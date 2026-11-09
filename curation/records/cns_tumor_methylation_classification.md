@@ -4,12 +4,13 @@ name: DNA methylation-based classification of human central nervous system tumor
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
-priority: 3
+priority: 4
 decision_markers:
 - Needs extensive data wrangling
+- Class-dependent Recording
 tags:
 - AI-Filled (Verify)
 - Many features
@@ -22,6 +23,7 @@ problem_type: Multiclass Classification
 source_links:
 - https://doi.org/10.1038/nature26000
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE90496
+v2_path: datasets/_dev/tabarena-v0pt2/cns_tumor_methylation_classification/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -54,3 +56,5 @@ type_adapter_id: curation-record-v1
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
 
 **Assessment (AI, 2026-11-08):** distinct from sarcoma_methylation_classification although 40 arrays are in both (35 of GSE90496, 5 of GSE109379): a CNS tumour classifier (91 classes) against a sarcoma classifier (65 classes), two tasks of one source line (PROV-7). /add-dataset decides whether the shared arrays leave one.
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (five text fixes made: the 27/29 count, the 10-15% chip optimism in splits_comment, the `Class-dependent Recording` marker for the material, the 35/40 shared-array note, the fit note; plus a LEAK-9 protocol line on test-batch rebalancing); keep the 91 classes until a class-by-class check against WHO 2021; disputed: SEL-4 (clustering-drawn subclasses), MET-5 (optional scoring column); for the curator: issues 1-3 (3: accept the stratification warning). Priority 4: gap + (multiclass thin), use case + (classifier in routine neuropathology), source + (Nature paper, GEO), shape + (2,801 patients, 428,800 features), risk - (open SEL-4 Must on part of the classes). Up from the screening's 3: shape moves from 0 to +, because the width is what the curator chose the large-candidates batch for (CC 2026-11-08).

@@ -2,12 +2,14 @@
 unique_name: enem_entrance_exam_scores
 name: Microdados do ENEM (Exame Nacional do Ensino Medio), INEP
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
+decision_markers:
+- Selection Bias
 tags:
 - AI-Filled (Verify)
 original_source: GOV Website
@@ -15,8 +17,7 @@ domain: education
 problem_type: Regression
 source_links:
 - https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados/enem
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/enem_entrance_exam_scores_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -45,3 +46,7 @@ type_adapter_id: curation-record-v1
 - Access: open download, no login, 526 MB to 1.04 GB per zip (2019: 659,560,141 bytes; 2022: 620,743,609; 2023: 549,511,687; 2024: 526,073,856; 2025: 1,035,674,693; HEAD requests). The INEP server does not send its intermediate certificate (RNP ICPEdu GR46 OV TLS CA 2025, published by GlobalSign) and drops long connections, so a build needs that certificate added and resumable range requests. No licence is stated on the page or in the Leia-me files read; the Leia-me cites the open-data policy only for the .ods copy of the dictionary.
 - Changes the call: the 2024 split (no common key) removes the newest editions from the task: a build uses 2023 or earlier, a temporal split such as 2019-2022 against 2023 (or one edition, IID); this answers the screening's open question on recent releases. No change to the priority (gap +, use case 0, source +, shape +, risk -: 3); TP_COR_RACA keeps the SEL-1 question for the curator, as on the Assam sibling.
 - Not checked: the counts of other editions (only 2023 counted); the 2025 Leia-me; why the 2023 file holds 84,459 rows fewer than INEP's 4,018,414 registrants (the Leia-me names only the takers of rare test versions and one participant as removed). Repeat registrants cannot be linked across editions: "O mesmo NU_INSCRICAO para anos diferentes não identifica o mesmo participante" (dictionary 2023, note 1), so a temporal split can hold the same person on both sides with no way to group them.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the actor rewritten as an NGO or MEC's CPOP cursinho, or a department filling limited places, asking the registration items on its own intake form; `Selection Bias` set, with the income gradient of absence and the treineiro share in fit_reason; `school_operating_status` dropped; 2018's school type and the modality aligned across editions; the municipalities decoded as "Name (UF) [code]"; a quantified note on 2023's blank second day, kept after the mediator's cause check); disputed: SEL-1 (sex, and the Assam sibling's `Ethical Issue` marker), LEAK-22 (the 2023 blank second day, kept), LEAK-10 (`school_operating_status`, dropped), USE-1 (the actor, rewritten), CLEAN-12 (the municipalities, decoded); for the curator: issue 1. Priority 3: gap 0, use case 0, source +, shape +, risk 0 (gap 0: education is not thin among the 151 accepted definitions; use case 0: ours, fit approximate; risk 0: the open issue confirms what is implemented and raises no leak or target question).

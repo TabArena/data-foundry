@@ -4,10 +4,10 @@ name: 'Chile Mineduc open data: Rendimiento por estudiante (student final academ
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
-priority: 4
+priority: 2
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -24,6 +24,7 @@ source_links:
 - https://doi.org/10.1007/s10639-022-11515-5
 - https://pmc.ncbi.nlm.nih.gov/articles/PMC9869310/
 - https://www.mineduc.cl/?p=22673
+v2_path: datasets/_dev/tabarena-v0pt2/chile_school_dropout_mineduc_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -54,3 +55,5 @@ type_adapter_id: curation-record-v1
 - Not checked: the files of 2002-2022 and 2025 (their rows are the layout's stated counts); whether MINEDUC publishes the deceased and graduates lists openly; the MRUN linkage before 2023.
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: students whose masked id changed between two yearly files are re-linked to their new id by school, sex, birth month, home commune and grade and relabelled "No", 10-19% of each year's dropouts, 10-26% of the links wrong by a placebo test, USE-5 fixed in the definition; the notes, the metric reason and the cleaning fixes); disputed: USE-5 (re-link or note; settled for the re-link), USE-1/USE-5 (all grades or grades 7-12; open), CLEAN-21 and CLEAN-12 (settled); for the curator: issues 1-3. Priority 2: gap -, use case - (fit approximate: the ministry's list covers grades 7-12 and the label keeps emigration and deaths), source + (Mineduc's census files with a codebook, and a paper), shape + (19.4M student-years, temporal, mixed types), risk - (a label repaired by a record link of our own with a measured share of wrong links; residual label noise).

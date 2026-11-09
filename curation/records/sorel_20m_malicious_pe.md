@@ -2,11 +2,11 @@
 unique_name: sorel_20m_malicious_pe
 name: 'SOREL-20M: Sophos-ReversingLabs 20 million Windows PE malware dataset'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 2
 tags:
 - AI-Filled (Verify)
@@ -22,8 +22,7 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://github.com/sophos/SOREL-20M
 - https://arxiv.org/abs/2012.07634
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/sorel_20m_malicious_pe_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -43,3 +42,7 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (technology & internet, binary and temporal not thin), use case 0 (the actor is clear, the fit approximate for the undisclosed labels), source + (paper, README, code, public bucket), shape + (19.4M dated files x 2,381), risk - (encodings of the raw file, undisclosed labelling, a newer sibling in `ember2024_malware_detection`).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2, together with ember2024_malware_detection: the same task (static detection of Windows PE files) from another source, and neither is better data (SOREL-20M: 19.4M files of 2017-2019, vendor labels, EMBER v2 features; EMBER2024: 2.9M files of 2023-2024, open VirusTotal labels, EMBER v3 features), so both enter (principles.md, Tensions: same task, another source).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the sample's text corrected, prefix 0 is 48.9% malicious against 50.5% for the release with about 40k extra benign training files from SHA-ordered batches of Jul-Aug 2017 and Jun-Jul 2018, test windows unaffected, EV-1; the feed rhythm of first_seen named in fit_reason, USE-8; the stated 0 and late values of header_coff_timestamp noted as kept, CLEAN-10; proposed: accept dataset_missing_value_sentinel, CLEAN-10; rebuttal round skipped, the briefs agreed on every fact); disputed: EV-1/USE-8 (the sample prefix), MET-5/MET-10/MET-11 (ROC AUC against partial AUC at max_fpr=1e-3, with SPLIT-10's gap), USE-6/USE-8 (first_seen to the minute); for the curator: issues 1-5. Priority 2: gap 0, use case 0, source +, shape +, risk - (use case: fit approximate, the 2-4 detection grey zone absent and the class mix set by collection; shape: 1.25M rows, 2,322 features; risk: unpublished labels, a SHA-ordered benign batch in the oldest train side, ROC AUC near ceiling).

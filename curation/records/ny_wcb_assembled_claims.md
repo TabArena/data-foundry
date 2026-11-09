@@ -4,7 +4,7 @@ name: 'Assembled Workers'' Compensation Claims: Beginning 2000 (New York State W
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
@@ -21,6 +21,7 @@ source_links:
 - https://catalog.data.gov/dataset/assembled-workers-compensation-claims-beginning-2000
 - https://data.ny.gov/api/views/jshw-gkgu/columns.json
 - https://catalog.data.gov/dataset/nyswcb-workers-compensation-claim-multiple-body-parts
+v2_path: datasets/_dev/tabarena-v0pt2/ny_wcb_assembled_claims_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -44,3 +45,5 @@ type_adapter_id: curation-record-v1
 - Adds: A documented claims-triage task in insurance (thin domain) with dates, so a temporal split by assembly date is natural; far larger and newer than any claims table we hold. Risks: many fields are filled after assembly (hearing, appeal, PPD/PTD, Section 32 dates, hearing and IME-4 counts, current status, highest ...
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the three WCIO codes, industry, age with the birth year, accident date, home ZIP, medical fee region and district dropped as values the table stores after assembly with a traced gain (LEAK-10 clause 2: on 105,786 matched claims of 2021 the 2026 values beat the June 2021 values by 0.030-0.037 log loss; each dropped block above 2 SE), and the insurer's name and type with them as the rule's default; history from 2016 (SPLIT-20, the EDI ramp); `fit_reason` names the insurer's lost-time desk and the inputs it holds that the table lacks; label maturity (about 12-13% of the test windows' PPD NSL and PTD awards still to come), the C-2 redefinition, the accident-date reason and the sex law read in the notes; NON-WC decoded; nothing restored from the June 2021 copy, which is not needed as a raw file: its insurer spellings carry more of the outcome than the 2026 ones and it would restore 259 cells); 1,152,698 claims, 6 features, log loss 1.02-1.04 against class shares 1.055-1.076, task probes without flags; disputed: LEAK-10 clause 2 (the bar for a field's return: settled, none returns; the residual of the kept fields: settled, it sat in the insurer, the fee region and the district; the insurer's drop: issue 1; the C-3 date, borderline: issue 3), SEL-1 (sex: issue 2, with rais_employment_separation issue 1); for the curator: issues 1-3. Priority 3: gap +, use case 0, source +, shape +, risk - (use case ours, fit approximate; risk: a thin task of six coarse fields, 3.2-4.0% below the class shares, 60% exact duplicate rows, and the label to date).

@@ -2,12 +2,12 @@
 unique_name: uk_mot_test_results
 name: Anonymised MOT tests and results (DVSA)
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
-priority: 3
+suggestion: 'Yes'
+priority: 2
 tags:
 - AI-Filled (Verify)
 - Non-IID (Temporal)
@@ -21,8 +21,7 @@ source_links:
 - https://open.data.dvsa.gov.uk/mot-anonymised/index.html
 - '# user guide (post-May 2018), v5.1'
 - https://edh-dvsa-data-gov-uk-files-prod.s3.eu-west-1.amazonaws.com/mot-testing-data-user-guide-v5.1.odt
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/uk_mot_test_results_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -42,3 +41,7 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (no thin domain; binary and temporal covered), use case + (DVSA names the model and its users), source + (agency release with a user guide), shape + (tens of millions of tests, ten mixed inputs, vehicle history over time), risk - (thin per-test inputs, a target recorded by the audited tester, heavy history joins).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the LEAK-9 protocol line widened to 'a fold uses only its own train rows; test rows are predicted without any other test row or later-dated row', with the task gamer's 657 / 1,509 / 1,586 linked test rows and +0.0014 to +0.0027 ROC AUC, no re-split; the metric reason reworded as a ranking use, MET-8; notes on the test-month density, the odometer read at the start of the test, the vehicle record as of June 2026 and the HYBRID ELECTRIC (CLEAN) merge, CLEAN-1, CLEAN-12; fit_reason on the missing tester id, USE-1); rebuttal round skipped (briefs converged); disputed: MET-8/MET-11 (log loss from context, decided once with sivep, nyc and nchs); for the curator: issue 1. Priority 2: gap 0, use case +, source +, shape +, risk - (use case: DVSA's own failure model; risk: thin per-test inputs and a label recorded by the audited tester).

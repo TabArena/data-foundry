@@ -4,7 +4,7 @@ name: ML Raman Open Dataset (MLROD)
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
@@ -27,6 +27,7 @@ source_links:
 - https://doi.org/10.1029/2021EA002125
 - https://odr.io/MLROD
 - https://arxiv.org/abs/2605.02003
+v2_path: datasets/_dev/tabarena-v0pt2/raman_mlrod/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -50,3 +51,5 @@ type_adapter_id: curation-record-v1
 - Notes: Raw Raman spectral bins (1,836 wavenumber points, 141-1100 cm-1) as features; SEL-15 judges such signals case by case. Licence CC BY-NC. Spectra from point maps of few physical samples (likely grouped by sample). HF mirror: https://huggingface.co/datasets/HTW-KI-Werkstatt/RamanBench/tree/main/mlrod
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the source's split, the reference maps train and both slabs are tested in one fold, scored by rock after the fact, SPLIT-19; the 46-spectrum gypsum and forsterite-albite powder map named after the gabbro moved to training, SPLIT-24/LEAK-17; one reading per band in place of the band minimum, LEAK-13, comb ROC AUC 0.651 to 0.536; the spreadsheet fill-down of qtzalb_train_60s_3000 row 2456 masked, PROV-13/CLEAN-26; a LEAK-9 protocol line and a kept-on-purpose note with the task gamer's gains; fit_reason, metric reason, licence note and counts corrected); of the three gates the panel set, the paper (PDF supplied by Lennart, 2026-11-09) settles two: the slabs were labelled by hand, the CNN only pointing at labels to recheck (Sec. 4.2: "Over 30,000 spectra were manually labeled by the authors over the span of 500 hr and three full passes"; USE-5 holds, both rocks kept), and the reference maps are separate hand samples (Table 1: augite from Trento Province, Italy, muscovite from Ottawa, the gabbro slab from Madagascar; SPLIT-24 and LEAK-17 hold, the maps stay); the record stays `TBD` on the third, the mirror against ODR (PROV-1, PROV-13: three files, L_raw_gabbro50dust_test_015s_9740, L_raw_granite0dust_test_015s_4084_final and qtzalb_train_60s_3000, downloaded by Lennart on 2026-11-09 match the mirror byte for byte, size and sha256, a byte match as for ai4d, so the fill-down is ODR's own and stays masked; still open: L_raw_granite50dust_test_015s_10000, ODR's file list with id 63742, and the licence badge; the paper's Table 1 lists about 130,000 spectra, as the 41 files hold); TODO run (SEL-12): the source's Spec-CNN against tuned LightGBM, CatBoost, RealMLP, logistic regression and TabPFN v3.5 on the shipped split, on GPU via SkyPilot, reported for the clean and dusty slabs, the gabbro and the granite apart (untuned logistic regression 0.934 accuracy on the clean slabs against the CNN's 1.00); disputed: SPLIT-19 (one fold per rock or the source's split, settled for the source's), SPLIT-24 (the hb_ms muscovite block, settled: kept, gated with the augite map), LEAK-13 (settled: one reading per band), SEL-12 (for the curator after the run); for the curator: issue 1 (the last ODR checks), issues 2-3 (answered by the paper, to confirm), issue 4 (SEL-12 after the run), issue 5 (design A, only on request). Priority 3: gap +, use case 0, source +, shape +, risk - (gap: multiclass classification is thin among the accepted definitions; use case: the abstract names the scientist's interpretation and the rover's decision, but the fit is approximate, a lab microscope for a rover instrument, with slab labels that name the grain in the gabbro and the spot in the granite; risk: one source check open (three of four files match ODR) and a spectrum CNN far ahead of untuned tabular models, whose accuracy on the hand labels the CNN helped check is partly self-confirming, and a spectrum CNN far ahead of untuned tabular models).

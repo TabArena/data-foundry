@@ -4,10 +4,12 @@ name: Multi-perspective AKI prediction in general hospital populations (KUMC EMR
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
-priority: 3
+priority: 2
+decision_markers:
+- Selection Bias
 tags:
 - AI-Filled (Verify)
 original_source: Other
@@ -17,6 +19,7 @@ problem_type: Binary Classification
 source_links:
 - https://doi.org/10.5061/dryad.qc90qb4
 - https://doi.org/10.1093/jamiaopen/ooy043
+v2_path: datasets/_dev/tabarena-v0pt2/kumc_inpatient_aki_prediction/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -40,3 +43,7 @@ type_adapter_id: curation-record-v1
 - Adds: An inpatient deterioration task with public data. The snapshot design (at admission or fixed lead time) needs picking, and the scrubbed EMR format needs a look.
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-08):** added as `datasets/_dev/tabarena-v0pt2/kumc_inpatient_aki_prediction/` by /add-dataset (builder, steps 0-6; the panel is the main session's). Measured, superseding the screening: the deposit is open (CC0; Dryad's version zip downloads without a token, the per-file API answers 401) and holds one wide table per perspective, no dates and no patient key; the Perspective #2 file (admission day, AKI on any day of the stay) has 76,957 stays and 302 coded features, not 1,917 (the dictionary's full set; the public file drops the medications and every flag set in fewer than about 400 stays, the full set needs a data use agreement). Shipped as random stays (`ForcedIIDFromTemporal`), fallback `roc_auc`; untuned LightGBM 0.716, no probe flag. Open for the curator: the admission diagnoses (APR-DRG) and comorbidities come from the discharge abstract, which the source presumes known at admission; kept with a note (ROC AUC 0.726 with them, 0.683 without).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: `comorbidity_renal_failure`, in part a code of this stay's AKI, and the 26 APR-DRG groups defined by a procedure done in the stay dropped as known only after admission, with their measured cost; the leak note rewritten with the late-coding test; the repeat-patient numbers and the split advice in the notes; the fit names the post-admission cohort filters and the missing admission creatinine, and the record carries `Selection Bias`; the metric reason; sex decoded, the age bands labelled on target-free reasons, the lab decoding led by the reference ranges, three names fixed; ROC AUC 0.705 untuned LightGBM on the 275 shipped features); disputed: LEAK-10 clause 2 (which procedure groups: settled, all 26 with APR-DRG 443; four untested comorbidities: the mediator's test shows no late signature, their keep is part of issue 1; the 35 medical groups and 26 remaining comorbidities: issue 1), CLEAN-12/CLEAN-14 (BMI and blood-pressure order: issue 2; race words: issue 3); for the curator: issues 1-3. Priority 2: gap -, use case - (fit approximate: no medications or admission creatinine, cohort cut after admission), source +, shape +, risk - (issue 1 keeps discharge-coded flags on a case-by-case call).

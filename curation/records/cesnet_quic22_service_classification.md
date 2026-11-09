@@ -2,11 +2,11 @@
 unique_name: cesnet_quic22_service_classification
 name: 'CESNET-QUIC22: QUIC traffic dataset for service classification'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 4
 tags:
 - AI-Filled (Verify)
@@ -25,8 +25,7 @@ source_links:
 - https://doi.org/10.1016/j.dib.2023.108888
 - '# the evaluation paper (TMA 2023) with the weekly split'
 - https://tma.ifip.org/2023/wp-content/uploads/sites/12/2023/06/tma2023-final13.pdf
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/cesnet_quic22_service_classification_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -46,3 +45,7 @@ type_adapter_id: curation-record-v1
 - Priority: gap + (multiclass is thin), use case + (the paper names the operator's decisions), source + (data paper, documented Zenodo release, an evaluation paper), shape + (millions of flows, about 133 inputs, weekly windows), risk - (SNI and IP shortcuts, a sampled class mix).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the use case reworded to labelling exported flow records for reporting, accounting and audit, with the first-30-packets score in the notes, log loss 0.260 against 0.220, USE-3, LEAK-1; the closed world named in the fit note, USE-8; the class mix from the source's per-service sampling in the metric reason, MET-5, MET-6; the 1-in-20 sample of a temporal frame recorded as a departure, class shares hold; split notes on the 31 Oct-1 Nov capture break, the 17 Nov holiday and sampling drift, SPLIT-20; negative inter-packet gaps and dst_asn 65535 to missing, CLEAN-11; ppi_dir as a named CLEAN-14 exception; 132 features; quic_version 0xfaceb00x named as Meta's QUIC stacks). Correction to the screening: the task ships 102 classes and draws from the release's 140.47M service flows; 105 classes and 153M flows are the release's totals. Disputed: USE-6/USE-10 (the server address and network as inputs), USE-5/USE-8 (the closed world), MET-5/MET-16 (class-weighted log loss); for the curator: issues 1-3. Priority 4: gap +, use case +, source +, shape +, risk - (gap: multiclass is thin; use case: the evaluation paper names the operator's decision; source: data article, documented Zenodo release and an evaluation paper; shape: 2.5M rows, 132 features, temporal; risk: the server address is much of the score, a sampled class mix, a closed world).

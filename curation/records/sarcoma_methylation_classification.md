@@ -4,12 +4,13 @@ name: 'Sarcoma classification by DNA methylation profiling: reference set (1,077
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
-priority: 3
+priority: 4
 decision_markers:
 - Needs extensive data wrangling
+- Class-dependent Recording
 tags:
 - AI-Filled (Verify)
 - Many features
@@ -23,6 +24,7 @@ source_links:
 - https://doi.org/10.1038/s41467-020-20603-4
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE140686
 - https://www.molecularsarcomapathology.org
+v2_path: datasets/_dev/tabarena-v0pt2/sarcoma_methylation_classification/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -55,3 +57,5 @@ type_adapter_id: curation-record-v1
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
 
 **Assessment (AI, 2026-11-08):** distinct from cns_tumor_methylation_classification although 40 arrays are in both: a sarcoma classifier (65 classes) against a CNS tumour classifier (91 classes) (PROV-7).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: `site` cleaned losslessly and `site_tissue` added, the Ewing's apostrophe, the `Class-dependent Recording` marker for the array type, task_summary and splits_comment naming the referring centre as the larger hidden group (+0.57 log loss against +0.019 for chip mates; a centre split leaves about 74 unseen-class test rows per fold), the Controls and clinical-columns notes reworded on the measured null, the date, abstention, small-class and shared-array note fixes); disputed: SEL-4 (clustering-only classes, one test with cns_tumor_methylation_classification), SPLIT-29/30/31 (referring centre), LEAK-39/LEAK-15 (array route kept, with tcga_pancancer_tumor_type's BCGSC), TP-1/TP-3 (near the ceiling); for the curator: issues 1-4. Priority 4: gap + (multiclass thin), use case + (classifier in routine sarcoma pathology, 29 of 59 discrepant cases revised), source + (Nature Communications paper, GEO), shape + (1,077 patients, 405,844 features), risk - (clustering-drawn labels, centre and array tied to the class, near the ceiling).

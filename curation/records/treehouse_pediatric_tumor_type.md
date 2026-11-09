@@ -4,7 +4,7 @@ name: 'Treehouse Tumor Compendium v25.01 PolyA: consistently processed RNA-seq f
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
@@ -19,6 +19,7 @@ source_links:
 - https://doi.org/10.1038/s41597-025-05376-z
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE294351
 - https://treehousegenomics.soe.ucsc.edu/public-data
+v2_path: datasets/_dev/tabarena-v0pt2/treehouse_pediatric_tumor_type/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -51,3 +52,5 @@ type_adapter_id: curation-record-v1
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
 
 **Assessment (AI, 2026-11-08):** distinct from tcga_pancancer_tumor_type (PROV-7): only the paediatric cut ships (3,477 datasets, 366 of them TCGA tumours); the whole compendium would be a version of the TCGA task (PROV-6).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (every TPM rounded alike, LEAK-13; the five THR49 second deposits dropped, SPLIT-24; both applied); disputed: SPLIT-1/SPLIT-23/LEAK-39 (patient vs study split), LEAK-15/USE-6 (age and sex missing by study), USE-5/TP-7 (AMKL beside AML), TP-3/CLEAN-22 (width); for the curator: issues 1-4. Priority 3: gap +, use case 0, source +, shape +, risk - (multiclass is thin; a tumour board's diagnosis, fit approximate; a Scientific Data descriptor with a GEO deposit; 3,256 rows x 54,573 features, grouped; diagnosis entangled with the study).

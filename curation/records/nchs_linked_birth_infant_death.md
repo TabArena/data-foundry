@@ -2,11 +2,11 @@
 unique_name: nchs_linked_birth_infant_death
 name: NCHS linked birth / infant death data
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 2
 tags:
 - AI-Filled (Verify)
@@ -22,8 +22,7 @@ source_links:
 - https://www.cdc.gov/nchs/data_access/vitalstatsonline.htm
 - '# user guide of the 2024 period / 2023 cohort files'
 - https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Dataset_Documentation/DVS/period-cohort-linked/24PE23CO_linkedUG.pdf
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/nchs_linked_birth_infant_death_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -43,3 +42,7 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical, binary and temporal covered), use case 0 (ours), source + (NCHS files with a user guide per year), shape + (millions of births, many mixed items, many cohorts), risk - (post-birth items and the `ILIVE` leak).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the co-twin's prior-birth counts blanked on later-born multiples, the cyanotic heart disease and the paternity acknowledgement dropped, the karyotype levels merged into Yes, LEAK-10; the 2017-2019 imputed birthweights blanked and the 'label-free' text corrected, LEAK-13; the 'plural delivery' interval code set missing, CLEAN-10; the unlinked deaths cited as LEAK-25; the release lag, the seed spread 0.004, the 2021 sampling fraction and the paper read stated; the use case narrowed to expected deaths at the birth); rebuttal round skipped (briefs converged); disputed: SEL-1 (race, every reviewer recommends dropping), LEAK-10/LEAK-6 (outcome-marked unknowns kept against mic and 2_month_survival), USE-3 (a second folder for the screen at registration), MET-8/MET-11 (log loss); for the curator: issues 1-4. Priority 2: gap 0, use case 0, source +, shape +, risk - (use case: ours, not the source's; risk: race and the outcome-marked unknowns are open).

@@ -4,10 +4,12 @@ name: 'TCGA PanCancer Atlas: Cell-of-Origin Patterns Dominate the Molecular Clas
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
+decision_markers:
+- Class-dependent Recording
 tags:
 - AI-Filled (Verify)
 original_source: GOV Website
@@ -19,6 +21,7 @@ source_links:
 - https://doi.org/10.1016/j.cell.2018.03.022
 - https://gdc.cancer.gov/about-data/publications/pancanatlas
 - https://portal.gdc.cancer.gov/
+v2_path: datasets/_dev/tabarena-v0pt2/tcga_pancancer_tumor_type/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -51,3 +54,5 @@ type_adapter_id: curation-record-v1
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
 
 **Assessment (AI, 2026-11-08):** distinct from treehouse_pediatric_tumor_type, whose paediatric cut holds 366 TCGA tumours: 33 adult TCGA projects against 111 paediatric diagnoses (PROV-7). A tumour-type task over the whole Treehouse compendium would be a version of this one (PROV-6), so only Treehouse's paediatric cut ships.
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (colon and rectum merged into one colorectal class, the plate batch, the route and the provenance written; no leak, copy or shortcut found; the hidden-group, task and full-width leak probes did not finish, 2,000-gene stand-ins used); disputed: LEAK-13/15/39 (the four BCGSC-only classes); for the curator: issues 1-4. Priority 3: gap + (multiclass thin), use case 0 (the source names cancers of unknown primary only as a potential use; fit approximate), source + (TCGA, GDC, Cell 2018), shape + (9,724 patients x 58,383 genes), risk - (site, plate and sequencing-route batches follow the class).

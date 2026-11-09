@@ -1,28 +1,28 @@
 ---
 unique_name: fpa_fod_wildfire_cause
-name: 'Spatial wildfire occurrence data for the United States, 1992-2020 (FPA FOD, 6th edition): wildfire cause'
+name: 'Spatial wildfire occurrence data for the United States, 1992-2024 (FPA FOD, 7th edition): wildfire cause'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
 original_source: GOV Website
-year: '2014'
+year: '2026'
 domain: environmental science & climate
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
+- https://doi.org/10.2737/RDS-2013-0009.7
 - https://doi.org/10.2737/RDS-2013-0009.6
 - https://doi.org/10.5194/essd-6-1-2014
 - https://doi.org/10.5281/zenodo.8381129
 - https://doi.org/10.5194/essd-16-3045-2024
 - https://www.kaggle.com/datasets/rtatman/188-million-us-wildfires
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/fpa_fod_wildfire_cause_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -51,3 +51,9 @@ type_adapter_id: curation-record-v1
 - Access: open. The metadata says "These data were collected using funding from the U.S. Government and can be used without additional permissions or fees" and asks for a citation; "Access Constraints: None". The RDS archive ships accdb, gdb, gpkg and sqlite downloads; their sizes were not read because of the 403. The ArcGIS REST layer answers queries and statistics without login, at most 2,000 records per page (about 1,331 pages for all records). Kaggle mirrors of the 6th edition exist (behroozsohrabi/us-wildfire-records-6th-edition: data.csv 1,066,385,139 bytes, data.sqlite 1,123,016,704 bytes, CC0). The record's Kaggle link is the 3rd update (1.88 million fires, 1992-2015).
 - Changes the call: the edition. The 7th edition (2026, 1992-2024, 2,661,383 records) supersedes the 6th edition the record names. The build should use it (PROV-6, a newer version of the same source), and the record's year and links should follow. With it the labelled table has 1,972,001 fires, just under 2 million. With the 6th edition it would be smaller (count not obtained). The undetermined share (25.9%) depends on the reporting system, which supports the `Class-dependent Recording` probe the screening named (LEAK-13). It also bears on the fit: a model trained on fires whose cause was determined is applied to fires whose cause was not, and those come more often from nonfederal and interagency systems (USE-8, approximate). None of this moves the priority: 3 stands. The sibling `fpa_fod_attributes_wildfire_size` (`TBD -> Yes`, priority 2) is the same fires with the final size as target (PROV-7, a distinct task); its covariates cover only the 6th edition's years (1992-2020, CONUS). `wildfireia_initial_attack_failure` is a cut of the natural fires with a size label, another task.
 - Not checked: the exact row count and the file sizes of the 6th and 7th edition downloads (the RDS archive answered 403); whether the 7th edition re-coded the causes of earlier years; the fill of DISCOVERY_TIME and OWNER_DESCR by year.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-08):** the build uses the 7th edition (Short 2026, 1992-2024), which supersedes the 6th the record links (PROV-6); the link and year follow at /add-dataset.
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (the eight documentation changes applied; issues 1-3 stay at option (a) unless the curator chooses otherwise); disputed: SPLIT-20 against SPLIT-14 (start of the training history), LEAK-13/USE-6 (the reporting fields, settled by a linear fit on 2022: 1.4151 with all fields, 1.4501 without the five), LEAK-25 citation (fixed); for the curator: issues 1-4. Priority 3: gap +, use case 0, source +, shape +, risk - (multiclass is thin; the use case is ours, not the source's; USFS archive with Short's ESSD papers; 1.14M fires, mixed types, temporal; the labelled population is about half of each test year and the training history spans the 2020-2021 reporting break).

@@ -4,7 +4,7 @@ name: Dataset Using TLS Fingerprints for OS Identification in Encrypted Traffic
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
@@ -19,6 +19,7 @@ source_links:
 - https://doi.org/10.5281/zenodo.3461771
 - '# the NOMS 2020 paper (its PDF also on Zenodo, 10.5281/zenodo.3989382)'
 - https://doi.org/10.1109/NOMS47738.2020.9110319
+v2_path: datasets/_dev/tabarena-v0pt2/tls_os_fingerprinting_masaryk_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -49,3 +50,5 @@ type_adapter_id: curation-record-v1
 - Not checked: the exact count of rows with SYN fields (one hour previewed); per-class counts in the files; whether the SSH fields are filled.
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the use case and question per Wi-Fi session, `unit_weight` declared on an opaque (session, half-day) id, the per-session class balance and the ranking effect in the metric's reason, `fit_reason` naming the DHCP-labelled test devices and the session unit, `dst_port` and `tls_extension_types` categorical, `syn_size` below 40 and the filler `tls_sni_length` missing, corrected notes); disputed: MET-15/MET-17 (count each session or each flow, and whether the session weight may also train: untuned LightGBM 0.204 unweighted, 0.197 prior-shifted, 0.096 trained with it), CLEAN-3 (the destination address, a confirmation); for the curator: issues 1-2. Priority 3: gap +, use case 0, source +, shape +, risk - (gap: multiclass is thin; use case: asset identification is named, the fit approximate, the test devices already labelled; risk: DHCP host-name labels, a closed set of five, an open weighing on the score's unit).

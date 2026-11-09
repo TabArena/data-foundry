@@ -4,7 +4,7 @@ name: 'PPNN full data: ECMWF ensemble 2 m temperature forecasts and DWD station 
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 4
@@ -26,6 +26,7 @@ source_links:
 - https://doi.org/10.6084/m9.figshare.19453580.v2
 - '# Chen and Lerch (2022), Full data for wind speed post-processing: another target (10 m wind speed), related data'
 - https://doi.org/10.6084/m9.figshare.19453622.v2
+v2_path: datasets/_dev/tabarena-v0pt2/ppnn_ecmwf_t2m_postprocessing_germany_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -56,3 +57,5 @@ type_adapter_id: curation-record-v1
 - Not checked: the values (missing values per column, variance or standard deviation in `_var`); the rows of the wind-speed deposit; Jobst et al. (Zenodo 8127734).
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-08):** review panel (full): ship after changes (made: a protocol line barring the later forecasts of the same station in other test rows, the measured MAE-CRPS closeness in the metric's reason, the year's evidence from the 2020 deposit, two impossible observations set missing and their 13 rows dropped, the soil-moisture, interpolation, unit and citation notes); disputed: LEAK-9 (a note or a protocol line; settled: the line), PROV-9 (2020 or 2021; settled: 2021), SPLIT-18 against SPLIT-19 with SPLIT-15 (the test windows); for the curator: issue 1. Priority 4: gap 0, use case +, source +, shape +, risk 0 (no thin domain, problem type or regime; the open issue is a weighing call between two valid split designs, not a leak or damage).

@@ -4,25 +4,28 @@ name: gp-soy-YLD (Soybean Yield Genomic Prediction)
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
-priority: 3
+priority: 4
 tags:
 - AI-Filled (Verify)
 - Many features
 collections:
 - TabBench-Bio
 original_source: Other
-year: '2019'
+year: '2015'
 domain: biology & life sciences
 problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
+- https://cran.r-project.org/package=SoyNAM
+- https://doi.org/10.1534/g3.118.200332
 - https://doi.org/10.1534/g3.119.400498
 - https://doi.org/10.5061/dryad.xksn02vb9
 - https://arxiv.org/abs/2609.07441
 - https://zenodo.org/records/4980429
+v2_path: datasets/_dev/tabarena-v0pt2/genomic_prediction_soy_yield/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -54,3 +57,5 @@ type_adapter_id: curation-record-v1
 - Not checked: how Azodi computed the line value; the SoyNAM papers (Song et al. 2017, Diers et al. 2018, Xavier et al. 2016) were not read; whether SoyBase serves the data at a new address (its project list names a data store SoyNAM_2014).
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the line value now removes environment and field-block effects estimated on the check plots alone, as Diers et al. 2018 do; 70 lines whose raw genotype row was another sample take their own calls from the QA matrix, none dropped; `context="all_rows"`; the record's year 2015 and the CRAN and Diers 2018 links); disputed: MET-1/MET-2/MET-5 (pooled r against the within-family r), the fold design (only a few groups, stratify or not); for the curator: issues 1-3. Priority 4: gap 0, use case +, source +, shape +, risk 0 (the target the size check called ours to compute now follows the data paper; the open metric question changes the score's unit, not the data).

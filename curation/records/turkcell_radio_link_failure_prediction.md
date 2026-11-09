@@ -2,12 +2,12 @@
 unique_name: turkcell_radio_link_failure_prediction
 name: Turkcell Radio Link Failure Prediction (ITU AI/ML in 5G Challenge 2021, ITU-ML5G-PS-012)
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
-priority: 3
+suggestion: 'Yes'
+priority: 4
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -24,8 +24,7 @@ source_links:
 - https://github.com/ITU-AI-ML-in-5G-Challenge/Challenge_Archive/tree/main/2021
 - https://doi.org/10.1016/j.compeleceng.2022.107742
 - https://arxiv.org/abs/2407.05197
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/turkcell_radio_link_failure_prediction_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -55,3 +54,7 @@ type_adapter_id: curation-record-v1
 - Access: open on GitHub, no login, 42 MB of 7z, 326 MB unpacked for training. The repository has no licence file. Its README asks users to cite Aktaş, Alemdar and Ergüt 2022 (Computers & Electrical Engineering 99:107742) and says the data "gives the opportunity for researchers to use live network data to define new problems or improve their works".
 - Changes the call: none that moves the priority. Facts for the curator: the 2021 metric is now confirmed from the ITU archive as the F1 of the failure class for each horizon (MET-4, on hard labels, MET-6). The label is Turkcell's threshold rule applied to the next day's KPIs, which are not inputs, so SEL-5 does not apply; today's unavail_second and bbe carry the lagged label, so the naive-profile test stays (TP-10). With 0.061% positives a month holds about 50, so test windows of a month or more, or the 5-day label (0.26%), need weighing (TP-5, CLEAN-18). The four 2021 windows add 184,253 labelled link-days four months after the training period. The record's name is right: PS-012 is the 2021 Turkcell problem.
 - Not checked: the paper's text (paywalled); whether the 2020 data of the other region can still be downloaded from ITU; the 2021 leaderboard scores.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the counters written in thousands repaired and the failure flag recomputed by Turkcell's rule, PROV-13/USE-5, 2,011 positives instead of 1,204; the day's observed weather from met-real read, CLEAN-22; TP-10 leg 1 re-run on the repaired label over three seeds, ahead of the link's rate in the two newer windows and a tie in January to April, so the scope stays; the LEAK-9 protocol line extended; the forecast dated d backed by the 2021 test archive and MLGrads, LEAK-10; within-day ROC AUC reported, TP-9; the `Anonymized` tag dropped, year 2021, small factual fixes; rebuttal round skipped, briefs converged); disputed: MET-4 (ROC AUC against the challenge's F1); for the curator: issue 1. Priority 4: gap 0, use case +, source +, shape +, risk - (gap: no thin domain, problem type or regime; use case: an operator's daily risk review of its own links, fit direct; source: Turkcell's own release with a data paper and the winner's code; shape: 1.96M link-days, mixed types, temporal; risk: the source's metric overruled, storm-dominated windows and a tree model unstable over seeds on 0.10% positives).

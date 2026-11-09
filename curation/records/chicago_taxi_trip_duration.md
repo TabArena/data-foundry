@@ -1,25 +1,25 @@
 ---
 unique_name: chicago_taxi_trip_duration
-name: Chicago Taxi Trips (2013-2023) and Taxi Trips (2024-)
+name: Chicago Taxi Trips (2024-)
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
 original_source: GOV Website
-year: '2016'
+year: '2026'
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression
 source_links:
-- https://data.cityofchicago.org/Transportation/Taxi-Trips-2013-2023-/wrvz-psew
-- https://data.cityofchicago.org/api/views/wrvz-psew.json
 - https://data.cityofchicago.org/Transportation/Taxi-Trips-2024-/ajtu-isnz
+- https://data.cityofchicago.org/api/views/ajtu-isnz.json
+v2_path: datasets/_dev/tabarena-v0pt2/chicago_taxi_trip_duration_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -33,7 +33,7 @@ type_adapter_id: curation-record-v1
 - Siblings and duplicates: `nyc_taxi_trip_duration` (`Yes`, v2 `_1m`, RMSLE) and `pkdd_15_taxi_trip_time_prediction_ii` (`Yes`) hold the same task in other cities. `chicago_rideshare_trip_duration` (a new record of this run) is the City's ride-hail table with the same layout: a sibling, not a duplicate (PROV-7), and the curator may want only one Chicago trip record. `nyc_taxi_green_dec_2016` and `nyc_taxi_fare_dataset` have other targets. No Chicago taxi record existed before this run. External collections: not searched (web search budget used up).
 - Better data: found as better data for `nyc_taxi_trip_duration` and `pkdd_15_taxi_trip_time_prediction_ii` (the data-scouting run of 2026-10-30/31); no further search.
 - Papers and pages: the two portal pages and their metadata; papers that used the data were not searched (web search budget used up).
-- Metric: none found (the portal publishes a register, no task), so the fallback `rmse` on the trip seconds, with the target shipped as log1p (MET-3, MET-8). The NYC competition scored RMSLE on the same task, but that is not this source's metric; the curator decides (MET-1, MET-4). Inputs none.
+- Metric: none found (the portal publishes a register, no task), so the fallback `rmse` on the trip seconds, with the target shipped as log1p (MET-3, MET-8). The NYC competition scored RMSLE on the same task, but that is not this source's metric; the curator decides (MET-1, MET-4). Inputs none. Superseded at /add-dataset (AI, 2026-11-09): `rmsle` from context (MET-11), as declared in the definition: on this data RMSLE and RMSE in seconds rank two LightGBM fits in opposite order in 3 of 3 windows, and trips over an hour (3.8-4.8% of the test trips) hold 38-45% of the squared error in seconds; the ETA actor judges an error relative to the trip's length, and both sibling competitions scored RMSLE on the same task.
 - Risks for /add-dataset: Trip End Timestamp, Trip Miles, Fare, Tips, Tolls, Extras, Trip Total and Payment Type are known only after the trip (LEAK); Trip Miles stands in for a route distance known at booking only if the use case is a booked trip. Trip Seconds against the rounded timestamps, and zero or multi-day durations, need cleaning rules (CLEAN). Suppressed tracts leave locations missing. 230M rows need sampling per window as in NYC's `_1m`. Taxi ID is a medallion, a grouping column rather than a feature.
 - Priority: gap 0 (regression and temporal not thin), use case 0 (the City names none; the ETA framing comes from the NYC and Porto competitions), source + (the regulator's documented table), shape + (230M trips, 2013-2026, mixed types, temporal), risk 0 (the post-trip columns are named and get dropped as in NYC).
 
@@ -50,3 +50,5 @@ type_adapter_id: curation-record-v1
 - Not checked: per-year counts for 2013-2023 and an exact 2025 count (API timeouts); the share of zero or implausible trip_seconds; whether the cached null counts of the new table are current.
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: every trip placed by its community area, the census tracts dropped and the tract centroids replaced by the area's, since the City hides a tract depending on the trip's own arrival quarter hour and the hidden flag is worth 0.0028-0.0039 RMSLE over 5 seeds, a gain in 15 of 15 fits, LEAK-10, at a cost of 0.024-0.025 of real tract detail; the location filter reads the community area, not the centroid, and the in-city selection is named in fit_reason and `row` (8.3% of the rides, 24% of the O'Hare pickups), USE-7, USE-8; two LEAK-9 protocol lines with a kept-on-purpose note, for the same taxi's next pickup among the test rows (0.0051-0.0056 RMSLE per window) and the later windows' labelled weeks; the 24 spring-forward trips lose the skipped hour, as nyc_taxi_trip_duration_1m, CLEAN-1; 1,094 trips faster than 120 km/h between the area centroids (3 km of slack per end) dropped, CLEAN-11 then CLEAN-15, as pkdd and Lusaka; the 60 s cut kept with its full reason and a note on why the siblings' 100 m rule cannot apply to centroids; the late-report note replaced by the measurement (later monthly updates added at most 94 trips to a published month), the metric reason led by this dataset's rank flip; the record's year, name, source links and Metric line fixed); disputed: USE-7 and CLEAN-11 (the 61-119 s records with no mile that end in their pickup area: dropped, 7,893 trips, by a rule that reads the target's band and trip_miles, or kept with a note); for the curator: issue 1. Priority 3: gap 0, use case 0, source +, shape +, risk 0 (use case: the City names no actor, the ETA framing is the siblings'; shape: 1,371,608 rows, 9 features, categorical and datetime, temporal; risk: the leaks found are fixed in the definition or closed by the protocol lines, and the open issue moves 7,893 of 6.6M rows).

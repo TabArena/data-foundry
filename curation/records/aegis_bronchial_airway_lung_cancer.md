@@ -4,14 +4,14 @@ name: 'AEGIS-1 and AEGIS-2 bronchial airway gene expression (GEO GSE66499): vali
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 tags:
 - Many features
 - AI-Filled (Verify)
-original_source: Other
+original_source: GOV Website
 year: '2015'
 domain: medical & healthcare
 required_split:
@@ -20,6 +20,7 @@ problem_type: Binary Classification
 source_links:
 - https://doi.org/10.1056/NEJMoa1504601
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE66499
+v2_path: datasets/_dev/tabarena-v0pt2/aegis_bronchial_airway_lung_cancer/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -33,9 +34,9 @@ type_adapter_id: curation-record-v1
 - Siblings and duplicates: `lung_cancer_epithelial_genexp` (GSE4115, Spira 2007; Yes, BeyondArena) is the earlier cohort of the same research line: other patients and another array, so its own record (PROV-4), with the same task; the curator decides whether both enter. No other record of GSE66499 (grep: GSE66499, AEGIS, bronchial). External collections: none found.
 - Better data: found as better data for `lung_cancer_epithelial_genexp`; no further search this round.
 - Papers and pages: the NEJM paper (abstract on Europe PMC: AUC 0.78 in AEGIS-1 and 0.74 in AEGIS-2, sensitivity 88-89%, specificity 47%, NPV 91% at intermediate pre-test risk); the classifier's derivation in AEGIS-1 (Whitney et al. 2015, BMC Medical Genomics; not read).
-- Metric: the paper reports AUC, sensitivity, specificity and NPV side by side for a classifier at its own cut-off, with no single criterion for our task (MET-5, MET-6), so the fallback `roc_auc`, also the paper's discrimination measure; inputs none.
+- Metric: the source's `roc_auc` (MET-5): Whitney et al. 2015 build the classifier by its cross-validated AUC ("the best AUC", Statistical methods), and Silvestri et al. 2015 report the AUC per cohort; inputs none. (Corrected 2026-11-09 from the fallback, review panel.)
 - Risks for /add-dataset: 41 replicate arrays must be collapsed or grouped by the patient parsed from the titles (LEAK-17); the processed values are RMA over the arrays processed together, a weak transductive leak (LEAK-30), repairable from the CEL files, as noted on the sibling; 76% cancer, selected by referral for bronchoscopy, which is the population of the use case (no `Selection Bias`); 33,297 features for 639 patients; no age, smoking history or lesion size ship, though the clinical decision uses them.
-- Priority: gap 0 (medical & healthcare and binary not thin), use case +, source +, shape 0 (639 patients, below about 1,000), risk 0.
+- Priority: gap 0 (medical & healthcare and binary not thin), use case 0, source +, shape 0 (639 patients, below about 1,000), risk - (corrected 2026-11-09 after the review panel: fit approximate, weak LEAK-30 kept, no age or smoking inputs).
 
 **Assessment (AI, 2026-10-31):** a candidate from the data-scouting run of 2026-10-30/31, not screened yet. Found through better data for `lung_cancer_epithelial_genexp`.
 - as published: 639 current or former smokers undergoing bronchoscopy for suspected lung cancer (AEGIS-1: 298, AEGIS-2: 341; 1,357 enrolled), 487 cancer and 152 benign; 680 CEL files (replicates) on Affymetrix ...; target: lung cancer diagnosis (cancer_yes_no), from bronchoscopy or 12 months of follow-up; access: open.
@@ -50,3 +51,5 @@ type_adapter_id: curation-record-v1
 - Not checked: whether RMA ran over all 680 arrays at once or per batch; the NEJM supplement; better data (the AEGIS nasal series and others were not looked up in this pass).
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (control clusters dropped, notes on the 227 untyped clusters and the 28 centres, record fields fixed); disputed: USE-8/USE-9 (the use-case wording), LEAK-30 (keeping the per-cohort RMA while the CEL files exist); for the curator: issues 1-2. Priority 3: gap 0, use case 0, source +, shape 0, risk - (a real triage decision but fit approximate, the bronchoscopy-nondiagnostic subgroup cannot be cut; NEJM trials on GEO; 639 rows x 32,642 features; weak LEAK-30 kept and no age or smoking inputs).

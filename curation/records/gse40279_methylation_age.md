@@ -4,7 +4,7 @@ name: GEO-GSE40279-Methylation-Age (Blood DNA Methylation Age)
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
@@ -24,6 +24,7 @@ source_links:
 - https://doi.org/10.1016/j.molcel.2012.10.016
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40279
 - https://arxiv.org/abs/2609.07441
+v2_path: datasets/_dev/tabarena-v0pt2/gse40279_methylation_age/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -56,3 +57,5 @@ type_adapter_id: curation-record-v1
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
 
 **Assessment (AI, 2026-11-08):** better data for the same task was found by the size check, GSE55763 (Lehne et al. 2015, Imperial College London: 2,664 people, blood 450K arrays, ages 23.7-75.0); per screen-candidates "Better data" it is screened as its own record, and the curator picks which one enters once both are known. This record keeps its verdict.
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: notes on the plate-constant ethnicity, the use case led by the aging study with forensic estimation second and approximate, the rmse reason citing Fig. 7A, the 18 distinct partitions, the ultra-wide label); the build waits on the library's parquet read limits; rebuttal round skipped (briefs converged); disputed: keep `ethnicity` (USE-6, USE-3); for the curator: issues 1-3. Priority 3: gap 0, use case +, source +, shape 0, risk − (a larger sibling cohort, gse55763, 9 plates only, an ultra-wide table that needs a library change to build).

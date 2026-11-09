@@ -4,10 +4,10 @@ name: Pathogenic Bacteria
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
-priority: 4
+priority: 3
 decision_markers:
 - TBD
 tags:
@@ -29,6 +29,7 @@ source_links:
 - https://github.com/csho33/bacteria-ID
 - https://arxiv.org/abs/2605.02003
 - https://pypi.org/project/raman-data/
+v2_path: datasets/_dev/tabarena-v0pt2/bacteria_id_raman/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -60,3 +61,5 @@ type_adapter_id: curation-record-v1
 - Not checked: which of the three measurement times the reference file holds; how many cultures or maps the reference and test spectra come from; how RamanBench labels the pooled clinical spectra.
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: four fit gaps named in fit_reason and the notes, the Gram stain, MALDI-TOF or PCR at the culture stage, a fixed drug per species and the pooled years, USE-8; the 74.0% against 93.1% sentence put down to the measurement session, the patients' map size, the source's 2019 protocol, the block order, the crop guess and the 25-spectra filter, writing.md; a near-copy note on 2018-24/21 (piperacillin-tazobactam), SPLIT-30; the patients numbered at random, LEAK-33; a LEAK-9 protocol line, no rows of other test patients and no fold make-up from outside; the early-stopping note, MET-1; the library note; and, implemented as recommended for the curator's mark, one prediction per patient from all its spectra (mean, all_rows, no weight), SPLIT-23, and 2 folds x 30 repeats, 5 patients per group per test fold, TP-5); disputed: SPLIT-23 (the unit, settled by the rule), TP-5 (2 folds or an amendment), TP-6 against LEAK-14 (the 5 library-only reference isolates); for the curator: issues 1-4 (4: three check warnings to accept). Priority 3: gap +, use case 0, source +, shape 0, risk 0 (use case: the source names the physician's empiric choice, but the fit is approximate, cultured colonies, five species, MALDI-TOF the routine comparator; shape: 50 scored patients, the spectrum the only input; risk: the exploits found are closed by the unit and the protocol line).

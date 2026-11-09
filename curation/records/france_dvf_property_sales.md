@@ -2,11 +2,11 @@
 unique_name: france_dvf_property_sales
 name: Demandes de valeurs foncières (DVF), France
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 2
 tags:
 - AI-Filled (Verify)
@@ -24,8 +24,7 @@ source_links:
 - https://static.data.gouv.fr/resources/demandes-de-valeurs-foncieres/20221017-153319/notice-descriptive-du-fichier-dvf-20221017.pdf
 - '# Etalab''s geolocated copy of the same rows (UTF-8 CSV, mutation id, coordinates)'
 - https://www.data.gouv.fr/datasets/demandes-de-valeurs-foncieres-geolocalisees
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/france_dvf_property_sales_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -45,3 +44,7 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (business & marketing, regression and temporal covered), use case 0 (ours), source + (DGFiP's register with a notice), shape + (millions of sales, mixed types, five years), risk - (repeated prices, thin building features, re-identification terms).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: off-plan sales dropped, LEAK-10; declared prices of 1,000 EUR or less dropped as non-prices, USE-5; year 2026, PROV-9; download text with the archived raw files' sha256, the licence's CGU purpose clause and the privacy wording corrected, PROV-8, SEL-1; 62 coordinates, 294 room counts and 390 Carrez areas masked, CLEAN-11; 2,185,254 sales, 1,653,624 rows shipped); disputed: USE-5 against CLEAN-11 on the 100-1,000 EUR band (settled by measurement: dropped), USE-3 and SPLIT-10 on a notary under the one-month gap (settled: out), CLEAN-11 on a blanket Carrez mask below 8 m2 (settled: the within-row rule); for the curator: issues 1-3 (1: the actor, a tax-office valuer at the deed's publication with gap 1, implemented, or a pre-sale valuer with gap 3, USE-3, SPLIT-10; 2: the April 2026 data now and Etalab's October 2026 release as a later version, implemented, or a re-source now; 3: keep `code_section`, the finest unit of Etalab's Statistiques DVF, against zillow_prize's dropped block group, CLEAN-14). Priority 2: gap 0, use case 0, source +, shape +, risk - (gap: no thin domain, problem type or regime; use case ours, DGFiP names no prediction; risk: a newer release of the same data exists, issue 2, and partial-rights transfers stay unmarked in the target, 1.1% of the sales).

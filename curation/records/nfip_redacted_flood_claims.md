@@ -3,8 +3,12 @@ unique_name: nfip_redacted_flood_claims
 name: NFIP redacted flood insurance claims (OpenFEMA NfipClaims v3, formerly FimaNfipClaims v2)
 checked_by:
 - Andrej
-suggestion: TBD -> Yes
-priority: 2
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
+priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Temporal)
@@ -17,6 +21,7 @@ original_data_state: One Table
 source_links:
 - https://www.fema.gov/openfema-data-page/nfip-redacted-claims-v3
 - https://www.fema.gov/api/open/v3/NfipClaims
+v2_path: datasets/_dev/tabarena-v0pt2/nfip_redacted_flood_claims/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -97,6 +102,12 @@ fits only a post-inspection prediction point, the depth-damage use (Wing et al. 
 NFIP flood damage claims (1972-2014) from a database obtained directly from FEMA"). To decide: prediction point,
 target (building or total), years to keep. No building id, so repeat claims cannot be grouped. Licence: OpenFEMA
 terms (not re-read).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2: Lennart accepted nfip_redacted_claims, which is the same OpenFEMA NfipClaims v3 table, prediction point and split; this checked record enters in its place, and nfip_redacted_claims is `No` with `Duplicate` (PROV-4, PROV-6). The target (building payout or building plus contents) stays a question for /add-dataset.
+
+**Assessment (AI, 2026-11-08):** carried over from nfip_redacted_claims' screening and size check: `amountPaidOnBuildingClaim` can be negative for reissued checks, and `waterDepth` is sometimes in feet rather than inches; 2,710,317 settled claims at opening with 54 inputs (size check of 2026-11-08).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: test windows re-cut to 2022H2 / 2023H1 / 2023H2, past the Risk Rating 2.0 changeover (LEAK-10); the 14 building fields a large loss changes blanked on rows located as a later policy term (rated RE before October 2021, policy or building dated after the loss) and `rateMethod` dropped (LEAK-10 Must over LEAK-11 Should); training sides without the test windows' storms and the claims opened after a window start (SPLIT-9, SPLIT-10; 431 / 2,502 / 710 rows); a protocol line against using the test rows (LEAK-9, event size); foundation code 0 missing, impossible elevations and two coordinates missing (CLEAN-10, CLEAN-11); use case cited to FEMA bulletins W-08095 / W-10008 and the refuted numbers corrected); 816,846 claims, task probe without flags (LightGBM skill +0.176); disputed: LEAK-10 clause 2 (the unlocated residue in the 14 fields: issue 3, with the across-datasets late-values question and ny_wcb_assembled_claims), MET-11 / MET-10 (RMSE or the Poisson deviance: issue 2), TP-1 / TP-2 (thin signal, loses on the Ian window: issue 1, a TODO for the tuned check); for the curator: issues 1-3. Priority 3: gap +, use case 0, source +, shape +, risk - (use case sourced but fit approximate; risk: the unlocated later-term residue in issue 3 and a thin signal dominated by one event per window).
 
 ## Reference
 

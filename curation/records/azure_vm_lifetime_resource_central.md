@@ -2,12 +2,12 @@
 unique_name: azure_vm_lifetime_resource_central
 name: 'Azure Public Dataset: VM traces (Resource Central)'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
-priority: 3
+suggestion: 'Yes'
+priority: 5
 tags:
 - AI-Filled (Verify)
 - Non-IID (Temporal)
@@ -21,8 +21,7 @@ source_links:
 - https://github.com/Azure/AzurePublicDataset
 - https://github.com/Azure/AzurePublicDataset/blob/master/AzurePublicDatasetV2.md
 - https://doi.org/10.1145/3132747.3132772
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/azure_vm_lifetime_resource_central_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -42,3 +41,7 @@ type_adapter_id: curation-record-v1
 - Priority: gap + (multiclass is thin; the paper's targets are buckets), use case + (the paper names the scheduler and its decision), source + (SOSP paper and Microsoft's documented release), shape 0 (2.7M VMs over 30 days, but four native inputs), risk - (leaky category and counts, censored lifetimes, features to build).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: `subscription_vms_in_slot` dropped and the deployment's same-slot count replaced by its count of the previous 5-minute slot, LEAK-10 clause 2, since the next slot's arrivals, the part of the late count that can be measured, lower log loss by 0.013 in 8 of 9 fits while the lag costs nothing measured; a LEAK-9 protocol line and kept-on-purpose note for the chain through the cumulative counts, which lowers log loss by 0.115 to 0.203 per window for a participant who reads later test rows; `subscription_vms_created_24h` missing on day 0 in subscriptions with VMs from before the trace, CLEAN-1 and CLEAN-19; `trace_day_of_week` a number, CLEAN-14; the notes: the scheduler "can ask" (USE-1, fit direct: the paper envisions it, Barbalho et al., MLSys 2023, built it), the trace's deployment is a subscription's VMs of one day, not a request, the MET-17 group sizes and ranking, and the false horizon reason replaced); disputed: LEAK-10 clause 2 (the deployment's same-slot count: lag, drop or keep), SPLIT-12 (3-day windows as an exception, or 4 to 4.5 days); for the curator: issues 1-2. Priority 5: gap +, use case +, source +, shape +, risk 0 (gap: multiclass classification is thin among the 151 accepted definitions; use case: the paper names the scheduler and the co-location decision, fit direct; risk: the look-ahead found is lagged out, the test-row chain is covered by the protocol line, and the open window length changes no row or label).

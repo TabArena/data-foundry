@@ -2,11 +2,11 @@
 unique_name: fmcsa_roadside_inspection_out_of_service
 name: FMCSA MCMIS roadside inspections (out-of-service outcome)
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -19,8 +19,7 @@ source_links:
 - https://data.transportation.gov/d/fx4q-ay7w
 - https://data.transportation.gov/d/wt8s-2hbx
 - https://data.transportation.gov/d/876r-jsdb
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/fmcsa_roadside_inspection_out_of_service_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -40,3 +39,7 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (binary and temporal not thin; transport has no domain value of its own), use case + (FMCSA documents the selection decision; fit direct), source + (a federal register with column documentation), shape + (8.3M dated inspections, mixed types, carriers), risk - (outcome columns, point-in-time carrier history and joins).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: `inspection_level` dropped as the level performed, LEAK-10 cl.2, 0.057-0.058 ROC AUC, so the prediction point is the selection of the vehicle; `size_weight_enf` and `traffic_enf` dropped as of unknown timing, 0.0008-0.0024; `vehicle_days_since_inspection` dropped and a LEAK-9 protocol line for the task gamer's vehicle chain, +0.010/+0.023/+0.034; cargo-tank and hazmat blanks as not applicable, NON as none, model year float; pooled-score note; the changed-records note corrected with the changed share per month, 12-16% in 2025 to 10.4%/6.2%/3.9% in the Aug/Sep/Oct 2026 test months, and the drift among never-changed records; the raw CSVs' sha256 in the notes); disputed: LEAK-24 (ship with less-corrected test labels or move the windows), CLEAN-10 (`location_desc`); the finisher's LEAK-9 check found the carrier history chains too, +0.0085/+0.0110/+0.0124 ROC AUC against noise 0.0001, so a rebuild freezing the history at the window start is proposed; for the curator: issues 1-3. Priority 3: gap 0, use case +, source +, shape +, risk - (use case: FMCSA's Inspection Selection System supports the choice, fit direct; source: FMCSA's national inspection database; shape: 1,778,366 shipped rows, mixed types, temporal; risk: labels at different correction stages, the carrier chain open, a rolling view that can only be rebuilt from the kept download).

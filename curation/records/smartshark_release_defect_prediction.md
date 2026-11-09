@@ -4,7 +4,7 @@ name: SmartSHARK release-level defect prediction data (Herbold, Trautsch, Trauts
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
@@ -22,6 +22,7 @@ source_links:
 - https://doi.org/10.5281/zenodo.5675024
 - https://doi.org/10.1007/s10664-021-10092-4
 - https://doi.org/10.5281/zenodo.4071448
+v2_path: datasets/_dev/tabarena-v0pt2/smartshark_release_defect_prediction/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -45,3 +46,5 @@ type_adapter_id: curation-record-v1
 - Adds: Newer (to about 2020 instead of 2004), far larger, curated labels instead of unknown labelling (MDP), project and release structure for a grouped or temporal split
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (applied: ages in months and the release year, a protocol line and a note for the next-release link that still gains 0.046 ROC AUC after the rounding, per-file fix dates (31 rows turn defective, 4,074 in all), the target names the 16.8% already reported, fit approximate, notes on `ISSUE_*` at collection, `_improvment` as Jira's "wish" type and the 279 release dates); rebuttal round skipped (the briefs converged); disputed: LEAK-25 (the left cohort cut reads the label), LEAK-9 (a protocol line against a +0.046 link), LEAK-10 (`ISSUE_*` read at collection), MET-1/MET-5 (pooled or within release); for the curator: issues 1-5 (5: two check-warning acceptances). Priority 3: gap 0, use case 0, source +, shape +, risk - (use case: a real QA ranking with an approximate fit and size dominating; source: peer-reviewed kit with validated links; shape: 113,066 rows x 3,260 features, grouped; risk: a protocol-only leak and an open cohort rule).

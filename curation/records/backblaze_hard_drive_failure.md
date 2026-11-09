@@ -4,7 +4,7 @@ name: 'Backblaze hard drive test data: drive failure from daily SMART statistics
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
@@ -12,7 +12,7 @@ tags:
 - AI-Filled (Verify)
 - Non-IID (Temporal)
 original_source: Company
-year: '2013'
+year: '2026'
 domain: technology & internet
 required_split:
 - Temporal (NON-IID)
@@ -20,10 +20,7 @@ problem_type: Binary Classification
 original_data_state: Other
 source_links:
 - https://www.backblaze.com/cloud-storage/resources/hard-drive-test-data
-- https://github.com/awesomedata/apd-core/tree/master/core//TimeSeries/Hard-Drive-Failure-Rates.yml
-- https://github.com/ErikinBC/SurvSet
-- https://arxiv.org/abs/2203.03094
-- https://cran.r-project.org/package=frailtySurv
+v2_path: datasets/_dev/tabarena-v0pt2/backblaze_hard_drive_failure_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -41,7 +38,7 @@ type_adapter_id: curation-record-v1
 - Risks for /add-dataset: the framing is ours and comes first: one row per drive at a cut date, the SMART values known then (lags if the curator wants them), the label "fails within N days", drives removed without failure treated as censored (SEL-11; no series value is forecast, so not SEL-10); about 1,500 failures among 354,415 drives in a quarter; the schema changes by quarter; 13 years of daily files ask for a sampling plan; SMART attributes differ by maker and model.
 - Priority: gap 0 (technology & internet, binary and temporal are not thin), use case + (the operator's own triage rule), source + (the operator publishes and documents it), shape + (hundreds of thousands of drives, temporal and grouped), risk - (the framing and the volume).
 
-**Assessment (AI, 2026-10-31):** a candidate from the data-scouting run of 2026-10-30/31, not screened yet. Found through better data for `ai4i_2020_predictive_maintenance_dataset`; a related task next to `tokyo1`; the curator's Zotero collection, item 140: "SurvSet: An open-source time-to-event dataset repository"; the curator's Zotero collection, item 148: "awesomedata/awesome-public-datasets"; the curator's Zotero collection, item 96: "SurvSet: An open-source time-to-event dataset repository".
+**Assessment (AI, 2026-10-31):** a candidate from the data-scouting run of 2026-10-30/31, not screened yet. Found through better data for `ai4i_2020_predictive_maintenance_dataset`; a related task next to `tokyo1`; the curator's Zotero collection, item 140: "SurvSet: An open-source time-to-event dataset repository"; the curator's Zotero collection, item 148: "awesomedata/awesome-public-datasets"; the curator's Zotero collection, item 96: "SurvSet: An open-source time-to-event dataset repository". Found with it, and not sources of this data (moved from `source_links` on 2026-11-09): SurvSet (https://github.com/ErikinBC/SurvSet; arXiv 2203.03094, https://arxiv.org/abs/2203.03094) and the R package frailtySurv (https://cran.r-project.org/package=frailtySurv), which ship a small, old survival extract of the drive data (`hdfail`), and the awesome-public-datasets entry (https://github.com/awesomedata/apd-core/tree/master/core//TimeSeries/Hard-Drive-Failure-Rates.yml), a metadata stub.
 - as published: One row per operational drive per day (date, serial, model, capacity, failure flag, raw and normalized SMART attributes); 354,415 drives in Q2 2026; 558,148,607 drive-days and 21,609 failures in total; target: failure (the drive fails that day), turned into 'fails within N days' at a snapshot date; access: open, open (cite Backblaze; the data itself may not be sold).
 - Why: Real fleet telemetry from the operator, open, widely used for disk-failure prediction, still updated. | a real predictive-maintenance task (equipment failure from condition-monitoring readings), the task ai4i simulates | tokyo1 classifies a server's state from performance counters, a task no newer labelled public ...
 - Adds: Hardware reliability, no record. Caveats: extreme imbalance (about 4 failures per 100,000 drive-days); per-drive series must become fixed-horizon snapshots (SEL-11); very large, so subsample; terms: cite Backblaze, the data itself may not be sold, no named licence. | real failures at very large scale, 13 years of ...
@@ -54,3 +51,5 @@ type_adapter_id: curation-record-v1
 - Not checked: positives per horizon counted on the files (computed from the page's totals); whether drives later found healthy are reset to `failure=0` in the published files (the Q3 2024 post says the dataset "is updated accordingly"); SMART fill rates over all models (one preview of one day).
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: boot drives dropped, LEAK-25; data drives without a pod slot at the cut dropped, LEAK-10 and USE-7; vault-migration removals kept as No, LEAK-22, and scattered removals dropped, LEAK-25; LEAK-9 protocol line; sentinels to missing; year 2026, PROV-9; notes on the 47.0% / 53.0% reactive / proactive count, the test cohort and the December dip); disputed: LEAK-22 against LEAK-25 (the removed drives, settled by rank), LEAK-9 (protocol line, settled), SPLIT-9 (`last_seen` look-ahead, a note), MET-11 (context metric, no: MET-7), CLEAN-19 (change features, a weighing call); for the curator: issues 1-2. Priority 3: gap 0, use case 0, source +, shape +, risk 0 (use case: the actor and decision are real but the fit is approximate, half the label being Backblaze's own pulls; risk: issue 1 moves ROC AUC by at most 0.0006 and issue 2 is a weighing call).

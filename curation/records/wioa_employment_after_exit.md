@@ -4,7 +4,7 @@ name: 'WIOA Individual Performance Records (PIRL public use file): employment af
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
@@ -18,6 +18,7 @@ source_links:
 - https://www.dol.gov/agencies/eta/performance/results/national
 - https://www.dol.gov/sites/dolgov/files/ETA/advisories/TEGL/2016/TEGL_26-15-Attachment-II_Acc.pdf
 - https://www.dol.gov/sites/dolgov/files/ETA/Performance/PY23%20Databooks/PY2023Appendix/WIOA%20Performance%20Records%20Public%20Use%20File%20Record%20Layout%20PY2023Q4.pdf
+v2_path: datasets/_dev/tabarena-v0pt2/wioa_employment_after_exit/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -48,3 +49,5 @@ type_adapter_id: curation-record-v1
 - Not checked: the exact record count (it needs the Parquet footer or the file: the server refuses direct and range requests from here, and the 539 MB Parquet file is above this check's download cap); the exit-cohort dates of the PY 2024 Q2 measure (not in the extracted text); the share of code 9 and blanks for PIRL 1602 in a file.
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes, as the Title I version `wioa_employment_after_exit` without a row budget (1,023,443 adult, dislocated-worker and DWG exits of 2022 to 2024, 162 features, test windows April to December 2024 behind a 9-month gap, fallback `roc_auc`). Applied: Title I only with one use case (a case manager's follow-up decision at the last planned service; the cohort-rate clause removed, USE-1, USE-5); the test windows moved back one quarter, so January to March 2025 (DOL's first report, and Texas's incomplete 2025Q3 wages: 0.398 employed against 0.623 a quarter earlier) leaves the frame (LEAK-24; train shares 53.0 / 61.2 / 68.7%); American Samoa and Palau dropped (no wage records, LEAK-39); race, Hispanic ethnicity and sex dropped (29 CFR 38.6(b), UIPL 41-94); `previous_known_outcome` added from exits at least four quarters back, Unknown where Texas and Utah ids do not link or the look-back lies before 2022 (USE-10; +0.002 to +0.007 ROC AUC on returning persons); PIRL 304, 1410 and 2516 masked after the exit; the 1,117 located invalid-SSN exits kept as a mix with New York's group noted (LEAK-25 as amended 2026-11-02); the CLEAN-10/11/14/5 fixes; notes on the release codings, NAICS 999999, one-day closures, Montana's blank wages and the gap's reason (the state's own wage records). Age and disability with the items that reveal them are dropped as the implemented option of issue 1. Disputed: SEL-1 (age and disability: issue 1), LEAK-24 (the first-report lag left after the Texas cut: settled by the shift; grading LEAK-24 by severity is a rule item across datasets), USE-10 (settled: added); for the curator: issues 1-2. Priority 3: gap 0, use case 0, source +, shape +, risk 0 (gap: social science is not thin among the 151 accepted definitions; use case: the per-person follow-up decision is ours, fit approximate; risk: no leak left open, the issues are an ethics reading and the codes).

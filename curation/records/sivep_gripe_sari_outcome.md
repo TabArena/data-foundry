@@ -2,12 +2,12 @@
 unique_name: sivep_gripe_sari_outcome
 name: SIVEP-Gripe SRAG (severe acute respiratory illness) notifications, Brazil
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
-priority: 2
+suggestion: 'Yes'
+priority: 3
 tags:
 - AI-Filled (Verify)
 - Non-IID (Temporal)
@@ -23,8 +23,7 @@ source_links:
 - https://dadosabertos.saude.gov.br/dataset/srag-2019-a-2026
 - '# data dictionary 2019-2025'
 - https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SRAG/dicionario-de-dados-2019-a-2025.pdf
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/sivep_gripe_sari_outcome/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -44,3 +43,7 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical, binary and temporal covered), use case 0 (the triage framing is ours), source + (the ministry's release with a dictionary), shape + (millions of rows, about 110 mixed inputs, years and states), risk - (80 later columns, changing codes, open outcomes in the newest years).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the forms notified on or after the outcome dropped, 14.4% of the rows, LEAK-10/LEAK-6; in-stay free-text cells blanked and 3 dead-on-arrival rows dropped; the survivor-marking covid_vaccine blank and the post-admission influenza dose set to No; vaccine day counts in 30-day bins, LEAK-17; the intensive-care-on-admission group and hospital-acquired SARI named, USE-3; censoring, metric, units, licence and potential-leak notes; hospital as name [municipality code], schooling under 7 and impossible values missing, one name per municipality code, CLEAN-11/12/14); disputed: LEAK-10 (the late forms), USE-3/USE-8 (an intensive-care flag), SEL-1 (race or colour, with rais), MET-8/MET-11 (roc_auc or log_loss); for the curator: issues 1-4. Priority 3: gap 0, use case 0, source +, shape +, risk 0 (use case: bed planning and monitoring, but the per-patient framing is ours and the fit approximate, form only; shape: 790,430 admissions, mixed inputs, temporal; risk: the leaks found are fixed, one Must call to confirm).

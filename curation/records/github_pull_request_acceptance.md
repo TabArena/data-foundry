@@ -2,12 +2,12 @@
 unique_name: github_pull_request_acceptance
 name: 'Pull request decisions explained: an empirical overview (3.35M GitHub pull requests)'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
-priority: 2
+suggestion: 'Yes'
+priority: 3
 tags:
 - AI-Filled (Verify)
 - Non-IID (Temporal)
@@ -24,8 +24,7 @@ source_links:
 - https://doi.org/10.1109/TSE.2022.3165056
 - '# the first release (MSR 2020 Data Showcase, public version, pull-request ids removed)'
 - https://zenodo.org/records/3922907
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/github_pull_request_acceptance_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -45,3 +44,7 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (technology & internet, binary and temporal are covered), use case 0 (not named by the source), source + (journal paper and documented Zenodo release), shape + (3.35M rows, about 48 mixed inputs, temporal with projects), risk - (half the factors leak).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: `contrib_perc_commit` dropped as counted after the merge, LEAK-10, 64.6% against 22.8% above 0 among outsiders' merged and unmerged first pull requests, model cost 0.0006-0.0036 ROC AUC; `integrator_availability` dropped as no code, no gain; a LEAK-9 protocol line for the task gamer's test-row exploit, 0.81-0.82 to 0.90-0.92; `description_length` kept with its note, at most +0.0024; notes on the label, `pushed_delta` in seconds, the 94-95% known-project share, the row counts, the 180-day selection beside smartshark's one-year horizon and the pooled score); disputed: MET-5/MET-1 (pooled ROC AUC against within-project scoring: project merge rate alone 0.71-0.72 of 0.80-0.81 pooled, LightGBM 0.61-0.63 within projects; tied to the across-datasets item on scoring within groups); for the curator: issue 1. Priority 3: gap 0, use case 0, source +, shape +, risk 0 (use case: the integrator is ours with an approximate fit; source: Zhang et al., IEEE TSE 2023, with code; shape: 1,304,081 shipped rows, mixed types, temporal; risk: the panel's leaks are fixed, the open issue is the metric).

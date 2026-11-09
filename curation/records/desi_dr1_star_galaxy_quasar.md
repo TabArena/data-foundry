@@ -4,7 +4,7 @@ name: DESI Data Release 1 (spectroscopic classes with Legacy Surveys DR9 photome
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
@@ -23,6 +23,7 @@ source_links:
 - https://data.desi.lbl.gov/doc/releases/dr1/
 - https://data.desi.lbl.gov/public/dr1
 - https://ui.adsabs.harvard.edu/abs/2026AJ....171..285D
+v2_path: datasets/_dev/tabarena-v0pt2/desi_dr1_star_galaxy_quasar_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -46,3 +47,7 @@ type_adapter_id: curation-record-v1
 - Adds: Two orders of magnitude more labelled objects (subsample for the benchmark), newer data, infrared WISE bands that help separate quasars from stars. Same risk as sdss_17: targets were picked by colour cuts (Selection Bias); the DESI target bits and tile/fibre columns encode the class and must be dropped. A newer ...
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** the same task from another survey as `sdss_17`, not better data for it (principles.md, Tensions, "Same task, another source"): SDSS has the u and i bands, DESI adds two infrared bands, Gaia astrometry and image morphology, and the targeting rules differ, so both enter. This corrects the "better data" reading of 2026-10-31; the reason is also in the definition's notes and in `sdss_17`'s record.
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: fit_reason names the ZWARN cohort and the label's disagreement with DESI's DR1 quasar catalogue in both directions, USE-8; fibre fluxes of unmeasured bands and SERSIC of point sources set missing, CLEAN-10; parallax and proper motions without a Gaia DR2 match blanked, LEAK-10 weak, CLEAN-21; the notes' LightGBM numbers re-run with early stopping, EV-1; the SEL-13/SEL-15 fact against magic_gamma_telescope; sdss_17 the same task from another survey); disputed: USE-5 and TP-6, the label (keep Redrock's class with the note, or relabel from DESI's quasar catalogue: the critic, and the advocate after the rebuttal, for its additions only; the mediator for the note, since DESI's quasar class follows the targeting class); for the curator: issue 1. Priority 3: gap +, use case 0, source +, shape +, risk - (gap: physics & astronomy and multiclass are thin among the accepted definitions; use case: ours, the fit approximate; risk: the label at the galaxy/quasar boundary is open, issue 1).

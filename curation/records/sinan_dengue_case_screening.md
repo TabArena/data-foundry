@@ -4,14 +4,17 @@ name: 'SINAN dengue notifications (Brazil, DATASUS): suspected cases with sympto
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
+decision_markers:
+- Selection Bias
 tags:
 - AI-Filled (Verify)
 - Non-IID (Temporal)
 original_source: GOV Website
+year: '2023'
 domain: medical & healthcare
 required_split:
 - Temporal (NON-IID)
@@ -19,6 +22,7 @@ problem_type: Binary Classification
 source_links:
 - https://dadosabertos.saude.gov.br/dataset/arboviroses-dengue
 - https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SINAN/Dengue/dic_dados_dengue.pdf
+v2_path: datasets/_dev/tabarena-v0pt2/sinan_dengue_case_screening_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -42,3 +46,7 @@ type_adapter_id: curation-record-v1
 - Adds: Better data for dengue diagnosis: far larger, with many years and states (temporal and state-grouped splits). Caveats: the portal licence is CC BY-ND 3.0 (no derivatives; check whether a curated subset is allowed). The lab-result columns define the label and must be dropped. Clinical-epidemiological confirmations are ...
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-08):** size check on the data, while adding (`sinan_dengue_case_screening_1m`): the open yearly files of 2014-2015 and 2022-2026 hold probable cases only (no discarded case, `CLASSI_FIN` = 5, in any of them; the portal defines probable cases as every notified case but the discarded ones), so the 6.5M notifications of 2024 cannot be labelled and the task uses 2016-2021, the files that hold discarded cases. Laboratory-decided notifications there: 2,979,887 of 7,030,293 closed as dengue or discarded (42%); 2,623,839 rows after dropping those without the form's clinical section (the signs came into use in the first half of 2016). Temporal, three half-year windows from July 2020 to December 2021 with a two-month gap; train sides over 1M, so the `_1m` version. Classification codes as the screening expected (5 discarded, 10-12 dengue; 1-4 on a few older-form 2016 rows); the place of infection and work-relatedness fields are erased when a case is discarded (LEAK-10). Untuned probes: ROC AUC 0.69-0.70 (Bohm et al.'s 0.985 on a balanced random sample is not reached; corrected 2026-11-09: it cannot be reproduced with their ten variables on these rows, logistic regression ROC AUC 0.578 on their own cohort and sampling).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the notifications made after a dengue sample was taken dropped by the sample dates, 2,253,525 rows left; a one-month gap; the surveillance team as the actor, USE-9 asked; `Selection Bias` with the cohort's numbers; roc_auc kept with its reason corrected; year 2023; the occupation's unknown codes missing and SINAN's own codes decoded; the copies of one patient as a proposed exception to LEAK-19); disputed: SPLIT-15 against SPLIT-20 (the window set); for the curator: issues 1-4 (the window set; the one-patient copies, a LEAK-19 exception to confirm; USE-6, optional activity counts; CLEAN-12, the CBO codes, alike for rais and wioa). Priority 3: gap 0, use case 0 (the source's physician takes no decision on the score; the surveillance team's use is ours and approximate), source + (the Ministry's national release with a data dictionary), shape + (2.25M rows, mixed types, temporal), risk 0 (no open issue raises a leak or an unclear target).

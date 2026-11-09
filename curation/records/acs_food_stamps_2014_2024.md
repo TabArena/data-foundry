@@ -1,13 +1,13 @@
 ---
 unique_name: acs_food_stamps_2014_2024
-name: 'American Community Survey Public Use Microdata Sample, 1-year files 2019-2024 (FS: household food stamp / SNAP receipt in the past 12 months)'
+name: 'American Community Survey Public Use Microdata Sample, 1-year files 2014-2019 and 2021-2024 (FS: household food stamp / SNAP receipt in the past 12 months)'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
-priority: 3
+suggestion: 'Yes'
+priority: 2
 tags:
 - Non-IID (Temporal)
 - AI-Filled (Verify)
@@ -21,8 +21,7 @@ source_links:
 - https://www.census.gov/programs-surveys/acs/microdata.html
 - https://www2.census.gov/programs-surveys/acs/data/pums/2024/1-Year/
 - https://tableshift.org/datasets.html#food-stamps
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/acs_food_stamps_2014_2024_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -52,3 +51,7 @@ type_adapter_id: curation-record-v1
 - Access: open download, no login; about 800 MB zipped per year, about 8.8 GB for 2014-2024. No licence is stated on the pages read (a US Census Bureau release).
 - Changes the call: none for the priority (gap +, use case 0, source +, shape +, risk -: 3). The version question with `food_stamps` (PROV-6) gets sharper: TableShift's version is one survey year, so the temporal split the curator asked about exists only with this record's years. SEL-7 stays the curator's call, as on `food_stamps`. For the build: the RELP and WKW recodes at 2019, the experimental 2020 file, grouping by SERIALNO (LEAK-17), and the income items behind the filter (PINCP is a filter, not an input).
 - Not checked: the exact rows per year after the filter (estimated); how the FS item reads in Puerto Rico, where the programme is the Nutrition Assistance Program, not SNAP: TableShift's state list includes PR and folktables (`load_acs.py`) downloads the state files one by one, `csv_ppr.zip` among them, so the 840,582 include Puerto Rico rows.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2; SEL-7 (the household reports its own SNAP receipt in the interview that gives the features, the mechanism of cdc_diabetes_health_indicators and stroke_prediction) is decided at the build: it is the first issue of the dataset's REVIEW.md. food_stamps (TableShift's 2018 file of the same item and filter) is `No` with `Duplicate` of this record (PROV-6).
+
+**Assessment (AI, 2026-11-09):** review panel (full): don't ship as built (option A, the outreach framing, breaks SEL-7 and USE-5: the agency holds the label, and its targets sit in "No": 48,305 "No" households at or below 130% of poverty against 50,819 "Yes" in all, 2024 window); ship after changes under B only if the curator takes the Census Bureau's item allocation of FS (1.7-3.1% of households a year, flagged) as the use case and narrows SEL-7 by amendment, then rebuilt for the imputer (PAP/SSIP/HINS4 added, grounds kept, split within the survey year); otherwise `No` (C, SEL-7, USE-5). Not rebuilt for B; the notes corrected (zip dates, unweighted shares, the PAP/SSIP/HINS4 measurement, the release lag behind no gap, the 2020 and race-coding breaks, the allocation shares of the features, the full grounds list, the shared 12-month window, a protocol line and a kept-on-purpose note for the task gamer's exploits). No column leaks (LEAK-10 checked on all 43 inputs); LightGBM 0.914 against 0.814 for one feature. Disputed: SEL-7 through SEL-2 or by amendment (settled: amendment), USE-9 (whether the imputer is a real use case and what Tanzania's precedent carries: for the curator), SPLIT-1 under B (settled: within the survey year, no exception), MET-8 (log_loss or roc_auc under B: for the curator), CLEAN-21 (nominal dollars: for the curator); for the curator: issues 1-3. Priority 2: gap 0, use case 0, source +, shape +, risk - (use case: the declared outreach actor fails USE-5, and the imputer is a documented actor that works by hot-deck today on a small share; risk: the recommendation not to ship as built).

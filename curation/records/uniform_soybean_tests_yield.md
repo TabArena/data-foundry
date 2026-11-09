@@ -4,7 +4,7 @@ name: Uniform Soybean Tests yield with genotype and daily weather (Shook et al. 
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
@@ -21,6 +21,7 @@ source_links:
 - https://doi.org/10.4231/r7hd7spk
 - https://eval.ai/web/challenges/challenge-page/1251/overview
 - https://github.com/itsMustafamr/Yield
+v2_path: datasets/_dev/tabarena-v0pt2/uniform_soybean_tests_yield/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -44,3 +45,7 @@ type_adapter_id: curation-record-v1
 - Adds: Large agricultural regression with grouped structure. Caveats: the season's weather is known only at harvest (an ex-post G x E model); plot traits such as protein, oil, lodging and seed size are measured at harvest (leaks for a yield task); data on Google Drive with no licence stated for the merged files (PURR ...
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** added (/add-dataset, builder) as `datasets/_dev/tabarena-v0pt2/uniform_soybean_tests_yield/`; no size check of 2026-11-08 was in this record. Access: the challenge's zip link (Drive 1DoyextA0q4mxumMAhBvqZbfZriIM9A-Y) answers 404 and the paper's Drive folder lists no files (2026-11-09); the definition reads a copy of the challenge zip that a participant of the University of Arizona's 2021 course INFO 529 put on CyVerse on 2021-10-23 (files dated 2021-08-30, shapes as on the challenge page: 93,028 + 10,337 records, 214 x 7 weather, 5,839 clusters), named in the download instructions. Only the 93,028 training records have yields (the challenge never published the test yields); 214 exact copies dropped, 92,814 ship with 1,504 features (daily weather as released). Split: held-out seasons, 7 yearly windows 2009-2015 (the 2009 window added after the review panel), in place of the challenge's random split, under which every test location-year and line was in training. Measured: untuned models barely beat the training mean (LightGBM RMSE 16.59 against 16.68), each location's earlier mean reaches 13.71 and adding the weekly weather to a location-mean model makes it worse (13.92 against 13.15, on 5 of 6 windows): beyond each location's mean and the yield trend the weather adds nothing measurable for the models tried. Sibling `genomic_prediction_soy_yield` (SoyNAM project trials 2011-2013, SNP inputs, line values) shares no records or trials with the UST reports; line identity cannot be checked as the UST line ids are anonymized (PROV-7: distinct tasks).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the use case reworded to the paper's aim with the breeder or UST coordinator as actor, the copy's match with the authors' GitHub files written down, the 2009 window added, AvgSur_d213's impossible cells set to missing, a LEAK-9 protocol line, the notes' numbers and wording corrected); disputed: the metric (MET-1, MET-2, MET-4: RMSE against mean_group_pearsonr within location-year x maturity group, Kendall tau 0.38 between the two model orders, decided with genomic_prediction_soy_yield); for the curator: issue 1. Priority 3: gap 0, use case 0 (written from the paper's aim, fit approximate), source + (PLOS ONE paper and its challenge; the copy matches the authors' files), shape +, risk 0 (no leak in the data; the later-season exploit is covered by the protocol line).

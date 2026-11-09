@@ -4,10 +4,10 @@ name: Near-infrared spectra dataset of milk composition in transmittance mode (o
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
-priority: 3
+priority: 4
 tags:
 - AI-Filled (Verify)
 original_source: Other
@@ -18,6 +18,7 @@ source_links:
 - https://doi.org/10.5281/zenodo.8263430
 - https://doi.org/10.1016/j.dib.2023.109767
 - https://arxiv.org/abs/2605.21544
+v2_path: datasets/_dev/tabarena-v0pt2/milk_nir_composition/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -41,3 +42,5 @@ type_adapter_id: curation-record-v1
 - Adds: Raw spectra instead of PCA scores; 5x tecator's 240 samples; several lab targets on the same spectra (fat, protein, lactose, urea, SCC); a dated on-farm collection. Caveats: raw spectral bins lean out (SEL-15); samples are likely repeated per cow over 8 weeks (check for a cow id and date for a grouped or temporal ...
 
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the spectrum rebuilt from the deposit's raw counts with each milking's own dark and white readings, since the deposit's `Trans_Tot` uses the week's mean references, later milkings and test rows included, exact to 5e-15 in the four whole weeks; cost on the four windows ridge 0.0983 to 0.0996, PLS-15 0.1095 to 0.1125; the axis declared as the source's nominal 960 + 2.86 nm per pixel; the false notes on the referencing, the "%" (the source's percent-transmittance convention) and the axis rewritten; the prediction point at the end of the sensor's cycle, up to 144 s after milking; notes on the single 2.59% milking, 67% of week 7's squared error, and on the fresh cows, normal milk, not colostrum, the article's Table 3 reproduced; the source's protocol score, ridge 0.101, beside the shipped windows, not as headroom); disputed: LEAK-30 / PROV-13 (which causal rebuild: settled for the milking's own pair over a 30-minute mean of our own), EV-8 (the source's 0.0826 as headroom: settled, no), EV-4 / PROV-15 (a note on another benchmark's results: settled, none), USE-6 against CLEAN-22 / CLEAN-26 (the 768 raw instrument columns: open); for the curator: issues 1-3 (the raw readings, left out; `cow_id`, kept; the 59 fresh-cow samples, kept); the spectrum-guide lines across datasets. Priority 4: gap 0, use case + (the source names the robot's real-time monitoring, fit direct), source + (the authors' deposit with a data paper and a research article), shape + (1,224 milkings, a spectrum with a cow id and times, temporal), risk 0 (the measured leak is fixed by the rebuild; the open calls change no validity).
