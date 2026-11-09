@@ -18,71 +18,6 @@
   sampler call and variant pointer require repair. These are open compatibility gates, not new curator decisions
   or accepted exceptions. Keep the PR draft until they are resolved.
 
-
-## 2026-11-12 (SuperLender excluded from redistributable contribution)
-
-- Myunghwan rejected `loan_default_prediction_challenge` for this release: the original DSN/Zindi challenge Rules / Datasets and packages prohibit redistribution to nonparticipants, including public GitHub/Kaggle uploads. Source: https://zindi.world/competitions/data-science-nigeria-challenge-1-loan-default-prediction (checked 2026-11-12). No applicable source-owner permission is established; a participant copy does not grant it.
-- Set the record to `No`, remove its working-copy package and clear `v2_path`. Preserve earlier scientific acceptance, qualification and build history; this release decision supersedes ship acceptance without asserting a scientific defect. Raw inputs and existing containers remain local and untouched. Reopen only with suitable redistribution permission or a licensed source.
-
-## 2026-11-10: Chromophore integrated into the accepted draft batch
-
-- Add the curator-accepted and built `chromophore_optical_properties_db` package, preserving the clean source/build commits and resolved review history. Its generated definition, README and REVIEW are byte-identical to the verified build version; no dataset build or model fit is repeated for integration.
-- Preserve the existing seven accepted packages, including the concurrent Papyrus addition, all decision-only records, shared history and main-branch framework changes. Add only the Chromophore record/package and scoped shared documentation.
-- Mark the accepted record `DF: Yes` for the PR while retaining the official claim mirror until merge. The one-name no-steal claim update refreshes its completed build/PR note and expiry, preserving stage and original claim time.
-
-## 2026-11-10: Chromophore built and reproduced
-
-- Built the accepted `chromophore_optical_properties_db` definition at clean Git revision `8a50be6ccb71d6b8fb77047ba7603028dd37e596`: format 2, 17,510 rows, three predictors, 3,335 groups and nine folds. UUID `01a1c4ae-5ada-74a4-b90e-d5924662a442`; checksum `v2:97decdfc67653a344bdbc617300599730e279e24d81cdd2d821e68525f89ccb2`.
-- Saved-container reload and checksum verification pass. The complete ordered frame and all nine ordered train/test memberships equal the accepted qualification; no new task-probe sweep was needed. Existing signal and family-variation findings remain applicable.
-- The build read one pinned CSV (3,213,377 bytes). Reproduction using only that traced input gives the same checksum; a local raw-input ZIP with SHA256 manifest was verified. No containers or raw data enter Git, and no previous container was removed.
-- Native build has zero errors or unaccepted warnings; the specific accepted gas/no-solvent warning and conflicting-response information are unchanged. Tests: 2,017 passed, 286 skipped; exact CI lint scope passes. Repository-wide lint retains pre-existing legacy-notebook findings outside CI scope; no unrelated formatting changes were made.
-- This selected local build preserves the curator's 1A/2A, declared RMSE and gas acceptance. The active claim stays until normal integration; no push or publication is included.
-
-## 2026-11-10: Chromophore accepted by curator
-
-- Myunghwan chose "1A, 2A, RMSE as declared, accept gas warning, ship" for `chromophore_optical_properties_db`. Independent decision-register/precedent review found zero conflicts; no rule exception or amendment is required.
-- Keep the implemented input/target weighting (193 removals; only 50 full-source-record repeats; 143 additional weighting removals) and retain 61 conflicting input sets / 124 current rows with approximate fit and unresolved individual causes. Preserve all qualification and panel history; resolve both numbered issues without removing them.
-- Record fallback RMSE as checked and accept only `dataset_smiles_column` for the 20 gas observations with no solvent molecule. Regenerate the README through the native check. Data, target, predictor contract, metric and grouping/fold logic remain unchanged; existing fitted evidence remains applicable.
-- Scientific acceptance only. The dataset stays unbuilt and locally uncommitted with the active claim preserved; no build, push or publication follows this verdict.
-
-## 2026-11-09: Chromophore qualification for added review
-
-- Added `chromophore_optical_properties_db` from pinned Figshare v3 experimental measurements: first absorption-peak wavelength in nm, two typed SMILES inputs and medium state, fallback RMSE and approximate fit.
-- The implemented repeat policy retains 17,510 rows / 6,498 dyes / 3,335 groups. Join dye scaffolds by nonempty InChI and canonical tautomer identity; all nine current folds pass tested identity separation. Historical pre-correction scores remain separate.
-- Native checks: 27, zero errors, one proposed gas/no-solvent warning. Completed task, leakage, raw, dtype and bounded group probes, strict train-only diagnostics and full independent panel with debate, mediation and cold editing. Strict exploratory LightGBM mean RMSE 56.655 nm versus native mean baseline 106.481; held-out-family variation remains material.
-- Two independent curator choices remain: equal-response multiplicity (193 input/target repeats versus 50 full-record repeats) and retention of differing responses (61 sets / 124 current rows). Priority 3; earlier source-count, metric-origin and scope claims are corrected in the dated assessment. No human final-inclusion mark, container build, commit or publication.
-
-
-## 2026-11-10: Papyrus addition to the existing curation draft (Myunghwan)
-
-- Integrate the accepted, verified Papyrus package into draft PR59, retaining original clean source/build commits and exact definition/generated report/full review. Set the record's DF:Yes integration proposal while retaining ownership/WIP until main.
-- Refresh only Papyrus's claim note and expiry, preserving Myunghwan, triage and original claim time. All six previous accepted packages and prior rejection/holds remain unchanged. No new build/model, data upload, collection registration, ready transition or merge.
-
-
-## 2026-11-10: Papyrus requested build and local commits
-
-- Build only `papyrus_bioactivity`: format 2, UUID `01a1c4a3-5dd9-7593-8c3b-19181baab684`, checksum `v2:08eb2e46164bb6dbb4f13509ecae23b7f124da5557b178805cc24bb11ddaf47c`, from clean accepted-definition commit `f3f5797fde2b9cd7eeca788bb5bbf35e5f905499`, using pinned Data Foundry runtime `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`. Preserve all 692,017 rows, seven inputs, three scaffold folds, fallback RMSE and pointwise protocol. Zero build errors/warnings.
-- Saved reload and a check from only traced inputs reproduce the checksum. Independently regenerate both prepared tables from the original publisher inputs in private scratch; every value/dtype/order matches. Manifested local backup: 5 files, 856,881,288bytes, archive/source hashes verified. No input/container enters Git.
-- Built rows, labels, features, order, splits and saved prediction labels exactly match qualification, so existing models/probes remain applicable. No new sweep or retraining needed. Checks: 2014 tests passed/285 skipped, including 18 temporary-socket reruns; pinned Ruff, records/pointers, review parser and diff checks pass. Full catalog retains 17 pre-existing RowBudget import failures; owned-definition import passes.
-- Local build/commit only; current claim and Yes/WIP(DF)/priority3 retained. No DF:Yes, registry membership, claim release, push, PR or merge. Other staged records and datasets untouched. No superseded Papyrus container existed to remove.
-
-
-## 2026-11-10: Papyrus scientific inclusion accepted (Myunghwan)
-
-- Record Myunghwan's explicit "ship it" on the completed `papyrus_bioactivity` review, keeping fallback RMSE as declared. Independent consistency review finds no departure or additional issue. Preserve original source means, all692,017rows/seven inputs, scaffold folds, repaired label-independent ordering and pointwise prediction restrictions.
-- Scientific review is complete; retain approximate assay/endpoint/stereo/cohort/sequence limits and the distinct protein-conditioned-task rationale with864same-thrombin matches. Preserve the full review history, Yes/WIP(DF), priority3 and current reservation.
-- No definition/generated README/data/model/split change, build, curation commit, DF:Yes, claim release, push or PR update. Ready for a separately requested build.
-
-## 2026-11-09: Papyrus pooled bioactivity qualification (Myunghwan)
-
-- Add `papyrus_bioactivity`: 692,017 original mean-pChEMBL labels across 5,057 proteins, seven intrinsic compound/protein inputs and three scaffold-disjoint folds. Retain recognized complete source means; no new aggregate or Ki-only cut. Explicit approximate pre-assay structural generalization, without chronological validity.
-- Repair inherited label-dependent row ordering using a known-input sort and fixed shuffle, confirmed by independent attacks and full target-perturbation controls. Merge exact source-connectivity aliases before splitting; mask unknown classification. Keep train-fitted transformations and frozen per-query inference, excluding held-out-record statistics.
-- Full independent panel recommends inclusion after applied documentation fixes, with zero separate issues. Strict bounded LightGBM RMSE0.977244 versus converged Ridge1.080116 and protein mean1.130486; final27checks pass without warnings. Document mixed-endpoint/stereo/cohort/sequence limits and864 same-thrombin overlaps under the distinct protein-conditioned-task rationale.
-- Record remains WIP(DF), priority3, with human inclusion verdict pending. No build, container, curation commit or publication.
-
-## 2026-11-09: Football deferred by curator
-
-
 ## 2026-11-16, regensburg_pediatric_appendicitis kept with fixes, no longer retired (no container built)
 
 - Lennart, 2026-11-16, and Andrej: the label of the children not operated is an outcome, not the surgeon's decision.
@@ -197,6 +132,11 @@ Andrej's decisions of 2026-11-11 and 2026-11-12 on the dataset's review.
   after it in a window the source does not state.
 - The record: the review in `## Review`, the decisions as CC lines. The container changes (columns, size); it needs a
   rebuild.
+
+## 2026-11-12 (SuperLender excluded from redistributable contribution)
+
+- Myunghwan rejected `loan_default_prediction_challenge` for this release: the original DSN/Zindi challenge Rules / Datasets and packages prohibit redistribution to nonparticipants, including public GitHub/Kaggle uploads. Source: https://zindi.world/competitions/data-science-nigeria-challenge-1-loan-default-prediction (checked 2026-11-12). No applicable source-owner permission is established; a participant copy does not grant it.
+- Set the record to `No`, remove its working-copy package and clear `v2_path`. Preserve earlier scientific acceptance, qualification and build history; this release decision supersedes ship acceptance without asserting a scientific defect. Raw inputs and existing containers remain local and untouched. Reopen only with suitable redistribution permission or a licensed source.
 
 ## 2026-11-12, the split count in scored units (SPLIT-33), in a PR of its own (no container built)
 
@@ -521,6 +461,45 @@ the precedent check found them consistent; the README files follow at the next `
   lung_cancer stays retired for the histology, with a CC line pointing here. Cases rows under USE-1 (rewritten),
   TP-5 and PROV-14 (new); tcga_lung_histology's assessment notes the new dataset.
 
+## 2026-11-10: Chromophore integrated into the accepted draft batch
+
+- Add the curator-accepted and built `chromophore_optical_properties_db` package, preserving the clean source/build commits and resolved review history. Its generated definition, README and REVIEW are byte-identical to the verified build version; no dataset build or model fit is repeated for integration.
+- Preserve the existing seven accepted packages, including the concurrent Papyrus addition, all decision-only records, shared history and main-branch framework changes. Add only the Chromophore record/package and scoped shared documentation.
+- Mark the accepted record `DF: Yes` for the PR while retaining the official claim mirror until merge. The one-name no-steal claim update refreshes its completed build/PR note and expiry, preserving stage and original claim time.
+
+## 2026-11-10: Chromophore built and reproduced
+
+- Built the accepted `chromophore_optical_properties_db` definition at clean Git revision `8a50be6ccb71d6b8fb77047ba7603028dd37e596`: format 2, 17,510 rows, three predictors, 3,335 groups and nine folds. UUID `01a1c4ae-5ada-74a4-b90e-d5924662a442`; checksum `v2:97decdfc67653a344bdbc617300599730e279e24d81cdd2d821e68525f89ccb2`.
+- Saved-container reload and checksum verification pass. The complete ordered frame and all nine ordered train/test memberships equal the accepted qualification; no new task-probe sweep was needed. Existing signal and family-variation findings remain applicable.
+- The build read one pinned CSV (3,213,377 bytes). Reproduction using only that traced input gives the same checksum; a local raw-input ZIP with SHA256 manifest was verified. No containers or raw data enter Git, and no previous container was removed.
+- Native build has zero errors or unaccepted warnings; the specific accepted gas/no-solvent warning and conflicting-response information are unchanged. Tests: 2,017 passed, 286 skipped; exact CI lint scope passes. Repository-wide lint retains pre-existing legacy-notebook findings outside CI scope; no unrelated formatting changes were made.
+- This selected local build preserves the curator's 1A/2A, declared RMSE and gas acceptance. The active claim stays until normal integration; no push or publication is included.
+
+## 2026-11-10: Chromophore accepted by curator
+
+- Myunghwan chose "1A, 2A, RMSE as declared, accept gas warning, ship" for `chromophore_optical_properties_db`. Independent decision-register/precedent review found zero conflicts; no rule exception or amendment is required.
+- Keep the implemented input/target weighting (193 removals; only 50 full-source-record repeats; 143 additional weighting removals) and retain 61 conflicting input sets / 124 current rows with approximate fit and unresolved individual causes. Preserve all qualification and panel history; resolve both numbered issues without removing them.
+- Record fallback RMSE as checked and accept only `dataset_smiles_column` for the 20 gas observations with no solvent molecule. Regenerate the README through the native check. Data, target, predictor contract, metric and grouping/fold logic remain unchanged; existing fitted evidence remains applicable.
+- Scientific acceptance only. The dataset stays unbuilt and locally uncommitted with the active claim preserved; no build, push or publication follows this verdict.
+
+## 2026-11-10: Papyrus addition to the existing curation draft (Myunghwan)
+
+- Integrate the accepted, verified Papyrus package into draft PR59, retaining original clean source/build commits and exact definition/generated report/full review. Set the record's DF:Yes integration proposal while retaining ownership/WIP until main.
+- Refresh only Papyrus's claim note and expiry, preserving Myunghwan, triage and original claim time. All six previous accepted packages and prior rejection/holds remain unchanged. No new build/model, data upload, collection registration, ready transition or merge.
+
+## 2026-11-10: Papyrus requested build and local commits
+
+- Build only `papyrus_bioactivity`: format 2, UUID `01a1c4a3-5dd9-7593-8c3b-19181baab684`, checksum `v2:08eb2e46164bb6dbb4f13509ecae23b7f124da5557b178805cc24bb11ddaf47c`, from clean accepted-definition commit `f3f5797fde2b9cd7eeca788bb5bbf35e5f905499`, using pinned Data Foundry runtime `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`. Preserve all 692,017 rows, seven inputs, three scaffold folds, fallback RMSE and pointwise protocol. Zero build errors/warnings.
+- Saved reload and a check from only traced inputs reproduce the checksum. Independently regenerate both prepared tables from the original publisher inputs in private scratch; every value/dtype/order matches. Manifested local backup: 5 files, 856,881,288bytes, archive/source hashes verified. No input/container enters Git.
+- Built rows, labels, features, order, splits and saved prediction labels exactly match qualification, so existing models/probes remain applicable. No new sweep or retraining needed. Checks: 2014 tests passed/285 skipped, including 18 temporary-socket reruns; pinned Ruff, records/pointers, review parser and diff checks pass. Full catalog retains 17 pre-existing RowBudget import failures; owned-definition import passes.
+- Local build/commit only; current claim and Yes/WIP(DF)/priority3 retained. No DF:Yes, registry membership, claim release, push, PR or merge. Other staged records and datasets untouched. No superseded Papyrus container existed to remove.
+
+## 2026-11-10: Papyrus scientific inclusion accepted (Myunghwan)
+
+- Record Myunghwan's explicit "ship it" on the completed `papyrus_bioactivity` review, keeping fallback RMSE as declared. Independent consistency review finds no departure or additional issue. Preserve original source means, all692,017rows/seven inputs, scaffold folds, repaired label-independent ordering and pointwise prediction restrictions.
+- Scientific review is complete; retain approximate assay/endpoint/stereo/cohort/sequence limits and the distinct protein-conditioned-task rationale with864same-thrombin matches. Preserve the full review history, Yes/WIP(DF), priority3 and current reservation.
+- No definition/generated README/data/model/split change, build, curation commit, DF:Yes, claim release, push or PR update. Ready for a separately requested build.
+
 ## 2026-11-10, horizon audit and the curator's window decisions, round 1 (no container built)
 
 The curator's marks on the test-windows board (Lennart, 2026-11-10) are applied where the window length holds; a
@@ -817,13 +796,28 @@ wisconsin. Open: noaa_storm issue 15 (the AI now recommends keeping the damage u
 - Native build has zero errors or unaccepted warnings; the specific accepted gas/no-solvent warning and conflicting-response information are unchanged. Tests: 2,017 passed, 286 skipped; exact CI lint scope passes. Repository-wide lint retains pre-existing legacy-notebook findings outside CI scope; no unrelated formatting changes were made.
 - This selected local build preserves the curator's 1A/2A, declared RMSE and gas acceptance. The active claim stays until normal integration; no push or publication is included.
 
-
 ## 2026-11-10: Chromophore accepted by curator
 
 - Myunghwan chose "1A, 2A, RMSE as declared, accept gas warning, ship" for `chromophore_optical_properties_db`. Independent decision-register/precedent review found zero conflicts; no rule exception or amendment is required.
 - Keep the implemented input/target weighting (193 removals; only 50 full-source-record repeats; 143 additional weighting removals) and retain 61 conflicting input sets / 124 current rows with approximate fit and unresolved individual causes. Preserve all qualification and panel history; resolve both numbered issues without removing them.
 - Record fallback RMSE as checked and accept only `dataset_smiles_column` for the 20 gas observations with no solvent molecule. Regenerate the README through the native check. Data, target, predictor contract, metric and grouping/fold logic remain unchanged; existing fitted evidence remains applicable.
 - Scientific acceptance only. The dataset stays unbuilt and locally uncommitted with the active claim preserved; no build, push or publication follows this verdict.
+
+## 2026-11-09: Chromophore qualification for added review
+
+- Added `chromophore_optical_properties_db` from pinned Figshare v3 experimental measurements: first absorption-peak wavelength in nm, two typed SMILES inputs and medium state, fallback RMSE and approximate fit.
+- The implemented repeat policy retains 17,510 rows / 6,498 dyes / 3,335 groups. Join dye scaffolds by nonempty InChI and canonical tautomer identity; all nine current folds pass tested identity separation. Historical pre-correction scores remain separate.
+- Native checks: 27, zero errors, one proposed gas/no-solvent warning. Completed task, leakage, raw, dtype and bounded group probes, strict train-only diagnostics and full independent panel with debate, mediation and cold editing. Strict exploratory LightGBM mean RMSE 56.655 nm versus native mean baseline 106.481; held-out-family variation remains material.
+- Two independent curator choices remain: equal-response multiplicity (193 input/target repeats versus 50 full-record repeats) and retention of differing responses (61 sets / 124 current rows). Priority 3; earlier source-count, metric-origin and scope claims are corrected in the dated assessment. No human final-inclusion mark, container build, commit or publication.
+
+## 2026-11-09: Papyrus pooled bioactivity qualification (Myunghwan)
+
+- Add `papyrus_bioactivity`: 692,017 original mean-pChEMBL labels across 5,057 proteins, seven intrinsic compound/protein inputs and three scaffold-disjoint folds. Retain recognized complete source means; no new aggregate or Ki-only cut. Explicit approximate pre-assay structural generalization, without chronological validity.
+- Repair inherited label-dependent row ordering using a known-input sort and fixed shuffle, confirmed by independent attacks and full target-perturbation controls. Merge exact source-connectivity aliases before splitting; mask unknown classification. Keep train-fitted transformations and frozen per-query inference, excluding held-out-record statistics.
+- Full independent panel recommends inclusion after applied documentation fixes, with zero separate issues. Strict bounded LightGBM RMSE0.977244 versus converged Ridge1.080116 and protein mean1.130486; final27checks pass without warnings. Document mixed-endpoint/stereo/cohort/sequence limits and864 same-thrombin overlaps under the distinct protein-conditioned-task rationale.
+- Record remains WIP(DF), priority3, with human inclusion verdict pending. No build, container, curation commit or publication.
+
+## 2026-11-09: Football deferred by curator
 
 ## 2026-11-09: Football deferred by curator
 
