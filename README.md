@@ -2,12 +2,13 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-09 10:22 UTC: 122 claim(s) (Andrej 15, Lennart 89, Myunghwan 18).
+As of 2026-11-09 10:22 UTC: 123 claim(s) (Andrej 16, Lennart 89, Myunghwan 18).
 
 ## Andrej
 
 | Dataset | Stage | Since | Until | Note |
 |---|---|---|---|---|
+| `allstate_claim_prediction_challenge` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `australian_vehicle_insurance_2004_2005` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `boreal_postfire_lichen_biomass` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `frempl_french_motor_personal_line` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |

@@ -1,0 +1,6 @@
+name: allstate_claim_prediction_challenge
+holder: Andrej
+stage: review
+claimed_at: '2026-11-09T10:22:51Z'
+expires_at: '2026-11-16T10:22:51Z'
+note: 're-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09)'
