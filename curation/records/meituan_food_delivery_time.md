@@ -5,6 +5,7 @@ checked_by:
 - Myunghwan
 data_foundry_status:
 - WIP (Triage)
+- 'DF: Yes'
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 4
@@ -71,3 +72,5 @@ CC (2026-11-09, Myunghwan): the declared metric, fallback RMSE in minutes, is ch
 **Assessment (AI, 2026-11-09):** Final approval is consistent with the rules and prior decisions: useful independent prediction, fallback RMSE on the original minute scale, and specifically explained unused temporal-tail rows. No exception or rule amendment. Scientific review complete; ready for an explicitly requested build. Data, target, predictors and splits unchanged. Existing ownership and WIP state remain until later integration.
 
 **Assessment (AI, 2026-11-09):** Curator-requested build completed: UUID `01a1c240-670c-7619-accd-dcfb6e721d9c`, checksum `v2:1c8113474925271ced300ea5c8142a758859f26f0fc76c69aa8306cf3a03c594`, format2, clean definition commit3762163a. Saved reload verifies; traced-input reproduction matches; typed frame and every ordered split equal the qualified forecast-free task. Zero errors/unaccepted warnings; existing62tailwarning accepted. No scientific change or new decision. Local build/integration commits authorized, no push/publication; claim and WIP mirror preserved pending main integration.
+
+**Assessment (AI, 2026-11-09):** Integrate the approved and verified Meituan package into existing draft PR59 at the curator's correction. DF: Yes is the accepted integration proposal; preserve actual claim/WIP mirror until main. Existing five package files and prior rejection/holds are unchanged. Original build/source commits stay reachable; no new build or model fit. Separate PR66 will be closed as superseded once integration is published.

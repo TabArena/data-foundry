@@ -1,5 +1,9 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-09, Meituan addition to the existing curation draft (Myunghwan)
+
+- Integrate the approved forecast-free Meituan package into existing draft PR59, preserving original build/source commits and all five prior dataset packages plus rejection/hold decisions. Set the accepted record's DF: Yes integration proposal, retaining its actual ownership/WIP mirror. No new data, split, feature, model or build change. Separate draft PR66 is superseded.
+
 ## 2026-11-09 (SuperLender addition to the existing curation draft)
 
 - Add the explicitly accepted, locally built SuperLender package to draft PR #59 alongside its existing four accepted datasets. Preserve both SuperLender commits and the original clean build revision in ancestry; all three package files match the verified source exactly. Keep AUROC, 4,368 distinct scored borrowers, 32 predictors and the nine borrower-disjoint random folds, with ForcedIIDFromTemporal/approximate limits.
