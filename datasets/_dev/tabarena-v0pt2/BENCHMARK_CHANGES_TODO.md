@@ -424,3 +424,35 @@ them as named columns or in sorted order. A score computed with the columns alig
   its own row, or check that a method's predictions do not change when the other test rows change. A method that
   learns from the test block is called out and not benchmarked (LEAK-9, amended 2026-11-05, Lennart: "we investigate
   models, and would find out if they do transductive learning which we can call out and not benchmark").
+
+## Test rows predicted without the other test rows: the large add run (2026-11-09)
+
+Each of these definitions carries a LEAK-9 protocol line; the check above applies to them too.
+
+- [ ] **uk_mot_test_results_1m:** a fold uses only its own train rows; test rows are predicted without any other test
+  row or later-dated row. A vehicle's later rows give an earlier row's label away (657 / 1,509 / 1,586 linked test
+  rows in the Dec / Nov / Oct folds, 38,728 of 38,734 linked labels right, +0.0014 to +0.0027 ROC AUC).
+- [ ] **azure_vm_lifetime_resource_central_1m:** a deployment's later test rows link to its earlier ones through the
+  cumulative `deployment_vms_before`; predict each test row without the other test rows.
+- [ ] **chicago_taxi_trip_duration_1m:** the same taxi's next pickup among the test rows bounds a trip's end; each test
+  trip is predicted from the training rows and its own features only.
+- [ ] **fmcsa_roadside_inspection_out_of_service_1m:** a later test row of the same vehicle or carrier reveals an
+  earlier one's outcome through the change of its history counts.
+- [ ] **github_pull_request_acceptance_1m:** a later test row of the same project or contributor reveals an earlier
+  one's outcome through the change of its history counts.
+- [ ] **backblaze_hard_drive_failure_1m:** a method sees only its split's train rows and test window; rows dated after
+  a test window reveal its labels (a drive is recognised across months).
+- [ ] **turkcell_radio_link_failure_prediction_1m:** a test row's label is the next day's row of the same link end,
+  which the test window holds; score each test row on its own.
+- [ ] **smartshark_release_defect_prediction:** predict each row from the training rows and its own features; the same
+  file in a later release gives the label away.
+- [ ] **ppnn_ecmwf_t2m_postprocessing_germany_1m:** a 14-day test window holds a station's later rows; no feature or
+  model step may use other test rows.
+- [ ] **uniform_soybean_tests_yield:** only the rows of a window's train and test indices are read; later seasons never.
+- [ ] **acs_food_stamps_2014_2024_1m:** fit only on the split's train rows; later survey years' labelled rows are never
+  added (+0.003 to +0.006 ROC AUC if they are).
+- [ ] **chile_school_dropout_mineduc_1m:** a model sees only its split's rows; a later window holds the same students
+  one year on, whose presence tells the label.
+- [ ] **nfip_redacted_flood_claims:** no feature or fit uses the test rows (counts of claims or event sizes over them).
+- [ ] **bacteria_id_raman** and **raman_mlrod:** each test patient or spectrum is predicted on its own (no averaging
+  over test neighbours, no class prior or preprocessing fitted on the test rows).
