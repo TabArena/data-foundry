@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-09 19:20 UTC: 122 claim(s) (Andrej 16, Lennart 88, Myunghwan 18).
+As of 2026-11-09 21:45 UTC: 122 claim(s) (Andrej 16, Lennart 88, Myunghwan 18).
 
 ## Andrej
 
@@ -135,7 +135,7 @@ As of 2026-11-09 19:20 UTC: 122 claim(s) (Andrej 16, Lennart 88, Myunghwan 18).
 | `loan_default_prediction_challenge` | triage | 2026-10-28 | 2026-11-16 | Myunghwan: reviewed, explicitly accepted and built; integrating verified SuperLender package into draft PR #59. AUROC; borrower-disjoint random folds. Retain ownership until main; no benchmark control plane. |
 | `lt_vehicle_loan_default_prediction` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `medical_facility_operational_data` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
-| `meituan_food_delivery_time` | triage | 2026-11-05 | 2026-11-12 | Curator-requested triage: priority-4 interaction datasets; scale, source and non-IID qualification pending. |
+| `meituan_food_delivery_time` | triage | 2026-11-05 | 2026-11-16 | Forecast-free accepted-at ETA approved and built; 568545 rows,15 predictors; reload and traced-input reproduction pass. Publishing draft PR from myunghwan/meituan-forecast-free-20261109; retain ownership pending main integration. |
 | `open_soil_spectral_library` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `protein_model_quality_rf_pcp` | review | 2026-10-28 | 2026-11-06 (expired) | Curator accepted; build, reload and traced-input reproduction complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 . Accepted approximations and source/descriptor limits are documented. Awaiting PR review/merge; retain Myunghwan ownership until merged. |
 | `sendy_logistics_challenge` | review | 2026-10-28 | 2026-11-06 (expired) | Curator ship accepted; build and verification complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 (commit 46e8b32). Placement-to-arrival RMSE; 21,199 rows, 13 predictors, random 3x3 folds. Awaiting PR review/merge; retain Myunghwan ownership until merged. |

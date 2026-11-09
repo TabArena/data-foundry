@@ -2,5 +2,5 @@ name: meituan_food_delivery_time
 holder: Myunghwan
 stage: triage
 claimed_at: '2026-11-05T22:19:29Z'
-expires_at: '2026-11-12T22:19:29Z'
-note: 'Curator-requested triage: priority-4 interaction datasets; scale, source and non-IID qualification pending.'
+expires_at: '2026-11-16T21:45:25Z'
+note: Forecast-free accepted-at ETA approved and built; 568545 rows,15 predictors; reload and traced-input reproduction pass. Publishing draft PR from myunghwan/meituan-forecast-free-20261109; retain ownership pending main integration.
