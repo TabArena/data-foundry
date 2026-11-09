@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-09 10:22 UTC: 123 claim(s) (Andrej 15, Lennart 90, Myunghwan 18).
+As of 2026-11-09 10:22 UTC: 122 claim(s) (Andrej 15, Lennart 89, Myunghwan 18).
 
 ## Andrej
 
@@ -35,7 +35,6 @@ As of 2026-11-09 10:22 UTC: 123 claim(s) (Andrej 15, Lennart 90, Myunghwan 18).
 | `aegis_bronchial_airway_lung_cancer` | add | 2026-11-08 | 2026-11-15 | add-dataset: large-datasets batch (stacked PR on #47) |
 | `african_credit_scoring_challenge` | add | 2026-11-08 | 2026-11-15 |  |
 | `alfa_bank_credit_history_default` | add | 2026-11-08 | 2026-11-15 | add-dataset: large-datasets batch (stacked PR on #47) |
-| `allstate_claim_prediction_challenge` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `anes_voting_2026` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `asp_potassco_classification` | add | 2026-11-08 | 2026-11-15 |  |
 | `azure_vm_lifetime_resource_central` | add | 2026-11-08 | 2026-11-15 | add-dataset: large-datasets batch (stacked PR on #47) |
