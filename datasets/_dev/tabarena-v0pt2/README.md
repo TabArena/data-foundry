@@ -49,6 +49,7 @@ four traced input files totaling 5,003,658 bytes. Reload and minimal-input repro
 with zero build errors or warnings. The dated changelog records its UUID and checksum; each dataset's generated
 README identifies its own latest build. This scoped run does not update the other definitions' build records.
 
+- Latest scoped build, November 9, 2026: one Meituan container, format 2, from one traced CSV (121,698,401 bytes). Reload verification and reproduction from the traced input pass; see the dataset report and dated CHANGELOG. Other datasets were not rebuilt.
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows

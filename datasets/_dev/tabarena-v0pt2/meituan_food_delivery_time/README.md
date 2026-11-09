@@ -3,7 +3,20 @@ report_format: data-foundry-report-v2
 unique_name: meituan_food_delivery_time
 container_format: 2
 checksum: v2:1c8113474925271ced300ea5c8142a758859f26f0fc76c69aa8306cf3a03c594
-build: null
+build:
+  uuid: 01a1c240-670c-7619-accd-dcfb6e721d9c
+  checksum: v2:1c8113474925271ced300ea5c8142a758859f26f0fc76c69aa8306cf3a03c594
+  built_at: '2026-11-09T21:39:28+00:00'
+  path: meituan_food_delivery_time/01a1c240-670c-7619-accd-dcfb6e721d9c
+  data_foundry_version: 0.0.5
+  git_sha: 3762163ad5c46702e89e5c9e4b7d51badc5395bb
+  libraries:
+    python: 3.12.3
+    pandas: 3.1.0
+    numpy: 2.5.4
+    pyarrow: 26.0.0
+    scikit-learn: 1.7.2
+    polars: 2.0.0
 build_stale: false
 data:
   n_rows: 568545
@@ -63,7 +76,7 @@ decisions:
 
 Regression of `delivery_minutes`, scored with `rmse` on temporal splits by `accepted_at`. 568,545 rows and 15 features. Source: GitHub (2024).
 
-Not built yet. The current definition gives checksum `v2:1c8113474925271ced300ea5c8142a758859f26f0fc76c69aa8306cf3a03c594`.
+Built as `01a1c240-670c-7619-accd-dcfb6e721d9c` on 2026-11-09. See [Build](#build).
 
 ## In brief
 
@@ -346,4 +359,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a1c240-670c-7619-accd-dcfb6e721d9c |
+| checksum | v2:1c8113474925271ced300ea5c8142a758859f26f0fc76c69aa8306cf3a03c594 |
+| built_at | 2026-11-09T21:39:28+00:00 |
+| path | meituan_food_delivery_time/01a1c240-670c-7619-accd-dcfb6e721d9c |
+| data_foundry_version | 0.0.5 |
+| git_sha | 3762163ad5c46702e89e5c9e4b7d51badc5395bb |
+| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
