@@ -1,5 +1,23 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-09, Meituan forecast-free primary (Myunghwan)
+
+- Curator chose independent delivery-time prediction without either platform forecast. Remove both derived forecast features; recorded promise remains only an external baseline. Preserve accepted-at point, total target, prebooks and strict all-event training cutoffs. Requalify the changed feature set; assisted results remain sensitivity evidence. No build.
+
+## 2026-11-09, Meituan human review page (Myunghwan)
+
+- Corrected issue-body indentation so the supported collector separates the short problem from its evidence and options. No task, data or split change; the local page is scoped to Meituan, excluding unrelated cross-dataset issues.
+
+## 2026-11-08, Meituan accepted-at and interval boundary (Myunghwan)
+
+- Curator confirmed acceptance-time prediction and requires every observed training event before test acceptance. Explicitly verify all six event clocks are covered by the delivery-time guard, and assert training ends before every test acceptance. Data, features and split memberships are unchanged; recheck evidence before reusing scores. No build.
+
+## 2026-11-08, Meituan delivery duration (Myunghwan)
+
+- Added `meituan_food_delivery_time`: 568,545 accepted orders, 17 features, acceptance-time ETA updates with total placement-to-delivery minutes, and three future-day windows using only labels known at each midnight refit. All prebooked orders remain.
+- Native checks: zero errors, one explained unused-tail warning (62 orders); task probes have no flags. Full independent panel leaves one curator question about forecast snapshot availability. Definition, generated evidence and review are local; no container built.
+
+
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 
 - `eryhemato_squamous_disease`: the 10 clinical scores 0-3 ship as numbers; a blanket `_feature_types` had cast them
@@ -3380,3 +3398,7 @@ Lennart's marks and notes on the review page (scope: the 125 built datasets and 
   (shipped notebook, sibling runs, helper files); notebook outputs and execution counts are cleared.
 - Removed `homeq_default_prediction`: retired on 2026-09-24 (`No (Retired)`, class-conditional generation artefacts;
   see `curation/records/homeq_default_prediction.md` and `curation/audits/beyondarena_leak_audit_2026-09-24.md`).
+
+- 2026-11-09 — meituan_food_delivery_time: complete fresh 15-feature qualification after Myunghwan chose forecast-free independent ETA; preserve source cohorts and all-event cutoffs, resolve issue1 with actual words, retain prior assisted evidence as sensitivity. Fresh probes and two-seed models pass; metric/warning/final inclusion pending.
+
+- 2026-11-09 — meituan_food_delivery_time: Myunghwan approves final inclusion of the forecast-free definition, fallback RMSE in minutes and retaining 62 unused October 25 rows; record the specific accepted warning and close scientific review. No data/feature/split change or build/commit request.
