@@ -1,5 +1,11 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-09: Football deferred by curator
+
+- Myunghwan deferred `football_match_probability_prediction` because the demonstrated incremental model-performance gain is weak. Set `TBD -> 2nd Tier` / `DF: Suspended`, preserving priority 4, the settled ordinary-temporal choice and all exploratory evidence.
+- The bounded study gives engineered LightGBM log loss 1.018451 versus logistic regression 1.023423 (0.486% reduction, wins two of three windows), and best tested heuristic 1.056243. Preserve the measured small gain and model/preprocessing limits; no scientific rejection, No Signal/Trivial marker or general gain threshold is inferred.
+- Release the named active reservation through the official workflow. Publish only this decision record and changelog to the existing draft; no Football build, exploratory package or raw data is published.
+
 ## 2026-11-09, Meituan addition to the existing curation draft (Myunghwan)
 
 - Integrate the approved forecast-free Meituan package into existing draft PR59, preserving original build/source commits and all five prior dataset packages plus rejection/hold decisions. Set the accepted record's DF: Yes integration proposal, retaining its actual ownership/WIP mirror. No new data, split, feature, model or build change. Separate draft PR66 is superseded.
