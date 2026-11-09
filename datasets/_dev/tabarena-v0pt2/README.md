@@ -44,6 +44,11 @@ Duolingo latest scoped build, 2026-11-05: repeated through the updated installed
   bytes). Saved-container reload and minimal-input reproduction match the checked checksum; the current trace matches
   the existing input archive, whose payloads and current sources were freshly reverified. Details and remaining
   limitations are in CHANGELOG.
+Scoped build on 2026-11-08 (November 9 UTC): one requested definition, container format 2,
+four traced input files totaling 5,003,658 bytes. Reload and minimal-input reproduction passed
+with zero build errors or warnings. The dated changelog records its UUID and checksum; each dataset's generated
+README identifies its own latest build. This scoped run does not update the other definitions' build records.
+
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows
