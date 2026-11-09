@@ -18,6 +18,7 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
+- Latest scoped build, November 9, 2026: one Meituan container, format 2, from one traced CSV (121,698,401 bytes). Reload verification and reproduction from the traced input pass; see the dataset report and dated CHANGELOG. Other datasets were not rebuilt.
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows

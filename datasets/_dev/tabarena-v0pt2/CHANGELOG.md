@@ -1,5 +1,13 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-09, Meituan build and verification (Myunghwan)
+
+- Built the approved forecast-free acceptance-time task: 568,545 rows, 15 features and three future-day windows. Container `01a1c240-670c-7619-accd-dcfb6e721d9c`, format 2; checksum `v2:1c8113474925271ced300ea5c8142a758859f26f0fc76c69aa8306cf3a03c594`; clean definition commit `3762163a`.
+- Saved container reload and checksum verification pass. A check from the one traced raw CSV reproduces the full checksum; typed data and every ordered train/test array match the qualified definition. No new task sweep: the recent forecast-free qualification has identical rows and splits.
+- Zero errors and zero unaccepted warnings; retain the curator-approved 62-row unused-tail warning and conflicting-profile information. No new scientific issue. Traced input backup remains local, outside Git.
+- Full tests: 1,999 pass and 286 skip in the sandbox; all 18 socket-blocked tests pass with localhost access. Repository-wide lint reports inherited issues in unchanged files; changed Python passes lint and formatting. No unrelated formatting fixes.
+- First container for this task; no superseded container removed. No raw data or container committed, and no push or publication requested.
+
 ## 2026-11-09, Meituan forecast-free primary (Myunghwan)
 
 - Curator chose independent delivery-time prediction without either platform forecast. Remove both derived forecast features; recorded promise remains only an external baseline. Preserve accepted-at point, total target, prebooks and strict all-event training cutoffs. Requalify the changed feature set; assisted results remain sensitivity evidence. No build.
