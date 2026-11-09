@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-09 13:15 UTC: 122 claim(s) (Andrej 16, Lennart 88, Myunghwan 18).
+As of 2026-11-09 19:20 UTC: 122 claim(s) (Andrej 16, Lennart 88, Myunghwan 18).
 
 ## Andrej
 
@@ -132,7 +132,7 @@ As of 2026-11-09 13:15 UTC: 122 claim(s) (Andrej 16, Lennart 88, Myunghwan 18).
 | `football_match_probability_prediction` | triage | 2026-11-05 | 2026-11-12 | Curator-requested triage: priority-4 interaction datasets; scale, source and non-IID qualification pending. |
 | `fugaku_hpc_job_failure` | add | 2026-11-03 | 2026-11-13 | Curator decisions reused; maintained installation 9048f36a repeat add/review/build cycle complete. Built/reloaded/minimal-input reproduction and existing backup of 43 input files freshly reverified; unchanged task with 2,500,499 rows and 388 predictors. Local commits c84f9b39 and 6b4bea76 on fugaku-skill-refresh-20261106; not pushed. Retain ownership pending upstream integration. First tuned benchmark family, baseline, probability and maturity/latency recheck remains required; known diagnostic limits retained. |
 | `geoai_ground_level_no2_estimation_challenge` | triage | 2026-10-28 | 2026-11-06 (expired) | Curator accepted as implemented with documented label-QC, regional and observed-day coverage limits. Built and verified: 82,051 rows, 11 predictors, station-held-out 3x3 folds; reload and traced-input reproduction passed with zero warnings. Local commits 7b2837b and 8cba4df on geoai-no2-curation; not pushed or submitted. Retain Myunghwan ownership pending upstream integration; existing stage preserved by gateway. |
-| `loan_default_prediction_challenge` | triage | 2026-10-28 | 2026-11-11 | Myunghwan: requested single-candidate SuperLender source screening; no benchmark control plane |
+| `loan_default_prediction_challenge` | triage | 2026-10-28 | 2026-11-16 | Myunghwan: reviewed, explicitly accepted and built; integrating verified SuperLender package into draft PR #59. AUROC; borrower-disjoint random folds. Retain ownership until main; no benchmark control plane. |
 | `lt_vehicle_loan_default_prediction` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `medical_facility_operational_data` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `meituan_food_delivery_time` | triage | 2026-11-05 | 2026-11-12 | Curator-requested triage: priority-4 interaction datasets; scale, source and non-IID qualification pending. |
