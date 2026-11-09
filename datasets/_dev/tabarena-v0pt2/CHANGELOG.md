@@ -1292,6 +1292,22 @@ noaa_storm's definitions now differ from any build.
 - This update publishes the decision record only. Exploratory definition, data and detailed reviews remain
   local; no XuetangX dataset package, build or container is added.
 
+## 2026-11-08 (SuperLender explicit ship verdict)
+
+- Myunghwan explicitly said 'ship this', confirming the completed review's default-ship disposition after independent consistency review. Preserve context ROC AUC, Random (IID)/ForcedIIDFromTemporal approximate evaluation and all previously approved limitations. No recipe, data, predictor, label or split change.
+- Clarify the metric Cases row: the exception is to MET-4 only; MET-11's context-origin requirement is followed, not excepted. This corrects the decision register's exception-to-Must classification without changing the approved metric or general rules.
+- The verdict accepts the definition for a later requested build under review-added-datasets. Keep the existing ownership claim and preserve resolved issues and historical panel; no build, source commit, publication, DF: Yes or claim release was performed.
+
+## 2026-11-08 (SuperLender split-field choice and review completion)
+
+- Myunghwan accepted random or temporal evaluation with care about borrower overlap. Keep the existing ForcedIIDFromTemporal/approximate random splits and align the record's required_split to Random (IID), after independent actual-mark consistency and a fresh raw/native-ID check: 4,368 scored borrowers and zero train/test borrower overlap in all nine unchanged folds.
+- All numbered issues, metric and record fields are settled. Apply the current procedure's default ship disposition: ready for a separately requested build. Preserve resolved issues and historical panel, retain the ownership claim, and leave DF: Yes for integration. No recipe, data, labels, predictors, split indices, build or source commit changed.
+
+## 2026-11-08 (SuperLender curator metric choice)
+
+- Myunghwan chose AUROC after discussion of the majority accuracy baseline and source error-rate scoring. Declare context `roc_auc`, preserving the computable original and documenting the case-specific MET-4 departure after independent consistency review. No general metric rule changes.
+- Data, Good/Bad labels, 32 predictors, cleaning and all nine forced-IID folds remain unchanged. Required_split still awaits its own mark; no overall ship decision or build is inferred. Issue 4 closes with the metric choice; issues 1–3 and the original panel remain as history. Regenerate README and rerun affected checks.
+
 ## 2026-11-06, asp_potassco_classification and sat11_hand_algo_runtime: Andrej's marks, third round (nothing rebuilt)
 
 - `asp_potassco_classification` (issue 2, B confirmed): the split count follows the units the metric scores, for every
@@ -1515,6 +1531,25 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
   generic raw-CLI, float32 neighbour-diagnostic and generated-review-template limitations remain explicit; no full
   clean leak-CLI or HPO result is claimed.
 
+## 2026-11-06 (combined accepted datasets and curator decisions)
+
+- Integrate the four accepted GeoAI ground-level NO2, Economic Well-being, Duolingo session-performance and
+  Fugaku job-failure packages. Preserve each verified source/build commit in history and its generated build card.
+  Exact definitions, data protocols and source evidence are unchanged; independent split-case notes and the
+  Duolingo prediction-protocol follow-up are retained.
+- Add `DF: Yes` bookkeeping for accepted records while retaining their actual claim/WIP mirrors until integration.
+  Remove Fugaku's stale AI-filled verification tag after the recorded curator approval and completed reviews.
+- Record QoS as `No` / `Not Representative`, and AirQo African, Fannie Mae, DESI and Busara as temporary
+  `TBD -> Yes` / `DF: Suspended` holds. Preserve previous comments, attribution and reopening conditions.
+  Held reservations are released through the official claims procedure; accepted reservations remain until merge.
+- Raw data, containers, private evidence packets and local archives remain outside Git. No scientific task,
+  cohort, split or metric is changed by this integration.
+
+## 2026-11-06 (SuperLender current-workflow review preparation)
+
+- Carried the qualified SuperLender definition and Myunghwan's applied keep/keep/accept decisions from the preserved 1964e1b2 checkout into an isolated checkout at 9048f36a. The current upstream candidate record had no intervening changes. The definition and existing data recipe are unchanged; no overall inclusion, split-field or metric mark is inferred.
+- Restored resolved review issues 1–3 with their original November 5 decisions, following the current history-retention convention. The original full panel remains. The record still has '?' for required_split and the definition remains approximate forced IID. No container was saved or dataset commit made.
+
 ## 2026-11-05, asp_potassco_classification: Andrej's marks on the v0.2 review page, second round (nothing rebuilt)
 
 - `asp_potassco_classification` (issue 2, B): the split protocol counts the units a metric scores. When the metric has
@@ -1594,21 +1629,6 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
 - Not built. READMEs regenerated with `dataset check` (0 errors, 0 warnings) except `lung_cancer`'s: its raw file (the
   PNAS supplement) has to be downloaded by hand, so its README still shows the earlier notes and checksum.
 
-
-## 2026-11-06 (combined accepted datasets and curator decisions)
-
-- Integrate the four accepted GeoAI ground-level NO2, Economic Well-being, Duolingo session-performance and
-  Fugaku job-failure packages. Preserve each verified source/build commit in history and its generated build card.
-  Exact definitions, data protocols and source evidence are unchanged; independent split-case notes and the
-  Duolingo prediction-protocol follow-up are retained.
-- Add `DF: Yes` bookkeeping for accepted records while retaining their actual claim/WIP mirrors until integration.
-  Remove Fugaku's stale AI-filled verification tag after the recorded curator approval and completed reviews.
-- Record QoS as `No` / `Not Representative`, and AirQo African, Fannie Mae, DESI and Busara as temporary
-  `TBD -> Yes` / `DF: Suspended` holds. Preserve previous comments, attribution and reopening conditions.
-  Held reservations are released through the official claims procedure; accepted reservations remain until merge.
-- Raw data, containers, private evidence packets and local archives remain outside Git. No scientific task,
-  cohort, split or metric is changed by this integration.
-
 ## 2026-11-05 (GeoAI internal-skill refresh build verified)
 
 - Rebuilt only `geoai_ground_level_no2_estimation_challenge` from clean commit `a40b46997a5bb7b08a2bac87187c74c109512466`: format 2, UUID `01a1ae48-7d06-76ac-9741-a58d8233b176`, checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`. The checksum is exactly equal to the preceding November build; no definition, data or metadata changes were needed.
@@ -1660,7 +1680,6 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
 - Myunghwan requested the repeated build and local commits. Commit the reviewed source before the build; raw data, containers, process evidence and review-page exports stay local.
 - Built format-2 container `01a1adef-2da5-75af-9a38-674925897d45`, checksum `v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3`, from clean source `8429113143096b5f196312d7cca1089cb18197ab`: 1,429,456 rows, eight predictors, zero errors/warnings. Saved reload and traced-input reproduction pass; rows, split memberships and the single raw input are unchanged. A local raw-input ZIP passed CRC/SHA verification. Preserve the historical container still referenced by the earlier checkout; no raw files or containers are deleted.
 
-
 ## 2026-11-05, verified Fugaku build on updated main
 
 - Built `fugaku_hpc_job_failure_1m` as `01a1ae07-bfad-7795-a282-7279d0d067dc` from clean source
@@ -1685,7 +1704,6 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
 - The native generated card still carries legacy boilerplate saying settled REVIEW.md is removed. The newer
   persistent-review procedure governs: all resolved history remains in REVIEW.md. The generated card was not
   hand-edited; this template wording mismatch is documented without changing framework source.
-
 
 ## 2026-11-05, Fugaku current-main refresh
 
