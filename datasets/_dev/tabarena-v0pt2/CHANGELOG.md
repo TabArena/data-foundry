@@ -952,6 +952,14 @@ only when scoring. The task summary is not stored in the container, so no checks
   from `known` to `known_at_scoring`. Text only. Not checked: their raw files are not in this worktree's warehouse,
   so only the READMEs' "In brief" section is regenerated (by the generator's own function); the definitions load.
 
+## 2026-11-09, Meituan forecast-free primary (Myunghwan)
+
+- Curator chose independent delivery-time prediction without either platform forecast. Remove both derived forecast features; recorded promise remains only an external baseline. Preserve accepted-at point, total target, prebooks and strict all-event training cutoffs. Requalify the changed feature set; assisted results remain sensitivity evidence. No build.
+
+## 2026-11-09, Meituan human review page (Myunghwan)
+
+- Corrected issue-body indentation so the supported collector separates the short problem from its evidence and options. No task, data or split change; the local page is scoped to Meituan, excluding unrelated cross-dataset issues.
+
 ## 2026-11-08, PR #47: main merged in (#63 row table, #64 row budget; no container built)
 
 - `allstate_claim_prediction_challenge_1m`, new in this PR, declares `row_budget = RowBudget(train=1_000_000,
@@ -1299,7 +1307,6 @@ noaa_storm's definitions now differ from any build.
 - Tests: 2,017 passed, 286 skipped; 18 initial failures due to sandbox-denied localhost sockets all passed on targeted rerun with socket access. Pinned Ruff lint/format, strict record validation and diff checks pass. No unrelated definition was rebuilt, no prior container was deleted and no raw data or container enters Git.
 - Local build/commit only. Claim remains held for integration; no DF: Yes, registry membership, push, PR, merge or data redistribution is applied. Original-source redistribution permission remains unresolved and separate from scientific acceptance.
 
-
 ## 2026-11-08 (SuperLender explicit ship verdict)
 
 - Myunghwan explicitly said 'ship this', confirming the completed review's default-ship disposition after independent consistency review. Preserve context ROC AUC, Random (IID)/ForcedIIDFromTemporal approximate evaluation and all previously approved limitations. No recipe, data, predictor, label or split change.
@@ -1315,6 +1322,15 @@ noaa_storm's definitions now differ from any build.
 
 - Myunghwan chose AUROC after discussion of the majority accuracy baseline and source error-rate scoring. Declare context `roc_auc`, preserving the computable original and documenting the case-specific MET-4 departure after independent consistency review. No general metric rule changes.
 - Data, Good/Bad labels, 32 predictors, cleaning and all nine forced-IID folds remain unchanged. Required_split still awaits its own mark; no overall ship decision or build is inferred. Issue 4 closes with the metric choice; issues 1–3 and the original panel remain as history. Regenerate README and rerun affected checks.
+
+## 2026-11-08, Meituan accepted-at and interval boundary (Myunghwan)
+
+- Curator confirmed acceptance-time prediction and requires every observed training event before test acceptance. Explicitly verify all six event clocks are covered by the delivery-time guard, and assert training ends before every test acceptance. Data, features and split memberships are unchanged; recheck evidence before reusing scores. No build.
+
+## 2026-11-08, Meituan delivery duration (Myunghwan)
+
+- Added `meituan_food_delivery_time`: 568,545 accepted orders, 17 features, acceptance-time ETA updates with total placement-to-delivery minutes, and three future-day windows using only labels known at each midnight refit. All prebooked orders remain.
+- Native checks: zero errors, one explained unused-tail warning (62 orders); task probes have no flags. Full independent panel leaves one curator question about forecast snapshot availability. Definition, generated evidence and review are local; no container built.
 
 ## 2026-11-06, asp_potassco_classification and sat11_hand_algo_runtime: Andrej's marks, third round (nothing rebuilt)
 
@@ -1758,6 +1774,7 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
 - A `REVIEW.md` in both folders, two of the 108 written for the BeyondArena v0.2 review page, without a panel, from
   the evidence gathered so far: the records, earlier experiments and model runs on the shipped data. Both records carry
   a `priority` and an `**Assessment (AI, 2026-11-04):**` line with its factors.
+
 
 
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
@@ -5495,3 +5512,7 @@ Lennart's marks and notes on the review page (scope: the 125 built datasets and 
   (shipped notebook, sibling runs, helper files); notebook outputs and execution counts are cleared.
 - Removed `homeq_default_prediction`: retired on 2026-09-24 (`No (Retired)`, class-conditional generation artefacts;
   see `curation/records/homeq_default_prediction.md` and `curation/audits/beyondarena_leak_audit_2026-09-24.md`).
+
+- 2026-11-09 — meituan_food_delivery_time: complete fresh 15-feature qualification after Myunghwan chose forecast-free independent ETA; preserve source cohorts and all-event cutoffs, resolve issue1 with actual words, retain prior assisted evidence as sensitivity. Fresh probes and two-seed models pass; metric/warning/final inclusion pending.
+
+- 2026-11-09 — meituan_food_delivery_time: Myunghwan approves final inclusion of the forecast-free definition, fallback RMSE in minutes and retaining 62 unused October 25 rows; record the specific accepted warning and close scientific review. No data/feature/split change or build/commit request.
