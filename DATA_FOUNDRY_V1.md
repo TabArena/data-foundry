@@ -47,7 +47,8 @@ or of the groups for `per_group` labels): 20 x 3 below 500, 10 x 3 below 2,500, 
 notebook (`subsample_split_to_budget`). IID and grouped splits come from `get_recommended_iid_splits` and
 `get_recommended_grouped_splits`; temporal splits were written by hand in each notebook. `run_bundle_checks` judges
 a format-1 container by this protocol (`splits_dimensions_off_protocol`, the 250k `splits_test_over_budget`); v2
-has its own protocol (always 3 folds, at most 1M train and 500k test rows).
+has its own protocol (always 3 folds; no row budget unless a version declares one, 1M train and 500k test rows
+for the `_1m` versions of TabArena v0.2).
 
 ## The notebook pipeline
 

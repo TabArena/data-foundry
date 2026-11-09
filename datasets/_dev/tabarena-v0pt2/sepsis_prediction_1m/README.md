@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sepsis_prediction_1m
 container_format: 2
-checksum: v2:c692dd625d89b613fd94982de2e27f6fdf6f51f5d185928e1ba944e6a739754d
+checksum: v2:4ddd67c170ee6c00f9e84a6bd2a1ea04b7a51fa90e4a02718a47df5b722a31d5
 build:
   uuid: 01a111fc-109e-7d32-85ac-ecdf6eea551e
   checksum: v2:769367d731628622c049583f09643ea1b9bdb7e895abf45055be614366c5815d
@@ -55,11 +55,14 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 998767
+    min: 999982
     max: 999999
   n_test:
     min: 499286
     max: 500000
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -68,10 +71,7 @@ bundle_checks:
   - dataset_duplicates_skipped
   - dataset_pure_feature_value_skipped
   - task_metric_input_is_model_input
-  accepted:
-    splits_rows_never_tested: The v2 protocol caps each test fold at 500k rows; the
-      grouped folds of the 1.5M-row frame overshoot by whole groups, so 3,371 rows
-      (0.2%) are trimmed from a test fold (2026-10-01).
+  accepted: {}
 decisions: []
 ---
 
@@ -81,7 +81,7 @@ decisions: []
 
 Binary classification of `SepsisLabel`, scored with `normalized_early_detection_utility` on grouped splits by `Patient_ID`. 1,499,999 rows and 42 features. Source: Other (2019).
 
-Built as `01a111fc-109e-7d32-85ac-ecdf6eea551e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c692dd625d89b613fd94982de2e27f6fdf6f51f5d185928e1ba944e6a739754d`, so the build is stale. See [Build](#build).
+Built as `01a111fc-109e-7d32-85ac-ecdf6eea551e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4ddd67c170ee6c00f9e84a6bd2a1ea04b7a51fa90e4a02718a47df5b722a31d5`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -226,14 +226,14 @@ Version of `sepsis_prediction`: We sub-sample the frame to 1.5M rows by whole pa
 
 ## Splits
 
-Default splits. The frame is sub-sampled to 1.5M rows (whole groups); every split trains on at most 1M and tests on at most 500k rows.
+Default splits. The frame is sub-sampled to 1.5M rows (whole groups); every split trains on at most 1M and tests on at most 500k rows: each fold tests on up to 500k rows of its third and trains on the other rows.
 
-1 repeat(s) x 3 fold(s) with seed 4267; train 998,767 to 999,999 rows, test 499,286 to 500,000 rows.
+1 repeat(s) x 3 fold(s) with seed 4267; train 999,982 to 999,999 rows, test 499,286 to 500,000 rows. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
 | 0 | 0 | 999999 | 499286 |
-| 0 | 1 | 998767 | 500000 |
+| 0 | 1 | 999999 | 500000 |
 | 0 | 2 | 999982 | 499481 |
 
 ## Group structure
@@ -262,15 +262,11 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 3 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 3 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 65,999,956 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 65,999,956 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
-- **info** `task_metric_input_is_model_input`: The metric's input column(s) ['Hour', 'Patient_ID'] are also given to the models (a feature, the group or the time column); they are not scoring columns. (hint: Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a feature.)
-
-Accepted on purpose:
-
-- `splits_rows_never_tested`: The v2 protocol caps each test fold at 500k rows; the grouped folds of the 1.5M-row frame overshoot by whole groups, so 3,371 rows (0.2%) are trimmed from a test fold (2026-10-01).
+- **info** `task_metric_input_is_model_input`: The metric reads the task's group or time column(s) ['Hour', 'Patient_ID'] where they are; they are not scoring columns.
 
 ## Data checks
 
@@ -421,4 +417,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c692dd625d89b613fd94982de2e27f6fdf6f51f5d185928e1ba944e6a739754d` |
+| stale | yes: the definition now gives checksum `v2:4ddd67c170ee6c00f9e84a6bd2a1ea04b7a51fa90e4a02718a47df5b722a31d5` |

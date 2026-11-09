@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     Metric,
+    RowBudget,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -148,7 +149,7 @@ class NumeraiV521m(AbstractCuratedDataset):
         gap=4,
         gap_unit="weeks",
     )
-    subsample_to_budget = True
+    row_budget = RowBudget(train=1_000_000, test=500_000)
     splits_comment = """
         Three test windows of 52 weekly eras (one year) each, newest first: eras 1184-1235, 1132-1183 and 1080-1131. Train is every era before the 4 eras that precede the window (train ends at era 1179 for the window starting at 1184). An era's 20-market-day target resolves about 5 weeks later: the download of 2026-10-06 has targets up to era 1235 and none for 1236-1240, so at era T the newest known target is that of era T - 5. Numerai's v5.2 notebook says to "embargo the first 4 eras following our last train era", but its code skips only 3 eras, so our gap is one era stricter. Numerai's example notebooks score a model on a long out-of-sample period (eras 575 onward); one year per window keeps 3 windows near the newest data and gives each window score 52 eras. Each test window keeps all its rows (327,025 to 361,712, under the 500k budget); each train side is a random 1M of all earlier rows (one random order for all windows); the frame keeps only the rows a split uses. Inner validation (tuning, early stopping) must be era-blocked with a 4-era gap as well: a stock's 20-day targets overlap for 3 eras, so on the newest train side a random hold-out gives LightGBM a per-era correlation of 0.040 (t 16.8), against 0.004 (t 1.1) on the last 52 train eras after a 4-era gap.
     """

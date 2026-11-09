@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, RowBudget, TaskSummary, drop_columns
 
 TARGET = "CHURN"
 
@@ -150,7 +150,7 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
     )
 
     # Splits: IID (one snapshot, no time index); the `_1m` version sub-samples the frame to the 1.5M-row budget.
-    subsample_to_budget = True
+    row_budget = RowBudget(train=1_000_000, test=500_000)
     accepted_check_warnings = {
         "dataset_duplicate_rows": "Every row is a different customer (unique user_id). The copies are customers "
         "mostly (75.3% of the 678,270 copies in the full file) described only by a tenure band and their active days, "

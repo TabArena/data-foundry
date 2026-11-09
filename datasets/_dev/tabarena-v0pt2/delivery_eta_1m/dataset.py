@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    RowBudget,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 
 class DeliveryEta1m(AbstractCuratedDataset):
@@ -94,7 +102,7 @@ class DeliveryEta1m(AbstractCuratedDataset):
         on="timestamp",
         splits=TemporalSplits(window=7, unit="days", n_windows=3),
     )
-    subsample_to_budget = True
+    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_parquet(raw_dir / "delivery_eta.parquet")

@@ -41,6 +41,8 @@ Duolingo latest scoped build, 2026-11-05: repeated through the updated installed
   bytes). Saved-container reload and minimal-input reproduction match the checked checksum; the current trace matches
   the existing input archive, whose payloads and current sources were freshly reverified. Details and remaining
   limitations are in CHANGELOG.
+
+- Latest scoped build, November 9, 2026: one Meituan container, format 2, from one traced CSV (121,698,401 bytes). Reload verification and reproduction from the traced input pass; see the dataset report and dated CHANGELOG. Other datasets were not rebuilt.
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows

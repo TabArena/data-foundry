@@ -865,6 +865,42 @@ class PredictiveMLTaskMetadataV2:
         return "\n".join(lines)
 
 
+def rows_text(n: int) -> str:
+    """A row count for comments and names: 1,500,000 -> "1.5M", 500,000 -> "500k"."""
+    return f"{n / 1e6:g}M" if n >= 1_000_000 else f"{n / 1e3:g}k"
+
+
+@pydantic.dataclasses.dataclass(frozen=True, config=pydantic.ConfigDict(extra="forbid"))
+class RowBudget:
+    """The most rows any outer split trains and tests on, for data sub-sampled to a budget.
+
+    Data Foundry sets no budget by default: the splits use the full frame. A v2 definition that declares one
+    (``row_budget = RowBudget(train=..., test=...)``) is a sub-sampled version named after its train budget
+    (:attr:`suffix`), and the container records the budget in
+    :attr:`PredictiveMLSplitsMetadata.row_budget`. TabArena v0.2 sub-samples its larger datasets to
+    ``RowBudget(train=1_000_000, test=500_000)`` (its ``_1m`` versions).
+
+    Attributes:
+        train: No split trains on more rows than this.
+        test: No split tests on more rows than this.
+    """
+
+    train: pydantic.PositiveInt
+    test: pydantic.PositiveInt
+
+    @property
+    def suffix(self) -> str:
+        """The name suffix of a version sampled to this budget, from its train budget.
+
+        10M -> ``"10m"``, 2.5M -> ``"2p5m"``, 300k -> ``"300k"``.
+        """
+        return rows_text(self.train).lower().replace(".", "p")
+
+    def describe(self) -> str:
+        """``"at most 1M train / 500k test rows per split"``."""
+        return f"at most {rows_text(self.train)} train / {rows_text(self.test)} test rows per split"
+
+
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
 class PredictiveMLSplitsMetadata:
     """Schema for the outer data splits for training and testing of predictive ML."""
@@ -930,10 +966,15 @@ class PredictiveMLSplitsMetadata:
     """The unit of ``time_gap``, read as ``time_horizon_unit`` is; a gap can also be in ``"minutes"`` or ``"hours"``
     (a label known minutes after its row)."""
 
+    row_budget: RowBudget | None = None
+    """The budget the data was sub-sampled to: no split trains on more than ``row_budget.train`` or tests on more
+    than ``row_budget.test`` rows, and the split checks hold the container to it. ``None``: no budget, the splits use
+    the full frame (and splits recorded before this field existed)."""
+
     type_adapter_id: str = "predictive-ml-splits-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""
 
-    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("split_random_state", "time_gap", "time_gap_unit")
+    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("split_random_state", "time_gap", "time_gap_unit", "row_budget")
     """Fields added after containers shipped: dropped from the checksum and the saved JSON while ``None``, so a
     container saved before they existed keeps verifying."""
 
@@ -1024,6 +1065,8 @@ class PredictiveMLSplitsMetadata:
             f"  time_gap:            {self.time_gap} {self.time_gap_unit or ''}".rstrip(),
             f"  splits_comment:      {self.splits_comment}",
         ]
+        if self.row_budget is not None:
+            lines.insert(-1, f"  row_budget:          {self.row_budget.describe()}")
 
         if self.splits:
             preview_limit = 3
