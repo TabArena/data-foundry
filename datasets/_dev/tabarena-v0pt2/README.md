@@ -18,6 +18,12 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
+Scoped build on 2026-11-08 (November 9 UTC): one requested definition, container format 2,
+four traced input files totaling 5,003,658 bytes. Reload and minimal-input reproduction passed
+with zero build errors or warnings. The dated changelog records its UUID and checksum; each dataset's generated
+README identifies its own latest build. This scoped run does not update the other definitions' build records.
+
+
 - 2026-11-05 (internal-skill refresh): rebuilt GeoAI as one format-2 dataset with the same checksum.
   Reload and reproduction from the single 10,000,397-byte Train.csv pass; the new raw-input backup stays local.
 

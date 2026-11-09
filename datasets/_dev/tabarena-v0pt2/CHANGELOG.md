@@ -1,5 +1,39 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-09 (SuperLender addition to the existing curation draft)
+
+- Add the explicitly accepted, locally built SuperLender package to draft PR #59 alongside its existing four accepted datasets. Preserve both SuperLender commits and the original clean build revision in ancestry; all three package files match the verified source exactly. Keep AUROC, 4,368 distinct scored borrowers, 32 predictors and the nine borrower-disjoint random folds, with ForcedIIDFromTemporal/approximate limits.
+- Set the accepted record's DF: Yes proposal and clear its settled TBD placeholder, retaining the actual Myunghwan/triage WIP mirror until merge. Refresh only this named claim's note and expiry; preserve its stage and original claim date.
+- Resolve shared README/CHANGELOG insertions by retaining both candidate histories. The existing four packages, prior No/hold decisions and newer XuetangX hold remain unchanged. No data/container upload, new build/model fit, collection registration, merge or claim release is performed.
+
+## 2026-11-08 (SuperLender requested build and local commits; built November 9 UTC)
+
+- Built only `loan_default_prediction_challenge`: format 2, UUID `01a1be30-45b2-71ef-901f-e94be6c0c4dd`, checksum `v2:322cbc2623bd4067697bf91c009aec047dedc6b204ba35d8c6bd16cd861dc120`, from clean definition commit `73360580f6752ec1713d2d7d0e8d11e4d4efafcf`. Preserve all 4,368 labeled rows, 32 predictors, approved context ROC AUC and the exact nine ForcedIIDFromTemporal/approximate random folds. Fresh raw-ID lineage confirms zero borrower overlap in every fold.
+- Save/reload verification and a check from the four traced raw inputs reproduce the checksum exactly; zero errors and warnings. The local input backup contains 4 files (5,003,658 bytes). Native scorer checks and fold hashes match qualification. No full model/probe rerun was needed because rows, labels, features and splits are unchanged.
+- Tests: 2,017 passed, 286 skipped; 18 initial failures due to sandbox-denied localhost sockets all passed on targeted rerun with socket access. Pinned Ruff lint/format, strict record validation and diff checks pass. No unrelated definition was rebuilt, no prior container was deleted and no raw data or container enters Git.
+- Local build/commit only. Claim remains held for integration; no DF: Yes, registry membership, push, PR, merge or data redistribution is applied. Original-source redistribution permission remains unresolved and separate from scientific acceptance.
+
+## 2026-11-08 (SuperLender explicit ship verdict)
+
+- Myunghwan explicitly said 'ship this', confirming the completed review's default-ship disposition after independent consistency review. Preserve context ROC AUC, Random (IID)/ForcedIIDFromTemporal approximate evaluation and all previously approved limitations. No recipe, data, predictor, label or split change.
+- Clarify the metric Cases row: the exception is to MET-4 only; MET-11's context-origin requirement is followed, not excepted. This corrects the decision register's exception-to-Must classification without changing the approved metric or general rules.
+- The verdict accepts the definition for a later requested build under review-added-datasets. Keep the existing ownership claim and preserve resolved issues and historical panel; no build, source commit, publication, DF: Yes or claim release was performed.
+
+## 2026-11-08 (SuperLender split-field choice and review completion)
+
+- Myunghwan accepted random or temporal evaluation with care about borrower overlap. Keep the existing ForcedIIDFromTemporal/approximate random splits and align the record's required_split to Random (IID), after independent actual-mark consistency and a fresh raw/native-ID check: 4,368 scored borrowers and zero train/test borrower overlap in all nine unchanged folds.
+- All numbered issues, metric and record fields are settled. Apply the current procedure's default ship disposition: ready for a separately requested build. Preserve resolved issues and historical panel, retain the ownership claim, and leave DF: Yes for integration. No recipe, data, labels, predictors, split indices, build or source commit changed.
+
+## 2026-11-08 (SuperLender curator metric choice)
+
+- Myunghwan chose AUROC after discussion of the majority accuracy baseline and source error-rate scoring. Declare context `roc_auc`, preserving the computable original and documenting the case-specific MET-4 departure after independent consistency review. No general metric rule changes.
+- Data, Good/Bad labels, 32 predictors, cleaning and all nine forced-IID folds remain unchanged. Required_split still awaits its own mark; no overall ship decision or build is inferred. Issue 4 closes with the metric choice; issues 1–3 and the original panel remain as history. Regenerate README and rerun affected checks.
+
+## 2026-11-06 (SuperLender current-workflow review preparation)
+
+- Carried the qualified SuperLender definition and Myunghwan's applied keep/keep/accept decisions from the preserved 1964e1b2 checkout into an isolated checkout at 9048f36a. The current upstream candidate record had no intervening changes. The definition and existing data recipe are unchanged; no overall inclusion, split-field or metric mark is inferred.
+- Restored resolved review issues 1–3 with their original November 5 decisions, following the current history-retention convention. The original full panel remains. The record still has '?' for required_split and the definition remains approximate forced IID. No container was saved or dataset commit made.
+
 ## 2026-11-08 (XuetangX curator hold)
 
 - Myunghwan deferred XuetangX MOOC dropout despite its value: the raw records are activities with one dropout
