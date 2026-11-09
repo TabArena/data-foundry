@@ -2,11 +2,11 @@
 unique_name: springleaf_marketing_response
 name: Springleaf Marketing Response
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 2
 decision_markers:
 - Anonymized
@@ -20,8 +20,6 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/springleaf-marketing-response
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -50,3 +48,5 @@ type_adapter_id: curation-record-v1
 - Access: Kaggle login and the competition rules. This account has entered the competition (`userHasEntered` true), so the download works; the training file was read in a scratch folder on 2026-11-08. The rules: "Participants must use the Data solely for the purpose and duration of the Competition" and "Any use of Data outside of the Competition is prohibited" (a licence note, never a verdict reason, EV-4).
 - Changes the call: the regime and an identifier; the priority stays 2 (gap 0, use case +, source 0, shape +, risk -, the risk point already taken). `VAR_0217` is a date for every row that differs between the rows of one person, so it is likely the mailing or record date: a temporal split by it is available (SPLIT-7), though the column's meaning is hidden and has to be argued at /add-dataset. `VAR_0212` is an identifier and leaves (CLEAN-22). The repeat customers carry their response across rows: Kaggle's random split let teams copy it from train to test ("from a naive xgboost of 0.79321 we went up to 0.79787"), so a temporal or grouped split must keep one person's rows apart (SPLIT-13, SPLIT-29). `VAR_0204`, a batch inquiry 15 months after the latest other date, raises a timing question: if the bureau attributes were pulled then, they postdate the mailing (LEAK-10, LEAK-38), and the anonymised columns do not say which ones came from that inquiry.
 - Not checked: the test file (not downloaded); what `VAR_0217` and the 2014 inquiry record; the winners' write-ups (topic 17081, "Solution Sharing", not read).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).

@@ -4,7 +4,7 @@ name: 'Freddie Mac Single-Family Loan-Level Dataset: default at origination'
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
@@ -48,3 +48,7 @@ type_adapter_id: curation-record-v1
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
 
 CC (2026-11-08, Lennart): framed per loan at origination (default within a fixed horizon, split by vintage); fannie_mae_single_family_loan_performance ships the loan-month panel of the same market. Not a duplicate: another source with disjoint loans (PROV-4 and PROV-6 do not apply), the same task, neither better data.
+
+**Assessment (AI, 2026-11-09):** not built in the large-datasets run of 2026-11-08: Freddie Mac's Clarity portal needs a free registration and acceptance of its terms, which this machine cannot pass. A person has to download the raw files; the build follows in a later round.
+
+CC (2026-11-09, Lennart): later; make this its own task with a human in the loop (the data needs a person to fetch it).

@@ -2,12 +2,10 @@
 unique_name: nfip_redacted_claims
 name: NFIP Redacted Claims (v3), FEMA OpenFEMA
 checked_by:
-- AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Lennart
-suggestion: TBD -> Yes
-priority: 3
+- Lennart
+suggestion: 'No'
+decision_markers:
+- Duplicate
 tags:
 - AI-Filled (Verify)
 original_source: GOV Website
@@ -17,8 +15,6 @@ original_data_state: One Table
 source_links:
 - https://www.fema.gov/openfema-data-page/nfip-redacted-claims-v3
 - https://www.fema.gov/openfema-data-page/fima-nfip-redacted-claims-v2
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -47,3 +43,5 @@ type_adapter_id: curation-record-v1
 - Access: open, no login; CSV ("large (500MB - 10GB)") and Parquet ("medium (50MB - 500MB)") per the catalogue; the bulk files answer 403 to a plain request from here, the API answers. The catalogue's licence and rights fields are empty; the OpenFEMA Terms and Conditions (https://www.fema.gov/about/openfema/terms-conditions, updated 2025-01-22) name no licence, ask for a citation of the endpoint and access date with the statement "This product uses the Federal Emergency Management Agency's OpenFEMA API, but is not endorsed by FEMA", forbid re-identification and the use of the data to decide an individual's rights or benefits (a note, EV-4).
 - Changes the call: `nfip_redacted_flood_claims` links the same v3 page and API, describes the same 2,725,989 claims x 84 columns, the same prediction point (at filing), a target of the same family and the same temporal split by loss date, and Andrej has checked it, with measured zeros, leaks and a probe (ROC AUC 0.578 for a payout, R^2 0.152 on log1p among positives, train 2021-22, test 2023, on the fields known at filing). Two records that end at the same original source with the same task are duplicates (PROV-4, Must): a reject of this record is proposed, with the marker `Duplicate`. It is not a version under PROV-6 (both records point at v3), and the building-only target is no distinct task (PROV-7) next to the building-plus-contents one. Two remarks of this record's screening may move to the kept record: the v3 page's note that `amountPaidOnBuildingClaim` can be negative when an uncashed check is reissued, and that `waterDepth` was sometimes reported in feet.
 - Not checked: the bulk file sizes (403); whether an adjuster sets `causeOfDamage` and `floodCharacteristicsIndicator` after inspection.
+
+CC (2026-11-08, Lennart): `No` with `Duplicate` of nfip_redacted_flood_claims, which holds the same OpenFEMA NfipClaims v3 claims (2,725,989 x 84), prediction point and split, with a target of the same family (PROV-4, PROV-6); that checked record enters (consistency check of 2026-11-08, option a).

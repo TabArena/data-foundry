@@ -2,7 +2,7 @@
 unique_name: kdd_cup_09_orange_large
 name: KDD Cup 2009 Orange customer relationship prediction, large version (15,000 variables)
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
@@ -22,8 +22,6 @@ problem_type: Binary Classification
 source_links:
 - https://kdd.org/kdd-cup/view/kdd-cup-2009/Data
 - https://proceedings.mlr.press/v7/guyon09.html
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -43,3 +41,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (business & marketing, binary and IID not thin), use case 0 (fit approximate, as the shipped version), source + (the challenge paper documents the construction), shape + (50,000 x 15,000, numeric and categorical), risk - (a version of a shipped dataset, anonymised).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): kept for later (`TBD -> Yes`, priority 2) in the screening review of the large candidates, round 2.

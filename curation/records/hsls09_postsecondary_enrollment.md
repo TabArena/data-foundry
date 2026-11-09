@@ -2,11 +2,11 @@
 unique_name: hsls09_postsecondary_enrollment
 name: High School Longitudinal Study of 2009 (HSLS:09), base year to second follow-up public-use file
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 4
 tags:
 - AI-Filled (Verify)
@@ -19,8 +19,6 @@ source_links:
 - https://nces.ed.gov/datalab/onlinecodebook
 - https://doi.org/10.3390/bdcc9040099
 - https://nces.ed.gov/surveys/hsls09/
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -49,3 +47,5 @@ type_adapter_id: curation-record-v1
 - Access: public-use file free for immediate download, no login; the restricted-use file (school ids, unaltered values) needs an NCES licence; data.gov lists the study under CC0 (screening).
 - Changes the call: the school id is suppressed on the PUF (`SCH_ID`: "Variable suppressed with -5 values on the public use file"), so the screening's grouped-by-school regime needs the restricted-use file; on the PUF the split is IID unless a key is rebuilt from the repeated school items (SPLIT-26 asks for the source's own key; not attempted). The PEAR outcome comes from records, not from the 2016 survey, and may cover more of the sample than the 2016 respondents (not checked). The wave cut stays the main build decision (LEAK-10): the transcript composites (`X3T*`, 139 PUF items) were compiled in 2013-14 and cover grades 9 to 12. Sibling: `hsls09_secondary_student_achievement` uses the same PUF. Priority 4 stands.
 - Not checked: the PUF itself (size, rows with `X6PSE` known, missing-value codes); the PEAR coverage; which outcome He et al. 2025 used.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).

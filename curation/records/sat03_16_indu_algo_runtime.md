@@ -2,7 +2,7 @@
 unique_name: sat03_16_indu_algo_runtime
 name: ASlib scenario SAT03-16_INDU-ALGO (10 SAT solvers on 2,000 industrial instances, with algorithm features)
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
@@ -23,8 +23,6 @@ source_links:
 - https://github.com/coseal/aslib_data/tree/master/SAT20-MAIN
 - https://github.com/coseal/aslib_data/tree/master/SAT18-EXP-ALGO
 - http://www.satcompetition.org/
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -53,3 +51,5 @@ type_adapter_id: curation-record-v1
 - Access: open GitHub download, ARFF, no login; the repository README's "License" section reads "GPLv3" and asks users to cite Bischl et al. 2016.
 - Changes the call: none for the priority. A question for the curator: CLEAN-24 drops a molecule's computed descriptors because the SMILES ships and the benchmark encodes it. Here nothing raw can ship (ASlib releases no CNF files, and Data Foundry has no special-feature kind for a formula), and ASlib defines the task on these features and their costs. `sat11_hand_algo_runtime` (169 features in the v0.2 working copy) and `asp_potassco_classification` ship the same kind, so if CLEAN-24's reasoning were extended to computed encodings of any raw object, the question covers the ASlib records together, not this one alone. A newer lead without a record: Bach and Iser, KIT 2023 (https://doi.org/10.35097/1331, CC BY 4.0), SATzilla 2012 features with SAT Competition 2020 and 2021 main-track runtimes; ASlib's SAT20-MAIN already covers the 2020 track.
 - Not checked: instance families as groups (the paths name the competition, not the family); how the 29 to 33 `presolved` instances per step should enter the target; the KIT dataset's counts.
+
+CC (2026-11-08, Lennart): kept for later (`TBD -> Yes`, priority 4) in the screening review of the large candidates, round 2.

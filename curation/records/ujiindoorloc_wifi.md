@@ -2,7 +2,7 @@
 unique_name: ujiindoorloc_wifi
 name: 'UJIIndoorLoc: a multi-building and multi-floor database for WLAN fingerprint-based indoor localization'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
@@ -24,8 +24,6 @@ source_links:
 - https://zenodo.org/records/14780428
 - https://zenodo.org/records/5174851 (Tampere TIE1/SAH1 2017, X,Y,Z + floor, 10,633 and 9,291 reference fingerprints, CC BY 4.0)
 - https://zenodo.org/records/6928554 (Silva et al. 2022 long-term Wi-Fi fingerprinting, 11,140 site-survey samples)
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -55,3 +53,5 @@ type_adapter_id: curation-record-v1
 - Access: open, no login, a 1.5 MB zip. UCI's API returned no licence field on 2026-11-08; the screening read CC BY 4.0 on the page.
 - Changes the call: the metric. The IPIN 2015 EvAAL-ETRI off-site competition on this database scored "Method accuracy = average (SampleError(Ri, Ei))" with "SampleError(Ri, Ei) = Distance(Ri, Ei) + (penalty1 * buildingfail) + (penalty2 * floorfail)", "penalty1 is set to 50" and "penalty2 is set to 4" ("floorfail is the absolute difference between actual floor and the predicted one"; the distance is Euclidean on the projected longitude and latitude, in metres), on a "large private final test set that has not been published" (https://evaal.isti.cnr.it/2015/competitors/technical-annex-off-site). It is a competition's metric (MET-4) for the joint position, so it needs longitude, latitude, floor and building predicted together. A single-target task (a building-floor class, or one coordinate) cannot use it, so the fallback for the chosen target stays (MET-5), and the joint form is a question for /add-dataset. The priority stays 2 (gap 0, use case 0, source +, shape +, risk -). The validation file is the only later data, so a temporal split has one test fold of 1,111 rows from other users, other points and mostly other phones. Sibling: `uji_long_term_wifi_fingerprinting` (see its assessment): the same lab and task on other data, not a version (PROV-6 does not apply); the curator may take one of the two.
 - Not checked: the IPIN 2014 paper's own counts of WAPs heard; the OpenML copies; the journal paper on the 2015 competition (Torres-Sospedra et al., JAISE 9:263, 2017; the open copies answered 403).
+
+CC (2026-11-08, Lennart): kept for later (`TBD -> Yes`, priority 2) in the screening review of the large candidates, round 2.

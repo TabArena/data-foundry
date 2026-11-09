@@ -2,11 +2,11 @@
 unique_name: census_pdb_self_response
 name: 'Census Planning Database: 2020 Census self-response rate by block group (Low Response Score task)'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 4
 tags:
 - AI-Filled (Verify)
@@ -21,8 +21,6 @@ source_links:
 - https://www.census.gov/newsroom/blogs/random-samplings/2026/03/updating-the-planning-database.html
 - https://api.census.gov/data/2026/pdb/blockgroup/variables.json
 - https://www.census.gov/topics/research/guidance/planning-databases.2012.html
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -51,3 +49,5 @@ type_adapter_id: curation-record-v1
 - Access: open download, CSV, no login; the Census API now needs a key for data queries (HTTP 302 to missing_key.html on 2026-11-08); public federal data.
 - Changes the call: none for the priority (4). For the wide-table list: 385 published, 80 inputs from one file for a 2020 target (12 if the 2020 counts are ruled concurrent), plus the 2022 PDB's ACS 2016-2020 estimates when joined; 360 only if the curator accepts the ACS 2020-2024 period. That choice is the record's risk point.
 - Not checked: the number of block groups with `opstat_univ_cen_2020` = 1 (it needs the 416 MB file); the 2022 PDB's columns and whether its `GIDBG` values match the 2026 file one to one; whether the margins of error count as features.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).

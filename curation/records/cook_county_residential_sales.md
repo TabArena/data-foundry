@@ -2,11 +2,11 @@
 unique_name: cook_county_residential_sales
 name: Cook County Assessor's Office residential model (model-res-avm) training data
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -23,8 +23,6 @@ source_links:
 - https://www.cookcountyassessoril.gov/news/cook-county-assessors-office-publicly-releases-residential-assessment-code-and-models
 - https://datacatalog.cookcountyil.gov/
 - https://datacatalog.cookcountyil.gov/d/wvhk-k5uv
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -53,3 +51,7 @@ type_adapter_id: curation-record-v1
 - Access: public S3, no login, Parquet; the README's only licence is the repository's ("Distributed under the AGPL-3 License"), with no separate terms for the S3 data.
 - Changes the call: the source names its own feature set, filter and split, which turns the record's leak risk into a known drop list. By the screening factors (gap 0, use case +, source +, shape +, no remaining known risk) the priority would be 4 instead of 3. Sibling: `king_county_home_sales_1999_2025` (another county, priority 2); no duplicate.
 - Not checked: when the exemption fields are recorded; whether `meta_sale_count_past_n_years` counts earlier sales only; the Board of Review calendar for the prior-year values.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-08):** open: it names itself better data for the shipped ames_housing and house_sales (keep both, or the older ones to 2nd Tier); priority stays 3 unless the curator takes the size check's 4.

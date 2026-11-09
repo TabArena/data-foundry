@@ -4,7 +4,7 @@ name: 'DRIAMS: Database of Resistance Information on Antimicrobials and MALDI-TO
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3

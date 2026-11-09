@@ -2,11 +2,11 @@
 unique_name: uji_long_term_wifi_fingerprinting
 name: Long-Term Wi-Fi fingerprinting dataset and supporting material (UJI library)
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 2
 tags:
 - AI-Filled (Verify)
@@ -21,8 +21,6 @@ source_links:
 - https://doi.org/10.5281/zenodo.3748719 (v2.2, 2020, 25 months)
 - https://doi.org/10.3390/data3010003 (Mendoza-Silva et al., Data 2018, 3(1):3)
 - 'https://doi.org/10.24432/C5MS59 (UJIIndoorLoc, UCI 310: ~21k WiFi fingerprints, 3 buildings, 2013; no record either, not checked here)'
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -52,3 +50,5 @@ type_adapter_id: curation-record-v1
 - Access: open, no login, a 6.5 MB zip. Licence: the Zenodo page says MIT; the zip's Readme says "The data is licensed under CC Attribution 4.0 International (CC BY 4.0). The script files are provided under MIT license".
 - Changes the call: none that moves the priority (2: gap 0, use case 0, source +, shape +, risk -). On width: about 110 of the 620 columns carry a reading in more than 1% of the rows. Under a temporal split, the APs installed later are blank in the training months (the 100 placeholder becomes missing, CLEAN). Siblings (PROV-4, PROV-6, PROV-7): `ujiindoorloc_wifi` is another collection by the same lab (three buildings with 4 or more floors, 2013, 18 users and 16 phones in its training file, 520 APs), so the two share no rows and neither is a version or a cut of the other; both carry the same task. If the curator takes one, the trade is this set's 5x rows and 25-month time axis, from one collector with two phones on two floors at 212 positions, against UJIIndoorLoc's many users and phones, 13 building-floor classes and a competition metric.
 - Not checked: the data paper's text and its evaluation (MDPI answered 403 again); why the stated count is 576 lower than the files; which month-25 sets come from the A5.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).

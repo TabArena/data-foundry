@@ -2,11 +2,11 @@
 unique_name: pover_t_tests_household_poverty
 name: 'Pover-T Tests: Predicting Poverty (World Bank, DrivenData)'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 2
 decision_markers:
 - Anonymized
@@ -21,8 +21,6 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.drivendata.org/competitions/50/worldbank-poverty-prediction/
 - https://www.drivendata.org/competitions/50/worldbank-poverty-prediction/page/99/
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -42,3 +40,9 @@ type_adapter_id: curation-record-v1
 - Priority: gap + (social science thin), use case 0 (named by the host, the fit approximate), source 0 (a competition page, no codebook, the surveys unnamed), shape + (8,203 households x 344 in country A, categorical and numeric, member tables), risk - (obfuscated columns, three different tables).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** not built in the large-datasets run of 2026-11-08: the data sits on DrivenData behind a login and the competition's terms, which this machine cannot pass. A person has to download the raw files; the build follows in a later round.
+
+CC (2026-11-09, Lennart): later; make this its own task with a human in the loop (the data needs a person to fetch it).

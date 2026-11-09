@@ -2,11 +2,11 @@
 unique_name: ecls_k2011_later_achievement
 name: Early Childhood Longitudinal Study, Kindergarten Class of 2010-11 (ECLS-K:2011), K-5 public-use file
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -18,8 +18,6 @@ problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://nces.ed.gov/ecls/dataproducts.asp
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -39,3 +37,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap + (education thin), use case 0 (ours, fit approximate), source + (NCES with codebook and manual), shape + (about 11,450 children x thousands of mixed items, schools), risk - (the round cut and the composites to check).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).

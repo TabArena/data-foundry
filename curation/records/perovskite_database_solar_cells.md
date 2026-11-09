@@ -2,11 +2,11 @@
 unique_name: perovskite_database_solar_cells
 name: 'The Perovskite Database Project: perovskite solar-cell devices from the literature'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 2
 tags:
 - AI-Filled (Verify)
@@ -22,8 +22,6 @@ source_links:
 - https://doi.org/10.1038/s41560-021-00941-3
 - https://doi.org/10.5281/zenodo.5837035
 - https://www.perovskitedatabase.com/
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -52,3 +50,5 @@ type_adapter_id: curation-record-v1
 - Access: open, a 3.3 MB zip, CC BY 4.0, no login; NOMAD's API is open as well.
 - Changes the call: the width, with no change to the priority (2: gap 0, use case 0, source +, shape +, risk -). The "about 410 fields" are 249 device fields, of which 63 to 116 carry information, mostly as strings that need parsing into layers and components (CLEAN). The table is wide only in its sparse tail. The record's "more than 16,000 papers" is the website's figure; the paper says over 15,000 papers were read and about 7,400 had device data.
 - Not checked: the same device reported in several papers; the 660 NOMAD entries outside the main upload; the field descriptions on perovskitedatabase.com (Resources) for each of the 249 fields, to separate design from measurement field by field.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).

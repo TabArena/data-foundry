@@ -2,11 +2,11 @@
 unique_name: cbecs_2018_building_energy_use
 name: 2018 Commercial Buildings Energy Consumption Survey (CBECS) public use microdata
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -21,8 +21,6 @@ original_data_state: One Table
 source_links:
 - https://www.eia.gov/consumption/commercial/data/2018/index.php?view=microdata
 - https://arxiv.org/abs/1910.14563
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -51,3 +49,5 @@ type_adapter_id: curation-record-v1
 - Access: open download, CSV (also SAS), no login; public federal data. Masking per the guide: no geography below the census division, square footage rounded, floors and heights top-coded, climate zone suppressed for buildings over a million square feet and some activities.
 - Changes the call: none; priority 3 stands. A decision for /add-dataset: keep only the 4,512 reported targets (SEL-3: the target is an observed outcome, and an imputed one is EIA's regression on the same characteristics) or keep the 1,845 others with a note. The 2018 survey is the newest CBECS (EIA's page, read 2026-11-08). EPA's score-updates page cites the 2012 CBECS for the ENERGY STAR models released in 2018-2019 and lists a CBECS-based update for 2025 without naming the survey year, so the use on the 2018 data is not yet documented.
 - Not checked: EPA's technical references; which questionnaire items a benchmarking programme holds for a building before it reports its energy use.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).

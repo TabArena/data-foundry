@@ -4,7 +4,7 @@ name: Bosch Production Line Performance (Kaggle competition)
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3

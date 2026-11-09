@@ -4,7 +4,7 @@ name: Fannie Mae Single-Family Loan Performance Data
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 4
@@ -55,3 +55,7 @@ type_adapter_id: curation-record-v1
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
 
 CC (2026-11-08, Lennart): framed as the loan-month panel (next month's status), while freddie_mac_single_family_default ships the per-loan task at origination; two distinct tasks on the two agencies' disjoint loans. Open: the shipped `mortgage` (the panel task, 50,000 loans) is to be decided against this one (keep both, or `mortgage` to 2nd Tier as with thailand_road_accident_fatalities_2015).
+
+**Assessment (AI, 2026-11-09):** not built in the large-datasets run of 2026-11-08: Fannie Mae's Data Dynamics needs a free account, which this machine cannot pass. A person has to download the raw files; the build follows in a later round.
+
+CC (2026-11-09, Lennart): later; make this its own task with a human in the loop (the data needs a person to fetch it).

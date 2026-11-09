@@ -3,6 +3,7 @@ unique_name: eclipse_bug_data_zimmermann
 name: 'Eclipse Bug Data (Zimmermann, Premraj & Zeller, PROMISE 2007), release 2.0a: Eclipse 2.0, 2.1, 3.0'
 checked_by:
 - Andrej
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
@@ -94,6 +95,8 @@ and texts are copyrighted and the site does "not allow redistribution of the arc
 - Access: open download from the Wayback Machine, no login: 5.9 MB and 0.8 MB of CSV zips. The page's terms: "facts are free (as in freedom), and are not copyrightable", while "The XML representation of the data is copyrighted ... we currently do not allow redistribution of the archive"; cite the PROMISE 2007 paper. No named licence (a note, EV-4).
 - Changes the call: two facts, neither moves the priority by the factors. First, the width: about 200 columns become 154 inputs. Second, better data for the same task is now accepted: `smartshark_release_defect_prediction` (`Yes`, Lennart, 2026-11-08) labels the files of 398 releases of 38 Apache projects for the same QA decision at a release, with 4,198 features and manually validated labels up to about 2020, where Eclipse gives three releases of 2002-2004 and one valid temporal window. The risk point is already taken (one window, files recurring across releases), so the factors give 3 again (gap 0, use case +, source +, shape +, risk -). The reasons for 2nd Tier in the earlier note (the age of the code, a family already shipped with `jm1`) now have a second, newer member in the family. `unified_bug_dataset` re-measures the Eclipse Bug Dataset with another analyser per its record, so taking both would need a PROV-6 check.
 - Not checked: the revised 2009 paper's text; the Eclipse part of the Unified Bug Dataset.
+
+CC (2026-11-08, Lennart): kept for later (`TBD -> Yes`, priority 3) in the screening review of the large candidates, round 2.
 
 ## Reference
 

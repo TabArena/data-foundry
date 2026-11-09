@@ -2,7 +2,7 @@
 unique_name: fragile_families_challenge
 name: Fragile Families Challenge
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
@@ -19,8 +19,6 @@ domain: social science
 source_links:
 - https://www.pnas.org/doi/10.1073/pnas.1915006117
 - https://oprdata.princeton.edu/Archive/FF
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -40,3 +38,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap + (social science thin), use case 0 (none from the source), source + (PNAS paper, a documented cohort study), shape + (2,121 to 4,242 families x 12,942 mixed variables), risk - (the ethics question, access by application, a small labelled set).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): kept for later (`TBD -> 2nd Tier`, priority 3) in the screening review of the large candidates, round 2.

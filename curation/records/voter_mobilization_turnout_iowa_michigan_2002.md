@@ -2,11 +2,11 @@
 unique_name: voter_mobilization_turnout_iowa_michigan_2002
 name: 'Voter mobilization experiment (Arceneaux, Gerber, Green 2006): turnout in the November 2002 election in Iowa and Michigan'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -19,8 +19,6 @@ source_links:
 - https://doi.org/10.60600/YU/XD0LK8
 - https://doi.org/10.1093/pan/mpj001
 - https://github.com/gsbDBI/ExperimentData/tree/master/Mobilization
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -49,3 +47,5 @@ type_adapter_id: curation-record-v1
 - Access: open, no login, CC0; 134 MB (tab) or 69 MB (Stata) for the main file. gsbDBI/ExperimentData (https://github.com/gsbDBI/ExperimentData/tree/master/Mobilization) holds the same Stata file and two processed zips (with and without unlisted numbers).
 - Changes the call: none. SEL-3: the source asks a causal question (whether matching recovers the experiment's effect of a call); the replication tables are effect estimates, apart from a descriptive "Table 3: Voting in 2002 as a Function of Previous Voting Behavior" (do-file), so its original task is no prediction (SEL-8). Read with SEL-2, scoring registered voters' turnout from the voter file (vote history, age, party, district) is how campaigns build get-out-the-vote lists, and the target is an observed record, not a survey answer. The precedents are `anes_voting_2026` (`Yes`, a likely-voter screen, a use case the curation wrote) and `social_pressure_turnout_michigan_2006` (same archive, `TBD -> Yes`). So it is a decision an actor makes (a campaign choosing whom to contact), with an approximate fit and the use case ours, not a discovery table. The unit is the household with one voter's turnout, not every registered voter (the screening said "registered voters"); random assignment makes the control group a random draw of the listed households, which suits the use case's population. TP-10 and TP-4 against `vote00` and `vote98` remain the main risk. Priority: gap +, use case 0, source +, shape +, risk -: 3.
 - Not checked: the paper's own text (only the Dataverse abstract, the sampling note and the replication code were read); whether `vote02` and `vote00` refer to the same voter in two-voter households (variable labels only); which state `pid_maj` covers.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).

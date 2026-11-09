@@ -2,15 +2,13 @@
 unique_name: ugr16_isp_netflow_intrusion
 name: 'UGR''16: NetFlow traces of a Spanish tier-3 ISP with labelled attacks and anomalies'
 checked_by:
-- Lennart
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Lennart
-suggestion: 'Yes'
+- AI (UNVERIFIED)
+suggestion: TBD -> Yes
 priority: 2
 tags:
 - AI-Filled (Verify)
 - Non-IID (Temporal)
+- Revisit later
 original_source: Other
 year: '2018'
 domain: technology & internet
@@ -21,6 +19,8 @@ source_links:
 - https://nesg.ugr.es/nesg-ugr16/ (official download; answered 403 to this session)
 - https://huggingface.co/datasets/mehedi107/ugr-16 (mirror of the official weekly labelled CSVs)
 - https://huggingface.co/datasets/Lystea/UGR16-PARQUET (parquet conversion)
+needs_review:
+- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -54,3 +54,7 @@ type_adapter_id: curation-record-v1
 CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
 
 CC (2026-11-08, Lennart): accepted with the real classes only: spam and the SSH and UDP scans that the authors' detectors found in the ISP's own customer traffic, against its real background. The classes the authors launched (dos, scan11, scan44) or spliced in from a public capture (nerisbotnet) leave the task, and so does blacklist (a flow whose IP is on a public denylist, no confirmed attack). This sets it apart from ctu_13 and ctu_sme_11 (`No`, `AHDS`, 2026-11-04): no staged traffic in the target (SEL-16). Priority 2 (was 3), as the size check of 2026-11-08 proposed.
+
+**Assessment (AI, 2026-11-09):** back in screening after an /add-dataset build on 2026-11-09. **A human must supply the data:** the official download (https://nesg.ugr.es/nesg-ugr16/) answers 403 to this machine, and the build read a personal Hugging Face mirror (mehedi107/ugr-16), which the run does not accept as a source of doubtful origin (PROV-1, PROV-13); the weekly labelled CSVs of the test weeks have to come from the official site through a browser. The build also found that the `spam` class is five hosts inside the ISP (a flag for those hosts alone scores ROC AUC 0.9995 on the three test windows), so the builder recommended `No` (`Not Representative`) unless the task is framed as recognising known senders. The draft definition is kept in the run folder `local-data-warehouse/_runs/2026-11-08_large_add/ugr16_isp_netflow_intrusion/` (not in the working copy).
+
+CC (2026-11-09, Lennart): back to the screening stage; a human needs to supply the data (answer on the large-run decisions page).

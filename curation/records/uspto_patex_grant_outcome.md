@@ -2,11 +2,11 @@
 unique_name: uspto_patex_grant_outcome
 name: USPTO Patent Examination Research Dataset (PatEx)
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 2
 tags:
 - AI-Filled (Verify)
@@ -22,8 +22,6 @@ source_links:
 - '# technical documentation of the 2019 release and the 2022 addendum'
 - https://www.uspto.gov/sites/default/files/documents/PatEx-2019-Technical-Doc.pdf
 - https://www.uspto.gov/sites/default/files/documents/oce-patex-technical-addendum-2022.pdf
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -43,3 +41,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (no thin domain; binary and temporal covered), use case 0 (ours), source + (USPTO release with technical documentation), shape + (millions of applications, mixed inputs, filing years), risk - (censored newest years, examiner fields of the last action, heavy joins).
 
 Found by the data-scouting run of 2026-11-08 for the large-datasets review (wide tables outside biology and medicine, and tables with 2M+ rows).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).

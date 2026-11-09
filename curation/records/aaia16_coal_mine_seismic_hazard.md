@@ -2,11 +2,11 @@
 unique_name: aaia16_coal_mine_seismic_hazard
 name: 'AAIA''16 Data Mining Challenge: Predicting Dangerous Seismic Events in Active Coal Mines'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 4
 tags:
 - Non-IID (Temporal)
@@ -23,8 +23,6 @@ source_links:
 - https://knowledgepit.ai/aaia16-data-mining-challenge/
 - https://annals-csis.org/Volume_8/pliks/560.pdf
 - https://doi.org/10.15439/2016F21
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -53,3 +51,9 @@ type_adapter_id: curation-record-v1
 - Access: Knowledge Pit login and enrolment in the challenge; 7z archives of CSV, sizes not stated; "The data set is free to use for non-commercial purposes", with a citation of the papers and a link to the platform (a note, EV-4).
 - Changes the call: the published test labels settle the record's open risk: the organisers' split (SPLIT-19) is usable, with 3,860 labelled non-overlapping test windows from 21 sites, 8 of them absent from training (Table I). For the wide-table list: the 547 columns are an unrolled series of 22 measures, not 547 variables, and the screening's SEL-12 and SEL-11/TP-10 questions stay. Priority 4 stands.
 - Not checked: the files (login); the names of the 22 hourly measures and of all 12 period values; the window step; whether the four additional training files repeat rows of the first.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** not built in the large-datasets run of 2026-11-08: the data sits on Knowledge Pit behind a login, which this machine cannot pass. A person has to download the raw files; the build follows in a later round.
+
+CC (2026-11-09, Lennart): later; make this its own task with a human in the loop (the data needs a person to fetch it).
