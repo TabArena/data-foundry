@@ -71,6 +71,18 @@ _needs_datasets = pytest.mark.skipif(not _HAS_DATASETS, reason="shipped datasets
 
 
 # --------------------------------------------------------------------- structure
+def test_no_review_file_in_a_dataset_folder():
+    """A dataset's review lives in its record's ``## Review`` (Lennart, 2026-11-11): no folder under ``datasets/`` holds
+    a ``REVIEW.md``. The working copy's cross-dataset file is the one review file outside the records.
+    """
+    allowed = {DATASETS / "_dev" / "tabarena-v0pt2" / "REVIEW.md"}
+    found = sorted(str(p.relative_to(DATASETS)) for p in DATASETS.rglob("REVIEW.md") if p not in allowed)
+    assert not found, (
+        f"review files in dataset folders: {found}; move them into the records with "
+        ".claude/skills/review-added-datasets/scripts/move_reviews_to_records.py"
+    )
+
+
 def test_records_dir_is_populated():
     """Sanity: the records directory exists and has records."""
     assert _record_files(), f"no record files found under {RECDIR}"

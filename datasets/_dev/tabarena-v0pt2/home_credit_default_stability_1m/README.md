@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_stability_1m
 container_format: 2
-checksum: v2:07f46a6f9e5bca83e0cdfd38ddd49efd30407ad3047c53ef765a55bb716c4f69
+checksum: v2:6031717725bdca615816ac75c7d0d465c14d323da7f0ed91d06a59d9f665faac
 build:
   uuid: 01a111fc-2b8d-77ef-a922-3ea3b96a716e
   checksum: v2:5a98ed32667628b5c2fea4874566abac7cf8d1f0b67636e5f12916fd41ddb8db
@@ -57,6 +57,9 @@ splits:
   n_test:
     min: 70497
     max: 79743
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -79,7 +82,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `date_decision`. 1,224,927 rows and 710 features. Source: Kaggle (2024).
 
-Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:07f46a6f9e5bca83e0cdfd38ddd49efd30407ad3047c53ef765a55bb716c4f69`, so the build is stale. See [Build](#build).
+Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6031717725bdca615816ac75c7d0d465c14d323da7f0ed91d06a59d9f665faac`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -221,7 +224,7 @@ Version of `home_credit_default_stability`: We sample per test window (v2 split 
 
 We follow TabRed's test period (2020-05-01 to 2020-10-05) and split it into 3 test windows of 2 months (May-June, July-August, September to 2020-10-05), simulating a model refit every 2 months; each window trains on all previous data. Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 70,497 to 79,743 rows. Prediction horizon: 2 months.
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 70,497 to 79,743 rows. Prediction horizon: 2 months. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -231,7 +234,7 @@ We follow TabRed's test period (2020-05-01 to 2020-10-05) and split it into 3 te
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 870,923,097 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 870,923,097 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
@@ -476,4 +479,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:07f46a6f9e5bca83e0cdfd38ddd49efd30407ad3047c53ef765a55bb716c4f69` |
+| stale | yes: the definition now gives checksum `v2:6031717725bdca615816ac75c7d0d465c14d323da7f0ed91d06a59d9f665faac` |

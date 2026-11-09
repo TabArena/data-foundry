@@ -7,7 +7,7 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 # Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
 SCORES = ["structure_quality"]
@@ -38,33 +38,38 @@ class MiamiHousing(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "miami_housing"
-    year = "2021"  # data from 2016, curated in 2021
     domain = "finance"
-    source = "OpenML"
-    source_url = "https://www.openml.org/d/43093"
-    license = "CC BY-NC-SA"
+    sources = (
+        Source(
+            role="publication",
+            platform="OpenML",
+            url="https://www.openml.org/d/43093",
+            license="CC BY-NC-SA",
+            year="2021",  # data from 2016, curated in 2021
+            bibtex="""
+                @misc{mayer2021structured,
+                  title={Structured Additive Regression and Tree Boosting},
+                  author={Mayer, Michael and Bourassa, Steven C and Hoesli, Martin and Scognamiglio, Donato},
+                  year={2021},
+                  howpublished={SSRN preprint, \\url{https://doi.org/10.2139/ssrn.3924412}},
+                  note={Cited by the data's first upload, OpenML 43093}
+                }
+                @article{bourassa2021big,
+                  title={Big data, accessibility and urban house prices},
+                  author={Bourassa, Steven C and Hoesli, Martin and Merlin, Louis and Renne, John},
+                  journal={Urban Studies},
+                  volume={58},
+                  number={15},
+                  pages={3176--3195},
+                  year={2021},
+                  publisher={SAGE Publications Sage UK: London, England}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         wget https://www.openml.org/data/download/22047757/miami2016.arff && mkdir -p local-data-warehouse/miami_housing && mv miami2016.arff local-data-warehouse/miami_housing/
-    """
-    bibtex = """
-        @misc{mayer2021structured,
-          title={Structured Additive Regression and Tree Boosting},
-          author={Mayer, Michael and Bourassa, Steven C and Hoesli, Martin and Scognamiglio, Donato},
-          year={2021},
-          howpublished={SSRN preprint, \\url{https://doi.org/10.2139/ssrn.3924412}},
-          note={Cited by the data's first upload, OpenML 43093}
-        }
-        @article{bourassa2021big,
-          title={Big data, accessibility and urban house prices},
-          author={Bourassa, Steven C and Hoesli, Martin and Merlin, Louis and Renne, John},
-          journal={Urban Studies},
-          volume={58},
-          number={15},
-          pages={3176--3195},
-          year={2021},
-          publisher={SAGE Publications Sage UK: London, England}
-        }
     """
     curation_comments = """
         - We log scale the target.

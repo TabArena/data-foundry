@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, set_missing
 
 # The corrected code table of UCI 573 (codetable.txt): code -> label per column
 CODES = {
@@ -125,33 +125,38 @@ class CreditG(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "credit_g"
-    year = "1994"
     domain = "finance"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5QG88"  # South German Credit (UPDATE): Statlog's data, corrected
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5QG88",  # South German Credit (UPDATE): Statlog's data, corrected
+            license="CC BY 4.0",
+            year="1994",
+            bibtex=r"""
+                @misc{uci2020southgermancredit,
+                  title        = {South German Credit [Dataset]},
+                  year         = {2020},
+                  howpublished = {\url{https://doi.org/10.24432/C5QG88}},
+                  note         = {UCI Machine Learning Repository; the corrected Statlog German credit data, see Groemping, U.
+                                  (2019), South German Credit Data: Correcting a Widely Used Data Set, Report 4/2019, Beuth
+                                  University of Applied Sciences Berlin},
+                }
+                @misc{hofmann1994statlog,
+                  author       = {Hofmann, H.},
+                  title        = {Statlog (German Credit Data) [Dataset]},
+                  year         = {1994},
+                  howpublished = {\url{https://doi.org/10.24432/C5NC77}},
+                  note         = {UCI Machine Learning Repository},
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the corrected data (UCI 573, South German Credit) from the UCI repository and unzip it to a
         predefined folder.
 
         mkdir -p local-data-warehouse/credit_g/ && wget -P local-data-warehouse/credit_g/ "https://archive.ics.uci.edu/static/public/573/south+german+credit+update.zip" && unzip -o "local-data-warehouse/credit_g/south+german+credit+update.zip" -d local-data-warehouse/credit_g/
-    """
-    bibtex = r"""
-        @misc{uci2020southgermancredit,
-          title        = {South German Credit [Dataset]},
-          year         = {2020},
-          howpublished = {\url{https://doi.org/10.24432/C5QG88}},
-          note         = {UCI Machine Learning Repository; the corrected Statlog German credit data, see Groemping, U.
-                          (2019), South German Credit Data: Correcting a Widely Used Data Set, Report 4/2019, Beuth
-                          University of Applied Sciences Berlin},
-        }
-        @misc{hofmann1994statlog,
-          author       = {Hofmann, H.},
-          title        = {Statlog (German Credit Data) [Dataset]},
-          year         = {1994},
-          howpublished = {\url{https://doi.org/10.24432/C5NC77}},
-          note         = {UCI Machine Learning Repository},
-        }
     """
     curation_comments = """
         - We reversed the original ordinal encoding.

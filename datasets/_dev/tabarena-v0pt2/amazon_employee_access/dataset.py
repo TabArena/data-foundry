@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class AmazonEmployeeAccess(AbstractCuratedDataset):
@@ -38,22 +38,27 @@ class AmazonEmployeeAccess(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "amazon_employee_access"
-    year = "2013"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/c/amazon-employee-access-challenge"
-    license = "Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/c/amazon-employee-access-challenge",
+            license="Public Domain",
+            year="2013",
+            bibtex=r"""
+                @misc{hamner2013amazon,
+                  author       = {Ben Hamner and kenmonta and Will Cukierski},
+                  title        = {Amazon.com - Employee Access Challenge},
+                  year         = {2013},
+                  howpublished = {\url{https://www.kaggle.com/competitions/amazon-employee-access-challenge}},
+                  note         = {Kaggle competition},
+                }
+            """,
+        ),
+    )
     download_description = """
         mkdir -p local-data-warehouse/amazon_employee_access/ && kaggle competitions download -c amazon-employee-access-challenge -f train.csv -p local-data-warehouse/amazon_employee_access/ && unzip local-data-warehouse/amazon_employee_access/train.csv.zip -d local-data-warehouse/amazon_employee_access/ && rm local-data-warehouse/amazon_employee_access/train.csv.zip
-    """
-    bibtex = r"""
-        @misc{hamner2013amazon,
-          author       = {Ben Hamner and kenmonta and Will Cukierski},
-          title        = {Amazon.com - Employee Access Challenge},
-          year         = {2013},
-          howpublished = {\url{https://www.kaggle.com/competitions/amazon-employee-access-challenge}},
-          note         = {Kaggle competition},
-        }
     """
     curation_comments = """
         - We only use the training data from Kaggle.

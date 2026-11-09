@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, set_missing
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -85,27 +85,32 @@ class Diabetes130Us(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "diabetes_130_us"
-    year = "2014"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5230J"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5230J",
+            license="CC BY 4.0",
+            year="2014",
+            bibtex="""
+                @article{strack2014impact,
+                  title={Impact of HbA1c measurement on hospital readmission rates: analysis of 70,000 clinical database patient records},
+                  author={Strack, Beata and DeShazo, Jonathan P and Gennings, Chris and Olmo, Juan L and Ventura, Sebastian and Cios, Krzysztof J and Clore, John N},
+                  journal={BioMed research international},
+                  volume={2014},
+                  number={1},
+                  pages={781670},
+                  year={2014},
+                  publisher={Wiley Online Library}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/diabetes_130_us/ && wget -P local-data-warehouse/diabetes_130_us/ https://archive.ics.uci.edu/static/public/296/diabetes+130-us+hospitals+for+years+1999-2008.zip && unzip local-data-warehouse/diabetes_130_us/diabetes+130-us+hospitals+for+years+1999-2008.zip -d local-data-warehouse/diabetes_130_us/
-    """
-    bibtex = """
-        @article{strack2014impact,
-          title={Impact of HbA1c measurement on hospital readmission rates: analysis of 70,000 clinical database patient records},
-          author={Strack, Beata and DeShazo, Jonathan P and Gennings, Chris and Olmo, Juan L and Ventura, Sebastian and Cios, Krzysztof J and Clore, John N},
-          journal={BioMed research international},
-          volume={2014},
-          number={1},
-          pages={781670},
-          year={2014},
-          publisher={Wiley Online Library}
-        }
     """
     curation_comments = """
         - We keep one encounter per patient, the first one by encounter_id, following the paper ("we considered only the first encounter for each patient as the primary admission", Strack et al. 2014, Sec. 2.3); we sort by encounter_id to make this explicit (each patient's encounters already appear in that order in the raw file, so the kept encounter is the same as before).

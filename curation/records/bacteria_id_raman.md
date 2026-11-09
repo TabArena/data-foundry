@@ -12,6 +12,7 @@ tags:
 - Many class
 - Many features
 - Non-IID (Grouped)
+- Spectral Data
 collections:
 - RamanBench
 original_source: Github

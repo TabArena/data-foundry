@@ -9,7 +9,17 @@ their scorers, :mod:`data_foundry.v2.chemistry` for SMILES columns, :mod:`data_f
 
 from __future__ import annotations
 
-from data_foundry.schema import Grouping, ScoringColumn, SpecialFeature, SpectrumDetails
+from data_foundry.schema import (
+    Grouping,
+    RawFile,
+    RowBudget,
+    ScoringColumn,
+    Source,
+    SpecialFeature,
+    SpectrumDetails,
+    TrainSampling,
+    UnitWeight,
+)
 from data_foundry.utils.dtypes import object_columns
 from data_foundry.v2.chemistry import (
     DEFAULT_SMILES_ENCODING,
@@ -26,8 +36,10 @@ from data_foundry.v2.dataset import (
     AbstractCuratedDataset,
     CurationResult,
     DatasetDefinitionError,
+    DataSummary,
     Decision,
     FeatureTypes,
+    NonFeature,
     TaskSummary,
     clean_text,
 )
@@ -39,12 +51,36 @@ from data_foundry.v2.encodings import (
     recommended_encodings,
 )
 from data_foundry.v2.metrics import Metric, score, scorer
-from data_foundry.v2.preprocessing import anonymize_ids, cast_dtypes, decode, drop_columns, order_rows, set_missing
-from data_foundry.v2.registry import discover_datasets, get_dataset, load_definition
+from data_foundry.v2.preprocessing import (
+    anonymize_ids,
+    cast_dtypes,
+    decode,
+    drop_columns,
+    order_rows,
+    provenance_columns,
+    read_files,
+    set_missing,
+)
+from data_foundry.v2.registry import (
+    discover_datasets,
+    discover_definitions,
+    get_dataset,
+    import_definition,
+    load_definition,
+)
 from data_foundry.v2.report import read_report
 from data_foundry.v2.special import SpecialColumn, SpecialColumnGroup, encode_special_feature, encodings_for
 from data_foundry.v2.spectra import Spectrum, encode_spectrum, spectrum_encoding
-from data_foundry.v2.splits import SplitPlan, Splits, Temporal, TemporalSplits
+from data_foundry.v2.splits import (
+    SplitPlan,
+    Splits,
+    Temporal,
+    TemporalSplits,
+    sample_train_positions,
+    subsample_train,
+    window_bounds,
+)
+from data_foundry.v2.windows import Window, candidate_windows, window_stats
 from data_foundry.v2.workbench import workbench
 
 __all__ = [
@@ -52,14 +88,19 @@ __all__ = [
     "DEFAULT_SMILES_ENCODING",
     "AbstractCuratedDataset",
     "CurationResult",
+    "DataSummary",
     "DatasetDefinitionError",
     "Decision",
     "Encoding",
     "FeatureTypes",
     "Grouping",
     "Metric",
+    "NonFeature",
+    "RawFile",
+    "RowBudget",
     "ScoringColumn",
     "Smiles",
+    "Source",
     "SpecialColumn",
     "SpecialColumnGroup",
     "SpecialFeature",
@@ -70,12 +111,17 @@ __all__ = [
     "TaskSummary",
     "Temporal",
     "TemporalSplits",
+    "TrainSampling",
+    "UnitWeight",
+    "Window",
     "anonymize_ids",
+    "candidate_windows",
     "canonical_smiles",
     "cast_dtypes",
     "clean_text",
     "decode",
     "discover_datasets",
+    "discover_definitions",
     "drop_columns",
     "encode_datetime",
     "encode_smiles",
@@ -85,18 +131,25 @@ __all__ = [
     "encode_text_tfidf",
     "encodings_for",
     "get_dataset",
+    "import_definition",
     "invalid_smiles",
     "load_definition",
     "murcko_scaffolds",
     "object_columns",
     "order_rows",
+    "provenance_columns",
     "rdkit_descriptors",
+    "read_files",
     "read_report",
     "recommended_encodings",
+    "sample_train_positions",
     "scaffold_groups",
     "score",
     "scorer",
     "set_missing",
     "spectrum_encoding",
+    "subsample_train",
+    "window_bounds",
+    "window_stats",
     "workbench",
 ]

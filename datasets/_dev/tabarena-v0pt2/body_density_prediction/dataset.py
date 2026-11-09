@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
 
 
 class BodyDensityPrediction(AbstractCuratedDataset):
@@ -36,28 +36,48 @@ class BodyDensityPrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "body_density_prediction"
-    year = "1995"
     domain = "medical & healthcare"
-    source = "Other"  # StatLib (Johnson's bodyfat file); later copies on OpenML and Kaggle
-    source_url = "https://lib.stat.cmu.edu/datasets/bodyfat"
-    license = "None"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # StatLib (Johnson's bodyfat file); later copies on OpenML and Kaggle
+            url="https://lib.stat.cmu.edu/datasets/bodyfat",
+            license="Free to distribute and use for non-commercial purposes (Dr. A. Garth Fisher's permission, in the StatLib file)",
+            year="1995",
+            bibtex=r"""
+                @article{penrose1985generalized,
+                  title={Generalized body composition prediction equation for men using simple measurement techniques},
+                  author={Penrose, Keith W and Nelson, Arnold G and Fisher, Arnold Garth},
+                  journal={Medicine \& Science in Sports \& Exercise},
+                  volume={17},
+                  number={2},
+                  pages={189},
+                  year={1985},
+                  publisher={Ovid Technologies (Wolters Kluwer Health)}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/fedesoriano/body-fat-prediction-dataset",
+            license="Data files © Original Authors",
+            name="the Kaggle copy we download",
+        ),
+        Source(
+            role="copy",
+            platform="OpenML",
+            url="https://www.openml.org/d/560",
+            license="Public",
+            year="2014",
+            name="OpenML 560",
+        ),
+    )
     download_description = """
         We download the data from Kaggle.
 
         kaggle datasets download fedesoriano/body-fat-prediction-dataset && unzip body-fat-prediction-dataset.zip && rm body-fat-prediction-dataset.zip
         mkdir -p local-data-warehouse/body_density_prediction && mv bodyfat.csv local-data-warehouse/body_density_prediction/
-    """
-    bibtex = r"""
-        @article{penrose1985generalized,
-          title={Generalized body composition prediction equation for men using simple measurement techniques},
-          author={Penrose, Keith W and Nelson, Arnold G and Fisher, Arnold Garth},
-          journal={Medicine \& Science in Sports \& Exercise},
-          volume={17},
-          number={2},
-          pages={189},
-          year={1985},
-          publisher={Ovid Technologies (Wolters Kluwer Health)}
-        }
     """
     curation_comments = """
         We start with the data from Kaggle.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
 
 
 class BloodTransfusion(AbstractCuratedDataset):
@@ -35,27 +35,32 @@ class BloodTransfusion(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "blood_transfusion"
-    year = "2008"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5GS39"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5GS39",
+            license="CC BY 4.0",
+            year="2008",
+            bibtex="""
+                @article{yeh2009knowledge,
+                  title={Knowledge discovery on RFM model using Bernoulli sequence},
+                  author={Yeh, I-Cheng and Yang, King-Jang and Ting, Tao-Ming},
+                  journal={Expert Systems with applications},
+                  volume={36},
+                  number={3},
+                  pages={5866--5871},
+                  year={2009},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/blood_transfusion/ && wget -P local-data-warehouse/blood_transfusion/ https://archive.ics.uci.edu/static/public/176/blood+transfusion+service+center.zip && unzip local-data-warehouse/blood_transfusion/blood+transfusion+service+center.zip -d local-data-warehouse/blood_transfusion/
-    """
-    bibtex = """
-        @article{yeh2009knowledge,
-          title={Knowledge discovery on RFM model using Bernoulli sequence},
-          author={Yeh, I-Cheng and Yang, King-Jang and Ting, Tao-Ming},
-          journal={Expert Systems with applications},
-          volume={36},
-          number={3},
-          pages={5866--5871},
-          year={2009},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         - We made feature names more descriptive.

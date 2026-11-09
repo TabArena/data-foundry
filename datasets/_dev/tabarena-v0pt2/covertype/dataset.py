@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class Covertype(AbstractCuratedDataset):
@@ -41,29 +41,34 @@ class Covertype(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "covertype"
-    year = "1998"
     domain = "environmental science & climate"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C50K5N"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C50K5N",
+            license="CC BY 4.0",
+            year="1998",
+            bibtex="""
+                @article{blackard1999comparative,
+                  title={Comparative accuracies of artificial neural networks and discriminant analysis in predicting forest cover types from cartographic variables},
+                  author={Blackard, Jock A and Dean, Denis J},
+                  journal={Computers and electronics in agriculture},
+                  volume={24},
+                  number={3},
+                  pages={131--151},
+                  year={1999},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We download the data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/31/covertype.zip && unzip covertype.zip && rm old_covtype.info covtype.info covertype.zip  && gunzip covtype.data.gz
         mkdir -p local-data-warehouse/covertype && mv covtype.data local-data-warehouse/covertype/
-    """
-    bibtex = """
-        @article{blackard1999comparative,
-          title={Comparative accuracies of artificial neural networks and discriminant analysis in predicting forest cover types from cartographic variables},
-          author={Blackard, Jock A and Dean, Denis J},
-          journal={Computers and electronics in agriculture},
-          volume={24},
-          number={3},
-          pages={131--151},
-          year={1999},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         We use the data from UCI: all 581,012 observations (30 x 30 m raster cells) of the four wilderness areas and all 7 cover types.

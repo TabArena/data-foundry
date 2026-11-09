@@ -24,8 +24,9 @@ work/<file> <url>`); prefer a paper's HTML version (PMC, arXiv HTML, the publish
 ## How to work
 
 1. **Honest baseline.** Fit an untuned LightGBM (or a scikit-learn gradient boosting model) on `features()` for every
-   split and score it with `score.py`. Every exploit is measured against it on the same splits (and against the
-   better honest model of step 3, when there is one).
+   split and score it with `score.py`. When `task.json` names a training weight, fit with it as each row's sample
+   weight, as the benchmark does. Every exploit is measured against it on the same splits (and against the better
+   honest model of step 3, when there is one).
 2. **Attack.** Go through the list below, cheapest first, and add your own ideas: the list is a start, not the limit.
    For each attack, build the exploit as a feature or a rule, refit or re-score on the same splits, and record the
    score.
@@ -64,6 +65,9 @@ work/<file> <url>`); prefer a paper's HTML version (PMC, arXiv HTML, the publish
   gives the label away.
 * **Columns from after the prediction point.** Each feature alone; a feature that comes close to the full model; a
   column that only exists, or only takes a value, once the outcome has happened.
+* **The weight.** When the task has a training weight (a time insured, an amount at risk), add it, its inverse or a
+  column that tracks it as a feature, and measure the gain. A weight the outcome can cut short (a policy cancelled
+  after a claim) is something a model at the prediction point does not know.
 * **Transforms over all rows.** Columns with mean 0 and SD 1, or min 0 and max 1, over the whole table; ranks or
   quantile bins; anything that needed the test rows to compute.
 * **Lookups.** A simple formula, a lookup table or a shallow tree that recovers the target.

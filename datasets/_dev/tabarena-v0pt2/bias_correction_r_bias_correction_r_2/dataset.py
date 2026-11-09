@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -78,11 +79,35 @@ class BiasCorrectionRBiasCorrectionR2(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "bias_correction_r_bias_correction_r_2"
-    year = "2020"
     domain = "environmental science & climate"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C59K76"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C59K76",
+            license="CC BY 4.0",
+            year="2020",
+            bibtex="""
+                @article{cho2020comparative,
+                  title = {Comparative Assessment of Various Machine Learning-Based Bias Correction Methods for Numerical Weather
+                    Prediction Model Forecasts of Extreme Air Temperatures in Urban Areas},
+                  author = {Cho, Dongjin and Yoo, Cheolhee and Im, Jungho and Cha, Dong-Hyun},
+                  journal = {Earth and Space Science},
+                  volume = {7},
+                  number = {4},
+                  pages = {e2019EA000740},
+                  year = {2020},
+                  doi = {10.1029/2019EA000740}
+                }
+                @misc{uci2020biascorrection,
+                  title = {Bias correction of numerical prediction model temperature forecast},
+                  year = {2020},
+                  howpublished = {UCI Machine Learning Repository},
+                  doi = {10.24432/C59K76}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We download the static zip of UCI dataset 514 (donated on 2020-02-17). It holds one file, Bias_correction_ucl.csv
@@ -92,25 +117,6 @@ class BiasCorrectionRBiasCorrectionR2(AbstractCuratedDataset):
         mkdir -p local-data-warehouse/bias_correction_r_bias_correction_r_2
         wget -O local-data-warehouse/bias_correction_r_bias_correction_r_2/bias_correction.zip "https://archive.ics.uci.edu/static/public/514/bias+correction+of+numerical+prediction+model+temperature+forecast.zip"
         unzip local-data-warehouse/bias_correction_r_bias_correction_r_2/bias_correction.zip -d local-data-warehouse/bias_correction_r_bias_correction_r_2/
-    """
-    bibtex = """
-        @article{cho2020comparative,
-          title = {Comparative Assessment of Various Machine Learning-Based Bias Correction Methods for Numerical Weather
-            Prediction Model Forecasts of Extreme Air Temperatures in Urban Areas},
-          author = {Cho, Dongjin and Yoo, Cheolhee and Im, Jungho and Cha, Dong-Hyun},
-          journal = {Earth and Space Science},
-          volume = {7},
-          number = {4},
-          pages = {e2019EA000740},
-          year = {2020},
-          doi = {10.1029/2019EA000740}
-        }
-        @misc{uci2020biascorrection,
-          title = {Bias correction of numerical prediction model temperature forecast},
-          year = {2020},
-          howpublished = {UCI Machine Learning Repository},
-          doi = {10.24432/C59K76}
-        }
     """
     curation_comments = """
         We start with Bias_correction_ucl.csv from UCI (dataset 514): 7,750 station-days of 25 automatic weather

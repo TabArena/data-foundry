@@ -7,7 +7,7 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -104,11 +104,45 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "immoscout_german_house_prices"
-    year = "2020"
     domain = "business & marketing"
-    source = "Kaggle"  # original source Kaggle, download source OpenML.
-    source_url = "https://www.openml.org/d/43342"
-    license = "CC BY-NC-SA 4.0"  # From OpenML, no idea about the original license as it was on Kaggle.
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            # german-house-prices (germany_housing_data_14.07.2020.csv), scraped from ImmoScout24 in July 2020, is
+            # deleted from Kaggle and its owner unknown; this notebook of November 2020 reads it from Kaggle.
+            url="https://www.kaggle.com/code/shritech1404/german-housing-price-prediction",
+            license=None,  # unknown: the dataset is deleted
+            year="2020",
+            name="german-house-prices, a deleted Kaggle dataset",
+            bibtex=r"""
+                @misc{Shritech2020GermanHousingPricePrediction,
+                  author = {shritech1404},
+                  title  = {German Housing Price Prediction},
+                  year   = {2020},
+                  howpublished = {\url{https://www.kaggle.com/code/shritech1404/german-housing-price-prediction}},
+                  note   = {Kaggle notebook}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="OpenML",
+            url="https://www.openml.org/d/43342",
+            license="CC BY-NC-SA 4.0",
+            year="2022",
+            name="OpenML 43342, which we download",
+            bibtex=r"""
+                @misc{OpenML43342Dataset,
+                  author = {{OpenML}},
+                  title  = {ImmoScout24 OpenML Dataset 43342},
+                  year   = {2023},
+                  howpublished = {\url{https://www.openml.org/d/43342}},
+                  note   = {OpenML dataset}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from OpenML (original Kaggle dataset has been deleted).
 
@@ -117,23 +151,6 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
 
         wget https://www.openml.org/data/download/22102167/dataset -O dataset.arff && mkdir -p local-data-warehouse/immoscout_german_house_prices && mv dataset.arff local-data-warehouse/immoscout_german_house_prices/
     """
-    bibtex = r"""
-        @misc{OpenML43342Dataset,
-          author = {{OpenML}},
-          title  = {ImmoScout24 OpenML Dataset 43342},
-          year   = {2023},
-          howpublished = {\url{https://www.openml.org/d/43342}},
-          note   = {OpenML dataset}
-        }
-        @misc{Shritech2020GermanHousingPricePrediction,
-          author = {shritech1404},
-          title  = {German Housing Price Prediction},
-          year   = {2020},
-          howpublished = {\url{https://www.kaggle.com/code/shritech1404/german-housing-price-prediction}},
-          note   = {Kaggle notebook}
-        }
-    """
-    bibtex_key = "Shritech2020GermanHousingPricePrediction,OpenML43342Dataset"
     curation_comments = """
         - The data first appeared on Kaggle as the dataset `german-house-prices` (file `germany_housing_data_14.07.2020.csv`, scraped from ImmoScout24 on 14 July 2020). It has since been deleted and its owner is unknown, so `source` is Kaggle and `source_url` points to the copy on OpenML (43342, uploaded 2022-03-23), which carries the Kaggle card's text.
         We treat this as an IID time-independent task, because the prices is not sold prices but instead the offer price, so the snapshot here represents a task where someone would want to predict the price they should offer for their house given other houses that are currently on the market. Thus, it seems like a real IID task where someone would want to build a model to know how much they should offer their houses at in the current market (with the limitation that past trends are ignored)
@@ -162,6 +179,12 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
     """
+    accepted_check_warnings = {
+        "meta_license_unknown": (
+            "The Kaggle dataset is deleted, so its licence is unknown; OpenML 43342, the copy we download, is CC "
+            "BY-NC-SA 4.0."
+        ),
+    }
 
     # Task
     target = "LogPrice"

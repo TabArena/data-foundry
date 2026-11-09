@@ -12,6 +12,7 @@ tags:
 - Non-IID (Grouped)
 - Many features
 - Multi-target
+- Spectral Data
 collections:
 - RamanBench
 original_source: Other

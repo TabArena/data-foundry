@@ -11,6 +11,7 @@ decision_markers:
 tags:
 - AI-Filled (Verify)
 - Many features
+- Spectral Data
 collections:
 - RamanBench
 original_source: Other

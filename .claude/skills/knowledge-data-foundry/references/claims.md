@@ -2,9 +2,9 @@
 
 Several curators, each running several agents, work on the same records and folders, and git shows their work only
 when it reaches `main`. A claim says "I am working on this dataset now", and every curator and agent sees it within
-seconds. A claim covers one dataset: its record `curation/records/<name>.md` and its folder
-`datasets/_dev/tabarena-v0pt2/<name>/` with `REVIEW.md`. Shared files (CHANGELOG, the vocabulary) are never
-claimed; their conflicts are resolved when merging.
+seconds. A claim covers one dataset: its record `curation/records/<name>.md` (its review included) and its folder
+`datasets/_dev/tabarena-v0pt2/<name>/`. Shared files (CHANGELOG, the vocabulary, the working copy's cross-dataset
+`REVIEW.md`) are never claimed; their conflicts are resolved when merging.
 
 ## How it works
 
@@ -68,6 +68,8 @@ From Python: `claims.claim(...)`, `claims.release(...)`, `claims.load(max_age=30
   it out and report it.
 * **For a long job**, `claims renew`.
 * **When the work reaches `main`, or is dropped,** `claims release <names>`.
+* **When the curator sets the board aside** for a run ("we can ignore any claims", 2026-11-11), the work goes on,
+  and the PR lists the datasets it touched that another curator holds, so the holder hears of it before it merges.
 * **Batch filters** use the board (`claims list --json`), not the record's `claimed_by`, which can lag behind.
 * **Hand edits:** the dashboard's Claimed by column shows the board. Pick your own name in a cell to claim, empty it to
   release. The 🔒 count in the bar says when the board was fetched.

@@ -14,14 +14,24 @@ import pandas as pd
 from pydantic import TypeAdapter
 from uuid6 import uuid7
 
+from data_foundry.row_table import (
+    ROWS_FILE,
+    SPLITS_TABLE_TYPE,
+    inline_metadata,
+    row_table_length,
+    splits_to_row_table,
+    table_metadata,
+)
 from data_foundry.schema import (
     DatasetMetadata,
+    DatasetMetadataV2,
     Grouping,
     MultilineStr,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
     SpecialFeature,
+    UnitWeight,
     as_column_list,
     resolve_warehouse_dir,
 )
@@ -40,6 +50,7 @@ logger = logging.getLogger(__name__)
 
 MetadataRegistry = {
     DatasetMetadata.type_adapter_id: DatasetMetadata,
+    DatasetMetadataV2.type_adapter_id: DatasetMetadataV2,
     PredictiveMLTaskMetadata.type_adapter_id: PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2.type_adapter_id: PredictiveMLTaskMetadataV2,
     PredictiveMLSplitsMetadata.type_adapter_id: PredictiveMLSplitsMetadata,
@@ -57,14 +68,54 @@ NoIndentMetadata = [
 
 def feature_columns(container: CuratedContainer) -> list[str]:
     """The model's input columns, in frame order: every column but the target, the group column(s) and, in format 2,
-    the scoring columns (:class:`~data_foundry.schema.ScoringColumn`: metric inputs, never features).
+    the scoring columns (:class:`~data_foundry.schema.ScoringColumn`: metric inputs, never features) and the unit of a
+    unit weight (:class:`~data_foundry.schema.UnitWeight`).
 
     ``X = container.dataset[feature_columns(container)]``.
     """
     task = container.task_metadata
     excluded = {task.target_column_name, *as_column_list(task.group_on)}
     excluded.update(c.column for c in getattr(task, "scoring_columns", None) or ())
+    excluded.update(as_column_list(getattr(task, "sample_weight", None)))
+    unit = getattr(task, "unit_weight", None)
+    if unit is not None:
+        excluded.add(unit.unit)
     return [c for c in container.dataset.columns if c not in excluded]
+
+
+def sample_weight(container: CuratedContainer) -> str | None:
+    """The task's training weight column, or ``None``: fit every model with it as each row's weight, never as a
+    feature (it is a scoring column, so :func:`feature_columns` leaves it out). Usually it is also the metric's row
+    weight, so the scorer weights the test rows alike; a weight for training alone (MET-16), its scoring column used
+    by ``"training"``, is read by the fit only.
+
+    ``model.fit(X, y, sample_weight=container.dataset[col].iloc[train_idx])`` with
+    ``col = sample_weight(container)``; a format-1 container has none.
+    """
+    return getattr(container.task_metadata, "sample_weight", None)
+
+
+def unit_weight(container: CuratedContainer) -> UnitWeight | None:
+    """The task's unit weight, or ``None``: a score that counts each unit once (MET-17), its weight column 1 over the
+    unit's rows (``unit_weight(container).column``) and the column of the unit (``.unit``). For scoring and validation
+    only, never a training weight; see :func:`validation_weight`. A format-1 container has none.
+    """
+    return getattr(container.task_metadata, "unit_weight", None)
+
+
+def validation_weight(container: CuratedContainer) -> str | None:
+    """The column to weight a validation loss by, or ``None`` (every row weighs 1): the metric's row weight, so that
+    model selection, early stopping and tuning on a validation split optimise what the test score counts.
+
+    It is the training weight when the task declares one (:func:`sample_weight`), a unit weight that counts each unit
+    once (:func:`unit_weight`; keep a unit's rows on one side of the validation split), or a row weight that is a
+    function of the features. ``w_val = container.dataset[col].iloc[val_idx]``.
+    """
+    if getattr(container, "format_version", 1) != 2:
+        return None
+    from data_foundry.v2.metrics import row_weight_column  # noqa: PLC0415 - data_foundry.v2 imports this module
+
+    return row_weight_column(container.task_metadata.objective_metric)
 
 
 def special_features(container: CuratedContainer, kind: str | None = None) -> list[SpecialFeature]:
@@ -91,14 +142,17 @@ class CuratedContainer:
             "test_dtypes.json",
             "test_categories.json",
             "container_metadata.json",
+            ROWS_FILE,
         }
     )
     _REQUIRED_METADATA: ClassVar[tuple[str, ...]] = ("dataset_metadata", "task_metadata", "experiment_metadata")
 
     dataset: pd.DataFrame
     """The curated dataset as a pandas DataFrame."""
-    dataset_metadata: DatasetMetadata
-    """Metadata about the dataset."""
+    dataset_metadata: DatasetMetadata | DatasetMetadataV2
+    """Metadata about the dataset: :class:`DatasetMetadataV2` from a v2 definition, :class:`DatasetMetadata` in the
+    containers of the v1 notebooks. Both read the same through ``domain``, ``publication``, ``sources``,
+    ``derived_from`` and ``derivation``."""
     task_metadata: PredictiveMLTaskMetadata | PredictiveMLTaskMetadataV2
     """Metadata about the task for the dataset; its class sets the container format (:attr:`format_version`)."""
     experiment_metadata: PredictiveMLSplitsMetadata
@@ -194,13 +248,11 @@ class CuratedContainer:
         assert self.uuid is not None, "UUID must be set."
         assert self.checksum is not None, "Checksum must be set."
 
-        metadata = {
-            "uuid": self.uuid,
-            "checksum": self.checksum,
-            "version_comment": self.version_comment,
-        }
+        metadata: dict[str, str | int | None] = {"uuid": self.uuid, "checksum": self.checksum}
         if self.format_version >= 2:  # format 1 keeps the file its readers know
             metadata["format_version"] = self.format_version
+        else:  # a format-2 version says how it differs in its dataset metadata (`derivation`)
+            metadata["version_comment"] = self.version_comment
         if self.test_dataset_checksum is not None:
             metadata["test_dataset_checksum"] = self.test_dataset_checksum
         return metadata
@@ -434,20 +486,17 @@ class CuratedContainer:
     def _save_path(self, save_dir: Path) -> Path:
         """Resolve the on-disk save directory for this container under ``save_dir``."""
         meta = self.dataset_metadata
-        path_name = meta.version_from_unique_name or meta.unique_name
-        base = save_dir / path_name
-        if meta.version_from_unique_name is not None:
-            base = base / "versions"
-        return base / self.uuid
+        version_of = getattr(meta, "version_from_unique_name", None)  # format 1 only
+        if version_of is not None:
+            return save_dir / version_of / "versions" / self.uuid
+        return save_dir / meta.unique_name / self.uuid
 
     def save(self, save_dir: Path | str | None = None) -> Path:
         """Save the curated data collection under ``save_dir`` (default: the warehouse,
         ``$DATA_FOUNDRY_WAREHOUSE`` or ``local-data-warehouse/``).
 
-        The container is written to
-        ``<save_dir>/<unique_name>/<uuid>/`` (or
-        ``<save_dir>/<version_from_unique_name>/versions/<uuid>/`` for
-        versioned datasets).
+        The container is written to ``<save_dir>/<unique_name>/<uuid>/`` (a format-1 version of another dataset:
+        ``<save_dir>/<version_from_unique_name>/versions/<uuid>/``).
         """
         save_dir = resolve_warehouse_dir() if save_dir is None else Path(save_dir)
         final_path = self._save_path(save_dir)
@@ -481,10 +530,14 @@ class CuratedContainer:
         ]:
             assert "." not in meta_name, "Meta names cannot contain dots!"
             adapter = TypeAdapter(MetadataRegistry[meta_obj.type_adapter_id])
-            meta_path = save_path / f"{meta_name}.{meta_obj.type_adapter_id}.json"
-            indent = None if meta_obj.type_adapter_id in NoIndentMetadata else 2
-            with meta_path.open("w") as f:
-                json.dump(omit_unset_fields(meta_obj, adapter.dump_python(meta_obj, mode="json")), f, indent=indent)
+            type_id, indent = meta_obj.type_adapter_id, None if meta_obj.type_adapter_id in NoIndentMetadata else 2
+            dumped = omit_unset_fields(meta_obj, adapter.dump_python(meta_obj, mode="json"))
+            table = self._row_table() if meta_name == "experiment_metadata" else None
+            if table is not None:  # the splits go to the row table; the metadata file stays small and readable
+                table.to_parquet(save_path / ROWS_FILE, index=False)
+                dumped, type_id, indent = table_metadata(dumped, table), SPLITS_TABLE_TYPE, 2
+            with (save_path / f"{meta_name}.{type_id}.json").open("w") as f:
+                json.dump(dumped, f, indent=indent)
 
         with (save_path / "container_metadata.json").open("w") as f:
             json.dump(self.container_metadata, f, indent=2)
@@ -493,6 +546,15 @@ class CuratedContainer:
             shutil.rmtree(final_path)
         save_path.rename(final_path)
         return final_path
+
+    def _row_table(self) -> pd.DataFrame | None:
+        """The row table a format-2 container saves its splits in (:mod:`data_foundry.row_table`).
+
+        None for format 1 and for splits a table cannot hold exactly, which stay inline.
+        """
+        if self.format_version < 2:  # the format that introduced the row table
+            return None
+        return splits_to_row_table(self.experiment_metadata.splits, len(self.dataset))
 
     def load_test_dataset(self, path: Path | str | None = None) -> pd.DataFrame:
         """Load the test dataset if it exists."""
@@ -530,6 +592,11 @@ class CuratedContainer:
             meta_name, type_adapter_id = meta_file.name.rsplit(".", 2)[:2]
             if meta_name not in CuratedContainer._REQUIRED_METADATA:
                 logger.warning("%s: not a metadata file of the container — skipping.", meta_file.name)
+                continue
+            if type_adapter_id == SPLITS_TABLE_TYPE:  # the splits are in the row table
+                with meta_file.open("r") as f:
+                    meta_data = inline_metadata(json.load(f), path, PredictiveMLSplitsMetadata.type_adapter_id)
+                metadata_objs[meta_name] = TypeAdapter(PredictiveMLSplitsMetadata).validate_python(meta_data)
                 continue
             if type_adapter_id not in MetadataRegistry:
                 raise ValueError(
@@ -602,6 +669,12 @@ class CuratedContainer:
                 f"{container_metadata_path} states format {stated_format}, but its task metadata is format "
                 f"{actual_format} ({metadata_objs['task_metadata'].type_adapter_id}).",
             )
+        n_table_rows = row_table_length(path)
+        if dataset is not None and n_table_rows is not None and n_table_rows != len(dataset):
+            raise ValueError(
+                f"{path / ROWS_FILE} has {n_table_rows:,} rows but dataset.parquet {len(dataset):,}; the row table "
+                "holds one row per row of the data.",
+            )
 
         return CuratedContainer(
             dataset=dataset,
@@ -631,8 +704,9 @@ class CuratedContainer:
         """Resolve the path of an extra artifact alongside the container.
 
         Extra artifacts are any files a producer ships in the container directory beyond
-        the six core files (``dataset.parquet``, ``dtypes.json``, ``container_metadata.json``
-        and the three ``*.{type_id}.json`` metadata files) and the optional test-dataset pair.
+        the core files (``dataset.parquet``, ``dtypes.json``, ``categories.json``, ``container_metadata.json``,
+        the three ``*.{type_id}.json`` metadata files and a format-2 container's ``rows.parquet``) and the optional
+        test-dataset files.
         Data Foundry does not interpret their contents — it only resolves the path so callers
         can load them however they need (e.g. ``pd.read_parquet``, ``json.load``, ``np.load``).
 
@@ -658,7 +732,7 @@ class CuratedContainer:
     def list_extra_files(self, *, path: Path | str | None = None) -> list[str]:
         """Return the sorted list of extra-artifact file names present next to the container.
 
-        Excludes the core six files and the optional test-dataset pair. Metadata JSON files
+        Excludes the core files and the optional test-dataset files. Metadata JSON files
         (``<name>.<type_id>.json`` — two dots before ``.json``) are also excluded.
         Returns ``[]`` if the directory does not exist or holds no extras.
         """

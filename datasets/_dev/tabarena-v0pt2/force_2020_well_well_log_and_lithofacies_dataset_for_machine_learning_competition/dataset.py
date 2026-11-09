@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Grouping,
     Metric,
+    Source,
     TaskSummary,
     drop_columns,
 )
@@ -181,11 +182,27 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
 
     # Dataset
     unique_name = "force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition"
-    year = "2020"
     domain = "environmental science & climate"
-    source = "GitHub"
-    source_url = "https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition"
-    license = "CC BY 4.0 (Zenodo record); the original well logs: NLOD 2.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="GitHub",
+            url="https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition",
+            license="CC BY 4.0 (Zenodo record); the original well logs: NLOD 2.0",
+            year="2020",
+            bibtex="""
+                @misc{bormann2020force,
+                  author = {Bormann, Peter and Aursand, Peder and Dilib, Fahad and Manral, Surrender and Dischington, Peter},
+                  title = {{FORCE} 2020 Well well log and lithofacies dataset for machine learning competition},
+                  year = {2020},
+                  publisher = {Zenodo},
+                  doi = {10.5281/zenodo.4351156},
+                  howpublished = {\\url{https://doi.org/10.5281/zenodo.4351156}},
+                  note = {FORCE 2020 Machine Learning Competition, \\url{https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition}}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We download the competition files from the organisers' GitHub repository, pinned to a commit (the data files
@@ -199,17 +216,6 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
 
         md5: train.zip d935a5161fb47421a07f0a51abfc3d46, leaderboard_test_features.csv b562ce84d315de526e5983bfe85aaf30,
         leaderboard_test_target.csv 50d873b9ee892ff5f0d8b8075c474482, hidden_test.csv 1ea8d4310de00f1beb7d5ba7e7006c26.
-    """
-    bibtex = """
-        @misc{bormann2020force,
-          author = {Bormann, Peter and Aursand, Peder and Dilib, Fahad and Manral, Surrender and Dischington, Peter},
-          title = {{FORCE} 2020 Well well log and lithofacies dataset for machine learning competition},
-          year = {2020},
-          publisher = {Zenodo},
-          doi = {10.5281/zenodo.4351156},
-          howpublished = {\\url{https://doi.org/10.5281/zenodo.4351156}},
-          note = {FORCE 2020 Machine Learning Competition, \\url{https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition}}
-        }
     """
     curation_comments = """
         We start with the four files of the FORCE 2020 lithology competition on GitHub: train.zip (98 wells), leaderboard_test_features.csv with leaderboard_test_target.csv (10 open-test wells) and hidden_test.csv (10 blind wells, labels included). Each row is one depth sample (every 0.152 m) of one of 118 wells in the Norwegian North Sea.

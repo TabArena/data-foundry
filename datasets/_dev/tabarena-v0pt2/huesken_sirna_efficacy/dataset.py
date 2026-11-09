@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, Source, TaskSummary
 
 DG = dict(
     zip(
@@ -140,11 +140,23 @@ class SirnaEfficacy(AbstractCuratedDataset):
         fit_reason="This tests pre-assay efficacy prediction within one reporter system. Transfer to endogenous expression, other cell systems, dosing or therapeutic outcomes is not established.",
     )
     unique_name = "huesken_sirna_efficacy"
-    year = "2005"
     domain = "biology & life sciences"
-    source = "Other"
-    source_url = "https://doi.org/10.1038/nbt1118"
-    license = "Not stated for the original supplementary data; publisher rights apply. No explicit redistribution license was found for the original data."
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://doi.org/10.1038/nbt1118",
+            license="Not stated for the original supplementary data; publisher rights apply. No explicit redistribution license was found for the original data.",
+            year="2005",
+            bibtex="""
+                @article{huesken2005sirna,
+                  title={Design of a genome-wide siRNA library using an artificial neural network},
+                  author={Huesken, Dieter and Lange, Joerg and Mickanin, Craig and others},
+                  journal={Nature Biotechnology}, volume={23}, pages={995--1001}, year={2005}, doi={10.1038/nbt1118}
+                }
+            """,
+        ),
+    )
     download_description = """
         Download Huesken's corrected supplementary Tables 2 and 3, then convert with poppler pdftotext -layout:
         https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fnbt1118/MediaObjects/41587_2005_BFnbt1118_MOESM3_ESM.pdf -> table2.pdf
@@ -153,13 +165,6 @@ class SirnaEfficacy(AbstractCuratedDataset):
         pdftotext -layout table3.pdf table3.txt
         Place the two text inputs in this dataset's warehouse directory. Two ambiguous guide matches are resolved using the original Table 3 human/rodent membership flags, without using efficacy.
         Verified original PDF SHA256: Table 2 c33063d8621e9318f04d7c8c07ca8e5422b81b336c4a48ac664b3daf26abee8f; Table 3 4d6cbaca93d98fa738659dfaf68875af3039b2061a94aa550b0c5a5b10e83d63.
-    """
-    bibtex = """
-        @article{huesken2005sirna,
-          title={Design of a genome-wide siRNA library using an artificial neural network},
-          author={Huesken, Dieter and Lange, Joerg and Mickanin, Craig and others},
-          journal={Nature Biotechnology}, volume={23}, pages={995--1001}, year={2005}, doi={10.1038/nbt1118}
-        }
     """
     curation_comments = """
         Start with the corrected Huesken supplementary Table 3 and target inserts in Table 2, not model-generated labels from the withdrawn early supplement.

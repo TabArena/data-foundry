@@ -5,6 +5,9 @@ Every ``datasets/_dev/tabarena-v0pt2/<name>/dataset.py`` is discovered and check
 * always: the class imports and validates (one test per folder, so a half-filled scaffold fails its own test and not
   the collection of all the others), and its ``README.md`` belongs to it (skipped while ``dataset.py`` holds a
   ``TODO(verify)`` marker, i.e. a definition waiting for its rebuild);
+* always: the working copy's ``collection.py`` sets TabArena v0.2's row budget, and the README keeps it: every test
+  side within 500k rows, and every train side within 1M unless the dataset is a ``_1m`` version, which gets the budget
+  by its name (whose train sides a benchmark sub-samples to 1M);
 * with ``DATA_FOUNDRY_V2_DATA_CHECKS=1`` and the raw data in the warehouse: a fresh ``check()`` gives the
   checksum recorded in ``README.md`` (the definition has not drifted from its evidence). This reads the
   full data, so it is opt-in.
@@ -18,7 +21,9 @@ import re
 from pathlib import Path
 
 import pytest
+from data_foundry.collections import TABARENA_V0PT2_ROW_BUDGET as V0PT2_ROW_BUDGET
 from data_foundry.v2 import discover_datasets, load_definition, read_report
+from data_foundry.v2.dataset import collection_row_budget, effective_row_budget
 
 ROOT = Path(__file__).resolve().parents[1] / "datasets" / "_dev" / "tabarena-v0pt2"
 FOLDERS = sorted(path.parent.name for path in ROOT.glob("*/dataset.py")) if ROOT.is_dir() else []
@@ -61,6 +66,30 @@ def test_definition_has_its_report(name: str) -> None:
     # Tolerated until every definition declares its `Metric` (step 5 of the metric plan): remove it then.
     errors = set(report["bundle_checks"].get("errors") or []) - set(PENDING_ERRORS)
     assert report["bundle_checks"]["ok"] or not errors, f"{name}: README.md records bundle-check errors {errors}"
+
+
+@pytest.mark.parametrize("name", sorted(REGISTRY))
+def test_splits_keep_the_v0pt2_row_budget(name: str) -> None:
+    """Every split of the README tests within v0.2's budget, and trains within it unless the dataset is a ``_1m``
+    version, which gets the collection's budget by its name (a benchmark sub-samples those train sides).
+    """
+    ds = REGISTRY[name]()
+    assert collection_row_budget(type(ds)) == V0PT2_ROW_BUDGET, f"{name}: `collection.py` sets {V0PT2_ROW_BUDGET}"
+    budget = effective_row_budget(type(ds))
+    report = read_report(ds.report_path)
+    if not report:
+        pytest.skip("no README.md yet")
+    splits = report["splits"]
+    if budget is None:
+        assert splits["n_train"]["max"] <= V0PT2_ROW_BUDGET.train, (
+            f"{name}: a split trains on {splits['n_train']['max']:,} rows; rename it `{name}_1m`, the version that "
+            "gets the collection's budget"
+        )
+    assert splits["n_test"]["max"] <= V0PT2_ROW_BUDGET.test, f"{name}: a split tests on {splits['n_test']['max']:,}"
+    if budget is not None:
+        assert splits.get("row_budget") == {"train": budget.train, "test": budget.test}, (
+            f"{name}: README.md predates its row budget; re-run `dataset check`"
+        )
 
 
 @pytest.mark.parametrize("name", sorted(REGISTRY))

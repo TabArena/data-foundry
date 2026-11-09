@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, SplitPlan, TaskSummary
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    SplitPlan,
+    TaskSummary,
+)
 
 COLUMNS = [
     "age",
@@ -92,27 +101,32 @@ class HeartDisease(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "heart_disease"
-    year = "1988"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C52P4X"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C52P4X",
+            license="CC BY 4.0",
+            year="1988",
+            bibtex="""
+                @article{detrano1989international,
+                  title={International application of a new probability algorithm for the diagnosis of coronary artery disease},
+                  author={Detrano, Robert and Janosi, Andras and Steinbrunn, Walter and Pfisterer, Matthias and Schmid, Johann-Jakob and Sandhu, Sarbjit and Guppy, Kern H and Lee, Stella and Froelicher, Victor},
+                  journal={The American journal of cardiology},
+                  volume={64},
+                  number={5},
+                  pages={304--310},
+                  year={1989},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         Get the UCI data (the processed files of the three hospitals).
 
         mkdir -p local-data-warehouse/heart_disease && cd local-data-warehouse/heart_disease && wget https://archive.ics.uci.edu/static/public/45/heart+disease.zip && unzip heart+disease.zip processed.cleveland.data processed.hungarian.data processed.va.data && rm heart+disease.zip
-    """
-    bibtex = """
-        @article{detrano1989international,
-          title={International application of a new probability algorithm for the diagnosis of coronary artery disease},
-          author={Detrano, Robert and Janosi, Andras and Steinbrunn, Walter and Pfisterer, Matthias and Schmid, Johann-Jakob and Sandhu, Sarbjit and Guppy, Kern H and Lee, Stella and Froelicher, Victor},
-          journal={The American journal of cardiology},
-          volume={64},
-          number={5},
-          pages={304--310},
-          year={1989},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         We start with the processed files of three hospitals from UCI's Heart Disease collection, the 13 variables of the Detrano et al. (1989) model and its label (p. 305; pages of Am J Cardiol 64:304-310). UCI's raw 76-attribute files hold the same 294 Hungarian, 200 Long Beach and 123 Swiss patients, so the patients the release dropped are not public.

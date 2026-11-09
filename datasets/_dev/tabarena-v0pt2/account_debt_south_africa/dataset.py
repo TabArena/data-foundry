@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
 
 # The columns the bad-debt label is set from: debt aged 90 days or more, write-offs, and their ratio to the billing.
 DEBT_COLUMNS = ["total90debt", "totalwriteoff", "debtbillingratio"]
@@ -98,11 +98,25 @@ class AccountDebtSouthAfrica(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "account_debt_south_africa"
-    year = "2020"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/dmsconsultingsa/municipal-debt-risk-analysis"
-    license = "CC0-1.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/dmsconsultingsa/municipal-debt-risk-analysis",
+            license="CC0-1.0",
+            year="2020",
+            bibtex=r"""
+                @misc{rawlins2020municipal,
+                  author = {Rawlins, Dylan},
+                  title = {Municipal Debt Risk Analysis},
+                  year = {2020},
+                  howpublished = {\url{https://www.kaggle.com/datasets/dmsconsultingsa/municipal-debt-risk-analysis}},
+                  note = {Kaggle dataset, DMS Technologies}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download version 1 of the Kaggle dataset (the only version, 4 June 2020). It holds one file,
@@ -110,15 +124,6 @@ class AccountDebtSouthAfrica(AbstractCuratedDataset):
         (Municipal-Debt-Risk-Analysis) is a copy of the same rows in the same order.
 
         mkdir -p local-data-warehouse/account_debt_south_africa && cd local-data-warehouse/account_debt_south_africa && kaggle datasets download dmsconsultingsa/municipal-debt-risk-analysis/1 && unzip municipal-debt-risk-analysis.zip && rm municipal-debt-risk-analysis.zip && cd ../../
-    """
-    bibtex = r"""
-        @misc{rawlins2020municipal,
-          author = {Rawlins, Dylan},
-          title = {Municipal Debt Risk Analysis},
-          year = {2020},
-          howpublished = {\url{https://www.kaggle.com/datasets/dmsconsultingsa/municipal-debt-risk-analysis}},
-          note = {Kaggle dataset, DMS Technologies}
-        }
     """
     curation_comments = """
         We start with MunicipalDebtAnalysis.csv (138,509 accounts of eight South African municipalities) from version 1 of the Kaggle dataset.

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, object_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode, object_columns
 
 
 class HomesiteQuoteConversion(AbstractCuratedDataset):
@@ -37,26 +37,31 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "homesite_quote_conversion"
-    year = "2015"
     domain = "insurance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/homesite-quote-conversion"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/homesite-quote-conversion",
+            license="Kaggle Competition Rules",
+            year="2015",
+            bibtex=r"""
+                @misc{Darrel2015HomesiteQuoteConversion,
+                  author = {Darrel and Stephen D. Stayton and Will Cukierski},
+                  title  = {Homesite Quote Conversion},
+                  year   = {2015},
+                  howpublished = {\url{https://kaggle.com/competitions/homesite-quote-conversion}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         We use the train.csv from the Kaggle competition.
 
         kaggle competitions download -c homesite-quote-conversion -f train.csv.zip && unzip train.csv.zip &&  rm train.csv.zip
         mkdir -p local-data-warehouse/homesite_quote_conversion && mv train.csv local-data-warehouse/homesite_quote_conversion/
-    """
-    bibtex = r"""
-        @misc{Darrel2015HomesiteQuoteConversion,
-          author = {Darrel and Stephen D. Stayton and Will Cukierski},
-          title  = {Homesite Quote Conversion},
-          year   = {2015},
-          howpublished = {\url{https://kaggle.com/competitions/homesite-quote-conversion}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with the train.csv from Kaggle.

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: biogeographical_ancestry_prediction
 container_format: 2
-checksum: v2:6ebebcd27fe855e83f4a7076e6dfbe32d372cc08f18c7e101d7906d11c99949d
+checksum: v2:34e0f172c0eb2f44fd9caa6449fd00a9bfa5f2c6e0c8cac2707a0adc104e1f6f
 build:
   uuid: 01a111fc-9b9e-7d5b-bb54-5ba4424f3c12
   checksum: v2:756da0d9ffa37ad6880e28e58cb2f12202f9717e6b4843cce912fbe19b61fd1e
@@ -66,7 +66,7 @@ decisions: []
 
 Multiclass classification of `Population`, scored with `log_loss` on IID splits. 607 rows and 102 features. Source: Other (2023).
 
-Built as `01a111fc-9b9e-7d5b-bb54-5ba4424f3c12` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6ebebcd27fe855e83f4a7076e6dfbe32d372cc08f18c7e101d7906d11c99949d`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9b9e-7d5b-bb54-5ba4424f3c12` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:34e0f172c0eb2f44fd9caa6449fd00a9bfa5f2c6e0c8cac2707a0adc104e1f6f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -206,6 +206,7 @@ We take the targets from the paper by Heinzel et al. (2025) and only rename the 
 - We drop the Turkey class (28 rows), deviating from the paper's ten classes. Its source has a genotyping artefact: rs3857620 is AG in 24 of 28 Turkey samples and never AA (about 5 expected under Hardy-Weinberg equilibrium), while all 607 other samples are GG, so the SNP alone separates Turkey (ROC AUC 0.93). Without Turkey, rs3857620 is constant and dropped, as is rs367953206 (TT in every sample; its only other value was the no-call NN, 9 Turkey rows and 1 Basque row).
 - "NN" genotypes are no-calls and are set to missing. They occur only in the HGDP classes (24 rows: Russian 8, French 7, Sardinian 5, Basque 4), never in 1000 Genomes, so missingness weakly hints at the source.
 - rs2789823 is AG in 7 rows, all Iberian; it may be a smaller artefact of the same kind and is kept.
+- Class-dependent recording (record marker `Class-dependent Recording`): Turkey comes from a separate source with its own genotyping artefact, as described above; the class is dropped.
 
 ## Splits
 
@@ -283,7 +284,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -461,4 +462,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6ebebcd27fe855e83f4a7076e6dfbe32d372cc08f18c7e101d7906d11c99949d` |
+| stale | yes: the definition now gives checksum `v2:34e0f172c0eb2f44fd9caa6449fd00a9bfa5f2c6e0c8cac2707a0adc104e1f6f` |

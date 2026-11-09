@@ -6,7 +6,7 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
 
 
 class PolishCompaniesBankruptcy(AbstractCuratedDataset):
@@ -41,26 +41,31 @@ class PolishCompaniesBankruptcy(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "polish_companies_bankruptcy"
-    year = "2016"
     domain = "finance"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5F600"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5F600",
+            license="CC BY 4.0",
+            year="2016",
+            bibtex=r"""
+                @article{zikeba2016ensemble,
+                  title={Ensemble boosted trees with synthetic features generation in application to bankruptcy prediction},
+                  author={Zi{\k{e}}ba, Maciej and Tomczak, Sebastian K and Tomczak, Jakub M},
+                  journal={Expert systems with applications},
+                  volume={58},
+                  pages={93--101},
+                  year={2016},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/polish_companies_bankruptcy/ && wget -P local-data-warehouse/polish_companies_bankruptcy/ https://archive.ics.uci.edu/static/public/365/polish+companies+bankruptcy+data.zip && unzip local-data-warehouse/polish_companies_bankruptcy/polish+companies+bankruptcy+data.zip -d local-data-warehouse/polish_companies_bankruptcy/ && rm local-data-warehouse/polish_companies_bankruptcy/polish+companies+bankruptcy+data.zip
-    """
-    bibtex = r"""
-        @article{zikeba2016ensemble,
-          title={Ensemble boosted trees with synthetic features generation in application to bankruptcy prediction},
-          author={Zi{\k{e}}ba, Maciej and Tomczak, Sebastian K and Tomczak, Jakub M},
-          journal={Expert systems with applications},
-          volume={58},
-          pages={93--101},
-          year={2016},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         - We only use data from year 5 (5year.arff), because it is the newest data and the target is bankruptcy status after only 1 year.

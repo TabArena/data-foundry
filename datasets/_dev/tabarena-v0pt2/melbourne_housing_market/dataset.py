@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -135,8 +136,9 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
             "building size, year built), blank for the sales before April 2017, looked up months later."
         ),
         split=(
-            "Nine test windows of three consecutive weekly sheets, from August 2017 to March 2018; each trains on all"
-            " earlier sales and predicts up to 7 calendar weeks ahead."
+            "Nine test windows of three consecutive weekly sheets, from August 2017 to March 2018, within an auction "
+            "campaign of about four weeks; each trains on all earlier sales (55% to 95%) and predicts up to 7 "
+            "calendar weeks ahead."
         ),
         changes=(
             "We drop results without a sale price (passed in, vendor bid) and the auction outcome, known only after "
@@ -154,11 +156,25 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "melbourne_housing_market"
-    year = "2017"  # the Kaggle upload's first version (public by March 2017); it grew to version 27 in 2018 (PROV-9)
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/anthonypino/melbourne-housing-market"
-    license = "CC BY-NC-SA 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/anthonypino/melbourne-housing-market",
+            license="CC BY-NC-SA 4.0",
+            year="2017",  # the Kaggle upload's first version (public by March 2017); it grew to version 27 in 2018 (PROV-9)
+            bibtex=r"""
+                @misc{pino2018melbourne,
+                  author = {Tony Pino},
+                  title = {Melbourne Housing Market},
+                  year = {2018},
+                  howpublished = {\url{https://www.kaggle.com/datasets/anthonypino/melbourne-housing-market}},
+                  note = {Kaggle dataset; weekly auction results of Domain.com.au, January 2016 to October 2018}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We download version 27 of the Kaggle dataset anthonypino/melbourne-housing-market (2018-10-14, the current
@@ -171,15 +187,6 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
         kaggle datasets download anthonypino/melbourne-housing-market -p local-data-warehouse/melbourne_housing_market
         unzip local-data-warehouse/melbourne_housing_market/melbourne-housing-market.zip -d local-data-warehouse/melbourne_housing_market
         rm local-data-warehouse/melbourne_housing_market/melbourne-housing-market.zip
-    """
-    bibtex = r"""
-        @misc{pino2018melbourne,
-          author = {Tony Pino},
-          title = {Melbourne Housing Market},
-          year = {2018},
-          howpublished = {\url{https://www.kaggle.com/datasets/anthonypino/melbourne-housing-market}},
-          note = {Kaggle dataset; weekly auction results of Domain.com.au, January 2016 to October 2018}
-        }
     """
     curation_comments = """
         We start with Melbourne_housing_FULL.csv of the Kaggle dataset anthonypino/melbourne-housing-market: results of properties scheduled for auction in Melbourne (January 2016 to March 2018) from the weekly result sheets of Domain.com.au, with attributes scraped from realestate.com.au.
@@ -217,7 +224,7 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
         horizon_unit="weeks",
     )
     splits_comment = """
-        Before the auction, a price model fitted once per window on all earlier sales predicts the sales of the next three weekly result sheets: 9 test windows of 3 consecutive auction dates of the file (one weekly sheet each), from 3-17 March 2018 back to 12-26 August 2017, newest first. Each window trains on all earlier sales (55-95% of the rows), without a gap: a price is published in the sheet of its week. The horizon is three sheets, up to 7 calendar weeks: the file lacks the sheets of 10 June, 5 August and 2 December 2017 and 13 January 2018, so a window can span 4 calendar weeks, and the window of 20 January to 3 February 2018 trains on sales up to 16 December 2017. An IID task of this size would get 3 x 3 splits. Calendar windows do not fit the file: it has no sheet between 16 December 2017 and 20 January 2018 and 18 sales on 20 and 27 January 2018, so a monthly window would test January 2018 on 18 sales and a four-week one on 9. Three sheets put them in a window of 93 sales (20 January to 3 February 2018); the other windows hold 868-1,550. Recording delay (SPLIT-10; measured 2026-10-21 as ames_housing did): the newest sheets are not short. Every weekly sheet of the full file from August 2017 to 17 March 2018 holds as many sales as the same sheet of the companion file, read up to October 2018 (558 of 558 on 17 March 2018), so no sale reached a sheet after it was first read. The three sheets of March 2018 hold 1,121 sales, against 1,174 in the same three sheets of 2017 (companion file, all suburbs), and the newest window's mean residual log price is +0.009 (one LightGBM fit per window), inside the range of the other windows (-0.013 to +0.022). No gap.
+        Before the auction, a price model fitted once per window on all earlier sales predicts the sales of the next three weekly result sheets: 9 test windows of 3 consecutive auction dates of the file (one weekly sheet each), from 3-17 March 2018 back to 12-26 August 2017, newest first. Each window trains on all earlier sales (55-95% of the rows), without a gap: a price is published in the sheet of its week. Three sheets lie within a Melbourne auction campaign of about four weeks ("Before the auction takes place, there is a sales campaign that runs for approximately four weeks", Nelson Alexander, https://www.nelsonalexander.com.au/news/auction-private-sale-and-expressions-interest-explained), so a price estimated during the campaign looks one to four sheets ahead; the Kaggle upload names no task or horizon, and three sheets give nine windows that each train on at least 55.3% of the sales (CC 2026-11-11). The windows walk back from the newest for two reasons. Nine is the count of splits an IID task of this size gets (3 x 3). Further back, the train sides hold mostly the sales before 27 May 2017, when the file holds only the inner suburbs (79.2% of the train side of the tenth window, 15-29 July 2017, and all of it from the window of 27 May 2017 on), and a window before 27 May 2017 tests the inner suburbs only. The nine cover winter, the spring auction season, the summer lull and early autumn. The horizon is three sheets, up to 7 calendar weeks: the file lacks the sheets of 10 June, 5 August and 2 December 2017 and 13 January 2018, so a window can span 4 calendar weeks, and the window of 20 January to 3 February 2018 trains on sales up to 16 December 2017. Calendar windows do not fit the file: it has no sheet between 16 December 2017 and 20 January 2018 and 18 sales on 20 and 27 January 2018, so a monthly window would test January 2018 on 18 sales and a four-week one on 9. Three sheets put them in a window of 93 sales (20 January to 3 February 2018); the other windows hold 868-1,550. Recording delay (SPLIT-10; measured 2026-10-21 as ames_housing did): the newest sheets are not short. Every weekly sheet of the full file from August 2017 to 17 March 2018 holds as many sales as the same sheet of the companion file, read up to October 2018 (558 of 558 on 17 March 2018), so no sale reached a sheet after it was first read. The three sheets of March 2018 hold 1,121 sales, against 1,174 in the same three sheets of 2017 (companion file, all suburbs), and the newest window's mean residual log price is +0.009 (one LightGBM fit per window), inside the range of the other windows (-0.013 to +0.022). No gap.
     """
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
@@ -374,9 +381,10 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
             ),
             Decision(
                 "Test windows of three weekly sheets",
-                "The file has no sheet between 16 December 2017 and 20 January 2018 and 18 sales in January 2018: "
-                "calendar windows leave a window of 9-18 sales, four sheets per window leave 2 of 9 windows below "
-                "half of the rows for training.",
+                "Three sheets lie within an auction campaign of about four weeks, and each of the nine windows trains "
+                "on at least half of the rows. The file has no sheet between 16 December 2017 and 20 January 2018 "
+                "and 18 sales in January 2018: calendar windows leave a window of 9-18 sales; four sheets per window "
+                "leave 2 of 9 windows below half of the rows for training.",
                 pd.DataFrame(windows).T,
             ),
         ]

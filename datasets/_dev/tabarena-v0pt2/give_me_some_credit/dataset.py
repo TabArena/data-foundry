@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
 
 
 class GiveMeSomeCredit(AbstractCuratedDataset):
@@ -36,24 +36,29 @@ class GiveMeSomeCredit(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "give_me_some_credit"
-    year = "2011"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/GiveMeSomeCredit/overview"
-    license = "Public"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/GiveMeSomeCredit/overview",
+            license="Public",
+            year="2011",
+            bibtex="""
+                @misc{cukierski2011credit,
+                    author = {Credit Fusion and Will Cukierski},
+                    title = {Give Me Some Credit},
+                    year = {2011},
+                    howpublished = {url{https://kaggle.com/competitions/GiveMeSomeCredit}},
+                    note = {Kaggle}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from Kaggle and uzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/give_me_some_credit/ && cd local-data-warehouse/give_me_some_credit && kaggle competitions download -c GiveMeSomeCredit && cd ../../ && unzip local-data-warehouse/give_me_some_credit/GiveMeSomeCredit.zip -d local-data-warehouse/give_me_some_credit/ && rm local-data-warehouse/give_me_some_credit/GiveMeSomeCredit.zip
-    """
-    bibtex = """
-        @misc{cukierski2011credit,
-            author = {Credit Fusion and Will Cukierski},
-            title = {Give Me Some Credit},
-            year = {2011},
-            howpublished = {url{https://kaggle.com/competitions/GiveMeSomeCredit}},
-            note = {Kaggle}
-        }
     """
     curation_comments = """
         - We renamed the target feature and its value to be more descriptive.

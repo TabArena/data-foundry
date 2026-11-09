@@ -6,10 +6,13 @@ from data_foundry.schema import (
     DATA_FOUNDRY_WAREHOUSE_ENV,
     DEFAULT_LOCAL_DATA_DIR,
     DatasetMetadata,
+    DatasetMetadataV2,
     Grouping,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
+    RowBudget,
+    Source,
     SpecialFeature,
     SpectrumDetails,
     resolve_warehouse_dir,
@@ -364,6 +367,54 @@ def test_predictive_splits_metadata_time_gap_is_left_out_of_the_checksum_while_u
     assert b"time_gap" not in encode_pydantic_metadata(plain)
 
 
+def test_predictive_splits_metadata_row_budget_is_left_out_of_the_checksum_while_unset():
+    splits = {0: {0: ([0, 1], [2, 3])}}
+    plain = PredictiveMLSplitsMetadata(splits_comment="x", splits=splits)
+    budgeted = PredictiveMLSplitsMetadata(splits_comment="x", splits=splits, row_budget=RowBudget(train=2, test=2))
+    assert plain.row_budget is None
+    assert b"row_budget" not in encode_pydantic_metadata(plain)  # a container saved before the field keeps verifying
+    assert encode_pydantic_metadata(plain) != encode_pydantic_metadata(budgeted)
+    assert "row_budget:          at most 0.002k test rows per split; a benchmark trains on at most 0.002k" in (
+        budgeted.describe()
+    )
+    assert "row_budget" not in plain.describe()
+
+
+def test_train_sampling_needs_a_row_budget_and_is_left_out_while_unset():
+    from data_foundry.schema import TrainSampling  # noqa: PLC0415
+
+    splits = {0: {0: ([0, 1], [2, 3])}}
+    sampling = TrainSampling(default="newest_year", unit="time_values")
+    with pytest.raises((ValueError, pydantic.ValidationError), match="set row_budget"):
+        PredictiveMLSplitsMetadata(splits_comment="x", splits=splits, train_sampling=sampling)
+    budget = RowBudget(train=2, test=2)
+    with_sampling = PredictiveMLSplitsMetadata(
+        splits_comment="x", splits=splits, row_budget=budget, train_sampling=sampling
+    )
+    without = PredictiveMLSplitsMetadata(splits_comment="x", splits=splits, row_budget=budget)
+    assert b"train_sampling" not in encode_pydantic_metadata(without)
+    assert encode_pydantic_metadata(with_sampling) != encode_pydantic_metadata(without)
+    with pytest.raises(pydantic.ValidationError):
+        TrainSampling(default="newest_rows", unit="rows")
+
+
+@pytest.mark.parametrize(
+    ("train", "suffix"), [(1_000_000, "1m"), (10_000_000, "10m"), (2_500_000, "2p5m"), (300_000, "300k")]
+)
+def test_row_budget_names_its_version_after_the_train_budget(train: int, suffix: str):
+    assert RowBudget(train=train, test=250_000).suffix == suffix
+
+
+def test_row_budget_takes_whole_positive_row_counts():
+    assert RowBudget(train=1e7, test=2.5e5) == RowBudget(train=10_000_000, test=250_000)  # `1e7` is a count
+    assert isinstance(RowBudget(train=1e7, test=1).train, int)
+    for train, test in ((0, 10), (10, -1), (1.5, 10)):
+        with pytest.raises(pydantic.ValidationError):
+            RowBudget(train=train, test=test)
+    with pytest.raises(pydantic.ValidationError):
+        RowBudget(train=10, test=5, frame=20)  # the frame follows from the budget
+
+
 def test_predictive_splits_metadata_time_gap_in_minutes():
     splits = {0: {0: ([0, 1], [2, 3])}}
     sm = PredictiveMLSplitsMetadata(splits_comment="temporal", splits=splits, time_gap=15, time_gap_unit="minutes")
@@ -516,6 +567,22 @@ def test_format_2_task_reads_the_group_fields_from_the_grouping():
     assert task.split_regime == "grouped_non_iid"
 
 
+def test_time_unit_needs_a_time_column_and_is_left_out_while_unset():
+    """A numeric time column's calendar travels with the task; containers without it keep their bytes."""
+
+    def task(**kwargs) -> PredictiveMLTaskMetadataV2:
+        return PredictiveMLTaskMetadataV2(
+            target_column_name="y", problem_type="regression", objective_metric=make_spec(), **kwargs
+        )
+
+    with pytest.raises(pydantic.ValidationError, match="set time_on"):
+        task(time_unit="weeks")
+    with pytest.raises(pydantic.ValidationError):
+        task(time_on="era", time_unit="fortnights")
+    assert b"time_unit" not in encode_pydantic_metadata(task(time_on="era"))
+    assert b'"time_unit":"weeks"' in encode_pydantic_metadata(task(time_on="era", time_unit="weeks")).replace(b" ", b"")
+
+
 def test_format_1_task_takes_no_grouping():
     with pytest.raises(pydantic.ValidationError, match="grouping"):
         PredictiveMLTaskMetadata(
@@ -598,3 +665,99 @@ def test_special_features_are_features_each_column_once(features, grouping, matc
             grouping=grouping,
             special_features=features,
         )
+
+
+# --- sources and the v2 dataset metadata ----------------------------------------------------------------------
+PUBLICATION = {
+    "role": "publication",
+    "platform": "UCI",
+    "url": "https://doi.org/10.24432/C5TEST",
+    "license": "CC BY 4.0",
+    "year": "2014",
+    "bibtex": "@misc{toy2014,\n  title = {Toy}\n}\n@misc{toy2015,\n  title = {Toy 2}\n}",
+}
+
+
+def test_a_source_reads_its_citation_keys_from_its_bibtex() -> None:
+    source = Source(**PUBLICATION, files=("sheets/*.txt",))
+    assert source.bibtex_key == "toy2014,toy2015"
+    assert source.files == ["sheets/*.txt"]
+    assert Source(**{**PUBLICATION, "bibtex_key": "toy2014"}).bibtex_key == "toy2014"  # a declared key is kept
+
+
+@pytest.mark.parametrize(
+    ("changes", "match"),
+    [
+        ({"year": None}, "needs its `year`"),
+        ({"bibtex": None}, "needs its `bibtex`"),
+        ({"url": " "}, "needs a `url`"),
+        ({"platform": "Somewhere"}, "Input should be"),
+        ({"files": ("../outside.csv",)}, "paths under the raw folder"),
+        ({"files": ("/abs.csv",)}, "paths under the raw folder"),
+    ],
+)
+def test_a_source_is_validated(changes: dict, match: str) -> None:
+    with pytest.raises((ValueError, pydantic.ValidationError), match=match):
+        Source(**{**PUBLICATION, **changes})
+
+
+def test_a_copy_or_part_needs_no_year_or_bibtex() -> None:
+    copy = Source(role="copy", platform="Kaggle", url="https://www.kaggle.com/x", license=None)
+    assert (copy.year, copy.bibtex, copy.bibtex_key) == (None, None, None)
+    assert copy.label() == "Kaggle copy"
+    assert Source(role="part", platform="Other", url="https://x", license=None, name="Sheet A").label() == "Sheet A"
+
+
+def _v2_metadata(**changes: object):
+    kwargs = {
+        "unique_name": "toy_ds",
+        "domain": "finance",
+        "sources": [Source(**PUBLICATION), Source(role="copy", platform="Kaggle", url="https://k", license="CC0")],
+        "download_description": "desc",
+        "data_tags": ["IID"],
+        **changes,
+    }
+    return DatasetMetadataV2(**kwargs)
+
+
+def test_v2_dataset_metadata_round_trips_and_names_its_publication() -> None:
+    meta = _v2_metadata(derived_from="toy_base", derivation="COP as the target.")
+    assert meta.type_adapter_id == "dataset-mold-v2"
+    assert meta.publication.year == "2014"
+    adapter = pydantic.TypeAdapter(DatasetMetadataV2)
+    assert adapter.validate_python(adapter.dump_python(meta, mode="json")) == meta
+    assert "derived_from:         toy_base: COP as the target." in meta.describe()
+
+
+@pytest.mark.parametrize(
+    ("changes", "match"),
+    [
+        ({"sources": []}, "exactly one publication"),
+        ({"sources": "reverse"}, "exactly one publication, first"),
+        ({"derived_from": "toy_base"}, "set both or neither"),
+        ({"derivation": "How it differs."}, "set both or neither"),
+        ({"derived_from": "toy_ds", "derivation": "x"}, "equals unique_name"),
+        ({"unique_name": "Toy DS"}, "snake_case"),
+    ],
+)
+def test_v2_dataset_metadata_is_validated(changes: dict, match: str) -> None:
+    if changes.get("sources") == "reverse":
+        changes["sources"] = list(reversed(_v2_metadata().sources))
+    with pytest.raises((ValueError, pydantic.ValidationError), match=match):
+        _v2_metadata(**changes)
+
+
+def test_format_1_metadata_reads_like_v2(base_dataset_metadata_kwargs: dict) -> None:
+    dm = DatasetMetadata(**base_dataset_metadata_kwargs)
+    assert dm.domain == dm.domain_str
+    assert dm.sources == [dm.publication]
+    pub = dm.publication
+    assert (pub.role, pub.platform, pub.url, pub.license, pub.year, pub.bibtex_key) == (
+        "publication",
+        dm.dataset_source,
+        dm.original_dataset_source_download_link,
+        dm.license,
+        dm.dataset_year,
+        dm.academic_reference_bibtex_key,
+    )
+    assert (dm.derived_from, dm.derivation) == (dm.version_from_unique_name, dm.version_comment)

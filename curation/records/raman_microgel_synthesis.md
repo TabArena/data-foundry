@@ -11,6 +11,7 @@ tags:
 - AI-Filled (Verify)
 - Tiny Data
 - Many features
+- Spectral Data
 collections:
 - RamanBench
 original_source: Other

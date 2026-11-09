@@ -5,7 +5,15 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    drop_columns,
+)
 
 TARGET = "CHURN"
 
@@ -51,9 +59,9 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
             "customer active in it for the risk of churning, for example to target retention offers."
         ),
         row=(
-            "One Expresso customer in Senegal who was active in the observation window: a random 1.5 million of the "
-            "2,154,048 customers of the competition file, whose dates are not published. Almost all are long-tenure "
-            "customers (94.9% over 24 months, none under 3 months)."
+            "One Expresso customer in Senegal who was active in the observation window, one of the 2,154,048 "
+            "customers of the competition file, whose dates are not published. Almost all are long-tenure customers "
+            "(94.9% over 24 months, none under 3 months)."
         ),
         predicted=(
             "Whether the customer churns, that is makes no transaction for 90 days after the window (18.75% do)."
@@ -65,11 +73,12 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         ),
         split=(
             "Random customers of the same snapshot, as in the competition, whose test set is a random 15% of the "
-            "extract; each fold trains on 1 million and tests on 500,000 customers."
+            "extract; each fold tests on 500,000 customers and trains on the other 1.65 million, which a benchmark "
+            "sub-samples to 1 million."
         ),
         changes=(
             "We drop the region, whose missing values follow the outcome and were most likely filled in after the "
-            "window, and sub-sample 1.5 million customers."
+            "window."
         ),
         fit="approximate",
         fit_reason=(
@@ -82,15 +91,25 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "expresso_churn_prediction_1m"
-    version_of = "expresso_churn_prediction"
-    version_comment = """
-        We sub-sample the frame (2,154,048 customers) to 1.5M customers, stratified on the target, and use 3-fold cross-validation, so every fold trains on 1M and tests on 500k customers (v2 split protocol).
-    """
-    year = "2020"
     domain = "business & marketing"
-    source = "Zindi"
-    source_url = "https://zindi.africa/competitions/umojahack-ghana-expresso-churn-prediction-challenge"
-    license = "Zindi Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Zindi",
+            url="https://zindi.africa/competitions/umojahack-ghana-expresso-churn-prediction-challenge",
+            license="Zindi Competition Rules",
+            year="2020",
+            bibtex=r"""
+                @misc{zindi2020expressochurn,
+                  author = {{Zindi} and {Expresso}},
+                  title = {UmojaHack Ghana: Expresso Churn Prediction Challenge},
+                  year = {2020},
+                  howpublished = {\url{https://zindi.africa/competitions/umojahack-ghana-expresso-churn-prediction-challenge}},
+                  note = {Zindi hackathon, 27 June 2020. Re-run with the same files as the Zindi competition Expresso Churn Prediction Challenge, 27 August to 28 November 2021, \url{https://zindi.africa/competitions/expresso-churn-prediction}}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         Train.csv of the Zindi hackathon "UmojaHack Ghana: Expresso Churn Prediction Challenge" (27 June 2020), re-run
@@ -107,15 +126,6 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         mkdir -p local-data-warehouse/expresso_churn_prediction
         unzip expresso-churn-prediction-challenge.zip Train.csv -d local-data-warehouse/expresso_churn_prediction
         rm expresso-churn-prediction-challenge.zip
-    """
-    bibtex = r"""
-        @misc{zindi2020expressochurn,
-          author = {{Zindi} and {Expresso}},
-          title = {UmojaHack Ghana: Expresso Churn Prediction Challenge},
-          year = {2020},
-          howpublished = {\url{https://zindi.africa/competitions/umojahack-ghana-expresso-churn-prediction-challenge}},
-          note = {Zindi hackathon, 27 June 2020. Re-run with the same files as the Zindi competition Expresso Churn Prediction Challenge, 27 August to 28 November 2021, \url{https://zindi.africa/competitions/expresso-churn-prediction}}
-        }
     """
     curation_comments = """
         We start with Train.csv of the Zindi hackathon UmojaHack Ghana: Expresso Churn Prediction Challenge (2020), re-run with the same files as the Expresso Churn Prediction Challenge (2021): 2,154,048 customers of the telecom operator Expresso in Senegal, one row each. Zindi's Test.csv has no labels and is not used.
@@ -134,6 +144,7 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         - Note: Zindi's rules forbid redistributing the data, uploads to Kaggle or GitHub included; the Kaggle copies we name are such uploads.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - The row budget (1M train, 500k test rows): We keep the whole frame (2,154,048 customers) and use 3-fold cross-validation over it (v2 split protocol). Each fold tests on 500k customers of its third, drawn stratified on the target, and trains on the other 1,654,048. The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M customers with `subsample_train`, whose default draws random rows stratified on the target.
     """
 
     # Task
@@ -149,8 +160,8 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         definition="ROC AUC of the churn probability against CHURN",
     )
 
-    # Splits: IID (one snapshot, no time index); the `_1m` version sub-samples the frame to the 1.5M-row budget.
-    subsample_to_budget = True
+    # Splits: IID (one snapshot, no time index). The `_1m` version samples each fold's test third to 500k rows; the
+    # 1M train budget is recorded for a benchmark, which sub-samples each train side (`subsample_train`).
     accepted_check_warnings = {
         "dataset_duplicate_rows": "Every row is a different customer (unique user_id). The copies are customers "
         "mostly (75.3% of the 678,270 copies in the full file) described only by a tenure band and their active days, "

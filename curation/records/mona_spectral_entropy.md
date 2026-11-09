@@ -8,6 +8,7 @@ decision_markers:
 - No Good Target / Scientific Discovery
 tags:
 - AI-Filled (Verify)
+- Spectral Data
 collections:
 - ChemPile
 source_links:

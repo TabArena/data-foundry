@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -81,23 +81,28 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "student_portuguese_performance"
-    year = "2014"
     domain = "education"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5TG7T"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5TG7T",
+            license="CC BY 4.0",
+            year="2014",
+            bibtex="""
+                @article{silva2008using,
+                  title={Using data mining to predict secondary school student performance},
+                  author={Silva, Alice},
+                  year={2008}
+                }
+            """,
+        ),
+    )
     download_description = """
         We get the portuguese data from the UCI repository. The math version is mostly duplicates from portuguese.
 
         wget https://archive.ics.uci.edu/static/public/320/student+performance.zip && unzip student+performance.zip student.zip && unzip student.zip student-por.csv && rm student+performance.zip student.zip
         mkdir -p local-data-warehouse/student_portuguese_performance && mv student-por.csv local-data-warehouse/student_portuguese_performance/
-    """
-    bibtex = """
-        @article{silva2008using,
-          title={Using data mining to predict secondary school student performance},
-          author={Silva, Alice},
-          year={2008}
-        }
     """
     curation_comments = """
         We use the data from UCI.

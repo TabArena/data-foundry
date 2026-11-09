@@ -15,9 +15,10 @@ When the curator names several records or a dashboard filter (for example "every
    second agent verifies the result against
    [verification.md](../../knowledge-curation/references/verification.md), and the first applies each finding or
    rejects it with evidence.
-4. Nothing is built. The open questions go into each folder's `REVIEW.md` and into the records of datasets not added
-   ([working_copy.md](working_copy.md)); the run's process log and evidence go into
-   `local-data-warehouse/_runs/<date>_<run>/`.
+4. Nothing is built. The open questions go into each record's `## Review`, also for a dataset that was not added; the
+   main session writes it from the unit agents' drafts ([records.md](records.md), "The review section"). The run's
+   process log and evidence go into `local-data-warehouse/_runs/<date>_<run>/`, and stay there: the record, the
+   definition and the CHANGELOG carry the numbers that matter, never the run folder's path.
 5. The curator reviews the result on the page `/review-added-datasets` builds.
 
 ## Machine limits
@@ -32,8 +33,27 @@ When the curator names several records or a dashboard filter (for example "every
 * Agents leave stray work (a `find /` ran 3.5 hours): check `ps` for long-running children before finishing.
 * Builds need memory more than cores: [rebuild.md](rebuild.md) lists the peaks.
 
+## Files agents share
+
+Lessons of the review rounds of 2026-11-10 and 11, where up to six agents applied decisions in parallel:
+
+* Evidence and scratch output go under the run folder, `local-data-warehouse/_runs/<date>_<run>/`, never the
+  session scratchpad: a restart wiped the scratchpad and the window tables in it.
+* Each agent writes under its own name (`apply_<agent>.md`, `<dataset>_windows.csv`); a shared file name (`out.md`,
+  `check.md`) is overwritten by the next agent.
+* A file several agents would edit (`CHANGELOG.md`, the working copy's cross-dataset `REVIEW.md`, a knowledge file,
+  the review page) is edited by the main session only: the agents return drafts. Two edits of one file at once lose
+  one of them.
+* An agent's summary is not the change: read the diff (a mark word copied wrong, a claim its own numbers
+  contradict).
+* Never `git stash`, `git checkout` or `git switch` while agents edit the working tree: the tree changes under them
+  and an edit is lost (2026-11-11, a stash during two doc agents' run lost one edit, which the agent re-applied).
+* A long run that is no longer needed is stopped (`SendMessage` to the agent, or `TaskStop`), not left to finish:
+  maps_router_eta_1m's full window statistics ran 52 minutes for counts already known.
+
 ## Brief for a unit agent
 
 Name in the brief: the records and the folder names, the knowledge files to read for each step (the workflow skill's
 "Knowledge used" table), the thread caps, the run folder for scratch output, that nothing is built, committed or
-pushed, and that records are edited only through the store API ([records.md](records.md)).
+pushed, and that records are edited only through the store API, a record's `## Review` also by an exact-string edit
+of the current file ([records.md](records.md)).

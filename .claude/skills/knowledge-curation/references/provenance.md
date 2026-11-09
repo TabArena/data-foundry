@@ -32,7 +32,7 @@ tour_travels_churn, mobile_churn, credit_card_customers, bank_customer_churn.
 
 **PROV-3 (Must).** The data is real: not generated, and not a real table someone reworked (relabelled, columns renamed,
 values replaced). A table that looks clean and scores well can still be either. Generated data is `No`; the scope rule
-is SEL-16 in [selection.md](selection.md), the detection is the seven tests under Methods, "Is the data generated?".
+is SEL-16 in [selection.md](selection.md), the detection is the nine tests under Methods, "Is the data generated?".
 Marker: `AHDS`, usually with `Missing source information`, and `Data Quality Issue` when a real table was manipulated.
 Values the data owner perturbed for privacy (disclosure control on a real cohort) are no rework when no test under
 Methods measures damage: the data stays, with a note saying what was checked and what cannot be (Lennart, 2026-10-21;
@@ -43,7 +43,8 @@ shipped version, which is again case by case (amended 2026-10-21, Lennart: "eith
 columns we ship, and if the marks on the published file leak/extend to the shipped version (which is again
 case-by-case)"; prompted by credit_card_customers, stroke_prediction and hepatitis_c_egypt). Cases:
 customer_satisfaction_in_airline, ecommerce_shipping, homeq_default_prediction, video_game_fps_prediction,
-framingham_heart_study_fhs, water_quality_and_potability, credit_card_customers, hepatitis_c_egypt.
+framingham_heart_study_fhs, water_quality_and_potability, credit_card_customers, hepatitis_c_egypt,
+bank_customer_churn, santander_customer_transaction_prediction, food_delivery_time.
 
 ### Duplicates
 
@@ -61,7 +62,7 @@ distinct task: a swapped target, another slice of the same cohort, added or drop
 
 **PROV-7 (Must; narrows PROV-4 and PROV-6).** Records that share a source but give different tasks are not
 duplicates. The comments say why they are distinct, ideally each with its own DOI. Cases:
-parkinsons_biomedical_voice_measurements, amex_iid.
+parkinsons_biomedical_voice_measurements, amex_iid, lung_adenocarcinoma_metastasis (lung_cancer's arrays).
 
 ### The source is the first publication
 
@@ -83,7 +84,7 @@ versions is one publication and takes the year of its first version (melbourne_h
 2026-10-22). The year is always a year. When the first publication cannot be pinned, take the best guess the evidence
 gives and say in the notes that it is a guess and why; never `Unknown` or `Unverified`, and never an accepted year
 warning (Lennart, 2026-11-04, on eucalyptus: "it should pick the best guess and maybe add a comment about this but it
-should be a year in the end"). A definition whose `year` is not a year does not load.
+should be a year in the end"). A definition whose publication `year` is not a year does not load.
 
 **PROV-10 (Must).** The citation is the work that published the data, not a paper that used it.
 
@@ -99,7 +100,7 @@ sources; they go into the comments. Cases: nyc_taxi_trip_duration, melbourne_hou
 all rows, labels taken from the wrong rating), check whether the origin has the clean data before keeping the damage
 or retiring the dataset, and repair or rebuild from the origin when it has them. Scaling over all rows is a weak leak:
 LEAK-30 in [leak_checks.md](leak_checks.md). Cases: SUPPORT2, ashrae, coad_colon_adenocarcinoma,
-corporate_credit_rating.
+corporate_credit_rating, lung_cancer.
 
 **PROV-14 (Must).** A repair stays under its record: the same units and the same features, with the damaged values
 restored from the origin (PROV-13), even when the table then differs from the release. Only a rebuild from other
@@ -186,17 +187,34 @@ The detection for PROV-3. Run these tests, cheapest first, on the earliest versi
 5. Look for class-conditional generation: a correlation between two features that differs strongly by class or
    changes sign, a label-free nearest-neighbour distance that predicts the label, number formats that differ by class
    (homeq_default_prediction: near-copy clusters pure in the label, distance alone AUC 0.92).
-6. Look for structure the world would show: units that ought to cluster (passengers of one flight), physical
-   constraints (arrival delay against departure delay), impossible combinations (children on business trips), known
-   reference values. This also shows which parts are real: the airline distances spike on actual route lengths (337 mi
-   LAX-SFO, 2,475 mi JFK-LAX), so only the passenger part is synthetic.
+6. Look for structure the world would show: units that ought to cluster (passengers of one flight), units that
+   ought to keep their attributes (a courier's age and vehicle), physical constraints (arrival delay against departure
+   delay), impossible combinations (children on business trips), known reference values. This also shows which parts
+   are real: the airline distances spike on actual route lengths (337 mi LAX-SFO, 2,475 mi JFK-LAX), so only the
+   passenger part is synthetic. food_delivery_time: none of 1,320 courier IDs keeps one age, rating or vehicle (medians
+   of 17 ages and 3 vehicle types over 41 orders).
 7. Look for a deterministic target: a near-perfect fit from a simple formula or lookup is `Trivial` and often `AHDS`
    (video_game_fps_prediction: log FPS = game + CPU + GPU, R^2 0.99998).
+8. Shuffle within each class: permute the values of a column among the rows of the same class and train a classifier
+   to tell the real rows from the shuffled ones, for each column and for all columns at once. ROC AUC near 0.5 means
+   the column holds nothing beyond the label, as when a generator draws each column from the label alone; the columns
+   of a real table of the same kind stay above. santander_customer_transaction_prediction: 0.49 for all 200 columns at
+   once, against 1.0 on Santander's real customer table (santander_customer_satisfaction); bank_customer_churn: seven
+   of ten columns 0.48-0.53, against 0.54-0.76 for every client column of bank_marketing. The pairwise form counts the
+   column pairs dependent within each class against the rate chance gives (santander: 5.1% outside the 95% band and
+   0.1% outside the 99.9% band, against 53% on the real table).
+9. Look at the fine structure of the target: a target drawn in two steps, a coarse level the features follow and a
+   remainder that is uniform and that no feature predicts, while the other columns change only at the level's edges.
+   food_delivery_time: the delivery time is a 5-minute block plus a uniform minute (19.6% to 21.2% of the orders on
+   each minute of a block; LightGBM R² -0.074 on the minute against -0.075 for shuffled minutes), and of the courier
+   age's variance across delivery minutes 0.0006 of 0.103 lies within blocks.
 
 Calibrate before concluding: run the same statistic on a real dataset of the same kind, since a selection on the label
 also changes correlations. Report which columns look real and which look generated, with the decisive test first.
-When you can, write the generator down: that settles it. The automated marks of generated data and their calibration
-are in [task_probes.md](task_probes.md), "Generated data".
+When you can, write the generator down: that settles it, and it leads the report. bank_customer_churn: churn drawn
+first, every other column given churn and at most two other columns, tenure, salary and the card flag as noise; this
+class-rooted Bayes net, used as a classifier, beats all 40 benchmark methods. The automated marks of generated data and
+their calibration are in [task_probes.md](task_probes.md), "Generated data".
 
 ### Finding a paper's text
 
@@ -229,7 +247,10 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | PROV-3 | ecommerce_shipping | tests 2 and 4: `Warehouse_block` is the id modulo 6, `Mode_of_Shipment` a 137-id cycle, 1,833 rows per warehouse block; retired | applied |
 | PROV-3 | homeq_default_prediction | test 5: near-copy clusters pure in the label, distance alone AUC 0.92; retired | applied |
 | PROV-3 | credit_card_customers | calibrated marks without a label link (a 12-month count that equals Q4 + Q1 in 10,127 of 10,127 rows, spend and inactivity unrelated as in no real credit table, a profile column a classifier cannot tell from a shuffle) and an offline source: enough to retire as `AHDS` (2026-10-26, Lennart) | applied |
+| PROV-3 | santander_customer_transaction_prediction | calibrated marks tied to the label: the 200 columns independent within each class at the chance rate (5.1% and 0.1% of pairs outside the 95% and 99.9% bands), real rows not told from rows shuffled within class (ROC AUC 0.49; tests 5 and 8), against 53% and 1.0 on Santander's real customer table; naive Bayes, right by construction, matches TabPFN-3.5: retired as `AHDS`. Disputed as the owner's anonymization and confirmed (2026-11-12, Lennart): the Kaggle model over each value and its count beats both (ROC AUC 0.905 to 0.910) but is still a sum of one-column terms, and whether a value is unique in its column is independent across columns within each class too | applied |
 | PROV-3 | hepatitis_c_egypt | marks without a label link: the columns are independent (21 of 406 pairs pass the 95% noise band, 20 by chance; AST-ALT r 0.04, the same HGB in men and women) and the stage is not predictable (macro ROC AUC 0.48-0.50 with all 28 features): left out with `AHDS` and `Data Quality Issue` (2026-10-26, Lennart) | applied |
+| PROV-3 | bank_customer_churn | a course table whose generator was written down: a class-rooted Bayes net (churn first, each column given churn and at most two other columns, three columns pure noise) that beats all 40 benchmark methods; the calibrated within-class shuffle test (test 8) agrees (seven of ten columns 0.48-0.53 against 0.54-0.76 on bank_marketing); retired as `AHDS`, which ends the earlier keep of a named course as a source | applied |
+| PROV-3 | food_delivery_time | tests 6 and 9, tied to the label: the delivery time a 5-minute block plus a uniform minute that no feature predicts, the other columns changing only at the block edges, courier IDs that keep no age, rating or vehicle, and a courier's age that follows the delivery time (4.2 years below the courier's mean at 10-14 minutes, 3.0 above at 50-54); the delivery points were already known to be the restaurant plus one of 12 equal offsets, and the 20-column upload it was cut from shows the same marks, so a rebuild from it is no way out: retired as `AHDS` | applied |
 | PROV-3 | water_quality_and_potability | the first upload (adityakadiwal, 2021) names its source "Synthetically generated"; TDS about 50 times the conductivity (Spearman 0.021), 1,277 of 1,278 potable rows above 1,000 mg/l: `No`, with `AHDS` added to `Missing source information`; PROV-2 as amended does not keep it (2026-10-22, Lennart) | applied |
 | PROV-3 | video_game_fps_prediction | test 7: log FPS = game + CPU + GPU, R^2 0.99998, `Trivial` and often `AHDS`; retired | applied |
 | PROV-3 | framingham_heart_study_fhs | BioLINCC's teaching data, anonymised by undocumented methods ("permutations and/or random visit selection", Nahhas, App. A.6): no test fires (digit preference intact, systolic BP ends in 0 for 22.5% of readings; within-person r 0.90 and 0.71 six years apart; per-sex baseline tables match the documentation); kept with a note of what was checked; PROV-3 amended (2026-10-21, Lennart). stroke_prediction, the other candidate (about 1,029 more patients aged 78 to 82 than the trend gives), was retired on its label (SEL-7, 2026-10-26) with `Data Quality Issue`, so it is no case | applied |
@@ -239,6 +260,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | PROV-6 | hiva_agnostic, nci_aids_antiviral_screen | a challenge's fingerprint build of a public screen against the screen's own structure release: HIVA's 4,229 labelled rows link to NSC numbers by their bits (97% with confidence) and every label agrees with the NCI file, and its three parts are 42,678 against the screen's 42,682 structure-bearing compounds, so it adds no compound and no label; what it adds is one 2006 ChemTK representation nobody can recompute, which CLEAN-24 as amended drops everywhere else. The structure release wins over the fingerprint build of the same rows: the same shape as ames_mutagenicity / tdc_ames, astrazeneca_chembl_logd74 / tdc_lipophilicity_astrazeneca and bbbp_martins / tdc_bbb_martins, flagged 2026-10-31 (2026-11-02, Lennart) | applied |
 | PROV-7 | parkinsons_biomedical_voice_measurements, telemonitoring_parkinsons_biomedical_voice_measurements | one source, two tasks: the first detects a disorder, the second tracks its progression ([selection.md](selection.md), "Duplicates and versions") | applied |
 | PROV-7 | amex_iid, amex_non_iid | the IID and grouped versions of one competition ([selection.md](selection.md), "Duplicates and versions") | applied |
+| PROV-7 | lung_cancer, lung_adenocarcinoma_metastasis | one study's arrays, two tasks: lung_cancer's histology (retired 2026-11-10) and the study's flag of a possible metastasis from another organ, a new record with its own rows and target (2026-11-11, Andrej); the rebuild from the study's GEO deposit (one MAS5 array per specimen instead of Dataset A's MAS4 means) was a repair under lung_cancer (PROV-13, PROV-14). Cited as PROV-14 until the review of 2026-11-11 (Lennart) | applied |
 | PROV-8, PROV-9 | airfoil_self_noise | 1989 and NASA RP-1218, not UCI 2014: the report's Figs. 11-43 show every measured value (the scaled target and the thickness are the report's formulas of them), and UCI's file was digitised from them (Lau, López and Oñate, CIMNE PI-335, Sec. 4.1), so it is a copy; the report's tables do not list the levels (2026-10-20, Lennart; PROV-9 amended) | applied |
 | PROV-9 | first_principles_tully_fisher | 1977 and Tully and Fisher (A&A 54), not PMLB: its 18 rows were read off the paper's Fig. 5(a); real measurements, so not `AHDS` (2026-10-20, Lennart) | applied |
 | PROV-9 | nikuradse_1, nikuradse_2 | 1933 and Nikuradse's VDI-Forschungsheft 361, not PMLB or the 1950 NACA translation: its Tables 2-8 hold the 362 measurements (2026-10-20, Lennart) | applied |
@@ -263,7 +285,8 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 ## In Data Foundry
 
 The record fields for source, year and links, the `_duplicate` naming and how to note a third-party problem:
-[records.md](../../knowledge-data-foundry/references/records.md). The definition's `source`, `year`, `source_url`,
-`download_description` and `bibtex`: [definitions.md](../../knowledge-data-foundry/references/definitions.md). The
+[records.md](../../knowledge-data-foundry/references/records.md). The definition's `sources` (the publication with
+its platform, link, license, year and BibTeX; the copies and parts) and `download_description`:
+[definitions.md](../../knowledge-data-foundry/references/definitions.md). The
 Kaggle command line and other access recipes:
 [sources_access.md](../../knowledge-data-foundry/references/sources_access.md).

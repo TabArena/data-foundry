@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     Smiles,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -69,11 +70,28 @@ class Apistox(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "apistox"
-    year = "2024"
     domain = "chemistry & material science"
-    source = "Other"  # Zenodo, with the Scientific Data descriptor; UCI 995 only links to the Zenodo DOI
-    source_url = "https://doi.org/10.5281/zenodo.11062076"
-    license = "CC BY-NC 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # Zenodo, with the Scientific Data descriptor; UCI 995 only links to the Zenodo DOI
+            url="https://doi.org/10.5281/zenodo.11062076",
+            license="CC BY-NC 4.0",
+            year="2024",
+            bibtex="""
+                @article{adamczyk2025apistox,
+                  title={{ApisTox}: a new benchmark dataset for the classification of small molecules toxicity on honey bees},
+                  author={Adamczyk, Jakub and Poziemski, Jakub and Siedlecki, Pawe{\\l}},
+                  journal={Scientific Data},
+                  volume={12},
+                  number={1},
+                  pages={5},
+                  year={2025},
+                  doi={10.1038/s41597-024-04232-w}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the main file of ApisTox from Zenodo: version 2 of the record (13350981), the version the
         Scientific Data descriptor cites. Version 1 (https://zenodo.org/records/11062077) holds the identical file, and
@@ -83,18 +101,6 @@ class Apistox(AbstractCuratedDataset):
 
         md5 of dataset_final.csv (as Zenodo lists it): 61ad9ef27a80987105a4cdb074eb102f
         sha256: de4b160a23601a44ac5ec5b23aae95973acba060135630a6df8f73d128baea9e
-    """
-    bibtex = """
-        @article{adamczyk2025apistox,
-          title={{ApisTox}: a new benchmark dataset for the classification of small molecules toxicity on honey bees},
-          author={Adamczyk, Jakub and Poziemski, Jakub and Siedlecki, Pawe{\\l}},
-          journal={Scientific Data},
-          volume={12},
-          number={1},
-          pages={5},
-          year={2025},
-          doi={10.1038/s41597-024-04232-w}
-        }
     """
     curation_comments = """
         We start with dataset_final.csv of ApisTox from Zenodo (record 13350981): 1,035 agrochemicals with their acute toxicity to honey bees.
@@ -132,6 +138,7 @@ class Apistox(AbstractCuratedDataset):
         splits=TemporalSplits(window=10, unit="unique", cutoffs=WINDOW_STARTS),
         horizon=10,
         horizon_unit="years",
+        time_unit="years",
     )
     splits_comment = """
         Expanding-window temporal splits on the first publication year: 4 test windows of ten years (2014-2023, 2004-2013, 1994-2003, 1984-1993), newest first; train is every compound dated before the window. The windows hold 54, 106, 118 and 173 compounds (12, 22, 19 and 33 toxic), and their train sides 95%, 85%, 73% and 56% of all compounds. A model trained on the compounds known up to a year predicts the toxicity of the compounds that appear in the next ten years. Ten years is the shortest window with 50 compounds at the newest end (2016-2023 holds 37): new compounds are few in recent years. An IID task of this size would get 10 x 3 splits, but the newest half of the data (from 1977 on) holds only 526 compounds, so four windows of about 50 or more remain.

@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -49,24 +50,29 @@ class Kick(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "kick"
-    year = "2011"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/DontGetKicked/overview"
-    license = "Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/DontGetKicked/overview",
+            license="Public Domain",
+            year="2011",
+            bibtex=r"""
+                @misc{DontGetKicked,
+                    author = {faysal and Will Adams and Will Cukierski},
+                    title = {Don't Get Kicked!},
+                    year = {2011},
+                    howpublished = {\url{https://kaggle.com/competitions/DontGetKicked}},
+                    note = {Kaggle}
+                }
+            """,
+        ),
+    )
     download_description = """
         kaggle competitions download -c dontgetkicked -p local-data-warehouse/kick
         unzip local-data-warehouse/kick/dontgetkicked.zip -d local-data-warehouse/kick/
         rm local-data-warehouse/kick/dontgetkicked.zip
-    """
-    bibtex = r"""
-        @misc{DontGetKicked,
-            author = {faysal and Will Adams and Will Cukierski},
-            title = {Don't Get Kicked!},
-            year = {2011},
-            howpublished = {\url{https://kaggle.com/competitions/DontGetKicked}},
-            note = {Kaggle}
-        }
     """
     curation_comments = """
         - The data is from a Kaggle competition. Its train/test split is neither temporal nor grouped: both cover January 2009 to December 2010 (test is 36-44% of every quarter), and 78.9% of test rows are at an auction location ("Auction" + "VNZIP1") that also occurs in train (72 of 128 test locations); some locations are only in test.

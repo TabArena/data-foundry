@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class Sdss17(AbstractCuratedDataset):
@@ -42,27 +42,39 @@ class Sdss17(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "sdss_17"
-    year = "2021"
     domain = "physics & astronomy"
-    source = "Other"  # SDSS Data Release 17; the Kaggle file is a cut of it
-    source_url = "https://www.sdss4.org/dr17/"
-    license = "Public Domain"  # On Kaggle it says Data files © Original Authors which is under public domain.
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # SDSS Data Release 17; the Kaggle file is a cut of it
+            url="https://www.sdss4.org/dr17/",
+            license="Public Domain",  # SDSS data are public; the Kaggle cut says Data files © Original Authors
+            year="2021",
+            bibtex="""
+                @article{accetta2022seventeenth,
+                  title={The seventeenth data release of the Sloan Digital Sky Surveys: Complete release of MaNGA, MaStar, and APOGEE-2 data},
+                  author={Accetta, Katherine and Aerts, Conny and Aguirre, Victor Silva and Ahumada, Romina and Ajgaonkar, Nikhil and Ak, N Filiz and Alam, Shadab and Prieto, Carlos Allende and Almeida, Andres and Anders, Friedrich and others},
+                  journal={The Astrophysical Journal Supplement Series},
+                  volume={259},
+                  number={2},
+                  pages={35},
+                  year={2022},
+                  publisher={IOP Publishing}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/fedesoriano/stellar-classification-dataset-sdss17",
+            license="Data files © Original Authors",
+            name="the Kaggle cut we download",
+        ),
+    )
     download_description = """
         We download the data from Kaggle.
 
         mkdir -p local-data-warehouse/sdss_17/ && cd local-data-warehouse/sdss_17 && kaggle datasets download fedesoriano/stellar-classification-dataset-sdss17 && cd ../../ && unzip local-data-warehouse/sdss_17/stellar-classification-dataset-sdss17.zip -d local-data-warehouse/sdss_17 && rm local-data-warehouse/sdss_17/stellar-classification-dataset-sdss17.zip
-    """
-    bibtex = """
-        @article{accetta2022seventeenth,
-          title={The seventeenth data release of the Sloan Digital Sky Surveys: Complete release of MaNGA, MaStar, and APOGEE-2 data},
-          author={Accetta, Katherine and Aerts, Conny and Aguirre, Victor Silva and Ahumada, Romina and Ajgaonkar, Nikhil and Ak, N Filiz and Alam, Shadab and Prieto, Carlos Allende and Almeida, Andres and Anders, Friedrich and others},
-          journal={The Astrophysical Journal Supplement Series},
-          volume={259},
-          number={2},
-          pages={35},
-          year={2022},
-          publisher={IOP Publishing}
-        }
     """
     curation_comments = """
         - We renamed the target feature.

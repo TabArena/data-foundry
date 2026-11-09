@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
 
 
 class AirfoilSelfNoise(AbstractCuratedDataset):
@@ -48,24 +48,37 @@ class AirfoilSelfNoise(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "airfoil_self_noise"
-    year = "1989"
     domain = "physics & astronomy"
-    source = "Other"  # NASA RP-1218 plots every measured value (Figs. 11-43); UCI 291 (2014) was digitised from them
-    source_url = "https://ntrs.nasa.gov/citations/19890016302"
-    license = "CC BY 4.0"  # stated on UCI 291, the copy we download
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # NASA RP-1218 plots every measured value (Figs. 11-43); UCI 291 (2014) was digitised from them
+            url="https://ntrs.nasa.gov/citations/19890016302",
+            license="CC BY 4.0",  # stated on UCI 291, the copy we download
+            year="1989",
+            bibtex="""
+                @techreport{brooks1989airfoil,
+                  title={Airfoil self-noise and prediction},
+                  author={Brooks, Thomas F and Pope, D Stuart and Marcolini, Michael A},
+                  institution={NASA Langley Research Center},
+                  type={NASA Reference Publication},
+                  number={1218 (L-16528)},
+                  year={1989}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="UCI",
+            url="https://archive.ics.uci.edu/dataset/291/airfoil+self+noise",
+            license="CC BY 4.0",
+            year="2014",
+            name="UCI 291, digitised from the report's plots",
+        ),
+    )
     download_description = """
         We download UCI's copy (dataset 291, donated 2014), whose values were digitised from the figures of NASA RP-1218.
         mkdir -p local-data-warehouse/airfoil_self_noise/ && wget -P local-data-warehouse/airfoil_self_noise/ https://archive.ics.uci.edu/static/public/291/airfoil+self+noise.zip && unzip local-data-warehouse/airfoil_self_noise/airfoil+self+noise.zip -d local-data-warehouse/airfoil_self_noise/
-    """
-    bibtex = """
-        @techreport{brooks1989airfoil,
-          title={Airfoil self-noise and prediction},
-          author={Brooks, Thomas F and Pope, D Stuart and Marcolini, Michael A},
-          institution={NASA Langley Research Center},
-          type={NASA Reference Publication},
-          number={1218 (L-16528)},
-          year={1989}
-        }
     """
     curation_comments = """
         - The 1,503 rows are 106 wind-tunnel runs of NASA RP-1218 (Brooks, Pope and Marcolini 1989): one NACA 0012 section (6 chord lengths) at one angle of attack and one free-stream velocity (4), each a one-third-octave spectrum of 8 to 19 bands. They are the report's tripped set only (Sec. 4.3: "Figures 11 to 43 are for airfoils where the boundary layers have been tripped"); the untripped Figs. 44-74 are not in the data. The angle is the effective angle after the open-jet correction (Sec. 2.4). The spectra are truncated at both ends where extraneous noise changed them by 2 dB or more, hence 8 to 19 bands. The suction-side displacement thickness is the report's formula for a tripped boundary layer, computed from chord, velocity and angle, so it is constant within a run.

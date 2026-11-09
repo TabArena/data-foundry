@@ -3,6 +3,9 @@ unique_name: eumtpl
 name: euMTPL, European motor TPL portfolio (CASdatasets)
 checked_by:
 - AI (UNVERIFIED)
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 3
 tags:
@@ -40,3 +43,5 @@ type_adapter_id: curation-record-v1
 - as published: 2,373,197 policy-years x 19 columns: policy_id, year, group (a shipped 70/10/20 train/validation/test split), fuel_type, vehicle_category, vehicle_use, province, horsepower, gender, age, exposure, ...; target: claim frequency (a num_* count, or their sum, with exposure) or claim cost (cost_*); access: open.
 - Why: same kind of task as fremtpl2 and bemtpl97 but larger and with a panel: one policy over three calendar years, so a temporal or policy-grouped split is natural; CASdatasets is the documented collection those records already rest on | The same pricing task as fremtpl2 and bemtpl97 with 3.5 times freMTPL2's rows, a year ...
 - Adds: 3.5 times freMTPL2's rows, a year column and policy ids (temporal and grouped regimes), several claim types; a third MTPL portfolio from another country (Italian CARD convention, by the cost columns). Risks: the insurer and the paper are not named (PROV-2 note), which target to ship, the shipped group split to check ...
+
+**Assessment (AI, 2026-11-06):** under the rules adopted on 2026-11-06 (MET-14, MET-15, LEAK-41), /add-dataset ships the claims per year of exposure with `exposure` as the weight scoring column and the task's `sample_weight`, scored by `mean_poisson_deviance` with that `weight` input and a stated floor (MET-13), as fremtpl2 and bemtpl97 now are; `exposure` is never a feature where a claim can cut it short, and probe 22 checks whether another column predicts it. The curator has the call when the dataset is added.

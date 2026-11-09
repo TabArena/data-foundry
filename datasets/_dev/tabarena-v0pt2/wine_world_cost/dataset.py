@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class WineWorldCost(AbstractCuratedDataset):
@@ -35,25 +35,30 @@ class WineWorldCost(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "wine_world_cost"
-    year = "2023"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/elvinrustam/wine-dataset"
-    license = "CC0: Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/elvinrustam/wine-dataset",
+            license="CC0: Public Domain",
+            year="2023",
+            bibtex=r"""
+                @misc{Rustamov2023WineDataset,
+                  author = {Elvin Rustamov},
+                  title  = {Wine Dataset},
+                  year   = {2023},
+                  howpublished = {\url{https://www.kaggle.com/datasets/elvinrustam/wine-dataset}},
+                  note   = {Kaggle dataset}
+                }
+            """,
+        ),
+    )
     download_description = """
         There are many different wine datasets available, but this one is a comprehensive collection of wine-related data that includes information on various wine characteristics and text. So we stick to it.
 
         kaggle datasets download elvinrustam/wine-dataset && unzip wine-dataset.zip && rm wine-dataset.zip
         mkdir -p local-data-warehouse/wine_world_cost && mv WineDataset.csv local-data-warehouse/wine_world_cost
-    """
-    bibtex = r"""
-        @misc{Rustamov2023WineDataset,
-          author = {Elvin Rustamov},
-          title  = {Wine Dataset},
-          year   = {2023},
-          howpublished = {\url{https://www.kaggle.com/datasets/elvinrustam/wine-dataset}},
-          note   = {Kaggle dataset}
-        }
     """
     curation_comments = """
         We start with the Kaggle version. We resolve several issues from the web scrapper.

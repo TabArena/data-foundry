@@ -11,6 +11,7 @@ tags:
 - AI-Filled (Verify)
 - Many features
 - Non-IID (Grouped)
+- Spectral Data
 collections:
 - RamanBench
 original_source: Other

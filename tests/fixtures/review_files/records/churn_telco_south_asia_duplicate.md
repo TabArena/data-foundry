@@ -9,8 +9,15 @@ type_adapter_id: curation-record-v1
 
 Another upload of a telco churn file.
 
-**Open issues (AI, 2026-10-01):** not added; duplicate. The files are the 2,000 rows of `churn_telco_south_asia`
-with renamed values.
+CC (2026-10-02, Lennart): a later comment closes the block.
+
+## Review
+
+**Outcome:** not added; duplicate. The files are the 2,000 rows of `churn_telco_south_asia` with renamed values.
+
+**Main points:** The files are the 2,000 rows of `churn_telco_south_asia` with renamed values.
+
+**Issues:**
 
 1. **Leave it out as a duplicate?**
 
@@ -26,4 +33,3 @@ with renamed values.
 
    [^1]: **PROV-3** (Must): the data is real, not a real table someone reworked (relabelled, columns renamed).
 
-CC (2026-10-02, Lennart): a later comment closes the block.

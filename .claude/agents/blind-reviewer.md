@@ -23,6 +23,7 @@ Look at the data with Python (pandas, scikit-learn, lightgbm if installed; limit
 * Is the data what it claims to be: real, not generated; the right target; plausible values?
 * Is the task worth benchmarking: is there signal, is it trivial, is it big enough to score?
 * Is it prepared sensibly: column types, missing values, encodings?
+* If `task.md` labels a column as the training weight, is that use right for the task?
 
 Return: your verdict (include / include with changes / exclude) in one sentence, then your concerns ranked from most
 to least serious, each with the evidence (numbers, a quote from the source) and what you would change. Say what you

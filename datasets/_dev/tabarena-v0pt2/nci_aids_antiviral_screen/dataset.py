@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     Smiles,
+    Source,
     TaskSummary,
     canonical_smiles,
     scaffold_groups,
@@ -93,11 +94,35 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "nci_aids_antiviral_screen"
-    year = "2004"
     domain = "chemistry & material science"
-    source = "GOV Website"
-    source_url = "https://wiki.nci.nih.gov/display/NCIDTPdata/AIDS+Antiviral+Screen+Data"
-    license = "Not stated (the DTP page names no terms; a release of the US National Cancer Institute)"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",
+            url="https://wiki.nci.nih.gov/display/NCIDTPdata/AIDS+Antiviral+Screen+Data",
+            license="Not stated (the DTP page names no terms; a release of the US National Cancer Institute)",
+            year="2004",
+            bibtex="""
+                @misc{nci_dtp_aids_antiviral_screen_2004,
+                  author={{National Cancer Institute, Developmental Therapeutics Program}},
+                  title={{AIDS} Antiviral Screen Data},
+                  year={2004},
+                  howpublished={\\url{https://wiki.nci.nih.gov/display/NCIDTPdata/AIDS+Antiviral+Screen+Data}},
+                  note={Screening results of May 2004 (aids\\_conc\\_may04.txt) and structures of October 1999 (AIDO99SD)}
+                }
+                @article{weislow1989new,
+                  title={New Soluble-Formazan Assay for {HIV-1} Cytopathic Effects: Application to High-Flux Screening of Synthetic and Natural Products for {AIDS}-Antiviral Activity},
+                  author={Weislow, Owen S. and Kiser, Rebecca and Fine, Donald L. and Bader, John and Shoemaker, Robert H. and Boyd, Michael R.},
+                  journal={Journal of the National Cancer Institute},
+                  volume={81},
+                  number={8},
+                  pages={577--586},
+                  year={1989},
+                  doi={10.1093/jnci/81.8.577}
+                }
+            """,
+        ),
+    )
     download_description = """
         The files are the attachments of the NCI Developmental Therapeutics Program's "AIDS Antiviral Screen Data" page on the NCI wiki (source_url; attachments dated 2013-09-09): the screening results of May 2004 and the structures of October 1999. dtp.cancer.gov, whose bulk-data page lists the same files, served a certificate that expired on 2026-10-29. Downloaded 2026-11-01.
 
@@ -114,25 +139,6 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
         sha256 of AIDO99SD.sdf: db3a96d3540663551be8d376d8ef8318a2329f9698510f53a990ef0ef0d06ff2
 
         On first use, `_prepare_raw_files` reads the SD file with RDKit into aido99sd_smiles.csv: per record the NSC, the CAS RN, the SMILES as published without stereochemistry (the file's charge code 4 read as +1), and the SMILES without common salts and solvents.
-    """
-    bibtex = """
-        @misc{nci_dtp_aids_antiviral_screen_2004,
-          author={{National Cancer Institute, Developmental Therapeutics Program}},
-          title={{AIDS} Antiviral Screen Data},
-          year={2004},
-          howpublished={\\url{https://wiki.nci.nih.gov/display/NCIDTPdata/AIDS+Antiviral+Screen+Data}},
-          note={Screening results of May 2004 (aids\\_conc\\_may04.txt) and structures of October 1999 (AIDO99SD)}
-        }
-        @article{weislow1989new,
-          title={New Soluble-Formazan Assay for {HIV-1} Cytopathic Effects: Application to High-Flux Screening of Synthetic and Natural Products for {AIDS}-Antiviral Activity},
-          author={Weislow, Owen S. and Kiser, Rebecca and Fine, Donald L. and Bader, John and Shoemaker, Robert H. and Boyd, Michael R.},
-          journal={Journal of the National Cancer Institute},
-          volume={81},
-          number={8},
-          pages={577--586},
-          year={1989},
-          doi={10.1093/jnci/81.8.577}
-        }
     """
     curation_comments = """
         We start with aids_conc_may04.txt (the screen's conclusion for 43,850 compounds, May 2004) and AIDO99SD (42,687 structures as an SD file, October 1999) from the NCI Developmental Therapeutics Program's AIDS Antiviral Screen page, joined by NSC number, the NCI's compound id.

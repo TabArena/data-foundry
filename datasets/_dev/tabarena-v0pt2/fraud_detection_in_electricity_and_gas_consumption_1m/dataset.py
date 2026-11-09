@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    drop_columns,
+)
 
 CUT = "2013-01-01"
 """The prediction date: the features are the invoices before it, and the fraud labels look recorded from it on."""
@@ -81,8 +90,8 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
         ),
         changes=(
             "We cut the history at 2013-01-01, as later invoices carry traces of the inspections that set the labels,"
-            " keep the clients billed before that date and still billed from 2015 on, so that every client was "
-            "followed long enough for a finding, and sample 1.5M invoices by whole clients."
+            " and keep the clients billed before that date and still billed from 2015 on, so that every client was "
+            "followed long enough for a finding."
         ),
         fit="approximate",
         fit_reason=(
@@ -94,17 +103,25 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "fraud_detection_in_electricity_and_gas_consumption_1m"
-    version_of = "fraud_detection_in_electricity_and_gas_consumption"
-    version_comment = """
-        We sub-sample the frame (1,862,650 invoices of 81,531 clients, all before 2013) to 1.5M rows by whole clients
-        (stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and
-        tests on about 500k rows (v2 split protocol).
-    """
-    year = "2019"
     domain = "industry & manufacturing"
-    source = "Zindi"
-    source_url = "https://zindi.africa/competitions/fraud-detection-in-electricity-and-gas-consumption-challenge"
-    license = "Zindi Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Zindi",
+            url="https://zindi.africa/competitions/fraud-detection-in-electricity-and-gas-consumption-challenge",
+            license="Zindi Competition Rules",
+            year="2019",
+            bibtex=r"""
+                @misc{zindi2019stegfraud,
+                  author       = {{Zindi} and {STEG}},
+                  title        = {Fraud Detection in Electricity and Gas Consumption Challenge},
+                  year         = {2019},
+                  howpublished = {\url{https://zindi.africa/competitions/fraud-detection-in-electricity-and-gas-consumption-challenge}},
+                  note         = {Zindi competition, first run as AI Hack Tunisia \#4 -- Predictive analytics challenge \#1 (20--22 September 2019); data from the Soci\'{e}t\'{e} Tunisienne de l'\'{E}lectricit\'{e} et du Gaz (STEG)}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         The Zindi files need a Zindi login (train.zip holds client_train.csv and invoice_train.csv:
@@ -123,15 +140,6 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
 
         sha256 (2026-10-06): client_train.csv ba15926524d57058945ddccdd5bd2e1add0e00286c7940d7d8201900f2f126c3,
         invoice_train.csv 03d6b05c74962b04d40e5609644fc14166fc13270923272ac2c3de66399c7743.
-    """
-    bibtex = r"""
-        @misc{zindi2019stegfraud,
-          author       = {{Zindi} and {STEG}},
-          title        = {Fraud Detection in Electricity and Gas Consumption Challenge},
-          year         = {2019},
-          howpublished = {\url{https://zindi.africa/competitions/fraud-detection-in-electricity-and-gas-consumption-challenge}},
-          note         = {Zindi competition, first run as AI Hack Tunisia \#4 -- Predictive analytics challenge \#1 (20--22 September 2019); data from the Soci\'{e}t\'{e} Tunisienne de l'\'{E}lectricit\'{e} et du Gaz (STEG)}
-        }
     """
     curation_comments = """
         We start with client_train.csv and invoice_train.csv of the Zindi challenge, from its Kaggle mirror.
@@ -168,7 +176,7 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
         - We drop `counter_number`, the meter's serial number: it carries no meaning as a number or a code (the fraud
           rate is 7.3-9.5% across its deciles, in no order; Spearman -0.04 with the account creation year).
           Serials repeat across clients, but clients that share a serial do not share labels (ROC AUC 0.50-0.51 for
-          the other clients' label), so the serial does not link clients across the split either. Without it, 57
+          the other clients' label), so the serial does not link clients across the split either. Without it, 61
           rows of the shipped frame repeat another row of the same client (two meters with the same invoice); we
           keep them.
         - Shifted rows: 15 invoices of 2 clients carry `reading_remarque` codes outside the documented 6-9 (203, 5)
@@ -195,6 +203,7 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
           reading (Zindi: "If the counter shows something wrong, the agent gives a bad score"); the codes 6-9 are not
           described and their use changes over time (7 only up to 1995, 8 and 9 from 1996, 9 replacing 6 from 2012), so
           which end is bad is unknown.
+        - The row budget (1M train, 500k test rows): We keep the whole frame (1,862,650 invoices of 81,531 clients, all before 2013) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole clients drawn from its third and stratified on the target, and trains on every other row (about 1.36M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole clients at random, stratified on the target.
     """
 
     # Task
@@ -234,18 +243,13 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Default grouped 3-fold cross-validation by client, on the frame sub-sampled to 1.5M rows by whole clients;
-        every split trains on at most 1M and tests on at most 500k rows. The grouped cross-section stands in for a
+        Default grouped 3-fold cross-validation by client over the full frame (1,862,650 invoices): each fold tests on
+        at most 500k rows, whole clients drawn from its third, and trains on every other row (about 1.36M), which a
+        benchmark sub-samples to 1M rows by whole clients (`subsample_train`). The grouped cross-section stands in for a
         deployment over time, in which STEG would train on the findings of earlier campaigns and score its clients
         forward: the labels are undated findings of 2013-2019, one per client, so no test window or gap can be set,
         and train and test clients share the same years, as in the challenge.
     """
-    subsample_to_budget = True
-    accepted_check_warnings = {
-        "splits_rows_never_tested": "The v2 protocol caps each test fold at 500k rows; the grouped folds of the 1.5M-row "
-        "frame overshoot by whole clients, so 430 rows (0.03%, 18 clients) are trimmed from a "
-        "test fold (2026-10-20).",
-    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         text = {"client_id": str, "creation_date": str}

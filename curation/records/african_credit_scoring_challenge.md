@@ -6,6 +6,8 @@ checked_by:
 - Lennart
 data_foundry_status:
 - 'DF: Yes'
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 2
 tags:
@@ -39,7 +41,7 @@ predict loan default
 
 **Assessment (AI, 2026-10-20):** priority 1 for the review of the added dataset: gap -, use case -, source -, shape +, risk - (Issues 2-3: label set at data pull; zero-share rows labelled 0 by construction; the fix selects on a post-disbursement field). A real temporal credit-default task, but the signal is weak and mostly the customer's history, the 2024 windows are near chance, and the label is fragile.
 
-**Assessment (AI, 2026-10-20):** review panel (re-check): ship after changes; the changes are in the definition. `other_lenders_on_loan` is dropped (LEAK-10: a count of the loan's lender rows at the data pull that cannot be dated; its link to the outcome changes sign between eras); the one impossible share (1.168) is set to missing; 58,953 rows, 10 features. The label is the loan's default (the two rows of a loan agree in 2,132 of 2,134 loans), not a per-lender outcome. Counted per loan, 2024 loans 31-45 days past due default at 7.2% against 5.8-9.8% later, so the 30-day settlement holds (LEAK-24). The 0.649 linear score of 2026-10-07 is not reproduced (0.705 with one-hot customer_id). Open for Lennart (REVIEW.md): the zero-share filter (issue 2) and an exception to SPLIT-20 for the two product eras (issue 1). Priority 2: gap -, use case - (fit approximate: pull-time share columns, history known only through settled labels), source + (Zindi page and codebook), shape +, risk - (the zero-share filter selects rows on a pull-time field, an open LEAK-25 / SPLIT-9 reading).
+**Assessment (AI, 2026-10-20):** review panel (re-check): ship after changes; the changes are in the definition. `other_lenders_on_loan` is dropped (LEAK-10: a count of the loan's lender rows at the data pull that cannot be dated; its link to the outcome changes sign between eras); the one impossible share (1.168) is set to missing; 58,953 rows, 10 features. The label is the loan's default (the two rows of a loan agree in 2,132 of 2,134 loans), not a per-lender outcome. Counted per loan, 2024 loans 31-45 days past due default at 7.2% against 5.8-9.8% later, so the 30-day settlement holds (LEAK-24). The 0.649 linear score of 2026-10-07 is not reproduced (0.705 with one-hot customer_id). Open for Lennart (the Review): the zero-share filter (issue 2) and an exception to SPLIT-20 for the two product eras (issue 1). Priority 2: gap -, use case - (fit approximate: pull-time share columns, history known only through settled labels), source + (Zindi page and codebook), shape +, risk - (the zero-share filter selects rows on a pull-time field, an open LEAK-25 / SPLIT-9 reading).
 
 CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
 
@@ -68,3 +70,7 @@ CC (2026-10-26, Lennart): issue 8, option (a): add the history feature a data sc
 **Assessment (AI, 2026-10-26):** issue 8 (a) applied: `earlier_loans`, the customer's loans in the release disbursed on an earlier day (Train.csv and Test.csv's Kenyan rows, any product, no label read); a count of earlier settled defaults is 0 in every row and is not added. ROC AUC over the six windows: the count alone 0.724; tuned LightGBM 0.698 (before 0.633); CatBoost default 0.673 (0.655), tuned 0.655 (0.651); TabPFN v3.5 0.724 (0.675 without the feature). Task probes: linear 0.704, LightGBM 0.660, random forest 0.647; the `unstable` flag is gone, `no_spread` and `drift_baseline` remain. Leak probes: nothing new. Recommendation on the page: ship.
 
 CC (2026-10-26, Lennart): verdict ship (with earlier_loans, issue 8).
+
+CC (2026-11-08, Lennart): text fix (cross-dataset item, go ahead): one row per loan. The `row` text no longer says that a loan funded together with a second lender gives two rows, and the notes no longer say that `New_versus_Repeat` can differ between a loan's two rows; the same claim is gone from the splits comment ("A row is one lender's part of a loan, so a two-lender loan counts twice") and from decision table 4 ("A row is one loan"). Text only; the `row` text changes the checksum (not built).
+
+**Assessment (AI, 2026-11-08):** the kept product has one lender: the shipped frame has 52,826 rows and 52,826 loan ids, and Train.csv's Type_1 rows 61,723 rows, 61,723 loan ids and one lender_id; the loans with two rows (4,268 rows) are all of other products (Type_7, Type_4, Type_5, ...). `dataset check`: 0 errors, 0 warnings, 2 info.

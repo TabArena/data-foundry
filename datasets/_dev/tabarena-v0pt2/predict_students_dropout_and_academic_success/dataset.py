@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 # Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
 SCORES = ["Application_order"]
@@ -45,25 +45,30 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "predict_students_dropout_and_academic_success"
-    year = "2021"
     domain = "education"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5MC89"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5MC89",
+            license="CC BY 4.0",
+            year="2021",
+            bibtex=r"""
+                @inproceedings{martins2021early,
+                  title={Early prediction of student’s performance in higher education: A case study},
+                  author={Martins, M{\'o}nica V and Tolledo, Daniel and Machado, Jorge and Baptista, Lu{\'\i}s MT and Realinho, Valentim},
+                  booktitle={Trends and Applications in Information Systems and Technologies: Volume 1 9},
+                  pages={166--175},
+                  year={2021},
+                  organization={Springer}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/predict_students_dropout_and_academic_success/ && wget -P local-data-warehouse/predict_students_dropout_and_academic_success/ https://archive.ics.uci.edu/static/public/697/predict+students+dropout+and+academic+success.zip && unzip local-data-warehouse/predict_students_dropout_and_academic_success/predict+students+dropout+and+academic+success.zip -d local-data-warehouse/predict_students_dropout_and_academic_success/  && rm local-data-warehouse/predict_students_dropout_and_academic_success/predict+students+dropout+and+academic+success.zip
-    """
-    bibtex = r"""
-        @inproceedings{martins2021early,
-          title={Early prediction of student’s performance in higher education: A case study},
-          author={Martins, M{\'o}nica V and Tolledo, Daniel and Machado, Jorge and Baptista, Lu{\'\i}s MT and Realinho, Valentim},
-          booktitle={Trends and Applications in Information Systems and Technologies: Volume 1 9},
-          pages={166--175},
-          year={2021},
-          organization={Springer}
-        }
     """
     curation_comments = """
         - We renamed the target variable and fixed some typos in the feature names.

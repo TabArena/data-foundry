@@ -23,10 +23,14 @@ from data_foundry.curation.store import load_all
 
 MULTI_JOIN = " | "
 
+FLAT_VIEW_SKIPS: frozenset[str] = frozenset({"review"})
+"""Fields left out of the flat view: a record's review runs to hundreds of thousands of characters, and a sheet cell
+holds 50,000. The record, the dashboard and the site show it."""
+
 # Column order for the flat view: id, then the sheet-style labels, then review flag.
 _COLUMNS: list[tuple[str, str]] = (
     [("unique_name", "unique_name")]
-    + [(f.name, f.label) for f in FIELDS]
+    + [(f.name, f.label) for f in FIELDS if f.name not in FLAT_VIEW_SKIPS]
     + [("needs_review", "Needs Review"), ("source_row", "Source Row")]
 )
 # Integer columns: kept as nullable integers, so an empty cell does not turn the column into text (or floats).

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, set_missing
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode, set_missing
 
 # The ordinal scales, lowest level first, from the FICO data dictionary (curation notes; the README lists them):
 # the worst delinquency, from a derogatory comment to current and never delinquent.
@@ -83,24 +83,36 @@ class Heloc(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "heloc"
-    year = "2018"
     domain = "finance"
-    source = "Other"  # FICO's Explainable Machine Learning Challenge (heloc_dataset_v1); the Kaggle file is a copy
-    source_url = "https://community.fico.com/s/explainable-machine-learning-challenge"
-    license = "Public"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # FICO's Explainable Machine Learning Challenge (heloc_dataset_v1); the Kaggle file is a copy
+            url="https://community.fico.com/s/explainable-machine-learning-challenge",
+            license="Public",
+            year="2018",
+            bibtex=r"""
+                @misc{averkiyoliabev2021heloc,
+                  author       = {Kaggle User Averkiyoliabev},
+                  title        = {Home Equity Line of Credit (HELOC)},
+                  year         = {2021},
+                  howpublished = {\url{https://www.kaggle.com/datasets/averkiyoliabev/home-equity-line-of-creditheloc}},
+                  note         = {Kaggle dataset},
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/averkiyoliabev/home-equity-line-of-creditheloc",
+            license=None,  # Kaggle says "Unknown"
+            name="the Kaggle copy we download",
+        ),
+    )
     download_description = """
         We download the data from Kaggle and uzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/heloc/ && cd local-data-warehouse/heloc && kaggle datasets download averkiyoliabev/home-equity-line-of-creditheloc && cd ../../ && unzip local-data-warehouse/heloc/home-equity-line-of-creditheloc.zip -d local-data-warehouse/heloc/ && rm local-data-warehouse/heloc/home-equity-line-of-creditheloc.zip
-    """
-    bibtex = r"""
-        @misc{averkiyoliabev2021heloc,
-          author       = {Kaggle User Averkiyoliabev},
-          title        = {Home Equity Line of Credit (HELOC)},
-          year         = {2021},
-          howpublished = {\url{https://www.kaggle.com/datasets/averkiyoliabev/home-equity-line-of-creditheloc}},
-          note         = {Kaggle dataset},
-        }
     """
     curation_comments = """
         - Label: "Bad" means the applicant was 90 days past due or worse at least once in the 24 months after the account was opened; "Good" means never more than 90 days overdue (FICO's challenge description, as reproduced in the AIX360 HELOC tutorial; FICO's challenge page now redirects).
@@ -115,6 +127,9 @@ class Heloc(AbstractCuratedDataset):
           each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order.
     """
+    accepted_check_warnings = {
+        "meta_license_unknown": ("The Kaggle copy we download gives its licence as 'Unknown' (checked 2026-11-10)."),
+    }
 
     # Task
     target = "RiskPerformance"

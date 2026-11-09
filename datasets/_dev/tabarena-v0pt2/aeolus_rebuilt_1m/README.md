@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: aeolus_rebuilt_1m
 container_format: 2
-checksum: v2:ec086b63b892722ad33a2a68dc40cf0cfb4d38748cb7f21568807b0720cd1d03
+checksum: v2:cee73acd5d8b71c59d1c422e8624d356379a5bc07a63e9d5b59cd4be00690037
 build: null
 build_stale: false
 data:
@@ -41,6 +41,9 @@ splits:
   n_test:
     min: 259738
     max: 273891
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -63,7 +66,7 @@ decisions:
 
 Binary classification of `ARR_DEL15`, scored with `roc_auc` on temporal splits by `FL_DATE`. 1,799,255 rows and 34 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:ec086b63b892722ad33a2a68dc40cf0cfb4d38748cb7f21568807b0720cd1d03`.
+Not built yet. The current definition gives checksum `v2:cee73acd5d8b71c59d1c422e8624d356379a5bc07a63e9d5b59cd4be00690037`.
 
 ## In brief
 
@@ -282,7 +285,7 @@ Version of `aeolus_rebuilt`: The BTS files hold 13,708,650 operated flights from
 
 As in aeolus_1m: a delay model is refit every two weeks and predicts the flights of the two weeks ahead. The last six weeks of 2024 are three two-week test windows (2024-12-18 to 12-31, 12-04 to 12-17 and 11-20 to 12-03, newest first; 25.9%, 16.7% and 17.5% of the operated flights late), so that one window falls in the holiday peak. Train is every flight from 2023 on dated at least two days before the window (a one-day gap): a flight's arrival delay is known only once it has landed, and the previous evening's flights land after midnight. Each window keeps all of its flights (264,245, 259,738 and 273,891); each train side is a random 1M of the earlier flights (one random order for all windows). The authors split 1-15 June 2024 chronologically 6:2:2 (Sec. 4.1), one test stretch of about three days and no season, so we depart from it. All three windows lie in late November and December: the score measures early-winter delays.
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 259,738 to 273,891 rows. Prediction horizon: 14 days. Gap between train and test: 1 days.
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 259,738 to 273,891 rows. Prediction horizon: 14 days. Gap between train and test: 1 days. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -753,7 +756,7 @@ The tail number links each flight to the aircraft's flight scheduled just before
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 62,973,925 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 62,973,925 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)

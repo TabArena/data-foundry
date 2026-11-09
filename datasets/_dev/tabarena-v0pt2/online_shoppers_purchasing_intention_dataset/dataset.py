@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -46,27 +46,32 @@ class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "online_shoppers_purchasing_intention_dataset"
-    year = "2018"
     domain = "business & marketing"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5F88Q"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5F88Q",
+            license="CC BY 4.0",
+            year="2018",
+            bibtex="""
+                @article{sakar2019real,
+                  title={Real-time prediction of online shoppers’ purchasing intention using multilayer perceptron and LSTM recurrent neural networks},
+                  author={Sakar, C Okan and Polat, S Olcay and Katircioglu, Mete and Kastro, Yomi},
+                  journal={Neural Computing and Applications},
+                  volume={31},
+                  number={10},
+                  pages={6893--6908},
+                  year={2019},
+                  publisher={Springer}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/online_shoppers_purchasing_intention_dataset/ && wget -P local-data-warehouse/online_shoppers_purchasing_intention_dataset/ http://archive.ics.uci.edu/static/public/468/online+shoppers+purchasing+intention+dataset.zip && unzip local-data-warehouse/online_shoppers_purchasing_intention_dataset/online+shoppers+purchasing+intention+dataset.zip -d local-data-warehouse/online_shoppers_purchasing_intention_dataset/ && rm local-data-warehouse/online_shoppers_purchasing_intention_dataset/online+shoppers+purchasing+intention+dataset.zip
-    """
-    bibtex = """
-        @article{sakar2019real,
-          title={Real-time prediction of online shoppers’ purchasing intention using multilayer perceptron and LSTM recurrent neural networks},
-          author={Sakar, C Okan and Polat, S Olcay and Katircioglu, Mete and Kastro, Yomi},
-          journal={Neural Computing and Applications},
-          volume={31},
-          number={10},
-          pages={6893--6908},
-          year={2019},
-          publisher={Springer}
-        }
     """
     curation_comments = """
         - Anomaly: the data contains time-based features that were preprocessed to create a time-invariant predictive task.

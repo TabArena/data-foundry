@@ -2,23 +2,25 @@
 report_format: data-foundry-report-v2
 unique_name: fremtpl2
 container_format: 2
-checksum: v2:d4a0e64079385d1358118fc9e2aaee6bfad29b58240fd49d7fdcaa9f1f7abe39
+checksum: v2:0933d52ef1b69c0701b49f4e0f6644502e0638c3dccf52c2c219f6476e1e95db
 build: null
 build_stale: false
 data:
   n_rows: 677991
-  n_features: 10
+  n_features: 9
   dtypes:
     category: 4
-    float64: 4
-    int64: 3
+    float64: 5
+    int64: 2
   n_test_dataset_rows: null
 task:
-  target: ClaimNb
+  target: claim_frequency
   problem_type: regression
   metric: mean_poisson_deviance
   metric_origin: source
-  scoring_columns: null
+  scoring_columns:
+  - Exposure
+  sample_weight: Exposure
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -46,13 +48,19 @@ bundle_checks:
   warnings: []
   infos: []
   accepted:
-    dataset_duplicate_rows: 'Each copy is a distinct policy (own IDpol): rating cells
-      are coarse, so many policies share every factor, and the repetition is the portfolio
-      (Lennart, 2026-11-04).'
-    dataset_conflicting_duplicate_rows: '520 rows (390 before BonusMalus was blanked
-      in blocks 0-4) share every factor with another policy but differ in claim count:
-      claims are rare, random events of identical risk profiles, not noise (Lennart,
-      2026-11-04).'
+    dataset_duplicate_rows: 'Accepted (Lennart, 2026-11-04); counts of 2026-11-06
+      on the 9 rating factors: 181,197 rows (26.7%) copy an earlier row with the same
+      target, and 327,862 sit in 138,537 groups of identical factors, 92.9% of which
+      sum to at most 1.01 years, so most groups look like one policy-year split into
+      records (each with its own IDpol) rather than distinct policies. The harm is
+      at the folds'' noise of about 0.0006: a memorizer of training twins gains +0.0001,
+      the group''s size and the other records'' exposure +0.0004, the count of identical
+      rows over train and test +0.0005; the one exception is the profile of the high
+      counts (notes, issue 11).'
+    dataset_conflicting_duplicate_rows: 'Accepted (Lennart, 2026-11-04); counts of
+      2026-11-06: 8,128 rows (1.2%) share every rating factor with another row but
+      differ in the target, 7,971 of them in the claim count: claims are rare, random
+      events of identical risk profiles, not noise.'
     task_target_value_dominant: '96% of the policies have no claim: real no-claim
       policies, the nature of claim frequency.'
 decisions:
@@ -63,27 +71,29 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `ClaimNb`, scored with `mean_poisson_deviance` on IID splits. 677,991 rows and 10 features. Source: Other (2014).
+Regression of `claim_frequency`, scored with `mean_poisson_deviance` on IID splits. 677,991 rows and 9 features. Source: Other (2014).
 
-Not built yet. The current definition gives checksum `v2:d4a0e64079385d1358118fc9e2aaee6bfad29b58240fd49d7fdcaa9f1f7abe39`.
+Not built yet. The current definition gives checksum `v2:0933d52ef1b69c0701b49f4e0f6644502e0638c3dccf52c2c219f6476e1e95db`.
 
 ## In brief
 
-**Question.** How many claims will a French motor-insurance policy make in the part of the year it is insured?
+**Question.** How many claims per year insured will a French motor-insurance policy make?
 
-**Use case.** For example, a pricing actuary sets the premium of motor third-party liability policies, estimating each policy's expected number of claims from its rating factors and the time it is insured.
+**Use case.** For example, a pricing actuary sets the yearly premium of motor third-party liability policies at the quote, estimating each policy's expected claims per year insured from its rating factors.
 
 **One row.** One of 677,991 policy records of an unnamed French insurer's motor portfolio, each observed mostly within one accounting year, about 2011 to 2013.
 
-**Predicted.** The number of claims with a recorded cost in that period (0 to 16; 96.3% have none).
+**Predicted.** Claims per year insured: the claims with a recorded cost in the record's period divided by the time it was insured (96.3% have none). Each record counts in proportion to that time, in training and scoring.
 
-**Known at prediction time.** The car's power, age, brand and fuel, the driver's age, the bonus-malus level (in 12% of the records), the density, area and region of residence, and the time insured in the year, which may reflect a cancellation later in it.
+**Known at prediction time.** The car's power, age, brand and fuel, the driver's age, the bonus-malus level (in 12% of the records only: blank in the rest, where it looks recorded after the year's own claims), and the density, area and region of residence.
+
+**Known only when scoring.** How long each record was insured, recorded with its claims. A claim can cut it short, so it is no input: it is the rate's denominator and each record's weight in training and scoring.
 
 **What the test data stands for.** Random policy records are held out, standing for comparable policies of the same portfolio and years; the release has no dates, and a policy's record of another year can be on the training side.
 
-**Our changes to the source.** We blank the bonus-malus level in the first five policy-number ranges (88% of the records), where it looks recorded after the year's own claims, and set default codes of car age (99, 100) and driver age (99, in the first range) to missing.
+**Our changes to the source.** We divide the claim count by the time insured and weight each record by that time, as the source's models do with an offset. We blank the bonus-malus level in the first five policy-number ranges (88% of the records), where it looks recorded after the year's own claims, and set default codes of car age (99, 100) and driver age (99, in the first range) to missing.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The rating factors and the claim counts mirror pricing a policy, but the release has no calendar dates, so a later year cannot be held out as an insurer would (forced from temporal). Realized exposure is kept on purpose although it can reflect a later cancellation. The insurer is unknown. The bonus-malus level is blank in 88% of records. A model reading other rows can find a next-year record (kept).
+> **Use case fit: approximate (a stand-in with a known gap).** Rating factors and claim frequency mirror pricing, but undated rows cannot hold out a later year (forced from temporal); the insurer is unknown. The bonus-malus level, the tariff's main factor, is blank in 88% of records; a model removes about 2% of a constant rate's error (6% before the blanking), so strong methods differ in the fourth decimal. A model reading other rows can find a next-year record (kept).
 
 ## Files in this folder
 
@@ -134,9 +144,10 @@ Only curators run `build`, when the dataset ships.
 | data_tags | IID, Spatial, ForcedIIDFromTemporal |
 | reference | DutangCharpentierCASdatasets,NollSalzmannWuthrich2018 |
 | rows x columns | 677,991 x 11 |
-| task.target | ClaimNb |
+| task.target | claim_frequency |
 | task.problem_type | regression |
 | task.metric | mean_poisson_deviance |
+| task.sample_weight | Exposure |
 | task.split_regime | iid |
 
 **Metric**
@@ -147,8 +158,23 @@ Only curators run `build`, when the dataset ships.
 | origin | source: the source's metric |
 | original | Poisson deviance loss of the claim counts against the expected counts, in and out of sample (reported as 100 times the mean) |
 | reference | https://github.com/JSchelldorfer/ActuarialDataScience/blob/3f761ef830d28c14dda5443d504d192069a64ca3/1%20-%20French%20Motor%20Third-Party%20Liability%20Claims/Tools/FreMTPL_1b%20load%20data.r#L35 |
-| definition | 2*mean(y*log(y/mu)-y+mu) over the expected counts mu; 0*log(0/mu)=0; mu below 1e-6 counts as 1e-6 (two orders below one day of exposure at a low claim frequency); the case study's Poisson.Deviance is 100 times it |
-| params | {'min_prediction': 1e-06} |
+| definition | 2*sum(w*(y*log(y/mu)-y+mu))/sum(w) over the claims per year y and the predicted rates mu, w = Exposure (years insured); 0*log(0/mu)=0; mu below 1e-4 claims per year counts as 1e-4. For mu above the floor it equals the source's mean count deviance of the expected counts Exposure*mu times n/sum(Exposure) of the scored rows (1.886 to 1.896 on the shipped folds); the case study's Poisson.Deviance is 100 times the count deviance |
+| params | {'min_prediction': 0.0001} |
+| inputs | weight: `Exposure` |
+
+**Scoring columns**
+
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+
+| column | role | how the metric uses it | model input |
+|---|---|---|---|
+| `Exposure` | weight | mean_poisson_deviance: years insured in the record's period (1/366 to 2.01), realized: shorter when the policy ended early, often after a claim; in IDpol blocks 5-6 mostly cut at a calendar date (block 6 never exceeds 0.74 of a year, 99.8% of block 5 is a partial year). The claim frequency's denominator; each row's weight in the metric and in training; never a feature | training weight; never a feature |
+
+The test-row values of `Exposure` are for the scorer only: never read them when predicting a test row.
+
+**Training weight**
+
+Fit every model with `Exposure` as each row's sample weight (`sample_weight(container)` from `data_foundry.curation_container`), and never use it as a feature. The metric weights the test rows by the same column, so a model fitted without it targets another quantity.
 
 <details>
 <summary>Feature types: 3 categorical, 1 ordinal, 0 string, 0 datetime</summary>
@@ -188,43 +214,49 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 677,991 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| ClaimNb | Exposure | VehPower | VehAge | DrivAge | BonusMalus | VehBrand | VehGas | Area | Density | Region |
+| claim_frequency | Exposure | VehPower | VehAge | DrivAge | BonusMalus | VehBrand | VehGas | Area | Density | Region |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0.79 | 5 | 0 | 58 | nan | B2 | Regular | C | 141 | Rhone-Alpes |
-| 0 | 0.04 | 7 | 1 | 38 | 51 | B12 | Diesel | E | 4478 | Ile-de-France |
-| 0 | 1 | 8 | 12 | 48 | nan | B10 | Diesel | D | 1165 | Bretagne |
-| 0 | 0.36 | 10 | 3 | 70 | nan | B10 | Regular | C | 383 | Provence-Alpes-Cotes-D'Azur |
-| 0 | 0.04 | 4 | 1 | 32 | nan | B12 | Diesel | D | 875 | Provence-Alpes-Cotes-D'Azur |
+| 0 | 0.98 | 5 | 1 | 58 | nan | B2 | Diesel | A | 31 | Pays-de-la-Loire |
+| 0 | 0.71 | 5 | 2 | 37 | nan | B2 | Diesel | A | 19 | Centre |
+| 0 | 0.08 | 8 | 0 | 50 | nan | B2 | Diesel | E | 7259 | Nord-Pas-de-Calais |
+| 0 | 0.05 | 6 | 1 | 26 | nan | B1 | Regular | B | 64 | Pays-de-la-Loire |
+| 0 | 1 | 9 | 11 | 69 | nan | B2 | Regular | D | 801 | Poitou-Charentes |
 
 ## Curation notes
 
 We start with data/freMTPL2freq.rda (677,991 policies) and data/freMTPL2sev.rda (26,444 claims) from CASdatasets commit 227fb56b8734bdb7c0327a41180e01d2ddaeaf26, joined on IDpol, the link the help page names.
 
 - Prediction point: the quotation of the policy for the accounting year, from the rating factors the help page lists; the source gives no dates ("observed mostly on one year", "approximately 2011-2013").
-- Target: ClaimNb as released (0 to 16), no cap, annualization, weight or offset. CASdatasets' update of 23 June 2022 set each count to the policy's claims in freMTPL2sev, as Wüthrich and Merz (2023, Appendix B, Sec. 13.1) do by hand: the old counts of the first policies "do not seem to be correct because these claims do not have claim severity counterparts". _clean checks that every count equals the claims table and that no claim names a missing policy. Those first 9,387 policies (IDpol up to 24,951) all had claims before (9,942), 293 have now, and they stay: their next-year rows claim at 0.048 a year against 0.076 for the rest of block 0.
+- Target: claim_frequency = ClaimNb / Exposure, the claims per year insured (MET-14), with Exposure as the row weight of the metric and the training weight (`sample_weight`, MET-15) and never a feature (LEAK-41). A fit without the weight scores worse than the weighted constant rate (LightGBM 0.50043 against 0.47980 on fold 0, the book priced 1.56 times too high), so a method must take the training weight, and results say whether it did. ClaimNb leaves the frame as a part of the target, and _clean checks that claim_frequency x Exposure gives it back. The counts are as released (0 to 16). CASdatasets' update of 23 June 2022 set each count to the policy's claims in freMTPL2sev, as Wüthrich and Merz (2023, Appendix B, Sec. 13.1) do by hand: the old counts of the first policies "do not seem to be correct because these claims do not have claim severity counterparts". _clean checks that every count equals the claims table and that no claim names a missing policy. Those first 9,387 policies (IDpol up to 24,951) all had claims before (9,942), 293 have now, and they stay: their next-year rows claim at 0.048 a year against 0.076 for the rest of block 0.
 - Not capped: the 8 policies with 5 to 16 claims (Noll et al.'s code caps at 4, "that might be data error", FreMTPL_1b load data.r line 30; Wüthrich and Merz drop them as "may be data error", Sec. 13.1) each have as many claims with a cost. Exposure above one year (1,224 rows, up to 2.01, IDpol blocks 1 and 2 only), capped at 1 by both, stays: the help page says only "mostly on one year", so it is unusual, not shown impossible (CLEAN-11).
-- Counts of 5 to 16 (Lennart, 2026-11-04: kept): seven of the eight policies are one profile (power 4, brand B1, area D, density 824, Languedoc-Roussillon, bonus-malus 50): 72 claims over 3.63 years, every claim with a positive cost, which Wüthrich and Merz suspect to be one driver or a rental fleet. A cap is a modelling choice of the literature, not a shown error, and the 2022 update ties each count to a costed claim; the 19 rows carry 0.0012 of the mean deviance 0.2534.
-- Exposure above one year (Lennart, 2026-11-04: kept): 1,224 rows of 1.01 to 2.01 years (median 1.04) in two policy ranges, IDpol 1,179,653-1,199,005 (961 rows) and the end of block 2 (263), which record a whole contract period rather than cutting at the accounting year and have no links to other years. The literature caps at 1 on the assumption that every policy lies inside one year, which these rows contradict; capping would raise their modelled rate by 11% on average. Exposure is the time at risk.
-- Potential leak, kept on purpose: Exposure, the share of the year insured, is shorter when the policy ended during the year, so it can record a later cancellation. It stays as the exposure the source puts into the expected count, as in bemtpl97. Claims proportional to it score 0.2534 against 0.2595 for the mean count (0.0061, the time at risk), and LightGBM on all inputs 0.2326 (3 random folds; 0.2435 after the BonusMalus blanking of 2026-11-05). Beyond a log(Exposure) offset, Exposure as a free feature is worth another 0.0039 to 0.0045 of mean deviance (14-19% of LightGBM's gain over the mean count, 3 folds; 0.0033 to 0.0047 and 21-30% after the blanking), and a Poisson GLM on the rating factors gives log(Exposure) a coefficient of 0.641 where an offset would be 1: that excess is the size of the kept leak. Part of it is renewals during the year recorded as two records (Wüthrich and Merz, Sec. 13.1). Revisit if policy dates become available.
-- Metric: the mean Poisson deviance of ClaimNb against the expected count, by which Noll, Salzmann and Wüthrich compare models in and out of sample (FreMTPL_1b load data.r line 35, 100 times the mean) and Wüthrich and Merz's out-of-sample loss (Sec. 5.2.4). The shared scorer floors a predicted mean at `min_prediction` 1e-6 (Lennart, 2026-11-04, on bemtpl97).
+- Counts of 5 to 16 (Lennart, 2026-11-04: kept): seven of the eight policies, 66 claims over 1.38 years, every claim with a positive cost, belong to one profile, the same car and driver a year apart (power 4, brand B1, area D, density 824, Languedoc-Roussillon, bonus-malus 50 before the blanking; car and driver aged 12 and 52 in block 2, 13 and 53 in block 3), which Wüthrich and Merz suspect to be one driver or a rental fleet: its 19 rows hold 72 claims over 3.63 years, 19.8 claims a year against the portfolio's 0.074. A cap is a modelling choice of the literature, not a shown error, and the 2022 update ties each count to a costed claim; the 19 rows carry 0.0023 of the constant rate's declared score 0.4793 (0.0012 of 0.2534 on the count). They fall 6/7/6 into the three test folds, and LightGBM predicts 3.8 to 17.2 claims a year for them from their copies on the training side (0.073 to 0.078 with the folds grouped on identical rating factors): this makes 94-102% of the 0.0007 to 0.0017 by which the random split scores better than the grouped one, which is -0.0002 to +0.00015 without these rows (7 runs of 3 folds; issue 11).
+- Exposure above one year (Lennart, 2026-11-04: kept): 1,224 rows of 1.01 to 2.01 years (median 1.04) in two policy ranges, IDpol 1,179,653-1,199,005 (961 rows) and the end of block 2 (263), which record a whole contract period rather than cutting at the accounting year and have no links to other years. The literature caps at 1 on the assumption that every policy lies inside one year, which these rows contradict; capping would raise their modelled rate by 11% on average. Exposure is the time at risk; these rows keep weights of up to 2.01.
+- Exposure (LEAK-41, MET-15; issue 6, resolved 2026-11-06): the share of the year insured is shorter when the policy ended during the year, often after a claim, so as a free feature it recorded the outcome. On the count target, beyond a log(Exposure) offset it was worth another 0.0039 to 0.0045 of mean deviance (0.0033 to 0.0047 after the BonusMalus blanking, 3 folds), a Poisson GLM gave log(Exposure) a coefficient of 0.641 where an offset is 1, and at the quote (every policy priced for a full year) the free model was never better than the offset model while actual claims came in 1.29 times its price. On the declared metric (LightGBM fitted with the weight, the 3 shipped folds) Exposure as a feature gains +0.0082 with a Poisson fit (0.0086 / 0.0087 / 0.0073 per fold, 43% of what that model gains over the constant rate) and +0.0075 with an L2 fit, and in probe 22 (50,000 rows a side, 3 folds x 3 seeds) +0.0048 and +0.0067; the worse of the two decides, and the column is out either way. The weight alone, reported next to that gain and no ceiling (LEAK-41 as reworded on 2026-11-08): a rate fitted on Exposure alone scores 0.47114 against the constant rate's 0.47929, and 1/Exposure as the prediction about 3.65, worse than the constant. The rating factors predict Exposure at R^2 0.17 (probe 22), and no feature's gain runs through it above 2 SD in either fit; the highest, Region and DrivAge (1.1 to 1.4 SD), are known at the quote and stay (USE-6). Exposure now ships as the rate's denominator and each row's weight, the source's offset model: with the weight, dividing does not inflate short records. Part of the short records are renewals during the year recorded as two records (Wüthrich and Merz, Sec. 13.1).
+- Metric: the mean Poisson deviance of the claim frequency weighted by Exposure, sum(w*d)/sum(w). For predictions above the floor it equals the mean Poisson deviance of ClaimNb against the expected count Exposure x rate, by which Noll, Salzmann and Wüthrich compare models in and out of sample (FreMTPL_1b load data.r line 35, 100 times the mean) and Wüthrich and Merz's out-of-sample loss (Sec. 5.2.4), times n/sum(Exposure) of the scored rows (1.886 to 1.896 on the shipped folds, 1.891 overall): the source's metric on its offset model, so models rank as by the source's metric on every fold (MET-11, origin source). Floor 1e-4 claims per year on the predicted rate, two orders below the smallest plausible rate (MET-13, Lennart's rule of 2026-11-04 on the scale the metric scores). Deviances measured before 2026-11-06 (in the CC lines, and where these notes say "on the count target") are on the claim count with Exposure a feature; the declared score is about 1.891 times the count deviance.
+- One task, the claims per year insured (issue 12, 2026-11-08; closes D12 of 2026-11-06): the claim cost per year insured was measured as the alternative and is not created as a second dataset of the same policies. Built from freMTPL2sev (ClaimAmount summed per IDpol, over Exposure, weighted by Exposure), its join is clean: 26,444 claims on 24,944 policies, each count equal to its policy's claims with an amount, no amount without a claim, amounts of 1 to 4,075,401 EUR (42.3% at the five IRSA-IDA flat amounts). The tail is real, not a data error (CLEAN-11): French motor liability covers bodily injury without a limit (Code des assurances, R211-7); the largest claim is 6.8% of all claim amounts and 18 to 19% of the test fold it falls in (19.3% of the first shipped fold), and the three largest (4.08M, 1.40M and 1.30M EUR) came from drivers aged 18 to 20. On 9 random splits (the 3 shipped folds and two more partitions of the same rows), five honest models fitted with the weight: on the claims per year the best LightGBM removes 2.26% of the constant rate's deviance (SD 0.18%, 9 of 9) and the GLM 1.79%, a regularised LightGBM beats the GLM on 9 of 9 by 0.32% (split SD 0.03%, bootstrap SE within a test fold 0.08%), and the five models keep their order (Kendall's W 0.89). On the cost per year the weighted Gini is 0.23 to 0.27 (split SD 0.07 to 0.09): the GLM and the regularised LightGBM score 0.34 to 0.40 on the three test folds that hold the 4.08M claim and 0.13 to 0.27 on the other six, the GLM leads by +0.011 (7 of 9, bootstrap SE within a fold 0.021), W 0.43; the weighted Tweedie deviance at power 1.5 (floor 0.1 EUR) gives the GLM 5.4% of the constant's (SD 4.4%, -0.3% to 11.5%). The rating factors predict no claim size beyond the tail: a gamma GLM gains 5.8% (SD 8.5%) over the mean claim as released and -0.8% (above 0 on 3 of 9) with claims capped at 200,000 EUR, and the frequency LightGBM times the mean claim ranks the cost per year better (Gini 0.29) than any model fitted on it (0.23 to 0.27). The insurer prices the cost per year, from a frequency and a severity model (USE-5); on this table the rating part of that price is the frequency's, which the source scores (MET-11), while a score of the cost follows where a few claims land.
 - Dtypes: Area ordered A (rural) to F (urban centre) as the help page defines it, bands of Density; VehBrand, VehGas and Region (22 regions before 2016) nominal; the rest numbers. IDpol dropped. A car age of 99 or 100 (48 rows) is a default date, as no car is 86 to 98 and the 14 of the 23 aged 99 that next_year_rows pairs are all 100 a year later: missing (CLEAN-10). Anomaly: a driver age of 99 has 70 rows against 5 at 98, kept as possible (superseded 2026-11-05: the 66 in block 0 are missing, CC below); 66 of them are in block 0, after 1 row at 96 and none at 97-98, and none of the 66 has a next-year row (62.7% of block 0 has one).
-- Copies kept: every IDpol is distinct; 28,768 rows copy an earlier row (40,903 rows sit in groups of equal rows; 30,987 and 43,947 after the BonusMalus blanking), neighbouring IDpols often share all rating factors, and at least half the rows of blocks 1, 3, 5 and 6 (48.7%, 48.3%, 49.2%, 60.3%) repeat a car of the block before with the driver a year older (decision table: 161,883 pairs, against 16 to 75 under shuffled or shifted controls), with no key the source states. These shares are lower bounds: a wider IDpol offset finds up to 75.3% in block 6. Chaining these pairs with neighbouring IDpols that share every rating factor gives 430,298 groups. For a model that scores one row at a time, grouping on them moves LightGBM skill over the portfolio frequency from 0.0821 to 0.0819 (3 folds each). A model that reads other rows can do more: for 16% of test rows the policy's next-year row is on the training side, the shipped columns single it out for 55% of linked rows, and its claim count and exposure are worth 0.0021 of mean deviance (0.0002 without BonusMalus) (corrected 2026-11-05: 0.0021 is the oracle that also reads the next-year row's bonus-malus ratio, 0.0020 re-measured; claim count and exposure alone are worth 0.0003; after the blanking the full oracle is worth 0.0008, 3 folds).
-- Split forced IID from temporal (ForcedIIDFromTemporal, SPLIT-8): an insurer fits on past years and prices the next. The blocks 0-1, 2-3 and 4-6 are read as consecutive periods of three sub-portfolios, with two caveats: from block 0 to 1 and 2 to 3 the bonus-malus barely moves (94.5% unchanged from 0 to 1, where the French system lowers it after every claim-free year), and in blocks 4-6 0.2% of linked rows cover a full year and 63-66% of linked pairs have exposures summing to at most 1.01, so they look like one contract year split across accounting years. Tested on blocks 1, 3 and 6 after training on blocks 0, 2, 4 and 5, LightGBM's mean deviance on those rows (BonusMalus in all rows) is 0.23316 against 0.23267 for the same rows under the shipped folds (+0.00049, SE 0.00016): the IID split is slightly optimistic, and the ranking against a Poisson GLM is unchanged. Recover the years if a release has them.
+- Copies kept: every IDpol is distinct, yet on the 9 rating factors 327,862 rows (48.4%) sit in 138,537 groups of identical rows and 181,197 copy an earlier row with the same target; 92.9% of these groups sum to at most 1.01 years, so most look like one policy-year split into records. Neighbouring IDpols often share all rating factors, and about half the rows of blocks 1, 3, 5 and 6 (48.7%, 48.3%, 49.2%, 60.3%) repeat a car of the block before with the driver a year older (decision table: 161,883 pairs, against 16 to 75 under shuffled or shifted controls), with no key the source states. These shares are lower bounds: a wider IDpol offset finds up to 75.3% in block 6. Chaining these pairs with neighbouring IDpols that share every rating factor gives 430,298 groups; on the count target, grouping on them moved LightGBM skill over the portfolio frequency from 0.0821 to 0.0819 (3 folds each). On the declared metric a model that scores one row at a time gains nothing from the copies outside the profile of the high counts (a memorizer of training twins +0.0001; issue 11). A model that reads other rows can do more: for 16% of test rows the policy's next-year row is on the training side and the shipped columns single it out for 55% of linked rows; flags of a previous or next record, read without labels, are worth about 0.0010, an oracle that also reads the linked row's claims, exposure and bonus-malus 0.0014 to 0.0025 (upper bounds: they read IDpol, which does not ship), and the count of identical rows over train and test +0.0005 (+0.00071 on the count target); the protocol line of issue 8 covers them.
+- Split forced IID from temporal (ForcedIIDFromTemporal, SPLIT-8): an insurer fits on past years and prices the next. The blocks 0-1, 2-3 and 4-6 are read as consecutive periods of three sub-portfolios, with two caveats: from block 0 to 1 and 2 to 3 the bonus-malus barely moves (94.5% unchanged from 0 to 1, where the French system lowers it after every claim-free year), and in blocks 4-6 0.2% of linked rows cover a full year and 63-66% of linked pairs have exposures summing to at most 1.01, so they look like one contract year split across accounting years. Tested on blocks 1, 3 and 6 after training on blocks 0, 2, 4 and 5, LightGBM scores 0.47077 on those rows against 0.46987 for the same rows under the shipped folds (+0.0009, SE 0.00035; +0.00046 without the profile of the high counts; on the count target with BonusMalus in all rows, 0.23316 against 0.23267, +0.00049): the IID split is slightly optimistic, and the ranking against a Poisson GLM is unchanged. Recover the years if a release has them.
 - Year 2014: the tables entered CASdatasets on 14 October 2014 (`pkg/inst/NEWS` at CASdatasets commit 324c15c999; the NEWS.md of the pinned commit does not list them); the first release holding them is not pinned. Source: "Unknown private insurer".
 - CC (2026-11-05, Lennart): BonusMalus blanked in IDpol blocks 0-4 (597,998 rows, 88.2%), where it looks recorded after the row's own claims (issue 5, B; LEAK-10, LEAK-7). There it is frozen from block 0 to 1 and 2 to 3 and claimants pile on the first malus step 62-63; in blocks 5-6 it follows the previous year's claims, as a start-of-year value does, and stays, as in zillow_prize, melbourne_housing_market and online_shoppers. bemtpl97 keeps its bm: its source says "The risk factors are registered at the start of the policy period" (binning manuscript, Sec. 2), the freMTPL2 help page says nothing of the kind, and the 2026-11-04 call that the two are treated alike covered the split and the fit. LightGBM Poisson, Exposure a free feature, shipped folds (3): mean deviance 0.2327 before, 0.2435 after (+0.0127 in blocks 0-3, -0.0013 in blocks 5-6); dropping the column too costs 0.0009 more in blocks 5-6.
 - CC (2026-11-05, Lennart): DrivAge 99 set to missing in block 0 (66 rows), a default code like VehAge 99 (issue 9, B; CLEAN-10). None of the 66 has a next-year row, so the missing value marks the same rows the 99 did. The 4 rows at 99 outside block 0 stay at 99: next_year_rows pairs the one in block 3 with a block-2 row at 98, and two of the three in block 4 with block-5 rows at 100.
 - CC (2026-11-05, Lennart): the split stays IID (`ForcedIIDFromTemporal`) for now (issue 7, B): prior work on freMTPL2 uses a random hold-out or a split grouped on identical rating factors, and none links records across years; revisit if the inferred policy chains become a recorded key.
 - CC (2026-11-05, Lennart): the label-free renewal signal stays (issue 8, as implemented, answered (a)): it is an evaluation leak, read from other rows, handled by LEAK-9 as amended on 2026-11-05 (a protocol line the benchmark checks; a method that learns from the test block is called out and not benchmarked), as medical_facility_operational_data. After issue 5 a model that reads the next-year record gains 0.0008 mean deviance (0.0009-0.0010 without `BonusMalus`).
-- CC (2026-11-05, Lennart): exposure is parked (issue 6; https://github.com/TabArena/data-foundry/issues/51) until the zero-inflated stack (PRs #44-#47) is merged; the declared metric and bemtpl97's issue 1 wait with it.
+- CC (2026-11-06, Lennart): issue 6 resolved by option A of https://github.com/TabArena/data-foundry/issues/51: the target is the claims per year insured, Exposure the weight of the metric and of training and never a feature (LEAK-41, MET-14, MET-15), the floor 1e-4 a year (MET-13). Supersedes the call of 2026-10-20 (Andrej: Exposure "a feature, not a divisor", capped at 1) and the parking of 2026-11-05: the conditional measurement came later (+0.0040; never better at quotation), and with the weight, dividing does not inflate short records.
+- CC (2026-11-06, Lennart): the claim amounts (the proposal of PR #46, D12) stay out for now; a task on amounts per year insured or on the claim size is a separate decision, made on leak-free numbers.
+- CC (2026-11-08, Lennart): the random split stays, with the note on the one rating profile of the high counts (issue 11, as implemented): its 19 rows of 677,991 make 94-102% of the gap to folds grouped on identical rating factors, and LightGBM ranks ahead of a Poisson GLM under every split. Follows the IID call of 2026-11-05 (issue 7) and bemtpl97; the counts of 5 to 16 stay as kept on 2026-11-04.
+- CC (2026-11-08, Lennart): on D12, the claim-amount task: "which task is more representative of the real use case? use that one and the other is not created as we dont want to have duplicates". One task ships, the claims per year insured as implemented, the AI's pick on the numbers of the bullet "One task" (issue 12, for Lennart to confirm); the claim cost per year insured is not created. Closes his CC of 2026-11-06 that kept the amounts out "for now".
 
 ## Splits
 
 Default IID protocol: random 3-fold cross-validation, one repeat for a train side of 451,994 rows, with the
 benchmark split seed 4267 after the base class's content ordering and shuffle with seed 42. Each row is a
-distinct IDpol; the source
-gives no dates and no policy key across rows, so a policy's record of another year, or another record of the
-same year, can fall on the other side. This evaluates comparable policies of the same portfolio and years,
-not a later year.
+distinct IDpol; the source gives no dates and no policy key across rows, so a policy's record of another
+year, or another record of the same year, can fall on the other side. This evaluates comparable policies of
+the same portfolio and years, not a later year. One rating profile, the high counts of the notes (19 rows,
+72 claims), has rows on both sides of every fold, and LightGBM learns it from its training rows: that makes
+94-102% of the 0.0007 to 0.0017 by which this split scores better than one grouped on identical rating
+factors, and without its rows the difference is about 0 (issue 11).
 
 1 repeat(s) x 3 fold(s) with seed 4267; train 451,994 rows, test 225,997 rows.
 
@@ -257,8 +289,8 @@ The release has no dates. IDpol runs in seven blocks; in blocks 1, 3, 5 and 6 a 
 
 Accepted on purpose:
 
-- `dataset_duplicate_rows`: Each copy is a distinct policy (own IDpol): rating cells are coarse, so many policies share every factor, and the repetition is the portfolio (Lennart, 2026-11-04).
-- `dataset_conflicting_duplicate_rows`: 520 rows (390 before BonusMalus was blanked in blocks 0-4) share every factor with another policy but differ in claim count: claims are rare, random events of identical risk profiles, not noise (Lennart, 2026-11-04).
+- `dataset_duplicate_rows`: Accepted (Lennart, 2026-11-04); counts of 2026-11-06 on the 9 rating factors: 181,197 rows (26.7%) copy an earlier row with the same target, and 327,862 sit in 138,537 groups of identical factors, 92.9% of which sum to at most 1.01 years, so most groups look like one policy-year split into records (each with its own IDpol) rather than distinct policies. The harm is at the folds' noise of about 0.0006: a memorizer of training twins gains +0.0001, the group's size and the other records' exposure +0.0004, the count of identical rows over train and test +0.0005; the one exception is the profile of the high counts (notes, issue 11).
+- `dataset_conflicting_duplicate_rows`: Accepted (Lennart, 2026-11-04); counts of 2026-11-06: 8,128 rows (1.2%) share every rating factor with another row but differ in the target, 7,971 of them in the claim count: claims are rare, random events of identical risk profiles, not noise.
 - `task_target_value_dominant`: 96% of the policies have no claim: real no-claim policies, the nature of claim frequency.
 
 ## Data checks
@@ -278,7 +310,7 @@ Accepted on purpose:
 | VehAge | float64 | 48 | 0.01 | 76 | 1.0, 2.0, 0.0, 3.0, 4.0, 5.0, 10.0, 6.0, 7.0, 8.0 |
 | DrivAge | float64 | 66 | 0.01 | 83 | 36.0, 38.0, 39.0, 37.0, 52.0, 34.0, 40.0, 51.0, 41.0, 42.0 |
 | Exposure | float64 | 0 | 0 | 181 | 1.0, 0.08, 0.07, 0.24, 0.5, 0.49, 0.03, 0.04, 0.12, 0.2 |
-| ClaimNb | int64 | 0 | 0 | 11 | 0, 1, 2, 3, 4, 11, 5, 9, 8, 6 |
+| claim_frequency | float64 | 0 | 0 | 224 | 0.0, 1.0, 2.0, 2.0408, 12.5, 1.3333, 1.3514, 4.1667, 1.1494, 2.439 |
 | VehPower | int64 | 0 | 0 | 12 | 6, 7, 5, 4, 8, 10, 9, 11, 12, 13 |
 | Density | int64 | 0 | 0 | 1607 | 27000, 3317, 1313, 9307, 3744, 1326, 405, 4128, 4762, 57 |
 
@@ -288,19 +320,19 @@ Accepted on purpose:
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 96.32 | 6.796 | 5.153 | 0.043 | 0.019 | log1p | 739251 | 581036 | lognormal |
+| 0 | 0 | 96.32 | 78.581 | 7.997 | 4.099 | 0.055 | log1p | 109046 | 95761.4 | lognormal |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| ClaimNb | 677991 | 0.0390035 | 0.207169 | 0 | 16 |
 | Exposure | 677991 | 0.528743 | 0.364441 | 0.00273224 | 2.01 |
 | VehPower | 677991 | 6.45465 | 2.05091 | 4 | 15 |
 | VehAge | 677943 | 7.0377 | 5.61274 | 0 | 85 |
 | DrivAge | 677925 | 45.4939 | 14.1283 | 18 | 100 |
 | BonusMalus | 79993 | 59.9113 | 15.9218 | 50 | 190 |
 | Density | 677991 | 1792.41 | 3958.57 | 1 | 27000 |
+| claim_frequency | 677991 | 0.118629 | 2.02458 | 0 | 365 |
 
 ### Categorical features
 

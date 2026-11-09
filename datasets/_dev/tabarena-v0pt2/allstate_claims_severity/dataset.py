@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class AllstateClaimsSeverity(AbstractCuratedDataset):
@@ -40,26 +40,31 @@ class AllstateClaimsSeverity(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "allstate_claims_severity"
-    year = "2016"
     domain = "insurance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/allstate-claims-severity"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/allstate-claims-severity",
+            license="Kaggle Competition Rules",
+            year="2016",
+            bibtex=r"""
+                @misc{Ferguson2016AllstateClaimsSeverity,
+                  author = {Dana Ferguson and Meg Risdal and NoTrick and Sara R. Sillah and Tim Emmerling and Will Cukierski},
+                  title  = {Allstate Claims Severity},
+                  year   = {2016},
+                  howpublished = {\url{https://kaggle.com/competitions/allstate-claims-severity}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         We use the train.csv from the Kaggle competition.
 
         kaggle competitions download -c allstate-claims-severity -f train.csv && unzip train.csv.zip &&  rm train.csv.zip
         mkdir -p local-data-warehouse/allstate_claims_severity && mv train.csv local-data-warehouse/allstate_claims_severity/
-    """
-    bibtex = r"""
-        @misc{Ferguson2016AllstateClaimsSeverity,
-          author = {Dana Ferguson and Meg Risdal and NoTrick and Sara R. Sillah and Tim Emmerling and Will Cukierski},
-          title  = {Allstate Claims Severity},
-          year   = {2016},
-          howpublished = {\url{https://kaggle.com/competitions/allstate-claims-severity}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with the train.csv from Kaggle.

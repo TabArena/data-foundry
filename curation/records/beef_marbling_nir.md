@@ -7,6 +7,7 @@ suggestion: TBD -> Yes
 priority: 2
 tags:
 - AI-Filled (Verify)
+- Spectral Data
 original_source: Other
 year: '2023'
 problem_type: Regression

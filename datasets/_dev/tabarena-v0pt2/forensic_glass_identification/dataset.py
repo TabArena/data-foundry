@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary, decode
 
 
 class ForensicGlassIdentification(AbstractCuratedDataset):
@@ -34,25 +34,30 @@ class ForensicGlassIdentification(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "forensic_glass_identification"
-    year = "1987"
     domain = "chemistry & material science"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5WW2P"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5WW2P",
+            license="CC BY 4.0",
+            year="1987",
+            bibtex="""
+                @misc{German1987glass,
+                  author       = {German, B.},
+                  title        = {{Glass Identification}},
+                  year         = {1987},
+                  howpublished = {UCI Machine Learning Repository},
+                  note         = {{DOI}: https://doi.org/10.24432/C5WW2P}
+                }
+            """,
+        ),
+    )
     download_description = """
         We get the data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/42/glass+identification.zip && unzip glass+identification.zip && rm glass+identification.zip glass.names glass.tag Index
         mkdir -p local-data-warehouse/forensic_glass_identification && mv glass.data local-data-warehouse/forensic_glass_identification/
-    """
-    bibtex = """
-        @misc{German1987glass,
-          author       = {German, B.},
-          title        = {{Glass Identification}},
-          year         = {1987},
-          howpublished = {UCI Machine Learning Repository},
-          note         = {{DOI}: https://doi.org/10.24432/C5WW2P}
-        }
     """
     curation_comments = """
         We start with the data from UCI.

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import openml
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary, decode
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -48,11 +48,34 @@ class Jm1(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "jm1"
-    year = "2004"
     domain = "technology & internet"
-    source = "Other"  # the PROMISE repository (from the NASA Metrics Data Program); OpenML 1053 is a copy
-    source_url = "http://promise.site.uottawa.ca/SERepository/datasets/jm1.arff"  # plain http only; https gives 404
-    license = "Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # the PROMISE repository (from the NASA Metrics Data Program); OpenML 1053 is a copy
+            url="http://promise.site.uottawa.ca/SERepository/datasets/jm1.arff",  # plain http only; https gives 404
+            license="Public Domain",
+            year="2004",
+            bibtex="""
+                @inproceedings{menzies2004good,
+                  title={How good is your blind spot sampling policy},
+                  author={Menzies, Tim and Di Stefano, Justin S},
+                  booktitle={Eighth IEEE International Symposium on High Assurance Systems Engineering, 2004. Proceedings.},
+                  pages={129--138},
+                  year={2004},
+                  organization={IEEE}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="OpenML",
+            url="https://www.openml.org/d/1053",
+            license="Public",
+            year="2014",
+            name="OpenML 1053, which we read (byte-identical to the PROMISE file)",
+        ),
+    )
     download_description = """
         `_load_raw` reads OpenML dataset 1053 with openml-python, which downloads the file to its own cache
         (~/.cache/openml), not to local-data-warehouse/jm1/. To fetch it before a check or build:
@@ -65,16 +88,6 @@ class Jm1(AbstractCuratedDataset):
         (https://data.openml.org/datasets/0000/1053/dataset_1053.pq) holds the same 10,885 rows and values. The
         PROMISE file answers over plain http only; the Wayback Machine holds the same file:
         https://web.archive.org/web/20240126152134id_/http://promise.site.uottawa.ca/SERepository/datasets/jm1.arff
-    """
-    bibtex = """
-        @inproceedings{menzies2004good,
-          title={How good is your blind spot sampling policy},
-          author={Menzies, Tim and Di Stefano, Justin S},
-          booktitle={Eighth IEEE International Symposium on High Assurance Systems Engineering, 2004. Proceedings.},
-          pages={129--138},
-          year={2004},
-          organization={IEEE}
-        }
     """
     curation_comments = """
         - We selected this dataset as representative of a set of predictive modeling tasks of software engineering (other examples of such tasks are available on OpenML under the names mozilla4, pc1, pc2, pc3, mc1, kc1, kc2). This dataset was selected as it has the largest sample size.

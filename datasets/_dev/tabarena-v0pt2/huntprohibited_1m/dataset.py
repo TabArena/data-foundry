@@ -5,7 +5,15 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    drop_columns,
+)
 
 TARGET = "is_blocked"
 
@@ -19,7 +27,7 @@ class Huntprohibited1m(AbstractCuratedDataset):
         ),
         row=(
             "One closed ad posted on Avito.ru from December 2013 to March 2014, blocked for illicit content or never "
-            "blocked; 1.5 million ads sampled from 3,963,488 after dropping duplicates."
+            "blocked; 3,963,488 ads after dropping duplicates."
         ),
         predicted="Whether a moderator blocked the ad for illicit content.",
         known=(
@@ -45,15 +53,25 @@ class Huntprohibited1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "huntprohibited_1m"
-    version_of = "huntprohibited"
-    version_comment = """
-        We sub-sample the frame (3,963,488 ads after dropping duplicates) to 1.5M ads, stratified on the target, and use 3-fold cross-validation, so every fold trains on 1M and tests on 500k ads (v2 split protocol).
-    """
-    year = "2014"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/avito-prohibited-content"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/avito-prohibited-content",
+            license="Kaggle Competition Rules",
+            year="2014",
+            bibtex=r"""
+                @misc{avito2014HuntProhibitedContent,
+                  author = {{Avito}},
+                  title = {The Hunt for Prohibited Content},
+                  year = {2014},
+                  howpublished = {\url{https://www.kaggle.com/competitions/avito-prohibited-content}},
+                  note = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         The training file of the Kaggle competition "The Hunt for Prohibited Content" (Avito, 2014); the rules must be
@@ -62,15 +80,6 @@ class Huntprohibited1m(AbstractCuratedDataset):
 
         mkdir -p local-data-warehouse/huntprohibited
         kaggle competitions download -c avito-prohibited-content -f avito_train.zip -p local-data-warehouse/huntprohibited
-    """
-    bibtex = r"""
-        @misc{avito2014HuntProhibitedContent,
-          author = {{Avito}},
-          title = {The Hunt for Prohibited Content},
-          year = {2014},
-          howpublished = {\url{https://www.kaggle.com/competitions/avito-prohibited-content}},
-          note = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with avito_train.tsv from the Kaggle competition "The Hunt for Prohibited Content": 3,995,803 ads posted on Avito.ru from December 2013 to March 2014. The unlabelled test file (April 2014) is not used.
@@ -86,11 +95,12 @@ class Huntprohibited1m(AbstractCuratedDataset):
         - We keep `attrs`, the ad's form fields for its category, as the released JSON text: unpacking it would give 72 mostly empty columns with Russian names, and the winning solutions treated it as text (Kaggle discussion 10178).
         - Tags: no `Spatial` tag (Lennart, 2026-10-22). 901,011 real-estate ads (22.5% of the file) hold a street address inside the `attrs` form text, but the dataset has no geographic column of its own.
         - Anomaly: 6,004 `attrs` strings are not valid JSON, the description writes line breaks as "^p", and `price` is 0 for 12.4% of the ads (no price given, or free). We keep all of these as released.
-        - Anomaly: sellers typed placeholder prices. `price` = 999,999,999, the form's maximum, on 29 ads of the file (14 in this version), 65.5% of them blocked; `price` = 1 on 3,962 ads of this version, 19.0% blocked. We keep them as codes: the seller entered them at submission, and they carry signal.
+        - Anomaly: sellers typed placeholder prices. `price` = 999,999,999, the form's maximum, on 29 ads of the file, all in this version, 65.5% of them blocked; `price` = 1 on 10,331 ads of this version, 18.7% blocked. We keep them as codes: the seller entered them at submission, and they carry signal.
         - Note: we keep the source's cohort, closed ads that were blocked for illicit content or never blocked.
         - Note: text carries most of the signal. On fold 0, LightGBM on the structured columns reaches ROC AUC 0.932 and a logistic regression on TF-IDF of the three text columns 0.994 (average precision 0.51 against 0.95), so a pipeline that encodes Russian text poorly loses most of the remaining error and most of the average precision.
         - Note: the hidden-group probe hits on subcategory and attrs, but every ad has a subcategory, and attrs is its category's form (missing for the 2.8% of ads in categories without one), so both describe a new ad and the split stays IID.
         - Metric: AP@k as the competition, with k = 12,500 per 500,000-ad test fold, the competition's 2.5% (k = 32,500 of about 1.3M test ads, per the participants). The rules restrict the data to use within the competition, and the ads include illicit or offensive content (rules page).
+        - The row budget (1M train, 500k test rows): We keep the whole frame (3,963,488 ads after dropping duplicates) and use 3-fold cross-validation over it (v2 split protocol). Each fold tests on 500k ads of its third, drawn stratified on the target, and trains on the other 3,463,488. The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M ads with `subsample_train`, whose default draws random rows stratified on the target.
     """
 
     # Task
@@ -104,8 +114,8 @@ class Huntprohibited1m(AbstractCuratedDataset):
         params={"k": 12500},
     )
 
-    # Splits: IID (no time index survives); the `_1m` version sub-samples the frame to the 1.5M-row budget.
-    subsample_to_budget = True
+    # Splits: IID (no time index survives). The `_1m` version samples each fold's test third to 500k rows; the 1M
+    # train budget is recorded for a benchmark, which sub-samples each train side (`subsample_train`).
     accepted_check_warnings = {
         "dataset_pure_feature_value": "Real-estate ads (category Недвижимость and its subcategories) and children's "
         "clothes are almost never blocked (0.12% of 1,149,136 real-estate ads in the full file): the seller picks the "
@@ -184,7 +194,7 @@ class Huntprohibited1m(AbstractCuratedDataset):
                 "blocked share of the ads kept": f"{kept[TARGET].mean():.1%}",
                 "kept ads sharing a description of 30+ characters with another kept ad": int(shared.sum()),
                 "blocked share of those": f"{kept.loc[shared, TARGET].mean():.1%}",
-                "ads in this version (sub-sampled)": len(df),
+                "ads in this version": len(df),
             },
             name="value",
         )

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class Fiat500(AbstractCuratedDataset):
@@ -38,22 +38,27 @@ class Fiat500(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "fiat_500"
-    year = "2020"
     domain = "technology & internet"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/paolocons/another-fiat-500-dataset-1538-rows"
-    license = "CC0: Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/paolocons/another-fiat-500-dataset-1538-rows",
+            license="CC0: Public Domain",
+            year="2020",
+            bibtex=r"""
+                @misc{paolocons2020fiat,
+                  author       = {Kaggle User Paolocons},
+                  title        = {Another Dataset on Used Fiat 500 (1538 Rows)},
+                  year         = {2020},
+                  howpublished = {\url{https://www.kaggle.com/datasets/paolocons/another-fiat-500-dataset-1538-rows}},
+                  note         = {Kaggle dataset},
+                }
+            """,
+        ),
+    )
     download_description = """
         kaggle datasets download paolocons/another-fiat-500-dataset-1538-rows -p local-data-warehouse/fiat_500/ && unzip local-data-warehouse/fiat_500/another-fiat-500-dataset-1538-rows.zip -d local-data-warehouse/fiat_500/ && rm local-data-warehouse/fiat_500/another-fiat-500-dataset-1538-rows.zip
-    """
-    bibtex = r"""
-        @misc{paolocons2020fiat,
-          author       = {Kaggle User Paolocons},
-          title        = {Another Dataset on Used Fiat 500 (1538 Rows)},
-          year         = {2020},
-          howpublished = {\url{https://www.kaggle.com/datasets/paolocons/another-fiat-500-dataset-1538-rows}},
-          note         = {Kaggle dataset},
-        }
     """
     curation_comments = """
         We start with automobile_dot_it_used_fiat_500_in_Italy_dataset_filtered.csv from Kaggle.
