@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, set_missing
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode, set_missing
 
 DATE_COLUMNS = [
     "ADATE_2",
@@ -215,24 +215,29 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "pva_revenue_prediction_kddcup98"
-    year = "1998"
     domain = "business & marketing"
-    source = "Other"
-    source_url = "https://kdd.ics.uci.edu/databases/kddcup98/kddcup98.html"  # Rel 10.24432/C5401H
-    license = None  # Unclear but has usage instruction that do not count as license (?)
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://kdd.ics.uci.edu/databases/kddcup98/kddcup98.html",  # Rel 10.24432/C5401H
+            license=None,  # Unclear but has usage instruction that do not count as license (?)
+            year="1998",
+            bibtex=r"""
+                @misc{Parsa1998KDDCup1998,
+                  author = {Ismail Parsa},
+                  title  = {KDD Cup 1998},
+                  year   = {1998},
+                  howpublished = {\url{https://kdd.ics.uci.edu/databases/kddcup98/kddcup98.html}},
+                  note   = {Dataset, UCI Machine Learning Repository. DOI: 10.24432/C5401H}
+                }
+            """,
+        ),
+    )
     download_description = """
         wget https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98lrn.zip && unzip cup98lrn && rm cup98lrn.zip
         wget https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98val.zip && unzip cup98val && rm cup98val.zip && wget https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/valtargt.txt
         mkdir -p local-data-warehouse/pva_revenue_prediction_kddcup98 && mv cup98VAL.txt local-data-warehouse/pva_revenue_prediction_kddcup98/ && mv cup98LRN.txt local-data-warehouse/pva_revenue_prediction_kddcup98/ && mv valtargt.txt local-data-warehouse/pva_revenue_prediction_kddcup98/
-    """
-    bibtex = r"""
-        @misc{Parsa1998KDDCup1998,
-          author = {Ismail Parsa},
-          title  = {KDD Cup 1998},
-          year   = {1998},
-          howpublished = {\url{https://kdd.ics.uci.edu/databases/kddcup98/kddcup98.html}},
-          note   = {Dataset, UCI Machine Learning Repository. DOI: 10.24432/C5401H}
-        }
     """
     curation_comments = """
         We start with the train and validation data from the KDD Cup 1998 website and combine them.

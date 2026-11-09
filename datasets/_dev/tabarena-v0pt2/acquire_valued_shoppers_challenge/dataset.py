@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -59,26 +60,31 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "acquire_valued_shoppers_challenge"
-    year = "2014"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/c/acquire-valued-shoppers-challenge"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/c/acquire-valued-shoppers-challenge",
+            license="Kaggle Competition Rules",
+            year="2014",
+            bibtex=r"""
+                @misc{DMDave2014AcquireValuedShoppersChallenge,
+                  author = {DMDave and Todd B and Will Cukierski},
+                  title  = {Acquire Valued Shoppers Challenge},
+                  year   = {2014},
+                  howpublished = {\url{https://kaggle.com/competitions/acquire-valued-shoppers-challenge}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         We start with the data from Kaggle.
 
         kaggle competitions download -c acquire-valued-shoppers-challenge
         mkdir -p local-data-warehouse/acquire_valued_shoppers_challenge && mv acquire-valued-shoppers-challenge.zip local-data-warehouse/acquire_valued_shoppers_challenge/ && cd local-data-warehouse/acquire_valued_shoppers_challenge/ && unzip acquire-valued-shoppers-challenge.zip && rm acquire-valued-shoppers-challenge.zip testHistory.csv.gz sampleSubmission.csv.gz
-    """
-    bibtex = r"""
-        @misc{DMDave2014AcquireValuedShoppersChallenge,
-          author = {DMDave and Todd B and Will Cukierski},
-          title  = {Acquire Valued Shoppers Challenge},
-          year   = {2014},
-          howpublished = {\url{https://kaggle.com/competitions/acquire-valued-shoppers-challenge}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We follow the preprocessing from TabRed https://github.com/yandex-research/tabred/tree/main/preprocessing#ecom-offers-acquire-valued-shoppers-by-dmdave (which follows a top solution https://github.com/MLWave/kaggle_acquire-valued-shoppers-challenge).

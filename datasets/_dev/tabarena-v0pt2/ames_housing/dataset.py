@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -606,13 +607,27 @@ class AmesHousing(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "ames_housing"
-    year = "2011"
     domain = "business & marketing"
-    source = "Other"
-    source_url = "https://doi.org/10.1080/10691898.2011.11889627"
-    license = (
-        "JSE data policy: free to use in teaching; use in papers, books or other published material needs the "
-        "consent of the contributing author (https://jse.amstat.org/jse_users.htm)"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://doi.org/10.1080/10691898.2011.11889627",
+            license="JSE data policy: free to use in teaching; use in papers, books or other published material needs the "
+            "consent of the contributing author (https://jse.amstat.org/jse_users.htm)",
+            year="2011",
+            bibtex="""
+                @article{decock2011ames,
+                  author = {De Cock, Dean},
+                  title = {Ames, Iowa: Alternative to the Boston Housing Data as an End of Semester Regression Project},
+                  journal = {Journal of Statistics Education},
+                  volume = {19},
+                  number = {3},
+                  year = {2011},
+                  doi = {10.1080/10691898.2011.11889627}
+                }
+            """,
+        ),
     )
     data_tags = ("Spatial",)
     download_description = """
@@ -625,17 +640,6 @@ class AmesHousing(AbstractCuratedDataset):
 
         The Kaggle competition house-prices-advanced-regression-techniques and OpenML 42165 (its
         train.csv), hold 1,460 of these sales with prices; see curation_comments.
-    """
-    bibtex = """
-        @article{decock2011ames,
-          author = {De Cock, Dean},
-          title = {Ames, Iowa: Alternative to the Boston Housing Data as an End of Semester Regression Project},
-          journal = {Journal of Statistics Education},
-          volume = {19},
-          number = {3},
-          year = {2011},
-          doi = {10.1080/10691898.2011.11889627}
-        }
     """
     curation_comments = """
         We start with AmesHousing.txt, the data file of De Cock (2011): 2,930 sales of residential property in Ames, Iowa, January 2006 to July 2010, from the Ames City Assessor's Office.

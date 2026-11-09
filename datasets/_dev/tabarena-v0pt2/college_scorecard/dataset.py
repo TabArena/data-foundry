@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -205,11 +206,26 @@ class CollegeScorecard(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "college_scorecard"
-    year = "2026"
     domain = "education"
-    source = "GOV Website"
-    source_url = "https://collegescorecard.ed.gov/data/"
-    license = "CC BY (data.gov catalog entry of the U.S. Department of Education)"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",
+            url="https://collegescorecard.ed.gov/data/",
+            license="CC BY (data.gov catalog entry of the U.S. Department of Education)",
+            year="2026",
+            bibtex=r"""
+                @misc{usdoe2026collegescorecard,
+                    author       = {{U.S. Department of Education}},
+                    title        = {{College Scorecard}: All Data Files (Institution-Level Data, 1996-97 to 2025-26)},
+                    year         = {2026},
+                    month        = jun,
+                    note         = {Data release of June 10, 2026},
+                    howpublished = {\url{https://collegescorecard.ed.gov/data/}}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         College Scorecard "All Data Files" release of June 10, 2026 (U.S. Department of Education). The official link
@@ -234,16 +250,6 @@ class CollegeScorecard(AbstractCuratedDataset):
         https://web.archive.org/web/20260830015514/https://collegescorecard.ed.gov/files/CollegeScorecardDataDictionary.xlsx
         https://web.archive.org/web/20260630125853/https://collegescorecard.ed.gov/files/InstitutionDataDocumentation.pdf
     """
-    bibtex = r"""
-        @misc{usdoe2026collegescorecard,
-            author       = {{U.S. Department of Education}},
-            title        = {{College Scorecard}: All Data Files (Institution-Level Data, 1996-97 to 2025-26)},
-            year         = {2026},
-            month        = jun,
-            note         = {Data release of June 10, 2026},
-            howpublished = {\url{https://collegescorecard.ed.gov/data/}}
-        }
-    """
     curation_comments = """
         We start with the files MERGED1996_97_PP.csv to MERGED2025_26_PP.csv of the College Scorecard release of June 10, 2026 (U.S. Department of Education).
 
@@ -262,6 +268,7 @@ class CollegeScorecard(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
           (CLEAN-10).
+        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): `DISTANCEONLY` is recorded from the 2011 cohort on, so the 2015 and 2016 windows, whose train sides end at 2009 and 2010, train on cohorts without it and test on cohorts that all have it. Kept: a model fit then met the column the same way.
     """
 
     # Task
@@ -285,11 +292,16 @@ class CollegeScorecard(AbstractCuratedDataset):
         horizon_unit="years",
         gap=YEARS_TO_RATE - 1,
         gap_unit="years",
+        time_unit="years",
     )
     accepted_check_warnings = {
         "splits_rows_unused": "By design: the cohorts of 2013 and 2014 (3,676 rows) lie in the five-year label gap of "
         "every window (the newest window trains on 2001-2012) and before the oldest test window (2015, the last one "
         "whose train side keeps half of the cohorts).",
+        "splits_feature_missing_in_test": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): `DISTANCEONLY` is recorded from the 2011 cohort on, so "
+            "the 2015 and 2016 windows train on cohorts without it (curation_comments)."
+        ),
     }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

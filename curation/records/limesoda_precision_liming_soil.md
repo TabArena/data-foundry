@@ -8,6 +8,7 @@ priority: 2
 tags:
 - AI-Filled (Verify)
 - Tiny Data
+- Spectral Data
 original_source: Other
 year: '2025'
 domain: environmental science & climate

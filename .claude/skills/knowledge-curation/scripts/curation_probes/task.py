@@ -19,7 +19,16 @@ the task's regime), the group columns, the time column and how a grouped task is
 * the scores: ROC AUC (binary), macro ROC AUC and log loss (multiclass), R^2 and RMSE (regression), per row and,
   for a task scored per group (``prediction_unit="group"`` with the aggregation ``mean``, ``any`` or ``last``), per
   group;
+* with the task's own metric (``metric``, a dict described in ``curation_probes.weights``): each baseline's and
+  family's score by it on the same test rows, computed as the benchmark does (``metric_mean``; ``declared_metric``
+  names the best family by it), and for a metric with a floor (``min_prediction``) the share of the predictions at
+  or below the floor (``at_floor_mean``), where a family pays the floor's cost;
 * the units of each class in each test fold, in rows (or in groups for a task scored per group).
+
+A task with a training weight (``sample_weight``, such as the years insured of a claims-per-year target) is probed
+with it: every model is fitted with it as each row's weight, the dummy and the drift baseline are the weighted mean
+(``sum(w * y) / sum(w)``) or the weighted class shares, and every score weights the test rows by it (a group by the
+sum of its rows' weights). The class counts of ``few_minority`` stay counts of rows or groups.
 
 Every score is also a skill against the dummy, 0 for the dummy and 1 for a perfect model: ``2 AUC - 1`` (binary),
 ``1 - log loss / dummy log loss`` (multiclass), ``1 - MSE / dummy MSE`` (regression). The flags are questions for the
@@ -39,6 +48,12 @@ curator, not verdicts:
   dummy's error (paired by window, a model that beats the dummy on every window is not unstable);
 * ``few_minority``: a probed test fold holds fewer than 5 rows (or groups) of a class, binary or multiclass; the
   report names each class that falls short with its smallest count in a test fold.
+
+The flags read the probe's own skill. With a declared metric, ``declared_metric["vs_dummy"]`` gives the best family by
+that metric against the dummy, paired by split: the mean gain (positive is better), its standard error, the share of
+splits it beats the dummy on, and for a loss the gain relative to the dummy's loss. A count or a rate scored by a
+deviance has an R^2 near 0.01 by nature, so ``no_signal`` can come with a real gain on the declared metric (fremtpl2,
+bemtpl97, 2026-11-06): the report then names both.
 
 Group and target columns are not features. Text (string) columns enter as 16 TF-IDF + SVD components each, fitted on
 the train side (``text=False`` leaves them out; see ``curation_probes.text``). Categoricals enter as codes and
@@ -61,6 +76,7 @@ from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
+from curation_probes import weights
 from curation_probes.text import MAX_TEXT_COLUMNS, TEXT_COMPONENTS, encode_text, features
 
 SOLVED = 0.995
@@ -161,11 +177,16 @@ def predict(model, X_test: pd.DataFrame, n_classes: int) -> np.ndarray:
     return out
 
 
-def scores(y: np.ndarray, pred: np.ndarray, reference: np.ndarray, n_classes: int) -> dict[str, float]:
-    """The scores of ``pred`` and its skill against the constant ``reference`` (the dummy's prediction)."""
+def scores(
+    y: np.ndarray, pred: np.ndarray, reference: np.ndarray, n_classes: int, weight: np.ndarray | None = None
+) -> dict[str, float]:
+    """The scores of ``pred`` and its skill against the constant ``reference`` (the dummy's prediction), each row
+    weighted by ``weight`` when given.
+    """
     if not n_classes:
-        mse, dummy = float(np.mean((y - pred) ** 2)), float(np.mean((y - reference) ** 2))
-        total = float(np.mean((y - y.mean()) ** 2))
+        mse = float(np.average((y - pred) ** 2, weights=weight))
+        dummy = float(np.average((y - reference) ** 2, weights=weight))
+        total = float(np.average((y - np.average(y, weights=weight)) ** 2, weights=weight))
         return {
             "rmse": mse**0.5,
             "r2": 1 - mse / total if total else float("nan"),
@@ -178,13 +199,15 @@ def scores(y: np.ndarray, pred: np.ndarray, reference: np.ndarray, n_classes: in
     q = q / q.sum(axis=1, keepdims=True)
     present = np.unique(y)
     if n_classes == 2:  # binary
-        auc = float(roc_auc_score(y, p[:, 1])) if len(present) == 2 else float("nan")
-        return {"auc": auc, "log_loss": float(log_loss(y, p, labels=labels)), "skill": 2 * auc - 1}
-    ll, ll_dummy = float(log_loss(y, p, labels=labels)), float(log_loss(y, q, labels=labels))
+        auc = float(roc_auc_score(y, p[:, 1], sample_weight=weight)) if len(present) == 2 else float("nan")
+        ll = float(log_loss(y, p, labels=labels, sample_weight=weight))
+        return {"auc": auc, "log_loss": ll, "skill": 2 * auc - 1}
+    ll = float(log_loss(y, p, labels=labels, sample_weight=weight))
+    ll_dummy = float(log_loss(y, q, labels=labels, sample_weight=weight))
     auc = float("nan")
     if len(present) > 2:
         sub = p[:, present] / p[:, present].sum(axis=1, keepdims=True)
-        auc = float(roc_auc_score(y, sub, multi_class="ovr", labels=list(present)))
+        auc = float(roc_auc_score(y, sub, multi_class="ovr", labels=list(present), sample_weight=weight))
     return {"macro_auc": auc, "log_loss": ll, "skill": 1 - ll / ll_dummy if ll_dummy else float("nan")}
 
 
@@ -196,7 +219,7 @@ def by_group(frame: pd.DataFrame, aggregation: str, n_classes: int) -> tuple[np.
         return last[cols].to_numpy(), last["_y"].to_numpy()
     grouped = frame.groupby("_g", sort=True)
     if aggregation == "any":
-        pred = grouped[cols].max().to_numpy()
+        pred = grouped[cols].max().to_numpy(copy=True)  # a writable copy: pandas 3 may return a read-only view
         if n_classes == 2:  # P(negative) as the complement of the max P(positive)
             pred[:, 0] = 1 - pred[:, 1]
         return pred, grouped["_y"].max().to_numpy()
@@ -232,6 +255,27 @@ def cap_train(train: np.ndarray, max_rows: int, times: np.ndarray | None, rng: n
     return np.sort(rng.choice(train, max_rows, replace=False))
 
 
+def vs_dummy(family: list[dict], dummy: list[dict], sign: float) -> dict[str, float] | None:
+    """A family against the dummy on the declared metric, paired by split: the mean gain (``sign`` makes a positive
+    gain better), its standard error, the share of splits with a gain, and for a loss (``sign`` -1) the gain relative
+    to the dummy's mean loss; None when no split scored both.
+    """
+    pairs = [(f.get("metric"), d.get("metric")) for f, d in zip(family, dummy, strict=True)]
+    gain = np.array([sign * (f - d) for f, d in pairs if f is not None and d is not None], dtype=float)
+    gain = gain[np.isfinite(gain)]
+    if not len(gain):
+        return None
+    dummy_loss = np.array([d for f, d in pairs if f is not None and d is not None], dtype=float)
+    out = {
+        "gain_mean": float(gain.mean()),
+        "gain_se": float(gain.std(ddof=1) / np.sqrt(len(gain))) if len(gain) > 1 else 0.0,
+        "beats_dummy_share": float((gain > 0).mean()),
+    }
+    if sign < 0 and np.nanmean(dummy_loss) > 0:
+        out["relative_gain"] = float(gain.mean() / np.nanmean(dummy_loss))
+    return out
+
+
 def run(  # noqa: C901, PLR0912, PLR0913
     df: pd.DataFrame,
     target: str,
@@ -247,6 +291,8 @@ def run(  # noqa: C901, PLR0912, PLR0913
     max_rows: int = MAX_ROWS,
     n_jobs: int = 8,
     text: bool = True,
+    sample_weight: np.ndarray | None = None,
+    metric: dict | None = None,
 ) -> dict:
     """Run the probes of the module docstring on one frame and return the numbers and flags.
 
@@ -265,6 +311,8 @@ def run(  # noqa: C901, PLR0912, PLR0913
             random rows (whole groups for the test side of a task scored per group).
         n_jobs: Threads per model.
         text: Encode the text columns (else leave them out).
+        sample_weight: The task's training weight, one value per row of ``df`` (never a column of it), or None.
+        metric: The task's own metric (see ``curation_probes.weights``), scored next to the probe's scores, or None.
     """
     regression = problem_type == "regression"
     group_cols = list(group_cols)
@@ -278,6 +326,9 @@ def run(  # noqa: C901, PLR0912, PLR0913
     else:
         y, classes = pd.factorize(labels_of, sort=True)
         n_classes = len(classes)
+    weight = None if sample_weight is None else np.asarray(sample_weight, dtype=float)
+    truth = y if regression else labels_of.to_numpy()  # the target as it ships, for the task's metric
+    metric_errors: dict[str, str] = {}  # the first error of the task's metric, per model
     if prediction_unit != "group":
         aggregation = None
     unit = "group" if aggregation in ("mean", "any", "last") else "row"
@@ -311,11 +362,17 @@ def run(  # noqa: C901, PLR0912, PLR0913
     numeric_blocks = {names[i]: [f"f{i}"] for i in range(len(names))}
 
     def reference_of(rows: np.ndarray) -> np.ndarray:
-        if regression:
-            return np.array([y[rows].mean()])
-        return (np.bincount(y[rows], minlength=n_classes) / len(rows))[None, :]
+        return weights.reference(y, rows, n_classes, weight)
 
     def record(key: str, y_te: np.ndarray, pred: np.ndarray, ref: np.ndarray, test: np.ndarray) -> None:
+        extra: dict[str, float | None] = {}
+        if metric is not None:  # the row predictions: the task's scorer aggregates a group itself
+            extra["metric"], error = weights.declared_score(metric, truth[test], pred, test, classes)
+            if error:
+                metric_errors.setdefault(key, error)
+            if metric.get("floor") is not None and not n_classes:
+                extra["at_floor"] = weights.at_floor(pred, metric["floor"])
+        w_te = weights.take(weight, test)
         if unit == "group":
             frame = pd.DataFrame(pred if n_classes else pred[:, None]).assign(_y=y_te, _g=groups[test])
             if order is not None:
@@ -327,7 +384,9 @@ def run(  # noqa: C901, PLR0912, PLR0913
                 ref_frame["_t"] = order[test]
             gref, _ = by_group(ref_frame, aggregation, n_classes)
             pred, y_te, ref = (gp if n_classes else gp[:, 0]), gy, (gref if n_classes else gref[:, 0])
-        results.setdefault(key, []).append(scores(y_te, pred, ref, n_classes))
+            if w_te is not None:  # a group weighs the sum of its rows' weights, in by_group's order
+                w_te = pd.Series(w_te).groupby(groups[test], sort=True).sum().to_numpy()
+        results.setdefault(key, []).append(scores(y_te, pred, ref, n_classes, w_te) | extra)
 
     def make_single() -> lgb.LGBMModel:
         return (lgb.LGBMRegressor if regression else lgb.LGBMClassifier)(n_estimators=200, verbose=-1, n_jobs=n_jobs)
@@ -335,6 +394,7 @@ def run(  # noqa: C901, PLR0912, PLR0913
     for i, (train, test, full_train) in enumerate(pairs):
         ref = reference_of(full_train)
         y_tr, y_te = y[train], y[test]
+        w_tr = weights.take(weight, train)
         X_tr, X_te = X.iloc[train].reset_index(drop=True), X.iloc[test].reset_index(drop=True)
         text_blocks: dict[str, list[str]] = {}
         if text_cols:
@@ -359,7 +419,7 @@ def run(  # noqa: C901, PLR0912, PLR0913
             record("drift", y_te, drift if n_classes else drift[:, 0], ref, test)
         lightgbm = None
         for key, make in candidates.items():
-            model = make().fit(X_tr, y_tr)
+            model = weights.fit(make(), X_tr, y_tr, w_tr)
             pred = predict(model, X_te, n_classes)
             if regression:
                 pred = np.clip(pred, y_tr.min(), y_tr.max())
@@ -375,16 +435,17 @@ def run(  # noqa: C901, PLR0912, PLR0913
             best_block, best_inner = ranked[0], -np.inf
             if len(inner_tr) and len(inner_va):
                 inner_ref = reference_of(train[inner_tr])
+                w_fit, w_va = weights.take(w_tr, inner_tr), weights.take(w_tr, inner_va)
                 for block in ranked:
                     cols = blocks[block]
-                    model = make_single().fit(X_tr.iloc[inner_tr][cols], y_tr[inner_tr])
+                    model = weights.fit(make_single(), X_tr.iloc[inner_tr][cols], y_tr[inner_tr], w_fit)
                     inner = scores(
-                        y_tr[inner_va], predict(model, X_tr.iloc[inner_va][cols], n_classes), inner_ref, n_classes
+                        y_tr[inner_va], predict(model, X_tr.iloc[inner_va][cols], n_classes), inner_ref, n_classes, w_va
                     )
                     if np.isfinite(inner["skill"]) and inner["skill"] > best_inner:
                         best_block, best_inner = block, inner["skill"]
             cols = blocks[best_block]
-            model = make_single().fit(X_tr[cols], y_tr)
+            model = weights.fit(make_single(), X_tr[cols], y_tr, w_tr)
             record("single_feature", y_te, predict(model, X_te[cols], n_classes), ref, test)
             chosen_single.append(best_block)
 
@@ -439,6 +500,19 @@ def run(  # noqa: C901, PLR0912, PLR0913
     if few:
         flags.append("few_minority")
     counts = pd.Series(chosen_single).value_counts()
+    declared = None
+    if metric is not None:
+        sign = 1.0 if metric["greater_is_better"] else -1.0
+        scored = [k for k in family if np.isfinite(table[k].get("metric_mean", np.nan))]
+        declared = {
+            "name": metric["name"],
+            "greater_is_better": bool(metric["greater_is_better"]),
+            "floor": metric.get("floor"),
+            "best": max(scored, key=lambda k: sign * table[k]["metric_mean"]) if scored else None,
+            "errors": metric_errors,
+        }
+        if declared["best"] is not None:
+            declared["vs_dummy"] = vs_dummy(results[declared["best"]], results["dummy"], sign)
     return {
         "problem_type": problem_type,
         "unit": unit if aggregation is None else f"{unit} ({aggregation})",
@@ -447,6 +521,8 @@ def run(  # noqa: C901, PLR0912, PLR0913
         "text_columns": len(text_cols),
         "splits_probed": len(pairs),
         "splits_shipped": len(flat),
+        "weighted": weight is not None,
+        "declared_metric": declared,
         "scores": table,
         "best": best,
         "best_skill_se": se,

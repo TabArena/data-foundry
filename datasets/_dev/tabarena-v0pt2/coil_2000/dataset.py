@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -1078,23 +1078,28 @@ class Coil2000(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "coil_2000"
-    year = "2000"
     domain = "business & marketing"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5630S"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5630S",
+            license="CC BY 4.0",
+            year="2000",
+            bibtex="""
+                @techreport{van2000coil,
+                  title={CoIL challenge 2000: The insurance company case},
+                  author={Van Der Putten, Peter and van Someren, Maarten and others},
+                  year={2000},
+                  institution={Technical Report 2000--09, Leiden Institute of Advanced Computer Science}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/coil_2000/ && wget -P local-data-warehouse/coil_2000/ https://archive.ics.uci.edu/static/public/125/insurance+company+benchmark+coil+2000.zip && unzip local-data-warehouse/coil_2000/insurance+company+benchmark+coil+2000.zip -d local-data-warehouse/coil_2000/
-    """
-    bibtex = """
-        @techreport{van2000coil,
-          title={CoIL challenge 2000: The insurance company case},
-          author={Van Der Putten, Peter and van Someren, Maarten and others},
-          year={2000},
-          institution={Technical Report 2000--09, Leiden Institute of Advanced Computer Science}
-        }
     """
     curation_comments = """
         - We created semantic meaningful names for the features.

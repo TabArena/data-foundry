@@ -5,8 +5,16 @@ says everything a benchmark needs:
 
 * the splits, ``experiment_metadata.splits`` as ``{repeat: {fold: (train_idx, test_idx)}}``: never re-split or
   shuffle, they encode the regime (IID, temporal, grouped);
+* the train budget, ``experiment_metadata.row_budget`` (a ``_1m`` version): its train sides keep every row they may
+  use, all history of a temporal one, and ``subsample_train(container, repeat, fold)`` draws the rows a model fits
+  on, at most ``row_budget.train`` of them, by the default sampler the container records
+  (``experiment_metadata.train_sampling``: for a temporal side the newest year, extended back until it holds that
+  many rows, sampled at random; whole groups of a grouped one); without a budget it returns the train side whole;
 * the features, ``feature_columns(container)``: no target, no group column, no scoring column (a metric input such
   as an era, never a feature);
+* the training weight, ``sample_weight(container)`` (or ``None``): a scoring column every model is fitted with as each
+  row's weight, never a feature, such as the years insured of a claims-per-year target; the metric weights the test
+  rows by it too;
 * the metric, ``task_metadata.objective_metric`` (its name, what it takes, its origin and reference), scored by
   ``scorer(container)``, which looks up the scoring columns' values by the test rows' index and reads class
   probabilities in the sorted order of the classes (scikit-learn's ``classes_``), or by name from a table whose
@@ -39,9 +47,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.curation_container import CuratedContainer, feature_columns, special_features
+from data_foundry.curation_container import CuratedContainer, feature_columns, sample_weight, special_features
 from data_foundry.v2.encodings import encode_text_tfidf
 from data_foundry.v2.metrics import scorer
+from data_foundry.v2.splits import subsample_train
 from sklearn.ensemble import HistGradientBoostingClassifier, HistGradientBoostingRegressor
 
 MAX_CATEGORIES = 255
@@ -69,13 +78,21 @@ def benchmark(container: CuratedContainer) -> list[float]:
     score = scorer(container)  # score(y_true, y_pred, row_index)
     classes = list(df[target].cat.categories) if task.problem_type != "regression" else None
     scoring = ", ".join(f"`{c.column}` ({c.role})" for c in task.scoring_columns) or "none"
+    weight = sample_weight(container)  # the training weight, or None
     print(f"Metric: {spec.name} ({spec.origin}; takes {spec.prediction}; ", end="")
     print(f"{'higher' if spec.greater_is_better else 'lower'} is better); scoring columns: {scoring}")
-    print(f"{len(features)} model inputs, {len(text)} text columns encoded per split\n")
+    print(f"{len(features)} model inputs, {len(text)} text columns encoded per split", end="")
+    print(f"; every model fitted with `{weight}` as the row weight\n" if weight else "\n")
+    budget = container.experiment_metadata.row_budget
+    if budget is not None:
+        sampling = container.experiment_metadata.train_sampling
+        print(f"Train budget: at most {budget.train:,} rows per fit, ", end="")
+        print(f"sampled by `{sampling.default}` in units of {sampling.unit}\n")
 
     scores: list[float] = []
     for repeat_id, folds in container.experiment_metadata.splits.items():
         for fold_id, (train_idx, test_idx) in folds.items():
+            train_idx = subsample_train(container, repeat_id, fold_id)  # noqa: PLW2901 - the train side within the budget
             x_train, x_test = df.iloc[train_idx][features], df.iloc[test_idx][features]
             x_train, x_test = _encode_text(x_train, x_test, text)
             y_train, y_test = df[target].iloc[train_idx], df[target].iloc[test_idx]
@@ -83,7 +100,8 @@ def benchmark(container: CuratedContainer) -> list[float]:
                 model = HistGradientBoostingRegressor(categorical_features="from_dtype", random_state=42)
             else:
                 model = HistGradientBoostingClassifier(categorical_features="from_dtype", random_state=42)
-            model.fit(x_train, y_train)
+            # the training weight is the metric's row weight: a model fitted without it targets another quantity
+            model.fit(x_train, y_train, sample_weight=None if weight is None else df[weight].iloc[train_idx])
             if spec.prediction == "proba":
                 # A table with a column per class, named by the class: the scorer matches the columns by name, and
                 # a fold whose training rows lack a class gets 0 for it. A plain array is read in the sorted order of

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: numerai_v5_2_1m
 container_format: 2
-checksum: v2:d1886086fe3dcec689f6559e283cb8d183e5defe50a4b21036c9511336cbe8ab
+checksum: v2:eda4067cc2f8a538f22a0ca14991fd43f02a2a5bf78d6a66bfb6416f21c5c0f9
 build: null
 build_stale: false
 data:
@@ -40,6 +40,9 @@ splits:
   n_test:
     min: 327025
     max: 361712
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -63,7 +66,7 @@ decisions:
 
 Regression of `target_ender_20`, scored with `mean_group_pearsonr` on temporal splits by `era`. 2,025,745 rows and 2,377 features. Source: Other (2025).
 
-Not built yet. The current definition gives checksum `v2:d1886086fe3dcec689f6559e283cb8d183e5defe50a4b21036c9511336cbe8ab`.
+Not built yet. The current definition gives checksum `v2:eda4067cc2f8a538f22a0ca14991fd43f02a2a5bf78d6a66bfb6416f21c5c0f9`.
 
 ## In brief
 
@@ -213,7 +216,7 @@ Version of `numerai_v5_2`: We sample per test window (v2 split protocol): each t
 
 Three test windows of 52 weekly eras (one year) each, newest first: eras 1184-1235, 1132-1183 and 1080-1131. Train is every era before the 4 eras that precede the window (train ends at era 1179 for the window starting at 1184). An era's 20-market-day target resolves about 5 weeks later: the download of 2026-10-06 has targets up to era 1235 and none for 1236-1240, so at era T the newest known target is that of era T - 5. Numerai's v5.2 notebook says to "embargo the first 4 eras following our last train era", but its code skips only 3 eras, so our gap is one era stricter. Numerai's example notebooks score a model on a long out-of-sample period (eras 575 onward); one year per window keeps 3 windows near the newest data and gives each window score 52 eras. Each test window keeps all its rows (327,025 to 361,712, under the 500k budget); each train side is a random 1M of all earlier rows (one random order for all windows); the frame keeps only the rows a split uses. Inner validation (tuning, early stopping) must be era-blocked with a 4-era gap as well: a stock's 20-day targets overlap for 3 eras, so on the newest train side a random hold-out gives LightGBM a per-era correlation of 0.040 (t 16.8), against 0.004 (t 1.1) on the last 52 train eras after a 4-era gap.
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 327,025 to 361,712 rows. Prediction horizon: 52 weeks. Gap between train and test: 4 weeks.
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 327,025 to 361,712 rows. Prediction horizon: 52 weeks. Gap between train and test: 4 weeks. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -235,10 +238,10 @@ Numerai sets every stock of a feature-era without data to 2; an era in which a f
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 3 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 3 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 4,817,221,610 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
-- **info** `task_metric_input_is_model_input`: The metric's input column(s) ['era'] are also given to the models (a feature, the group or the time column); they are not scoring columns. (hint: Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a feature.)
+- **info** `task_metric_input_is_model_input`: The metric reads the task's group or time column(s) ['era'] where they are; they are not scoring columns.
 - **info** `meta_time_horizon_unit`: `time_horizon_unit='weeks'` implies calendar time, but `time_on='era'` has dtype int32, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
 
 Accepted on purpose:

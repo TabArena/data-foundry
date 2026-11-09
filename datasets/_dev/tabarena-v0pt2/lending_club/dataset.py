@@ -9,6 +9,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -49,7 +50,10 @@ class LendingClub(AbstractCuratedDataset):
             "state and partial zip code; the loan amount, purpose and free-text description; and the credit-bureau "
             "history (accounts, balances, delinquencies, inquiries)."
         ),
-        split=("Each of the last three quarters of 2015 is a test window, trained on all loans issued before it."),
+        split=(
+            "Three quarters are test windows, each trained on all loans issued before it: the newest, October to "
+            "December 2015, then April to June 2015 and October to December 2014."
+        ),
         changes=(
             "We keep only the 36-month loans issued up to 2015, whose outcomes are all known; we add credit-bureau "
             "fields from LendingClub's full file and leave out the company's grade and interest rate."
@@ -64,11 +68,44 @@ class LendingClub(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "lending_club"
-    year = "2018"
     domain = "finance"
-    source = "Other"  # LendingClub's own download portal (gone); we read the archived copy on Zenodo
-    source_url = "https://www.lendingclub.com"
-    license = "CC0: Public Domain"  # On Kaggle, likely not true TOS from the website.
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # LendingClub's own download portal (gone); we read the archived copy on Zenodo
+            url="https://www.lendingclub.com",
+            license=None,  # LendingClub's terms of use; the CC0 of the Kaggle file is its uploader's
+            year="2018",
+            bibtex="""
+                @article{sanz2025credit,
+                  title={Credit Risk Meets Large Language Models: Building a Risk Indicator from Loan Descriptions in P2P Lending},
+                  author={Sanz-Guerrero, Mario and Arroyo, Javier},
+                  journal={Inteligencia Artificial},
+                  volume={28},
+                  number={75},
+                  pages={220--247},
+                  year={2025}
+                }
+            """,
+        ),
+        Source(
+            role="part",
+            platform="Other",
+            url="https://doi.org/10.5281/zenodo.11295916",
+            license="CC BY 4.0",
+            year="2024",
+            name="the loan-granting cut of arXiv:2401.16458 on Zenodo, the base table",
+            files=("LC_loans_granting_model_dataset.csv?download=1",),
+        ),
+        Source(
+            role="part",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/wordsforthewise/lending-club",
+            license="CC0: Public Domain",  # set by its uploader
+            name="All Lending Club loan data, joined in by loan id",
+            files=("accepted_2007_to_2018Q4.csv.gz",),
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         It seems the official download portal from https://www.lendingclub.com is gone. So we can only utilize artifacts from the past, which seem to go up to 2018.
@@ -85,17 +122,6 @@ class LendingClub(AbstractCuratedDataset):
         mkdir -p local-data-warehouse/lending_club && mv LC_loans_granting_model_dataset.csv?download=1 local-data-warehouse/lending_club
         kaggle datasets download wordsforthewise/lending-club -f accepted_2007_to_2018Q4.csv.gz && mv accepted_2007_to_2018Q4.csv.gz local-data-warehouse/lending_club/
     """
-    bibtex = """
-        @article{sanz2025credit,
-          title={Credit Risk Meets Large Language Models: Building a Risk Indicator from Loan Descriptions in P2P Lending},
-          author={Sanz-Guerrero, Mario and Arroyo, Javier},
-          journal={Inteligencia Artificial},
-          volume={28},
-          number={75},
-          pages={220--247},
-          year={2025}
-        }
-    """
     curation_comments = """
         We start with the data from Sanz-Guerrero et al. (2025), which is already preprocessed for this task and used for tabular-text learning. It lacks many variables of the original data that can be added without changing the task or leaking the label, so we merge them in from the original data.
 
@@ -107,11 +133,22 @@ class LendingClub(AbstractCuratedDataset):
         - In accepted_2007_to_2018Q4.csv.gz, at least 99.8% of the 36-month loans up to 2015Q4 are finished, but only 57-93% per quarter in 2016, and only 63-97% per quarter of the 60-month loans from 2014 on. The missing loans are mostly good ones, so later or longer loans would skew the labels towards early defaults and early payoffs (default rate among finished loans: 15-16% in 2013, 20% in 2015, 24-26% in 2016).
         - `term` is used only for this selection and is not a feature (it is part of the company's own assessment, see the merged features). Until 2026-10 the `lending_club_1m` version tested on 2016 and the v1 `lending_club` notebook on 2016-2018.
         - We leave out the joint-applicant fields of the original data (sec_app_*, revol_bal_joint): they are filled only from 2017 on, so they are empty for the loans we keep.
-        - Loans per issue year in the cleaned data (from the v1 exploration, counted 2026-10-22): 836 (2008), 4,716 (2009), 8,466 (2010), 12,747 (2011), 41,953 (2012), 99,018 (2013), 161,028 (2014), 280,780 (2015); 46% of the rows are from 2015, the year of the test windows.
+        - Loans per issue year in the cleaned data (from the v1 exploration, counted 2026-10-22): 836 (2008), 4,716 (2009), 8,466 (2010), 12,747 (2011), 41,953 (2012), 99,018 (2013), 161,028 (2014), 280,780 (2015); 46% of the rows are from 2015, the year of the two newer test windows (the oldest is 2014 Q4).
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
           (CLEAN-10).
     """
+    accepted_check_warnings = {
+        "meta_license_unknown": (
+            "LendingClub published the loans under its terms of use, without a licence; the Zenodo cut is CC BY 4.0 "
+            "and the Kaggle file CC0, set by its uploader."
+        ),
+        "splits_train_under_half": (
+            "Signed off (Lennart, 2026-11-11, review issue 1, b): October to December 2014 trains on 45.9% of the "
+            "loans, beside October to December 2015 and April to June 2015 on 85.5% and 62.8%; SPLIT-14's two tiers "
+            "admit it."
+        ),
+    }
 
     # Task
     target = "Default"
@@ -129,22 +166,34 @@ class LendingClub(AbstractCuratedDataset):
     splits_comment = """
         We try to create splits that simulate a model deployed to solve the task.
 
-        The official data is updated monthly, and a month of loans is a small test set. We simulate a model
-        that is refit every quarter: 3 test windows, the quarters 2015 Q2, Q3 and Q4 (newest first), each with
-        all loans issued before the quarter as training data. The outcome of a loan issued shortly before a
-        window was only known later (by 2018), so the train side holds labels a deployed model would not have
-        had yet; a gap of a full 36-month term would remove this but leave too little data.
+        Each test window is one calendar quarter, a model refit every quarter. LendingClub released its loan files by
+        calendar quarter ("complete loan data for all loans issued through the previous completed calendar quarter"),
+        and no source names a refit cadence: Sanz-Guerrero and Arroyo (2025) shuffle the loans into 5 folds, so the
+        quarter matches the release, not a stated cadence (CC 2026-11-11), and a month of loans is a small test set.
+        The 3 test windows (CC 2026-11-11), newest first: October to December 2015, the newest quarter, in which 14
+        new credit-bureau fields (all_util, inq_fi, open_acc_6m, ...) appear; April to June 2015; and October to
+        December 2014, a quarter of another year. They hold 88,667, 64,222 and 49,197 loans, and each trains on all
+        loans issued before it: 520,877, 383,088 and 279,567 loans (85.5%, 62.8% and 45.9% of the 609,544). October
+        to December 2014 trains on less than half the loans (45.9%), beside 85.5% and 62.8%. The windows are spread
+        over two years instead of walking back from the newest: 46% of the loans were issued in 2015, so before 2015
+        only 2014 Q4, Q3 and Q2 keep 30% of the loans for training (45.9%, 39.2% and 33.0%), and 2014 Q4 adds the
+        other year at the smallest cost in training data. July to September and January to March 2015 are not
+        tested. The default rate barely moves between the windows (14.8%, 15.4% and 14.6%; on the train sides 13.8%,
+        13.3% and 12.8%). The outcome of a loan issued shortly before a window was only known later (by 2018), so the
+        train side holds labels a deployed model would not have had yet; a gap of a full 36-month term would remove
+        this but leave too little data.
 
         Exception to SPLIT-10 (2026-10-21, Lennart): a loan's outcome is known only when it ends, up to 36 months after
-        issue, and the data has no outcome dates; a 36-month gap leaves 5-9% of the rows for training in the three
-        windows and a 12-month gap 33-46%, below the 50% floor (even a 6-month gap leaves 46% for the oldest window).
-        Serves SPLIT-14 (Must). No shortcut of the kind alfa_battle_2_0_task_2 removes (training labels that tell a
-        test row's outcome) has been measured here; the unmatured labels fall under SPLIT-10 (principles.md,
+        issue, and the data has no outcome dates; a 36-month gap leaves 3.9-8.8% of the rows for training in the three
+        windows and a 12-month gap 22.5-45.9%, under the floor (even a 6-month gap leaves only the newest window at
+        half: 62.8%, 45.9% and 33.0%; for the windows of 2026-10-21 the figures were 5-9%, 33-46% and 46% for the
+        oldest). Serves SPLIT-14 (Must). No shortcut of the kind alfa_battle_2_0_task_2 removes (training labels that
+        tell a test row's outcome) has been measured here; the unmatured labels fall under SPLIT-10 (principles.md,
         Tensions).
     """
     temporal = Temporal(
         on="issue_d",
-        splits=TemporalSplits(window=3, unit="months", n_windows=3),
+        splits=TemporalSplits(window=3, unit="months", cutoffs=("2015-10-01", "2015-04-01", "2014-10-01")),
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

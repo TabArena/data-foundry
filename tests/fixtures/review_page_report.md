@@ -1,6 +1,6 @@
 # Added datasets: issues (2026-10-01)
 
-Open review issues, collected by `collect_reviews.py` on 2026-10-01 from the REVIEW.md of 1 dataset, the open issues of 1 record without a folder and the working copy's REVIEW.md. Edit those files, not this report.
+Open review issues, collected by `collect_reviews.py` on 2026-10-01 from the records' reviews of 1 added dataset, of 1 record without a folder and the working copy's REVIEW.md. Edit those files, not this report.
 
 **Open:** 2 records, 2 issues, 1 record field, 1 cross-dataset item.
 

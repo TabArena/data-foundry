@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
 
 
 class LungCancerEpithelialGenexp(AbstractCuratedDataset):
@@ -45,27 +45,32 @@ class LungCancerEpithelialGenexp(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "lung_cancer_epithelial_genexp"
-    year = "2006"
     domain = "medical & healthcare"
-    source = "GOV Website"
-    source_url = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE4115"
-    license = "Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",
+            url="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE4115",
+            license="Public Domain",
+            year="2006",
+            bibtex="""
+                @article{spira2007airway,
+                  title={Airway epithelial gene expression in the diagnostic evaluation of smokers with suspect lung cancer},
+                  author={Spira, Avrum and Beane, Jennifer E and Shah, Vishal and Steiling, Katrina and Liu, Gang and Schembri, Frank and Gilman, Sean and Dumas, Yves-Martine and Calner, Paul and Sebastiani, Paola and others},
+                  journal={Nature medicine},
+                  volume={13},
+                  number={3},
+                  pages={361--366},
+                  year={2007},
+                  publisher={Nature Publishing Group US New York}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the original gene expression data from the GEO records.
 
         mkdir -p local-data-warehouse/lung_cancer_epithelial_genexp/ && wget -P local-data-warehouse/lung_cancer_epithelial_genexp/ https://ftp.ncbi.nlm.nih.gov/geo/series/GSE4nnn/GSE4115/matrix/GSE4115_series_matrix.txt.gz && gzip -d local-data-warehouse/lung_cancer_epithelial_genexp/GSE4115_series_matrix.txt.gz
-    """
-    bibtex = """
-        @article{spira2007airway,
-          title={Airway epithelial gene expression in the diagnostic evaluation of smokers with suspect lung cancer},
-          author={Spira, Avrum and Beane, Jennifer E and Shah, Vishal and Steiling, Katrina and Liu, Gang and Schembri, Frank and Gilman, Sean and Dumas, Yves-Martine and Calner, Paul and Sebastiani, Paola and others},
-          journal={Nature medicine},
-          volume={13},
-          number={3},
-          pages={361--366},
-          year={2007},
-          publisher={Nature Publishing Group US New York}
-        }
     """
     curation_comments = """
         - We start with an extended dataset of 192 patients. The original reference uses 129 samples as "Individuals without final diagnoses as of May 2005 were excluded from this primary dataset". We remove 5 samples without a clear label ("Smoker with suspect lung cancer Sample"), yielding a dataset of 187 samples.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -55,28 +55,33 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "garments_worker_productivity"
-    year = "2020"
     domain = "industry & manufacturing"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C51S6D"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C51S6D",
+            license="CC BY 4.0",
+            year="2020",
+            bibtex="""
+                @article{imran2021mining,
+                    title={Mining the productivity data of the garment industry},
+                    author={Imran, Abdullah Al and Rahim, Md Shamsur and Ahmed, Tanvir},
+                    journal={International Journal of Business Intelligence and Data Mining},
+                    volume={19},
+                    number={3},
+                    pages={319--342},
+                    year={2021},
+                    publisher={Inderscience Publishers (IEL)}
+                }
+            """,
+        ),
+    )
     download_description = r"""
         mkdir -p local-data-warehouse/garments_worker_productivity \
         && wget -P local-data-warehouse/garments_worker_productivity/ https://archive.ics.uci.edu/static/public/597/productivity+prediction+of+garment+employees.zip \
         && unzip local-data-warehouse/garments_worker_productivity/productivity+prediction+of+garment+employees.zip -d local-data-warehouse/garments_worker_productivity/ \
         &&  rm local-data-warehouse/garments_worker_productivity/productivity+prediction+of+garment+employees.zip
-    """
-    bibtex = """
-        @article{imran2021mining,
-            title={Mining the productivity data of the garment industry},
-            author={Imran, Abdullah Al and Rahim, Md Shamsur and Ahmed, Tanvir},
-            journal={International Journal of Business Intelligence and Data Mining},
-            volume={19},
-            number={3},
-            pages={319--342},
-            year={2021},
-            publisher={Inderscience Publishers (IEL)}
-        }
     """
     curation_comments = """
         - We fix typos in data entries (e.g., "finishing " becomes "finishing").

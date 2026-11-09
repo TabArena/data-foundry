@@ -3,8 +3,9 @@ unique_name: ausprivauto0405
 name: 'Australian private motor insurance 2004-2005 (de Jong and Heller): claim occurrence and frequency per policy'
 checked_by:
 - AI (UNVERIFIED)
-suggestion: TBD -> Yes
-priority: 4
+suggestion: 'No'
+decision_markers:
+- Duplicate
 tags:
 - AI-Filled (Verify)
 original_source: Other
@@ -40,3 +41,5 @@ type_adapter_id: curation-record-v1
 - as published: 67,856 one-year vehicle policies taken out in 2004 or 2005, 9 columns (Exposure, VehValue, VehAge, VehBody, Gender, DrivAge, ClaimOcc, ClaimNb, ClaimAmount); 4,624 policies with at least one claim; ...; target: ClaimOcc (at least one claim in the policy year), or ClaimNb with Exposure (claim frequency); access: open.
 - Why: A real policy-level motor portfolio from a standard actuarial text, documented and open in two R packages, with the insurer's pricing task. Insurance is thin in the benchmark (bemtpl97 and fremtpl2 only).
 - Adds: A third market (Australia) for claim-frequency pricing. Caveats: only 5 rating factors, so the task may be weak; the insurer is unnamed; ClaimNb and ClaimAmount frame the outcome and must be dropped; exposure handling as in bemtpl97. Its sibling ausprivautolong (insuranceData ClaimsLong, 120,000 rows) is simulated ...
+
+CC (2026-11-08, Lennart): `No`, `Duplicate` of australian_vehicle_insurance_2004_2005 (review board of PR #47, cross-dataset item "Retire the record ausprivauto0405", go ahead): CASdatasets' `ausprivauto0405` holds the same rows as insuranceData's `dataCar` (exposure, vehicle value, claim count and cost equal on every row) without the area; the australian folder is the canonical version (`datasets/_dev/tabarena-v0pt2/australian_vehicle_insurance_2004_2005/`).

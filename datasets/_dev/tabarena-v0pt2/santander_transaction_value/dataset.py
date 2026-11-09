@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
 
 
 class SantanderTransactionValue(AbstractCuratedDataset):
@@ -40,26 +40,31 @@ class SantanderTransactionValue(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "santander_transaction_value"
-    year = "2018"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/santander-value-prediction-challenge"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/santander-value-prediction-challenge",
+            license="Kaggle Competition Rules",
+            year="2018",
+            bibtex=r"""
+                @misc{McDonald2018SantanderValuePredictionChallenge,
+                  author = {Mark McDonald and Mercedes Piedra and Sohier Dane and Soraya Jimenez},
+                  title  = {Santander Value Prediction Challenge},
+                  year   = {2018},
+                  howpublished = {\url{https://kaggle.com/competitions/santander-value-prediction-challenge}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized", "ForcedIIDFromTemporal")
     download_description = """
         We use the train.csv from the Kaggle competition.
 
         kaggle competitions download -c santander-value-prediction-challenge -f train.csv && unzip train.csv.zip &&  rm train.csv.zip
         mkdir -p local-data-warehouse/santander_transaction_value && mv train.csv local-data-warehouse/santander_transaction_value/
-    """
-    bibtex = r"""
-        @misc{McDonald2018SantanderValuePredictionChallenge,
-          author = {Mark McDonald and Mercedes Piedra and Sohier Dane and Soraya Jimenez},
-          title  = {Santander Value Prediction Challenge},
-          year   = {2018},
-          howpublished = {\url{https://kaggle.com/competitions/santander-value-prediction-challenge}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with the train.csv from Kaggle.

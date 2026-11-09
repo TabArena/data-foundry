@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import dataclasses
+import functools
+import hashlib
+import importlib.util
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -13,6 +16,37 @@ from data_foundry.collections._sources import (
     resolve_cache_dir,
 )
 from data_foundry.curation_container import CuratedContainer
+from data_foundry.schema import RowBudget
+
+COLLECTION_FILE = "collection.py"
+"""The file next to a collection's dataset folders that sets what the collection holds every definition to (its
+``row_budget``; ``datasets/_dev/tabarena-v0pt2/collection.py``)."""
+
+
+def collection_file_budget(folder: Path | str) -> RowBudget | None:
+    """``row_budget`` of the :data:`COLLECTION_FILE` in ``folder``; None without one, or when it sets none."""
+    path = Path(folder).resolve() / COLLECTION_FILE
+    if not path.is_file():
+        return None
+    return _read_collection_budget(path, path.stat().st_mtime_ns)
+
+
+@functools.cache
+def _read_collection_budget(path: Path, mtime_ns: int) -> RowBudget | None:
+    """``row_budget`` of the collection file at ``path`` (``mtime_ns`` keys the cache to the file's version)."""
+    del mtime_ns
+    module_name = f"_data_foundry_collection_{hashlib.sha256(bytes(path)).hexdigest()[:16]}"
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    if spec is None or spec.loader is None:
+        msg = f"{path}: not a Python file."
+        raise ValueError(msg)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    budget = getattr(module, "row_budget", None)
+    if budget is not None and not isinstance(budget, RowBudget):
+        msg = f"{path}: `row_budget` must be a `RowBudget(train=..., test=...)`."
+        raise TypeError(msg)
+    return budget
 
 
 @dataclass(frozen=True)
@@ -105,6 +139,11 @@ class DatasetCollection:
     cache containers automatically; otherwise callers must supply a local
     warehouse ``base_dir``.
     """
+    row_budget: RowBudget | None = None
+    """The collection's row budget, or None. Every container must keep it (:meth:`budget_findings`): no split tests on
+    more than ``test`` rows, and a container whose train sides are longer than ``train`` records this budget with its
+    train sampling, so a benchmark sub-samples them before a fit. ``verify=True`` holds a loaded container to it.
+    """
 
     def __post_init__(self) -> None:
         seen: dict[str, str] = {}
@@ -166,7 +205,7 @@ class DatasetCollection:
         leave it ``None`` to fetch via :attr:`source` (using ``cache_dir`` /
         ``$DATA_FOUNDRY_CACHE``). ``force_download`` is only meaningful when
         loading via :attr:`source` — it bypasses the cache for every entry.
-        ``verify`` checks each container against its checksum (see :meth:`get_dataset`).
+        ``verify`` checks each container against its checksum and the row budget (see :meth:`get_dataset`).
         """
         for entry in self.entries:
             if base_dir is not None:
@@ -175,7 +214,7 @@ class DatasetCollection:
                     load_dataset=load_dataset,
                     load_test_data=load_test_data,
                 )
-                yield _verified(container, entry) if verify else container
+                yield self._verified(container, entry) if verify else container
             else:
                 yield self.get_dataset(
                     entry.uuid,
@@ -185,6 +224,37 @@ class DatasetCollection:
                     force_download=force_download,
                     verify=verify,
                 )
+
+    def budget_findings(self, container: CuratedContainer) -> list[str]:
+        """How ``container`` breaks the collection's :attr:`row_budget` (empty when it keeps it, or there is none).
+
+        A split tests on more than ``test`` rows; a train side is longer than ``train`` and the container does not
+        record this budget; the container records another budget; or it records a budget without the train sampling
+        a benchmark needs to sub-sample to it.
+        """
+        budget = self.row_budget
+        if budget is None:
+            return []
+        meta = container.experiment_metadata
+        recorded = getattr(meta, "row_budget", None)
+        sides = [(len(train), len(test)) for folds in meta.splits.values() for train, test in folds.values()]
+        findings = []
+        if recorded is not None and recorded != budget:
+            findings.append(f"records the row budget {recorded}, not the collection's {budget}")
+        over_test = [n for _, n in sides if n > budget.test]
+        if over_test:
+            findings.append(
+                f"{len(over_test)} split(s) test on more than {budget.test:,} rows (up to {max(over_test):,})"
+            )
+        over_train = [n for n, _ in sides if n > budget.train]
+        if over_train and recorded != budget:
+            findings.append(
+                f"{len(over_train)} split(s) train on more than {budget.train:,} rows (up to {max(over_train):,}) "
+                "and the container records no budget to sub-sample them to"
+            )
+        if recorded is not None and getattr(meta, "train_sampling", None) is None:
+            findings.append("records a row budget but no `train_sampling`")
+        return findings
 
     def find_entry(self, name_or_uuid: str) -> CollectionEntry:
         """Look up an entry by its ``uuid``, its own dataset name (``<name>_1m`` for a version) or its folder name."""
@@ -220,10 +290,11 @@ class DatasetCollection:
                 from :attr:`source`. Use this to invalidate stale data — e.g.
                 after a known upstream revision change.
             verify: When ``True``, recompute the checksum (and the test set's, when loaded) and raise if the
-                files do not match it. Needs ``load_dataset=True``.
+                files do not match it, or the container breaks the collection's :attr:`row_budget`. Needs
+                ``load_dataset=True``.
 
         Raises:
-            ValueError: ``verify`` and the container does not match its checksum.
+            ValueError: ``verify`` and the container does not match its checksum or breaks the row budget.
         """
         if self.source is None:
             raise RuntimeError(
@@ -238,7 +309,19 @@ class DatasetCollection:
             load_dataset=load_dataset,
             load_test_data=load_test_data,
         )
-        return _verified(container, entry) if verify else container
+        return self._verified(container, entry) if verify else container
+
+    def _verified(self, container: CuratedContainer, entry: CollectionEntry) -> CuratedContainer:
+        """``container`` when it matches its checksum and keeps the collection's row budget, else a ValueError."""
+        _verified(container, entry)
+        findings = self.budget_findings(container)
+        if findings:
+            raise ValueError(
+                f"{entry.relative_path.as_posix()}: breaks the row budget of collection {self.name!r}: "
+                + "; ".join(findings)
+                + ".",
+            )
+        return container
 
     def prefetch(
         self,
@@ -289,6 +372,7 @@ class DatasetCollection:
         *,
         source: DataSource | None = None,
         names: Mapping[str, str] | None = None,
+        row_budget: RowBudget | None = None,
     ) -> DatasetCollection:
         """Build a collection from an iterable of ``<unique_name>/[versions/]<uuid>`` strings.
 
@@ -304,6 +388,7 @@ class DatasetCollection:
             description=description,
             entries=tuple(entries),
             source=source,
+            row_budget=row_budget,
         )
 
 

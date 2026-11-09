@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -162,11 +163,25 @@ class ZillowPrize(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "zillow_prize"
-    year = "2017"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/zillow-prize-1"
-    license = "Kaggle Competition Rules (data for use in the competition only; no redistribution)"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/zillow-prize-1",
+            license="Kaggle Competition Rules (data for use in the competition only; no redistribution)",
+            year="2017",
+            bibtex=r"""
+                @misc{Zillow2017ZillowPrize,
+                  author = {{Zillow}},
+                  title  = {Zillow Prize: Zillow's Home Value Prediction (Zestimate)},
+                  year   = {2017},
+                  howpublished = {\url{https://www.kaggle.com/competitions/zillow-prize-1}},
+                  note   = {Kaggle competition, round 1}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We download the sales and property files of round 1 from Kaggle (the competition rules must be accepted on
@@ -182,15 +197,6 @@ class ZillowPrize(AbstractCuratedDataset):
         (6b3aa0924226a13b5e50efb7632825b9), properties_2016.csv.zip (9d31981b1921c82c4e413463b89b2d46),
         properties_2017.csv.zip (971daab9c17f95208fb7556ede1b06e3), zillow_data_dictionary.xlsx
         (ee71063852e0a724e2eef1bc86981206; read by no code, it documents the columns).
-    """
-    bibtex = r"""
-        @misc{Zillow2017ZillowPrize,
-          author = {{Zillow}},
-          title  = {Zillow Prize: Zillow's Home Value Prediction (Zestimate)},
-          year   = {2017},
-          howpublished = {\url{https://www.kaggle.com/competitions/zillow-prize-1}},
-          note   = {Kaggle competition, round 1}
-        }
     """
     curation_comments = """
         We start with train_2016_v2.csv and train_2017.csv (home sales in Los Angeles, Orange and Ventura counties) and properties_2016.csv and properties_2017.csv (one row per parcel) from round 1 of the Kaggle competition Zillow Prize.

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ashrae_great_energy_predictor_iii_1m
 container_format: 2
-checksum: v2:014ea078c6ba64e0baf64356665a054e4bc4c7495b903aed8f519bf511fcb5da
+checksum: v2:d40df49f965ceee0b063d8cb3f0fd81becbf8ee5097d38afb7b58fb186f599cd
 build: null
 build_stale: false
 data:
@@ -41,6 +41,9 @@ splits:
   n_test:
     min: 500000
     max: 500000
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -60,7 +63,7 @@ decisions:
 
 Regression of `log1p_meter_reading`, scored with `rmsle` on temporal splits by `timestamp`. 2,500,000 rows and 15 features. Source: Kaggle (2019).
 
-Not built yet. The current definition gives checksum `v2:014ea078c6ba64e0baf64356665a054e4bc4c7495b903aed8f519bf511fcb5da`.
+Not built yet. The current definition gives checksum `v2:d40df49f965ceee0b063d8cb3f0fd81becbf8ee5097d38afb7b58fb186f599cd`.
 
 ## In brief
 
@@ -228,7 +231,7 @@ Version of `ashrae_great_energy_predictor_iii`: The cleaned frame has 39.1M hour
 
 Three test windows of 4 months tile 2017, the competition's first test year: September-December, May-August and January-April 2017, newest first; train is all earlier hours. The oldest window is the competition's own setting: train on the year 2016 and predict the first months of 2017. 2016 holds 50.07% of the hours (8,784 of 17,544) but 49.12% of the rows, as it has more gaps and drops (site 0's recording gap); we keep the window because it is the competition's setting. A window is the horizon: the competition asked for the two years after its training year, and 4 months is the longest window that gives three windows inside 2017. Each test window keeps at most 500k of its rows and each train side is a random 1M of all earlier rows (one random order for all windows); the frame keeps only the rows a split uses.
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 500,000 rows. Prediction horizon: 4 months.
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 500,000 rows. Prediction horizon: 4 months. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -307,7 +310,7 @@ Chilled-water zeros peak in winter and steam and hot-water zeros in summer: a pl
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 ## Data checks

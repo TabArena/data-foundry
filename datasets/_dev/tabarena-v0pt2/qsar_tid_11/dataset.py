@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     Smiles,
+    Source,
     TaskSummary,
     canonical_smiles,
     scaffold_groups,
@@ -105,11 +106,27 @@ class QsarTid11(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "qsar_tid_11"
-    year = "2015"
     domain = "chemistry & material science"
-    source = "OpenML"
-    source_url = "https://www.openml.org/d/3050"
-    license = "Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="OpenML",
+            url="https://www.openml.org/d/3050",
+            license="Public Domain",
+            year="2015",
+            bibtex="""
+                @article{olier2018meta,
+                  title={Meta-QSAR: a large-scale application of meta-learning to drug design and discovery},
+                  author={Olier, Ivan and Sadawi, Noureddin and Bickerton, G Richard and Vanschoren, Joaquin and Grosan, Crina and Soldatova, Larisa and King, Ross D},
+                  journal={Machine Learning},
+                  volume={107},
+                  pages={285--311},
+                  year={2018},
+                  publisher={Springer}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the dataset from OpenML to a predefined folder.
 
@@ -118,17 +135,6 @@ class QsarTid11(AbstractCuratedDataset):
         The compounds' structures, for the SMILES column and the scaffold groups of the split, come from ChEMBL 17's structure table (133,574,872 bytes, sha256 484009d05a2b1a4af714b18f76f329b69fcce806044ebcca7695efa30d58b44e); the definition cuts out this file's compounds once (chembl_17_structures_tid11.csv).
 
         wget -P local-data-warehouse/qsar_tid_11/ https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_17/chembl_17_chemreps.txt.gz
-    """
-    bibtex = """
-        @article{olier2018meta,
-          title={Meta-QSAR: a large-scale application of meta-learning to drug design and discovery},
-          author={Olier, Ivan and Sadawi, Noureddin and Bickerton, G Richard and Vanschoren, Joaquin and Grosan, Crina and Soldatova, Larisa and King, Ross D},
-          journal={Machine Learning},
-          volume={107},
-          pages={285--311},
-          year={2018},
-          publisher={Springer}
-        }
     """
     curation_comments = """
         - The target is ChEMBL target 11, human prothrombin (thrombin, CHEMBL204), named by OpenML's original data URL.

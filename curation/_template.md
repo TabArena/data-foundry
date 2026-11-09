@@ -94,8 +94,8 @@ Field-by-field (the reference table is "The fields" in
 - **source_links** — download links / DOIs, one per line (OpenML id URL, Kaggle, DOI, UCI…).
   These double as the dataset's identity for de-duplication, so include the canonical ones.
 - **v2_path** — repo-relative path of the dataset's definition,
-  `datasets/_dev/tabarena-v0pt2/<unique_name>/dataset.py` (or the `<unique_name>_1m/` folder whose class declares
-  `version_of` this record). Every new dataset gets one: `/add-dataset` sets it, and `sync-notebooks` refreshes it.
+  `datasets/_dev/tabarena-v0pt2/<unique_name>/dataset.py` (or the `<unique_name>_1m/` folder of its version
+  sub-sampled to a row budget). Every new dataset gets one: `/add-dataset` sets it, and `sync-notebooks` refreshes it.
 - **notebook_path** — only for a dataset curated with Data Foundry v1 (never set for a new one; see
   `DATA_FOUNDRY_V1.md`): repo-relative path of *the* v1 curation notebook behind it, e.g.
   `datasets/beyond_iid/new_iid/<unique_name>/<unique_name>.ipynb`. One dataset, one notebook:

@@ -15,10 +15,13 @@ copy, [working_copy.md](working_copy.md)):
 |---|---|---|
 | `dataset.py` | the curator or the agent | The only definition: one `AbstractCuratedDataset` subclass. Flat class attributes declare the metadata, the task, the standard preprocessing and the splits; a few hooks hold the code. |
 | `README.md` (+ `figures/*.png`) | `dataset check` / `dataset build` | The dataset card and evidence: YAML front matter (build record, data and split shape, bundle-check slugs, decision titles), then the files of the folder, links, how to rebuild, the dataset and task, the curation notes, the splits, the decisions with their tables and figures, the check results and the build record. Never edited by hand. |
-| `REVIEW.md` | the agent, while issues are open | The open issues for the curator ([working_copy.md](working_copy.md)); deleted once they are settled. |
 
-Discovery is `data_foundry.v2.discover_datasets(root)`, and `tests/test_v2_datasets.py` tests every discovered folder
-(each import in its own test), so there is no per-dataset test file and no registry to edit.
+The dataset's review (the issues for the curator, open and settled, and the review panel) is not in the folder: it is
+the `## Review` section of its curation record ([records.md](records.md), "The review section").
+
+Discovery is `data_foundry.v2.discover_datasets(root)` (the tasks; `discover_definitions` adds the parents of a family,
+"Families" below), and `tests/test_v2_datasets.py` tests every discovered folder (each import in its own test), so there
+is no per-dataset test file and no registry to edit.
 
 ## The definition file
 
@@ -31,7 +34,7 @@ from pathlib import Path
 
 import pandas as pd
 from data_foundry.v2 import (
-    AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits, drop_columns,
+    AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits, drop_columns,
 )
 
 
@@ -40,20 +43,25 @@ class MyDataset(AbstractCuratedDataset):
 
     # Dataset (field mapping)
     unique_name = "my_dataset"
-    year = "2024"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://..."
-    license = "CC BY 4.0"
+    sources = (                         # the publication first; its year and BibTeX are the dataset's
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://...",
+            license="CC BY 4.0",
+            year="2024",
+            bibtex="""
+                @misc{key2024,
+                  ...
+                }
+            """,                         # the key is parsed from the entry
+        ),
+    )
     data_tags = ("Spatial",)            # context tags only; regime tags are added from the task
     download_description = """
         kaggle datasets download ... && unzip ...
     """                                  # indented like code: dedented by the base class
-    bibtex = """
-        @misc{key2024,
-          ...
-        }
-    """                                  # the key is parsed from the entry
     curation_comments = """
         We start with <file> from <source>.
 
@@ -107,9 +115,13 @@ The class is validated when `dataset.py` is imported: the required attributes ar
 validates, `unique_name` equals the folder name, every accepted warning has a reason, the regime is one `Grouping` or
 `Temporal` (the flat `time_on`, `group_on`, `group_labels`, `group_time_on`, `temporal_splits`, `time_horizon`,
 `time_horizon_unit` attributes are refused), a grouping has a `definition`, a temporal task has windows or
-`_make_splits` and a horizon, `subsample_to_budget` needs `version_of` and a `_1m` name, a version needs a
-`version_comment`, `prepared_raw_files` needs `_prepare_raw_files`, a multi-column `stratify_on` is refused (build one
-key in `_clean`), `Temporal(splits=...)` or `subsample_to_budget` together with a custom `_make_splits` is refused, and
+`_make_splits` and a horizon, `sources` is a tuple of `Source` with exactly one publication (listed first, with a
+four-digit `year` and a `bibtex`), a `row_budget` needs the name `<name>_<suffix>` (`_1m`) and is refused in a
+collection that sets a budget, the removed `year`,
+`source`, `source_url`, `license`, `bibtex`, `bibtex_key`, `version_of`, `version_comment` and `raw_data_from` are
+refused with what replaced them, `prepared_raw_files` needs `_prepare_raw_files`, a multi-column `stratify_on` is
+refused (build one key in `_clean`), `Temporal(splits=...)` or `row_budget` together with a custom `_make_splits` is
+refused, the old `subsample_to_budget` is refused with a pointer to `row_budget`, and
 `TemporalSplits` needs `n_windows`, `cutoffs` or `min_train_fraction`. After `_clean`, a declared column that is
 missing, or a group or time column with missing values, stops the run with the attribute's name.
 
@@ -123,11 +135,11 @@ ignore list).
 
 Do not re-implement any of this.
 
-*  Metadata: it builds `DatasetMetadata` / `PredictiveMLTaskMetadataV2` (container format 2) from the attributes.
-  Multi-line text (`download_description`, `bibtex`, `curation_comments`, `version_comment`, `splits_comment`) is
-  indented like code and dedented for you. The BibTeX key is parsed from `bibtex` (set `bibtex_key` only when it must
-  differ). The regime tags (`IID`, or `Non-IID` with `Temporal`, `Grouped` or `GroupedTemporal`) are added from the
-  task.
+*  Metadata: it builds `DatasetMetadataV2` / `PredictiveMLTaskMetadataV2` (container format 2) from the attributes.
+  Multi-line text (`download_description`, a source's `bibtex`, `curation_comments`, `splits_comment`) is indented
+  like code and dedented for you. A source's BibTeX key is parsed from its `bibtex` (set `Source(bibtex_key=...)` only
+  when it must differ). The regime tags (`IID`, or `Non-IID` with `Temporal`, `Grouped` or `GroupedTemporal`) are
+  added from the task.
 * Defaults: `stratify_on` is the target for classification; set it only to deviate. `metric` has no default: it is
   required, and `Metric.fallback(reason=...)` resolves to the problem type's `roc_auc`, `log_loss` or `rmse` at build.
 * After `_clean`: it casts the columns `_feature_types` names (a dict gives datetime formats; unused categories are
@@ -168,9 +180,17 @@ task_summary = TaskSummary(
 ```
 
 (Written with implicit string concatenation in the file, so no line passes 120 characters.) The fields: `use_case`
-(settled first), `question`, `row`, `predicted`, `known` (in plain words, never column names), `split` (what the test
-data stands for), `changes` (only our changes that alter the task for a reader; empty when none), `fit`
-(`"direct"`, `"approximate"`, `"none"`) and `fit_reason`.
+(settled first), `question`, `row`, `predicted`, `known` (in plain words, never column names), `known_at_scoring`
+(what the scorer knows that the model does not; empty when it knows only the target), `split` (what the test data
+stands for), `changes` (only our changes that alter the task for a reader; empty when none), `fit` (`"direct"`,
+`"approximate"`, `"none"`) and `fit_reason`.
+
+`known_at_scoring` is for a metric input recorded with the outcome, such as a realized time on risk that weights a
+rate (MET-15): known for the training rows and when scoring, since those periods are over, but not at the prediction
+point. Say what it is and why the model cannot have it, in plain words: "How long each policy was actually insured,
+which a claim or a cancellation can cut short; it weights the claims per year insured in training and in the score."
+A metric input known at the prediction point (a weight that is a function of the features) goes in `known` or nowhere
+(Lennart, 2026-11-09).
 
 ## Field mapping (record to definition)
 
@@ -182,13 +202,22 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   `"business & marketing"`, `"insurance"`; the closest match when the record's value differs. A molecule-property
   dataset (the input is the molecule: QSAR, toxicity, bioactivity) is `"chemistry & material science"` (Lennart,
   2026-10-21, the ten QSAR siblings).
-* `source`: exactly one of `"Kaggle"`, `"Zindi"`, `"OpenML"`, `"GitHub"`, `"UCI"`, `"HuggingFace"`, `"GOV Website"`,
-  `"Customer"`, `"Other"`, `"ASlib"`: where the data was first published, with `source_url` pointing there
-  (PROV-8 in [provenance.md](../../knowledge-curation/references/provenance.md)). `download_description` says where
-  the files are downloaded from and names the original when the download is a copy.
-* `year`: the year of that first publication (PROV-9 in
-  [provenance.md](../../knowledge-curation/references/provenance.md)), always four digits: when it cannot be pinned,
-  the best guess, with the reason in `curation_comments`. A definition with another value does not load.
+* `sources`: a tuple of `Source(role=..., platform=..., url=..., license=..., year=..., bibtex=..., name=...,
+  files=...)`, the publication first.
+  * The **publication** (`role="publication"`, exactly one) is where the data was first published, with `url`
+    pointing there (PROV-8 in [provenance.md](../../knowledge-curation/references/provenance.md)). `platform` is
+    exactly one of `"Kaggle"`, `"Zindi"`, `"OpenML"`, `"GitHub"`, `"UCI"`, `"HuggingFace"`, `"GOV Website"`,
+    `"Customer"`, `"Other"`, `"ASlib"`. Its `year` is the year of that first publication (PROV-9), always four digits:
+    when it cannot be pinned, the best guess, with the reason in `curation_comments`; a definition with another value
+    does not load. Its `bibtex` is the work that published the data (below), its `license` the one it states (None
+    when it states none).
+  * A **copy** (`role="copy"`) is a later copy of the data, such as the re-upload we download (a Kaggle or UCI copy of
+    a paper's supplement): its own `platform`, `url` and `license`, a `name` ("UCI 291") and, if known, its `year`.
+    List it when the download is not the publication; `download_description` still says how the files are fetched.
+  * A **part** (`role="part"`) is a piece the dataset is assembled from (one of several survey waves, a second table
+    joined in), each with its own `license` and a `name` that tells the parts apart.
+  * `files=("*.csv",)` names the raw files that come from a source, as paths or glob patterns under the raw folder.
+    The container lists them with their SHA-256, size and rows (`raw_files`, "The raw-file manifest" below).
 * `data_tags`: context tags only, since listing a regime tag yourself switches the automatic ones off. `"Anonymized"`
   when the source hid what the features are, by replacing their names or values on purpose (common for competition
   data; the record gets the `Anonymized` marker, and the cases without it are in
@@ -203,8 +232,8 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
 * `problem_type`: "Regression" to `"regression"`, "Binary Classification" to `"binary_classification"`,
   "Multiclass Classification" or "Classification" to `"multiclass_classification"`. A table that supports a regression
   or a classification target, where taking one means dropping the other, gets one folder per framing: the second is
-  `<unique_name>_clf/` (or `_reg/`) with its own `unique_name`, and the record's `problem_type` follows the one that
-  ships.
+  `<unique_name>_clf/` (or `_reg/`) with its own `unique_name`, written as a child of the first ("Families" below), and
+  the record's `problem_type` follows the one that ships.
 * `metric` (required): a `Metric` from `data_foundry.v2.metrics`; which one is decided by
   [metrics.md](../../knowledge-curation/references/metrics.md) (MET). Three constructors, one per origin (MET-11):
   * `Metric.source(name, original=..., reference=..., params=..., inputs=..., definition=...)`: what the source
@@ -247,28 +276,98 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   class name is an error (Lennart, 2026-11-05). Before declaring a metric with inputs, check on the data that every
   test fold holds what it needs (MET-2).
 
+  A row weight makes each row count in proportion to it: `normalized_weighted_gini`, `weighted_pearsonr` (without
+  `weights`), `rescaled_mean_tweedie_deviance` (its required `weight`; since 2026-11-08: each scored set's predictions
+  multiplied by `sum(w * y) / sum(w * p)`, then the weighted Tweedie deviance, the stand-in for a pricing game's market
+  that rescales every tariff to one total, pricing_game_2016_french_fleet), the optional `weight` input of
+  `mean_poisson_deviance` and `mean_tweedie_deviance` (`sum(w * d) / sum(w)`, as scikit-learn's `sample_weight`) and of
+  `rmse` (`sqrt(sum(w * (y - p)^2) / sum(w))`, since 2026-11-08: boreal_postfire_lichen_biomass weighs each quadrat by 1
+  over its plot's quadrats, so each plot counts once), and `ordered_lorenz_gini` with `params={"per_unit": True}`, where
+  the target and the prediction are already per unit of the weight (a loss per year insured; the unnormalised weighted
+  Gini). Without `per_unit` its weight is the base premium that totals are compared against, not a row weight.
+  `data_foundry.v2.metrics.row_weight_column(spec)` returns a spec's row-weight column, or `None`. The regression
+  fallback takes the weight too (`Metric.fallback(reason=..., inputs={"weight": ...})`); the spec of a weighted `rmse`
+  states the weighted formula, while the unweighted spec keeps `sqrt(mean((y - p)^2))`, so the containers built before
+  keep their checksum. The three deviances require `min_prediction`, the floor on the predicted mean, the lowest value
+  the use case's actor acts on, stated with its fact, never above the smallest plausible mean on the scale the metric
+  scores (MET-13 as amended 2026-11-09; `1e-4` claims per year for fremtpl2 and bemtpl97, $10 for noaa_storm).
+  `score()` refuses an input the metric does not take, so a weight is never dropped without notice.
+
   The build writes the spec into the task metadata as `objective_metric`: `name`, `kind` (`standard`, `custom` or
   `local`), `prediction` (`proba`, `label`, `value`), `greater_is_better`, `origin`, `params`, `inputs`, `original`,
   `reference`, `definition` (a one-line formula), `reason` and `target_transform`; a reader without Data Foundry can
   implement the metric from these fields. `describe()` and the README show it with the scoring columns. The bundle
   checks: `task_metric_undeclared` (a fallback without a reason), `task_metric_unknown`, `task_metric_not_canonical` (an
-  alias), `task_metric_problem_type_mismatch`, `task_metric_unknown_param`, `task_metric_input_missing` (a role the
-  metric needs is not mapped), `task_metric_input_is_model_input` (info: the metric reads the task's group or time
-  column), `task_metric_input_is_feature` (warning: the metric reads a plain feature; ship a scoring copy),
+  alias), `task_metric_problem_type_mismatch`, `task_metric_unknown_param`, `task_metric_param_invalid` (error: params
+  that fail the registry's validation, such as a Poisson deviance without `min_prediction`), `task_metric_input_missing`
+  (a role the metric needs is not mapped), `task_metric_input_is_model_input` (info: the metric reads the task's group
+  or time column), `task_metric_input_is_feature` (warning: the metric reads a plain feature; ship a scoring copy),
   `task_metric_reference_missing` (a source or stand-in without a link),
   `task_metric_stand_in_incomplete`, `task_metric_not_computable` (no finite score of a random prediction on some fold),
   `task_metric_local`, `task_metric_transform_not_regression`, `task_metric_transform_overflow` (the inverse of
-  `target_transform` overflows on a shipped value: the target is not on that scale) and
-  `task_metric_deviance_on_transformed_target` (warning: a Poisson or Tweedie deviance scores the mean on the original
-  scale, which a model fit on a log target misses; ship the target untransformed, as pricing_game_2017_french_mtpl).
+  `target_transform` overflows on a shipped value: the target is not on that scale),
+  `task_metric_deviance_on_transformed_target` (error since 2026-11-06, CLEAN-16: a Poisson or Tweedie deviance scores
+  the mean on the original scale, which a model fit on a log target misses; ship the target untransformed, as
+  pricing_game_2017_french_mtpl) and `task_metric_weight_without_sample_weight` (warning: the metric reads a row weight
+  and the task declares no `sample_weight`; accept it with the reason when the weight is a function of the features).
+  The training weight's checks: `task_sample_weight_not_metric_weight` (error: `sample_weight` is not the metric's row
+  weight), `task_weight_invalid` (error: a missing, non-finite or negative weight, a zero weight on a row a deviance
+  scores, a split side whose weights sum to 0), `task_rate_count_not_whole` (warning: under a weighted Poisson
+  deviance, target x weight is not a whole count) and `task_feature_looks_like_exposure` (warning: a numeric feature
+  named like an amount at risk on a task without a weight; accept it with what the column is, planned or realized).
   `Metric.local(fn, name=..., prediction=..., greater_is_better=...)` holds code only the definition has; it is for a
   user's own dataset that is never shipped (`build(allow_local_metric=True)`), never for the working copy (MET-13).
+* `sample_weight = "<column>"` (optional, opt-in per dataset): the task's training weight, a rate's realized
+  denominator such as the years insured (MET-14, MET-15). It names a scoring column of role `weight` that the
+  objective metric reads as its row weight, so every model trains with the weight it is scored by:
+
+  ```python
+  sample_weight = "Exposure"
+  scoring_columns = (ScoringColumn(column="Exposure", role="weight", used_by="mean_poisson_deviance",
+                                   description="years insured, cut short by a cancellation after a claim; the "
+                                   "rate's denominator, the metric's row weight and the training weight"),)
+  metric = Metric.source("mean_poisson_deviance", ..., inputs={"weight": "Exposure"}, params={"min_prediction": 1e-4})
+  ```
+
+  The container stores it in the task metadata. `feature_columns(container)` leaves it out with the other scoring
+  columns, `sample_weight(container)` (`data_foundry.curation_container`) returns it (`None` when the task has none),
+  and a harness fits every model with it as each training row's weight, never as a feature. The test-row values of a
+  weight scoring column, a training weight or not, are for the scorer only: never read them when predicting a test
+  row (LEAK-41; the README and `describe()` say so, Lennart, 2026-11-08). The amount at risk is described in
+  text: the scoring column's `description` (what it measures, whether the outcome can cut it short) and a
+  `curation_comments` bullet. A metric weight that is a function of the features (liberty_mutual_fire_peril_loss_cost's
+  `var11_weight`, g_research_crypto_forecasting_1m's asset `Weight`) needs no sample weight: accept
+  `task_metric_weight_without_sample_weight` with that reason.
+
+  A weight for training alone (MET-16: a design weight when sampling depends on the outcome, a label's precision) is
+  the `sample_weight` too, its scoring column declared `used_by="training"` and left out of the metric's `inputs`:
+
+  ```python
+  sample_weight = "replicate_weight"
+  scoring_columns = (ScoringColumn(column="replicate_weight", role="weight", used_by="training",
+                                   description="replicate measurements behind the mean label; trains, does not "
+                                   "score, since each compound is one decision"),)
+  ```
+
+  The checks then accept it as the training weight and no unused scoring column; it is never a feature, and a harness
+  still weights a validation loss by the metric's weight (`validation_weight(container)`), not by this one.
+* `unit_weight = UnitWeight(column="<weight column>", unit="<unit column>")` (optional): a score that counts each unit
+  once (MET-17), e.g. each plot of boreal_postfire_lichen_biomass or each mouse of pancreatic_cancer_mouse_detection.
+  The column is the metric's weight scoring column (`inputs={"weight": column}`), 1 over the unit's rows (`1.0 /
+  df.groupby(unit)[unit].transform("size")`); the unit is a column `_clean` keeps (the group column, or a column kept
+  for it), metadata, never a feature. It is for scoring and validation only, never a `sample_weight`. The task metadata
+  stores it, so downstream tools can read it: `unit_weight(container)` returns it, `validation_weight(container)`
+  returns the column a validation loss is weighted by (the metric's row weight: the training weight, a unit weight or a
+  weight that is a function of the features), and `feature_columns(container)` leaves the unit out. Its checks:
+  `task_unit_weight_not_one_per_unit` (error: a unit's weights do not sum to 1) and `task_unit_weight_unit_split`
+  (warning: a unit has rows on both sides of a split). With it declared, `task_metric_weight_without_sample_weight` is
+  not raised (Lennart, 2026-11-08: downstream tools "need to know it to set their own validation loss correctly").
 * `download_description`: for a Kaggle dataset `kaggle datasets download <slug> && unzip ... && rm ...`, then the move
   into `local-data-warehouse/<unique_name>/`; for a competition `kaggle competitions download -c <name>`; otherwise
   `wget <url>`. Pin a DOI or an archived release where one exists.
-* `bibtex`: the work that published the data. For a Kaggle dataset a `@misc` entry with `howpublished = {\url{...}}`
-  and `note = {Kaggle dataset}`. Balance every brace and escape `&`, `%`, `#`, `_` in typeset fields; the bundle checks
-  catch broken entries and a key that does not match.
+* A source's `bibtex`: the work that published the data. For a Kaggle dataset a `@misc` entry with
+  `howpublished = {\url{...}}` and `note = {Kaggle dataset}`. Balance every brace and escape `&`, `%`, `#`, `_` in
+  typeset fields; the bundle checks catch broken entries and a key that does not match.
 * The task attributes: IID needs nothing beyond `target` and `problem_type` (set `stratify_on = None` only with a
   reason). Temporal: `temporal = Temporal(on=..., splits=TemporalSplits(...))`. Grouped: `grouping = Grouping(...)`.
   A task is grouped or temporal, never both; an order inside groups is `Grouping(time_on=...)`.
@@ -350,8 +449,11 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 # 8. TODO(verify): drop leaking features (the traps below; leak_checks.md). The most common step in the collection.
 # 9. TODO(verify): duplicate rows: decide and document (leak_checks.md, Copies across the split (LEAK-16 to LEAK-21)).
 # 10. TODO(verify): target transform: `np.log` / `np.log1p` a skewed positive target and rename the column; skip it
-#     when the source already logged it.
-# 11. TODO(verify): censored or capped target values (drop the capped rows or document the cap).
+#     when the source already logged it or a deviance scores the target (CLEAN-16). A count or amount over a realized
+#     amount at risk becomes the rate, the amount its weight scoring column and `sample_weight` (MET-14, MET-15).
+# 11. TODO(verify): censored or capped target values: decide case by case and document it in `curation_comments`
+#     (asp_potassco_classification and sat11_hand_algo_runtime keep a timed-out run at its recorded limit and drop
+#     only the instances on which every configuration timed out; a target censored by the download date: LEAK-24).
 # 12. TODO(verify): rows the use case never sees (a row without the input the prediction acts on; bias_correction's
 #     days without an LDAPS run).
 # 13. TODO(verify): recording errors cleaned to the state an expert would ship (the top solutions' and data owners'
@@ -385,10 +487,14 @@ version (all found in the v0.2 copy, 2026-10-06):
 ### IID and grouped
 
 Keep the default: no split attributes. The base class runs the v2 split protocol (`src/data_foundry/v2/splits.py`):
-always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of the train side (`recommended_dimensions`),
-built by `iid_splits` / `grouped_splits` with the benchmark seed, and every split capped to 1M train and 500k test rows
-(`cap_splits`). The comment is "Default splits."; set `splits_comment` only when there is something to say (a split
-that deliberately differs from the source's protocol, what a grouped test fold holds).
+always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of the train side, in the units the metric
+scores (the groups of `per_group` labels, else the scored units, set by the metric's `group` input, when all rows of
+each are in one group, else the rows; SPLIT-33, `recommended_dimensions`),
+built by `iid_splits` / `grouped_splits` with the benchmark seed, on the full frame: Data Foundry caps no split unless
+the definition is a version with a row budget (a `_1m` version, below; the whole path as a decision tree:
+[split_protocol.md](split_protocol.md)). The comment is "Default splits."; set
+`splits_comment` only when there is something to say (a split that deliberately differs from the source's protocol,
+what a grouped test fold holds).
 
 ### Grouped: `Grouping`
 
@@ -414,8 +520,19 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
 * `prediction_unit` and `aggregation` come from what one real-world prediction is in the source: `mean` for replicate
   measurements of one label, `any` for multiple-instance data (musk: a molecule is a musk if any conformation is),
   `last` when the latest row carries the label (amex; needs `time_on`), `select_min` / `select_max` when one row is
-  chosen by its prediction and scored by its true value (sat11: run the algorithm predicted fastest). Everything else
-  is `row`.
+  chosen by its prediction and scored by its true value under a metric that does not choose by itself. Everything
+  else is `row`.
+* Algorithm selection (one row per instance and algorithm, the runtime as the target, the algorithm predicted
+  fastest is run): the metric chooses. `par_k` takes the instance as its `group` input, picks per instance the row
+  with the lowest prediction and counts rows tied there as the mean of their costs. Declare `prediction_unit="row"`
+  and no aggregation: the scorer applies an aggregation before the metric, so `select_min` would choose first and
+  break a tie by the order of the rows (a constant prediction on sat11_hand_algo_runtime scores 19,140 s, always the
+  first solver in the file, against 18,539 s under `par_k`'s rule; trained models did not tie). What the split holds
+  out decides where the instance comes from:
+  * instances (sat11_hand_algo_runtime): the grouping is on the instance, and the metric reads that column (MET-2);
+  * something larger (asp_potassco_classification: problem classes): the grouping is on the class, and the
+    anonymised instance ships as `ScoringColumn(column="instance_id", role="group", used_by="par_k")`, never a
+    feature.
 * `context`: `all_rows` when all rows of a new group are known when predicting, `past_rows` when only its earlier rows
   are (needs `time_on`), `none` when each row stands alone.
 * `definition` is required: what one group is, why groups are held out (the use case), and the source with a quote.
@@ -457,6 +574,7 @@ repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is t
 | Explicit test periods (kickstarter: calendar years) | `TemporalSplits(window=1, unit="years", cutoffs=(2023, 2024, 2025))` |
 | Windows down to a train share (coffee: 2 months; sf_permit: 6 months; both keep at least half for training) | `TemporalSplits(window=2, unit="months", min_train_fraction=0.5)` |
 | Explicit periods of several months (consumer_complaints: 3 quarters of 2025; home_credit: 3 x 2 months) | `TemporalSplits(window=3, unit="months", cutoffs=("2025-04-01", "2025-07-01", "2025-10-01"))` |
+| Windows chosen from the candidates (SPLIT-15: the newest and two in other seasons; an illustration, none in the collection yet) | `TemporalSplits(window=7, unit="days", gap=1, cutoffs=("2024-12-24", "2024-07-09", "2024-03-12"))` |
 | N windows of distinct time values (anes: election years; garments: dates; kick: derived size) | `TemporalSplits(window=1, unit="unique", n_windows=9)`, `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)` |
 | Only a row order (california, mercedes) | `TemporalSplits(window=320, unit="rows", n_windows=9)` (horizon: 320 steps); `window=None` needs `Temporal(horizon=..., horizon_unit="steps")` |
 | A gap in a smaller unit than the window (g_research_crypto_forecasting_1m: 3 x 91 days, 15-minute gap, whole minutes sampled) | `TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes", sample_by="time")` |
@@ -469,6 +587,31 @@ rows (SPLIT-17 in [splits.md](../../knowledge-curation/references/splits.md)). C
 `"unique"`, of the rows otherwise) and, with `window=None` and `unit="unique"`, sizes the windows so they cover the
 newest `1 - min_train_fraction` of the values.
 
+**Choosing the test windows (SPLIT-15).** Which windows a temporal task tests on is the curator's call, argued per
+dataset; the newest window is always one of them. A window that trains on less than half the rows is the curator's
+sign-off every time: `dataset check` warns `splits_train_under_half`, and the review raises it as an issue. The evidence
+is statistics of the data, never a model's score:
+
+```bash
+.venv/bin/python -m data_foundry.curation.cli dataset windows <name> --root datasets/_dev/tabarena-v0pt2
+#   --window 14 --unit days --step 7   other lengths or a finer step; --csv windows.csv writes every column
+```
+
+It lists the candidate windows of the declared length and gap (`window_stats` of the definition,
+`src/data_foundry/v2/windows.py`), walking back from the newest data while a train side keeps 30% of the rows
+(SPLIT-14's lower bound; the core windows keep 50%, which the train share shows), the definition's own marked `*`: the
+dates and the months covered, the weekdays of a window shorter than a week, the test rows and the train share, the
+target on each side (a binary target's event share and count, a regression target's mean and quantiles), and the drift
+of the features from the train side (the population stability index of each feature, its largest value and the features
+behind it, and the share of test rows with a category the whole train side never shows; free text and dates are left
+out). A feature that counts time (epoch seconds, a year, a running index) drifts in every window: read past it to the
+next features. Read it against the use case: which periods must a deployed model handle, which windows show them, and
+which are near copies of the newest (the same season, little drift). Declare the choice with `cutoffs` (the newest
+window's start among them; a choice without it is refused), and write the reasons into `splits_comment` with the numbers
+they rest on. A numeric time column (numerai's eras) states what one step counts with `Temporal(time_unit=...)`; the
+table then shows its values with the unit. The README's splits section shows the same statistics for the chosen windows
+("The test windows").
+
 Labels that arrive late and training rows whose label is not yet known need `_make_splits`: train on the rows whose
 outcome is known by each window's start, with the gap declared on `Temporal` (brazilian_ecommerce, sf_permit_time,
 hotel_booking_demand). The training history the use case calls for is set in `_load_raw` or `_clean`, with a
@@ -476,27 +619,134 @@ hotel_booking_demand). The training history the use case calls for is set in `_l
 
 ### Larger than the row budget: the `_1m` version
 
-The v2 protocol keeps every split at 3 folds (or at least 3 temporal windows) and at most 1M train / 500k test rows:
-the row budget (Lennart, 2026-10-21: at most 1M training rows). A dataset whose splits, before any cap, have a
-side over the budget ships only as a sub-sampled version, whatever the size of its frame (nyc_taxi_trip_duration:
-1.45M rows, train sides of 1.28M to 1.39M). The version has its own folder and class, `<unique_name>_1m/dataset.py`,
-with `unique_name = "<name>_1m"`, `version_of = "<name>"` and a `version_comment`. It reads the raw files of
-`<name>`. Set `subsample_to_budget = True`:
+The whole path from a definition to the fit, as a decision tree with worked examples:
+[split_protocol.md](split_protocol.md).
 
-* IID or grouped data: a frame of up to 1.5M rows is taken fully (3 folds of 2/3 train). A larger frame is sub-sampled
-  to 1.5M rows before splitting (`subsample_frame`: rows stratified on the target, or whole groups), then the usual
-  splits are built and each side capped (`cap_splits`). `subsample_to_budget` on a frame that already fits is an error.
-* Temporal data: the frame is not sampled. The windows (at least 3) are built on the full data, then
-  `sample_temporal_splits` keeps at most 500k rows of each test window and a random 1M of all earlier rows for each
-  train side, drawn in one random order so the train sides overlap; the frame keeps only the rows a split uses. A
-  temporal `_1m` version whose windows all fit is an error. When the rows of one time value form a cross-section the
-  target or the features are relative to (the 14 coins of a minute), `TemporalSplits(..., sample_by="time")` draws
-  whole time values instead of rows: one random order of the values, each side taking whole values while it stays
-  within its budget (the value that would cross it is dropped), without stratification
-  (g_research_crypto_forecasting_1m; Lennart, 2026-10-22). Random rows would leave about one coin per minute.
-  `sample_by` without `subsample_to_budget` is an error.
+Data Foundry sets no row budget: by default every split uses the full frame and no side is capped. A benchmark's
+budget, `row_budget = RowBudget(train=N, test=M)` (from `data_foundry.v2`), works on the two sides differently
+(issue #70, Lennart 2026-11-10):
 
-A dataset that sets `splits_comment` itself states the sub-sampling there.
+* **The test side is capped in the container.** Every split tests on at most M rows, drawn at random within its
+  window or fold (stratified, whole groups, or whole time values).
+* **The train side keeps every row available to it.** All history before a temporal window (minus the gap), or
+  every row of an IID or grouped fold outside its test side. N is recorded, not applied: a benchmark sub-samples each
+  train side to N rows before a fit, with `subsample_train(container, repeat, fold)` (from `data_foundry.v2`) or a
+  sampler of its own that keeps the constraints the container records (`experiment_metadata.train_sampling`: what to
+  keep whole, the stratum). A model can so see more history or bring its own sub-sampling, and the sampling can be
+  studied.
+* **The default sampler** (`sample_train_positions`): for temporal data, the newest year before the window, extended
+  back in time until it holds N rows, and a random N of those. A numeric time column gets its year from
+  `Temporal(time_unit=...)`, what one step counts (numerai's eras: `"weeks"`, so 52 eras); a version with a budget on
+  a numeric time column must declare it. Whole groups at random for a grouped task; random rows, stratified, for an
+  IID one. The study
+  behind it (issue #70): the newest N rows lose seasons and weekdays on dense data and changed the model ranking twice,
+  a random N of all history dilutes recent data on long histories, and a random sample of the newest year never lost
+  much and changed no ranking.
+
+The container records the budget (`experiment_metadata.row_budget`) and the sampling
+(`experiment_metadata.train_sampling`); the README states both (`splits.row_budget`, `splits.train_sampling`). The
+split checks warn on a test side over M (`splits_test_over_budget`) and fail a budget without its sampling
+(`splits_train_sampling_missing`).
+
+TabArena v0.2 uses 1M train / 500k test rows (Lennart, 2026-10-21: at most 1M training rows), set once for the working
+copy in `datasets/_dev/tabarena-v0pt2/collection.py` (`TABARENA_V0PT2_ROW_BUDGET` from `data_foundry.collections`;
+Lennart, 2026-11-12). A definition there declares no `row_budget`: a v0.2 dataset whose splits have a side over the
+budget, whatever the size of its frame (nyc_taxi_trip_duration: 1.45M rows, train sides of 1.28M to 1.39M), is the
+version named `<name>_1m`, folder and `unique_name`, and gets the collection's budget by its name
+(`effective_row_budget`). The build refuses a dataset over the budget without the suffix (it names the folder to make)
+and a `_1m` version whose splits keep within the budget anyway (take the dataset fully); `tests/test_v2_datasets.py`
+holds every v0.2 README to the budget, and the registered collection (`DatasetCollection(row_budget=...)`) holds every
+container to it on `verify=True` (`budget_findings`). A definition in the collection that declares a `row_budget` is
+refused. Outside a collection a definition declares `row_budget = RowBudget(train=N, test=M)` itself and is named after
+it. The version has its own folder and class, `<name>_1m/dataset.py`; `curation_comments` says why it carries a budget.
+It reads the raw files of `<name>`, its name without the budget suffix, and is saved under its own name. The suffix
+marks the benchmark's N that the container records (`RowBudget.suffix`: `_1m`; `_10m` for `RowBudget(train=10_000_000,
+test=250_000)`, `_2p5m`, `_300k`). The splits adapt to the budget:
+
+* IID or grouped data: the full frame is split into the usual 3 folds; each fold tests on up to `test` rows of its
+  third (stratified, or whole groups) and trains on every other row (`fit_splits_to_budget`). A test budget above
+  a third of the frame changes nothing.
+* Temporal data: the windows (at least 3) are built on the full data, then `sample_temporal_splits` keeps at most
+  `test` rows of each test window; every train side keeps all earlier rows, and the frame drops only the newest
+  window's unsampled rows. When the rows of one time value form a cross-section the target or the features are
+  relative to (the 14 coins of a minute), `TemporalSplits(..., sample_by="time")` draws whole time values instead of
+  rows: one random order of the values, each test side taking whole values while it stays within its budget (the
+  value that would cross it is dropped), without stratification (g_research_crypto_forecasting_1m; Lennart,
+  2026-10-22). Random rows would leave about one coin per minute. The default train sampler then draws whole time
+  values too. `sample_by` without a `row_budget` is an error.
+
+A version whose budget changes nothing (no test side over `test` and no train side over `train`) is an error: take the
+dataset fully. The rows a version's sampled test sides leave out are never tested; the coverage check
+(`splits_rows_never_tested`) does not flag them when the container records a budget. A dataset that sets
+`splits_comment` itself states the test sampling and the train budget there.
+
+## Families: one parent, several tasks
+
+Several tasks on the same data (another target, an IID, grouped or temporal split, other preprocessing, a budget
+version of a task) share their metadata and cleaning through a parent definition instead of copying it. Each member
+is still its own folder, `<root>/<unique_name>/dataset.py`, and ships its own container: one task per container.
+
+```python
+# exam_scores/dataset.py: the parent (no `target`)
+class ExamScores(AbstractCuratedDataset):
+    data_summary = DataSummary(data=..., row=..., goals=..., limits=...)   # required on a parent
+    unique_name = "exam_scores"
+    domain = ...
+    sources = (Source(..., files=("*.csv",)),)   # one file per school, listed in `raw_files`
+    download_description = ...   # the family's raw files, read by every member
+    non_features = (             # kept in the frame, never a feature: every task drops them
+        NonFeature("math_score", "outcome", "The math score of the exam."),
+        NonFeature("reading_score", "outcome", "The reading score of the same exam."),
+        *provenance_columns(),   # source_file, source_row, source_id
+    )
+    def _load_raw(self, raw_dir):
+        return read_files(raw_dir, "*.csv")   # stacks the files and records where each row comes from
+    def _clean(self, raw): ...   # the shared cleaning
+
+# exam_scores_math/dataset.py: a child (a task)
+ExamScores = import_definition("exam_scores")
+
+class ExamScoresMath(ExamScores):
+    unique_name = "exam_scores_math"
+    derivation = "The math score as the target; the reading score, written at the same exam, is dropped."
+    task_summary = TaskSummary(...)
+    target = "math_score"        # a declared outcome given a role: kept
+    problem_type = "regression"
+    metric = Metric.fallback(reason=...)
+    # the reading score and the provenance columns are dropped by the standard steps
+```
+
+* **Kinds.** A definition without a `target` is a parent: it is never built and never discovered as a dataset
+  (`discover_datasets` returns tasks; `discover_definitions` returns both). A parent declares `data_summary` (what the
+  data is, independent of one task) and may declare the task defaults its children share (`problem_type`, `metric`,
+  `grouping`, `temporal`, `stratify_on`, `scoring_columns`, `special_features`, the weights), but no `row_budget`,
+  `task_summary`, `splits_comment` or regime tag. A parent without `_load_raw` or full metadata is partial: it shares
+  code only, and its children complete it.
+* **A child** subclasses its parent, imported with `import_definition("<parent>")` (the sibling folder). It declares
+  its own `unique_name`, named `<parent>_<variant>` after what differs (`_cop`, `_grouped`, `_clf`; a row budget's
+  suffix last, `<parent>_<variant>_1m`), and `derivation`: how it differs from its parent. It may override any hook
+  and call `super()` (`_clean`, `_feature_types`, `_make_splits`, `_decisions`); it inherits everything else.
+* **Raw files** belong to the definition that says how to download them (`download_description`): the family root
+  when it does, and every member reads that folder. A child does not redeclare `download_description`,
+  `_prepare_raw_files` or `prepared_raw_files` that a parent declares.
+* **Summaries.** A child inherits the parent's `data_summary`, shown above its own `task_summary` in its README. An
+  inherited `task_summary` or `splits_comment` is refused when the child's task differs (target, problem type,
+  grouping, temporal); `dataclasses.replace(Parent.task_summary, split=...)` changes single fields.
+* **Never features.** The parent keeps every outcome (both scores) and declares it in `non_features`, with the
+  provenance columns; each task drops every declared column after `_clean` unless it gives one a role (its target,
+  `grouping.on`, a scoring or weight column), since an outcome measured with the target is not known at the
+  prediction point (LEAK rules). Section "Columns that are never features" below.
+* **The container** records the parent: `dataset_metadata.derived_from` (its `unique_name`) and `derivation`. A
+  benchmark groups the tasks of one family by it.
+* **Checking.** `dataset check <parent>` checks the parent as data: its frame (in content order), a data checksum, its
+  sources and columns, the children found next to it, and the definition findings (`parent_without_children` when
+  none derives from it). `dataset build` refuses a parent. A child's check scans the definition files of its parents
+  too (`TODO(verify)` markers, nondeterministic calls), and the workbench reloads a child when a parent file changes.
+* **Trying a task.** In a notebook next to the parent, `class Try(import_definition("<parent>")): ...` with a target
+  and a split runs `check()` without a folder: it writes no README and cannot be built.
+* **Scaffold.** `dataset new <parent>_<variant> --parent <parent>` writes a child with the TODOs to fill in.
+* **Example.** [`examples/dataset_family/`](../../../../examples/dataset_family/) holds a family (exam scores: a parent
+  and two tasks), a README on the idea and `run_family.py`, which runs it on generated raw files.
 
 ## Traps to flag at scaffold time
 
@@ -513,6 +763,8 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 * Duplicate rows: decide and say the share.
 * Row order that carries signal (the base class shuffles; a temporal row order needs a check against the date).
 * Censored or capped targets; the newest periods losing their slow cases.
+* An amount at risk (time insured, area swept) or a span that the outcome can cut short: a realized one is the rate's
+  weight, never a feature (LEAK-41, MET-15).
 * Proxy and impossible values.
 * Rare classes and merged labels.
 * The source's split protocol, taken as a claim.
@@ -522,14 +774,54 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 * Destroyed meaning to reconstruct.
 * Classes recorded differently: "check number formats and missingness per class (probes 3, 9, 17); do two same-label
   subgroups separate, or rows of one class that share a format the other class rarely has (LEAK-39)? Are there
-  straight-line fills in the raw order (probe 18, LEAK-40)?"
+  straight-line fills in the raw order (probe 18, LEAK-40)?" Whatever is found, fixed or not, is one `curation_comments`
+  bullet that starts ``Class-dependent recording (record marker `Class-dependent Recording`):``: what was recorded
+  differently and how it splits by class, the score of the recording alone (before and after a fix), and what was done:
+  harmonised, dropped, kept with the reason, or `Not harmonised yet:` with what the fix would cost. The record gets the
+  marker and a short evidence note (LEAK-13 to LEAK-15, LEAK-39 and LEAK-40 in
+  [leak_checks.md](../../knowledge-curation/references/leak_checks.md)).
 * Cohort and selection, right truncation.
 * A label read off a later stage.
 * Definition bugs the audit found in shipped datasets: a numeric column listed as categorical (a 125k-level category in
   give_me_some_credit); a target stored as `log1p` with metric `rmsle` and no
   `target_transform`, which logs it again (santander_transaction_value); BibTeX citing a different competition
-  (sberbank_housing_market_forecasting); a tag in `license` (cirrhosis: `"IID"`). Read the class attributes once more
-  for these before handing off.
+  (sberbank_housing_market_forecasting); a tag in a source's `license` (cirrhosis: `"IID"`). Read the class
+  attributes once more for these before handing off.
+
+## Columns that are never features: `non_features`
+
+`non_features = (NonFeature(column, reason, description), ...)` declares columns a definition keeps in its frame but
+no task may use as a feature. The reasons: `outcome` (a result measured with or after the target, such as a second
+score of the same exam), `provenance` (where a row comes from: its file, row number, id), `identifier` (a key with no
+meaning as an input; a running id often encodes the order of collection or the origin) and `other` (with a
+`description` saying why).
+
+* A parent declares them; its children inherit them and may add more (`non_features = (*Parent.non_features,
+  NonFeature(...))`), never remove one. A standalone task may declare them too.
+* The standard steps drop every declared column after `_clean`, unless the task gives it a role: its target, a group
+  or time key, a scoring or weight column. So `revenue` declared as an outcome is the target of one child and dropped
+  by another, and a `source_file` declared as provenance may be the group key of a task that holds files out.
+* The parent's README lists them ("Never features"); a task's README names the ones it dropped. Nothing about them
+  enters the container: a task container holds only its features, target and the columns its task uses.
+* A declared column that the declaring definition's `_clean` does not return stops the run (a misspelling).
+
+## Assembled from several files: `read_files`
+
+`read_files(raw_dir, "*.csv")` (from `data_foundry.v2`) stacks the files that match a pattern, in the order of their
+sorted paths, and adds three columns: `source_file` (the file's path under the raw folder), `source_row` (the row's
+number in its file, from 1) and `source_id` (the file's own id column with `id_column=...`, else a hash of the row's
+values, which survives a re-saved or reordered file). `(source_file, source_id)` identifies a row. `read=` takes
+another reader (`pd.read_parquet`, `partial(pd.read_csv, sep="\t")`). Declare the three columns with
+`non_features = (*provenance_columns(), ...)`, so every task drops them.
+
+## The raw-file manifest
+
+A source that names its files (`Source(files=("*.csv",))`) gets them listed in the container's dataset metadata,
+`raw_files`: each file's path, SHA-256, size, source and the rows it gave (counted on `source_file`). With the build's
+git commit, the hashes pin what a container was built from: a changed file changes the checksum. The hashes are
+cached in the raw folder (`.raw_manifest.json`, by size and modification time), so a large file is read once. The
+README front matter records them, and the next check compares: `raw_files_changed` (warning) names the files that
+changed, appeared or went; `raw_files_missing` (error) a pattern that matches no file.
 
 ## Bundle checks and what to do at scaffold time
 
@@ -540,6 +832,8 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 | `dataset_index_range` | handled by the base class |
 | `dataset_object_dtype` | name every non-numeric column in `_feature_types` |
 | `dataset_identifier_column` | drop uninformative identifiers (recipe step 3) |
+| `dataset_sequential_id_column` | an integer column numbered densely, one value per row (a running id): drop it, or declare it `NonFeature(column, "identifier")` in the parent |
+| `raw_files_missing`, `raw_files_changed` | a source's `files` pattern matches nothing; a raw file differs from the README's (the raw-file manifest) |
 | `dataset_constant_column`, `dataset_all_missing_column`, `dataset_duplicate_columns` | drop them (step 7) |
 | `dataset_feature_equals_target` | drop target components |
 | `dataset_pure_feature_value` | a value (100 rows or more), or present against missing, that holds one class only: look the column up in the source's documentation; drop it if derived from or recorded after the outcome, else accept with the reason. On a target with a 94-98% base rate it is usually an ordinary category effect |
@@ -551,12 +845,13 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 | `task_target_missing_values` | drop rows with a missing target |
 | `task_target_rare_class`, `splits_test_class_unseen_in_train` | a class too rare to stratify: keep a rare class of the source's labels when its rows carry about their share of the score, merge only by a convention of the field, and accept with the counts ([task_probes.md](../../knowledge-curation/references/task_probes.md), TP-7 and TP-8) |
 | `task_metric_*` | declare `metric` with its origin and reference, the canonical name and the params and inputs the metric takes; each input column a `ScoringColumn` (Field mapping, `metric`) |
+| `task_sample_weight_not_metric_weight`, `task_weight_invalid`, `task_rate_count_not_whole`, `task_feature_looks_like_exposure` | a count or amount over a realized amount at risk: build the rate in `_clean` (assert that target x weight rebuilds the count), ship the amount as the weight scoring column the metric reads and as `sample_weight`, never as a feature (MET-14, MET-15, LEAK-41); a feature named like an amount at risk that is known at the prediction point is accepted with that reason; a weight for training alone that the metric does not read is declared `used_by="training"` (MET-16) |
 | `task_stratify_*` | stratify on the target (classification) or a discrete feature |
 | `task_time_on_dtype`, `task_time_on_missing_values`, `task_time_on_not_sorted` | a datetime (`_feature_types`) or numeric time column without NaN; the base class sorts |
 | `task_group_labels_per_group_violated`, `task_group_on_unique_per_row` | pick `per_group` or `per_sample` correctly |
 | `splits_temporal_leakage`, `splits_temporal_order` | expanding train, newest window first |
 | `splits_rows_unused` | IID and grouped splits cover every row |
-| `splits_train_over_budget`, `splits_test_over_budget` | a split side over the row budget: a `_1m` version with `subsample_to_budget` ("Larger than the row budget"); narrower windows do not shrink a train side |
+| `splits_test_over_budget` | a test side over the container's `row_budget` (only a version with a budget is checked; a benchmark sub-samples the train sides): the splits of a custom `_make_splits` must keep to it ("Larger than the row budget") |
 | `splits_too_few` | a temporal task with fewer than 3 test windows: declare at least 3 |
 | `meta_time_horizon_missing` | a fixed-length window in `Temporal(splits=...)`, or `Temporal(horizon=..., horizon_unit=...)` |
 | `meta_time_gap_without_time_on` | a gap belongs to a temporal task |
@@ -566,7 +861,10 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 | `groups_not_clustered` (info) | rows no closer to their group than chance: compare IID and grouped scores before keeping the grouping |
 | `splits_test_single_class`, `splits_test_target_constant` | a test fold whose metric is undefined: fewer, larger folds or windows, or the task is too small |
 | `splits_test_minority_few`, `splits_test_class_missing` | test folds with under 10 rows of the rarer class, or without some class: widen the windows, merge by convention, or accept with the counts |
-| `task_target_value_dominant` | one value holds half of a regression target: name the cap, placeholder or zero inflation in `curation_comments`, drop censored rows, or accept with the reason |
+| `splits_train_under_half`, `splits_train_under_floor`, `splits_floor_core` (error) | a window trains on less than half the curated frame's rows (under 30%; or the core of SPLIT-14 breaks): raise an issue for the curator's sign-off with the windows and their shares and an option without them; accept the warning only with the curator's CC date, never on the AI's word |
+| `splits_feature_missing_in_test` | a feature 95% or more missing on one side of a window and at most half missing on the other (read on up to 100k rows a side): a column that stops or starts being recorded within the history. Name it in `curation_comments` and raise it for the curator (drop it, keep it as the deployed model met it, or start the data at the change); accept only with the curator's decision |
+| `time_newest_period_short` | the newest 30 days of a date column hold under 60% of the median rows a day of the 30-day spans before: compare the newest period's target rate with earlier ones; a download or scrape cut before the outcomes were complete is cut off (LEAK-24), a seasonal low or a real decline is accepted with the numbers |
+| `task_target_value_dominant` | one value holds half of a regression target: name the cap, timeout, placeholder or zero inflation in `curation_comments`; keep or drop censored rows case by case (sat11_hand_algo_runtime keeps its timeouts at the recorded limit), or accept with the reason |
 | `meta_tags_*` | tags agree with the split regime |
 | `meta_bibtex_*` | balanced braces, keys defined, `&`, `%`, `_` escaped |
 | `meta_placeholder_left`, `definition_todo_left`, `definition_license_placeholder` | every TODO in the metadata (the licence included) and every `TODO(verify)` in `dataset.py` is resolved before `build` |
@@ -665,10 +963,15 @@ and the rest is checked when the metric is written or reviewed.
    * A correlation of a constant prediction is 0, no skill, where scipy gives NaN (`pearsonr`, `spearmanr`,
      `weighted_pearsonr`, and per group `mean_group_pearsonr`).
    * A prediction outside the metric's domain is floored, not refused: `rmsle` at 0, the Poisson and Tweedie
-     deviances at `min_prediction` (with `prediction_domain="positive"`, so the bundle check draws valid dummies). The
-     Poisson floor defaults to machine epsilon, as `log_loss` clips probabilities. Where the floor sets the scale of
-     the worst error, it is a required param the definition states: above power 1 a Tweedie deviance charges a claim
-     about `y * p^(1-q)`, so a 2000 EUR claim predicted at 0 costs about 2e6 at a floor of 1e-6 and 2e3 at 1 EUR.
+     deviances at `min_prediction` (with `prediction_domain="positive"`, so the bundle check draws valid dummies).
+     The three deviances require the floor, with no library default (`task_metric_param_invalid` without it): the
+     definition states it at the lowest value the use case's actor acts on, with its fact, never above the smallest
+     plausible mean on the scale the metric scores (MET-13 as amended 2026-11-09; 1e-4 claims per year on fremtpl2 and
+     bemtpl97), and `task_probes.py` reports the share of predictions at it. The floor
+     sets the scale of the worst error: one claim predicted at f costs `2 * (log(1/f) - 1 + f)` in Poisson deviance
+     (25.6 at 1e-6, 16.4 at 1e-4), and above power 1 a Tweedie deviance charges a claim about `y * p^(1-q)`, so a 2000
+     EUR claim predicted at 0 costs about 2e6 at a floor of 1e-6 and 2e3 at 1 EUR. No per-row cap: it makes the
+     deviance improper (MET-13).
    * Precision, recall and F1 pass `zero_division=0.0`: the value scikit-learn uses anyway, without the warning.
 2. **The score does not depend on the row order.** Tied predictions count by the mean over their orderings (the
    expected share at a cut-off, a tied block's mid position in a cumulative curve, the mean of tied candidates), as in
@@ -711,7 +1014,7 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
 | Grouped | `airfoil_self_noise/dataset.py`, `early_learning_predictors/dataset.py`, `musk/dataset.py`, `emscad/dataset.py` | `Grouping` with a `definition` citing the source (airfoil: a setup built from two columns, with the source's prediction use quoted; musk: one prediction per molecule, `aggregation="any"`), rule-based leak drops in `_clean`, long feature lists (early_learning), a group id built from the data and an accepted group finding (emscad). |
 | Temporal | `kick/dataset.py` | `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)`, a datetime in `_feature_types`, and `_decisions` with a table and a figure. |
 | Temporal with late labels | `brazilian_ecommerce/dataset.py`, `sf_permit_time/dataset.py` | `_make_splits` training on rows whose label had arrived, with the gap on `Temporal`. |
-| Sub-sampled `_1m` | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | `version_of`, `version_comment`, `subsample_to_budget`, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
+| A `_1m` version (row budget) | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | the name `<name>_1m`, which gets the collection's budget, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
 | Heavy raw data | `acquire_valued_shoppers_challenge/dataset.py` | `prepared_raw_files` + `_prepare_raw_files` (a polars join run once), fixed calendar windows. |
 
 ## What the benchmark harness does with a definition
@@ -728,6 +1031,7 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
   scoring and custom metrics).
 * The declared metric changes no score yet: TabArena's adapter scores only `roc_auc`, `log_loss` and `rmse` and does
   not read the `objective_metric` spec; supporting it, the custom metrics and the scoring columns is an entry of
-  `BENCHMARK_CHANGES_TODO.md`.
+  `BENCHMARK_CHANGES_TODO.md`. Nor does it pass a task's `sample_weight` to the fit: a container that declares one
+  enters no run until the adapter fits every model with it (the entry "Training weights").
 * String columns are embedded by the pipeline, so a definition ships text as `string`, and molecules as RDKit
   descriptors.

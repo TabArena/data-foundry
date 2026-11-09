@@ -8,7 +8,8 @@ Usage, from the repository root::
 
 Writes ``<out>/data.json`` and ``<out>/review_page.html`` (``assets/review_page.html`` with the data embedded).
 Per record the page embeds the report's section, the definition's ``dataset.py``, ``task_summary``, declared
-``metric`` (with its scoring columns; the Use case tab shows it) and generated ``README.md`` (for a retired
+``metric`` (with its scoring columns) and split (from the README's front matter and Splits section; the Use case
+tab shows both) and generated ``README.md`` (for a retired
 definition: from the last commit that still had it) and the curation record, as they are at build time. The report
 format is ``references/review_file_format.md``; a report that does not follow it stops the build with the section
 and the line.
@@ -37,6 +38,7 @@ import posixpath
 import re
 import subprocess
 import sys
+import textwrap
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
@@ -56,7 +58,7 @@ except ImportError:  # pragma: no cover - depends on the environment
         "    uv pip install --python .venv/bin/python markdown-it-py",
     )
 
-from data_foundry.v2.dataset import TaskSummary
+from data_foundry.v2.dataset import DEFAULT_SPLITS_COMMENT, TaskSummary, definition_files
 from data_foundry.v2.metrics import Metric
 from data_foundry.v2.registry import load_definition
 from data_foundry.v2.report import read_report
@@ -82,6 +84,7 @@ VERIF_HEADING = re.compile(r"^#### Verification")
 LABELS = [
     ("outcome", re.compile(r"Outcome")),
     ("judgment", re.compile(r"Record judgment")),
+    ("horizon", re.compile(r"Horizon")),
     ("data", re.compile(r"Data")),
     ("definition", re.compile(r"Definition")),
     ("checks", re.compile(r"Checks")),
@@ -99,6 +102,7 @@ LABELS = [
 SECTION_TITLES = {
     "outcome": "Outcome",
     "judgment": "Record judgment",
+    "horizon": "Horizon",
     "data": "Data",
     "definition": "Definition",
     "checks": "Checks",
@@ -379,13 +383,23 @@ Span = tuple[int, str, int]
 """A section: the index of its heading line, its title, and the index where it ends."""
 
 
+def _check_something_to_review(
+    rows: list[dict[str, Any]], record_parts: list[Span], roles: dict[str, Span], fail: Callable[..., ReportFormatError]
+) -> None:
+    """Record rows need their per-record sections; a report without record rows holds the items across datasets."""
+    if rows and not record_parts:
+        raise fail(0, "the report", "no `## ` section with the per-record sections (`### <unique_name>`)")
+    if not rows and ACROSS not in roles:
+        raise fail(0, "the report", "no record row and no `## Across datasets` section: nothing to review")
+
+
 def _parse_summary(lines: list[str], span: Span, fail: Callable[..., ReportFormatError]) -> list[dict[str, Any]]:
     """The summary table: one row per record, in the report's order (the page sorts them by ``review_order``)."""
     start, title, end = span
     section = f"## {title}"
     table = [i for i in range(start + 1, end) if lines[i].lstrip().startswith("|")]
-    if len(table) < 3:
-        raise fail(start, section, "no summary table with at least one record row")
+    if len(table) < 2:
+        raise fail(start, section, "no summary table (a header and its separator row)")
     if not re.fullmatch(r"\|?(\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?", lines[table[1]].strip()):
         raise fail(table[1], section, "the second table line is the separator `|---|---|---|`")
     rows: list[dict[str, Any]] = []
@@ -603,10 +617,8 @@ def parse_report(path: Path) -> dict[str, Any]:
             roles[role] = span
     if SUMMARY not in roles:
         raise fail(0, "the report", "no `## Summary per record` section")
-    if not record_parts:
-        raise fail(0, "the report", "no `## ` section with the per-record sections (`### <unique_name>`)")
-
     rows = _parse_summary(lines, roles[SUMMARY], fail)
+    _check_something_to_review(rows, record_parts, roles, fail)
     names = {row["name"] for row in rows}
     fields = _parse_fields(lines, roles[FIELDS], names, fail) if FIELDS in roles else {}
     crosscut = _parse_crosscut(lines, roles[ACROSS], fail) if ACROSS in roles else []
@@ -621,6 +633,9 @@ def parse_report(path: Path) -> dict[str, Any]:
         "title": lines[0][2:].strip(),
         "date": date.group(1) if date else None,
         "header_md": "\n".join(lines[1 : parts[0][0]]),
+        "metric_marks": _metric_marks(lines[1 : parts[0][0]]),
+        "horizon_marks": _metric_marks(lines[1 : parts[0][0]], HORIZON_MARKS_LABEL),
+        "split_marks": _metric_marks(lines[1 : parts[0][0]], SPLIT_MARKS_LABEL),
         "rows": rows,
         "fields": fields,
         "crosscut": crosscut,
@@ -701,7 +716,7 @@ def _cut_notes(text: str) -> tuple[str, str, list[tuple[str, str]]]:
 
 
 BULLET_LEAD = re.compile(r"^[*-] \*\*([^*:]+):?\*\*")
-SHOWN_LEADS = {"Problem": 0, "Options": 2, "Recommendation": 2}
+SHOWN_LEADS = {"Problem": 0, "Verdict": 0, "Options": 2, "Recommendation": 2}
 """The bullets of an issue in view: the problem above the Details box, the options and the recommendation below it.
 Every other bullet (effect, experiments, consistency, panel, ...) goes into the closed Details box."""
 
@@ -719,7 +734,7 @@ def _fold(body: str) -> str:
             parts.append((2, "", [line]))  # text after a detail bullet stays in view
         else:
             parts[-1][2].append(line)
-    if not any(lead == "Problem" for _, lead, _ in parts):
+    if not any(lead in ("Problem", "Verdict") for _, lead, _ in parts):
         return MD.render(body.strip()) if body.strip() else ""
     groups = ["\n".join(ln for g, _, lines in parts if g == k for ln in lines).strip() for k in range(3)]
     leads = [lead.lower() for g, lead, _ in parts if g == 1 and lead]
@@ -989,8 +1004,9 @@ def _readme(folder_dir: Path, wc_path: str, github: str) -> dict | None:
 
 
 def _record(path: Path) -> dict:
-    """The record's frontmatter as rows and its body as HTML."""
+    """The record's frontmatter as rows and its body as HTML, without the review (the Decisions tab shows it)."""
     meta, body = _frontmatter(path.read_text())
+    body = _without_review(body)
     rows = []
     for k, v in meta.items():
         value = ", ".join(str(x) for x in v) if isinstance(v, list) else v
@@ -998,8 +1014,56 @@ def _record(path: Path) -> dict:
     return {"fields": rows, "html": render(body)}
 
 
+METRIC_MARKS_LABEL = "**Metric marks:**"
+"""The report's header line naming the records whose declared metric the round marks (`` `a`, `b` `` or ``all``);
+without it the page shows no metric (Lennart, 2026-11-10: "the metric was not a new issue or choice here, hence it
+should be resolved or hidden unless asked for")."""
+
+
+HORIZON_MARKS_LABEL = "**Horizon marks:**"
+"""The same for the horizon and test windows of a temporal task, which the curator signs off for every new temporal
+dataset (Lennart, 2026-11-10: "for new datasets, the curator should also sign off on this (akin to how we sign off on
+the metric)")."""
+
+
+SPLIT_MARKS_LABEL = "**Split marks:**"
+"""The same for the declared split (the regime, its columns, the time basis, the folds), which the page shows in the
+Use case tab above the metric: on the page, with a mark, only when the round asks about it."""
+
+
+def _metric_marks(lines: list[str], label: str = METRIC_MARKS_LABEL) -> set[str] | None:
+    """The records of the header's marks line ``label`` (``None``: all), or none without that line."""
+    for line in lines:
+        if line.startswith("## "):
+            break
+        if line.startswith(label):
+            rest = line[len(label) :].strip().rstrip(".")
+            return None if rest == "all" else set(re.findall(r"`([^`]+)`", rest))
+    return set()
+
+
+REVIEW_SECTION = re.compile(r"^## Review[ \t]*\n.*?(?=^## |\Z)", re.MULTILINE | re.DOTALL)
+"""A record's ``## Review`` section: the review the page shows on the Decisions and Panel tabs, not in the record tab,
+and never read for the curator's CC lines (a review may quote one)."""
+
+
+def _without_review(body: str) -> str:
+    """A record's markdown body without its ``## Review`` section."""
+    return REVIEW_SECTION.sub("", body)
+
+
+HORIZON_CHECKED = re.compile(
+    r"^CC \((?P<date>\d{4}-\d{2}-\d{2}), (?P<who>[^)]+)\): the declared horizon\b.*?\bis checked\b.*$", re.MULTILINE
+)
+
+
 METRIC_CHECKED = re.compile(
     r"^CC \((?P<date>\d{4}-\d{2}-\d{2}), (?P<who>[^)]+)\): the declared metric\b.*?\bis checked\b.*$", re.MULTILINE
+)
+
+
+SPLIT_CHECKED = re.compile(
+    r"^CC \((?P<date>\d{4}-\d{2}-\d{2}), (?P<who>[^)]+)\): the declared split\b.*?\bis checked\b.*$", re.MULTILINE
 )
 
 
@@ -1007,11 +1071,100 @@ def _metric_checked(path: Path) -> dict | None:
     """The record's latest CC line saying the declared metric is checked (the curator's metric mark, applied): the page
     then shows that line instead of the mark and does not count the metric as open.
     """
-    found = list(METRIC_CHECKED.finditer(_frontmatter(path.read_text())[1])) if path.is_file() else []
+    found = list(METRIC_CHECKED.finditer(_without_review(_frontmatter(path.read_text())[1]))) if path.is_file() else []
     if not found:
         return None
     m = found[-1]
     return {"date": m["date"], "by": m["who"], "html": MD.renderInline(m.group(0))}
+
+
+def _horizon_checked(path: Path) -> dict | None:
+    """The record's latest CC line saying the declared horizon is checked (the curator's horizon mark, applied)."""
+    found = list(HORIZON_CHECKED.finditer(_without_review(_frontmatter(path.read_text())[1]))) if path.is_file() else []
+    if not found:
+        return None
+    m = found[-1]
+    return {"date": m["date"], "by": m["who"], "html": MD.renderInline(m.group(0))}
+
+
+def _split_checked(path: Path) -> dict | None:
+    """The record's latest CC line saying the declared split is checked (the curator's split mark, applied)."""
+    found = list(SPLIT_CHECKED.finditer(_without_review(_frontmatter(path.read_text())[1]))) if path.is_file() else []
+    if not found:
+        return None
+    m = found[-1]
+    return {"date": m["date"], "by": m["who"], "html": MD.renderInline(m.group(0))}
+
+
+HORIZON_TITLE = "Sign off the horizon: the window length, the gap and the period the windows cover?"
+"""The title of a temporal record's horizon sign-off, the issue "H" the page shows first among its issues."""
+
+
+def _horizon_item(text: str, temporal: dict | None, record_path: Path) -> dict | None:
+    """A temporal record's ``**Horizon:**`` block as an issue of its own, "H", shaped and marked like the numbered
+    issues: the verdict, a closed Details box (the declared windows, the length, the gap, the time frame), the options
+    table and the recommendation. Resolved once the record carries the CC line that the declared horizon is checked.
+    None without a block or for a task that is not temporal.
+    """
+    if not text.strip() or temporal is None:
+        return None
+    declared = _declared_line(temporal)
+    lines = text.splitlines()
+    at = next((i + 1 for i, ln in enumerate(lines) if BULLET_LEAD.match(ln) and "Verdict" in ln), None)
+    if at is not None:  # after the verdict bullet and its continuation lines
+        while at < len(lines) and lines[at].startswith((" ", "\t")) and lines[at].strip():
+            at += 1
+        lines[at:at] = [f"* **Declared:** {declared}"]
+    checked = _horizon_checked(record_path)
+    return {
+        "n": "H",
+        "titleHtml": MD.renderInline(HORIZON_TITLE),
+        **_thread("\n".join(lines)),
+        "resolved": checked is not None,
+    }
+
+
+def _declared_line(temporal: dict) -> str:
+    """The definition's declared windows in one line, for the horizon's Details box."""
+    parts = [f"time column `{temporal['on']}`"]
+    if temporal.get("window") is not None:
+        parts.append(f"windows of {temporal['window']} {temporal.get('unit', '')}".strip())
+    if temporal.get("cutoffs"):
+        parts.append("starting " + ", ".join(f"`{c}`" for c in temporal["cutoffs"]))
+    elif temporal.get("n_windows"):
+        parts.append(
+            f"the newest {temporal['n_windows']} back to back"
+            + (f", step {temporal['step']}" if temporal.get("step") else "")
+        )
+    gap = temporal.get("gap")
+    parts.append(f"a gap of {gap} {temporal.get('gap_unit') or temporal.get('unit', '')}".strip() if gap else "no gap")
+    if temporal.get("horizon") is not None:
+        parts.append(f"declared horizon {temporal['horizon']} {temporal.get('horizon_unit') or ''}".strip())
+    out = "; ".join(parts) + " (`dataset.py`)."
+    if temporal.get("comment"):
+        out += f" Its splits comment: {temporal['comment']}"
+    return out
+
+
+def _temporal_from_class(cls: Any) -> dict | None:
+    """A temporal definition's declared test windows (what the curator signs off as its horizon) and its splits
+    comment; None for a task that is not temporal.
+    """
+    temporal = getattr(cls, "temporal", None)
+    if temporal is None:
+        return None
+    out: dict[str, Any] = {"on": temporal.on}
+    splits = getattr(temporal, "splits", None)
+    for key in ("window", "unit", "step", "gap", "gap_unit", "n_windows", "cutoffs", "sample_by"):
+        value = getattr(splits, key, None)
+        if value is not None and value != () and not (key == "gap" and value == 0):
+            out[key] = list(value) if isinstance(value, tuple) else value
+    for key in ("horizon", "horizon_unit", "time_unit"):
+        value = getattr(temporal, key, None)
+        if value is not None:
+            out[key] = value
+    out["comment"] = " ".join(str(getattr(cls, "splits_comment", "") or "").split())
+    return out
 
 
 def _priority(path: Path) -> int | None:
@@ -1031,6 +1184,7 @@ def review_order(d: dict[str, Any]) -> tuple[bool, int, int, str]:
 def _decided(path: Path) -> dict | None:
     """The triage verdict of a record that already says No (verified, not reviewed for shipping), else None."""
     meta, body = _frontmatter(path.read_text())
+    body = _without_review(body)
     if not str(meta.get("suggestion") or "").startswith("No"):
         return None
     notes = [p.strip() for p in re.split(r"\n\s*\n", body) if p.strip().startswith("CC (")]
@@ -1116,6 +1270,108 @@ def _metric_from_front(task: dict) -> dict | None:
     out.update(name=task["metric"], origin=task.get("metric_origin"))
     out["scoring_columns"] = [{"column": c} for c in task.get("scoring_columns") or ()]
     return {**out, "source": "readme"}
+
+
+SPLITS_SECTION = re.compile(r"^## Splits\n(.*?)(?=^## |\Z)", re.S | re.M)
+SPLIT_SHAPE = re.compile(r"^\d+ repeat\(s\) x \d+ fold\(s\)")
+SPLIT_KEYS = (
+    "n_repeats",
+    "n_folds",
+    "random_state",
+    "time_horizon",
+    "time_horizon_unit",
+    "time_gap",
+    "time_gap_unit",
+    "n_train",
+    "n_test",
+)
+"""The fields of the README's ``splits`` front matter the Use case tab shows."""
+
+
+def _literal_from_source(code: str, name: str) -> Any:
+    """The value of the class attribute ``name`` in a committed dataset.py, read without importing it."""
+    for node in ast.walk(ast.parse(code)):
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == name for t in node.targets):
+            try:
+                return ast.literal_eval(node.value)
+            except ValueError:
+                return None
+    return None
+
+
+SPLIT_WORD = re.compile(r"\bsplit", re.I)
+
+
+def _split_notes(comments: str | None) -> list[str]:
+    """The bullets of a definition's ``curation_comments`` that speak of the split, as inline HTML."""
+    bullets: list[str] = []
+    for line in textwrap.dedent(comments or "").splitlines():
+        if line.startswith("- "):
+            bullets.append(line[2:].strip())
+        elif line.strip() and bullets:
+            bullets[-1] += " " + line.strip()
+    return [MD.renderInline(b) for b in bullets if SPLIT_WORD.search(b)]
+
+
+TIME_BASIS = ("Timeless", "Snapshot", "DelayedTarget", "StationaryRelation")
+"""The definition's use-case prototypes (SPLIT-32), as in ``data_foundry.schema.TIME_BASIS_TAGS``."""
+FORCED = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
+"""The definition's forced tags (SPLIT-8), as in ``data_foundry.schema.FORCED_TIME_TAGS``."""
+TIME_LINE = re.compile(r"Time basis:\s*(.+?)(?:\n\s*[-*]\s|\n\s*\n|$)", re.S)
+
+
+def _time_basis(tags: list[str], comments: str | None) -> dict:
+    """The definition's time basis (a prototype or a forced tag) and its `Time basis:` line."""
+    m = TIME_LINE.search(comments or "")
+    return {
+        "basis": next((t for t in tags if t in TIME_BASIS or t in FORCED), None),
+        "lineHtml": MD.renderInline(" ".join(m.group(1).split())) if m else "",
+    }
+
+
+def _time_facts(split: dict, record_path: Path) -> None:
+    """Add the record's collection facts (SPLIT-32) to ``split["time"]``, next to the definition's time basis."""
+    meta, _ = _frontmatter(record_path.read_text()) if record_path.is_file() else ({}, "")
+    tags = [str(t) for t in meta.get("tags") or []]
+    time = split.setdefault("time", _time_basis([], None))
+    time["facts"] = [t for t in tags if t.split(":")[0] in ("Samples", "Time", "Target", "Entities", "Features")]
+
+
+def _split(readme: str | None, tags: list[str], comments: str | None) -> dict | None:
+    """The declared split, as the generated README states it.
+
+    From the front matter: the regime, the stratification, time and group columns, the grouping, the repeats and
+    folds, the horizon and gap and the train and test sizes. From the Splits section: the definition's note on the
+    split (empty for the default splits) and the table of splits (with the time windows of a temporal task). The
+    ``Forced...`` data tags say that the regime was forced; the definition's notes on the split say why.
+    """
+    front, body = _frontmatter(readme)
+    task, sp = front.get("task") or {}, front.get("splits") or {}
+    if not task.get("split_regime"):
+        return None
+    note, table = "", ""
+    m = SPLITS_SECTION.search(body)
+    if m:
+        paras = [x.strip() for x in re.split(r"\n\s*\n", m.group(1)) if x.strip()]
+        at = next((i for i, x in enumerate(paras) if SPLIT_SHAPE.match(x)), len(paras))
+        note = "\n\n".join(paras[:at])
+        table = "\n".join(line for line in m.group(1).splitlines() if line.startswith("|"))
+    grouping = task.get("grouping") or {}
+    return {
+        "regime": REGIME.get(task["split_regime"], task["split_regime"]),
+        "forced": [x for x in tags if x.startswith("Forced")],
+        "stratify_on": task.get("stratify_on"),
+        "time_on": task.get("time_on"),
+        "group_on": task.get("group_on"),
+        "group_time_on": task.get("group_time_on"),
+        "prediction_unit": grouping.get("prediction_unit"),
+        "aggregation": grouping.get("aggregation"),
+        **{k: sp.get(k) for k in SPLIT_KEYS},
+        "noteHtml": render(note) if note and note != DEFAULT_SPLITS_COMMENT else "",
+        "tableHtml": MD.render(table) if table else "",
+        "notes": _split_notes(comments),
+        "time": _time_basis(tags, comments),
+    }
 
 
 def _sentence(text: str) -> str:
@@ -1213,11 +1469,19 @@ def _live_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
         raise BuildError(f"{where.wc}/{folder}/dataset.py names `{cls.dataset_metadata.unique_name}`, not `{folder}`")
     regime = "grouped" if cls.grouping is not None else "temporal" if cls.temporal is not None else "iid"
     front = read_report(where.root / folder / "README.md")
+    code = definition.read_text()
+    for parent in definition_files(cls)[1:]:  # the parents it derives from, whose code it runs too
+        code += (
+            f"\n\n# --- the parent it derives from: ../{parent.parent.name}/{parent.name} ---\n\n{parent.read_text()}"
+        )
+    readme = where.root / folder / "README.md"
     return {
-        "code": definition.read_text(),
+        "code": code,
         "summary": _summary_from_class(cls),
         "metric": _metric_from_class(cls) or _metric_from_front(front.get("task") or {}),
-        "meta": _meta(regime, cls.problem_type, front, retired=False),
+        "split": _split(readme.read_text() if readme.is_file() else None, list(cls.data_tags), cls.curation_comments),
+        "temporal": _temporal_from_class(cls),
+        "meta": _meta(regime, getattr(cls, "problem_type", None), front, retired=False),
         "readme": _readme(where.root / folder, f"{where.wc}/{folder}", where.github),
     }
 
@@ -1234,7 +1498,8 @@ def _retired_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
     commit, removed_on = found
     code = _show(where.repo, commit, path)
     readme_at = _last_commit_with(where.repo, f"{where.wc}/{folder}/README.md")
-    front, _ = _frontmatter(_show(where.repo, readme_at[0], f"{where.wc}/{folder}/README.md") if readme_at else None)
+    readme = _show(where.repo, readme_at[0], f"{where.wc}/{folder}/README.md") if readme_at else None
+    front, _ = _frontmatter(readme)
     task = front.get("task") or {}
     meta = None
     if code or front:
@@ -1244,6 +1509,11 @@ def _retired_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
         "code": code,
         "summary": _summary_from_source(code) if code else None,
         "metric": _metric_from_front(task),
+        "split": _split(
+            readme,
+            list(_literal_from_source(code, "data_tags") or ()) if code else [],
+            _literal_from_source(code, "curation_comments") if code else None,
+        ),
         "meta": meta,
         "retiredCommit": _git(where.repo, "rev-parse", "--short", commit).stdout.strip(),
         "retiredDate": removed_on,
@@ -1272,24 +1542,31 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
     if not record_path.is_file():
         raise BuildError(f"{name}: no curation record {RECORDS_DIR}/{name}.md")
     retired = bool(folder) and not (where.root / folder).is_dir()
-    files: dict[str, Any] = {"code": None, "summary": None, "metric": None, "meta": None, "readme": None}
+    files: dict[str, Any] = dict.fromkeys(("code", "summary", "metric", "split", "temporal", "meta", "readme"))
     if folder:
         files.update(_retired_definition(where, name, folder) if retired else _live_definition(where, name, folder))
+    if files["split"] is not None:
+        _time_facts(files["split"], record_path)
     if files["summary"] is None and name in tldr:
         files["summary"] = _summary_from_tldr(str(tldr[name]))
     decided = _decided(record_path)
     fields = report["fields"].get(name, [])
+    marks, hmarks = report.get("metric_marks", set()), report.get("horizon_marks", set())
+    smarks = report.get("split_marks", set())
+    horizon = _horizon_item(rec["blocks"].get("horizon", ""), files["temporal"], record_path)
+    items = [horizon] if horizon and (hmarks is None or name in hmarks) else []
     return {
         "name": name,
         "folder": folder,
         "priority": _priority(record_path),
-        "openMarks": sum(1 for it in rec["items"] if not it["resolved"]) + len(fields),
+        "openMarks": sum(1 for it in [*items, *rec["items"]] if not it["resolved"]) + len(fields),
         "late": row["late"],
         "cat": "decided" if decided else cat,
         "outcomeHtml": MD.renderInline(row["outcome"]),
         "pointsHtml": MD.renderInline(row["points"]),
         "issuesIntroHtml": render(rec["issues_intro"]),
-        "items": [
+        "items": items
+        + [
             {
                 "n": it["n"],
                 "titleHtml": MD.renderInline(it["title_md"]),
@@ -1300,7 +1577,9 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
         ],
         "fields": fields,
         "blocks": [
-            {"key": k, "title": SECTION_TITLES[k], "html": render(v)} for k, v in rec["blocks"].items() if v.strip()
+            {"key": k, "title": SECTION_TITLES[k], "html": render(v)}
+            for k, v in rec["blocks"].items()
+            if v.strip() and k != "horizon"
         ],
         "shared": [{"title": s["title"], "html": render(s["md"])} for s in report["shared"].get(name, [])],
         "panel": _panel(rec.get("panel")),
@@ -1311,6 +1590,10 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
         "summary": files["summary"],
         "metric": files["metric"],
         "metricChecked": _metric_checked(record_path),
+        "metricMark": marks is None or name in marks,
+        "split": files["split"],
+        "splitMark": smarks is None or name in smarks,
+        "splitChecked": _split_checked(record_path),
         "meta": files["meta"],
         "readme": files["readme"],
         "retiredCommit": files.get("retiredCommit"),

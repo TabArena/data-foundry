@@ -10,6 +10,7 @@ decision_markers:
 tags:
 - AI-Filled (Verify)
 - Many features
+- Spectral Data
 original_source: Other
 year: '2021'
 domain: medical & healthcare

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class WineQuality(AbstractCuratedDataset):
@@ -38,26 +38,31 @@ class WineQuality(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "wine_quality"
-    year = "2009"
     domain = "chemistry & material science"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C56S3T"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C56S3T",
+            license="CC BY 4.0",
+            year="2009",
+            bibtex=r"""
+                @article{cortez2009modeling,
+                  title={Modeling wine preferences by data mining from physicochemical properties},
+                  author={Cortez, Paulo and Cerdeira, Ant{\'o}nio and Almeida, Fernando and Matos, Telmo and Reis, Jos{\'e}},
+                  journal={Decision support systems},
+                  volume={47},
+                  number={4},
+                  pages={547--553},
+                  year={2009},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         Download from UCI and uzip data to a predefined folder.
         mkdir -p local-data-warehouse/wine_quality/ && wget -P local-data-warehouse/wine_quality/ https://archive.ics.uci.edu/static/public/186/wine+quality.zip && unzip local-data-warehouse/wine_quality/wine+quality.zip -d local-data-warehouse/wine_quality/ && rm local-data-warehouse/wine_quality/wine+quality.zip
-    """
-    bibtex = r"""
-        @article{cortez2009modeling,
-          title={Modeling wine preferences by data mining from physicochemical properties},
-          author={Cortez, Paulo and Cerdeira, Ant{\'o}nio and Almeida, Fernando and Matos, Telmo and Reis, Jos{\'e}},
-          journal={Decision support systems},
-          volume={47},
-          number={4},
-          pages={547--553},
-          year={2009},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         - We combine the original datasets for red and white wine into a single dataset with an additional column indicating the type of wine (red or white).

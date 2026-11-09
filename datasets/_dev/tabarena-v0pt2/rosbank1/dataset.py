@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -266,13 +267,25 @@ class Rosbank1(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "rosbank1"
-    year = "2018"
     domain = "business & marketing"
-    source = "Other"
-    source_url = "https://boosters.pro/championship/rosbank1/overview"
-    license = (
-        "None stated: the competition rules (boosters.pro API, `regulations`) and the Hugging Face card give no data "
-        "licence"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://boosters.pro/championship/rosbank1/overview",
+            license="None stated: the competition rules (boosters.pro API, `regulations`) and the Hugging Face card give no data "
+            "licence",
+            year="2018",
+            bibtex=r"""
+                @misc{Rosbank2018MLCompetition,
+                  author = {{Rosbank}},
+                  title = {Rosbank {ML} Competition},
+                  year = {2018},
+                  howpublished = {\url{https://boosters.pro/championship/rosbank1/overview}},
+                  note = {Data science competition on Boosters.pro, 27 April to 28 May 2018; task 1 churn (ROC AUC), task 2 POS spend (RMSE); files mirrored at https://huggingface.co/datasets/pytorch-lifestream/rosbank-churn}
+                }
+            """,
+        ),
     )
     download_description = """
         Rosbank released the data on boosters.pro for its ML Competition (27 April to 28 May 2018). The competition page (https://boosters.pro/championship/rosbank1/overview) is a JavaScript app whose content (name, dates, task texts, metrics, rules, leaderboards) comes from https://boosters.pro/api/champ/champ?champname=rosbank1; it lists no data files (checked 2026-10-07). The pytorch-lifestream team (Sber AI Lab, authors of the CoLES paper that uses the data) keeps the competition files on Hugging Face (dllllb/rosbank-churn, now pytorch-lifestream/rosbank-churn; earlier as rosbank-ml-contest-boosters.pro.zip on Yandex Cloud, now removed). The decompressed train.csv (33,672,402 bytes, sha256 cd19fe2557a4364f85a27a248ca68cb06efcd2e0642cea98d9319e1e8f90e392) is byte-identical to the copies participants put on GitHub in 2018: kianya/rosbank-competition (data/train.csv, committed 2018-10-26) and Ikitan/ML-Rosbank-competition (train.csv). We download the labelled file at a pinned revision; test.csv.gz (518,376 transactions of 5,217 clients, no labels) is not used.
@@ -291,15 +304,6 @@ class Rosbank1(AbstractCuratedDataset):
         done
 
         cbr_currencies.xml: sha256 b6bc755432f5f3cfa8827496263ce6978a0382ae24c7a1b9ff2568406e6d7ec3 (the list grows when the Bank adds a currency; the 30 ids above are what the definition needs). The 30 rate files concatenated in name order (cat cbr_rates/*.xml | sha256sum): 50cbff2632b63e7f9e0c9b461c6fa47d717f5b5854d9e1f202c485018bd9b339.
-    """
-    bibtex = r"""
-        @misc{Rosbank2018MLCompetition,
-          author = {{Rosbank}},
-          title = {Rosbank {ML} Competition},
-          year = {2018},
-          howpublished = {\url{https://boosters.pro/championship/rosbank1/overview}},
-          note = {Data science competition on Boosters.pro, 27 April to 28 May 2018; task 1 churn (ROC AUC), task 2 POS spend (RMSE); files mirrored at https://huggingface.co/datasets/pytorch-lifestream/rosbank-churn}
-        }
     """
     curation_comments = """
         We start with train.csv.gz of Rosbank's ML Competition on Boosters.pro (2018), from the pytorch-lifestream mirror on Hugging Face: 490,513 card transactions of the 5,000 labelled clients. One row is one client.
@@ -342,6 +346,11 @@ class Rosbank1(AbstractCuratedDataset):
         "splits_rows_unused": "The 524 clients whose period ends in September 2017 fall in the three-month label gap "
         "of every window: the newest window (December 2017) trains on the periods that ended by 31 August 2017, the "
         "last whose outcome is known when it starts.",
+        "time_newest_period_short": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): the periods ending in November and December 2017 hold 123 "
+            "and 63 clients against 416 to 524 a month from May to October, the thin tail of the client intake the notes "
+            "describe (curation_comments, Cohort)."
+        ),
     }
     splits_comment = """
         A churn model is refit, for example every month, and scores the clients whose grace period ends in that month. A client's label covers the three months after its period, so it is known three months after period_end: each window trains on the clients whose period ended at least three months before the window starts. Windows of one calendar month of period_end, newest first: December 2017 (63 clients, 23 churned), November 2017 (123, 49) and October 2017 (515, 179), training on 3,566, 3,078 and 2,559 clients. A fourth window (September 2017) would train on 44% of the clients, below the 50% floor, and two-month windows would leave one window above it. The periods ending from January 2018 on are not in the dataset (curation_comments, "Cohort"). The client intake drops after July 2017 (first transactions 400 to 800 a month, then about 50 to 110), so November and December are a thin tail of late or irregular clients; the period end is estimated from the last transaction for 11%, 29% and 38% of the October, November and December clients. Every test label window spans the New Year and no training label window does. The competition split its clients at random (its unlabelled test file covers the same months); this split mirrors the refit, and on the same test windows a random training side scores about 0.01 AUC higher, while 3 x 3 random folds score lower (0.817 against 0.860) as the later clients are easier to score.

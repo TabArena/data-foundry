@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -43,25 +43,30 @@ class Diamonds(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "diamonds"
-    year = "2007"
     domain = "business & marketing"
-    source = "Other"
-    source_url = "https://github.com/tidyverse/ggplot2/blob/main/data-raw/diamonds.csv"
-    license = "MIT License"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://github.com/tidyverse/ggplot2/blob/main/data-raw/diamonds.csv",
+            license="MIT License",
+            year="2007",
+            bibtex="""
+                @incollection{wickham2016data,
+                  title={Data analysis},
+                  author={Wickham, Hadley},
+                  booktitle={ggplot2: Elegant graphics for data analysis},
+                  pages={189--201},
+                  year={2016},
+                  publisher={Springer}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the CSV directly from the ggplot2 GitHub repository.
 
         mkdir -p local-data-warehouse/diamonds/ && wget -O local-data-warehouse/diamonds/original_diamonds.csv https://raw.githubusercontent.com/tidyverse/ggplot2/main/data-raw/diamonds.csv
-    """
-    bibtex = """
-        @incollection{wickham2016data,
-          title={Data analysis},
-          author={Wickham, Hadley},
-          booktitle={ggplot2: Elegant graphics for data analysis},
-          pages={189--201},
-          year={2016},
-          publisher={Springer}
-        }
     """
     curation_comments = """
         - The price ships on a log scale (log of US dollars), the scale a practitioner models a price on, and is scored

@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     Splits,
     TaskSummary,
     Temporal,
@@ -118,11 +119,25 @@ class SfPermitTime(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "sf_permit_time"
-    year = "2026"  # the snapshot we pin; the source grows over time
     domain = "business & marketing"
-    source = "GOV Website"
-    source_url = "https://data.sf.gov/Housing-and-Buildings/Building-Permits/i98e-djp9"
-    license = "Open Data Commons Public Domain Dedication and License"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",
+            url="https://data.sf.gov/Housing-and-Buildings/Building-Permits/i98e-djp9",
+            license="Open Data Commons Public Domain Dedication and License",
+            year="2026",  # the snapshot we pin; the source grows over time
+            bibtex=r"""
+                @misc{SanFrancisco2026BuildingPermits,
+                  author = {{City and County of San Francisco}},
+                  title  = {Building Permits},
+                  year   = {2026},
+                  howpublished = {\url{https://data.sf.gov/Housing-and-Buildings/Building-Permits/i98e-djp9/about_data}},
+                  note   = {DataSF Open Data Portal dataset, Accessed: 2026-02-05}
+                }
+            """,
+        ),
+    )
     download_description = """
         We re-collected the data similar to how the data from Kaggle was created.
 
@@ -134,15 +149,6 @@ class SfPermitTime(AbstractCuratedDataset):
 
         We save the file in the root dir as Building_Permits_20260205.csv
         mkdir -p local-data-warehouse/sf_permit_time && mv Building_Permits_20260205.csv local-data-warehouse/sf_permit_time
-    """
-    bibtex = r"""
-        @misc{SanFrancisco2026BuildingPermits,
-          author = {{City and County of San Francisco}},
-          title  = {Building Permits},
-          year   = {2026},
-          howpublished = {\url{https://data.sf.gov/Housing-and-Buildings/Building-Permits/i98e-djp9/about_data}},
-          note   = {DataSF Open Data Portal dataset, Accessed: 2026-02-05}
-        }
     """
     curation_comments = """
         We start with the Building Permits table of the San Francisco open data portal (permits filed 2015 to 2025, downloaded 2026-02-05).

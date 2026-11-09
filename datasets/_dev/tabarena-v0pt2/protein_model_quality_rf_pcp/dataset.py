@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
 
 
 def protein_key(name: str) -> str:
@@ -69,27 +69,31 @@ class RfPcp(AbstractCuratedDataset):
         ),
     )
     unique_name = "protein_model_quality_rf_pcp"
-    raw_data_from = "protein_model_quality_rf_pcp"
-    year = "2014"
     domain = "biology & life sciences"
-    source = "Other"
-    source_url = "https://sourceforge.net/projects/rf-pcp/files/"
-    license = "No dataset licence stated in the author archive or inspected release listing"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://sourceforge.net/projects/rf-pcp/files/",
+            license="No dataset licence stated in the author archive or inspected release listing",
+            year="2014",
+            bibtex="""
+                @article{rana2015rfpcp,
+                  title={Quality assessment of modeled protein structure using physicochemical properties},
+                  author={Rana, Prashant Singh and Sharma, Harish and Bhattacharya, Mahua and Shukla, Anupam},
+                  journal={Journal of Bioinformatics and Computational Biology},
+                  volume={13}, number={2}, pages={1550005}, year={2015},
+                  doi={10.1142/S0219720015500055}
+                }
+            """,
+        ),
+    )
     download_description = """
         Download the author's RF-PCP-DataSet.zip from
         https://downloads.sourceforge.net/project/rf-pcp/RF-PCP-DataSet.zip and extract its three CSVs under
         local-data-warehouse/protein_model_quality_rf_pcp/.
         Archive SHA256: d7d057c1f8043f7289fdbeed7cc36c26086650afc3e4ce7d8ad1228c09baef17.
         This candidate reads RF-PCP-Full-dataset.csv. The two other CSVs are retained as source evidence.
-    """
-    bibtex = """
-        @article{rana2015rfpcp,
-          title={Quality assessment of modeled protein structure using physicochemical properties},
-          author={Rana, Prashant Singh and Sharma, Harish and Bhattacharya, Mahua and Shukla, Anupam},
-          journal={Journal of Bioinformatics and Computational Biology},
-          volume={13}, number={2}, pages={1550005}, year={2015},
-          doi={10.1142/S0219720015500055}
-        }
     """
     curation_comments = """
         - Prediction point: after generating a candidate structure, before its experimental reference is available.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
 
 SCREENING_TESTS = ["Hinselmann", "Schiller", "Citology"]
 """The three screening results besides the biopsy: outcomes of the same work-up, not features."""
@@ -85,11 +85,45 @@ class CaracasCervicalCancer(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "caracas_cervical_cancer"
-    year = "2017"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5Z310"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5Z310",
+            license="CC BY 4.0",
+            year="2017",
+            bibtex="""
+                @inproceedings{fernandes2017transfer,
+                  title={Transfer Learning with Partial Observability Applied to Cervical Cancer Screening},
+                  author={Fernandes, Kelwin and Cardoso, Jaime S. and Fernandes, Jessica},
+                  booktitle={Pattern Recognition and Image Analysis (IbPRIA 2017)},
+                  series={Lecture Notes in Computer Science},
+                  volume={10255},
+                  pages={243--250},
+                  year={2017},
+                  publisher={Springer},
+                  doi={10.1007/978-3-319-58838-4_27}
+                }
+                @article{fernandes2018supervised,
+                  title={Supervised deep learning embeddings for the prediction of cervical cancer diagnosis},
+                  author={Fernandes, Kelwin and Chicco, Davide and Cardoso, Jaime S. and Fernandes, Jessica},
+                  journal={PeerJ Computer Science},
+                  volume={4},
+                  pages={e154},
+                  year={2018},
+                  doi={10.7717/peerj-cs.154}
+                }
+                @misc{fernandes2017cervical,
+                  title={Cervical Cancer (Risk Factors)},
+                  author={Fernandes, Kelwin and Cardoso, Jaime and Fernandes, Jessica},
+                  year={2017},
+                  howpublished={UCI Machine Learning Repository},
+                  doi={10.24432/C5Z310}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from UCI (dataset 383, Cervical Cancer (Risk Factors)). The zip holds one file,
         risk_factors_cervical_cancer.csv (858 rows, 36 columns; unanswered questions are "?").
@@ -98,35 +132,6 @@ class CaracasCervicalCancer(AbstractCuratedDataset):
         wget -P local-data-warehouse/caracas_cervical_cancer https://archive.ics.uci.edu/static/public/383/cervical+cancer+risk+factors.zip
         unzip local-data-warehouse/caracas_cervical_cancer/cervical+cancer+risk+factors.zip -d local-data-warehouse/caracas_cervical_cancer
         rm local-data-warehouse/caracas_cervical_cancer/cervical+cancer+risk+factors.zip
-    """
-    bibtex = """
-        @inproceedings{fernandes2017transfer,
-          title={Transfer Learning with Partial Observability Applied to Cervical Cancer Screening},
-          author={Fernandes, Kelwin and Cardoso, Jaime S. and Fernandes, Jessica},
-          booktitle={Pattern Recognition and Image Analysis (IbPRIA 2017)},
-          series={Lecture Notes in Computer Science},
-          volume={10255},
-          pages={243--250},
-          year={2017},
-          publisher={Springer},
-          doi={10.1007/978-3-319-58838-4_27}
-        }
-        @article{fernandes2018supervised,
-          title={Supervised deep learning embeddings for the prediction of cervical cancer diagnosis},
-          author={Fernandes, Kelwin and Chicco, Davide and Cardoso, Jaime S. and Fernandes, Jessica},
-          journal={PeerJ Computer Science},
-          volume={4},
-          pages={e154},
-          year={2018},
-          doi={10.7717/peerj-cs.154}
-        }
-        @misc{fernandes2017cervical,
-          title={Cervical Cancer (Risk Factors)},
-          author={Fernandes, Kelwin and Cardoso, Jaime and Fernandes, Jessica},
-          year={2017},
-          howpublished={UCI Machine Learning Repository},
-          doi={10.24432/C5Z310}
-        }
     """
     curation_comments = """
         We start with risk_factors_cervical_cancer.csv from UCI: 858 patients of the gynecology service at Hospital Universitario de Caracas (2012-2013), with their answers to a risk-factor questionnaire and four test results.

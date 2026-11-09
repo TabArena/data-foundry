@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
 
 # Columns of support2.csv that are not features at the prediction point (study day 3), with the reason.
 DROPPED_COLUMNS = {
@@ -238,16 +238,40 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "2_month_survival_rate_prediction"
-    year = "2003"
     domain = "medical & healthcare"
-    source = "Other"
-    source_url = "https://hbiostat.org/data/repo/supportdesc"
-    license = (
-        'Free use with attribution: hbiostat.org/data states "Permission is granted to anyone wishing to use the '
-        'data sets provided here" and asks to cite the original paper and Vanderbilt Biostatistics. Every value of the '
-        "dataset comes from that file. The ICPSR 2957 public-use files, read only to find the rows of the phase II "
-        "physiology, are under ICPSR's terms of use (no redistribution without ICPSR's written agreement; cite the "
-        "study) and are not part of the dataset"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://hbiostat.org/data/repo/supportdesc",
+            license='Free use with attribution: hbiostat.org/data states "Permission is granted to anyone wishing to use the '
+            'data sets provided here" and asks to cite the original paper and Vanderbilt Biostatistics. Every value of the '
+            "dataset comes from that file. The ICPSR 2957 public-use files, read only to find the rows of the phase II "
+            "physiology, are under ICPSR's terms of use (no redistribution without ICPSR's written agreement; cite the "
+            "study) and are not part of the dataset",
+            year="2003",
+            bibtex="""
+                @article{knaus1995support,
+                  title={The {SUPPORT} prognostic model: Objective estimates of survival for seriously ill hospitalized adults},
+                  author={Knaus, William A and Harrell, Frank E and Lynn, Joanne and Goldman, Lee and Phillips, Russell S and Connors, Alfred F and Dawson, Neal V and Fulkerson, William J and Califf, Robert M and Desbiens, Norman and others},
+                  journal={Annals of Internal Medicine},
+                  volume={122},
+                  number={3},
+                  pages={191--203},
+                  year={1995},
+                  doi={10.7326/0003-4819-122-3-199502010-00007},
+                  note={Data obtained from https://hbiostat.org/data courtesy of the Vanderbilt University Department of Biostatistics}
+                }
+                @misc{knaus2020supporticpsr,
+                  title={Study to Understand Prognoses and Preferences for Outcomes and Risks of Treatment ({SUPPORT}) and Hospitalized Elderly Longitudinal Project ({HELP}), 1989-1997},
+                  author={Knaus, William and Lynn, Joanne},
+                  publisher={Inter-university Consortium for Political and Social Research [distributor]},
+                  year={2020},
+                  note={ICPSR 2957, version V2, 2020-02-20; used to restore the row order of the phase II physiology},
+                  doi={10.3886/ICPSR02957.v2}
+                }
+            """,
+        ),
     )
     download_description = """
         Two downloads. Every value of the dataset comes from the first; the second only tells where each patient's physiology sits in it.
@@ -258,27 +282,6 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         mkdir -p local-data-warehouse/2_month_survival_rate_prediction && cd local-data-warehouse/2_month_survival_rate_prediction && wget https://hbiostat.org/data/repo/support2csv.zip && unzip support2csv.zip && rm support2csv.zip
         # after downloading DS9 and DS10 from ICPSR (login), in the same folder:
         unzip -o <DS9 zip> -d icpsr_2957 && unzip -o <DS10 zip> -d icpsr_2957
-    """
-    bibtex = """
-        @article{knaus1995support,
-          title={The {SUPPORT} prognostic model: Objective estimates of survival for seriously ill hospitalized adults},
-          author={Knaus, William A and Harrell, Frank E and Lynn, Joanne and Goldman, Lee and Phillips, Russell S and Connors, Alfred F and Dawson, Neal V and Fulkerson, William J and Califf, Robert M and Desbiens, Norman and others},
-          journal={Annals of Internal Medicine},
-          volume={122},
-          number={3},
-          pages={191--203},
-          year={1995},
-          doi={10.7326/0003-4819-122-3-199502010-00007},
-          note={Data obtained from https://hbiostat.org/data courtesy of the Vanderbilt University Department of Biostatistics}
-        }
-        @misc{knaus2020supporticpsr,
-          title={Study to Understand Prognoses and Preferences for Outcomes and Risks of Treatment ({SUPPORT}) and Hospitalized Elderly Longitudinal Project ({HELP}), 1989-1997},
-          author={Knaus, William and Lynn, Joanne},
-          publisher={Inter-university Consortium for Political and Social Research [distributor]},
-          year={2020},
-          note={ICPSR 2957, version V2, 2020-02-20; used to restore the row order of the phase II physiology},
-          doi={10.3886/ICPSR02957.v2}
-        }
     """
     curation_comments = """
         We start with support2.csv from the Vanderbilt Biostatistics data repository (hbiostat.org/data): the 9,105 patients of SUPPORT phases I (1989-1991) and II (1992-1994), seriously ill adults at five US teaching hospitals. We keep the 8,967 patients alive after study day 3.

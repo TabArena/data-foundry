@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
 
 
 class Houses(AbstractCuratedDataset):
@@ -40,28 +40,33 @@ class Houses(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "houses"
-    year = "1999"
     domain = "business & marketing"
-    source = "Other"
-    source_url = "https://lib.stat.cmu.edu/datasets/"
-    license = "Public"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://lib.stat.cmu.edu/datasets/",
+            license="Public",
+            year="1999",
+            bibtex=r"""
+                @article{pace1997sparse,
+                  title={Sparse spatial autoregressions},
+                  author={Pace, R Kelley and Barry, Ronald},
+                  journal={Statistics \\& Probability Letters},
+                  volume={33},
+                  number={3},
+                  pages={291--297},
+                  year={1997},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We download the houses.zip from the lib.stat.cmu.edu repository and preprocess cadata.txt (strip the 27-line header text, remove leading whitespace, add a column header row).
 
         mkdir -p local-data-warehouse/houses/ && wget -q -P /tmp https://lib.stat.cmu.edu/datasets/houses.zip && unzip -o /tmp/houses.zip -d /tmp && { echo "MedianHouseValue  MedianIncome  HousingMedianAge  TotalRooms  TotalBedrooms  Population  Households  Latitude  Longitude"; sed -n '28,$p' /tmp/cadata.txt | sed 's/^  //'; } > local-data-warehouse/houses/cadata_manual.txt && rm /tmp/houses.zip /tmp/cadata.txt
-    """
-    bibtex = r"""
-        @article{pace1997sparse,
-          title={Sparse spatial autoregressions},
-          author={Pace, R Kelley and Barry, Ronald},
-          journal={Statistics \\& Probability Letters},
-          volume={33},
-          number={3},
-          pages={291--297},
-          year={1997},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         - The data contains rows whose values were capped artificially at a price of 500001. This creates a censored target, punishing model that learn to extrapolate from the data. We remove rows with this censored value in the target variable to obtain a more realistic task.

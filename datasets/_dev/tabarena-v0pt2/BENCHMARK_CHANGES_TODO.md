@@ -38,7 +38,7 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
   `examples/benchmark_container.py` does not use it yet: `feature_columns` drops the group column, so no model there
   sees which test rows share a group.
 - [ ] **Dataset-specific metrics.** Every v0.2 definition now declares the metric its source scored, or an explicit
-  fallback (the rules: `.claude/skills/knowledge-curation/references/metrics.md`, MET-1 to MET-13), and a format-2
+  fallback (the rules: `.claude/skills/knowledge-curation/references/metrics.md`, MET-1 to MET-16), and a format-2
   container stores it as data: `task_metadata.objective_metric` (`data_foundry.schema.MetricSpec`: `name`, `kind`
   `standard` or `custom`, `prediction` `proba` / `label` / `value`, `greater_is_better`, `params`, `inputs`,
   `origin` `source` / `stand_in` / `context` / `fallback`, `original`, `reference`, `definition`, `reason`,
@@ -76,8 +76,7 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
     already in the metric). The sources fixed hard-label decisions (MET-4, MET-6), so the metric stays and the
     threshold becomes part of the method.
 
-  The metrics per dataset, from the metric decisions of 2026-10-21
-  (`local-data-warehouse/_runs/2026-10-21_metrics/decisions.json`; 15 of them wait for the curator, marked `*`):
+  The metrics per dataset, from the metric decisions of 2026-10-21 (15 of them wait for the curator, marked `*`):
 
   | Metric | Kind, prediction | Datasets |
   |---|---|---|
@@ -101,8 +100,82 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
   | `hierarchical_balanced_accuracy` | custom, label; input `group` | micro_mass (scoring column `Strain`) |
   | `par_k` | custom, value; input `group` | sat11_hand_algo_runtime (PAR10, cutoff 5,000 s, group `instance_id`, `select_min`) |
   | `normalized_early_detection_utility` | custom, label; inputs `group`, `order` | sepsis_prediction_1m (scoring columns `Patient_ID`, `Hour`; each test patient's hours whole) |
+  | `mean_poisson_deviance` | standard, value; optional input `weight` (a row weight), `min_prediction` required | fremtpl2 (scoring column `Exposure`), bemtpl97 (`expo`): claims per year insured, the weight column also the task's `sample_weight`, `min_prediction` 1e-4 (2026-11-06) |
+- [ ] **Training weights.** A TODO for later: nothing changes in TabArena or AutoGluon yet. A format-2 task may declare
+  a training weight, `task_metadata.sample_weight` (read it with `data_foundry.curation_container.sample_weight`): a
+  scoring column that the objective metric reads as its row weight (MET-15), such as the years insured of a claims
+  rate (fremtpl2 `Exposure`, bemtpl97 `expo`). Every model is fitted with it as the row weight and never gets it as a
+  feature: a time on risk that a claim can cut short leaks the outcome as a feature (LEAK-41), and a fit without the
+  weight targets another quantity (on fremtpl2 an unweighted fit scores worse than the constant rate).
+  - **The gate.** No container with a `sample_weight` enters a run until the adapter builds X from
+    `feature_columns()`, passes the weight to every fit, and scores with Data Foundry's scorer. A contract test on a
+    toy container guards it: its realized weight, used as a feature or ignored, moves the score past a stated
+    tolerance.
+  - **Scoring columns never reach `predict`.** The adapter passes the scoring columns to the scorer, and the
+    `sample_weight` column to the fit as the training rows' weight; it passes none of them to `predict`. A test row's
+    weight is the realized amount at risk, which a model at the quote does not have (LEAK-41): read as a feature it
+    gains 0.0052 deviance on bemtpl97, 0.0072 to 0.0088 on fremtpl2 and 0.09 to 0.12 weighted Gini on
+    australian_vehicle_insurance_2004_2005 (X1, 2026-11-08).
+  - **Weighted validation.** Early stopping, tuning and ensembling use the weighted metric, with the same
+    `min_prediction` floor in validation and test (in AutoGluon, `TabularPredictor(sample_weight=col,
+    weight_evaluation=True)`).
+  - **The models to update.** AutoGluon's NN_TORCH, FastAI and KNN drop the weight with a log line at level 15;
+    RealMLP, TabM, the TabPFN wrappers, TabICL, Mitra and TabDPT never read it; XGBoost's early stopping ignores the
+    evaluation weights; CatBoost stops on RMSE for a metric it does not know; AutoGluon has no Poisson scorer and no
+    offset.
+  - **A model-fit contract test** for the benchmark pipeline, per model: does it use the training weights, and the
+    validation weights? Fit with half the rows at weight 0: the prediction must change. Other fit properties are worth
+    testing the same way, such as transductive use of the test rows (LEAK-9) and determinism.
+  - **Resampling, one default for a weight-blind model.** Draw each bag fold's training rows with probability in
+    proportion to the weight (the validation rows untouched), seeded, recorded as `weight_mode=resampled` and flagged
+    on the leaderboard. Measured against a weighted fit, it costs 0.0007 to 0.0018 deviance on fremtpl2 (three draws
+    or one); on australian_vehicle_insurance_2004_2005 it closes 90% of the deviance gap but only 45% of the Gini gap.
+- [ ] **Validation weights and unit weights.** A TODO for later (Lennart, 2026-11-08). The adapter weights every
+  validation loss (early stopping, model selection, tuning, ensembling) by `validation_weight(container)`
+  (`data_foundry.curation_container`), the metric's row weight, so the model optimises what the test score counts. A
+  task with a `unit_weight` (MET-17: boreal_postfire_lichen_biomass, superconductivity,
+  pancreatic_cancer_mouse_detection, dementia_prediction) counts each unit once in the score: weight the validation loss
+  by its column, keep a unit's rows on one side of an inner validation split (group the inner folds by
+  `unit_weight(container).unit`), and never fit with it as a training weight. A contract test: a toy container whose
+  units have 1 and 5 rows; the adapter's validation score equals the scorer's on the same rows.
 - [ ] **Report the effective sample size.** For a task scored per group, the number of test groups per fold is the
   sample size of the score (34 molecules per fold in `musk`); show it next to the results.
+
+## Losses for deviance-scored tasks
+
+A TODO for TabArena to decide (Andrej, 2026-11-09, cross-dataset review: "Yes, we should definitely stick to what
+practitioners do wherever possible, but we also need more research on that."). Nothing changes in Data Foundry. A
+practitioner on a count or claim-cost task fits a Poisson or Tweedie loss with a log link; most benchmark methods fit
+squared error, so on a zero-heavy target they predict values near zero or below, which the metric's floor then scores.
+On pricing_game_2017_french_mtpl (repeat 0, folds 0 to 2, untuned) LightGBM fitted by squared error scores 74.94 at a
+1 EUR floor and 102.83 at 0.1 EUR, LightGBM fitted with the Tweedie loss 75.51 and 78.11, the constant 63.31 at both.
+
+- [ ] **The metric's loss where a method has one.** The adapter reads `task_metadata.objective_metric` and sets the
+  matching objective with a log link on LightGBM, XGBoost and CatBoost; a method without such a loss (RealMLP, TabM,
+  the TabPFN wrappers, TabICL: an AI reading of their interfaces, not checked per version) keeps its own loss.
+
+  | Metric | Objective | Parameter |
+  |---|---|---|
+  | `mean_poisson_deviance` | Poisson (LightGBM `poisson`, XGBoost `count:poisson`, CatBoost `Poisson`) | none |
+  | `mean_tweedie_deviance` | Tweedie (LightGBM `tweedie`, XGBoost `reg:tweedie`, CatBoost `Tweedie`) | the variance power = the metric's `power` (LightGBM and XGBoost `tweedie_variance_power`; CatBoost `Tweedie:variance_power=<power>`) |
+  | `rescaled_mean_tweedie_deviance` | Tweedie, as above (the rescaling only multiplies each scored set's predictions by one factor) | the metric's `power` |
+
+  The training weight (`sample_weight(container)`, above) is passed with the objective as it is with any other loss.
+- [ ] **The floor on every method's output.** Every method's predictions are floored at the metric's `min_prediction`
+  before scoring, in validation as in test (the scorer does it on the test rows already; early stopping and tuning do
+  the same), whatever loss the method fitted.
+- [ ] **The tasks.** fremtpl2 and bemtpl97 (`mean_poisson_deviance`, weighted by the exposure),
+  pricing_game_2016_french_fleet (`rescaled_mean_tweedie_deviance`, power 1.5), pricing_game_2017_french_mtpl and
+  noaa_storm_events_damage (`mean_tweedie_deviance`, power 1.5), and any later task scored by one of the three
+  deviances.
+- [ ] **Open research** (Andrej's note above), before the protocol fixes the rule:
+  - which methods have a Poisson or Tweedie loss, or can be given one (a custom loss for the neural methods, a log
+    link on the output), and how each behaves with it: convergence, tuning and early stopping on the deviance;
+  - whether matched losses change the rankings on these tasks against squared error with the floor, over several
+    seeds, with the fold-level spread;
+  - what practitioners fit per task (the source papers and the competitions' winning solutions: a Poisson GLM or GBM
+    for frequency, Tweedie or frequency times severity for the claim cost, and what loss is used for storm damage),
+    and whether the benchmark should follow the task's practice or one rule per metric.
 
 ## Recommended scoring of grouped tasks
 
@@ -299,12 +372,39 @@ ignores them, since the bins stay numeric features.
   `split_random_state` (and `grouping` for grouped tasks); releases up to v0.0.5 forbid unknown fields and cannot load
   them. Release data-foundry before uploading the rebuilt containers and raise TabArena's `data-foundry>=0.0.3` floor.
   From this version on, `CuratedContainer.load` ignores fields it does not know, with a warning.
+- [ ] **The rebuilt containers keep their splits in a row table** (`rows.parquet`, one `split_r<repeat>_f<fold>`
+  column per split holding `train`, `test` or nothing; the split metadata file is then
+  `experiment_metadata.predictive-ml-splits-table-v1.json`). A data-foundry release before the row table refuses
+  these containers as written by a newer version, so the floor above must be a release that has it. The adapter reads
+  the splits through `experiment_metadata.splits` and needs no change.
 
-## Frame sizes of the v2 split protocol
+## The train budget of the `_1m` versions (issue #70, 2026-11-10)
 
-- [ ] **Temporal `_1m` versions ship up to 2.5M rows** (each split still trains on at most 1M and tests on at most
-  500k rows): check storage and loading for `cooking_time_1m`, `delivery_eta_1m` and `maps_router_eta_1m` (2.5M rows,
-  989 float columns for maps).
+Since issue #70 a `_1m` version caps only its test sides in the container (at most 500k rows per split). Its train
+sides keep every row they may use: all earlier rows of a temporal window (minus the gap), every row of an IID or
+grouped fold outside its test side. The container records the budget, `experiment_metadata.row_budget`
+(`{train: 1000000, test: 500000}`), and the default sampler, `experiment_metadata.train_sampling` (`default`:
+`newest_year` or `random`; `unit`: `rows`, `groups` or `time_values`; `stratify_on`). Every other v0.2 container has
+neither. The 18 versions carry them once rebuilt.
+
+- [ ] **Fit on at most `row_budget.train` rows.** Before each fit the adapter takes the train positions from
+  `data_foundry.v2.subsample_train(container, repeat, fold)`: for a temporal train side the newest year, extended back
+  in time until it holds 1M rows, and a random 1M of those (numerai's year is 52 eras, from
+  `task_metadata.time_unit`); whole groups of a grouped one, stratified rows of an IID one. It is deterministic and returns the train side whole for a container
+  without a budget. Without this step a model trains on the whole history.
+- [ ] **N is a hard cap, validation included.** The rows a fit uses for training and inner validation together are
+  at most `row_budget.train`: the inner validation is drawn from the sampled rows, never added to them (Lennart,
+  2026-11-10).
+- [ ] **A model's own sampler is a hook, reported as its own track.** A method may choose its N rows itself (more of
+  the recent past, another window of the history, by recency weights), only from the split's train side and only when
+  it keeps `train_sampling.unit` (whole groups, whole time values). Results with a custom sampler are a separate track
+  of the leaderboard, never mixed with the default one.
+- [ ] **Load only a split's rows.** A rebuilt version ships its whole history, tens of millions of rows for the
+  largest (the sizes come with the next check of the working copy). A worker reads the rows of its split from
+  `rows.parquet` and the sampled train rows from `dataset.parquet`, instead of the whole frame per fit; check storage
+  and loading for the largest (maps_router_eta_1m has 989 float columns).
+- [ ] **Larger budgets.** A `_10m` version for large-data experiments carries its own `row_budget`; the adapter reads
+  N from the container, never assumes 1M.
 
 ## Model defaults
 

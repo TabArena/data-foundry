@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -99,11 +100,25 @@ class LusakaMobility2024(AbstractCuratedDataset):
         ),
     )
     unique_name = "2024_lusaka_mobility_prediction_hackathon"
-    year = "2024"
     domain = "industry & manufacturing"
-    source = "Zindi"
-    source_url = "https://zindi.world/competitions/2024-lusaka-mobility-prediction-hackathon"
-    license = "Zindi Competition Rules (Yango private property)"
+    sources = (
+        Source(
+            role="publication",
+            platform="Zindi",
+            url="https://zindi.world/competitions/2024-lusaka-mobility-prediction-hackathon",
+            license="Zindi Competition Rules (Yango private property)",
+            year="2024",
+            bibtex=r"""
+                @misc{yango2024lusaka,
+                  author = {{Yango} and {Zindi}},
+                  title = {2024 Lusaka Mobility Prediction Hackathon},
+                  year = {2024},
+                  howpublished = {\url{https://zindi.world/competitions/2024-lusaka-mobility-prediction-hackathon}},
+                  note = {Trip-duration competition; participant download copy pinned separately}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial", "Anonymized")
     download_description = """
         The first publisher is Yango's 2024 Lusaka challenge on Zindi. Original downloads require access unavailable
@@ -116,15 +131,6 @@ class LusakaMobility2024(AbstractCuratedDataset):
         curl --fail --location https://raw.githubusercontent.com/Mwandamena/yango-hackathon/2fa7817be0740ea1739143ea6e61a28d6cf1462d/data/Lusaka_weather.csv -o local-data-warehouse/2024_lusaka_mobility_prediction_hackathon/2fa7817be0740ea1739143ea6e61a28d6cf1462d/Lusaka_weather.csv
 
         The original competition/reuse restrictions remain separate from this copy's technical accessibility.
-    """
-    bibtex = r"""
-        @misc{yango2024lusaka,
-          author = {{Yango} and {Zindi}},
-          title = {2024 Lusaka Mobility Prediction Hackathon},
-          year = {2024},
-          howpublished = {\url{https://zindi.world/competitions/2024-lusaka-mobility-prediction-hackathon}},
-          note = {Trip-duration competition; participant download copy pinned separately}
-        }
     """
     curation_comments = """
         We start with Train.csv and Lusaka_weather.csv from the participant mirror pinned in download_description.
@@ -150,7 +156,7 @@ class LusakaMobility2024(AbstractCuratedDataset):
     metric = Metric.source(
         "rmse",
         original="Root Mean Squared Error",
-        reference=source_url + "#evaluation",
+        reference="https://zindi.world/competitions/2024-lusaka-mobility-prediction-hackathon#evaluation",
         definition="Square root of mean squared error on trip duration in minutes; identity target transform.",
     )
     temporal = Temporal(

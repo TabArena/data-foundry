@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary
 
 FACIAL = (
     "Max1R13_",
@@ -134,37 +134,42 @@ class InfraredThermographyTemperature(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "infrared_thermography_temperature"
-    year = "2023"
     domain = "medical & healthcare"
-    source = "Other"
-    source_url = "https://doi.org/10.13026/3bhc-9065"
-    license = "CC0 1.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://doi.org/10.13026/3bhc-9065",
+            license="CC0 1.0",
+            year="2023",
+            bibtex="""
+                @misc{wang2023facial,
+                  author = {Wang, Quanzeng and Zhou, Yangling and Ghassemi, Pejman and Chenna, Dwith and Chen, Michelle and Casamento, Jon and Pfefer, Joshua and Mcbride, David},
+                  title = {Facial and oral temperature data from a large set of human subject volunteers (version 1.0.0)},
+                  howpublished = {PhysioNet},
+                  year = {2023},
+                  doi = {10.13026/3bhc-9065},
+                  url = {https://doi.org/10.13026/3bhc-9065}
+                }
+                @article{wang2022infrared,
+                  author = {Wang, Quanzeng and Zhou, Yangling and Ghassemi, Pejman and McBride, David and Casamento, Jon P. and Pfefer, T. Joshua},
+                  title = {Infrared Thermography for Measuring Elevated Body Temperature: Clinical Accuracy, Calibration, and Evaluation},
+                  journal = {Sensors},
+                  volume = {22},
+                  number = {1},
+                  pages = {215},
+                  year = {2022},
+                  doi = {10.3390/s22010215}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the FLIR camera file of version 1.0.0 from PhysioNet and check it against the release's SHA256SUMS.txt.
 
         mkdir -p local-data-warehouse/infrared_thermography_temperature && cd local-data-warehouse/infrared_thermography_temperature
         wget https://physionet.org/files/face-oral-temp-data/1.0.0/FLIR_groups1and2.csv https://physionet.org/files/face-oral-temp-data/1.0.0/SHA256SUMS.txt
         grep FLIR_groups1and2.csv SHA256SUMS.txt | sha256sum -c -
-    """
-    bibtex = """
-        @misc{wang2023facial,
-          author = {Wang, Quanzeng and Zhou, Yangling and Ghassemi, Pejman and Chenna, Dwith and Chen, Michelle and Casamento, Jon and Pfefer, Joshua and Mcbride, David},
-          title = {Facial and oral temperature data from a large set of human subject volunteers (version 1.0.0)},
-          howpublished = {PhysioNet},
-          year = {2023},
-          doi = {10.13026/3bhc-9065},
-          url = {https://doi.org/10.13026/3bhc-9065}
-        }
-        @article{wang2022infrared,
-          author = {Wang, Quanzeng and Zhou, Yangling and Ghassemi, Pejman and McBride, David and Casamento, Jon P. and Pfefer, T. Joshua},
-          title = {Infrared Thermography for Measuring Elevated Body Temperature: Clinical Accuracy, Calibration, and Evaluation},
-          journal = {Sensors},
-          volume = {22},
-          number = {1},
-          pages = {215},
-          year = {2022},
-          doi = {10.3390/s22010215}
-        }
     """
     curation_comments = """
         We start with FLIR_groups1and2.csv from PhysioNet (version 1.0.0): 1,020 subjects of an FDA fever-screening study, each with four rounds of facial temperatures, two oral readings, demographics and the room conditions.

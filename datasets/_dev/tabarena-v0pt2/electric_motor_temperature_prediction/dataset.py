@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
 
 
 class ElectricMotorTemperaturePrediction(AbstractCuratedDataset):
@@ -47,26 +47,31 @@ class ElectricMotorTemperaturePrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "electric_motor_temperature_prediction"
-    year = "2021"
     domain = "industry & manufacturing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/wkirgsn/electric-motor-temperature"
-    license = "CC BY-SA 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/wkirgsn/electric-motor-temperature",
+            license="CC BY-SA 4.0",
+            year="2021",
+            bibtex="""
+                @article{kirchgassner2020estimating,
+                  title={Estimating electric motor temperatures with deep residual machine learning},
+                  author={Kirchg{"a}ssner, Wilhelm and Wallscheid, Oliver and B{"o}cker, Joachim},
+                  journal={IEEE Transactions on Power Electronics},
+                  volume={36},
+                  number={7},
+                  pages={7480--7488},
+                  year={2020},
+                  publisher={IEEE}
+                }
+            """,
+        ),
+    )
     data_tags = ("Non-IID", "Grouped")
     download_description = """
         kaggle datasets download wkirgsn/electric-motor-temperature --unzip && mkdir -p local-data-warehouse/electric_motor_temperature_prediction && mv measures_v2.csv local-data-warehouse/electric_motor_temperature_prediction/
-    """
-    bibtex = """
-        @article{kirchgassner2020estimating,
-          title={Estimating electric motor temperatures with deep residual machine learning},
-          author={Kirchg{"a}ssner, Wilhelm and Wallscheid, Oliver and B{"o}cker, Joachim},
-          journal={IEEE Transactions on Power Electronics},
-          volume={36},
-          number={7},
-          pages={7480--7488},
-          year={2020},
-          publisher={IEEE}
-        }
     """
     curation_comments = """
         We select the task to predict permanent magnet temperature from the input features. We create grouped splits on the profile_id, which corresponds to predicting the temperature for an unseen motor run session, thus simulating how the model would be used in reality.

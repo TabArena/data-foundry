@@ -17,7 +17,7 @@ Guidelines page.
   /review-screened-candidates ─▶ you, in the dashboard: accept (Yes), keep for later, or reject
           │
           ▼
-  /add-dataset ────────────────▶ dataset folder + REVIEW.md: ranked questions, review-panel reports   (AI)
+  /add-dataset ────────────────▶ dataset folder + review in the record: ranked questions, panel reports   (AI)
           │
           ▼
   /review-added-datasets ──────▶ you, on the review page: ship, change, don't ship; Claude applies it
@@ -68,19 +68,21 @@ Two stages, and in each one the AI works first and you verify:
 * **You type:** `/add-dataset some_record`, or a dashboard filter for a batch.
 * **Claude:** writes the dataset definition (`dataset.py`) from the source, loops on `dataset check` and the leak,
   task and group probes until clean, runs the verification checklist, then sends a review panel of agents at it (below)
-  and writes what you must decide into the folder's `REVIEW.md`: ranked, most fundamental first, each question with its
-  evidence, the rule it rests on and the decision needed; the panel's full reports below.
+  and writes what you must decide into the record's review (its `## Review` section, in `curation/records/<name>.md`):
+  ranked, most fundamental first, each question with its evidence, the rule it rests on and the decision needed; the
+  panel's full reports below. No review file is made in the dataset folder.
 * **Never:** builds a container, commits or pushes on its own.
 * **Next:** `/review-added-datasets`.
 
 ### `/review-added-datasets`: you decide on the review page
 
 * **When:** after `/add-dataset`, or when you want to see everything still open.
-* **Claude:** builds a page from the `REVIEW.md` files (a local HTML file, or a private Claude artifact if you prefer),
+* **Claude:** builds a page from the records' reviews (a local HTML file, or a private Claude artifact if you prefer),
   ordered by priority: the most important datasets first, and within one priority the quickest decisions first. Per
   dataset you get the use case, your decisions, the panel's reports, the definition, its README and the record.
-  You mark a verdict per dataset and each question; Claude reads the marks back, checks them for consistency, applies
-  them (to `dataset.py`, the record, the CHANGELOG) and removes what is settled from `REVIEW.md`.
+  You mark a verdict per dataset and each question; Claude reads the marks back, checks them for consistency and
+  applies them (to `dataset.py`, the record, the CHANGELOG). Each settled question stays in the record's review with
+  your mark and a Resolved line that says what was done, so the record keeps how the dataset was decided.
 * **Next:** a build and a commit, when you ask ("rebuild X and Y", "commit this"). A ship verdict does not request
   a build: building is a separate ask, and it can come later.
 
@@ -114,7 +116,7 @@ one side (definitions in [`.claude/agents/`](../agents/)):
 | precedent checker | how similar datasets were decided before, and whether this one is consistent |
 | advocate and critic | argue for and against shipping, from the evidence above, then answer each other once |
 | mediator | settles what the rules settle, and hands you the calls that are yours |
-| review editor | reads `REVIEW.md` as you would and fixes what is unclear |
+| review editor | reads the draft review as you would and fixes what is unclear |
 
 A full panel costs on the order of a million tokens per dataset; for a re-check after a small change Claude runs a
 smaller one. In stage 1, three agents help: a screener for batches, a reject checker that argues against every quick

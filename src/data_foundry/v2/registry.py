@@ -15,7 +15,7 @@ import sys
 import types
 from pathlib import Path
 
-from data_foundry.v2.dataset import DEFINITION_FILENAME, AbstractCuratedDataset
+from data_foundry.v2.dataset import DEFINITION_FILENAME, AbstractCuratedDataset, DatasetDefinitionError, is_task
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +30,14 @@ def _module_name(definition: Path) -> str:
 
 
 def load_definition(definition: Path | str) -> type[AbstractCuratedDataset]:
-    """Import one ``dataset.py`` and return the single concrete dataset class it defines.
+    """Import one ``dataset.py`` and return the single definition class it defines: a task, or a parent of tasks.
+
+    The definition is the class defined in the file that declares its own ``unique_name``; a parent it imports
+    (``import_definition``) or a helper base class is not it.
 
     Raises:
         FileNotFoundError: ``definition`` does not exist.
-        LookupError: The file defines no concrete dataset class, or more than one.
+        LookupError: The file defines no definition class, or more than one.
         DatasetDefinitionError: The class is incomplete or inconsistent (raised at import).
     """
     definition = Path(definition).resolve()
@@ -66,7 +69,7 @@ def load_definition(definition: Path | str) -> type[AbstractCuratedDataset]:
         and not isinstance(obj, types.GenericAlias)  # Python 3.10 counts an alias like `Splits` as a class
         and issubclass(obj, AbstractCuratedDataset)
         and obj.__module__ == name
-        and not inspect.isabstract(obj)
+        and "unique_name" in vars(obj)
     ]
     if len(classes) != 1:
         found = ", ".join(c.__name__ for c in classes) or "none"
@@ -74,8 +77,52 @@ def load_definition(definition: Path | str) -> type[AbstractCuratedDataset]:
     return classes[0]
 
 
+_IMPORTING: list[Path] = []
+"""The definitions :func:`import_definition` is importing, outermost first (a circular family fails, not hangs)."""
+
+
+def import_definition(name: str, root: Path | str | None = None) -> type[AbstractCuratedDataset]:
+    """The definition class of the folder ``name`` next to the calling one, to derive a child from it.
+
+    ::
+
+        ExamScores = import_definition("exam_scores")
+
+
+        class ExamScoresMath(ExamScores):
+            unique_name = "exam_scores_math"
+            derivation = "The math score as the target."
+            ...
+
+    Args:
+        name: The parent's folder (its ``unique_name``) in the same root as the calling ``dataset.py``.
+        root: The folder of dataset folders. Default: the one holding the calling file's folder; from a notebook,
+            the parent of the current directory (a notebook next to a ``dataset.py``).
+
+    Raises:
+        ImportError: The definitions import each other in a circle.
+    """
+    if root is None:
+        caller = inspect.currentframe().f_back.f_globals.get("__file__")
+        root = Path(caller).resolve().parent.parent if caller else Path.cwd().resolve().parent
+    definition = (Path(root) / name / DEFINITION_FILENAME).resolve()
+    if definition in _IMPORTING:
+        chain = " -> ".join(p.parent.name for p in [*_IMPORTING, definition])
+        raise ImportError(f"The definitions import each other in a circle: {chain}.")
+    _IMPORTING.append(definition)
+    try:
+        return load_definition(definition)
+    finally:
+        _IMPORTING.pop()
+
+
 def discover_datasets(root: Path | str, *, strict: bool = True) -> dict[str, type[AbstractCuratedDataset]]:
-    """Import every ``<root>/*/dataset.py`` and return the dataset classes by ``unique_name``.
+    """The tasks under ``root`` by ``unique_name``: :func:`discover_definitions` without the parents."""
+    return {name: cls for name, cls in discover_definitions(root, strict=strict).items() if is_task(cls)}
+
+
+def discover_definitions(root: Path | str, *, strict: bool = True) -> dict[str, type[AbstractCuratedDataset]]:
+    """Import every ``<root>/*/dataset.py`` and return the definition classes (tasks and parents) by ``unique_name``.
 
     Args:
         root: The folder holding one sub-folder per dataset.
@@ -112,5 +159,20 @@ def discover_datasets(root: Path | str, *, strict: bool = True) -> dict[str, typ
 
 
 def get_dataset(root: Path | str, name: str) -> AbstractCuratedDataset:
-    """Import ``<root>/<name>/dataset.py`` and return an instance of its dataset class."""
-    return load_definition(Path(root) / name / DEFINITION_FILENAME)()
+    """Import ``<root>/<name>/dataset.py`` and return an instance of its definition class (a task or a parent)."""
+    return instance(load_definition(Path(root) / name / DEFINITION_FILENAME))
+
+
+def instance(cls: type[AbstractCuratedDataset]) -> AbstractCuratedDataset:
+    """An instance of a definition class.
+
+    Raises:
+        DatasetDefinitionError: ``cls`` is a partial parent (no ``_load_raw``), which shares code only.
+    """
+    if inspect.isabstract(cls) and not is_task(cls):
+        msg = (
+            f"{cls.__name__} is a partial parent: it shares code with its children and has no `_load_raw`, so there "
+            "is no data to check; check its children."
+        )
+        raise DatasetDefinitionError(msg)
+    return cls()

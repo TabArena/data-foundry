@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 from pathlib import Path
 
 import pytest
@@ -8,8 +9,8 @@ from data_foundry.collections import (
     DATA_FOUNDRY_CACHE_ENV,
     DEFAULT_CACHE_DIR,
     CollectionEntry,
-    DataSource,
     DatasetCollection,
+    DataSource,
     HuggingFaceSource,
     LocalWarehouseSource,
     clear_cache,
@@ -17,6 +18,11 @@ from data_foundry.collections import (
     list_collections,
     resolve_cache_dir,
 )
+from data_foundry.collections._sources import has_core_files
+from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
+from data_foundry.schema import PredictiveMLSplitsMetadata, RowBudget, TrainSampling
+
+from tests.test_bundle_checks import make_container, make_iid_splits
 
 
 # --- CollectionEntry parsing ---
@@ -197,6 +203,16 @@ def _core_files(path: Path) -> Path:
     ):
         (path / name).touch()
     return path
+
+
+def test_a_container_whose_splits_are_in_the_row_table_is_complete_only_with_it(tmp_path):
+    path = _core_files(tmp_path / "toy")
+    assert has_core_files(path)
+    (path / "experiment_metadata.predictive-ml-splits-mold-v1.json").unlink()
+    (path / f"experiment_metadata.{SPLITS_TABLE_TYPE}.json").touch()
+    assert not has_core_files(path)  # an interrupted download: the split metadata names a missing row table
+    (path / ROWS_FILE).touch()
+    assert has_core_files(path)
 
 
 def _make_hf_snapshot(cache_dir: Path, repo_id: str, sha: str, relative: str, *, ref: str | None = None) -> Path:
@@ -686,3 +702,45 @@ def test_get_dataset_verify_rejects_a_changed_container(tmp_path):
         coll.get_dataset("toy", verify=True)
     with pytest.raises(ValueError, match="do not match"):
         next(coll.iter_containers(base_dir, verify=True))
+
+
+# --- a collection's row budget ---
+
+
+def budget_collection(budget: RowBudget | None) -> DatasetCollection:
+    return DatasetCollection(name="toy", description="Toy.", entries=(), row_budget=budget)
+
+
+def test_a_collection_without_a_budget_finds_nothing():
+    assert budget_collection(None).budget_findings(make_container()) == []
+
+
+def test_a_collection_holds_its_containers_to_its_row_budget():
+    container = make_container()  # 60 rows: 3 folds of 40 train and 20 test rows, no budget recorded
+    assert budget_collection(RowBudget(train=40, test=20)).budget_findings(container) == []
+    findings = budget_collection(RowBudget(train=30, test=10)).budget_findings(container)
+    assert any("test on more than 10 rows (up to 20)" in f for f in findings)
+    assert any("train on more than 30 rows (up to 40)" in f and "records no budget" in f for f in findings)
+
+
+def test_a_recorded_budget_leaves_the_train_sides_to_the_benchmark():
+    budget = RowBudget(train=30, test=20)
+    sampling = TrainSampling(default="random", unit="rows", stratify_on="target")
+    meta = PredictiveMLSplitsMetadata(
+        splits_comment="x", splits=make_iid_splits(60), row_budget=budget, train_sampling=sampling
+    )
+    container = make_container(experiment_metadata=meta)
+    assert budget_collection(budget).budget_findings(container) == []  # 40 train rows: a benchmark samples 30
+    assert any(
+        "not the collection's" in f for f in budget_collection(RowBudget(train=30, test=25)).budget_findings(container)
+    )
+    unsampled = make_container(experiment_metadata=dataclasses.replace(meta, train_sampling=None))
+    assert "records a row budget but no `train_sampling`" in budget_collection(budget).budget_findings(unsampled)
+
+
+def test_verify_holds_a_container_to_the_collection_budget(monkeypatch):
+    monkeypatch.setattr("data_foundry.collections._core._verified", lambda container, _entry: container)  # checksum ok
+    entry = CollectionEntry.from_relative_path("toy/019d7366-4673-7d9a-9821-35604af616f6")
+    collection = budget_collection(RowBudget(train=30, test=10))
+    with pytest.raises(ValueError, match="breaks the row budget of collection 'toy'"):
+        collection._verified(make_container(), entry)

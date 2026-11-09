@@ -17,9 +17,19 @@ from data_foundry.examples import (
     get_toy_container_path,
     load_toy_container,
 )
-from data_foundry.schema import DatasetMetadata, PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2, ScoringColumn
+from data_foundry.schema import (
+    DatasetMetadata,
+    PredictiveMLSplitsMetadata,
+    PredictiveMLTaskMetadataV2,
+    RowBudget,
+    ScoringColumn,
+    TrainSampling,
+)
 from data_foundry.v2.dataset import metric_spec
-from data_foundry.v2.metrics import Metric
+from data_foundry.v2.metrics import Metric, scorer
+from data_foundry.v2.splits import subsample_train
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.metrics import mean_poisson_deviance
 
 
 def test_toy_container_path_exists_inside_package():
@@ -94,9 +104,9 @@ def _format_2_metadata(unique_name: str) -> DatasetMetadata:
     )
 
 
-def _format_2_toy(tmp_path: Path, extra: dict | None = None) -> Path:
+def _format_2_toy(tmp_path: Path, extra: dict | None = None, budget: RowBudget | None = None) -> Path:
     """A regression container scored per era (``mean_group_pearsonr`` on the scoring column ``era``); ``extra``
-    adds feature columns (name to values).
+    adds feature columns (name to values), ``budget`` a row budget with the random default sampler.
     """
     rng = np.random.default_rng(0)
     n = 120
@@ -129,7 +139,12 @@ def _format_2_toy(tmp_path: Path, extra: dict | None = None) -> Path:
         dataset=df,
         dataset_metadata=_format_2_metadata("toy_eras"),
         task_metadata=task,
-        experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="toy", splits=splits),
+        experiment_metadata=PredictiveMLSplitsMetadata(
+            splits_comment="toy",
+            splits=splits,
+            row_budget=budget,
+            train_sampling=TrainSampling(default="random", unit="rows") if budget else None,
+        ),
         uuid="u",
     )
     return container.save(save_dir=tmp_path)
@@ -170,6 +185,23 @@ def test_benchmark_container_example_scores_a_format_2_container_by_its_spec(tmp
     assert len(scores) == 1
     assert 0.0 < scores[0] <= 1.0  # x1 drives y, so the per-era correlation is positive
     assert "mean_group_pearsonr=" in capsys.readouterr().out
+
+
+def test_benchmark_container_example_fits_on_the_train_budget(tmp_path, capsys):
+    """A container with a row budget keeps the whole train side; the example fits on the default sample of it."""
+    pytest.importorskip("sklearn")
+    container = CuratedContainer.load(_format_2_toy(tmp_path, budget=RowBudget(train=40, test=60)))
+    train, test = container.experiment_metadata.splits[0][0]
+    sample = subsample_train(container, 0, 0)
+    assert len(train) == 60
+    assert len(sample) == 40
+    assert set(sample) <= set(train)
+    df = container.dataset
+    model = HistGradientBoostingRegressor(categorical_features="from_dtype", random_state=42)
+    model.fit(df[["x1", "x2"]].iloc[sample], df["y"].iloc[sample])
+    expected = scorer(container)(df["y"].iloc[test].to_numpy(), model.predict(df[["x1", "x2"]].iloc[test]), test)
+    assert _example("benchmark_container").benchmark(container) == [pytest.approx(expected)]
+    assert "Train budget: at most 40 rows per fit, sampled by `random` in units of rows" in capsys.readouterr().out
 
 
 def test_benchmark_container_example_encodes_every_feature_type(tmp_path, capsys):
@@ -244,3 +276,84 @@ def test_benchmark_container_example_refuses_a_format_1_container():
     example = _example("benchmark_container")
     with pytest.raises(SystemExit, match="benchmark_on_beyond_arena"):
         example.main(get_toy_container_path())
+
+
+def _rate_toy(tmp_path: Path) -> Path:
+    """Claims per year insured, scored by the Poisson deviance weighted by the years insured (the training weight)."""
+    rng = np.random.default_rng(2)
+    n = 300
+    exposure = rng.integers(1, 13, n) / 12
+    df = pd.DataFrame({"x1": rng.normal(size=n), "Exposure": exposure})
+    df["claim_frequency"] = rng.poisson(0.2 * np.exp(0.5 * df["x1"]) * exposure) / exposure
+    metric = Metric.source(
+        "mean_poisson_deviance",
+        reference="https://example.org",
+        params={"min_prediction": 1e-4},
+        inputs={"weight": "Exposure"},
+    )
+    task = PredictiveMLTaskMetadataV2(
+        target_column_name="claim_frequency",
+        problem_type="regression",
+        objective_metric=metric_spec(metric, "regression"),
+        scoring_columns=[
+            ScoringColumn(
+                column="Exposure", role="weight", used_by="mean_poisson_deviance", description="years insured"
+            )
+        ],
+        sample_weight="Exposure",
+    )
+    index = np.arange(n)
+    splits = {0: {0: (index[index % 3 != 0].tolist(), index[index % 3 == 0].tolist())}}
+    container = CuratedContainer(
+        dataset=df,
+        dataset_metadata=_format_2_metadata("toy_rates"),
+        task_metadata=task,
+        experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="toy", splits=splits),
+        uuid="u",
+    )
+    return container.save(save_dir=tmp_path)
+
+
+def test_both_examples_weight_a_rate_by_its_training_weight(tmp_path, capsys):
+    """The benchmark fits with the training weight and the scorer weights the test rows; the plain-json reader
+    floors the predictions and passes the weight to scikit-learn, as the scorer does.
+    """
+    folder = _rate_toy(tmp_path)
+    container = CuratedContainer.load(folder)
+    df = container.dataset
+    train, test = container.experiment_metadata.splits[0][0]
+    model = HistGradientBoostingRegressor(categorical_features="from_dtype", random_state=42)
+    model.fit(df[["x1"]].iloc[train], df["claim_frequency"].iloc[train], sample_weight=df["Exposure"].iloc[train])
+    expected = scorer(container)(
+        df["claim_frequency"].iloc[test].to_numpy(), model.predict(df[["x1"]].iloc[test]), test
+    )
+    assert _example("benchmark_container").benchmark(container) == [pytest.approx(expected)]
+    assert "fitted with `Exposure` as the row weight" in capsys.readouterr().out
+    value = _example("read_metric_without_data_foundry").main(folder)
+    rate, exposure = df["claim_frequency"].iloc[test], df["Exposure"].iloc[test]
+    dummy = np.full(len(test), float(df["claim_frequency"].iloc[train].mean()))
+    assert value == pytest.approx(mean_poisson_deviance(rate, dummy, sample_weight=exposure))
+    assert "Training weight: Exposure" in capsys.readouterr().out
+
+
+def test_the_family_example_checks_a_parent_and_its_tasks(tmp_path, capsys):
+    spec = importlib.util.spec_from_file_location("example_run_family", EXAMPLES / "dataset_family" / "run_family.py")
+    example = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(example)
+    first = example.main(tmp_path / "warehouse")
+    assert set(first) == {"exam_scores", "exam_scores_math", "exam_scores_reading"}
+    assert example.main(tmp_path / "again") == first  # the raw files and every checksum are reproducible
+    out = capsys.readouterr().out
+    assert "exam_scores_math       grouped_non_iid  <- exam_scores" in out
+    assert "derived from `exam_scores`: The math score as the target" in out
+    assert "0 error(s)" in out
+    assert "exam_scores_math_iid: folder None" in out
+    assert "dropped as no features: ['reading_score', 'source_file', 'source_row', 'source_id']" in out
+    assert "raw files in its metadata: ['Ashford.csv'" in out
+    assert not list((EXAMPLES / "dataset_family").glob("*/README.md")), "the example writes no README"
+
+
+@pytest.mark.parametrize("path", sorted(EXAMPLES.rglob("*.py")), ids=lambda p: p.relative_to(EXAMPLES).as_posix())
+def test_every_example_parses(path):
+    """An example that does not run in the tests (it needs the network) must still be valid Python."""
+    ast.parse(path.read_text(), filename=str(path))

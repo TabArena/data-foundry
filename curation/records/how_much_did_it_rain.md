@@ -3,7 +3,7 @@ unique_name: how_much_did_it_rain
 name: How Much Did It Rain? (Kaggle 2015)
 checked_by:
 - Andrej
-suggestion: 'No'
+suggestion: TBD -> 2nd Tier
 decision_markers:
 - Time-series (Regression)
 tags:
@@ -68,6 +68,8 @@ SPLIT-7).
 CC (2026-10-30, Andrej), in chat, on SPLIT-8: "I also disagree with that. Forced IID is to be avoided at all costs."
 SPLIT-8 itself is unchanged for now (17 datasets of the v0.2 working copy ship as forced IID under it); this record's
 `No` stands.
+
+CC (2026-11-08, Lennart): re-opened, out of the PR #47 batch (review board, cross-dataset item "Re-read how_much_did_it_rain's No under the reworded SPLIT-8", go ahead: "re-open in the curation record but leave out of this batch for now, next screening can take a look at it"). The `No` of 2026-10-30 (Andrej) rested on a measured leak across a forced split (the hours of one storm on both sides); under SPLIT-8 as reworded on 2026-11-05 such a leak is weighed case by case. For the next screening: does a split grouped on storms remove the leak, or how large is it when kept? The suggestion returns to the screening's `TBD -> 2nd Tier`; the `Time-series (Regression)` marker stays until that check.
 
 ## Reference
 

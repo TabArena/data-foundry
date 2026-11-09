@@ -82,16 +82,17 @@ warnings: new, or known (a known one counts only when its measured size differs 
 
 ## Phase D: the editor
 
-The main session applies the changes that need no decision, writes `REVIEW.md` (SKILL step 8), and gives the draft to
-`review-editor`, which reads it cold as the curator would: is every issue's problem, effect, evidence and decision
-clear, are the issues in rank order, is every sentence of the summary backed by the details, is anything raised that
-would change no decision? The main session applies its fixes.
+The main session applies the changes that need no decision, writes the record's `## Review` (SKILL step 8), and gives
+the draft to `review-editor`, which reads it cold as the curator would: is every issue's problem, effect, evidence and
+decision clear, are the issues in rank order, is every sentence of the summary backed by the details, is anything
+raised that would change no decision? The main session applies its fixes.
 
-## What lands in REVIEW.md
+## What lands in the record's review
 
-The issues come from the mediator's "needs the curator" list and the disputed points, in rank order, 0 to N of them:
-when the list is empty the REVIEW.md has no issue, and that is a result, not a gap. After them, the
-`**Review panel:**` block ([review file format](../../review-added-datasets/references/review_file_format.md)):
+The review is the `## Review` section of the record, `curation/records/<unique_name>.md`; no `REVIEW.md` is made in
+the dataset folder. The issues come from the mediator's "needs the curator" list and the disputed points, in rank
+order, 0 to N of them: when the list is empty the review has no issue, and that is a result, not a gap. After them, the
+`**Review panel:**` block ([review format](../../review-added-datasets/references/review_file_format.md)):
 
 ```markdown
 **Review panel:** ship after changes (mediator). Claims: 14, 12 hold, 1 refuted (fixed), 1 untested. Blind review:
@@ -110,8 +111,8 @@ would benchmark; its main concern is the year column. Agreed: the split. Dispute
 </details>
 ```
 
-The block leaves with the file once the curator has settled every issue; the decisive evidence goes into the record as
-`CC` and `Assessment` lines on the way.
+The block stays in the record's review as the run wrote it, also once the curator has settled every issue; the
+decisive evidence also goes into the record's comments as `CC` and `Assessment` lines.
 
 ## Tiers
 

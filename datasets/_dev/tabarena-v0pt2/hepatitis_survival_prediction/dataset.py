@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 
 class HepatitisSurvivalPrediction(AbstractCuratedDataset):
@@ -36,25 +36,30 @@ class HepatitisSurvivalPrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "hepatitis_survival_prediction"
-    year = "1988"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5Q59J"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5Q59J",
+            license="CC BY 4.0",
+            year="1988",
+            bibtex="""
+                @inproceedings{efron1981statistical,
+                  title={Statistical theory and the computer},
+                  author={Efron, Bradley and Gong, Gail},
+                  booktitle={Computer science and statistics: Proceedings of the 13th Symposium on the Interface},
+                  pages={3--7},
+                  year={1981},
+                  organization={Springer}
+                }
+            """,
+        ),
+    )
     download_description = """
         Get the UCI data.
 
         wget https://archive.ics.uci.edu/static/public/46/hepatitis.zip && unzip hepatitis.zip hepatitis.data && rm hepatitis.zip && mkdir -p local-data-warehouse/hepatitis_survival_prediction && mv hepatitis.data local-data-warehouse/hepatitis_survival_prediction/
-    """
-    bibtex = """
-        @inproceedings{efron1981statistical,
-          title={Statistical theory and the computer},
-          author={Efron, Bradley and Gong, Gail},
-          booktitle={Computer science and statistics: Proceedings of the 13th Symposium on the Interface},
-          pages={3--7},
-          year={1981},
-          organization={Springer}
-        }
     """
     curation_comments = """
         We start with the data from UCI.

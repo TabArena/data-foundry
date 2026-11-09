@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary
 
 RAW_FILE = "South Asian Wireless Telecom Operator (SATO 2015).csv"
 """The one file of the Kaggle dataset mahreen/sato2015; OpenML 44227 holds the same values."""
@@ -44,11 +44,27 @@ class ChurnTelcoSouthAsia(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "churn_telco_south_asia"
-    year = "2017"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/mahreen/sato2015"
-    license = "CC0-1.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/mahreen/sato2015",
+            license="CC0-1.0",
+            year="2017",
+            bibtex="""
+                @inproceedings{ahmed2017mcs,
+                  title = {{MCS}: Multiple classifier system to predict the churners in the telecom industry},
+                  author = {Ahmed, Mehreen and Siddiqi, Imran and Afzal, Hammad and Khan, Behram},
+                  booktitle = {2017 Intelligent Systems Conference (IntelliSys)},
+                  pages = {678--683},
+                  year = {2017},
+                  organization = {IEEE},
+                  doi = {10.1109/IntelliSys.2017.8324367}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the Kaggle dataset mahreen/sato2015, uploaded on 2017-10-11 by the Kaggle user mahreen (OpenML
@@ -60,17 +76,6 @@ class ChurnTelcoSouthAsia(AbstractCuratedDataset):
 
         mkdir -p local-data-warehouse/churn_telco_south_asia && cd local-data-warehouse/churn_telco_south_asia
         kaggle datasets download mahreen/sato2015 && unzip sato2015.zip && rm sato2015.zip
-    """
-    bibtex = """
-        @inproceedings{ahmed2017mcs,
-          title = {{MCS}: Multiple classifier system to predict the churners in the telecom industry},
-          author = {Ahmed, Mehreen and Siddiqi, Imran and Afzal, Hammad and Khan, Behram},
-          booktitle = {2017 Intelligent Systems Conference (IntelliSys)},
-          pages = {678--683},
-          year = {2017},
-          organization = {IEEE},
-          doi = {10.1109/IntelliSys.2017.8324367}
-        }
     """
     curation_comments = """
         We start with South Asian Wireless Telecom Operator (SATO 2015).csv (2,000 rows, 14 columns) from the Kaggle dataset mahreen/sato2015 (CC0-1.0), the data of Ahmed et al. (IntelliSys 2017). OpenML 44227 is the same file.

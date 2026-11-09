@@ -24,11 +24,10 @@ Usage in a curation notebook — build the container, check it, then save::
 Every finding carries a stable ``slug``; pass ``ignore=["slug", ...]`` to accept a
 finding on purpose (the notebook then documents the accepted deviation).
 
-The split protocol a bundle is judged by follows its container format
-(:attr:`~data_foundry.curation_container.CuratedContainer.format_version`): format 1 (the v1 notebooks, the shipped
-BeyondArena containers) by the v1 protocol of :mod:`data_foundry.curation_recommendations` (repeat ladder, 250k test
-rows), format 2 (the v2 definitions) by :func:`data_foundry.v2.splits.protocol_checks` (always 3 folds, 500k test
-rows). Every other check is the same for both formats.
+A format-2 container (the v2 definitions) is also judged by the v2 split protocol,
+:func:`data_foundry.v2.splits.protocol_checks` (always 3 folds, and the row budget the container records, if any).
+Format 1 (the v1 notebooks, the shipped BeyondArena containers, frozen) has no split-protocol check left: its
+containers are pinned and never rebuilt. Every other check is the same for both formats.
 """
 
 from __future__ import annotations
@@ -45,8 +44,8 @@ import numpy as np
 import pandas as pd
 
 from data_foundry.curation_container import CuratedContainer
-from data_foundry.curation_recommendations import SPLIT_TEST_ROW_BUDGET, SPLIT_TRAIN_ROW_BUDGET
-from data_foundry.schema import as_column_list
+from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
+from data_foundry.schema import DatasetMetadata, as_column_list, training_only_weight
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
 
@@ -54,10 +53,12 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
 
     from data_foundry.schema import (
-        DatasetMetadata,
+        DatasetMetadataV2,
         PredictiveMLSplitsMetadata,
         PredictiveMLTaskMetadata,
         PredictiveMLTaskMetadataV2,
+        Source,
+        UnitWeight,
     )
 
 Severity = Literal["error", "warning", "info"]
@@ -319,7 +320,7 @@ class _Ctx:
         return self.container.dataset
 
     @property
-    def dataset_metadata(self) -> DatasetMetadata:
+    def dataset_metadata(self) -> DatasetMetadata | DatasetMetadataV2:
         return self.container.dataset_metadata
 
     @property
@@ -464,6 +465,7 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
         return
 
     constant, all_missing, id_like, unused_categories, sentinel_hits, string_missing = [], [], [], [], [], []
+    sequential = []
     # a special feature's columns are checked by its kind: a SMILES is unique per molecule by nature (an input, not a
     # row id), and a spectrum's intensity of 999 is a reading, not a code for a missing value
     special = {c for f in getattr(ctx.task, "special_features", None) or () for c in f.columns}
@@ -479,6 +481,14 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
         unique_per_row = n_unique == ctx.n_rows and ctx.n_rows > 1
         if column != ctx.target and column not in special and is_labelish and unique_per_row:
             id_like.append(column)
+        is_integer = pd.api.types.is_integer_dtype(series.dtype) and not pd.api.types.is_bool_dtype(series.dtype)
+        if (
+            column != ctx.target
+            and is_integer
+            and unique_per_row
+            and int(series.max()) - int(series.min()) < 2 * ctx.n_rows
+        ):
+            sequential.append(column)  # a row counter or a running id: it orders the rows by date or by origin
 
         if isinstance(series.dtype, pd.CategoricalDtype):
             unused = set(series.dtype.categories) - set(series.dropna().unique())
@@ -519,6 +529,15 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
             f"{len(id_like)} column(s) have one distinct value per row: {id_like[:5]}.",
             hint="Uninformative sample identifiers should be dropped (curation guidelines); keep and process only "
             "informative ones (e.g. a time index).",
+        )
+    if sequential:
+        yield CheckResult(
+            "dataset_sequential_id_column",
+            "warning",
+            f"{len(sequential)} integer column(s) hold one value per row, densely numbered like a running id: "
+            f"{sequential[:5]}.",
+            hint="A running id often encodes the order of collection (time) or the origin (a prefix per source), which "
+            "a model then learns. Drop it, or declare it `NonFeature(column, 'identifier')` in the parent.",
         )
     if unused_categories:
         formatted = ", ".join(f"{c} (+{n})" for c, n in unused_categories[:5])
@@ -618,7 +637,8 @@ def _check_dataset_duplicates(ctx: _Ctx) -> Iterator[CheckResult]:
             hint="Keep one of each pair.",
         )
 
-    feature_columns = [c for c in df.columns if c != ctx.target]
+    # the model's inputs: a scoring column (a weight, an era) is no feature, so rows that differ only there are copies
+    feature_columns = [c for c in df.columns if c != ctx.target and c not in scoring]
     if feature_columns:
         duplicated_features = df.duplicated(subset=feature_columns, keep=False)
         n_dup_feature_rows = int(duplicated_features.sum())
@@ -999,13 +1019,27 @@ def _metric_spec_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PL
                 "error",
                 f"Metric {name!r} takes the params {sorted(definition.params)}, not {unknown_params}.",
             )
+        else:
+            try:
+                definition.validate(spec.params)
+            except ValueError as error:
+                yield CheckResult(
+                    "task_metric_param_invalid",
+                    "error",
+                    f"The params of {name!r} are invalid: {error}",
+                    hint="State the required params in the definition's `Metric` (a Poisson deviance's "
+                    "`min_prediction`, MET-13).",
+                )
         missing_roles = [role for role in definition.inputs if role not in spec.inputs]
-        extra_roles = [role for role in spec.inputs if role not in definition.inputs]
+        extra_roles = [
+            role for role in spec.inputs if role not in definition.inputs and role not in definition.optional_inputs
+        ]
         if missing_roles or extra_roles:
+            optional = f" and may take {list(definition.optional_inputs)}" if definition.optional_inputs else ""
             yield CheckResult(
                 "task_metric_input_missing",
                 "error",
-                f"Metric {name!r} needs the input role(s) {list(definition.inputs)}; the spec maps "
+                f"Metric {name!r} needs the input role(s) {list(definition.inputs)}{optional}; the spec maps "
                 f"{dict(spec.inputs)}.",
             )
     if spec.origin in ("source", "stand_in") and not (spec.reference or "").strip():
@@ -1030,10 +1064,11 @@ def _metric_spec_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PL
 
     yield from _target_transform_findings(ctx)
     yield from _scoring_column_findings(ctx)
+    yield from _weight_findings(ctx)
     yield from _metric_computes_findings(ctx)
 
 
-_MEAN_DEVIANCES = ("mean_poisson_deviance", "mean_tweedie_deviance")
+_MEAN_DEVIANCES = ("mean_poisson_deviance", "mean_tweedie_deviance", "rescaled_mean_tweedie_deviance")
 """Metrics minimised by the true mean on the original scale, which a model fit on a transformed target misses."""
 
 
@@ -1058,13 +1093,13 @@ def _target_transform_findings(ctx: _Ctx) -> Iterator[CheckResult]:
     if name in _MEAN_DEVIANCES:
         yield CheckResult(
             "task_metric_deviance_on_transformed_target",
-            "warning",
+            "error",
             f"`{name}` scores the predicted mean on the original scale, but the target ships as "
             f"`target_transform={transform!r}`: a model fit on that scale predicts about the mean of the transformed "
             "value, whose inverse falls below the mean (for a log, the geometric mean), so the deviance punishes the "
             "transform, not the model (pricing_game_2017_french_mtpl: deviance skill -5.1 on log1p, +0.05 in euros).",
-            hint="Ship the target untransformed (CLEAN-16 exception, as pricing_game_2017_french_mtpl), or accept "
-            "the warning with the reason.",
+            hint="Ship the target untransformed: a target scored by a deviance ships on the identity scale "
+            "(CLEAN-16 as amended on 2026-11-06).",
         )
     if ctx.df is None or ctx.target not in ctx.df.columns:
         return
@@ -1134,14 +1169,163 @@ def _scoring_column_findings(ctx: _Ctx) -> Iterator[CheckResult]:
             f"Scoring column(s) {undocumented} lack a role, a description or the metric that uses them.",
         )
     used = {column: role for role, column in spec.inputs.items()}
-    unused = sorted(c.column for c in scoring.values() if used.get(c.column) != c.role or c.used_by != spec.name)
+    alone = training_only_weight(task)
+    unused = sorted(
+        c.column
+        for c in scoring.values()
+        if (used.get(c.column) != c.role or c.used_by != spec.name) and c.column != alone
+    )
     if unused:
         yield CheckResult(
             "task_scoring_column_unused",
             "error",
             f"Scoring column(s) {unused} are not an input of the metric {spec.name!r} in the role they declare.",
-            hint="Map the role to the column in the metric's `inputs`, or drop the column (or keep it as a feature).",
+            hint="Map the role to the column in the metric's `inputs`, or drop the column (or keep it as a feature). "
+            'A weight for training alone is the `sample_weight`, its scoring column `used_by="training"` (MET-16).',
         )
+
+
+_EXPOSURE_NAME = re.compile(
+    r"(?:^|_)(?:exposure|expo|exposition|earned|swept|area_swept|at_risk|insured_years|vehicle_years|policy_years|"
+    r"person_years)(?:_|$)",
+    re.IGNORECASE,
+)
+"""Feature names that look like an amount at risk (time insured, area swept): a realized one leaks (LEAK-41)."""
+
+
+def _unit_weight_findings(ctx: _Ctx, unit: UnitWeight) -> Iterator[CheckResult]:
+    """A unit weight (MET-17) gives each unit one vote: the weights of each unit's rows sum to 1, and a unit's rows
+    lie on one side of every split, or a unit's vote would be split between training and test.
+    """
+    df = ctx.df
+    if df is None or unit.column not in df.columns or unit.unit not in df.columns:
+        return
+    sums = pd.to_numeric(df[unit.column], errors="coerce").groupby(df[unit.unit].to_numpy(), dropna=False).sum()
+    off = sums[(sums - 1.0).abs() > 1e-6]
+    if len(off):
+        yield CheckResult(
+            "task_unit_weight_not_one_per_unit",
+            "error",
+            f"`unit_weight`: the weights of {len(off)} of {len(sums)} units ({unit.unit!r}) do not sum to 1 "
+            f"(e.g. {off.index[0]!r}: {off.iloc[0]:.6g}); each unit must count once (MET-17).",
+            hint=f'Build it as `1.0 / df.groupby("{unit.unit}")["{unit.unit}"].transform("size")`.',
+        )
+    units = df[unit.unit].to_numpy()
+    split = [
+        f"r{repeat}/f{fold}"
+        for repeat, fold, train_idx, test_idx in ctx.flat_splits
+        if len(set(units[train_idx]) & set(units[test_idx]))
+    ]
+    if split:
+        yield CheckResult(
+            "task_unit_weight_unit_split",
+            "warning",
+            f"`unit_weight`: a unit ({unit.unit!r}) has rows on both sides of {len(split)} split(s) ({split[0]}, ...): "
+            "its vote is shared between training and test.",
+            hint="Group the splits by the unit (or a coarser group that contains it), or accept with the reason.",
+        )
+
+
+def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:
+    """The task's training weight (``sample_weight``) is the metric's row weight (MET-15) or declared for training
+    alone (MET-16), and each weight holds finite, non-negative values with weight on every split side; a weighted
+    Poisson target rebuilds whole counts; a feature named like an amount at risk is explained when the task declares no
+    weight (LEAK-41).
+    """
+    from data_foundry.v2.metrics import row_weight_column  # noqa: PLC0415 - data_foundry.v2 imports this module
+
+    task = ctx.task
+    spec = task.objective_metric
+    sample_weight = getattr(task, "sample_weight", None)
+    row_weight = row_weight_column(spec)
+    if sample_weight is not None and sample_weight != row_weight and training_only_weight(task) is None:
+        yield CheckResult(
+            "task_sample_weight_not_metric_weight",
+            "error",
+            f"`sample_weight={sample_weight!r}` is not the row weight the metric {spec.name!r} reads "
+            f"({row_weight!r}): models would train on another weighting than the score uses (MET-15).",
+            hint="Map the metric's `weight` input to the same scoring column, drop `sample_weight`, or, for a weight "
+            'meant for training alone, declare its scoring column `used_by="training"` (MET-16).',
+        )
+    unit = getattr(task, "unit_weight", None)
+    if unit is not None:
+        yield from _unit_weight_findings(ctx, unit)
+    if row_weight is not None and sample_weight != row_weight and (unit is None or unit.column != row_weight):
+        trains = "the task declares no `sample_weight`: models train unweighted"
+        if sample_weight is not None:
+            trains = f"models train with {sample_weight!r}"
+        yield CheckResult(
+            "task_metric_weight_without_sample_weight",
+            "warning",
+            f"The metric weights rows by {row_weight!r}, but {trains}. A realized amount at risk (time insured) must "
+            "also be the training weight (MET-15).",
+            hint=f'Declare `sample_weight = "{row_weight}"`, or accept the warning when the weight is a function of '
+            "the features (a sum insured, an asset's weight).",
+        )
+    weight_columns = [c for c in dict.fromkeys((sample_weight, row_weight)) if c is not None]
+    for column in weight_columns:
+        yield from _weight_column_findings(ctx, column, scored=column == row_weight)
+    if not weight_columns and ctx.df is not None:
+        excluded = {ctx.target, *ctx.columns_of(task.group_on), *(c.column for c in task.scoring_columns)}
+        suspects = sorted(
+            c
+            for c in ctx.df.columns
+            if c not in excluded and _EXPOSURE_NAME.search(str(c)) and pd.api.types.is_numeric_dtype(ctx.df[c])
+        )
+        if suspects:
+            yield CheckResult(
+                "task_feature_looks_like_exposure",
+                "warning",
+                f"Feature(s) {suspects} look like an amount at risk (time insured, area swept). A realized one is cut "
+                "by the outcome and never a feature; it is the rate's denominator and the weight (LEAK-41, MET-15).",
+                hint="Say in the notes what the column is (planned or realized) and accept the warning, or ship the "
+                "rate with the column as `sample_weight`.",
+            )
+
+
+def _weight_column_findings(ctx: _Ctx, column: str, *, scored: bool) -> Iterator[CheckResult]:
+    """One weight column (the training weight, the metric's row weight, or both) holds finite values >= 0 with weight
+    on every split side; the metric's weight of a mean deviance is positive (a rate's denominator), and under a Poisson
+    deviance target x weight rebuilds whole counts. A weight for training alone (``scored=False``) only trains.
+    """
+    if ctx.df is None or column not in ctx.df.columns:
+        return
+    spec = ctx.task.objective_metric
+    weights = pd.to_numeric(ctx.df[column], errors="coerce").to_numpy(dtype=float)
+    problems = []
+    bad = ~np.isfinite(weights)
+    if bad.any():
+        problems.append(f"{int(bad.sum())} missing or non-finite")
+    if (weights < 0).any():
+        problems.append(f"{int((weights < 0).sum())} negative")
+    if scored and spec.name in _MEAN_DEVIANCES and (weights == 0).any():
+        problems.append(f"{int((weights == 0).sum())} zero (a rate needs a positive denominator)")
+    empty = [
+        f"r{repeat}/f{fold} {side}"
+        for repeat, fold, train_idx, test_idx in ctx.flat_splits
+        for side, idx in (("train", train_idx), ("test", test_idx))
+        if len(idx) and not np.nansum(np.clip(weights[idx], 0, None)) > 0
+    ]
+    if empty:
+        problems.append(f"no weight on {', '.join(empty[:3])}")
+    if problems:
+        yield CheckResult(
+            "task_weight_invalid",
+            "error",
+            f"The weight column {column!r} has {'; '.join(problems)}: a row weight is a finite number >= 0 with "
+            "weight on every split side.",
+        )
+    if scored and spec.name == "mean_poisson_deviance" and ctx.target in ctx.df.columns and not bad.any():
+        totals = pd.to_numeric(ctx.df[ctx.target], errors="coerce").to_numpy(dtype=float) * weights
+        off = np.abs(totals - np.round(totals)) > 1e-6 * np.maximum(1.0, np.abs(totals))
+        if off.any():
+            yield CheckResult(
+                "task_rate_count_not_whole",
+                "warning",
+                f"target x {column!r} is not a whole count on {int(off.sum())} row(s): a Poisson rate weighted by "
+                "its denominator should rebuild the count it was divided from.",
+                hint="Check that the target is the count divided by this weight, or accept with the reason.",
+            )
 
 
 def metric_computes_findings(container: CuratedContainer, metric: object) -> list[CheckResult]:
@@ -1300,7 +1484,7 @@ def _check_time_column(ctx: _Ctx) -> Iterator[CheckResult]:
                 f"Dataset is not sorted ascending by `time_on={task.time_on!r}`.",
                 hint="Temporal data should be sorted chronologically (curation guidelines): "
                 "`df = df.sort_values(time_on).reset_index(drop=True)` before building the splits. Expected only "
-                "when rows were subsampled per split afterwards (`curation_recommendations.subsample_temporal`) — "
+                "when a split step reduced the frame per split afterwards — "
                 "the per-fold leakage check is what actually guards the protocol.",
             )
 
@@ -1431,9 +1615,11 @@ def _check_splits_coverage(ctx: _Ctx) -> Iterator[CheckResult]:
         )
 
     # Only k-fold-shaped splits (>1 fold per repeat) promise to test every row; a single
-    # train/test split per repeat deliberately leaves most rows in train only.
+    # train/test split per repeat deliberately leaves most rows in train only. Splits fitted to a row budget test on
+    # a sample of each fold's third by design, and the container records the budget.
     n_folds_per_repeat = {len(folds) for folds in ctx.splits_metadata.splits.values()}
-    if ctx.regime != "temporal_non_iid" and n_folds_per_repeat != {1}:
+    budgeted = ctx.splits_metadata.row_budget is not None
+    if ctx.regime != "temporal_non_iid" and n_folds_per_repeat != {1} and not budgeted:
         n_never_tested = int((~tested).sum())
         if n_never_tested:
             yield CheckResult(
@@ -1544,6 +1730,63 @@ def _check_splits_temporal(ctx: _Ctx) -> Iterator[CheckResult]:
         )
 
 
+FEATURE_GONE = 0.95
+"""A feature is gone from a side when at least this share of its rows miss it."""
+
+FEATURE_PRESENT = 0.5
+"""... and present on the other side when at most this share miss it."""
+
+FEATURE_SAMPLE_ROWS = 100_000
+"""The rows of each side read for the missing shares, drawn with a fixed seed."""
+
+
+@_check
+def _check_splits_feature_missing_in_test(ctx: _Ctx) -> Iterator[CheckResult]:
+    """Temporal splits: a feature recorded on one side of a window and missing on the other.
+
+    A column that stops (or starts) being recorded within the history teaches a model a feature its test rows lack
+    (delivery_eta_1m: 45 features 99.6% missing from 23 November 2023, in every test window; reviews of
+    2026-11-10 and 11). Each side reads up to :data:`FEATURE_SAMPLE_ROWS` rows.
+    """
+    if ctx.regime != "temporal_non_iid" or ctx.df is None or not ctx.flat_splits:
+        return
+    from data_foundry.curation_container import feature_columns  # noqa: PLC0415 - it imports the schema this uses
+
+    columns = [c for c in feature_columns(ctx.container) if ctx.has_column(c)]
+    if not columns:
+        return
+    rng = np.random.default_rng(0)
+
+    def missing(rows: np.ndarray) -> pd.Series:
+        if len(rows) > FEATURE_SAMPLE_ROWS:
+            rows = np.sort(rng.choice(rows, FEATURE_SAMPLE_ROWS, replace=False))
+        return ctx.df.iloc[rows][columns].isna().mean()
+
+    found: dict[str, list[str]] = {}
+    for repeat_i, fold_i, train, test in ctx.flat_splits:
+        if not train.size or not test.size:
+            continue
+        on_train, on_test = missing(train), missing(test)
+        gone = (on_test >= FEATURE_GONE) & (on_train <= FEATURE_PRESENT)
+        new = (on_train >= FEATURE_GONE) & (on_test <= FEATURE_PRESENT)
+        for column in on_test.index[gone | new]:
+            found.setdefault(column, []).append(
+                f"r{repeat_i}f{fold_i} {on_train[column]:.0%} missing in train, {on_test[column]:.0%} in test"
+            )
+    if found:
+        listed = "; ".join(f"`{c}` ({found[c][0]})" for c in list(found)[:5])
+        yield CheckResult(
+            "splits_feature_missing_in_test",
+            "warning",
+            f"{len(found)} feature(s) recorded on one side of a window and missing on the other: {listed}"
+            + (f"; and {len(found) - 5} more" if len(found) > 5 else "")
+            + ".",
+            hint="A column that stops or starts being recorded within the history: models learn it on one side only. "
+            "Name it in `curation_comments` and raise it for the curator (drop it, keep it, or start the data at the "
+            "change); accept this warning only with the curator's decision.",
+        )
+
+
 @_check
 def _check_splits_groups(ctx: _Ctx) -> Iterator[CheckResult]:
     """Grouped splits: no group may appear in both train and test of a fold."""
@@ -1562,81 +1805,6 @@ def _check_splits_groups(ctx: _Ctx) -> Iterator[CheckResult]:
             "error",
             f"{len(leaking)} fold(s) share a `group_on` value between train and test: {leaking[:5]}.",
             hint="A grouped split must keep every group entirely in one side of the split.",
-        )
-
-
-@_check
-def _check_splits_dimensions(ctx: _Ctx) -> Iterator[CheckResult]:
-    """Compare the split dimensions against the recommended v1 protocol (format 1 only)."""
-    from data_foundry.curation_recommendations import get_recommended_splits_dimensions
-
-    task = ctx.task
-    if ctx.container.format_version != 1 or ctx.df is None or task.time_on is not None or not ctx.flat_splits:
-        return
-    if isinstance(task.group_on, list):
-        # The recommendation helper only understands a single group column.
-        return
-    n_repeats = len(ctx.splits_metadata.splits)
-    folds_per_repeat = {len(folds) for folds in ctx.splits_metadata.splits.values()}
-    if len(folds_per_repeat) != 1:
-        return
-    n_folds = next(iter(folds_per_repeat))
-    if (n_repeats, n_folds) == (1, 1) and len(ctx.flat_splits[0][2]) >= 0.99 * SPLIT_TRAIN_ROW_BUDGET:
-        # A `_1m` split capped at the row budget: whole groups can leave it a few rows short of
-        # train + test budget, which would otherwise drop the frame into the 1x3 size band.
-        return
-
-    try:
-        recommended = get_recommended_splits_dimensions(
-            dataset=ctx.df,
-            group_on=task.group_on if isinstance(task.group_on, str) else None,
-            time_on=None,
-            group_labels=task.group_labels,
-        )
-    except (ValueError, KeyError):
-        return
-    rec_repeats, rec_folds, rec_test_size = recommended
-    if (n_repeats, n_folds) != (rec_repeats, rec_folds):
-        yield CheckResult(
-            "splits_dimensions_off_protocol",
-            "warning",
-            f"Splits are {n_repeats}x{n_folds} but the recommendation for this size is {rec_repeats}x{rec_folds}"
-            + (f" (test_size={rec_test_size:,})" if rec_test_size else "")
-            + ".",
-            hint="Deviating is allowed when the task demands it — record why in `splits_comment`.",
-        )
-
-
-@_check
-def _check_splits_row_budget(ctx: _Ctx) -> Iterator[CheckResult]:
-    """No outer split may train on more than 1M rows (or, in format 1, test on more than 250k)."""
-    if not ctx.flat_splits:
-        return
-    train_budget, test_budget = SPLIT_TRAIN_ROW_BUDGET, SPLIT_TEST_ROW_BUDGET
-    over_train = [(r, f, len(train)) for r, f, train, _test in ctx.flat_splits if len(train) > train_budget]
-    over_test = [(r, f, len(test)) for r, f, _train, test in ctx.flat_splits if len(test) > test_budget]
-    if ctx.container.format_version != 1:
-        over_test = []  # format 2 has its own test budget: _check_splits_protocol_v2
-    if over_train:
-        largest = max(n for *_, n in over_train)
-        yield CheckResult(
-            "splits_train_over_budget",
-            "error",
-            f"{len(over_train)} split(s) train on more than {train_budget:,} rows (largest: {largest:,}); "
-            f"first: {[(r, f) for r, f, _ in over_train[:5]]}.",
-            hint="Sub-sample each split's train side to the budget, e.g. with "
-            "`curation_recommendations.subsample_temporal(train_cap=1_000_000)`; for grouped splits, sample whole "
-            "groups until the train side fits.",
-        )
-    if over_test:
-        largest = max(n for *_, n in over_test)
-        yield CheckResult(
-            "splits_test_over_budget",
-            "warning",
-            f"{len(over_test)} split(s) test on more than {test_budget:,} rows (largest: {largest:,}); "
-            f"first: {[(r, f) for r, f, _ in over_test[:5]]}.",
-            hint="Cap the test side (e.g. `subsample_temporal(test_cap=250_000)`), or accept it in `ignore=[...]` "
-            "with the reason, e.g. when a grouped split cannot hit the cap without dropping whole groups.",
         )
 
 
@@ -1793,13 +1961,29 @@ def _check_data_tags(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_bibtex(ctx: _Ctx) -> Iterator[CheckResult]:
-    """Lightweight BibTeX validation: it must parse, balance, and define the declared key(s)."""
-    metadata = ctx.dataset_metadata
-    bibtex = metadata.academic_reference_bibtex or ""
-    declared = [k.strip() for k in (metadata.academic_reference_bibtex_key or "").split(",") if k.strip()]
+    """Lightweight BibTeX validation of every source that has one (the publication must).
+
+    Each must parse, balance, and define the declared key(s).
+    """
+    for source in ctx.dataset_metadata.sources:
+        if source.role != "publication" and not (source.bibtex or "").strip():
+            continue
+        yield from _bibtex_findings(source.bibtex or "", source.bibtex_key, _where(ctx, source))
+
+
+def _where(ctx: _Ctx, source: Source) -> str:
+    """How a message names a source: the field of a format-1 container, the source of a v2 one."""
+    if isinstance(ctx.dataset_metadata, DatasetMetadata):
+        return "`academic_reference_bibtex`"
+    return f"the BibTeX of the {source.role} source{f' {source.name!r}' if source.name else ''}"
+
+
+def _bibtex_findings(bibtex: str, key: str | None, where: str) -> Iterator[CheckResult]:
+    """The findings on one BibTeX text and its declared key(s); ``where`` names it in the messages."""
+    declared = [k.strip() for k in (key or "").split(",") if k.strip()]
 
     if not bibtex.strip():
-        yield CheckResult("meta_bibtex_empty", "error", "`academic_reference_bibtex` is empty.")
+        yield CheckResult("meta_bibtex_empty", "error", f"{where} is empty.")
         return
 
     n_open, n_close = bibtex.count("{"), bibtex.count("}")
@@ -1807,7 +1991,7 @@ def _check_bibtex(ctx: _Ctx) -> Iterator[CheckResult]:
         yield CheckResult(
             "meta_bibtex_unbalanced_braces",
             "error",
-            f"BibTeX has {n_open} '{{' but {n_close} '}}' — it will not compile.",
+            f"{where} has {n_open} '{{' but {n_close} '}}' — it will not compile.",
         )
 
     entries = re.findall(r"@(\w+)\s*\{\s*([^,\s}]+)\s*,", bibtex)
@@ -1815,7 +1999,7 @@ def _check_bibtex(ctx: _Ctx) -> Iterator[CheckResult]:
         yield CheckResult(
             "meta_bibtex_no_entry",
             "error",
-            "`academic_reference_bibtex` contains no `@type{key, ...}` entry.",
+            f"{where} contains no `@type{{key, ...}}` entry.",
             hint="Paste a real BibTeX entry (the template ships `@` as a placeholder).",
         )
         return
@@ -1825,7 +2009,7 @@ def _check_bibtex(ctx: _Ctx) -> Iterator[CheckResult]:
         yield CheckResult(
             "meta_bibtex_key_empty",
             "error",
-            f"`academic_reference_bibtex_key` is empty; the BibTeX defines {entry_keys}.",
+            f"The citation key of {where} is empty; the BibTeX defines {entry_keys}.",
             hint="Set it to the citation key(s), comma-separated for multiple entries.",
         )
     else:
@@ -1834,14 +2018,14 @@ def _check_bibtex(ctx: _Ctx) -> Iterator[CheckResult]:
             yield CheckResult(
                 "meta_bibtex_key_not_defined",
                 "error",
-                f"`academic_reference_bibtex_key` names {unknown} but the BibTeX defines {entry_keys}.",
+                f"The citation key of {where} names {unknown} but the BibTeX defines {entry_keys}.",
             )
         if len(entry_keys) != len(declared):
             yield CheckResult(
                 "meta_bibtex_key_count",
                 "warning",
-                f"BibTeX defines {len(entry_keys)} entry/entries {entry_keys} but "
-                f"`academic_reference_bibtex_key` lists {len(declared)}: {declared}.",
+                f"{where} defines {len(entry_keys)} entry/entries {entry_keys} but its citation key lists "
+                f"{len(declared)}: {declared}.",
                 hint="List every key, comma-separated, so citing the dataset pulls in all entries.",
             )
 
@@ -1862,7 +2046,7 @@ def _check_bibtex(ctx: _Ctx) -> Iterator[CheckResult]:
         yield CheckResult(
             "meta_bibtex_latex_hazard",
             "warning",
-            f"BibTeX contains characters LaTeX treats as markup outside of `\\url{{}}`: {hazards}.",
+            f"{where} contains characters LaTeX treats as markup outside of `\\url{{}}`: {hazards}.",
             hint="Escape them (`\\&`, `\\%`, `\\#`, `\\_`) or wrap the value in `\\url{...}` so the citation compiles.",
         )
 
@@ -1907,29 +2091,30 @@ def _check_dataset_metadata_completeness(ctx: _Ctx) -> Iterator[CheckResult]:
     """Provenance fields a consumer needs: license, link, year, download recipe, no placeholders."""
     metadata = ctx.dataset_metadata
 
-    if metadata.license is None:
+    unlicensed = [source.label() for source in metadata.sources if source.license is None]
+    if unlicensed:
         yield CheckResult(
             "meta_license_unknown",
             "warning",
-            "`license` is None (unknown or missing).",
+            f"The license is None (unknown or missing) for {unlicensed}.",
             hint="Record the license if one exists — downstream users need it to redistribute the data.",
         )
 
-    link = (metadata.original_dataset_source_download_link or "").strip()
-    if not re.match(r"(https?://|doi:|10\.\d{4})", link):
-        yield CheckResult(
-            "meta_source_link",
-            "warning",
-            f"`original_dataset_source_download_link={link!r}` does not look like a URL or DOI.",
-        )
-
-    year = str(metadata.dataset_year).strip()
-    if not re.fullmatch(r"(19|20)\d{2}", year):
-        yield CheckResult(
-            "meta_dataset_year",
-            "warning",
-            f"`dataset_year={metadata.dataset_year!r}` is not a plausible 4-digit year.",
-        )
+    for source in metadata.sources:
+        link = (source.url or "").strip()
+        if not re.match(r"(https?://|doi:|10\.\d{4})", link):
+            yield CheckResult(
+                "meta_source_link",
+                "warning",
+                f"The link of {source.label()} ({link!r}) does not look like a URL or DOI.",
+            )
+        year = str(source.year or "").strip()
+        if (source.role == "publication" or year) and not re.fullmatch(r"(19|20)\d{2}", year):
+            yield CheckResult(
+                "meta_dataset_year",
+                "warning",
+                f"The year of {source.label()} ({source.year!r}) is not a plausible 4-digit year.",
+            )
 
     if not (metadata.download_description or "").strip():
         yield CheckResult(
@@ -1955,10 +2140,13 @@ def _check_dataset_metadata_completeness(ctx: _Ctx) -> Iterator[CheckResult]:
     fields_to_scan = {
         "unique_name": metadata.unique_name,
         "download_description": metadata.download_description,
-        "academic_reference_bibtex": metadata.academic_reference_bibtex,
-        "academic_reference_bibtex_key": metadata.academic_reference_bibtex_key,
+        **{
+            f"sources[{i}].{name}": getattr(source, name)
+            for i, source in enumerate(metadata.sources)
+            for name in ("url", "license", "year", "bibtex", "bibtex_key", "name")
+        },
         "curation_comments": metadata.curation_comments,
-        "version_comment": metadata.version_comment,
+        "derivation": metadata.derivation,
         "target_column_name": ctx.task.target_column_name,
         **_metric_text_fields(ctx.task),
         "splits_comment": ctx.splits_metadata.splits_comment,
@@ -2094,23 +2282,31 @@ def run_bundle_checks(
     return report
 
 
-def _task_metadata_file(path: Path, container: CuratedContainer | None) -> str:
-    """The task metadata file a saved container must hold: the container's own format, else whichever is there."""
+def _metadata_file(path: Path, container: CuratedContainer | None, name: str, default_type: str) -> str:
+    """The ``<name>`` metadata file a saved container must hold: of the container's type, else whichever is there."""
     if container is not None:
-        return f"task_metadata.{container.task_metadata.type_adapter_id}.json"
-    found = sorted(f.name for f in path.glob("task_metadata.*.json"))
-    return found[0] if found else "task_metadata.predictive-ml-task-mold-v1.json"
+        return f"{name}.{getattr(container, name).type_adapter_id}.json"
+    found = sorted(f.name for f in path.glob(f"{name}.*.json"))
+    return found[0] if found else f"{name}.{default_type}.json"
 
 
 def _expected_files(path: Path, container: CuratedContainer | None) -> list[str]:
-    """The files a saved container must hold (the category and test-set files only when the frames need them)."""
+    """The files a saved container must hold.
+
+    The category and test-set files only when the frames need them, the row table when the splits are in it.
+    """
+    table = (path / f"experiment_metadata.{SPLITS_TABLE_TYPE}.json").is_file()
     files = [
         "dataset.parquet",
         "dtypes.json",
         "container_metadata.json",
-        "dataset_metadata.dataset-mold-v1.json",
-        _task_metadata_file(path, container),
-        "experiment_metadata.predictive-ml-splits-mold-v1.json",
+        _metadata_file(path, container, "dataset_metadata", "dataset-mold-v1"),
+        _metadata_file(path, container, "task_metadata", "predictive-ml-task-mold-v1"),
+        *(
+            [f"experiment_metadata.{SPLITS_TABLE_TYPE}.json", ROWS_FILE]
+            if table
+            else ["experiment_metadata.predictive-ml-splits-mold-v1.json"]
+        ),
     ]
     if container is not None and categorical_details(container.dataset):
         files.append("categories.json")

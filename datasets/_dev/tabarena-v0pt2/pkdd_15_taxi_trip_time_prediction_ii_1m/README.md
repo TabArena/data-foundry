@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: pkdd_15_taxi_trip_time_prediction_ii_1m
 container_format: 2
-checksum: v2:6bdaac43d792000885251110c73304dcc02ab62f7c80aa84d738793bbc71acf5
+checksum: v2:d1c74fa802ad862e77af1757271d551ff67fbf178b215963130dd50eaa4df870
 build: null
 build_stale: false
 data:
@@ -40,6 +40,9 @@ splits:
   n_test:
     min: 130112
     max: 149602
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -58,7 +61,7 @@ decisions:
 
 Regression of `log1p_travel_time`, scored with `rmsle` on temporal splits by `start_time`. 1,429,426 rows and 8 features. Source: Kaggle (2015).
 
-Not built yet. The current definition gives checksum `v2:6bdaac43d792000885251110c73304dcc02ab62f7c80aa84d738793bbc71acf5`.
+Not built yet. The current definition gives checksum `v2:d1c74fa802ad862e77af1757271d551ff67fbf178b215963130dd50eaa4df870`.
 
 ## In brief
 
@@ -207,7 +210,7 @@ Version of `pkdd_15_taxi_trip_time_prediction_ii`: The cleaned frame holds 1,636
 
 A model refit every month predicts the travel times of the next month's trips: 3 test windows of 30 days that start on 1 June, 1 May and 1 April 2014 (newest first; the May window leaves out 31 May), and train is the trips that start at least one day before the window. The gap of one day is part of the task: a trip lasts up to 3 hours, so at a refit the last trips before it have no travel time yet; without the gap 48, 36 and 8 train trips per window (June, May, April) would end after the window start, with it none. Each window keeps all of its trips (131,648 to 151,406, under the 500k budget); each train side is a random 1M of the eligible earlier trips (one random order for all windows). The monthly length follows the source: the challenge tested on 320 trips 1.5 to 6 months after its training year. The file covers one year, so the April to June test season has no earlier copy in train.
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 130,112 to 149,602 rows. Prediction horizon: 30 days. Gap between train and test: 1 days.
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 130,112 to 149,602 rows. Prediction horizon: 30 days. Gap between train and test: 1 days. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -253,7 +256,7 @@ TIMESTAMP is Unix time (UTC): the weekday pickup profile moves by one UTC hour a
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 ## Data checks

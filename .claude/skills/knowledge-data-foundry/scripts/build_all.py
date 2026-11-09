@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -41,7 +42,10 @@ def _definitions(root: Path) -> list[str]:
 
 
 def _prepares(root: Path, name: str) -> bool:
-    return "prepared_raw_files" in (root / name / "dataset.py").read_text()
+    """Whether the definition, or a parent it derives from (``import_definition("<parent>")``), prepares raw files."""
+    text = (root / name / "dataset.py").read_text()
+    parents = re.findall(r'import_definition\(\s*["\']([a-z0-9_]+)["\']', text)
+    return "prepared_raw_files" in text or any(_prepares(root, parent) for parent in parents if parent != name)
 
 
 def main() -> int:

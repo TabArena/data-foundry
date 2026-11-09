@@ -10,8 +10,10 @@ Rebuilds the frame and the split plan from ``<root>/<unique_name>/dataset.py`` a
 number measures) on the grouping's columns and the shipped grouped splits: the first ``--repeats`` repeats,
 ``--permutations`` runs of the permutation test when the labels are one per group (``Grouping(labels="per_group")``),
 a random set of whole groups when the frame has more than ``--max-rows`` rows, and ``--n-jobs`` processes. A
-definition without a grouping is no grouped task (exit code 1). The numbers are indicative (untuned models) and meant
-for the curation decision; how to read them: ``.claude/skills/knowledge-curation/references/leak_checks.md`` (probe 11).
+definition without a grouping is no grouped task (exit code 1). A task with a training weight (``sample_weight``) is
+probed with it: every model is fitted with it (kNN takes none) and every score is weighted. The numbers are indicative
+(untuned models) and meant for the curation decision; how to read them:
+``.claude/skills/knowledge-curation/references/leak_checks.md`` (probe 11).
 """
 
 from __future__ import annotations
@@ -56,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
         permutations=args.permutations,
         max_rows=args.max_rows,
         n_jobs=args.n_jobs,
+        sample_weight=data.weights,
     )
     return 0
 

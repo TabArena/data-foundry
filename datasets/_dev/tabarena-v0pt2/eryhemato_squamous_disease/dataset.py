@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 # Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
 SCORES = [
@@ -59,28 +59,33 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "eryhemato_squamous_disease"
-    year = "1998"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5FK5P"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5FK5P",
+            license="CC BY 4.0",
+            year="1998",
+            bibtex=r"""
+                @article{guvenir1998learning,
+                  title={Learning differential diagnosis of erythemato-squamous diseases using voting feature intervals},
+                  author={G{\"u}venir, H Altay and Demir{\"o}z, G{\"u}l{\c{s}}en and Ilter, Nilsel},
+                  journal={Artificial intelligence in medicine},
+                  volume={13},
+                  number={3},
+                  pages={147--165},
+                  year={1998},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         We take the original data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/33/dermatology.zip && unzip dermatology.zip && rm dermatology.zip dermatology.names
         mkdir -p local-data-warehouse/eryhemato_squamous_disease && mv dermatology.data local-data-warehouse/eryhemato_squamous_disease/
-    """
-    bibtex = r"""
-        @article{guvenir1998learning,
-          title={Learning differential diagnosis of erythemato-squamous diseases using voting feature intervals},
-          author={G{\"u}venir, H Altay and Demir{\"o}z, G{\"u}l{\c{s}}en and Ilter, Nilsel},
-          journal={Artificial intelligence in medicine},
-          volume={13},
-          number={3},
-          pages={147--165},
-          year={1998},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         We start with the data from UCI.

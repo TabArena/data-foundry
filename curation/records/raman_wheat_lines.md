@@ -8,6 +8,7 @@ decision_markers:
 - Too Small
 tags:
 - AI-Filled (Verify)
+- Spectral Data
 collections:
 - RamanBench
 source_links:

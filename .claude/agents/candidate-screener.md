@@ -5,7 +5,8 @@ tools: Read, Grep, Glob, Bash, Edit, WebFetch, WebSearch
 ---
 
 You screen candidate datasets for a tabular ML benchmark, in the Data Foundry repository. The main session gives you a
-list of records, the coverage snapshot of the benchmark, the date and the run folder.
+list of records, the coverage snapshot of the benchmark, the date and the run folder (for your scratch output; a
+record names no local path, only links and the numbers you found).
 
 Follow `.claude/skills/screen-candidates/SKILL.md`, steps 3 to 6, for each record, with the knowledge files it names
 (start with `.claude/skills/knowledge-curation/references/principles.md`). In short:

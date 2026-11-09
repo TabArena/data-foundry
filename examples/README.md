@@ -7,18 +7,22 @@ curation log. Run them from the repository root, for example `python examples/lo
 |---|---|---|
 | [`load_curated_container.py`](load_curated_container.py) | Load a container and print its identity, data, metadata (both container formats) and extra files. Defaults to the toy container shipped with the package. | nothing |
 | [`benchmark_on_beyond_arena.py`](benchmark_on_beyond_arena.py) | Train a random forest on every outer split of one BeyondArena (format 1) dataset, dropping the group column from the features, scored by RMSE. | network (first run), scikit-learn |
-| [`benchmark_container.py`](benchmark_container.py) | Train a model on every outer split of a Data Foundry v2 (format 2) container: the features from `feature_columns` (no target, group or scoring column), each declared type in its recommended encoding (special features, ordinal, datetime, text per split), scored by the metric spec through `scorer(container)`. | a v2 container folder, scikit-learn |
+| [`benchmark_container.py`](benchmark_container.py) | Train a model on every outer split of a Data Foundry v2 (format 2) container: the features from `feature_columns` (no target, group or scoring column), each declared type in its recommended encoding (special features, ordinal, datetime, text per split), fitted on `subsample_train` (the train budget of a `_1m` version), scored by the metric spec through `scorer(container)`. | a v2 container folder, scikit-learn |
 | [`read_metric_without_data_foundry.py`](read_metric_without_data_foundry.py) | Read a container's metric spec and scoring columns from `task_metadata.*.json` with plain `json` and pandas, and score a dummy prediction with scikit-learn; imports nothing from `data_foundry`. Defaults to the toy container. | pandas, scikit-learn |
 | [`data_foundry_data_regimes.py`](data_foundry_data_regimes.py) | One IID, two grouped (`per_group`, `per_sample`) and one temporal dataset side by side: how the regime shows up in the metadata. | network (first run) |
 | [`download_all_beyond_arena_datasets.py`](download_all_beyond_arena_datasets.py) | The registered collections, then the whole BeyondArena collection downloaded once (`prefetch`) and every checksum verified. | network, several GB |
+| [`dataset_family/`](dataset_family/) | A family of dataset definitions: a parent (`exam_scores`, no target) with the shared data and cleaning, and two tasks derived from it (`exam_scores_math` grouped by school, `exam_scores_reading` IID), which drop the columns the parent declares as never features (the other score, the provenance of each row); the raw files listed with their hashes. Its README explains the idea; `run_family.py` checks the parent and both tasks on generated raw files and tries a third task from a class written in the script. Builds nothing. | nothing |
 | [`curation_records.py`](curation_records.py) | Read, filter, edit and snapshot the curation log (`curation/records/`) from code. | a repository checkout |
+
+A task with a training weight names it: `sample_weight(container)` (`data_foundry.curation_container`) returns the
+column, and every model is fitted with it as each row's weight, never as a feature.
 
 Containers come through a collection (`data_foundry.collections`): it pins each dataset by `(unique_name, uuid)` and
 downloads it once into `~/.cache/data_foundry/<collection>/` (an explicit `cache_dir=...`, then
 `$DATA_FOUNDRY_CACHE`, take precedence). BeyondArena is the collection registered today; the TabArena v0.2 collection
 will be used the same way.
 
-To curate a dataset there is no example script: a dataset is a `dataset.py` folder made from
+To curate a dataset there is no example script beyond the family above: a dataset is a `dataset.py` folder made from
 [`datasets/_template/`](../datasets/_template/) (`dataset new`), and the definitions of the TabArena v0.2 working
 copy are the worked examples, starting with
 [`blood_transfusion`](../datasets/_dev/tabarena-v0pt2/blood_transfusion/dataset.py). See

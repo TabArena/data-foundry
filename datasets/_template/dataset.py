@@ -5,7 +5,14 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns  # noqa: F401
+from data_foundry.v2 import (  # noqa: F401
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    drop_columns,
+)
 
 
 class ClassName(AbstractCuratedDataset):
@@ -17,6 +24,7 @@ class ClassName(AbstractCuratedDataset):
         row="TODO(verify): what one row is.",
         predicted="TODO(verify): the target in plain words, by when after the prediction point.",
         known="TODO(verify): what the model knows then, in plain words.",
+        known_at_scoring="",  # a metric input recorded with the outcome (a realized time on risk); "" when none
         split="TODO(verify): what the test data stands for (new customers, the next weeks, unseen patients).",
         changes="",  # our changes to the source a reader needs to know
         fit="direct",  # TODO(verify): "direct", "approximate" (a stand-in with a known gap) or "none" (retire)
@@ -25,28 +33,37 @@ class ClassName(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "<unique_name>"
-    year = "TODO"
     domain = "TODO"  # one of data_foundry.schema.Domain
-    source = "TODO"  # where the data first appeared: one of data_foundry.schema.DatasetSource
-    source_url = "TODO"
-    license = "TODO"
+    sources = (
+        # The publication: where the data first appeared, not a later re-upload; its year and BibTeX are the
+        # dataset's. Add Source(role="copy", platform=..., url=..., license=...) for the copy we download when it is
+        # not the publication, and Source(role="part", name=..., ..., files=("...",)) per piece of an assembled dataset.
+        Source(
+            role="publication",
+            platform="TODO",  # one of data_foundry.schema.DatasetSource
+            url="TODO",
+            license="TODO",
+            year="TODO",
+            bibtex="""
+                @misc{TODO,
+                  title = {TODO},
+                }
+            """,
+        ),
+    )
     data_tags = ()  # context tags only (Spatial, Anonymized, ...); the regime tags are added from the task
     download_description = """
         TODO(verify): commands that recreate the raw files.
         mkdir -p local-data-warehouse/<unique_name> && mv data_files local-data-warehouse/<unique_name>/
-    """
-    bibtex = """
-        @misc{TODO,
-          title = {TODO},
-        }
     """
     curation_comments = """
         We start with <file> from <source>.
 
         - TODO(verify): what was dropped and why (identifiers, leaking features, constant columns).
     """
-    # Data over the row budget ships as a sub-sampled `<name>_1m` version, which also sets: version_of = "<name>",
-    # version_comment = "...", subsample_to_budget = True.
+    # TabArena v0.2 ships data over its row budget (a split side over 1M train / 500k test rows) as the version
+    # `<name>_1m` (folder and unique_name; it reads the raw files of `<name>`). The working copy's collection.py
+    # sets the budget, so the definition declares none; the build says when the name must carry the suffix.
 
     # Task (stratifying on a classification target is the default)
     target = "TODO"
@@ -58,6 +75,7 @@ class ClassName(AbstractCuratedDataset):
     # and only when the source defines none, the fallback (roc_auc / log_loss / rmse by problem type) with where you
     # looked. A metric that needs a column (a group, a weight) maps it in `inputs={"group": "era"}` and declares it in
     # `scoring_columns = (ScoringColumn(column="era", role="group", used_by="...", description="..."),)`.
+    # sample_weight = None  # a rate's realized denominator (MET-15): the metric's row-weight column and fit weight
     metric = Metric.fallback(reason="TODO(verify): where we looked for the source's metric, and found none.")
     # The regime: neither declaration is an IID task with the recommended split. A grouped task (import `Grouping`):
     # grouping = Grouping(

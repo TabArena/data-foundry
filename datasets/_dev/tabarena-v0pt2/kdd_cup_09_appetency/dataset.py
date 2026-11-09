@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 
 class KddCup09Appetency(AbstractCuratedDataset):
@@ -33,26 +33,31 @@ class KddCup09Appetency(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "kdd_cup_09_appetency"
-    year = "2009"
     domain = "business & marketing"
-    source = "Other"
-    source_url = "https://kdd.org/kdd-cup/view/kdd-cup-2009/Data"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://kdd.org/kdd-cup/view/kdd-cup-2009/Data",
+            license="Public Domain",
+            year="2009",
+            bibtex=r"""
+                @inproceedings{guyon2009analysis,
+                  title={Analysis of the kdd cup 2009: Fast scoring on a large orange customer database},
+                  author={Guyon, Isabelle and Lemaire, Vincent and Boull{\'e}, Marc and Dror, Gideon and Vogel, David},
+                  booktitle={KDD-Cup 2009 Competition},
+                  pages={1--22},
+                  year={2009},
+                  organization={PMLR}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
-    license = "Public Domain"
     download_description = """
         We download the data and the labels from the KDD challenge website:
 
         mkdir -p local-data-warehouse/kdd_cup_09_appetency && wget -P local-data-warehouse/kdd_cup_09_appetency https://kdd.org/cupfiles/KDDCupData/2009/orange_small_train.data.zip && unzip local-data-warehouse/kdd_cup_09_appetency/orange_small_train.data.zip -d local-data-warehouse/kdd_cup_09_appetency/ && rm local-data-warehouse/kdd_cup_09_appetency/orange_small_train.data.zip && wget -P local-data-warehouse/kdd_cup_09_appetency https://kdd.org/cupfiles/KDDCupData/2009/orange_small_train_appetency.labels
-    """
-    bibtex = r"""
-        @inproceedings{guyon2009analysis,
-          title={Analysis of the kdd cup 2009: Fast scoring on a large orange customer database},
-          author={Guyon, Isabelle and Lemaire, Vincent and Boull{\'e}, Marc and Dror, Gideon and Vogel, David},
-          booktitle={KDD-Cup 2009 Competition},
-          pages={1--22},
-          year={2009},
-          organization={PMLR}
-        }
     """
     curation_comments = """
         - We use the small training data from the original data (230 features).

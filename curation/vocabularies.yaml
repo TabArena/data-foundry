@@ -44,6 +44,7 @@ decision_markers:
 - Out-of-scope Task (CTR/RecSys/Ranking)
 - Ethical Issue
 - Too Small
+- No Signal
 - Not Representative
 - Selection Bias
 - Anonymized
@@ -70,6 +71,7 @@ tags:
 - '?'
 - Multi-target
 - Many class
+- Spectral Data
 - Two-Regime Zeros
 - Search for better data
 - Revisit later

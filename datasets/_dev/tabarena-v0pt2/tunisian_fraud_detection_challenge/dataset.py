@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
 
 ZERO_WITH_BLOCK_MISSINGNESS = (
     "TVA_CAF125",
@@ -41,11 +41,24 @@ class TunisianFraudDetectionChallenge(AbstractCuratedDataset):
         fit_reason="Retrospective investigation of documented annual dossiers. Every row is an inspected taxpayer-year, so the uninspected filers a real screening ranks are never seen (selection). Audit dates are absent, so when a previous adjustment became known is not dated. Kept on purpose: the refund and regularisation fields (`TVA_MTORDTVA`, `TVA_MTDJRTVA`, `TVA_DEDREG`, `TVA_CRDBLQ`, `TVA_CRDRES`, `TVA_CRDRMP`, `TVA_CRDRMC`) and 22 registry fields looked up at extraction.",
     )
     unique_name = "tunisian_fraud_detection_challenge"
-    year = "2019"
     domain = "finance"
-    source = "Zindi"
-    source_url = "https://zindi.world/competitions/tunisian-fraud-detection"
-    license = "Zindi competition rules; redistribution restricted"
+    sources = (
+        Source(
+            role="publication",
+            platform="Zindi",
+            url="https://zindi.world/competitions/tunisian-fraud-detection",
+            license="Zindi competition rules; redistribution restricted",
+            year="2019",
+            bibtex="""
+                @misc{tunisian2019fraud,
+                  title={Tunisian Fraud Detection Challenge},
+                  author={{Tunisian Ministry of Finance} and {Zindi}},
+                  year={2019},
+                  url={https://zindi.world/competitions/tunisian-fraud-detection}
+                }
+            """,
+        ),
+    )
     download_description = """
         Obtain the authorized Train.csv and VariableDescription.csv from
         https://zindi.world/competitions/tunisian-fraud-detection/data (login) and place them in
@@ -56,14 +69,6 @@ class TunisianFraudDetectionChallenge(AbstractCuratedDataset):
         as Train.csv; MIRROR_SOURCE.txt beside the files says so); its identity with the Zindi file rests on Lennart's
         statement that his Zindi download of 2026-11-04 is byte-identical. Only Train.csv supplies benchmark rows and labels. A separate private test-file inspection informs the predictor schema; no test rows or submission labels enter this definition.
         The related Sup'Com challenge is a later rerun of this source family, not another independent dataset.
-    """
-    bibtex = """
-        @misc{tunisian2019fraud,
-          title={Tunisian Fraud Detection Challenge},
-          author={{Tunisian Ministry of Finance} and {Zindi}},
-          year={2019},
-          url={https://zindi.world/competitions/tunisian-fraud-detection}
-        }
     """
     curation_comments = """
         - CC (2026-10-31, Myunghwan): Accepted all remaining choices: the dataset for a later requested build, both annual-time warning reasons, and Temporal (NON-IID) metadata. Temporal evaluation is preferred as closer to scanning a new year (superseded 2026-11-05: the task is the retrospective ranking of past fiscal years, with the taxpayer's earlier adjustments as held history; issue 1 CC below). Six annual markers (five since the 2018 cut of 2026-11-04) constrain inner validation; January 1 represents each fiscal cohort, not event dates. Preserve the accepted retrospective scope and unknown historical availability.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, set_missing
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -57,28 +57,33 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "regensburg_pediatric_appendicitis"
-    year = "2023"
     domain = "medical & healthcare"
-    source = "Other"
-    source_url = "https://doi.org/10.5281/zenodo.7711412"
-    license = "CC-BY-NC-4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://doi.org/10.5281/zenodo.7711412",
+            license="CC-BY-NC-4.0",
+            year="2023",
+            bibtex=r"""
+                @article{marcinkevivcs2024interpretable,
+                  title={Interpretable and intervenable ultrasonography-based machine learning models for pediatric appendicitis},
+                  author={Marcinkevi{\v{c}}s, Ri{\v{c}}ards and Wolfertstetter, Patricia Reis and Klimiene, Ugne and Chin-Cheong, Kieran and Paschke, Alyssia and Zerres, Julia and Denzinger, Markus and Niederberger, David and Wellmann, Sven and Ozkan, Ece and others},
+                  journal={Medical image analysis},
+                  volume={91},
+                  pages={103042},
+                  year={2024},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         We get the newest version of the tabular data from Zenodo.
 
 
         wget https://zenodo.org/records/7711412/files/app_data.xlsx?download=1
         mkdir -p local-data-warehouse/regensburg_pediatric_appendicitis && mv app_data.xlsx?download=1 local-data-warehouse/regensburg_pediatric_appendicitis/
-    """
-    bibtex = r"""
-        @article{marcinkevivcs2024interpretable,
-          title={Interpretable and intervenable ultrasonography-based machine learning models for pediatric appendicitis},
-          author={Marcinkevi{\v{c}}s, Ri{\v{c}}ards and Wolfertstetter, Patricia Reis and Klimiene, Ugne and Chin-Cheong, Kieran and Paschke, Alyssia and Zerres, Julia and Denzinger, Markus and Niederberger, David and Wellmann, Sven and Ozkan, Ece and others},
-          journal={Medical image analysis},
-          volume={91},
-          pages={103042},
-          year={2024},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         We start with the tabular meta-data used in the paper. We create only one task out of the dataset using one of the three available classes. We note that the main use case of the paper was image-based modelling and comparing to tabular baselines with image-to-tabular-radiometric. The authors also published the tabular data, which we use here.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
@@ -38,28 +38,33 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "taiwanese_bankruptcy_prediction"
-    year = "2020"
     domain = "finance"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5004D"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5004D",
+            license="CC BY 4.0",
+            year="2020",
+            bibtex="""
+                @article{liang2016financial,
+                  title={Financial ratios and corporate governance indicators in bankruptcy prediction: A comprehensive study},
+                  author={Liang, Deron and Lu, Chia-Chi and Tsai, Chih-Fong and Shih, Guan-An},
+                  journal={European journal of operational research},
+                  volume={252},
+                  number={2},
+                  pages={561--572},
+                  year={2016},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/taiwanese_bankruptcy_prediction/ && wget -P local-data-warehouse/taiwanese_bankruptcy_prediction/ https://archive.ics.uci.edu/static/public/572/taiwanese+bankruptcy+prediction.zip && unzip local-data-warehouse/taiwanese_bankruptcy_prediction/taiwanese+bankruptcy+prediction.zip -d local-data-warehouse/taiwanese_bankruptcy_prediction/ && rm local-data-warehouse/taiwanese_bankruptcy_prediction/taiwanese+bankruptcy+prediction.zip
-    """
-    bibtex = """
-        @article{liang2016financial,
-          title={Financial ratios and corporate governance indicators in bankruptcy prediction: A comprehensive study},
-          author={Liang, Deron and Lu, Chia-Chi and Tsai, Chih-Fong and Shih, Guan-An},
-          journal={European journal of operational research},
-          volume={252},
-          number={2},
-          pages={561--572},
-          year={2016},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         - We map binary Bankrupt column to yes/no

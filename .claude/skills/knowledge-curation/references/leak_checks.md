@@ -36,7 +36,8 @@ that the real groups are collection sites the file does not hold (maternal_healt
 binarizes), run the probes against the source's original labels too, and check the shipped label the same way: a
 depth-2 or depth-3 tree on its defining columns shows whether the target is a rule. A label the definition builds uses
 a convention of the field ([task_probes.md](task_probes.md), TP-7). Why: a merge can hide a column that spells out the
-fine label, or the fine label can turn out to be read off a few features. Cases: audiology_diagnosis's three merged
+fine label, or the fine label can turn out to be read off a few features. A label the field defines by columns we
+ship follows SEL-5 ([selection.md](selection.md)): test the rest first. Cases: audiology_diagnosis's three merged
 classes hid that its four cochlear diagnoses are set by two history answers, age over 60 and noise exposure (139 of
 147 cases).
 
@@ -51,7 +52,8 @@ each test fold's mean of every feature, so each split hands the model the test p
 **LEAK-6 (Must).** Measure before acting. A slight optimism with a known cause can stay with a note; a confirmed leak
 goes even when small. Cases: santander `has_*` (+0.003 AUC). One narrowing (amended 2026-10-26, Lennart, with LEAK-10):
 late values that cannot be located row by row stay with a note when the part that can be traced shows no gain
-(LEAK-10, second clause below).
+(LEAK-10, second clause below). A column the task uses as a weight or as a rate's denominator never stays with a note
+(LEAK-41).
 
 **LEAK-7 (Should).** The smallest fix that keeps a valid signal beats dropping the column. Cases: lag `incentive`
 (garments), drop the months where `PageValues` misbehaves (online_shoppers), cut the censored years (sf_permit_time),
@@ -68,23 +70,24 @@ a model can read other test rows, is fixed in the scoring (causal per-entity pre
 a protocol line the benchmark checks, not in the data; document the prediction point. A method that learns from the
 test block is called out and not benchmarked (Lennart, 2026-11-05: "we investigate models, and would find out if they
 do transductive learning which we can call out and not benchmark"). Cases: sepsis_prediction_1m,
-5g_energy_consumption, medical_facility_operational_data, fremtpl2 (protocol lines).
+5g_energy_consumption, medical_facility_operational_data, fremtpl2, bank_marketing (protocol lines).
 
 Repair or rebuild damaged data from its origin before keeping it: PROV-13 in [provenance.md](provenance.md).
 
 ### Values not known at the prediction point
 
-**LEAK-10 (Must).** A feature holds only what existed at the prediction point (LEAK-1) and never gives the target away.
-Out: a column recorded after the outcome; attributes looked up after the outcome (a property's current record for a
-past sale), unless the data shows they did not change; a part, a consequence or another encoding of the target; a
-feature computed from the window that defines the target, even when its value is known at snapshot time, unless the
-data shows the window's values do not move with the outcome given the covariates known at the prediction point; a value
-fitted from the same measurement that gives the label; targeting or pointing ids that encode pre-selection or the
-observation date; a same-day value that depends on the day's outcome; missingness that encodes the outcome; an aggregate
-that may include the row's own outcome. Fix it in the definition the smallest way (LEAK-7), else drop it; when the
-features summarise a window that ends at the outcome and no common prediction point can be rebuilt, retire. Test: the
-codebook (LEAK-2) and probes 1 to 4. Cases: the Mechanisms table under Cases. Two clauses, amended 2026-10-26 (Lennart),
-each a case-by-case judgment of the curator, never a default:
+**LEAK-10 (Must; amended 2026-11-08, Lennart, on noaa_storm_events_damage).** A feature holds only what existed at the
+prediction point (LEAK-1) and never gives the target away. Out: a column recorded after the outcome; attributes looked
+up after the outcome (a property's current record for a past sale), unless the data shows they did not change; a part, a
+consequence or another encoding of the target; a feature computed from the window that defines the target, even when its
+value is known at snapshot time, unless the data shows the window's values do not move with the outcome given the
+covariates known at the prediction point; a value fitted from the same measurement that gives the label; targeting or
+pointing ids that encode pre-selection or the observation date; a same-day value that depends on the day's outcome;
+missingness that encodes the outcome; an aggregate that may include the row's own outcome. Fix it in the definition the
+smallest way (LEAK-7), else drop it; when the features summarise a window that ends at the outcome and no common
+prediction point can be rebuilt, retire. Test: the codebook (LEAK-2) and probes 1 to 4. Cases: the Mechanisms table
+under Cases. Three clauses, amended 2026-10-26 and 2026-11-08 (Lennart), each a case-by-case judgment of the curator,
+never a default:
 * A window sum stays when the data shows it does not move with the outcome once the covariates known at the
   prediction point are accounted for (account_debt_south_africa's billing totals; "keep them, amend it but make clear
   this needs case by case curator judgement"). A value that encodes the target's own quantity, or that falls in the
@@ -94,50 +97,98 @@ each a case-by-case judgment of the curator, never a default:
   go when they may carry a gain (distribution_transformers_at_cauca_department) and stay with a note only when the
   part that can be traced shows none (onlinenewspopularity's keyword and self-reference counts, "go with (a)"). This
   narrows LEAK-6 for that one case; a "removing it changes no score" test alone is still no reason to keep
-  (2026-10-21).
+  (2026-10-21). A column the task uses as a weight or as a rate's denominator is LEAK-41's, never kept with a note.
+* A span (a duration, a count of attempts) whose start or end the outcome or an outcome-free criterion can draw: the
+  part that features locate is blanked (noaa_storm_events_damage's wind entries estimated from the damage). The rest
+  stays with a note giving its worth only when the source's rule lets the outcome draw a minority of the spans and the
+  span keeps its worth on the rows the outcome did not draw, measured with the narratives or the source as a diagnostic,
+  never as a feature or to blank (noaa_storm's Flash Flood duration: on the 82% of test rows whose narratives name no
+  damage-like onset it cuts the deviance by 40% to 48% in 24 of 24 fits; the 5% that name a building carry 68% to 81% of
+  the total cut, kept with that note). A span the outcome ends every time goes (heart_failure_followup_survival's
+  `time`, death or censoring), as does one recorded after the prediction point (bank_marketing's `campaign`). The size
+  of the worth alone never decides (2026-11-08, Lennart, X4).
 
 **LEAK-11 (Should; narrows LEAK-10).** A value measured after the outcome that weakens the signal stays, with a note.
 Cases: south_africa_coronary_heart_disease.
+
+**LEAK-41 (Must; narrows LEAK-6, LEAK-10 and LEAK-11; 2026-11-06, Lennart, on fremtpl2 and bemtpl97; amended 2026-11-08,
+Lennart, on pricing_game_2016_french_fleet and on the weight-alone score).** A column the task uses as a weight (the
+metric's row weight, the training weight, a rate target's denominator) whose value is set or cut after the prediction
+point is never a model input, whatever it scores, and neither is a column that encodes it: an earned premium (ship it
+annualised to the planned term, or not at all), a length corrected on some rows and realized on others, a sum of a
+group's exposures, a value whose precision marks the cut. A part known at the start ships as its own column (LEAK-7,
+LEAK-37). A column is judged by its timing, as under LEAK-10: a feature known at the prediction point that predicts the
+weight through risk selection stays (USE-6). For each suspect column the definition reports its gain on the declared
+metric with an L2 fit on the shipped scale and with the weighted actuarial fit, and decides on the worse; it states,
+next to the gain of the weight added to the features, the score of 1/weight alone for a ranking metric (a Gini) or of a
+model of the target on the weight alone for a level-sensitive metric (a deviance); neither is a ceiling (fremtpl2:
+1/weight as the prediction scores 3.65 against the constant's 0.479; frempl: 1/length alone 0.184, the realized length
+added to the features 0.256). No model is trained or scored on rows selected by the realized weight (such as full-year
+rows only); a row with no amount at risk may go under USE-7, its claims counted in the notes; a selection the source
+made before release, the same in train and test, that cannot be undone, defines the task's population and is sized in
+the notes. Test: probe 22. Cases: pricing_game_2016_french_fleet (the organisers left out every period of cover under 30
+days before release, in the 2014 file the game priced too: about 15% of the periods and 1.5% of the vehicle-years, the
+same on both sides of the split; no other insurance table of PR #47 has such a floor, their released lengths run down to
+a day); fremtpl2 (`Exposure` as weight and feature scores 0.24341, as a free feature 0.24343: the weight alone does not
+stop the leak); frempl_french_motor_personal_line (1/length alone scores 0.184, the honest model 0.183 under the
+weighted Tweedie fit of D9, also on the identity scale and the widened folds of 2026-11-08, 0.176 before D9; the length
+to 31 December, the part known at the start, stays its own column, which settled the scale as the identity: 2026-11-08,
+Lennart, issue 7 (b)); spanish_motor_insurance_coverage_level_2022_2024 (earned premiums annualised: +0.0096 under a
+weighted Tweedie fit, Spearman 0.025 with the exposure; its 49 rows without exposure; the annualised premiums still mark
+a cut year by their precision, a part-year's quotient falling back on the tariff's 5-decimal grid: ROC AUC 0.965 for the
+located cancellations, rounded to the cent since 2026-11-08 (review issue 7, Lennart): 0.565 after); a simulated partial
+correction (renewals reset to a full year, new business left realized) still beats the oracle (0.46490 against 0.46799,
+with 30% of claims followed by a cancellation).
 
 **LEAK-12 (Must; applies SPLIT-9).** In a temporal task, training rows whose label is not yet known at the prediction
 point are filtered out by an as-of date: SPLIT-9 in [splits.md](splits.md). Cases: hotel_booking_demand.
 
 ### Artefacts that differ by class
 
-**LEAK-13 (Must; amended 2026-10-26, Andrej, on gallstone_disease).** Class-specific recording conventions are
-harmonised: write every row at the precision of the measured values, computed columns and filled cells included, and
-drop a column only one class has or one that was filled in for one class only. First measure how much the fix removes.
-Test: probes 4, 9 and 17. Cases: hepatitis_c_prediction, gallstone_disease.
+**LEAK-13 (Must).** Class-specific recording conventions are harmonised: write every row at the precision of the
+measured values, computed columns and filled cells included, and drop a column only one class has or one that was filled
+in for one class only. A convention that changed over time (a unit, a number format) counts too when the classes changed
+over the same time: it dates the row, and the date tells the class. First measure how much the fix removes. Test: probes
+4, 9 and 17. Cases: hepatitis_c_prediction, gallstone_disease, horse_colic_survival (re-targeted, then the unit
+harmonised).
 
 **LEAK-14 (Must).** A class that comes from a separate source or assay is dropped once the paper confirms it. Test:
 probe 7. Cases: biogeographical_ancestry_prediction.
 
-**LEAK-15 (Must; amended 2026-10-27, Andrej, on gallstone_disease).** A recording artefact that runs through several
-features that would matter for prediction in practice, and that cannot be undone (no batch id to drop, no format to
-harmonise, no route to align), retires the dataset: a feature subset does not help when it also separates same-label
-groups. An artefact confined to features a practical model would not rely on is fixed (LEAK-13, LEAK-14, LEAK-39) or
-kept with a note. Test: probes 7, 8 and 17, and the score without the affected features. Cases:
-prostate_cancer_detection (retired), gallstone_disease (kept).
+**LEAK-15 (Must).** A recording artefact that runs through several features that would matter for prediction in
+practice, and that cannot be undone (no batch id to drop, no format to harmonise, no route to align), retires the
+dataset: a feature subset does not help when it also separates same-label groups. An artefact confined to features a
+practical model would not rely on is fixed (LEAK-13, LEAK-14, LEAK-39) or kept with a note. Test: probes 7, 8 and 17,
+and the score without the affected features. Cases: prostate_cancer_detection (retired), gallstone_disease (kept),
+lung_adenocarcinoma_metastasis (kept: its metastasis arrays are dimmer and their per-array scaling calls fewer genes
+present, which runs through every gene, but a rank of the genes within each array undoes it at no cost and the class
+difference holds within processing batches; the control probes, which separate the classes, dropped), lung_cancer
+(repaired: rebuilt from the origin's per-array files, where the spike-in control probes no longer separate the classes;
+later retired on its use case; the arrays ship on as lung_adenocarcinoma_metastasis).
 
-**LEAK-39 (Must; 2026-10-26, Andrej, on gallstone_disease).** Rows of one class recorded through a separate route, found
-by a recording fingerprint (number formats, a derived column that follows another definition, a shifted measurement)
-rather than a source column, are dropped when models recognise them and the route cannot be aligned with the other
-rows: too few rows of the other class went through it to calibrate it. Find them as rows of one class that share the
-formats the other class rarely has. Then score them against the other class out of fold, and score the other class's
-rows of the same route: when those are predicted as the first class, models learn the route, not the target. Test:
-probes 7, 9 and 17. Cases: gallstone_disease.
+**LEAK-39 (Must).** Rows of one class recorded through a separate route, found by a recording fingerprint (number
+formats, a derived column that follows another definition, a shifted measurement) rather than a source column, are
+dropped when models recognise them and the route cannot be aligned with the other rows: too few rows of the other class
+went through it to calibrate it. Find them as rows of one class that share the formats the other class rarely has. Then
+score them against the other class out of fold, and score the other class's rows of the same route: when those are
+predicted as the first class, models learn the route, not the target. Test: probes 7, 9 and 17. Cases: gallstone_disease
+(dropped), lung_cancer (repaired: one array per specimen from the origin instead of the replicate means; models had
+barely told the averaged rows from the others; later retired on its use case; the arrays ship on as
+lung_adenocarcinoma_metastasis).
 
-**LEAK-40 (Should; 2026-10-26, Andrej, on gallstone_disease).** Gaps the source filled from neighbouring rows
-(interpolation, carried values) in a file sorted by class are tested, not assumed to leak: set the filled cells to
-missing and re-impute them inside each training fold without the label. When that scores the same or higher, the fills
-stay with a note. Setting them to missing is no fix when the gaps follow the classes: the missing values then mark a
-class. Their written precision is harmonised (LEAK-13). Values filled from the label, such as an outcome group's mean,
-are LEAK-10 and go back to missing. Test: probe 18. Cases: gallstone_disease (kept),
-heart_failure_followup_survival (outcome-group means, set back to missing).
+**LEAK-40 (Should).** Gaps the source filled from neighbouring rows (interpolation, carried values) in a file sorted by
+class are tested, not assumed to leak: set the filled cells to missing and re-impute them inside each training fold
+without the label. When that scores the same or higher, the fills stay with a note. Setting them to missing is no fix
+when the gaps follow the classes: the missing values then mark a class. Their written precision is harmonised (LEAK-13).
+Values filled from the label, such as an outcome group's mean, are LEAK-10 and go back to missing. Test: probe 18.
+Cases: gallstone_disease (kept), heart_failure_followup_survival (outcome-group means, set back to missing).
 
-Marker, for a dataset where LEAK-13 to LEAK-15, LEAK-39 or LEAK-40 applied, kept or retired: `Class-dependent
-Recording`. It says the classes were measured, formatted or filled differently, so the recording can give the label
-away. `Selection Bias` is about which rows were sampled, with the measurements alike.
+Marker, for a dataset where LEAK-13 to LEAK-15, LEAK-39 or LEAK-40 applies, whether the artefact was fixed, is kept with
+a note or is still open, and whether the dataset is kept or retired: `Class-dependent Recording`. It says the classes
+were measured, formatted or filled differently, so the recording can give the label away. `Selection Bias` is about
+which rows were sampled, with the measurements alike. The definition's notes say, once per dataset, what was recorded
+differently by class, how much it gives away (the recording alone, before and after a fix) and what was done, or why
+nothing was ([definitions.md](../../knowledge-data-foundry/references/definitions.md), "Classes recorded differently").
 
 Generated or manipulated data is retired (`AHDS`, `Data Quality Issue`; SEL-16, PROV-3); how to tell (probe 15):
 PROV-3 in [provenance.md](provenance.md), "Is the data generated?".
@@ -159,12 +210,14 @@ source's question. ai4d_lab_tanzania_tourism_classification_challenge keeps its 
 coarse survey answers with 2 to 10 levels, and 361 repeated profiles are `Alone` travellers, 67.8% of copy groups larger
 than their party, so the copies are distinct respondents (Lennart, 2026-11-05; LEAK-19 unchanged).
 
-**LEAK-19 (Should).** Exact copies with the same label: drop them rather than group on the duplicate key. Cases:
-wine_quality (1,177 rows); audiology_diagnosis (27 copies of the same findings and diagnosis on different patient ids).
-Copies of one compound go (qsar_oral_toxicity's 477 exact copies; qsar_tid_11's 37 salt forms of one ChEMBL parent);
-distinct compounds that the descriptors cannot tell apart stay, with the reason in the notes (hiva_agnostic: 23 repeated
-vectors, every NSC number distinct; qsar_tid_11: stereoisomers and analogs with their own measured potency) (Lennart,
-2026-10-21).
+**LEAK-19 (Should).** Exact copies with the same label: drop them rather than group on the duplicate key. When the
+copies are uneven by class, the notes give the share per class and the class balance after the drop:
+early_stage_diabetes_risk_prediction (61% of the negative rows, 46% of the positive ones; the positive share moves from
+62% to 69%). Cases: wine_quality (1,177 rows); audiology_diagnosis (27 copies of the same findings and diagnosis on
+different patient ids). Copies of one compound go (qsar_oral_toxicity's 477 exact copies; qsar_tid_11's 37 salt forms of
+one ChEMBL parent); distinct compounds that the descriptors cannot tell apart stay, with the reason in the notes
+(hiva_agnostic: 23 repeated vectors, every NSC number distinct; qsar_tid_11: stereoisomers and analogs with their own
+measured potency) (Lennart, 2026-10-21).
 
 **LEAK-20 (Should).** Feature vectors that occur with both labels: drop every copy, unless they are genuine label
 ambiguity the task has. Cases: jm1 (176 rows); consumer_complaints. Exception: mortgage (7 loans, Lennart, 2026-10-22)
@@ -277,7 +330,9 @@ GPS total recorded after delivery not excluded) (2026-11-05, Lennart).
 Also not a leak, with their home elsewhere:
 
 * IID over related entities is optimistic but can match how a task is framed: a candidate for a grouped or temporal
-  variant, not a fix (SPLIT-31 in [splits.md](splits.md); amazon_employee_access, bank_marketing).
+  variant, not a fix (SPLIT-31 in [splits.md](splits.md); amazon_employee_access; bank_marketing until it was split by
+  time on the file's date order on 2026-11-08, since a client's later record gave an earlier one's label away across
+  the random split).
   concrete_compressive_strength was one until it was grouped by mix on 2026-10-14 (SPLIT-24).
 * Choosing which columns or categories to keep by counts over the whole table (the most frequent codes, questions asked
   in one year only) is ordinary cleaning that follows the task's best practice: CLEAN-8 in
@@ -349,6 +404,8 @@ The numbers compare the shipped data with a suspected fix; they are not leaderbo
 | 19 | The rows `_clean` removes, against the kept ones: the class shares, or the target's median and mean shift (`leak_probes.py --raw`) | the removed rows differ by their target: a filter on the outcome | protein_model_quality_rf_pcp: the 4,893 native references removed all score GDT_TS 1 (mean shift +3.0 SD), by design |
 | 20 | Each raw column the definition drops, alone against the shipped target on the shipped splits (`leak_probes.py --raw`) | a dropped column scores well alone: say why it is out, and check that no kept column carries it | protein_model_quality_rf_pcp: `TM` R^2 0.87 and `RMSD` 0.84, other quality scores of the same model, rightly dropped |
 | 21 | Exact copies in the raw table, before `_clean`: rows equal in every column but the target and the identifiers, by label (`leak_probes.py --raw`) | copies the definition removed, or the source's own repeats it kept (set against probe 5) | ai4d_lab_tanzania_tourism_classification_challenge: 2,018 of 18,506 rows in 718 groups, 370 with more than one label |
+| 22 | Weight proxy: the realized weight (a time on risk) fitted on the features; the declared metric with the weight added as a feature against the honest fit; each top feature's gain through the weight; for a Gini, 1/weight alone (`leak_probes.py --weight-proxy`) | a feature whose gain through the weight is above noise: decide by its timing (LEAK-41, LEAK-10) | australian_vehicle_insurance_2004_2005: the rating factors predict the exposure at R^2 0.06 (the study's folds) and 0.074 (the shipped splits); frempl_french_motor_personal_line: 1/length alone 0.184 Gini against the honest model's 0.183 (weighted Tweedie, 2026-11-06; 0.176 under the metric of 2026-11-03), the length as a feature 0.256 |
+| 23 | Forced split (`ForcedGroupedFromTemporal`, `ForcedIIDFromTemporal`; SPLIT-8; the end of `leak_probes.py`'s default run there, alone with `--forced-split`): (a) period outcome: each test period predicted by a fit without its period's training rows against one without as many random training rows, by the declared metric with the training weight, pooled and within a period; (b) shared units: the test rows whose group, exact profile of the inputs, or profile without the period column has training rows, and what a lookup of their training target adds on those rows (the training side's lookup out of fold by group on a grouped split) | a gain above 2 SEs over the splits: (a) the period's outcome is shared across the split (a shock or a level of the year); (b) the unit's outcome reaches the test rows with a lookup through training; for a profile it can also be natural repeats (LEAK-18), and whether the copies are one entity decides (LEAK-17). A change on the rows without a lookup is no leak, only a sign that the lookup changed the fit. Weighed case by case (SPLIT-8) | spanish_motor_insurance_coverage_level_2022_2024: the year's own rows add +0.0053 Gini pooled (SE 0.0026, 7 of 9 splits; +0.0045 by hand on 2026-11-02), +0.0014 within a year; pricing_game_2016_french_fleet: +0.07 pooled on its deviance (SE 0.22; -0.18 by hand); a lookup of the exact profile (4.3% of the test rows: other fleets with the same classes and start) -0.40 on those rows (SE 0.44), -0.018 in all; with lookup folds of rows it had read +0.117, an artefact (a training row's lookup took 78% of its weight from its own contract); on the folds since issue 9's join (2026-11-08): -0.38 pooled (SE 0.25; -0.43 by hand), the exact profile's lookup -0.23 on those rows (SE 0.17), +0.014 in all |
 
 ### The raw state (probes 10, 18 to 21)
 
@@ -380,6 +437,42 @@ the end: cut before the first period out of band, or compare a second download (
 censoring at the release end only; whether a model refit at a window's start would have known each training label is
 SPLIT-10's question, and a changing case mix can hide or mimic a drop.
 
+### Probe 22
+
+Probe 22 (`weight_proxy`) asks whether the features carry a realized weight: the time on risk of a rate target, cut
+short when a claim causes a cancellation (LEAK-41). The weight is the task's sample weight, or the column
+`--weight-column` names. A cross-fitted LightGBM of the weight on the features gives the R^2, the Spearman correlation
+and the top features. The leak reference is the declared weighted metric with the weight added as a feature, against the
+honest fit: what a perfect proxy would gain. For each top feature, the weight-mediated gain is its gain without the
+weight minus its gain when the weight is a feature, with the SD over folds and seeds; a feature that stands in for the
+weight loses its gain once the weight is there. The probe also scores the weight alone: 1/weight for a Gini metric, a
+model of the target on the weight for a deviance (no ceiling: the realized weight added to the features can score
+higher). A gain above noise flags a feature; it does not decide. The call is on timing (LEAK-41, LEAK-10): a feature
+known at the quote stays, even when it predicts the weight through risk selection (USE-6).
+
+### Probe 23
+
+Probe 23 runs the leak tests SPLIT-8 asks of a split forced from temporal, which puts rows of one period on both sides.
+The period-outcome test (`period_outcome`) reads the periods from `--time-on`, else the first date column, whole-number
+year column (fewest values first) or column named by a period word (`year`, `month`, `season`, `era`); the output names
+the others. Dates are cut at the coarsest calendar period with three or more (`--period` sets it). Each test period is
+predicted by a fit without the training rows of its period and by one without as many random training rows: the
+difference is what the period's own rows add, pooled (a shift of the period's level counts) and within a period (it does
+not). A period finer than the cycle of a feature can flag without a shared outcome, since the fit without a quarter's
+rows extrapolates a seasonal feature (pricing_game_2016_french_fleet by quarter: +0.46, SE 0.17, mostly in the fourth
+quarters). The shared-unit test (`shared_units`) counts the test rows whose unit has training rows (a group column,
+which a grouped split never shares; the exact profile of the inputs; the profile without the period column, the same
+unit in another period) and adds a lookup of the unit's training target to the inputs: over the whole training side for
+a test row, out of fold for a training row, the folds drawn by group on a grouped split. A training row then never reads
+its own group, as a test row never does. With folds of rows it did, and pricing_game_2016_french_fleet showed a false
+gain of +0.117 that sat on the test rows without a lookup. The gain is reported on the test rows with a lookup and on
+the rest, each scored on its own rows. The flag reads the first; a change on the rest only says the lookup changed the
+fit. Both fit regularised LightGBM (15 leaves, a 200th of the training rows a leaf, rate 0.03, 300 trees) with the
+training weight and probe 22's actuarial objective, score the declared metric, and run 9 splits x 3 seeds. The SE is
+over the splits, whose repeats share rows, so it is a lower bound. Untuned fits gave pricing_game_2016_french_fleet a
+false hit (+1.72, SE 0.56, with fits at 92.0 against the constant's 82.6). A hit is a measurement to weigh (SPLIT-8),
+not a verdict (2026-11-08, Lennart, cross-dataset item on forced splits).
+
 ## Cases
 
 Precedents: how a rule was applied. They never change a rule; an exception is listed with the fact that set it apart.
@@ -389,9 +482,11 @@ The cases of the rules outside this table are named in the rules.
 
 | Rule | Mechanism | Action | Cases |
 |---|---|---|---|
-| LEAK-4 | A label we built that a few features spell out (classes merged or dropped by the definition) | use a convention of the field and check it with a shallow tree; run the probes on the source's labels too | audiology_diagnosis: three classes from names replaced by hearing loss with or without a conductive part |
+| LEAK-4 | A label we built that a few features spell out (classes merged or dropped by the definition) | use a convention of the field and check it with a shallow tree; run the probes on the source's labels too | audiology_diagnosis: three classes from names replaced by hearing loss with or without a conductive part; that label in turn read off five of its tests (accuracy 0.903 of 0.938), retired (2026-11-05) |
 | LEAK-9 | An evaluation-level leak: the test set holds complete trajectories that end at the outcome | fix the scoring (causal per-entity predictions, the task's own utility), not the data; document the prediction point | sepsis_prediction |
 | LEAK-9 | Queue fields are history at each row's own arrival; a method that reads the other test rows of a block would see the future | no per-row scorer; a protocol line in the definition that a model may not use other test rows, and the benchmark checks models for it (2026-11-04, Lennart: "we can check if the model cheats"); also sepsis_prediction's and 5g_energy_consumption's protocol lines | medical_facility_operational_data |
+| LEAK-9 (applied, Andrej, 2026-11-09) | Stacked yearly rows of one entity under a forced split by entity: all years of a test entity sit in its test fold, so a later test row's values (a renewal price, a claim counter) give an earlier test row's outcome away, and a history built from the entity's earlier rows would put each test row's outcome into its next row's features | a protocol line in the notes and `splits_comment` (each test row is predicted from the training rows and its own features only; no feature or model step may use other test rows), and no history feature built across the test fold | spanish_motor_insurance_coverage_level_2022_2024: the next year's premium over this year's, its bonus class and whether it exists gain +0.12 on the declared Gini for LightGBM that reads them (0.44 against 0.31, 9 of 9 splits); the year before's claims as features would score 0.70 to 0.74 when read from the next test row, so renewals carry none (review issues 9 and 10 (a)); also frempl_french_motor_personal_line's line for its later records (its review issue 10: no predecessor amount) |
+| LEAK-9 (applied, Andrej, 2026-11-10) | Rows of one hidden entity in time order under a temporal split: the entity's next row, often in the same test window and found from shipped columns, records an event about the row before it (a default), while read with the row alone the column adds nothing on the row's own outcome | keep the column; a protocol line in the notes and `splits_comment` (each test row predicted from the training rows and its own features only; no feature or model step may use other test rows; a method that reads another test row of the same entity is called out and not benchmarked); a drop would not close the channel, as other columns read the same way | loan_default_prediction_imperial_college: f615/f617 flag the previous loan's default; the next row is found from f521 in 88.7% of the cases, and reading its f615/f617 lifts the normalized Gini from 0.20 to 0.63, while the columns add 0.000 ROC AUC on the row's own loss (review issue 6 (a)); f213 read from the next row still gives a loss at ROC AUC 0.67 |
 | LEAK-10 | A column recorded after the outcome | drop it | heart_failure `time` (follow-up ends at death or censoring); anes post-election items; kickstarter `profile`, `staff_pick`; hotel `BookingChanges`, `AssignedRoomType`, `RequiredCarParkingSpaces` |
 | LEAK-10 | Attributes looked up after the outcome (a property's current record for a past sale) | drop them, or keep them where the data shows they did not change | house_sales (the King County lesson); melbourne_housing_market: kept for the sales looked up by the weekly runs within weeks of the sale (`Bedroom2` equals the sheet's `Rooms` in 98.9-100% of the rows of each test window), blanked for the 7,578 sales looked up at once by 10 April 2017, up to 15 months after the sale (LEAK-7 row below; Lennart, 2026-10-21) |
 | LEAK-10 (decision, Lennart, 2026-10-21) | Attributes looked up after the outcome that changed for an unknown subset of the positives, with no record that isolates the change | drop them; LEAK-10 as written, no amendment for a gain that may sit on the changed rows | distribution_transformers_at_cauca_department: `power_kva` and `installation_type` from an inventory taken during or after 2020 dropped (none of the 163 replacement-marked first burns of 2020 is rated 5 kVA, against 9% of the other 277; no replacement log; ROC AUC 0.701 to 0.639) |
@@ -407,7 +502,8 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-10 (amended 2026-10-26, Lennart) | Snapshot data: a window sum that the data shows does not move with the outcome, given the covariates known at the prediction point | keep it with a note, case by case | account_debt_south_africa `TotalBilling`, `AverageBilling`: within file blocks and property-value bins their residuals separate the classes at ROC AUC 0.509 / 0.501 / 0.496 |
 | LEAK-10, LEAK-6 (amended 2026-10-26, Lennart) | Values read at a later pull whose late cells cannot be located row by row | keep them with a note only when the traceable part shows no gain; blank located cells; drop when a gain may sit on them | onlinenewspopularity `kw_*`, `self_reference_*` (crawl-time share counts: only counts unique above 5,000 can be traced; masking the traced young cells changes R^2 by -0.0004) |
 | LEAK-10, LEAK-6 (applied, Lennart, 2026-11-05) | Schedule fields that count the final schedule, not the plan at the prediction point (no-shows missing, visits booked later counted), the late cells not locatable row by row | keep them with a note: the whole-field worth is an upper bound on the late part, and it sits within about two seed SDs, so the late part shows no gain | medical_facility_operational_data: nine schedule fields (`AheadCount`, `IsFirst`, `IsLast`, `FutFlowCount2/4`, `NumScheduledNext*`, `SumTimeToCompleteNext*`) match the visits that took place in 99.9-100% of rows; dropping them changes LightGBM's MAE by +0.08 to +0.16 against seed noise of 0.07 (42-53-day windows) and +0.05 against 0.05 (14-day windows; +0.14 with an L2 model). Unlike distribution_transformers_at_cauca_department, where the dropped fields carried ROC AUC 0.701 against 0.639 |
-| LEAK-10, LEAK-7 (Andrej, 2026-11-02) | Time on risk cut short by the outcome (a policy or period that ends early after a claim or a cancellation), in insurance pricing | where the data locates the cut row by row, remove it or fix it (the length known at the start); where it cannot be located, keep it with a `Potential leak, kept on purpose:` note giving its measured size | frempl_french_motor_personal_line (25,131 early ends without a continuation given the start-known length, the dates locate them); pricing_game_2016_french_fleet (every period's length to 31 December); spanish_motor_insurance_coverage_level_2022_2024 (the located cancellations get a full year; the 5,653 first-year cuts, which look like a late start, kept: the traced estimate of the uncut time raises the Gini by 0.0065); australian_vehicle_insurance_2004_2005 (`exposure` kept: no dates locate the cut, and the traced part lowers the Gini). Departs from fremtpl2 (2026-10-20, `Exposure` kept) where the data locates the cut |
+| LEAK-10, LEAK-7, LEAK-41 (Andrej, 2026-11-02; amended 2026-11-06, Lennart; applied 2026-11-08, Lennart) | Time on risk or another amount at risk cut short by the outcome (a policy or period that ends early after a claim or a cancellation) | where the data locates the cut row by row, fix it to the length known at the start (which may stay a feature) or remove it; where it cannot be located and the amount is the denominator of a count or amount target, the target ships as the rate and the recorded amount as its weight scoring column and the task's sample weight, never as a feature (MET-14, MET-15, LEAK-41; the proportional part stays, LEAK-7); where the decision is per unit of an equal-area map, the rate is scored unweighted and no sample weight is declared (MET-15), the notes naming the cut's bias; where it cannot be located and is no denominator, LEAK-10's second clause applies | located: frempl_french_motor_personal_line (25,131 early ends without a continuation given the start-known length, the dates locate them; since 2026-11-06 the length to 31 December stays a feature and the realized length is the rate's weight; the rate on the identity scale since 2026-11-08, so the length stays (CLEAN-16)); pricing_game_2016_french_fleet (every period's length to 31 December, a feature; since 2026-11-06 the realized period is the rate's weight and no window trains on periods admitted by their early end). Denominator: fremtpl2 (`Exposure` as a free feature gains 0.0040, 25% of the skill, and is never better at quotation); bemtpl97 (`expo`: +0.0043, 17%, on the count deviance of the old target with `expo` a free feature; on the declared metric over 9 folds +0.0047 under the weighted Poisson fit and +0.0051 under L2); australian_vehicle_insurance_2004_2005 (`exposure`: the rate's weight since 2026-11-06, a feature on 2026-11-02 because the traced part lowered the row Gini; on claim counts 47 to 82% of a free model's gain over the null is the leak, and on the weighted rate Gini reading it adds +0.09 to +0.12 on 9 of 9 shipped splits); spanish_motor_insurance_coverage_level_2022_2024 (since 2026-11-06 `actual_exposure` is the metric's and the training weight, the earned premiums are annualised and `total_exposure`, corrected on some rows and realized on others, leaves the features under LEAK-41; the annualised premiums still mark the located cancellations, at ROC AUC 0.81 by their values and 0.965 by their decimals (a part-year's quotient falls back on the tariff's 5-decimal grid) until they were rounded to the cent on 2026-11-08 (review issue 7, Lennart: 0.795 by their values and 0.565 by their decimals after), and gain nothing above noise through them on the declared metric, and dropping `total_exposure` costs 0.0176 weighted Gini under a weighted Tweedie fit, the planned time of late starts it also carried) Equal-area map, unweighted (2026-11-08, Lennart): noaa_afsc_bottom_trawl_survey_cpue (the area swept released and left out as a weight; the cut not located row by row: 149 of the 256 tows under half the median duration carry performance code 0); wadden_sea_sibes_macoma_abundance (the subsample fraction, set after the sample is seen, not released). |
+| LEAK-10, LEAK-37 (2026-11-06, Lennart) | A span or extent whose start or end the source defines by the outcome | read the source's definition of the start and end; where the outcome alone draws it (damage alone, "the rain that led to damage"), blank or drop it for those types; where it is drawn by the outcome or an outcome-free criterion, keep it with a `Potential leak, kept on purpose:` note giving its worth | noaa_storm_events_damage `duration_hours`: NWSI 10-1605 App. A times the span by the damage alone for Strong Wind and Heavy Rain (Sec. 45, 21: blanked 2026-11-06, Lennart) and starts a Seiche by it (Sec. 41: blanked at the re-review of 2026-11-06), and by the damage or a criterion without it for Thunderstorm Wind, High Wind, Coastal Flood, Lakeshore Flood, Storm Surge/Tide, Dust Storm and Volcanic Ashfall (Sec. 46, 24, 4, 27, 44, 11, 51); within Thunderstorm Wind and High Wind, `magnitude_type` and the measured speed, first-report features, locate the spans only the damage can have timed (a speed estimated from the damage, EG or ES, or Thunderstorm Wind measured under 50 kt: 241,523 rows), blanked like Strong Wind's (2026-11-08, Lennart, review issue 7; the blank cost +0.023 to +0.036 RMSLE on those rows under a larger LightGBM, 12 of 12 seeds); the other 78,843 rows of the seven types are kept with a note; on the declared metric since 2026-11-08 (the mean Tweedie deviance on the dollars, review issue 8) their worth has no consistent sign (-41% to +99% of the deviance on their test rows over 15 fits, median -5%; the measured Thunderstorm Wind spans positive in 35 of 45 fits), where under RMSLE it was -0.02 to +0.12 (median about +0.04; the measured Thunderstorm Wind spans +0.03 to +0.18 in 30 of 30 fits); a Flash Flood is timed by a threat, but one of its four example onsets is water that "comes in contact, flowing into, or causes damage to an above ground residence or public building" (Sec. 14), so the damage can set some starts, and no field records the onset (6.8% of its narratives name water at or damage to a building): kept with a note (2026-11-08, Lennart, review issue 11), worth +31% to +102% of the deviance on its test rows (+9% to +27% on all rows) under a 100-tree Tweedie LightGBM, and +40% to +48% on the 82% whose narratives name no damage-like onset, so it stays under LEAK-10's third clause (X4); Flood starts and ends with a threat to life or property (Sec. 15; its definition's damage is the entry criterion, not the clock), Hurricane (Typhoon) and Tropical Storm with the storm's direct effects (Sec. 25, 49): read as outcome-free and kept (the Flood duration worth +0% to +43% of the deviance on its rows); under RMSLE the Flood and Flash Flood durations had no consistent sign (-0.09 to +0.09); the blank of Strong Wind and Heavy Rain cost nothing measurable (the study measured 0.020 to 0.038 on the seven damage-timed types, trained from 2016); a tornado's duration is blanked on a fact of its own, not on this row's reading: the damage survey sets the vortex's ground contact (Sec. 47) and the duration tracks the dropped path length (Spearman 0.83 with `TOR_LENGTH`; `TOR_LENGTH` and `TOR_WIDTH` dropped). bank_marketing `campaign` (the calls of this campaign, counted up to the last one; they end at a subscription or when the bank stops calling): dropped, after the prediction point (before the campaign's first call; the span starts there, as heart_failure_followup_survival's `time`); it was worth 0.006 to 0.008 ROC AUC under the random split and 0.0013 to 0.0016 once the period was known, and on the five time windows +0.0065 to logistic regression (higher in 5 of 5) and -0.014 to LightGBM (2026-11-08, Lennart, issue 2; kept with a note on 2026-11-06) |
 | LEAK-10, LEAK-7 | An aggregate that may include the row's own outcome | keep only the period where it behaves like history, and call the evidence circumstantial | online_shoppers `PageValues`: Feb-May every buyer has PV > 0 (AUC 0.974), Jun-Dec 27% of buyers have PV = 0 (0.814); Feb-May dropped |
 | LEAK-10, LEAK-7 (applied, Lennart, 2026-11-05) | A rating factor that looks recorded after the row's own outcome in some periods only, the periods located by the record ids, with no source statement of when it was recorded | blank it in the periods where it does not behave like history, keep it where it does | fremtpl2 `BonusMalus`: blanked in `IDpol` blocks 0-4 (597,998 rows, 88%), where it is frozen across the two years and claimants pile on the first malus step 62-63, kept in blocks 5-6, where it follows the previous year's claims (LightGBM Poisson mean deviance 0.2327 to 0.2435, 3 folds; dropping it too costs another 0.0009 in blocks 5-6). bemtpl97 `bm` kept: its source registers the rating factors at the start of the policy period |
 | LEAK-10 (exception, Andrej, 2026-11-03) | Aggregates of the same hidden value as measured leaking aggregates, with no sign of a leak in tests without labels | drop them with the leaking ones as one block, and still measure each next to it (the tests without labels, and its worth with labels where the data allows), both in the notes: the judgement rests on the block and the measurements together | loan_default_prediction_imperial_college: f529-f531, f533-f535, f537 dropped with f527/f528; sets it apart from online_shoppers `PageValues` and account_debt_south_africa: aggregates of the same hidden x as two measured leaks (f527, f528), and with anonymised fields a test without labels is indirect |
@@ -416,13 +512,15 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-10, LEAK-38 (precedent, Lennart, 2026-10-22) | A named field whose missingness or fill, given the covariates known at the prediction point, differs by outcome (a conditional test), although the host's test file carries it the same way | drop it | expresso_churn_prediction REGION (flag AUC 0.936 among customers active all 62 days); kick `WheelType`/`WheelTypeID` (1.2% predicted missing for bad buys, 24.9% observed) and `PRIMEUNIT`/`AUCGUART` (42.3% predicted filled, 7.8% observed) |
 | LEAK-11 | Measured after the outcome, but it weakens the signal | keep it and note it | south_africa_coronary_heart_disease (ESL Sec. 5.2.2, p. 148; dropping `sbp`, `obesity`: AUC 0.774 to 0.778) |
 | LEAK-12 (SPLIT-9) | Temporal: training rows whose label is not yet known at the prediction point | filter training rows by an as-of date | hotel_booking_demand: in-window cancellations in train were 100% cancelled (log loss 1.7 to 0.33); a filter on `ReservationStatusDate` keeps the shortcut |
-| LEAK-13 | Class-specific recording conventions | harmonise (round every row to the shared precision, drop a column only one class has); first measure how much the fix removes | hepatitis_c_prediction (7 lab columns rounded, `ALP` dropped) |
+| LEAK-13 | Class-specific recording conventions | harmonise (round every row to the shared precision, drop a column only one class has); first measure how much the fix removes | hepatitis_c_prediction (6 lab columns rounded; `ALP`, missing only for patients, and `ALT`, below the donors' values in most patients, dropped) |
 | LEAK-14 | One class from a separate source or assay | drop that class once the paper confirms it | biogeographical_ancestry_prediction (Turkey, `rs3857620`) |
-| LEAK-15 (amended 2026-10-27, Andrej) | A recording artefact through several features that matter for prediction, that cannot be undone | retire; a feature subset does not help when it also separates same-label groups | gallstone_disease, kept: after LEAK-13 and LEAK-39 the suspected artefacts left (AST lower with gallstones, the fatty-liver grades on two scales) do not carry the score (TabPFN 3.5 0.826 without AST, 0.827 with it; 0.834 without the grade, 0.838 with it). prostate_cancer_detection, retired (the paper's 7 features: Benign against NED 0.92-0.97, the label 0.62-0.70) |
-| LEAK-13 (amended 2026-10-26, Andrej) | Precision that differs by class, filled cells with many decimals, a column filled in for one class only | write every row at the measured precision; drop the one-class column | gallstone_disease: GFR, vitamin D, visceral muscle area, CRP and creatinine at their measured precision (with LEAK-39, probe 17 from 0.949 to 0.666); `Hyperlipidemia` dropped (8 with gallstones, none without, though high cholesterol is as common without) |
+| LEAK-15 | A recording artefact through several features that matter for prediction, that cannot be undone | retire; a feature subset does not help when it also separates same-label groups | gallstone_disease, kept: after LEAK-13 and LEAK-39 the suspected artefacts left (AST lower with gallstones, the fatty-liver grades on two scales) do not carry the score (TabPFN 3.5 0.826 without AST, 0.827 with it; 0.834 without the grade, 0.838 with it). prostate_cancer_detection, retired (the paper's 7 features: Benign against NED 0.92-0.97, the label 0.62-0.70). lung_adenocarcinoma_metastasis, kept (2026-11-11, review panel; Lennart): the metastasis arrays are dimmer and MAS5's per-array scaling raises their noise (scaling factor ROC AUC 0.62, share of genes called present 0.71; scanner noise and background do not differ), which runs through every gene; it holds within processing batches (0.74), and the batch adds its own component, but the label signal far exceeds it: a rank of the genes within each array removes it at no cost (logistic regression 0.848 against 0.846), and regressing it out inside the folds leaves at least 0.800 |
+| LEAK-13 | Precision that differs by class, filled cells with many decimals, a column filled in for one class only | write every row at the measured precision; drop the one-class column | gallstone_disease: GFR, vitamin D, visceral muscle area, CRP and creatinine at their measured precision (with LEAK-39, probe 17 from 0.949 to 0.666); `Hyperlipidemia` dropped (8 with gallstones, none without, though high cholesterol is as common without) |
 | LEAK-13 (applied, Lennart, 2026-11-05) | A time column coarsened in the split step, after the framework has sorted the rows by its finer values, so the order inside each period still carries them | coarsen it in `_clean`, before the sort; a check that needs the finer value reads a flag computed from it there | chicago_traffic_crashes: the hour floor moved from `_make_splits` to `_clean`; a row's rank in its hour had lowered log loss by 0.00098 (positive on all 9 splits), and the injury share by tenth of the hour went from 9.9-18.6% to a flat 15.1-15.5%; `dataset check` no longer warns `definition_time_changed_in_split` (813,133 rows) |
 | LEAK-39 | Part of one class recorded through a second route, found by a format fingerprint | drop the route's rows | gallstone_disease: 77 rows (72 with gallstones, 5 without); before the drop TabPFN 3.5 separates them from those without gallstones at 0.993, the other cases at 0.842, and scores the route's 5 without gallstones 0.77 (0.22 for the others) |
 | LEAK-40 | Gaps filled by interpolation down a class-sorted file | keep the fills when a label-free re-imputation inside each fold scores the same or higher | gallstone_disease: 134 fills kept (re-imputed, TabPFN 3.5 0.864; with the fills 0.838) |
+| LEAK-13 | A unit that changed over time while the classes changed over the same time | change the target so that the classes no longer follow the period, then harmonise the unit (CLEAN-21) | horse_colic_survival: `total_protein` in g/L for 95 horses (1 died, 27 euthanized) and in g/dL for 209 (64 died, 16 euthanized), the switch following the hospital number; the unit alone told died from euthanized at ROC AUC 0.79. Died and euthanized merged into did not survive, which the unit does not follow (Fisher p = 0.16); `total_protein` then put in g/dL and the 1/2 codes set to missing, the split random by case |
+| LEAK-39, LEAK-15 | Part of one class averaged from replicate arrays, and control probes that separate the classes, neither carrying the score | rebuild from the origin's per-array files when it has them; else keep both, with a note | lung_cancer: 47 of 139 adenocarcinomas are means of 2 to 4 arrays (none of the 58 other rows), told from single arrays at ROC AUC 0.59-0.62; the spike-in control probes alone separate the classes at 0.85; logistic regression log loss 0.141 as shipped, 0.140 with every value rounded to the shared grid, 0.146 without the averaged rows, 0.139 without the 67 control probes. The study's deposit (GEO GSE83227) has every array: one MAS5 array per specimen gives the same 197 specimens, spike-ins 0.57, scan date 0.58, log loss 0.123; rebuilt from it (2026-11-10, Andrej) |
 | PROV-3 ([provenance.md](provenance.md)) | Generated or manipulated data | retire (`AHDS`, `Data Quality Issue`) | ecommerce_shipping, customer_satisfaction_in_airline, homeq_default_prediction |
 | LEAK-22 | The cohort holds rows that cannot have the outcome | follow the paper's cohort | diabetes_130_us: encounters ending in death (1,084) or hospice (461) removed (Strack et al. 2014, Sec. 2.3) |
 | LEAK-23 | Only rows with the event, follow-up ending on one date (right truncation) | an outcome within a fixed horizon, over the rows followed that long | cirrhosis_patient_survival_prediction (time to death over deaths only until 2026-10-14; now death or transplant within 5 years) |

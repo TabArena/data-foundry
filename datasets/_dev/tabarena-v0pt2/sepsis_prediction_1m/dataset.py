@@ -5,7 +5,15 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, decode
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    decode,
+)
 
 
 class SepsisPrediction1m(AbstractCuratedDataset):
@@ -17,8 +25,8 @@ class SepsisPrediction1m(AbstractCuratedDataset):
             " 2019)."
         ),
         row=(
-            "One hour of one intensive-care stay at one of two US hospitals; 1.5 million hours of whole stays sampled"
-            " from the challenge's public data."
+            "One hour of one intensive-care stay at one of two US hospitals: the 1,552,210 hours of the 40,336 stays "
+            "in the challenge's public data."
         ),
         predicted=(
             "Whether sepsis begins within six hours or has already begun: the label turns on six hours before onset "
@@ -47,15 +55,35 @@ class SepsisPrediction1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "sepsis_prediction_1m"
-    version_of = "sepsis_prediction"
-    version_comment = """
-        We sub-sample the frame to 1.5M rows by whole patients (stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol).
-    """
-    year = "2019"
     domain = "medical & healthcare"
-    source = "Other"
-    source_url = "https://physionet.org/content/challenge-2019/1.0.0/"  # the Kaggle file is a copy
-    license = "ODC Open Database License"  # CC BY-NC-SA 4.0 on Kaggle...
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://physionet.org/content/challenge-2019/1.0.0/",  # the Kaggle file is a copy
+            license="ODC Open Database License",
+            year="2019",
+            bibtex="""
+                @article{reyna2020early,
+                  title={Early prediction of sepsis from clinical data: the PhysioNet/Computing in Cardiology Challenge 2019},
+                  author={Reyna, Matthew A and Josef, Christopher S and Jeter, Russell and Shashikumar, Supreeth P and Westover, M Brandon and Nemati, Shamim and Clifford, Gari D and Sharma, Ashish},
+                  journal={Critical care medicine},
+                  volume={48},
+                  number={2},
+                  pages={210--217},
+                  year={2020},
+                  publisher={LWW}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/salikhussaini49/prediction-of-sepsis",
+            license="CC BY-NC-SA 4.0",
+            name="the Kaggle copy we download (PhysioNet's download was down)",
+        ),
+    )
     # Regime tags by hand: the automatic ones would read `GroupedTemporal` from `Grouping(time_on=...)`, but the split
     # uses the groups only (`time_on` orders the hours inside a stay).
     data_tags = ("Non-IID", "Grouped")
@@ -64,18 +92,6 @@ class SepsisPrediction1m(AbstractCuratedDataset):
 
         kaggle datasets download -d salikhussaini49/prediction-of-sepsis && unzip prediction-of-sepsis.zip all_files && rm prediction-of-sepsis.zip
         mkdir -p local-data-warehouse/sepsis_prediction && mv all_files local-data-warehouse/sepsis_prediction/
-    """
-    bibtex = """
-        @article{reyna2020early,
-          title={Early prediction of sepsis from clinical data: the PhysioNet/Computing in Cardiology Challenge 2019},
-          author={Reyna, Matthew A and Josef, Christopher S and Jeter, Russell and Shashikumar, Supreeth P and Westover, M Brandon and Nemati, Shamim and Clifford, Gari D and Sharma, Ashish},
-          journal={Critical care medicine},
-          volume={48},
-          number={2},
-          pages={210--217},
-          year={2020},
-          publisher={LWW}
-        }
     """
     curation_comments = """
         We start with all files from Kaggle.
@@ -94,6 +110,7 @@ class SepsisPrediction1m(AbstractCuratedDataset):
           (as it shows the target), but it is group metadata, not a model feature: the 42 features leave it out.
         - The target (2026-11-01, CLEAN-25): `SepsisLabel` ships its classes as words (1 is the event). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
+        - The row budget (1M train, 500k test rows): We keep the whole frame (1,552,210 hours of 40,336 patients) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole patients drawn from its third, and trains on every other row (about 1.05M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole patients at random. Both draws are stratified by each patient's most frequent label.
     """
 
     # Task
@@ -125,12 +142,7 @@ class SepsisPrediction1m(AbstractCuratedDataset):
         """,
     )
 
-    # Splits
-    subsample_to_budget = True
-    accepted_check_warnings = {
-        "splits_rows_never_tested": "The v2 protocol caps each test fold at 500k rows; the grouped folds of the 1.5M-row "
-        "frame overshoot by whole groups, so 3,371 rows (0.2%) are trimmed from a test fold (2026-10-01).",
-    }
+    # Splits: the `_1m` version gets the collection's row budget (`collection.py`) by its name.
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "all_files" / "Dataset.csv")

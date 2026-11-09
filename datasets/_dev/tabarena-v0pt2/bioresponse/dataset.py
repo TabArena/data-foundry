@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
 
 
 class Bioresponse(AbstractCuratedDataset):
@@ -37,25 +37,30 @@ class Bioresponse(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "bioresponse"
-    year = "2012"
     domain = "chemistry & material science"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/c/bioresponse"
-    license = "Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/c/bioresponse",
+            license="Public Domain",
+            year="2012",
+            bibtex="""
+                @misc{bioresponse2012hamner,
+                    author = {Ben Hamner and dcthompson and Jorg},
+                    title = {Predicting a Biological Response},
+                    year = {2012},
+                    howpublished = {https://kaggle.com/competitions/bioresponse},
+                    note = {Kaggle}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         We download the data from Kaggle and uzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/bioresponse && cd local-data-warehouse/bioresponse && kaggle competitions download -c bioresponse && unzip bioresponse.zip && rm bioresponse.zip
-    """
-    bibtex = """
-        @misc{bioresponse2012hamner,
-            author = {Ben Hamner and dcthompson and Jorg},
-            title = {Predicting a Biological Response},
-            year = {2012},
-            howpublished = {https://kaggle.com/competitions/bioresponse},
-            note = {Kaggle}
-        }
     """
     curation_comments = """
         - We changed the name of the target and mapped it to yes/no

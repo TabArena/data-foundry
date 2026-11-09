@@ -3,6 +3,9 @@ unique_name: msha_mine_injury_frequency
 name: 'usMSHA1316: injuries per US mine-year from Mine Safety and Health Administration data, 2013-2016 (SOA exam data, CASdatasets)'
 checked_by:
 - AI (UNVERIFIED)
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 3
 tags:
@@ -44,3 +47,5 @@ type_adapter_id: curation-record-v1
 - as published: 53,746 mine-years x 20 columns: YEAR, US_STATE, COMMODITY, PRIMARY, SEAM_HEIGHT, TYPE_OF_MINE, MINE_STATUS, AVG_EMP_TOTAL, EMP_HRS_TOTAL, ten PCT_HRS_* shares of hours by work location, and ...; target: NUM_INJURIES: accidents reported per mine-year (count, with EMP_HRS_TOTAL as exposure); access: open.
 - Why: Real regulator data with an actuarial count target and a published exam and paper. The original source (MSHA mines, employment and accident files) is maintained up to today, so a newer, larger build with mine ids is possible.
 - Adds: A workplace-safety and occupational-insurance domain, with compositional features. Caveats: the same mine recurs across years without an id (grouped leak risk; rebuilding from MSHA's raw files would give ids and newer years), many zero counts, and the CASdatasets page's format block is wrong (it says 1,340 x 8).
+
+**Assessment (AI, 2026-11-06):** under the rules adopted on 2026-11-06 (MET-14, MET-15, LEAK-41), /add-dataset ships the injuries per 2,000 employee hours (NUM_INJURIES / (EMP_HRS_TOTAL/2000), the memo's offset as the denominator) with EMP_HRS_TOTAL/2000 as the weight scoring column and the task's `sample_weight`, scored by `mean_poisson_deviance` with that `weight` input (the memo's Poisson model with the offset, "Validation should be on NUM_INJURIES"). Whether the hours are planned or realized (a mine closing after an accident cuts them) is the timing question of LEAK-41: as the denominator and weight they are never a feature, and AVG_EMP_TOTAL, which encodes them, needs the same check (probe 22). The curator has the call when the dataset is added.

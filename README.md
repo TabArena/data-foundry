@@ -93,8 +93,22 @@ with Data Foundry v1 ([DATA_FOUNDRY_V1.md](DATA_FOUNDRY_V1.md)); a format-2 cont
 (`data_foundry.schema.Grouping`), and `container.grouping` returns it: the prediction unit (a row, or one prediction
 per group with an aggregation such as `mean` or `any`), what a model may know about a group when predicting, and the
 definition of a group with its source. A format-1 container has no such block, so `container.grouping` raises
-there. The group column is split and scoring metadata, never a model feature. `run_bundle_checks` judges each
-format by its own split protocol (v1: the repeat ladder and 250k test rows; v2: 3 folds and 500k test rows).
+there. The group column is split and scoring metadata, never a model feature. A format-2 container keeps its outer
+splits in a row table, `rows.parquet`: one row per row of `dataset.parquet`, one column per split
+(`split_r<repeat>_f<fold>`) holding `train`, `test` or nothing, so it opens in any Parquet reader next to the data
+([`examples/read_metric_without_data_foundry.py`](examples/read_metric_without_data_foundry.py) reads it without Data
+Foundry); `container.experiment_metadata.splits` returns the same `{repeat: {fold: (train, test)}}` for either
+layout, every side in row order. `run_bundle_checks` judges each
+format by its own split protocol (v1: the repeat ladder, 1M train and 250k test rows; v2: 3 folds, and the test cap
+of the `experiment_metadata.row_budget` a `_1m` version records: no size limit without one).
+
+**Row budget.** A format-2 container with a `row_budget` (a `<name>_1m` version) tests on at most `row_budget.test`
+rows per split, and its train sides keep every row they may use (all earlier rows of a temporal window). A benchmark
+fits on at most `row_budget.train` of them: `subsample_train(container, repeat, fold)` (`data_foundry.v2`) draws them
+by the default sampler the container records in `experiment_metadata.train_sampling` (for a temporal side the newest
+year, extended back in time until it holds that many rows, sampled at random; whole groups of a grouped one,
+stratified rows otherwise), and returns the train side whole for a container without a budget. A numeric time column
+carries its calendar in `task_metadata.time_unit` (numerai's `era` counts weeks). A benchmark that samples by its own rule keeps the unit `train_sampling` names.
 
 **Checksums.** `container.verify()` recomputes a container's checksum and compares it with the stored one (with
 `get_dataset(..., verify=True)` a collection does it on load). A container built since 2026-10-06 has a version-2
@@ -143,21 +157,26 @@ shortened:
 
 ```python
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, Source
 
 
 class BloodTransfusion(AbstractCuratedDataset):
     unique_name = "blood_transfusion"
-    year = "2008"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5GS39"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5GS39",
+            license="CC BY 4.0",
+            year="2008",
+            bibtex="""
+                @article{yeh2009knowledge, title={Knowledge discovery on RFM model using Bernoulli sequence}, ...}
+            """,
+        ),
+    )
     download_description = """
         mkdir -p local-data-warehouse/blood_transfusion/ && wget -P local-data-warehouse/blood_transfusion/ <UCI zip> && unzip ...
-    """
-    bibtex = """
-        @article{yeh2009knowledge, title={Knowledge discovery on RFM model using Bernoulli sequence}, ...}
     """
     curation_comments = """
         - We renamed the target and mapped binary values to "Yes"/"No".
@@ -292,7 +311,6 @@ data-foundry/
 │   ├── schema.py             # DatasetMetadata, PredictiveMLTaskMetadata (format 1) / V2 (+ Grouping), PredictiveMLSplitsMetadata
 │   ├── curation_container.py # CuratedContainer (save/load + describe + checksum)
 │   ├── collections/          # BEYOND_ARENA, DatasetCollection, HuggingFaceSource, cache helpers
-│   ├── curation_recommendations.py  # the v1 split helpers (DATA_FOUNDRY_V1.md)
 │   ├── dataset_checks.py     # run_all_checks(...) — sanity stats, rendered in each dataset's README
 │   ├── bundle_checks.py      # run_bundle_checks(...) / verify_saved_container(...) — bundle integrity
 │   ├── curation/             # curation log toolkit — CurationRecord, store, dashboard (serve), import/export, build-site

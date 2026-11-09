@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids, decode
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    anonymize_ids,
+    decode,
+)
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -59,22 +68,27 @@ class Cardiotocography(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "cardiotocography"
-    year = "2010"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C51S4N"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C51S4N",
+            license="CC BY 4.0",
+            year="2010",
+            bibtex="""
+                @misc{campos2010cardiotocography,
+                  author       = {Campos, D. and Bernardes, J.},
+                  title        = {{Cardiotocography}},
+                  year         = {2000},
+                  howpublished = {UCI Machine Learning Repository},
+                  note         = {{DOI}: https://doi.org/10.24432/C51S4N}
+                }
+            """,
+        ),
+    )
     download_description = """
         wget https://archive.ics.uci.edu/static/public/193/cardiotocography.zip && unzip cardiotocography.zip && rm cardiotocography.zip && mkdir -p local-data-warehouse/cardiotocography && mv CTG.xls local-data-warehouse/cardiotocography
-    """
-    bibtex = """
-        @misc{campos2010cardiotocography,
-          author       = {Campos, D. and Bernardes, J.},
-          title        = {{Cardiotocography}},
-          year         = {2000},
-          howpublished = {UCI Machine Learning Repository},
-          note         = {{DOI}: https://doi.org/10.24432/C51S4N}
-        }
     """
     curation_comments = """
         We use the data from UCI and the 3 class problem of predicting NSP as it is more medical relevant.

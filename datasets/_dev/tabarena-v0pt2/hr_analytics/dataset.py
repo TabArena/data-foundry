@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, drop_columns
 
 RAW_FILE = "train_jqd04QH.csv"
 """The hackathon's train file: 18,359 enrollees with labels, 2,425 of them looking for a job change."""
@@ -80,11 +80,35 @@ class HrAnalytics(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "hr_analytics"
-    year = "2018"
     domain = "business & marketing"
-    source = "Other"  # Analytics Vidhya's DataHack hackathon Student DataFest 2018: The Data Supremacy, 6-22 July 2018
-    source_url = "https://www.analyticsvidhya.com/datahack/contest/the-data-supremacy"
-    license = None  # neither contest page states one; Kaggle's 2020 copy is marked CC0 by its uploader
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # Analytics Vidhya's DataHack hackathon Student DataFest 2018: The Data Supremacy, 6-22 July 2018
+            url="https://www.analyticsvidhya.com/datahack/contest/the-data-supremacy",
+            license=None,  # neither contest page states one
+            year="2018",
+            bibtex=r"""
+                @misc{analyticsvidhya2018datasupremacy,
+                  author = {{Analytics Vidhya}},
+                  title = {Student DataFest 2018: The Data Supremacy},
+                  year = {2018},
+                  howpublished = {\url{https://www.analyticsvidhya.com/datahack/contest/the-data-supremacy}},
+                  note = {DataHack hackathon, 6--22 July 2018; the files ran again as JanataHack: HR Analytics in May 2020.
+                          Kaggle's 2020 copy (HR Analytics: Job Change of Data Scientists) adds rows of the unlabelled test
+                          file, all labelled 1}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists",
+            license="CC0: Public Domain",  # set by its uploader
+            year="2020",
+            name="the Kaggle copy of 2020",
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We download the train file of Analytics Vidhya's Student DataFest 2018: The Data Supremacy (DataHack, 6 to 22
@@ -95,17 +119,6 @@ class HrAnalytics(AbstractCuratedDataset):
 
         mkdir -p local-data-warehouse/hr_analytics && cd local-data-warehouse/hr_analytics
         curl -fLO https://datahack-prod.s3.amazonaws.com/train_file/train_jqd04QH.csv
-    """
-    bibtex = r"""
-        @misc{analyticsvidhya2018datasupremacy,
-          author = {{Analytics Vidhya}},
-          title = {Student DataFest 2018: The Data Supremacy},
-          year = {2018},
-          howpublished = {\url{https://www.analyticsvidhya.com/datahack/contest/the-data-supremacy}},
-          note = {DataHack hackathon, 6--22 July 2018; the files ran again as JanataHack: HR Analytics in May 2020.
-                  Kaggle's 2020 copy (HR Analytics: Job Change of Data Scientists) adds rows of the unlabelled test
-                  file, all labelled 1}
-        }
     """
     curation_comments = """
         We start with train_jqd04QH.csv, the train file of Analytics Vidhya's Student DataFest 2018: The Data

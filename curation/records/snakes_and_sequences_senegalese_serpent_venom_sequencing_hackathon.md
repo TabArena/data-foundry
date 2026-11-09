@@ -8,6 +8,7 @@ decision_markers:
 - Wrong Domain / Source Modality
 tags:
 - AI-Filled (Verify)
+- Spectral Data
 collections:
 - New (BeyondArena)
 original_source: Zindi

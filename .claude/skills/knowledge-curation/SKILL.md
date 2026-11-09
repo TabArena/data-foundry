@@ -24,7 +24,7 @@ Weigh); cite them. Read [principles.md](references/principles.md) first.
 | 4 | P4 honest evaluation: splits | [splits.md](references/splits.md) | `SPLIT` | deciding or checking a split |
 | 5 | P5 faithful, unique data | [provenance.md](references/provenance.md) | `PROV` | tracing a source or a duplicate, judging whether data is generated |
 | 6 | P6 worth benchmarking | [task_probes.md](references/task_probes.md) | `TP` | before proposing `Trivial` or `Too Small`, or answering a task-probe flag |
-| 6b | P6 worth benchmarking: the metric | [metrics.md](references/metrics.md) | `MET` | choosing or checking the metric a dataset declares: whose metric to trust, threshold metrics, cost matrices, the target's scale, matching the data to the metric, names and implementations |
+| 6b | P6 worth benchmarking: the metric | [metrics.md](references/metrics.md) | `MET` | choosing or checking the metric a dataset declares: whose metric to trust, threshold metrics, cost matrices, the target's scale, matching the data to the metric, rates and their weights, names and implementations |
 | 7 | P7 the expert state | [cleaning_features.md](references/cleaning_features.md) | `CLEAN` | writing or reviewing the cleaning of a dataset |
 
 Procedure, at every rank:

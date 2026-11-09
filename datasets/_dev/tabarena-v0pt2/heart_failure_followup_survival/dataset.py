@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode, drop_columns
 
 
 class HeartFailureFollowupSurvival(AbstractCuratedDataset):
@@ -36,27 +36,40 @@ class HeartFailureFollowupSurvival(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "heart_failure_followup_survival"
-    year = "2017"
     domain = "medical & healthcare"
-    source = "Other"  # S1 Data of Ahmad et al. 2017 (PLoS ONE); UCI 519 is the 2020 re-upload
-    source_url = "https://doi.org/10.1371/journal.pone.0181001"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # S1 Data of Ahmad et al. 2017 (PLoS ONE); UCI 519 is the 2020 re-upload
+            url="https://doi.org/10.1371/journal.pone.0181001",
+            license="CC BY 4.0",
+            year="2017",
+            bibtex="""
+                @article{chicco2020machine,
+                  title={Machine learning can predict survival of patients with heart failure from serum creatinine and ejection fraction alone},
+                  author={Chicco, Davide and Jurman, Giuseppe},
+                  journal={BMC medical informatics and decision making},
+                  volume={20},
+                  number={1},
+                  pages={16},
+                  year={2020},
+                  publisher={Springer}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="UCI",
+            url="https://archive.ics.uci.edu/dataset/519/heart+failure+clinical+records",
+            license="CC BY 4.0",
+            year="2020",
+            name="UCI 519",
+        ),
+    )
     download_description = """
         We get the data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/519/heart+failure+clinical+records.zip && unzip heart+failure+clinical+records.zip && rm heart+failure+clinical+records.zip && mkdir -p local-data-warehouse/heart_failure_followup_survival && mv heart_failure_clinical_records_dataset.csv local-data-warehouse/heart_failure_followup_survival/
-    """
-    bibtex = """
-        @article{chicco2020machine,
-          title={Machine learning can predict survival of patients with heart failure from serum creatinine and ejection fraction alone},
-          author={Chicco, Davide and Jurman, Giuseppe},
-          journal={BMC medical informatics and decision making},
-          volume={20},
-          number={1},
-          pages={16},
-          year={2020},
-          publisher={Springer}
-        }
     """
     curation_comments = """
         We use the data as is from UCI.

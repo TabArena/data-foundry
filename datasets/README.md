@@ -3,7 +3,8 @@
 The dataset definitions of Data Foundry, by state. New datasets are v2 folders (one `dataset.py` and a
 generated `README.md`; [CONTRIBUTING_DATASETS.md](../CONTRIBUTING_DATASETS.md)).
 The notebooks in this tree are Data Foundry v1, kept as the record of what shipped
-([DATA_FOUNDRY_V1.md](../DATA_FOUNDRY_V1.md)); never add a dataset as a notebook.
+([DATA_FOUNDRY_V1.md](../DATA_FOUNDRY_V1.md)); never add a dataset as a notebook. They are legacy code and no longer run
+on the current package: commit `6cc3c945` is the last state with the v1 helpers they import (removed 2026-11-12).
 
 ```
 datasets/

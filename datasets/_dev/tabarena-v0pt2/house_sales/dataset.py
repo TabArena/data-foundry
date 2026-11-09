@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -296,11 +297,54 @@ class HouseSales(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "house_sales"
-    year = "2015"
     domain = "business & marketing"
-    source = "GOV Website"  # King County's recorded sales; the file is a course cut of them, downloaded from Kaggle
-    source_url = "https://info.kingcounty.gov/assessor/DataDownload/default.aspx"
-    license = "CC0 1.0 Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",  # King County's recorded sales; the file is a course cut of them, downloaded from Kaggle
+            url="https://info.kingcounty.gov/assessor/DataDownload/default.aspx",
+            license="CC0 1.0 Public Domain",
+            year="2015",
+            bibtex=r"""
+                @misc{fox2015kchousedata,
+                  author = {Fox, Emily and Guestrin, Carlos},
+                  title = {kc\_house\_data: House sales in King County, Washington},
+                  year = {2015},
+                  howpublished = {Machine Learning Specialization, University of Washington, Coursera; \url{https://www.coursera.org/specializations/machine-learning}},
+                  note = {Re-uploaded to Kaggle in 2016 as harlfoxem/housesalesprediction}
+                }
+                @misc{kingcounty2015assessor,
+                  author = {{King County Department of Assessments}},
+                  title = {Assessor data download: real property sales, residential building and change history extracts},
+                  year = {2015},
+                  howpublished = {\url{https://info.kingcounty.gov/assessor/DataDownload/default.aspx}}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="GitHub",
+            url="https://github.com/learnml/machine-learning-specialization",
+            license=None,  # the repository states no license
+            year="2015",
+            name="the course's first distribution of kc_house_data",
+        ),
+        Source(
+            role="copy",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/harlfoxem/housesalesprediction",
+            license="CC0: Public Domain",
+            name="kc_house_data.csv, which we download",
+        ),
+        Source(
+            role="copy",
+            platform="OpenML",
+            url="https://www.openml.org/d/42731",
+            license="CC0 Public Domain",
+            year="2020",
+            name="OpenML 42731",
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         kc_house_data.csv is a cut of the sales and property records of the King County Department of Assessments
@@ -320,26 +364,11 @@ class HouseSales(AbstractCuratedDataset):
 
         The first build filters the extracts to three files in the same folder. With the downloads of 2026-10-07 (change log, building file) and 2026-10-19 (sales) their md5 are: house_sales_changes.csv 06491065b3ddbc8b0d9d20fb82444cad, house_sales_bath_counts.csv dc04ef1d66b0f1374a5b541bfb76c9ea, house_sales_sale_warnings.csv 06e45bc786381590dfcf24822e1ce221. A different md5 after a new download means the county changed its 2014-2015 records.
     """
-    bibtex = r"""
-        @misc{fox2015kchousedata,
-          author = {Fox, Emily and Guestrin, Carlos},
-          title = {kc\_house\_data: House sales in King County, Washington},
-          year = {2015},
-          howpublished = {Machine Learning Specialization, University of Washington, Coursera; \url{https://www.coursera.org/specializations/machine-learning}},
-          note = {Re-uploaded to Kaggle in 2016 as harlfoxem/housesalesprediction}
-        }
-        @misc{kingcounty2015assessor,
-          author = {{King County Department of Assessments}},
-          title = {Assessor data download: real property sales, residential building and change history extracts},
-          year = {2015},
-          howpublished = {\url{https://info.kingcounty.gov/assessor/DataDownload/default.aspx}}
-        }
-    """
     curation_comments = """
         We start with kc_house_data.csv from Kaggle: 21,613 sales of houses in King County, Washington, dated 2014-05-02 to 2015-05-27. Three extracts of the King County Department of Assessments give the house as it stood at each sale and the county's flags on each sale.
 
         - Prediction point: a house sells, and the assessor's mass appraisal or a public-record valuation model estimates its price from the assessor's record on the sale day and its location, trained on the sales recorded earlier. The assessed value and the previous sale price are not in the file; the conditions the parties declare at the sale are (`sale_condition`).
-        - The target is the price of this sale, given its declared conditions (USE-5; Lennart, 2026-10-22, option (c) of REVIEW.md issue 8). We keep the sales the county flags as not at market value and add `sale_condition`, one categorical from the county's sale warnings (lookup type 7 of EXTR_LookUp) that name a fact of the transaction the parties know before the price: a lender or an agent knows a short sale or an estate sale. Levels, the first match wins: short sale (60), bankruptcy or forced sale (13, 23), estate (12), other pre-price code (11, 14, 16, 17, 18, 19, 20, 21, 22, 24, 25, 33, 34, 36: the transactions WAC 458-53-080(2) excludes from the ratio study, and 54 affordable housing), no market exposure (15, last: 65 of its sales also carry a more specific code), none (decision table).
+        - The target is the price of this sale, given its declared conditions (USE-5; Lennart, 2026-10-22, option (c) of Review issue 8). We keep the sales the county flags as not at market value and add `sale_condition`, one categorical from the county's sale warnings (lookup type 7 of EXTR_LookUp) that name a fact of the transaction the parties know before the price: a lender or an agent knows a short sale or an estate sale. Levels, the first match wins: short sale (60), bankruptcy or forced sale (13, 23), estate (12), other pre-price code (11, 14, 16, 17, 18, 19, 20, 21, 22, 24, 25, 33, 34, 36: the transactions WAC 458-53-080(2) excludes from the ratio study, and 54 affordable housing), no market exposure (15, last: 65 of its sales also carry a more specific code), none (decision table).
         - We drop the related-party sales (warning 51; Lennart, 2026-10-26): a price between related parties is not a market price, and the assessor's ratio study leaves them out (WAC 458-53-080). This reopens option (c) of REVIEW issue 8 (2026-10-22), which kept them with a `sale_condition` level, so that they are treated as the family sales of ames_housing.
         - The county sets every warning after the deed is recorded, while it verifies the sale, and codes only the sales it checks, so `none` is not proof of a market sale. Sales are matched on parcel, deed date and price (20,742 of the 20,967 sales before May 2015); the other 225 are `none`. The Kaggle file holds these sales without a warning column.
         - We drop the 360 sales (1.7%) with warning 46 (non-representative sale, 357) or 8 (questionable per appraisal, 4; 7, questionable per sales identification, has none). These are the appraiser's judgments, made with the price in view (46 has no WAC 458-53-080 category): the residuals of the 46 sales lie only on the low side (untuned LightGBM without an indicator: none above +0.3, 29% below -0.3), so as a feature 46 leaks the label (`_judged`).
@@ -365,6 +394,12 @@ class HouseSales(AbstractCuratedDataset):
           each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 1 scores with no words per level are numbers (`SCORES`): `view`.
     """
+    accepted_check_warnings = {
+        "meta_license_unknown": (
+            "The course repository, the first distribution of kc_house_data, states no licence; the Kaggle copy we "
+            "download and OpenML 42731 are CC0."
+        ),
+    }
 
     # Task
     target = "log_price"
