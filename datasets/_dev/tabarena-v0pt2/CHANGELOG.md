@@ -2,6 +2,13 @@
 
 ## 2026-11-16, wine_world_cost: the use case kept as a merchant's listing decision (Lennart's decision, no container built)
 
+## 2026-11-09, Meituan addition to the existing curation draft (Myunghwan)
+
+- Integrate the approved forecast-free Meituan package into existing draft PR59, preserving original build/source commits and all five prior dataset packages plus rejection/hold decisions. Set the accepted record's DF: Yes integration proposal, retaining its actual ownership/WIP mirror. No new data, split, feature, model or build change. Separate draft PR66 is superseded.
+
+## 2026-11-09 (SuperLender addition to the existing curation draft)
+
+
 - Review issue 7 (whether any real use case exists), A: kept, fit approximate. The actor is a UK wine merchant's buyer
   who, offered a wine from a producer the merchant does not stock yet, estimates the shelf price it would sell at, to
   decide whether to list it and what supplier price that price point allows. The trade fixes the price point first and
