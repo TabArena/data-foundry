@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-09 10:22 UTC: 123 claim(s) (Andrej 16, Lennart 89, Myunghwan 18).
+As of 2026-11-09 13:15 UTC: 122 claim(s) (Andrej 16, Lennart 88, Myunghwan 18).
 
 ## Andrej
 
@@ -107,7 +107,6 @@ As of 2026-11-09 10:22 UTC: 123 claim(s) (Andrej 16, Lennart 89, Myunghwan 18).
 | `tls_os_fingerprinting_masaryk` | add | 2026-11-08 | 2026-11-15 | add-dataset: large-datasets batch (stacked PR on #47) |
 | `treehouse_pediatric_tumor_type` | add | 2026-11-08 | 2026-11-15 | add-dataset: large-datasets batch (stacked PR on #47) |
 | `turkcell_radio_link_failure_prediction` | add | 2026-11-08 | 2026-11-15 | add-dataset: large-datasets batch (stacked PR on #47) |
-| `ugr16_isp_netflow_intrusion` | add | 2026-11-08 | 2026-11-15 | add-dataset: large-datasets batch (stacked PR on #47) |
 | `uji_long_term_wifi_fingerprinting` | add | 2026-11-08 | 2026-11-15 | add-dataset: large-datasets batch (stacked PR on #47) |
 | `ujiindoorloc_wifi` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: wide non-bio and 2M+ lists |
 | `uk_mot_test_results` | add | 2026-11-08 | 2026-11-15 | add-dataset: large-datasets batch (stacked PR on #47) |
