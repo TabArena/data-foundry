@@ -76,9 +76,10 @@ spondylolisthesis by the size of the slip). Drop the rule's inputs first and tes
 * the rest does not beat a constant, or stays within what shuffled labels give: the task is out, `No Signal` (TP-2);
 * too few features are left to carry the task: the label was likely no good target, and the task is out,
   `No Good Target / Scientific Discovery`;
-* the inputs are at hand at the decision and the rule, not fitted on these data, matches the methods: `Trivial`
-  (TP-4). When the rest still carries a signal, it is kept and reassessed from scratch as a new task (use case,
-  signal, split), and ships only if it passes.
+* the inputs are at hand at the decision and the rule, not fitted on these data, beats the methods: `Trivial`
+  (TP-4); when it only matches them, the dataset is a candidate to drop and the curator decides. When the rest still
+  carries a signal, it is kept and reassessed from scratch as a new task (use case, signal, split), and ships only if
+  it passes.
 
 Marker: the one the branch names. Cases: account_debt_south_africa,
 central_international_medical_college_and_hospital_health_risk_prediction (NEWS2), audiology_diagnosis,
@@ -263,10 +264,11 @@ A table without a genuine predictive target is `No Good Target / Scientific Disc
 
 ### Trivial, too small, empty
 
-`Trivial` (one feature, or a rule not fitted on these data, matches the best methods, or the task is solved perfectly)
-is `No` (TP-4), and `Too Small` (a handful of units of a class per test fold) is `No` or `TBD -> 2nd Tier` (TP-5). Both
-need evidence from the task's own splits; the rules are in [task_probes.md](task_probes.md). A small but real signal, or
-methods that tie on a hard task, is not trivial and no reason to retire (TP-2); methods that stay within what shuffled
+`Trivial` (one feature, or a rule not fitted on these data, beats the best methods, or the task is solved perfectly)
+is `No` (TP-4; one that only matches them makes the dataset a candidate to drop, the curator's call), and `Too Small`
+(a handful of units of a class per test fold) is `No` or `TBD -> 2nd Tier` (TP-5). Both need evidence from the task's
+own splits; the rules are in [task_probes.md](task_probes.md). A small but real signal, or methods that tie on a hard
+task, is not trivial and no reason to retire (TP-2); methods that stay within what shuffled
 labels give are `No Signal`, and the task is retired (TP-2). A label a rule assigns from columns we ship, by a published
 formula or by the field's definition, follows SEL-5. Under class imbalance, accuracy against the majority class is no
 evidence in either direction ([evidence.md](evidence.md), EV-5; Lennart, 2026-09-23): judge learnability
@@ -428,7 +430,7 @@ marker records where a record stands, not an issue of the data.
 | `No Good Target (yet)` | real data without a predictive target so far (a listing, a survey, a table built for another purpose); one may be defined later, and such records mostly wait as `TBD -> 2nd Tier` | none |
 | `No Good Target / Scientific Discovery` | no genuine predictive target: a discovery, survey or look-back table, a label no decision fits | SEL-3, SEL-4, SEL-5, SEL-6, SEL-7; USE-2, USE-8 ([use_case.md](use_case.md)) |
 | `Data Quality Issue` | damage that cannot be undone or repaired: a supervised transform fit on the whole labelled set, a manipulated real table | LEAK-27 ([leak_checks.md](leak_checks.md)); PROV-3 ([provenance.md](provenance.md)) |
-| `Trivial` | one feature, or a rule not fitted on these data (a published formula, the field's definition, a textbook or clinical score), matches the best methods, or the task is solved perfectly | TP-4; SEL-5 |
+| `Trivial` | one feature, or a rule not fitted on these data (a published formula, the field's definition, a textbook or clinical score), beats the best methods, or the task is solved perfectly; one that matches them makes a candidate to drop, the curator's call | TP-4; SEL-5 |
 | `Image` | an image or video task, including features computed from an image to describe its content | SEL-12, SEL-13 |
 | `Time-series (Forecasting)` | future values of a series over a horizon | SEL-10 |
 | `NLP (Text)` | a raw-text task where language models dominate | SEL-12 |

@@ -36,13 +36,14 @@ part still wins). Cases: gallstone_disease, electric_motor_temperature_predictio
 
 **TP-4 (Must).** `Trivial` needs proof. Read what the dominant feature means first: the natural core of a task (a
 listed price for a sale price, age for survival) is expected to dominate. Then test it: the raw feature, chosen on
-each split's training side, has to match or beat the methods fold by fold. The same holds for a rule not fitted on
-these data (a formula the source or the field publishes, the field's definition of the label, a textbook or clinical
-score): if the methods learn nothing better than such a rule, the data cannot be used for prediction. Take the rule
-from the field's sources, not from the rows; it needs no training side, so it is scored as it stands on every test
-fold. Before ruling it out, look at where its misses go: the field's measurement can be spread over more columns than
-the rule read. Marker: `Trivial`. Cases: fitness_club (yes, retired); audiology_diagnosis (a textbook rule, yes,
-retired); sepsis_survival, california (no, kept).
+each split's training side, against the methods fold by fold. The same holds for a rule not fitted on these data (a
+formula the source or the field publishes, the field's definition of the label, a textbook or clinical score): if the
+methods learn nothing better than such a rule, the data cannot be used for prediction. Take the rule from the field's
+sources, not from the rows; it needs no training side, so it is scored as it stands on every test fold. Before ruling
+it out, look at where its misses go: the field's measurement can be spread over more columns than the rule read. A
+feature or rule that beats the methods is proof: `Trivial`. One that matches them (within the spread of the folds)
+makes the dataset a candidate to drop, and the curator decides. Marker: `Trivial`. Cases: fitness_club (beats, yes,
+retired); audiology_diagnosis (a textbook rule beats, yes, retired); sepsis_survival, california (no, kept).
 
 **TP-5 (Must).** `Too Small` means a handful of units of a class, per test fold and in total, counted in the unit the
 task is scored on (parkinsons: 8 healthy people, 2-3 per fold; retired). A small dataset as such is a tiny-data task
