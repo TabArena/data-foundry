@@ -198,7 +198,7 @@ and their rows are left single. The output gives the clusters at 0.9, 0.85, 0.8 
 the same random folds with each cluster moved into one fold. Read a near-copy hit as a pointer: find in the source
 what the rows of a cluster share (the salt forms of one parent structure, one company inspected again, one client's
 invoices) and take the group key from there, never from the clusters (SPLIT-24 in [splits.md](splits.md) bars
-similarity clusters; a link calibrated against chance is allowed, and the verdict follows LEAK-41 and LEAK-42 in
+similarity clusters; a link calibrated against chance is allowed, and the verdict follows LEAK-42 and LEAK-43 in
 [leak_checks.md](leak_checks.md), "Entity leakage").
 When no row has 10 informative columns the check does not run, and the output says `not run` (before 2026-10-21 it
 read 0.0%): no evidence either way, as on huntprohibited_1m (9 features), where exact keys on the description later

@@ -539,7 +539,7 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
   it in `_clean` from the columns that define the entity before any step replaces them (santander_transaction_value's
   customers come from the raw lag columns, before the summaries), carry it as a column, and leave it out of the
   `drop_duplicates` subset: with it, copies that fall in different groups survive (all 4,459 rows stay there instead
-  of 4,447). The curation notes give the match rule, the chance rate and the verdict (LEAK-41 to LEAK-43).
+  of 4,447). The curation notes give the match rule, the chance rate and the verdict (LEAK-42 to LEAK-44).
 
 ### Temporal: `Temporal` and `TemporalSplits`
 

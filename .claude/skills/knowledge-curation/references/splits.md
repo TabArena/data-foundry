@@ -291,14 +291,14 @@ Cold start or warm start is decided from the use case before grouping: USE-10 an
 text or a poster-specific masked contact, consecutive blocks of identical person-level answers in the raw file order,
 identical values in the columns that define the entity) or by a calibrated link. A calibrated link takes its match rule
 from how the data were recorded (the same counters read again, values shifted by one step, a policy record starting
-the day the other ends), never from the score, and a chance rate shows that most of its links are real (LEAK-42 in
+the day the other ends), never from the score, and a chance rate shows that most of its links are real (LEAK-43 in
 [leak_checks.md](leak_checks.md)); whether it holds is the curator's call, case by case, by how certain the evidence
 is. Never on a similarity-threshold cluster, and never on a hash of the feature vector standing in for an unknown
 entity. Cases: emscad, in_vehicle_coupon_recommendation, concrete_compressive_strength, airfoil_self_noise,
 maternal_health_risk, frempl_french_motor_personal_line, santander_transaction_value.
 
 **SPLIT-25 (Must).** When the real groups matter and cannot be recovered, never group on a guess. Drop the repeats
-that can be identified and ask whether the target still stands for the use case (LEAK-41, not recoverable); retire
+that can be identified and ask whether the target still stands for the use case (LEAK-42, not recoverable); retire
 the dataset when the repeats cannot be identified, or when what stays still rewards recognising an unrecorded group,
 and note that the authors could be asked for the group labels. Cases: maternal_health_risk,
 hazelnut_spread_contaminant_detection.

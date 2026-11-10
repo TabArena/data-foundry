@@ -197,11 +197,11 @@ probes 5 and 6.
 across the split even when the rows differ: keep one row per entity when the use case is that row (USE-11,
 [use_case.md](use_case.md)), or group (SPLIT-24, SPLIT-29, [splits.md](splits.md)). Parse ids as strings: sdss_17's
 float-parsed `obj_ID` merged 21,947 distinct objects (it is now deduplicated on the sky position). Test: probe 11. A
-unit the data does not record: "Entity leakage" below (LEAK-41 to LEAK-43).
+unit the data does not record: "Entity leakage" below (LEAK-42 to LEAK-44).
 
 **LEAK-18 (Should).** Many degrees of freedom and an exact match: a collection artefact, drop it and give the share.
 Few features and plausible repeats: natural, keep them and say so. A match on all but one or two of many values is a
-calibrated link (SPLIT-24, LEAK-42): the evidence that may drop such a row may also group it. Cases:
+calibrated link (SPLIT-24, LEAK-43): the evidence that may drop such a row may also group it. Cases:
 sepsis_survival_minimal_clinical_records
 keeps 110,204 rows over 975 distinct feature rows: three features, real patients, and predicting from them is the
 source's question. ai4d_lab_tanzania_tourism_classification_challenge keeps its 965 exact copies: 17 of 19 inputs are
@@ -233,8 +233,8 @@ later snapshot). With the unit recorded, LEAK-17 settles it. The rules below are
 where the look-alike rows may be records of one unit or distinct units. The goal is to keep the dataset with the leak
 removed wherever the evidence allows.
 
-**LEAK-41 (Must).** Repeats of a unit the data does not record get one of four verdicts, stated in the notes with the
-evidence of LEAK-42:
+**LEAK-42 (Must).** Repeats of a unit the data does not record get one of four verdicts, stated in the notes with the
+evidence of LEAK-43:
 
 1. Natural: the look-alikes are distinct units (a coarse profile, a shared area, one product made the same way). The
    random split stays; the notes give the share of test rows with a look-alike in training.
@@ -255,7 +255,7 @@ certain the evidence is that it holds. Every drop is a discussion point too: the
 label shares or the target's distribution before and after, and asks whether the target still stands for the use case
 (LEAK-19 for uneven copies). Cases: the "Entity leakage" table below.
 
-**LEAK-42 (Should).** Three tests set the verdict; the size of a score gap does not (SPLIT-30).
+**LEAK-43 (Should).** Three tests set the verdict; the size of a score gap does not (SPLIT-30).
 
 * Is the link real? Count the matches against a chance rate that keeps the data's structure: each column shuffled
   within its class, values jittered by their measurement error, round values against odd ones, shifted ids, shuffled
@@ -267,7 +267,7 @@ label shares or the target's distribution before and after, and asks whether the
   order checked against a known date. Records of one unit side by side in the file are more often copies entered
   together than later records.
 
-**LEAK-43 (Should).** A later record of the same unit that holds this record's label in a feature (a lag column, the
+**LEAK-44 (Should).** A later record of the same unit that holds this record's label in a feature (a lag column, the
 outcome of the previous campaign, a readmission that tells the earlier stay was survived, a premium class set by last
 year's claims) carries the label forward. Any method that reads the training rows at prediction time (in-context
 models, nearest neighbours, a lookup) can use it, even when a row-only model gains nothing. Once a key and an order
@@ -522,7 +522,7 @@ over the splits, whose repeats share rows, so it is a lower bound. Untuned fits 
 false hit (+1.72, SE 0.56, with fits at 92.0 against the constant's 82.6). A hit is a measurement to weigh (SPLIT-8),
 not a verdict (2026-11-08, Lennart, cross-dataset item on forced splits).
 
-### Entity leakage (LEAK-41 to LEAK-43)
+### Entity leakage (LEAK-42 to LEAK-44)
 
 1. Candidates come from probes 5, 6, 11 and 21 and from `hidden_groups.py` (composite keys, near copies, text keys,
    [task_probes.md](task_probes.md), "Hidden groups"). A near-copy cluster points at a unit; it is not the key.
@@ -621,11 +621,11 @@ The cases of the rules outside this table are named in the rules.
 
 | Rule | Dataset | Decision | Kind |
 |---|---|---|---|
-| LEAK-41, LEAK-18 | ai4d_lab_tanzania_tourism_classification_challenge | natural: 17 of 19 inputs are coarse survey answers, 410 of 766 repeated profiles carry several labels, and grouping by profile costs 0.005 log loss; random split, copies kept | applied |
-| LEAK-41 | santander_customer_satisfaction | natural: customers who share an exact `var38` (the household's income) are different people of one household, and their labels move TabPFN-3.5 by 0.5%; random split | applied |
-| LEAK-41, LEAK-42 | liberty_mutual_fire_peril_loss_cost | a real link that carries no label: risks rebuilt as rows equal in every column but `var15`, an age stepping by 1 (16.8-16.9% of test rows have their risk in training), yet a risk's training loss ranks its test terms at ROC AUC 0.500-0.524; an insurer prices renewals of its own risks, so the random split stays | applied |
-| LEAK-41, SPLIT-24 | frempl_french_motor_personal_line | entity fix, grouped: a policy's records rebuilt by a link from the recording (the same six profile columns, one record starting the day the other ends, the driver's age the same or one more), the most conservative of the keys offered: 68,857 policy components for 115,155 records | applied |
-| LEAK-41, LEAK-43 | santander_transaction_value | order and customers rebuilt without dates: snapshots linked by lag columns shifted by k steps, plus sparse links confirmed by the earlier target in the later row (4,371 links, 85-110 with shuffled targets); a later snapshot carries the earlier target; 710 customers held out whole, and the test rows whose target a training row shows fall from 72-75% to 1-3% | applied |
+| LEAK-42, LEAK-18 | ai4d_lab_tanzania_tourism_classification_challenge | natural: 17 of 19 inputs are coarse survey answers, 410 of 766 repeated profiles carry several labels, and grouping by profile costs 0.005 log loss; random split, copies kept | applied |
+| LEAK-42 | santander_customer_satisfaction | natural: customers who share an exact `var38` (the household's income) are different people of one household, and their labels move TabPFN-3.5 by 0.5%; random split | applied |
+| LEAK-42, LEAK-43 | liberty_mutual_fire_peril_loss_cost | a real link that carries no label: risks rebuilt as rows equal in every column but `var15`, an age stepping by 1 (16.8-16.9% of test rows have their risk in training), yet a risk's training loss ranks its test terms at ROC AUC 0.500-0.524; an insurer prices renewals of its own risks, so the random split stays | applied |
+| LEAK-42, SPLIT-24 | frempl_french_motor_personal_line | entity fix, grouped: a policy's records rebuilt by a link from the recording (the same six profile columns, one record starting the day the other ends, the driver's age the same or one more), the most conservative of the keys offered: 68,857 policy components for 115,155 records | applied |
+| LEAK-42, LEAK-44 | santander_transaction_value | order and customers rebuilt without dates: snapshots linked by lag columns shifted by k steps, plus sparse links confirmed by the earlier target in the later row (4,371 links, 85-110 with shuffled targets); a later snapshot carries the earlier target; 710 customers held out whole, and the test rows whose target a training row shows fall from 72-75% to 1-3% | applied |
 
 ## In Data Foundry
 
