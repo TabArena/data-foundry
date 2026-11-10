@@ -224,7 +224,9 @@ class AustralianVehicleInsurance20042005(AbstractCuratedDataset):
     sample_weight = "exposure"
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
-        return pd.read_csv(raw_dir / "dataCar.csv")
+        # round_trip: pandas 2's default parser reads some exposures a few units off in the last place; the exact
+        # parse (pandas 3's default) keeps the frame and its checksum the same under both
+        return pd.read_csv(raw_dir / "dataCar.csv", float_precision="round_trip")
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw.copy()

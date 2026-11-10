@@ -66,6 +66,14 @@ def _period_links(raw: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
     return links["i"].to_numpy(), links["j"].to_numpy()
 
 
+def _exact_float(values: pd.Series) -> pd.Series:
+    """The long integers to float64 with Python's correctly rounded `float` (pandas 2 holds them as text, pandas 3 as
+    Python ints): pandas 2's `to_numeric` reads some a unit off in the last place (19,795 rows of f391), pandas 3's is
+    exact; this gives the same values under both.
+    """
+    return values.map(lambda v: np.nan if pd.isna(v) else float(v)).astype("float64")
+
+
 class LoanDefaultPredictionImperialCollege(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=(
@@ -206,14 +214,16 @@ class LoanDefaultPredictionImperialCollege(AbstractCuratedDataset):
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
-        return pd.read_csv(raw_dir / "train_v2.csv", low_memory=False)
+        # round_trip: pandas 2's default parser reads some long decimals a few units off in the last place; the
+        # exact parse (pandas 3's default) keeps the frame and its checksum the same under both
+        return pd.read_csv(raw_dir / "train_v2.csv", low_memory=False, float_precision="round_trip")
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw.copy()
         # 1. Integers longer than int64 arrive as text: cast to float64, checking that no value is lost.
         text = [c for c in df.columns if df[c].dtype == object]
         missing_before = int(df[text].isna().sum().sum())
-        df[text] = df[text].apply(pd.to_numeric, errors="coerce")
+        df[text] = df[text].apply(_exact_float)
         assert int(df[text].isna().sum().sum()) == missing_before, "a text column held a non-number"
         # 2. The row id is the time order (the data page and the Kaggle admin, topic 6871).
         df = df.rename(columns={"id": "time_index"})
