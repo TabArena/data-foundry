@@ -2,5 +2,5 @@ name: chromophore_optical_properties_db
 holder: Myunghwan
 stage: triage
 claimed_at: '2026-11-05T22:19:29Z'
-expires_at: '2026-11-12T22:19:29Z'
-note: 'Curator-requested triage: priority-4 interaction datasets; scale, source and non-IID qualification pending.'
+expires_at: '2026-11-17T09:15:40Z'
+note: 'Curator accepted first absorption-peak regression with 1A/2A, fallback RMSE and gas warning. Build, reload and single-traced-CSV checksum reproduction complete; 17,510 rows, 3,335 groups, nine folds. Source/build commits 8a50be6cc and 144b0ae82. Integration into existing draft PR #59: https://github.com/TabArena/data-foundry/pull/59 . Retain Myunghwan ownership until merged.'

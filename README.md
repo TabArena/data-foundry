@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-10 09:13 UTC: 126 claim(s) (Andrej 16, Lennart 88, Myunghwan 22).
+As of 2026-11-10 09:15 UTC: 126 claim(s) (Andrej 16, Lennart 88, Myunghwan 22).
 
 ## Andrej
 
@@ -128,7 +128,7 @@ As of 2026-11-10 09:13 UTC: 126 claim(s) (Andrej 16, Lennart 88, Myunghwan 22).
 | `bigsoldb_2` | triage | 2026-11-10 | 2026-11-17 | Myunghwan requested non-pending dependency candidates reserved; Papyrus screening review first. Label collection must finish before held-out prediction starts. |
 | `chicago_rideshare_trip_duration` | triage | 2026-11-10 | 2026-11-17 | Myunghwan requested non-pending dependency candidates reserved; Papyrus screening review first. Label collection must finish before held-out prediction starts. |
 | `chicago_traffic_crashes` | triage | 2026-10-29 | 2026-11-05 (expired) | Selected by Myunghwan as the next large-scale candidate (about 1.1 million crashes). Reservation for screening review; no scientific inclusion or build decision. |
-| `chromophore_optical_properties_db` | triage | 2026-11-05 | 2026-11-12 | Curator-requested triage: priority-4 interaction datasets; scale, source and non-IID qualification pending. |
+| `chromophore_optical_properties_db` | triage | 2026-11-05 | 2026-11-17 | Curator accepted first absorption-peak regression with 1A/2A, fallback RMSE and gas warning. Build, reload and single-traced-CSV checksum reproduction complete; 17,510 rows, 3,335 groups, nine folds. Source/build commits 8a50be6cc and 144b0ae82. Integration into existing draft PR #59: https://github.com/TabArena/data-foundry/pull/59 . Retain Myunghwan ownership until merged. |
 | `duolingo_spaced_repetition_recall` | triage | 2026-10-31 | 2026-11-13 | Updated installed workflow at9048f36a completed add/review/build with prior curator decisions retained. Local commits 90e77a7c and 3be188a7; container 01a1ae4b-07ce-7d55-b885-f6b11cb52d72. Same accepted checksum/data/splits; reload and traced-input reproduction pass, zero errors/warnings. Native review records explicit retention with original marks preserved. Train-only, own-row prediction protocol stays required; downstream method checks remain unverified. Not pushed or submitted; retain Myunghwan ownership pending integration, existing stage preserved. |
 | `economic_well_being_prediction_challenge` | triage | 2026-10-28 | 2026-11-11 | Curator ship accepted. Local build, reload and traced-input reproduction verified (2026-11-03); temporal x unseen-country, 21,454 rows, 16 evaluations. Local branch prepared separately; intentionally not added to existing PR. Retain ownership pending separately authorized publication/integration. |
 | `fugaku_hpc_job_failure` | add | 2026-11-03 | 2026-11-13 | Curator decisions reused; maintained installation 9048f36a repeat add/review/build cycle complete. Built/reloaded/minimal-input reproduction and existing backup of 43 input files freshly reverified; unchanged task with 2,500,499 rows and 388 predictors. Local commits c84f9b39 and 6b4bea76 on fugaku-skill-refresh-20261106; not pushed. Retain ownership pending upstream integration. First tuned benchmark family, baseline, probability and maturity/latency recheck remains required; known diagnostic limits retained. |
