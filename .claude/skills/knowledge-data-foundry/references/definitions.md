@@ -573,9 +573,11 @@ budget, `row_budget = RowBudget(train=N, test=M)` (from `data_foundry.v2`), work
   sampler of its own that keeps the constraints the container records (`experiment_metadata.train_sampling`: what to
   keep whole, the stratum). A model can so see more history or bring its own sub-sampling, and the sampling can be
   studied.
-* **The default sampler** (`sample_train_positions`): for temporal data on a datetime time column, a random N of the
-  newest year before the window (the newest N rows when that year holds fewer); for an ordinal time (eras), a random N
-  of all earlier rows; whole groups at random for a grouped task; random rows, stratified, for an IID one. The study
+* **The default sampler** (`sample_train_positions`): for temporal data, the newest year before the window, extended
+  back in time until it holds N rows, and a random N of those. A numeric time column gets its year from
+  `Temporal(time_unit=...)`, what one step counts (numerai's eras: `"weeks"`, so 52 eras); a version with a budget on
+  a numeric time column must declare it. Whole groups at random for a grouped task; random rows, stratified, for an
+  IID one. The study
   behind it (issue #70): the newest N rows lose seasons and weekdays on dense data and changed the model ranking twice,
   a random N of all history dilutes recent data on long histories, and a random sample of the newest year never lost
   much and changed no ranking.

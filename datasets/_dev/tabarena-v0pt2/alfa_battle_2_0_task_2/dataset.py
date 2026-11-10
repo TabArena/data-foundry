@@ -580,7 +580,7 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
 
         Exception to SPLIT-10 (2026-10-21, Lennart): the data has no label dates and a default can be flagged up to a year after the issue, so a gap of the label delay leaves 13-27% (12 months) or 35-53% (6 months) of the rows for training, below the 50% floor. Serves SPLIT-14 (Must). SPLIT-9 is met by removing the measurable shortcut, the products of the test window's clients; the diffuse rest of unmatured labels falls under SPLIT-10 (principles.md, Tensions). No gap (gap 0; Lennart, 2026-10-26).
     """
-    temporal = Temporal(on="issue_month", horizon=2, horizon_unit="months")
+    temporal = Temporal(on="issue_month", horizon=2, horizon_unit="months", time_unit="months")
     accepted_check_warnings = {
         "splits_rows_unused": "By design: these products of months 0-17 belong to clients with a product in each of "
         "the three test windows, so the repeat-client filter removes them from every training side (curation_comments, "

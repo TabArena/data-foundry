@@ -567,6 +567,22 @@ def test_format_2_task_reads_the_group_fields_from_the_grouping():
     assert task.split_regime == "grouped_non_iid"
 
 
+def test_time_unit_needs_a_time_column_and_is_left_out_while_unset():
+    """A numeric time column's calendar travels with the task; containers without it keep their bytes."""
+
+    def task(**kwargs) -> PredictiveMLTaskMetadataV2:
+        return PredictiveMLTaskMetadataV2(
+            target_column_name="y", problem_type="regression", objective_metric=make_spec(), **kwargs
+        )
+
+    with pytest.raises(pydantic.ValidationError, match="set time_on"):
+        task(time_unit="weeks")
+    with pytest.raises(pydantic.ValidationError):
+        task(time_on="era", time_unit="fortnights")
+    assert b"time_unit" not in encode_pydantic_metadata(task(time_on="era"))
+    assert b'"time_unit":"weeks"' in encode_pydantic_metadata(task(time_on="era", time_unit="weeks")).replace(b" ", b"")
+
+
 def test_format_1_task_takes_no_grouping():
     with pytest.raises(pydantic.ValidationError, match="grouping"):
         PredictiveMLTaskMetadata(

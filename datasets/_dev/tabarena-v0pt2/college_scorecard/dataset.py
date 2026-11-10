@@ -291,6 +291,7 @@ class CollegeScorecard(AbstractCuratedDataset):
         horizon_unit="years",
         gap=YEARS_TO_RATE - 1,
         gap_unit="years",
+        time_unit="years",
     )
     accepted_check_warnings = {
         "splits_rows_unused": "By design: the cohorts of 2013 and 2014 (3,676 rows) lie in the five-year label gap of "

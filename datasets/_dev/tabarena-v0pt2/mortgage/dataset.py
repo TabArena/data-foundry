@@ -225,6 +225,7 @@ class Mortgage(AbstractCuratedDataset):
         splits=TemporalSplits(window=1, unit="unique", n_windows=3),
         horizon=1,  # one period, a quarter
         horizon_unit="steps",
+        time_unit="quarters",
     )
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:

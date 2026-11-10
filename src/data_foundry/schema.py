@@ -930,6 +930,10 @@ class PredictiveMLTaskMetadata:
         )
 
 
+TimeUnit = Literal["minutes", "hours", "days", "weeks", "months", "quarters", "years"]
+"""The unit one step of a numeric time column counts (:attr:`PredictiveMLTaskMetadataV2.time_unit`)."""
+
+
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
 class PredictiveMLTaskMetadataV2:
     """The task metadata of a container built by a v2 definition (:mod:`data_foundry.v2`): container format 2.
@@ -953,6 +957,10 @@ class PredictiveMLTaskMetadataV2:
     """The column the IID or grouped splits are stratified on (the target of a classification task by default)."""
     time_on: str | None = None
     """The time column of a temporal task: every test row comes after every training row."""
+    time_unit: TimeUnit | None = None
+    """The unit one step of a numeric ``time_on`` counts: numerai's ``era`` counts weeks, so era 1235 is a year after
+    era 1183. It gives a time column that is a number its calendar (the newest year of a train side, a horizon in
+    weeks). ``None`` for a date column, whose calendar is its own, and for a time that is only an order."""
     grouping: Grouping | None = None
     """How a grouped task is used (:class:`Grouping`): the group column, the labels, the order inside a group, the
     prediction unit, the aggregation and the context. The group column is metadata, never a model feature."""
@@ -973,7 +981,7 @@ class PredictiveMLTaskMetadataV2:
     type_adapter_id: str = "predictive-ml-task-mold-v2"
     """Identifies container format 2."""
 
-    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("sample_weight", "unit_weight")
+    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("time_unit", "sample_weight", "unit_weight")
     """Fields added after containers shipped: dropped from the checksum and the saved JSON while ``None``, so a
     container saved before they existed keeps verifying."""
 
@@ -981,6 +989,8 @@ class PredictiveMLTaskMetadataV2:
         """Validate the regime, and the rules between the grouping and the target."""
         if not (self.target_column_name or "").strip():
             raise ValueError("target_column_name must name the target column.")
+        if self.time_unit is not None and self.time_on is None:
+            raise ValueError("time_unit says what one step of the time column counts; set time_on.")
         if self.time_on is not None and self.grouping is not None:
             raise ValueError(
                 "A task is temporal (time_on) or grouped (grouping), not both; record the order inside a group as "
@@ -1208,9 +1218,10 @@ class TrainSampling:
     and uses :func:`data_foundry.v2.splits.subsample_train` as the default.
 
     Attributes:
-        default: The default sampler: ``"newest_year"`` (a temporal task on a datetime time column: a random sample of
-            the newest year of the train side, or its newest rows when that year holds fewer than the budget) or
-            ``"random"`` (a random sample of the train side).
+        default: The default sampler: ``"newest_year"`` (a temporal task: the newest year of the train side, extended
+            back in time until it holds the budget's rows, and a random sample of those; the year of a numeric time
+            column from ``task_metadata.time_unit``) or ``"random"`` (an IID or grouped task: a random sample of the
+            train side).
         unit: What any sampler keeps whole (:data:`SamplingUnit`).
         stratify_on: The column the default sampler stratifies on, or None.
     """

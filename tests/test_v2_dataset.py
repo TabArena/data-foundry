@@ -927,20 +927,39 @@ def test_a_temporal_version_sampled_by_time_keeps_whole_days(tmp_path: Path, war
     assert len(kept) == 180
 
 
-def test_a_temporal_version_on_an_ordinal_time_column_samples_from_all_history(tmp_path: Path, warehouse: Path) -> None:
-    del warehouse  # an integer period (as numerai's eras) has no calendar year: the default draws from all of a side
-    body = (
+def ordinal_version_body(time_unit: str | None) -> str:
+    """The temporal version on an integer day number instead of a date, with ``time_unit`` declared or not."""
+    unit = f'time_unit="{time_unit}", ' if time_unit else ""
+    return (
         temporal_version_body(windows='TemporalSplits(window=5, unit="unique", n_windows=3)')
         .replace('pd.Timestamp("2024-01-01") + pd.to_timedelta(df["row_id"] // 20, unit="D")', 'df["row_id"] // 20')
         .replace(', datetime=["t"]', "")
-        .replace('Temporal(on="t", ', 'Temporal(on="t", horizon=5, horizon_unit="steps", ')
+        .replace('Temporal(on="t", ', f'Temporal(on="t", horizon=5, horizon_unit="days", {unit}')
     )
-    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=body)
+
+
+def test_a_temporal_version_on_a_numeric_time_declares_what_a_step_counts(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse  # an integer day number has no calendar of its own: the newest-year rule needs `time_unit`
+    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=ordinal_version_body(None))
+    with pytest.raises(DatasetDefinitionError, match="declare what one step of it counts"):
+        get_dataset(tmp_path / "datasets", "toy_ds_0p19k").make_splits()
+    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=ordinal_version_body("days"))
     ds = get_dataset(tmp_path / "datasets", "toy_ds_0p19k")
-    plan = ds.make_splits()
-    assert "by default rows drawn at random, `subsample_train`" in plan.comment
-    assert "newest year" not in plan.comment
-    assert ds.train_sampling(plan.df) == TrainSampling(default="random", unit="rows", stratify_on="y")
+    container = ds.check(write_report=False, verbose=False).container
+    assert container.task_metadata.time_unit == "days"
+    assert container.experiment_metadata.train_sampling == TrainSampling(
+        default="newest_year", unit="rows", stratify_on="y"
+    )
+    assert "extended back in time until it holds that many rows" in container.experiment_metadata.splits_comment
+    assert len(subsample_train(container, 0, 0)) == 190
+
+
+def test_time_unit_needs_a_numeric_time_column(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = temporal_version_body().replace('Temporal(on="t", ', 'Temporal(on="t", time_unit="days", ')
+    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=body)
+    with pytest.raises(DatasetDefinitionError, match="is a date, whose calendar is its own"):
+        get_dataset(tmp_path / "datasets", "toy_ds_0p19k").make_splits()
 
 
 def test_a_temporal_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path) -> None:

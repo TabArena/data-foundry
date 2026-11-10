@@ -32,7 +32,7 @@ import numpy as np
 import pandas as pd
 
 from data_foundry.bundle_checks import CheckResult
-from data_foundry.schema import RowBudget, TrainSampling, as_column_list
+from data_foundry.schema import RowBudget, TimeUnit, TrainSampling, as_column_list
 from data_foundry.v2._optional import import_build_dependency
 
 if TYPE_CHECKING:
@@ -71,6 +71,17 @@ GapUnit = Literal["minutes", "hours", "days", "weeks", "months", "years"]
 """The unit of a calendar window's gap when it differs from the window's (``TemporalSplits(gap_unit=...)``)."""
 
 _GAP_UNITS = ("minutes", "hours", *_CALENDAR_UNITS)
+
+STEPS_PER_YEAR: dict[str, int] = {
+    "minutes": 525_600,
+    "hours": 8_760,
+    "days": 365,
+    "weeks": 52,
+    "months": 12,
+    "quarters": 4,
+    "years": 1,
+}
+"""How many steps of a numeric time column (:attr:`Temporal.time_unit`) make a year."""
 
 SampleBy = Literal["rows", "time"]
 """What a temporal version's per-window sampling to its ``row_budget`` draws (``TemporalSplits(sample_by=...)``).
@@ -379,6 +390,8 @@ class Temporal:
         Temporal(on="arrival_date", horizon=3, horizon_unit="months")                           # `_make_splits`
         Temporal(on="cohort", splits=TemporalSplits(unit="unique", n_windows=9, gap=5), horizon=1,
                  horizon_unit="years", gap=5, gap_unit="years")                               # gap: 5 cohorts
+        Temporal(on="era", splits=TemporalSplits(window=52, unit="unique", n_windows=3, gap=4), horizon=52,
+                 horizon_unit="weeks", gap=4, gap_unit="weeks", time_unit="weeks")             # an era is a week
 
     Attributes:
         on: The time column; the frame is sorted by it and future rows never train a split.
@@ -392,9 +405,14 @@ class Temporal:
             ``_make_splits``. A gap in a calendar unit or in rows is stated by the windows
             (:attr:`TemporalSplits.gap_length`), and declaring it again is an error.
         gap_unit: The unit of ``gap``, as for ``horizon_unit``; set together with ``gap``.
+        time_unit: What one step of a time column that is a number counts (``minutes`` to ``years``): numerai's
+            ``era`` counts weeks. It gives the column a calendar, which the newest-year rule of the train sampler
+            needs (:func:`subsample_train`), so a version with a ``row_budget`` on a numeric time column declares
+            it. A date column has its own calendar and declares none; a time that is only an order (a row number)
+            has none.
 
-    The container stores the column as the task's ``time_on``, the horizon as the splits' ``time_horizon`` /
-    ``time_horizon_unit`` and the gap as their ``time_gap`` / ``time_gap_unit``.
+    The container stores the column as the task's ``time_on`` (with ``time_unit``), the horizon as the splits'
+    ``time_horizon`` / ``time_horizon_unit`` and the gap as their ``time_gap`` / ``time_gap_unit``.
     """
 
     on: str
@@ -403,8 +421,12 @@ class Temporal:
     horizon_unit: HorizonUnit | None = None
     gap: int | None = None
     gap_unit: HorizonUnit | None = None
+    time_unit: TimeUnit | None = None
 
     def __post_init__(self) -> None:
+        if self.time_unit is not None and self.time_unit not in STEPS_PER_YEAR:
+            msg = f"Temporal.time_unit={self.time_unit!r} is not one of {tuple(STEPS_PER_YEAR)}."
+            raise ValueError(msg)
         if not isinstance(self.on, str) or not self.on.strip():
             msg = "Temporal.on must name the time column."
             raise ValueError(msg)
@@ -887,6 +909,7 @@ def sample_train_positions(
     n_rows: int,
     *,
     time_on: str | None = None,
+    time_unit: str | None = None,
     group_on: str | list[str] | None = None,
     stratify_on: str | None = None,
     whole_values_of: str | None = None,
@@ -896,10 +919,10 @@ def sample_train_positions(
 
     Deterministic, and blind to any model or score:
 
-    * a temporal train side (``time_on``, a datetime column): a random sample of its newest year (stratified on
-      ``stratify_on``, or whole values of ``whole_values_of``). When that year holds fewer than ``n_rows`` rows, the
-      newest ``n_rows`` rows (whole time values where declared). On a time column that is no datetime (an ordinal era),
-      a random sample of the whole side;
+    * a temporal train side (``time_on``): the newest year, extended back in time until it holds ``n_rows`` rows, and
+      a random ``n_rows`` of those (stratified on ``stratify_on``, or whole values of ``whole_values_of``). The year
+      is the calendar year before the side's newest row on a date column, and :data:`STEPS_PER_YEAR` steps of
+      ``time_unit`` on a numeric one (52 weekly eras);
     * a grouped one (``group_on``): whole groups in a random order, stratified by each group's most frequent class;
     * an IID one: random rows, stratified on ``stratify_on``.
 
@@ -910,10 +933,16 @@ def sample_train_positions(
     if len(positions) <= n_rows:
         return np.sort(positions)
     rng = np.random.default_rng(random_state)
-    if time_on is not None and pd.api.types.is_datetime64_any_dtype(df[time_on]):
+    if time_on is not None:
         times = df[time_on].to_numpy()[positions]
-        recent = positions[times >= times.max() - NEWEST_HISTORY]
-        if len(recent) < n_rows:  # the newest year is short of the budget: the newest rows instead
+        if pd.api.types.is_datetime64_any_dtype(df[time_on]):
+            recent = positions[times >= times.max() - NEWEST_HISTORY]
+        elif time_unit is not None:
+            recent = positions[times > times.max() - STEPS_PER_YEAR[time_unit]]
+        else:
+            msg = f"`{time_on}` is no date: the newest year needs what one step of it counts (`time_unit`)."
+            raise ValueError(msg)
+        if len(recent) < n_rows:  # the year holds fewer: extended back in time to the newest n_rows rows
             return _newest(positions, n_rows, times, None if whole_values_of is None else df[whole_values_of])
         positions = recent
     if time_on is not None or group_on is None:
@@ -952,7 +981,8 @@ def subsample_train(
     """The train positions a benchmark fits split ``(repeat, fold)`` on: its train side sub-sampled to the budget.
 
     The default sampler (:func:`sample_train_positions`) with the container's constraints
-    (``experiment_metadata.train_sampling``): the newest year of a temporal side, whole groups, whole time values, the
+    (``experiment_metadata.train_sampling``): the newest year of a temporal side extended back to ``n_rows`` rows
+    (the year of a numeric time column from ``task_metadata.time_unit``), whole groups, whole time values, the
     stratum. ``n_rows`` defaults to the container's train budget (``row_budget.train``); a container without one, or a
     side within it, gives the train side whole::
 
@@ -976,6 +1006,7 @@ def subsample_train(
         train,
         n_rows,
         time_on=time_on if sampling is None or sampling.default == "newest_year" else None,
+        time_unit=getattr(task, "time_unit", None),
         group_on=task.group_on if unit == "groups" else None,
         stratify_on=sampling.stratify_on if sampling is not None else task.stratify_on,
         whole_values_of=time_on if unit == "time_values" else None,

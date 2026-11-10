@@ -1079,18 +1079,20 @@ class AbstractCuratedDataset(ABC):
     def train_sampling(self, df: pd.DataFrame | None = None) -> TrainSampling | None:
         """How a benchmark sub-samples this dataset's train sides to ``row_budget.train`` (None without a budget).
 
-        The newest year at random for a temporal task on a datetime time column, else at random; whole groups for a
-        grouped task, whole time values with ``TemporalSplits(sample_by="time")``; stratified like the splits.
+        A temporal task: the newest year, extended back in time until it holds ``row_budget.train`` rows, and a random
+        sample of those (the year of a numeric time column from ``Temporal(time_unit=...)``). IID and grouped tasks: at
+        random. Whole groups for a grouped task, whole time values with ``TemporalSplits(sample_by="time")``;
+        stratified like the splits.
         """
         if self.row_budget is None:
             return None
         task = self.task_metadata
         by_time = self._samples_by_time()
-        frame = self.df if df is None else df
-        dated = task.time_on is not None and pd.api.types.is_datetime64_any_dtype(frame[task.time_on])
+        if task.time_on is not None:
+            self._check_time_unit((self.df if df is None else df)[task.time_on])
         unit = "time_values" if by_time else ("groups" if task.group_on is not None else "rows")
         return TrainSampling(
-            default="newest_year" if dated else "random",
+            default="newest_year" if task.time_on is not None else "random",
             unit=unit,
             stratify_on=None if by_time else task.stratify_on,
         )
@@ -1106,7 +1108,7 @@ class AbstractCuratedDataset(ABC):
         unit = {"rows": "rows", "groups": "whole groups", "time_values": "whole values of the time column"}
         where = ""
         if sampling.default == "newest_year":
-            where = " from the newest year before each window (the newest rows when that year holds fewer)"
+            where = " from the newest year before each window, extended back in time until it holds that many rows"
         return f"by default {unit[sampling.unit]} drawn at random{where}, `subsample_train`"
 
     def _window_splits(self, df: pd.DataFrame) -> tuple[Splits, str]:
@@ -1151,6 +1153,8 @@ class AbstractCuratedDataset(ABC):
         Every split side comes in row order: a side is a set of rows, and the container's row table stores it so.
         """
         df = self.df if df is None else df
+        if self.temporal is not None:
+            self._check_time_unit(df[self.temporal.on])
         plan = self._make_splits(df)
         if not isinstance(plan, SplitPlan):
             plan = SplitPlan(splits=plan)
@@ -1166,6 +1170,27 @@ class AbstractCuratedDataset(ABC):
             msg = f"{type(self).__name__}: custom splits need a `splits_comment` (or `SplitPlan(comment=...)`)."
             raise DatasetDefinitionError(msg)
         return plan
+
+    def _check_time_unit(self, times: pd.Series) -> None:
+        """Check the time column's calendar against ``Temporal(time_unit=...)``.
+
+        A date has its own calendar; a numeric time column says what a step counts when the train sampler needs it.
+        """
+        unit, name = self.temporal.time_unit, type(self).__name__
+        dated = pd.api.types.is_datetime64_any_dtype(times)
+        if unit is not None and dated:
+            msg = f"{name}: `{times.name}` is a date, whose calendar is its own: drop `Temporal(time_unit=...)`."
+            raise DatasetDefinitionError(msg)
+        if unit is not None and not pd.api.types.is_numeric_dtype(times):
+            msg = f"{name}: `time_unit` counts steps of a numeric time column; `{times.name}` is {times.dtype}."
+            raise DatasetDefinitionError(msg)
+        if unit is None and not dated and self.row_budget is not None:
+            msg = (
+                f"{name}: a benchmark samples the train sides of a version with a `row_budget` from their newest year, "
+                f"and `{times.name}` is no date: declare what one step of it counts, `Temporal(..., time_unit=...)` "
+                "(numerai's weekly eras: `time_unit='weeks'`)."
+            )
+            raise DatasetDefinitionError(msg)
 
     def preview_splits(self, df: pd.DataFrame | None = None) -> pd.DataFrame:
         """One row per outer split with its train/test sizes, and time ranges for a temporal task."""
@@ -1945,6 +1970,7 @@ def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadataV
         objective_metric=metric_spec(_declared_metric(cls), cls.problem_type),
         stratify_on=stratify_on,
         time_on=cls.temporal.on if cls.temporal is not None else None,
+        time_unit=cls.temporal.time_unit if cls.temporal is not None else None,
         grouping=grouping,
         scoring_columns=[dataclasses.replace(c, description=clean_text(c.description)) for c in cls.scoring_columns],
         sample_weight=cls.sample_weight,

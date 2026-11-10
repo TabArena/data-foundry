@@ -234,7 +234,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
-        - The row budget: each test window keeps at most 500k of its rows (all of them here), and each train side holds every earlier row, so the frame keeps all 1,526,659 applications. The 1M train budget is recorded, not applied: a benchmark sub-samples each train side to 1M rows before a fit with `subsample_train`. Its default is a random 1M of the newest year before the window, or the newest 1M rows where that year holds fewer (splits comment), in place of TabReD's random sub-sampling of all earlier rows: the study of issue #70 found the newest year best for dated data.
+        - The row budget: each test window keeps at most 500k of its rows (all of them here), and each train side holds every earlier row, so the frame keeps all 1,526,659 applications. The 1M train budget is recorded, not applied: a benchmark sub-samples each train side to 1M rows before a fit with `subsample_train`. Its default is the newest year before the window, extended back in time until it holds 1M rows, and a random 1M of those (splits comment), in place of TabReD's random sub-sampling of all earlier rows: the study of issue #70 found the newest year best for dated data.
     """
 
     # Task
@@ -250,7 +250,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We follow TabRed's test period (2020-05-01 to 2020-10-05) and split it into 3 test windows of 2 months (May-June, July-August, September to 2020-10-05), simulating a model refit every 2 months; each window trains on all previous data. Each window keeps all its rows (under the 500k budget), and each train side holds every earlier row (1.30M to 1.46M); a benchmark sub-samples it to 1M before a fit (`subsample_train`): by default a random 1M of the newest year before the window, or the newest 1M rows where that year holds fewer (825k rows before the September window, 940k before July), so each window trains on the 12 to 14 months before it.
+        We follow TabRed's test period (2020-05-01 to 2020-10-05) and split it into 3 test windows of 2 months (May-June, July-August, September to 2020-10-05), simulating a model refit every 2 months; each window trains on all previous data. Each window keeps all its rows (under the 500k budget), and each train side holds every earlier row (1.30M to 1.46M); a benchmark sub-samples it to 1M before a fit (`subsample_train`): by default the newest year before the window, extended back in time until it holds 1M rows, and a random 1M of those; the year before the September window holds 825k rows and the one before July 940k, so each window trains on the 12 to 14 months before it.
     """
     # 3 windows of 2 months replace TabRed's single 4.5-month test period (v2 split protocol, 2026-10), so the horizon
     # drops from 5 to 2 months and results are not comparable with TabRed's. The windows hold 74,687 / 79,743 /

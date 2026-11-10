@@ -222,6 +222,7 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
         splits=TemporalSplits(window=1, unit="unique", n_windows=3),
         horizon=1,
         horizon_unit="years",
+        time_unit="years",
     )
     splits_comment = """
         Three expanding yearly windows, newest first: test 2010 trained on 2006-2009 (4,529 rows, 80.3%; 1,110 test

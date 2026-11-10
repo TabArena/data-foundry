@@ -389,9 +389,9 @@ grouped fold outside its test side. The container records the budget, `experimen
 neither. The 18 versions carry them once rebuilt.
 
 - [ ] **Fit on at most `row_budget.train` rows.** Before each fit the adapter takes the train positions from
-  `data_foundry.v2.subsample_train(container, repeat, fold)`: a random 1M of the newest year of a temporal train side
-  (the newest 1M rows when that year holds fewer; random over all of it for numerai's ordinal eras), whole groups of
-  a grouped one, stratified rows of an IID one. It is deterministic and returns the train side whole for a container
+  `data_foundry.v2.subsample_train(container, repeat, fold)`: for a temporal train side the newest year, extended back
+  in time until it holds 1M rows, and a random 1M of those (numerai's year is 52 eras, from
+  `task_metadata.time_unit`); whole groups of a grouped one, stratified rows of an IID one. It is deterministic and returns the train side whole for a container
   without a budget. Without this step a model trains on the whole history.
 - [ ] **N is a hard cap, validation included.** The rows a fit uses for training and inner validation together are
   at most `row_budget.train`: the inner validation is drawn from the sampled rows, never added to them (Lennart,

@@ -346,11 +346,22 @@ def test_the_default_takes_the_newest_rows_when_the_year_is_short() -> None:
     assert len(by_day) == 2_000
 
 
-def test_the_default_on_an_ordinal_time_or_without_time() -> None:
-    df = yearly_frame().assign(era=lambda d: d["t"].dt.isocalendar().week.astype(int) + 100 * d["t"].dt.year)
-    kept = sample_train_positions(df, np.arange(len(df)), 500, time_on="era")
+def test_the_default_on_a_numeric_time_takes_its_year_from_the_time_unit() -> None:
+    df = yearly_frame().assign(era=lambda d: (d["t"] - d["t"].iloc[0]).dt.days // 7)  # a weekly era, as numerai's
+    positions = np.arange(len(df))
+    kept = sample_train_positions(df, positions, 500, time_on="era", time_unit="weeks")
     assert len(kept) == 500
-    assert df["t"].iloc[kept].min() < pd.Timestamp("2023-01-01")  # random over all history: no datetime, no year
+    assert df["era"].iloc[kept].min() > df["era"].max() - 52  # the newest 52 eras
+    by_date = sample_train_positions(df, positions, 500, time_on="t")
+    assert df["t"].iloc[by_date].min() >= df["t"].max() - pd.DateOffset(years=1)  # the same year by the calendar
+    extended = sample_train_positions(df, positions, 2_000, time_on="era", time_unit="weeks")
+    assert np.array_equal(extended, positions[-2_000:])  # the year holds fewer: extended back in time
+    with pytest.raises(ValueError, match="needs what one step of it counts"):
+        sample_train_positions(df, positions, 500, time_on="era")
+
+
+def test_the_default_without_time() -> None:
+    df = yearly_frame()
     grouped = sample_train_positions(df, np.arange(len(df)), 500, group_on="g")
     assert len(grouped) <= 500
     assert (df["g"].iloc[grouped].value_counts() == 6).all()  # whole groups
