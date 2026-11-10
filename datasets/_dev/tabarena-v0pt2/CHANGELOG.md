@@ -32,17 +32,6 @@ collection tags and the pinned BeyondArena containers stay.
   (the Kaggle copy's `CC BY-SA 4.0` is that uploader's), a random split with a line and no time-basis tag, and no
   `Trivial` (the published Framingham points reach ROC AUC 0.748 against 0.773 for TabPFN 3.5).
 
-## 2026-11-10, PR #58: hepatitis_c_prediction retired (Andrej, 2026-10-27; no container built)
-
-- Andrej set the record to `No (Retired)` on 2026-10-27; its folder is removed and `v2_path` cleared. `DF: Yes`, the
-  collection tags and the pinned BeyondArena container stay. The `Class-dependent Recording` marker and its evidence
-  note stay on the record. Reasons, from his CC of 2026-10-27: donors and patients come from separate, undocumented
-  collections, recorded differently, and donor vs patient is not a decision anyone makes from a liver panel; the 75
-  patients alone are too few to stage (hepatitis vs fibrosis: log loss 0.696 from the blood values without age vs
-  0.691 from the class frequencies). A CC line records the decision; a repeated better-data line is removed.
-- `tests/test_curation_scripts.py`: the participant-kit test builds `eryhemato_squamous_disease` in place of
-  `hepatitis_c_prediction` (it runs where the raw file is downloaded).
-
 ## 2026-11-10, `ljubljana_breast_cancer` retired as `Trivial` (Andrej's mark on the BeyondArena v0.2 review page)
 
 - TP-4 now separates a feature or unfitted rule that beats the methods (proof of `Trivial`) from one that matches them
@@ -863,8 +852,9 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
   collection tags and the pinned BeyondArena container stay. The record carries his October disagreement notes.
   - `early_stage_diabetes_risk_prediction`: patients of a diabetes hospital, not the adults the screening use case is
     for; 52% of the rows repeat another row.
-- `hepatitis_survival_prediction`, retired the same day, is not retired here: Andrej reversed the retirement on
-  2026-11-10 (BeyondArena v0.2 review page), as no reason for it held; its record and folder are left unchanged.
+- `hepatitis_survival_prediction` and `hepatitis_c_prediction`, retired the same day, are not retired here: Andrej
+  reversed both retirements on 2026-11-10 (BeyondArena v0.2 review page), as no reason for them held; their records
+  and folders are left unchanged.
 
 ## 2026-11-05, three tasks without a real target retired; new marker `No Signal`
 

@@ -3,11 +3,10 @@ unique_name: hepatitis_c_prediction
 name: Hepatitis C Prediction Dataset
 checked_by:
 - Lennart
-- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-suggestion: No (Retired)
+suggestion: 'Yes'
 decision_markers:
 - Selection Bias
 - Class-dependent Recording
@@ -26,6 +25,7 @@ source_links:
 - https://doi.org/10.24432/C5D612
 - https://www.kaggle.com/datasets/fedesoriano/hepatitis-c-dataset
 notebook_path: datasets/beyond_iid/new_iid/hepatitis_c_prediction/hepatitis_c_prediction.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/hepatitis_c_prediction/dataset.py
 source_row: 771
 type_adapter_id: curation-record-v1
 ---
@@ -39,14 +39,6 @@ Need to check label distribution of class and if multiple entries per patient ID
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Hoffmann et al. 2018 report overall and per-class accuracy under leave-one-out; 88% donors, so accuracy is dominated by donor vs patient; the suspect-donor class is dropped (MET-2). Original rejected: accuracy. log_loss is the multiclass fallback.
 
 CC (2026-10-21, Lennart): the metric is the log_loss fallback, as proposed; balanced accuracy, a threshold metric the paper did not choose, is not used.
-
-CC (2026-10-27, Andrej): 533 blood donors and 75 hepatitis C patients, donated to UCI by a Hannover clinical-chemistry group; the label is donor or one of three disease stages (hepatitis, fibrosis, cirrhosis). Suggest excluding.
-- Reasons to exclude:
-  - **Donors and patients come from separate collections:** the cited paper has no donors, and the groups were recorded differently (number format, ALP missing only for patients, ALT, a liver enzyme raised in hepatitis C, lower in most patients than in donors). The donor group is itself odd: nobody under 32, and the 7 "suspect donors" are visibly ill (albumin 15-25 g/L, normal 35-52). So donor vs patient, 88% of the rows, compares two undocumented collections. It is not a real decision either: hepatitis C is diagnosed with antibody and viral RNA tests, not liver panels.
-  - **The patients alone are too few:** staging them from routine blood values, the cited paper's task, leaves 75 rows (24 / 21 / 30), and only cirrhosis stands out. Between hepatitis and fibrosis, the blood values without age do no better than predicting the class frequencies (log loss 0.696 vs 0.691).
-- Evidence: `~/claude_jobs/hcv_review/`.
-
-CC (2026-10-27, Andrej): retired (`No (Retired)`) for the two reasons above.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_liver_elastography_fibrosis` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
