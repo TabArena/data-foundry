@@ -529,6 +529,7 @@ repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is t
 | Only a row order (california, mercedes) | `TemporalSplits(window=320, unit="rows", n_windows=9)` (horizon: 320 steps); `window=None` needs `Temporal(horizon=..., horizon_unit="steps")` |
 | A gap in a smaller unit than the window (g_research_crypto_forecasting_1m: 3 x 91 days, 15-minute gap, whole minutes sampled) | `TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes", sample_by="time")` |
 | Overlapping windows (ghana, now retired: 3 days moving by 2) | `TemporalSplits(window=3, unit="days", step=2, min_train_fraction=0.5)` |
+| Windows spread over the horizon instead of the newest weeks (proposed for the `_1m` versions, not yet used; see the study of 2026-11-10) | `TemporalSplits(window=7, unit="days", n_windows=3, placement="spread")`: the newest window, the oldest whose train side keeps `min_train_fraction` (default 0.5) of the rows, and the others evenly between |
 
 The number of windows follows `recommended_dimensions` (20, 10, 3 or 1 times 3), never fewer than 3 (`splits_too_few`)
 and never a train side below half the data (`min_train_fraction=0.5`); then widen windows of fewer than about 50 test

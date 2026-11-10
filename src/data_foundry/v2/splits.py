@@ -79,6 +79,15 @@ SampleBy = Literal["rows", "time"]
 * ``"time"``: whole values of the time column, in one random order of the values; every row of a drawn value is kept.
 """
 
+Placement = Literal["newest", "spread"]
+"""Where :class:`TemporalSplits` puts its windows: ``"newest"`` (default) walks back from the newest data, one window
+after the other; ``"spread"`` puts ``n_windows`` windows evenly over the eligible horizon, from the newest window back
+to the oldest whose train side keeps the floor (:func:`spread_windows`), so the test windows cover the horizon instead
+of its last weeks."""
+
+SPREAD_MIN_TRAIN_FRACTION = 0.5
+"""The floor of a spread placement without ``min_train_fraction``: SPLIT-14's smallest train share."""
+
 
 # --- split dimensions -----------------------------------------------------------------------------------------
 
@@ -239,6 +248,7 @@ class TemporalSplits:
         TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)
         TemporalSplits(window=7, unit="days", n_windows=3)                    # a `_1m` version: 3 weeks
         TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes", sample_by="time")
+        TemporalSplits(window=7, unit="days", n_windows=3, placement="spread")  # the newest, a middle, the oldest
 
     A window of fixed length is the prediction horizon (:attr:`horizon`): ``window`` ``unit`` for a calendar unit,
     ``window`` steps for ``unit="rows"``.
@@ -262,6 +272,7 @@ class TemporalSplits:
     min_train_fraction: float | None = None
     gap_unit: GapUnit | None = None
     sample_by: SampleBy = "rows"
+    placement: Placement = "newest"
 
     def __post_init__(self) -> None:
         problems = []
@@ -296,10 +307,36 @@ class TemporalSplits:
                 problems.append("gap_unit is set, but there is no gap (gap=0)")
         if self.sample_by not in ("rows", "time"):
             problems.append(f"sample_by={self.sample_by!r} is not one of ('rows', 'time')")
+        return problems + self._placement_problems()
+
+    def _placement_problems(self) -> list[str]:
+        if self.placement not in ("newest", "spread"):
+            return [f"placement={self.placement!r} is not one of ('newest', 'spread')"]
+        problems = []
+        if self.placement == "spread":
+            if self.n_windows is None or self.n_windows < 2:
+                problems.append("placement='spread' needs n_windows of 2 or more")
+            if self.cutoffs is not None or self.step is not None:
+                problems.append("placement='spread' places the windows itself: leave cutoffs and step unset")
+            if self.window is None:
+                problems.append("placement='spread' needs a fixed window")
         return problems
 
     def splits(self, df: pd.DataFrame, time_on: str) -> Splits:
         """Build the splits for ``df`` (sorted by ``time_on``)."""
+        if self.placement == "spread":
+            return spread_windows(
+                temporal_window_splits(
+                    df,
+                    time_on=time_on,
+                    window=self.window,
+                    unit=self.unit,
+                    gap=self.gap,
+                    gap_unit=self.gap_unit,
+                    min_train_fraction=self.floor,
+                ),
+                self.n_windows,
+            )
         return temporal_window_splits(
             df,
             time_on=time_on,
@@ -320,6 +357,11 @@ class TemporalSplits:
         size = f"{window} {unit}" if window is not None else "from each cutoff to the end of the data"
         if self.cutoffs is not None:
             where = f"starting at {', '.join(str(c) for c in sorted(self.cutoffs, reverse=True))}"
+        elif self.placement == "spread":
+            where = (
+                "spread evenly from the newest window back to the oldest whose train side keeps "
+                f"{self.floor:.0%} of the data"
+            )
         else:
             where = "walking back from the newest data"
         text = f"Expanding-window temporal splits: {n_built} test window(s) of {size}, {where}, newest first"
@@ -329,6 +371,11 @@ class TemporalSplits:
         if self.gap:
             text += f" up to a gap of {self.gap} {self.gap_unit or unit}"
         return text + "."
+
+    @property
+    def floor(self) -> float:
+        """The smallest train share a spread window may have: ``min_train_fraction``, else SPLIT-14's 50%."""
+        return self.min_train_fraction if self.min_train_fraction is not None else SPREAD_MIN_TRAIN_FRACTION
 
     @property
     def horizon(self) -> tuple[int, str] | None:
@@ -618,6 +665,27 @@ def _calendar_end(last: pd.Timestamp, unit: str) -> pd.Timestamp:
     if unit == "months":
         return day.replace(day=1) + pd.DateOffset(months=1)
     return day.replace(month=1, day=1) + pd.DateOffset(years=1)
+
+
+def spread_windows(candidates: Splits, n_windows: int) -> Splits:
+    """``n_windows`` of the ``candidates`` (contiguous windows, newest first), evenly spaced from the newest to the
+    oldest, re-keyed newest first.
+
+    The windows keep their length and gap; only which of them test changes. Each is still trained on all earlier
+    rows, so the oldest one trains on the least data, at least the floor its candidates were built with.
+
+    Raises:
+        ValueError: When fewer candidate windows fit than ``n_windows``.
+    """
+    keys = sorted(candidates)
+    if len(keys) < n_windows:
+        msg = (
+            f"Only {len(keys)} window(s) fit above the train floor, fewer than n_windows={n_windows}: shorten the "
+            "window or use fewer windows."
+        )
+        raise ValueError(msg)
+    picked = np.unique(np.round(np.linspace(0, len(keys) - 1, n_windows)).astype(int))
+    return {i: candidates[keys[p]] for i, p in enumerate(picked)}
 
 
 # --- the row budget -------------------------------------------------------------------------------------------

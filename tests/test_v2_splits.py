@@ -302,6 +302,41 @@ def test_temporal_windows_gap_in_its_own_unit() -> None:
         )
 
 
+def test_spread_windows_cover_the_horizon_above_the_floor() -> None:
+    """The newest window, the oldest that keeps half the rows for training, and one evenly between."""
+    days = pd.DataFrame({"t": pd.date_range("2024-01-01", periods=200, freq="D")})
+    spec = protocol.TemporalSplits(window=7, unit="days", n_windows=3, placement="spread")
+    splits = spec.splits(days, "t")
+    every = protocol.temporal_window_splits(days, time_on="t", window=7, unit="days", min_train_fraction=0.5)
+    assert sorted(splits) == [0, 1, 2]
+    assert splits[0] == every[0]  # the newest window first
+    assert splits[2] == every[max(every)]  # the oldest above the floor last
+    assert splits[1] == every[round(max(every) / 2)]
+    for folds in splits.values():
+        train, test = folds[0]
+        assert len(train) >= 0.5 * len(days)
+        assert len(test) == 7
+    assert "spread evenly from the newest window back to the oldest" in spec.describe(len(splits))
+    floor = protocol.TemporalSplits(window=7, unit="days", n_windows=3, placement="spread", min_train_fraction=0.8)
+    assert min(len(f[0][0]) for f in floor.splits(days, "t").values()) >= 0.8 * len(days)
+
+
+def test_spread_windows_need_room_and_refuse_fixed_placements() -> None:
+    """Too short a horizon for the windows is an error, and so are a step, cutoffs or an unknown placement."""
+    days = pd.DataFrame({"t": pd.date_range("2024-01-01", periods=30, freq="D")})
+    with pytest.raises(ValueError, match="Only 2 window"):
+        protocol.TemporalSplits(window=7, unit="days", n_windows=3, placement="spread").splits(days, "t")
+    for kwargs, message in (
+        ({"n_windows": None, "min_train_fraction": 0.5}, "needs n_windows"),
+        ({"n_windows": 3, "step": 14}, "leave cutoffs and step unset"),
+        ({"cutoffs": ("2024-01-10",)}, "leave cutoffs and step unset"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            protocol.TemporalSplits(window=7, unit="days", placement="spread", **kwargs)
+    with pytest.raises(ValueError, match="placement="):
+        protocol.TemporalSplits(window=7, unit="days", n_windows=3, placement="random")
+
+
 def test_temporal_sampling_within_budget_changes_nothing() -> None:
     df = daily_frame(n_days=20)
     windows = protocol.temporal_window_splits(df, time_on="t", window=5, unit="days", n_windows=3)
