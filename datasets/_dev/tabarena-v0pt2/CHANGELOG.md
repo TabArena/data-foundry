@@ -1,5 +1,24 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10, test windows chosen per dataset (SPLIT-15); proposals for the temporal `_1m` versions (no definition changed)
+
+- SPLIT-15 is rewritten: the newest window is always a test window, and the others are the curator's choice per
+  dataset, argued from the use case with statistics of the data, never a model's score. `dataset windows <name>`
+  lists the candidate windows with their months, rows, train share, target and feature drift; the README's splits
+  section describes the chosen windows ("The test windows", at the next check). Explicit `cutoffs` must include the
+  newest window; the 11 definitions that declare cutoffs do.
+- A proposal on the test windows is an open issue in the REVIEW.md of 11 temporal `_1m` versions, for the curator to
+  decide: other windows for aeolus_rebuilt_1m, climate_model_weather_forecasting_1m, delivery_eta_1m,
+  nyc_taxi_trip_duration_1m, pkdd_15_taxi_trip_time_prediction_ii_1m, maps_router_eta_1m, consumer_complaints_1m and
+  home_credit_default_stability_1m; today's windows for numerai_v5_2_1m and ashrae_great_energy_predictor_iii_1m;
+  cooking_time_1m has no alternative above the floor (its splits comment should say what it cannot test).
+  g_research_crypto_forecasting_1m's proposal is in the PR description, as its folder is held by another session.
+- Found on the way: maps_router_eta_1m's oldest window trains on 44.8% of all routes, below SPLIT-14's floor, now
+  that the container keeps every route (its proposal fixes it); ashrae_great_energy_predictor_iii_1m's January-April
+  window trains on 49.47% (the splits comment says 49.12%), under the floor's 40% allowance for recurring meters;
+  delivery_eta_1m's features change on 23-24 November 2023 (`num_96` goes from 1.8% to 99.7% missing, 31 of 217
+  numeric features move by more than half a standard deviation), which no curation note mentions yet.
+
 ## 2026-11-10, the `_1m` versions keep every training row (issue #70; no container built)
 
 - A `row_budget` now caps only the test sides in the container: each split tests on at most 500k rows, drawn as

@@ -4,19 +4,16 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
+import pytest
 from data_foundry.v2 import get_dataset
 from data_foundry.v2.cli import add_dataset_parser
 from data_foundry.v2.splits import TemporalSplits, temporal_window_splits, window_bounds
 from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
 from tests.test_v2_dataset import temporal_version_body, warehouse, write_definition  # noqa: F401 - the fixture
-
-if TYPE_CHECKING:
-    import pytest
 
 
 def three_years(seed: int = 0) -> pd.DataFrame:
@@ -129,3 +126,22 @@ def test_the_readme_describes_the_test_windows(tmp_path: Path, warehouse: Path) 
     assert "### The test windows" in readme
     assert "dataset windows toy_ds_0p19k" in readme
     assert "| period |" in readme
+
+
+def test_unseen_categories_read_the_whole_train_side_and_free_text_is_left_out() -> None:
+    """A level held by one early train row is seen, though no sample would draw it; free text has no levels."""
+    df = three_years()
+    rare = df["c"].astype(str).to_numpy()
+    rare[5] = "rare"  # one row of January 2021
+    rare[-1] = "rare"  # and one in the newest window
+    df["c"] = pd.Categorical(rare)
+    df["note"] = pd.Series([f"text {i}" for i in range(len(df))], dtype="string")
+    windows = candidate_windows(df, "t", TemporalSplits(window=1, unit="months", n_windows=3))[:2]
+    table = stats(df, windows, features=["x", "c", "note"], n_rows=50)
+    assert table["unseen_categories"].iloc[0] == pytest.approx(1 / 3, abs=0.2)  # `new` only, not `rare`
+    assert "note" not in table["top_drift"].iloc[0]
+    listed = [Window(train=list(w.train), test=w.test) for w in windows]  # not a range: read whole
+    assert (
+        stats(df, listed, features=["c"])["unseen_categories"].tolist()
+        == stats(df, windows, features=["c"])["unseen_categories"].tolist()
+    )

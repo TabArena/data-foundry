@@ -568,8 +568,9 @@ It lists the candidate windows of the declared length and gap (`window_stats` of
 definition's own marked `*`: the dates and the months covered, the weekdays of a window shorter than a week, the test
 rows and the train share, the target on each side (a binary target's event share and count, a regression target's
 mean and quantiles), and the drift of the features from the train side (the population stability index of each
-feature, its largest value and the features behind it, and the share of test rows with a category the train side
-never shows). Read it against the use case: which periods must a deployed model handle, which windows show them, and
+feature, its largest value and the features behind it, and the share of test rows with a category the whole train
+side never shows; free text and dates are left out). A feature that counts time (epoch seconds, a year, a running
+index) drifts in every window: read past it to the next features. Read it against the use case: which periods must a deployed model handle, which windows show them, and
 which are near copies of the newest (the same season, little drift). Declare the choice with `cutoffs` (the newest
 window's start among them; a choice without it is refused), and write the reasons into `splits_comment` with the
 numbers they rest on. A numeric time column (numerai's eras) states what one step counts with
