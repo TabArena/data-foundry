@@ -18,6 +18,10 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
+- Selected build on 2026-11-10: one accepted dataset, container format 2, one traced raw file (3,213,377 bytes).
+  Reload verification and reproduction using only that input passed with identical checksums. This was a selected
+  build, not a rebuild of the full working copy; the dataset's generated card records its UUID and checksum.
+
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows

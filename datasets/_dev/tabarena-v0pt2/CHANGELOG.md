@@ -1,5 +1,13 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10: Chromophore built and reproduced
+
+- Built the accepted `chromophore_optical_properties_db` definition at clean Git revision `8a50be6ccb71d6b8fb77047ba7603028dd37e596`: format 2, 17,510 rows, three predictors, 3,335 groups and nine folds. UUID `01a1c4ae-5ada-74a4-b90e-d5924662a442`; checksum `v2:97decdfc67653a344bdbc617300599730e279e24d81cdd2d821e68525f89ccb2`.
+- Saved-container reload and checksum verification pass. The complete ordered frame and all nine ordered train/test memberships equal the accepted qualification; no new task-probe sweep was needed. Existing signal and family-variation findings remain applicable.
+- The build read one pinned CSV (3,213,377 bytes). Reproduction using only that traced input gives the same checksum; a local raw-input ZIP with SHA256 manifest was verified. No containers or raw data enter Git, and no previous container was removed.
+- Native build has zero errors or unaccepted warnings; the specific accepted gas/no-solvent warning and conflicting-response information are unchanged. Tests: 2,017 passed, 286 skipped; exact CI lint scope passes. Repository-wide lint retains pre-existing legacy-notebook findings outside CI scope; no unrelated formatting changes were made.
+- This selected local build preserves the curator's 1A/2A, declared RMSE and gas acceptance. The active claim stays until normal integration; no push or publication is included.
+
 ## 2026-11-10: Chromophore accepted by curator
 
 - Myunghwan chose "1A, 2A, RMSE as declared, accept gas warning, ship" for `chromophore_optical_properties_db`. Independent decision-register/precedent review found zero conflicts; no rule exception or amendment is required.
