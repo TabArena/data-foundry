@@ -16,7 +16,6 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     Smiles,
-    Source,
     TaskSummary,
     canonical_smiles,
     scaffold_groups,
@@ -134,28 +133,11 @@ class PapyrusBioactivity(AbstractCuratedDataset):
         ),
     )
     unique_name = "papyrus_bioactivity"
-    sources = (
-        Source(
-            role="publication",
-            platform="Other",
-            url="https://doi.org/10.4121/16896406.v1",
-            license="CC BY-SA 4.0",
-            year="2021",
-            bibtex="""
-        @article{bequignon2023papyrus,
-          title={Papyrus: a large-scale curated dataset aimed at bioactivity predictions},
-                    author={Bequignon, Olivier J. M. and Bongers, Brandon J. and Jespers, Willem and IJzerman, Ad P.
-          and van der Water, Bob and van Westen, Gerard J. P.},
-          journal={Journal of Cheminformatics},
-          volume={15},
-          number={3},
-          year={2023},
-          doi={10.1186/s13321-022-00672-x}
-        }
-    """,
-        ),
-    )
+    year = "2021"
     domain = "chemistry & material science"
+    source = "Other"
+    source_url = "https://doi.org/10.4121/16896406.v1"
+    license = "CC BY-SA 4.0"
     download_description = """
         The first Papyrus data publication is cited as 2021 in the 2023 paper (reference 20).
         This definition pins release 2024.2 / files05.7: https://zenodo.org/records/13987985 .
@@ -168,6 +150,18 @@ class PapyrusBioactivity(AbstractCuratedDataset):
         The commands save the filenames this definition expects. The publisher MD5 values are checked before
         preparation. The high-quality source slice is reproduced by this definition; no external script is needed.
         The release README and 05.7_additional_files.zip document schema, counts and CC BY-SA 4.0 terms.
+    """
+    bibtex = """
+        @article{bequignon2023papyrus,
+          title={Papyrus: a large-scale curated dataset aimed at bioactivity predictions},
+                    author={Bequignon, Olivier J. M. and Bongers, Brandon J. and Jespers, Willem and IJzerman, Ad P.
+          and van der Water, Bob and van Westen, Gerard J. P.},
+          journal={Journal of Cheminformatics},
+          volume={15},
+          number={3},
+          year={2023},
+          doi={10.1186/s13321-022-00672-x}
+        }
     """
     curation_comments = """
         Papyrus2024.2/files05.7 supplies standardized non-stereochemical activities and intrinsic protein metadata.

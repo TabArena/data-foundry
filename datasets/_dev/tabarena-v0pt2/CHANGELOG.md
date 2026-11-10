@@ -810,6 +810,7 @@ wisconsin. Open: noaa_storm issue 15 (the AI now recommends keeping the damage u
 - Native checks: 27, zero errors, one proposed gas/no-solvent warning. Completed task, leakage, raw, dtype and bounded group probes, strict train-only diagnostics and full independent panel with debate, mediation and cold editing. Strict exploratory LightGBM mean RMSE 56.655 nm versus native mean baseline 106.481; held-out-family variation remains material.
 - Two independent curator choices remain: equal-response multiplicity (193 input/target repeats versus 50 full-record repeats) and retention of differing responses (61 sets / 124 current rows). Priority 3; earlier source-count, metric-origin and scope claims are corrected in the dated assessment. No human final-inclusion mark, container build, commit or publication.
 
+
 ## 2026-11-09: Papyrus pooled bioactivity qualification (Myunghwan)
 
 - Add `papyrus_bioactivity`: 692,017 original mean-pChEMBL labels across 5,057 proteins, seven intrinsic compound/protein inputs and three scaffold-disjoint folds. Retain recognized complete source means; no new aggregate or Ki-only cut. Explicit approximate pre-assay structural generalization, without chronological validity.
@@ -818,6 +819,7 @@ wisconsin. Open: noaa_storm issue 15 (the AI now recommends keeping the damage u
 - Record remains WIP(DF), priority3, with human inclusion verdict pending. No build, container, curation commit or publication.
 
 ## 2026-11-09: Football deferred by curator
+
 
 ## 2026-11-09: Football deferred by curator
 
