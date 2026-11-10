@@ -3,7 +3,20 @@ report_format: data-foundry-report-v2
 unique_name: chromophore_optical_properties_db
 container_format: 2
 checksum: v2:97decdfc67653a344bdbc617300599730e279e24d81cdd2d821e68525f89ccb2
-build: null
+build:
+  uuid: 01a1c4ae-5ada-74a4-b90e-d5924662a442
+  checksum: v2:97decdfc67653a344bdbc617300599730e279e24d81cdd2d821e68525f89ccb2
+  built_at: '2026-11-10T08:58:44+00:00'
+  path: chromophore_optical_properties_db/01a1c4ae-5ada-74a4-b90e-d5924662a442
+  data_foundry_version: 0.0.5
+  git_sha: 8a50be6ccb71d6b8fb77047ba7603028dd37e596
+  libraries:
+    python: 3.12.3
+    pandas: 3.1.0
+    numpy: 2.5.4
+    pyarrow: 26.0.0
+    scikit-learn: 1.7.2
+    polars: 2.0.0
 build_stale: false
 data:
   n_rows: 17510
@@ -71,7 +84,7 @@ decisions: []
 
 Regression of `Absorption max (nm)`, scored with `rmse` on grouped splits by `scaffold`. 17,510 rows and 3 features. Source: Other (2020).
 
-Not built yet. The current definition gives checksum `v2:97decdfc67653a344bdbc617300599730e279e24d81cdd2d821e68525f89ccb2`.
+Built as `01a1c4ae-5ada-74a4-b90e-d5924662a442` on 2026-11-10. See [Build](#build).
 
 ## In brief
 
@@ -344,4 +357,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a1c4ae-5ada-74a4-b90e-d5924662a442 |
+| checksum | v2:97decdfc67653a344bdbc617300599730e279e24d81cdd2d821e68525f89ccb2 |
+| built_at | 2026-11-10T08:58:44+00:00 |
+| path | chromophore_optical_properties_db/01a1c4ae-5ada-74a4-b90e-d5924662a442 |
+| data_foundry_version | 0.0.5 |
+| git_sha | 8a50be6ccb71d6b8fb77047ba7603028dd37e596 |
+| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |

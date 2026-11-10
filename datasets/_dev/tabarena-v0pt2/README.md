@@ -50,6 +50,10 @@ with zero build errors or warnings. The dated changelog records its UUID and che
 README identifies its own latest build. This scoped run does not update the other definitions' build records.
 
 - Latest scoped build, November 9, 2026: one Meituan container, format 2, from one traced CSV (121,698,401 bytes). Reload verification and reproduction from the traced input pass; see the dataset report and dated CHANGELOG. Other datasets were not rebuilt.
+- Selected build on 2026-11-10: one accepted dataset, container format 2, one traced raw file (3,213,377 bytes).
+  Reload verification and reproduction using only that input passed with identical checksums. This was a selected
+  build, not a rebuild of the full working copy; the dataset's generated card records its UUID and checksum.
+
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows
