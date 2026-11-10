@@ -22,6 +22,14 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
   Reload verification and reproduction using only that input passed with identical checksums. This was a selected
   build, not a rebuild of the full working copy; the dataset's generated card records its UUID and checksum.
 
+Latest scoped build, 2026-11-10: one requested definition, container format 2,
+5 traced input files totaling 856,881,288 bytes. Saved reload and minimal-input
+reproduction pass with zero build errors/warnings; both prepared tables also
+regenerate exactly from publisher inputs. The local input backup is manifested
+and verified. See the dated changelog and generated dataset report for build
+identity. Other definitions' build records are unchanged.
+
+
 Scoped build on 2026-11-08 (November 9 UTC): one requested definition, container format 2,
 four traced input files totaling 5,003,658 bytes. Reload and minimal-input reproduction passed
 with zero build errors or warnings. The dated changelog records its UUID and checksum; each dataset's generated
