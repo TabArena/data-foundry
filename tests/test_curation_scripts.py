@@ -355,19 +355,19 @@ def test_participant_score_aggregates_per_group(clean_room, tmp_path):
     assert value == pytest.approx(np.sqrt((1.0**2 + 0.0**2) / 2))
 
 
-HEPATITIS_RAW = REPO / "local-data-warehouse" / "hepatitis_c_prediction" / "hcvdat0.csv"
+DERMATOLOGY_RAW = REPO / "local-data-warehouse" / "eryhemato_squamous_disease" / "dermatology.data"
 
 
-@pytest.mark.skipif(not HEPATITIS_RAW.exists(), reason="the raw files of hepatitis_c_prediction are not downloaded")
-def test_participant_kit_on_hepatitis(clean_room, tmp_path):
+@pytest.mark.skipif(not DERMATOLOGY_RAW.exists(), reason="the raw file of eryhemato_squamous_disease is not downloaded")
+def test_participant_kit_on_dermatology(clean_room, tmp_path):
     """The real definition: every row, the shipped splits, a metric without our notes, and a score.py that runs."""
     out = tmp_path / "participant_kit"
     clean_room.write_participant(
-        "hepatitis_c_prediction",
+        "eryhemato_squamous_disease",
         out,
         root=REPO / "datasets" / "_dev" / "tabarena-v0pt2",
         records=REPO / "curation" / "records",
-        prediction_point="a laboratory physician reads a blood panel",
+        prediction_point="a dermatologist examines the skin, before any biopsy",
     )
     names = sorted(p.name for p in out.iterdir())
     assert names == ["data.parquet", "metrics.py", "score.py", "splits.parquet", "task.json", "task.md", "work"]
@@ -378,7 +378,8 @@ def test_participant_kit_on_hepatitis(clean_room, tmp_path):
     splits = pd.read_parquet(out / "splits.parquet")
     assert set(splits["side"]) == {"train", "test"}
     assert splits["row"].max() < len(pd.read_parquet(out / "data.parquet"))
-    for note in ("donor rows", "round", "MET-2", "hepatitis_c_prediction"):  # curation comments, metric reason, name
+    # curation comments, metric reason, name
+    for note in ("CLEAN-14", "Guevenir", "VFI5", "eryhemato_squamous_disease"):
         assert note not in (out / "task.md").read_text()
     run = subprocess.run([sys.executable, "-I", "score.py"], cwd=out, capture_output=True, text=True, check=True)
     assert run.stdout.startswith("r0f0: train ")

@@ -1,5 +1,16 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10, PR #58: hepatitis_c_prediction retired (Andrej, 2026-10-27; no container built)
+
+- Andrej set the record to `No (Retired)` on 2026-10-27; its folder is removed and `v2_path` cleared. `DF: Yes`, the
+  collection tags and the pinned BeyondArena container stay. The `Class-dependent Recording` marker and its evidence
+  note stay on the record. Reasons, from his CC of 2026-10-27: donors and patients come from separate, undocumented
+  collections, recorded differently, and donor vs patient is not a decision anyone makes from a liver panel; the 75
+  patients alone are too few to stage (hepatitis vs fibrosis: log loss 0.696 from the blood values without age vs
+  0.691 from the class frequencies). A CC line records the decision; a repeated better-data line is removed.
+- `tests/test_curation_scripts.py`: the participant-kit test builds `eryhemato_squamous_disease` in place of
+  `hepatitis_c_prediction` (it runs where the raw file is downloaded).
+
 ## 2026-11-10, `ljubljana_breast_cancer` retired as `Trivial` (Andrej's mark on the BeyondArena v0.2 review page)
 
 - TP-4 now separates a feature or unfitted rule that beats the methods (proof of `Trivial`) from one that matches them
