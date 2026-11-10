@@ -2,12 +2,14 @@
 unique_name: football_match_probability_prediction
 name: Football Match Probability Prediction (Kaggle community competition, Octosport with Sportmonks data)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Myunghwan
+data_foundry_status:
+- 'DF: Suspended'
+suggestion: TBD -> 2nd Tier
 priority: 4
 tags:
-- AI-Filled (Verify)
 - Non-IID (Temporal)
+- Revisit later
 original_source: Kaggle
 year: '2022'
 required_split:
@@ -17,8 +19,6 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/competitions/football-match-probability-prediction
 - https://www.sportmonks.com/blogs/football-predictions-kaggle-competition
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -41,3 +41,7 @@ type_adapter_id: curation-record-v1
 - as published: Matches as units; 'more than 150,000 historical matches from 2019 to 2021, more than 860 leagues and 9,500 teams' (Sportmonks); files train.csv (180 MB), test.csv (118 MB), ...; target: Match outcome home / draw / away, scored as probabilities with multiclass log loss (the leaderboard metric); access: registration.
 - Why: The same target (home win / draw / away) and the same leaderboard metric (log loss) as the Laduma rerun, with features of the same kind (team and match history), and here the per-row history covers only matches before the one predicted, so the in-match leak the Laduma records carry is avoided by construction.
 - Adds: Hundreds of times more matches (over 150,000 against a few hundred), hundreds of leagues instead of one masked league, pre-match features only. Note: the Open International Soccer Database (Dubitzky et al., Machine Learning 108, 2019; 216,743 matches, 52 leagues, 2000-2017; results only) is a second source of the ...
+
+CC (2026-11-09, Myunghwan): Defer Football Match Probability Prediction: "The difference seems weak. We may want to defer this dataset." Record this decision in the draft PR. This is a hold on pursuing inclusion, not a scientific rejection.
+
+**Assessment (AI, 2026-11-09, curator deferral):** Save this as a candidate-specific second-tier hold for weak demonstrated incremental model value. In the bounded 18-fit study, January-selected engineered LightGBM averaged source multinomial log loss 1.018451 versus strict raw logistic regression 1.023423: a small 0.004973 (0.486%) improvement, winning February/April and losing March. The best tested smoothed home/away team-record heuristic scored 1.056243. Engineered logistic averaged 1.023029, with iteration caps in April/March; no optimized-linear or exhaustive advanced-family claim follows. The small measured signal is retained; no Trivial, Too Small, No Signal or general minimum-gain rule is inferred. The source-defined fixture task and previously chosen ordinary temporal splits remain valid as qualified; this hold does not reopen that choice or establish a new leak. Preserve the exploratory definition, source files, predictions and independent audits locally. Suspend inclusion/build and release only this active reservation through the official workflow. Suggested reopening guidance: an explicit curator request supported by a justified task/model revision or stronger appropriately validated incremental-value evidence; this guidance is an AI suggestion, not a new quoted curator condition or authorization for unattended search.

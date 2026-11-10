@@ -1,5 +1,289 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10: Chromophore integrated into the accepted draft batch
+
+- Add the curator-accepted and built `chromophore_optical_properties_db` package, preserving the clean source/build commits and resolved review history. Its generated definition, README and REVIEW are byte-identical to the verified build version; no dataset build or model fit is repeated for integration.
+- Preserve the existing seven accepted packages, including the concurrent Papyrus addition, all decision-only records, shared history and main-branch framework changes. Add only the Chromophore record/package and scoped shared documentation.
+- Mark the accepted record `DF: Yes` for the PR while retaining the official claim mirror until merge. The one-name no-steal claim update refreshes its completed build/PR note and expiry, preserving stage and original claim time.
+
+## 2026-11-10: Chromophore built and reproduced
+
+- Built the accepted `chromophore_optical_properties_db` definition at clean Git revision `8a50be6ccb71d6b8fb77047ba7603028dd37e596`: format 2, 17,510 rows, three predictors, 3,335 groups and nine folds. UUID `01a1c4ae-5ada-74a4-b90e-d5924662a442`; checksum `v2:97decdfc67653a344bdbc617300599730e279e24d81cdd2d821e68525f89ccb2`.
+- Saved-container reload and checksum verification pass. The complete ordered frame and all nine ordered train/test memberships equal the accepted qualification; no new task-probe sweep was needed. Existing signal and family-variation findings remain applicable.
+- The build read one pinned CSV (3,213,377 bytes). Reproduction using only that traced input gives the same checksum; a local raw-input ZIP with SHA256 manifest was verified. No containers or raw data enter Git, and no previous container was removed.
+- Native build has zero errors or unaccepted warnings; the specific accepted gas/no-solvent warning and conflicting-response information are unchanged. Tests: 2,017 passed, 286 skipped; exact CI lint scope passes. Repository-wide lint retains pre-existing legacy-notebook findings outside CI scope; no unrelated formatting changes were made.
+- This selected local build preserves the curator's 1A/2A, declared RMSE and gas acceptance. The active claim stays until normal integration; no push or publication is included.
+
+## 2026-11-10: Chromophore accepted by curator
+
+- Myunghwan chose "1A, 2A, RMSE as declared, accept gas warning, ship" for `chromophore_optical_properties_db`. Independent decision-register/precedent review found zero conflicts; no rule exception or amendment is required.
+- Keep the implemented input/target weighting (193 removals; only 50 full-source-record repeats; 143 additional weighting removals) and retain 61 conflicting input sets / 124 current rows with approximate fit and unresolved individual causes. Preserve all qualification and panel history; resolve both numbered issues without removing them.
+- Record fallback RMSE as checked and accept only `dataset_smiles_column` for the 20 gas observations with no solvent molecule. Regenerate the README through the native check. Data, target, predictor contract, metric and grouping/fold logic remain unchanged; existing fitted evidence remains applicable.
+- Scientific acceptance only. The dataset stays unbuilt and locally uncommitted with the active claim preserved; no build, push or publication follows this verdict.
+
+## 2026-11-09: Chromophore qualification for added review
+
+- Added `chromophore_optical_properties_db` from pinned Figshare v3 experimental measurements: first absorption-peak wavelength in nm, two typed SMILES inputs and medium state, fallback RMSE and approximate fit.
+- The implemented repeat policy retains 17,510 rows / 6,498 dyes / 3,335 groups. Join dye scaffolds by nonempty InChI and canonical tautomer identity; all nine current folds pass tested identity separation. Historical pre-correction scores remain separate.
+- Native checks: 27, zero errors, one proposed gas/no-solvent warning. Completed task, leakage, raw, dtype and bounded group probes, strict train-only diagnostics and full independent panel with debate, mediation and cold editing. Strict exploratory LightGBM mean RMSE 56.655 nm versus native mean baseline 106.481; held-out-family variation remains material.
+- Two independent curator choices remain: equal-response multiplicity (193 input/target repeats versus 50 full-record repeats) and retention of differing responses (61 sets / 124 current rows). Priority 3; earlier source-count, metric-origin and scope claims are corrected in the dated assessment. No human final-inclusion mark, container build, commit or publication.
+
+## 2026-11-10: Papyrus addition to the existing curation draft (Myunghwan)
+
+- Integrate the accepted, verified Papyrus package into draft PR59, retaining original clean source/build commits and exact definition/generated report/full review. Set the record's DF:Yes integration proposal while retaining ownership/WIP until main.
+- Refresh only Papyrus's claim note and expiry, preserving Myunghwan, triage and original claim time. All six previous accepted packages and prior rejection/holds remain unchanged. No new build/model, data upload, collection registration, ready transition or merge.
+
+
+## 2026-11-10: Papyrus requested build and local commits
+
+- Build only `papyrus_bioactivity`: format 2, UUID `01a1c4a3-5dd9-7593-8c3b-19181baab684`, checksum `v2:08eb2e46164bb6dbb4f13509ecae23b7f124da5557b178805cc24bb11ddaf47c`, from clean accepted-definition commit `f3f5797fde2b9cd7eeca788bb5bbf35e5f905499`, using pinned Data Foundry runtime `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`. Preserve all 692,017 rows, seven inputs, three scaffold folds, fallback RMSE and pointwise protocol. Zero build errors/warnings.
+- Saved reload and a check from only traced inputs reproduce the checksum. Independently regenerate both prepared tables from the original publisher inputs in private scratch; every value/dtype/order matches. Manifested local backup: 5 files, 856,881,288bytes, archive/source hashes verified. No input/container enters Git.
+- Built rows, labels, features, order, splits and saved prediction labels exactly match qualification, so existing models/probes remain applicable. No new sweep or retraining needed. Checks: 2014 tests passed/285 skipped, including 18 temporary-socket reruns; pinned Ruff, records/pointers, review parser and diff checks pass. Full catalog retains 17 pre-existing RowBudget import failures; owned-definition import passes.
+- Local build/commit only; current claim and Yes/WIP(DF)/priority3 retained. No DF:Yes, registry membership, claim release, push, PR or merge. Other staged records and datasets untouched. No superseded Papyrus container existed to remove.
+
+
+## 2026-11-10: Papyrus scientific inclusion accepted (Myunghwan)
+
+- Record Myunghwan's explicit "ship it" on the completed `papyrus_bioactivity` review, keeping fallback RMSE as declared. Independent consistency review finds no departure or additional issue. Preserve original source means, all692,017rows/seven inputs, scaffold folds, repaired label-independent ordering and pointwise prediction restrictions.
+- Scientific review is complete; retain approximate assay/endpoint/stereo/cohort/sequence limits and the distinct protein-conditioned-task rationale with864same-thrombin matches. Preserve the full review history, Yes/WIP(DF), priority3 and current reservation.
+- No definition/generated README/data/model/split change, build, curation commit, DF:Yes, claim release, push or PR update. Ready for a separately requested build.
+
+
+## 2026-11-09: Papyrus pooled bioactivity qualification (Myunghwan)
+
+- Add `papyrus_bioactivity`: 692,017 original mean-pChEMBL labels across 5,057 proteins, seven intrinsic compound/protein inputs and three scaffold-disjoint folds. Retain recognized complete source means; no new aggregate or Ki-only cut. Explicit approximate pre-assay structural generalization, without chronological validity.
+- Repair inherited label-dependent row ordering using a known-input sort and fixed shuffle, confirmed by independent attacks and full target-perturbation controls. Merge exact source-connectivity aliases before splitting; mask unknown classification. Keep train-fitted transformations and frozen per-query inference, excluding held-out-record statistics.
+- Full independent panel recommends inclusion after applied documentation fixes, with zero separate issues. Strict bounded LightGBM RMSE0.977244 versus converged Ridge1.080116 and protein mean1.130486; final27checks pass without warnings. Document mixed-endpoint/stereo/cohort/sequence limits and864 same-thrombin overlaps under the distinct protein-conditioned-task rationale.
+- Record remains WIP(DF), priority3, with human inclusion verdict pending. No build, container, curation commit or publication.
+
+
+## 2026-11-09: Football deferred by curator
+
+- Myunghwan deferred `football_match_probability_prediction` because the demonstrated incremental model-performance gain is weak. Set `TBD -> 2nd Tier` / `DF: Suspended`, preserving priority 4, the settled ordinary-temporal choice and all exploratory evidence.
+- The bounded study gives engineered LightGBM log loss 1.018451 versus logistic regression 1.023423 (0.486% reduction, wins two of three windows), and best tested heuristic 1.056243. Preserve the measured small gain and model/preprocessing limits; no scientific rejection, No Signal/Trivial marker or general gain threshold is inferred.
+- Release the named active reservation through the official workflow. Publish only this decision record and changelog to the existing draft; no Football build, exploratory package or raw data is published.
+
+## 2026-11-09, Meituan addition to the existing curation draft (Myunghwan)
+
+- Integrate the approved forecast-free Meituan package into existing draft PR59, preserving original build/source commits and all five prior dataset packages plus rejection/hold decisions. Set the accepted record's DF: Yes integration proposal, retaining its actual ownership/WIP mirror. No new data, split, feature, model or build change. Separate draft PR66 is superseded.
+
+## 2026-11-09 (SuperLender addition to the existing curation draft)
+
+- Add the explicitly accepted, locally built SuperLender package to draft PR #59 alongside its existing four accepted datasets. Preserve both SuperLender commits and the original clean build revision in ancestry; all three package files match the verified source exactly. Keep AUROC, 4,368 distinct scored borrowers, 32 predictors and the nine borrower-disjoint random folds, with ForcedIIDFromTemporal/approximate limits.
+- Set the accepted record's DF: Yes proposal and clear its settled TBD placeholder, retaining the actual Myunghwan/triage WIP mirror until merge. Refresh only this named claim's note and expiry; preserve its stage and original claim date.
+- Resolve shared README/CHANGELOG insertions by retaining both candidate histories. The existing four packages, prior No/hold decisions and newer XuetangX hold remain unchanged. No data/container upload, new build/model fit, collection registration, merge or claim release is performed.
+
+## 2026-11-08 (SuperLender requested build and local commits; built November 9 UTC)
+
+- Built only `loan_default_prediction_challenge`: format 2, UUID `01a1be30-45b2-71ef-901f-e94be6c0c4dd`, checksum `v2:322cbc2623bd4067697bf91c009aec047dedc6b204ba35d8c6bd16cd861dc120`, from clean definition commit `73360580f6752ec1713d2d7d0e8d11e4d4efafcf`. Preserve all 4,368 labeled rows, 32 predictors, approved context ROC AUC and the exact nine ForcedIIDFromTemporal/approximate random folds. Fresh raw-ID lineage confirms zero borrower overlap in every fold.
+- Save/reload verification and a check from the four traced raw inputs reproduce the checksum exactly; zero errors and warnings. The local input backup contains 4 files (5,003,658 bytes). Native scorer checks and fold hashes match qualification. No full model/probe rerun was needed because rows, labels, features and splits are unchanged.
+- Tests: 2,017 passed, 286 skipped; 18 initial failures due to sandbox-denied localhost sockets all passed on targeted rerun with socket access. Pinned Ruff lint/format, strict record validation and diff checks pass. No unrelated definition was rebuilt, no prior container was deleted and no raw data or container enters Git.
+- Local build/commit only. Claim remains held for integration; no DF: Yes, registry membership, push, PR, merge or data redistribution is applied. Original-source redistribution permission remains unresolved and separate from scientific acceptance.
+
+## 2026-11-08 (SuperLender explicit ship verdict)
+
+- Myunghwan explicitly said 'ship this', confirming the completed review's default-ship disposition after independent consistency review. Preserve context ROC AUC, Random (IID)/ForcedIIDFromTemporal approximate evaluation and all previously approved limitations. No recipe, data, predictor, label or split change.
+- Clarify the metric Cases row: the exception is to MET-4 only; MET-11's context-origin requirement is followed, not excepted. This corrects the decision register's exception-to-Must classification without changing the approved metric or general rules.
+- The verdict accepts the definition for a later requested build under review-added-datasets. Keep the existing ownership claim and preserve resolved issues and historical panel; no build, source commit, publication, DF: Yes or claim release was performed.
+
+## 2026-11-08 (SuperLender split-field choice and review completion)
+
+- Myunghwan accepted random or temporal evaluation with care about borrower overlap. Keep the existing ForcedIIDFromTemporal/approximate random splits and align the record's required_split to Random (IID), after independent actual-mark consistency and a fresh raw/native-ID check: 4,368 scored borrowers and zero train/test borrower overlap in all nine unchanged folds.
+- All numbered issues, metric and record fields are settled. Apply the current procedure's default ship disposition: ready for a separately requested build. Preserve resolved issues and historical panel, retain the ownership claim, and leave DF: Yes for integration. No recipe, data, labels, predictors, split indices, build or source commit changed.
+
+## 2026-11-08 (SuperLender curator metric choice)
+
+- Myunghwan chose AUROC after discussion of the majority accuracy baseline and source error-rate scoring. Declare context `roc_auc`, preserving the computable original and documenting the case-specific MET-4 departure after independent consistency review. No general metric rule changes.
+- Data, Good/Bad labels, 32 predictors, cleaning and all nine forced-IID folds remain unchanged. Required_split still awaits its own mark; no overall ship decision or build is inferred. Issue 4 closes with the metric choice; issues 1–3 and the original panel remain as history. Regenerate README and rerun affected checks.
+
+## 2026-11-06 (SuperLender current-workflow review preparation)
+
+- Carried the qualified SuperLender definition and Myunghwan's applied keep/keep/accept decisions from the preserved 1964e1b2 checkout into an isolated checkout at 9048f36a. The current upstream candidate record had no intervening changes. The definition and existing data recipe are unchanged; no overall inclusion, split-field or metric mark is inferred.
+- Restored resolved review issues 1–3 with their original November 5 decisions, following the current history-retention convention. The original full panel remains. The record still has '?' for required_split and the definition remains approximate forced IID. No container was saved or dataset commit made.
+
+## 2026-11-08 (XuetangX curator hold)
+
+- Myunghwan deferred XuetangX MOOC dropout despite its value: the raw records are activities with one dropout
+  label per learner-course enrollment, so constructing tabular samples requires chosen aggregation and further
+  task design. Aggregation is not adopted by default; the candidate is not straightforward enough to pursue now.
+- Record `TBD -> 2nd Tier` / `DF: Suspended` and preserve prior screening, qualification and curator history.
+  Source timing remains unaccepted; no proven leakage or poor-data rejection is inferred. The official
+  reservation is released. Revisit only on explicit curator reconsideration of a suitable tabular task.
+- This update publishes the decision record only. Exploratory definition, data and detailed reviews remain
+  local; no XuetangX dataset package, build or container is added.
+
+
+## 2026-11-06 (combined accepted datasets and curator decisions)
+
+- Integrate the four accepted GeoAI ground-level NO2, Economic Well-being, Duolingo session-performance and
+  Fugaku job-failure packages. Preserve each verified source/build commit in history and its generated build card.
+  Exact definitions, data protocols and source evidence are unchanged; independent split-case notes and the
+  Duolingo prediction-protocol follow-up are retained.
+- Add `DF: Yes` bookkeeping for accepted records while retaining their actual claim/WIP mirrors until integration.
+  Remove Fugaku's stale AI-filled verification tag after the recorded curator approval and completed reviews.
+- Record QoS as `No` / `Not Representative`, and AirQo African, Fannie Mae, DESI and Busara as temporary
+  `TBD -> Yes` / `DF: Suspended` holds. Preserve previous comments, attribution and reopening conditions.
+  Held reservations are released through the official claims procedure; accepted reservations remain until merge.
+- Raw data, containers, private evidence packets and local archives remain outside Git. No scientific task,
+  cohort, split or metric is changed by this integration.
+
+## 2026-11-05 (GeoAI internal-skill refresh build verified)
+
+- Rebuilt only `geoai_ground_level_no2_estimation_challenge` from clean commit `a40b46997a5bb7b08a2bac87187c74c109512466`: format 2, UUID `01a1ae48-7d06-76ac-9741-a58d8233b176`, checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`. The checksum is exactly equal to the preceding November build; no definition, data or metadata changes were needed.
+- All 27 bundle checks pass, zero errors/warnings; saved-container reload verifies. A traced-input-only check reproduces the checksum from one 10,000,397-byte Train.csv. The new raw-input ZIP passes CRC and source SHA-256 checks. Rows, all nine splits and raw-input selection are unchanged.
+- The focused review and editor follow-through are complete. Prior acceptance, resolved issue 1, source RMSE and documented limits remain intact; no new human input or collection-wide probe sweep is needed. Previous containers remain referenced audit baselines and were retained. Local commits do not publish the dataset upstream.
+
+## 2026-11-05 (GeoAI rechecked after internal-skill update)
+
+- Repeated the accepted GeoAI review under the refreshed installed skills/runtime. The pin is now `9048f36a`, exactly the source used by the previous cycle: 32 procedure hashes and 168 tracked source files match. No definition, data, target, metric, feature, context or split changes.
+- Fresh independent claim and precedent audits and mediator support reusing the October acceptance and prior completed evidence. All values/dtypes/metadata, nine folds and checksum exactly match the previous November container. One fresh LightGBM fold also reproduces every saved prediction. The full historical model/probe sweeps are reused with their recorded limitations, not described as new fits.
+- Current checks: 27 passed, zero errors/warnings; dtype zero flags; 2,017 tests passed, 286 skipped after the 18 localhost-dependent cases passed on exact retry. Priority remains 3, issue 1 stays resolved and no new human input is needed. The editor's presentation repairs and new build verification are complete.
+
+## 2026-11-05 (GeoAI current-main build verified)
+
+- Built only `geoai_ground_level_no2_estimation_challenge` from clean definition commit `2687a3ae2ebd33135af563cf9605e3adbc2897b6`: format 2, UUID `01a1adf0-eb77-7e00-8228-2b3c1bc263db`, checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`. No crashes, errors or warnings; all 27 bundle checks pass.
+- Saved-container reload verified. A check against only the traced Train.csv (10,000,397 bytes) reproduces the full checksum; the raw-input ZIP backup passes CRC and source SHA-256 verification. Rows, all nine splits and traced inputs are unchanged from the October build. Current metadata serialization and the explanatory context comment account for the checksum difference.
+- The complete current group probe matches the historical printed results: IID/grouped LightGBM R2 0.788/0.636; grouped ridge 0.396, random forest 0.631, LightGBM 0.634 and kNN 0.554. These full-frame-imputation diagnostics remain indicative. Per-group label permutation is inapplicable to this per-sample target. No new curator question or collection-wide probe sweep is needed.
+- The resolved review and original acceptance remain preserved. The October container is still referenced by its historical checkout and retained; no unreferenced superseded container was deleted. The generated dataset table removed on current main is not reintroduced. Local build and commits do not establish upstream publication.
+
+## 2026-11-05 (GeoAI requalified against updated main)
+
+- Restored the previously accepted `geoai_ground_level_no2_estimation_challenge` definition and decision history on main `9048f36a`. Myunghwan explicitly requested this add/review/build cycle using the prior decisions; the accepted QC, regional and observed-day coverage limits remain documented.
+- Current independent claim/split and column audits confirm identical rows, values, missingness, dtypes, eleven predictors, target, all nine station folds and RMSE scoring. Expanded leak/raw-state and dtype probes and current task probes found no new material defect. The raw-order flag reflects date-major observations across stations. Historical fold-safe results remain applicable after exact input/split/runtime comparison and one bit-for-bit reproduced fold.
+- Focused review includes an isolated participant task gamer across all nine folds, precedent consistency, mediator and editor. Calendar and same-day training-station label improvements are legitimate signal. Clarified the existing context contract: each held-out-station query uses only its own row; the labeled training archive at other stations remains available. No scientific transformation changed and no new curator choice is needed.
+- Restored issue 1 as resolved, retaining the original October 30 acceptance and November 5 reuse instruction. The review file remains in the repository under the current history-retention rule. The final checksum differs from October because current schema serializes an empty special-features field and the definition has one additional explanatory curation-comment bullet; independent canonical checksum comparisons account for both changes exactly.
+- Current bundle checks: 27 passed, zero errors/warnings. Full tests: 2,016 passed, 286 skipped after the eighteen sandbox-loopback cases passed on retry. GeoAI lint/format and record/pointer validation pass; whole-repository lint/format findings match the baseline, including its existing example syntax error. The completed grouped-model rerun and requested build are recorded in the entry above.
+## 2026-11-05
+
+- Repeat the economic well-being cycle after the installed internal pin advanced to `9048f36a`, identical to the previous qualified runtime. Preserve all scientific decisions, definition, frame, scorer and sixteen positional splits; reuse unchanged seven-role panel/probe evidence after identity checks and a focused reuse audit, mediation and editor. Current review-store carry-forward authorization is saved without reimporting historical closed-item marks.
+- Requested installed-runtime rebuild from clean `b4ac95ff0f853de54117555ae24bd013c3630fd4`: UUID `01a1ae48-ee3d-73ae-bf99-a2b037658716`, same checksum `v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3`; reload and traced-input reproduction pass. One raw CSV, 5,829,604 bytes, SHA-256 backup manifest verified locally. Native27checks: zero errors/warnings, three infos. Updated-runtime suite: 2,017 passed, 286 skipped, 12 library warnings. Prior containers remain referenced by historical commits and are retained. No code push, PR update or claim release.
+- Build the requalified economic well-being definition from clean commit `197d469d2931d8949f5454bc4d839f6b05558ef8`: UUID `01a1adf2-7ba6-7a75-a157-1c1451ba511e`, format 2, checksum `v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3`. Reload and traced-input-only reproduction pass; zero build errors/warnings, three infos. Local SHA-256-manifested raw backup verified. The original accepted branch still references its earlier container, which is retained; no historical container or raw file deleted.
+- Final current-main suite: 2,016 passed, 286 skipped, twelve library warnings. Review history retains the closed timing/target issues and the seven-role focused panel; no new curator input. Separate local commits only; existing PR unchanged.
+- Requalify `economic_well_being_prediction_challenge` against main `9048f36a`, preserving Myunghwan’s prior annual timing, supplied-index and temporal × unseen-country decisions. Decode R/U as Rural/Urban under current CLEAN-12; all rows, labels, numeric values and country-year membership sets remain unchanged, with canonical order and indices regenerated. Restore resolved review issues with original IDs/dates and retain the completed focused panel. Document the accepted candidate-specific higher-ranked use-case override in SPLIT-3 Cases without amending the global rule.
+- Native checks: 27, zero errors/warnings, three infos. New dtype, all-sixteen-split task and refreshed leak/raw probes pass execution; no_spread remains the previously investigated finding, with prior prediction scores independently reverified by ID. Participant-kit review finds no demonstrated exploit beyond honest/random controls. Native Claude authentication failed before inference; the fresh Codex reviewer used contractual kit isolation, with that limitation disclosed. No new curator input is needed.
+## 2026-11-05, `duolingo_spaced_repetition_recall_1m_clf`: updated installed workflow repeat
+
+- Repeat add, added review and the requested local build using the updated installed source/launcher at9048f36a; preserve the prior accepted task, eight predictors, AUROC, equal records and temporal 1M/111111 protocol. No scientific definition, data, label or split change.
+- Fresh launcher/API checks pass with zero errors/warnings and exact approved values/category/label/six-array equality. Prior numerical/probe/participant evidence is fingerprinted and verified reusable; a focused independent claim/precedent, mediator and editor recheck finds no new decision. Preserve original mark identity and record the latest explicit retention instruction in the supported review store.
+- Clarify TP-7's rule strength without rewriting historical curator text. The previously measured future-counter exploit and required benchmark-side own-row checks remain explicit; this repeat does not certify downstream enforcement.
+- Built `01a1ae4b-07ce-7d55-b885-f6b11cb52d72` from clean source `90e77a7ccbaadc25d903a32e255298f7ca31694a`, format 2, unchanged checksum `v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3`: 1,429,456 rows, eight predictors, zero errors/warnings. Saved reload and traced-input-only reproduction pass; exact prior data/splits and saved scores match. The one-file raw backup passed CRC/SHA verification. Historical containers still referenced by preserved earlier checkouts remain available; no raw files or containers are deleted.
+
+## 2026-11-05, `duolingo_spaced_repetition_recall_1m_clf`: requalified on current main
+
+- Reapply Myunghwan's approved >=75% session-performance classifier on updated main, retaining AUROC, numerical session_seen, equal weights and the temporal 1M/111111 windows with a one-day gap. Preserve original dated decisions and resolved issue IDs; retain REVIEW.md under the current history convention.
+- Current native checks report zero errors/warnings. Exact values, category state, labels and all six split arrays match the prior accepted package; saved predictions score identically. Fresh leak, task, dtype and raw-state checks and an independent focused panel are complete.
+- The participant attack and independent refutation find later test-history counters reconstruct earlier labels on 3.32-5.18% of rows, adding 0.0210-0.0349 AUROC to frozen honest predictions. Apply the current LEAK-9 own-row evaluation protocol while preserving legitimate histories; add the required benchmark method check to BENCHMARK_CHANGES_TODO. A clean build does not establish downstream enforcement.
+- Myunghwan requested the repeated build and local commits. Commit the reviewed source before the build; raw data, containers, process evidence and review-page exports stay local.
+- Built format-2 container `01a1adef-2da5-75af-9a38-674925897d45`, checksum `v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3`, from clean source `8429113143096b5f196312d7cca1089cb18197ab`: 1,429,456 rows, eight predictors, zero errors/warnings. Saved reload and traced-input reproduction pass; rows, split memberships and the single raw input are unchanged. A local raw-input ZIP passed CRC/SHA verification. Preserve the historical container still referenced by the earlier checkout; no raw files or containers are deleted.
+## 2026-11-06, verified Fugaku build with maintained installation
+
+- Built `fugaku_hpc_job_failure_1m` as `01a1ae4e-b3ba-76cc-8c72-d588a0a10bab` from clean source
+  `c84f9b391016b94a8168083ff6b3e39ff999c7fc` using maintained upstream pin `9048f36a`, without a source override.
+  Format 2 and checksum `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d` match the November 5
+  build. The accepted definition, data, class meanings, predictor scope, all split memberships and metric remain
+  unchanged. Original decisions, the formal SPLIT-10 exception and first-tuned-benchmark recheck remain in force; no
+  new human input or mark was needed.
+- Native saved-container reload and minimal-input reproduction pass with exactly the checked checksum, 0 errors, 0
+  warnings and 2 known informational heavy-check skips. Full build took 524 seconds, peak 20.5 GiB. Suite: 2,017
+  passed, 286 skipped; strict 2,091-record/pointer and scoped lint/format checks pass. The refreshed native review
+  page has three historical resolved issues, zero open marks and zero field decisions. Focused independent claim,
+  precedent, mediator and cold-editor reports remain separately dated from the historical
+  actual-data/model/column/split evidence reused after exact identity checks.
+- The fresh trace closes to 43 files (29,687,404,633 payload bytes), exactly the existing local
+  `fugaku-raw-inputs-2026-11-05.zip`. Every archive payload and current source SHA-256/size was freshly reverified; no
+  duplicate archive was needed. The run-local helper accommodation copies all four declared prepared outputs and the
+  marker independently. Minimal verification did not rerun preparation or write through source links; framework source
+  is unchanged.
+- Retain the explicitly documented generic raw-CLI, float32 neighbour-diagnostic and legacy generated-review-wording
+  limitations. No clean full native leak-CLI or HPO result is claimed. Earlier dated reports that state a then-pending
+  build or archive check are preserved as history; this entry records subsequent completion. Keep prior containers
+  because frozen reviewed checkouts and identity evidence reference them. No raw files or containers were deleted.
+  Dataset branch, containers, input archive and run artifacts remain local; no push, PR or main integration occurred.
+
+## 2026-11-06, maintained-skill Fugaku recheck
+
+- Repeat the requested add/review/build cycle through the maintained installation after its pin upgrade to `9048f36a`.
+  That source and numerical dependencies are identical to the actual runtime used by the completed November5 cycle;
+  the earlier per-run source override is no longer required. Preserve the accepted task, source-bound decisions,
+  resolved IDs1–3, all dated reports, formal SPLIT-10 exception and first-tuned-benchmark recheck.
+- New focused panel: claim, precedent, mediator and cold editor. No column/split/target/feature rule changed; prior
+  verified audits and model/probe outputs are reused after a fresh native27-check and exact
+  full-data/category/membership/spec/version/scorer comparison. Checksum stays
+  `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d`; no new human input is required. Existing
+  generic raw-CLI, float32 neighbour-diagnostic and generated-review-template limitations remain explicit; no full
+  clean leak-CLI or HPO result is claimed.
+
+## 2026-11-05, verified Fugaku build on updated main
+
+- Built `fugaku_hpc_job_failure_1m` as `01a1ae07-bfad-7795-a282-7279d0d067dc` from clean source
+  `1061a759c76f07a50ed2df4433a4a7d577368471` (main `9048f36a`), format 2, checksum
+  `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d`. The definition is unchanged from the accepted
+  task; the checksum difference from November 3 is solely the new empty special-feature metadata field. Original
+  decisions and the first-tuned-benchmark recheck remain in force.
+- Native saved-container reload and minimal-warehouse reproduction pass with exactly the checked
+  checksum, 0 errors, 0 warnings and 2 known informational heavy-check skips. Full build took 554 seconds, peak 19.7 GiB.
+  Updated-main suite: 2,017 passed, 286 skipped; strict 2,091-record/pointer and scoped lint/format checks pass. The
+  preserved probe limitations remain, including generic raw-CLI inapplicability and the separately supplemented
+  float32 neighbour diagnostic failure; no full clean leak-CLI or HPO result is claimed.
+- The 43-file input closure (29,687,404,633 bytes) is backed up locally as `fugaku-raw-inputs-2026-11-05.zip`. Every
+  archive payload and current source SHA-256/size matches its manifest; the fresh build trace matches that exact
+  dependency closure. The current pinned helper's marker/self-symlink issue is handled by a local wrapper that copies
+  all four declared preparation outputs plus the marker independently. The minimal check does not rerun preparation or
+  write through source links; framework source is unchanged.
+- Keep the November 3 container because its frozen reviewed checkout and identity evidence still reference it. No raw
+  or prior container was deleted. Containers, archive and run artifacts remain local and outside git; only generated
+  card/overview/log metadata are committed. No dataset branch push or integration to main occurred.
+
+- The native generated card still carries legacy boilerplate saying settled REVIEW.md is removed. The newer
+  persistent-review procedure governs: all resolved history remains in REVIEW.md. The generated card was not
+  hand-edited; this template wording mismatch is documented without changing framework source.
+
+## 2026-11-05, Fugaku current-main refresh
+
+- Reapply the accepted `fugaku_hpc_job_failure_1m` package to main `9048f36a`. Preserve Myunghwan’s original target,
+  inputs, exact temporal memberships, ROC-AUC metric, qualified SPLIT-10 exception, overall ship and
+  first-tuned-benchmark recheck. Restore the original issue IDs1–3 and full historical panel in persistent
+  `REVIEW.md`, with actual human turns and resolved outcomes. No old mark receives a new source identity; no generated
+  overview table is restored.
+- Current focused panel (claim, column, split, precedent, mediator, cold editor): ship with the accepted
+  qualifications; no new curator decision. Reuse past models only after exact data/category/split/metric/library
+  identity and all six old/current scorer comparisons. Fresh updated dtype/format/raw-period diagnostics and
+  source/maturity checks do not establish a new retained-feature defect. The source cohort, reporting-clock,
+  parent-unit and separately supplemented native float32 diagnostic limits remain explicit.
+- The framework checksum changes from `v2:c7436e8df22a906088cadbb4d641da32cd709976aeaa43e087ac12ff278475cd` to
+  `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d` only because the new schema serializes empty
+  `special_features`. Restoring the old metadata encoding on the actual current container exactly recovers the
+  accepted checksum. No row, target, category, predictor or membership changes.
+- Current native check:27 checks,0errors,0warnings,2known heavy-check informational skips. Updated-main
+  tests:2,017passed,286skipped. All176definitions import; strict2,091-record vocabulary and pointer checks pass;
+  scoped Ruff/format pass. New native raw checks are invoked directly on bounded actual-source windows because the
+  generic raw CLI cannot unwrap this loader; a clean full native leak CLI is not claimed.
+
+## 2026-11-09, Meituan build and verification (Myunghwan)
+
+- Built the approved forecast-free acceptance-time task: 568,545 rows, 15 features and three future-day windows. Container `01a1c240-670c-7619-accd-dcfb6e721d9c`, format 2; checksum `v2:1c8113474925271ced300ea5c8142a758859f26f0fc76c69aa8306cf3a03c594`; clean definition commit `3762163a`.
+- Saved container reload and checksum verification pass. A check from the one traced raw CSV reproduces the full checksum; typed data and every ordered train/test array match the qualified definition. No new task sweep: the recent forecast-free qualification has identical rows and splits.
+- Zero errors and zero unaccepted warnings; retain the curator-approved 62-row unused-tail warning and conflicting-profile information. No new scientific issue. Traced input backup remains local, outside Git.
+- Full tests: 1,999 pass and 286 skip in the sandbox; all 18 socket-blocked tests pass with localhost access. Repository-wide lint reports inherited issues in unchanged files; changed Python passes lint and formatting. No unrelated formatting fixes.
+- First container for this task; no superseded container removed. No raw data or container committed, and no push or publication requested.
+
+## 2026-11-09, Meituan forecast-free primary (Myunghwan)
+
+- Curator chose independent delivery-time prediction without either platform forecast. Remove both derived forecast features; recorded promise remains only an external baseline. Preserve accepted-at point, total target, prebooks and strict all-event training cutoffs. Requalify the changed feature set; assisted results remain sensitivity evidence. No build.
+
+## 2026-11-09, Meituan human review page (Myunghwan)
+
+- Corrected issue-body indentation so the supported collector separates the short problem from its evidence and options. No task, data or split change; the local page is scoped to Meituan, excluding unrelated cross-dataset issues.
+
+## 2026-11-08, Meituan accepted-at and interval boundary (Myunghwan)
+
+- Curator confirmed acceptance-time prediction and requires every observed training event before test acceptance. Explicitly verify all six event clocks are covered by the delivery-time guard, and assert training ends before every test acceptance. Data, features and split memberships are unchanged; recheck evidence before reusing scores. No build.
+
+## 2026-11-08, Meituan delivery duration (Myunghwan)
+
+- Added `meituan_food_delivery_time`: 568,545 accepted orders, 17 features, acceptance-time ETA updates with total placement-to-delivery minutes, and three future-day windows using only labels known at each midnight refit. All prebooked orders remain.
+- Native checks: zero errors, one explained unused-tail warning (62 orders); task probes have no flags. Full independent panel leaves one curator question about forecast snapshot availability. Definition, generated evidence and review are local; no container built.
+
 ## 2026-11-06, PR #63 (stacked on #64): the splits in a row table
 
 - A format-2 container keeps its outer splits in a row table, `rows.parquet`: one row per row of `dataset.parquet`,
@@ -3421,3 +3705,7 @@ Lennart's marks and notes on the review page (scope: the 125 built datasets and 
   (shipped notebook, sibling runs, helper files); notebook outputs and execution counts are cleared.
 - Removed `homeq_default_prediction`: retired on 2026-09-24 (`No (Retired)`, class-conditional generation artefacts;
   see `curation/records/homeq_default_prediction.md` and `curation/audits/beyondarena_leak_audit_2026-09-24.md`).
+
+- 2026-11-09 — meituan_food_delivery_time: complete fresh 15-feature qualification after Myunghwan chose forecast-free independent ETA; preserve source cohorts and all-event cutoffs, resolve issue1 with actual words, retain prior assisted evidence as sensitivity. Fresh probes and two-seed models pass; metric/warning/final inclusion pending.
+
+- 2026-11-09 — meituan_food_delivery_time: Myunghwan approves final inclusion of the forecast-free definition, fallback RMSE in minutes and retaining 62 unused October 25 rows; record the specific accepted warning and close scientific review. No data/feature/split change or build/commit request.

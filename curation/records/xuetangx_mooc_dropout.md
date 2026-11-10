@@ -2,15 +2,21 @@
 unique_name: xuetangx_mooc_dropout
 name: XuetangX MOOC dropout prediction (Understanding Dropouts in MOOCs, AAAI 2019; KDD Cup 2015)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Myunghwan
+data_foundry_status:
+- 'DF: Suspended'
+suggestion: TBD -> 2nd Tier
 priority: 4
 decision_markers:
 - Needs extensive data wrangling
 tags:
-- AI-Filled (Verify)
+- Non-IID (Temporal)
+- Revisit later
 original_source: Website
+year: '2019'
 domain: education
+required_split:
+- Temporal (NON-IID)
 problem_type: Binary Classification
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
@@ -20,8 +26,6 @@ source_links:
 - https://biendata.com/competition/kddcup2015/
 - https://www.kaggle.com/datasets/ramspimatiz7gmailcom/mooc-dataset-dropout-dataset
 - https://www.kaggle.com/datasets/sst2023/kdd-cup-2015
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -43,3 +47,15 @@ type_adapter_id: curation-record-v1
 - as published: Paper Table 2: 467,113 instructor-paced + 218,274 self-paced course enrollments (dropout 80% / 94%), 698 + 515 courses, 2015-08 to 2017-08 logs; KDD Cup 2015 subset (Table 1): 200,904 enrollments, ...; target: dropout: no activity on the course in the 10 days after a 30-day (KDD Cup) or 35-day (paper) history window; access: open (the first publisher's download links on lfs.aminer.cn now redirect to the aminer.cn home page; the same files are mirrored on Kaggle; the KDD Cup copy on biendata needs a login).
 - Why: a real competition and paper on a task still done on every MOOC platform, with a deployed use and a metric (AUC, F1; the KDD Cup scored AUC); groups by course and user and a time order by course start
 - Adds: a second, much larger learning-analytics dropout task next to open_university_learning_analytics_dataset, from another platform and country; mixed features once the logs are aggregated (activity counts, demographics, course category)
+
+CC (2026-11-06, Myunghwan): Proceed to add-dataset qualification, explicitly requested after the screening explanation. Pursue the larger AAAI XuetangX release first; verify actual release coverage, prediction-time inputs and evaluation before final inclusion. No build or commit is authorized.
+
+**Assessment (AI, 2026-11-07):** review panel (full): recommend shipping only after explicit curator acceptance of an approximate released-label task; disputed: source-window alignment and actual label maturity remain unverified (USE-5/8, LEAK-10, SPLIT-9/10); for the curator: issue 1. The acquired copy has 225,642 enrollments, 247 courses and 31 predictors; original-publisher byte equivalence and cohort selection are unverified. Native checks 0 errors, 1 unknown-license warning; model probes show signal but no-spread lacks tuned evidence. Full eleven-role panel includes the cold-editor check recorded in the final review. Priority 4: gap + (education), use case + (source retention contact), source + (platform paper/code), shape + (measured temporal interaction table), risk - (source clock/copy gaps and log aggregation).
+
+**Assessment (AI, 2026-11-07):** review panel (focused): existing candidate rechecked and ready for the same final curator choice; disputed: actual source-window alignment and label availability remain unverified (USE-5/8, LEAK-10, SPLIT-9/10); for the curator: issue 1 unchanged. Fresh raw hashes, preserved labels, exact frame/scorer/splits and native 27-check result (0 errors, 1 license warning) confirm reuse of the dated probes and full panel; zero new model fits. Claim audit, mediation and cold editor found no new substantive issue. Priority 4: gap + (education), use case + (source retention contact), source + (platform paper/code), shape + (verified temporal interaction table), risk - (unchanged source-clock/copy gaps).
+
+CC (2026-11-08, Myunghwan): Hold XuetangX. Good dataset, but we do not aggregate by default. Raw records are individual activities while the supplied dropout label belongs to a learner-course enrollment; constructing one tabular sample per enrollment requires aggregation and additional task design. This is not straightforward enough to pursue now. Defer inclusion; this is not a scientific rejection or a finding of demonstrated leakage.
+
+**Assessment (AI, 2026-11-08):** Applied the curator's case-specific hold as `TBD -> 2nd Tier` / `DF: Suspended`, retaining the existing wrangling marker, priority and all exploratory definition/evidence. The earlier screening approval and panel recommendations remain history, superseded for current inclusion by this hold. Issue 1's source timing remains unaccepted, not resolved. The later checks found feasible identity-disjoint windows and a plausible inclusive-day explanation, not a curator-approved tabular representation. Suggested reopening: explicit curator reconsideration of a straightforward source-defined task table or expressly accepted aggregation design; this is operational guidance, not an additional quoted curator condition.
+
+**Assessment (AI, 2026-11-08):** Draft-PR decision-only publication: the exploratory enrollment-aggregation definition, generated card, full panel and measurements are preserved locally, not included as an added dataset in this PR. No source activity row is treated as an independent labeled sample. The candidate remains held; no timing approximation or scientific inclusion is accepted. The official active claim was released and its mirror cleared on 2026-11-08.

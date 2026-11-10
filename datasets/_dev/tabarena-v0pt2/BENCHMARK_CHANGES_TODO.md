@@ -350,3 +350,13 @@ them as named columns or in sorted order. A score computed with the columns alig
   its own row, or check that a method's predictions do not change when the other test rows change. A method that
   learns from the test block is called out and not benchmarked (LEAK-9, amended 2026-11-05, Lennart: "we investigate
   models, and would find out if they do transductive learning which we can call out and not benchmark").
+
+- [ ] Apply the same train-only, current-row prediction check to `duolingo_spaced_repetition_recall_1m_clf`. Its later test-session history counters reconstruct earlier test labels on 3.32-5.18% of rows at 99.97-100% precision; adding the recovered labels to frozen honest predictions gains 0.0210-0.0349 AUROC on the three shipped test windows. Fit all learned transforms on the training side; freeze them and the model. A prediction may read its current row and training data only, never other test rows, test-block statistics, future histories or another split's held-out labels. Verify invariance when unrelated test rows are added, removed, permuted or changed; batched row-independent computation is permitted. This is required benchmark-side method checking, not enforcement supplied by Data Foundry or certified by its build.
+
+- [ ] **Chromophore: encode both structures and enforce independent queries.** For
+  `chromophore_optical_properties_db`, encode dye and solvent/host SMILES as typed structures;
+  preserve gas's absent solvent with medium state. Fit learned transforms on training rows only,
+  exclude scaffold metadata from predictors, and predict each query without held-out-batch counts
+  or group labels (`grouping.context="none"`). The bounded participant attack found no robust gain
+  from forbidden batch counts; that does not verify downstream adapters. Actual benchmark
+  enforcement and inner-tuning paths remain to be checked before using their scores.

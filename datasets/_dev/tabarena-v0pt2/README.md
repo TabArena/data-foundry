@@ -18,6 +18,43 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
+- Selected build on 2026-11-10: one accepted dataset, container format 2, one traced raw file (3,213,377 bytes).
+  Reload verification and reproduction using only that input passed with identical checksums. This was a selected
+  build, not a rebuild of the full working copy; the dataset's generated card records its UUID and checksum.
+
+Latest scoped build, 2026-11-10: one requested definition, container format 2,
+5 traced input files totaling 856,881,288 bytes. Saved reload and minimal-input
+reproduction pass with zero build errors/warnings; both prepared tables also
+regenerate exactly from publisher inputs. The local input backup is manifested
+and verified. See the dated changelog and generated dataset report for build
+identity. Other definitions' build records are unchanged.
+
+
+Scoped build on 2026-11-08 (November 9 UTC): one requested definition, container format 2,
+four traced input files totaling 5,003,658 bytes. Reload and minimal-input reproduction passed
+with zero build errors or warnings. The dated changelog records its UUID and checksum; each dataset's generated
+README identifies its own latest build. This scoped run does not update the other definitions' build records.
+
+
+- 2026-11-05 (internal-skill refresh): rebuilt GeoAI as one format-2 dataset with the same checksum.
+  Reload and reproduction from the single 10,000,397-byte Train.csv pass; the new raw-input backup stays local.
+
+- 2026-11-05: rebuilt GeoAI against updated main as one format-2 dataset. The single traced raw file is
+  Train.csv (10,000,397 bytes); saved-container reload and reproduction from only that input both pass.
+  The raw-input backup remains local. See the GeoAI README and dated changelog for the build identity.
+
+Economic Well-being: the 2026-11-05 installed-skill alignment rebuild used the same qualified scientific source and reproduced the preceding checksum. One format-2 dataset, one traced raw CSV (5,829,604 bytes); reload, minimal-input reproduction and the local manifested backup are verified. The dated CHANGELOG records the new UUID.
+
+Economic Well-being targeted rebuild on 2026-11-05: one format-2 dataset from one traced raw CSV (5,829,604 bytes). Saved-container reload and a check using only that input reproduce the checksum. The dated CHANGELOG entry records the UUID and accepted protocol. The manifested raw-input backup remains local, outside Git.
+
+Duolingo latest scoped build, 2026-11-05: repeated through the updated installed workflow for one format-2 definition and one traced raw input (379,004,009 bytes). Saved reload and reproduction using only that input passed, with zero errors or warnings and an unchanged checksum. This was a single-dataset rebuild, not a rebuild of the full working copy.
+
+- Fugaku latest requested scoped build (2026-11-06): one format-2 container, with 43 input dependencies (29,687,404,633
+  bytes). Saved-container reload and minimal-input reproduction match the checked checksum; the current trace matches
+  the existing input archive, whose payloads and current sources were freshly reverified. Details and remaining
+  limitations are in CHANGELOG.
+
+- Latest scoped build, November 9, 2026: one Meituan container, format 2, from one traced CSV (121,698,401 bytes). Reload verification and reproduction from the traced input pass; see the dataset report and dated CHANGELOG. Other datasets were not rebuilt.
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows

@@ -1,0 +1,313 @@
+---
+report_format: data-foundry-report-v2
+unique_name: duolingo_spaced_repetition_recall_1m_clf
+container_format: 2
+checksum: v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3
+build:
+  uuid: 01a1ae4b-07ce-7d55-b885-f6b11cb52d72
+  checksum: v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3
+  built_at: '2026-11-06T00:38:42+00:00'
+  path: duolingo_spaced_repetition_recall/versions/01a1ae4b-07ce-7d55-b885-f6b11cb52d72
+  data_foundry_version: 0.0.5
+  git_sha: 90e77a7ccbaadc25d903a32e255298f7ca31694a
+  libraries:
+    python: 3.12.3
+    pandas: 3.1.0
+    numpy: 2.5.4
+    pyarrow: 26.0.0
+    scikit-learn: 1.7.2
+    polars: 2.0.0
+build_stale: false
+data:
+  n_rows: 1429456
+  n_features: 8
+  dtypes:
+    category: 4
+    datetime64[ns]: 1
+    int64: 4
+  n_test_dataset_rows: null
+task:
+  target: session_accuracy_at_least_75
+  problem_type: binary_classification
+  metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
+  split_regime: temporal_non_iid
+  stratify_on: session_accuracy_at_least_75
+  time_on: timestamp
+  group_on: null
+  group_labels: null
+  group_time_on: null
+  grouping: null
+splits:
+  n_repeats: 3
+  n_folds: 1
+  random_state: 4267
+  time_horizon: 1
+  time_horizon_unit: days
+  time_gap: 1
+  time_gap_unit: days
+  n_train:
+    min: 1000000
+    max: 1000000
+  n_test:
+    min: 111111
+    max: 111111
+bundle_checks:
+  ok: true
+  errors: []
+  warnings: []
+  infos: []
+  accepted: {}
+decisions:
+- Session performance criterion
+---
+
+# duolingo_spaced_repetition_recall_1m_clf
+
+> Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
+
+Binary classification of `session_accuracy_at_least_75`, scored with `roc_auc` on temporal splits by `timestamp`. 1,429,456 rows and 8 features. Source: Other (2016).
+
+Built as `01a1ae4b-07ce-7d55-b885-f6b11cb52d72` on 2026-11-06. See [Build](#build).
+
+## In brief
+
+**Question.** Given N exercises on a word and prior practice, will this session achieve at least 75% correct?
+
+**Use case.** A language-learning application estimates session performance given an exercise count and prior practice. This version reports the chance of reaching a curator-selected 75% accuracy criterion, for example to show the likelihood of meeting a session performance goal. The source does not establish this cutoff as mastery or as its deployed decision rule.
+
+**One row.** One learner-word lesson or practice session in Duolingo's six-language historical logs, 28 February to 12 March 2013.
+
+**Predicted.** Probability of a session achieving at least 75% correct: positive when 4 times the correct count is at least 3 times the exercise count, including exact 75%. This summarizes the same observed performance as the original fraction but does not estimate its conditional mean.
+
+**Known at prediction time.** The supplied session exercise count N (session_seen), course, lexical tag, prior exposure and correct-answer counts, elapsed time and recorded clock context. The archive records realized N, not a documented planned count. Clock consistency is curator-accepted; start/completion semantics remain unverified. Each test prediction uses the fixed training-side model and that row alone; other test rows cannot enter preprocessing, features or inference.
+
+**What the test data stands for.** Three later one-day test windows with earlier training and a one-day gap; learners may recur. Each window uses 1M train and 111,111 test records, approximately 90/10 after sampling. The target-dependent canonical ordering can change sampled records when this target replaces the fraction, so old diagnostic scores are not copied as qualification.
+
+**Our changes to the source.** Replace expected-fraction regression with probability of reaching at least 75% session accuracy. The label is coarsened, not filtered. AUROC evaluates binary probability rankings; diagnostic classifiers train with binary log loss. Retain numerical session_seen, equal record weights, eight predictors and the temporal-only 90/10 protocol. The cutoff is curator-selected, not source-defined.
+
+> **Use case fit: approximate (a stand-in with a known gap).** Session performance includes learning and feedback within practice. The count is realized rather than proven preassigned; the task conditions on it without a causal fixed-count claim. Start/completion timestamps and reporting latency remain unverified. The one-day gap is an accepted conservative approximation, not a proven delay bound.
+
+## Files in this folder
+
+| file | what it is |
+|---|---|
+| [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
+| [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
+
+- The curation record, with the triage decision and its sources: [`curation/records/duolingo_spaced_repetition_recall.md`](../../../../curation/records/duolingo_spaced_repetition_recall.md)
+- The original source: <https://doi.org/10.18653/v1/P16-1174>
+- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
+
+## Rebuild
+
+`dataset.py` reads its raw files from `local-data-warehouse/duolingo_spaced_repetition_recall/`. To get them:
+
+```text
+Obtain settles.acl16.learning_traces.13m.csv.gz, file 3091087, from version 1.0 of
+https://doi.org/10.7910/DVN/N8XJME and place it in local-data-warehouse/duolingo_spaced_repetition_recall/.
+Official data API: https://dataverse.harvard.edu/api/access/datafile/3091087.
+Use the X-Dataverse-key header if authentication is needed, without saving a token in URLs or source code.
+Verify MD5 0a1cae5eb7ad4b0bd9c0de91d74fcced and 379004009 bytes.
+```
+
+Then, from the repository root:
+
+```bash
+.venv/bin/python -m data_foundry.curation.cli dataset check datasets/_dev/tabarena-v0pt2/duolingo_spaced_repetition_recall_1m_clf   # pipeline and checks, no UUID; rewrites this page
+.venv/bin/python -m data_foundry.curation.cli dataset build datasets/_dev/tabarena-v0pt2/duolingo_spaced_repetition_recall_1m_clf   # also saves the container and records its UUID
+```
+
+Only curators run `build`, when the dataset ships.
+
+## Dataset and task
+
+| field | value |
+|---|---|
+| source | Other: https://doi.org/10.18653/v1/P16-1174 |
+| year | 2016 |
+| domain | education |
+| license | CC BY-NC 4.0 |
+| data_tags | Non-IID, Temporal |
+| reference | settles-meeder-2016-trainable |
+| version of | duolingo_spaced_repetition_recall |
+| rows x columns | 1,429,456 x 9 |
+| task.target | session_accuracy_at_least_75 |
+| task.problem_type | binary_classification |
+| task.metric | roc_auc |
+| task.split_regime | temporal_non_iid |
+| task.stratify_on | session_accuracy_at_least_75 |
+| task.time_on | timestamp |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
+| definition | area under the ROC curve |
+| reason | Source checked: Settles and Meeder (2016), section 4.1, https://aclanthology.org/P16-1174.pdf uses MAE for quantitative strength displays and AUC/half-life correlation for ranking. Myunghwan selects probability of at least 75% session accuracy, a new binary performance summary; source MAE and rounded-proportion AUC do not score this label. Use binary roc_auc fallback (MET-2/MET-8/MET-11), equal records, with no fixed probability action threshold. This changes the target and evaluation, not merely the scale of the old regression error. |
+
+<details>
+<summary>Feature types: 4 categorical, 0 string, 1 datetime</summary>
+
+- categorical (4): `learning_language`, `ui_language`, `lexeme_string`, `session_accuracy_at_least_75`
+- string (0): none
+- datetime (1): `timestamp`
+
+</details>
+
+<details>
+<summary>BibTeX</summary>
+
+```bibtex
+@inproceedings{settles-meeder-2016-trainable,
+  title = {A Trainable Spaced Repetition Model for Language Learning},
+  author = {Settles, Burr and Meeder, Brendan},
+  booktitle = {Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics},
+  pages = {1848--1858}, year = {2016}, doi = {10.18653/v1/P16-1174},
+  url = {https://aclanthology.org/P16-1174/}
+}
+```
+
+</details>
+
+## Sample rows
+
+The first 5 of 1,429,456 rows of the final frame (the oldest rows: the frame is sorted by `timestamp`). Cells are cut at 40 characters.
+
+| session_accuracy_at_least_75 | timestamp | delta | learning_language | ui_language | lexeme_string | history_seen | history_correct | session_seen |
+|---|---|---|---|---|---|---|---|---|
+| Yes | 2013-02-28 18:28:01 | 27649635 | de | en | mann/mann&lt;n>&lt;m>&lt;sg>&lt;nom> | 5 | 4 | 1 |
+| Yes | 2013-02-28 18:28:01 | 27649635 | de | en | lernt/lernen&lt;vblex>&lt;pri>&lt;p3>&lt;sg> | 6 | 4 | 2 |
+| Yes | 2013-02-28 20:07:24 | 5963 | de | en | der/der&lt;det>&lt;def>&lt;m>&lt;sg>&lt;nom> | 5 | 4 | 5 |
+| Yes | 2013-02-28 20:11:14 | 444649 | es | en | de/de&lt;pr> | 3 | 3 | 1 |
+| Yes | 2013-02-28 20:11:14 | 1708699 | es | en | vino/vino&lt;n>&lt;m>&lt;sg> | 7 | 6 | 1 |
+
+## Curation notes
+
+We start with settles.acl16.learning_traces.13m.csv.gz, Harvard Dataverse version 1.0, file 3091087.
+
+- Prediction contract: estimate session performance conditional on supplied session_seen N and prior/context inputs. The archive records realized N, not a verified preassigned count. This is an approximate conditional logged-process task, not a causal test of assigning N. Source clock start/completion semantics and label arrival remain unverified under the curator-accepted recorded-clock approximation.
+- Practical purpose and changed estimand: the former regression estimated E[K/N | X,N], expected fraction correct. This curator-selected version estimates P(K/N >= 0.75 | X,N), the chance that the same session meets a specified accuracy criterion. Both concern session performance, but one does not recover the other. The binary version discards within-class score detail; it does not remove denominator dependence. At N=1,2,3 this criterion equals all-correct; at N=4, 3/4 is positive. No rows are removed for having a particular outcome.
+- Label construction: use original integer session_correct K and session_seen N to define Yes if 4*K >= 3*N, No otherwise. Exact 75% is positive. Verify the published p_recall equals K/N, remove identity-aware source copies before coarsening, and drop p_recall, session_correct and opaque IDs from model data. Numerical session_seen remains a conditioning input, not a label by itself. Coarsening before source-copy removal could collapse distinct events; source-copy removal precedes it here.
+- Training and evaluation: diagnostics fit binary-log-loss classifiers and score roc_auc, with log loss also reported. Benchmark methods retain their own training objective. AUROC evaluates ranking of this binary event, not expected fraction, probability calibration or accuracy at a fixed action threshold. Equal weight per existing record; no exercise/denominator weighting, class balancing or label smoothing. The 75% outcome cutoff is not a threshold on predicted probabilities.
+- Meaning of 75%: Myunghwan selected this performance criterion after bounded >=75% and all-correct diagnostics. It is not a source-defined mastery convention or deployed rule; the source originally predicts a quantitative session proportion. Do not present a changed target as only a metric swap or choose the task solely for a larger numerical gap. Current qualification uses the final definition's own samples and source-label leak checks.
+- Identity-aware deduplication removes 81 exact source profiles with user_id retained, then excludes learner identity. The source lexeme_id is opaque; lexeme_string is a lexical and morphological tag, not free prose. No current correct count or fraction remains as a predictor. All learners remain eligible across temporal folds; prior summaries are allowed, not a cold-start claim.
+- Convert Unix timestamp to UTC-referenced datetime, retained as context and split key. Sort actual timestamps by the base class, not approximate source file order. Three March 12/11/10 2013 one-day windows use expanding history with a one-day gap; newest day is partial, ending 16:14:57 UTC. A custom wrapper only supplies train_cap=1000000 and test_cap=111111. The same full-source eligibility rule remains; the original paper's single file-order 90/10 cut is not literally reproduced.
+- Counter consistency from prior full-source verification: both prior counters match preceding history plus the preceding session in 98.18% of 6,992,475 strictly later visible learner-word pairs; exposure and correct counters decrease in 0.328% and 0.305%. Causes are unknown. Keep source histories rather than reconstructing left-truncated history. These observations do not demonstrate current-outcome leakage.
+- Source and limits: 83.886% of raw sessions are all correct and 58.937% have one exercise. Keep all genuine outcomes. Paper/archive first-90% mean recall differs, 0.859 versus 0.896172; historical paper scores are not reproduced results for this archive. The 2016 ACL paper/code predate this Dataverse deposit released 2017-12-14. The source added lexeme_string to the release; original experiments used lexeme_id.
+- Curator decisions (Myunghwan, latest 2026-11-03): selected inclusive >=75% session-performance classification and AUROC while preserving the practical performance-estimation purpose; this supersedes the earlier fraction/RMSE choice. Keep numerical session_seen, equal records, temporal-only windows, one-day gap, 1M/111111 caps and no learner reservation. The curator selected the formulation after seeing exploratory outer-window results. Model iteration selection uses inner validation, but these inspected dates are not a pristine confirmatory test of the formulation choice. No automated cutoff sweep was used. Final inclusion, warning acceptance and build/commit remain separate decisions.
+- Metric provenance: Settles and Meeder (2016), section 4.1, deliberately use MAE for strength displays and AUC/half-life correlation for ranking; source AUC rounds proportions and is not this >=75% label. Use binary roc_auc as the fallback for the curator-defined event, not as a claim to reproduce source evaluation. The source display-MAE criterion answers a different quantitative target (MET-1, MET-2, MET-8, MET-11).
+- Potential leak, kept on purpose (LEAK-9, an evaluation leak): fit preprocessing and the model on this split's training rows only, freeze learned state, and predict each test session from its own eight supplied covariates. No feature, model step or update may use other test rows, test-block statistics, future histories or held-out labels from another split. Batching is allowed only when each prediction is invariant to adding, removing, reordering or changing unrelated test rows; equal timestamps grant no ordering access. A later test row's history_correct can reveal an earlier session's correct count: a feature-only same-test successor attack recovers 3.32-5.18% of test labels at 99.97-100% precision, increasing the frozen honest model's AUROC by 0.0210-0.0349 across three windows. These are evaluation leaks; each row's own prior histories remain legitimate. The benchmark must check methods against this protocol and exclude test-block learning. Downstream enforcement is required, not established by a dataset check or this build.
+- Final scientific review (2026-11-03, Myunghwan): approved inclusion as implemented with the documented conditional realized-N, clock/label-arrival, source-history, short-period and exploratory-selection limitations. The practical purpose is session-performance estimation via probability of achieving at least 75%, not expected fraction correct or source-defined mastery. Issue 6 is closed; there are no check warnings to accept. Build, commit and publication require a separate request.
+
+Version of `duolingo_spaced_repetition_recall`: Apply the same temporal windows to the full release, then keep 1M earlier training and 111,111 later test rows per window using the shared benchmark sampling order. This curator-selected cap gives approximately 90/10 after sampling; it does not reproduce the paper's single file-order cutoff. Keep the used-row union. All learners are eligible; learner IDs are excluded from features.
+
+## Splits
+
+Three newest calendar-day test windows, March 12/11/10 2013, with expanding earlier history and a one-day training gap. All learners are eligible and may recur; no learner holdout. Actual timestamps are sorted, with all training clocks strictly before each test window minus the gap. Use the standard temporal windows and shared benchmark sampling order on the full source, with curator-selected caps of 1M train and 111,111 test rows per window (approximately 90/10). Keep the used-row union. A custom split wrapper only supplies the smaller test cap; no temporal eligibility or learner partition changes. Learner ID and the current correct count are excluded from predictors. The newest day is partial; daily cadence and label-delay bounds remain accepted approximations, not verified source facts. Fit on the training side only and predict each test row from its own covariates with frozen model state; no other test rows, future histories, test-block statistics or held-out labels from another split may enter a prediction.
+
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 111,111 rows. Prediction horizon: 1 days. Gap between train and test: 1 days.
+
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 1000000 | 111111 | 2013-02-28 18:28:01 | 2013-03-10 23:59:58 | 2013-03-12 00:00:01 | 2013-03-12 16:14:57 |
+| 1 | 0 | 1000000 | 111111 | 2013-02-28 18:28:01 | 2013-03-09 23:59:57 | 2013-03-11 00:00:04 | 2013-03-11 23:59:59 |
+| 2 | 0 | 1000000 | 111111 | 2013-02-28 18:28:01 | 2013-03-08 23:59:59 | 2013-03-10 00:00:00 | 2013-03-10 23:59:58 |
+
+## Decisions
+
+### 1. Session performance criterion
+
+Coarsen observed session accuracy into the curator-selected inclusive 75% event; retain N, exclude outcome ingredients, and preserve the conditional performance-estimation meaning.
+
+| measure | value |
+|---|---|
+| source rows | 12854226 |
+| learners | 115222 |
+| lexemes | 19279 |
+| source fraction = 0 | 906340 |
+| source fraction = 1 | 10782942 |
+
+## Bundle checks
+
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+
+
+## Data checks
+
+### Feature summary
+
+| index | dtype | n_missing | pct_missing | n_unique | examples |
+|---|---|---|---|---|---|
+| learning_language | category | 0 | 0 | 6 | en, es, fr, de, it, pt |
+| ui_language | category | 0 | 0 | 4 | en, es, pt, it |
+| lexeme_string | category | 0 | 0 | 13803 | a/a&lt;det>&lt;ind>&lt;sg>, is/be&lt;vbser>&lt;pri>&lt;p3>&lt;sg>, eats/eat&lt;vblex>&lt;pri>&lt;p3>&lt;sg>, we/… |
+| session_accuracy_at_least_75 | category | 0 | 0 | 2 | Yes, No |
+| timestamp | datetime64\[ns\] | 0 | 0 | 445082 | 2013-03-12 10:19:11, 2013-03-01 18:22:50, 2013-03-01 20:55:03, 2013-03-08 21:53… |
+| delta | int64 | 0 | 0 | 510661 | 165, 158, 172, 183, 146, 204, 161, 156, 176, 179 |
+| history_seen | int64 | 0 | 0 | 2579 | 3, 4, 2, 5, 6, 7, 1, 8, 9, 10 |
+| history_correct | int64 | 0 | 0 | 2302 | 3, 2, 4, 5, 1, 6, 7, 8, 9, 10 |
+| session_seen | int64 | 0 | 0 | 20 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 |
+
+### Target distribution
+
+| session_accuracy_at_least_75 | count | pct |
+|---|---|---|
+| Yes | 1240113 | 86.75 |
+| No | 189343 | 13.25 |
+
+### Numeric features
+
+| index | count | mean | std | min | max |
+|---|---|---|---|---|---|
+| delta | 142946 | 719113 | 2.19973e+06 | 1 | 3.91196e+07 |
+| history_seen | 142946 | 21.3771 | 111.716 | 1 | 9945 |
+| history_correct | 142946 | 18.7267 | 92.8581 | 1 | 9489 |
+| session_seen | 142946 | 1.81487 | 1.3532 | 1 | 19 |
+
+### Categorical features
+
+<details>
+<summary>Show the table (21 rows)</summary>
+
+| column | rank | value | count | pct |
+|---|---|---|---|---|
+| learning_language | 1 | en | 55911 | 39.11 |
+| learning_language | 2 | es | 37716 | 26.38 |
+| learning_language | 3 | fr | 20857 | 14.59 |
+| learning_language | 4 | de | 16274 | 11.38 |
+| learning_language | 5 | it | 8763 | 6.13 |
+| lexeme_string | 1 | a/a&lt;det>&lt;ind>&lt;sg> | 1423 | 1 |
+| lexeme_string | 2 | is/be&lt;vbser>&lt;pri>&lt;p3>&lt;sg> | 1068 | 0.75 |
+| lexeme_string | 3 | eats/eat&lt;vblex>&lt;pri>&lt;p3>&lt;sg> | 1048 | 0.73 |
+| lexeme_string | 4 | we/prpers&lt;prn>&lt;subj>&lt;p1>&lt;mf>&lt;pl> | 845 | 0.59 |
+| lexeme_string | 5 | are/be&lt;vbser>&lt;pres> | 746 | 0.52 |
+| session_accuracy_at_least_75 | 1 | Yes | 124178 | 86.87 |
+| session_accuracy_at_least_75 | 2 | No | 18768 | 13.13 |
+| timestamp | 1 | 2013-03-12 10:19:11 | 9 | 0.01 |
+| timestamp | 2 | 2013-03-01 18:22:50 | 7 | 0 |
+| timestamp | 3 | 2013-03-01 20:55:03 | 7 | 0 |
+| timestamp | 4 | 2013-03-08 21:53:56 | 7 | 0 |
+| timestamp | 5 | 2013-03-01 21:47:15 | 6 | 0 |
+| ui_language | 1 | en | 87035 | 60.89 |
+| ui_language | 2 | es | 40513 | 28.34 |
+| ui_language | 3 | pt | 10724 | 7.5 |
+| ui_language | 4 | it | 4674 | 3.27 |
+
+</details>
+
+## Build
+
+| field | value |
+|---|---|
+| uuid | 01a1ae4b-07ce-7d55-b885-f6b11cb52d72 |
+| checksum | v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3 |
+| built_at | 2026-11-06T00:38:42+00:00 |
+| path | duolingo_spaced_repetition_recall/versions/01a1ae4b-07ce-7d55-b885-f6b11cb52d72 |
+| data_foundry_version | 0.0.5 |
+| git_sha | 90e77a7ccbaadc25d903a32e255298f7ca31694a |
+| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
