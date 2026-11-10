@@ -398,7 +398,7 @@ class SpecialFeature:
 
 SourceRole = Literal["publication", "part", "copy"]
 """What a :class:`Source` is to its dataset: ``publication``, where the data were first published (the dataset's
-year and citation are this source's); ``part``, a piece the dataset is assembled from (one of several datasheets, a
+year and citation are this source's); ``part``, a piece the dataset is assembled from (one of several survey waves, a
 second table joined in); ``copy``, a later copy of the data, such as the re-upload we download (Kaggle, UCI)."""
 
 _BIBTEX_KEY = re.compile(r"@\w+\s*\{\s*([^,\s}]+)\s*,")
@@ -439,7 +439,7 @@ class Source:
     bibtex_key: str | None = None
     """The citation key(s) of :attr:`bibtex`, comma-separated; read from it when None."""
     name: str | None = None
-    """A short label that tells sources apart, e.g. "Hoval Belaria pro 8 datasheet"."""
+    """A short label that tells sources apart, e.g. "the 2019 survey wave"."""
     files: list[str] = pydantic.Field(default_factory=list)
     """The raw files that come from this source: paths or glob patterns under the raw folder."""
 

@@ -1,4 +1,4 @@
-the """Train a model on one BeyondArena dataset across every outer CV split, scored by RMSE.
+"""Train a model on one BeyondArena dataset across every outer CV split, scored by RMSE.
 
 BeyondArena ships format-1 containers: the metric is named only (``task_metadata.objective_metric_name``). This
 example fits a random forest regressor and scores RMSE, so it takes the numeric regression datasets. For a Data

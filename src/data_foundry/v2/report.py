@@ -31,13 +31,15 @@ from data_foundry.v2.dataset import (
     CLI_COMMAND,
     DEFINITION_FILENAME,
     REPORT_FILENAME,
+    definition_files,
+    lineage,
     provenance,
     raw_name,
     split_summary,
 )
 
 if TYPE_CHECKING:
-    from data_foundry.v2.dataset import AbstractCuratedDataset, CurationResult
+    from data_foundry.v2.dataset import AbstractCuratedDataset, CurationResult, ParentCheckResult
 
 REPORT_FORMAT = "data-foundry-report-v2"
 """Identifies the frontmatter layout, for readers that parse it."""
@@ -141,6 +143,8 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
     return {
         "report_format": REPORT_FORMAT,
         "unique_name": container.dataset_metadata.unique_name,
+        # only for a child, so every other README's front matter stays as it was
+        **({"parent": container.dataset_metadata.derived_from} if container.dataset_metadata.derived_from else {}),
         "container_format": container.format_version,
         "checksum": container.checksum,
         "build": build,
@@ -253,6 +257,11 @@ def _header(result: CurationResult, fm: dict[str, Any]) -> list[str]:
         f"{PROBLEM_TYPES.get(task['problem_type'], task['problem_type'])} of `{task['target']}`, scored with "
         f"`{task['metric']}` on {regime}. {size}. Source: {meta.publication.platform} ({meta.publication.year})."
     )
+    if meta.derived_from:
+        summary += (
+            f" Derived from [`{meta.derived_from}`](../{meta.derived_from}/{REPORT_FILENAME}): "
+            f"{_one_line(meta.derivation or '')}"
+        )
     return [
         f"# {meta.unique_name}",
         "",
@@ -283,13 +292,34 @@ FIT_LABELS = {
 }
 
 
-def _brief_section(ds: AbstractCuratedDataset) -> list[str]:
-    """The plain-language summary of ``task_summary``: the description first, then the judgement of the use case."""
-    summary = ds.task_summary
+DATA_LABELS = {
+    "data": "The data",
+    "row": "One row",
+    "goals": "What it serves",
+    "limits": "Limits",
+}
+
+
+def _data_summary_section(ds: AbstractCuratedDataset) -> list[str]:
+    """The plain-language summary of ``data_summary`` (a parent's, or the one a child inherits)."""
+    summary = getattr(ds, "data_summary", None)
     if summary is None:
         return []
     texts = summary.fields()
-    out = ["## In brief", ""]
+    out = ["## About the data", ""]
+    return out + [f"**{label}.** {texts[name]}" + "\n" for name, label in DATA_LABELS.items() if texts[name]]
+
+
+def _brief_section(ds: AbstractCuratedDataset) -> list[str]:
+    """The plain-language summary of ``task_summary``: the description first, then the judgement of the use case.
+
+    The data summary (:func:`_data_summary_section`) comes first when there is one.
+    """
+    summary = ds.task_summary
+    if summary is None:
+        return _data_summary_section(ds)
+    texts = summary.fields()
+    out = [*_data_summary_section(ds), "## In brief", ""]
     out += [f"**{label}.** {texts[name]}" + "\n" for name, label in BRIEF_LABELS.items() if texts[name]]
     out += [f"> **Use case fit: {FIT_LABELS[summary.fit]}.** {texts['fit_reason']}", ""]
     return out
@@ -327,6 +357,13 @@ def _files_section(ds: AbstractCuratedDataset, *, has_figures: bool) -> list[str
         else:
             what = f"Next to the definition, but `{DEFINITION_FILENAME}` does not name it."
         rows.append((f"[`{name}/`]({name})" if path.is_dir() else f"[`{name}`]({name})", what))
+    for file in definition_files(type(ds))[1:]:  # the parents this definition derives from
+        rows.append(
+            (
+                f"[`../{file.parent.name}/{file.name}`](../{file.parent.name}/{file.name})",
+                f"The definition of the parent `{file.parent.name}`, which this one derives from.",
+            ),
+        )
     out = ["## Files in this folder", "", _table(pd.DataFrame(rows, columns=["file", "what it is"]), full=True), ""]
 
     links = []
@@ -355,6 +392,17 @@ def _rebuild_section(ds: AbstractCuratedDataset) -> list[str]:
         files = ", ".join(f"`{f}`" for f in ds.prepared_raw_files)
         out += [f"On first use, `_prepare_raw_files` writes {files} into the same folder.", ""]
     target = _repo_relative(ds.folder)
+    if not ds.is_task:
+        return [
+            *out,
+            "Then, from the repository root (a parent is checked, never built; its children are):",
+            "",
+            _fence(
+                f"{CLI_COMMAND} dataset check {target}   # the frame, its checksum and checks; rewrites this page",
+                "bash",
+            ),
+            "",
+        ]
     out += [
         "Then, from the repository root:",
         "",
@@ -744,6 +792,105 @@ def write_report(result: CurationResult, path: Path | str) -> Path:
     return path
 
 
+# --- the page of a parent ----------------------------------------------------------------------------------
+
+
+def parent_frontmatter(result: ParentCheckResult) -> dict[str, Any]:
+    """The machine-readable front matter of a parent's ``README.md``."""
+    frame = result.frame
+    return {
+        "report_format": REPORT_FORMAT,
+        "unique_name": result.dataset.unique_name,
+        "kind": "parent",
+        "data_checksum": result.data_checksum,
+        "children": result.children,
+        "data": {
+            "n_rows": len(frame),
+            "n_columns": frame.shape[1],
+            "dtypes": {str(k): int(v) for k, v in frame.dtypes.astype(str).value_counts().sort_index().items()},
+        },
+        "findings": {
+            "errors": [f.slug for f in result.findings if f.severity == "error"],
+            "warnings": [f.slug for f in result.findings if f.severity == "warning"],
+            "infos": [f.slug for f in result.findings if f.severity == "info"],
+        },
+    }
+
+
+def render_parent_report(result: ParentCheckResult) -> str:
+    """The ``README.md`` of a parent: the data its children start from, and the children."""
+    ds, frame = result.dataset, result.frame
+    meta = ds.dataset_metadata
+    fm = parent_frontmatter(result)
+    out: list[str] = ["---", yaml.safe_dump(fm, sort_keys=False, allow_unicode=True).rstrip(), "---", ""]
+    publication = meta.publication
+    out += [
+        f"# {ds.unique_name}",
+        "",
+        f"> Generated from [`{DEFINITION_FILENAME}`]({DEFINITION_FILENAME}) by `dataset check`. Do not edit this "
+        f"page: change `{DEFINITION_FILENAME}` and re-run the check.",
+        "",
+        f"A parent definition: the data that {len(result.children)} task(s) derive from. It is checked, never built. "
+        f"{len(frame):,} rows and {frame.shape[1]:,} columns; data checksum `{result.data_checksum}`. Source: "
+        f"{publication.platform} ({publication.year}).",
+        "",
+    ]
+    out += _data_summary_section(ds)
+    out += ["## Children", ""]
+    if result.children:
+        for child in result.children:
+            out.append(f"- [`{child}`](../{child}/{REPORT_FILENAME})")
+        out.append("")
+    else:
+        out += ["None yet: no definition next to this one derives from it.", ""]
+    out += _files_section(ds, has_figures=False)
+    out += _rebuild_section(ds)
+    out += _sources_section(meta)
+    out += _columns_section(frame)
+    if meta.curation_comments and meta.curation_comments.strip():
+        out += ["## Curation notes", "", meta.curation_comments.strip(), ""]
+    out += ["## Checks", ""]
+    if result.findings:
+        rows = [(f.severity, f"`{f.slug}`", f.message) for f in result.findings]
+        out += [_table(pd.DataFrame(rows, columns=["severity", "check", "finding"]), full=True), ""]
+    else:
+        out += ["No findings.", ""]
+    return "\n".join(out).rstrip() + "\n"
+
+
+def write_parent_report(result: ParentCheckResult, path: Path | str) -> Path:
+    """Render a parent's ``README.md`` and write it to ``path``."""
+    path = Path(path)
+    path.write_text(render_parent_report(result))
+    return path
+
+
+def _sources_section(meta: Any) -> list[str]:
+    rows = [
+        (s.role, s.name or "", f"{s.platform}: <{s.url}>", s.year or "", s.license or "none stated")
+        for s in meta.sources
+    ]
+    out = [
+        "## Sources",
+        "",
+        _table(pd.DataFrame(rows, columns=["role", "name", "where", "year", "license"]), full=True),
+    ]
+    out += [
+        "",
+        *_details("BibTeX", _fence("\n".join(s.bibtex.strip() for s in meta.sources if s.bibtex) + "\n", "bibtex")),
+    ]
+    return out
+
+
+def _columns_section(frame: pd.DataFrame) -> list[str]:
+    rows = [
+        (f"`{c}`", str(frame[c].dtype), f"{frame[c].isna().mean():.1%}", f"{frame[c].nunique(dropna=True):,}")
+        for c in frame.columns
+    ]
+    table = _table(pd.DataFrame(rows, columns=["column", "dtype", "missing", "unique values"]), full=True)
+    return ["## Columns", "", *_maybe_collapsed(f"{len(rows)} columns", table, len(rows))]
+
+
 # --- helpers ------------------------------------------------------------------------------------------------
 
 
@@ -762,7 +909,7 @@ def _record_link(ds: AbstractCuratedDataset) -> str | None:
     """A relative link to the curation record of ``ds`` (its own, else the one of the dataset it derives from)."""
     if _repo_root(ds.folder) is None:
         return None
-    for name in dict.fromkeys((ds.unique_name, raw_name(type(ds)))):
+    for name in dict.fromkeys((*(k.unique_name for k in lineage(type(ds))), raw_name(type(ds)))):
         record = records_dir() / f"{name}.md" if name else None
         if record is not None and record.is_file():
             rel = Path(os.path.relpath(record.resolve(), ds.folder.resolve())).as_posix()

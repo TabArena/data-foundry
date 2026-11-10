@@ -75,7 +75,8 @@ dtypes, accepted warnings) are in [`definitions.md`](.claude/skills/knowledge-da
 * **Honest comments.** `curation_comments` records what was dropped and why, anomalies left in on purpose
   (`Anomaly:`, `Note:`), and sampling choices. Someone re-curating the data in two years reads it first.
 * **One task per container.** Two reasonable targets or two split regimes are two datasets with their own
-  `unique_name`.
+  `unique_name`. They share their metadata and cleaning through a parent definition (no `target`) that each task
+  subclasses (`import_definition("<parent>")`, a `derivation` saying how it differs), instead of copying it.
 * **Sources.** `sources` lists the publication first (its year and BibTeX are the dataset's), then the copy you
   download when it is not the publication, and the parts of an assembled dataset, each with its own license.
 * **Versions.** A version sub-sampled to a row budget is named `<name>_1m` (after `RowBudget.suffix`), declares

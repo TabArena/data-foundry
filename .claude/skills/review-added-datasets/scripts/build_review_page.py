@@ -56,7 +56,7 @@ except ImportError:  # pragma: no cover - depends on the environment
         "    uv pip install --python .venv/bin/python markdown-it-py",
     )
 
-from data_foundry.v2.dataset import TaskSummary
+from data_foundry.v2.dataset import TaskSummary, definition_files
 from data_foundry.v2.metrics import Metric
 from data_foundry.v2.registry import load_definition
 from data_foundry.v2.report import read_report
@@ -1221,11 +1221,16 @@ def _live_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
         raise BuildError(f"{where.wc}/{folder}/dataset.py names `{cls.dataset_metadata.unique_name}`, not `{folder}`")
     regime = "grouped" if cls.grouping is not None else "temporal" if cls.temporal is not None else "iid"
     front = read_report(where.root / folder / "README.md")
+    code = definition.read_text()
+    for parent in definition_files(cls)[1:]:  # the parents it derives from, whose code it runs too
+        code += (
+            f"\n\n# --- the parent it derives from: ../{parent.parent.name}/{parent.name} ---\n\n{parent.read_text()}"
+        )
     return {
-        "code": definition.read_text(),
+        "code": code,
         "summary": _summary_from_class(cls),
         "metric": _metric_from_class(cls) or _metric_from_front(front.get("task") or {}),
-        "meta": _meta(regime, cls.problem_type, front, retired=False),
+        "meta": _meta(regime, getattr(cls, "problem_type", None), front, retired=False),
         "readme": _readme(where.root / folder, f"{where.wc}/{folder}", where.github),
     }
 
