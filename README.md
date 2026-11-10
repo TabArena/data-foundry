@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-10 01:02 UTC: 126 claim(s) (Andrej 16, Lennart 88, Myunghwan 22).
+As of 2026-11-10 08:45 UTC: 126 claim(s) (Andrej 16, Lennart 88, Myunghwan 22).
 
 ## Andrej
 
@@ -22,7 +22,7 @@ As of 2026-11-10 01:02 UTC: 126 claim(s) (Andrej 16, Lennart 88, Myunghwan 22).
 | `spanish_motor_insurance_2015_2018` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `spanish_motor_insurance_coverage_level_2022_2024` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `wadden_sea_sibes_macoma_abundance` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
-| `walmart_sales_in_stormy_weather` | add | 2026-10-30 | 2026-11-06 (expired) | add-dataset, zero-inflated batch |
+| `walmart_sales_in_stormy_weather` | add | 2026-10-30 | 2026-11-17 | add-dataset, zero-inflated batch |
 | `wisconsin_local_government_property_insurance_fund` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 
 ## Lennart
