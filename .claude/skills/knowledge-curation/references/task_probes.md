@@ -43,7 +43,8 @@ sources, not from the rows; it needs no training side, so it is scored as it sta
 it out, look at where its misses go: the field's measurement can be spread over more columns than the rule read. A
 feature or rule that beats the methods is proof: `Trivial`. One that matches them (within the spread of the folds)
 makes the dataset a candidate to drop, and the curator decides. Marker: `Trivial`. Cases: fitness_club (beats, yes,
-retired); audiology_diagnosis (a textbook rule beats, yes, retired); sepsis_survival, california (no, kept).
+retired); audiology_diagnosis (a textbook rule beats, yes, retired); ljubljana_breast_cancer (a clinical score
+matches, the curator's call: retired); sepsis_survival, california (no, kept).
 
 **TP-5 (Must).** `Too Small` means a handful of units of a class, per test fold and in total, counted in the unit the
 task is scored on (parkinsons: 8 healthy people, 2-3 per fold; retired). A small dataset as such is a tiny-data task
@@ -337,6 +338,7 @@ task-probe flags the decision answers. The decisions on metrics (2026-10-21) are
 |---|---|---|---|---|---|
 | TP-4 | fitness_club | one_feature | retired, `Trivial` (2026-10-05) | `months_as_member` alone, chosen on all 30 training sides, AUC 0.822, above all 37 configurations; `days_before` = 2 × weekday in 1,251 of 1,500 rows (generated) | applied |
 | TP-4 | audiology_diagnosis | none (a rule check) | retired, `Trivial` (2026-11-10, Andrej) | the textbook definition, not fitted: conductive or mixed for an air-bone gap or a tympanogram other than type A, sensorineural for abnormal air conduction or any of the audiogram's 40 pattern codes, otherwise normal; 194 of 195 cases (accuracy 0.995) against 0.968 for the best of logistic regression, random forest and gradient boosting; reading air conduction alone it reached 0.764, as the coarse code reads normal for 45 high-frequency losses that the pattern codes carry | applied |
+| TP-4 | ljubljana_breast_cancer | none (a rule check) | retired, `Trivial` and `Outdated` (2026-11-10, Andrej) | an untrained score, one point each for grade 3, more than 2 involved nodes and a capsular breach: ROC AUC 0.710 against 0.717 for TabPFN 3.5 (at least as good on 28 of 60 folds) and 0.710 for a random forest; a match, so a candidate, and the curator retired it: nothing learnable beats three standard prognostic factors | applied |
 | TP-5 | parkinsons_biomedical_voice_measurements | no_spread, one_feature, unstable | retired, `Too Small` (2026-10-05) | 8 healthy people, 2-3 per test fold; ranks less stable than on 98% of BeyondArena | applied |
 | TP-7 | audiology_diagnosis | no_spread, unstable | target re-defined, rebuilt (2026-10-06); retired (2026-11-05) | our own 3-class merge replaced by hearing loss with or without a conductive part; duplicates and non-hearing-loss diagnoses dropped; no flags since, but the new type is read off five of its features (accuracy 0.903 of 0.938) and an unfitted textbook rule on the audiogram assigns 194 of 195 cases (TP-4) | applied |
 | TP-6 | eryhemato_squamous_disease | solved | clinical features only, rebuilt (2026-10-06) | macro AUC 0.999 with the biopsy features, 0.98 and 87% accuracy before the biopsy | applied |

@@ -1,5 +1,13 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10, `ljubljana_breast_cancer` retired as `Trivial` (Andrej's mark on the BeyondArena v0.2 review page)
+
+- TP-4 now separates a feature or unfitted rule that beats the methods (proof of `Trivial`) from one that matches them
+  (a candidate to drop, the curator's call).
+- `ljubljana_breast_cancer`: an untrained 3-item score (grade 3, more than 2 involved nodes, capsular breach) reaches
+  ROC AUC 0.710 against 0.717 for TabPFN 3.5 and 0.710 for a random forest on 60 folds. The record is `No (Retired)`
+  with `Trivial` and `Outdated` and a CC line, `v2_path` is cleared and the folder is removed; a TP-4 case row.
+
 ## 2026-11-10, labels a rule assigns from shipped columns: one rule; audiology_diagnosis is `Trivial` (nothing built)
 
 - SEL-19 of 2026-11-05 is folded into SEL-5: a label a published formula or the field's definition assigns from columns
