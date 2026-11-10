@@ -58,6 +58,12 @@ CC (2026-11-05, Andrej): retired (`No (Retired)`, `No Good Target / Scientific D
 - **Why the keep does not hold:** Lennart's `Yes` predates the objection; the source classifies the three classes (da Rocha Neto 2006, 2011), but for one of them that is reading off a column.
 Marker `No Good Target / Scientific Discovery` added: a label one column assigns, and a remainder no decision waits on, is no real prediction target; `Trivial` is not the reason for retiring it. `year` set to 2006, the thesis, from the definition.
 
+CC (2026-11-10, Andrej): stays retired with `No Good Target / Scientific Discovery`, the reason restated under the rule for labels a rule assigns from shipped columns: without the slip the other five measures still predict, but neither task they leave has a decision behind it.
+- **The rest carries a signal:** with `degree_spondylolisthesis` dropped, the five pelvic measures separate disc hernia from normal at ROC AUC 0.889 (160 patients; shuffled labels 0.48 on average, 0.59 at best of 20) and spondylolisthesis from the rest at 0.913 (5-fold x 5 repeats, best of logistic regression, random forest and gradient boosting).
+- **No decision waits on either task:** disc hernia is diagnosed by MRI and symptoms, which the table lacks, and the pelvic angles are measured for surgical planning; nobody reads spondylolisthesis from pelvic shape while its own measure, the slip, is on the same radiograph.
+- **Why not `Trivial`:** one threshold on the slip assigns the spondylolisthesis class (accuracy 0.974), but that is half the rows; for the three classes the slip alone reaches accuracy 0.78 against 0.85 for all six measures.
+Evidence: Slurm job 1374813 (`~/claude_jobs/sel19_reassess/`).
+
 ## Reference
 
 @inproceedings{da2011diagnostic,

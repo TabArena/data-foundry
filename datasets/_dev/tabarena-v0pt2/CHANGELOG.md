@@ -19,8 +19,9 @@
 - `audiology_diagnosis`: marker `Trivial` in place of `No Good Target / Scientific Discovery`. The textbook rule on
   the audiogram assigns 194 of 195 cases (accuracy 0.995) against 0.968 for the best model; the case history alone
   keeps a small signal (log loss 0.713 against 0.762) but no decision.
-- `biomechanical_orthopaedic_prediction`: unchanged; its case row moves to SEL-5, and the reassessment of the five
-  other measures (hernia against normal, ROC AUC 0.889) is open on the review page.
+- `biomechanical_orthopaedic_prediction`: stays retired with `No Good Target / Scientific Discovery` (Andrej's mark on
+  the review page): the five other measures still predict (hernia against normal ROC AUC 0.889), but neither task they
+  leave has a decision behind it. A CC line in the record; the case row moves from SEL-5 to USE-2.
 
 ## 2026-11-10, PR #55: horse_colic_survival decided (Andrej; no container built)
 
