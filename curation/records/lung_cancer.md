@@ -7,9 +7,10 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-suggestion: 'Yes'
+suggestion: No (Retired)
 decision_markers:
 - Class-dependent Recording
+- No Good Target / Scientific Discovery
 tags:
 - New IID
 - Many features
@@ -28,7 +29,6 @@ source_links:
 - 'https://www.pnas.org/doi/10.1073/pnas.191502998#supplementary-materials (data set A of the paper''s supplement, dataseta_12600gene.xls: per-patient means of MAS4 values)'
 - https://www.openml.org/d/45093 (later copy of data set A)
 notebook_path: datasets/beyond_iid/new_iid/lung_cancer/lung_cancer.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/lung_cancer/dataset.py
 source_row: 1033
 type_adapter_id: curation-record-v1
 ---
@@ -75,6 +75,12 @@ CC (2026-11-10, Andrej): rebuilt from the study's arrays in GEO GSE83227 instead
   - The task is easy (log loss 0.126, accuracy 0.95): open as issue 5 of the folder's `REVIEW.md`.
 
 **Assessment (AI, 2026-11-10):** evidence for the rebuild (logistic regression, 20 repeats of 3 folds; `~/claude_jobs/lung_raw/`): the GEO arrays give the same 197 specimens (139 / 21 / 20 / 17); the 12 adenocarcinoma titles starting `A` are the adenocarcinomas without clinical annotation, and the study's annotation sheet (caArray archive in GEO) flags 16 possible metastases; log loss 0.123 at random, 0.126 grouped by patient, 0.141 on Dataset A; 10 pathology marker genes alone reach accuracy 0.93.
+
+CC (2026-11-10, Andrej): retired (`No (Retired)`, `No Good Target / Scientific Discovery`; BeyondArena v0.2 review page, issue 6, B): no decision rests on the prediction for these specimens. The label is the histology pathologists read on resected tumours, where the slide is clear; the use case ("a check on the microscope reading") was ours, and a pathologist in doubt orders a two-stain panel, not an expression array.
+- **Why not kept for the task's general value:** telling lung tumour types apart from molecular data matters on small biopsies and cytology that come back "non-small cell carcinoma, not otherwise specified", and for tumours of unknown origin; those cases are not in this data, so the test labels come from the easy cases only (log loss 0.126, one-vs-rest ROC AUC 0.996 on the GEO rebuild).
+- **Other targets checked** from the study's annotation sheet (GEO's caArray archive, `SampleData.xls`): metastasis from another organ vs primary, ROC AUC 0.861 but 16 cases, about 5 per test fold (too few to rank methods); death within 24/36/60 months after resection, expression 0.58/0.55/0.51 against 0.49-0.52 on shuffled labels, while stage and age reach 0.63/0.71/0.80 (not a gene-expression task); lymph-node involvement 0.60 (staged at surgery anyway).
+- **Not a rule change:** an expert annotation stays a valid target; the dataset fails the use case (no actor, moment or decision for these rows), as glioma_grading_clinical_and_mutation_features did. A dataset of ambiguous small biopsies labelled by the later resection would be a real task.
+- Folder removed and `v2_path` cleared; the GEO rebuild of issue 1 is the commit before this retirement. Issues 4 and 5 of the review are closed with this decision.
 
 ## Reference
 
