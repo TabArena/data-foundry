@@ -1,5 +1,20 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10, PR #58: biomechanical_orthopaedic_prediction and blood_tests_drink_prediction retired (moved from #57)
+
+Both were retired on 2026-11-05 (Andrej's marks on the BeyondArena v0.2 review page) and carried out in #57; they move
+here, with the other retirements on the use case. Each record is `No (Retired)` with
+`No Good Target / Scientific Discovery` and a CC line, its folder is removed and `v2_path` cleared; `DF: Yes`, the
+collection tags and the pinned BeyondArena containers stay.
+- `biomechanical_orthopaedic_prediction`: `degree_spondylolisthesis` is the criterion of half the labels (one threshold,
+  accuracy 0.974). Reassessed on 2026-11-10 under SEL-5: the five other measures still predict (hernia against normal
+  ROC AUC 0.889), but neither task they leave has a decision behind it, since disc hernia is diagnosed from MRI and
+  symptoms the table lacks. `year` 2006, `problem_type` Multiclass Classification.
+- `blood_tests_drink_prediction`: no decision rests on estimating drinks from blood values the doctor already has.
+- Guidelines: USE-2, a label that stands in for what the features already measure fits no decision (blood_tests); its
+  Cases rows hold both datasets, and SEL-5 names biomechanical as the case whose rest was reassessed and is out under
+  USE-2.
+
 ## 2026-11-10, PR #58: south_africa_coronary_heart_disease retired (Andrej, review page; no container built)
 
 - Andrej's marks of 2026-11-10 on the BeyondArena v0.2 review page: retired (`No (Retired)`,
