@@ -10,7 +10,6 @@ data_foundry_status:
 suggestion: No (Retired)
 decision_markers:
 - Outdated
-- Trivial
 - No Good Target (yet)
 - Not Representative
 - Selection Bias
@@ -59,6 +58,8 @@ CC (2026-11-05, Andrej): retired (`No (Retired)`, `No Good Target / Scientific D
 - **As the definition's use case it leads to nothing:** the definition reads it as checking a patient's account of drinking from blood markers; once a doctor has the blood values, those values guide what happens next, and an estimate of the drinks adds nothing to act on (asking is simpler).
 - **The sample would not carry over:** men only, 336 of 345 drink, and how the drinks were recorded is not stated.
 Not changed: `Trivial` stays for now (open on the review page: the single-feature test refuted it, skill +0.05 against +0.10 to +0.17 for the methods). Had the dataset stayed, the four records entered twice would have been dropped.
+
+CC (2026-11-10, Andrej): `Trivial` removed (review page issue 2, B): the test refuted it; the best single feature reaches skill +0.05 against +0.10 to +0.17 for every method configuration. The retirement's reasons stand.
 
 ## Reference
 

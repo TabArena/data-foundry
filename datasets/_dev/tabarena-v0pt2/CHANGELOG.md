@@ -24,6 +24,13 @@
   `required_split` Grouped, `source_links`, `checked_by`. LEAK-15 and LEAK-39 list it as repaired (was kept with a
   note), PROV-13 as a case. Evidence in `~/claude_jobs/lung_raw/`.
 
+## 2026-11-10, retirement records after the review page's marks
+
+- early_stage_diabetes_risk_prediction: reassessed on the review page and kept retired on several reasons together
+  (a selection that makes the fit none; an untrained symptom rule at ROC AUC 0.905 and near-perfect models are
+  unrealistic); the record adds `Not Representative` next to `Selection Bias`.
+- blood_tests_drink_prediction: the refuted `Trivial` removed from the record (issue 2, B).
+
 ## 2026-11-10, PR #58: biomechanical_orthopaedic_prediction and blood_tests_drink_prediction retired
 
 Both were retired on 2026-11-05 (Andrej's marks on the BeyondArena v0.2 review page). Each record is `No (Retired)` with
@@ -48,17 +55,6 @@ collection tags and the pinned BeyondArena containers stay.
 - Decided for the case it returns, not applied to a definition: the ESL data page as the source with no licence stated
   (the Kaggle copy's `CC BY-SA 4.0` is that uploader's), a random split with a line and no time-basis tag, and no
   `Trivial` (the published Framingham points reach ROC AUC 0.748 against 0.773 for TabPFN 3.5).
-
-## 2026-11-10, PR #58: hepatitis_c_prediction retired (Andrej, 2026-10-27; no container built)
-
-- Andrej set the record to `No (Retired)` on 2026-10-27; its folder is removed and `v2_path` cleared. `DF: Yes`, the
-  collection tags and the pinned BeyondArena container stay. The `Class-dependent Recording` marker and its evidence
-  note stay on the record. Reasons, from his CC of 2026-10-27: donors and patients come from separate, undocumented
-  collections, recorded differently, and donor vs patient is not a decision anyone makes from a liver panel; the 75
-  patients alone are too few to stage (hepatitis vs fibrosis: log loss 0.696 from the blood values without age vs
-  0.691 from the class frequencies). A CC line records the decision; a repeated better-data line is removed.
-- `tests/test_curation_scripts.py`: the participant-kit test builds `eryhemato_squamous_disease` in place of
-  `hepatitis_c_prediction` (it runs where the raw file is downloaded).
 
 ## 2026-11-10, `ljubljana_breast_cancer` retired as `Trivial` (Andrej's mark on the BeyondArena v0.2 review page)
 
@@ -880,8 +876,9 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
   collection tags and the pinned BeyondArena container stay. The record carries his October disagreement notes.
   - `early_stage_diabetes_risk_prediction`: patients of a diabetes hospital, not the adults the screening use case is
     for; 52% of the rows repeat another row.
-- `hepatitis_survival_prediction`, retired the same day, is not retired here: Andrej reversed the retirement on
-  2026-11-10 (BeyondArena v0.2 review page), as no reason for it held; its record and folder are left unchanged.
+- `hepatitis_survival_prediction` and `hepatitis_c_prediction`, retired the same day, are not retired here: Andrej
+  reversed both retirements on 2026-11-10 (BeyondArena v0.2 review page), as no reason for them held; their records
+  and folders are left unchanged.
 
 ## 2026-11-05, three tasks without a real target retired; new marker `No Signal`
 
