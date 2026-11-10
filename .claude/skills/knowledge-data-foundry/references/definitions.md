@@ -570,8 +570,9 @@ rows and the train share, the target on each side (a binary target's event share
 mean and quantiles), and the drift of the features from the train side (the population stability index of each
 feature, its largest value and the features behind it, and the share of test rows with a category the whole train
 side never shows; free text and dates are left out). A feature that counts time (epoch seconds, a year, a running
-index) drifts in every window: read past it to the next features. Read it against the use case: which periods must a deployed model handle, which windows show them, and
-which are near copies of the newest (the same season, little drift). Declare the choice with `cutoffs` (the newest
+index) drifts in every window: read past it to the next features. Read it against the use case: which periods must a
+deployed model handle, which windows show them, and which are near copies of the newest (the same season, little
+drift). Declare the choice with `cutoffs` (the newest
 window's start among them; a choice without it is refused), and write the reasons into `splits_comment` with the
 numbers they rest on. A numeric time column (numerai's eras) states what one step counts with
 `Temporal(time_unit=...)`; the table then shows its values with the unit. The README's splits section shows the same
