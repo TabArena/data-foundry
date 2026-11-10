@@ -304,3 +304,18 @@ def test_both_examples_weight_a_rate_by_its_training_weight(tmp_path, capsys):
     dummy = np.full(len(test), float(df["claim_frequency"].iloc[train].mean()))
     assert value == pytest.approx(mean_poisson_deviance(rate, dummy, sample_weight=exposure))
     assert "Training weight: Exposure" in capsys.readouterr().out
+
+
+def test_the_family_example_checks_a_parent_and_its_tasks(tmp_path, capsys):
+    spec = importlib.util.spec_from_file_location("example_run_family", EXAMPLES / "dataset_family" / "run_family.py")
+    example = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(example)
+    first = example.main(tmp_path / "warehouse")
+    assert set(first) == {"exam_scores", "exam_scores_math", "exam_scores_reading"}
+    assert example.main(tmp_path / "again") == first  # the raw files and every checksum are reproducible
+    out = capsys.readouterr().out
+    assert "exam_scores_math       grouped_non_iid  <- exam_scores" in out
+    assert "derived from `exam_scores`: The math score as the target" in out
+    assert "0 error(s)" in out
+    assert "exam_scores_math_iid: folder None" in out
+    assert not list((EXAMPLES / "dataset_family").glob("*/README.md")), "the example writes no README"

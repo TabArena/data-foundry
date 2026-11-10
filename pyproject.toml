@@ -253,6 +253,12 @@ exclude = [
     "FBT003",
     "RUF005",
 ]
+# An example in its own folder (`examples/<example>/`) is a set of scripts, not a package.
+"examples/*/*.py" = ["INP001"]
+# The definitions of the examples (`examples/**/dataset.py`) follow the same rules.
+"examples/**/dataset.py" = [
+    "D100", "D101", "D102", "E501", "INP001", "RUF012", "ARG002", "RET504", "PD",
+]
 
 [tool.ruff.lint.isort]
 no-lines-before = ["future"]

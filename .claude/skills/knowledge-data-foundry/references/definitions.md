@@ -17,8 +17,9 @@ copy, [working_copy.md](working_copy.md)):
 | `README.md` (+ `figures/*.png`) | `dataset check` / `dataset build` | The dataset card and evidence: YAML front matter (build record, data and split shape, bundle-check slugs, decision titles), then the files of the folder, links, how to rebuild, the dataset and task, the curation notes, the splits, the decisions with their tables and figures, the check results and the build record. Never edited by hand. |
 | `REVIEW.md` | the agent, while issues are open | The open issues for the curator ([working_copy.md](working_copy.md)); deleted once they are settled. |
 
-Discovery is `data_foundry.v2.discover_datasets(root)`, and `tests/test_v2_datasets.py` tests every discovered folder
-(each import in its own test), so there is no per-dataset test file and no registry to edit.
+Discovery is `data_foundry.v2.discover_datasets(root)` (the tasks; `discover_definitions` adds the parents of a family,
+"Families" below), and `tests/test_v2_datasets.py` tests every discovered folder (each import in its own test), so there
+is no per-dataset test file and no registry to edit.
 
 ## The definition file
 
@@ -210,7 +211,7 @@ A metric input known at the prediction point (a weight that is a function of the
   * A **copy** (`role="copy"`) is a later copy of the data, such as the re-upload we download (a Kaggle or UCI copy of
     a paper's supplement): its own `platform`, `url` and `license`, a `name` ("UCI 291") and, if known, its `year`.
     List it when the download is not the publication; `download_description` still says how the files are fetched.
-  * A **part** (`role="part"`) is a piece the dataset is assembled from (one of several datasheets, a second table
+  * A **part** (`role="part"`) is a piece the dataset is assembled from (one of several survey waves, a second table
     joined in), each with its own `license` and a `name` that tells the parts apart.
   * `files=("sheets/*.txt",)` names the raw files that come from a source, as paths or glob patterns under the raw
     folder.
@@ -228,8 +229,8 @@ A metric input known at the prediction point (a weight that is a function of the
 * `problem_type`: "Regression" to `"regression"`, "Binary Classification" to `"binary_classification"`,
   "Multiclass Classification" or "Classification" to `"multiclass_classification"`. A table that supports a regression
   or a classification target, where taking one means dropping the other, gets one folder per framing: the second is
-  `<unique_name>_clf/` (or `_reg/`) with its own `unique_name`, and the record's `problem_type` follows the one that
-  ships.
+  `<unique_name>_clf/` (or `_reg/`) with its own `unique_name`, written as a child of the first ("Families" below), and
+  the record's `problem_type` follows the one that ships.
 * `metric` (required): a `Metric` from `data_foundry.v2.metrics`; which one is decided by
   [metrics.md](../../knowledge-curation/references/metrics.md) (MET). Three constructors, one per origin (MET-11):
   * `Metric.source(name, original=..., reference=..., params=..., inputs=..., definition=...)`: what the source
@@ -596,6 +597,68 @@ splits adapt to the budget:
 The rows a version's sampled test sides leave out are never tested; the coverage check (`splits_rows_never_tested`)
 does not flag them when the container records a budget. A dataset that sets `splits_comment` itself states the
 sub-sampling there.
+
+## Families: one parent, several tasks
+
+Several tasks on the same data (another target, an IID, grouped or temporal split, other preprocessing, a budget
+version of a task) share their metadata and cleaning through a parent definition instead of copying it. Each member
+is still its own folder, `<root>/<unique_name>/dataset.py`, and ships its own container: one task per container.
+
+```python
+# exam_scores/dataset.py: the parent (no `target`)
+class ExamScores(AbstractCuratedDataset):
+    data_summary = DataSummary(data=..., row=..., goals=..., limits=...)   # required on a parent
+    unique_name = "exam_scores"
+    domain = ...
+    sources = (...)
+    download_description = ...   # the family's raw files, read by every member
+    def _load_raw(self, raw_dir): ...
+    def _clean(self, raw): ...   # the shared cleaning: every outcome stays in the frame
+
+# exam_scores_math/dataset.py: a child (a task)
+ExamScores = import_definition("exam_scores")
+
+class ExamScoresMath(ExamScores):
+    unique_name = "exam_scores_math"
+    derivation = "The math score as the target; the reading score, written at the same exam, is dropped."
+    task_summary = TaskSummary(...)
+    target = "math_score"
+    problem_type = "regression"
+    metric = Metric.fallback(reason=...)
+
+    def _clean(self, raw):
+        return super()._clean(raw).drop(columns=["reading_score"])   # the other outcome is no feature
+```
+
+* **Kinds.** A definition without a `target` is a parent: it is never built and never discovered as a dataset
+  (`discover_datasets` returns tasks; `discover_definitions` returns both). A parent declares `data_summary` (what the
+  data is, independent of one task) and may declare the task defaults its children share (`problem_type`, `metric`,
+  `grouping`, `temporal`, `stratify_on`, `scoring_columns`, `special_features`, the weights), but no `row_budget`,
+  `task_summary`, `splits_comment` or regime tag. A parent without `_load_raw` or full metadata is partial: it shares
+  code only, and its children complete it.
+* **A child** subclasses its parent, imported with `import_definition("<parent>")` (the sibling folder). It declares
+  its own `unique_name`, named `<parent>_<variant>` after what differs (`_cop`, `_grouped`, `_clf`; a row budget's
+  suffix last, `<parent>_<variant>_1m`), and `derivation`: how it differs from its parent. It may override any hook
+  and call `super()` (`_clean`, `_feature_types`, `_make_splits`, `_decisions`); it inherits everything else.
+* **Raw files** belong to the definition that says how to download them (`download_description`): the family root
+  when it does, and every member reads that folder. A child does not redeclare `download_description`,
+  `_prepare_raw_files` or `prepared_raw_files` that a parent declares.
+* **Summaries.** A child inherits the parent's `data_summary`, shown above its own `task_summary` in its README. An
+  inherited `task_summary` or `splits_comment` is refused when the child's task differs (target, problem type,
+  grouping, temporal); `dataclasses.replace(Parent.task_summary, split=...)` changes single fields.
+* **Outcomes.** The parent keeps every outcome (both scores); each task keeps its target and drops the others in its
+  `_clean`, since an outcome measured with the target is not known at the prediction point (LEAK rules).
+* **The container** records the parent: `dataset_metadata.derived_from` (its `unique_name`) and `derivation`. A
+  benchmark groups the tasks of one family by it.
+* **Checking.** `dataset check <parent>` checks the parent as data: its frame (in content order), a data checksum, its
+  sources and columns, the children found next to it, and the definition findings (`parent_without_children` when
+  none derives from it). `dataset build` refuses a parent. A child's check scans the definition files of its parents
+  too (`TODO(verify)` markers, nondeterministic calls), and the workbench reloads a child when a parent file changes.
+* **Trying a task.** In a notebook next to the parent, `class Try(import_definition("<parent>")): ...` with a target
+  and a split runs `check()` without a folder: it writes no README and cannot be built.
+* **Scaffold.** `dataset new <parent>_<variant> --parent <parent>` writes a child with the TODOs to fill in.
+* **Example.** [`examples/dataset_family/`](../../../../examples/dataset_family/) holds a family (exam scores: a parent
+  and two tasks), a README on the idea and `run_family.py`, which runs it on generated raw files.
 
 ## Traps to flag at scaffold time
 
