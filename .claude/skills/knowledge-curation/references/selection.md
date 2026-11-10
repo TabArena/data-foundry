@@ -82,8 +82,7 @@ spondylolisthesis by the size of the slip). Drop the rule's inputs first and tes
   it passes.
 
 Marker: the one the branch names. Cases: account_debt_south_africa,
-central_international_medical_college_and_hospital_health_risk_prediction (NEWS2), audiology_diagnosis,
-biomechanical_orthopaedic_prediction.
+central_international_medical_college_and_hospital_health_risk_prediction (NEWS2), audiology_diagnosis.
 
 **SEL-6 (Must; narrows SEL-3).** A label counted over one calendar window shared by all rows, instead of a fixed time
 after each row, supports only a look back at which rows drew the outcome. Marker:
@@ -461,7 +460,6 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SEL-5 | account_debt_south_africa | the deterministic rule's inputs dropped; the rest still makes a real task | applied |
 | SEL-5 | central_international_medical_college_and_hospital_health_risk_prediction | the label is NEWS2, and its inputs are the whole task: `Trivial` | applied |
 | SEL-5 | audiology_diagnosis | the type of hearing loss (normal, sensorineural, conductive or mixed), defined by the audiogram: a textbook rule on it, not fitted (an air-bone gap or a tympanogram other than type A, then abnormal air conduction or any of the 40 pattern codes), assigns 194 of 195 cases (accuracy 0.995) against 0.968 for the best model; the rule took in the pattern codes after its first form (0.764) called 45 sensorineural ears normal, codes that name the type themselves; without the audiogram the 11 history answers keep a small signal (log loss 0.713 against 0.762) and no decision: retired with `Trivial` (2026-11-10, Andrej) | applied |
-| SEL-5 | biomechanical_orthopaedic_prediction | `degree_spondylolisthesis` is the slip that defines one of the three classes (one threshold, accuracy 0.974); without it the five other measures still separate disc hernia from normal (ROC AUC 0.889, shuffled labels at most 0.59), so the rest is reassessed as a new task; disc hernia is diagnosed from MRI and symptoms the table lacks: retired with `No Good Target / Scientific Discovery` (2026-11-05), the reassessment open on the review page | applied |
 | SEL-6 | analcatdata_supreme | Congress's responses in 1979-1988 to Supreme Court rulings of 1953-1988, counted over one shared window: `No Good Target / Scientific Discovery` (2026-10-14, Lennart) | applied |
 | SEL-7 | cdc_diabetes_health_indicators | "ever told you have diabetes", told a median of 10 years earlier, with the undiagnosed in the negative class (2026-10-15, Lennart) | applied |
 | SEL-7 | stroke_prediction | a stroke the patient already had, undated, in a hackathon release rather than an interview: retired as cdc_diabetes_health_indicators, since no decision is made with it (a screening task would need a first stroke within a horizon, from dated records); with `Data Quality Issue` for the columns that look generated; SEL-7 not amended (2026-10-26, Lennart: "This looks too bad, dont ship it") | applied |

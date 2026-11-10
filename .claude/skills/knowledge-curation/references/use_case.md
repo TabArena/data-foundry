@@ -17,11 +17,9 @@ whether to approve it". Write it down before anything else, and check every colu
 against it. Why: the written prediction point finds columns no probe flags. How: the use-case checklist under Methods.
 Cases: kickstarter.
 
-**USE-2 (Must).** A task no decision fits is out. The kinds of labels no decision fits are SEL-4 to SEL-7
-in [selection.md](selection.md), and data that serves only a study looking back is SEL-3. A label that stands in for
-what the features already measure fits no decision either: once the actor holds the inputs, they act on those. Marker:
-`No Good Target / Scientific Discovery` (the fit None, USE-8). Cases: under SEL-3 to SEL-7;
-blood_tests_drink_prediction.
+**USE-2 (Must).** A task no decision fits is out. The kinds of labels no decision fits are SEL-4 to SEL-7 in
+[selection.md](selection.md), and data that serves only a study looking back is SEL-3. Marker:
+`No Good Target / Scientific Discovery` (the fit None, USE-8). Cases: under SEL-3 to SEL-7.
 
 ### The prediction point
 
@@ -152,13 +150,12 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | USE-1, USE-3 | kickstarter | once the task was "predict at launch", the written prediction point found `staff_pick`, awarded mid-campaign, which no probe flagged (2026 leak audit) | applied |
 | USE-1, USE-5 | nba_players_2016_2019 | `No` + `No Good Target / Scientific Discovery`, `Not Representative`: no actor, moment or decision fits (the prediction point moved twice to fit the data, 25 of 35 features are end-of-season values), and the score ranks the whole ballot where the actor acts on its 2 or 3 starters; more seasons would be a rebuild of our own and fix neither (2026-10-26, Lennart) | applied |
 | USE-1 | glioma_grading_clinical_and_mutation_features | `No` + `No Good Target / Scientific Discovery`: the grade is the pathologist's diagnosis, made before the DNA is sequenced, so a model can only cross-check a label that already exists; a cross-check of a known label is no use case, and the source names no clinical setting (2026-10-26, Lennart) | applied |
-| USE-2 | blood_tests_drink_prediction | drinks per day estimated from five blood tests that respond to alcohol: as a stand-in for liver damage the blood tests are the better measure, and as a check of a patient's account the doctor already holds the blood values and can ask; no decision rests on the estimate: retired with `No Good Target / Scientific Discovery` | applied |
 | USE-4 | eryhemato_squamous_disease | offered on the 12 clinical features, before the skin biopsy | applied |
 | USE-5 | corporate_credit_rating | 17% of the checkable labels were not the issuer rating; retired for a rebuild from the agencies' own histories (2026-10-16) | applied |
 | USE-5 | xente_fraud_detection_challenge | the fraud label follows a review applied above about 500k UGX on a shipped input: within the same customers' spans, 109 of 110 rows at 500k-1M are fraud against 16 of 149 at 100k-490k, minutes apart, so a 0 below the step means "not reviewed" as much as "not fraud"; `No` for now with `Data Quality Issue`, to revisit with a second curator's reading or the host's account of how `FraudResult` was set (2026-11-04, Lennart). It differs from ieee_fraud_detection, whose chargeback rule labels every transaction | applied |
 | USE-5 | cirrhosis_patient_survival_prediction | time to death over the patients who died became death or transplant within five years, over the patients followed that long | applied |
 | USE-5 | diabetes_3 | Efron et al. (2004) describe the label only as "a quantitative measure of disease progression one year after baseline", with no measure, scale, clinic or inclusion rule: kept with fit approximate and a note (2026-10-21, Lennart; USE-5 amended) | applied |
-| USE-5 | blood_tests_drink_prediction | the quantity is known (drinks per day), how it was recorded is not: kept with fit approximate; retired later (2026-11-05) on another ground, no decision rests on the prediction | applied |
+| USE-5 | blood_tests_drink_prediction | the quantity is known (drinks per day), how it was recorded is not: kept with fit approximate | applied |
 | USE-5 | mobile_churn | no churn rule and no horizon stated: approximate under the amendment, now that PROV-2 (amended 2026-10-21, Lennart) keeps a sound upload with a source to point to | applied |
 | USE-5 | wine_quality, numerai_v5_2_1m, corporate_credit_rating | a rating or grade ships as regression or as classes by the source, checked against common sense and similar use cases, with no general rule: wine_quality's 0-10 grade and numerai's target as regression, as their sources model them; corporate_credit_rating as letter classes with the rare grades merged (carried into corporate_issuer_credit_rating) (2026-10-21, Lennart) | applied |
 | USE-6 | brazilian_ecommerce | the delivery date Olist promised at checkout stays an input: it is fixed before the delivery, so it cannot leak; R^2 0.366 with it, 0.332 without (2026-10-15) | applied |

@@ -35,8 +35,9 @@ clock_protein_toxicity.
 part still wins). Cases: gallstone_disease, electric_motor_temperature_prediction, hr_analytics.
 
 **TP-4 (Must).** `Trivial` needs proof. Read what the dominant feature means first: the natural core of a task (a
-listed price for a sale price, age for survival) is expected to dominate. Then test it: the raw feature, chosen on
-each split's training side, against the methods fold by fold. The same holds for a rule not fitted on these data (a
+listed price for a sale price, age for survival) is expected to dominate, which rules out a leak but not the test.
+Then test it: the raw feature, chosen on each split's training side, against the methods fold by fold. The same
+holds for a rule not fitted on these data (a
 formula the source or the field publishes, the field's definition of the label, a textbook or clinical score): if the
 methods learn nothing better than such a rule, the data cannot be used for prediction. Take the rule from the field's
 sources, not from the rows; it needs no training side, so it is scored as it stands on every test fold. Before ruling
@@ -109,6 +110,28 @@ generated-data probes with their calibrations.
   (a generated or edited dataset: PROV-3 in [provenance.md](provenance.md), "Is the data generated?"). Look at the raw
   feature without a model too: `Listed Price` used as the prediction scored R² 0.64 until the 39 listings at $0 were set
   aside, then 0.89-0.91.
+* **A rule not fitted on the data** (TP-4). Look for one whenever the field scores or defines the target from what
+  ships: a clinical or prognostic score, a published formula, the label's definition, an expert system's rules, a
+  domain theory shipped with the data, and a column that is another system's prediction of the target (a vendor or
+  bureau score, a quoted premium, a listed price). Then:
+  - Compare it with the best method on the shipped splits (tuned results where they exist), paired per split: the
+    mean difference with its standard error and the splits on which the rule is at least as good. A match is a
+    difference small against the spread of the best method's own score across splits, even when the method is ahead
+    on most of them (sepsis_survival: age plus five years for men 0.7059 against 0.7068 for TabPFN 3.5, ahead on 8 of
+    9 splits, whose scores run from 0.699 to 0.710).
+  - A constant set by hand (a weight, an offset, a cut-off) keeps the rule unfitted when fitting it on each training
+    side changes nothing (the offset for men fitted per side: 3 to 5 years, 0.7058). A cut-off read off the rows makes
+    it fitted (ljubljana_breast_cancer's 2-node cut-off, of unrecorded source, was named in the decision).
+  - A rule gives a rank or a class. Compare it on a rank metric (ROC AUC, accuracy), or for log loss calibrate its
+    score once on the training side with one monotone fit.
+  - With a few low-cardinality columns, bound the best achievable score: each cell's rate measured on all rows,
+    minus what the same estimate reaches on labels simulated from a smooth fit (sepsis_survival: 0.722 on the real
+    labels, 0.717 against 0.704 for the curve on simulated ones, so about 0.709 is achievable). A rule and the methods
+    both near that bound leave nothing to rank.
+  - A screen of the BeyondArena v0.2 datasets (2026-11-10) found such rules close to the methods on few: a 3-item
+    prognostic score (ljubljana_breast_cancer), age and sex (sepsis_survival), an exercise-test count on one hospital
+    of heart_disease; the rest stay well below (published cardiovascular points, bureau scores, insurers' premiums,
+    textbook marker genes, a splice-site domain theory).
 * **A zero-inflated regression target** (forest_fires: 48% zeros). Check the oracle bound (the true zero / non-zero
   indicator with the positives' train mean: R² 0.58) and a hurdle model, P(y > 0) × E[y | y > 0], with its two stages
   reported apart (AUC of y > 0: 0.51-0.58; R² on the positive rows: below 0). Neither stage was learnable, so the
