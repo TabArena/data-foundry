@@ -319,3 +319,9 @@ def test_the_family_example_checks_a_parent_and_its_tasks(tmp_path, capsys):
     assert "0 error(s)" in out
     assert "exam_scores_math_iid: folder None" in out
     assert not list((EXAMPLES / "dataset_family").glob("*/README.md")), "the example writes no README"
+
+
+@pytest.mark.parametrize("path", sorted(EXAMPLES.rglob("*.py")), ids=lambda p: p.relative_to(EXAMPLES).as_posix())
+def test_every_example_parses(path):
+    """An example that does not run in the tests (it needs the network) must still be valid Python."""
+    ast.parse(path.read_text(), filename=str(path))
