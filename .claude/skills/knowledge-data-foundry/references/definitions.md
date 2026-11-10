@@ -169,9 +169,17 @@ task_summary = TaskSummary(
 ```
 
 (Written with implicit string concatenation in the file, so no line passes 120 characters.) The fields: `use_case`
-(settled first), `question`, `row`, `predicted`, `known` (in plain words, never column names), `split` (what the test
-data stands for), `changes` (only our changes that alter the task for a reader; empty when none), `fit`
-(`"direct"`, `"approximate"`, `"none"`) and `fit_reason`.
+(settled first), `question`, `row`, `predicted`, `known` (in plain words, never column names), `known_at_scoring`
+(what the scorer knows that the model does not; empty when it knows only the target), `split` (what the test data
+stands for), `changes` (only our changes that alter the task for a reader; empty when none), `fit` (`"direct"`,
+`"approximate"`, `"none"`) and `fit_reason`.
+
+`known_at_scoring` is for a metric input recorded with the outcome, such as a realized time on risk that weights a
+rate (MET-15): known for the training rows and when scoring, since those periods are over, but not at the prediction
+point. Say what it is and why the model cannot have it, in plain words: "How long each policy was actually insured,
+which a claim or a cancellation can cut short; it weights the claims per year insured in training and in the score."
+A metric input known at the prediction point (a weight that is a function of the features) goes in `known` or nowhere
+(Lennart, 2026-11-09).
 
 ## Field mapping (record to definition)
 
@@ -248,22 +256,79 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   class name is an error (Lennart, 2026-11-05). Before declaring a metric with inputs, check on the data that every
   test fold holds what it needs (MET-2).
 
+  A row weight makes each row count in proportion to it: `normalized_weighted_gini`, `weighted_pearsonr` (without
+  `weights`), `rescaled_mean_tweedie_deviance` (its required `weight`; since 2026-11-08: each scored set's predictions
+  multiplied by `sum(w * y) / sum(w * p)`, then the weighted Tweedie deviance, the stand-in for a pricing game's market
+  that rescales every tariff to one total, pricing_game_2016_french_fleet), the optional `weight` input of
+  `mean_poisson_deviance` and `mean_tweedie_deviance` (`sum(w * d) / sum(w)`, as scikit-learn's `sample_weight`) and of
+  `rmse` (`sqrt(sum(w * (y - p)^2) / sum(w))`, since 2026-11-08: boreal_postfire_lichen_biomass weighs each quadrat by 1
+  over its plot's quadrats, so each plot counts once), and `ordered_lorenz_gini` with `params={"per_unit": True}`, where
+  the target and the prediction are already per unit of the weight (a loss per year insured; the unnormalised weighted
+  Gini). Without `per_unit` its weight is the base premium that totals are compared against, not a row weight.
+  `data_foundry.v2.metrics.row_weight_column(spec)` returns a spec's row-weight column, or `None`. The regression
+  fallback takes the weight too (`Metric.fallback(reason=..., inputs={"weight": ...})`); the spec of a weighted `rmse`
+  states the weighted formula, while the unweighted spec keeps `sqrt(mean((y - p)^2))`, so the containers built before
+  keep their checksum. The three deviances require `min_prediction`, the floor on the predicted mean, the lowest value
+  the use case's actor acts on, stated with its fact, never above the smallest plausible mean on the scale the metric
+  scores (MET-13 as amended 2026-11-09; `1e-4` claims per year for fremtpl2 and bemtpl97, $10 for noaa_storm).
+  `score()` refuses an input the metric does not take, so a weight is never dropped without notice.
+
   The build writes the spec into the task metadata as `objective_metric`: `name`, `kind` (`standard`, `custom` or
   `local`), `prediction` (`proba`, `label`, `value`), `greater_is_better`, `origin`, `params`, `inputs`, `original`,
   `reference`, `definition` (a one-line formula), `reason` and `target_transform`; a reader without Data Foundry can
   implement the metric from these fields. `describe()` and the README show it with the scoring columns. The bundle
   checks: `task_metric_undeclared` (a fallback without a reason), `task_metric_unknown`, `task_metric_not_canonical` (an
-  alias), `task_metric_problem_type_mismatch`, `task_metric_unknown_param`, `task_metric_input_missing` (a role the
-  metric needs is not mapped), `task_metric_input_is_model_input` (info: the metric reads the task's group or time
-  column), `task_metric_input_is_feature` (warning: the metric reads a plain feature; ship a scoring copy),
+  alias), `task_metric_problem_type_mismatch`, `task_metric_unknown_param`, `task_metric_param_invalid` (error: params
+  that fail the registry's validation, such as a Poisson deviance without `min_prediction`), `task_metric_input_missing`
+  (a role the metric needs is not mapped), `task_metric_input_is_model_input` (info: the metric reads the task's group
+  or time column), `task_metric_input_is_feature` (warning: the metric reads a plain feature; ship a scoring copy),
   `task_metric_reference_missing` (a source or stand-in without a link),
   `task_metric_stand_in_incomplete`, `task_metric_not_computable` (no finite score of a random prediction on some fold),
   `task_metric_local`, `task_metric_transform_not_regression`, `task_metric_transform_overflow` (the inverse of
-  `target_transform` overflows on a shipped value: the target is not on that scale) and
-  `task_metric_deviance_on_transformed_target` (warning: a Poisson or Tweedie deviance scores the mean on the original
-  scale, which a model fit on a log target misses; ship the target untransformed, as pricing_game_2017_french_mtpl).
+  `target_transform` overflows on a shipped value: the target is not on that scale),
+  `task_metric_deviance_on_transformed_target` (error since 2026-11-06, CLEAN-16: a Poisson or Tweedie deviance scores
+  the mean on the original scale, which a model fit on a log target misses; ship the target untransformed, as
+  pricing_game_2017_french_mtpl) and `task_metric_weight_without_sample_weight` (warning: the metric reads a row weight
+  and the task declares no `sample_weight`; accept it with the reason when the weight is a function of the features).
+  The training weight's checks: `task_sample_weight_not_metric_weight` (error: `sample_weight` is not the metric's row
+  weight), `task_weight_invalid` (error: a missing, non-finite or negative weight, a zero weight on a row a deviance
+  scores, a split side whose weights sum to 0), `task_rate_count_not_whole` (warning: under a weighted Poisson
+  deviance, target x weight is not a whole count) and `task_feature_looks_like_exposure` (warning: a numeric feature
+  named like an amount at risk on a task without a weight; accept it with what the column is, planned or realized).
   `Metric.local(fn, name=..., prediction=..., greater_is_better=...)` holds code only the definition has; it is for a
   user's own dataset that is never shipped (`build(allow_local_metric=True)`), never for the working copy (MET-13).
+* `sample_weight = "<column>"` (optional, opt-in per dataset): the task's training weight, a rate's realized
+  denominator such as the years insured (MET-14, MET-15). It names a scoring column of role `weight` that the
+  objective metric reads as its row weight, so every model trains with the weight it is scored by:
+
+  ```python
+  sample_weight = "Exposure"
+  scoring_columns = (ScoringColumn(column="Exposure", role="weight", used_by="mean_poisson_deviance",
+                                   description="years insured, cut short by a cancellation after a claim; the "
+                                   "rate's denominator, the metric's row weight and the training weight"),)
+  metric = Metric.source("mean_poisson_deviance", ..., inputs={"weight": "Exposure"}, params={"min_prediction": 1e-4})
+  ```
+
+  The container stores it in the task metadata. `feature_columns(container)` leaves it out with the other scoring
+  columns, `sample_weight(container)` (`data_foundry.curation_container`) returns it (`None` when the task has none),
+  and a harness fits every model with it as each training row's weight, never as a feature. The test-row values of a
+  weight scoring column, a training weight or not, are for the scorer only: never read them when predicting a test
+  row (LEAK-41; the README and `describe()` say so, Lennart, 2026-11-08). The amount at risk is described in
+  text: the scoring column's `description` (what it measures, whether the outcome can cut it short) and a
+  `curation_comments` bullet. A metric weight that is a function of the features (liberty_mutual_fire_peril_loss_cost's
+  `var11_weight`, g_research_crypto_forecasting_1m's asset `Weight`) needs no sample weight: accept
+  `task_metric_weight_without_sample_weight` with that reason.
+* `unit_weight = UnitWeight(column="<weight column>", unit="<unit column>")` (optional): a score that counts each unit
+  once (MET-17), e.g. each plot of boreal_postfire_lichen_biomass or each mouse of pancreatic_cancer_mouse_detection.
+  The column is the metric's weight scoring column (`inputs={"weight": column}`), 1 over the unit's rows (`1.0 /
+  df.groupby(unit)[unit].transform("size")`); the unit is a column `_clean` keeps (the group column, or a column kept
+  for it), metadata, never a feature. It is for scoring and validation only, never a `sample_weight`. The task metadata
+  stores it, so downstream tools can read it: `unit_weight(container)` returns it, `validation_weight(container)`
+  returns the column a validation loss is weighted by (the metric's row weight: the training weight, a unit weight or a
+  weight that is a function of the features), and `feature_columns(container)` leaves the unit out. Its checks:
+  `task_unit_weight_not_one_per_unit` (error: a unit's weights do not sum to 1) and `task_unit_weight_unit_split`
+  (warning: a unit has rows on both sides of a split). With it declared, `task_metric_weight_without_sample_weight` is
+  not raised (Lennart, 2026-11-08: downstream tools "need to know it to set their own validation loss correctly").
 * `download_description`: for a Kaggle dataset `kaggle datasets download <slug> && unzip ... && rm ...`, then the move
   into `local-data-warehouse/<unique_name>/`; for a competition `kaggle competitions download -c <name>`; otherwise
   `wget <url>`. Pin a DOI or an archived release where one exists.
@@ -351,7 +416,8 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 # 8. TODO(verify): drop leaking features (the traps below; leak_checks.md). The most common step in the collection.
 # 9. TODO(verify): duplicate rows: decide and document (leak_checks.md, Copies across the split (LEAK-16 to LEAK-21)).
 # 10. TODO(verify): target transform: `np.log` / `np.log1p` a skewed positive target and rename the column; skip it
-#     when the source already logged it.
+#     when the source already logged it or a deviance scores the target (CLEAN-16). A count or amount over a realized
+#     amount at risk becomes the rate, the amount its weight scoring column and `sample_weight` (MET-14, MET-15).
 # 11. TODO(verify): censored or capped target values (drop the capped rows or document the cap).
 # 12. TODO(verify): rows the use case never sees (a row without the input the prediction acts on; bias_correction's
 #     days without an LDAPS run).
@@ -530,6 +596,8 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 * Duplicate rows: decide and say the share.
 * Row order that carries signal (the base class shuffles; a temporal row order needs a check against the date).
 * Censored or capped targets; the newest periods losing their slow cases.
+* An amount at risk (time insured, area swept) or a span that the outcome can cut short: a realized one is the rate's
+  weight, never a feature (LEAK-41, MET-15).
 * Proxy and impossible values.
 * Rare classes and merged labels.
 * The source's split protocol, taken as a claim.
@@ -568,6 +636,7 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 | `task_target_missing_values` | drop rows with a missing target |
 | `task_target_rare_class`, `splits_test_class_unseen_in_train` | a class too rare to stratify: keep a rare class of the source's labels when its rows carry about their share of the score, merge only by a convention of the field, and accept with the counts ([task_probes.md](../../knowledge-curation/references/task_probes.md), TP-7 and TP-8) |
 | `task_metric_*` | declare `metric` with its origin and reference, the canonical name and the params and inputs the metric takes; each input column a `ScoringColumn` (Field mapping, `metric`) |
+| `task_sample_weight_not_metric_weight`, `task_weight_invalid`, `task_rate_count_not_whole`, `task_feature_looks_like_exposure` | a count or amount over a realized amount at risk: build the rate in `_clean` (assert that target x weight rebuilds the count), ship the amount as the weight scoring column the metric reads and as `sample_weight`, never as a feature (MET-14, MET-15, LEAK-41); a feature named like an amount at risk that is known at the prediction point is accepted with that reason |
 | `task_stratify_*` | stratify on the target (classification) or a discrete feature |
 | `task_time_on_dtype`, `task_time_on_missing_values`, `task_time_on_not_sorted` | a datetime (`_feature_types`) or numeric time column without NaN; the base class sorts |
 | `task_group_labels_per_group_violated`, `task_group_on_unique_per_row` | pick `per_group` or `per_sample` correctly |
@@ -682,10 +751,15 @@ and the rest is checked when the metric is written or reviewed.
    * A correlation of a constant prediction is 0, no skill, where scipy gives NaN (`pearsonr`, `spearmanr`,
      `weighted_pearsonr`, and per group `mean_group_pearsonr`).
    * A prediction outside the metric's domain is floored, not refused: `rmsle` at 0, the Poisson and Tweedie
-     deviances at `min_prediction` (with `prediction_domain="positive"`, so the bundle check draws valid dummies). The
-     Poisson floor defaults to machine epsilon, as `log_loss` clips probabilities. Where the floor sets the scale of
-     the worst error, it is a required param the definition states: above power 1 a Tweedie deviance charges a claim
-     about `y * p^(1-q)`, so a 2000 EUR claim predicted at 0 costs about 2e6 at a floor of 1e-6 and 2e3 at 1 EUR.
+     deviances at `min_prediction` (with `prediction_domain="positive"`, so the bundle check draws valid dummies).
+     The three deviances require the floor, with no library default (`task_metric_param_invalid` without it): the
+     definition states it at the lowest value the use case's actor acts on, with its fact, never above the smallest
+     plausible mean on the scale the metric scores (MET-13 as amended 2026-11-09; 1e-4 claims per year on fremtpl2 and
+     bemtpl97), and `task_probes.py` reports the share of predictions at it. The floor
+     sets the scale of the worst error: one claim predicted at f costs `2 * (log(1/f) - 1 + f)` in Poisson deviance
+     (25.6 at 1e-6, 16.4 at 1e-4), and above power 1 a Tweedie deviance charges a claim about `y * p^(1-q)`, so a 2000
+     EUR claim predicted at 0 costs about 2e6 at a floor of 1e-6 and 2e3 at 1 EUR. No per-row cap: it makes the
+     deviance improper (MET-13).
    * Precision, recall and F1 pass `zero_division=0.0`: the value scikit-learn uses anyway, without the warning.
 2. **The score does not depend on the row order.** Tied predictions count by the mean over their orderings (the
    expected share at a cut-off, a tied block's mid position in a cumulative curve, the mean of tied candidates), as in
@@ -745,6 +819,7 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
   scoring and custom metrics).
 * The declared metric changes no score yet: TabArena's adapter scores only `roc_auc`, `log_loss` and `rmse` and does
   not read the `objective_metric` spec; supporting it, the custom metrics and the scoring columns is an entry of
-  `BENCHMARK_CHANGES_TODO.md`.
+  `BENCHMARK_CHANGES_TODO.md`. Nor does it pass a task's `sample_weight` to the fit: a container that declares one
+  enters no run until the adapter fits every model with it (the entry "Training weights").
 * String columns are embedded by the pipeline, so a definition ships text as `string`, and molecules as RDKit
   descriptors.

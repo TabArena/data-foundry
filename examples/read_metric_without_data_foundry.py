@@ -6,13 +6,15 @@ script imports nothing from ``data_foundry``. It:
 1. reads ``task_metadata.*.json``: the metric spec ``objective_metric`` in container format 2 (name, kind, prediction,
    origin, original, reference, definition, params, inputs, target_transform), or the bare ``objective_metric_name``
    in format 1 (BeyondArena);
-2. lists the scoring columns (format 2: ``scoring_columns``), the columns the metric needs, which are never features;
+2. lists the scoring columns (format 2: ``scoring_columns``), the columns the metric needs, which are never features,
+   and the training weight (``sample_weight``, one of them): fit every model with it as each row's weight;
 3. takes the features as every column but the target, the group column(s) and the scoring columns;
 4. scores a dummy prediction on the test side of the first split with the scikit-learn function of a standard
    metric. A custom metric (``kind: "custom"``) is implemented from its ``definition`` and ``params``, or by copying
    ``src/data_foundry/v2/metrics.py`` (numpy, pandas, scikit-learn and scipy only) into your code. A regression
    target may ship on a modelling scale (``target_transform``: ``log``, ``log1p``, ``log10``); the metric is
-   computed after the inverse of both the true values and the predictions.
+   computed after the inverse of both the true values and the predictions. A deviance floors the predictions at its
+   ``min_prediction`` param and weights the rows by its ``weight`` input (scikit-learn's ``sample_weight``).
 
 Run::
 
@@ -120,6 +122,30 @@ def dummy_prediction(prediction: str, y_train: pd.Series, n: int, classes: list)
     return rng.choice(y_train.to_numpy(), size=n)  # a label drawn from the training side
 
 
+def print_scoring_columns(task: dict) -> list[dict]:
+    """Print the scoring columns (format 2) and the training weight, one of them; return the scoring columns."""
+    scoring = task.get("scoring_columns") or []
+    print("Scoring columns (never features):" if scoring else "Scoring columns: none")
+    for column in scoring:
+        print(f"  {column['column']}: role {column['role']}, used by {column['used_by']}: {column['description']}")
+    if task.get("sample_weight"):  # when the task trains with a weight (a rate's years insured)
+        print(f"Training weight: {task['sample_weight']} (fit every model with it as the row weight; never a feature)")
+    return scoring
+
+
+def floor_and_weights(spec: dict, df: pd.DataFrame, test_idx: list[int], y_pred: np.ndarray) -> tuple:
+    """A deviance's prediction floor (``params.min_prediction``: a smaller prediction counts as it) and its row weight
+    (``inputs.weight``: ``sum(w * d) / sum(w)``, scikit-learn's ``sample_weight``), when the spec has them.
+    """
+    floor = (spec.get("params") or {}).get("min_prediction")
+    if floor is not None:
+        y_pred = np.maximum(y_pred, floor)
+    weight = (spec.get("inputs") or {}).get("weight")
+    if weight is None:
+        return y_pred, {}
+    return y_pred, {"sample_weight": df[weight].iloc[test_idx].to_numpy(dtype=float)}
+
+
 def main(path: Path) -> float | None:
     """Print the spec and the scoring columns, then score a dummy prediction; return the score (None if custom)."""
     folder = find_container(path)
@@ -138,11 +164,7 @@ def main(path: Path) -> float | None:
         if spec.get(key):
             print(f"  {key}: {spec[key]}")
 
-    scoring = task.get("scoring_columns") or []
-    print("Scoring columns (never features):" if scoring else "Scoring columns: none")
-    for column in scoring:
-        print(f"  {column['column']}: role {column['role']}, used by {column['used_by']}: {column['description']}")
-
+    scoring = print_scoring_columns(task)
     target = task["target_column_name"]
     not_features = {target, *group_columns(task), *(c["column"] for c in scoring)}
     features = [c for c in df.columns if c not in not_features]
@@ -173,7 +195,8 @@ def main(path: Path) -> float | None:
     inverse = INVERSE[spec.get("target_transform") or "identity"]  # identity in format 1 and for classification
     if spec["prediction"] == "value":
         y_true, y_pred = inverse(np.asarray(y_true, dtype=float)), inverse(np.asarray(y_pred, dtype=float))
-    value = float(STANDARD[spec["name"]](y_true, y_pred, **kwargs))
+    y_pred, weights = floor_and_weights(spec, df, test_idx, y_pred)
+    value = float(STANDARD[spec["name"]](y_true, y_pred, **kwargs, **weights))
     print(f"{spec['name']} of a test prediction on the first test fold ({len(test_idx)} rows): {value:.4f}")
     return value
 

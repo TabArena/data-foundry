@@ -25,6 +25,8 @@ EXAMPLE_PARAMS = {
     ("par_k", "regression"): {"cutoff": 100},
     ("mean_group_top_k_overlap", "regression"): {"k": 3},
     ("mean_tweedie_deviance", "regression"): {"power": 1.5, "min_prediction": 1.0},
+    ("mean_poisson_deviance", "regression"): {"min_prediction": 1e-6},
+    ("rescaled_mean_tweedie_deviance", "regression"): {"power": 1.5, "min_prediction": 1.0},
 }
 """Params for metrics that cannot be declared without them."""
 
@@ -140,6 +142,30 @@ def test_the_score_does_not_depend_on_the_row_order(name: str, problem_type: str
     first = _score(name, problem_type, y, p, **inputs)
     second = _score(name, problem_type, y[perm], p[perm], **{role: v[perm] for role, v in inputs.items()})
     assert second == pytest.approx(first, rel=1e-9, abs=1e-12), name
+
+
+WEIGHTED = [(name, problem_type) for name, problem_type in CASES if "weight" in METRICS[name].optional_inputs]
+
+
+@pytest.mark.parametrize(("name", "problem_type"), WEIGHTED, ids=[f"{name}-{p.split('_')[0]}" for name, p in WEIGHTED])
+@pytest.mark.parametrize("kind", ["fair", "constant", "zero", "negative", "huge", "tied"])
+def test_an_optional_weight_keeps_the_score_finite_and_free_of_the_row_order(
+    name: str, problem_type: str, kind: str
+) -> None:
+    """A metric that may take a ``weight`` (the deviances, RMSE) meets the same rules with one."""
+    y = _truth(problem_type)
+    p = _prediction(name, problem_type, y, kind)
+    if p is None:
+        pytest.skip(f"no {kind} prediction of kind {METRICS[name].prediction}")
+    params = EXAMPLE_PARAMS.get((name, problem_type), {})
+    spec = metric_spec(Metric.source(name, reference="x", params=params, inputs={"weight": "w"}), problem_type)
+    w = np.random.default_rng(5).choice([0.2, 0.5, 1.0], len(y))
+    perm = np.random.default_rng(3).permutation(len(y))
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        first = score(spec, y, p, weight=w)
+    assert np.isfinite(first), (name, kind, first)
+    assert score(spec, y[perm], p[perm], weight=w[perm]) == pytest.approx(first, rel=1e-9, abs=1e-12), name
 
 
 @pytest.mark.parametrize(("name", "problem_type"), CASES, ids=IDS)

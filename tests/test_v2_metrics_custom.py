@@ -14,8 +14,8 @@ import pandas as pd
 import pytest
 from data_foundry.schema import ScoringColumn
 from data_foundry.v2.dataset import metric_spec
-from data_foundry.v2.metrics import METRICS, Metric, dummy_prediction, score
-from scipy import stats
+from data_foundry.v2.metrics import METRICS, Metric, dummy_prediction, row_weight_column, score
+from scipy import special, stats
 from sklearn.metrics import mean_squared_error, roc_auc_score
 
 from tests.test_bundle_checks import make_iid_frame, make_v2_container, metric_findings
@@ -339,11 +339,141 @@ def test_ordered_lorenz_gini_by_hand_and_on_the_base() -> None:
     assert score(spec, loss, 2.5 * base, weight=base) == pytest.approx(0.0, abs=1e-12)
 
 
+@pytest.mark.parametrize("seed", [0, 1])
+def test_ordered_lorenz_gini_per_unit_scores_a_rate_with_its_exposure(seed: int) -> None:
+    """``per_unit``: a loss per year insured ordered by the predicted rate, x the cumulative years. The same as the
+    totals on the base of the years, and the unnormalised form of ``normalized_weighted_gini`` on the rate.
+    """
+    rng = np.random.default_rng(seed)
+    n = 4000
+    years = rng.uniform(0.05, 1.0, n)
+    rate = np.where(rng.uniform(size=n) < 0.1, rng.lognormal(7, 1.2, n), 0.0) / years
+    pred = np.exp(rng.normal(5, 1, n)) * (1 + (rate > 0))
+    per_unit = _spec("ordered_lorenz_gini", "regression", inputs={"weight": "years"}, params={"per_unit": True})
+    totals = _spec("ordered_lorenz_gini", "regression", inputs={"weight": "years"})
+    got = score(per_unit, rate, pred, weight=years)
+    assert got == pytest.approx(score(totals, rate * years, pred * years, weight=years), rel=1e-12)
+    assert got == pytest.approx(frees_ordered_lorenz_gini(rate * years, years, pred * years), rel=1e-10)
+    normalized = _spec("normalized_weighted_gini", "regression", inputs={"weight": "years"})
+    best = score(per_unit, rate, rate, weight=years)
+    assert got == pytest.approx(score(normalized, rate, pred, weight=years) * best, rel=1e-10)
+    with pytest.raises(ValueError, match="per_unit"):
+        Metric.source("ordered_lorenz_gini", inputs={"weight": "years"}, params={"per_unit": "yes"})
+
+
 def test_normalized_weighted_gini_host_test_case() -> None:
     # the host's check in thread 9880: "should now score -0.821428571428572"
     spec = _spec("normalized_weighted_gini", "regression", inputs={"weight": "var11"})
     value = score(spec, [0, 0, 1, 0, 1], [0.1, 0.4, 0.3, 1.2, 0.0], weight=[1, 2, 5, 4, 3])
     assert value == pytest.approx(-0.821428571428572, rel=1e-12)
+
+
+# --- rescaled_mean_tweedie_deviance --------------------------------------------------------------------------------
+
+
+def rescaled_tweedie_reference(y, w, p, power, floor) -> float:
+    """The formula written out, without scikit-learn: the predictions floored, multiplied by the factor that balances
+    them with the truth on these rows, then the weighted mean of the Tweedie unit deviance.
+    """
+    y, w = np.asarray(y, dtype=float), np.asarray(w, dtype=float)
+    p = np.maximum(np.asarray(p, dtype=float), floor)
+    m = p * (w * y).sum() / (w * p).sum()
+    q = power
+    if q == 1:
+        d = 2 * (special.xlogy(y, y / m) - y + m)
+    else:
+        d = 2 * (y ** (2 - q) / ((1 - q) * (2 - q)) - y * m ** (1 - q) / (1 - q) + m ** (2 - q) / (2 - q))
+    return float((w * d).sum() / w.sum())
+
+
+def _rescaled(power: float = 1.5, floor: float = 1e-6):
+    params = {"power": power, "min_prediction": floor}
+    return _spec("rescaled_mean_tweedie_deviance", "regression", params=params, inputs={"weight": "w"})
+
+
+def _pure_premiums(seed: int, n: int = 20000) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """A charge per year insured over realized years in (0.05, 1], mostly 0, and a predicted rate (some below 1)."""
+    rng = np.random.default_rng(seed)
+    years = rng.uniform(0.05, 1.0, n)
+    rate = np.where(rng.uniform(size=n) < 0.08, rng.gamma(2.0, 400.0, n), 0.0) / years
+    pred = rng.gamma(1.0, 60.0, n) * (1 + (rate > 0))
+    return rate, years, pred
+
+
+@pytest.mark.parametrize("seed", [0, 1, 2])
+@pytest.mark.parametrize("power", [1.0, 1.5, 1.8])
+def test_rescaled_mean_tweedie_deviance_equals_the_formula(seed: int, power: float) -> None:
+    """Equal to the formula written out, at three powers, with predictions below the floor."""
+    rate, years, pred = _pure_premiums(seed)
+    floor = 0.5  # some predictions fall below it
+    assert (pred < floor).any()
+    expected = rescaled_tweedie_reference(rate, years, pred, power, floor)
+    assert score(_rescaled(power, floor), rate, pred, weight=years) == pytest.approx(expected, rel=1e-9)
+
+
+def test_rescaled_mean_tweedie_deviance_by_hand() -> None:
+    """Small cases worked out by hand, the floor before the factor."""
+    # y = (0, 4), w = (1, 1), p = (1, 1): c = 4 / 2, m = (2, 2). At q = 1.5 the unit deviance is
+    # 2 * (-4 sqrt(y) + 2 y / sqrt(m) + 2 sqrt(m)): 4 sqrt(2) for y = 0, -16 + 12 sqrt(2) for y = 4;
+    # the mean is 8 (sqrt(2) - 1)
+    assert score(_rescaled(), [0, 4], [1, 1], weight=[1, 1]) == pytest.approx(8 * (np.sqrt(2) - 1), rel=1e-12)
+    # w = (3, 1), p = (5, 5): c = 4 / 20, m = (1, 1); the deviance is 4 for y = 0 and 4 for y = 4, weighted mean 4
+    assert score(_rescaled(), [0, 4], [5, 5], weight=[3, 1]) == pytest.approx(4.0, rel=1e-12)
+    # at q = 1 (Poisson): m = (2, 2); 2 * 2 = 4 for y = 0 and 2 * (4 log 2 - 2) for y = 4, mean 4 log 2
+    assert score(_rescaled(1.0), [0, 4], [1, 1], weight=[1, 1]) == pytest.approx(4 * np.log(2), rel=1e-12)
+    # the floor applies before the factor: p = (0, 1) at a floor of 0.5 is (0.5, 1), c = 2 / 1.5, m = (2/3, 4/3)
+    expected = rescaled_tweedie_reference([0, 2], [1, 1], [0.5, 1.0], 1.5, 0.5)
+    assert score(_rescaled(1.5, 0.5), [0, 2], [0.0, 1.0], weight=[1, 1]) == pytest.approx(expected, rel=1e-12)
+
+
+def test_rescaled_mean_tweedie_deviance_ignores_the_level_and_sees_the_spread() -> None:
+    """A common scale of the predictions changes nothing (the game's uniform factor); a change of spread does, which a
+    Gini cannot see. A balanced prediction scores its plain weighted Tweedie deviance.
+    """
+    rate, years, pred = _pure_premiums(4)
+    pred = pred + 1.0  # above the floor at every scale below
+    spec = _rescaled(1.5, 1e-6)
+    base = score(spec, rate, pred, weight=years)
+    for factor in (1e-3, 0.37, 12.0, 1e6):
+        assert score(spec, rate, factor * pred, weight=years) == pytest.approx(base, rel=1e-10)
+    steeper = score(spec, rate, pred**2, weight=years)
+    gini = _spec("normalized_weighted_gini", "regression", inputs={"weight": "w"})
+    assert score(gini, rate, pred**2, weight=years) == pytest.approx(score(gini, rate, pred, weight=years), rel=1e-12)
+    assert abs(steeper - base) > 1e-3 * base
+    balanced = pred * (years * rate).sum() / (years * pred).sum()
+    plain = Metric.source(
+        "mean_tweedie_deviance", params={"power": 1.5, "min_prediction": 1e-6}, inputs={"weight": "w"}
+    )
+    assert base == pytest.approx(score(plain, rate, balanced, weight=years), rel=1e-12)
+
+
+def test_rescaled_mean_tweedie_deviance_edges_and_declaration() -> None:
+    """NaN without a loss to share, a bad or missing weight raises, both params required, a row weight."""
+    spec = _rescaled()
+    assert np.isnan(score(spec, [0.0, 0.0], [1.0, 2.0], weight=[1.0, 1.0]))  # no loss: no total to share
+    assert np.isnan(score(spec, [0.0, 5.0], [1.0, 2.0], weight=[1.0, 0.0]))  # the loss on a row of weight 0
+    with pytest.raises(ValueError, match="weight"):
+        score(spec, [0.0, 2.0], [1.0, 1.0], weight=[-1.0, 1.0])
+    with pytest.raises(ValueError, match=r"needs the input\(s\) \['weight'\]"):
+        score(spec, [0.0, 2.0], [1.0, 1.0])
+    with pytest.raises(ValueError, match="missing param"):
+        Metric.source("rescaled_mean_tweedie_deviance", params={"power": 1.5}, inputs={"weight": "w"})
+    with pytest.raises(ValueError, match="power"):
+        Metric.source("rescaled_mean_tweedie_deviance", params={"power": 0.5, "min_prediction": 1.0})
+    assert row_weight_column(spec) == "w"
+
+
+def test_rescaled_mean_tweedie_deviance_is_fast_on_one_million_rows() -> None:
+    """Timed on 1M rows (0.03 s on 2026-11-08)."""
+    import time  # noqa: PLC0415
+
+    rate, years, pred = _pure_premiums(0, n=1_000_000)
+    spec = _rescaled()
+    start = time.perf_counter()
+    score(spec, rate, pred, weight=years)
+    elapsed = time.perf_counter() - start
+    print(f"rescaled_mean_tweedie_deviance on 1M rows: {elapsed:.3f} s")
+    assert elapsed < 5
 
 
 # --- weighted_pearsonr ---------------------------------------------------------------------------------------------
@@ -926,6 +1056,7 @@ def test_every_custom_metric_documents_itself() -> None:
                 "ordered_lorenz_gini",
                 "par_k",
                 "precision_at_k",
+                "rescaled_mean_tweedie_deviance",
                 "rmspe",
                 "weighted_pearsonr",
             ]
@@ -945,6 +1076,7 @@ _CHECK_PARAMS = {
     "average_precision_at_k": {"k_fraction": 0.1},
     "par_k": {"cutoff": 5000},
     "mean_group_top_k_overlap": {"k": 2},
+    "rescaled_mean_tweedie_deviance": {"power": 1.5, "min_prediction": 1e-3},
 }
 
 
@@ -957,6 +1089,8 @@ def test_every_custom_metric_computes_on_a_dummy_prediction(name: str) -> None:
     n = 5000
     if problem_type == "regression":
         y = np.log(rng.uniform(1, 5000, n)) if name == "par_k" else rng.normal(size=n) + 3
+        if d.prediction_domain == "positive":  # a deviance: an amount >= 0, mostly 0
+            y = np.where(rng.uniform(size=n) < 0.1, rng.gamma(2.0, 100.0, n), 0.0)
     else:
         y = rng.choice(["no", "yes"], n, p=[0.8, 0.2])
     inputs = {role: f"col_{role}" for role in d.inputs}
@@ -966,7 +1100,7 @@ def test_every_custom_metric_computes_on_a_dummy_prediction(name: str) -> None:
         "order": rng.integers(0, 10, n),
         "weight": rng.uniform(1, 7, n),
     }
-    y_pred = dummy_prediction(spec.prediction, y, n, seed=1)
+    y_pred = dummy_prediction(spec.prediction, y, n, seed=1, domain=d.prediction_domain)
     value = score(spec, y, y_pred, **{role: values[role] for role in d.inputs})
     assert np.isfinite(value), name
 
@@ -992,5 +1126,7 @@ def test_every_custom_metric_passes_the_bundle_metric_checks(name: str) -> None:
         ScoringColumn(column=column, role=role, used_by=name, description="toy scoring column")
         for role, column in inputs.items()
     ]
-    container = make_v2_container(df, spec=spec, scoring_columns=scoring, problem_type=problem_type)
+    container = make_v2_container(
+        df, spec=spec, scoring_columns=scoring, problem_type=problem_type, sample_weight=row_weight_column(spec)
+    )
     assert metric_findings(container) == {}

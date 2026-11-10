@@ -27,5 +27,9 @@ For every column of the cleaned frame (load it through
    order of the codes is often reversed), and that its codes for unknown answers are missing.
 4. A verdict: fine, leak (rule, strength, remedy), cleaning problem (rule, remedy), or question for the curator.
 
+When the task has a training weight (`sample_weight`, such as a realized time on risk), read the weight column's
+values too, and judge each feature that predicts it (probe 22, `leak_probes.py <name> --weight-proxy`) by its timing
+(LEAK-41): a feature known at the quote stays (USE-6); one set or cut after the prediction point goes.
+
 Never edit a repository file. Return the column table (column | meaning | known at prediction? | dtype and cleaning |
 verdict | rule), then the problems ranked by `principles.md`, each with its evidence and the mildest remedy.

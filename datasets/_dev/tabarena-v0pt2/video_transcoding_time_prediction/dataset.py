@@ -63,6 +63,7 @@ class VideoTranscodingTimePrediction(AbstractCuratedDataset):
         - The data includes several transcoding per video (also with different output target formats), which creates a non-IID setting. We will use the video id as the group label, and we will make sure to split the data such that all transcoding measurements for a given video are in the same split (train/test).
         - We log scale the target variable.
         - Metric: RMSLE on the time, computed after the inverse of the shipped log (`target_transform="log"`), not the paper's R2 on the raw time (known only from a dissertation abstract, not read); the curator accepted the log-scale error (Lennart, 2026-10-21).
+        - Scored per job (Lennart, 2026-11-08, review issue 1; MET-17): each job is a decision of the scheduler. 80 of the 1,099 videos were transcoded to the full grid of 841 output settings and hold 97.8% of the jobs, so the score is in effect the error on new output settings of these videos; 1,018 videos have one job, and counting each video once would give them 93% of the weight, neither mix a cluster's queue. Counting each video once ranks 8 untuned predictors (random forest, extra trees, two LightGBM, two ridge, kNN, the training mean) like the per-job RMSLE at Kendall tau 0.90 per split on average (lowest 0.79) and 0.93 for the ranking by the mean over the 9 shipped splits, and swaps the top pair (random forest leads per job, LightGBM per video).
     """
 
     # Task

@@ -1,0 +1,135 @@
+---
+unique_name: boreal_postfire_lichen_biomass
+name: Terrestrial lichen - Northwest Territories / Terrestrial lichen - Saskatchewan (post-fire forage-lichen biomass, Greuel et al. 2021)
+checked_by:
+- Andrej
+data_foundry_status:
+- WIP (DF)
+claimed_by: Andrej
+suggestion: 'Yes'
+priority: 3
+tags:
+- Two-Regime Zeros
+original_source: Other
+year: '2021'
+domain: biology & life sciences
+required_split:
+- Grouped (NON-IID)
+problem_type: Regression
+original_data_state: Database (or multiple to-be-joined tables)
+source_links:
+- https://doi.org/10.5061/dryad.t1g1jwt15
+- https://doi.org/10.5061/dryad.tb2rbnzzj
+- https://doi.org/10.1002/ecs2.3481
+- https://doi.org/10.5061/dryad.76hdr7sth
+v2_path: datasets/_dev/tabarena-v0pt2/boreal_postfire_lichen_biomass/dataset.py
+type_adapter_id: curation-record-v1
+---
+
+## Comments
+
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+
+**Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: a regional post-fire survey of caribou forage lichen
+(567 plots in the Northwest Territories and Saskatchewan) with stand age, stand type and ecoprovince as covariates, not
+a designed experiment, so the family's open species-abundance question decides it rather than a fast reject; the
+biomass target is an allometric estimate from cover and height.
+- Source: Greuel et al. 2021 (Ecosphere 12:e03481), two Dryad deposits, CC0: Northwest Territories
+  (doi:10.5061/dryad.t1g1jwt15, first version 2021-02-03, now version 5 of 2026-05-18; site info, destructive biomass
+  samples, lichen data and quadrat cover sheets) and Saskatchewan (doi:10.5061/dryad.tb2rbnzzj, 2021-02-18; lichen data
+  and destructive biomass sheets). Dryad methods: "346 plots were established with 5, 1 by 1 m quadrats within
+  predetermined burn age classes" (NWT) and "221 plots were established with 2, 2 by 2 m quadrats within three age
+  categories" (SK). About 1,730 and 440 quadrat rows (earlier AI triage, 2026-10-19, an estimate); not downloaded
+  (Dryad answers 401 to file requests).
+- Use case: the authors "used estimates of lichen biomass to quantify patterns of lichen recovery in different stand
+  types, ecoprovinces, and with time following stand-replacing fire", and the results "provide a basis for estimating
+  future caribou habitat" (Dryad abstract); for example a caribou range planner estimating forage lichen in a stand of
+  known fire age and type. No actor or decision is named, so the fit is approximate at best. Regime grouped by plot or
+  site, since quadrats nest in plots (SPLIT-3); the two regions differ in protocol (quadrat size, age classes).
+- Siblings and duplicates: `athabasca_forage_lichen_cover` is another study (Alberta, data not released); no duplicate
+  among the records. No ecological record of the family had a curator's verdict yet; the triage of 2026-10-19 named
+  `wadden_sea_sibes_macoma_abundance`, `great_lakes_marsh_bird_point_counts` and
+  `nantucket_sound_sea_duck_aerial_survey_counts` as the cases to settle the question on (since settled by Andrej on
+  2026-10-30, policy question 1 of the zero-inflated review: no new rule, each survey judged on its own use case).
+  External collections: none found.
+- Papers and pages: Greuel et al. 2021 (text not read: Wiley 403; claims from the Dryad abstract and methods, the
+  authors' text); the companion deposit doi:10.5061/dryad.76hdr7sth (Baltzer et al.) describes the mature stands.
+- Metric: none found (the Dryad abstract reports a hurdle GLM judged by significance and a logistic growth model; the
+  paper's text was not reachable), so the fallback `rmse`.
+- Risks for /add-dataset: the target. Biomass comes from "allometric equations to estimate lichen biomass from field
+  measurements of lichen cover and height" (Dryad abstract), so cover and height are the label's inputs and go
+  (SEL-5); measured lichen cover is the alternative target. The two protocols need one target definition, the sheets
+  need joining, and what the site sheet holds beyond stand age, type and ecoprovince is unseen. The question of
+  species-abundance mapping from habitat covariates is settled (Andrej, 2026-10-30, policy question 1 of the
+  zero-inflated review: no new rule, each survey judged on its own use case); `No Good Target / Scientific Discovery`
+  stays as the marker of that concern.
+- Priority: gap 0 (biology, regression and grouped are not thin), use case 0 (none named), source + (a paper and two
+  documented deposits), shape 0 (about 567 plots, few covariates), risk - (allometric target, two protocols).
+
+**Assessment (AI, 2026-10-30):** The family's question on species-abundance mapping is settled without a new rule
+(Andrej, 2026-10-30, policy question 1 of the zero-inflated review: "I don't think there is new rule to build here.
+These are per dataset judgement calls and if a dataset is useful for a predictive application although the data was
+collected for something else, then this is fine"), as SEL-2 already reads the scope rules: this record is judged on its
+own use case. The verdict and priority stay.
+
+CC (2026-10-30, Andrej): `Yes`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening
+review page).
+
+Workbook rows 37 and 38 are one study (Greuel et al. 2021, one paper, overlapping authors) released as two regional
+Dryad deposits with different field protocols, so they share this record. Northwest Territories: "346 plots were
+established with 5, 1 by 1 m quadrats within predetermined burn age classes (37-38 and 46-49 years post-fire) and ...
+'control' (>70 years)". Saskatchewan: "221 plots were established with 2, 2 by 2 m quadrats within three age
+categories". About 1,730 and 440 quadrat rows by estimate; not downloaded (Dryad blocks automated downloads).
+
+The study is a fire-recovery chronosequence: the abstract's hurdle GLM "identified stand age, stand type and
+ecoprovince as significant predictors of lichen presence", inference on three design variables with no remote-sensing
+covariates, mapping or validation mentioned. Biomass is itself estimated: "allometric equations to estimate lichen
+biomass from field measurements of lichen cover and height", so cover and height would be the target's own inputs.
+Zero mechanism, from the abstract only: no forage lichen in the quadrat, hence allometric biomass 0. Workbook
+pushback: "Verified strict match" and "Core: Yes" rest on the hurdle model, which is inference, not a prediction task.
+Paper text not read (Wiley 403). Licence: CC0.
+
+**Assessment (AI, 2026-11-01):** added as `datasets/_dev/tabarena-v0pt2/boreal_postfire_lichen_biomass/` by /add-dataset with the full review panel; the open questions are in its `REVIEW.md`. Recommend shipping as changed: the caribou range-plan biologist named as the actor, the NT plots grouped by burn area and the SK plots per plot (216 groups), three NT plots' coordinates repaired from the site sheet. Superseding the screening's guesses above: 516 plots and 2,010 quadrats; fetched from Dryad's version zips without a token (the 2022 revision of the NT sheet), not "Dryad answers 401". The marker `No Good Target / Scientific Discovery` stays until your mark on issue 1. Priority 3: gap 0, use case 0 (fit approximate), source + (CC0 deposits and a paper), shape +, risk 0.
+
+CC (2026-11-03, Andrej): the two duplicate-row warnings are accepted as worded (issue 3 (A) in boreal_postfire_lichen_biomass).
+
+CC (2026-11-03, Andrej): read Greuel et al. (2021) through Wiley's HTML page (issue 4): stand age by tree-ring dating, a pooled volume allometry with no significant variation across ecoprovinces, Saskatchewan's total heights adjusted by a live-to-total ratio of 0.76, an observed-versus-fitted R2 of 0.18 without held-out evaluation, no explanation of the missing plots: "We can now replace the blanket warning with specific references for confirmed claims."
+
+**Assessment (AI, 2026-11-03):** the paper is read from the publisher's PDF (Wayback Machine copy of 2021-07-16); the notes now cite it by section, and the claim that the two regions convert cover differently is removed (one pooled allometry; 12.633 is its volume slope in kg/ha). Its stated aim is the task itself: "accurately predicting the availability of lichen forage under current and future fire regimes".
+
+CC (2026-11-03, Andrej): ship after the changes (verdict). Issue 1 (A): the paper's own forecast with the range-plan actor and the burn-area split; the `No Good Target / Scientific Discovery` marker is removed, as the paper's predictive aim answers it. Issue 2 (A): the tree-ring stand age stays. Issue 5 (A): kg/ha, decided for this task alone ("I go with your recommendation"). Issue 6 (A): RMSE on kg/ha ("We can keep RMSE in this case").
+
+CC (2026-11-03, Andrej): ship (verdict); the metric, RMSE on kg/ha, checked.
+
+**Assessment (AI, 2026-11-06):** review panel (focused, re-review under LEAK-41, MET-14 to MET-16): ship after changes (wording only; nothing shipped changes; the notes' equal-per-plot taus, the dropped 0.91 of the former site splits and the exposure reason are fixed); disputed: none, issue 7 is a weighing call (the per-quadrat RMSE counts an NT plot 2.5 times an SK plot: A keep and say so, implemented, or B count each plot once); for the curator: issue 7.
+
+CC (2026-11-08, Lennart): issue 7 (B) in boreal_postfire_lichen_biomass, "Each plot counts once." Andrej's RMSE on kg/ha (2026-11-03, issue 6) stays and is now weighted by 1 over the plot's number of quadrats (`plot_weight`: 0.2 in NT, 0.5 in SK), a scoring column for the metric only, not a training weight. The warning that the metric has a row weight but no sample weight is accepted: a design weight that gives each plot one vote, set by `jurisdiction`, not an amount at risk.
+
+**Assessment (AI, 2026-11-08):** `rmse` now takes an optional `weight` input (`sqrt(sum(w * (y - p)^2) / sum(w))`), and the definition declares it from context with `plot_weight`. On the data, `plot_weight` is 0.2 on all 1,630 NT quadrats and 0.5 on all 380 SK quadrats (326 plots of 5, 190 of 2), so it sums to 1 per plot. On the 30 shipped splits, with the 8 untuned predictors of the claim audit, the declared score ranks the models exactly like the RMSE of the plot means with each plot counted once (Kendall tau 1 on 30 of 30 splits). Against the per-quadrat RMSE declared before, tau is 0.81 per split (lowest 0.21) and 0.86 for the ranking by the mean RMSE; that ranking swaps the training mean with ridge and with knn. Task probe: the random forest scores 1,159.8 kg/ha against the training mean's 1,250.0 and beats it on 80% of the splits; no flag. The splits hold the same rows and test groups as before; only the frame's row order changed. `dataset check`: 0 errors, 0 warnings.
+
+**Assessment (AI, 2026-11-08):** correction to the line above: the metric stays the fallback RMSE, now weighted by `plot_weight` (`Metric.fallback` takes inputs since 2026-11-08), not declared from context; the README states origin `fallback`. The declared metric was checked as declared (CC 2026-11-08 above, issue 7 B).
+
+CC (2026-11-08, Lennart): the declared metric (the fallback `rmse`, weighted by `plot_weight` so each plot counts once) is checked: as marked, with issue 7 (B).
+
+CC (2026-11-08, Lennart): the score's `plot_weight` is declared as the task's `unit_weight` (column `plot_weight`, unit `plot`), so downstream tools can read that each plot counts once and weight their validation loss alike ("make sure to somehow add it to the metadata that this kind of group type ... exists and can be read by downstream tools"; MET-17). The `plot` column stays in the frame as metadata, never a feature.
+
+CC (2026-11-09, Andrej): issue 9 (B) in boreal_postfire_lichen_biomass, "Option B: Site-sheet coordinates as features." Every NT plot ships its transect start from the authors' site sheet `All_site_info_NT.xlsx` as its coordinates; the 0.01 degree grid of the lichen sheet (three plots repaired) only links CG2 and F2 and is not shipped, so the groups are unchanged.
+
+**Assessment (AI, 2026-11-09):** issue 9 (B): on the same 30 splits the random forest's weighted RMSE moves by +4.2 kg/ha (SE 3.3), LightGBM's by +3.9 (SE 8.9), within noise; the duplicate warnings are recounted (518 copies, 506 at 0, all within one plot; 976 conflicting rows; 28.8% of the variance within a plot). Issue 8 (B, Andrej's change mark asked for an ablation first): the SK plots joined point in polygon to Canada's fire maps (NFDB agency perimeters and NBAC, Open Government Licence - Canada), keeping a polygon within 1 year of the plot's fire year: 94 of 190 plots get a burn (94 of the 124 dated 1945 or later; 44 of the 71 with a same-year plot within 5 km), 45 burns of which 20 hold 2 to 9 plots (69 plots); the map year equals the field fire year in 157 of 165 matches; 42 plots lie inside a later mapped fire and none of their own year (33 dated before 1945) and stay on their own. Ablation (untuned, container inputs, 3 seeds, 30 splits each): 216 groups and an SK test quadrat 3.4 km from training with one group per SK plot, 167 groups and 4.3 km on the burns; the random forest's RMSE 1,166.8 (SE 29) against 1,186.3 (SE 24) overall and 1,230.3 (SE 40) against 1,254.1 (SE 47) on the SK rows, within the fold draw (the unchanged NT part moves as much); paired on the former folds, removing the test plots' burn-mates from training raises the forest's RMSE on those plots by 31 kg/ha (SE 9) against +2 to +6 for removing other SK plots, about 5 kg/ha on the SK RMSE and 2 kg/ha overall. B was implemented in the definition that day (`_prepare_raw_files` read the 2 GB of maps once); superseded on 2026-11-10: B is removed and the SK plots are one group each again (CC 2026-11-10 below).
+
+CC (2026-11-09, Andrej): columns held only for training rows stay out for now, no training-only role (cross-dataset item of 2026-11-09; MET-14, LEAK-41, MET-16); the notes list them.
+
+CC (2026-11-10, Andrej): issue 8 (a) in boreal_postfire_lichen_biomass, "Reply (a): Back to A, with the note". Each SK plot is its own group again (216 groups); the grouping by Canada's fire maps of 2026-11-09 is removed (no NFDB or NBAC download, no prepared polygon table), and the notes give its measured effect: 71 of 190 SK plots have a same-fire-year plot within 5 km, 94 of 190 lie inside a mapped burn of their year, burn-mates in training flatter the SK RMSE by about 5 kg/ha against a fold-draw SE of about 40, and no model changes rank. The site-sheet coordinates of issue 9 stay.
+
+**Assessment (AI, 2026-11-10):** issue 8 (a) applied; the probes give the numbers of before 2026-11-09 again: task probe random forest 1,164.3 kg/ha against the training mean's 1,250.0 (better on 77% of the 30 splits), no flag; group probe LightGBM R^2 0.408 on random folds against -0.035 on the burn-area folds; leak probes no flag; an SK test quadrat lies a median 3.4 km from the nearest training plot (SD 0.6 over the splits), NT 22 km. `dataset check`: 0 errors, 0 warnings. Verdict mark of 2026-11-10 (Andrej): changes, now made.
+
+CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
+
+## Reference
+
+Greuel R.J., Degre-Timmons G.E., Baltzer J.L., Johnstone J.F., et al. (2021). Predicting patterns of terrestrial
+lichen biomass recovery following boreal wildfires. Ecosphere 12:e03481. doi:10.1002/ecs2.3481. Data:
+doi:10.5061/dryad.t1g1jwt15 (Northwest Territories), doi:10.5061/dryad.tb2rbnzzj (Saskatchewan).
+
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master rows 37 (Terrestrial lichen - Northwest
+Territories) and 38 (Terrestrial lichen - Saskatchewan).

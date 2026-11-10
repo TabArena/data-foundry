@@ -98,6 +98,8 @@ class Collected:
     entries: list[Entry]
     across: str = ""
     across_items: int = 0
+    settled: list[str] = field(default_factory=list)
+    """Records left out because nothing on them waits for the curator (:func:`is_settled`)."""
 
     @property
     def n_folders(self) -> int:
@@ -407,6 +409,8 @@ def _retired_entries(root: Path, records: Path, names: list[str]) -> dict[str, E
     so a retired dataset stays on the page with its decisions.
     """
     entries: dict[str, Entry] = {}
+    if not names:
+        return entries
     repo = Path(brp._git(root, "rev-parse", "--show-toplevel").stdout.strip())
     for name in names:
         record = records / f"{name}.md"
@@ -493,6 +497,36 @@ def collect(root: Path, records: Path, names: list[str] | None = None) -> Collec
     return Collected(entries=[entries[n] for n in sorted(entries)], across=across, across_items=n_across)
 
 
+CLOSING_RE = re.compile(r"\*\*(Resolved|Deferred) \(")
+"""A closing turn; the last one says whether an item is parked (Deferred) or settled (Resolved)."""
+
+
+def is_settled(entry: Entry, records: Path) -> bool:
+    """Whether nothing on ``entry`` waits for the curator: every issue resolved (none left deferred), no record-field
+    row, no triage verdict to verify, and, for a dataset with a folder, the record's CC line that the declared metric is
+    checked. Such a record ships by default and leaves the page (Lennart, 2026-11-08); its REVIEW.md stays in git.
+    """
+    if entry.fields:
+        return False
+    for item in brp._split_items(entry.issues)[1]:
+        closings = CLOSING_RE.findall(item["body_md"])
+        parked = (closings[-1] if closings else "") == "Deferred" or item["title_md"].startswith("Deferred")
+        if not item["resolved"] or parked:
+            return False
+    record = records / f"{entry.name}.md"
+    if not record.is_file() or brp._decided(record):
+        return False
+    return not entry.folder or brp._metric_checked(record) is not None
+
+
+def _settled_lines(collected: Collected) -> list[str]:
+    """The report's line naming the records left out as settled, or nothing."""
+    if not collected.settled:
+        return []
+    names = ", ".join(f"`{n}`" for n in collected.settled)
+    return [f"**Settled, left out (they ship by default):** {names}.", ""]
+
+
 def _cell(text: str) -> str:
     return re.sub(r"(?<!\\)\|", r"\\|", text)
 
@@ -522,6 +556,7 @@ def render_report(collected: Collected, *, title: str, date: str) -> str:
         f"**Open:** {_plural(len(entries), 'record')}, {_plural(n_issues, 'issue')}, "
         f"{_plural(n_fields, 'record field')}, {_plural(collected.across_items, 'cross-dataset item')}.",
         "",
+        *_settled_lines(collected),
         "## Summary per record",
         "",
         "| Record | Outcome | Main points |",
@@ -536,7 +571,15 @@ def render_report(collected: Collected, *, title: str, date: str) -> str:
                 out.append(f"- `{e.name}`: {parts}.")
     if collected.across:
         out += ["", "## Across datasets", "", collected.across]
-    out += ["", "## Per dataset"]
+    out += _per_dataset_lines(entries)
+    return "\n".join(out) + "\n"
+
+
+def _per_dataset_lines(entries: list[Entry]) -> list[str]:
+    """The report's per-record sections, under one heading, or nothing when no record is left."""
+    if not entries:
+        return []
+    out = ["", "## Per dataset"]
     for e in entries:
         out += ["", f"### {e.name}", "", f"**Outcome:** {e.outcome}"]
         if e.judgment:
@@ -545,7 +588,7 @@ def render_report(collected: Collected, *, title: str, date: str) -> str:
             out += ["", f"**{e.issues_label}:**", "", e.issues]
         if e.panel:
             out += ["", e.panel]
-    return "\n".join(out) + "\n"
+    return out
 
 
 def check_report(path: Path, collected: Collected) -> None:
@@ -584,6 +627,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--names", help="Comma-separated unique names: collect only these records.")
     parser.add_argument("--title", default="Open review issues", help="The report's title (the page shows it).")
     parser.add_argument("--date", default=dt.date.today().isoformat(), help="The date in the title (YYYY-MM-DD).")
+    parser.add_argument(
+        "--keep-settled",
+        action="store_true",
+        help="Keep the records with nothing left to decide (left out by default: they ship by default).",
+    )
     args = parser.parse_args(argv)
     try:
         dt.date.fromisoformat(args.date)
@@ -592,6 +640,14 @@ def main(argv: list[str] | None = None) -> int:
     names = [n.strip() for n in args.names.split(",") if n.strip()] if args.names else None
     try:
         collected = collect(args.root, args.records, names)
+        if not args.keep_settled:
+            settled = [e.name for e in collected.entries if is_settled(e, args.records)]
+            collected.entries = [e for e in collected.entries if e.name not in settled]
+            collected.settled = settled
+        if not collected.entries and not collected.across_items:
+            names = ", ".join(collected.settled)
+            print(f"nothing left to decide for {names}: no report written (--keep-settled writes one)")
+            return 0
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(render_report(collected, title=args.title, date=args.date))
         check_report(args.out, collected)
@@ -605,6 +661,11 @@ def main(argv: list[str] | None = None) -> int:
         f"field rows {sum(len(e.fields) for e in entries)}, cross-dataset items {collected.across_items}, "
         f"review panels {sum(1 for e in entries if e.panel)}"
     )
+    if collected.settled:
+        print(
+            f"left out {_plural(len(collected.settled), 'settled record')} (--keep-settled keeps them): "
+            f"{', '.join(collected.settled)}"
+        )
     for warning in (w for e in entries for w in shape_warnings(e)):
         print(f"warning: {warning}", file=sys.stderr)
     print(f"{args.out} written")

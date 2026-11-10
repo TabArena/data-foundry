@@ -80,6 +80,11 @@ MECHANISMS: dict[str, str] = {
     "one-hot": r"\bone-hot\b",
     "generated data": r"\b(?:generated|simulated|artificial|synthetic) data\b|\bAHDS\b",
     "post-outcome feature": r"\bpost-(?:outcome|election|admission)\b|\bafter the outcome\b|\bprediction point\b",
+    "realized weight / time on risk": (
+        r"\btime on risk\b|\bamounts? at risk\b|\bsample[_ ]weights?\b|\btraining weights?\b|\bearned premiums?\b"
+        r"|\breali[sz]ed (?:exposures?|weights?|lengths?|denominators?)\b"
+        r"|\bexposures?\b[^.;]{0,40}?\b(?:as (?:the |a )?(?:row |training )?weight|denominator|divisor|offset)\b"
+    ),
 } | {
     f"probe flag {flag}": rf"\b{flag}\b"
     for flag in ("no_signal", "solved", "no_spread", "one_feature", "drift_baseline", "unstable", "few_minority")

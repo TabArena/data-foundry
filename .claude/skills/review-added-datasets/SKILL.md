@@ -52,10 +52,14 @@ and `priority_factors.py` (in `knowledge-data-foundry/scripts/`, no names: every
 with the measured factors. Give a record without one its priority as `/add-dataset` does (Step 8,
 [selection.md](../knowledge-curation/references/selection.md), "Priority"), through the store API.
 
-`collect_reviews.py` reads every `datasets/_dev/tabarena-v0pt2/<folder>/REVIEW.md`, the open-issue blocks of the
-records and the working copy's own `REVIEW.md`, and writes one report; `--names` limits it to some records (the
-batch of one run). It stops with the file and the line when a file breaks the format, and checks the report with the
-builder's parser; fix the file, not the scripts. The report is generated: never edit or commit it.
+`collect_reviews.py` reads every `datasets/_dev/tabarena-v0pt2/<folder>/REVIEW.md`, the open-issue blocks of the records
+and the working copy's own `REVIEW.md`, and writes one report; `--names` limits it to some records (the batch of one
+run). It leaves out a record with nothing left to decide (every issue resolved, no field row, the declared metric
+checked, nothing deferred or to verify from triage): such a record ships by default, and its decisions stay readable in
+its `REVIEW.md` (Lennart, 2026-11-08); `--keep-settled` keeps it, for a page that looks back or to check one settled
+file's report. When every record is settled, the report and the page hold only the items across datasets. It stops with
+the file and the line when a file breaks the format, and checks the report with the builder's parser; fix the file, not
+the scripts. The report is generated: never edit or commit it.
 
 `build_review_page.py` writes `data.json` and `review_page.html` into `--out`. Both scripts need `markdown-it-py`
 (the `curation` extra: `uv pip install --python .venv/bin/python -e ".[curation]"`). Records whose definition has no
@@ -137,8 +141,8 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   short form), Claude's evidence as an `**Assessment (AI, <date>):**` line, through the store API
   ([records.md](../knowledge-data-foundry/references/records.md)). Then the issue gets a closing
   `**Resolved (<date>, <curator>):**` turn with the decision and stays in the `REVIEW.md` (or the record's open-issues
-  block): never delete an issue or a `REVIEW.md`, the page keeps every dataset so the curator can look back at its
-  decisions (Andrej, 2026-11-02).
+  block): never delete an issue or a `REVIEW.md`, so the curator can look back at its decisions (Andrej, 2026-11-02);
+  the page itself shows only the records with something left to decide (Step 1).
 * **Record fields:** `update` sets the record's field to the definition's value; `keep` leaves the record as it is.
   Either way the row leaves the `REVIEW.md`.
 * **The metric:** `ok` keeps the declared metric (a CC line in the record says it was checked); `change` changes
@@ -149,7 +153,9 @@ Apply that mark only once the curator has answered; apply the others now. Never 
 * **Parked:** a record with a `**Deferred (<date>):**` issue waits for it: the page shows "parked", does not count its
   metric and does not ship it by default.
 * **No open issue:** a record of the review whose issues, field rows and metric are all settled ships by default
-  (Lennart, 2026-11-05); the page shows "ship (no issues)" until the curator sets another verdict. Apply it as **ship**.
+  (Lennart, 2026-11-05); apply it as **ship**, with the metric's CC line in the form the page reads ("the declared
+  metric (...) is checked, ..."); the next build leaves it off the page (Step 1). Until then the page shows
+  "ship (no issues)".
 * **ship:** the definition stays; apply the item marks; the dataset joins the accepted set and is built later. The
   claim stays until the work goes to `main`: the PR that takes it there sets `DF: Yes`, and `claims release <name>`
   ([claims.md](../knowledge-data-foundry/references/claims.md)) clears the board and the record's `WIP (DF)` and
@@ -194,5 +200,5 @@ under them. A new issue takes the next number after the highest its file has had
 * The page and its data stay under `local-data-warehouse/` and are never committed; the artifact is private until
   the curator shares it.
 * Retired definitions, and their `REVIEW.md` when the record is named in `--names`, are shown from the last commit that
-  still had their folder (a decided dataset never drops off the page); records that were not added show
+  still had their folder (while something on them is open, or with `--keep-settled`); records that were not added show
   only their open issues and their record.

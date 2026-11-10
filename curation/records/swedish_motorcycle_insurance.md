@@ -3,6 +3,9 @@ unique_name: swedish_motorcycle_insurance
 name: 'Swedish motorcycle insurance (Wasa, 1994-1998): partial-casco claim frequency'
 checked_by:
 - AI (UNVERIFIED)
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 4
 tags:
@@ -42,3 +45,5 @@ type_adapter_id: curation-record-v1
 - as published: 64,548 rows x 9 columns (OwnerAge, Gender, Area, RiskClass, VehAge, BonusClass, Exposure, ClaimNb, ClaimAmount), motorcycle partial casco (theft, fire), 1994-1998; target: ClaimNb per Exposure (claim frequency), or claim occurrence; access: open.
 - Why: A real portfolio from a named insurer, documented in a standard pricing text and open.
 - Adds: A motorcycle line and a fourth market (Sweden). Caveats: claims are rare (count not checked); 6 rating factors; CASdatasets says the data are 'aggregated across all policies and claims', so check whether a row is a policy or a tariff cell; dated 1994-1998.
+
+**Assessment (AI, 2026-11-06):** under the rules adopted on 2026-11-06 (MET-14, MET-15, LEAK-41), /add-dataset ships ClaimNb / Exposure (claims per policy year) with Exposure as the weight scoring column and the task's `sample_weight`, scored by `mean_poisson_deviance` with that `weight` input and a stated floor (MET-13), as fremtpl2 and bemtpl97 now are; rows with zero exposure go under USE-7 with their claims counted in the notes (LEAK-41). The curator has the call when the dataset is added.

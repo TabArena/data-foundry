@@ -5,6 +5,8 @@ checked_by:
 - Lennart
 data_foundry_status:
 - 'DF: Yes'
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 decision_markers:
@@ -53,6 +55,12 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 CC (2026-10-22, Lennart): verdict ship after changes. Issue 1: (a), amend TP-10 and keep the dataset. Issue 2: keep the 18 features. Issue 6: (a), all history sampled as whole minutes. Issue 7: a 15-minute gap, with the framework change.
 
 **Assessment (AI, 2026-10-22):** applied. TP-10 amended (leg 1 by the declared metric, leg 2: no lag of the target column itself), with a cases row. Framework: `TemporalSplits(sample_by="time")` draws whole time values to the row budget, and `gap_unit` gives the gap its own unit (minutes, hours, ...); tests added. The definition uses `gap=15, gap_unit="minutes", sample_by="time"`: train sides of about 1M rows over 84-87k whole minutes (11.5-11.9 coins per minute) from 2018-01-01, test sides of 500k rows (14 coins per minute). The notes give the CLEAN-19 comparison with the other top solutions and the SPLIT-20 reason; no text recommends `No`. The weighted Pearson figures were measured on the earlier random-row, 1-day-gap splits. stock and appliances_energy_prediction are listed for a re-check under the amended TP-10 (working copy REVIEW.md). REVIEW.md removed. Not built yet.
+
+**Assessment (AI, 2026-11-06):** review panel (focused, re-review under LEAK-41, MET-14 to MET-16; claim auditor and mediator): ship after changes, all text and applied (not built yet). No sample weight under MET-15: `Weight` takes one value per `Asset_Name`, a feature; training with it moved the weighted Pearson by +0.0045, +0.0034 and +0.0001 (12 seeds; mean +0.0026, SD 0.0023 across windows; only window 0's ensemble interval excludes 0, +0.0050 [+0.0005, +0.0099]), settled by the rule as for liberty_mutual_fire_peril_loss_cost. TP-10 leg 1 re-measured on the shipped splits (whole-minute train sides, 15-minute gap): a 12-seed LightGBM ensemble scores +0.039, +0.033 and +0.021, its lead over the coin's mean +0.038, +0.042 and +0.023 with the interval excluding 0 in the two newer windows, pooled +0.034 (SE about 0.008); R² +0.0008, +0.0008 and -0.0023 (mean of 4 seeds). These figures supersede the R² and weighted Pearson figures of the lines of 2026-10-07 to 2026-10-22, measured on earlier splits; the TP-10 Cases row now gives them. Corrected in the definition: fit_reason, the Scope, Note and Training weight bullets and the accepted warning; the History and CLEAN-19 measurements now name the splits they were measured on. Disputed: none; for the curator: issue 8 (is TP-10 leg 1 still met now that the oldest window's lead includes 0; recommended A, keep).
+
+CC (2026-11-08, Lennart): issue 8 of the folder's REVIEW.md, as implemented (ok): the test still holds. TP-10 leg 1 is met on the shipped splits: the model is ahead of the coin's mean in every window by its point estimate (lead +0.038, +0.042 and +0.023), and the interval is read pooled (+0.034, about 4.3 standard errors above 0), as for ashrae_great_energy_predictor_iii and rain_in_australia. This confirms the keep of 2026-10-22 (Lennart), whose figures (every window's interval above 0) came from the earlier splits; the dataset stays as defined.
+
+CC (2026-11-08, Lennart): the declared metric (`weighted_pearsonr`) is checked, as declared on the PR #47 review board.
 
 ## Reference
 

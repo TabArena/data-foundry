@@ -74,8 +74,8 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
             "month on the loans whose outcome it knows."
         ),
         row=(
-            "One loan of the lender's main product (Type_1, 7 days) in Kenya, July to December 2022; a loan funded "
-            "together with a second lender gives two rows. 99.5% are repeat customers."
+            "One loan of the lender's main product (Type_1, 7 days) in Kenya, July to December 2022; each loan has "
+            "one row, as the product has one lender. 99.5% are repeat customers."
         ),
         predicted=(
             "The loan's default, as it stood when the data was pulled in October 2024, long after every loan was due "
@@ -150,7 +150,7 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
         - Unsettled labels: recent defaults include late payments paid later (decision table, counted per loan). A label counts as settled 30 days after the due date, a conservative cut rather than a measured end of settlement, and each training side holds only the loans settled before its window starts; every Type_1 loan was due long before the data pull.
         - Temporal split on disbursement_date: 6 test windows of at most 30 days, each training on the loans settled before it starts (splits comment).
         - customer_id stays as a categorical: an entity's own history is legitimate under a temporal split (ieee_fraud_detection's uid). A default usually ends a customer's history, which made "the customer's last loan" a winning rule in the competition's random split; here a training side holds only settled loans.
-        - New_versus_Repeat is a categorical, read per row: it can differ between a loan's two rows.
+        - New_versus_Repeat is a categorical (New Loan, Repeat Loan).
         - disbursement_date and due_date are datetimes; we keep due_date, disbursement_date plus duration, as a source column.
         - We do not join economic_indicators.csv: for Kenya alone it is a function of the year, with no values for 2024.
         - Duplicates: the 267 extra copies of identical rows have their own tbl_loan_id and share a date; we keep them as separate loans.
@@ -175,7 +175,7 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
 
     # Splits: six windows at the end of the Type_1 lending (`_make_splits`)
     splits_comment = """
-        A lender scores each loan when it is disbursed and refits on the loans whose outcome it knows, at least once a month; the six windows hold about a week of loans each (6-11 days, the declared horizon 7 days). A loan's label counts as known 30 days after its due date, so each training side holds the loans whose due date lies more than 30 days before the window starts; the loans of the five weeks before a window are not in its training side. Six windows of about equal numbers of rows cover the end of the product's lending, newest first, from the first day by which half of the rows have a settled label to the last Type_1 loan on 2022-12-01; they hold 18-22 default rows each, and more windows would leave some with 8. A row is one lender's part of a loan, so a two-lender loan counts twice. The 2022 windows leave out the 8-18% of the rows of their dates whose lender funds less than one unit (curation comments).
+        A lender scores each loan when it is disbursed and refits on the loans whose outcome it knows, at least once a month; the six windows hold about a week of loans each (6-11 days, the declared horizon 7 days). A loan's label counts as known 30 days after its due date, so each training side holds the loans whose due date lies more than 30 days before the window starts; the loans of the five weeks before a window are not in its training side. Six windows of about equal numbers of rows cover the end of the product's lending, newest first, from the first day by which half of the rows have a settled label to the last Type_1 loan on 2022-12-01; they hold 18-22 default rows each, and more windows would leave some with 8. The 2022 windows leave out the 8-18% of the rows of their dates whose lender funds less than one unit (curation comments).
     """
     temporal = Temporal(on="disbursement_date", horizon=WINDOW_DAYS, horizon_unit="days")
 
@@ -353,7 +353,7 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
             Decision(
                 "Test windows: the end of the Type_1 lending, none longer than 30 days",
                 "Six windows of about equal numbers of rows run from the first day by which half of the rows have a "
-                "settled label to the last Type_1 loan (2022-12-01). A row is one lender's part of a loan.",
+                "settled label to the last Type_1 loan (2022-12-01). A row is one loan.",
                 windows,
             ),
         ]

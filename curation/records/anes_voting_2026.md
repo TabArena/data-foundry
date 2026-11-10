@@ -6,7 +6,10 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
+priority: 3
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -56,6 +59,12 @@ CC (2026-11-01, Lennart): on the review board's ANES sheet: read 2024's attendan
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (2 means voted (ANES codebook)); counts with a cut end are numbers: VCF0138, VCF9122.
 
 CC (2026-11-01, Lennart): counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14): the lossless form, chosen from the context rather than by model runs; the same day's numbers with censoring flags are reverted.
+
+**Assessment (AI, 2026-11-06):** review panel (focused, re-review under LEAK-41, MET-14 to MET-16): ship after changes, made: the survey-weight note now names the measured outcome-linked selection (MET-16: weighting by `VCF0009z` lowers the share who say they voted in 8 of the 9 test years, by 2 to 9 points; scored unweighted, weighting the AUC moves it by +0.004 to +0.005); disputed: none; for the curator: no issue (optional follow-up: quote the codebook's `VCF0009z` entry, EV-2).
+
+**Assessment (AI, 2026-11-06):** priority 3 (selection.md, Priority): a good shape (48,587 units, 261 features, temporal) +, a strong source (the ANES cumulative file and its codebook) +; no gap in the benchmark; the use case is the curation's (a pollster's likely-voter screen), so it does not count; no open issue.
+
+CC (2026-11-08, Lennart): the declared metric (`roc_auc`) is checked, as declared; the record ships, with no open issue on the PR #47 review board.
 
 ## Reference
 

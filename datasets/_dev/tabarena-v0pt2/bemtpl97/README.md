@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bemtpl97
 container_format: 2
-checksum: v2:f5b8358cf651da8cd86e4666a50322cf1f75d63a91e0e7b379c761b07deb6dfd
+checksum: v2:1a20c3c72648c57516ea7737842326e2241d9b6add0e8f15a55d7f093b70466b
 build:
   uuid: 01a18ad7-0bb6-7938-bc7e-98a4b50a8804
   checksum: v2:c453db381a0392e96b56e809e924cb0be3d0c3f4cf1087235d06d69a97aab978
@@ -20,18 +20,20 @@ build:
 build_stale: true
 data:
   n_rows: 163231
-  n_features: 12
+  n_features: 11
   dtypes:
     category: 5
-    float64: 3
-    int64: 5
+    float64: 4
+    int64: 4
   n_test_dataset_rows: null
 task:
-  target: nclaims
+  target: nclaims_per_year
   problem_type: regression
   metric: mean_poisson_deviance
   metric_origin: source
-  scoring_columns: null
+  scoring_columns:
+  - expo
+  sample_weight: expo
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -61,12 +63,9 @@ bundle_checks:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
   accepted:
-    task_target_low_cardinality: The curator explicitly confirmed regression on the
-      original claim count, observed from 0 to 5. The target measures a numeric number
-      of claims; it is not binned into classification labels.
-    task_target_value_dominant: The 144,936 zero labels are observed zero claims,
-      not censoring or missing-value placeholders. The curator accepted claim-count
-      regression on all policyholders, including nonclaimants.
+    task_target_value_dominant: 'The 144,936 zero rates are policyholders without
+      a claim in 1997, not censoring or missing-value placeholders: claim frequency
+      on all policyholders, including nonclaimants.'
 decisions:
 - Preserve distinct policyholders with repeated coarse profiles
 ---
@@ -75,27 +74,29 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `nclaims`, scored with `mean_poisson_deviance` on IID splits. 163,231 rows and 12 features. Source: GitHub (2019).
+Regression of `nclaims_per_year`, scored with `mean_poisson_deviance` on IID splits. 163,231 rows and 11 features. Source: GitHub (2019).
 
-Built as `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:f5b8358cf651da8cd86e4666a50322cf1f75d63a91e0e7b379c761b07deb6dfd`, so the build is stale. See [Build](#build).
+Built as `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:1a20c3c72648c57516ea7737842326e2241d9b6add0e8f15a55d7f093b70466b`, so the build is stale. See [Build](#build).
 
 ## In brief
 
-**Question.** How many claims will a motor-insurance policyholder make during their insured period?
+**Question.** How many claims per year insured will a motor-insurance policyholder make?
 
-**Use case.** For example, an EU motor insurer prices a third-party liability policy today: before quoting, its actuary estimates how many claims the policyholder will make during the insured period from the rating factors the insurer may use, learned here from a Belgian portfolio of 1997. Since 21 December 2012 EU law bars sex as a rating factor (CJEU C-236/09, Test-Achats), so the model does not see it.
+**Use case.** For example, an EU motor insurer prices a third-party liability policy today: before quoting the yearly premium, its actuary estimates the policyholder's expected claims per year insured from the rating factors the insurer may use, learned here from a Belgian portfolio of 1997. Since 21 December 2012 EU law bars sex as a rating factor (CJEU C-236/09, Test-Achats), so the model does not see it.
 
 **One row.** One of 163,231 policyholders of a Belgian motor-insurance portfolio observed in 1997, as first published in 2019.
 
-**Predicted.** Expected claims during the observed insured period; labels are original nclaims (observed 0-5).
+**Predicted.** Claims per year insured: the claims of 1997 (0 to 5) divided by the share of 1997 insured. Each policyholder counts in proportion to that share, in training and scoring.
 
-**Known at prediction time.** At policy start the insurer knows the policyholder, vehicle, coverage and municipality; sex is left out, as EU insurers may no longer price on it. The share of 1997 insured is supplied, though its availability at quotation is unresolved: it is shorter when a policy started or was surrendered during the year, and per insured year part-year policies claim 1.6 to 2.3 times as often as full-year ones.
+**Known at prediction time.** At policy start the insurer knows the policyholder, vehicle, coverage and municipality; sex is left out, as EU insurers may no longer price on it.
+
+**Known only when scoring.** The share of 1997 each policyholder was insured. It is shorter when a policy started or was surrendered during the year, often after a claim, so it is no input: it is the rate's denominator and each policyholder's weight in training and scoring.
 
 **What the test data stands for.** Random policyholders are held out, representing comparable unseen customers of the same year; the portfolio has no dates, so no later year can be held out.
 
-**Our changes to the source.** We keep the original claim count and every policyholder of the first public copy, and exclude the identifier, the municipality name, the same-period outcome fields and the policyholder's sex.
+**Our changes to the source.** We divide the claim count by the share of 1997 insured and weight each policyholder by that share, as the source's models do with an offset. We keep every policyholder of the first public copy, and exclude the identifier, the municipality name, the same-period outcome fields and the policyholder's sex.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The insurer prices today, but the data is one undated year of a 1997 portfolio, so random policyholders of 1997 stand in for today's customers, whose rating factors and claim rates may differ. Sex is left out, as today's tariff must leave it out. Realized exposure is kept on purpose, although it can reflect a cancellation later in the year.
+> **Use case fit: approximate (a stand-in with a known gap).** The insurer prices today, but the data is one undated year of a 1997 portfolio, so random policyholders of 1997 stand in for today's customers, whose rating factors and claim rates may differ. Sex is left out, as today's tariff must leave it out.
 
 ## Files in this folder
 
@@ -141,9 +142,10 @@ Only curators run `build`, when the dataset ships.
 | data_tags | IID, Spatial, ForcedIIDFromTemporal |
 | reference | Antonio2019PricingAnalytics,Henckaerts2020TreeMLData,Henckaerts2020Boosting |
 | rows x columns | 163,231 x 13 |
-| task.target | nclaims |
+| task.target | nclaims_per_year |
 | task.problem_type | regression |
 | task.metric | mean_poisson_deviance |
+| task.sample_weight | expo |
 | task.split_regime | iid |
 
 **Metric**
@@ -154,8 +156,23 @@ Only curators run `build`, when the dataset ships.
 | origin | source: the source's metric |
 | original | Mean Poisson deviance of observed claims against expected observed-period claim counts |
 | reference | https://github.com/henckr/treeML/blob/2ee8accc6df49168bd865cdf49efa1b7a5c8f4de/treeML.Rmd#L641-L657 |
-| definition | 2*mean(y*log(y/mu)-y+mu); zero y log term is zero; finite y>=0; mu below 1e-6 counts as 1e-6 |
-| params | {'min_prediction': 1e-06} |
+| definition | 2*sum(w*(y*log(y/mu)-y+mu))/sum(w) over the claims per year y and the predicted rates mu, w = expo (the share of 1997 insured); zero y log term is zero; mu below 1e-4 claims per year counts as 1e-4. Equals the source's mean count deviance of the expected counts expo*mu times n/sum(expo) of the scored rows (about 1.12) |
+| params | {'min_prediction': 0.0001} |
+| inputs | weight: `expo` |
+
+**Scoring columns**
+
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+
+| column | role | how the metric uses it | model input |
+|---|---|---|---|
+| `expo` | weight | mean_poisson_deviance: the share of 1997 the policy was in force (one day to one year), realized: shorter when the policy started or was surrendered during the year, a surrender often after a claim. The rate's denominator; each row's weight in the metric and in training; never a feature | training weight; never a feature |
+
+The test-row values of `expo` are for the scorer only: never read them when predicting a test row.
+
+**Training weight**
+
+Fit every model with `expo` as each row's sample weight (`sample_weight(container)` from `data_foundry.curation_container`), and never use it as a feature. The metric weights the test rows by the same column, so a model fitted without it targets another quantity.
 
 <details>
 <summary>Feature types: 4 categorical, 1 ordinal, 0 string, 0 datetime</summary>
@@ -201,29 +218,31 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 163,231 rows of the final frame (random rows: the frame is shuffled); 12 of 13 columns, the target first. Cells are cut at 40 characters.
 
-| nclaims | expo | coverage | ageph | bm | power | agec | fuel | use | fleet | postcode | long |
+| nclaims_per_year | expo | coverage | ageph | bm | power | agec | fuel | use | fleet | postcode | long |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 1 | TPL+ | 30 | 10 | 55 | 9 | gasoline | private | 0 | 1650 | 4.30096 |
-| 0 | 0.123288 | TPL++ | 25 | 2 | 76 | 1 | gasoline | private | 0 | 3110 | 4.71814 |
-| 1 | 0.90137 | TPL | 51 | 4 | 76 | 5 | gasoline | private | 0 | 1640 | 4.36153 |
-| 0 | 1 | TPL+ | 71 | 1 | 84 | 13 | gasoline | private | 1 | 7340 | 3.83246 |
-| 0 | 1 | TPL | 54 | 0 | 42 | 9 | gasoline | private | 0 | 7130 | 4.08024 |
+| 0 | 1 | TPL | 26 | 11 | 37 | 5 | gasoline | private | 0 | 9140 | 4.19347 |
+| 0 | 1 | TPL+ | 60 | 2 | 54 | 16 | gasoline | private | 0 | 9600 | 3.59561 |
+| 0 | 0.186301 | TPL++ | 27 | 2 | 90 | 1 | gasoline | private | 0 | 1180 | 4.34955 |
+| 1 | 1 | TPL | 57 | 0 | 66 | 10 | gasoline | private | 0 | 6000 | 4.43709 |
+| 0 | 1 | TPL++ | 68 | 1 | 50 | 2 | diesel | private | 0 | 1340 | 4.55539 |
 
 ## Curation notes
 
 We start with data/P&Cdata.txt of [katrienantonio/PE-pricing-analytics](https://github.com/katrienantonio/PE-pricing-analytics/tree/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e) commit 0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e, the first public copy (2019, all 163,231 policies), read with exact float parsing; its column names, coverage labels (PO as TPL+, FO as TPL++) and fleet codes (N and Y as 0 and 1) become those of the author's 2020 release (superseded 2026-11-05: until then we started with data/beMTPL97.rda from CASdatasets commit 227fb56b8734bdb7c0327a41180e01d2ddaeaf26, the release's 163,212 rows, equal as a parsed table to the author's mtpl_data.rds).
 
 - Prediction point: the quotation at policy start. [Binning manuscript](https://roelverbelen.netlify.app/publication/binning/binning.pdf), Sec. 2, p. 4: "The risk factors are registered at the start of the policy period and remain constant during this period". The quotation is today's, by an EU insurer (CC below on sex).
-- Target: the original nclaims, 0 to 5, as a count regression on every policyholder; no annualization, cap, weight or offset. We drop the identifier ID, the same-period outcomes AMOUNT and AVG (the release's amount and average; the 2019 copy has no claim column), and TOWN, the municipality name, which has one value per postcode and is not in the release.
-- Potential leak, kept on purpose: expo, the share of 1997 the policy was in force (one day to one year), is shorter for policyholders "who started the policy in the course of the year or surrendered the policy before the end of the year" ([arXiv:1904.10890v3](https://arxiv.org/pdf/1904.10890v3), Sec. 4.1). A start is known at quotation, a surrender (often after a claim) is not, and without dates the two cannot be told apart. The source puts exposure into the expected count in proportion (an offset with slope 1); here it is a free feature. Given the other features and a proportional offset, part-year policies claim about 1.4 times the expected count, and using expo freely instead of as an offset gains 0.0036 to 0.0041 of mean Poisson deviance, 16 to 18% of untuned LightGBM's skill over the training mean (3 and 9 folds; superseded 2026-11-05: 0.0039 on the 163,231 rows without sex, 0.0033 to 0.0047 per fold, 16% of the skill, 9 folds; the same run on the old frame gave 0.0040, 0.0036 to 0.0044; out of fold, a LightGBM offset model gives part-year policies 1.41 times the expected count on both frames). Revisit if policy dates become available.
-- Metric: the source's mean Poisson deviance of nclaims against the predicted expected count, by which it tunes and compares its frequency models ([arXiv:1904.10890v3](https://arxiv.org/pdf/1904.10890v3), Sec. 3.2 Eq. 5, Algorithm 3, Sec. 4.5; treeML.Rmd lines 641-657 score nclaims against frequency times expo). Exposure enters through the prediction, so it is neither a weight nor a scoring column. A predicted mean below 1e-6 counts as 1e-6 (Lennart, 2026-11-04: "in pratice we would also clip to a reasonable number"): one day of exposure at a 3% claim frequency is about 1e-4, so the floor sits two orders below the smallest plausible mean; a NaN or infinite prediction raises.
-- Dtypes: coverage is ordered, TPL < TPL+ < TPL++ (plus limited, then comprehensive material damage; CLEAN-14); fuel, use, fleet and postcode are nominal; the rest stay numeric. sex stays by curator choice, for research on a 1997 tariff (superseded 2026-11-05: sex leaves the features, CC below; it was nominal).
-- Copies kept: each row is a distinct source policyholder; the 133 extra exact rows and 35 conflicting profiles are coarse rating profiles that coincide (the IID hidden-group probe found none, though 147,308 rows were too sparse to compare; superseded 2026-11-05: 176 extra exact rows and 50 rows with a conflicting profile on the 163,231 rows without sex, and the probe again found none, 155,120 rows too sparse).
+- Target: nclaims_per_year = nclaims / expo, the claims per year insured (MET-14), with expo as the row weight of the metric and the training weight (`sample_weight`, MET-15) and never a feature (LEAK-41). nclaims (0 to 5, no cap) leaves the frame as a part of the target, and _clean checks that nclaims_per_year x expo gives it back. We drop the identifier ID, the same-period outcomes AMOUNT and AVG (the release's amount and average; the 2019 copy has no claim column), and TOWN, the municipality name, which has one value per postcode and is not in the release.
+- Exposure (LEAK-41, MET-15; issue 1, resolved 2026-11-06): expo, the share of 1997 the policy was in force (one day to one year), is shorter for policyholders "who started the policy in the course of the year or surrendered the policy before the end of the year" ([arXiv:1904.10890v3](https://arxiv.org/pdf/1904.10890v3), Sec. 4.1). A start is known at quotation, a surrender (often after a claim) is not, and without dates the two cannot be told apart. On the count target shipped until 2026-11-06 (the claims of the observed period, scored by the source's count deviance), expo as a free feature gained 0.0036 to 0.0041 of mean deviance over a proportional offset (16 to 18% of untuned LightGBM's skill; 0.0039 on the 163,231 rows without sex, 9 folds), part-year policies claimed about 1.4 times the offset model's expected count, and at the quote (every policy priced for a full year) the free model was 0.0002 to 0.0011 worse than the offset model and never better, its claims coming in 1.08 times its price. expo now ships as the rate's denominator and each row's weight, the source's offset model. On the declared metric (9 shipped folds, untuned LightGBM fitted with the weight), expo as a feature gains +0.0047 (SD 0.0006) under the weighted Poisson fit and +0.0051 (SD 0.0007) under a weighted L2 fit, and probe 22 (3 splits x 3 seeds, 50,000-row cap) gives +0.0040 and +0.0035: both fits gain, so expo stays out whichever is the worse. The weight alone, reported next to that gain and no ceiling (LEAK-41 as reworded on 2026-11-08): a Poisson fit on expo alone (the same as on 1/expo) scores 0.6122 against the training mean's 0.6193 and the honest model's 0.5979, while a scaled 1/expo used directly as the prediction scores no better than the training mean on average (0.6204 against 0.6193 over the 3 folds of repeat 0; 0.6223 against 0.6233 on the first, the only fold where it is lower). Probe 22: the features predict expo at R^2 0.032 (50,000-row cap; 0.055 in a refit on the full training folds) through rating factors registered at the start, and no feature's gain goes through expo above noise under either fit (USE-6). With the background of month-end ends and first-of-month starts removed, the excess starts claim 0.094 a year and full years 0.126, so true starts show no excess claims and little legitimate signal goes with the feature.
+- Metric: the source's mean Poisson deviance, by which it tunes and compares its frequency models ([arXiv:1904.10890v3](https://arxiv.org/pdf/1904.10890v3), Sec. 3.2 Eq. 5, Algorithm 3, Sec. 4.5; treeML.Rmd lines 641-657 score nclaims against frequency times expo), here on the rate weighted by expo: sum(w*d)/sum(w) equals the source's count deviance of the expected count expo x rate times n/sum(expo) of the scored rows (about 1.12), so models rank as by the source's metric on every fold (MET-11, origin source). Floor 1e-4 claims per year on the predicted rate (MET-13 as amended on 2026-11-06; the rule of 2026-11-04, "in pratice we would also clip to a reasonable number", two orders below the smallest plausible rate, on the scale the metric scores); a NaN or infinite prediction raises.
+- Dtypes: coverage is ordered, TPL < TPL+ < TPL++ (plus limited, then comprehensive material damage; CLEAN-14); fuel, use, fleet and postcode are nominal; the rest stay numeric. postcode is nominal although its leading digit is the province (CLEAN-14's clause on codes whose digits carry meaning), since long and lat give each municipality's location, as in house_sales, melbourne_housing_market and perth_house_prices, and unlike lt_vehicle_loan_default_prediction, whose geographically ordered code went numeric with no coordinates (2026-11-05). Its 583 levels need an encoding or smoothing: the source models place by the coordinates, not the code, with "spatial smoothing over the latitude/longitude coordinates" in its GAM and GLM benchmarks and the coordinates "as continuous variables in the tree-based models" ([arXiv:1904.10890v3](https://arxiv.org/pdf/1904.10890v3), Sec. 4.1). sex stays by curator choice, for research on a 1997 tariff (superseded 2026-11-05: sex leaves the features, CC below; it was nominal).
+- Copies kept: each row has its own source ID; the 133 extra exact rows and 35 conflicting profiles are coarse rating profiles that coincide (the IID hidden-group probe found none, though 147,308 rows were too sparse to compare; superseded 2026-11-05: 176 extra exact rows and 50 conflicting profiles (100 rows) on the 163,231 rows without sex, and the probe again found none, 155,120 rows too sparse; superseded 2026-11-06: with expo no longer a feature, 397 extra exact rows and 88 conflicting profiles (177 rows), and 0.4% of test rows have an exact copy in train, 0.1% with another label). Some part-year copies may be one policyholder whose policy was re-issued during 1997 under a new ID: 57 pairs of part-year rows with the same profile (176 when the ages may differ by a year and bm by two) have exposures that sum to one year; both rows of a pair claim in none of the 57 and in 1.1% of the 176.
 - Selection by the release: the manuscript has 163,231 policies, 19 of them with an average claim cost above EUR 81,000 (Sec. 3.2, p. 11). The release is the 2019 copy of those 163,231 rows minus exactly these 19 (all claimants, 21 claims, 0.1% of all claims), the other rows identical and in the same order; the boosting paper evaluates on the 163,212. No further filter (superseded 2026-11-05: the 19 are restored, CC below, so no selection by claim cost remains).
 - Split forced IID from temporal (ForcedIIDFromTemporal, SPLIT-8): an insurer fits on past policy years and prices the next, but the portfolio is one undated year and its raw order (the 2019 copy's and the release's alike) is sorted by postcode, so no row-order window exists and the cost cannot be measured. A later year would test the drift of claim frequency; recover one if a release has it.
 - Year 2019: the first public copy is data/P&Cdata.txt in [katrienantonio/PE-pricing-analytics](https://github.com/katrienantonio/PE-pricing-analytics/tree/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e), added on 26 September 2019 with all 163,231 policies; we download the author's 2020 release of the 163,212 through CASdatasets (superseded 2026-11-05: we download this 2019 copy). The observation year is 1997. CASdatasets declares GPL (>= 2); the 2019 course repository states no licence; the insurer's terms are not stated.
 - CC (2026-11-05, Lennart): all 163,231 policies of the first public copy ship (issue 2, b; PROV-8, USE-5), not the release's 163,212, which leave out the 19 policies whose average claim cost exceeds EUR 81,000. Re-verified on 2026-11-05: the 2019 copy minus exactly its 19 rows with AVG above 81,000 equals the release row by row in the same order, every value equal to the 15 digits of the text file; the 19 hold 21 claims. The restored rows remove the selection by claim cost, so the record needs no `Selection Bias` marker for it. They are 19 rows more than the boosting paper evaluates on.
 - CC (2026-11-05, Lennart): sex leaves the features (issue 3, a). The actor is an EU insurer pricing today, and the Test-Achats ruling (CJEU C-236/09, 1 March 2011, in force for new contracts from 21 December 2012) bars sex as a rating factor: "We make this special case here as we would try to understand how good such models would be in the current world, and they would not be able to use sex". The 1997 portfolio stays the data, priced as an insurer would today, so the fit stays approximate. Sex carried 0.0004 of mean Poisson deviance (0.0002 to 0.0007 per fold, better in 9 of 9; 1.6% of the skill; untuned LightGBM-Poisson, 9 folds, 163,231 rows). With both changes the model scores 0.5279 against the training mean's 0.5520 (was 0.5274 against 0.5517: 4.4% skill each). The tension is a row in principles.md; home_credit_default_risk (CODE_GENDER) and credit_card_clients_default (SEX) keep sex, not reviewed yet.
+- CC (2026-11-06, Lennart): issue 1 resolved by its option B as the rate with a sample weight (option A of https://github.com/TabArena/data-foundry/issues/51): the target is the claims per year insured, expo the weight of the metric and of training and never a feature (LEAK-41, MET-14, MET-15), the floor 1e-4 a year (MET-13). Supersedes Myunghwan's calls of 2026-10-23 ("Retain expo ... Do not annualize, bin, clip, weight") and 2026-10-26 ("expo as a predictor") and the floor of 2026-11-04 (1e-6 on the expected count): the conditional measurement came later (+0.0043, 17% of the skill; never better at quotation), the source itself scores with an offset, and with the weight, dividing does not inflate short records. The built container 01a18ad7 is superseded.
+- Note (AI, 2026-11-06), on the CCs above: their scores are on the count target shipped until 2026-11-06, with expo a free feature. The +0.0043 (17% of the skill) is the exposure study's gain of a free expo over the offset on that count deviance (+0.00425, SD 0.00063, 9 shipped folds, untuned LightGBM-Poisson with early stopping), the scale of the Exposure bullet's 0.0036 to 0.0041 from other fits. On the declared metric the honest model scores 0.5979 against the training mean's 0.6193 (3.46%, better on 9 of 9 folds), and expo as a feature would gain +0.0047 to +0.0051 (Exposure bullet).
 
 ## Splits
 
@@ -258,20 +277,19 @@ The source documents unique policyholders. Coarse characteristics and zero-heavy
 | distinct source IDs | 163231 |
 | retained rows | 163231 |
 | extra identical cleaned rows | 176 |
-| rows in repeated predictor profiles | 450 |
-| extra predictor-profile copies | 226 |
+| rows in repeated predictor profiles | 963 |
+| extra predictor-profile copies | 485 |
 
 ## Bundle checks
 
 0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 176 exact duplicate row(s) (0.1% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `dataset_conflicting_duplicate_rows`: 50 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **info** `dataset_duplicate_rows`: 397 exact duplicate row(s) (0.2% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_conflicting_duplicate_rows`: 88 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 Accepted on purpose:
 
-- `task_target_low_cardinality`: The curator explicitly confirmed regression on the original claim count, observed from 0 to 5. The target measures a numeric number of claims; it is not binned into classification labels.
-- `task_target_value_dominant`: The 144,936 zero labels are observed zero claims, not censoring or missing-value placeholders. The curator accepted claim-count regression on all policyholders, including nonclaimants.
+- `task_target_value_dominant`: The 144,936 zero rates are policyholders without a claim in 1997, not censoring or missing-value placeholders: claim frequency on all policyholders, including nonclaimants.
 
 ## Data checks
 
@@ -290,7 +308,7 @@ Accepted on purpose:
 | expo | float64 | 0 | 0 | 365 | 1.0, 0.0849, 0.4959, 0.7479, 0.4137, 0.3288, 0.2466, 0.9151, 0.8329, 0.6658 |
 | long | float64 | 0 | 0 | 583 | 4.4371, 4.3871, 3.7066, 5.5566, 4.166, 3.9568, 3.3758, 4.8582, 4.6838, 3.2014 |
 | lat | float64 | 0 | 0 | 583 | 50.4173, 51.216, 51.0591, 50.6478, 50.4679, 50.4569, 50.5925, 50.462, 50.8816, … |
-| nclaims | int64 | 0 | 0 | 6 | 0, 1, 2, 3, 4, 5 |
+| nclaims_per_year | float64 | 0 | 0 | 559 | 0.0, 1.0, 2.0, 3.0, 1.0928, 1.2007, 1.337, 2.0166, 1.5021, 1.7217 |
 | ageph | int64 | 0 | 0 | 78 | 43, 49, 47, 50, 51, 45, 39, 42, 38, 41 |
 | bm | int64 | 0 | 0 | 23 | 0, 1, 5, 2, 4, 11, 10, 9, 6, 7 |
 | power | int64 | 0 | 0 | 178 | 55, 40, 66, 44, 33, 43, 47, 51, 65, 60 |
@@ -302,20 +320,20 @@ Accepted on purpose:
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 88.79 | 3.233 | 2.684 | 0.135 | 0.056 | log1p | 299386 | 296665 | lognormal |
+| 0 | 0 | 88.79 | 85.761 | 3.498 | 0.954 | 0.074 | log1p | 93800.8 | 191489 | exponential |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | expo | 163231 | 0.889736 | 0.244205 | 0.00273973 | 1 |
-| nclaims | 163231 | 0.123972 | 0.367617 | 0 | 5 |
 | ageph | 163231 | 47 | 14.8314 | 18 | 95 |
 | bm | 163231 | 3.26874 | 3.99867 | 0 | 22 |
 | power | 163231 | 56.004 | 19.0256 | 10 | 243 |
 | agec | 163231 | 7.37501 | 4.20641 | 0 | 48 |
 | long | 163231 | 4.40724 | 0.751023 | 2.57779 | 6.30554 |
 | lat | 163231 | 50.7584 | 0.31785 | 49.5362 | 51.4498 |
+| nclaims_per_year | 163231 | 0.157527 | 0.976758 | 0 | 182.5 |
 
 ### Categorical features
 
@@ -352,4 +370,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 6b2e70b5b795a373a3ae71006b8db8e471eabe9f-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:f5b8358cf651da8cd86e4666a50322cf1f75d63a91e0e7b379c761b07deb6dfd` |
+| stale | yes: the definition now gives checksum `v2:1a20c3c72648c57516ea7737842326e2241d9b6add0e8f15a55d7f093b70466b` |

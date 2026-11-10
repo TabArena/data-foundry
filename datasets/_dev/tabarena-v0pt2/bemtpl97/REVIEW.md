@@ -1,25 +1,38 @@
 # bemtpl97
 
-**Outcome:** added. Verdict: ship after changes (mediator). Validity: USE-3 and USE-5 hold (the source's own claim
-count; every feature except `expo` is registered at policy start); LEAK-10 (Must) is triggered by `expo`, whose use
-beyond plain exposure carries 16-18% of the model's skill (issue 1); SPLIT-8 holds (one undated year, IID with
-`ForcedIIDFromTemporal`, fit approximate); PROV-9 and PROV-10 were triggered by a public copy from 2019 and are fixed
-in the metadata. Value: MET-1, MET-5 and MET-13 hold (the source's Eq. 5, floor 1e-6), MET-2 holds for the shipped
-metric (claim auditor); TP-2 shows a real signal (4.2-4.4% deviance skill, 9/9 folds; 3.7% with `expo` as an offset
-only, so the signal survives the fix in issue 1). Quality: CLEAN-14 holds. Weighed: none decides the verdict; issue 2
-is a USE-5 weighing call. Left for Lennart: issue 1, decided for bemtpl97 and fremtpl2 together; issues 2 and 3; then
-a rebuild when you ask for it.
+**Outcome:** added. The AI recommends shipping it. The re-review of 2026-11-06 under the exposure rules (LEAK-41,
+MET-14 to MET-16), held after issue 1 was resolved, asked only for text in the notes (mediator: ship after changes),
+and that text is in. The first public copy (2019) of a Belgian motor-insurance portfolio of 1997: the claims per year
+insured of 163,231 policyholders, predicted at the quote from 11 rating factors, each policyholder weighted by its share
+of 1997 insured (`expo`). Validity: USE-1, USE-3 and USE-5 hold (settled on 2026-11-05); LEAK-41 was triggered by
+`expo` and is fixed (the weight scoring column and `sample_weight`, never a feature), and the notes now give its report:
+as a feature `expo` would gain +0.0047 under the weighted Poisson fit and +0.0051 under weighted L2 (9 folds), and a fit
+on `expo` alone scores 0.6122, between the training mean's 0.6193 and the honest model's 0.5979; probe 22 finds that
+the features predict `expo` at R² 0.032 under its 50,000-row cap (0.055 on full folds, claim audit), through factors
+known at the start; LEAK-10 holds (`bm` is the level at the start); LEAK-16 holds (copies give no shortcut); SPLIT-8
+holds, its cost disclosed (`ForcedIIDFromTemporal`, fit approximate); SPLIT-29 and SPLIT-30 find nothing (grouping by
+postcode lowers the skill by 0.04 to 0.15 percentage points, and the ranking holds). Value: TP-2, a small real signal:
+on the declared metric the honest model scores 0.5979 against the training mean's 0.6193, a skill of 3.46%
+(3.27-3.68%), better on 9 of 9 folds; the task probe's `no_signal` flag reads the RMSE skill (R² 0.015), not this
+metric (EV-3); MET-11 holds (the source's Eq. 5 score times n/sum(expo), 1.1229-1.1254 per fold, so models rank as by
+the source's metric); MET-13, MET-14 and MET-15 hold (the floor of 1e-4 claims per year never binds); MET-16 does not
+apply (`expo` is an exposure, not a survey weight). Quality: CLEAN-14 holds (`postcode` stays nominal, since `long` and
+`lat` give each municipality's location) and CLEAN-16 holds. Weighed: nothing decides the verdict. Left for Lennart: no
+issue here; the panel's two open questions concern weighted tables in general and are the cross-dataset items X1 and X2
+(working copy REVIEW.md, 'From PR #47'). Like every container with a `sample_weight`, it enters no run before the
+collection's training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate").
 
-**Main points:** Make `expo` a scoring column, as the source uses it, or keep it as a feature under a LEAK-10
-amendment, for both MTPL datasets; then two small calls: keep the release's 19 removed policies out, and keep or drop
-`sex`.
+**Main points:** No open issue, so it ships by default: issues 1-3 are resolved, and the re-review of 2026-11-06 adds
+none on this dataset (its two questions are the cross-dataset items X1 and X2).
 
-**Record judgment:** valid; a documented Belgian motor-insurance portfolio and the source's own frequency task. Five
-statements in the record are out of date after this panel: the AI line of 2026-11-04 calls exposure an offset (as
-shipped it is a free feature); the 2026-10-26 lines call the removal of the 19 policies unverified (it is now verified
-row by row); the first CC of 2026-11-04 says the scorer floors at machine epsilon (superseded the same day by
-`min_prediction=1e-6`); "the 20 other forced-IID definitions" are 17 in the working copy; "no panel ran" is superseded
-by this panel. The year is now 2019 in the definition and the record.
+**Record judgment:** valid; a documented Belgian motor-insurance portfolio and the source's own frequency task, now the
+claims per year insured weighted by `expo`. The CC of 2026-11-06 names the calls it supersedes (Myunghwan's of
+2026-10-23 and 2026-10-26, the floor of 2026-11-04). Three AI lines of 2026-11-06 follow it: the panel's assessment;
+the text changes, which mark the 2026-11-04 line "Exposure is an offset, not a weight" as superseded; and the priority,
+raised from 3 to 4 because its risk factor (issue 1) is resolved. The scores in the CCs of 2026-11-05 and 2026-11-06
+are on the count target shipped until then. The CC's +0.0043 is the exposure study's gain on the count deviance
+(+0.00425, fitted with early stopping), not on the rate scale as the mediator and the claim auditor read it. On the
+weighted rate deviance the same comparison gives +0.0048. A dated AI line next to the CC in the notes says so.
 
 **Issues for Lennart:**
 
@@ -110,6 +123,18 @@ by this panel. The year is now 2019 in the definition and the record.
 
    **Deferred (2026-11-05):** parked with fremtpl2 issue 6 until the zero-inflated stack (PRs #44-#47) is merged; [#51](https://github.com/TabArena/data-foundry/issues/51)
    holds the context. The declared metric waits with it.
+
+   **Resolved (2026-11-06, Lennart):** B, as the rate with a sample weight (option A of
+   [#51](https://github.com/TabArena/data-foundry/issues/51), the exposure study of 2026-11-05). The target is
+   `nclaims_per_year` = `nclaims` / `expo`; `expo` is the weight scoring column, the `weight` input of
+   `mean_poisson_deviance` and the task's `sample_weight`, and never a feature (LEAK-41, MET-14, MET-15, adopted the same
+   day); the floor is 1e-4 claims per year (MET-13). This is the source's offset model (Henckaerts et al., Eq. 5): on
+   every shipped fold the weighted rate deviance equals the count deviance of the same predictions times n/sum(expo) of
+   the scored rows (1.123 to 1.125). Supersedes Myunghwan's calls of 2026-10-23 and 2026-10-26 (keep `expo` as a
+   predictor; do not weight) and the floor of 2026-11-04 (1e-6 on the expected count): the conditional measurement came
+   later (+0.0043, 17% of the skill; never better at quotation), and the source itself scores with an offset. The
+   low-cardinality acceptance goes (the rate has 559 values); the built container `01a18ad7` is superseded.
+   `dataset check`: 0 errors, 0 warnings.
 
 2. **Ship the 163,212 released rows or all 163,231?**
 
@@ -202,919 +227,1166 @@ by this panel. The year is now 2019 in the definition and the record.
    constraint today wins when the use case is today's pricing; home_credit_default_risk and credit_card_clients_default
    keep sex, not reviewed yet).
 
-**Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's PR #33 review of 2026-11-04. Claims: 21 audited, 14 hold, 4 refuted in whole or in part (the year, the citation, the `known` sentence and the reason the `expo` note gave; all fixed in the notes, the `expo` question stays as issue 1), 1 record wording inconsistent, 2 untested (the build, the licence). Blind review: include with changes; its main concern is `expo` as a plain feature (its RMSE concern is moot, the definition scores by deviance). Task gamer: no real leak; its best exploit is `expo` used freely instead of as an offset, 0.0039 of deviance (0.0032 to 0.0047 per split) against a noise band of 0.0001 to 0.0004, the known kept-on-purpose note. Agreed: the split (SPLIT-8), the metric (MET-1, MET-5, MET-13), the dtypes (CLEAN-14), the copies (LEAK-16) and the provenance fixes (PROV-9, PROV-10). Disputed: only whether the rebuild is a separate gate (EV-7). On LEAK-10 the advocate withdrew the amendment in its rebuttal, so all sides recommend the scoring column; keeping `expo` under an amendment stays open to you (issue 1).
+**Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
+after issue 1 was resolved as the rate weighted by `expo`. Claim audit: 31 claims, 20 hold (2 with a caveat), 2 refuted
+(LEAK-41's report and the copy counts, both now in the notes), 4 stale or on mixed scales (now named or superseded),
+the `no_signal` flag a reading of the wrong scale, 4 untested (the shuffle seed, the sex ruling settled on 2026-11-05,
+the licence and the paper's text; its Sec. 4.1 quote on exposure was checked after the audit). Blind review: include
+with changes; its main concern, the metric, asks for the exposure-weighted Poisson deviance that ships (its task sheet
+does not name the metric). Task gamer: only test-row `expo`, which a participant can read from the scoring columns, beats the noise
+(+0.0052 used as a feature, against 0.00005 of noise; cross-dataset item X1). Agreed: the target, the weight, the
+metric and its floor, the split, the signal and every text change (made). Disputed: whether this definition should say
+that test-row `expo` is the scorer's alone (the critic) or one house remedy should cover every weighted table (the
+advocate), moved to cross-dataset item X1; the mediator settled the rest (`postcode` stays nominal with the fact that
+sets it apart written down; the clause on possibly re-issued pairs goes in).
 
 <details><summary>Mediator</summary>
 
-**Recommendation for `bemtpl97`: ship after changes.** One change needs your decision first: `expo` is a free feature, and by LEAK-10 it should become a scoring column. That reverses your own earlier calls (Myunghwan's of 2026-10-23 and 2026-10-26, and Lennart's of 2026-11-04), so it is issue 1. The other changes need no decision.
+**Mediator report: bemtpl97 (exposure re-review, 2026-11-06, full tier)**
 
-**Judgment record**
+I ran no new experiment because no fact is in dispute. Both sides accept every measurement. The two places where the reports differ (which fit is "the worse"; the critic's "15% of the skill") are settled from the reports' own numbers below.
 
-```text
-Verdict: ship after changes.
-Validity: USE-3, USE-5 hold (the source's own count, every feature except expo known at policy start).
-  LEAK-10 triggered by expo: 0.0036-0.0041 of deviance, 16-18% of the skill, comes from using it non-proportionally;
-  recommended fix in the definition (LEAK-7): expo as a scoring column (curator decision, issue 1).
-  SPLIT-8 holds (IID, ForcedIIDFromTemporal, approximate, disclosed). PROV-9/PROV-10 triggered, fixed in metadata
-  (first public copy 2019-09-26).
-Value: MET-1, MET-5, MET-11, MET-13 hold (the source's Eq. 5, floor 1e-6); MET-2 holds fully only after issue 1.
-  TP-2: real signal, 4.2-4.4% skill with expo free, 3.7% with expo as offset only, 9/9 folds both ways.
-Quality: CLEAN-14 holds; the int32 postcode is a panel-kit parquet artifact, not the definition.
-Weighed: none decides; restoring the 19 rows is a minor weighing call (issue 3).
-For the curator: issue 1, the fix (b) or a LEAK-10 amendment (a), decided for bemtpl97 and fremtpl2 together.
-```
+**1. Judgment record**
 
-**Changes to make now (no decision needed)**
+Verdict: ship after changes. The changes are to the notes only: the data, target, weight, metric, floor and split stay as defined. The rebuild happens when the curator asks for it.
 
-1. **Year and citation (PROV-9, PROV-10, Must).**
-   - Set `year = "2019"` in `dataset.py` and in the record's front matter.
-   - Add `katrienantonio/PE-pricing-analytics`, commit 0b279c43 of 2019-09-26, file `data/P&Cdata.txt`, to the bibtex and the year note.
-   - Keep treeML/CASdatasets as the download (PROV-8).
-2. **The 19 removed policies (EV-2, USE-5 note).** Replace "most likely removed" in `fit_reason` and `curation_comments` with the verified fact: the release is the 2019 file minus exactly its 19 rows with an average claim cost above EUR 81,000 (21 claims, 0.1% of claims), the other rows identical and in order. Add a record line saying the 2026-10-26 "unverified" sentence is outdated.
-3. **The `known` field is wrong (EV-2).**
-   - It says "longer coverage gives more opportunity for claims". Per insured year, part-year policies claim 1.6-2.3x as often as full-year ones (0.292 at expo ≤ 0.25 against 0.126 for a full year).
-   - Name both causes the source gives for a part year: a start during the year, or a surrender (arXiv v3, Sec. 4.1, p. 14).
-   - The rest of the `expo` wording follows issue 1.
-4. **SPLIT-8 note (SPLIT-22, writing).** Add "the raw order is sorted by postcode, so no row-order window exists".
-5. **Record corrections (records.md, writing.md).** Append AI lines; do not edit old lines.
-   - The 2026-11-04 AI line "Exposure is an offset" was false as shipped.
-   - "No panel ran for this dataset" is outdated.
-   - The CC "20 other forced-IID definitions" should read 17.
-   - "Machine epsilon" is superseded by 1e-6.
-6. **Create `datasets/_dev/tabarena-v0pt2/bemtpl97/REVIEW.md` (pipeline).** The record cites "REVIEW.md issue 1", but the file has never existed in git. It should hold issues 1-4 below.
-7. **fremtpl2 `dataset.py` line 136.** Change "floors a predicted mean at machine epsilon" to 1e-6, which its params already use.
-8. **Bookkeeping.**
-   - Add both siblings to the SPLIT-8 Cases table in `splits.md`.
-   - Your decision line on issue 1 should carry `LEAK-10`. The register shows no flag only because the `expo` lines have `rule_ids: []`.
-9. **After the changes, rebuild on your ask (rebuild.md).** The build is stale and the container is not in the local warehouse. Then check:
-   - `postcode` is a category in the container;
-   - after issue 1, `expo` is a scoring column and not in `feature_columns`;
-   - the dummy re-scores 0.551735, and LightGBM about 0.531 under (b).
+Validity:
+- USE-1, USE-3 and USE-5 hold (settled on 2026-11-05, not reopened).
+- LEAK-41 was triggered by `expo` and is fixed: `expo` is the weight scoring column and `sample_weight`, and it is never a feature. Its reporting clause is missing from the text, which is an unmet Must. It is fixed now with a sentence of numbers that are already measured (change 1).
+- LEAK-10 holds: bm is the level at the start (5,215 claimants at bm 0).
+- LEAK-16 holds: copies give no shortcut, and the possibly re-issued pairs share no outcomes.
+- SPLIT-8 holds, and its cost is disclosed. SPLIT-29 and SPLIT-30 have no hit (grouping by postcode costs 0.0004-0.0015, and the ranking holds).
 
-**Issues for the curator, ranked**
+Value:
+- TP-2: a small real signal. The deviance skill is 3.46% (3.27-3.68%), better than the constant on 9 of 9 folds. The probe's no_signal flag reads the RMSE skill (R² 0.015); read that way under EV-3, the flag is not a finding.
+- MET-11 (origin source): the metric is exactly the source's Eq. 5 times n/sum(expo), a factor of 1.1229-1.1254.
+- MET-13: the floor never binds.
+- MET-14 and MET-15 hold.
 
-**1. `expo` as a free feature (P4, LEAK-10 Must; a consistency check of case 1, also for fremtpl2).**
-- **Problem.** `expo` is the realized time insured, which falls inside the outcome's period. Conditional on all covariates and a proportional offset, part-year rows claim about 1.4x what is expected (column auditor), and the free log(expo) slope is 0.45-0.54, not 1.
-- **Effect.** Using `expo` freely instead of as an offset gains 0.0036-0.0041 of deviance, 16-18% of LightGBM's skill. Four agents measured this independently. The task gamer mapped its exploit #1 to the existing "Potential leak, kept on purpose" note. That makes it a known exploit, but the note states only the proportional signal (log(expo) alone: 0.5470 against 0.5517), not this gain. So it counts as an issue.
-- **Can the mechanism be settled?** No. There are no dates in any copy, the 2019 one included.
-  - Advocate's best case: new entrants (bm = 11) have O/E 3.36 at expo ≤ 0.1, and a mid-year start is known at quotation.
-  - Critic's best case: existing policyholders (bm ≠ 11) still reach O/E 2.13 at expo ≤ 0.1, and over all part-year rows bm = 11 gives 1.39 against 1.41 for the rest.
-- **Which rule wins.**
-  - LEAK-10's window clause: a value in the outcome's period "still goes". Its late-pull clause: values whose cells "cannot be located row by row… go when they may carry a gain".
-  - LEAK-38 does not apply. `expo` is a named field in a research release, not an anonymised competition field, and a conditional test has measured the mechanism.
-  - LEAK-11 does not apply, because `expo` strengthens the signal.
-  - This is not a conflict: the fix also satisfies MET-1, MET-5 and MET-2 better. By the ladder, fix the definition. Both sides now agree on this, and the advocate withdrew the amendment as the preferred route.
-- **The fix.** `expo` becomes a scoring column; the model predicts annual frequency f(x), and the scorer computes deviance(nclaims, expo·f(x)), the source's Eq. 5. Proportional exposure stays (0.5314 against 0.5361 without expo), and the skill stays at 3.7% with 9/9 wins. It needs an exposure input in `_poisson_deviance` with tests, in the same change (MET-13).
-- **One fact I measured, which sets the form.** The unweighted mean of d(y, e·g) equals the expo-weighted mean of d(y/e, g) times Σe/n, a constant per fold (ratio 0.5036 = 1/1.9855 on synthetic data). So scoring the target `nclaims/expo` by Poisson deviance weighted by `expo` ranks every model the same.
-  - Form (i) keeps the count target but needs models to take an offset.
-  - Form (ii) annualizes the target but works with any model that takes a sample weight.
-  - Pick the form your harness can pass to models at fit time.
-- **Settled in passing:** the advocate's 0.983 is a per-policy rank correlation and says nothing about the leaderboard (critic is right). It does not matter, because a Must does not depend on how much the ranking moves.
-- **Your decision:**
-  - (b) apply the fix to bemtpl97 and fremtpl2 together. This is recommended; the cost is the part due to mid-year starts, which cannot be separated without dates.
-  - (a) keep `expo`, which needs a LEAK-10 amendment (a Must takes no exception), and the note rewritten with both causes, 16-18% of the skill and O/E about 1.4.
-- **What would settle the mechanism:** policy start and end dates.
+Quality:
+- CLEAN-14: postcode stays a nominal category. The fact that sets it apart is written down: long and lat give each postcode's location, as in the three nominal precedents (all of which have coordinates).
+- CLEAN-16 holds.
 
-**2. Shipped rows: 163,212 or all 163,231 (P5/P3, USE-5 Weigh; a minor weighing call).**
-- **Problem and effect.** The release dropped 19 policies by their claim cost, an outcome. They are all claimants, with 21 claims (0.1%).
-- **For keeping 163,212** (both sides): these are the rows the metric's paper evaluated (Sec. 4.1); the removal is the source's preprocessing; under USE-8 a selection alone does not change the fit.
-- **For restoring:** the unselected origin exists (the 2019 copy), so the selection can be undone (PROV-13 spirit).
-- **Recommendation and decision needed:** keep 163,212 and state the selection as a fact. Your call.
+Weighed: nothing decides the verdict.
 
-**3. `sex` "stays by curator choice" (no rule covers it; attribution).**
-- **Problem.** No CC line in the record states this choice. The definition attributes it to a curator anyway.
-- **Effect and evidence.** The domain practitioner notes gender-based pricing is banned in the EU since 2012 (CJEU C-236/09). Keeping it as research on a 1997 tariff is fine if it is disclosed.
-- **Decision needed:** confirm in a CC line, or the attribution is marked as an AI draft.
+For the curator:
+- X1, cross-dataset (P4, LEAK-41): participants can read the test-row weight from the scoring columns.
+- X2, cross-dataset (P4, LEAK-41): what "1/weight alone" means under a deviance.
+- Issue 3, low: the record's priority now that the risk factor is resolved.
 
-**4. `postcode` with integer categories (P7, CLEAN-14; optional).**
-- **Problem.** A plain parquet round trip turns integer categories into integers, which is why the panel kit shows int32. The container restores the categories from `categories.json`.
-- **Effect.** A reader without Data Foundry sees numbers.
-- **Decision needed:** whether to store the categories as strings (cheap and safe), or leave them.
+**2. Agreed facts**
 
-**Agreed facts**
+Target, weight and metric:
+- The target is `nclaims_per_year` = nclaims / expo. It rebuilds the integer counts 0-5 exactly and has 559 distinct values.
+- `expo` is not in `feature_columns`. `sample_weight` is `expo`, and the metric input is {weight: expo}.
+- The weighted rate deviance equals the source's count deviance (treeML.Rmd L641-657) times n/sum(expo). The factor is 1.1229-1.1254 and the identity is exact on all 9 folds, so models rank exactly as under the source's metric.
+- Floor 1e-4:
+  - The smallest honest predicted rate is 0.008-0.045.
+  - 0 of 489,693 test predictions fall below 1e-3, and 0.0% sit at the floor in every probe family.
+  - NaN and inf raise an error.
+- Weighting:
+  - Unweighted, the mean rate is 1.13 times the portfolio rate (0.157 against 0.139).
+  - Ignoring the weight costs 0.0066-0.0114 of deviance.
+  - Actual/expected is 0.89-0.94 without the weight and 0.98-1.01 with it.
 
-- **Rows and target.** 163,212 rows, `id` unique. Counts 0-5 (144,936 zeros). `expo` runs from 1/365 to 1, and 77.3% of rows have a full year. 13 features.
-- **Folds.** 9 folds of 108,808 train / 54,404 test.
-- **Columns.** CASdatasets equals the treeML rds (0 differing cells). Dropping `id`, `claim`, `amount` and `average` is right. Every feature except `expo` is "registered at the start of the policy period". Dtypes are right (CLEAN-14).
-- **Metric.** It is the source's mean Poisson deviance (arXiv Eq. 5, Sec. 4.5; treeML.Rmd L641-657). The 1e-6 floor sits about 2.6 orders below the smallest plausible mean.
-- **Scores.**
+Exposure as a leak, on the declared metric over 9 folds:
+- `expo` as a feature gains +0.0047 (SD 0.0006) under the weighted Poisson fit and +0.0051 (SD 0.0007) under weighted L2.
+- Probe 22, with its 50k cap, gives +0.0040 (SD 0.0008) under Poisson and +0.0035 (SD 0.0027) under L2.
+- Which fit gains more flips between the two runs, and the difference is within one SD. Both gains are positive, so "decide on the worse" excludes `expo` either way.
+- The weight alone, fitted (a tree on expo, which is the same as on 1/expo): 0.6122 against the training mean's 0.6193 and the honest model's 0.5979. Per fold it beats the constant by 0.0051-0.0079.
+- A scaled k/expo used directly as the prediction scores no better than the constant (0.6223 against 0.6233).
+- The features predict expo at R² 0.032 under the 50k cap and 0.055 on full folds (Spearman 0.24). No feature's gain runs through expo above noise under either fit.
 
-  | model | mean deviance |
-  |---|---|
-  | dummy | 0.551735 |
-  | LightGBM, expo free | 0.5274-0.5285 (9/9 wins) |
-  | LightGBM, expo as offset only | 0.5314 |
-  | LightGBM, no expo | 0.5361-0.5367 |
+Part-year rows:
+- Part-year policies claim at actual/expected 1.42 (1.31-1.48) against 0.93 for full years.
+- Excess starts claim 0.094 a year, full years 0.126.
+- At the quote, a model with expo as a feature is worse than the honest model on 9 of 9 folds, and its claims come in at 1.08 times its price.
 
-  A random column moves the score by 0.0001-0.0004.
-- **Split.** No dates in any copy, so IID is forced (SPLIT-8). The raw order is sorted by postcode. Holding out whole municipalities costs at most 0.002 skill. Exact feature twins across the split are 0.12-0.15% of test rows, with label agreement at chance (0.793 against 0.799).
-- **Copies.** 133 exact copies and 35 conflicting rows, both INFO.
-- **Provenance.** The 2019-09-26 public copy has 163,231 rows. The release equals it minus exactly the 19 rows with an average claim cost above EUR 81,000.
-- **The rest of the task gamer's finds** add nothing new:
-  - Counts over train and test rows together (LEAK-30) gain 0.0002, inside the noise band.
-  - Looking rows up in the public source is not a task flaw.
-  - Row order, splits and format features are clean.
-  - Nothing hurts an honest model.
-- **Settled as moot.** The blind reviewer's RMSE points do not apply: the definition already scores by deviance. Its int32 postcode point was made on the kit artifact.
+Signal:
+- The honest model scores 0.5979 against 0.6193 (3.46%, 9/9 folds). The probe's own numbers give 3.1% (0.6004 against 0.6199).
+- The top predicted decile claims 3.4-3.8 times the bottom one, and the ordered Lorenz Gini is 0.207-0.212.
 
-**Consistency with precedent**
+Split:
+- Train and test match on expo on every fold: mean 0.889-0.891, KS p-values 0.67-1.00.
+- On full-year test rows only, the ranking is the same as on all rows.
+- Copies:
+  - On the shipped basis there are 397 extra exact rows and 88 conflicting profiles (177 rows). The notes' "50 rows" were 50 profiles (100 rows).
+  - 0.4% of test rows have a copy in train.
+  - Between 57 (strict) and 176 (loose) pairs of part-year rows have exposures that sum to one year. That is 15.1% of two-row profile copies against 2.8% for random same-postcode pairs. Both rows of a pair claim in 0.0% (strict) to 1.1% (loose) of pairs.
 
-- **Follow precedent:**
-  - SPLIT-8 forced IID: the 19 tagged definitions, all approximate.
-  - The MET-13 floor, the same as fremtpl2.
-  - Kept copies: hiva_agnostic, fremtpl2.
-  - Dtypes: house_sales `zipcode`, fremtpl2.
-  - The source's metric: the zillow_prize tension row.
-- **Departs from precedent, and the fix (b) restores it:** keeping `expo` as a free feature.
-  - LEAK-10 window clause: account_debt_south_africa, where values were kept only because the residual AUC was at chance.
-  - Unlocatable gain: distribution_transformers_at_cauca_department.
-  - A conditional test measured the mechanism, so LEAK-10 and not LEAK-38 applies: kick, expresso_churn_prediction.
-  - hotel_booking_demand: `BookingChanges` dropped.
-- **What sets this recommendation apart from your earlier keep:** the conditional test is new. The keep rested on the log(expo)-only fit, which measures only the proportional part.
-- **Siblings.** fremtpl2 has the same mechanism (slope 0.62; deviance 0.2428 with the offset against 0.2407 free), so decide the two alike (consistency rule 2).
-- **Year.** The precedent checker called "2020" consistent with PROV-9 before the 2019 copy was found. A measured fact wins (EV-2), so this departure is explained.
+Postcode:
+- 583 levels, with long and lat as its centroid, one pair per postcode.
+- Untuned LightGBM with the native category overfits it: skill 0.0342 without postcode against 0.0063 with it.
+- This is context only. Types are decided from meaning, not from model runs (EV-4).
+
+Two corrections of fact:
+- The critic's "about 15% of the honest skill" for the gamer's 0.0052 does not reproduce. Against the honest gain over the constant (about 0.020-0.021) it is about a quarter (24-26%).
+- The blind reviewer's "19 policies with two rows" is a misreading. 163,231 − 163,212 = 19 are the restored policies with an average claim cost above EUR 81,000, not duplicate policies.
+
+**3. Changes to make now (no decision needed)**
+
+In `datasets/_dev/tabarena-v0pt2/bemtpl97/`:
+
+1. LEAK-41 reporting clause (P4, Must; both sides agree). Add one sentence to the Exposure bullet of `curation_comments`, giving the declared-metric numbers:
+   - the Poisson gain +0.0047 (SD 0.0006) and the L2 gain +0.0051 (SD 0.0007) on 9 folds;
+   - probe 22 at its 50k cap: +0.0040 and +0.0035;
+   - both fits gain, so expo stays out;
+   - the weight alone, fitted: 0.6122 against 0.6193 (constant) and 0.5979 (honest);
+   - a scaled 1/expo as the prediction: at the constant.
+   Giving both readings of the ceiling meets the clause however X2 is settled.
+
+2. Name the scale of the old numbers (EV-2, writing):
+   - In the Exposure bullet, "0.0036 to 0.0041" and "0.0039" are count-target fits with expo as a free feature, from the old task.
+   - The +0.0043 in the 2026-11-06 CC and in the leak_checks.md LEAK-10/LEAK-41 Cases row looks rate-scale (0.0039 × 1.124). The CC is the curator's line: annotate it, do not rewrite it.
+
+3. Copies kept bullet (LEAK-16, Should; writing):
+   - Give the shipped counts: 397 extra exact rows and 88 conflicting profiles (177 rows).
+   - In the superseded part, "50 rows" becomes "50 profiles (100 rows)".
+   - Add the clause on possible re-issued policies: 57-176 pairs whose exposures sum to a year, sharing no claims. The bullet's "each row is a distinct source policyholder" is a claim the data makes less than certain. The clause costs one line; the critic asked for it and the advocate called it optional, so I settle it as: add it.
+
+4. Postcode (CLEAN-14, Should; both sides agree after the rebuttals):
+   - In the Dtypes bullet: "postcode nominal although its leading digit is the province, since long/lat give each municipality's location (as in house_sales, melbourne_housing_market and perth_house_prices; unlike lt_vehicle_loan_default_prediction, which has no coordinates)".
+   - Add a note that a 583-level code needs encoding or smoothing, as the source smooths location in space (Sec. 4.1).
+
+5. REVIEW.md:
+   - The new panel block supersedes the old outcome block, which still says floor 1e-6, LEAK-10 triggered and 4.2-4.4% skill.
+   - Add the no_signal reading: "no_signal reads the RMSE skill (R² 0.015); declared-metric skill 3.46% (0.5979 vs 0.6193), 9/9: TP-2 small real signal, keep (EV-3)".
+   - Give the probe 22 R² with its cap: 0.032 at 50k, 0.055 on full folds.
+
+6. Record `curation/records/bemtpl97.md`:
+   - An Assessment line for this panel: ship after changes, notes only, and the current skill of 3.46%.
+   - It states that the priority's "risk -: issue 1" factor is resolved. Re-weighing the priority is issue 3.
+   - Inline "(superseded 2026-11-06)" notes on Myunghwan's lines 50 and 56 and the floor line 76 are optional. No rule asks for them, and fremtpl2 and australian do not have them either.
+
+Not a definition change: the clean-room task.md does not name the metric. That is a gap in the panel kit, and it is why the blind reviewer asked for the weighted Poisson deviance that already ships.
+
+**4. Issues for the curator (ranked)**
+
+X1 (P4, LEAK-41 Must; cross-dataset: fremtpl2, australian_vehicle_insurance_2004_2005, frempl_french_motor_personal_line, pricing_game_2016_french_fleet, spanish_motor_insurance_coverage_level_2022_2024). The test-row weight is readable next to the features.
+
+- Problem: a scoring column stays in the frame. The participant kit ships test-row expo in scoring.parquet, so one line of code makes the realized exposure, which the outcome partly sets, a model input.
+- Effect, measured by the task gamer on 9 splits against an honest 0.59913 (noise moves the score by 0.00005):
+
+  | Exploit | Score | Gain |
+  |---|---|---|
+  | expo or 1/expo as a feature | 0.59396 | 0.0052 (0.0039-0.0061) |
+  | expo<1 flag | 0.59467 | 0.0045 |
+  | per-expo-bin factor learned on train | 0.59503 | 0.0041 |
+
+  No deployed model has this input at the quote.
+- What this definition needs now: nothing more than changes 1-2.
+  - The definition meets LEAK-41: `feature_columns` drops expo, and the scoring column's description already says "never a feature".
+  - A clause for this dataset alone would treat it unlike its five siblings.
+  - The critic's disputed clause ("test-row values are for the scorer only") is a placement question, not a conflict between rules, so it moves here.
+- Advocate's best evidence: the API (definitions.md) says a scoring column is never a feature and the harness passes the weight only as `sample_weight` and to the scorer, so misuse breaks the protocol, not the dataset.
+- Critic's best evidence: the generated README is what a user reads. It does not say that test-row weights belong to the scorer, and the misuse gains about a quarter of the honest skill.
+- Rejected under LEAK-41's own Must: the gamer's alternative of scoring only full-year test rows. It is also unnecessary, since the ranking is unchanged on those rows.
+- Options:
+  - (a) withhold test-row scoring columns from participant bundles, with the scorer joining them on its side;
+  - (b) generated README and describe() text, for every role=weight scoring column, saying that test-row values are for the scorer only and never a model input;
+  - (c) a clause in each definition's scoring-column description;
+  - (d) leave as is.
+- Recommendation: (b) now, as one house change that covers every weighted table, and (a) for any kit given to outside participants.
+
+X2 (P4, LEAK-41 Must, wording; cross-dataset: fremtpl2 has the same gap). What "the score of 1/weight alone" means for a deviance.
+
+- Problem: for a deviance, 1/weight used as a prediction is no ceiling (k/expo scores at the constant). Probe 22 computes it only for a Gini.
+- Effect: none on the decision. bemtpl97 and fremtpl2 still have to state the numbers, and the three siblings that report them may read the clause differently.
+- Best evidence:
+  - Precedent checker, for an amendment: a scaled 1/expo scores 0.6223 against 0.6233; fitted on expo, it beats the constant by 0.0051-0.0079.
+  - Both sides: it does not block bemtpl97.
+- Options:
+  - (a) Amend LEAK-41: the ceiling is the weight alone fitted to the target (1/weight for a rank metric). This is the precedent checker's recommendation.
+  - (b) Read the clause as it stands and report the fitted weight alone, with no amendment.
+  - (c) Leave it. A Must has no exceptions, so this is not open.
+- Recommendation: (a). Under (a) or (b), add fremtpl2's equivalent of change 1.
+
+Issue 3 (Weigh). The record's priority, 3, rests on "risk -: issue 1", which is resolved today. This is a re-weighing for the next assessment, not a block.
+
+**5. Disputed points and how they settle**
+
+D1. Clause in this definition against a harness-level policy (critic point 2, advocate point 6).
+- No rule demands a clause in the definition: LEAK-41 governs model inputs, and the definition meets it.
+- The remedy belongs at the house level, so like cases stay alike (principles, Conflicts).
+- Moved to X1.
+
+D2. Postcode: "settled precedent" against lt_vehicle_loan_default_prediction (P7, CLEAN-14, Should).
+- Settled by a fact I checked. house_sales, melbourne_housing_market and perth_house_prices, which went nominal, all ship coordinates.
+- lt_vehicle_loan has no coordinates, and its geographic order was measured.
+- The distinguishing fact holds and is written down (change 4). No change of type.
+- If the curator wants it explicit, CLEAN-14's code clause could say "unless coordinates already carry the place". That would be an amendment, with four cases behind it.
+
+D3. Which fit is "the worse" (advocate's rebuttal).
+- Not a real dispute. The order flips between the full-fold and capped runs, by less than one SD, and both gains are positive. The note gives both runs (change 1).
+
+D4. Re-issued pairs clause, "optional" against "ask": add it (change 3; writing, LEAK-16).
+
+**6. The task gamer's exploits, mapped to rules**
+
+The definition has no "Potential leak, kept on purpose:" note. Its only accepted warning, task_target_value_dominant (the 144,936 zero rates), is unrelated.
+
+| Exploit | Rule | Status | Gain compared with the notes |
+|---|---|---|---|
+| 1. expo or 1/expo as a feature (+0.0052) | LEAK-41 (Must), LEAK-10 | The mechanism is known (Exposure bullet; scoring column "never a feature"). The channel, readable test-row weights, is new and not documented. | Differs from the notes' 0.0036-0.0041 / 0.0039 / +0.0043, which are count-scale fits from the old setup. Matches the declared-metric 0.0047 / 0.0051 within noise. Change 1 removes the difference. |
+| 2. expo<1 flag (+0.0045) | LEAK-41, "a column that encodes it" | Known mechanism; same channel | Same as 1 |
+| 3. per-expo-bin post-hoc factor (+0.0041) | LEAK-41: the test weight used as an input after the model | Known mechanism; same channel | Same as 1 |
+
+Attacks that found nothing:
+- postcode frequency over all rows (LEAK-30): +0.0003, within noise, and a statistic a deployed model has;
+- copies (LEAK-16): a twin's claim gives 0.103 against 0.099, no entity leak;
+- row order: the claim rate by row decile is flat;
+- value formats: no class-dependent precision or rounding;
+- the training target revealing expo: no help at test time beyond exploit 1;
+- lookup in the public source: works for any public dataset, not ranked.
+
+Dropping short rows from training makes an honest model worse (0.60106 against 0.59913).
+
+**7. Consistency with precedent**
+
+The precedent checker found the definition consistent, and the register raises no flag on bemtpl97.
+- It is treated exactly like fremtpl2: rate target, exposure as the weight, mean_poisson_deviance, floor 1e-4, ForcedIIDFromTemporal, fit approximate.
+- It fits the pattern of the four sibling tables reversed the same day.
+- The three reversals each name the fact that sets them apart, so none needs a prompt:
+  - Myunghwan's call of 2026-10-23 (keep expo as a predictor);
+  - Myunghwan's call of 2026-10-26 (count target, no weighting; his Poisson deviance is kept up to a constant per fold);
+  - the 1e-6 floor of 2026-11-04 (MET-13 amended on purpose).
+- The per-contract exception (spanish_motor_insurance_2015_2018) does not apply: bemtpl97's term within 1997 varies and cannot be told apart from surrenders.
+
+Reflection prompts:
+- **Consistency check (AI, 2026-11-06):** australian_vehicle_insurance_2004_2005, frempl_french_motor_personal_line and pricing_game_2016_french_fleet report LEAK-41's L2 gain and weight-alone score, while bemtpl97 and fremtpl2 do not. A Must has no exceptions. (a) Add the numbers to both (change 1 here, and the same for fremtpl2); (b) amend LEAK-41's ceiling for deviances (X2) and then add them; (c) none, since a Must cannot be left unmet.
+- **Consistency check (AI, 2026-11-06):** bemtpl97's postcode stays nominal while lt_vehicle_loan_default_prediction's geographically ordered code went numeric (2026-11-05). The distinguishing fact: long/lat give each postcode's location, as in house_sales, melbourne and perth, which also went nominal. (a) Record the fact in the Dtypes bullet (change 4); (b) ship postcode as a number like lt_vehicle_loan; (c) amend CLEAN-14's code clause to name coordinates.
+- Optional naming point: fremtpl2's `claim_frequency` is the one outlier against the family's `*_per_year` target names. No rule covers it.
 
 </details>
 
 <details><summary>Claim audit</summary>
 
-**bemtpl97 claim audit (2026-11-04)**
+**Claim audit: bemtpl97 (exposure re-review, 2026-11-06, full tier)**
 
-**Focus question:** `focus.md` asks no extra question beyond the standard panel. Its pointers are settled below:
-- **(2)** I re-ran the deviance skill with the shipped scorer: dummy 0.551735, LightGBM-Poisson 0.527420, 9/9 wins.
-- **(4)** The definition's frame types `postcode` as category. The int32 is in the panel kit and clean room only.
-- **(5)** I opened the arXiv paper and the binning manuscript, and all quoted passages hold.
-- **(6)** The 2018 SAJ paper did not publish the rows. A 2019 public copy did (refutation R2).
+Read-only. Tests: the target, weight, splits, metric identity and edges; 9-fold LightGBM fits, weighted Poisson and
+weighted L2, with and without expo, 1/expo alone, at-quote and A/E tests; the raw file and the start-excess claim;
+copies; unweighted fits and expo predictability.
+Model used throughout: untuned LightGBM (400 trees, lr 0.03, 31 leaves, min_child_samples 200), shipped types, every fit
+weighted by expo unless stated, scored by an independent formula of the declared metric that equals the scorer on every
+fold (dummy 0.623246 both ways on fold 0/0).
 
-**Claims table**
+**Verdict**
+
+Today's change holds: the target, the weight, the metric identity with the source's Eq. 5 count deviance, the floor and
+the removal of expo from the features all survive tests that could have refuted them. One Must clause is not met in the
+text: LEAK-41's reporting clause (gain of the suspect column on the declared metric under an L2 fit and under the
+weighted actuarial fit, and the score of 1/weight alone) is not in the definition; the numbers it gives are on the old
+count scale with expo as a free feature. The decision itself does not change: both fits show expo gains, so it stays
+out. The other findings are about stale numbers and wording.
+
+**Claims table (today's changes first)**
 
 | # | Claim | Source | Test | Result | Evidence | Rule |
 |---|---|---|---|---|---|---|
-| 3, 34, 35, 36 | 163,212 distinct holders; id unique; expo in [1/365, 1]; counts 0-5; 144,936 zeros | dataset.py, warnings | Loaded raw through `dataset_io.from_definition(raw=True)` | holds | Counts 0:144,936, 1:16,539, 2:1,556, 3:162, 4:17, 5:2. Expo runs 0.00274 to 1; 77.33% full-year. | PROV-13 |
-| 17 | CASdatasets rda equals the treeML `mtpl_data.rds` | curation_comments | Downloaded the rds at 2ee8accc and compared all 18 columns | holds | 0 differing cells | PROV-8 |
-| 22, 55, D | The metric is the source's mean Poisson deviance of the count against e·f(x), unweighted | metric spec, record | Read the arXiv text (pdfminer) and treeML.Rmd L641-657 | holds | Sec. 3.2 Eq. 5: "f(xi) is replaced by ei·f(xi)". Algorithm 3 tunes on "loss function L". Sec. 4.5: "We evaluate the Poisson deviance … on the holdout test data". Rmd: `dev_poiss(nclaims, .x*expo)`. Fig. 10 range is 0.528-0.538, the same scale as ours (LightGBM 0.5274). Sum versus mean ranks models the same on a fixed fold. | MET-1, MET-3, MET-5, MET-11 |
-| D (MET-2) | Computable on every fold; no scoring column needed | task.json | `scorer()` with a train-mean dummy on all 9 folds; counted positives | holds | Dummy 0.5460-0.5557, mean 0.551735. 5,899-6,191 claimants per test fold. The target, classes and balance are the source's. | MET-2 |
-| 24 | Floor 1e-6; NaN and inf raise; one day at 3% is about 1e-4 | curation_comments | Called `_poisson_deviance` directly | holds | All-zero prediction scores 3.21 (26.56 on a toy case). NaN and inf raise ValueError. 0.03/365 = 8.2e-5. | MET-13 |
-| 54 vs 56 | The first CC on 2026-11-04 says the scorer floors "at machine epsilon" | record | Compared with the spec | inconsistent wording | The spec says 1e-6. The later CC supersedes the earlier one, but the record contradicts itself. | writing.md |
-| 18 | Binning manuscript Sec. 2: "registered at the start of the policy period…" | curation_comments | Opened the manuscript | holds | Verbatim match at manuscript line 154 (Sec. 2) | USE-3, LEAK-1 |
-| 20 | `expo` can record a later cancellation; it is kept "as the exposure the source puts into the expected count" | curation_comments, fit_reason | Annualised frequency by expo bin; LightGBM-Poisson ×9 folds with expo free, as an offset only, offset plus a full-year flag, and no expo | first half holds; second half **refuted** | See R1 | USE-3, LEAK-10, LEAK-2 |
-| 7 | "Longer coverage gives more opportunity for claims" | task_summary.known | Claimant share by expo bin | **partly refuted** | Claimant share by bin: 3.8%, 8.1%, 10.9%, 17.4% (0.75 to <1), 11.5% (full year). Part-year holders claim more per insured year. | USE-3 |
-| 21 | log(expo) Poisson scores 0.5470 against the mean's 0.5517 | curation_comments | PoissonRegressor ×9 folds | holds | 0.547002 vs 0.551735; slope on log(expo) is 0.453 | EV-1 |
-| 11, 27, 49 | The release "most likely" dropped the 19 policies with average above EUR 81,000 | fit_reason, record | Compared row by row with the 163,231-row 2019 copy | holds, now **certain**; the old "unverified" line is outdated | The release equals the 2019 file minus exactly its 19 rows with AVG > 81,000, in order. All 15 compared columns are identical; only the ids are renumbered. Manuscript p. 11: "For 19 records the average claim cost exceeds this threshold" (18,295 → 18,276). The 19 rows hold 21 claims (17×1, 2×2). Release max average is 80,499.6. | PROV-13, USE-5 |
-| 12, 29 | Year 2020 is "the earliest public copy found" | curation_comments, metadata | GitHub commit history; downloaded the copy | **refuted** | See R2 | PROV-8, PROV-9 |
-| 16 | The bibtex names the work that published the data | bibtex | Read the SAJ manuscript footnote; looked for the first public release | **refuted (minor)** | The SAJ paper shares no rows (footnote 1 only cites earlier samples). The first publication is the 2019 course repository, which is missing. | PROV-10 |
-| 25 | `coverage` ordered TPL < TPL+ < TPL++; `postcode` nominal | curation_comments | Definition frame dtypes; the arXiv appendix | holds | coverage is an ordered category, 95,124 / 45,984 / 22,104. The appendix defines TPL+ as limited and TPL++ as comprehensive damage; the 2019 file codes them TPL/PO/FO. postcode is a category with 583 levels and 583 unique lat/long pairs. The int32 in `participant_kit/` and `clean_room/` comes from the panel tooling, not the definition. | CLEAN-14 |
-| 26, 33 | 133 exact duplicate rows, 35 conflicting profiles, all kept | curation_comments | Recounted | holds | 133 / 35; 168 duplicate feature profiles | LEAK-16 |
-| 28, 8 | No dates exist, so the split is forced IID | splits | Read the header of the 2019 origin as well | holds | No date column in any copy (18 columns, plus TOWN in 2019) | SPLIT-8 |
-| 30, 31 | 3×3 CV, 108,808 train / 54,404 test; municipalities recur | splits_comment | Read `make_splits()` | holds (seed mechanics untested) | 9 splits with these sizes | SPLIT-1 |
-| 45, 48, 50 | Builder scores: dummy 0.551735, LightGBM 0.528534, 9/9 wins | record | Independent LightGBM-Poisson run | holds | Dummy exactly 0.551735. My LightGBM scores 0.527420 (4.41% skill), 9/9 wins. | TP-2, EV-8 |
-| 37, 39 | CASdatasets page facts; fremtpl2 is a different portfolio; no other Belgian record | record | Raw shape; grep of the records | holds | 18 columns. `eumtpl` lists bemtpl97 as a sibling, not a duplicate. A third derivative exists (maidrr `mtpl_be`, 163,210 rows) but has no record. | PROV-7 |
-| 13 | Licence GPL (>= 2), insurer terms unknown | metadata | none | untested | Not a verdict reason | EV-4 |
-| 53, 57 | The build reproduces | record | Tried to load the built container | untested | `01a18ad7…/dataset.parquet` is missing from the local warehouse, and the README says `build_stale: true` | EV-7 |
-
-**Implied claims.**
-- Every feature except `expo` is known at the start of the policy. This holds: `bm` is "registered at the start" (arXiv App. A), and long/lat follow from postcode.
-- Exact copies across the split: 0.1% (probe 5).
-- The target is the source's own count, not a proxy.
+| 1 | Target nclaims_per_year = nclaims/expo, 559 distinct values; _clean checks the count rebuilds; nclaims 0 to 5 | dataset.py _clean, curation_comments "Target", CHANGES.md | rebuild nclaims = y*expo on the container | holds | integers exactly, 0..5 = {144936, 16556, 1558, 162, 17, 2}; 559 distinct; max rate 182.5 (2 claims in 4 days) | MET-14 |
+| 2 | expo is no feature; it is the weight scoring column, the metric's weight input and sample_weight | dataset.py scoring_columns/sample_weight; CC 2026-11-06 | feature_columns(c), sample_weight(c), task_metadata | holds | features = 11 rating factors, expo absent; sample_weight 'expo'; MetricSpec inputs {'weight':'expo'} | LEAK-41, MET-15 |
+| 3 | Weighted rate deviance = source count deviance of expo x rate times n/sum(expo) of the scored rows, 1.123 to 1.125; so models rank as by the source's metric on every fold | metric.definition; curation_comments "Metric"; REVIEW issue 1 Resolved | compute both on all 9 test folds | holds | ratio = n/sum(expo) exactly on every fold, 1.12290 to 1.12542 (rounds to 1.123-1.125); algebraically exact, floor included (floor applies to the rate) | MET-11 (source, identity) |
+| 4 | The original is the mean Poisson deviance of observed claims against expected observed-period counts (treeML.Rmd L641-657) | metric.original/reference | read treeML.Rmd at the pinned commit | holds | dev_poiss(ytrue,yhat) = -2*mean(dpois(y,yhat,log)-dpois(y,y,log)), called as dev_poiss(mtpl_tst$nclaims, .x * mtpl_tst$expo), unweighted; the fit uses offset(log(expo)) (L148) | MET-1, MET-3 |
+| 5 | Floor 1e-4 claims per year, two orders below the smallest plausible rate; NaN or infinite raises | metric.params; curation_comments "Metric"; MET-13 | min prediction of the weighted Poisson fit on 9 folds; scorer with NaN/inf/-1/0 | holds | min predicted rate 0.022-0.045, 0.1% quantile 0.034-0.056: 1e-4 is 2.3-2.7 orders below; 0 of 489,693 test predictions below 1e-3; NaN and inf raise ValueError; 0 and -1 floor; score row-order invariant | MET-13 |
+| 6 | Library implementation tested (weighted equals sklearn sample_weight, hand case, equals count deviance) | MET-13 | read src/data_foundry/v2/metrics.py and tests/test_v2_metrics.py | holds | _poisson_deviance -> sklearn mean_poisson_deviance(sample_weight=w) on floored preds; tests at L531-559 cover weighted vs sklearn, by hand, rate-vs-count identity, floor | MET-13 |
+| 7 | "Each policyholder counts in proportion to that share, in training and scoring"; README: a model fitted without the weight targets another quantity | task_summary.predicted; README "Training weight" | fit the rate unweighted (repeat 0-2, fold 0) | holds | unweighted training mean 0.157 vs weighted 0.139 (1.13x); unweighted Poisson LGBM 0.6052 vs weighted 0.5973 on the same folds; unweighted L2 0.6161, worse than the weighted dummy on 1 of 3 folds (0.6221 vs 0.6171) | MET-15 |
+| 8 | The weighting is right for the decision (premium earned pro rata, not a per-contract decision) | task_summary.use_case; MET-15 | reading of MET-15 against the use case | holds | the actuary prices a yearly premium earned pro rata over insured time; the book's claims are a sum over exposure | MET-15 |
+| 9 | Probe 22: features predict expo at R2 0.03; expo as a feature gains +0.0040 (SD 0.0008); no feature's gain goes through expo above noise | CHANGES.md; probes/probe22*.txt | refit expo on the 11 features on full train folds; 9-fold gain of expo on the declared metric | holds in substance, numbers cap-dependent | expo R2 0.055, Spearman 0.24 on full folds (probe, 50k cap: 0.032 / 0.20); gain of expo +0.0047 (SD 0.0006, 9/9 folds) weighted Poisson, +0.0051 (SD 0.0007) weighted L2; probe: +0.0040 / +0.0035 (SD 0.0027); mediated gains all within noise in both probe runs | LEAK-41, USE-6 |
+| 10 | LEAK-41 reporting: "for each suspect column the definition reports its gain on the declared metric with an L2 fit on the shipped scale and with the weighted actuarial fit, and decides on the worse; it states the score of 1/weight alone" | leak_checks.md LEAK-41 (applies to the definition) | read curation_comments Exposure bullet and CC | REFUTED (not reported) | the bullet gives "0.0036 to 0.0041 ... over a proportional offset" and "0.0039", the CC "+0.0043": all Poisson count-target fits with expo free (old scale, old task); no L2 number, no 1/expo-alone score. On the declared metric: L2 +0.0051 (SD 0.0007), weighted Poisson +0.0047 (SD 0.0006): the worse is L2; 1/expo alone scores 0.6122 (Poisson) / 0.6126 (L2) against the training mean's 0.6193 and the honest model's 0.5979 (it recovers 0.0071 of the honest 0.0214) | LEAK-41 (Must) |
+| 11 | Part-year policies claim about 1.4 times the offset model's expected count | curation_comments Exposure | A/E of expo<1 rows under the shipped weighted Poisson fit, 9 folds | holds | A/E part-year 1.42 (1.31-1.48), full-year 0.93; expo<=0.25: 1.82 | LEAK-41 |
+| 12 | At the quote the free model was 0.0002 to 0.0011 worse than the offset model, never better; its claims 1.08 times its price | curation_comments Exposure; CC "never better at quotation" | free model (expo as feature) predicted at expo=1, scored on the declared metric, vs the honest model | holds in direction; range not reproduced | worse on 9/9 folds by 0.0003-0.0018 on the rate scale (0.00026-0.0016 on the count scale); claims/price 1.080 (1.058-1.102); honest model 1.000 | LEAK-41 |
+| 13 | Without the month-end and first-of-month background, excess starts claim 0.094 a year and full years 0.126, so true starts show no excess claims | curation_comments Exposure | day counts expo*365 on the raw file; spikes at first-of-month starts and month-end ends against the mean of the 6 neighbouring days; 31 and 334 (start and end alike) left out | holds | 885 excess start rows, 43.8 excess claims, 0.0939 claims/yr; full years 0.1260; month-end ends 4,413 excess rows at 0.166/yr (the surrender side) | LEAK-41, LEAK-7 |
+| 14 | No model trained or scored on rows selected by the realized weight | LEAK-41 (implied) | read _clean | holds | no row filter; all 163,231 rows in every split | LEAK-41 |
+| 15 | Floor change from 1e-6 on the count; low-cardinality acceptance went; container 01a18ad7 superseded | CHANGES.md, CC | README frontmatter, accepted_check_warnings | holds | only task_target_value_dominant accepted; README build_stale true | MET-13 |
+| 16 | Accepted warning: 144,936 zero rates are nonclaimants | accepted_check_warnings | count | holds | 144,936 rows with nclaims 0 | TP |
+| 17 | Row: one of 163,231 policyholders; distinct IDs; one TOWN per postcode | task_summary.row; _clean; notes | raw file | holds | 163,231 rows, ID unique, 583 postcodes, 1 TOWN each | PROV-8 |
+| 18 | The 19 policies with AVG above 81,000 hold 21 claims, all claimants (0.1% of claims) | notes "Selection by the release", CC 2026-11-05 | raw file | holds | 19 rows, 21 claims, all claimants, 0.104% of claims | USE-5, PROV-8 |
+| 19 | Raw order sorted by postcode, so no row-order window | notes "Split forced IID" | raw PC monotone | holds | PC monotone increasing over all 163,231 rows | SPLIT-8 |
+| 20 | Split: random 3x3 IID, train 108,820-108,821, test 54,410-54,411; test customers unseen | splits_comment | splits | holds | sizes as stated, no train/test overlap, each repeat covers all rows | SPLIT-1, SPLIT-8 |
+| 21 | "after the base class's content ordering and shuffle with seed 42" | splits_comment | not run | untested | house mechanism; not refutable from the container without re-implementing the base class | - |
+| 22 | Copies kept: "176 extra exact rows and 50 rows with a conflicting profile" (no sex) | curation_comments "Copies kept" | recount on the old basis (expo a feature) and the shipped basis | REFUTED (stale and miscounted) | old basis: 176 extra exact rows holds; 50 is the number of conflicting PROFILES (100 rows). Shipped basis (expo no feature): 397 extra exact rows, 88 conflicting profiles (177 rows), 485 extra feature-profile copies; bundle info shows 397 and 88; probe 5: 0.4% of test rows have a train copy, 0.1% with another label | LEAK-16, LEAK-18, writing |
+| 23 | Exposure gain "+0.0043, 17% of the skill" (CC 2026-11-06, leak_checks case row) vs "0.0036 to 0.0041 ... 0.0039 on the 163,231 rows" (bullet) | CC vs bullet | compare scales | inconsistent | 0.0039 x 1.124 = 0.0044: the CC number appears to be on the rate scale and the bullet's on the count scale, neither says so; mine on the declared metric: 0.0047 (18% of the free model's gain over the dummy) | writing, EV-2 |
+| 24 | Skill: "the model scores 0.5279 against the training mean's 0.5520 (4.4%)" | CC 2026-11-05 | honest weighted Poisson fit on the shipped task | superseded, not restated | today 0.5979 vs 0.6193 on the declared metric: 3.46% (3.27-3.68%), 9/9 folds; without postcode 0.5982. The 4.4% was count scale with expo free; no current skill number is in the definition | TP-2, writing |
+| 25 | Task probe flag no_signal (TP-1, TP-2) | probes/task.txt | read the probe JSON | flag is a reading artifact; signal real | the probe's "skill" is the RMSE skill (= R2 0.015); on the declared metric probe LightGBM scores 0.6004 vs dummy 0.6199 (3.1%), and the weighted Poisson fit 3.5%, 9/9. task.txt also prints "best family lightgbm" and "best family linear" (declared-metric best vs RMSE best). Under EV-3 the benign reading holds; it needs one line in REVIEW.md | TP-2, EV-3 |
+| 26 | Use case: EU insurer today; sex barred since 21 December 2012 (C-236/09) | task_summary | settled on 2026-11-05; not re-run | untested today | not reopened by today's change | USE-1 |
+| 27 | Prediction point: rating factors registered at policy start (binning manuscript Sec. 2) | notes | settled; every remaining feature is a rating factor | holds (settled) | expo, the only period value, is gone; probe 22 finds no feature that carries it above noise | LEAK-10, LEAK-41 |
+| 28 | The source's paper (arXiv:1904.10890v3 Eq. 5, Sec. 4.1 quote) | notes | fetch the PDF | untested here | the PDF did not render to text in this sandbox (no pdftotext/pypdf); the code check (claim 4) and the 2026-11-04 panel's reading support it | MET-1, EV-2 |
+| 29 | Licence: no licence in the 2019 repo, GPL (>= 2) in CASdatasets | license | not run | untested | unchanged today | PROV |
+| 30 | REVIEW.md outcome block (floor 1e-6, LEAK-10 triggered, 4.2-4.4% skill) | REVIEW.md top | compare with today | stale | describes the pre-2026-11-06 state; the new panel block replaces it | writing |
+| 31 | Record priority 3 rests on "risk: issue 1, a likely LEAK-10 leak through expo" | record Assessment 2026-11-04 | compare | stale | the risk is resolved today; the priority factors may be revisited | Weigh |
 
 **Refuted and untested, ranked (validity first, Must first)**
 
-**R1. P4, USE-3 / LEAK-10 (Must, graded by severity). Claim 20, second half, and claim 7.**
-- **What the source does:** it puts exposure in proportionally, with the slope fixed at 1. The arXiv paper replaces f(x) by e·f(x), the treeML GBM uses `offset(log(expo))`, and the binning GAM (manuscript line 403) makes the count "proportional to the exposure".
-- **What the benchmark does:** it ships `expo` as a free feature.
-- **What the data shows:**
-  - The fitted slope on log(expo) is 0.45, not 1.
-  - Annualised frequency is 0.292 for expo ≤ 0.25, 0.240 for 0.25-0.5, 0.198 for 0.5-0.75, 0.233 for 0.75 to <1, and 0.126 for full-year policies.
-- **What the free use is worth:**
+R1. LEAK-41 reporting clause not met (claim 10; P4, Must). Validity of the decision is NOT affected: under both fits
+    expo as a feature gains (L2 +0.0051, weighted Poisson +0.0047 on the declared metric, 9/9 folds), so "decide on the
+    worse" also keeps it out. What is missing is the stated evidence, on the declared metric's scale: the L2 gain, the
+    actuarial gain, and the 1/weight-alone score.
+    What it changes: the notes, not the data. Mildest remedy: one sentence in the Exposure bullet, e.g. "On the declared
+    metric (9 shipped folds, untuned LightGBM, weighted by expo): expo as a feature gains +0.0047 (SD 0.0006) under the
+    weighted Poisson fit and +0.0051 (SD 0.0007) under a weighted L2 fit (probe 22, 50,000-row cap: +0.0040 and
+    +0.0035); 1/expo alone scores 0.6122 against the training mean's 0.6193 and the honest model's 0.5979." Also mark
+    the 0.0036-0.0041 / 0.0039 numbers as count-scale fits with expo free.
 
-  | LightGBM variant (9 folds) | Mean deviance | Skill over dummy |
-  |---|---|---|
-  | expo as a free feature | 0.527420 | 4.41% |
-  | log(expo) as offset only | 0.531395 | 3.69% |
-  | no expo at all | 0.536896 | 2.69% |
-  | offset plus a full-year flag | 0.527505 | 4.39% |
+R2. Stale copy counts (claim 22; P4/P7, LEAK-16/18, Should/quality). The "Copies kept" bullet gives counts for the old
+    feature set (expo a feature), and "50 rows" are 50 profiles (100 rows). With expo out: 397 extra exact rows,
+    88 conflicting profiles (177 rows); probe 5: 0.4% of test rows have a train copy. The keep stays right (coarse
+    profiles, distinct IDs). Remedy: update the numbers and say "profiles".
 
-  - Using expo freely gains 0.0040 deviance over the offset, about 16% of the model's skill.
-  - The full-year flag alone recovers almost all of that gain.
-- **Why it matters:** this non-proportional excess is the channel a cancellation after a claim would leak through. Without dates I cannot separate surrender after a claim (post-outcome) from mid-year starters (known at quotation).
-- **What it changes:** the "kept on purpose" note understates the size, and its justification ("the exposure the source puts into the expected count") is inaccurate.
-- **Mildest remedy:** keep the curator's decision but rewrite the note with these numbers. The text "longer coverage gives more opportunity" should say that claims are proportional to exposure within a policy, while part-year holders claim at 1.6-2.3× the annual rate.
-- **Stronger option, for the curator:** ship `expo` as a scoring-column offset instead of a feature. This is a weighing call.
+R3. Mixed scales for the exposure gain (claim 23; writing, EV-2). The CC and the leak_checks case row say +0.0043,
+    the bullet 0.0036-0.0041 and 0.0039, without a scale. Remedy: name the scale on each number, or replace them with
+    the declared-metric numbers of R1.
 
-**R2. P5, PROV-8 / PROV-9 / PROV-10 (Must). Claims 12, 29 and 16.**
-- The full portfolio (163,231 rows, 18,295 claimants, 20,236 claims, mean 0.1239715) has been public since 2019-09-26. It sits at `github.com/katrienantonio/PE-pricing-analytics`, commit 0b279c43, file `data/P&Cdata.txt`, in KU Leuven course material that ships the SAJ 2018 PDF.
-- The treeML release (2020-04-30) and CASdatasets (added 2024-05-29, c86358f9) are both its large-claim-filtered cut.
-- **What it changes:** the year should be 2019. The citation and source note should name this first public release. The download can stay as it is, since PROV-8 lets the download copy differ from the source.
-- **Mildest remedy:** set `year = "2019"`, add the course repository to the notes and the bibtex, and keep the treeML entry as the release that was shipped.
+R4. No current skill number (claim 24) and the unread no_signal flag (claim 25; P6, TP-2, EV-3). The signal is real on
+    the declared metric: 3.46% deviance skill (3.27-3.68%), 9/9 folds; the probe's flag reads RMSE skill (R2 0.015).
+    Remedy: one REVIEW.md line with the reading; optionally replace the stale 0.5279/0.5520 in the notes with
+    0.5979/0.6193.
 
-**R3. P5 / P3, USE-5 (Weigh). Not a refutation; claims 11 and 27 are now proven.**
-- The 19 policies removed for severity reasons hold real frequency rows: all are claimants, 21 claims in total, 0.1% of claims. The removal conditions on the outcome.
-- The unselected origin exists (R2), so the selection is reversible.
-- **What it changes:** "most likely" becomes a fact. The record's 2026-10-26 line ("removal of whole policies unverified") is outdated.
-- **Mildest remedy:** reword the note. Shipping all 163,231 rows from the 2019 copy is a curator call; it would drop the selection limit but move away from the release the metric paper used.
+R5. Probe 22 numbers depend on the cap (claim 9; minor). Full-fold expo R2 is 0.055 (Spearman 0.24), not 0.03. It does
+    not change the call (rating factors known at the quote stay, USE-6). Remedy: quote the full-fold value or name
+    the cap.
 
-**R4. Procedure (writing.md).** The first CC of 2026-11-04 says "machine epsilon", while the spec and the later CC say 1e-6. Mildest remedy: leave both, since the newer CC wins, and the next record edit notes the supersession.
+R6. Stale review text (claims 30, 31; writing, Weigh). The REVIEW.md outcome block and the record's priority line
+    describe the pre-change state. Remedy: the new panel block supersedes the outcome; the next assessment may revisit
+    the priority (the "risk -" factor is resolved).
 
-**Untested:**
-- **Build reproduction (claims 53, 57).** The container files are not in the local warehouse and the build is stale, so the shipped dtypes cannot be compared. This changes nothing until the curator rebuilds.
-- **Licence (claim 13).** Never a verdict reason (EV-4).
-- **Split-seed mechanics (claim 30).**
-- **Deprez et al. 2026 (claim 39).** External and not material.
+Untested: claim 21 (seed/shuffle mechanism, house code), claim 26 (sex ruling, settled 2026-11-05, not reopened),
+claim 28 (the arXiv PDF text did not render here; the treeML code confirms the metric), claim 29 (licence), the
+rebuild (curator only; README build is stale by design).
 
-**Judgment record:**
-- **Verdict:** ship after note and metadata changes.
-- **Validity:** USE-3 holds and LEAK-10 is a documented potential leak whose stated size and justification are understated (R1). PROV-9 and PROV-10 are triggered and fixable in metadata (R2). SPLIT-8 holds.
-- **Value:** MET-1 to MET-3 and MET-5 hold, the metric is the source's, and TP-2 shows real signal (4.4% deviance skill, 9/9 wins).
-- **Quality:** CLEAN-14 holds.
-
-Sources:
-- [arXiv 1904.10890v3](https://arxiv.org/abs/1904.10890v3)
-- [treeML.Rmd L641-657](https://github.com/henckr/treeML/blob/2ee8accc6df49168bd865cdf49efa1b7a5c8f4de/treeML.Rmd#L641-L657)
-- [Binning manuscript](https://roelverbelen.netlify.app/publication/binning/binning.pdf)
-- [katrienantonio/PE-pricing-analytics 2019 page](https://katrienantonio.github.io/PE-pricing-analytics/background/2019_04_APC_Pricing_analytics_in_R.html)
-- [maidrr mtpl_be](https://rdrr.io/github/henckr/maidrr/man/mtpl_be.html)
+**Metric summary (MET-1, MET-11, MET-13, MET-15):** holds. The source scores the unweighted mean Poisson deviance of
+nclaims against frequency x expo (treeML.Rmd L641-657, fit with offset(log(expo)) at L148). The shipped weighted rate
+deviance is that score times n/sum(expo) of each fold (1.1229-1.1254), an exact identity, so models rank the same on
+every fold (origin source). Computable on every fold: 54,410-54,411 test rows, 5,986-6,169 claimants and
+6,647-6,822 claims per fold; dummy scores 0.6142-0.6256. Floor 1e-4 is never reached by honest fits (min 0.022). NaN
+and inf raise. sample_weight equals the metric's weight input (MET-15).
 
 </details>
 
 <details><summary>Column audit</summary>
 
-Focus question: `focus.md` adds no question beyond the standard panel. On its pointers: postcode is not a defect in what ships (#2 below), and I re-ran the Poisson deviance (#1). That re-run found a measured case for the `expo` timing concern. No column needs a new drop or recode for cleaning, but `expo` goes back to the curator with new numbers.
+**Column audit: bemtpl97 (exposure re-review, 2026-11-06, tier full)**
 
-**Column table (cleaned frame: 163,212 rows, 13 features plus the target)**
+Verdict: no leak and no cleaning problem in any column. The change of 2026-11-06 is right column by column. expo has
+left the features and is only the weight. The target is the rate and is not transformed (CLEAN-16). nclaims is out of
+the frame. Every feature that predicts expo is known at the quote, so it stays (LEAK-41, USE-6). There is one open
+question for the curator, low rank (P7, CLEAN-14): the 583-level nominal postcode, whose digits carry geography.
 
-Meanings are from the CASdatasets help page (fetched). Prediction point: the quote at policy start.
+Read: the dataset's dataset.py and REVIEW.md; principles.md, leak_checks.md (LEAK-10, LEAK-41, probe 22),
+cleaning_features.md (CLEAN-14, CLEAN-16) and use_case.md (USE-6, USE-7); the CASdatasets codebook
+man/beMTPL97.Rd; the probe outputs task.txt, leak.txt, probe22.txt and probe22_l2.txt.
 
-| column | meaning | known at prediction? | dtype and cleaning | verdict | rule |
+Frame: loaded with dataset_io.from_definition (rebuilt from the definition), 163,231 rows, 11 features, the target,
+and expo as the weight scoring column (it is not in df; it is ProbeInput.weights). No missing values in any column.
+
+Prediction point: the quote at policy start. Source: "The risk factors are registered at the start of the policy
+period and remain constant during this period" (binning manuscript, Sec. 2).
+
+**Column table**
+
+| Column | Meaning (codebook) | Known at prediction? | Dtype and cleaning | Verdict | Rule |
 |---|---|---|---|---|---|
-| nclaims (target) | "claim number" | target | Int32, 0-5 (144,936 / 16,539 / 1,556 / 162 / 17 / 2), no missing | fine | CLEAN-15/16 (count kept raw by curator) |
-| expo | "exposure": share of 1997 insured | **partly no**: its length can come from a cancellation during the year | float64, 365 values (days/365), 1/365 to 1, 77.3% equal 1 | **question for curator: measured leak mechanism** (#1) | LEAK-10, LEAK-38, LEAK-7 |
-| coverage | TPL / TPL + limited material damage / TPL + comprehensive damage | yes, set at the start | ordered TPL<TPL+<TPL++; this matches the codebook (the coverage adds up). Claims per exposure-year 0.146 / 0.128 / 0.135 (not monotone, which does not matter: the order comes from meaning) | fine | CLEAN-14 |
-| ageph | policyholder age | yes | Int32, 18-95, no impossible values | fine | CLEAN-14 |
-| sex | female/male | yes | category, 2 levels | fine (kept by curator for research on a 1997 tariff) | SEL-1 weigh |
-| bm | level on the Belgian bonus-malus scale, 0-22, higher is worse | yes (level at the start) | Int32, all 23 levels present; a scale with no words per level, so numeric is right | fine | CLEAN-14 |
-| power | horsepower in kW | yes | Int32, 10-243; 192 rows under 20 kW are unusual (microcars), not impossible | fine | CLEAN-11 |
-| agec | vehicle age in years | yes | Int32, 0-48 | fine | CLEAN-14 |
-| fuel | gasoline/diesel | yes | category | fine | |
-| use | private/work | yes | category | fine | |
-| fleet | "1 or 0", vehicle is part of a fleet | yes | category '0'/'1' | fine (the flag form CLEAN-12's table asks for) | CLEAN-12/14 |
-| postcode | policyholder's postal code | yes | category, 583 levels (1000-9990). The dtype probe flags it `numeric_levels`; nominal is right. It maps one-to-one onto (lat, long) pairs, 583 to 583 with 0 conflicts | fine (#2 note) | CLEAN-14, CLEAN-5 weigh |
-| long | longitude of the municipality centre | yes | float64, 583 values | fine | |
-| lat | latitude of the municipality centre | yes | float64, 583 values | fine | |
-| id (dropped) | policy number | n/a | raw probe R2 -0.0006 | dropping is right | CLEAN-3 |
-| claim, amount, average (dropped) | outcomes of the same period | no | raw probe R2 about 0.90 each | dropping is right | LEAK-10 |
+| nclaims_per_year (target) | claims of 1997 divided by expo (counts 0-5: 144,936 / 16,556 / 1,558 / 162 / 17 / 2) | the outcome | float64, 559 values, 0 to 182.5. The weighted mean 0.139 matches the portfolio frequency. 79 rows above 10 a year carry 87 claims but only 5.6 of the total weight, so the weight keeps them in proportion. Not transformed, as CLEAN-16 asks for a deviance-scored target. _clean checks that rate x expo gives back the count | fine | MET-14, CLEAN-16 |
+| expo (weight scoring column) | share of the year at risk; values are whole days from 1/365 to 1 (expo*365 is an integer on every row). 22.7% of rows are part-year, with spikes at month ends (31, 90, 120, 151, 181, 273, 334 days) | no: realized, cut short by a surrender | the weight of the metric and of training. Not a feature: absent from the probe frame | fine as the weight; never an input | LEAK-41, MET-15 |
+| coverage | TPL / TPL+ (plus limited material damage) / TPL++ (plus comprehensive) | yes, contract at the start | ordered category TPL < TPL+ < TPL++, the codebook's nesting. The raw PO/FO codes are decoded correctly (raw row 2: PO -> TPL+) | fine | CLEAN-14, CLEAN-12 |
+| ageph | policyholder age | yes | int64, 18-95, numeric | fine | CLEAN-14 |
+| bm | level 0-22 on the former Belgian bonus-malus scale; higher means a worse claim history | yes. Checked on the data: bm 0 has 5,215 claimants (frequency 0.101 a year), which a level updated after the year's claims would not allow. So it is the level at the start | int64, numeric. No words per level, so it stays a number (CLEAN-14 scale rule). 2 rows have age 18-19 at bm 0 or 1 (a new driver enters at 11): implausible but not impossible (a transferred level), so left alone | fine | LEAK-10, CLEAN-14 |
+| power | vehicle power in kW | yes | int64, 10-243 | fine | CLEAN-14 |
+| agec | vehicle age in years | yes | int64, 0-48. agec 0 has only 195 rows (mostly full year), while agec 1 has 7,557 rows, 34% of them part-year. This looks like age counted from the registration year (the source does not say). It is a vehicle attribute at the start either way. A car older than the driver's years since 18 occurs on 9,126 rows (used cars), which is not impossible | fine | CLEAN-14 |
+| fuel | gasoline / diesel | yes | nominal category | fine | CLEAN-14 |
+| use | private / work | yes | nominal category | fine | CLEAN-14 |
+| fleet | vehicle is part of a fleet (1 yes, 0 no) | yes | category "0"/"1", decoded from the 2019 copy's N/Y to the release's codes. A 0/1 flag is a category (CLEAN-14). N/Y would read better, but the release's codes are a documented choice | fine | CLEAN-14 |
+| postcode | policyholder's postcode (municipality) | yes | nominal category, 583 levels, 1000-9990. The dtype probe flags it numeric_levels (answered below). TOWN, the name with one value per postcode, is dropped as redundant | question for the curator (low) | CLEAN-14 |
+| long | longitude of the municipality centre | yes | float64. One value per postcode in both directions (583 values), real coordinates | fine (redundant with postcode, not a leak) | CLEAN-14 |
+| lat | latitude of the municipality centre | yes | float64, as long | fine | CLEAN-14 |
+| Dropped: ID | policy number, equal to the raw row position; the file is sorted by postcode | - | dropped | right | CLEAN-3 |
+| Dropped: AMOUNT, AVG | claim amount and average claim, from the same period | no (outcome) | dropped | right | LEAK-10 |
+| Dropped: NCLAIMS -> nclaims | the count, part of the target | no | leaves the frame after the division | right | LEAK-10, MET-14 |
+| Dropped: SEX | policyholder sex | yes, but barred for an EU insurer today | dropped by the CC of 2026-11-05 (Tensions row) | settled, not reopened | USE-6 tension |
+| Dropped: TOWN | municipality name | yes | dropped, one value per postcode | right | CLEAN-3 |
 
-I re-ran the dtype probe. It flags 1 of 13 columns (postcode); answered above. No proxy missing codes (0 NaN in every column), no impossible values, no reversed encodings.
+**Weight proxy (LEAK-41, probe 22): each feature that predicts expo, judged by its timing**
 
-**Problems, ranked**
+- From the features, expo is predicted at R^2 0.032 and Spearman 0.20. Gain shares: postcode 57%, bm 12%, ageph 10%,
+  agec 8%, power 6%. Under the Poisson fit no feature's gain goes through expo above noise: bm 15% and power 22% of
+  their gains, each inside one SD. Under the L2 fit every weight-mediated gain is within its SD, and some are
+  negative. The leak reference: expo as a feature gains +0.0040 (SD 0.0008) on the Poisson fit and +0.0035 (SD 0.0027)
+  on L2.
+- My own tables show where the link comes from: risk selection on attributes fixed at the start.
+  - bm 11, the entry level, is 10.8% of part-year rows against 3.4% of full-year rows (new business that starts
+    mid-year). Higher bm levels have more part-year rows.
+  - agec 1 is 34% part-year (newly bought vehicles).
+  - Young drivers are more often part-year: 33.7% at 18-20 against 12.7% over 70.
+  - fleet 1 is 9.6% part-year against 23.1%.
+  - Brussels (1xxx postcodes) has a mean expo of 0.845 against 0.89-0.91 elsewhere. Postcode alone predicts expo at a
+    cross-fitted R^2 of 0.014 (shrunk means). Its 57% gain share is mostly a high-cardinality effect.
+- Timing: all five are registered at the start of the policy period (the source), and bm is shown above to be the
+  level at the start. None is set or cut after the quote, and none encodes expo (no length, earned amount, group sum
+  of exposures, or precision that marks a cut). Under LEAK-41 and USE-6 they all stay. No feature goes.
 
-**1. P4, `expo`: the timing concern is now measured, not just suspected (LEAK-10 Must against the kept-on-purpose note under LEAK-38; question for the curator).**
+**Dtype probe: one column of 11 flagged**
 
-The definition's evidence is "log(expo) alone 0.5470 vs mean 0.5517". That only measures the legitimate part, where more insured time means more claims. It does not test cancellation. I tested it conditionally. LightGBM Poisson on the 12 other features, with log(expo) as an offset (claims proportional to exposure, as in the source's models), on the 3 folds of repeat 0:
+- postcode (category, 583 values, 1000-9990): numeric_levels.
+  - Answer: postcode is a code, so a category is the default (CLEAN-14, last bullet). This follows the settled
+    precedents (house_sales zipcode, melbourne_housing_market Postcode, perth_house_prices POSTCODE; the earlier panel
+    settled it nominal).
+  - The clause "unless its digits carry meaning a model can use (zip code prefixes, whose nearby values are nearby
+    places)" applies in part. Belgian postcodes are hierarchical by province (1xxx Brussels and Brabant, 2xxx Antwerp,
+    ... 9xxx East Flanders), and lt_vehicle_loan_default_prediction (2026-11-05) shipped a geography-ordered code as a
+    number.
+  - What sets this case apart: long and lat already give each municipality's exact location (one value per postcode),
+    so a number adds no place information that is not already there. I would keep the category and leave the call to
+    the curator.
+  - For context only (types are decided from meaning, not from model runs; EV-4): with untuned LightGBM-Poisson,
+    weighted, on the first 6 shipped splits x 2 seeds:
+    - postcode as a category: 0.60851;
+    - as a number: 0.59770 (-0.0108, better 12/12);
+    - postcode dropped: 0.59791;
+    - all geography dropped: 0.60174;
+    - dummy: 0.61933.
+    The 583-level category overfits an untuned model and is worse than no geography at all. Probe 22 shows the same
+    (postcode gain -0.017 on the Poisson fit, -0.037 on L2) and so does the leak probe (all features -0.021, below a
+    depth-2 tree at +0.012). This is a model-handling matter, not a cleaning error.
+- No column of unknown meaning, no proxy missing codes, no reversed scale. coverage is the only ordinal, and its order
+  matches the codebook.
 
-- Observed/expected claims by exposure band, `(0,.25]`, `(.25,.5]`, `(.5,.75]`, `(.75,.999]`, full year: **1.77-1.86, 1.38-1.61, 1.17-1.34, 1.43-1.47, 0.92-0.93**. Policies with part of a year insured claim about 40% more than their covariates and exposure predict.
-- In the raw counts, policies with 0.75-0.999 years insured have a claimant share of **17.4%**, against **11.5%** for full-year policies, despite less time at risk.
-- New business (a mid-year start) does not explain it. Proxies for new business have the same excess as the rest. For part-year rows, bm=11 (the entry level) gives O/E 1.39 against 1.41 for the others. bm=0 (long-standing policyholders, so no new start) gives 1.29. Cars up to 1 year old give 1.21 against 1.43. This fits contracts that ended after a claim (a total loss, or a cancellation by the insurer or the policyholder).
-- Mean Poisson deviance on the same folds:
+**Problems ranked (principles.md: P1-P5 validity, then P6 value, then P7 quality)**
 
-| setup | deviance |
-|---|---|
-| training-mean dummy | 0.5505 / 0.5506 / 0.5541 |
-| no expo | 0.5361 / 0.5338 / 0.5388 |
-| expo as offset only | 0.5313 / 0.5289 / 0.5333 |
-| expo as a free feature (the shipped setup) | 0.5278 / 0.5248 / 0.5292 |
-
-- The gain beyond proportional exposure is **0.0036-0.0041**, about **16-18% of the model's skill** over the dummy (0.0227-0.0249). This gain is where the cancellation signal lives.
-- LEAK-38 says that once a conditional test measures the mechanism, LEAK-10 applies. Here it is circumstantial, because the policies carry no dates, and the proportional part of `expo` is legitimate. So this is the curator's call, not an automatic drop.
-
-Remedies, mildest first:
-- (a) Keep `expo`, but replace the note's numbers with these: about 16-18% of the skill from non-proportional exposure, O/E about 1.4.
-- (b) Recommended, and closer to the source: make `expo` a scoring column, not a feature. The model predicts an annual frequency, and the scorer computes the deviance of nclaims against expo × prediction. This is exactly the source's Eq. 5 and treeML.Rmd L641-657 (frequency times expo). The source's models only ever use exposure as an offset, so they cannot learn the 1.4× excess. The free feature can. The target stays the original nclaims and the metric is unchanged. It needs a library metric that takes an exposure scoring column. It also reverses two things the definition says now: "neither a weight nor a scoring column", and Myunghwan's no-offset choice of 2026-10-23.
-- (c) Drop `expo`: this loses the legitimate exposure scaling.
-
-freMTPL2 carries the same note ("about a fifth of the gain"), so treat the two alike (principles.md consistency rule 2).
-
-**2. P7, postcode in the panel kit (no defect in the shipped data; focus pointer 4).** The definition types it as a category; it has integer categories. A plain parquet round trip turns that into an integer (I reproduced this: Categorical[int] read back as int64). That is why `clean_room/data.parquet` and `participant_kit/data.parquet` hold int32. The container restores categories from `categories.json` (`src/data_foundry/curation_container.py:363-388`), so the shipped data stays categorical. Two effects remain:
-- A reader without Data Foundry gets numbers. Optional remedy: make the categories strings.
-- The kit's blind reviewer and task gamer saw postcode as numeric. This matters little, because it is one-to-one with (lat, long), and under CLEAN-14 the digits of a postcode carry meaning anyway (Belgian postcodes are numbered by area, so close codes are close places).
-
-**3. P7, minor and no action needed.**
-- `power` has 192 rows below 20 kW: unusual, so it stays (CLEAN-11).
-- `postcode` repeats the information in long/lat. It is not an exact copy, so it stays (CLEAN-5 weigh). The source uses both.
-
-No other column is wrong for the prediction point. bm, coverage, use and fleet are "registered at the start of the policy period" (the binning manuscript, p. 4, as quoted in the definition; I did not open the page myself).
-
-**What I did not verify**
-- I ran only repeat 0, so 3 of the 9 folds.
-- The arXiv Eq. 5 and the binning manuscript's p. 4 and p. 11 quotes are unopened.
-- The built container (`01a18ad7…`) is not in the local warehouse, so the categorical restore of postcode is confirmed from the code, not from the built file.
+P4 (LEAK-41, LEAK-10, Must):
+- None open. The only column set after the quote, expo, is now the weight and nothing else. Its leak was +0.0040 (SD
+  0.0008), 16-18% of the skill earlier. No feature encodes it: R^2 0.03, and no gain through the weight above noise.
+- bm was checked to be the level at the start (5,215 claimants at bm 0).
+- No missingness caused by the outcome (no missing values), no window that ends at the outcome, no identifier left.
+P6: none from the columns. The target is the rate, weighted, and the deviance on it equals the source's count deviance
+times n/sum(expo).
+P7 (CLEAN-14, Should; question for the curator, low):
+- postcode stays a nominal category of 583 levels, although its digits are hierarchical by province.
+- Mildest remedy: keep it as it is (precedent; long and lat carry the location). If you want the CLEAN-14 digit clause
+  applied as for lt_vehicle_loan_default_prediction, ship it as a number. Do not decide it from the model numbers
+  above.
+- This is not reopened by today's change. It is listed only because probe 22 ranks postcode first as a predictor of
+  expo, and that ranking comes from its cardinality, not from a timing problem.
+Notes, no action:
+- fleet ships as "0"/"1" rather than N/Y. It is a release convention and lossless.
+- 2 rows have age 18-19 at bm 0 or 1, and agec 0 is rare (195 rows). These are plausible source facts and not
+  impossible values (CLEAN-10 does not apply).
 
 </details>
 
 <details><summary>Split audit</summary>
 
-**Split audit for `bemtpl97`. Verdict: right, with notes.**
+**Split audit: bemtpl97 (exposure re-review, 2026-11-06, tier full)**
 
-**The question in `focus.md`:** it asks nothing beyond the standard panel. Pointer (1) says no group probes ran because the task is IID, so I ran the grouped alternatives myself. They do not change the regime. The IID split with the `ForcedIIDFromTemporal` tag is the right choice, it matches freMTPL2 (SPLIT-8, Lennart 2026-11-04), and no re-split, gap or filter is needed.
+Verdict: RIGHT WITH NOTES. The IID split (ForcedIIDFromTemporal, 3 x 3 folds) still mirrors the application under the
+rate target with expo as the weight. No re-split, gap or filter is needed. The notes below are disclosures or cross-references.
 
-**Regime against the use case (P3/P4, SPLIT-1, SPLIT-8, USE-10/11)**
-- The use case is an insurer that fits on past policy years and prices the next year, so the task is temporal by nature. The release is one undated year (1997), so no window can be built. Under SPLIT-8 it ships IID with the tag, the fit is `approximate`, and the notes say what a dated year would change and that it should be recovered. That meets SPLIT-8's documentation requirement.
-- The entity question: there is one row per policyholder (`id` is unique, 163,212 rows) and one year. Claim history enters through `bm` (bonus-malus) as a feature, not as an earlier row. So holding out random policyholders is the correct entity regime (USE-11 pattern). The `splits_comment` claim "test customers are unseen, while municipalities may recur" is accurate.
-- **The raw order is not time (SPLIT-22), checked.** `id` equals the raw position plus 1 on every row, and `postcode` never decreases in raw order (0 violations). The file is sorted by municipality. Within a municipality the order does not follow the outcome: the mean within-postcode Spearman correlation with position is -0.008 for `nclaims` and +0.006 for `expo`. Over within-postcode quintiles, the claim share runs 0.113, 0.117, 0.111, 0.109, 0.110. The only notable within-postcode trend is `power` at -0.15, which looks like a secondary sort key. So, unlike freMTPL2 (whose blocks stood in for years), no proxy window exists and the SPLIT-8 cost cannot be measured. The definition's statement of this is correct.
-- Temporal items (time column meaning, windows, gap against label delay, unmatured training labels, season-shaped window): none apply because there is no time column. One caveat that cannot be measured: claims from late in 1997 may have been reported after the extract (a reporting delay). Without dates this cannot be tested. It belongs to the same "recover a dated release" note, not to a remedy.
+Inputs: definition rebuilt from the raw 2019 copy through dataset_io.from_definition (163,231 rows, 11 features, expo
+as the weight, regime iid). The splits are the shipped ones: 9 folds, 108,820-108,821 train / 54,410-54,411 test.
+Every model is fitted with sample_weight=expo on nclaims_per_year. Every score is the declared metric: weighted mean Poisson
+deviance, floor 1e-4. My dummy, 0.61933, matches the task probe's 0.6199 on 5 of 9 splits.
 
-**Alternative splits I ran.** Model: LightGBM Poisson, 400 trees, learning rate 0.03, 31 leaves, `min_child_samples=200`, untuned. Each split has 9 folds. Scored by the shipped metric (mean Poisson deviance, predictions floored at 1e-6). Skill is 1 minus model deviance over the train-mean dummy's deviance.
+**What today's change reopens, and what it does not**
 
-| split | features | model deviance | dummy deviance | skill (min to max) | wins |
-|---|---|---|---|---|---|
-| shipped IID 3x3 | all 13 | 0.53472 | 0.55173 | 0.0308 (0.0273 to 0.0343) | 9/9 |
-| grouped by `postcode`, 3x3 | all 13 | 0.53119 | 0.55174 | 0.0372 (0.0366 to 0.0383) | 9/9 |
-| shipped IID 3x3 | without `postcode` | 0.52678 | 0.55173 | 0.0452 (0.0416 to 0.0485) | 9/9 |
-| grouped by `postcode`, 3x3 | without `postcode` | 0.52787 | 0.55174 | 0.0432 (0.0403 to 0.0475) | 9/9 |
-| leave out first postcode digit (9 regions) | without `postcode` | 0.52562 | 0.54715 | 0.0389 (0.0311 to 0.0569) | 9/9 |
+- Regime (P3/P4, SPLIT-1, SPLIT-8): unchanged. The data is one undated policy year and the raw order is sorted by
+  postcode, so no window can be built and the cost cannot be measured. The splits.md SPLIT-8 row for bemtpl97 still holds. The new target
+  and weight do not create a time index.
+- Time on risk cut at the year's edges (brief: SPLIT-9, LEAK-41):
+  * Every row's expo is cut at 1 Jan and 31 Dec 1997. expo x 365 is a whole number on every row. 77.3% of rows are full
+    years (126,222 at 365 days). The part-year rows hold 13.1% of the exposure and claim at 0.228 a year against 0.126.
+  * The split has no window cutoff, so neither side admits rows by the length of their exposure, unlike
+    pricing_game_2016_french_fleet. The two sides match on every fold:
+    - mean expo: train 0.8893-0.8903, test 0.8886-0.8906;
+    - full-year share: train 0.772-0.774, test 0.772-0.775;
+    - KS p on the expo distribution: 0.67 to 1.00;
+    - weighted claim rate: train 0.1385-0.1403, test 0.1374-0.1411.
+    Nothing to fix.
+  * The application quotes a full year. I scored each model on only the full-year test rows: the ranking is the same as on
+    all rows, and the skills are close. LGBM without postcode beats the GLM: all rows 0.0342 against 0.0319 skill,
+    full-year rows 0.0270 against 0.0254, 9 of 9 folds. The part-year rows (surrender after a claim) carry about 21% of the
+    test claims at their expo weight, but they do not change which model wins. A note for the metric auditor, not a
+    split defect.
 
-- Holding out whole municipalities costs at most 0.002 skill (0.0452 to 0.0432, with the same features). Holding out whole regions still keeps every fold above the dummy. Location adds no hidden-group optimism. This agrees with the hidden-group probe: `postcode` gap +0.0013 (fold sd 0.0029), `lat` +0.0036, `long` -0.0006, no hit.
-- Under SPLIT-4 the municipality is a feature, not a group. All 583 municipalities in the data recur in every fold, and a new policy always has a known municipality. Belgium has about 589, so there is no cold-start municipality to test. No re-split (SPLIT-4, SPLIT-30).
+**Problems, ranked by principles.md**
 
-**Hidden groups and near copies (SPLIT-29/30)**
-- 335 rows sit in 166 repeated full feature profiles, the largest holding 3 rows. Over 169 within-profile pairs, labels agree at 0.793 against 0.799 by chance. These are coincident coarse profiles, not one entity. Almost all are full-year rows (98.8% have `expo` == 1, against 77.3% overall).
-- Test rows with an exact feature twin in the training side: 80, 81 and 64 per fold (0.12% to 0.15%).
-- Rows that share every feature except `expo`: 763 (0.47%).
-- The probe's near-copy check was not run on 147,308 rows, as `focus.md` notes. The label-concordance test above covers the exact-profile part of that gap and finds nothing.
+1. P4, SPLIT-8 (Must, satisfied): the forced-IID cost still cannot be measured. Disclosed already
+   (curation_comments SPLIT-8 bullet, task_summary.split, fit approximate). No remedy. The year-to-year drift of
+   frequency and the bonus-malus transitions are not tested, as before.
 
-**Problems, ranked (P4 first, then strength)**
+2. P4, SPLIT-29/SPLIT-30 (Must, no hit): the hidden group, postcode, rerun under the new target and weight.
+   * All 583 postcodes recur in every training side. 0 or 1 test postcode per fold is new to its training side, and each
+     such postcode has 2 rows. 31 postcodes have fewer than 30 rows. A new quote always has a known municipality, so the
+     municipality is a feature, not an entity new data would lack (SPLIT-4, unchanged).
+   * The alternative splits, same models, 9 folds each, skill = 1 - deviance / dummy:
 
-1. **P4, SPLIT-8 / SPLIT-7 (Must, satisfied; a disclosure note, no fix).** The forced-IID cost cannot be measured: there are no dates and the raw order is sorted by postcode. The definition already says so.
-   - Mildest remedy: none now. Recover a dated year if a later release has one, as already stated.
-   - One wording fix for the `curation_comments` SPLIT-8 bullet: add "the raw order is sorted by postcode, so no row-order window exists". This saves the next auditor from looking for freMTPL2-style blocks.
-2. **P4, SPLIT-1 together with LEAK-10 (Should; the leak itself belongs to the leak auditor).** `expo` is realized exposure. Under the true next-year use case it would not be known at quotation, so the IID split and the kept `expo` share one approximation.
-   - Measured size: the exposure-only offset baseline (training frequency times `expo`) scores 0.55072 against the dummy's 0.55173, a 0.18% improvement. The definition's log(`expo`) Poisson figure (0.5470 against 0.5517) is consistent with this.
-   - Small, already disclosed with a "Potential leak, kept on purpose" note. No split remedy.
-3. **Not a split defect, an observation for the column auditor (P6/P7, CLEAN).** With `postcode` as a 583-level nominal feature, untuned LightGBM under the shipped split loses 0.014 skill against dropping the column (0.0308 against 0.0452), because `lat`/`long` already carry the location.
-   - The nominal type is correct for a postcode (dtype decided from context, never from model runs), so I propose no change.
-   - The same models lose nothing under the grouped split, which shows the drop is overfitting on categories, not a leak or a hidden group.
-   - Relevant to the `focus.md` pointer (4): if the kit ships `postcode` as int32, the participant sees a different encoding from the one the README declares.
+     | Split | LGBM no postcode | GLM no postcode | LGBM with postcode (nominal) |
+     |---|---|---|---|
+     | shipped IID 3x3 | 0.0342 | 0.0319 | 0.0063 |
+     | grouped by postcode 3x3 | 0.0327 | 0.0315 | 0.0270 |
+     | leave one region out (1st digit) | 0.0277 | 0.0284 | 0.0274 |
 
-**What I checked against the record:** 9 folds, each 108,808 train / 54,404 test, with no index overlap. The builder's LightGBM deviance of 0.52853 against the dummy's 0.55173 is in line with my 0.52678 (without `postcode`) and 0.53472 (with it).
+   * Grouping by municipality costs the honest models 0.0004 to 0.0015 of skill. The ranking holds:
+     - LGBM against the GLM, mean paired difference: -0.00143 (SD 0.00032) under IID, -0.00080 (SD 0.00064) grouped;
+     - LGBM wins 9 of 9 folds under IID and 7 of 9 grouped.
+     Only leaving out a whole region (a cold start that the use case does not have) makes the two tie: 4 of 9, +0.00047, SD 0.00164.
+   * No hidden-group optimism. No re-split (SPLIT-30: the gap never decides; the context says municipalities recur).
+
+3. P4, LEAK-16 / SPLIT-29 (Should, negligible): copies of rating profiles across the split.
+   * Exact 11-feature profile copies: 963 rows in 478 repeated profiles. The leak probe finds an exact copy in train for
+     0.4% of test rows. They carry the same label on 0.3% of test rows, mostly both zero claims, so a copy gives no
+     shortcut.
+   * New today: some copies look like one policyholder in two part-year records. Take same-profile pairs of part-year rows:
+     - 57 of 144 have expo summing to one full year (365 +- 1 days). Strict: same postcode, coverage, power, fuel, use,
+       fleet, ageph, agec and bm.
+     - With ages within 1 year and bm within 2, 176 pairs (352 rows) do.
+     - Base rate: 2.8% of random same-postcode pairs sum to at most one year; 15.1% of the 2-row profile copies do.
+     The most likely cause is a policy re-issued during 1997, such as a vehicle or contract change that the rating
+     factors do not show.
+   * Size and effect: 114 to 352 rows (0.07% to 0.22%). About 45-47% of the pairs fall across train and test on each
+     fold. Their outcomes are not shared: both records claim in 0.0% of the strict pairs and 1.1% of the loose ones.
+     Mildest remedy: none. If you want it on record, one clause in the copies bullet: "some part-year copies may be one
+     policyholder re-issued in 1997 (57 to 176 pairs whose exposures sum to a year; no shared claims)". The definition's
+     "each row is a distinct source policyholder" rests on the unique source ID, which a re-issued policy would also
+     get.
+
+4. Cross-reference, not a split defect (column auditor; CLEAN-14, model behaviour): under the new weighted rate target,
+   LightGBM with postcode as a native 583-level category loses much more than before.
+   * Skill falls from 0.0342 without postcode to 0.0063 with it under the shipped IID split (+0.0173 deviance, 0 of 9
+     folds better). Before, under the count target, it fell from 0.0452 to 0.0308.
+   * Under the postcode-grouped split the loss is 0.0035. The overfitting is to seen categories: it penalises the
+     model, it gives no optimism.
+   * This likely explains the task probe's weak LightGBM (skill 0.015) and its no_signal flag, and the leak probe's
+     "all features -0.021" (no postcode in its single-feature list).
+   * Typing stays from context (dtypes-from-context). The README could warn that a 583-level nominal postcode needs an
+     encoding or smoothing, as the source does with lat/long.
+
+What I did not check: the IBNR or reporting delay of late-1997 claims; the source does not say when the extract was
+taken. This is moot for an IID split, where no training label is newer than a test row's quote.
 
 </details>
 
 <details><summary>Domain practitioner</summary>
 
-**bemtpl97, domain practitioner (claims frequency actuary at a Belgian MTPL insurer). Verdict: approximate fit, metric scores the decision (yes). The dataset is ready from my side. Gap 1 is a design choice the curator has already settled.**
+**bemtpl97: domain practitioner, re-review of 2026-11-06 (full tier)**
 
-**Focus question.** `focus.md` asks nothing beyond the standard panel. The direct answer is the standard verdict above. From its "things worth a look" list, I answered three:
-- **Item 5:** I opened arXiv Sec. 3.2 Eq. 5, Sec. 4.1 and Sec. 4.5 myself.
-- **Item 2:** I re-ran the deviance skill on the kit with the source's deviance.
-- **Item 4:** postcode, below.
+Actor: the pricing actuary of an EU motor third-party liability (MTPL) insurer. I build the claim-frequency model of
+today's tariff and learn it from the 1997 Belgian portfolio.
 
-**Fit: approximate (agree with `fit="approximate"`, USE-8)**
+**Verdict**
 
-The rows, the label and the metric are the source's own frequency-model validation. The test set is not next year's portfolio (SPLIT-8, disclosed), and realized exposure is offered as a free input, where I would only ever use it as an offset.
+Fit: approximate. I agree with fit="approximate" (USE-8). The target, the weight and the metric are now the source's
+own offset frequency model, the quantity I price. The data is still one undated 1997 year: random 1997
+policyholders stand in for next year's book, and the rating factors are thinner than a tariff of today.
+Metric: yes, it scores my decision. I would pick a model by the expo-weighted mean Poisson deviance with the
+1e-4 floor myself (MET-1, MET-5, MET-8, MET-11, MET-14, MET-15, MET-13).
+Today's change closes gap 1 of my earlier block, the one I ranked largest (expo as a free feature), in the form I
+asked for. Nothing new blocks the dataset from my side.
 
 **The five questions, as the actuary**
 
-1. **Inputs at prediction time.** coverage, ageph, bm, power, agec, fuel, use, fleet, postcode, long and lat are rating factors "registered at the start of the policy period". I have all of them at quotation. `expo` is different (gap 1).
-   - What I would always have but is missing: vehicle make, model and value; new business vs renewal; years with the insurer; the policy start date.
-   - What I would not have today: `sex`. EU law has banned gender in pricing since 21 Dec 2012 (CJEU C-236/09, Test-Achats). Keeping it as research on a 1997 tariff is fine and is disclosed.
-2. **Target.** I act on the annual claim frequency f(x), which goes into pure premium = E(F)×E(S) (arXiv Sec. 2). `nclaims` scored against e·f(x) is exactly how the source validates that frequency (Eq. 5: "f(x_i) is replaced by e_i·f(x_i)"). I want an expected count, a number. The label is not a proxy. The task covers only the frequency half of the premium, which is the standard separate model an actuary builds (USE-5 holds).
-3. **Row and test data.** One row is one policyholder-year, which is one premium I set. That matches. The test set is random policyholders of 1997, while I would face next year's book. The drift cannot be measured, and the gap is disclosed under ForcedIIDFromTemporal. The source itself uses 6 stratified random folds within the year (Sec. 3.3), so the benchmark matches the source's own protocol.
-4. **Would I use it?** Yes, as a frequency-model benchmark. I would distrust any winner whose gain comes from bending `expo` non-proportionally (gap 1). When I build the tariff I set e = 1 (or the contract term), so I can't use that part of its score.
-5. **Metric: yes.** See below.
+1. Inputs at the quote (USE-3, USE-6).
+   - The 11 features are coverage, ageph, bm, power, agec, fuel, use, fleet, postcode, long and lat. All are
+     registered at the start of the policy period (binning manuscript Sec. 2 p. 4, cited in the notes), so I have
+     each of them at the quote. long and lat are the postcode's centroid.
+   - expo is no longer an input (LEAK-41). That matches the quote: I price a full year (the contract term), and I
+     cannot know the realized share of the year.
+   - sex is gone. Correct for an EU tariff since 21 Dec 2012 (CJEU C-236/09, Test-Achats).
+   - Inputs I would always have that are missing, all limits of the release and not curation errors:
+     - vehicle make, model and value;
+     - new business or renewal, and tenure with the insurer;
+     - the claims-history certificate beyond the bm level;
+     - the policy start date and planned term;
+     - in many books today, telematics or mileage.
+   - bm is the 1997 bonus-malus level, which was then on Belgium's uniform legal scale. Today each insurer runs its
+     own system. This is my own knowledge (the scale was liberalised in the early 2000s) and I did not fetch a
+     source. It adds to the age of the data (gap 1 below).
 
-**Gaps, ranked by how much they change the task**
+2. Target (USE-5). The claims per year insured, nclaims / expo, is the annual frequency f(x).
+   - It enters the pure premium as E[N] x E[S] (Henckaerts et al., arXiv:1904.10890v3 Sec. 2). It is the quantity I
+     act on, not a proxy.
+   - I want a number: the expected rate, scored by a proper rule. A class or a threshold would be of no use to me.
+   - Frequency is only half of the premium. A separate frequency model is standard practice, so USE-5 holds.
 
-**1. `expo` is a free feature, not an offset.** This is the largest gap. It is settled by curator choice (Myunghwan 2026-10-23, Lennart 2026-11-04), consistent with fremtpl2, and named as a kept potential leak under USE-8/USE-12. My own run on the participant kit, repeat 0, 3 folds, no tuning:
-- **Claims per policy-year by exposure band.** Full-year policies have a frequency of 0.126.
+3. Rows, weights and test data.
+   - One row is one policyholder-year, which is one premium I set.
+   - Weighting by the share of the year insured: yes, that is how I would do it. Premium is earned pro rata and
+     unearned premium is refunded on cancellation, so a book breaks even per earned year. The break-even rate is
+     sum(N) / sum(e), not the mean of N/e (MET-15). On the kit:
 
-  | expo band | frequency |
-  |---|---|
-  | ≤0.25 | 0.292 |
-  | 0.25–0.5 | 0.240 |
-  | 0.5–0.75 | 0.198 |
-  | 0.75–0.999 | 0.233 |
+     | Quantity | Value |
+     |---|---|
+     | portfolio rate sum(N)/sum(e) | 0.1393 claims per year |
+     | unweighted mean of the target | 0.1575 (1.13 times the portfolio rate) |
 
-  So 22.7% of rows (expo < 1) claim 1.6 to 2.3 times more often per unit of exposure. Exposure is not proportional.
-- **Mean Poisson deviance:**
+     A model that ignores the weight overprices the book. In my checks (LightGBM
+     Poisson, lr 0.05, 400 trees, min_child_samples 200, splits r0f0 to r0f2), actual/expected was 0.89 to 0.94
+     without the weight and 0.977 to 1.015 with it.
 
-  | model | deviance |
-  |---|---|
-  | dummy (training mean) | 0.5517 |
-  | exposure-proportional rate | 0.5507 |
-  | LightGBM, log(expo) offset | 0.5308 |
-  | LightGBM, expo as a free feature | 0.5268 |
+     | Split | Weighted LGBM | Unweighted LGBM | Weighted constant | Unweighted constant |
+     |---|---|---|---|---|
+     | r0f0 | 0.60380 | 0.61044 | 0.62325 | 0.62454 |
+     | r0f1 | 0.59906 | 0.61045 | 0.62050 | 0.62266 |
+     | r0f2 | 0.59433 | 0.60319 | 0.61424 | 0.61746 |
 
-  About 0.0041 of 0.0249 skill (16%) comes from using exposure non-proportionally. This matches the record's log(expo)-only 0.5470 and fremtpl2's "about a fifth".
-- For short policies (expo < 0.5), the free-feature model predicts 1.58 times the offset model's expected count. The two models' annual-frequency rankings correlate at 0.983.
-- **Wording is incomplete (claim 20).** The source gives two causes for short exposure: policyholders "who started the policy in the course of the year or surrendered the policy before the end of the year" (arXiv v3 Sec. 4.1, p. 14). A mid-year start is known at quotation; a surrender (often after a claim) is not. `curation_comments` and `known` cite only the surrender. They should name both, which also explains why the effect can't be split without dates.
-- **What an expert would change:** ship `expo` as a scoring column. The model predicts the annual frequency f(x), and the scorer computes the deviance of y against expo·f(x). This is the source's formulation and the quantity the actuary prices (USE-5). It removes the cancellation channel and fits MET-2 ("every input it needs ships as a column and is never a feature"). It reverses a settled decision, so I raise it as the strongest alternative for `REVIEW.md` rather than as a blocker.
+     Ignoring the weight costs 0.0066 to 0.0114, more than the free-expo leak of 0.0040 that probe 22 measured. The
+     metric punishes it, which is right. The harness has to pass sample_weight to every method. A method that cannot
+     take weights is mispriced, and the benchmark should say so rather than hide it.
+   - Test data: random policyholders of the same year, while I face next year's book (SPLIT-8, ForcedIIDFromTemporal,
+     disclosed). The source itself cross-validates within the year (Sec. 3.3), so the benchmark matches the source's
+     protocol, not my production setting.
 
-**2. Random split within one year instead of next year (SPLIT-8).** Disclosed. It changes what is measured (no frequency drift, no bonus-malus transitions) but not the decision, and it matches the source's own CV.
+4. Would I use this model? Yes, as a frequency-model benchmark and as a first segmentation. It separates risks:
+   - the lowest predicted decile claims 0.073 to 0.081 a year, the highest 0.274 to 0.284 (3.4 to 3.8 times);
+   - the expo-weighted ordered Lorenz Gini is 0.207 to 0.212.
+   What would make me trust a winner:
+   - actual/expected near 1 overall and by segment (bm, age, region). The weighted fit is at 0.98 to 1.01 overall.
+   - a top decile that is not overfit. Mine came in at actual/expected 0.91 to 0.97, so it overprices the riskiest
+     tenth a little.
+   - postcode smoothed in space rather than memorised over 583 levels, as the source does (Sec. 4.1).
+   What would make me distrust one:
+   - a gain that rests on the 583 postcode levels;
+   - a model that ignores the sample weight.
+   The free-expo channel is now closed, so the worry I named in my earlier block is gone.
 
-**3. Missing rating factors** (vehicle make/model/value, new vs renewal, tenure, mileage). These are the release's limits, not curation errors. Small effect; a benchmark only needs consistent inputs.
+5. Metric: yes.
+   - It is the source's metric. sum(w*d)/sum(w) on the rate equals Henckaerts et al.'s count deviance of e x f(x)
+     (Eq. 5, Sec. 4.5) times n/sum(expo), 1.123 to 1.125 per fold, so models rank as by the source's metric
+     (MET-5, MET-11).
+   - It is scored at the unit I act on: the policyholder, weighted by the earned year, which is the premium I collect
+     (MET-1, MET-15).
+   - It is a strictly proper rule for the mean rate. It rewards both segmentation and level, and a tariff needs both
+     (MET-8).
+   - It weighs segmentation more than level. A uniform 10% overprice of the weighted model costs only 0.0009 to
+     0.0019, against its 0.019 to 0.020 gain over the constant rate. That suits a frequency benchmark: in practice the
+     level is rebalanced to the target premium volume at the end anyway.
+   - Floor of 1e-4 claims per year (MET-13 as amended): the lowest decile's observed rate is about 0.07, and a
+     plausible best cell is about 0.03, so the floor sits 2.5 to 3 orders below. The task probe puts 0.0% of
+     predictions at the floor in every family. The floor never binds on honest predictions, which is how I would
+     clip.
+   - MET-6 and MET-7 do not apply: I make no threshold decision per policy and the source fixes no cost matrix. MET-9
+     does not apply: this is not classification.
+   - The alternatives I would not pick for a frequency benchmark:
+     - the paper's loss-ratio lift, double lift and the ordered Lorenz Gini (Sec. 5) work on the pure premium and
+       need a severity model;
+     - the Gini ranks only and ignores the level.
+   - The metric I would choose is the declared one, unchanged.
 
-**4. `sex` is a 1997-only input.** Small. A modern practitioner removes it. Disclosed as the curator's choice.
+**Gaps between the dataset and my decision, ranked by how much they change the task**
 
-**5. postcode as a 583-level nominal.** No effect on the task, only on models. LightGBM with postcode as a native category scored 0.5405, against 0.5268 with it dropped. The source smooths over lat/long instead (Sec. 4.1). Nominal is the right type (CLEAN-14, dtype probe). Focus item 4: the kit ships postcode as int32 while the README calls it nominal, so a consumer reading the kit dtype treats it as numeric. Worth one line in `REVIEW.md`.
+1. One undated 1997 year with a random split. Today's book differs in claim frequency, in the bonus-malus system (a
+   legal scale then) and in rating factors, and no later year exists to test drift (SPLIT-8). This is the reason the
+   fit is approximate. It is disclosed.
+2. Rating factors thinner than a modern tariff (vehicle, tenure, claims history, telematics). These are the release's
+   limits. A benchmark only needs consistent inputs.
+3. Without dates, the legitimate part of a mid-year start cannot be used. The notes measure little legitimate signal
+   in it: excess starts claim 0.094 a year against 0.126 for full years. An offset GLM loses the same. Small.
+4. Frequency only, no severity. This is the standard split of the premium, so USE-5 holds.
+5. The 19 restored heavy-cost policyholders (21 claims, 0.1% of claims). Negligible for frequency, and restoring them
+   removes a selection by the outcome. Agree.
+Settled and not reopened: sex dropped (agree), coverage ordered, postcode nominal.
 
-**6. Release selection: 19 high-cost policies removed.** Negligible for frequency: 19 of 18,295 claimants (0.1%). The paper confirms "exclusion of very large claims" in preprocessing (Sec. 4.1). Disclosed; per USE-8 a selection alone does not change the fit.
+**What an expert would change**
 
-**Metric: yes, `mean_poisson_deviance` scores the decision**
-
-- **It is the source's metric.** Henckaerts et al. compare frequency models by out-of-sample Poisson deviance with e·f(x) (Sec. 3.2 Eq. 5; Sec. 4.5, Fig. 10, all checked in the v3 PDF). Unweighted, per policy, which is the unit I price (MET-1, MET-5).
-- **It is a proper rule.** Poisson deviance is strictly consistent for the mean count, so it scores the expected count the way MET-8 asks of probabilities. Calibration (premium level) and ranking (differentiation) both count, and a tariff needs both.
-- **I would not pick the alternatives for frequency alone.** The paper's managerial measures (loss-ratio lift, double lift, Gini of the ordered Lorenz curve, Sec. 5) work on the pure premium, which needs a severity model. Gini also ranks only and ignores the level. They suit the final tariff, not a frequency benchmark. MET-6/MET-7 (threshold or top-k) don't apply: no hard decision is made per policy.
-- **The floor `min_prediction=1e-6` is sound (MET-13).** The note's "3% frequency" is conservative. The portfolio's frequency is 0.139 per year, so one day of exposure gives a smallest plausible mean of about 3.8e-4, roughly 2.6 orders of magnitude above the floor. A practitioner clips the same way.
-- **One caveat, from gap 1.** Because `expo` enters as a feature and not through the scorer, the deviance also rewards exposure used non-proportionally. Under the offset formulation I would keep the same metric with expo as a scoring column.
+- Nothing in the definition. Target, weight, metric and floor are what I would ship (MET-14, MET-15, LEAK-41,
+  MET-13).
+- Point for the mediator: the task probe flags no_signal (TP-1, TP-2) with "skill +0.015", which matches the probe's
+  R^2. The relative deviance reduction of its own numbers is 3.1% (0.6199 to 0.60043). I measured 3.1% to 3.5%,
+  with a 3.4 to 3.8 times decile spread. For MTPL frequency this is a normal, real signal: individual counts are
+  mostly Poisson noise. It is TP-2's "small real signal: keep" (evidence.md row no_signal, case 3). If the probe's
+  skill is the R^2 and not the declared metric's skill, the flag reads the wrong scale. The column or task auditor
+  should check that.
+- Optional wording: fit_reason could also name the 1997 legal bonus-malus scale as part of "rating factors may
+  differ". Not required.
 
 **Sources**
 
-- [Henckaerts, Côté, Antonio, Verbelen, arXiv:1904.10890v3](https://arxiv.org/pdf/1904.10890v3): Sec. 2 p. 4 (offset ln(e), pure premium), Sec. 3.2 Eq. 5, Sec. 3.3 (6 stratified folds), Sec. 4.1 p. 14 (163,212 policyholders; exposure from mid-year starts or surrenders; exclusion of very large claims), Sec. 4.5 Fig. 10, Sec. 5 (lift, Gini).
-- CJEU C-236/09 (Test-Achats), from my own knowledge; I did not fetch it.
-- Not opened by me: the treeML.Rmd lines 641-657, the binning manuscript p. 4 / p. 11 quotes, and the CASdatasets page.
+- Henckaerts, Cote, Antonio, Verbelen, arXiv:1904.10890v3: Sec. 2 (pure premium, offset), Sec. 3.2 Eq. 5, Sec. 3.3
+  (folds), Sec. 4.1 (exposure causes, 583 postcodes, spatial smoothing), Sec. 4.5, Sec. 5 (lift, Gini). I read these
+  in my earlier block and did not re-fetch them today.
+- The definition, README, REVIEW.md (issue 1 resolved, my earlier block) and record; the change summary; the task
+  probe and probe 22 (Poisson and L2 fits).
+- My own checks on the participant kit (3 splits; my deviance equals the kit's score() to the last digit).
+- Web, on offset against weighted-rate equivalence in Poisson GLMs and exposure as a covariate:
+  https://metricgate.com/blogs/offset-vs-weight-in-glm/
+  https://www.r-bloggers.com/2013/08/exposure-as-a-possible-explanatory-variable/
+- From my own knowledge, not fetched: CJEU C-236/09 (Test-Achats); the pro-rata earning and refund of MTPL premium;
+  the liberalisation of Belgium's legal bonus-malus scale.
+- Rules: use_case.md USE-3, USE-5, USE-6, USE-8; metrics.md MET-1, MET-5, MET-6 to MET-9, MET-11, MET-13 to MET-15;
+  leak_checks.md LEAK-41; evidence.md (no_signal row).
 
 </details>
 
 <details><summary>Blind review</summary>
 
-**Verdict: include with changes.** This is a real and widely used Belgian MTPL claim-frequency dataset with an honest IID setup. But it is a Poisson count task with exposure, and the benchmark currently treats it as plain regression with `expo` as an ordinary feature. That framing needs fixing, and the low signal should be understood, before it goes in.
+**Blind review: beMTPL97 claim frequency (target nclaims_per_year, weight expo)**
 
-**What the task is.** A motor insurer pricing third-party liability cover predicts each policyholder's expected yearly claim count from rating factors: age, bonus-malus level, the car, and the region. That prediction feeds the frequency part of the premium. This is the standard actuarial frequency model and a real use. The source describes the data in Denuit & Lang (2004) and Henckaerts et al. (2018, Scand. Act. J.). CASdatasets lists 18 columns and 163,212 policies, which matches the file. The preparation dropped `id`, `claim` (whether any claim was filed, which would leak the target), `amount` and `average` (claim cost, which would also leak). That is correct.
+**Verdict:** Include with changes. A real, widely used actuarial task with correct exposure handling and no leaks; the one real issue is the scoring metric: an exposure-weighted squared error on a claims-per-year rate is driven by a few short-exposure rows. Use Poisson deviance.
 
-**Concerns, most serious first**
+**Task**
 
-1. **Exposure is used as a feature, not as an offset or weight, and it may carry leakage.**
-   - Evidence: CASdatasets defines `expo` as "the fraction of the year the policyholder was at risk of filing a claim." 22.5% of rows have `expo` < 1 (minimum 0.0027).
-   - Claim rates by exposure band are not proportional to exposure:
+Belgian MTPL portfolio, 1997 (CASdatasets beMTPL97; Henckaerts et al. 2018, Scand. Actuarial J.). An insurer predicts each policy's expected claim frequency at underwriting or renewal, to set the price (the frequency half of a frequency-severity tariff). This is a real, standard use.
+- Features: coverage, ageph, bm, power, agec, fuel, use, fleet, postcode, long, lat. All are known at the start of the policy.
+- Dropped source columns: id, claim, amount, average (all leaky or outcome columns, so dropping them is right) and sex. Dropping sex is defensible: the EU gender directive has banned gender in pricing since 2012. It does depart from the source paper.
 
-     | `expo` band | Claims per policy |
-     |---|---|
-     | 0.75 to 0.99 | 0.203 |
-     | full year (1.0) | 0.126 |
+**Training weight (expo): correct**
 
-     Part-year policies claim more per year at risk. This pattern fits policies being cancelled or changed after a claim, and that information only exists after the period ends.
-   - `expo` adds real predictive power. With LightGBM (Poisson objective, 3-fold), mean Poisson deviance is 0.5276 with `expo` and 0.5367 without it. The no-skill baseline is 0.5517, so `expo` accounts for about 40% of the gain over the baseline.
-   - Change: predict claims per year at risk. Either use the target `nclaims/expo` with sample weight `expo`, or keep `nclaims` and pass `log(expo)` as an offset. If the framework cannot do either, drop `expo` from the features, or at least document it as known only at the end of the period.
+- The target is exactly nclaims/expo: max |target*expo - round| = 4e-16, and the implied counts are 0..5 (144,936 zeros, 16,556 ones, ...).
+- Fitting the rate with weight expo is the textbook equivalent of a Poisson GLM/GBM on counts with a log(expo) offset: same likelihood up to a constant.
+- Weighting test rows by expo is also right: Var(N/e) = lambda/e, so expo is the inverse-variance weight.
+- Exposure-weighted mean rate = 0.139, which matches the published portfolio frequency of about 0.139. Unweighted mean = 0.158.
+- Exposure: median 1.0 and 77% of rows equal 1.0, but 2% of rows have expo < 0.1 (minimum 0.00274, i.e. 1 day).
 
-2. **The problem type and metric do not fit the target.**
-   - The target is a small count: 0 is 88.8%, 1 is 10.1%, 2 is 0.95%, and only 181 rows have 3 to 5.
-   - Under RMSE/R² every method lands within a hair of the mean predictor:
+**Concerns (most to least serious)**
 
-     | Model | RMSE | R² |
-     |---|---|---|
-     | Mean predictor | 0.3675 | 0 |
-     | LightGBM, L2 objective | 0.3633 | 0.023 |
-     | LightGBM, Poisson objective | 0.3631 | 0.024 |
+1. The metric must be Poisson deviance, not weighted MSE/RMSE.
+   - The rate is heavy-tailed: max 182.5, which is 1 claim with expo 0.0055. 79 rows have a rate above 10.
+   - Even after expo weighting, each row adds n^2/e to the squared error. The top 20 rows (0.01%) carry 4.6% of the total weighted SSE, and the top 1% carry 36%.
+   - Signal is modest. In my 3-fold LightGBM check, model vs constant:
+     - Poisson deviance: 0.600 vs 0.622, 0.592 vs 0.617, 0.600 vs 0.620 (about 3.5-4% reduction).
+     - Weighted MSE: 0.187 vs 0.191 (about 2% reduction).
+   - With a 2% margin, whichever fold holds the few extreme rows will dominate the ranking under MSE.
+   - Change: score with exposure-weighted Poisson deviance, and declare it in task.md. If the framework only offers MSE-type metrics, at least report a deviance-based metric too.
+   - Could not check: task.md says the score is weighted by expo but does not name the metric.
+2. postcode is int64.
+   - It has 583 levels, and long/lat are a deterministic function of it (each postcode maps to exactly one long/lat pair).
+   - The numeric code is partly meaningful: the leading digit is the Belgian province, so treating it as ordinal is tolerable. With long/lat present it is redundant.
+   - Change: keep as is, or declare it as a high-cardinality categorical. Either way, note that it is a geographic code. This is minor.
+3. Duplicates and multiple rows per policy.
+   - CASdatasets reports 163,212 unique policyholders, but there are 163,231 rows. So about 19 policies have two rows, and the id was dropped, so a random split can put the same policy in both train and test. The effect is negligible (0.01%).
+   - 176 fully duplicated rows and 485 rows with duplicate features: these are natural coincidences of common profiles (mostly zero-claim, expo=1). Not a leak.
+4. IID split.
+   - The data is a single-year cross-section, so a random split is the only option. A real tariff would be applied to the next year's portfolio, so scores are mildly optimistic. Acceptable.
+5. Signal and size.
+   - Low signal by design: a claim-frequency task where the best possible model is close to the constant. Feature importance is spread (ageph, power, long, bm, postcode).
+   - This is realistic and still separates methods: GLM vs GAM vs GBM differences in the literature are of this size.
+   - 163k rows is plenty.
 
-   - Poisson deviance separates models more clearly (0.552 → 0.530 → 0.528). It is also the metric actuaries and the source paper use.
-   - Change: score with Poisson deviance, ideally weighted by exposure. If the benchmark only supports MSE, note that it ranks methods on a very compressed scale. Also consider whether a Poisson or count task type is available.
+**Data plausibility**
 
-3. **The signal is low, so ranking noise is a risk.** R² of about 0.02 is normal for claim frequency and is not a defect. Still, the differences between strong methods will be small compared with the variation across folds. With 163k rows and 9 splits the scores should be stable enough, but I did not measure the variance across folds.
+- No missing values. Category levels match the source docs: coverage TPL/TPL+/TPL++, fuel, use, fleet as '0'/'1'.
+- Ranges are plausible: ageph 18-95, bm 0-22, power 10-243 kW, agec 0-48, coordinates inside Belgium.
+- The data is real (well-documented public portfolio), not synthetic.
 
-4. **The geography columns are redundant and `postcode` is encoded as a number.**
-   - `postcode`, `long` and `lat` each have exactly 583 unique values. They look one-to-one, since `long`/`lat` give the municipality centre.
-   - `postcode` is stored as int32. Belgian postcodes are only loosely ordered by region (the first digit marks the province), so a numeric code is a crude encoding. As a category it would have 583 levels.
-   - Change: keep `long`/`lat` as numeric, and either drop `postcode` or mark it as a high-cardinality categorical. The current choice works but is worth documenting.
+**Could not check**
 
-5. **The split is an assumption.** A single policy year with no dates and no policyholder ID, so random rows are the only option. In practice a tariff is applied to next year's book, so IID is somewhat optimistic, but nothing better is possible here. There are 168 rows whose features duplicate another row's and 133 fully duplicated rows. Given coarse discrete features, these are plausibly distinct policies, and at 0.1% they don't matter.
-
-6. **Minor type issues.**
-   - `fleet` is a category with values 0/1. That is fine, though a boolean would be more natural.
-   - `nclaims` uses the pandas nullable Int32 type. It has no missing values, but make sure downstream code casts it to float.
-   - No column has any missing values.
-   - All value ranges are plausible: `ageph` up to 95, `bm` 0 to 22, `power` up to 243 kW, `agec` up to 48, frequency 0.139 claims per year at risk. Claim rate rises with `bm` level, 0.091 at level 0 to about 0.3 at levels 16 to 18, as expected.
-
-**What I could not check**
-- Whether part-year exposure really comes from cancellation after a claim. The documentation does not say why exposure is below 1.
-- The exact insurer and year. CASdatasets says "unknown insurer," and 1997 is only implied by the dataset name.
-- Whether the benchmark framework supports offsets, sample weights or a Poisson metric.
-- Variance across folds and repeats.
-- The pinned treeML GitHub commit. I read the CASdatasets page but not the repository or the paper's full text.
+- The exact metric used.
+- Whether the source's few multi-row policies are split across folds (id was removed).
+- Whether the GitHub repos' versions differ from CASdatasets (I only read the CASdatasets reference page).
 
 </details>
 
 <details><summary>Task gamer</summary>
 
-**Verdict:** I found no real leak. The only gameable point is `expo`, the realised exposure, which is only known once the policy period ends. Used as a free feature it is worth 0.0091 of Poisson deviance over a model without it. 0.0039 of that comes from the fact that short policies claim at 1.5 to 3.4 times the per-year rate, which fits policies being terminated after a claim. Nothing else beats the noise.
+**beMTPL97 (nclaims_per_year, weighted Poisson deviance, IID 3x3): task gamer report**
 
-Honest baseline: untuned LightGBM, Poisson objective, all 13 features, scored on the 9 shipped splits. Mean 0.52753 (per split 0.52259 to 0.53096). A model predicting only the mean scores 0.55173. Adding a random column moves the mean by +0.00014 to +0.00036, and single splits by up to 0.0008. That is the noise band.
+Verdict: the task can be gamed only through the exposure (expo). It is shipped in scoring.parquet for the test rows as well, and using it as a feature cuts the deviance by about 0.9% (0.0052). Nothing else beats the noise.
 
-| # | Exploit | Honest score | Exploited score | Gain (per split, range) | A deployed model has it? | Fix |
+All scores are mean_poisson_deviance (lower is better), averaged over the 9 shipped splits. The model is LightGBM with the poisson objective, 400 trees, lr 0.05, 31 leaves, min_child_samples 50, sample_weight = expo, all 11 features, no tuning.
+
+Honest baseline: 0.59913 (per split 0.5945-0.6051).
+
+Noise check (baseline plus a uniform random column): 0.59918. The mean moves by +0.00005, and the per-split moves range from -0.0009 to +0.0004.
+
+| # | Exploit | Honest | Exploited | Gain per split (range) | Deployed model has it? | Fix |
 |---|---|---|---|---|---|---|
-| 1 | `expo` (realised exposure) as a free feature, not a proportional offset | 0.53146 (expo as offset log(expo) only) | 0.52753 (baseline, expo free) | 0.0039 (0.0032 to 0.0047) | Unclear. Yes if expo<1 means the policy started mid-year (known at start). No if it means it ended early (cancellation, write-off after a claim). | Use the planned period, or force expo to be an offset. Or score claim frequency weighted by expo, as the source does. |
-| 1b | `expo` at all, compared with no exposure | 0.53666 (no expo) | 0.52753 | 0.0091 (0.0079 to 0.0105) | The proportional part (0.0052) matches the source's own design. The rest is #1. | Same as #1 |
-| 2 | Counts over train and test rows together (rows per postcode, rows per ageph/sex/postcode/power/agec/fuel/coverage) | 0.52753 | 0.52734 | 0.0002 (-0.0002 to +0.0006) | Yes for postcode density. The gain is within noise anyway. | none |
+| 1 | expo (or 1/expo) as a feature | 0.59913 | 0.59396 / 0.59400 | 0.0052 mean (0.0039-0.0061) | No: actual exposure is known only at the end of the period; at the quote the term is 1 year | Keep expo out of reach at test time (do not ship test-row expo to participants), or state that expo is a weight/offset only and check that it is not used as a feature |
+| 2 | flag expo < 1 as a feature | 0.59913 | 0.59467 | 0.0045 mean | No (same reason) | same |
+| 3 | post-hoc rule: baseline x per-expo-bin factor learned on train | 0.59913 | 0.59503 | 0.0041 mean | No | same |
 
-**Flaws that hurt an honest model:** none found. The best honest model, with log(expo) as offset plus expo as a feature, scores 0.52721. That beats the baseline by 0.0003 (0.00001 to 0.0011), which is about the noise band. So the baseline is not being pulled down.
+Finding 1 (the weight). Under a constant-rate Poisson model the claim rate would not depend on the exposure. Here it does, strongly. Claims per year insured by expo bin:
+  (0,0.1] 0.388 (3,323 rows); (0.1,0.25] 0.273; (0.25,0.5] 0.240; (0.5,0.75] 0.198; (0.75,0.99] 0.235; full year 0.126 (126,516 rows).
+Partial-year policies are either new mid-year business or policies surrendered or cancelled during the year. A claim can trigger a cancellation, as can a vehicle written off, so a short exposure is partly a consequence of the outcome. That is why a short-expo rate three times the full-year rate gives the label away. At the quote, a deployed model knows the planned term (a 1-year contract). At most it knows a mid-year start date, and the data has no start date. It does not know the realised exposure. The fact that would settle the size of the leak is the split of short exposures into late starts and early ends; the published data does not have it. A model that knew only the start date would get part of this gain legitimately. Because scoring.parquet ships expo for every row, test rows included, the exploit takes one line. The source analysis (Henckaerts et al. 2018, treeML) uses expo only as an offset or weight, never as a feature.
 
-**Findings**
+Mildest fix: keep using expo as the weight, but do not give participants the test rows' expo, which the benchmark's scorer can join on its own side. Alternatively, keep only full-year rows in the test set (expo == 1, 77% of rows), where the feature carries no information.
 
-**1. Exposure.**
-- **Mechanism.**
-  - Overall the per-year claim rate is 0.227 for expo<1 against 0.126 for expo=1.
-  - By exposure band: 0.383 for (0, 0.1], 0.273 for (0.1, 0.25], 0.240 for (0.25, 0.5], 0.198 to 0.241 up to 0.999, then 0.126 at a full year.
-  - Against an out-of-fold offset model, actual/expected for existing policyholders (bm≠11) is 2.13 at expo≤0.1, 1.2 to 1.6 for partial years, and 0.93 for full years.
-  - So the deviance rewards a model that learns "short realised exposure means more claims per day".
-- **Where the excess comes from.** Part of it is new entrants: bm=11 is 10.8% of partial-year rows against 3.4% of full-year rows, and its actual/expected at expo≤0.1 is 3.36. That share is known at the start. The excess among bm≠11 policies fits policies ending at or after a claim, which is only known later. The exposures cluster at month ends (days 31, 90, 120, 151, 181, 273, 334), which fits either a start or an end.
-- **What decides it.** Whether expo<1 comes from a late start (known at the start) or an early end (not known). The kit has no start or end dates, so I could not tell.
-- **The source.** henckr/treeML uses exposure as an offset (gbm) or in a `cbind(expo, nclaims)` response, and scores predicted frequency × realised expo. Realised exposure is therefore part of the source's own setup; the non-proportional use is what this kit adds by making expo a plain feature.
-- **Mildest fix.** Make expo an offset only, or change the target to nclaims/expo with expo as the sample weight. Also state in task.md whether expo is the planned or the realised period.
+Flaws that hurt an honest model: none found.
+- Training only on full-year policies (drop the expo < 1 rows): 0.60106, worse than the baseline's 0.59913. The short-exposure rows help, and the IID split makes no training row unavailable at the prediction point.
 
-**Attacks that found nothing**
+Attacks that found nothing:
+- Postcode frequency computed over train and test rows together: 0.59880, a gain of 0.0003, inside the noise spread. It is also a portfolio statistic that a deployed model has: signal, not an exploit.
+- Row order: the claim rate by row decile is flat at 0.135-0.144. The rows are shuffled, and no id column exists.
+- Copies across the split: 963 rows share all 11 features with another row. Their claim rate given that a twin claimed is 0.103, against 0.099 when the twin did not, so there is no entity leak.
+- Formats: long/lat are postcode centroids, one per postcode, with 11-14 decimals depending on the value, not by class. The share of round values (multiples of 5) in ageph, power and agec is the same for claimants and non-claimants. The difference in bm is the bm signal itself.
+- Target format: y = nclaims/expo, so a non-zero training y reveals its exposure. That is no help at test time beyond expo itself (exploit 1).
+- Train-vs-test differences and transforms over all rows: the split is IID random with equal fold sizes, and no feature is standardised or ranked (raw ages, postcodes, coordinates).
+- Lookup in the published source (CASdatasets beMTPL97): it would work, since the public file holds nclaims and expo per row. Not ranked.
 
-- **Row order.** Spearman correlation of row position with nclaims is 0.0025 (p=0.31). Claim rate by position decile stays between 0.120 and 0.126. Next-row agreement on claim>0 is 0.8014 against 0.8011 expected by chance. Columns are not sorted (postcode is non-decreasing 50% of the time).
-- **Splits.** Folds are disjoint, test sets do not overlap training, and each repeat covers all 163,212 rows. Train and test claim rates match (0.1234 to 0.1245).
-- **Copies across the split.** 0.2% of rows share all 13 features with another row. Their label variance (0.132) is about the overall variance (0.135). Only 0.28% to 0.36% of test rows have an exact match (all features but expo) in training, and the matched training label correlates with the true label at 0.18 on 175 rows. No gain is possible.
-- **Formats.** expo×365 is a whole number for every row. Postcode, long and lat map one to one (583 values each). A model on format features alone (expo==1, last digits of power and age, power divisible by 5) scores 0.55287, worse than predicting the mean (0.55173).
-- **Missing values:** none in any column. **Sentinels:** none seen.
-- **Transforms over all rows.** long and lat are real municipality centres, not standardised or rank-transformed. The counts over all rows are covered in table row #2.
-- **Train against test classifier:** not run. The split is random by rows and train and test claim rates match, so a classifier would score about chance by design.
-- **Columns from after the prediction point.** The source's `claim`, `amount`, `average` and `id` are already dropped from the kit. Apart from expo, every feature is known at policy start.
-- **Looking rows up in the source file.** It would work: the public CASdatasets file holds nclaims, and the features are nearly unique per row. Not a flaw of the task; not ranked.
+Not checked: a tuned honest model, to see whether the expo gain survives tuning (it is a large, monotone effect, so it likely does), and the split of short exposures into late starts and early ends (no date in the data).
 
-**What I could not check**
-
-- Policy start and end dates, which would settle finding #1.
-- Whether the preparation filtered or rounded anything compared with the published file. The kit matches the documented 163,212 rows and column set minus id, claim, amount and average; I did not download the raw file to compare values.
-- No competition, forum or "leak" thread exists for this dataset. A 2026 preprint reports that contracts cancelled mid-term claim more per unit of exposure, but it does not confirm that it uses this dataset.
-
-Sources:
-- [CASdatasets beMTPL97 reference](https://dutangc.github.io/CASdatasets/reference/beMTPL97.html)
-- [henckr/treeML treeML.Rmd](https://github.com/henckr/treeML/blob/2ee8accc6df49168bd865cdf49efa1b7a5c8f4de/treeML.Rmd)
-- [arXiv 2604.02400 (mid-term cancellations, higher frequency)](https://arxiv.org/pdf/2604.02400)
-- [arXiv 2502.11788 (offset vs ratio-weighted Tweedie, mid-term cancellations)](https://arxiv.org/html/2502.11788v1)
+Sources: https://arxiv.org/pdf/1904.10890 (Henckaerts et al., expo as offset; notes policyholders who start mid-year or surrender early); https://arxiv.org/pdf/2604.02400 (mid-term cancellations partly tied to severe claims); https://www.r-bloggers.com/2013/08/exposure-as-a-possible-explanatory-variable/
 
 </details>
 
 <details><summary>Precedent check</summary>
 
-The focus file (`focus.md`) asks nothing beyond the standard panel. Its "known and kept on purpose" list is where the precedent question lies. Of its five items, four follow precedent: the IID split under `ForcedIIDFromTemporal`, the floor `min_prediction=1e-6`, the 133 duplicate and 35 conflicting rows, and the release's 19 removed policies. One does not: `expo`. It is kept as a free feature, which departs from LEAK-10, and LEAK-10 is a Must. The data shows `expo` carries more than exposure. The register has no flag on bemtpl97 or fremtpl2. That is because the `expo` decisions carry no rule ID (`rule_ids: []` on the 2026-10-23 curator line), not because the decision is clean.
+**Precedent check: bemtpl97, full tier, exposure re-review of 2026-11-06**
 
-**1. `expo` kept as a free feature: departs with a stated reason, but not a reasonable exception under the ranking (a Must)**
+Verdict: consistent. The definition decides bemtpl97 exactly as fremtpl2 and fits the pattern of the other four insurance tables changed the same day. All three reversed calls (Myunghwan's of 2026-10-23 and 2026-10-26, Lennart's floor of 2026-11-04) name the fact that sets the new decision apart, so none needs a reflection prompt. The register raises no flag on bemtpl97 or on any exposure case: its flags concern LEAK-38, TP-10, USE-5, USE-8, SPLIT-9/10/14 and others, on unrelated datasets. There is one real gap: a reporting clause of LEAK-41 (a Must) that bemtpl97 and fremtpl2 both leave out and that australian_vehicle_insurance_2004_2005, frempl_french_motor_personal_line and pricing_game_2016_french_fleet fill. An issue draft for it is at the end.
 
-- **Decision.** Myunghwan's curator line of 2026-10-23: "Retain expo". Lennart's line of 2026-11-04 carries it into the approximate `fit_reason`. The definition records it as "Potential leak, kept on purpose", which is the wording LEAK-30 uses for transductive scaling. The mechanism here is a different one: a value that may record an event after the prediction point (a cancellation later in the year). That is LEAK-10, a Must with no exceptions.
-- **Precedents under LEAK-10.**
-  - account_debt_south_africa (2026-10-26, Lennart): a window value is kept only when "the data shows it does not move with the outcome given the covariates". There the residual ROC AUC was 0.509 / 0.501 / 0.496.
-  - distribution_transformers_at_cauca_department (2026-10-21, Lennart): late values are dropped when they "may carry a gain".
-  - onlinenewspopularity: such values stay with a note only when the traceable part shows no gain.
-  - hotel_booking_demand: `BookingChanges` was dropped.
-- **The stated evidence does not test the mechanism.** The record's Poisson fit on log(expo) alone (0.5470 against the training mean's 0.5517) measures signal, and plain exposure would give that signal too. I ran the account_debt test instead:
-  - **Claims per insured year by exposure:** 0.292 at expo ≤ 0.25 (8,625 rows), 0.240, 0.198 and 0.233 for the middle bands, and 0.126 for a full year (126,211 rows).
-  - **Poisson GLM with all covariates:** the coefficient on log(expo) is 0.54. Pure exposure would give 1.0. A part-year flag on top of the offset gives a rate of ×1.53.
-  - **Deviance on one random third:** dummy 0.5560, covariates alone 0.5427, plus expo as an offset 0.5393, plus log(expo) as a free covariate 0.5364. The part of `expo` that is not proportional adds about as much (0.0029) as the proportional exposure does (0.0034).
-- **Sibling fremtpl2 behaves the same.** Claims per year are 0.138 at ≤ 0.25 against 0.055 for a full year; the coefficient is 0.62; deviance is 0.2428 with the offset and 0.2407 with the free covariate. Its definition keeps Exposure "as in bemtpl97". So the two siblings are decided alike; both depart from the LEAK-10 cases.
-- **What may set the case apart.** Without dates, a mid-year cancellation cannot be told apart from new business that starts mid-year. The insured period of new business is known at quotation, so that part would be legitimate.
-- **Contradiction between record and definition.** The AI line of 2026-11-04 says "Exposure is an offset, not a weight". The definition says "no annualization, cap, weight or offset" and "neither a weight nor a scoring column". As shipped, `expo` is a free feature, not an offset.
+Files read: the definition and REVIEW.md; the record (lines 50, 56, 72, 76, 92); fremtpl2's dataset.py;
+principles.md, leak_checks.md, metrics.md and cleaning_features.md; the decision register; the probe outputs
+(probe 22 with Poisson and L2 fits, the task probe).
 
-**Consistency check (AI, 2026-11-04):** your call on bemtpl97 (and fremtpl2) keeps realized `expo` as a free feature. That departs from LEAK-10, a Must. Under its 2026-10-26 clause (account_debt_south_africa), a value is kept only when the data shows it does not move with the outcome given the covariates. Here claims per insured year are 2.3x higher for policies insured up to a quarter of the year, and the free log(expo) coefficient is 0.54 against 1.0 for pure exposure. What sets this case apart?
-(a) `expo` is the length of the target's own window and the source's offset, and part-year rows partly reflect new business known at quotation. Recorded as an amendment of LEAK-10, since a Must takes no exception, covering exposure as the denominator of a count target.
-(b) Treat it like distribution_transformers: remove the part that is not proportional by scoring `nclaims` against `expo` × predicted annual frequency, with `expo` as a scoring column and not a feature. This is the source's structure, and it reverses the 2026-10-26 "no offsets" on both siblings.
-(c) Reopen account_debt_south_africa to match.
-(d) Change LEAK-10 generally (amendment).
+My own measurements (read-only, with the shipped container and splits):
+- The weighted rate deviance equals the count deviance of expo x rate times n/sum(expo) on the scored rows, exactly (0.62019 = 0.62019 on fold 0/0; 0.62350 on fold 1/1).
+- Honest LightGBM-Poisson fitted with the expo weight: the smallest predicted rate is 0.0082 / 0.0096, the 0.1% quantile 0.020 / 0.023. The portfolio rate is 0.139 a year.
+- expo alone (LightGBM on expo only) scores 0.61538 / 0.61303 / 0.60917 against the training-rate constant's 0.62325 / 0.62050 / 0.61424 (repeat 0, folds 0-2). That is a gain of 0.0051 to 0.0079.
+- A scaled 1/expo (k/expo, with the counts summing right) scores no better than the constant: 0.62233 / 0.62152 / 0.61740.
 
-**2. Floor `min_prediction=1e-6` (MET-13): consistent**
+**Decision 1: claims per year insured, expo as the weight scoring column and sample_weight, never a feature (Lennart, 2026-11-06; record line 92; REVIEW.md issue 1 option B in form (ii), option A of #51)**
 
-- MET-13 was amended on 2026-11-04 on this very case. fremtpl2 declares the same parameter.
-- The other metrics whose domain is limited match:
-  - All 20 `rmsle` definitions ship `log` or `log1p`, so their predictions are always in range.
-  - `mape` and `rmspe` are limited on the label side, not on the prediction side.
-- Lennart's two lines of the same day ("machine epsilon", then "1e-6") are a refinement that MET-13 reconciles (library default machine epsilon, definition states 1e-6), not drift.
-- **Stale text in fremtpl2:** `datasets/_dev/tabarena-v0pt2/fremtpl2/dataset.py` line 136 says "The shared scorer floors a predicted mean at machine epsilon (Lennart, 2026-11-04, on bemtpl97)", while its params (line 166) are 1e-6.
+Status: consistent.
 
-**3. IID split under `ForcedIIDFromTemporal` (SPLIT-8), fit approximate: consistent**
+Precedents and how bemtpl97 compares:
+- fremtpl2, CC 2026-11-06 (Lennart): fremtpl2's dataset.py, line 171; metrics.md Cases line 313.
+  - Same facts: realized time on risk, no dates that tell a mid-year start from a cancellation, a free-feature gain (fremtpl2 +0.0040, 25% of the skill; bemtpl97 +0.0043, 17%; probe 22 today +0.0040, SD 0.0008), and no better at quotation.
+  - Same treatment: the rate as the target, the exposure as the weight scoring column, the metric's weight input and sample_weight, mean_poisson_deviance with origin source, min_prediction=1e-4, ForcedIIDFromTemporal, fit approximate.
+  - Lennart's 2026-11-04 "beMTPL97 and freMTPL2 are treated alike" (record line 72) is honoured.
+- leak_checks.md Cases line 441 (LEAK-10, LEAK-7, LEAK-41; Andrej 2026-11-02, amended Lennart 2026-11-06): where the cut cannot be located and the amount is the denominator of a count target, the rate ships with the amount as weight, never as a feature. bemtpl97 is listed there as a denominator case, and the definition matches the row.
+- Same-day siblings that reverse earlier keeps of realized exposure for the same reason:
+  - australian_vehicle_insurance_2004_2005 (Andrej's keep of 2026-11-02 reversed; metrics.md line 315)
+  - spanish_motor_insurance_coverage_level_2022_2024 (Andrej's keep of 2026-11-02 reversed; line 318)
+  - frempl_french_motor_personal_line and pricing_game_2016_french_fleet (lines 316-317)
+  
+  All four tables that had kept a realized exposure as a feature are now decided alike, so no opposite-outcome pair remains in the exposure family.
+- Why the per-contract precedent does not apply (spanish_motor_insurance_2015_2018, MET-14 per-contract clause, Lennart, 2026-11-06, metrics.md line 319). That table keeps a per-contract target because every first year has a planned term of exactly one calendar year. In bemtpl97 the term inside 1997 varies (mid-year starts as well as surrenders), and the two cannot be told apart (curation_comments, Exposure bullet). Same for pricing_game_2017_french_mtpl (whole policy-years, no exposure column).
+- LEAK-41's "a part known at the start ships as its own column": the start part cannot be located without dates. That matches fremtpl2 and differs from frempl and pricing_game_2016, whose dates locate it. The definition says so.
+- CLEAN-16 as amended: a deviance-scored rate ships untransformed, and nclaims_per_year is on the identity scale. Consistent.
+- MET-11: origin source holds, because models rank the same as under Henckaerts et al.'s Eq. 5 count deviance on every fold (verified above).
 
-- **Precedents:** account_debt_south_africa (2026-10-12), and mobile_churn, churn_telco_south_asia, bank_customer_churn and tour_travels_churn ("one undated snapshot", 2026-10-21, Lennart).
-- All 19 working-copy definitions with this tag are `fit="approximate"`.
-- **The real opposite-outcome pair has been settled.** On 2026-10-28 Myunghwan shipped beMTPL97 but held freMTPL2 for "missing timing information"; the same fact applies to both. Lennart's "do (a) and ship both" (2026-11-04) resolved it.
-- **Count slip.** "the 20 other forced-IID definitions" in the 2026-11-04 line does not match: the working copy has 19 tagged definitions including both siblings, so 17 others.
-- The SPLIT-8 Cases table in `splits.md` lists neither sibling. This is bookkeeping, not a departure.
+Minor, not a departure: the target name. bemtpl97 uses `nclaims_per_year`, as do australian (`claim_cost_per_year`), pricing_game_2016 (`claim_charge_per_vehicle_year`), frempl (`log1p_claim_amount_per_year`) and spanish_coverage_level (`log1p_incurred_per_exposure_year`). fremtpl2's `claim_frequency` is the one outlier in the family. No rule covers this, so it is not a consistency issue. If Lennart wants one spelling, fremtpl2 is the one to rename.
 
-**4. Dtypes (CLEAN-14): consistent**
+**Decision 2: reversal of Myunghwan's CC of 2026-10-23 ("Retain expo, the recorded time insured ... Do not annualize, bin, clip, weight or add row filters"; record line 50)**
 
-- **`coverage` ordered TPL < TPL+ < TPL++:** nested cover is a single line, which follows the CLEAN-14 cases (heart_disease, ames_housing) and fremtpl2's ordered `Area`.
-- **Full `postcode` declared nominal:** follows house_sales `zipcode`, melbourne_housing_market `Postcode` and perth_house_prices `POSTCODE`, all categorical. The zip-prefix clause does not apply.
-- **`fleet` 0/1 as a category:** follows the 0/1 amendment of 2026-10-21.
-- **`bm` numeric:** matches fremtpl2's `BonusMalus`.
-- The int32 `postcode` in the panel kit is an artifact issue, not a precedent issue.
+Status: departs, with a stated reason.
 
-**5. Copies kept (LEAK-16, LEAK-19, LEAK-20, both Shoulds): departs with a stated reason, consistent**
+- What sets it apart, as written in the record (line 92) and in curation_comments:
+  - The conditional measurement came after his call: part-year policies claim about 1.4 times what a proportional offset expects, and a free expo gains +0.0043 (17% of the skill) and is 0.0002-0.0011 worse at quotation.
+  - The source itself scores with an offset.
+  - With the weight, dividing by expo no longer inflates short records.
+- His call rested on the proportional part ("longer coverage permits more claims"), which the rate form keeps.
+- His own line already said "Realized exposure may reflect cancellation and is not verified as quotation-time information". The new fact settles a doubt he recorded; it does not contradict a fact he relied on.
+- It is not drift: a newer curator decision beats an older one (principles.md, "Precedence in the process", Who decides), and the change comes with new Musts (LEAK-41, MET-15) adopted on purpose the same day.
+- Myunghwan's "no clipping" had already been overruled by Lennart's floor of 2026-11-04, which is unchanged in substance.
 
-- 133 exact and 35 conflicting rows are kept. The stated fact is that every source ID is distinct and the rating cells are coarse.
-- This follows hiva_agnostic (distinct NSC numbers, 2026-10-21) and fremtpl2 (warnings accepted by Lennart, 2026-11-04).
-- For bemtpl97 the check rates both as INFO, not warning, so nothing needs accepting.
+**Decision 3: reversal of Myunghwan's CC of 2026-10-26 (mean_poisson_deviance on the original nclaims, "expo as a predictor; no annualization, target transformation, weighting"; record line 56)**
 
-**6. Metric is the source's (MET-4 to MET-9): consistent**
+Status: departs, with a stated reason; the part he decided on purpose is kept.
 
-- Henckaerts et al. make one deliberate choice: they tune and test by Poisson deviance. That matches the tension row "source's metric when one deliberate choice" (zillow_prize `mae`).
-- Myunghwan's switch from RMSE to deviance on 2026-10-26 applies that rule. fremtpl2 does the same.
+- His quoted reason, "expected claim count should matter, so poisson deviance ... might be better", is kept.
+  - The shipped metric is still the source's Poisson deviance on expected counts, up to a per-fold constant (1.123-1.125), so every model ranks as it would under his metric. My check above shows this exactly.
+- Only the form (count against rate) and expo's role change, for the reasons given under Decision 2.
+- "No weighting" in that line is the AI's paraphrase of what he left unchanged, not his own words. The reversal therefore overrules no argument he gave.
 
-**7. Year and citation (PROV-9, PROV-10): consistent**
+**Decision 4: reversal of the floor of 2026-11-04 (Lennart: min_prediction=1e-6 on the expected count; record line 76), now 1e-4 claims per year on the rate**
 
-- **Year 2020:** PROV-9 takes "the first commit that shares them", here treeML's 2020-04-30 commit. That is the same rule fremtpl2 applied with its CASdatasets entry date of 2014.
-- **Unverified:** whether CASdatasets shipped beMTPL97 before 2020-04-30. If it did, that earlier year wins.
-- **Bibtex without the 2018 SAJ paper:** consistent with PROV-10. That paper analysed 163,231 rows but did not release them. Citing two works is common (25 definitions).
+Status: consistent; a deliberate amendment, not drift.
 
-**8. `sex` "stays by curator choice": no departure, missing attribution**
+- It is the same curator two days apart, but the rule was changed on purpose: MET-13 was amended on 2026-11-06 with this case named ("two orders below the smallest plausible mean, on the scale the metric scores ... 1e-4 claims per year on fremtpl2 and bemtpl97").
+- The principle of 2026-11-04 is unchanged; only the scale moved from count to rate.
+- On the count scale, 1e-6 had meant a different floor for each row on the rate scale (1e-6 to 3.65e-4 a year, depending on expo). The new floor is the same for every row.
+- Measured:
+  - The smallest honest predicted rate is 0.008-0.010 a year (0.1% quantile 0.020-0.023), so 1e-4 is about two orders below it, as MET-13 asks.
+  - The task probe reports 0.0% of predictions at the floor for every model family.
+- The same floor is used for fremtpl2 (portfolio rate 0.074), so like cases are decided alike.
 
-- No rule in knowledge-curation covers protected attributes.
-- No curator line in the record states this choice; only the 2026-10-23 acceptance of the 13 predictors. The attribution in `curation_comments` has nothing in the record behind it.
+Bookkeeping (no finding): the 2026-11-06 CC lines name what they supersede, but Myunghwan's lines 50 and 56 and the floor line 76 carry no inline "(superseded 2026-11-06: ...)" note. Some 2026-11-04 lines do carry such notes. fremtpl2 and australian are handled the same way as bemtpl97 (0 inline notes of 2026-11-06 in any of the three), and records.md sets no rule on it. So the three are consistent with each other; add the inline notes only if Lennart wants that habit kept.
+
+**Departure without a stated reason: the reporting clause of LEAK-41 (Must)**
+
+LEAK-41 says: "For each suspect column the definition reports its gain on the declared metric with an L2 fit on the shipped scale and with the weighted actuarial fit, and decides on the worse; it states the score of 1/weight alone as the ceiling a leak would reach."
+
+- These siblings report both numbers:
+  - australian_vehicle_insurance_2004_2005 (an L2 LightGBM and "1/exposure alone")
+  - pricing_game_2016_french_fleet (L2 fit)
+  - frempl_french_motor_personal_line (1/Exposure alone 0.184)
+- bemtpl97 reports only the Poisson-fit gain (0.0036-0.0041; +0.0043 in the CC) and states neither number. fremtpl2 has the same gap.
+- The outcome stands either way, since expo is out of the features. What is missing is the record of the check.
+
+Draft in the review-file shape:
+
+**Report the L2 gain and the weight-alone score of `expo`, as LEAK-41 asks, in bemtpl97 and fremtpl2?**
+
+* **Problem:**
+  - LEAK-41 asks every definition to report the suspect weight's gain under an L2 fit and under the weighted actuarial fit, and the score of the weight alone as the ceiling a leak would reach. australian_vehicle_insurance_2004_2005, frempl_french_motor_personal_line and pricing_game_2016_french_fleet do; bemtpl97 and fremtpl2 give only the Poisson-fit gain.
+  - The numbers exist for bemtpl97:
+    - probe 22: expo as a feature gains +0.0040 (SD 0.0008) under the weighted Poisson fit and +0.0035 (SD 0.0027) under L2, so the actuarial fit is the worse and decides.
+    - expo alone (a fit on expo only) beats the training-rate constant by 0.0051 to 0.0079 mean deviance (3 folds).
+    - a scaled 1/expo is no better than the constant (0.6223 against 0.6233).
+  - Probe 22 computes "1/weight alone" only for a Gini, so for a deviance the rule's ceiling has no defined form yet.
+* **Options:**
+
+  | | Option | Pro | Con |
+  |---|---|---|---|
+  | a | Distinguishing fact: under a deviance a "1/weight alone" ceiling is not defined (a scaled 1/expo scores at the constant), so add only the L2 gain to both notes and amend LEAK-41 to say the ceiling is the weight alone fitted to the target (or 1/weight for a rank metric) | makes the rule computable for every metric; two sentences per definition | an amendment of a Must for a wording point |
+  | b | Treat bemtpl97 and fremtpl2 like the three siblings: add the L2 gain and the score of expo (Exposure) alone to both notes, as the rule reads today | follows the rule as written; no rule change | "1/weight alone" has to be read as "the weight alone" for a deviance without the rule saying so |
+  | c | Leave as is: expo is out of the features, so the decision does not depend on the numbers | no work | a Must's reporting clause stays unmet on two of six definitions, with no exception possible under a Must |
+
+* **Recommendation:** (a). The numbers are already measured, and stating the ceiling per metric type keeps the six insurance definitions reporting the same thing.
+
+Footnotes of the draft:
+
+- **LEAK-41** (Must; 2026-11-06, Lennart, on fremtpl2 and bemtpl97): the reporting clause on the L2 and actuarial gains and the 1/weight ceiling; probe 22 (leak_checks.md, the probes table) computes 1/weight only for a Gini.
+- **MET-13** (Must; amended 2026-11-06): the floor two orders below the smallest plausible mean on the scored scale; measured above as met.
 
 </details>
 
 <details><summary>Advocate</summary>
 
-**Opening brief for bemtpl97 (advocate). My position: ship. The data, split and metric stay as defined. The notes and metadata need corrections. `expo` needs one curator decision, and that decision is not a reason to reject the dataset.**
+**Advocate, opening brief: bemtpl97 (exposure re-review, 2026-11-06, full tier)**
 
-**1. The task is real, and the metric is the source's own (P3 and P6; USE-3, USE-5, MET-1, MET-2 and MET-5 are all Musts and all hold).**
-- **Evidence.**
-  - Every feature except `expo` is "registered at the start of the policy period". The claim auditor and the column auditor both confirmed this quote verbatim, in the binning manuscript (Sec. 2) and the arXiv paper (App. A).
-  - The label is the source's own count. It is not a proxy.
-  - The metric is Eq. 5 of arXiv:1904.10890v3 ("f(xi) is replaced by ei·f(xi)"), the same formula as treeML.Rmd L641-657. The source's Fig. 10 range (0.528-0.538) is on the same scale as ours.
-  - The signal is real:
-    - The dummy scores 0.551735, reproduced exactly.
-    - LightGBM-Poisson scores 0.5274-0.5285, a 4.2-4.4% skill, and wins on 9 of 9 folds in three independent runs.
-    - A random column moves the score by 0.0001-0.0004, about 1/60 of the skill.
-  - The domain practitioner's verdict: "metric scores the decision (yes)". Poisson deviance is strictly consistent for the mean count.
-- **What it answers.** The blind reviewer's point 2 (RMSE compresses the scale) and point 3 (low signal) are about RMSE. The definition already ships deviance (Myunghwan, 2026-10-26), so neither point applies. An R² of about 0.02 is normal for claim frequency (TP-2: small and real, keep).
+Position: ship as defined. The data, target, weight, metric, floor and split stay as they are. Before the build, the notes need a few added or corrected sentences. One of them is a Must (the LEAK-41 reporting clause). It is a documentation gap and the numbers it needs are already measured. Expected verdict: "ship after changes", with no change to the data.
 
-**2. `expo`: I concede the measurement. The dataset stays either way (USE-12, Must, P3), and the open question is which fix.**
-- **What I concede.**
-  - Four agents agree. Part-year policies claim 1.6-2.3 times the annual rate. Using `expo` freely gains 0.0036-0.0041 deviance over using it as an offset, which is 16-18% of the skill.
-  - The note's evidence ("log(expo) alone 0.5470") measures only the legitimate proportional part.
-  - "Longer coverage gives more opportunity" is partly refuted.
-  - A Must takes no exception, so "kept on purpose" alone does not satisfy LEAK-10. It needs either an amendment or a fix.
-- **Why the measurement does not settle the mechanism.**
-  - The source names two causes of short exposure: policies that "started the policy in the course of the year or surrendered" (arXiv Sec. 4.1, p. 14). A mid-year start is known at quotation.
-  - New entrants (bm=11) make up 10.8% of part-year rows against 3.4% of full-year rows, with actual/expected 3.36 at expo ≤ 0.1 (task gamer).
-  - The column auditor's "not new business" proxies (bm≠11, bm=0) are weak. My inference, which ranks lowest under EV-2: a Belgian policyholder who switches insurer keeps their bonus-malus level, so a mid-year switcher looks like an existing customer.
-  - Without dates, LEAK-10's window clause cannot be tested the way it was for account_debt_south_africa. `expo` is also the length of the target's own window: the target is the count "during the observed insured period".
-- **Mildest remedy that keeps the definition as it is.** The curator records an amendment of LEAK-10 covering exposure as the denominator of a count target, which is option (a) in the precedent checker's consistency prompt.
-  - The note gets rewritten with the measured numbers: 16-18% of the skill, observed/expected about 1.4 for part-year rows, and both causes named.
-  - fremtpl2 is decided the same way. Lennart treated the two alike on 2026-11-04 (principles.md, consistency rule 2).
-- **If the curator declines the amendment.** The next rung on the ladder is a definition fix that still keeps the dataset: `expo` becomes a scoring column and the scorer computes the deviance of y against expo·f(x). This is the source's exact structure, and the ranking of models barely changes (correlation 0.983). It needs a new library metric: `_poisson_deviance` in `src/data_foundry/v2/metrics.py` has no exposure input today. Dropping `expo` is not the mildest remedy, because it throws away the legitimate scaling (0.0052 of the deviance).
+1. The only validity problem the dataset had is fixed, and no feature brings it back (P4; LEAK-41 Must, LEAK-10 Must).
+   - Evidence that expo is gone from the inputs:
+     - It is no longer among the features. feature_columns gives the 11 rating factors, sample_weight is 'expo' and the metric input is {'weight':'expo'} (claim auditor, claims 2 and 14).
+     - No model is trained or scored on rows chosen by expo; all 163,231 rows are in every split.
+   - Evidence that no feature stands in for it:
+     - The 11 features predict expo only weakly: R² 0.03 under the probe's 50k cap and 0.055 on full folds.
+     - The gain that runs through the weight is within noise for every feature, under both the Poisson fit and the L2 fit (column auditor; claim auditor claim 9).
+   - All features are registered at policy start (binning manuscript Sec. 2). The column auditor checked bm on the data: bm 0 has 5,215 claimants, so it is the start-of-year level.
+   - Where postcode, bm, age and agec predict expo, they do so through risk selection on attributes fixed at the start. LEAK-41 and USE-6 keep such features explicitly.
+   - Why this outranks any objection: this was the P4 Must that had kept the dataset parked (REVIEW issue 1). Every evidence agent says it is now resolved: the claim auditor, the column auditor, the split auditor, the domain practitioner, the precedent checker, and the blind reviewer ("no leaks").
 
-**3. The split follows SPLIT-8 (Must), the precedents and the source (P4).**
-- There is one undated year, and the raw order is sorted by postcode, so no proxy for time exists (split auditor; 0 violations of the order).
-- All 19 forced-IID definitions in the working copy are `approximate`, fremtpl2 included.
-- The source's own protocol is random folds within the year (Sec. 3.3).
-- Holding out whole municipalities costs at most 0.002 skill. Holding out whole regions still beats the dummy on 9 of 9 folds.
-- Exact feature twins across the split are 0.12-0.15% of test rows, with label agreement at chance (0.793 against 0.799).
+2. The metric is the source's own metric, scored on the unit the decision acts on (P6; MET-1, MET-11, MET-13, MET-14, MET-15).
+   - Identity with the source: the weighted rate deviance equals Henckaerts et al.'s Eq. 5 count deviance (treeML.Rmd L641-657) times n/sum(expo). That factor is 1.1229 to 1.1254 per fold. The identity is exact on all 9 folds, so models rank exactly as under the source's metric (claim auditor claim 3; precedent checker).
+   - The floor never binds:
+     - The floor is 1e-4. The lowest honest predicted rate is 0.008 to 0.045, which puts the floor 2.3 to 2.7 orders below.
+     - 0 of 489,693 test predictions fall below 1e-3, and 0.0% of predictions sit at the floor for every probe family.
+     - NaN and inf raise an error.
+   - The weighting is right for pricing:
+     - Without the weight the mean rate is 1.13 times the portfolio rate, and an unweighted fit is 0.0066 to 0.0114 worse.
+     - Actual/expected is 0.89 to 0.94 without the weight and 0.98 to 1.01 with it (domain practitioner).
+   - The practitioner says: "The metric I would choose is the declared one, unchanged."
+   - Answer to the blind reviewer's concern 1: they asked for exposure-weighted Poisson deviance, which is exactly what ships. They could not see it because the clean-room task.md does not name the metric. That is a gap in the clean room's wording, not in the definition.
 
-**4. Provenance: I concede R2. It is a metadata fix only (P5; PROV-9 and PROV-10, Musts).**
-- **What changes.** The 163,231-row portfolio has been public since 2019-09-26 (`katrienantonio/PE-pricing-analytics`, 0b279c43). So:
-  - set `year = "2019"`;
-  - add that repository to the bibtex and the notes.
-- **What stays.** The download can stay as it is (PROV-8 lets the download copy differ from the first publication).
-- **The 19 removed policies.** The selection is now proven: exactly the 19 rows with an average claim above EUR 81,000, holding 21 claims (0.1%). I argue against restoring them:
-  - The paper evaluated on these 163,212 policyholders (Sec. 4.1), so the shipped rows are the metric source's own rows.
-  - The removal is the source's preprocessing, not damage, so PROV-13 does not apply.
-  - USE-8: a selection alone does not change the fit.
-  - Reword "most likely" as a fact.
+3. The split mirrors the application, and its one limit is disclosed (P4; SPLIT-1, SPLIT-8 Must satisfied, SPLIT-29/30).
+   - The data is one undated year with raw rows sorted by postcode, so no time window can be built. The forced-IID cost is disclosed in curation_comments, task_summary.split and fit=approximate.
+   - Train and test match on expo for every fold:
+     - mean expo: 0.889 to 0.890 in train, 0.889 to 0.891 in test;
+     - KS p-values: 0.67 to 1.00;
+     - weighted claim rate: 0.1385 to 0.1403 in train, 0.1374 to 0.1411 in test.
+   - Postcode as a hidden group:
+     - Grouping the split by postcode costs honest models only 0.0004 to 0.0015 of skill.
+     - The LightGBM-over-GLM ranking holds: 9/9 folds under IID, 7/9 grouped.
+     - Scored on full-year rows only, the ranking is the same as on all rows.
+   - Copies give no shortcut: 0.4% of test rows have a train copy, and same-label copies are mostly both zero claims.
+   - Possible re-issued policies (57 to 176 pairs whose exposures sum to one year) share no claims (0.0% to 1.1%).
+   - Mildest remedy for the re-issued pairs: an optional clause in the copies bullet. No re-split.
 
-**5. Dtypes are right (P7, CLEAN-14).**
-- `coverage` is ordered and matches the codebook. `postcode` is nominal (583 levels, one-to-one with lat/long), which follows the house_sales and melbourne precedents. `fleet` and `bm` match fremtpl2.
-- The int32 `postcode` came from the panel kit. The column auditor reproduced this as a plain parquet round trip, and the container restores the categories (`curation_container.py:363-388`). The blind reviewer's point 4 was made on that artifact.
-- Untuned LightGBM overfitting a 583-level category (0.014 of skill) is a model problem. EV-4 says a model's limits are never an argument, and dtypes are decided from context.
-- Optional and cheap: store the categories as strings, so a reader without Data Foundry also gets a category.
+4. The signal is real; the no_signal flag reads the wrong scale (P6; TP-2 Should "small real signal: keep"; EV-3).
+   - The probe's "skill +0.015" is its RMSE skill (equal to R² 0.015). On the declared metric:
+     - probe LightGBM: 0.6004 against the dummy's 0.6199 (3.1%);
+     - claim auditor's weighted Poisson fit: 3.46% (3.27% to 3.68%), better than the constant on 9/9 folds.
+   - The decile spread is 3.4 to 3.8 times and the ordered Lorenz Gini 0.207 to 0.212 (domain practitioner).
+   - For MTPL frequency this is the normal size of the signal, since individual claim counts are mostly Poisson noise. The blind reviewer independently judged that it "still separates methods".
+   - Remedy: one line in REVIEW.md that reads the flag. No change to the task.
 
-**6. Copies and the floor follow precedent (LEAK-16 Should, MET-13).**
-- 133 exact copies and 35 conflicting profiles. The check rates them INFO, and they follow hiva_agnostic and fremtpl2.
-- `min_prediction=1e-6` is the amended MET-13, set on this case. It sits about 2.6 orders below the smallest plausible mean (practitioner: 3.8e-4).
+5. Like cases are decided alike, and every reversal names the fact that sets it apart (Principles, Conflicts: "treat like cases alike"; Who decides).
+   - fremtpl2 has the same facts and gets the same treatment: rate target, exposure as the weight, mean_poisson_deviance, floor 1e-4, ForcedIIDFromTemporal, fit approximate.
+   - The four sibling tables that had kept realized exposure as a feature were reversed the same day for the same reason, so no pair with opposite outcomes remains.
+   - The per-contract exception (spanish_motor_insurance_2015_2018) does not apply. Its planned term is one calendar year; bemtpl97's term varies and cannot be told apart from surrenders.
+   - The reversals of Myunghwan's calls of 2026-10-23 and 2026-10-26 rest on a later measurement. Part-year rows claim at an actual/expected of 1.42 against the offset model's expectation; the claim auditor reproduced this. His own line had already flagged expo as unverified at quotation, and his choice of Poisson deviance is kept.
+   - The register raises no flag on bemtpl97 (precedent checker).
 
-**7. Procedure fixes, none of which affects the verdict (writing.md).**
-- Superseded wording to fix:
-  - The record's "machine epsilon" line is superseded by the 1e-6 line.
-  - fremtpl2 `dataset.py` line 136 also says "machine epsilon".
-  - "20 other forced-IID definitions" should be 17.
-- The AI line of 2026-11-04 says "Exposure is an offset". The definition says the opposite. Correct that line.
-- "`sex` stays by curator choice" has no CC line behind it. It needs a curator line, or it should be marked as an AI draft.
-- The record cites "REVIEW.md issue 1", but no `REVIEW.md` exists in `datasets/_dev/tabarena-v0pt2/bemtpl97/`.
-- The README is `build_stale: true` and the container is missing locally. Reproducing the build is untested, but builds happen only when the curator asks, so this is not a verdict reason.
+6. The task gamer's only exploit is not a defect of the definition (P4 LEAK-41; house API in definitions.md).
+   - The gamer's finding: test-row expo in scoring.parquet, used as a feature, gains 0.0052.
+   - Why it is not a definition defect:
+     - The definition already declares expo a scoring column of role weight. feature_columns drops it, and the API says a scoring column is "never a feature". Every dataset with a weight or a group-scored metric works this way.
+     - The gamer's own table says a deployed model does not have this input.
+     - Using it breaks the declared protocol; it is not a gap in the dataset. Whether participants see the test-row weight is a question for the harness and the kit, across all such datasets.
+   - The gamer's alternative fix ("keep only full-year test rows") is forbidden by LEAK-41's own Must: "No model is trained or scored on rows selected by the realized weight". The gamer also showed that dropping short rows from training makes an honest model worse (0.60106 against 0.59913).
+   - Mildest remedy: none in the definition. If wanted, a harness-level note that scoring columns are withheld or must not be used as inputs. That is a house matter, outside this dataset.
 
-**Judgment record**
-```text
-Verdict: ship after note and metadata changes.
-Validity: USE-3, USE-5 hold; LEAK-10 triggered by expo (16-18% of skill non-proportional; mechanism mixed:
-  mid-year start vs surrender, untestable without dates); remedy: amend LEAK-10 for exposure as the target window's
-  denominator (keeps the definition), else expo as a scoring column; SPLIT-8 holds; PROV-9/PROV-10 fixed in metadata
-  (year 2019, cite the 2019 course repository).
-Value: MET-1, MET-2, MET-5 hold (source's Eq. 5); TP-2 real signal, 4.2-4.4%, 9/9.
-Quality: CLEAN-14 holds; postcode int32 is a kit artifact.
-For the curator: issue 1, expo, an amendment or a scoring-column fix (bemtpl97 and fremtpl2 together).
-```
+7. What I concede, and the mildest fix for each. None of these touches the data.
+   - (a) LEAK-41 reporting clause (Must, P4): not met in the text. The claim auditor and the precedent checker both flag it.
+     - The decision does not depend on it. Expo gains under both fits on the declared metric: +0.0051 (SD 0.0007) under L2 and +0.0047 (SD 0.0006) under weighted Poisson, 9/9 folds. Probe 22 at its cap gives +0.0035 and +0.0040.
+     - 1/expo alone scores 0.6122, against the training mean's 0.6193 and the honest model's 0.5979.
+     - Remedy (fix the definition's notes, the second rung of the remedy ladder): one sentence with these numbers, and a label on the old 0.0036-0.0041 / 0.0039 / +0.0043 figures saying they are count-scale fits with expo free.
+     - The precedent checker found the same gap in fremtpl2. Whether "1/weight alone" needs amending for a deviance metric (their option a) is a call for the curator, not grounds to hold this dataset.
+   - (b) Stale numbers (writing, EV-2):
+     - The copies bullet should read 397 extra exact rows and 88 conflicting profiles (177 rows); "50" counts profiles, not rows.
+     - The skill should read 0.5979 against 0.6193 (3.46%), replacing 0.5279 against 0.5520.
+     - The probe 22 R² should name its cap (full folds give 0.055).
+     - The REVIEW.md outcome block and the record's priority "risk" factor describe the state before the change.
+     - Remedy: text edits.
+   - (c) Postcode as a 583-level nominal category (P7, CLEAN-14 Should; low): the column auditor and the split auditor note that untuned LightGBM overfits it.
+     - Keeping it nominal follows settled precedent (house_sales, melbourne_housing_market, perth_house_prices) and the earlier panel's call.
+     - long and lat already carry the location.
+     - Types are decided from meaning, not from model runs (EV-4, dtypes-from-context).
+     - At P7, a cheap note is the right remedy: a README line that a 583-level code needs encoding or smoothing, as the source smooths it in space.
+     - It does not outrank anything above, and it was not reopened by today's change.
+
+Judgment record as I would write it:
+- Verdict: ship after changes (notes only).
+- Validity: LEAK-41 triggered and fixed (expo is the weight, never a feature); its reporting clause is to be added to the notes. LEAK-10 holds. SPLIT-8 holds, cost disclosed. SPLIT-29/30 no hit.
+- Value: TP-2, a small real signal (3.46% deviance skill, 9/9 folds); MET-11, the source's metric (exact identity); MET-13, the floor never binds; MET-15, the weighting is right.
+- Quality: CLEAN-14, postcode nominal kept with a note.
+- For the curator: (1) LEAK-41's "1/weight alone" wording for deviance metrics (shared with fremtpl2); (2) the harness policy on scoring columns in participant kits.
+
+Sources: the panel's reports (claim auditor, column auditor, split auditor, domain practitioner, precedent checker, blind reviewer, task gamer) and the task probe; the rules in principles.md, leak_checks.md (LEAK-41) and task_probes.md (TP-2).
 
 </details>
 
 <details><summary>Critic</summary>
 
-**Opening brief against shipping `bemtpl97` as defined**
+**Critic, opening brief: bemtpl97 (exposure re-review, 2026-11-06, full tier)**
 
-My position is that it should ship only after changes, and should not be excluded. The task is real: the source's own frequency model, scored by the source's own Poisson deviance, with 4.4% skill and 9 of 9 fold wins (TP-2). Two Must rules fail, and both can be fixed in the definition.
+Position: ship only after changes. None of my points is a reason to exclude. Today's change to the target, the weight and the metric holds up under every audit: the target rebuilds the integer counts exactly, expo is out of feature_columns, and the weighted rate deviance equals the source's Eq. 5 count deviance times n/sum(expo) (1.1229-1.1254 on every fold). What I ask for is mostly notes the definition owes under a Must, plus one quality call. Points are in rank order.
 
-**1. `expo` is a free feature, but realised exposure carries outcome information beyond exposure. P4, LEAK-10 (Must). Fix the definition.**
-- **Problem.** `expo` is the share of 1997 the policy was actually in force. The source cites two causes for a part year: a start during the year, and a surrender before its end (arXiv 1904.10890v3, Sec. 4.1). A surrender, often after a claim, happens after the prediction point. The source only ever uses exposure in proportion to the expected count: e·f(x) in Eq. 5, `offset(log(expo))` in treeML. The definition lets a model bend it freely.
-- **Evidence.** Four agents measured this independently and agree:
-  - Claims per insured year are 0.292 at expo ≤ 0.25 and 0.126 for a full year.
-  - Fitted on log(expo), the slope is 0.45 to 0.54. Pure exposure would give 1.0.
-  - Using `expo` freely rather than as an offset gains 0.0036 to 0.0041 deviance (claim-auditor, column-auditor, domain practitioner, task gamer). That is 16 to 18% of the model's skill over the dummy.
-  - New business does not explain it. Entry-level bm=11 rows show O/E 1.39 against 1.41 for the rest (column-auditor). Among existing policyholders (bm≠11), O/E is 2.13 at expo ≤ 0.1 (task gamer).
-- **Effect on the task.** The score rewards a pattern a pricing actuary cannot use: "at quotation I set e = 1" (domain practitioner).
-- **Why the stated reasons do not hold.**
-  - LEAK-38 covers anonymised competition fields whose timing cannot be tested. Here a conditional test measured the mechanism, and LEAK-38 itself says LEAK-10 then applies.
-  - The "kept on purpose" format comes from LEAK-30 (transductive scaling), which is a different mechanism.
-  - LEAK-10's 2026-10-26 clauses go against keeping it. A window value stays only when "the data shows it does not move with the outcome given the covariates" (account_debt_south_africa), which fails here. Values whose late cells cannot be located row by row "go when they may carry a gain" (distribution_transformers), and these carry 0.004.
-  - A Must takes no exception. The curator's 2026-10-23 and 2026-10-26 "retain expo" lines give no fact that sets the case apart (principles, consistency case 1).
-- **Remedy.** Make `expo` a scoring column, not a feature. The model predicts annual frequency f(x), and the scorer computes the mean Poisson deviance of `nclaims` against expo·f(x).
-  - This is exactly the source's Eq. 5 and treeML.Rmd L641-657. The target, the rows and the metric stay the same.
-  - It keeps the legitimate proportional part: 0.5313 with expo as an offset against 0.5361 without expo (column-auditor).
-  - It also satisfies MET-2 (Must): "every input it needs ships as a column and is never a feature".
-  - It needs the deviance scorer to read an exposure scoring column.
-  - Apply the same fix to fremtpl2, which carries the same mechanism (slope 0.62) and the same note ("as in bemtpl97").
-  - If the curator still wants `expo` as a feature, that is an amendment of LEAK-10 (precedent-checker's option (a)), not an exception.
+1. LEAK-41's reporting clause is not met (P4, Must).
+- Problem: LEAK-41 says the definition "reports its gain on the declared metric with an L2 fit on the shipped scale and with the weighted actuarial fit, and decides on the worse; it states the score of 1/weight alone". The Exposure bullet and the CC give only Poisson count-scale gains with expo as a free feature (0.0036-0.0041, 0.0039, +0.0043). Those come from the old task. There is no L2 number and no weight-alone score.
+- Effect: the decision stands, because both fits show a gain. But the evidence the Must asks for is missing, and the reader cannot check "decide on the worse".
+- Evidence: claim auditor claim 10 (REFUTED). On the declared metric over 9 folds, expo gains +0.0051 (SD 0.0007) under weighted L2 and +0.0047 (SD 0.0006) under weighted Poisson, so L2 is the worse fit. 1/expo alone scores 0.6122 against the training mean's 0.6193 and the honest model's 0.5979. Probe 22 (50k cap) gives +0.0040 / +0.0035. The precedent checker finds that australian_vehicle_insurance_2004_2005, frempl_french_motor_personal_line and pricing_game_2016_french_fleet report these numbers, and that bemtpl97 and fremtpl2 do not. A Must has no exceptions.
+- Remedy (note): add one sentence with these numbers to the Exposure bullet, and mark the old figures as count-scale fits with expo free. Precedent checker issue draft, option (a) or (b). If the curator takes (a), "1/weight alone" for a deviance should be read as "the weight alone fitted to the target", which scores 0.0051-0.0079 better than the constant.
 
-**2. The note's justification is factually wrong. P4, LEAK-38 note format (Should), and EV-2. Rewrite the note.**
-- `curation_comments` says `expo` stays "as the exposure the source puts into the expected count". The source puts it in proportionally; the definition does not.
-- `known` says "longer coverage gives more opportunity for claims". The claimant share is 17.4% at expo 0.75 to 0.999 against 11.5% for a full year.
-- The evidence cited (log(expo) alone scores 0.5470 against 0.5517) measures signal that plain exposure would also give. It does not test the leak.
-- The record's AI line of 2026-11-04 says "Exposure is an offset, not a weight". The definition says "no … offset" and "neither a weight nor a scoring column".
-- **Remedy.** If point 1 is fixed, the note goes. If it is not, rewrite the note in LEAK-38's format: both causes (start and surrender), the 16 to 18% share of skill, O/E about 1.4, and when to revisit.
+2. Test-row expo sits next to the features (P4, LEAK-41 Must, "never a model input"; the definition meets it, the shipped bundle invites breaking it).
+- Problem: expo is a scoring column, so it stays in the frame for test rows too. The participant kit ships it in scoring.parquet.
+- Effect: one line of code puts the realized exposure, partly set by the outcome, into a model. That gains 0.0052 (0.0039-0.0061 per split), about 15% of the honest skill, and no deployed model at the quote has this value.
+- Evidence: task gamer exploits 1-3: expo or 1/expo as a feature 0.59396 against 0.59913; an expo<1 flag 0.59467; a train-learned per-expo-bin factor 0.59503. The noise check moves the score by 0.00005.
+- Remedy (note; this is protocol-wide, not a definition change): one line in the README's Training weight section. The harness passes expo only as sample_weight on training rows and to the scorer, never as a model input, and test-row expo is the scorer's alone. Also raise it for the curator as a cross-cutting issue for every weighted dataset (fremtpl2 and the four other insurance tables): either withhold test-row weights from what participants see, or document it.
 
-**3. The year and the citation are wrong. P5, PROV-9 and PROV-10 (Must). Fix the metadata.**
-- **Problem.** The definition says 2020 is "the earliest public copy found". The claim-auditor found an earlier one: `github.com/katrienantonio/PE-pricing-analytics`, commit 0b279c43 of 2019-09-26, file `data/P&Cdata.txt`. It holds 163,231 rows.
-- The shipped release equals that file minus exactly the 19 rows with an average claim cost above EUR 81,000, in the same order. All 15 compared columns are identical; only the ids are renumbered.
-- PROV-9 takes "the first commit that shares them". The precedent-checker's "consistent with 2020" predates this finding, and a measurement wins (EV-2).
-- **Remedy.**
-  - Set `year = "2019"`.
-  - Add the course repository to the bibtex and the source note.
-  - Keep treeML and CASdatasets as the shipped copy, which PROV-8 allows.
+3. The task probe's no_signal flag is not explained (P6, TP-1/TP-2, EV-3).
+- Problem: probes/task.txt flags no_signal. Its "skill" is the RMSE-based R² (0.015). It also prints two "best family" lines (linear by RMSE, lightgbm by the declared metric). No REVIEW.md line reads the flag, and the definition states no current skill. The 4.4% skill in the notes is on the count scale with expo free (claim 24).
+- Effect: a curator reading the probe sees "no signal" on a task whose real signal is small but real. random_forest scores worse than the dummy (-0.013).
+- Evidence: on the declared metric the deviance skill is 3.46% (3.27-3.68%), 9/9 folds (claim auditor), and 3.1% from the probe's own numbers (0.6199 to 0.60043). The domain practitioner finds a 3.4-3.8x spread between the top and bottom deciles and a Gini of 0.207-0.212.
+- Remedy (note): a REVIEW.md line, "no_signal reads RMSE skill; declared-metric skill 3.46%, 9/9: TP-2 small real signal, keep". Replace the stale 0.5279/0.5520 in the notes with 0.5979/0.6193.
 
-**4. The release's selection is now proven, but the definition still says "most likely". P3, USE-5 (Weigh). A note.**
-- The 19 removed policies are all claimants, with 21 claims (0.1% of claims). Their removal depends on the outcome.
-- The arXiv paper itself uses the 163,212 rows, so the task stays the source's.
-- **Remedy.**
-  - Replace "most likely removed" in `fit_reason` and `curation_comments` with the verified fact.
-  - Mark the record's 2026-10-26 "unverified" line as outdated.
-  - Shipping all 163,231 rows from the 2019 origin is a curator call. I do not ask for it.
+4. postcode as a 583-level nominal category, digits geographic (P7, CLEAN-14, Should; quality only).
+- Problem: Belgian postcodes are hierarchical by province (1xxx Brussels, 2xxx Antwerp, ... 9xxx East Flanders). CLEAN-14's last clause keeps a code numeric "when its digits carry meaning a model can use (zip code prefixes...)". lt_vehicle_loan_default_prediction (2026-11-05) shipped a code ordered by geography as a number. house_sales zipcode and the earlier panel's call went nominal. The source does not use the 583 levels as such: it smooths location in space (Sec. 4.1).
+- Effect on the benchmark (stated as effect, not as the reason for the type; EV-4): an untuned LightGBM with the native category falls from 0.0342 to 0.0063 skill, 0 of 9 folds better (split auditor). As a number it scores 0.59770 against 0.60851 as a category (column auditor, 12/12). The ranking then partly measures how well a method handles high-cardinality categories, which is the gain the domain practitioner says he would distrust.
+- Remedy (mildest): the curator decides CLEAN-14's digit clause against the lt_vehicle_loan precedent, from context. If postcode stays nominal, add a README note that it is a geographic code with long/lat as its centroid and needs encoding or smoothing, as the source does.
 
-**5. The build is stale and was not reproduced. EV-7 (procedure). Rebuild before shipping.**
-- The README says `build_stale: true`.
-- The container `01a18ad7…/dataset.parquet` is missing from the local warehouse.
-- So no agent could check the shipped dtypes or the categories restored from `categories.json`; for `postcode` that restore is confirmed from the code only.
-- **Remedy.** Rebuild after points 1 to 4 and check the container. Under the house rules the rebuild happens only when the curator asks.
+5. Stale and mixed-scale numbers in the notes (writing, EV-2).
+- Copies kept: the bullet says "176 extra exact rows and 50 rows with a conflicting profile". Those counts are on the old basis (expo a feature), and the 50 are profiles (100 rows). With expo out it is 397 extra exact rows and 88 conflicting profiles (177 rows) (claim 22, REFUTED).
+- Exposure gain: +0.0043 (CC, leak_checks Cases row) and 0.0039 (bullet) are on different scales, and neither says which (claim 23).
+- Probe 22: expo R² 0.03 is the 50k-cap figure. On full folds it is 0.055 (Spearman 0.24) (claim 9).
+- The REVIEW.md outcome block (floor 1e-6, LEAK-10 triggered, 4.2-4.4% skill) and the record's priority, which rests on the now-resolved "risk: issue 1", describe the old state (claims 30-31).
+- Remedy: update the numbers, name the scale on each, and let the new panel block supersede the old outcome. The next assessment can revisit the priority (Weigh).
 
-**6. The record contradicts itself and the definition. writing.md (procedure). Text fixes.**
-- The CC of 2026-11-04 says "machine epsilon"; the spec and the later CC say 1e-6. fremtpl2 `dataset.py` line 136 repeats the stale "machine epsilon".
-- "20 other forced-IID definitions" should be 17.
-- "sex stays by curator choice" has no curator line in the record behind it. Add one, or drop the attribution.
-- The AI line "no panel ran for this dataset" is now outdated.
-- Add to the SPLIT-8 bullet: "the raw order is sorted by postcode, so no row-order window exists" (split-auditor).
+6. "Each row is a distinct policyholder" is not quite shown (P4, LEAK-16/SPLIT-29, Should; negligible effect).
+- Problem: among same-profile pairs of part-year rows, 57 strict pairs (176 loose pairs, 114-352 rows) have exposures that sum to one year. That is 15.1% of 2-row profile copies against 2.8% of random same-postcode pairs, which points to a policy re-issued during 1997 under a new ID.
+- Effect: 45-47% of the pairs straddle train and test, but their outcomes are not shared (0.0% / 1.1% both claim). No optimism.
+- Remedy (note): one clause in the Copies kept bullet, as the split auditor words it. The task_summary "row" may keep its wording.
 
-**7. `postcode` is int32 in the panel kit. P7, CLEAN-14. Optional, and not a reason to exclude.**
-- The definition types `postcode` correctly as nominal. Integer categories become int64 in a plain parquet round trip, which is why the kit shows int32.
-- A reader without Data Foundry gets numbers.
-- **Remedy (optional).** Store the categories as strings.
+Not raised, because the evidence does not back it:
+- The blind reviewer's MSE worry: the metric is already the weighted Poisson deviance.
+- The outcome-cut part-year rows: the LEAK-41 case row settles this, and on full-year test rows only the ranking is unchanged (split auditor).
+- The forced IID split: SPLIT-8 is disclosed.
 
-**Judgment record**
-- **Verdict:** ship after changes 1, 2, 3, 4 and 6, and after the rebuild in point 5.
-- **Validity:**
-  - LEAK-10 triggered; the fix is `expo` as a scoring column (point 1).
-  - PROV-9 and PROV-10 triggered; the fix is in the metadata (point 3).
-  - USE-3 holds.
-  - SPLIT-8 holds and is disclosed.
-- **Value:** MET-1, MET-2 (after point 1) and MET-5 hold. TP-2 shows a real signal.
-- **Quality:** CLEAN-14 holds; point 7 is optional.
-- **For the curator:** point 1 reverses the "no offsets" decisions of 2026-10-23 and 2026-10-26 on both siblings. Keeping `expo` as a feature needs a LEAK-10 amendment, not an exception.
+Requested verdict: ship after changes.
+- Validity: LEAK-41 holds in substance, but its reporting clause is unmet (Must, fix with a note: point 1); a test-weight note goes to the harness (point 2).
+- Value: TP-2 small real signal, with the flag's reading recorded (point 3).
+- Quality: CLEAN-14 postcode is a curator call or a note (point 4); points 5-6 are notes.
+
+Sources: the panel's reports (claim auditor, column auditor, split auditor, domain practitioner, precedent checker, blind reviewer, task gamer) and the task probe; the definition's dataset.py; the rule text in leak_checks.md (LEAK-41) and principles.md.
 
 </details>
 
 <details><summary>Advocate rebuttal</summary>
 
-**Rebuttal for bemtpl97 (advocate). The critic and I now agree on the verdict: ship after changes, do not exclude. I concede the critic's point 1 remedy. The one difference left is small: the critic makes the rebuild a gate, and I treat it as part of fixing point 1.**
+**Advocate rebuttal: bemtpl97 (exposure re-review, 2026-11-06)**
 
-**Critic 1: `expo` should be a scoring column. Conceded, and I withdraw my amendment as the preferred route.**
-- **The rules point to the definition fix.**
-  - LEAK-10's own text says: "Fix it in the definition the smallest way (LEAK-7), else drop it."
-  - The remedy ladder (principles.md item 5) ranks "fix the definition" above "keep with a documented note".
-  - The scoring-column fix resolves the problem without changing the target, the rows or the metric. It is exactly the source's Eq. 5 and treeML.Rmd L641-657. So it is the mildest remedy, and keeping `expo` with a note under an amendment ranks below it.
-- **My case for the amendment does not hold up.** It rested on the claim that part-year rows are mostly mid-year starts, which are known at quotation. The data goes against that:
-  - New business does not explain the excess. Part-year rows with bm=11 have O/E 1.39, against 1.41 for the rest (column auditor).
-  - Existing policyholders (bm≠11) reach O/E 2.13 at expo ≤ 0.1 (task gamer).
-  - My point about switchers keeping their bonus-malus level is an inference with no measurement behind it. It ranks lowest under EV-2.
-- **Both LEAK-10 clauses go against keeping `expo`.**
-  - The window clause keeps a value only when "the data shows it does not move with the outcome given the covariates". Here it moves: the free log(expo) slope is 0.45-0.54, and freeing `expo` gains 0.0036-0.0041 of deviance.
-  - The same clause also says a value "that falls in the outcome's period, still goes". `expo` falls in the outcome's period.
-  - The late-pull clause covers values whose late cells cannot be located row by row: they go when they "may carry a gain" (distribution_transformers). We cannot locate the surrender cases, and they carry 16-18% of the skill.
-- **What follows:**
-  - The definition fix: `expo` becomes a scoring column, and the scorer computes deviance(nclaims, expo·f(x)). This needs an exposure input in `_poisson_deviance` (`src/data_foundry/v2/metrics.py`).
-  - The fix keeps the legitimate proportional part. With `expo` as an offset LightGBM scores 0.5313, against 0.5361 without `expo`, so the 3.69% skill and the 9/9 wins stay.
-  - Model rankings barely move: the free-feature and offset models' annual-frequency rankings correlate at 0.983.
-  - fremtpl2 gets the same fix (consistency rule 2; slope 0.62 there).
-  - The fix reverses the "no offsets" decisions of 2026-10-23 and 2026-10-26. That needs a curator line. Keeping `expo` as a feature is still open to the curator, but only as a deliberate LEAK-10 amendment (option (d)/(a)). I no longer argue for it.
-  - The one real cost: the fix also removes the part that comes from mid-year starts (bm=11 at expo ≤ 0.1 has O/E 3.36). Without dates that part cannot be separated, and LEAK-10 resolves an unlocatable gain by removing it.
+The critic and I want the same verdict: ship after changes, with notes only and no change to the data. I concede five of the six points with the critic's remedies, and part of point 4. On point 4 I dispute only one thing: that the curator should consider shipping postcode as a number.
 
-**Critic 2: the note is wrong. Conceded.**
-- What I conceded in point 2 of my opening applies unchanged.
-- Once the critic's point 1 is applied, the "kept on purpose" note goes. In its place, a short note says why `expo` is a scoring column: both causes of a part year (start and surrender), the 16-18% of skill, and O/E about 1.4.
-- The text "neither a weight nor a scoring column" and the `known` sentence on opportunity get rewritten.
-- The AI line "Exposure is an offset" becomes accurate after the fix, but it should be re-dated, because it was false when written.
+1. LEAK-41 reporting clause (P4, Must). I concede this in full, as in my opening point 7a.
+   - What follows: the definition is not ready to build until the Exposure bullet carries the declared-metric numbers. These are the L2 gain of +0.0051 (SD 0.0007), the weighted Poisson gain of +0.0047 (SD 0.0006), and 1/expo alone at 0.6122 against the training mean's 0.6193 and the honest model's 0.5979. The old figures need their scale named.
+   - One precision for the note: which fit is "the worse" depends on the run.
+     - On full folds (claim auditor), L2 is worse.
+     - Under probe 22's 50k cap, Poisson is worse (+0.0040 against +0.0035, the precedent checker's reading).
+     - The note should give both runs and state that both fits show a gain. "Decide on the worse" then excludes expo either way, so the order between them does not matter.
+   - The wording of "1/weight alone" for a deviance (precedent checker, option a or b) is the curator's call and shared with fremtpl2. It does not block bemtpl97.
 
-**Critic 3: the year and the citation. Conceded.** This is my point 4: set `year = "2019"`, cite `katrienantonio/PE-pricing-analytics` 0b279c43, and keep treeML and CASdatasets as the shipped copy (PROV-8).
+2. Test-row expo next to the features. I concede the README line and the cross-cutting issue for the curator.
+   - What follows: one sentence in the Training weight section. Expo is passed as sample_weight on training rows and to the scorer, never as a model input.
+   - I dispute only the placement, and I believe the critic agrees. The definition meets LEAK-41: expo is a scoring column, and feature_columns drops it (definitions.md: a scoring column is never a feature). Withholding test-row weights from the kit is a harness decision that covers every weighted dataset. It is not a defect of this definition, and it is not a reason to hold bemtpl97.
 
-**Critic 4: the selection of 19 policies. Agreed.**
-- Replace "most likely" with the verified fact, and mark the 2026-10-26 "unverified" line as outdated.
-- We both leave restoring the 163,231 rows to the curator. The paper evaluated on the 163,212 rows (Sec. 4.1).
+3. Reading of the no_signal flag (P6, TP-2, EV-3). I concede this. It is the same as my opening point 4.
+   - What follows: the REVIEW.md line the critic drafted, and 0.5979/0.6193 (3.46%, 9/9 folds) in place of 0.5279/0.5520.
+   - random_forest scoring -0.013 is an untuned forest overfitting noise. TP-2's own row on no_signal says so ("Untuned models overfit noise"). It does not count against the signal.
 
-**Critic 5: rebuild before shipping. Conceded in substance, disputed as a separate gate.**
-- Once point 1 is conceded, the definition and the metric change, so a rebuild and a check of the container are part of that fix anyway.
-- A stale README alone is not a defect of the dataset. Builds happen only when the curator asks (rebuild.md).
-- After the rebuild, these checks should run:
-  - `postcode` is a category in the container;
-  - the scoring column is present and is not in `feature_columns`;
-  - the dummy and LightGBM scores are re-run against 0.551735 and about 0.5314.
+4. Postcode as a nominal category (P7, CLEAN-14 Should). I concede the README note and dispute the alternative of shipping it as a number.
+   - Concede: add a README note that postcode is a geographic code, that long/lat are its centroid, and that it needs encoding or smoothing, as the source smooths location (Sec. 4.1).
+   - Dispute: CLEAN-14's digit clause asks whether the digits carry meaning "a model can use". Here they add none.
+     - long and lat give each of the 583 municipalities its exact location, one value per postcode in both directions (column auditor).
+     - The province that the leading digit encodes is a coarse function of those coordinates, so a numeric postcode adds no place information the frame lacks.
+     - That fact sets bemtpl97 apart from lt_vehicle_loan_default_prediction. The precedents with a coordinate pair or comparable settings went nominal: house_sales zipcode, melbourne_housing_market, perth_house_prices, and this dataset's own earlier panel. Under "treat like cases alike" (principles, Conflicts), the nominal type stands.
+   - The critic's effect numbers (0.0342 to 0.0063 skill; 0.59770 against 0.60851) are untuned-model behaviour. EV-4 and dtypes-from-context forbid deciding a type from them, and the critic says so.
+   - The domain practitioner's distrust of "a gain that rests on the 583 postcode levels" is an argument for the note. A method that memorises 583 levels is penalised by the metric, as the split auditor shows: it costs skill and gives no optimism. Measuring that is legitimate.
+   - What follows: keep nominal and add the note. The curator may still revisit the clause, but it is a P7 Should and outranks nothing above.
 
-**Critic 6: the record's text. Conceded, with one addition.**
-- The fixes the critic lists:
-  - "machine epsilon" is superseded in the record and at fremtpl2 line 136;
-  - "20 other forced-IID definitions" should be 17;
-  - "`sex` stays by curator choice" needs a curator line or should be marked as an AI draft;
-  - "no panel ran" is outdated;
-  - the SPLIT-8 bullet gets "raw order sorted by postcode" added.
-- I add one more: the record cites "REVIEW.md issue 1", but no `REVIEW.md` exists in the folder.
+5. Stale and mixed-scale numbers (writing, EV-2). I concede all of these. They are the same as my opening point 7b.
+   - What follows:
+     - Copies kept: 397 extra exact rows and 88 conflicting profiles (177 rows), counted as profiles.
+     - Each exposure gain is labelled with its scale.
+     - The probe 22 R² names its cap (0.055 on full folds).
+     - The new panel block supersedes the old outcome, and the priority is revisited at the next assessment.
 
-**Critic 7: `postcode` int32. Agreed.**
-- The int32 comes from the panel kit's parquet round trip, not from the definition (CLEAN-14 holds).
-- Storing the categories as strings is optional.
+6. "Each row is a distinct policyholder" (LEAK-16, SPLIT-29, Should). I concede the optional clause.
+   - What follows: one clause in the Copies kept bullet, worded as the split auditor has it.
+   - No re-split is needed. The pairs share no outcomes (0.0% of strict pairs and 1.1% of loose pairs both claim), and the effect is nil (SPLIT-30).
 
-**Where we agree on what holds:**
-- USE-3, USE-5, MET-1, MET-5 and SPLIT-8 hold.
-- TP-2 shows a real signal: 4.2-4.4% skill, 9/9 fold wins, against a noise band of 0.0001-0.0004.
-- None of the critic's points argues for exclusion.
+Net: the critic raises no point that touches the data, target, weight, metric, floor or split. Every remedy is on the notes rung of the remedy ladder or with the harness. The judgment record stays as in my opening brief, with three additions: the README note on test-row weights, the README note on postcode, and the clause on copies.
 
-**Judgment record (revised)**
-```text
-Verdict: ship after changes.
-Validity: LEAK-10 triggered by expo; fix in the definition (LEAK-7, ladder): expo as a scoring column,
-  deviance of nclaims against expo*f(x) (source's Eq. 5); same for fremtpl2; reverses 2026-10-23/26 no-offset lines
-  (curator line needed; keeping expo as a feature would need a LEAK-10 amendment). PROV-9/PROV-10: year 2019, cite
-  PE-pricing-analytics 0b279c43. SPLIT-8 holds. USE-5: selection of 19 policies stated as fact.
-Value: MET-1, MET-2 (after the fix), MET-5 hold; TP-2 real (offset-only skill 3.7%, 9/9).
-Quality: CLEAN-14 holds; postcode as strings optional.
-For the curator: issue 1, approve the expo scoring-column fix on both siblings (needs an exposure input in
-  _poisson_deviance), then rebuild and re-check.
-```
+Sources: the critic's brief and the panel's reports; the rules in principles.md, leak_checks.md (LEAK-41) and task_probes.md (TP-2).
 
 </details>
 
 <details><summary>Critic rebuttal</summary>
 
-**Rebuttal (critic) on `bemtpl97`**
+**Critic rebuttal: bemtpl97 (exposure re-review, 2026-11-06)**
 
-The advocate and I now agree on most points. We disagree on one thing: what to do about `expo`.
+Overall: the advocate and I mostly agree. We both want "ship after changes", with notes only and no change to the data, and we both treat the LEAK-41 reporting clause as an unmet Must that a note fixes. Below I go through the advocate's seven points: what I concede, and the two places where we differ (points 6 and 7c).
 
-**Advocate 1: the task is real and the metric is the source's (USE-3, USE-5, MET-1, MET-2, MET-5).** I concede this. My opening said the same: a 4.2 to 4.4% skill, 9 of 9 fold wins, and Eq. 5 of the source paper. I add one point. MET-2 holds fully only when the exposure that Eq. 5 needs ships as a scoring column. Today it ships as a feature. See point 2.
+1. Validity fixed, no feature brings expo back: concede.
+- The audits support it. expo is not in feature_columns. Every feature's gain through the weight is within noise under both fits. The features predict expo at R² 0.03 (capped) to 0.055 (full folds), through risk selection on factors known at the start (LEAK-41, USE-6).
+- One correction to "this outranks any objection": LEAK-41 is one Must, and its reporting clause is part of it. "Every Must has to hold" (principles, How to decide, step 4). The advocate's own 7(a) accepts this, so it only affects how the record is worded, not the verdict.
 
-**Advocate 2, `expo`: I dispute the remedy.**
-- **The ladder does not list an amendment.**
-  - `principles.md` says a Must violation "is fixed in the definition when it can be (drop, lag, filter, re-split, re-target)". The remedy ladder runs: repair, fix the definition, keep with a note, exclude.
-  - An amendment is not a step on that ladder. It is a deliberate change to the rule, offered when a departure "would break a Must" (consistency case 1). It is not the mildest remedy for a Must that can be fixed.
-  - Both sides agree this one can be fixed. The advocate's own fallback is the fix: `expo` as a scoring column, with the deviance of `nclaims` against expo·f(x). So the Must calls for the fix (Must, P4). The amendment is open to the curator only as a deliberate change to LEAK-10.
-- **"The mechanism cannot be tested without dates" argues for removal, not for keeping.** LEAK-10 has two clauses, amended on 2026-10-26.
-  - A value from the target's window stays only "when the data shows it does not move with the outcome given the covariates". The data shows it does move: the log(expo) slope is 0.45 to 0.54, and O/E is about 1.4.
-  - Values whose late cells "cannot be located row by row … go when they may carry a gain". This is the advocate's own premise, and the gain is 0.0036 to 0.0041.
-  - The advocate also calls `expo` "the length of the target's own window". That puts it inside LEAK-10's window clause, not outside it.
-- **The new-business explanation loses on evidence (EV-2, Must).**
-  - New entrants (bm=11) do show an excess, O/E 3.36 at expo ≤ 0.1. But existing policyholders show it too: O/E 2.13 at expo ≤ 0.1 for bm≠11 (task gamer).
-  - Over all part-year rows, bm=11 gives 1.39 and the rest give 1.41 (column auditor).
-  - The idea that "switchers keep their bm level" is inference. The advocate ranks it lowest, and it cannot outweigh two measurements.
-- **I concede this much.** The scoring-column fix also removes the legitimate part from mid-year starts, which is known at quotation. That cost is smaller than keeping a measured post-outcome channel (LEAK-10 clause 2). The source itself never uses that part: it fixes the slope at 1.
-- **The advocate's 0.983 does not show what it is used for.** It is the per-policy rank correlation between two models' predicted frequencies (domain practitioner). It says nothing about how the leaderboard would order methods, so it does not show that the fix "barely changes" the ranking.
-- **I concede these points.**
-  - Do not drop `expo`, since that loses the proportional 0.0052.
-  - The fix needs an exposure input in `_poisson_deviance` (`src/data_foundry/v2/metrics.py`).
-  - fremtpl2 must be decided the same way (consistency rule 2).
+2. Metric: concede.
+- The identity with Eq. 5 is exact (factor 1.1229-1.1254). The floor never binds. The weighting is right (MET-11, MET-13, MET-14, MET-15).
+- I raised nothing here; I set aside the blind reviewer's MSE worry for the same reason the advocate gives.
 
-**Advocate 3: the split (SPLIT-8).** I concede. It is IID, `approximate`, disclosed, and matches the source's random folds. Holding out whole municipalities costs at most 0.002 skill. One wording fix remains: the SPLIT-8 note should say the raw order is sorted by postcode.
+3. Split: concede.
+- SPLIT-8 is disclosed, and SPLIT-29/30 have no hit.
+- On the re-issued pairs: the advocate calls the clause "optional", I asked for a note. Both are fine. I still ask for the clause, because the Decision text "Each row is a distinct policyholder" is a claim, and 57-176 pairs whose exposures sum to one year make it less than certain (LEAK-16, Should). It costs one clause.
 
-**Advocate 4: provenance (PROV-9, PROV-10).** I concede, and our remedies match: set `year = "2019"`, cite `katrienantonio/PE-pricing-analytics` 0b279c43, keep the treeML download (PROV-8), and state the 19-row selection as a fact. I agree not to restore the 19 rows (USE-8; the paper's own 163,212 rows).
+4. Signal real, no_signal flag on the wrong scale: concede.
+- The remedy is the same as my point 3: one REVIEW.md line, and the 3.46% skill (0.5979 against 0.6193) replacing the stale 4.4%.
 
-**Advocate 5: dtypes (CLEAN-14).** I concede. The int32 comes from the panel kit, not the definition. String categories stay optional.
+5. Like cases alike: concede.
+- The precedent checker finds every reversal grounded and no register flag. The siblings agree, except for the reporting clause shared with fremtpl2 (point 7a).
 
-**Advocate 6: copies and the floor (LEAK-16, MET-13).** I concede. Both checks rate the copies as INFO, and the 1e-6 floor sits about 2.6 orders below the smallest plausible mean.
+6. The gamer's exploit is not a defect of the definition: concede in part.
+- Conceded:
+  - The definition meets LEAK-41: expo is a scoring column, and feature_columns drops it.
+  - The gamer's "full-year test rows only" fix is forbidden by LEAK-41's own clause. I did not ask for it.
+  - The advocate already lists the harness policy for the curator. That covers the cross-cutting issue I asked for.
+- Disputed: "Mildest remedy: none in the definition".
+  - The README's Training weight section is generated from the definition (the scoring column's description), and it is what a user of the container reads. It already says expo is "never a feature".
+  - What it does not say is that test-row expo belongs to the scorer alone, not the model.
+  - The gain from misusing it is 0.0052, about 15% of the honest skill (task gamer, 9 splits). That is larger than any other exploit and well above the noise (0.00005).
+  - One clause in the scoring column's description ("test-row values are for the scorer only") is the mildest remedy that works.
+  - The rule that backs it is LEAK-41 (Must, "never a model input"), applied to the shipped bundle as well as to the feature list. If the curator prefers to settle this once at harness level, I accept that in place of the clause.
 
-**Advocate 7: procedure.**
-- I concede the text fixes and accept a new fact the advocate found: the record cites "REVIEW.md issue 1", but no `REVIEW.md` exists in the folder. Add that to my point 6.
-- I partly dispute the build. A stale build is no reason to exclude, but a stale build cannot ship. The rebuild belongs after the definition fixes, when the curator asks for it (EV-7). Then the container's dtypes and `postcode` categories can be checked, which no agent could do here.
+7. Concessions:
+- (a) LEAK-41 reporting: agreed in full, including the numbers and labelling the old figures as count scale with expo free.
+- (b) Stale numbers: agreed in full. Add the mixed scales of +0.0043 against 0.0039 (claim 23), which should name their scale.
+- (c) postcode: agree on rank (P7, Should, not a reason to hold the dataset) and on the README note as the remedy. I dispute only "settled precedent".
+  - The closest precedent with the same fact went the other way: lt_vehicle_loan_default_prediction (2026-11-05) shipped a code ordered by geography as a number under CLEAN-14's digit clause.
+  - The house_sales, melbourne and perth precedents predate it.
+  - Under "treat like cases alike" (principles, Conflicts), keeping postcode nominal needs the fact that sets it apart to be written down.
+  - The advocate names that fact: long and lat carry the location, one pair per postcode. That is a sound distinguishing fact, and it comes from the data's meaning, not from model runs (EV-4).
+  - My ask therefore narrows: a CLEAN-14 line in the Dtypes bullet, "postcode nominal despite its province digits, since long/lat give each municipality's location (unlike lt_vehicle_loan_default_prediction)", plus the README encoding note. No change of type unless the curator wants it.
 
-**Judgment record**
-- **Verdict:** ship after changes. Never exclude.
-- **Validity:**
-  - LEAK-10 (Must) fails. The fix is `expo` as a scoring column, with a scorer that takes exposure. Apply it to bemtpl97 and fremtpl2 together.
-  - An amendment of LEAK-10 is a deliberate rule change for the curator to choose. It is not a milder remedy.
-  - PROV-9 and PROV-10 are fixed in the metadata.
-  - USE-3 and SPLIT-8 hold.
-- **Value:** MET-1 and MET-5 hold. MET-2 holds fully once `expo` is a scoring column. TP-2 shows real signal.
-- **Quality:** CLEAN-14 holds. String categories for `postcode` are optional.
-- **For the curator:**
-  - The one open disagreement is LEAK-10: fix the definition (critic) or amend the rule (advocate). If you choose the amendment, the note is rewritten in LEAK-38's format with both causes, 16 to 18% of the skill and O/E about 1.4.
-  - Then: the text fixes (including the missing `REVIEW.md`), and a rebuild when you ask for it.
+Agreed judgment record:
+- Verdict: ship after changes (notes only).
+- Validity: LEAK-41 triggered and fixed; its reporting clause is added to the notes (Must). LEAK-10 holds. SPLIT-8 holds, cost disclosed. SPLIT-29/30 no hit.
+- Value: TP-2 small real signal (3.46%, 9/9), with a REVIEW.md line that reads the no_signal flag. MET-11, MET-13 and MET-15 hold.
+- Quality: CLEAN-14 postcode kept nominal, with the distinguishing fact and an encoding note. The stale counts, scales and skill are updated. The re-issued-pairs clause goes in.
+- Still disputed:
+  - The test-row expo clause in the scoring column's description (my ask) against a harness-level policy only (the advocate's).
+- For the curator:
+  - (1) LEAK-41's "1/weight alone" wording for deviance metrics (shared with fremtpl2).
+  - (2) The harness policy on scoring columns in participant kits; if adopted, it replaces the disputed clause.
+
+Sources: the advocate's brief and the panel's reports; principles.md and leak_checks.md.
 
 </details>

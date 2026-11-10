@@ -151,6 +151,12 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             "metric": task.objective_metric.name,
             "metric_origin": task.objective_metric.origin,
             "scoring_columns": [c.column for c in task.scoring_columns] or None,
+            **({"sample_weight": task.sample_weight} if getattr(task, "sample_weight", None) else {}),
+            **(
+                {"unit_weight": {"column": task.unit_weight.column, "unit": task.unit_weight.unit}}
+                if getattr(task, "unit_weight", None)
+                else {}
+            ),
             "split_regime": task.split_regime,
             "stratify_on": task.stratify_on,
             "time_on": task.time_on,
@@ -259,6 +265,7 @@ BRIEF_LABELS = {
     "row": "One row",
     "predicted": "Predicted",
     "known": "Known at prediction time",
+    "known_at_scoring": "Known only when scoring",
     "split": "What the test data stands for",
     "changes": "Our changes to the source",
 }
@@ -456,10 +463,21 @@ def _metric_block(task: Any) -> list[str]:
         if value
     ]
     out = ["**Metric**", "", _table(pd.DataFrame(rows, columns=["field", "value"]), full=True), ""]
+    weight = getattr(task, "sample_weight", None)
+    unit = getattr(task, "unit_weight", None)
     if task.scoring_columns:
         table = pd.DataFrame(
             [
-                (f"`{c.column}`", c.role, f"{c.used_by}: {c.description}", "never a feature")
+                (
+                    f"`{c.column}`",
+                    c.role,
+                    f"{c.used_by}: {c.description}",
+                    "training weight; never a feature"
+                    if c.column == weight
+                    else "unit weight: weight a validation loss by it; never a feature"
+                    if unit is not None and c.column == unit.column
+                    else "never a feature",
+                )
                 for c in task.scoring_columns
             ],
             columns=["column", "role", "how the metric uses it", "model input"],
@@ -472,6 +490,33 @@ def _metric_block(task: Any) -> list[str]:
             "(`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).",
             "",
             _table(table, full=True),
+            "",
+        ]
+        weights = [c.column for c in task.scoring_columns if c.role == "weight"]
+        if weights:
+            out += [
+                f"The test-row values of {_names(weights)} are for the scorer only: never read them when predicting "
+                "a test row.",
+                "",
+            ]
+    if unit is not None:
+        out += [
+            "**Unit weight**",
+            "",
+            f"The score counts each `{unit.unit}` once: `{unit.column}` is 1 over the unit's number of rows, so the "
+            "weights of a unit sum to 1. It is for scoring only, never a training weight or a feature. A model that "
+            f"picks its settings on a validation split weights the validation loss by `{unit.column}` too "
+            "(`validation_weight(container)` from `data_foundry.curation_container`) and keeps a unit's rows on one "
+            f"side of that split; `{unit.unit}` is metadata, never a feature.",
+            "",
+        ]
+    if weight is not None:
+        out += [
+            "**Training weight**",
+            "",
+            f"Fit every model with `{weight}` as each row's sample weight (`sample_weight(container)` from "
+            "`data_foundry.curation_container`), and never use it as a feature. The metric weights the test rows by "
+            "the same column, so a model fitted without it targets another quantity.",
             "",
         ]
     return out

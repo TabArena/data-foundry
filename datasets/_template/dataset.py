@@ -17,6 +17,7 @@ class ClassName(AbstractCuratedDataset):
         row="TODO(verify): what one row is.",
         predicted="TODO(verify): the target in plain words, by when after the prediction point.",
         known="TODO(verify): what the model knows then, in plain words.",
+        known_at_scoring="",  # a metric input recorded with the outcome (a realized time on risk); "" when none
         split="TODO(verify): what the test data stands for (new customers, the next weeks, unseen patients).",
         changes="",  # our changes to the source a reader needs to know
         fit="direct",  # TODO(verify): "direct", "approximate" (a stand-in with a known gap) or "none" (retire)
@@ -59,6 +60,7 @@ class ClassName(AbstractCuratedDataset):
     # and only when the source defines none, the fallback (roc_auc / log_loss / rmse by problem type) with where you
     # looked. A metric that needs a column (a group, a weight) maps it in `inputs={"group": "era"}` and declares it in
     # `scoring_columns = (ScoringColumn(column="era", role="group", used_by="...", description="..."),)`.
+    # sample_weight = None  # a rate's realized denominator (MET-15): the metric's row-weight column and fit weight
     metric = Metric.fallback(reason="TODO(verify): where we looked for the source's metric, and found none.")
     # The regime: neither declaration is an IID task with the recommended split. A grouped task (import `Grouping`):
     # grouping = Grouping(

@@ -1,17 +1,53 @@
 # fremtpl2
 
-**Outcome:** added. A French motor third-party liability portfolio (677,991 policy records, about 2011-2013): the
-number of claims with a recorded cost in the insured part of the year, scored by the source's mean Poisson deviance on
-random folds. Verdict: ship after changes, not as defined (second-pass panel, after Lennart's PR #33 review of
-2026-11-04). Validity: USE-5 and PROV-13 hold (the 2022 counts equal the claims table); LEAK-10 is triggered, likely,
-by `BonusMalus` in blocks 0-4 (issue 5) and, with the mechanism measured, by realised `Exposure` (issue 6); LEAK-17 and SPLIT-8's text are triggered by the policy chains across the random split (issue 7);
-SPLIT-14 cannot be met, so SPLIT-8 applies. Value: MET-5 holds; the signal is real and small (LightGBM 0.2326, Poisson
-GLM 0.2397, exposure baseline 0.2534). Quality: CLEAN-11 (no cap, exposures above a year kept) holds; CLEAN-10 is open
-for `DrivAge` 99 (issue 9). Weighed: the label-free renewal signal, kept with a note (issue 8).
+**Outcome:** added. The AI recommends shipping it: the re-review panel of 2026-11-06 under the exposure rules found no
+rule of validity broken, its changes are text only and made (below), and a new measurement raised a new split question
+(issue 11, settled on 2026-11-08: the random split kept with the note). Like every container with a `sample_weight`, it
+enters no run before the collection's training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The
+gate"). A French motor third-party liability portfolio (CASdatasets freMTPL2, 677,991 policy records, about 2011-2013):
+the target is the claims per year insured (`ClaimNb` / `Exposure`, 0 for 96.3%) from the 9 rating factors; `Exposure`,
+the share of the year insured, is each record's weight in training and scoring and never a feature (option A of #51,
+issue 6); random 3-fold split tagged forced from temporal; scored by the source's Poisson deviance, weighted by
+`Exposure`. Validity: MET-14 and MET-15 hold (an unweighted LightGBM scores 0.50043 against the weighted constant's
+0.47980 on fold 0, so a method must use the weight); LEAK-41 holds: the rating factors predict `Exposure` at R^2 0.17
+and none gains through it above noise, and the notes now report what it would leak as a feature (+0.0082 Poisson,
++0.0075 L2; a rate fitted on it alone 0.47114 against the constant's 0.47929); LEAK-10 holds with `BonusMalus` blank in
+blocks 0-4, where it likely follows the year's own claims (issue 5, EV-6); LEAK-9: next-year records found by reading
+other rows (label-free flags about 0.0010) stay under the protocol line (issue 8); SPLIT-8 holds (IID with
+`ForcedIIDFromTemporal`; holding out the later blocks costs +0.0009); SPLIT-29 does not apply (19 rows are not many),
+but by SPLIT-30 the one rating profile behind 94-102% of the gap to a split grouped on identical rating factors was a
+question for you, kept with the note on 2026-11-08 (issue 11). Value: MET-11 holds above the floor (the scorer equals
+the source's offset count deviance times n/sum(Exposure), 1.886-1.896 per fold) and MET-13 holds (the floor of 1e-4 a
+year binds for no prediction of a Poisson LightGBM); TP-2, a small real signal: a weighted Poisson LightGBM beats the
+constant rate on 3 of 3 folds by 0.0096 to 0.0127 (D^2 about 2.3%, actual over expected 1.00, Gini 0.195), while a
+random column moves fold scores by up to 0.0006, so strong methods differ in the fourth decimal; the task probe flags
+`no_signal`, but the flag reads an R^2-type skill (+0.002), which a Poisson count has near 0.01 by nature, and on the
+declared metric the probe's LightGBM scores 0.47283 against the dummy's 0.47838 and beats it on 3 of 3 splits (EV-3);
+re-check with the first tuned run (TP-1). The honest skill fell from about 6% to 2% with the `BonusMalus` blanking
+(issue 5), not with the rate target. Quality: CLEAN-11 (no cap, exposures above a year kept) and CLEAN-10 (default ages
+missing) hold as settled. Weighed: the reference table of actuarial frequency modelling, scored by the source's own
+metric +; `BonusMalus` blank in 88% of records, no dates, a thin signal -. Issues 10 (the record's tag stays, and
+bemtpl97 gets it) and 11 (the random split stays) were settled on 2026-11-08, and so were X1 (the test rows' weight is
+for the scorer only) and X2 (LEAK-41 reports the weight-alone score, no ceiling) in the working copy's REVIEW.md ("From
+PR #47"), which this panel raised with bemtpl97's. Open since 2026-11-08, on Lennart's question about D12: which one
+task these policies ship (issue 12, no panel). The AI keeps the claims per year and recommends it: on 9 random splits it
+tells a regularised LightGBM from the GLM on 9 of 9, while a score of the claim cost per year insured follows where a
+few claims land (one claim of 4.08M EUR is 18 to 19% of its test fold's claim amount; weighted Gini W 0.43); the claim
+cost per year is not created.
 
-**Main points:** Blank `BonusMalus` in blocks 0-4 (issue 5)? Take realised `Exposure` out of the features and score
-with it as an offset (issue 6)? Group the split on the inferred policy chains (issue 7)? Keep the label-free renewal
-signal with a note (issue 8)? Set `DrivAge` 99 to missing (issue 9)?
+Changes made after the review panel (AI, 2026-11-06), text only (rows, target, weight, metric, features and split
+unchanged): the `Exposure` bullet reports LEAK-41's numbers on the declared metric; the two accepted duplicate warnings
+give the counts the check now reports (181,197 copies, 8,128 conflicting rows) and read most groups as one policy-year
+split into records; "Counts of 5 to 16" and `splits_comment` name the profile and its effect on the split; the split
+and renewal numbers are restated on the declared metric and older numbers are marked; the `Exposure` description says
+blocks 5-6 are cut mostly at a date; the metric's identity is stated above the floor; `known` and `fit_reason` say why
+`BonusMalus` is blank and how small the signal is; the notes say a method must use the weight. The panel's reports
+quote the definition before these changes.
+
+**Main points:** Open: none. Settled on 2026-11-08: one task, the claims per year insured, and the claim cost per year
+insured is not created (issue 12); the tag `Two-Regime Zeros` stays and bemtpl97 gets it, as the tag describes the
+target's distribution (issue 10); the random split stays, with the note on the one rating profile behind its gap to a
+split grouped on identical rating factors (issue 11).
 
 **Issues for Lennart:**
 
@@ -161,6 +197,16 @@ signal with a note (issue 8)? Set `DrivAge` 99 to missing (issue 9)?
    (PRs #44-#47) is merged. The GitHub issue (context, typical modelling: an offset or a weight, what the stack provides
    and what is missing) is [#51](https://github.com/TabArena/data-foundry/issues/51).
 
+   **Resolved (2026-11-06, Lennart):** A, as the rate with a weight (option A of
+   [#51](https://github.com/TabArena/data-foundry/issues/51), the exposure study of 2026-11-05). The target is
+   `claim_frequency` = `ClaimNb` / `Exposure`; `Exposure` is the weight scoring column, the `weight` input of
+   `mean_poisson_deviance` and the task's `sample_weight`, and never a feature (LEAK-41, MET-14, MET-15, adopted the same
+   day); the floor is 1e-4 claims per year (MET-13). This is the offset model: on every shipped fold the weighted rate
+   deviance equals the count deviance of the same predictions times n/sum(Exposure) of the scored rows (1.886 to
+   1.896), so models rank as by the source's metric. Supersedes Andrej's call of 2026-10-20 ("a feature, not a
+   divisor", capped at 1) and the parking above: the conditional measurement came later (+0.0040; never better at
+   quotation), and with the weight, dividing does not inflate short records. `dataset check`: 0 errors, 0 warnings.
+
 7. **Group the split on the inferred policy chains (`ForcedGroupedFromTemporal`) instead of IID?**
 
    * **Problem:**
@@ -261,6 +307,90 @@ signal with a note (issue 8)? Set `DrivAge` 99 to missing (issue 9)?
    **Resolved (2026-11-05, Lennart):** B. The split stays IID with `ForcedIIDFromTemporal` for now; prior work gives no
    reason to group, and it is revisited if the inferred policy chains become a recorded key.
 
+11. **Keep the random split with a note on the one rating profile behind its gap to a split grouped on identical rating factors, or group on those factors?**
+
+   * **Problem:**
+     - The re-review of 2026-11-06 ran the grouping your survey of issue 7 found in prior work, folds grouped on
+       identical rating factors, and the random folds score 0.0007 to 0.0017 better, 94-102% of it from one profile.
+     - That profile is the same car and driver a year apart, 19 rows with 72 claims over 3.63 years (19.8 claims a year
+       against the portfolio's 0.074), which Wüthrich and Merz suspect to be one driver or a rental fleet; it holds
+       seven of the eight policies with 5 to 16 claims you kept on 2026-11-04.
+     - Under the random split LightGBM predicts 3.8 to 17.2 claims a year for the profile's test rows from their copies
+       on the training side (0.073 to 0.078 when grouped), the only memorization the random split rewards.
+   * **Background:**
+     - Issue 7 (resolved 2026-11-05, B) settled grouping on the inferred chains. This is a different key, the one prior
+       work uses.
+     - The profile: power 4, brand B1, regular fuel, area D, density 824, Languedoc-Roussillon, bonus-malus 50 (blank as
+       shipped), car and driver aged 12 and 52 in block 2, 13 and 53 in block 3; its rows fall 6/7/6 into the three test
+       folds.
+     - Your call of 2026-11-05 rests on prior work, and one strand of it, Schelldorfer (2021) and Lorentzen and Mayer,
+       groups on identical rating factors because ignoring the groups lifts LightGBM's pseudo-R^2 from 5.0% to 6.0%; the
+       correlation of 0.017 in issue 7's option B was measured on the inferred chains, not on this profile.
+     - On this table the 9 shipped rating factors are the whole feature vector, and 92.9% of their 138,537 groups of
+       identical rows sum to at most 1.01 years, so most groups look like one policy-year split into records.
+   * **Effect on the task:** On the random split LightGBM scores better by 7-15% of its gain over the constant rate,
+     almost all of it from recognising this profile; a Poisson GLM gains 0.0001, and LightGBM ranks ahead of the GLM
+     under every split.
+   * **Experiments:** split and claim auditors, independently, LightGBM Poisson fitted with the weight, 7 runs of 3
+     folds:
+     - grouped minus random: +0.00157 and +0.00167 on the shipped folds, +0.0007 to +0.0013 with other seeds;
+     - without the profile's rows: -0.0002 to +0.00015;
+     - an explicit memorizer gains nothing: a lookup of the profile's training rate blended into LightGBM scores 0.46823
+       against 0.46813, and the training twins' claims, left one out, add +0.0001 on average;
+     - grouping costs nothing elsewhere: 488,666 groups, folds of 224,778 to 226,838 rows;
+     - holding out the later blocks costs +0.0009 (SE 0.00035), +0.00046 without the profile.
+   * **Consistency:**
+     - A follows your call of 2026-11-05 and bemtpl97 (random split; the two treated alike on 2026-11-04).
+     - B departs from maternal_health_risk, where a key made of the whole feature vector was barred as a stand-in for an
+       unknown entity[^fv-key], and from bemtpl97, unless you rule that the profile is the entity here.
+     - C undoes your keep of the counts of 5 to 16 of 2026-11-04.
+   * **Panel:** The advocate and the critic agree that the new fact goes to you, and the mediator recommends A.
+     - Advocate: 19 rows are not the many rows that make a random split wrong[^many-rows], LightGBM ranks the same under
+       every split and the size of a gap decides nothing[^gap-size], and new quotes keep their rating profile, which
+       makes it a feature[^composite].
+     - Critic: Schelldorfer and Lorentzen and Mayer group on exactly this key against exactly this optimism, and a key
+       whose groups mostly sum to one policy-year marks the entity, which the rule on keys allows[^fv-key].
+   * **Unknown:** whether the profile is one contract, one driver or one fleet; a source statement, or your ruling that
+     identical rating factors define the entity for freMTPL2, would settle it.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the random split, with the note (implemented) | the notes and `splits_comment` name the profile and its effect | follows your call of 2026-11-05 and bemtpl97; 19 rows of 677,991 are not many | an optimism of about 0.001 on LightGBM stays |
+     | B | Group on identical rating factors | `ForcedGroupedFromTemporal`, the 9 shipped factors as the group key (488,666 groups, 350,129 of them single rows) | the key of Schelldorfer and of Lorentzen and Mayer; removes the only memorization | a ruling that the profile is the entity; bemtpl97 checked alike |
+     | C | Drop the profile's 19 rows | a row filter in `_clean` | removes the memorization | undoes your keep of 2026-11-04; nobody recommends it |
+
+   * **Recommendation:** A, keep the random split with the note: 19 rows of 677,991 do not make a random split wrong,
+     LightGBM ranks the same under every split, and the size of the gap decides nothing; B is the choice if you read
+     the profile as one policy or one fleet, and then a consistency check with maternal_health_risk and bemtpl97 comes
+     first. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, give the definition a `Grouping` whose group column is built from the 9 shipped rating
+   factors (`BonusMalus` blank in blocks 0-4; never a feature), set the tag `ForcedGroupedFromTemporal`, rewrite
+   `splits_comment`, `task_summary.split` and the notes' split bullets, re-run `dataset check` and the group and leak
+   probes, record the answer to the consistency check, and check bemtpl97 for the same structure. On C, filter the 19
+   rows in `_clean` (the profile above) and rewrite the "Counts of 5 to 16" bullet. On A, nothing more: the note is in
+   the definition. Either way the SPLIT-8 Cases row of fremtpl2 in `splits.md` follows the decision. If Lennart picks
+   B, post a `**Consistency check (AI, <date>):**` turn before applying it: grouping on identical rating factors departs
+   from maternal_health_risk (a feature-vector key barred) and from bemtpl97 (random split). Options: (a) the
+   literature's key, with 92.9% of groups at most a policy-year, recorded as the fact that sets it apart; (b) keep the
+   random split; (c) reopen bemtpl97; (d) amend the rule on constructed keys.
+
+   [^many-rows]: **SPLIT-29** (Must): an IID split is wrong when many rows share an entity that new data would not have
+     and the entity carries the label; **LEAK-17** (Must) groups repeated entities.
+   [^gap-size]: **SPLIT-4** and **SPLIT-30** (Must): the split follows what the task does in reality, not the size of
+     the gap; a hidden-group hit is a question, and the data is re-split only when the context says the rows share an
+     entity new data would not have, or the evidence is very strong.
+   [^fv-key]: **SPLIT-24** (Must): group on a true id or on one constructed exactly from the data, such as identical
+     values in the columns that define the entity, never on a hash of the feature vector standing in for an unknown
+     entity (maternal_health_risk).
+   [^composite]: `splits.md`, "Composite keys": when the key is what one row's entity is, group on it; when new rows
+     keep the key, it is a feature.
+
+   **Resolved (2026-11-08, Lennart):** A, as implemented: the random split stays (`ForcedIIDFromTemporal`), and the
+   notes and `splits_comment` name the profile and its effect on the gap to a grouped split; the CC of 2026-11-08 in
+   the notes and the record says so. Rows, target, weight, metric and split are unchanged.
+
 8. **Keep the label-free renewal and record-structure signal with a note?**
 
    * **Problem:**
@@ -343,1042 +473,1471 @@ signal with a note (issue 8)? Set `DrivAge` 99 to missing (issue 9)?
    rows at 99 in blocks 3-4 stay (three pair a year apart with a real age). A CLEAN-10 Cases row. The record's `year` is
    2014 (PROV-9).
 
-**Review panel:** ship after changes, not as defined (mediator). Tier full, second pass after Lennart's PR #33 review of
-2026-11-04. Claims: 21; 14 hold, 1 holds in part ("consecutive years"), 5 refuted (the Exposure share, "changes
-nothing", machine epsilon, "21 of 23", the 28,768 copies; all corrected in the notes this pass), 1 untested (the
-Wüthrich and Merz page numbers and Eq. 5.28; their quotes were verified by the advocate). Blind review: include with
-changes; its main concerns were the extreme counts under squared error (moot under the declared Poisson deviance), the
-`Exposure` framing and near-duplicate rows. Task gamer: the best exploit is realised `Exposure` (0.0045, about 2% of
-the score); record-structure statistics over train and test gain 0.0006-0.0007; sibling labels add nothing. Agreed:
-the target, the metric, no cap, exposures above a year kept, `DrivAge` 99 to missing, the wording fixes, and that
-`BonusMalus` as shipped likely breaks a Must. Disputed: the split (LEAK-17, SPLIT-8, SPLIT-24; issue 7), `Exposure`
-(LEAK-10 against LEAK-37; issue 6), and the `BonusMalus` mask (LEAK-10; settled by the mediator for blocks 0-4,
-issue 5).
+10. **Keep the record's tag `Two-Regime Zeros` on a claim-count target?**
+
+   * **Problem:**
+     - The record carries the tag `Two-Regime Zeros`, which came with a proposal to predict the claim amount, a task
+       that stays out for now[^amount].
+     - The tag marks a target whose lowest value is by far the most frequent one and separate from the rest of its
+       distribution[^tag-def], while the shipped target counts claims per year insured, 0 for 96.3% of the records.
+     - A Poisson count reproduces those zeros: from the rating factors and each record's time insured it expects 96.2%
+       zeros against 96.3% observed, so the zero is the count's first step, not a regime of its own.
+   * **Effect on the task:** none on the rows, the split or the score: the tag lives only in the record, a priority tag
+     on the dashboard, and lists the dataset among the two-regime targets.
+   * **Experiments:** the review writer (AI), on the 3 shipped folds, out of fold: a weighted Poisson LightGBM's rate
+     times the time insured expects 96.23% zeros, the constant portfolio rate 96.21%, against 96.32% observed.
+   * **Consistency:** Dropping it follows how_much_did_it_rain_ii (2026-10-30) and
+     thailand_road_accident_register_2019_2022 (2026-11-01), whose tags went when the zero proved the count's first
+     step[^tag-cases]; the insurance tables that keep it predict a claim amount (australian_vehicle_insurance_2004_2005,
+     spanish_motor_insurance_coverage_level_2022_2024).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the tag (implemented) | the record stays tagged | none found for the shipped count | a count tagged as a two-regime target |
+     | B | Drop the tag | the record's `tags` lose it | follows the tag's definition and the thailand precedent | none found |
+
+   * **Recommendation:** B, drop the tag: the shipped target is a count whose zeros a Poisson model reproduces; a CC
+     restores it if the amount task comes back. **Decision:** A or B?
+
+   **Notes for the AI:** on B, remove `Two-Regime Zeros` from the record's `tags` through the store API and add an
+   `**Assessment (AI, <date>):**` line with the zero shares above.
+
+   **Consistency check (AI, 2026-11-08):** Keep `Two-Regime Zeros` on fremtpl2 when bemtpl97, the same target treated
+   alike, carries none?
+
+   * **Problem:**
+     - The target is claims per year, scored by a Poisson deviance, and a Poisson model reproduces its zeros (96.2%
+       expected against 96.3% observed), which the tag's definition excludes[^f10a].
+     - bemtpl97 (same target and metric, treated alike since 2026-11-04) has no tag, and
+       thailand_road_accident_register_2019_2022 lost its tag for the same reason; the mark has no note.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep it as a marker for the amount task | a CC line says the tag holds a place for the claim-amount task kept out for later | your mark stands | a tag for a task that does not ship |
+     | b | Drop it, as bemtpl97 and thailand | the record's `tags` lose it | like cases alike | none found |
+     | c | Tag bemtpl97 too | both tagged | the pair alike | against the tag's definition twice |
+
+   * **Recommendation:** (b).
+   * **Decision:** (a), (b) or (c)?
+
+   **Lennart (2026-11-08, ok):** Reply (c): Tag bemtpl97 too; the tag should when the target has the kind of
+   distribution indepdet of just the task as far as I understand
+
+   **Resolved (2026-11-08, Lennart):** the tag stays on fremtpl2 and bemtpl97 gets it too: the tag describes the
+   target's distribution (here 96.3% of the policies without a claim), not the task's model, and the tag's definition
+   in records.md now says so.
+
+
+   [^f10a]: records.md, `tags` (Andrej, 2026-10-30); thailand_road_accident_register_2019_2022.
+
+
+   [^amount]: Andrej, 2026-10-20 (the amount design of PR #46); kept out by D12 of the exposure study of 2026-11-05 (CC
+     of 2026-11-06 in the notes).
+   [^tag-def]: The tag's definition (Andrej, 2026-10-30, `records.md`, `tags`): "If the low value is by far the most
+     frequent one and independent of the remaining target distribution, then we can treat it as two regime zero,
+     otherwise not".
+   [^tag-cases]: thailand_road_accident_register_2019_2022 (2026-11-01): "a count model given the features predicts
+     89.2% zeros against 89.0% observed, so the zero is the first step of the count, as for how_much_did_it_rain_ii".
+
+12. **Ship the claims per year insured, as now, or the claim cost per year insured, and only one of the two?**
+
+   * **Problem:**
+     - You asked which of the two tasks on these policies is more representative of the real use case, to ship that one
+       and not create the other[^f12-ask].
+     - The insurer prices the claim cost per year insured, but builds that price from a model of the claims per year and
+       one of the claim size, and the source's case study scores the claims per year[^f12-use].
+     - On this table a score of the cost per year follows where a few claims land: the largest claim, 4.08M EUR, is 18
+       to 19% of the claim amount of the test fold it falls in.
+   * **Background:**
+     - The amounts come from freMTPL2sev, summed per policy and divided by `Exposure`, each policy weighted by
+       `Exposure`; the join is clean in the pinned release (26,444 claims on 24,944 policies, each count equal to its
+       policy's claims with an amount, no amount on a policy without a claim).
+     - The tail is real, not a data error[^f12-clean]: French motor liability covers bodily injury without a limit
+       ([Code des assurances, R211-7](https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006812124)), and the
+       three largest claims (4.08M, 1.40M and 1.30M EUR) came from drivers aged 18 to 20.
+     - Noll, Salzmann and Wüthrich, Lorentzen and Mayer, and Wüthrich and Merz model the claims per year with the
+       Poisson deviance; the [scikit-learn Tweedie
+       example](https://scikit-learn.org/stable/auto_examples/linear_model/plot_tweedie_regression_insurance_claims.html)
+       models the cost per year (Tweedie at power 1.9, a Lorenz Gini weighted by exposure, each amount capped at 200,000
+       EUR) and concludes that "the claim amount is very challenging to predict".
+     - D12 of 2026-11-06 kept the amounts out for a later decision[^f12-d12].
+   * **Effect on the task:** A keeps the rows, target, weight, metric and split as shipped; B changes the target and the
+     metric, and the claim count leaves the frame; either way the other task is not created.
+   * **Experiments:** the AI, on 9 random splits (the 3 shipped folds and two more partitions of the same rows), five
+     honest models (two GLMs, three LightGBMs) fitted with the weight, `Exposure` never a feature:
+     - claims per year, weighted Poisson deviance: the best LightGBM removes 2.26% of the constant rate's deviance (SD
+       0.18%, 9 of 9) and the GLM 1.79%; a regularised LightGBM beats the GLM on 9 of 9 by 0.32% (split SD 0.03%,
+       bootstrap SE within one test fold 0.08%); the five models keep their order across splits (Kendall's W 0.89, where
+       1 is the same order on every split);
+     - claim cost per year, weighted Gini: 0.23 to 0.27 for the five models, split SD 0.07 to 0.09; the GLM and the
+       regularised LightGBM score 0.34 to 0.40 on the three test folds that hold the 4.08M claim and 0.13 to 0.27 on the
+       other six; the GLM leads by +0.011 (7 of 9, bootstrap SE within a fold 0.021); W 0.43;
+     - claim cost per year, weighted Tweedie deviance at power 1.5 (floor 0.1 EUR): the GLM removes 5.4% of the
+       constant's (SD 4.4%, -0.3% to 11.5%; bootstrap SE within a fold 3.5%); W 0.78, mostly from two LightGBMs that
+       chase the tail and lose to the constant on 3 and on 9 of the 9 splits;
+     - the claim size: a gamma GLM of the mean claim gains 5.8% (SD 8.5%) over the mean claim as released and -0.8%
+       (above 0 on 3 of 9) with the claims capped at 200,000 EUR; the frequency LightGBM times the mean claim ranks the
+       cost per year better (Gini 0.29) than any model fitted on it (0.23 to 0.27);
+     - with the claims capped at 200,000 EUR in the score alone, the cost's Gini still orders the models at W 0.40;
+     - the portfolio cost per year of the 9 test folds runs from 140 to 194 EUR, their claims per year from 0.0730 to
+       0.0745.
+   * **Consistency:**
+     - australian_vehicle_insurance_2004_2005 ships the cost per year with the weighted Gini, kept on 2026-11-08: its
+       source scores no frequency, and there the frequency models tied while the Gini separated the GLM from boosting
+       (+0.031, 8 of 9); here the measurements run the other way[^f12-d8].
+     - bemtpl97 ships the claims per year, as A; its release holds the claim amounts too, with the same tail (the
+       largest policy 1.99M EUR, 6.1% of all amounts, on a quarter of the rows), and its source builds the price from a
+       frequency and a severity model, scoring each by its deviance and the price by a Gini[^f12-bem].
+     - frempl_french_motor_personal_line and pricing_game_2016_french_fleet ship the cost per year: frempl's source
+       defines no task, and pricing_game_2016's game priced the cost, whose material-damage charges stop at 13,992 EUR a
+       period.
+   * **Panel:** none; asked by Lennart on 2026-11-08.
+   * **Unknown:** how tuned methods score the cost per year; the untuned models above are the evidence.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Claims per year insured (implemented) | `ClaimNb` / `Exposure`, weighted Poisson deviance, as shipped; the amounts are not created as a task | the source's metric; tells the models apart on 9 of 9 splits; the part of the price the rating factors set on this table | not the price itself; the claim size is left out |
+     | B | Claim cost per year insured | `ClaimAmount` / `Exposure`, weighted Tweedie deviance at power 1.5 (floor 0.1 EUR) or the weighted Gini; the claim count leaves; the claims per year are not created | the quantity the insurer prices; as australian | one claim moves every model's Gini by about 0.15; the Gini orders the models by chance (W 0.43); a frequency model ranks it better than models fitted on it |
+
+   * **Recommendation:** A, the claims per year: on this table the price varies with the rating factors through the
+     claims per year, which the source scores and which tells the models apart on every split, while a score of the cost
+     per year follows where a handful of claims land. On the use case alone the cost per year is the closer quantity; on
+     the measurements it is not a close call. **Decision:** A or B?
+
+   **Notes for the AI:** on A, nothing more: the notes' bullet "One task" and the CC of 2026-11-08 in the notes and the
+   record say it; bemtpl97 stays as it is. On B: `_load_raw` sums `ClaimAmount` per `IDpol`; `_clean` builds
+   `claim_cost_per_year` = `ClaimAmount` / `Exposure`, asserts that it times `Exposure` gives the amount back, and drops
+   `ClaimNb` (MET-14, LEAK-10); `metric = Metric.from_context("mean_tweedie_deviance", params={"power": 1.5,
+   "min_prediction": 0.1}, inputs={"weight": "Exposure"}, ...)` with a reason that names the power and the floor
+   (MET-13: two orders below the cheapest rating cell of at least 500 policies, 55.7 EUR a year, rounded down to a power
+   of ten), or `normalized_weighted_gini` if Lennart prefers australian's; `ScoringColumn.used_by` follows; rewrite
+   `task_summary` (question, predicted, changes, fit_reason), the target-dominant acceptance, the notes' target, metric,
+   "Counts of 5 to 16" and split bullets and `splits_comment` (the random split stays, its folds move with the new
+   content order); `dataset check`, the task probe and probe 22 with both objectives (LEAK-41: the weight alone scores
+   0.32 Gini on the cost per year, above every honest model, and `Exposure` as a feature adds +0.13); the CC line; the
+   tag stays; then ask whether bemtpl97 follows.
+
+   **Resolved (2026-11-08, Lennart):** A, as implemented: one task, the claims per year insured; the claim cost per year insured is not created (no duplicate).
+
+
+   [^f12-ask]: Lennart, 2026-11-08, on D12: "fremtpl2's claim-amount task -> which task is more representative of the
+     real use case? use that one and the other is not created as we dont want to have duplicates".
+   [^f12-use]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it; **MET-1**
+     (Must): the declared metric scores the decision of the use case; **MET-11** (Must): A's metric has origin
+     `source` (the case study's Poisson deviance on its offset model), B's would be `context`.
+   [^f12-clean]: **CLEAN-11** (Should): impossible values become missing, and values that are only unusual stay.
+   [^f12-d12]: Lennart, 2026-11-06 (D12 of the exposure study): the claim amounts "stay out for now; a task on amounts
+     per year insured or on the claim size is a separate decision, made on leak-free numbers"; the amount task was
+     Andrej's proposal of 2026-10-20 (the aggregate claim amount per policy).
+   [^f12-d8]: D8 of 2026-11-06 and australian_vehicle_insurance_2004_2005 issue 8, answered (a) on 2026-11-08 (Lennart);
+     **MET-10** (Weigh): the resolution on our folds is a factor in the choice of metric.
+   [^f12-bem]: Henckaerts, Côté, Antonio and Verbelen, [arXiv:1904.10890](https://arxiv.org/abs/1904.10890), Sec. 2:
+     "P&C insurers usually opt for a so-called frequency-severity strategy to price a contract"; Sec. 5.1: loss ratio
+     lift, double lift and the Gini index of Frees et al. (2013).
+
+**Review panel:** ship after changes (mediator). Tier full, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
+MET-16, after option A of #51 (issue 6): 12 reports. Claims: 32 audited; 20 hold, 3 hold in part (`Exposure`'s share of
+the gain, LEAK-41's reporting, the wording of the high counts), 3 refuted (the two accepted-warning reasons and the
+"Copies kept" counts, stale since `Exposure` left the features), 2 stale record lines, 2 untested (the old-target split
+numbers, now labelled; the book's quotes), and 2 re-measures the change note asked for (the record-count exploit, the
+memorizer under the two splits); all in the definition are fixed. Blind review: include with changes; it read the blank
+`BonusMalus` as a preparation defect (it is the blanking of issue 5) and asked for the weighted Poisson deviance, which
+the task declares. Task gamer: one real exploit, `Exposure` read as a feature (+0.0072 to +0.0088 per fold, +0.0088 to
++0.0111 with the other records' summed exposure), which `feature_columns()` drops; a participant can read the test rows'
+weight only from the scoring columns (X1). Agreed: ship with text changes only, made above (rows, target, weight,
+metric, features and split unchanged). Disputed: the one profile that makes the gap to a split grouped on identical
+rating factors, kept with a note (advocate, mediator) or grouped (critic); agreed after the rebuttals that it goes back
+to you (issue 11); and how LEAK-41's 1/weight ceiling reads for a deviance (X2). One count of the reports is corrected
+on a re-count: the profile is 19 rows with 72 claims over 3.63 years on the shipped as on the raw factors, falling 6/7/6
+into the test folds; the 20 rows with 77 claims over 4.63 years in the split auditor's filter add the eighth high-count
+policy, one row of another profile with no copy.
 
 <details><summary>Mediator</summary>
 
-**fremtpl2: mediator report (second-pass panel, 2026-11-04)**
+**fremtpl2: mediator's report (exposure re-review 2026-11-06, full tier)**
 
-**Recommendation (judgment record)**
+The advocate and the critic agree on the verdict and on every change. One dispute is left: whether issue 7 goes back to you as a question or is closed by a note. By the rules it goes back to you, and I recommend option (a), keeping IID with a note. I ran one cheap experiment, to settle how LEAK-41's "score of 1/weight alone" reads for a deviance (numbers under "Agreed facts", item 8).
 
-```text
-Verdict: ship after changes (not as defined).
-Validity: USE-5 holds (ClaimNb, direct fit); PROV-13 holds (2022 counts equal the claims table);
-  LEAK-10 BonusMalus triggered, likely (blank blocks 0-4 or drop; curator, issue 1);
-  LEAK-10 Exposure triggered, measured (offset scoring column or a LEAK-10 amendment; curator, issue 2);
-  LEAK-17 / SPLIT-8 triggered (recommend ForcedGroupedFromTemporal on the chains; Lennart's IID call of 2026-11-04 needs a fact the rules count; issue 3);
-  SPLIT-14 cannot be met, so SPLIT-8 applies.
-Value: MET-5 holds (the source's Poisson deviance, min_prediction 1e-6); real small signal: LightGBM 0.2326, GLM 0.2397, exposure baseline 0.2534.
-Quality: CLEAN-10 DrivAge 99 fixed (change below); CLEAN-11 no cap holds; wording fixes.
-Weighed: the label-free renewal signal kept with a note (issue 4).
-For the curator: issues 1-3 (Must), issue 4 (a new tension row).
-```
+**1. Judgment record**
 
-The mediator's issues 1-4 are issues 5-8 of this file; its change 6 (`DrivAge` 99) changes the data and is issue 9.
+Verdict: ship after changes. All the changes are text; the data, target, weight, metric, features and split stay as defined.
+Validity:
+- SEL holds. USE-1 and USE-5 hold (fit approximate).
+- MET-14 and MET-15 hold.
+- LEAK-41 holds in its decision: Exposure is never an input, and no feature carries it above noise. Its reporting clause (Must) is not met yet; the notes fix it (change 1).
+- LEAK-10 holds: BonusMalus is blanked in blocks 0-4 (issue 5, "likely", EV-6).
+- LEAK-9: the protocol line covers the renewal and record-structure signal (issue 8).
+- SPLIT-8 holds: IID, ForcedIIDFromTemporal.
+- SPLIT-29 is not triggered: 20 rows of 677,991 are not "many".
+- SPLIT-30: the 20-row profile is a hidden-group hit, so it is a question. Issue 7 is re-opened with that fact.
+Value:
+- TP-1: the no_signal flag was checked against the declared metric. Poisson LightGBM beats the constant on every fold by 0.0096 to 0.0127 (D² about 2.3%, A/E 1.00, Gini 0.195). The flag comes from an R²-type skill.
+- TP-2: a small real signal, keep.
+- MET-11: the source's metric. MET-13: the 1e-4 floor holds.
+Quality: CLEAN-11 and CLEAN-10 hold as settled. Stale or unlabelled numbers and two stale accepted-warning reasons are to be restated (EV-7).
+Weighed: issue 7, note against grouping. No other weighing is new.
+For the curator:
+- issue 7 re-opened, a weighing call;
+- two items shared with bemtpl97: the test-row weight a participant can read, and how LEAK-41's "1/weight alone" reads for a deviance;
+- the "Two-Regime Zeros" tag (minor).
 
-Neither side asks for exclusion. The critic's "don't ship as defined" stands, because the advocate conceded that BonusMalus and Exposure each break a Must that a note does not resolve.
+**2. Changes to make now (no decision needed)**
 
-**Decisive experiment run in this pass**
+All are in the definition's notes or fields, REVIEW.md, the record, or a Cases row. Numbers are on the declared scale unless marked.
 
-Disputed point: does the cross-split label leak survive once BonusMalus is out? I ran LightGBM (Poisson) without BonusMalus and report mean Poisson deviance over 3 folds.
+1. LEAK-41 reporting clause (Must). Add one sentence to the Exposure bullet:
+   - Exposure as a feature gains +0.0082 with the weighted Poisson fit (per fold 0.0086 / 0.0087 / 0.0073) and +0.0075 with L2 (full data). Probe 22 (50k cap) gives +0.0048 and +0.0067. Decide on the worse; the column is out either way.
+   - The ceiling: a rate model on Exposure alone scores 0.47114 against the constant's 0.47929 (claim auditor). Raw 1/Exposure is no ceiling under a deviance (item 8).
+   - The rating factors predict Exposure at R² 0.17. No feature's gain runs through it above 2 SD. Region and DrivAge are highest (1.1-1.4 SD), are known at the quote, and stay (USE-6).
+   - Replace "21-30% of LightGBM's gain" with 43% on the declared scale, or drop the share.
+   - The same sentence goes into bemtpl97 (precedent checker C1).
+2. The two accepted-warning reasons (EV-7; the reading under LEAK-17). The acceptances stay; only the stated facts change.
+   - dataset_conflicting_duplicate_rows: 8,128 rows (1.2%), not 520; 7,971 of them differ in claim count.
+   - dataset_duplicate_rows: 181,197 exact copies (26.7%). 327,862 rows sit in 138,537 feature-identical groups, and 92.9% of those groups sum to at most 1.01 years. So most groups look like one policy-year split into records, not distinct policies.
+   - The measured harm, all at or below the noise of about 0.0006 per fold: twin memorizer +0.0001; group size and siblings' exposure without the row's own Exposure, 0.0004; transductive record count +0.0005. The one exception is the profile of issue 7.
+3. "Counts of 5 to 16" bullet (EV-7). Correct the wording:
+   - The seven policies have 66 claims over 1.38 years.
+   - "72 claims over 3.63 years" belongs to the 19 rows of the profile on the raw factors. On the shipped factors (BonusMalus blank) the profile is 20 rows, 77 claims and 4.63 years.
+   - "0.0012 of 0.2534" is the count scale; on the declared scale it is 0.0023 of 0.4793.
+   - Add the fleet sentence here and in splits_comment. Under IID the profile's rows fall 6/7/7 across the folds, and LightGBM predicts 3.8-17.2 claims a year for them from their training copies (0.073-0.078 when grouped). It makes 94-102% of the IID-vs-grouped gap (+0.0008 to +0.0017). Without it the gap is -0.0002 to +0.00015.
+   - Both sides call this sentence required whatever you decide on issue 7.
+4. Restate the split and renewal numbers on the declared scale, and add one dating clause ("numbers before 2026-11-06 are on the count target with Exposure a feature; the declared score is 1.891 times the count deviance") (EV-7).
+   - Forced-temporal cost: +0.0009 (SE 0.00035), +0.00046 without the profile.
+   - Renewal channel: label-free flags about 0.0010; full oracle 0.0015-0.0025 (upper bounds, they read IDpol).
+   - Record-count exploit: +0.0005 (it was +0.00071 on the count target with Exposure a feature).
+   - "Copies kept": 327,862 rows in feature-identical groups and 181,197 exact copies. The old counts included Exposure as a column.
+   - Label 0.0821/0.0819, 0.23316/0.23267 and 0.2327/0.2435 as old-target numbers.
+5. Exposure ScoringColumn description (LEAK-41, wording). Add that in blocks 5-6 the records are mostly cut at a calendar date: block 6 never exceeds 0.74 of a year, and 99.8% of block 5 is a partial year.
+6. Metric definition and notes (MET-11). Add "for predictions above the floor" to the identity with the source's count deviance (precedent checker B3).
+7. TP call in REVIEW.md and fit_reason (TP-1, TP-2):
+   - give the per-fold deviance skill, D², A/E and Gini;
+   - say the no_signal flag comes from R², and a Poisson count has R² near 0.01 by nature;
+   - fold resolution is about 0.0006, so strong methods differ in the fourth decimal;
+   - the honest skill fell from about 0.064 to 0.023 because of the BonusMalus blanking (issue 5), not option A;
+   - re-check against tuned methods when they exist.
+8. Weight requirement (MET-15), in fit_reason or the task text. The task needs sample_weight: an unweighted LightGBM scores 0.50043 against the constant's 0.47980 (fold 0, A/E 0.64). Results should record whether a method used the weight.
+9. BonusMalus wording (EV-6, settles the critic's rebuttal point 3).
+   - Keep "likely". Do not present the gamer's +0.040 as the size of the leak: it is a partial restore over blocks 0-4 and mixes the leak with any real quote-time signal.
+   - Both outside reviewers read the blanking as a preparation defect. Keep it prominent in task_summary.known as well as in changes.
+10. Records:
+   - REVIEW.md Outcome header: it still describes the count target.
+   - The record gets a 2026-11-06 Assessment line: 9 features, Exposure the weight, issues 5, 6, 8 and 9 resolved, issue 7 re-opened.
+   - SPLIT-8 Cases row for fremtpl2 (splits.md line 257): rewrite to the 2026-11-05 reason (precedent checker prompt 1, option a). Drop the gap-size reason, which SPLIT-4 and SPLIT-30 bar. Label +0.00049 as the forward-by-block hold-out on the old target, not the grouping cost.
 
-| Added to the no-BM model | Shipped folds | Grouped on chains |
-|---|---|---|
-| none (deviance) | 0.24351 | 0.24349 |
-| true next-year row's ClaimNb and Exposure (via IDpol) | −0.00023 (−0.00011 to −0.00041, 3/3 folds) | +0.00005 (nothing) |
-| count of feature-matched later candidates (label-free) | −0.00086 | −0.00098 |
-| plus the candidates' labels | another −0.00019 (3/3 folds) | +0.00004 (nothing) |
+**3. Issues for the curator, ranked**
 
-What this settles:
-- With BonusMalus in, the next-year channel is worth −0.0021. Without it, −0.0002. So most of the split leak runs through BonusMalus and is fixed by issue 1.
-- The small remainder still exists under IID and is gone under grouping.
-- The renewal signal (about −0.0009 to −0.0010) survives any split.
+1. Issue 7 re-opened: keep IID with a note, or group on identical rating factors? (P4; SPLIT-30 Must, with SPLIT-29, LEAK-17 and SPLIT-24.)
+   - Problem: one rating profile is the entire IID-vs-grouped gap. It has 20 rows, 77 claims and 4.63 years, a rate of 16.6 claims a year against the portfolio's 0.07. Wüthrich and Merz suspect one driver or a rental fleet. It is the only memorization a random split rewards.
+   - Effect: +0.0008 to +0.0017 on LightGBM, 7-15% of its skill over the constant. The GLM gap is 0.0001. The LightGBM-over-GLM ranking is the same under every split. An explicit memorizer gains nothing (best blend 0.46823 against 0.46813).
+   - The dispute, settled by the rules:
+     - Both sides now agree SPLIT-30 makes the hit a question, so it goes to you and is not closed by a note.
+     - The critic's first claim, that the fact refutes the issue-7 resolution, does not hold. You resolved issue 7 on prior work, and the 2026-11-05 survey already listed the strand that groups on identical factors. The 0.017 correlation was about the inferred chains, not this profile.
+     - The new fact is the measured content of that grouping: one profile.
+   - Advocate's best evidence, for (a):
+     - SPLIT-29 needs "many rows", and 20 of 677,991 are not many.
+     - The ranking is unchanged, and the gap size never decides (SPLIT-4, SPLIT-30).
+     - On this table the shipped 9-factor key is the whole feature vector. SPLIT-24 bars "a hash of the feature vector standing in for an unknown entity" (maternal_health_risk).
+     - New quotes keep their rating profile (splits.md "Composite keys": when new rows keep the key, it is a feature).
+   - Critic's best evidence, for (b):
+     - Schelldorfer (2021) and Lorentzen and Mayer group on exactly this key, against this optimism.
+     - 92.9% of feature-identical groups sum to at most a year, so the key mostly marks one policy-year: an entity by SPLIT-24's "identical values in the columns that define the entity".
+     - It costs nothing elsewhere: 488,666 groups, folds of 224,778 to 226,838 rows.
+   - Options:
 
-**Changes to make now (no decision needed)**
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep IID, fleet note (change 3) | the score's dependence on 20 rows is stated | follows your 2026-11-05 call; SPLIT-29 not met | a known 0.001 optimism stays |
+     | b | Group on identical shipped factors | ForcedGroupedFromTemporal, GroupKFold | the literature's key; removes the only memorization | a ruling that the profile is the entity (SPLIT-24); bemtpl97 to check alike |
+     | c | Drop the 20 rows | a filter | removes it | undoes the 2026-11-04 keep; not recommended by anyone |
 
-1. Metric bullet: change "machine epsilon" to `min_prediction` 1e-6. Rule: MET-13, and Lennart's later CC on bemtpl97.
-2. VehAge: the notes and the `DEFAULT_VEHICLE_AGE` docstring say "21 of the 23 aged 99 are 100 a year later". The shipped rule pairs 14 of the 23, and all 14 are 100 a year later. Rule: EV-7.
-3. "Copies kept" bullet. Rules: EV-7, SPLIT-4, SPLIT-30.
-   - Say 28,768 rows copy an earlier row, and 40,903 rows sit in groups of equal rows.
-   - Name the links behind the 430,298 groups.
-   - Say the 48-60% link shares are lower bounds (±30 gives up to 75.3%).
-   - Remove "changes nothing" as a reason and give the measured channels instead.
-4. "Split forced IID" bullet. Rule: SPLIT-8.
-   - Report the cost on the same rows: +0.00049 deviance (SE 0.00016), so IID is slightly optimistic.
-   - Qualify the blocks. From 0→1 and 2→3 the BonusMalus is frozen (94.5% unchanged in 0→1). In blocks 4-6, 0.2% of linked rows cover a full year and 63-66% of pairs sum to at most 1.01, so they look like split contract years.
-5. Exposure note: replace "about a fifth of the gain". The proportional part is 0.0061. The size of the kept leak is the part beyond the offset: 0.0039-0.0045 (14-19% of the gain), with a free GLM coefficient of 0.641. Write these numbers whatever issue 2 decides. Rule: EV-7.
-6. DrivAge 99: set the 66 block-0 rows to missing, as VehAge is. They follow an empty band, none has a next-year row (62.7% of block 0 does), and block 1 has no driver older than 97. Both sides conceded, and no curator ruling exists to depart from. Rule: CLEAN-10.
-7. Year note: cite `pkg/inst/NEWS` at CASdatasets commit 324c15c999. The pinned NEWS.md does not list the tables. Rule: EV-7.
-8. Citations. Rule: EV-7. The two Wüthrich and Merz quotes are verified word for word (Appendix B, pp. 553-575, saved chapter). Still to do, verify or cut:
-   - the 553/554 page split;
-   - Eq. 5.28;
-   - the 9,942 old claims;
-   - the LightGBM figure of 292.6.
+   - Recommendation: (a).
+   - What would settle it: your ruling on whether identical rating factors "define the entity" for freMTPL2 (SPLIT-24), or a source statement that the profile is one contract.
+2. Cross-dataset, shared with bemtpl97: the test-row weight is readable from the scoring columns. (P4; LEAK-41 Must "never a model input", LEAK-9 Should.)
+   - Problem: the participant kit hands out Exposure for test rows in scoring.parquet, because the metric needs it. A participant who uses it as a feature gains +0.0084 / 0.0088 / 0.0072 per fold (gamer). Adding the siblings' summed Exposure brings it to 0.0088-0.0111.
+   - Advocate and column auditor: this is the scoring-column contract of every weighted task, not a defect of this definition.
+   - Critic: agrees it needs no change to the definition.
+   - Needed now for fremtpl2: only change 1, which states the size.
+   - Decision, across datasets:
+     - (a) a LEAK-9 protocol line for every weighted task: a method that reads a scoring column as input is called out and not benchmarked, as with the renewal line;
+     - (b) the harness withholds scoring columns from the predict call and the scorer reads them afterwards (code and API);
+     - (c) both.
+   - My lean is (c): the rule is a Must, and (a) alone relies on spotting it.
+3. Cross-dataset, shared with bemtpl97: how LEAK-41's "score of 1/weight alone" reads for a deviance. (P4; LEAK-41 text against probe 22's text.)
+   - Facts: the rule text has no Gini limit; probe 22 scores 1/weight "for a Gini metric". My run on the shipped folds:
 
-Applied in this pass: changes 1-5, 7 and 8 in part (the page numbers cut in favour of Sec. 13.1, which the saved chapter shows; the 9,942 old claims recomputed from the 2017 copy: 9,387 policies, 9,942 claims). Change 6 is issue 9.
+     | Prediction | Score per fold | Against the constant (0.4774-0.4807) |
+     |---|---|---|
+     | 1/Exposure | 3.636 to 3.657 | far worse |
+     | k/Exposure, k fit on train | 0.4904 to 0.4915 | worse |
+     | rate per Exposure band (20 bands), fit on train | 0.4708 to 0.4724 | better |
+     | rate model on Exposure alone (claim auditor) | 0.47114 | better |
 
-**Issues for the curator, ranked**
+     Under a level-sensitive metric, raw 1/weight scores worse than the constant, so it cannot serve as a ceiling. The meaningful ceiling is a rate fit on the weight alone.
+   - Precedent checker: Gini only. Advocate and critic: the rule's text governs; rules win over a reading.
+   - Needed now: change 1 reports the rate fit on the weight alone, which meets either reading.
+   - Decision: amend LEAK-41 and probe 22 to read "for a ranking metric (Gini), 1/weight alone; for a level-sensitive metric, a model of the target on the weight alone", or keep the text. The amendment is recommended; bemtpl97 follows either way.
+4. Tag "Two-Regime Zeros" (record; quality). It came from Andrej's amount task, which D12 keeps out. Your definition (policy question 4: a low value that dominates and is separate) may or may not fit a Poisson rate with 96.3% zeros. Keep or drop?
 
-**1. BonusMalus is likely recorded after the row's claims in blocks 0-4 (P4, LEAK-10 Must; EV-6 "likely"; LEAK-3).**
-- Problem: in blocks 0-3 the value is frozen across years and tied to the row's own claims as strongly as to the other year's (×4.3-5.9 vs ×4.8-6.2).
-  - Claimants pile onto the first malus step, 62-63: 5.3-6.8% of claimants against 1.5-1.7% of other rows.
-  - Block-4 rows without a next-year row show the same pile (7.8% vs 1.3%). Continuing block-4 rows and blocks 5-6 do not (1.1-2.2% vs 1.4-1.6%).
-- Effect: BonusMalus carries 42% of the gain (0.0112 of 0.0269). Removing it costs 0.0131 in blocks 0-3 and gains 0.0005 in blocks 5-6. It also carries most of the split leak (experiment above).
-- Each side's best evidence:
-  - Critic: the 62-63 footprint, which better risk selection would not produce.
-  - Advocate: no source statement exists, and the whole literature uses BonusMalus as its main factor.
-- Settled sub-dispute, the mask. The critic would blank blocks 0-3 plus the block-4 rows without a next-year row. Under that mask, missing would mean "not renewed", and non-renewed rows claim 0.141 against 0.070 per year. That is "missingness that encodes the outcome", which LEAK-10 bars. Blanking all of blocks 0-4 covers the same rows without this problem, so the advocate's mask wins under the same Must.
-- Decision needed:
-  - accept the leak reading, since the panel's source search (LEAK-3) found nothing;
-  - then blank blocks 0-4 (LEAK-7, the smallest fix; the online_shoppers form) or drop the column. They are equivalent in effect.
-  - Keeping it as is needs an amendment of LEAK-10.
+**4. Agreed facts**
 
-**2. Exposure as a free feature (P4, LEAK-10 Must). This is an independent failure, not a conflict.**
-- No exception rule applies:
-  - LEAK-37 covers a planned term, and no planned term ships.
-  - LEAK-11 needs a value that weakens the signal, and this one strengthens it.
-  - LEAK-38 covers anonymised competition fields, and its own clause sends a measured mechanism back to LEAK-10.
-- The mechanism is measured conditionally:
-  - within each exposure bin, a claim lowers the chance of a next-year row (0.19 vs 0.27 up to 0.47 vs 0.53);
-  - among rows with a prior-year record (no new business), rows with exposure ≤0.1 claim 0.255 a year against 0.056 at a full year.
-- Advocate's best point: Wüthrich and Merz say renewals during the year are split into two records, so the leak is mixed. That makes it smaller, not absent.
-- Decision needed, one of:
-  - (a) Exposure becomes a scoring column, scored by Poisson deviance of the predicted rate × Exposure (the source's offset form). This needs a new metric in `src/data_foundry/v2/metrics.py` and reopening bemtpl97.
-  - (b) Amend LEAK-10 for exposure denominators, recording 0.0039-0.0045 as the leak's size.
+1. Target, weight and metric:
+   - The target is ClaimNb/Exposure (0 to 365, 96.32% zero). ClaimNb is out, and _clean checks that the count rebuilds.
+   - The features are the 9 rating factors. sample_weight is Exposure, and so is the metric's weight.
+2. The scorer equals the source's offset count deviance times n/sum(Exposure), to 1e-15. The factors are 1.8956, 1.8919 and 1.8864 per fold (1.891 overall), so models rank as by the source's metric (MET-11).
+3. The floor never binds for LightGBM (0.0%). An all-zero prediction scores a finite 1.30.
+4. The weight is required: unweighted fits lose to the weighted constant (0.49792 to 0.50043 against 0.47929 to 0.47980; A/E 0.64).
+5. Honest skill:
+   - Poisson LightGBM beats the constant on every fold by 0.0096 to 0.0127 (D² about 2.3%, A/E 1.00, Gini 0.195).
+   - A random-column control moves fold scores by up to about 0.0006.
+   - The task probe's no_signal flag reads R².
+6. Exposure as a feature: +0.0082 Poisson and +0.0075 L2 (full data); +0.0048 and +0.0067 in probe 22. On the count scale this is 0.0043, so the notes' 0.0039-0.0045 holds in absolute size, but its share is 43%, not 21-30%.
+7. Probe 22: the rating factors predict Exposure at R² 0.17. No feature passes 2 SD; Region and DrivAge are at 1.1-1.4 SD, and both are known at the quote.
+8. The weight-alone readings: Exposure alone scores 0.47114 against the constant's 0.47929. Raw 1/Exposure scores about 3.65, and k/Exposure about 0.490 (my run).
+9. The profile:
+   - 20 rows on the shipped key, 77 claims, 4.63 years. On the raw factors it is 19 rows, 72 claims, 3.63 years; the seven policies with 5-16 claims have 66 claims over 1.38 years.
+   - It makes 94-102% of the IID-vs-grouped gap. Without it the gap is -0.0002 to +0.00015.
+10. Twin memorizer +0.0001. Record-count exploit +0.0005 (below noise). Forced-temporal cost +0.0009 (+0.00046 without the profile). Renewal flags about 0.0010; full oracle 0.0015-0.0025.
+11. Duplicates: 8,128 conflicting rows; 181,197 exact copies; 327,862 rows in 138,537 feature-identical groups, 92.9% of which sum to at most 1.01 years.
+12. Exposure timing:
+   - a claim lowers the chance of a next-year record in every partial-year band;
+   - blocks 5-6 are cut mostly at a date (block 6 at most 0.74 of a year);
+   - no row is selected by its weight.
+13. Settled points:
+   - BonusMalus blanking (issue 5) is settled and not reopened. The restore gain of 0.040 mixes the leak with any real quote-time signal.
+   - Not capping is settled (CLEAN-11): capping in training hurts (0.46909 against 0.46850).
+   - The default codes are settled (CLEAN-10).
+14. Stale record lines: the 2026-11-04 Assessment ("realised exposure kept, 10 features, three Must issues open") and REVIEW.md's Outcome header.
 
-  I recommend (a).
+The task gamer's exploits, mapped to rules and notes. The definition has no "Potential leak, kept on purpose:" bullet; the relevant notes are the Exposure bullet and the issue-8 CC (LEAK-9).
 
-**3. The split: IID or ForcedGroupedFromTemporal (P4; LEAK-17 Must and SPLIT-8's text against SPLIT-13, a Should, and USE-10).**
-- Ruling by rank: LEAK-17 (Must) outranks SPLIT-13 (Should).
-  - "Changes the score by nothing" is barred as a reason by SPLIT-4 and SPLIT-30.
-  - "Not the source's key" does not bar grouping either. SPLIT-24 allows a key constructed exactly from the data. The chains come from an exact rule whose chance rate is 0.02-0.05% (161,883 matches against 16-75 under the controls). SPLIT-25 does not apply.
-  - The renewal argument cuts against IID: IID hands the model the policy's future year (−0.0021, or −0.0002 without BonusMalus), while past years are worth −0.00015.
-- What grouping costs: nothing measurable. Skill is 0.0825 vs 0.0813, and deviance 0.23265 vs 0.23238-0.23245.
-- Decision needed. Lennart's CC of 2026-11-04 kept IID for reasons the rules do not count, and new evidence has come in since. Choose one:
-  - (a) ForcedGroupedFromTemporal on the `next_year_rows` chains, with a SPLIT-24 ruling that this key counts as constructed exactly. This is my recommendation.
-  - (b) Keep IID, recording a fact the rules accept. After issue 1 the residual leak is 0.0002 on 3 of 3 folds.
+| # | Exploit | Rule | Note it maps to | New or known | Gain against the note |
+|---|---|---|---|---|---|
+| 1 | Exposure plus group size plus siblings' summed Exposure, +0.0088 to 0.0111 | LEAK-41 (the weight, and "a sum of a group's exposures"); LEAK-9 (reads test rows) | Exposure bullet; issue-8 CC | known | without the row's own Exposure, 0.0004 (noise); the rest is exploit 2 |
+| 2, 2b | Exposure, or a full-year flag, as a feature, +0.0072 to 0.0088 | LEAK-41 | Exposure bullet | known | differs from the note only in scale and share (change 1); needs the test-row weight (curator item 2) |
+| 3 | Transductive group size over train and test, +0.0005 | LEAK-9 | issue 8 / issue-8 CC | known | 0.00071 before; now below noise; the note gives no number (change 4) |
+| F1 | BonusMalus restored from the source, +0.040 | LEAK-10 | issue 5 CC | known, settled | not an exploit (change 9) |
+| - | Looking rows up in the published source recovers the labels | none in this definition | none | known for any public dataset | not counted |
 
-**4. The label-free renewal and record-structure signal (P4; LEAK-10 mechanism, transductive; a weighing call).**
-- What it is: whether a later or sibling record exists can be read from the test features themselves.
-- Size:
-  - renewal signal: 0.0009-0.0010 without BonusMalus; 0.0017 with it (split auditor);
-  - the gamer's record-structure statistics: 0.0006-0.0007.
-- No split removes it. Merging records needs a key the source does not give.
-- The principles' tension row on weak transductive leaks lists only scaling cases.
-- Decision needed: keep with a `Potential leak, kept on purpose:` note giving these numbers, and add a tension row.
+Nothing new.
 
-Minor, no change unless the source speaks: VehPower 15 may be a top band (CLEAN-14).
+**5. Consistency with precedent**
 
-Task-gamer exploits mapped:
+- The precedent checker finds the definition consistent with bemtpl97 and the four insurance tables decided on 2026-11-06.
+  - The three reversals (Andrej, 2026-10-20; the AI line of 2026-10-29; the 1e-6 floor) each carry a stated fact or an amendment.
+  - There is no drift and no third exception. register.json has no flag on fremtpl2 or bemtpl97.
+- Reflection prompt 1 (SPLIT-8 Cases row): adopted as option (a), in change 10, with the critic's addition that the gap-size reason goes.
+- Issue 7, option (a) follows your 2026-11-05 call and bemtpl97 (IID, "treated alike", 2026-11-04). Option (b) would depart from:
+  - maternal_health_risk (a feature-vector hash barred under SPLIT-24), unless you rule that the rating profile is the entity;
+  - bemtpl97, unless you check it for the same structure.
+  If you choose (b), the check to answer is:
 
-| Exploit | Rule | Status | Is it an issue? |
-|---|---|---|---|
-| Realised Exposure, 0.0045 | LEAK-10 | known (the Exposure note) | yes: the measured gain differs from the note (issue 2) |
-| Statistics over train and test records, 0.0006-0.0007 | LEAK-10, transductive | new | issue 4 |
-| Sibling labels, 0.00007 | LEAK-17 | known (Copies kept; accepted warnings `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows`) | no: within noise, as noted |
-| Lookup in the published file | PROV | inherent to any public dataset | not ranked |
-
-The blind reviewer's cap and RMSE concerns do not apply: the metric is Poisson deviance, and capping training counts makes the score worse (0.233173 vs 0.233023).
-
-**Agreed facts**
-
-- **Size and counts:** 677,991 rows and 26,444 claims; every count equals the claims table (2022 CASdatasets version). 96.32% of rows have no claim. Seed 4267; train sides of 451,994 rows.
-- **Metric:** the declared metric equals the source's (FreMTPL_1b line 35, 100 × the mean deviance), with `min_prediction` 1e-6.
-- **Links:** `next_year_rows` gives 161,883 pairs: 48.7%, 48.3%, 49.2% and 60.3% of blocks 1, 3, 5 and 6. The chance rate is 0.02-0.05%, and 99.9% of pairs have the driver exactly +1.
-- **Kit:** row order does not reveal IDpol (Spearman −0.0003), and the kit has no IDpol.
-- **Next-year row on the train side:** 16% of test rows. Rebuilt from the shipped columns alone, the true partner is the only candidate for 54.6% of linked rows.
-- **Grouped vs random:** within fold noise for honest models. The pair correlation of claims is 0.017.
-- **BonusMalus:** frozen from 0→1 and 2→3; follows the French CRM rule in 4→5→6.
-- **Exposure:**
-  - beyond-offset gain 0.0039-0.0045; free coefficient 0.641;
-  - 0 of the 1,224 rows above one year are linked;
-  - exposure below one year predicts a missing next-year row.
-- **Extreme counts:** the 19 rows with 5-16 claims carry 0.00126 of the deviance; capping makes the score worse.
-- **DrivAge 99:** 66 of the 70 rows are in block 0, and none has a next-year row.
-- **Sources:** OpenML 41214 has 678,013 rows; the help page quotes hold.
-
-**Consistency with precedent**
-
-The register has no flag on fremtpl2. The precedent checker's report:
-
-- **Following precedent:** the 2022 counts, no cap and exposures above one year kept (qsar_tid_11, bemtpl97), the metric and floor, fit "approximate", the hold turned into Yes, the copies kept, the Spatial tag and screening eumtpl later.
-- **Issue 1 (BonusMalus):** blanking follows the second clause of LEAK-10 as applied to zillow_prize and melbourne_housing_market, and the online_shoppers form. No precedent goes the other way.
-- **Issue 2 (Exposure):** recommendation (a) follows kick `WheelType` and heart_failure `time`, both dropped once the mechanism was measured. It departs from bemtpl97 (Myunghwan, CCs of 2026-10-23 and 2026-10-26: expo retained "not verified as quotation-time information"). What sets this pass apart: the conditional test now measures the mechanism. bemtpl97 has to be reopened to match, or LEAK-10 amended.
-- **Issue 3 (split):** grouping follows open_university and nba (stacked periods, recurring entities). It departs from Lennart's own CC of 2026-11-04. What sets it apart: the link to the next year carries label information that was not measured then (−0.0021), and SPLIT-24 admits an exactly built key. It differs from distribution_transformers, which held the same units with identical attributes in one non-stacked year. The precedent checker's consistency prompt (options a-d) stands.
-- **DrivAge:** setting it to missing makes it consistent with VehAge in the same definition.
+  > **Consistency check (AI, 2026-11-06):** grouping fremtpl2 on identical rating factors departs from maternal_health_risk (a feature-vector key barred, SPLIT-24) and from bemtpl97 (IID). What sets it apart?
+  > (a) the literature's key, and 92.9% of the groups sum to at most a policy-year, so the profile defines the entity here, recorded as the SPLIT-24 fact;
+  > (b) keep IID as bemtpl97;
+  > (c) reopen bemtpl97 to group alike;
+  > (d) amend SPLIT-24 for rating profiles.
+- C1, the LEAK-41 reporting gap, is shared with bemtpl97: same fix (change 1), same cross-dataset item (issue 3).
+- Side notes from the precedent checker, outside this definition:
+  - australian_vehicle_insurance_2004_2005/dataset.py (lines 127 and 279) cites Andrej's fremtpl2 call for amounts that fremtpl2 no longer ships (D12): check the wording there.
+  - Tell Andrej that three of his exposure calls are now superseded.
+- Minor, untouched: the claim auditor's unweighted count-scale fit gives 0.2633, not the 0.26187 that MET-15's Cases row quotes. The direction is the same; no change.
 
 </details>
 
 <details><summary>Claim audit</summary>
 
-**Verdict:** fremtpl2 holds up for ordinary models, but four statements are wrong and the split question needs the curator. The links between IDpol blocks are real. Grouping on them changes nothing for models that score one row at a time. But the split does leak: a test row's next-year record often sits on the training side, and any model that reads other training rows can find it from the shipped columns alone. The definition also understates how much of the gain Exposure carries. Nothing was edited, built or committed.
+**fremtpl2 -- claim auditor, exposure re-review (2026-11-06, tier full)**
 
-**Answer to focus.md**
+Verdict: today's change holds. The target, the weight, the metric identity, the source reference, the floor and
+LEAK-41's decision itself all survive their tests. Nothing that breaks validity was refuted. What fails is text that
+today's change made stale: the two accepted duplicate warnings, the "Copies kept" counts, the Exposure leak's share,
+and a set of numbers measured on the count scale or the old target that the notes now give without a label. LEAK-41's
+reporting duty is only partly met: the L2 gain and the Exposure-alone ceiling are missing. The re-measures the change
+note asked for are done below (IID against grouped on identical factors, the record-count exploit, a twin memorizer).
 
-- **Are the links real?** Yes. Offsets +1..+9 give 238,273 matches. Offsets 101-109 give 62 and 1001-1009 give 107, so the links are about 1,000 times chance. The driver's age is +1 in nearly every match (only 39 matches at +0 and 34 at +2).
-- **Do the blocks look like consecutive years?** Blocks 4-5-6 do: the bonus-malus moves the way the French system does. Of policies with a malus above 50 and no claim, 93.5% (4→5) and 92.1% (5→6) go down. After a claim, 35-37% go up, against 2.5% without one.
-  - In 0→1 and 2→3 the bonus-malus barely moves: 5.2% and 20.5% go down, 94.5% stay the same in 0→1. So those blocks are not clean yearly renewals.
-  - Blocks 5 and 6 have no full-year rows (0.2% and 0%).
-- **Is "changes the score by nothing" true?** Only for models that look at one row at a time. LightGBM (Poisson objective) skill is:
-  - 0.0825 on the shipped random folds;
-  - 0.0813 grouped by the chains of `next_year_rows` (516,108 groups);
-  - 0.0829 grouped by chains plus identical neighbours (430,379 groups, close to the notes' 430,298).
-  - The fold-to-fold spread is 0.0008-0.0036. A Poisson GLM gives 0.0426, 0.0426 and 0.0425.
-- **Does the pair structure leak across the 3-fold split?** Yes.
-  - In every test fold, 16.0% of rows have their next-year row on the train side (36,200, 35,828 and 36,096 of 225,997), and 16% have their previous-year row there.
-  - Features taken from the next-year row (via IDpol) lower LightGBM's mean deviance from 0.2325 to 0.2305 (-0.0021). That is about 10% of the model's gain over the exposure baseline. On the linked test rows alone it is -0.008 to -0.010.
-  - Features from the previous-year row are worth only -0.00015. So the signal is future information, not history an insurer would have.
-  - The shipped columns alone recover the next-year row. Matching on brand, fuel, region, density, power and area, with driver age +1, finds 161,897 candidate pairs, which include the true partner of every one of the 161,883 rule pairs. The true partner is the only candidate for 54.6% of linked rows. Features built this way lower deviance by 0.0041, of which about 0.0014 comes from the true partners.
-  - Row order does not reveal IDpol (rank correlation -0.0003), and the participant kit has no IDpol.
-- **Is IID with the ForcedIIDFromTemporal tag still right?** It is defensible, since three temporal windows cannot be built (SPLIT-14). But SPLIT-8's own text names grouping by the entity, tagged ForcedGroupedFromTemporal, for exactly this case: stacked periods with recurring entities. That is how open_university and nba were shipped. Grouping on the chains costs row-wise models nothing (0.0813 vs 0.0825). This conflicts with those precedents, so it is a question for the curator, not something I would override.
+Setup: the definition loaded with load_definition; shipped folds (1 x 3, 451,994 / 225,997); scorer from
+data_foundry.v2.metrics. LightGBM 4.7 Poisson (400 trees, lr 0.05, 31 leaves, min_child_samples 200), fitted with
+sample_weight = Exposure unless stated otherwise.
+Scales: the declared metric = count deviance x n/sum(Exposure) (1.891 overall). The constant portfolio rate scores
+0.47929 on the declared scale, which is 0.25342 on the count scale.
 
-**Claims table**
+**Claims (claim, source, test, result, evidence, rule)**
+
+**Today's change**
 
 | # | Claim | Source | Test | Result | Evidence | Rule |
 |---|---|---|---|---|---|---|
-| 23, 48 | Grouping on the inferred links changes nothing | notes; record, CC of 2026-11-04 | grouped vs shipped folds; features from the linked row (via IDpol, and via shipped columns only) | **refuted in part** | holds for row-wise models (0.0825 / 0.0813 / 0.0829); the next-year row is worth -0.0021 deviance and can be found without IDpol for 55% of linked rows | SPLIT-8, LEAK-17, SPLIT-29 |
-| 17 | Exposure "carries about a fifth of the gain" | notes | LightGBM without Exposure; with log(Exposure) as an offset but not as a feature | **refuted** | without Exposure 0.2448 vs 0.2325, so 45% of the 0.0270 gain over the mean count; beyond the offset Exposure is still worth 0.0040 (15%); block 0 rows with exposure ≤0.25 that do not continue claim 0.258 a year, against 0.117 for those that continue | LEAK-10, LEAK-11 |
-| 24 | Blocks 0-1, 2-3, 4-6 look like consecutive years; held-out skill 0.0847 vs 0.0820 | notes | bonus-malus change in pairs; blocks 1, 3, 6 held out vs 3 random draws of the same size | **numbers hold, "years" weakened** | 0.0849 vs 0.0812±0.0001; bonus-malus frozen in 0→1 and 2→3 (see above) | SPLIT-8, SPLIT-14 |
-| 22, 29, 47 | About half (48-60%) of blocks 1, 3, 5, 6 repeat a row of the block before | notes; decision table | widen the offset to ±30 | holds, but only as a lower bound | rule gives 48.7/48.3/49.2/60.3%; ±30 gives 50.8/49.0/55.5/75.3%; offsets -9..-1 find 80,406 matches, 26,851 between rows the rule leaves unpaired | EV-6 |
-| 18 | The scorer floors the prediction at machine epsilon | notes | read the declared metric | **refuted** (wording) | the declared `min_prediction` is 1e-6, and that is what the scorer uses | MET-11 |
-| Metric | `mean_poisson_deviance` is the source's metric, on counts against expected counts | `Metric.source` in dataset.py | read the pinned reference file; score dummies on each fold | holds | line 35 defines Poisson.Deviance as 200/n × the deviance sum, i.e. 100 × the mean; each test fold has 8,160-8,465 rows with a claim (max 9-16); a mean-count prediction scores 0.2568-0.2622; all-zero predictions are floored and score 0.99-1.02; an RMSE-trained LightGBM has 1.2-1.3% of predictions floored and scores 0.2348 | MET-1, 2, 3, 5 |
-| Metric | Meaning survives without the source's caps | MET-2 | deviance carried by the extreme rows | holds, with a note | the 19-row profile carries 0.00126 of 0.2534; the 16-claim row alone adds about 0.0007 to fold 0, the size of some model gaps | MET-2 |
-| 14, 16 | 1,224 rows with exposure above one year, two IDpol ranges, no links to other years | notes | count, ranges, links | holds | 1.01-2.01, median 1.04; 961 rows at IDpol 1,179,653-1,199,005 and 263 at 2,214,197-2,286,947; 0 links; capping raises their rate by 11.4% | CLEAN-11 |
-| 12 | First 9,387 policies (IDpol up to 24,951): 293 with claims now | notes | count | holds | 307 claims on 293 policies; the old 9,942 and the 292.6 LightGBM figure were not recomputed | PROV-13 |
-| 13, 15 | 8 policies with 5-16 claims; one profile with 72 claims over 3.63 years | notes | count | holds | 7 of the 8 share the profile; its 19 rows hold 72 claims over 3.63 years | CLEAN |
-| 20 | VehAge 99/100: 48 rows; 21 of the 23 aged 99 are 100 a year later | notes | `next_year_rows` | 48 holds; 21 not reproduced | the rule pairs 14 of the 23, and all 14 are 100 a year later | CLEAN-10 |
-| 21 | Driver age 99: 70 rows against 5 at 98 | notes | count | holds | 70 vs 5 | CLEAN |
-| 22 | 28,768 rows equal another | notes | duplicate count | wording | 28,768 rows copy an earlier row; 40,903 rows sit in groups of equal rows | writing |
-| 34 | 390 rows share every factor but differ in claim count | accepted warnings | the check's formula | holds | 390 is the check's count; 1,507 rows sit in groups with more than one label | LEAK-20 |
-| 4, 9, 11, 35 | 677,991 policies, 26,444 claims, 96.3% zeros, counts equal the claims table | task summary; notes | count | holds | 96.32%; claims sum to 26,444; CASdatasets commit 531aa236fc of 2022-06-23 (claims.md's "22 June" is a typo; the definition is right) | PROV |
-| 25 | Tables entered CASdatasets on 14 October 2014 | notes | read NEWS | holds | `pkg/inst/NEWS` at commit 324c15c999 lists freMTPL2freq.rda 14/10/2014; the pinned NEWS.md does not | PROV |
-| 26 | OpenML 41214 is the older 678,013-row copy | download description | OpenML API | holds | 678,013 rows, uploaded 2018-11-05 | PROV-8 |
-| 3, 37 | Help page quotes | record | read the page | holds | "observed mostly on one year", "approximately 2011-2013", "Unknown private insurer" | EV-2 |
-| 30 | Train side 451,994 rows, seed 4267 | splits comment | splits | holds | 3 × 451,994 / 225,997 | SPLIT |
-| implied | Bonus-malus is known at quotation | none written | does the bonus-malus rise with the same row's claims? | holds | 4→5: 4.0% with a claim vs 3.1% without; 5→6: 2.9% vs 3.05% | LEAK-10 |
-| 18, 11 | Wüthrich and Merz quotes (pp. 553-554; Eq. 5.28) | notes | none | untested | book not opened | EV-7 |
+| 1 | Target claim_frequency = ClaimNb/Exposure, the count rebuilds, ClaimNb leaves the frame | notes "Target", _clean, task_summary.changes | load the container: columns, the code's assert, target range | HOLDS | 11 columns, no ClaimNb, no IDpol; _clean's allclose assert passes; target 0 to 365 (1 claim in 1/365 year); 96.32% zeros ("96.3% have none" holds) | MET-14 |
+| 2 | Exposure no feature; it is the weight scoring column, the metric's weight and the sample_weight | notes, scoring_columns, sample_weight, task_summary.known | feature_columns(c), sample_weight(c), spec.inputs | HOLDS | features = the 9 rating factors; sample_weight(c) = "Exposure"; spec inputs {"weight": "Exposure"}; the declared sample weight is the metric's row weight | MET-15, LEAK-41, MET-2 |
+| 3 | The weighted rate deviance = the count deviance with an offset x n/sum(Exposure), 1.886-1.896 per fold, 1.891 overall | notes "Metric", metric.definition, CHANGES | constant prediction on each fold: scorer vs hand-coded weighted deviance vs count deviance of Exposure*mu | HOLDS (exact) | folds: scorer 0.479803 / 0.480681 / 0.477393 = hand = count x ratio to 1e-15; ratios 1.8956, 1.8919, 1.8864; overall 1.8913. Algebra: `d_count(N, v*mu) = v*d_rate(N/v, mu)`, so the per-fold ranking is the source's | MET-11 (source) |
+| 4 | The source compares models by this count deviance with an exposure offset, 100 x the mean | metric.original, reference (FreMTPL_1b load data.r#L35) | read the pinned R files | HOLDS | L35: Poisson.Deviance <- 200*(sum(pred)-sum(obs)+sum(log((obs/pred)^obs)))/n; "FreMTPL2 Part 1" L76-88: glm(ClaimNb ~ ..., offset=log(Exposure), family=poisson()), then 100*Poisson.Deviance(test$fitGLM, test$ClaimNb) in and out of sample. The source's data caps ClaimNb at 4 and Exposure at 1 (L30-31); ours does not (settled, CLEAN-11) | MET-1, MET-3, MET-11 |
+| 5 | Floor 1e-4 claims per year, two orders below the smallest plausible rate | notes "Metric", params | out-of-fold predictions of a Poisson LightGBM and an L2 LightGBM; zero prediction on every fold | HOLDS | Poisson LightGBM: min 0.0104, 0.1% quantile 0.0208, 0% at the floor; L2: 0.055% at the floor (1.4% with Exposure as a feature); all-zero prediction scores 1.30 (finite) on every fold; task probe reports the floor share (RF 0.5%) | MET-13 |
+| 6 | "with the weight, dividing does not inflate short records" / an unweighted fit targets another quantity (MET-15's fremtpl2 numbers: 0.1186 vs 0.0738, worse than the constant) | notes Exposure CC, README training-weight block, MET-15 | unweighted vs weighted Poisson LightGBM; the two constants | HOLDS | unweighted mean rate 0.11863 vs weighted 0.07377 (x1.61); unweighted LightGBM 0.49792 and the unweighted constant 0.49892, both worse than the weighted constant 0.47929; weighted LightGBM 0.46822. (MET-15's 0.26187 is not reproduced exactly: my unweighted fit is 0.2633 on the count scale. Same direction) | MET-15 |
+| 7 | Exposure is cut short by claims ("a claim can cut it short") | task_summary.known, ScoringColumn description | P(next-year row) by exposure band and claim, blocks 0/2/4/5, next_year_rows | HOLDS | in each partial band a claim lowers continuation: <=0.25: 0.169 vs 0.263; 0.25-0.5: 0.255 vs 0.324; 0.5-0.75: 0.370 vs 0.444; 0.75-0.99: 0.406 vs 0.469; full year: 0.663 vs 0.629 (not cut) | LEAK-41, LEAK-10 |
+| 8 | Exposure as a free feature was worth 0.0039-0.0045 beyond the offset, "21-30% of LightGBM's gain" after the blanking | notes Exposure bullet | Poisson LightGBM on the shipped folds, 9 features vs 9 + Exposure | ABSOLUTE SIZE HOLDS, SHARE REFUTED | +0.00819 on the declared scale (per fold 0.0086 / 0.0087 / 0.0073) = 0.0043 on the count scale, inside 0.0039-0.0045. Against the constant-rate baseline the model with Exposure gains 0.01926 and Exposure is 43% of it, not 21-30%; it is 74% of the honest model's gain over the constant (0.0111) | LEAK-41, EV-7 |
+| 9 | LEAK-41 reporting: the gain with an L2 fit and with the weighted actuarial fit, decided on the worse, and the score of 1/weight alone as the ceiling | LEAK-41 (Must) requires it of the definition | full-data fits; Exposure alone | PARTLY MET (missing numbers) | notes give only the count-scale offset gain (0.0039-0.0045). Measured: Poisson +0.0082, L2 +0.0075 (0.47112 -> 0.46363); the worse is the Poisson one. Exposure alone scores 0.47114 against 0.47929 for the constant: a leak through Exposure would reach 0.0082, 74% of what the 9 honest features reach (0.46822). Probe 22 (50k cap): +0.0048 Poisson, +0.0067 L2; features predict Exposure at R^2 0.17, no feature's gain runs through it above noise. Neither probe 22's numbers nor the ceiling are in the notes | LEAK-41 |
+| 10 | Poisson GLM gives log(Exposure) a free coefficient of 0.641 | notes Exposure bullet | sklearn PoissonRegressor with Noll et al.'s binning plus log(Exposure) as a covariate, all rows | HOLDS in substance | 0.626 with the raw BonusMalus, 0.568 with the blanked one (+ missing indicator); the design decides the third digit. Well below 1 either way | EV-1 |
+| 11 | Re-measure of the record-count exploit (gamer's +0.00071 before) | CHANGES "still to re-measure" | add n = number of rows with the identical feature vector in the full frame (train + test) | MEASURED (smaller) | +0.00051 on the declared scale (per fold 0.00070 / 0.00062 / 0.00022), = 0.00027 count scale; adding the train twins' summed exposure and count adds nothing (0.46805). Under the grouped split +0.00035 | LEAK-9 (issue 8, settled) |
+| 12 | Re-measure of a memorizer, IID vs a split grouped on identical rating factors (issues 7, 8 settled on the count target) | CHANGES | (a) GroupKFold on the feature-vector hash vs the shipped folds; 3 more random seeds of each; (b) LightGBM given the train-side twins' claims and exposure (leave-one-out) | (a) GAP FROM THE FLEET ONLY; (b) NO GAIN | (a) grouped is worse by 0.00167 (shipped folds), 0.00070 / 0.00127 / 0.00078 (seeds 1-3). 94% of the gap sits in the 8 rows with 5-16 claims; without them grouped - IID = -0.00005 / -0.00010 / -0.00021. (b) +0.00010 / +0.00041 / -0.00010 per fold, noise. So the random split rewards learning the 5-16-claim fleet from its sibling rows (6-15% of LightGBM's gain over the constant) and nothing else | SPLIT-8, LEAK-17, CLEAN-11 |
 
-**Refuted and untested claims, ranked**
+**Task summary and splits**
 
-1. **The split leaks future information (P4; SPLIT-8, a Must; LEAK-17, a Must).** "Changes nothing" holds only for row-wise models. Models that read other training rows can find a test row's next-year record from the shipped columns and gain up to about 10% of the model's gain.
-   - What it changes: rankings between such models and gradient-boosted trees can shift by about 0.001-0.002 deviance.
-   - Mildest remedy: ship ForcedGroupedFromTemporal, grouped on the chains from `next_year_rows` with the offsets made symmetric. Row-wise scores do not move. Otherwise, keep IID and rewrite the notes to say "no effect for row-wise models; a policy's next year can be recovered from the features". The curator decides (consistency check, case 2).
-2. **Exposure's share of the gain is understated (P4; LEAK-10, a Must, against LEAK-11).** Exposure carries 45% of the gain, not a fifth. The part beyond pure time insured, which a later cancellation could create, is 0.0040 (15%).
-   - Mildest remedy: correct the note with these numbers. The curator re-confirms the keep with the right numbers; this sits on the "weak vs strong suspected leak" tension in principles.md.
-3. **"Consecutive years" is uncertain for blocks 0-1 and 2-3 (P4; SPLIT-8).** The bonus-malus is frozen there.
-   - Mildest remedy: a note that says this, and that the link counts are lower bounds.
-4. **Wording (P6 and procedure).**
-   - "Machine epsilon" should read 1e-6 (MET-11).
-   - 28,768 copies of an earlier row (40,903 rows in groups of equal rows).
-   - Say which links the 430,298 groups use.
-   - "21 of 23" is not reproduced by the shipped rule.
-5. **Untested.**
-   - The Wüthrich and Merz page quotes.
-   - The old count of 9,942 and the 292.6 LightGBM figure.
-   - Whether `eumtpl` duplicates this dataset (PROV-6/7, still open).
+| # | Claim | Source | Test | Result | Evidence | Rule |
+|---|---|---|---|---|---|---|
+| 13 | 677,991 records; BonusMalus "in 12% of the records", "blank in 88%" | task_summary.row, known, fit_reason | count | HOLDS | 79,993 kept (11.8%), 597,998 blank (88.2%) | - |
+| 14 | The signal is real (implied by shipping; the task probe flags no_signal, TP-1/TP-2) | probes/task.txt | weighted Poisson LightGBM vs the train-side constant rate, every fold | SIGNAL HOLDS; the probe flag is an artefact of its L2/R^2 models | gains 0.0109 / 0.0127 / 0.0096 per fold (D^2 about 2.3%); L2 LightGBM gains only 0.008 and the probe's skill is R^2. REVIEW.md should say why the flag is overruled | TP-1, TP-2 |
+| 15 | Random 3-fold CV, train 451,994 / test 225,997, each row a distinct IDpol | splits_comment | splits; raw IDpol | HOLDS | 3 folds of 451,994 / 225,997, disjoint; IDpol unique. "after the base class's content ordering and shuffle with seed 42": untested | SPLIT-1 |
+| 16 | "for 16% of test rows the next-year row is on the training side; the shipped columns single it out for 55% of linked rows" | notes "Copies kept" | next_year_rows; for each linked earlier row, count rows matching the fixed factors, DrivAge+1, VehAge +0/1 (no IDpol, no Exposure) | HOLDS after the change | 161,883 pairs = 23.9% of rows, x2/3 = 15.9%; exactly one candidate for 54.6% | LEAK-9 |
+
+**Accepted warnings**
+
+| # | Claim | Source | Test | Result | Evidence | Rule |
+|---|---|---|---|---|---|---|
+| 17 | dataset_conflicting_duplicate_rows: "520 rows (390 before BonusMalus was blanked) share every factor with another policy but differ in claim count" | accepted_check_warnings | the bundle check's own logic (bundle_checks.py ~L622) on the shipped frame | REFUTED (number stale) | with Exposure now a scoring column the check sees 8,128 conflicting rows (1.2%); 7,971 of them differ in the claim count. 520 is what the old frame (Exposure a feature) gives | P6, EV-7 |
+| 18 | dataset_duplicate_rows: "Each copy is a distinct policy (own IDpol) ... the repetition is the portfolio" | accepted_check_warnings | same check; exposure sums of the feature-identical groups | REFUTED in substance (numbers absent) | the check now counts 181,197 exact duplicate rows (26.7%); 327,862 rows (48.4%) sit in 138,537 groups with identical features; 92.9% of those groups (298,355 rows) sum to <= 1.01 years, the signature of one policy-year split into records (the notes' own "renewals during the year recorded as two records"; Andrej's 94%). Each has its own IDpol, but most copies do not look like distinct policies. Measured harm is small (item 12) | P6, LEAK-17 |
+| 19 | task_target_value_dominant: "96% of the policies have no claim" | accepted_check_warnings | count | HOLDS | 96.32% | - |
+
+**Curation notes, other bullets**
+
+| # | Claim | Source | Test | Result | Evidence | Rule |
+|---|---|---|---|---|---|---|
+| 20 | 26,444 claims; counts 0-16; each count equals the claims table | notes intro, "Target" | raw counts | HOLDS | 26,444; 0-16; _clean's assert passes | PROV-13 |
+| 21 | first 9,387 policies (IDpol <= 24,951), 293 claims now; their next-year rows claim at 0.048 vs 0.076 | notes "Target" | raw + next_year_rows | HOLDS | 9,387; 293; 0.04799 vs 0.07586. "(9,942) before": untested (needs the OpenML copy) | - |
+| 22 | 8 policies with 5-16 claims; "seven of the eight policies are one profile ...: 72 claims over 3.63 years"; "the 19 rows carry 0.0012 of the mean deviance 0.2534" | notes "Counts of 5 to 16" | raw | HOLDS IN PART (wording) | 8 policies; the seven of the profile have 66 claims over 1.38 years. 72 claims over 3.63 years are the 19 rows of the profile (DrivAge 52/53, VehAge 12/13). 0.0012 / 0.2534 is the count scale; on the declared scale it is 0.0023 of 0.4793 | P6, EV-7 |
+| 23 | Exposure above one year: 1,224 rows, up to 2.01, blocks 1 and 2; 961 in IDpol 1,179,653-1,199,005; median 1.04 | notes | raw | HOLDS | 1,224 (961 in block 1, all in that range; 263 in block 2); max 2.01; median 1.04. "capping would raise their rate by 11%": untested | CLEAN-11 |
+| 24 | Dtypes: VehAge 99/100 = 48 rows, no car 86-98; DrivAge 99 = 70 rows vs 5 at 98, 66 in block 0 after 1 at 96 and none at 97-98; 22 regions; Area bands of Density | notes "Dtypes", CC 2026-11-05 | raw | HOLDS | 48; 0 cars aged 86-98 (max 85); 70 / 5 / 3 at 100; 66; 1 / 0 / 0; 22; Area density ranges A 1-50, B 50-100, C 100-500, D 500-1,993, E 2,001-9,850, F 10,008-27,000 (they touch at 50 only) | CLEAN-10 |
+| 25 | "Copies kept: 28,768 rows copy an earlier row (40,903 in groups; 30,987 and 43,947 after the blanking)" | notes "Copies kept" | duplicates on the model's inputs of today's frame | REFUTED (stale) | those counts include Exposure as a column. On the shipped inputs: 327,862 rows in feature-identical groups, 181,197 exact copies with the target; leak probe: 36.4% of test rows have an exact feature copy in train | P6, EV-7 |
+| 26 | "grouping on them moves LightGBM skill from 0.0821 to 0.0819"; split-test +0.00049; BonusMalus 0.2327 -> 0.2435; renewal oracle 0.0021 / 0.0008 | notes "Copies kept", "Split forced IID", CC 2026-11-05 | - | UNTESTED under the new target (measured with Exposure a feature on the count target; the notes do not say so) | chain-grouped and block-temporal splits not rebuilt here; the identical-factor grouping of item 12 is the nearest new number | EV-7 |
+| 27 | Year 2014: tables entered CASdatasets on 14 October 2014 | notes "Year", record | pkg/inst/NEWS at CASdatasets 324c15c999 | HOLDS | "freMTPL2sev.rda 14/10/2014", "freMTPL2freq.rda 14/10/2014" | PROV-9 |
+| 28 | Help-page quotes "observed mostly on one year", "approximately 2011-2013" | notes "Prediction point", task_summary.row | the CASdatasets page | HOLDS | both on the freMTPL page | PROV |
+| 29 | Wüthrich and Merz (2023) Sec. 13.1 / 5.2.4 quotes, "renewals recorded as two records"; "at the quote the free model was never better, actual 1.29 x price" | notes | - | UNTESTED (the book is not open access; the quote-scenario run was not redone) | - | - |
+
+**Record**
+
+| # | Claim | Source | Test | Result | Evidence | Rule |
+|---|---|---|---|---|---|---|
+| 30 | Screening 2026-10-22: the case study caps ClaimNb and truncates Exposure (check); compares models by out-of-sample Poisson deviance with Exposure | record | R files | HOLDS | L30-31 pmin(ClaimNb,4), pmin(Exposure,1); Part 1 L87-88 | MET-1 |
+| 31 | Screening "fit direct ... ClaimNb with Exposure"; Assessment 2026-10-29 "Exposure as a predictor"; Andrej 2026-10-20 "a feature, not a divisor, capped at 1" | record | - | SUPERSEDED, and marked so by CC 2026-11-06 | - | - |
+| 32 | Assessment 2026-11-04 (priority 3): "realised exposure kept", "10 mixed features", "three Must issues open"; tag "Two-Regime Zeros" | record | compare with the definition | STALE | 9 features now; Exposure no feature; issues 5-9 resolved. No newer priority line; the tag comes from Andrej's amount task (D12: the amounts stay out) | - |
+
+**REFUTED AND UNTESTED, RANKED (validity first, Must first)**
+
+No validity refutation. Today's design (rate target, Exposure as the weight only, the offset-equivalent deviance, floor
+1e-4) holds on every test.
+
+1. LEAK-41 reporting partly met (Must; item 9). The notes give only the count-scale offset gain. Missing: the L2 gain
+   (+0.0075), the actuarial gain on the declared scale (+0.0082, the worse of the two) and the Exposure-alone ceiling
+   (0.47114 against the constant's 0.47929, 74% of what the honest features reach). What it changes: a reader cannot
+   see how large the removed leak was on the metric that ships. Mildest remedy: one sentence in the Exposure bullet
+   with these numbers and probe 22's (R^2 0.17; no feature's gain runs through Exposure above noise).
+2. Accepted warnings stale (items 17, 18). The conflicting-duplicate reason says 520 rows; the check now counts 8,128
+   (1.2%). The duplicate reason says each copy is a distinct policy; the check now counts 181,197 exact copies
+   (26.7%), and 92.9% of the feature-identical groups sum to at most a year, which looks like one policy-year split
+   into records. What it changes: the acceptance justifies other numbers than the check reports. Measured harm is
+   small: a twin memorizer gains nothing (+0.0001), and grouping costs nothing outside the fleet. Mildest remedy:
+   rewrite both reasons with today's counts and the split-records reading, and cite item 12's numbers.
+3. "Copies kept" counts stale (item 25), and the split numbers measured on the old target are not labelled
+   (item 26). New measures for the paragraph: grouping on identical rating factors costs 0.0007-0.0017 (4 runs),
+   94% of it from the 8 rows with 5-16 claims (without them -0.0000 to -0.0002); the record-count exploit is +0.0005
+   (0.0002-0.0007 per fold). What it changes: the random split rewards learning the fleet from its sibling rows, 6-15%
+   of LightGBM's gain over the constant (SPLIT-8, CLEAN-11 tension). The IID decision itself is untouched. Mildest
+   remedy: replace the counts and add the fleet sentence next to "Counts of 5 to 16".
+4. Exposure's share "21-30% of LightGBM's gain" (item 8). On the shipped baseline it is 43% (0.0082 of 0.0193); the
+   absolute 0.0039-0.0045 holds on the count scale. Mildest remedy: give the share on the declared metric, or drop it.
+5. Mixed scales (items 22, 26, and 0.2534 / 0.0012 / 0.0021 / 0.23316 / 0.2327 / 0.0008). These are count-scale or
+   old-target numbers, while the declared metric is 1.891 times the count scale. Mildest remedy: one clause, "numbers
+   before 2026-11-06 are on the count target with Exposure as a feature; the declared score is 1.891 x the count
+   deviance".
+6. "Seven policies ... 72 claims over 3.63 years" (item 22). The seven have 66 claims over 1.38 years; 72 claims over
+   3.63 years are the 19 profile rows. Mildest remedy: reword.
+7. Task probe flag no_signal (item 14). It is overruled by the declared metric: a weighted Poisson LightGBM beats the
+   constant on every fold by 0.0096-0.0127. REVIEW.md should record why (the probe's L2/R^2 models), not leave the flag
+   unanswered.
+8. Record stale (item 32): the latest priority assessment predates today (realised exposure kept, 10 features, Must
+   issues open), and the tag "Two-Regime Zeros" fits the amount task, not claim frequency. Remedy: an Assessment line
+   for today's change, and the tag reviewed.
+Untested: the Wüthrich and Merz quotes (book); "never better at quotation, 1.29"; the chain-grouped and block-temporal
+splits under the rate target; "capping would raise their rate by 11%"; "9,942 before"; the content-ordering shuffle.
 
 </details>
 
 <details><summary>Column audit</summary>
 
-**fremtpl2 column audit (column-auditor, 2026-11-04)**
+**fremtpl2 column audit (column-auditor, exposure re-review 2026-11-06, full tier)**
 
-**Focus question: direct answer**
+Verdict: fine under the new rules. Exposure is out of the features (LEAK-41, MET-15 met); no remaining feature
+carries it through a post-quote channel; every feature is a rating factor known at the quote. One documentation gap
+(LEAK-41 asks the definition to report the probe-22 numbers; the notes do not). Nothing settled in issues 5, 7, 8, 9
+is reopened by today's change.
 
-- **The 48-60% claim is true.** `next_year_rows` gives exactly the same counts: 54,571 / 63,800 / 20,924 / 22,577 rows, which is 48.7%, 48.3%, 49.2% and 60.3% of blocks 1, 3, 5 and 6.
-  - Chance is far lower. Shuffling row contents within each block gives 16 pairs. Using IDpol offsets of 1,001-1,009 instead of 1-9 gives 75. The real count is 161,883.
-  - Dropping the driver-age condition gives 162,019 pairs, and 99.9% of them still have the driver exactly one year older. These are the same policies in consecutive years.
-- **"Changes the score by nothing" holds for the shipped features.** LightGBM Poisson deviance is 0.23269 on the shipped random folds (fold SE 0.0015) and 0.23224 when split by pair chain (516,108 groups, SE 0.0007).
-- **Leak across the 3-fold split: real but small.**
-  - 31% of test rows have a linked row on the train side.
-  - Adding that row's ClaimNb and Exposure as features lowers deviance by 0.0004 (0.0003-0.0005 on each fold). Most of it comes from the later-year row (0.0003); the earlier-year row gives 0.0001.
-  - Removing IDpol does not hide the links: 52.5% of later rows have exactly one candidate predecessor in the shipped features (median 1, p90 3).
-  - The participant kit and row order are clean: no IDpol, and Spearman correlation of row position with IDpol is -0.0003.
-- **Keep IID with ForcedIIDFromTemporal** (SPLIT-8, SPLIT-31; SPLIT-25 rules out grouping on inferred links).
-  - One consistency note: SPLIT-8's text points to ForcedGroupedFromTemporal "when the periods are stacked and the entities recur". The difference here is that the entity is inferred and grouping makes no measurable difference.
-  - The splits_comment should add the 0.0004 lookup gain and the link reconstructability.
-- **Exposure below 1 does predict a missing next-year row** (focus item 4). Share of rows with a next-year row: 26% at exposure ≤0.25, 93.5% at a full year. Within each exposure bin a claim lowers it (0.19 vs 0.27, 0.28 vs 0.35, 0.44 vs 0.51, 0.47 vs 0.53).
-- **The 1,224 rows with exposure above 1 have no links** (claim 16 confirmed): 0 of 263 in block 2 have a next-year row, and none of the 961 in block 1 has an earlier-year row.
-- **The pairs reveal two column problems that matter more than the split:** BonusMalus and Exposure. Both are ranked below.
+Inputs read: the folder's dataset.py, README.md and REVIEW.md (incl. my 2026-11-04 column
+table, REVIEW.md lines 594-683), leak_checks.md (LEAK-41, probe 22), cleaning_features.md (CLEAN-10, CLEAN-16),
+metrics.md (MET-15), CHANGES.md, probes/probe22.txt, probes/probe22_l2.txt, participant_kit/task.md.
+Prediction point (first curation_comments bullet): the quotation of the policy for the accounting year.
+
+Runs:
+- dtype probe: `dtype_probes.py fremtpl2` -> "0 of 9 columns flagged; no codebook" (CASdatasets help page read by
+  hand, as on 2026-11-04).
+- Frame profile of the built container (677,991 x 11; features = the 9 rating factors; sample_weight = Exposure).
+- Probe-22 design extended to the four features the probe did not check, plus a replication for Region and DrivAge
+  (shipped 3 folds x 3 seeds, 50k
+  caps, LightGBM Poisson weighted by Exposure).
+- Region x IDpol block table of mean Exposure (raw via _load_raw, IDpol // 1e6).
 
 **Column table**
 
-| column | meaning (CASdatasets help page) | known at prediction? | dtype and cleaning | verdict | rule |
+| column | meaning (CASdatasets help page) | known at quote? | dtype and cleaning | verdict | rule |
 |---|---|---|---|---|---|
-| ClaimNb (target) | claims during the exposure period | outcome | int64, 0-16, matches freMTPL2sev | fine | USE-5, LEAK-26 |
-| Exposure | period of exposure, years | **partly no**: a short exposure can record a cancellation after a claim | float64, 1 day to 2.01 | leak, kept on purpose by the curator; the note misstates its size | LEAK-10 |
-| VehPower | "power of the car (ordered values)" | yes | int64, 4-15; 2,926 rows at 15 against 2,350 at 14 | fine; a question whether 15 means "15 or more" (the source does not say) | CLEAN-14 |
-| VehAge | vehicle age, years | yes | float64; the 48 rows at 99 or 100 set to missing; 68-85 kept as unusual | fine | CLEAN-10, CLEAN-11 |
-| DrivAge | driver age, years | yes | int64, 18-100; **70 rows at 99 against 5 at 98 and 3 at 100** | cleaning problem | CLEAN-10 |
-| BonusMalus | French bonus-malus coefficient, 50-350 | **likely no in blocks 0-4**: recorded after the row's own claims | int64, 50-230; numeric is correct | **leak (likely)** | LEAK-10 |
-| VehBrand | brand ("unknown categories") B1-B14 | yes | category, 11 levels | fine | CLEAN-14 |
-| VehGas | Diesel or Regular | yes | category | fine | CLEAN-14 |
-| Area | A (rural) to F (urban centre) | yes | ordered A<…<F, correct order; exactly log-density bands with cuts at 50, 100, 500, 2,000 and 10,000 (3 boundary values fall in two areas) | fine (a coarse copy of Density, published by the source) | CLEAN-14, CLEAN-5 n/a |
-| Density | inhabitants per km² | yes | int64; 27,000 is the most common value (10,514 rows, all Ile-de-France, likely Paris rounded) | fine | CLEAN-11 |
-| Region | 22 regions before 2016 | yes | category | fine | CLEAN-14 |
-| IDpol (dropped) | policy id; its block is the inferred year | encodes the period | dropped | fine | CLEAN-3, LEAK-10 |
-| sev_claims (dropped) | the target's source | outcome | dropped | fine | — |
+| claim_frequency (target) | ClaimNb / Exposure, claims with a cost per year insured | outcome | float64, 0 to 365 (1 claim in 1 day); weighted mean 0.0738, unweighted 0.1186; untransformed; _clean checks x Exposure rebuilds ClaimNb | fine | MET-14, CLEAN-16 (deviance -> identity scale) |
+| Exposure (weight scoring column) | years insured in the record's period | no: realized, cut short by cancellations, often after a claim | float64, 1/366 to 2.01, 181 values: 2-decimal grid on 99.0% of rows, day fractions /365 and /366 on the 1-3-day rows; 1,224 rows > 1 kept | fine as weight + denominator, never a feature (feature_columns excludes it) | LEAK-41, MET-15, CLEAN-11 |
+| VehPower | power of the car ("ordered values") | yes | int64 4-15, numeric keeps the order; 2,926 at 15 vs 2,350 at 14 (possible top code, source silent) | fine | CLEAN-14 |
+| VehAge | car age, years | yes | float64 0-85; 99/100 (48 rows) missing as default date; 80-85 kept as unusual | fine | CLEAN-10, CLEAN-11 |
+| DrivAge | driver age, years | yes | float64 18-100; 66 block-0 rows at 99 missing (issue 9 settled); 4 at 99 and 3 at 100 elsewhere kept | fine | CLEAN-10 |
+| BonusMalus | French bonus-malus coefficient (50-350) | yes in blocks 5-6 (start-of-year value); blanked in blocks 0-4 (issue 5 settled) | float64, 79,993 non-null (11.8%, matches task_summary "12%"), 50-190 | fine | LEAK-10, LEAK-7 |
+| VehBrand | car brand, "unknown categories" | yes | category, 11 levels, unordered | fine | CLEAN-14 |
+| VehGas | Diesel or Regular | yes | category, 2 levels | fine | CLEAN-14 |
+| Area | density class, "A rural ... F urban centre" | yes | ordered category A<B<C<D<E<F, order matches the help page and Density bands (A 1-50, B 50-100, C 100-500, D 500-1993, E 2001-9850, F 10008-27000) | fine (coarse copy of Density, published by the source) | CLEAN-14 |
+| Density | inhabitants per km2 of the city | yes | int64 1-27,000; 27,000 = 10,514 rows, all Ile-de-France (Paris, likely rounded) | fine | CLEAN-11 |
+| Region | 22 pre-2016 regions | yes | category, 22 levels | fine | CLEAN-14 |
+| IDpol (dropped) | policy number; its block marks period/sub-portfolio | n/a | dropped after the block-based masks | fine | CLEAN-3 |
+| ClaimNb, sev_claims (dropped) | the count and its rebuild from freMTPL2sev | outcome | dropped; ClaimNb is part of the target | fine | LEAK-10 |
 
-My run of the dtype probe flags 0 of 10 columns but reads no codebook: CASdatasets is neither UCI nor OpenML, so I read the help page by hand.
+**The weight column and the features that predict it (LEAK-41, probe 22)**
 
-**Problems, ranked**
+Exposure values: mean 0.529, median 0.49; 24.8% exactly 1; 18.8% at <= 0.1. The claim rate falls steeply with it
+(0.172 per year at <= 0.1, 0.055 at a full year, 0.040 above a year), the cancellation-after-claim footprint that
+made it a leak as a feature. It ships only as the weight scoring column; feature_columns(c) returns the 9 rating
+factors without it.
 
-**1. BonusMalus is likely recorded after the claims in blocks 0-4 (P4, LEAK-10 Must; likely, not shown; EV-6).**
+Features fitted on Exposure (probe 22): R^2 0.169, Spearman 0.411; top by gain Region 29%, DrivAge 21%, VehAge 19%,
+VehBrand 11%, Density 11%. Leak reference: Exposure as a feature gains +0.0048 (SD 0.0019) Poisson, +0.0067
+(SD 0.0042) L2. Weight-mediated gain per feature, the worse of the two fits (LEAK-41 decides on the worse):
 
-Blocks 4-6 serve as the control: there BonusMalus behaves like a value taken at the start of the year.
-- From year to year it follows the French bonus-malus rule. Among rows with no claim and a coefficient above 50, 92-94% are lower in the next row. A claim raises it in 35-37%.
-- In 4→5 and 5→6 pairs (drivers 30+, coefficient ≥100), it is linked to the claims of the year before (×8.3 and ×5.7), not much to its own row's claims (×1.4 and ×1.9).
+| feature | mediated, Poisson (probe) | mediated, L2 (probe) | mine, Poisson | timing | call |
+|---|---|---|---|---|---|
+| Region | +0.00099 (SD 0.00082) | +0.0016 (SD 0.0042) | +0.0012 (SD 0.0009) | quote | stays (USE-6) |
+| DrivAge | +0.0012 (SD 0.0019), 38% | +0.0006 (SD 0.0025) | +0.0016 (SD 0.0011) | quote | stays (USE-6) |
+| VehAge | -0.00003 (SD 0.0016) | -0.0011 (SD 0.0027) | - | quote | stays |
+| VehBrand | -0.0073 (SD 0.021) | +0.0009 (SD 0.0036) | - | quote | stays |
+| Density | +0.0003 (SD 0.0015) | -0.0022 (SD 0.0034) | - | quote | stays |
+| VehPower | not checked | not checked | +0.00014 (SD 0.00075) | quote | stays |
+| BonusMalus | not checked | not checked | +0.00005 (SD 0.00057) | quote (blocks 5-6) | stays |
+| VehGas | not checked | not checked | +0.00007 (SD 0.00092) | quote | stays |
+| Area | not checked | not checked | +0.00002 (SD 0.00088) | quote | stays |
 
-In blocks 0-3 it looks like one value per policy, recorded after the claims:
-- It is frozen across the two years. Among claim-free rows above 50 it drops in only 2-6% of pairs, and a claim raises it in only 1-4%.
-- It is linked to its own row's claims as strongly as to the other year's (×4.3-5.9 against ×4.8-6.2).
+None is above 2 SD; Region and DrivAge sit at 1.1-1.4 SD in both runs, so they are the two to name. Both are fixed
+at the quote, so LEAK-41 keeps them whatever they score. The mechanism is structural, not outcome-driven:
+- Region: mean Exposure by region spans 0.36-0.66, mostly through the sub-portfolio mix of the IDpol blocks (block
+  means 0.61/0.63/0.50/0.50/0.57/0.38/0.36 for blocks 0-6; Centre is 23-34% of blocks 0-4 and 1.8% of blocks 5-6;
+  Haute-Normandie is at 0.27-0.30 in blocks 2-3 only). R^2 of Exposure on Region 0.065, on block 0.047, on
+  block x Region 0.100. That is how the accounting cuts contracts per sub-portfolio, fixed before the year.
+- DrivAge (Spearman +0.16) and VehAge (+0.18): older drivers and cars stay longer, i.e. less churn: risk selection
+  (USE-6), not a value set after the quote.
+- BonusMalus's missingness is the block 0-4 vs 5-6 indicator: R^2 0.025 on Exposure alone (non-null rows mean
+  0.368 vs 0.550), mediated gain +0.00005. The block is fixed when the record is created; stays.
+No feature is a value set or cut after the quote (no earned premium, no realized length, no group sum of exposures,
+no precision marker). The precision marker sits only in Exposure itself (day fractions /365 vs /366 on the
+1-3-day rows), which is no feature.
 
-The decisive footprint is the first malus step from the floor, 62-63 (50 × 1.25), among drivers 30+:
+**Problems, ranked (principles.md order: validity first)**
 
-| rows | share at 62-63, with a claim | share at 62-63, without |
-|---|---|---|
-| blocks 0-3 | 5.3-6.8% | 1.5-1.7% |
-| block 4, no next-year row | 7.8% | 1.3% |
-| block 4 with a next-year row, and blocks 5-6 | 1.1-2.2% | 1.4-1.6% |
+1. Documentation gap, LEAK-41 (Must rule; this is its reporting clause, a mild fix). LEAK-41 says "for each suspect
+   column the definition reports its gain on the declared metric with an L2 fit on the shipped scale and with the
+   weighted actuarial fit, and decides on the worse". The notes report Exposure's own gains (0.0039-0.0047) but
+   not probe 22's feature-side result. No column is above noise, so nothing is "suspect" in the strict sense, but
+   Region and DrivAge are the probe's top features with 1.1-1.4 SD mediated gains.
+   Remedy (mildest): one sentence in the Exposure bullet of curation_comments, e.g. "Probe 22: the rating factors
+   predict Exposure at R^2 0.17 (Region, DrivAge, VehAge first, through the sub-portfolio mix and churn); no
+   feature's gain goes through it above noise under the Poisson or the L2 fit (largest Region +0.0010 to +0.0016,
+   DrivAge +0.0006 to +0.0012); all are known at the quote and stay (LEAK-41, USE-6)." No code change.
 
-Choosing riskier drivers would not pile claimants onto exactly one malus step.
+2. Protocol note, not a column problem (LEAK-9; for the task gamer). The participant kit hands out Exposure for every
+   row in scoring.parquet, test rows included, as the metric needs it. A participant who reads the test rows' weight
+   as an input recovers the +0.0048 leak. This is the scoring-column contract every weighted task has ("Scoring
+   columns ... never features" in task.md); nothing to change in the definition. Flagged so the gamer's report
+   measures it under the rate target.
 
-Size of the effect (LightGBM with log(Exposure) as an offset, shipped folds):
-- Removing BonusMalus costs 0.0131 deviance in blocks 0-3 and 0.0110 in block 4, but **gains 0.0005 (SE 0.0003) in blocks 5-6**.
-- Over all rows, BonusMalus carries 0.0112 of the 0.0269 total gain over the mean count (42%), the largest of any feature.
-- The affected rows are blocks 0-3 plus block 4's rows without a next-year row: about 577k rows (85%).
+3. Questions carried over, unchanged by today (no action): VehPower 15 may be a "15 or more" top code (2,926 vs
+   2,350 at 14; source silent; numeric is still lossless for order); Density 27,000 is likely Paris rounded.
+   Neither changes a verdict.
 
-Remedy, mildest first; the call is the curator's:
-- (a) Look for a source statement first (LEAK-3). My search found none.
-- (b) Blank BonusMalus in the rows where the late value can be located (LEAK-10 second clause, as for zillow and melbourne). Those rows are found only through the inferred IDpol blocks.
-- (c) Drop BonusMalus. In blocks 5-6 it adds nothing measurable.
-- Keeping it with a note departs from a Must, so it needs an amendment, not an exception.
-
-The whole freMTPL2 literature uses BonusMalus as its main factor. That weighs for (a) before acting.
-
-**2. Exposure: the mechanism is measured, and the note gives the wrong number (P4, LEAK-10; kept by the curator, as in bemtpl97, a consistent precedent).**
-
-- Rows with an earlier-year row, so started before the year, claim at 0.255 a year when exposure is ≤0.1, against 0.056 at a full year (4.5×). Within each exposure bin a claim also lowers the chance of a next-year row (above).
-- Exposure as a free feature against the source's form (exposure as an offset, Noll et al.): 0.23269 vs 0.23654. That is 0.0039 better on every fold (0.0033-0.0044), or 14% of the gain. 42% of that 0.0039 comes from rows with exposure ≤0.1.
-- The notes' "about a fifth of the gain" (0.2534 vs 0.2595) is the proportional, legitimate time-at-risk part. The part that can carry the leak is the 0.0039, and the notes do not give it.
-
-Remedy: correct the note's number (the mildest). Alternatively, score the rate times Exposure, with Exposure as a scoring column. That is the source's own form, but it needs a new metric in `src/data_foundry/v2/metrics.py`. Curator's call.
-
-**3. Pair structure across the split (P4, SPLIT-8, SPLIT-31).** A lookup gains 0.0004, and 52.5% of the links can be rebuilt without IDpol. Keep IID and add a sentence to splits_comment.
-
-**4. DrivAge 99 is a default (P7, CLEAN-10 Should).**
-- 66 of the 70 rows are in block 0.
-- None of those 66 has a next-year row, even with the driver-age condition dropped. 62.7% of block 0 does.
-- Their claim frequency is 0.081.
-
-The notes keep 99 "as possible" without giving a reason. The cheap fix is missing for the 66 rows, the same treatment as VehAge 99.
-
-**5. VehPower 15 may be a top band (P7, CLEAN-14).** A question, no change unless the source says so.
-
-**6. Wording (writing.md).** The metric bullet says "machine epsilon" but the Metric declares 1e-6, as the checklist already noted.
-
-Sources:
-- [CASdatasets freMTPL help page](https://dutangc.github.io/CASdatasets/reference/freMTPL.html)
-- Searched for a statement on BonusMalus timing and found none. Closest result: [burning-cost, causal inference on freMTPL2 BonusMalus](https://burning-cost.github.io/2026/03/28/causal-inference-fremtpl2-bonusmalus-dml), which argues BonusMalus builds up from past claims and uses log(Exposure) as an offset, without addressing timing.
+Settled points not reopened: BonusMalus blanking in blocks 0-4 (issue 5), IID split (issue 7), renewal signal
+(issue 8), DrivAge 99 in block 0 (issue 9). Today's change does not touch these columns' timing; my extended probe
+shows BonusMalus does not carry Exposure (+0.00005).
 
 </details>
 
 <details><summary>Split audit</summary>
 
-**Verdict: right with notes.** The IID split with `ForcedIIDFromTemporal` is still the right choice. I found nothing that needs a re-split. Three things need a note or a wording fix. One of them is a small leak of the dataset itself, not of the split: it is just as large under a grouped split.
+**fremtpl2 - split auditor, exposure re-review (2026-11-06, full tier)**
 
-**Direct answer to focus.md**
+VERDICT: right with notes. IID (ForcedIIDFromTemporal) still matches the use case under the rate target. Every row is
+on the training side whatever its time on risk, so no side is selected by the realized weight (LEAK-41, SPLIT-9). One
+new fact reopens issue 7 as a question, not a fix. The whole IID-vs-grouped gap that the study left open comes from a
+single 20-row rating profile (the counts 5-16 kept on 2026-11-04). LightGBM learns it from copies on the training side.
+Without those 20 rows the gap is zero.
 
-- **The links are real.** `next_year_rows` gives 161,883 pairs, and 99.5% of them have an IDpol offset of +1. Three checks show they are not chance:
-  - Shuffling IDpol within each block leaves 28 matches.
-  - Requiring a driver age change of 0, +2 or −1 instead of +1 leaves 25, 21 and 19 matches.
-  - So the chance rate is about 0.02%, and the pairs are one policy in two consecutive periods.
-  - Rows that reappear one block later: block 1 48.7%, block 3 48.3%, block 5 49.2%, block 6 60.3%. Links run 0→1, 2→3 and 4→5→6.
-  - Separately, 96,476 pairs of adjacent IDpols share all rating factors, and in 99.9% of them the two exposures add up to at most one year. These look like one policy split into two records within a period.
-  - 61% of rows are in a linked group of two or more. 66.8% of the cross-year pairs and 66.5% of the same-period pairs are cut by the shipped folds.
-- **"Changes the score by nothing" holds for ordinary models.** I scored by Poisson deviance (lower is better), comparing each row's score under the shipped folds with its score under folds grouped by the links, using a cluster bootstrap:
+Setup: LightGBM Poisson (300 trees, lr 0.05, 31 leaves, min_child 200) on claim_frequency with sample_weight=Exposure.
+Scores are the declared metric (Exposure-weighted mean Poisson deviance, floor 1e-4). I checked my function against
+the container scorer on fold 0 (dummy 0.47980 both). "OOF" means the out-of-fold score over all 677,991 rows, so the
+splits are compared on the same rows. All numbers are on the rate scale; divide by about 1.89 for the old count scale.
 
-  | Model | Shipped | Grouped by chain (3 seeds) | Shipped minus grouped |
-  |---|---|---|---|
-  | LightGBM | 0.23265 | 0.23238–0.23245 | +0.0002 to +0.0003 (SE 0.0002); the random split is not optimistic |
-  | Poisson GLM | 0.23970 | 0.23976 | −0.00007 (SE 0.00003) |
-  | Over-flexible LightGBM, linked rows only | | | −0.0003 (SE 0.0003) |
+1. Regime
+   Pricing at the quote, for comparable policies of one portfolio. A temporal split would fit, but the release has no
+   dates (SPLIT-8). The declared regime matches. The 9 features are the rating factors, and Exposure, ClaimNb and IDpol
+   are out. The split comment and task_summary.split describe the regime correctly.
 
-  - Two random seeds differ from each other by up to 0.0002.
-  - The LightGBM–GLM gap is 0.0071, so the ranking is the same under every split.
-  - Chains plus same-period neighbours give 430,379 groups. That agrees with the 430,298 in the notes, and the skill matches too: 0.0820 shipped against 0.0825 grouped.
-- **The links do leak, but through the dataset, not across the split.** Whether a policy has a later-period record can be found from the shipped features alone (same brand, fuel, region, density and power; driver one year older). A later record means the policy was renewed rather than ended, and renewed policies claim far less: in block 0, 0.070 claims per year against 0.141.
-  - Using only that fact, with no labels, lowers the deviance by 0.00170 on the shipped folds (−0.00134 to −0.00206 per fold).
-  - Under the grouped folds it lowers it by 0.00181. Grouping does not remove it.
-  - Control: the same feature built from rows five years older gives +0.00003, so the gain is the policy's own later record.
-  - The earlier period's claim count, which is legitimate history for a renewal, is worth only −0.00016.
-  - It is the same mechanism as the Exposure/cancellation note in the record (claim 17).
-- **Is IID with the forced tag still right?** Yes, under SPLIT-8.
-  - The calendar years of the blocks are unknown, and each sub-portfolio has only 2–3 periods. That gives one later window, not the three that SPLIT-14 asks for.
-  - The "blocks are years" reading is also uncertain for blocks 4–6. Block 4's full-year rows almost never continue (0.1%), and blocks 5 and 6 have 73 and 0 full-year rows.
-- **The kit does not reveal IDpol.** IDpol is not in the kit, and the kit's row order is unrelated to it (Spearman −0.0003).
-- **Exposure above one year:** none of the 1,224 rows has a link in either direction (961 in block 1, 263 in block 2), so claim 16 is right.
-- **Exposure below one year predicts no next-period link:** link rate 0.436 against 0.982 in block 0, 0.272 against 0.001 in block 4, 0.530 against 0.863 in block 5. This fits the cancellation mechanism.
+2. Memorizer under IID and under a split grouped on identical rating factors (the study's open item)
+   OOF deviance, 3 folds:
 
-**Problems, ranked**
+   | | dummy | LightGBM | Poisson GLM |
+   |---|---|---|---|
+   | IID (shipped folds) | 0.47929 | 0.46813 | 0.47171 |
+   | grouped, shipped 9-feature key | 0.47931 | 0.46970 | 0.47182 |
+   | grouped, raw factors (lit. key) | 0.47930 | 0.46902 | - |
+   | grouped, next-year chains | 0.47930 | 0.46860 | - |
 
-**1. P4, LEAK-10 / LEAK-17 (weak, Should-strength): a renewal can be seen from the policy's later record.**
-- Evidence: as above, −0.0017/−0.0018 deviance under random and grouped folds alike. That is 0.7% of the deviance and about 6% of LightGBM's gain over the mean-count baseline (0.2595 → 0.2326).
-  - A participant who matches only against training rows gains −0.0012 on the shipped folds and −0.0004 on grouped folds. The renewal fact without labels already accounts for −0.00094 of that.
-  - The over-flexible LightGBM run shows no such gain, so models that do not build the feature on purpose do not seem to pick it up.
-  - Not checked: whether in-context models (TabPFN) find it. That needs a GPU run.
-- Rule: LEAK-17 says to group, but grouping does not fix it here (EV-1 measurement). Only holding out the latest period removes it, and that gives a single window (fails SPLIT-14). The tension "weak leak against the data as published" applies: keep it with a note.
-- Mildest remedy: add to the "Potential leak, kept on purpose" bullet. "A policy's next-period record, findable from the features, marks a renewed policy; continuing rows claim at half the rate; matching on it gains 0.0017 deviance under random and grouped folds alike."
+   Seed noise: IID with other random folds gives 0.46824 and 0.46839. Grouped on the shipped key with other seeds gives
+   0.46905 and 0.46920. The LightGBM gap is +0.0008 to +0.0016, which is 7-14% of its skill over the dummy (0.0112).
+   The GLM gap is +0.0001.
+   - An explicit memorizer gains nothing. 36.4% of test rows (23.2% of test exposure) have an exact feature copy on the
+     training side. A pure lookup of the profile's training rate, shrunk to the portfolio rate, scores 0.48459, worse
+     than the dummy. Blending the lookup into LightGBM (k = 0.5, 2, 10 years) never beats LightGBM (best 0.46823).
+   - The whole gap is one profile. The grouping gap has a 0.00157 total over rows, and the 50 rows with the largest
+     change carry 102% of it. They sit in profiles of 3-20 rows that have a claim. One profile does it: power 4, B1,
+     Regular, area D, density 824, Languedoc-Roussillon, BonusMalus blank, car/driver 12/52 in block 2 and 13/53 in
+     block 3. It has 20 rows, 77 claims and 4.63 years, a rate of 16.6 claims a year against about 0.07 for the
+     portfolio. It includes the 7 policies with 5-16 claims that the notes already name, which Wuthrich and Merz suspect
+     to be one driver or a rental fleet. Under IID its rows fall 6/7/7 across the folds. LightGBM predicts 3.8-17.2
+     claims a year for its test rows from the training copies. Grouped on the shipped key, it predicts 0.073-0.078.
+     Without those 20 rows (8 rows in the "bigcount" filter of the result files):
+       IID 0.46746 / 0.46759 / 0.46751 against grouped 0.46750 / 0.46758 / 0.46766 (seeds 0/1/2), a gap of -0.00001
+       to +0.00015. For the GLM the gap is 0.46951 against 0.46958.
+     The ranking (LightGBM ahead of the GLM) is the same under every split.
+   - Rule: SPLIT-29 / LEAK-17 (Must) with SPLIT-30 (a hit is a question). This is not "many rows". It is one entity
+     whose rows carry the label and that new quotes would not share. Under IID a model is rewarded for recognising it,
+     and that is the only memorization the data rewards. The rate target does not create it: the weighted rate equals
+     the count deviance with an offset. Issue 7 was settled without this number, and the 2026-11-04 call that kept
+     counts 5-16 weighed their share of the deviance, not their effect on the split.
+   - Remedies, mildest first:
+     (a) Keep IID and add one sentence to splits_comment and the notes. It names the profile and the gap (+0.0008 to
+         +0.0016 on LightGBM, 0 without it) and says the IID score depends on how its 20 rows fall.
+     (b) Group on the identical shipped rating factors. This is the key Schelldorfer and Lorentzen-Mayer use, for this
+         reason. It costs nothing elsewhere: 488,666 groups, folds of 224,778-226,838 rows. Per the brief, an equal
+         profile is not a proven entity id. Here it is a composite key for which one fleet or driver is the evidence
+         (splits.md pattern "Composite keys"). The tag would move to ForcedGroupedFromTemporal.
+     A filter (dropping the 20 rows) undoes the 2026-11-04 keep and is not recommended. I lean to (a). (b) is the
+     choice if the curator reads the profile as one entity. This is the curator's call; the issue 7 options need this
+     row added.
 
-**2. P4, SPLIT-8 (Must: the cost has to be measured): the cost in the notes has the wrong sign.**
-- Evidence: "skill 0.0847 against 0.0820 for random rows of that size" compares different rows. On the same rows (blocks 1, 3 and 6, with training on blocks 0, 2, 4 and 5, 58% of the data):
-  - LightGBM: 0.23316 against 0.23267 under the shipped folds, +0.00049 (SE 0.00016); skill 0.0843 against 0.0863.
-  - GLM: +0.00009 (SE 0.00005).
-  - So the forced IID split is slightly optimistic, by 0.2%, and the ranking is unchanged.
-- Remedy: a wording fix in the "Split forced IID" bullet. Report the deviance on the same rows. No re-split.
+3. Next-year records across the split (issue 8, re-measured on the rate)
+   161,883 inferred pairs (next_year_rows). 66.5% of them have their two rows on different sides of the shipped folds.
+   30.9% of test rows have a linked row (previous or next year) on the training side. The features below are upper
+   bounds, because they read IDpol, which does not ship. Shipped columns single out the partner for about 55% of links
+   (notes). LightGBM OOF on IID, 0.46813:
+     + has-previous / has-next flags (label-free)          0.46716  (-0.00097)
+     + partner's Exposure (training side only)             0.46737  (-0.00077)
+     + flags + partner's Exposure + partner's rate         0.46677  (-0.00136)
+     + the above + partner's shipped BonusMalus            0.46563  (-0.00250)
+   Without the 20-row profile the gains are the same (-0.00097 / -0.00142 / -0.00262). Grouping on the chains removes
+   the label part but not the flags: LightGBM + flags scores 0.46746 against 0.46860 for LightGBM alone under the chain
+   split. This matches issue 8 (LEAK-9 protocol line; no split removes it). Note: the notes quote it on the count scale
+   (0.0008 after blanking; 0.0009-0.0010 for the label-free signal). On the shipped metric the full oracle is about
+   0.0015-0.0025 and the flags about 0.0010. The numbers in fit_reason and the notes should be restated on the rate
+   scale.
 
-**3. P4, SPLIT-8 letter and consistency: why IID and not `ForcedGroupedFromTemporal`.**
-- Evidence: SPLIT-8 names the grouped regime when periods are stacked and entities recur across them, which is the case here. The precedents nba_players_2016_2019 and open_university_learning_analytics_dataset were grouped, but they had an entity id in the release.
-- What sets this case apart:
-  - There is no key in the release. The entity can only be rebuilt from the dropped IDpol by an inferred rule; SPLIT-24 would still allow grouping on it, given the 0.02% chance rate.
-  - Grouping changes nothing (problem 1 and the table above), and it does not remove the renewal signal.
-  - Most policies priced are renewals, which are known entities (USE-10), so a cold-start grouped split mirrors the use case no better.
-- Remedy: one sentence in `splits_comment` or in the Decision text, recorded as Lennart's reason. Optionally a consistency-check line against those two precedents.
+4. Time on risk cut at the accounting year and at the release
+   Exposure by IDpol block (share below a year / exactly a year / above a year; max):
+   - blocks 0-4: 65-77% / 23-35% / 0-0.9% (the 1,224 rows above a year are in blocks 1-2)
+   - block 5: 99.8% / 0.17% (73 rows) / 0; quantiles 50% 0.33, 99% 0.96
+   - block 6: 100% / 0 / 0; max 0.74, 90% 0.73
 
-**4. Quality / wording (EV-6, EV-8).**
-- The notes and the decision text say the pairs "look like" one policy. With the measured null (161,883 against 28) this can be stated as a fact.
-- The same-period neighbour pairs, with exposures summing to at most one year, support `splits_comment`'s "another record of the same year".
-- Remedy: a wording edit.
+   Block 6 never reaches 0.74 of a year, so it is cut at a calendar date (most likely the extraction date), not only by
+   the outcome. Block 5 is almost all partial years too. The rate falls less with exposure there (0.082 at
+   Exposure <= 0.25 to 0.057 at 0.75-1) than in blocks 0-4 (0.147 to 0.077, 0.055 at a full year). So in 5-6 the short
+   records are largely censored rather than ended by a claim. Under IID:
+   - No side admits or drops rows by the weight. The rate with Exposure as weight treats a censored record
+     proportionally, so LEAK-41's "no model trained or scored on rows selected by the realized weight" holds.
+   - Note for the definition: the Exposure ScoringColumn description says "shorter when the policy ended early, often
+     after a claim". In blocks 5-6 it is mostly cut by a date (block 6 capped at 0.74). Add one clause; this is
+     wording, not a split change.
+   - Note for any later temporal variant (SPLIT-8: recover the years): block 6, the newest period, covers about three
+     quarters of a year, a season-shaped test window. A model tested there scores a partial year.
+   - Records of one contract year split across two accounting years: 54,109 pairs have exposures summing to <= 1.01
+     (63-67% of linked pairs in blocks 3-5). 66.5% of them straddle the folds. They are part of the transductive
+     signal of item 3, not a separate issue.
 
-**Pointer for the leak auditor (not a split issue):** BonusMalus barely changes between linked records in blocks 0→1 and 2→3, but it moves normally in 4→5→6.
+5. The forced-temporal alternative, re-run on the rate
+   Train on blocks 0, 2, 4, 5 (396,446 rows) and test on blocks 1, 3, 6 (281,545 rows). LightGBM scores 0.47077,
+   against 0.46987 for the same rows under the shipped IID folds: +0.00090 (row bootstrap SE 0.00035; dummy 0.48176).
+   Without the 20-row profile the gap is +0.00046 against 0.46909. The notes give +0.00049 on the count scale; on the
+   rate it is +0.0009, half of it the same profile. The ranking against the GLM is unchanged. IID is slightly
+   optimistic, as the notes already say.
 
-| | Blocks 0→1 | Blocks 2→3 | Blocks 4→5→6 |
-|---|---|---|---|
-| BonusMalus falls after a claim-free period (start above 50) | 5% | 21% | 93% / 92% |
-| BonusMalus rises after a claim | 1% | 4% | 35% / 37% |
-
-So in blocks 0–3 the BonusMalus value may be one reading copied to both records. If that reading was taken after the earlier record's period, it falls under LEAK-10. I did not settle this.
-
-**Judgment record**
-
-Validity: SPLIT-1/SPLIT-8 hold (forced IID; the one block window costs +0.0005 deviance); SPLIT-29/30 not triggered (grouped ≈ random); LEAK-17/LEAK-10 triggered weakly through the renewal record, keep with a note. Not applicable: SPLIT-9/10, gap and season (no dates).
-For the curator: the wording of problem 2, and the note for problem 1.
+Ranked (principles.md: P4 honest evaluation first)
+ 1. Should, open question to the curator (SPLIT-29/LEAK-17 via SPLIT-30; reopens issue 7 with a new number). One
+    20-row profile with 77 claims makes the whole IID-vs-grouped gap (+0.0008 to +0.0016, 7-14% of LightGBM's skill).
+    Mildest remedy: a note (a). Alternative: group on identical shipped rating factors (b).
+ 2. Note (LEAK-9, issue 8 settled). Restate the next-year signal on the shipped metric: label-free flags about 0.0010,
+    with partner labels and next-year BonusMalus up to about 0.0025 (upper bounds by IDpol).
+ 3. Note (LEAK-41 wording). The Exposure description should say blocks 5-6 are cut by a date (block 6 at most 0.74
+    year). Record the partial-year newest block for a future temporal variant (SPLIT-8, SPLIT-12).
+ 4. Note (SPLIT-8). Restate the forced-temporal cost on the rate: +0.0009 (+0.0005 without the profile).
+ Not a problem: an explicit profile memorizer gains nothing (best blend 0.46823 against LightGBM 0.46813). No row is
+ selected by its weight. The split sizes are 451,994 / 225,997 x 3.
 
 </details>
 
 <details><summary>Domain practitioner</summary>
 
-**Domain practitioner (pricing actuary, French motor TPL): fremtpl2**
+**Domain practitioner (pricing actuary, French motor third-party liability book): fremtpl2, exposure re-review 2026-11-06, full tier**
 
-**Fit: approximate.** The rating factors, the claim counts and the policy-year unit match how a French insurer prices claim frequency, but there are no dates, so the next year cannot be held out. Realised Exposure is a free feature, and part of it is known only after the quote (USE-8, SPLIT-8).
+**VERDICT**
 
-**Metric scores the decision: yes.** Mean Poisson deviance of the counts against the expected counts.
+Fit: approximate (unchanged). Option A makes the target and its weighting exactly what I price with (claims per year
+insured, each record counting by its time insured), so the target is no longer a gap; the remaining gaps are inputs
+I always have at the quote (the bonus-malus coefficient, blank in 88% of records) and the missing calendar year.
+Metric scores the decision: yes. The Exposure-weighted Poisson deviance of the rate is the source's offset-model
+deviance up to a per-fold constant, strictly consistent for the expected rate, at the unit I price (a policy-year).
 
-**Focus question, answered directly**
+**WHAT I MEASURED (shipped folds, declared scorer)**
 
-**1. Are the links real? Yes, but "consecutive years" only holds well for blocks 0→1 and 2→3.**
-- The `next_year_rows` rule finds 161,883 pairs.
-- The same rule at wrong offsets finds almost nothing: 62 matches at 101-109 and 90 at 501-509. The chance rate is about 0.05%.
-- The bonus-malus moves the way the French legal bonus-malus coefficient (CRM, Code des assurances A121-1) predicts: ×0.95 per claim-free year, ×1.25 per at-fault claim.
-  - Earlier BM above 50 and no claim: the later BM falls in 37% of pairs (10th percentile of the ratio 0.941). It rises in 2.0%.
-  - Earlier row with a claim: the later BM rises in 10.4%.
-- In block 0, rows insured the full year have a next-year row 98.2% of the time, against 43.6% for rows with Exposure below 1. That is renewal versus termination.
-- None of the 1,224 rows with Exposure above 1 is linked. Claim 16 is confirmed.
-- Blocks 4-5-6 behave differently:
-  - Only 0.2% of their linked rows are full-year records.
-  - In 63-66% of the 4→5 and 5→6 pairs, the two exposures add up to at most 1.01.
-  - So these look like one contract year split across two accounting years, not two full years. The notes' "consecutive years of three sub-portfolios" overstates this.
+LightGBM Poisson (500 trees, lr 0.03, 31 leaves, min_child 200), trained with sample_weight = Exposure, 9 features:
+- fold 0: constant 0.47980, LightGBM 0.46864, skill 0.0233; A/E 0.992; exposure-weighted Gini 0.192
+- fold 1: constant 0.48068, LightGBM 0.46810, skill 0.0262; A/E 1.000; Gini 0.203
+- fold 2: constant 0.47739, LightGBM 0.46764, skill 0.0204; A/E 1.007; Gini 0.191
+- mean skill 0.0233 (SD 0.0029), A/E 1.000, Gini 0.195; 0.0% of predictions at the 1e-4 floor.
+  Skill on rows with BonusMalus present (blocks 5-6, ~26.7k test rows per fold): 0.0129; on blanked rows 0.0242.
 
-**2. "Changes the score by nothing": true for an honest model.**
-- Setup: LightGBM Poisson with Lorentzen and Mayer's parameters, the declared metric, skill measured against Exposure × the portfolio frequency.
+Same model trained WITHOUT the weight (fold 0): deviance 0.50043 against the constant's 0.47980 (skill -0.043),
+  A/E 0.642 (the book priced 1.56 times too high), Gini 0.136. This confirms MET-15's 1.61x on the new scale.
+Earlier panel's actuary (REVIEW.md, BonusMalus in all rows, log(Exposure) offset): skill 0.0644. The fall to 0.0233 is
+  the cost of the BonusMalus blanking of 2026-11-05 (issue 5), not of option A: option A is the offset model.
+Task probe (probes/task.txt) flags no_signal (TP-1, TP-2) from an R^2-type skill (+0.002). Read with care: a claim
+  frequency model always has R^2 near 0.01 because Poisson noise dominates; on the declared deviance the skill is
+  0.023, A/E is 1.00 and the Gini 0.19 (typical published MTPL frequency Ginis are 0.2-0.3). The signal is real.
 
-| Folds | Skill (SD) | Deviance |
-|---|---|---|
-| Shipped | 0.0797 (0.0002) | 0.2332 |
-| Grouped by the literature's 9-factor key | 0.0791 (0.0025) | 0.2334 |
-| Grouped by key plus inferred links (378,542 groups) | 0.0794 (0.0012) | 0.2333 |
+**Q1. AT THE QUOTE, DO I HAVE THESE INPUTS? (USE-3, USE-6)**
 
-- All three are within one fold SD of each other.
-- Last year's claim as a feature (the legitimate history of a known policy, USE-10) adds +0.00001 deviance, i.e. nothing. The BM already carries it, as the CRM is designed to.
+- VehPower, VehAge, VehBrand, VehGas, DrivAge, Area, Density, Region: yes, all on the quote form or derived from the
+  address (commune density, region). Standard French tariff variables.
+- BonusMalus (the CRM, coefficient de reduction-majoration, Code des assurances A121-1): I ALWAYS have it at the quote,
+  from the relevé d'information the previous insurer must hand over, and it is the strongest single factor in the
+  French tariff. Its blanking in blocks 0-4 is justified by the release (it looks recorded after the year's claims,
+  LEAK-10, settled issue 5), but the task is now "price most of the book without the CRM". This is the largest
+  remaining gap between the data and my decision (skill 0.064 -> 0.023 on the same model class).
+- Exposure: correctly not an input now (LEAK-41). At the quote I know the planned term (a year), not the realized
+  share of the year; a cancellation after a claim is information from after the quote. Probe 22: the features
+  predict Exposure at R^2 0.169, and no feature's gain runs through Exposure above noise (Poisson and L2 fits), so
+  nothing else needs to go.
+- Missing inputs I would always have: new business vs renewal and tenure, start date and calendar year, product or
+  sub-portfolio code (blocks 4-6 are mostly part-year records), cover level and deductible, vehicle group / value
+  (SRA classification), number of named drivers, licence age. Gender is rightly absent (banned in EU pricing since
+  21 December 2012, Test-Achats).
 
-**3. Does the pair structure leak across the random split? Yes, through one backward channel, and only if a participant goes looking for it.**
-- When a test row's next-year row sits on the training side, a rise in that row's BM reveals this year's claim: P(claim) is 0.238 against a base of 0.037.
-- I stacked a Poisson GLM on the honest out-of-fold predictions:
-  - Using the IDpol links: skill 0.0797 → 0.0843 (+0.0046).
-  - Without IDpol, linking from shipped columns only (same brand, fuel, region, density, power and area; driver one year older; car the same age or one older; BM at least 1.2× higher): 0.0854 (+0.0057), on 3 of 3 folds (+0.0053, +0.0064, +0.0056).
-- That is about 10× the gap between random and grouped folds.
-- Grouping by the inferred chain halves it (0.0794 → 0.0818, +0.0024).
-- Grouping by car-and-commune cell (88,849 cells, largest 940 rows) closes it by construction. Honest skill there is 0.0774 (SD 0.0025), but part of that drop is a change of task (unseen cells).
+**Q2. IS THE TARGET WHAT I ACT ON? (USE-5, MET-14)**
 
-**4. Is IID with `ForcedIIDFromTemporal` still right? Defensible, and I would keep it.**
-- Out of time is not harder. Training on blocks 0, 2, 4 and 5 and testing on 1, 3, 6 gives skill 0.0824 (actual/expected 1.014), against 0.0754 for random rows of the same size. This agrees with the notes' 0.0847 vs 0.0820.
-- SPLIT-8 applies: no dates, at most 3 inferred periods per sub-portfolio, and a key the source never states.
-- SPLIT-8's literal condition for `ForcedGroupedFromTemporal` ("periods stacked, entities recur") is met only through inferred keys.
-- So for the curator: keep IID, but name the BM channel and its size in `splits_comment` and in the decision. Or group by the inferred chain, which costs no measurable skill and halves the channel.
+Yes. The frequency model of a tariff estimates lambda(x), claims per year insured; the pure premium is lambda(x)
+times the expected severity, and the annual premium is earned pro rata to the time insured. claim_frequency =
+ClaimNb / Exposure with Exposure as the weight is the textbook form: Ohlsson and Johansson (2010) model the claim
+frequency with the duration as the GLM weight; Noll, Salzmann and Wuthrich use log(Exposure) as offset; scikit-learn's
+freMTPL2 example ships exactly Frequency = ClaimNb / Exposure with sample_weight = Exposure in fit and score. I want a
+positive number (an expected rate), not a class.
+Would I weight records by their time insured? Yes, without hesitation (MET-15): the book's claims and the earned
+premium are sums over time insured, and the weighted rate is the maximum-likelihood rate of a constant claim hazard
+even when a claim ends the policy (the record is then censored at the claim, and N / time at risk is still the
+hazard's estimator). That is why the earlier free-Exposure model under-priced full-year quotes (actual 1.29 times its
+price) and the weighted rate does not. Unweighted, the same model prices the book 1.56 times too high (A/E 0.642).
+Frequency alone, without severity (D12), is a standard standalone model in a frequency-severity tariff; no gap.
+Kept rows with Exposure up to 2.01 (1,224) and the 8 policies with 5-16 costed claims: fine for me; their weights are
+their time at risk and they carry little of the score (0.0012 of 0.2534 on the count scale for the high counts).
 
-**Q1-Q5 from the actuary's seat**
+**Q3. DOES ONE ROW MATCH ONE DECISION? IS THE TEST WHAT I FACE? (USE-10, SPLIT-8)**
 
-1. **Inputs.**
-   - Every rating factor is known when I quote. The BM is the CRM at renewal.
-   - Realised Exposure is not fully known. At quote I know the contract term and start date, not a later cancellation.
-   - Missing inputs I would always have: new business vs renewal (tenure), start date, a product or sub-portfolio code (blocks 4-6 are almost all part-year records), vehicle value or model group, cover or deductible, number of drivers.
-2. **Target.** The expected claim count, i.e. frequency λ(x) × term, is exactly what I price with; severity is a separate model. I want a positive mean, not a class. Claims with a recorded cost (the 2022 counts) are fine.
-3. **Unit and test data.**
-   - One row is a policy × accounting-year slice, the unit of a frequency model's data.
-   - The test I really face is next year's renewals plus new business. Random rows stand in for that. The cost measured above is nil, but test rows get backward information (point 3).
-4. **Would I use it?** Yes, as a model-selection benchmark. I would trust it more if Exposure entered as an offset. I would distrust gains from very flexible models that use Exposure non-proportionally (gap 1).
-5. **Metric.** Yes, see the last section.
+- One row is a policy-year record, the unit of a frequency model's data; renewals split across two accounting years
+  (Wuthrich and Merz, Sec. 13.1) and split contract years in blocks 4-6 are two rows of one contract, which the weight
+  now handles correctly: each part counts by its own time.
+- The test I face is next year's renewals plus new business. Random rows stand in for it (ForcedIIDFromTemporal); the
+  earlier panel measured out-of-time no harder (+0.00049 deviance, ranking unchanged). Under the rate target this is
+  unchanged: nothing about the split depends on the target's form.
+- My known policies' own history is legitimate (USE-10), but the CRM carries it by design; it is gone in 88% of rows.
 
-**Gaps between the dataset and the real decision, ranked by how much they change the task**
+**Q4. WOULD I USE THIS MODEL?**
 
-1. **Exposure as a free feature: the largest effect.**
-   - LightGBM with log(Exposure) as an offset (Exposure not a feature): skill 0.0644 (deviance 0.2371). With Exposure as a feature: 0.0797 (0.2332).
-   - So 19% of the skill (0.0039 deviance) comes from using realised exposure non-proportionally.
-   - Claims per year fall from 0.172 at Exposure ≤ 0.1 to 0.055 at a full year.
-   - In block 0, short rows with no next-year row claim 0.144 per year, against 0.095 for short rows with one. That fits terminations that follow claims, which is information from after the quote.
-   - Under USE-8 a kept leak does not change the fit. But the notes' "about a fifth of the gain" (0.2595 → 0.2534) measures the proportional, legitimate use. The size of the kept potential leak is the separate 0.0039 (LEAK-30 wording).
-2. **No year (SPLIT-8).** The measured cost is nil or negative (0.0824 vs 0.0754).
-3. **The backward BM channel.** +0.0046 to +0.0057 skill for a participant who exploits it; none for a standard model.
-4. **Missing standard tariff inputs and a mixed portfolio** without a product code. The frequency level differs by block, from 0.0863 to 0.0586 claims per year.
+As a model-selection benchmark for a frequency model: yes, more so than before, because the score now rewards the
+quantity I price and no longer rewards reading the realized Exposure. I would not deploy a tariff fitted on it: no
+CRM in most rows, no year, an unknown insurer.
+I would trust a model that: predicts a positive rate for every policy; balances the book (A/E near 1, here 0.99-1.01);
+ranks risks (Gini about 0.2); is monotone where tariffs are (rate falls with the CRM bonus where present).
+I would distrust: any method that ignores the sample weight (it loses to the constant, see above); gains from a
+method reading other rows (the next-year record, settled issue 8; the gamer's +0.00071 is still to be re-measured
+under the rate); and predictions pinned at the floor (random forest 0.5% in the task probe: a zero rate is
+unpriceable).
 
-**What an expert would change (no file edited)**
-- **"Potential leak" bullet:** report the non-proportional share (0.2371 → 0.2332, offset vs feature) as the size of the kept leak.
-- **`splits_comment` and the decision:** add the backward BM channel and its size (+0.0057 relinked from shipped columns, +0.0024 under chain grouping). Optionally group by the chain, the `ForcedGroupedFromTemporal` variant of SPLIT-8.
-- **Decision text:** qualify blocks 4-5-6 as split contract years.
-- **Metric bullet:** it says "machine epsilon", but the definition declares `min_prediction` 1e-6 (MET-13). The prep report already flagged this.
+**Q5. DOES THE METRIC SCORE MY DECISION? Yes (MET-1, MET-8, MET-13, MET-14, MET-15).**
 
-**Metric: yes (MET-1, MET-5, MET-8)**
-- Poisson deviance is the criterion the source chose deliberately: Noll et al. and Wüthrich and Merz Eq. 5.28.
-- Lorentzen and Mayer's exposure-weighted deviance of frequencies ranks models the same way, since d(N, μ) = v·d(N/v, μ/v).
-- It is strictly consistent for the mean, so it rewards honest expected counts. It scores the unit I price (a policy-year).
-- No threshold or top-k applies (MET-6, MET-7, MET-9 not applicable). Exposure enters through the prediction, as in bemtpl97 (MET-2).
-- What I would choose: the same deviance on λ̂(x)·Exposure with log Exposure as an offset. A generic benchmark cannot enforce that, so the declared metric stays. Actual/expected and Gini are checks a practitioner adds, not the score.
+- mean_poisson_deviance of the rate weighted by Exposure = the source's count deviance against Exposure x rate times
+  n / sum(Exposure) of the scored rows (1.886-1.896 per fold), a constant within a fold: models rank as by the source's
+  metric (MET-11 origin source). It is strictly consistent for the mean rate, it penalizes a wrong level as well as a
+  wrong ranking, and it scores the policy-year I price.
+- The weight is right (MET-15): the decision's quantity, the book's claims against the earned premium, is a sum over
+  time insured.
+- The floor 1e-4 claims per year is about 740 times below the portfolio rate (0.0738) and two orders below any
+  plausible risk cell: it never binds on a sane model (0.0% for LightGBM) and bounds the cost of a zero prediction
+  (MET-13). I would clip there too.
+- No threshold, k or cost matrix exists in pricing: MET-6, MET-7 and MET-9 do not apply.
+- What I would choose: the same metric. I would add actual/expected on the book and an exposure-weighted Lorenz curve
+  and Gini as diagnostics, as scikit-learn's freMTPL2 example and Wuthrich and Merz do, but not as the score: A/E is
+  not a scoring rule and the Gini ignores the level.
 
-**Sources**
-- [CASdatasets freMTPL help page](https://dutangc.github.io/CASdatasets/reference/freMTPL.html)
-- Lorentzen and Mayer, Responsible ML material:
-  - [Introduction](https://lorentzenchr.github.io/responsible_ml_material/xai_1_introduction.html): the group_id is rows with identical risk factors, "We assume that rows in such a group represent the same policy, even if their IDpol varies".
-  - [Explaining models](https://lorentzenchr.github.io/responsible_ml_material/xai_2_explaining_models.html): LightGBM pseudo-R² is 6.0% on a random split vs 5.0% grouped, on the old OpenML counts (41214). That gap does not reproduce on the 2022 counts.
-- [Légifrance, Code des assurances A121-1](https://www.legifrance.gouv.fr/codes/id/LEGIARTI000036754143/2018-04-01/) and [UFC-Que Choisir on the CRM](https://ain.ufcquechoisir.fr/wp-content/uploads/sites/81/2020/06/Coefficient-de-Réduction-Majoration.pdf): premium = reference premium × CRM, +25% per at-fault claim.
-- Noll, Salzmann and Wüthrich 2018 (SSRN 3164764), as cited in the definition.
-- Search hits I looked at but did not use: [OpenML 41214](https://api.openml.org/d/41214), [Hugging Face mirror](https://huggingface.co/datasets/mabilton/fremtpl2/blob/main/README.md).
+**GAPS, RANKED BY HOW MUCH THEY CHANGE THE TASK**
+
+1. BonusMalus blank in 88% of records (settled issue 5). I always have the CRM at the quote; without it honest skill
+   is 0.023 instead of 0.064. The task stays real but is "price without the CRM" for most rows. Not to reopen (the
+   column looks post-outcome there), but the largest gap.
+2. A method without sample-weight support is mis-scored by design: unweighted, LightGBM scores 0.50043 against the
+   constant's 0.47980 (A/E 0.64). That is correct for my decision (such a model would mis-price the book) but it is a
+   benchmark-design consequence: the harness must pass `sample_weight` to every method that takes one and the
+   leaderboard should say which methods could not (in-context learners without a weight argument).
+3. No calendar year (SPLIT-8, ForcedIIDFromTemporal): measured small, ranking unchanged.
+4. Missing standard tariff inputs (tenure, product code, cover/deductible, vehicle group, start date) and a mixed book
+   (frequency 0.059-0.086 by block): a coarser tariff than any insurer's, an honest public subset.
+5. Cross-row channel to next-year records (settled issue 8): unchanged by option A; the gamer's re-measure is open.
+6. Exposure-as-target denominator: closed by option A. Exposure as a free feature was worth +0.0048 (SD 0.0019,
+   probe 22); it is now no input.
+
+**WHAT AN EXPERT WOULD CHANGE**
+
+- Nothing in the target, the weight or the metric: this is how I would set them up.
+- fit_reason / notes: state the honest skill under the shipped rate target (about 0.023 deviance skill, A/E 1.00, Gini
+  0.19, my 3-fold LightGBM) and that the BonusMalus blanking, not option A, took it from about 0.064, so a reader does
+  not read the low skill as a broken target.
+- Task probe reading: the no_signal flag on an R^2-type skill is misleading for a Poisson frequency task; record the
+  deviance skill next to it or accept the flag with that reason.
+- Benchmark protocol / README: say that the task needs the sample weight and that a method ignoring it scores worse
+  than the constant rate (MET-15's 0.26187 vs 0.25342 on the count scale; 0.50043 vs 0.47980 here, fold 0).
+
+**SOURCES**
+
+- CASdatasets freMTPL help page: https://dutangc.github.io/CASdatasets/reference/freMTPL.html
+- scikit-learn, "Poisson regression and non-normal loss" (freMTPL2: Frequency = ClaimNb/Exposure, sample_weight =
+  Exposure in fit and in mean_poisson_deviance; Lorenz/Gini and calibration as diagnostics; Exposure not a feature):
+  https://scikit-learn.org/stable/auto_examples/linear_model/plot_poisson_regression_non_normal_loss.html
+- Noll, Salzmann and Wuthrich 2018 (SSRN 3164764) and its code (FreMTPL_1b load data.r, line 35), as cited in dataset.py.
+- Wuthrich and Merz 2023, Statistical Foundations of Actuarial Learning, Sec. 5.2.4 and Appendix 13.1 (from the
+  definition's notes; not re-read today).
+- Ohlsson and Johansson 2010, Non-Life Insurance Pricing with Generalized Linear Models (claim frequency with duration
+  as weight; from my knowledge, not fetched).
+- Code des assurances A121-1 (CRM): https://www.legifrance.gouv.fr/codes/id/LEGIARTI000036754143/2018-04-01/ (as cited
+  by the earlier panel; not re-fetched).
+- Panel inputs: CHANGES.md, probes/task.txt, probes/probe22.txt, probes/probe22_l2.txt, REVIEW.md (earlier practitioner
+  block), dataset.py; rules use_case.md (USE-3, USE-5, USE-6, USE-8, USE-10), metrics.md (MET-1, MET-6 to
+  MET-9, MET-11, MET-13 to MET-15), leak_checks.md (LEAK-10, LEAK-41).
 
 </details>
 
 <details><summary>Blind review</summary>
 
-**Verdict:** include with changes. This is the standard real-world claim-frequency dataset and has real signal, but as prepared a handful of extreme, near-duplicate claim counts and an unweighted squared-error framing can decide the ranking.
+**BLIND REVIEW: freMTPL2 claim frequency (clean room: data.parquet 200,000-row sample, task.md)**
 
-**Concerns, most serious first**
+Reviewer worked only from the clean room folder and the public web.
 
-1. **A few extreme counts from one entity dominate squared error, and a random split rewards memorising them.**
-   - In the sample, ClaimNb runs 0 (192,574), 1 (6,997), 2 (402), 3 (20), then 4, 4, 5, 5, 6, 9, 11.
-   - The 5, 6, 9 and 11 all share one risk profile: VehPower 4, VehAge 12/13, DrivAge 52/53, BonusMalus 50, B1, Regular, Area D, Density 824, Languedoc-Roussillon. Three of them have Exposure 0.08. This is almost certainly one policyholder or fleet split into many short records.
-   - In 3-fold random CV, LightGBM learns the profile from the sibling rows in train. It predicts 1.23 claims for test rows of this cluster, against a population mean of 0.04. It also predicts 2.87 for a sibling row with 0 claims.
-   - These 8 rows (0.004% of the sample) carry 2.6% of the model's squared error. Dropping them moves RMSE from 0.2065 to 0.2038. That shift is larger than the whole gap between GBM and linear regression (0.0012, bootstrap SD 0.0003).
-   - The full 678k table probably holds more rows of this cluster. Older versions have ClaimNb up to 16.
-   - **Change:** cap ClaimNb at 4, as is common in the actuarial literature (from memory; I did not confirm a citation). Better still, also score with Poisson deviance (see 2) and/or use a grouped split (see 3).
+VERDICT: Include with changes. The task (exposure-weighted Poisson claim frequency for motor TPL pricing) is real, standard and honest, and Exposure is the right training/scoring weight. But as prepared, BonusMalus, the strongest rating factor, is 88% missing (0 missing in canonical copies). The scoring metric must also be a Poisson deviance: under weighted MSE the task cannot tell models apart.
 
-2. **The framing is not how the prediction is used.**
-   - The real use: an insurer's pricing team predicts expected claim frequency at policy inception to set the premium. The source treats Exposure as the observation period: "The period of exposure for a policy, in years".
-   - Practice models ClaimNb/Exposure with Exposure as a weight, or uses Poisson with a log(Exposure) offset, and scores with Poisson deviance. scikit-learn's reference example does this: "model the frequency y = ClaimNb / Exposure … use Exposure as sample_weight".
-   - Here Exposure is a plain feature and the target is a raw count. Exposure alone gives R² 0.008. All features give R² 0.033 (L2) or 0.036 (Poisson objective), with Poisson D² about 0.09–0.10.
-   - Realised exposure is partly known only after the fact (mid-year cancellations, possibly triggered by a claim). Claim rate is not monotone in exposure: 6.7% for exposure 0.75–0.99 against 5.5% for exactly 1.0. This is accepted actuarial practice when exposure is an offset, but as a free feature the model can learn post-hoc effects.
-   - **Change:** declare Poisson deviance as the metric if the harness allows it. If it is RMSE-only, keep the count target but cap it. Document Exposure as an exposure measure, not a risk factor.
+**TASK**
 
-3. **Near-duplicate rows: grouped versus random split.**
-   - The literature warns about this for this exact dataset. Lorentzen's material uses grouped splitting on a group_id of identical risk factors: "all their risk factors identical … their 'IDpol' values are very similar … their exposures and claim frequencies are identical". Ignoring the groups raised LightGBM test pseudo-R² "6.0% vs. 5.0%" on the older 678,013-row version.
-   - In this sample, 31,353 rows (15.7%) share all nine risk factors with another row, and 7,578 rows also share Exposure (6,816 of them at Exposure 0.08).
-   - In this version, though, claims mostly do not repeat within groups. If a row has a claim, the chance that a group sibling does too is 1.0%, versus 1.9% when the row has none. Grouped and random 3-fold CV gave the same score (R² 0.0333 vs 0.0330).
-   - So outside the extreme cluster in item 1, I measured little leakage on the 200k sample.
-   - **Change:** prefer GroupKFold on the risk-factor tuple. It is cheap and also contains the cluster in item 1. At minimum, document that the IID split is optimistic for memorising models.
+An insurer's pricing actuary predicts the expected yearly claim count per policy (frequency = ClaimNb / Exposure) from rating factors known at underwriting. The prediction feeds the frequency part of the premium (frequency x severity). This is a real, central use, and freMTPL2freq is the reference dataset of the actuarial ML literature (Noll, Salzmann & Wuthrich, SSRN 3164764).
 
-4. **Version and provenance are unclear.**
-   - The 677,991 rows match the current CASdatasets reference ("dim(freMTPL2freq)" gives 677991 × 12). The CASdatasets NEWS only records a new freMTPL2freq.rda file dated 2024/09/17. OpenML 41214, the Hugging Face copy and older versions have 678,013 rows. The Hugging Face copy documents 9,117 ClaimNb mismatches with the severity file.
-   - What changed in the 2024 update (22 rows removed, ClaimNb corrections?) is undocumented in what I could read.
-   - VehAge has 14 NaN in the sample. Older versions have none; my best guess is about 47 in the full table, but I cannot say where they come from. Region uses full names rather than R-codes.
-   - The first-listed source is a Kaggle mirror whose content I could not read.
-   - Row order shows no drift in claim rate (3.2–4.2% across 40 position bins). The ordered high-claim block of the old version is therefore absent, which is consistent with a corrected or re-sorted release.
-   - **Change:** cite CASdatasets 1.2-x as the source, record the version, and note the VehAge NaNs.
+**EXPOSURE AS WEIGHT: CORRECT**
 
-5. **Signal is low and model differences are small.**
-   - R² is about 3%. GBM beats linear regression by 0.0012 RMSE, and GBM-Poisson beats GBM-L2 by 0.0003 (SD 0.0003, not significant) on a 67k-row test fold.
-   - With 226k test rows per fold on the full data it is scoreable, but it will separate model classes rather than close competitors.
-   - This is realistic for insurance frequency and the task is not trivial, but it amplifies items 1 and 2.
+For a Poisson count N ~ Poi(lambda * e), the frequency y = N/e has variance lambda/e. Fitting y with weight e is equivalent to Poisson regression of N with a log(e) offset, which is exactly how the source literature uses it. Scoring with e as the test-row weight is also correct: it gives an exposure-weighted portfolio loss. Exposure must not be a feature (it is a duration and is only known after the fact), and task.md says it is not. Note that exposure is strongly associated with frequency in this data (weighted frequency 0.169 in the lowest exposure quintile (<=0.12y) vs 0.057 in the highest), a known artefact of freMTPL2. Using exposure as a feature would therefore leak, and the prepared task correctly keeps it out.
 
-6. **Preparation is mostly fine (minor).**
-   - IDpol is dropped, which is correct.
-   - The categoricals are typed as category.
-   - Values are plausible: DrivAge 18–100, BonusMalus 50–228 (source range 50–350), Density 1–27,000.
-   - Area is a deterministic binning of Density (A ≤ 50, B 50–100, C 100–500, D 500–1993, E 2001–9850, F ≥ 10008). It is redundant and ordinal but stored as an unordered category. That is harmless; just note it.
-   - VehPower is an ordinal int, which is fine.
+**CONCERNS, MOST TO LEAST SERIOUS**
 
-**What I could not check**
-- Only the 200k sample was available. The size of the extreme cluster, the duplicate rate and the grouped-versus-random gap on the full 677,991 rows are extrapolated.
-- I could not read the Kaggle page (it renders with JavaScript).
-- I could not read the CASdatasets manual PDF (no PDF tools were available) or the SSRN case study. So I could not confirm what changed in the 2024 release, where the VehAge NaNs come from, or the exact capping convention in the original paper.
-- Without IDpol I could not link to the severity file or confirm the groups by consecutive policy IDs.
-- task.md does not state the evaluation metric.
+1. BonusMalus is 88% missing, which looks like a preparation or source-version defect.
+   Evidence: 176,395 of 200,000 rows have NaN. Missingness is flat across row position (0.880-0.885 per decile), so it is not a block. Missingness is not random: mean Exposure is 0.55 for missing rows vs 0.37 for observed rows, and claim_frequency is 0.124 vs 0.101. The OpenML copy (d/43593, from CASdatasets 1.0-6) reports 0 missing values for BonusMalus. CASdatasets documents it as "Bonus/malus, between 50 and 350". The CASdatasets changelog says nothing about NAs. In the observed rows the feature carries strong signal (weighted frequency 0.058 at BM=50 vs 0.108 at BM>100). In this table, however, a LightGBM Poisson model loses almost nothing without it (deviance 0.4757 with vs 0.4759 without).
+   Change: Reload from a version where BonusMalus is complete (CASdatasets 1.0-x / OpenML 41214 or 43593, 678,013 rows), or find and fix the conversion that dropped it. If the current CASdatasets 1.2-1 release really has these NAs, document that and prefer the older complete release.
 
-Sources:
-- [CASdatasets freMTPL reference](https://dutangc.github.io/CASdatasets/reference/freMTPL.html)
-- [CASdatasets NEWS](https://github.com/dutangc/CASdatasets/blob/master/NEWS.md)
-- [Lorentzen, Responsible ML – XAI](https://lorentzenchr.github.io/responsible_ml_material/xai_2_explaining_models.html)
-- [Hugging Face mabilton/fremtpl2 README](https://huggingface.co/datasets/mabilton/fremtpl2/blob/main/README.md)
-- [scikit-learn Poisson regression example](https://scikit-learn.org/stable/auto_examples/linear_model/plot_poisson_regression_non_normal_loss.html)
-- [OpenML 41214](https://api.openml.org/d/41214)
+2. The metric must be exposure-weighted Poisson deviance. Under weighted MSE/RMSE/R2 the task is noise.
+   Evidence (3-fold CV on the 200k sample, LightGBM, exposure weights). Weighted Poisson deviance: constant 0.4828, model 0.4757 (-1.5%). Weighted MSE: constant 0.25708, model 0.25650 (R2 about 0.002). Under the constant prediction, the 10 largest rows contribute 13.5% of the weighted SSE and the top 100 contribute 31%. These are one-claim policies with tiny exposure: target up to 365 at exposure 1/365, each adding N^2/e to the SSE. task.md says only "regression" and does not name a metric.
+   Change: Fix the metric to weighted mean Poisson deviance, optionally with Gini/lift. Do not use RMSE or R2.
+
+3. The signal is small and benchmark resolution needs checking.
+   Evidence: the best model improves deviance by only about 1.5% over the mean, and claims are rare (3.7% of rows have a claim; about 7,400 claim events in 200k rows). On the full data with complete BonusMalus, the literature reports roughly 4-5% deviance reduction. With 3 folds on 678k rows there is enough data, but differences between strong methods will be in the 4th decimal.
+   Change: Use the full 678k rows. Report deviance with fold standard errors or use more repeats. Fixing concern 1 should roughly double the headroom.
+
+4. Known data-quality items are not addressed.
+   Evidence: 363/200k rows have Exposure >1 (max 2.01), while the source says data are "observed mostly over one year". Implied ClaimNb (y*e is integer in every row) reaches 11, and the literature usually caps ClaimNb at 4 and Exposure at 1 as data errors (Noll et al. / Wuthrich). VehAge reaches 85. There are 19 NaN in VehAge and 18 in DrivAge (DrivAge max 99), and canonical copies have none. This suggests implausible values (e.g. 100) were nulled somewhere, which is acceptable if intended.
+   Change: Cap Exposure at 1 and ClaimNb at 4 as in the reference papers, or state why not. Document the VehAge/DrivAge NaNs.
+
+5. Near-duplicate rows cross the IID split.
+   Evidence: 10.7% of rows share their full feature vector with another row in the 200k sample, and 2.5% are complete duplicates including target and exposure. freMTPL2 is known to contain the same policyholder split into several exposure periods (no policyholder ID is available). With a 3.7% claim rate and Poisson noise, I expect the leakage to be mild, but it slightly favours memorising models.
+   Change: Optionally group by the full feature vector when splitting, or at least note it. Not blocking.
+
+6. Minor preparation notes.
+   Types are sensible: VehBrand, VehGas, Area and Region are categorical, and Area A-F is ordinal and almost a binned version of Density (Area exactly follows log-density cut-points; it is redundant but harmless). VehPower is int. Region uses region names ("Centre", "Ile-de-France", ...) rather than R-codes; this is fine and consistent with CASdatasets 1.2-1. The row count of 677,991 matches the CASdatasets 1.2-1 docs ("dim 677991 12"); the older version has 678,013 rows. IDpol is correctly dropped. I could not find what the 1.2 release changed.
+
+**WHAT I COULD NOT CHECK**
+
+- Whether the 88% BonusMalus NAs come from the CASdatasets 1.2-1 file itself or from the preparation. I could not download the .rda, the CASdatasets PDF manual would not extract (no PDF tools), and the Kaggle page did not render.
+- The full 677,991 rows: I saw only the 200k sample.
+- The metric and the actual fold assignment used by the benchmark.
+- Whether the null VehAge/DrivAge values were intended cleaning.
+
+Sources: https://dutangc.github.io/CASdatasets/reference/freMTPL.html ; https://dutangc.github.io/CASdatasets/news/index.html ; https://api.openml.org/d/43593 ; https://huggingface.co/datasets/mabilton/fremtpl2/blob/main/README.md ; https://ifoa-adswp.github.io/IBLM/reference/load_freMTPL2freq.html
 
 </details>
 
 <details><summary>Task gamer</summary>
 
-**Verdict:** the task can be gamed only slightly. Statistics over all rows (train and test) of the records that share a policy's features gain about 0.0006 on a score of about 0.2326, which is 0.2–0.3%. A larger flaw is already inside every honest model: the realised `Exposure` carries outcome information, worth 0.0045 (about 2%). Sibling labels across the split add nothing.
+**TASK GAMER REPORT - freMTPL2 claim_frequency (Poisson deviance, weight = Exposure, IID 3-fold)**
 
-Honest baselines (mean Poisson deviance over 3 folds, lower is better):
-- Default LightGBM with a Poisson objective: **0.233023** (folds 0.233246 / 0.230466 / 0.235358).
-- Tuned LightGBM (early stopping inside train): **0.232631** (0.232679 / 0.230103 / 0.235110).
-- Noise from adding a random column: ±0.0002 per split on the default model (means 0.233036 to 0.233238); +0.00007 on the tuned model.
-- For reference: constant prediction 0.2595; exposure × training frequency 0.2534.
+VERDICT: Only one real exploit exists: the training weight (Exposure). Using it as a feature cuts the deviance by
+about 0.008 (1.7%). Adding the siblings' Exposure in duplicate-feature groups brings the cut to about 0.010. A much
+bigger flaw works the other way: the preparation blanked BonusMalus, the strongest rating factor, on 88% of rows
+(every source row with IDpol < 5,000,000). That costs an honest model about 0.040.
 
-| # | Exploit | Honest score | Exploited score | Gain (per split, range) | A deployed model has it? | Fix |
+Honest baseline: LightGBM, objective=poisson, lr 0.05, 400 trees, 31 leaves, min_child_samples 200, sample_weight =
+Exposure, on features(). Scores per fold: 0.46900 0.46844 0.46806 (mean 0.46850). Untuned default LGBM with L2 loss
+scores 0.46931.
+Noise reference: the baseline plus a column of random numbers scores 0.46961 0.46891 0.46822 (mean 0.46892), so
+fold-level changes below about 0.0006 are noise.
+
+**EXPLOITS (ranked by gain; lower is better, gain = baseline - exploited)**
+
+| # | Exploit | Script | Honest | Exploited | Gain per fold (range) | Deployed model has it? | Fix |
+|---|---|---|---|---|---|---|---|
+| 1 | Exposure + duplicate-group size + siblings' summed Exposure | a2_copies.py (B2), a4_exposure_format.py (D3) | 0.46850 | 0.45847 | 0.0101 / 0.0111 / 0.0088 | No: siblings' exposures are only known once the year is over | Same as 2; additionally a grouped split by the feature key |
+| 2 | Training weight Exposure (or 1/Exposure, E==1, E>1) as a feature | a1_baseline_weight.py | 0.46850 | 0.46036 | 0.0084 / 0.0088 / 0.0072 | Partly: a planned term is known at the quote, a term cut short by cancellation is not | Keep Exposure out of the features (already done); see note |
+| 2b | Only a "full year" flag (Exposure >= 0.99) | a5_exposure_where.py | 0.46900 (fold 0) | 0.46438 | 0.0046 (fold 0) | Same as 2 | Same as 2 |
+| 3 | Duplicate-group size counted over train+test (features only, transductive) | a2_copies.py (A) | 0.46850 | 0.46802 | 0.0006 / 0.0010 / -0.0000 | Partly (counting identical risks in the portfolio is possible; counting the test rows is not) | Grouped split; at the noise level anyway |
+
+**FLAWS THAT HURT AN HONEST MODEL**
+
+| # | Flaw | Script | Kit score | Score without the flaw | Gain | Fix |
 |---|---|---|---|---|---|---|
-| 1 | Realised `Exposure` used as a free feature instead of a pure time-at-risk offset | 0.237547 (offset only) | 0.233023 (default baseline) | 0.0045 (0.0039 to 0.0052) | Unsure. Only if the record's end date is fixed when the policy is quoted. | Merge records into one row per policy-year, or restate the prediction point as "period at risk known" |
-| 2 | Record-structure statistics over train+test: number of records with identical features except `Exposure` (`gsize_all`), and their summed exposure (`gexp_all`) | 0.233023 / tuned 0.232631 | 0.232316 / tuned 0.232082 | default 0.00071 (0.00019 to 0.00108); tuned 0.00055 (0.00012 to 0.00080) | No. It uses the policy's other records in the same year, including later ones and their realised exposure. | Merge feature-identical records into one policy-year row (summed `Exposure` and `ClaimNb`) |
-| 3 | Labels of training siblings (same features except `Exposure`) | 0.233023 | 0.232953 (credibility rule, `a` chosen inside train); 0.232583 (LightGBM with out-of-fold sibling features) | 0.00007, within noise; the LightGBM gain of 0.00044 comes entirely from the label-free part of #2 (#2 + labels 0.232321 vs #2 alone 0.232316) | Partly: past records of the policy would be known (experience rating) | None needed beyond #2 |
+| F1 | BonusMalus blanked on 597,998 of 677,991 rows | compare_source.py, a6_bm_restore.py | 0.46850 | 0.42876 (BM restored from the source on 566,782 matched rows; 108,766 still NaN) | 0.0392 / 0.0390 / 0.0411 | Rebuild the column from the source; the full fix is larger than this partial restore shows |
+A participant cannot avoid F1 with an honest choice from the kit. The restore needs a lookup in the published source,
+which works on any public dataset, so it is not counted as an exploit. It only measures what the preparation lost.
+With BonusMalus restored, adding Exposure still gains about the same: 0.42876 -> 0.42123.
 
-**Flaws that hurt an honest model:** none found. Every training-row choice I tried stayed within noise or made the score worse:
+**FINDINGS**
 
-| Honest choice | Default model | Tuned model |
-|---|---|---|
-| Cap training `ClaimNb` at 4 | 0.233173 (worse) | 0.232735 (worse) |
-| Drop training rows with `ClaimNb` > 5 (as Wüthrich–Merz do) | 0.233405 (worse) | not run |
-| Drop training rows with `Exposure` > 1 | 0.232968 | 0.232682 |
-| Drop the policy-ID ≤ 24500 block from training (only possible with the source file) | 0.232958 | not run |
+1/2. Exposure as a feature (the weight attack). Claims per year fall steeply with exposure: 0.30 for E <= 0.05,
+0.14 for (0.05, 0.1], 0.12 for (0.1, 0.25], 0.097, 0.080, 0.075, 0.055 at E = 1, and 0.040 for E > 1. As a feature,
+Exposure cuts the deviance from 0.46850 to 0.46036. On fold 0, rows with E < 0.25 hold 54% of the gain but only 7%
+of the weight, and full-year rows hold 29% of the gain. A model at the quote knows the planned term. It does not know
+whether the policy will be cancelled or replaced during the year, and a claim can cause either. Short exposures
+having more claims per year is the usual sign of that. The fact that would decide it: the share of exposures below
+one year that come from mid-year starts or the end of the observation window (known at the quote) rather than from
+cancellations (not known). The data cannot answer this. The kit already keeps Exposure out of features(), so the
+fix is in place: Exposure stays a scoring and weight column only. A stricter version would cap Exposure at 1, as
+the case study does, but that changes the metric.
 
-Capping or dropping the extreme counts hurts because the test folds keep them.
+1. Duplicate groups and siblings' exposure. 327,862 rows (48%) share every feature value with another row: 222,470
+rows sit in pairs and the largest group has about 20 rows. In the source, such groups are consecutive IDpols, which
+suggests one policy split into several contract records. A group's Exposure sums to a median of 0.98, so a row's
+siblings tell you how its year was split. Adding the group size and the siblings' Exposure on top of own Exposure
+gives 0.45847, an extra 0.0019 over Exposure alone. Without own Exposure, the group size and siblings' Exposure gain
+only 0.0004, which is noise (B: 0.46811). The siblings' claims do not leak: leave-one-out sibling claims and
+exposure from training rows score 0.46855 (C), and P(claim) is 3.2% when a sibling has a claim versus 2.5% when
+none does. The IID row split separates the records of one policy, but this barely moves the score. The mildest fix
+is a split grouped by the feature key, as an option, not a must.
 
-**Findings**
+F1. BonusMalus blanking. The source (OpenML 41214, freMTPL2freq) has BonusMalus on every row. In the kit it is
+present only on 79,993 rows. Matching the kit to the source on claims, exposure and features shows the kit keeps
+BonusMalus exactly for IDpol >= 5,000,006 (77,549 of 77,549 matched rows) and blanks it for every IDpol <=
+4,189,196. Where it is present, it equals the source value 100% of the time. The blanking is an IDpol range, not
+random and not by value: the blank share is 85-93% for every BonusMalus value. Restoring BonusMalus on the 84% of
+rows that match uniquely improves the honest model by 0.040, which is five times the Exposure exploit. Because the
+blanking follows IDpol, "BonusMalus missing" also stands for IDpol < 5M. The baseline already uses the NaN, and an
+explicit missing indicator adds nothing (0.46850). Fix: re-ingest BonusMalus. The blanks look like a parsing or
+type step that failed for most of the file. Other differences from the source: 22 rows dropped (678,013 ->
+677,991), VehAge > 85 set to NaN (48 rows; source max 100), 66 DrivAge NaN, BonusMalus max 190 vs 230 in the
+source, and Region codes renamed to names. Exposure and ClaimNb are not capped (max 2.01 and 16, as in the source),
+and claim_frequency = ClaimNb / Exposure exactly.
 
-**1. Realised `Exposure`.** Claims per year at risk fall steeply with the length of the record:
-- 1.03 for records of 0.01 years or less;
-- 0.24 for 0.01 to 0.05 years;
-- 0.12 for 0.1 to 0.25 years;
-- 0.055 for full years.
+**ATTACKS THAT FOUND NOTHING**
 
-Against an offset-only model:
-- Records of 0.25 years or less have 3,436 claims where the offset predicts 2,295.
-- Records of 0.01 years or less have 104 claims where it predicts 9.
-- Full-year records have 9,216 claims where it predicts 12,013.
+- Missing-value indicators (BonusMalus NaN, NaN count): 0.46850, no change. The model already uses the NaNs.
+- Exposure precision: 1% of rows have an exposure off the 2-decimal grid (multiples of 1/365). They are just the
+  shortest exposures (mean 0.005). As a flag alone: 0.46850, no change. Added to Exposure: 0.46036, no change.
+- Training-set siblings' claims (target encoding of the duplicate group, leave-one-out): 0.46855 (+0.0000).
+- Group size counted on training rows only: 0.46853.
+- Row order: claim rate by 50k-row block runs 0.071-0.077 with no trend. Next-row claim agreement is 0.92914 against
+  0.92913 expected under independence, and IDpol is not in the kit. Nothing.
+- Fold composition: test claims per year 0.0735 / 0.0738 / 0.0740 against train 0.0739 / 0.0737 / 0.0737, and no
+  overlap between train and test.
+- Formats: every numeric feature is a whole number. Nothing to read from decimals.
+- Honest training choices (the opposite flaw): capping ClaimNb at 4 and Exposure at 1 in training, as the source case
+  study does, scores 0.46909. Capping ClaimNb only scores 0.46915. Dropping training rows with ClaimNb >= 5 scores
+  0.46995. All three are worse than the baseline, so the uncapped training rows do not hurt an honest model.
+- Looking the rows up in the published source: it works (566,782 unique matches give IDpol and BonusMalus), but it
+  is not ranked. The source's ClaimNb is the label, so the lookup recovers the target of most rows.
 
-6,877 records last 1 to 3 days (stored at day precision as k/365 or k/366). They have a frequency of 1.27 per year.
+**NOT CHECKED**
 
-Records that end early carry the claims, which fits contracts cancelled or split after a claim. Wüthrich–Merz write that "policy renewals during the year account for two separate records". arXiv 2604.02400 reports higher frequency for contracts cancelled mid-term. So `Exposure` is partly set by events after the quote, while the task's prediction point is the quote.
+- Whether short exposures are cancellations or mid-year starts. That needs the insurer's contract data. It decides
+  how much of exploit 2 a deployed model would legitimately have.
+- Hyperparameter tuning, and models other than LightGBM. All gains are measured with one fixed LightGBM setup.
+- Web search turned up no competition leak threads for this dataset (it is a CASdatasets/OpenML benchmark, not a
+  Kaggle competition). A Springer chapter on CASdatasets notes that policies with more than 5 claims look like data
+  errors from one driver with very short exposures. Dropping them from training hurt (see above).
 
-What would decide it: whether a record's end date is known when the policy is quoted (mid-year new business) or set during the year (cancellation, vehicle change, record split). The mildest fix is one row per policy-year. If that is impossible, restate the prediction point so it says the period at risk is known.
-
-**2. Record-structure statistics.** 38% of rows sit in groups with identical features except `Exposure`. The median summed exposure of a group is 0.85, which looks like one policy split into several records within the year. 28.7% of test rows have a training sibling.
-
-Claims per year by the group's summed exposure:
-- 0.21 to 0.32 when the sum is below 0.2;
-- 0.054 when the sum is about 1.
-
-This is the same early-termination effect seen at policy level. It needs the test rows and the policy's future records, so a deployed model would not have it. Fix: merge the records. A grouped split alone would not stop the statistic being computed inside the test fold.
-
-**3. Sibling labels.** Rows whose siblings had claims have a frequency of 0.11 against 0.067, but a credibility rule on top of the baseline gains only 0.00007. The kit's target counts claims from the severity file (`freMTPL2sev`), which attributes each claim to a single record, so labels hardly carry across records.
-
-The one extreme group (same driver, 15 records, claims 16/9/8/6/5/3/1) helps only on the fold where it splits favourably: test rows with `ClaimNb` ≥ 4 cost 0.0013 → 0.0011 of the fold score.
-
-**Attacks that found nothing**
-- **Row order and ids:**
-  - Claim rate by row decile is flat (0.038–0.041).
-  - Kit position vs the source policy ID: Spearman 0.003.
-  - Adjacent rows never share a group (0 of 677,990 pairs).
-  - Next-row claim agreement 0.00141 against 0.00135 by chance.
-- **Exposure format:** flags for k/365 vs k/366 (which hint at the year): 0.233013 against 0.233023.
-- **Missing values:** `VehAge` is missing in 48 rows (99/100 in the source), with 1 claim among them. Nothing.
-- **Train vs test:** a classifier separating the two sides, label included, scores AUC 0.502.
-- **Policy-ID ≤ 24500 block:** 9,139 rows that all have claims in the frequency file (`freMTPL2freq`) but carry label 0 in 97% of cases. Features find the block (AUC 0.85), but its label rate (3.2%) is close to the rest (3.7%). Dropping it from training is within noise.
-- **Transforms over all rows:** none; columns are raw integers and categories.
-- **Lookup in the published file:** works. Every kit row matches an OpenML `freMTPL2freq` row, and its label equals the number of `freMTPL2sev` records for that policy ID. Not ranked.
-
-**What the preparation changed:**
-- `ClaimNb` was replaced by the severity-file count: 26,444 claims against 36,102 in the frequency file.
-- 22 rows were dropped, all with frequency-file `ClaimNb` = 1 and no severity record.
-- `VehAge` 99/100 became missing.
-- The policy ID was dropped, Region codes became names, and rows were shuffled.
-- `Exposure` and `ClaimNb` were not capped.
-
-**Could not check**
-- Record dates and why records are split, which would settle #1 and #2.
-- Whether `BonusMalus` is the value at the start of the year or after this year's claims.
-- Kaggle discussion threads (not fetched).
-- Whether identical-feature groups are always one policy rather than different policyholders who happen to match.
-
-Sources: [Wüthrich & Merz, ch. 13](https://link.springer.com/chapter/10.1007/978-3-031-12409-9_13), [arXiv 2604.02400](https://arxiv.org/pdf/2604.02400), [R-bloggers: Exposure as a possible explanatory variable](https://www.r-bloggers.com/exposure-as-a-possible-explanatory-variable/), [OpenML 41214](https://api.openml.org/d/41214) and the `freMTPL2sev` dataset (41215), [Wüthrich/Schelldorfer data-loading script](https://github.com/JSchelldorfer/ActuarialDataScience/blob/3f761ef830d28c14dda5443d504d192069a64ca3/1%20-%20French%20Motor%20Third-Party%20Liability%20Claims/Tools/FreMTPL_1b%20load%20data.r).
+Sources: https://api.openml.org/d/41214 (downloaded to work/src/fremtpl2freq.arff),
+https://link.springer.com/chapter/10.1007/978-3-031-12409-9_13 ,
+https://dutangc.perso.math.cnrs.fr/RRepository/pub/web/vignettes/poisson_vignette.html
 
 </details>
 
 <details><summary>Precedent check</summary>
 
-**Precedent check: fremtpl2 (second pass, 2026-11-04)**
+**fremtpl2 precedent check, full tier, exposure re-review of 2026-11-06.**
 
-The register has no flag on fremtpl2. Of the ten decisions checked, seven follow precedent. Three need the curator: the split (1), Exposure (2) and DrivAge 99 (3).
+VERDICT: Consistent. The definition follows bemtpl97 and the PR #47 insurance tables on every point the new rules fix. Each of the three calls it reverses is reversed with a stated fact. I found no departure without a reason, no drift and no third exception. One reflection prompt is drafted, about a stale precedent row in splits.md. One reporting gap against LEAK-41 is shared with bemtpl97.
 
-**Focus question: are the links real, is IID with ForcedIIDFromTemporal right, and do the pairs leak across the split?**
+The register (register.json, 25 flags) has no flag on fremtpl2 or bemtpl97. The only insurance hits are pricing_game_2016_french_fleet (SPLIT-10/SPLIT-14 amendment due) and spanish_motor_insurance_2015_2018 (the "trivial" mechanism). Neither bears on this definition.
 
-- **The links are real, and the shares are right.** Running `next_year_rows` again gives 161,883 pairs covering 310,517 of 677,991 rows. The share of rows with an earlier-year row is 0.487 in block 1, 0.483 in block 3, 0.492 in block 5 and 0.603 in block 6, and about 0 elsewhere, so "48-60%" holds. In the twins table, 99.9% of pairs have DrivAge exactly +1. They are inferred links, not a key the source states.
-- **"Changes the score by nothing" holds within noise.** Skill is 0.0821 on random folds and 0.0819 on folds grouped by the inferred chains. The difference (0.0002) is far below the fold spread (SD about 0.003 random, 0.002 grouped). The label crosses years only weakly: a claim the next year follows a claim at 0.066 against 0.0385 after no claim, and the pair correlation is 0.017.
-- **The pairs do cross the split.** 47.6% of test rows have their inferred policy group on the train side. Under IID that includes a policy's *later* year in train.
-- **SPLIT-8 applies.** If the blocks are years {0,2,4}, {1,3,5}, {6}, only two windows exist, and SPLIT-14 needs three. So shipping with a Forced tag is right, and the cost was measured as SPLIT-8 asks: 0.0847 on later years against 0.0820 random, so IID is not optimistic here.
-- **The choice of IID over grouped is where precedent splits.** See decision 1.
+**A. The definition against its precedents**
 
-**Decisions, ranked**
+1. Target is the rate ClaimNb/Exposure. ClaimNb leaves the frame and _clean checks that it rebuilds (MET-14, LEAK-10).
+   CONSISTENT. Same as bemtpl97 (nclaims/expo, the same rebuild check; Lennart, 2026-11-06), australian_vehicle_insurance_2004_2005, frempl_french_motor_personal_line and pricing_game_2016_french_fleet (all 2026-11-06, metrics.md Cases).
+   MET-14's per-contract clause (spanish_motor_insurance_2015_2018: a planned term of exactly one calendar year, known when written) does not apply. freMTPL2 has no planned term and no dates, and 1,224 rows are longer than a year.
 
-**1. The split stays IID with ForcedIIDFromTemporal on stacked inferred years (CC 2026-11-04, Lennart)**
-**Verdict: departs from precedent; the reason is stated only in part.**
+2. Exposure is the weight scoring column, the metric's weight input and sample_weight, and never a feature (LEAK-41, MET-15).
+   CONSISTENT. bemtpl97 does the same with expo (+0.0043, 17%). This matches the LEAK-10/LEAK-41 Cases row "time on risk cut short by the outcome" (leak_checks.md line 441) in its "denominator, cut not locatable" branch, as with bemtpl97, australian and spanish_motor_insurance_coverage_level_2022_2024.
+   - frempl and pricing_game_2016 keep a start-known length (to 31 December) as a feature, because their dates locate the cut.
+   - fremtpl2 has no dates, so no start-known part can be built. That fact sets it apart from those two (LEAK-41: "a part known at the start ships as its own column").
+   - No rows are selected by the realized weight, as LEAK-41 requires. No row has zero exposure (minimum 1/366).
 
-- **Precedents:**
-  - SPLIT-8 as amended 2026-10-21: "grouped by the entity when the periods are stacked and the entities recur across them".
-  - nba_players_2016_2019 and open_university_learning_analytics_dataset (2026-10-21, Lennart): stacked periods grouped by a true key, ForcedGroupedFromTemporal.
-  - distribution_transformers_at_cauca_department (2026-10-21, Lennart): one year shipped IID, "not stacked, as the two files hold the same units".
-  - account_debt_south_africa (2026-10-12) and bemtpl97 (2026-11-04): Forced IID.
-- **Against nba and open_university, the record's reason does set this case apart.** There is no source key, and SPLIT-24 and SPLIT-25 bar grouping on a guess.
-- **Against distribution_transformers, the distinguishing facts are visible in the data but not written down:**
-  - the features change between years (driver age +1, car age +0/+1, BonusMalus);
-  - about 46% of rows are in a pair, not 100%;
-  - which block is which year is itself inferred.
-- **Part of the stated reason does not count under the rules.** "Change the score by nothing" cites the size of the gap, and SPLIT-4 and SPLIT-30 say the gap never decides. The same number does count if it is put as SPLIT-29's condition that the entity carries the label (pair correlation 0.017).
-- **SPLIT-13 and USE-10 give a further reason.** In pricing, renewals are known entities.
-- **The decision is new territory.** It is the first Forced IID definition that stacks periods with recurring entities, so no amendment is due yet. SPLIT-8 is a Must, so the departure needs a fact, not an exception.
+3. Metric is mean_poisson_deviance weighted by Exposure, origin source (MET-11).
+   CONSISTENT. bemtpl97 is the same (a factor n/sum(expo) of about 1.12 against Henckaerts Eq. 5). Here the factor is 1.886 to 1.896 per fold, a per-fold constant, so models rank the same: MET-11's identity clause.
 
-Consistency check (AI, 2026-11-04): your call on fremtpl2 (all inferred years stacked, random split, a departure from SPLIT-8's stacked-and-recurring clause) differs from distribution_transformers_at_cauca_department (one year kept, IID, not stacked, 2026-10-21: the same units in both years). What sets fremtpl2 apart?
-(a) The links are inferred, with changed attributes (driver +1, car +0/+1, BonusMalus), between blocks whose years are themselves inferred. The entity carries almost none of the label (correlation 0.017; grouping moves skill by 0.0002, fold SD 0.003, so SPLIT-29 does not fire). Pricing serves renewals (SPLIT-13). Recorded in the notes in place of "change the score by nothing".
-(b) Treat it like distribution_transformers: keep one inferred year per sub-portfolio (blocks 0, 2, 4: 353,887 rows, 52%).
-(c) Treat it like nba and open_university: ForcedGroupedFromTemporal on the 430,298 inferred chains. This needs a SPLIT-24 ruling on the rule-built key.
-(d) Amend SPLIT-8: when entities are only inferred and carry little of the label, the closest regime is IID.
+4. Rate shipped untransformed (CLEAN-16, amended 2026-11-06 on fremtpl2): CONSISTENT. A deviance-scored rate ships on the identity scale, as bemtpl97 does.
 
-**2. Exposure stays a free feature, "Potential leak, kept on purpose" (bemtpl97 CC 2026-10-23, Myunghwan; followed here)**
-**Verdict: consistent with bemtpl97, but neither definition names a rule that lets it stay, and it may break LEAK-10 (Must).**
+5. No cap on counts, exposures above one year kept (CLEAN-11): CONSISTENT with Lennart's CC of 2026-11-04 (records/fremtpl2.md line 106) and with bemtpl97 (nclaims 0 to 5, no cap). Under the weight these rows count up to 2.01 times. That follows from the 2026-11-04 fact that they record whole contract periods.
 
-- **No exception rule covers it.** LEAK-30 is for transductive scaling, and LEAK-38 is for anonymised competition fields whose timing cannot be tested. Lennart has not ruled on Exposure himself: on 2026-11-04 he ruled "treated alike" on the split and the fit only.
-- **New measurement on the raw table:**
-  - claims per year by exposure band: 0.172 at 0.1 years or less, 0.123 at 0.1-0.25, 0.097 at 0.25-0.5, 0.055 at a full year;
-  - in a Poisson GLM on the rating factors, log(Exposure) gets a free coefficient of 0.641, where a pure offset would be 1.
-- **Short policies claim about three times more per year.** That fits the cancellation-after-claim mechanism, but it is confounded with new business.
-- **Precedents decided the other way:**
-  - heart_failure_followup_survival `time` (2026-09-30, Lennart): a duration ended by the outcome, dropped.
-  - kick `WheelType` (2026-10-22, Lennart): dropped once a conditional test measured the mechanism.
-- **The literature uses exposure differently.** Noll et al. and Wüthrich and Merz treat exposure as an offset (coefficient fixed at 1), not a feature.
+6. Not reopened by today's change: BonusMalus blanked in blocks 0-4 and kept in 5-6 (LEAK-10/LEAK-7 Cases row, leak_checks.md line 444, 2026-11-05), DrivAge 99 (CLEAN-10, cleaning_features.md line 337, 2026-11-05), IID split (2026-11-05) and the LEAK-9 protocol line (2026-11-05).
+   - bemtpl97 keeps bm. The stated distinguishing fact is still in place: its source registers the risk factors at the start of the policy period.
+   - The issue 7 and 8 numbers were measured on the count target with Exposure as a free feature. CHANGES.md already lists them for re-measurement; this is a size question, not a precedent one.
+   - LEAK-41 now names "a sum of a group's exposures" as encoding the weight. This covers part of issue 8's record-structure signal (the summed exposure of identical records). The resolution of issue 8 (LEAK-9, protocol line) stays consistent.
 
-Consistency check (AI, 2026-11-04): your call on fremtpl2 and bemtpl97 (Exposure kept as a free feature, a departure from LEAK-10) differs from heart_failure_followup_survival (`time` dropped, 2026-09-30) and kick (`WheelType` dropped after a conditional test, 2026-10-22). The same mechanism, a value cut short after the outcome, is now measurable here (coefficient 0.641 against 1). What sets it apart?
-(a) The planned period is known at quotation (LEAK-37), the premium is pro-rated on it, and the source's metric is built on it. The excess at short exposure is mostly new business. Recorded with the GLM number.
-(b) Treat it like kick: keep Exposure out of the features and only as an offset in the scorer (a scoring column), as the source's GLM does.
-(c) Reopen bemtpl97 to match whichever you choose.
-(d) Amend LEAK-10 for exposure denominators.
+**B. The calls the definition reverses**
 
-A third count dataset scored by exposure (ausprivauto0405 and eumtpl are screened) would make this the third case with the same reason, and an amendment would be due.
+B1. Andrej, CC 2026-10-20 (curation/records/fremtpl2.md lines 38-70): Exposure "a feature, not a divisor", capped at 1.
+   REVERSED WITH A STATED FACT (CC 2026-11-06, Lennart, record line 128; REVIEW.md issue 6). Each of his reasons is answered:
+   - "The contracted period is known at pricing." His own line concedes that a mid-year cancellation shortens it. The measurements came later (EV-1/EV-2, a measurement outranks a reading):
+     - Exposure as a free feature beyond an offset is worth +0.0039 to +0.0045, about 25% of the skill.
+     - A Poisson GLM gives log(Exposure) a coefficient of 0.641 (an offset is 1).
+     - At quotation the free model was never better than the offset model.
+   - "Dividing would inflate short policies' targets." Answered by the weight. MET-15's "Why": an unweighted fit gives 1.61 times the portfolio rate (0.1186 against 0.0738) and scores worse than a constant. With the weight, it does not inflate.
+   - "Capped at 1." Already reversed 2026-11-04 (CLEAN-11, the two ranges of whole contract periods).
+   This is a rule change made on purpose, not an exception. LEAK-41 (Must) is new, and the LEAK-10 Cases row "time on risk cut short" (Andrej, 2026-11-02, which named fremtpl2 as a departure) was amended in place with name and date, as principles.md asks.
+   - The same reversal covers his line on australian_vehicle_insurance_2004_2005 (2026-11-02, "Exposure kept: consistent (fremtpl2, onlinenewspopularity)") and Myunghwan's bemtpl97 calls of 2026-10-23 and 2026-10-26. All were reversed the same day by the same rule, so like cases are decided alike.
+   - Not a consistency failure, but worth telling Andrej: three of his exposure calls (fremtpl2 2026-10-20, the LEAK-10 row 2026-11-02, australian 2026-11-02) now stand superseded.
+   - Side note: australian_vehicle_insurance_2004_2005/dataset.py (lines 127 and 279) cites "Andrej's call on fremtpl2 of 2026-10-20" as the precedent for keeping fixed claim amounts as recorded. That part of the call was never reversed, but fremtpl2 does not ship amounts (D12, 2026-11-06). The citation now points to an unshipped design. It still holds as a curator call; a wording check is enough.
 
-**3. DrivAge 99 kept "as possible", VehAge 99/100 set to missing (same definition, CLEAN-10)**
-**Verdict: like cases decided differently, with no reason given.**
+B2. AI assessment, 2026-10-29 (record line 96): "approved task intent remains original uncapped ClaimNb with Exposure as a predictor". It called the annualised/capped form "an unapproved historical draft".
+   REVERSED WITH A STATED FACT. It is an AI line, which ranks below a curator decision ("Who decides"). The 2026-11-06 CC names it and gives the same facts as B1. The 2026-10-29 line rejected the annualised draft as unapproved, not on its merits. Today's form is annualised but uncapped, and the curator has approved it. No conflict.
 
-- **VehAge:** set to missing as a default date: no car is 86-98, and 21 of 23 cars aged 99 are 100 a year later.
-- **DrivAge, block 0** (66 of the 70 rows at 99): 1 row at 96, none at 97-98, 66 at 99.
-- **The 66 never reappear.** Block 1 (block 0's next year) has no driver older than 97, and none of the 66 has a next-year row even when any driver age is allowed. 62.7% of block 0 has one. They match the default-code pattern of VehAge.
-- **The definition's evidence is coarser.** Its "70 against 5 at 98" counts across all blocks.
+B3. The floor of 2026-11-04: min_prediction=1e-6 on the expected count (Lennart, bemtpl97 CC, records/bemtpl97.md line 76: "two orders below the smallest plausible mean"; carried to fremtpl2). Now 1e-4 claims per year.
+   REVERSED WITH A STATED FACT, as an amendment. MET-13 was amended 2026-11-06 ("on the scale the metric scores": 1e-4 claims per year on fremtpl2 and bemtpl97). The same rationale is applied on the rate scale, identically in both datasets. This is not drift.
+   - Task probe: share at the floor is 0.1% for LightGBM and 0.5% for random forest (bemtpl97 0.0%), reported as MET-13 asks.
+   - For the metric auditor, not a precedent issue: with some predictions floored on the rate scale, "equals the source's count deviance times n/sum(Exposure)" holds only for unfloored predictions (the source has no floor).
 
-Consistency check (AI, 2026-11-04): your call on DrivAge 99 (kept) differs from VehAge 99/100 in the same definition (missing, CLEAN-10). Both are a spike at 99 after an empty band, concentrated in block 0. What sets DrivAge apart?
-(a) Driver age may be top-coded at 99 (a real age of at least 99), not a default date, recorded as such; (b) set the 66 block-0 values to missing like VehAge; (c) reopen VehAge to keep both; (d) amend CLEAN-10.
+**C. Findings (real, but not departures by a curator)**
 
-**4. The 2022 CASdatasets counts ("use the newer version")**
-**Verdict: consistent.** The data owner repaired the counts to match its own claims table (PROV-13, PROV-14). This matches the tension row "a version the source defines replaces ours" (eryhemato). The year stays 2014, the first publication (PROV-9). OpenML 41214/41215 are noted as an older copy (PROV-15).
+C1. The LEAK-41 reporting clause is not met, by fremtpl2 or by bemtpl97.
+   LEAK-41 (Must, leak_checks.md line 103): "For each suspect column the definition reports its gain on the declared metric with an L2 fit on the shipped scale and with the weighted actuarial fit, and decides on the worse."
+   - fremtpl2's notes give only the Poisson/actuarial gain (+0.0039 to +0.0045; MET row +0.0040). There is no L2 figure and no probe 22 numbers.
+   - Probe 22 measured both:
+     - Poisson: +0.004806 (SD 0.0019); features predict Exposure at R² 0.1687.
+     - L2: +0.006742 (SD 0.0042), the worse of the two, so the one LEAK-41 says to report.
+   - australian_vehicle_insurance_2004_2005 and frempl_french_motor_personal_line report probe 22 / L2. bemtpl97 does not either.
+   - The decision does not change (the column is out either way). This is a notes fix for both datasets alike, not a curator question. The 1/weight ceiling applies to a Gini metric (probe 22 text), so it is not needed here.
 
-**5. Exposure above one year kept, counts of 5-16 not capped (CC 2026-11-04)**
-**Verdict: consistent.** CLEAN-11 keeps values that are only unusual. Its "single extreme target in the training period" clause does not apply to a random split (qsar_tid_11, 2026-10-21). This matches bemtpl97's "no clip" (2026-10-23).
+C2. The SPLIT-8 Cases row for fremtpl2 is stale and misquotes its number (splits.md line 257, dated 2026-11-04). It reads: "grouping by the inferred chains costs +0.00049 Poisson deviance and leaves the ranking unchanged".
+   - +0.00049 (SE 0.00016) is the forward-by-block test, not the grouping cost: train on blocks 0, 2, 4, 5 and test on 1, 3, 6 (the definition's split note).
+   - The grouping cost was 0.0002 to 0.0003 (REVIEW.md issue 7).
+   - The reason given is the size of the gap, which SPLIT-4 and SPLIT-30 (both Must) bar. The 2026-11-04 consistency check flagged this, and the CC of 2026-11-05 (issue 7, B) replaced it with "prior work uses a random hold-out or a split grouped on identical factors; revisit if the chains become a recorded key".
+   - The row was not updated. A later case citing it would inherit a reason the rules do not count ("a precedent that contradicts a rule is flagged, not followed"). Reflection prompt 1 below.
 
-**6. Metric: mean Poisson deviance with `min_prediction=1e-6` (MET-5, MET-13)**
-**Verdict: consistent with bemtpl97 (2026-11-04), with one stale text.** The Metric bullet in `curation_comments` still says the scorer "floors a predicted mean at machine epsilon". The params and bemtpl97's notes say 1e-6.
+C3. Value precedent to re-read (for the task-probe agent and the mediator).
+   - The 2026-11-04 panel judged "real and small signal (keep)" (TP-2) on numbers that included the Exposure leak and the unblanked BonusMalus.
+   - Today's task probe flags no_signal (TP-1, TP-2): LightGBM r2 0.002, deviance 0.47283 against the dummy's 0.47838, about 1.2% on the declared metric.
+   - bemtpl97, the same design, is not flagged: r2 0.015, about 3.1%.
+   - The flag reads the r2-based "skill", not the declared deviance. This is not a departure, but the TP precedent for fremtpl2 now rests on superseded numbers and needs a fresh call.
 
-**7. Fit "approximate"**
-**Verdict: consistent.** All 20 ForcedIIDFromTemporal definitions in the working copy are approximate. `fit_reason` names Exposure as kept, as USE-8 requires.
+C4. Minor: REVIEW.md's Outcome header still describes "the number of claims ... scored by the source's mean Poisson deviance" (the count target).
 
-**8. The hold (Myunghwan, 2026-10-28) turned into Yes (Lennart, 2026-11-04)**
-**Verdict: consistent.** The newer curator decision wins, and it applies SPLIT-8. It also removes an inconsistency: Myunghwan had shipped bemtpl97 on 2026-10-28 with the same missing timing.
+**D. Drift and third exceptions**
 
-**9. Copies and conflicting copies kept, check warnings accepted**
-**Verdict: consistent.** LEAK-18 (few coarse features, plausible repeats), LEAK-20's clause for genuine label ambiguity, bemtpl97, hiva_agnostic.
+- Lennart on exposure: count with Exposure as a feature ("the metric is checked as declared", 2026-11-04), then parked (2026-11-05), then the rate with a weight (2026-11-06). The change comes with a new measurement and a new Must (LEAK-41), applied to all six insurance tables the same day. That is an amendment, not drift.
+- Floor: one rationale, one amendment, applied identically to bemtpl97 and fremtpl2. No drift.
+- No exception is recorded in this definition (LEAK-41 and MET-15 are Musts with no exceptions; MET-14 is followed), so no count toward a third exception.
 
-**10. `Spatial` tag (regions) and eumtpl screened later**
-**Verdict: consistent.** The tag follows definitions.md. eumtpl follows selection.md: an old record keeps the verdict its own data earns (hepatitis_c_egypt, 2026-10-26).
+**Reflection prompt 1 (C2), in the review-file issue shape**
 
-**Drift and amendments**
-- No drift by one curator on SPLIT-8, CLEAN-11 or MET-13.
-- No third exception on any rule this dataset touches.
-- The bemtpl97 CC says "the 20 other forced-IID definitions". There are 20 in total including both MTPL sets.
+**Should the SPLIT-8 Cases row for fremtpl2 carry the 2026-11-05 reason instead of the 2026-11-04 gap size?**
+
+* **Problem:**
+  - The row in splits.md (line 257) gives "grouping by the inferred chains costs +0.00049 Poisson deviance and leaves the ranking unchanged" as the reason for IID[^gap].
+  - +0.00049 is the forward-by-block test (train blocks 0, 2, 4, 5; test 1, 3, 6). The grouping cost was 0.0002-0.0003.
+  - Your call of 2026-11-05 (issue 7, B) rests on prior work (a random hold-out or a split grouped on identical factors), and the row does not say so.
+  - All numbers were measured on the count target with Exposure as a feature.
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | a | Rewrite the row to the 2026-11-05 reason | the links are inferred between inferred years and are not the source's key[^key]; prior work uses a random or factor-grouped split; revisit if a key is recorded; +0.00049 labelled as the temporal-hold-out cost | a precedent that holds under the rules | a row edit in the knowledge file |
+  | b | Keep the row as is | none | no edit | a gap-size reason the rules bar, a misattributed number |
+  | c | Reopen issue 7 to group on the chains | ForcedGroupedFromTemporal | as nba_players_2016_2019, open_university (2026-10-21) | goes beyond prior work; a ruling on the key |
+
+* **Recommendation:** (a). The definition already states the 2026-11-05 reason. Only the precedent row lags, and a stale row is what a later case would follow.
+
+[^gap]: **SPLIT-4** and **SPLIT-30** (Must): the size of the gap never decides.
+[^key]: **SPLIT-24** (Must): a key "constructed exactly from the data"; **SPLIT-8**.
+
+**Precedents cited (with dates)**
+
+- bemtpl97: rate nclaims/expo, expo as weight, floor 1e-4 (Lennart, 2026-11-06); bm kept (2026-11-05); IID, ForcedIIDFromTemporal, "treated alike" (2026-11-04).
+- australian_vehicle_insurance_2004_2005, frempl_french_motor_personal_line, pricing_game_2016_french_fleet, spanish_motor_insurance_coverage_level_2022_2024: MET-14/MET-15/LEAK-41, 2026-11-06.
+- spanish_motor_insurance_2015_2018: per contract stays, MET-14 clause, 2026-11-06.
+- pricing_game_2017_french_mtpl: no exposure column, whole policy-years, 2026-11-06.
+- leak_checks.md: line 103 LEAK-41; line 441 Cases row "time on risk cut short" (Andrej 2026-11-02, amended Lennart 2026-11-06); line 444 BonusMalus row (2026-11-05).
+- metrics.md: MET-13 floor amendment and MET-14/15 rows (2026-11-06).
+- splits.md: line 256 bemtpl97, line 257 fremtpl2.
+- cleaning_features.md: line 193 CLEAN-16, line 337 CLEAN-10.
 
 </details>
 
 <details><summary>Advocate</summary>
 
-**Opening brief (advocate), fremtpl2**
+**ADVOCATE OPENING BRIEF: fremtpl2, exposure re-review 2026-11-06, full tier**
 
-Verdict sought: ship after wording changes. Four of the five agents who looked at the split find IID with `ForcedIIDFromTemporal` defensible or right. Two problems are real: the Exposure note gives the wrong size, and the timing of BonusMalus is in doubt. Each has a fix that keeps the dataset.
+Position: ship as defined. The target, the weight, the metric, the features and the split all stay. The evidence agents found real problems, but each one is a stale note, a missing reporting sentence or a protocol note. Each is fixed by editing text (curation_comments, accepted-warning reasons, a ScoringColumn description, REVIEW.md). None needs a change to the data pipeline. No agent refuted any validity claim (claim auditor: "No validity refutation. Today's design ... holds on every test").
 
-**1. The task, the target and the metric are what the source defines (P3, P5, P6; USE-5, PROV-13, MET-5). Nobody disputed this.**
-- Evidence: 677,991 policies and 26,444 claims. Every count equals the claims table, because the data owner repaired the counts in 2022. The metric is the case study's own Poisson deviance (FreMTPL_1b line 35, 100 times the mean), confirmed by the claim auditor and the practitioner.
-- There is real signal and every fold can be scored: each test fold has 8,160-8,465 rows with a claim. Mean count scores 0.2595, exposure times frequency 0.2534, a Poisson GLM 0.2397 and LightGBM 0.2326. The LightGBM-GLM gap of 0.0071 is far above the seed noise of 0.0002.
-- The practitioner, a pricing actuary, says: "Yes, as a model-selection benchmark."
-- Why this matters for the critic: every point below is a fix inside the definition. None reaches exclusion on the remedy ladder.
+1. The target, the weight and the metric are the source's own design, and they rank models exactly as the source does. (MET-14, MET-15, LEAK-41 Must; MET-11 Should)
+   - Evidence:
+     - The scorer equals the source's offset count deviance times n/sum(Exposure) to 1e-15 on every fold. The per-fold factors are 1.8956 / 1.8919 / 1.8864, so the ranking is the source's (claim auditor, item 3).
+     - The source code fits glm(ClaimNb ~ ..., offset=log(Exposure)) and scores with the Poisson deviance (item 4).
+     - The practitioner: "Nothing in the target, the weight or the metric: this is how I would set them up." The same setup is in scikit-learn's freMTPL2 example.
+     - The blind reviewer reached the same answer on its own, without the notes ("EXPOSURE AS WEIGHT: CORRECT").
+     - Fitting without the weight scores worse than the constant: 0.50043 against 0.47980, A/E 0.642 (practitioner). This is MET-15's reason, measured.
+     - The floor of 1e-4 never binds on a sane model: 0.0% for LightGBM. An all-zero prediction still scores a finite 1.30 (item 5, MET-13).
+     - The precedent checker found the definition "consistent" with bemtpl97 and four other insurance tables decided the same day. Each of the three reversed calls is reversed with a stated fact. There is no drift and no third exception. The register has no flag.
+   - Answers: no agent objects to the core design. This point is the base the other points rest on.
 
-**2. IID with `ForcedIIDFromTemporal` is the closest regime SPLIT-8 allows (SPLIT-8, SPLIT-14, both Must; Lennart's CC of 2026-11-04).**
-- The temporal split cannot be built. There are no dates, and each sub-portfolio has two or three inferred periods, so SPLIT-14 cannot be met.
-- The measured cost is small and its sign is mixed:
-  - Notes: 0.0847 vs 0.0820.
-  - Practitioner: 0.0824 vs 0.0754.
-  - Split auditor, on the same rows: +0.00049 deviance (0.2%), ranking unchanged.
-- Grouping on the chains changes nothing. Three agents measured it:
-  - 0.0825 / 0.0813 / 0.0829 skill
-  - 0.23265 vs 0.23238-0.23245 deviance
-  - 0.0797 / 0.0791 / 0.0794 skill
-  - Fold SD is 0.0008-0.003.
-- SPLIT-29 does not fire, because the entity carries almost none of the label: pair correlation 0.017, and last year's claim as a feature adds +0.00001.
-- I concede the cross-row signal is real. It is worth 0.0004 (column auditor) to 0.0021 (claim auditor, via IDpol) deviance, and about 0.0014 for the practitioner's BonusMalus channel. That is 0.2-0.9% of the score. It needs a participant who deliberately matches rows: the over-flexible LightGBM picks up nothing, and sibling labels add 0.00007.
-- Grouping does not remove it: −0.0017 random against −0.0018 grouped (split auditor). The signal sits in the data itself, so it falls under the tension "a weak transductive leak against the data as published": keep it with a note.
-- On LEAK-17, a fix that does not remove the leak is not the remedy the rule asks for. The mildest remedy is a sentence in `splits_comment` with the numbers.
-- I concede SPLIT-8's text names `ForcedGroupedFromTemporal` for stacked periods with recurring entities, so a consistency check against open_university and distribution_transformers is due (principles case 2). The facts that set this case apart:
-  - there is no source key;
-  - the links are inferred, and the attributes change between years;
-  - grouping changes nothing and leaves the renewal signal in place;
-  - pricing serves renewals, which are known entities (USE-10, SPLIT-13).
-- If the curator prefers grouping on the chains, that also keeps the dataset at no cost.
+2. Honest evaluation holds: no feature carries the realized weight. (P4; LEAK-41 Must, LEAK-10 Must, USE-6)
+   - Evidence:
+     - feature_columns are the 9 rating factors. Exposure is the weight only (claim auditor, item 2).
+     - Probe 22: the features predict Exposure at R² 0.17. No feature's gain runs through Exposure above 2 SD under either the Poisson or the L2 fit. The largest are Region (+0.0010 to +0.0016) and DrivAge (+0.0006 to +0.0016) (column auditor).
+     - Both are fixed at the quote, so LEAK-41 keeps them by their timing ("risk selection stays", USE-6).
+     - No row is selected by its weight under IID (split auditor, item 4).
+     - The gamer found one real exploit only: Exposure, or the summed Exposure of the twins, used as a feature (+0.008 to +0.010). The kit already blocks it ("Keep Exposure out of the features (already done)").
+     - Reading the scoring column of the test rows is the protocol contract of every weighted task (LEAK-9; column auditor, problem 2). It is not a flaw of this definition.
+   - Answers: the gamer's exploit table. P4 is the highest rank in play, and it holds.
 
-**3. Not capping the counts and keeping exposures above one year is right (CLEAN-11, Should; precedents bemtpl97 and qsar_tid_11).**
-- The 19 extreme rows carry 0.00126 of 0.2534. Each claim has a recorded cost.
-- The task gamer measured that capping training counts at 4 makes scores worse (0.233173 vs 0.233023), and so does dropping counts above 5 (0.233405).
-- The blind reviewer's cap and RMSE concerns assume an RMSE metric. The declared metric is Poisson deviance, so those concerns do not apply.
-- The 1,224 rows with exposure above one year have zero links, as three agents confirmed. They are unusual, not impossible.
+3. The BonusMalus blanking is a settled leak fix, not a preparation defect. (LEAK-10 Must, LEAK-7 Should; P4 over P6)
+   - The blind reviewer and the gamer call it a defect and ask for a re-ingest (+0.040 if restored). Neither had the notes.
+   - The gamer's own finding, "kept exactly for IDpol >= 5,000,006 ... blanks for every IDpol <= 4,189,196", is the definition's block mask (dataset.py line 268, `mask(block.le(LAST_LATE_BONUS_MALUS_BLOCK))`). It is not a parsing failure.
+   - The curator's call of 2026-11-05 (issue 5, B) rests on measurements:
+     - In blocks 0-4 the coefficient is frozen from block 0 to 1, 94.5% unchanged, where the French system lowers it after every claim-free year.
+     - In those blocks claimants pile on the first malus step, 62-63, so the value looks recorded after the row's own claims.
+     - In blocks 5-6 it follows the previous year's claims, as a start-of-year value does, and it stays.
+     - It is distinguished from bemtpl97 by a stated source fact: "risk factors are registered at the start of the policy period".
+   - A post-outcome value restored would of course lower the deviance. The +0.040 measures the leak, not lost honest signal.
+   - Rank: P4 (validity) outranks P6 (value). The cost of the fix (honest skill 0.064 down to 0.023, practitioner) is the price of honesty. It is not a reason to restore the column ("a real task carries ... it does not carry a leak").
+   - Concession: the evidence that the value is post-outcome is a measurement of distributions, not a statement by the source. Today's change does not reopen issue 5 (column auditor; precedent checker, A6).
+   - Mildest remedy for the confusion: the practitioner's sentence in fit_reason, that the blanking, not option A, took the skill from about 0.064 to 0.023.
 
-**4. Exposure stays as a feature, but the note's number must be corrected (LEAK-37 against LEAK-10; precedent bemtpl97).**
-- The planned term and the accounting-year cut are known at quotation. The source's model and metric are built on exposure, and the dataset cannot predict a count without it.
-- I concede the note is wrong. "A fifth of the gain" measures the legitimate, proportional part. The part that can carry a later cancellation is 0.0039-0.0045 (14-19% of the gain), and the free GLM coefficient is 0.641.
-- Part of that excess is new business and records split within a year: groups of identical rows sum to a median of 0.85 years, and blocks 4-6 look like split contract years. So the cancellation share is likely, not shown (EV-6).
-- Mildest remedy: rewrite the note with these numbers and put the consistency check against heart_failure and kick to the curator.
-- If the curator rules it a Must breach, the next rung is the definition fix, not exclusion: Exposure as an offset scoring column. That needs a new metric.
+4. The IID split stays. The new gap is one 20-row fleet, and the gap size never decides the split. (SPLIT-4 / SPLIT-30 Must; SPLIT-8; issue 7 settled 2026-11-05)
+   - Evidence:
+     - The IID-vs-grouped gap is +0.0008 to +0.0016. Of it, 94-102% comes from one profile: 20 rows, 77 claims in 4.63 years.
+     - Without that profile the gap is -0.00001 to +0.00015 (split auditor) and -0.00005 to -0.00021 (claim auditor).
+     - An explicit memorizer gains nothing: the best blend scores 0.46823 against LightGBM's 0.46813; twins' leave-one-out changes the score by +0.0001.
+     - The record-count exploit is +0.0005, below the gamer's noise floor of 0.0006.
+     - The ranking, LightGBM over the GLM, is the same under every split.
+     - The forced-temporal cost is +0.0009, half of it the same profile.
+   - Rules: SPLIT-4 and SPLIT-30 bar deciding a split on the size of its gap. The curator's 2026-11-05 reason (prior work uses a random or a factor-grouped split) is untouched.
+   - Mildest remedy: the split auditor's option (a), one sentence that names the profile and its effect. Grouping on identical factors (option b) is a weighing call for the curator. It is not needed for validity.
 
-**5. BonusMalus timing is the strongest open problem. I concede it is likely, and argue for the fix that keeps the dataset (LEAK-10, Must; LEAK-3, Should; precedent online_shoppers).**
-- Evidence: from block 0 to 1 and block 2 to 3, BonusMalus is frozen (it falls after a claim-free year in only 5-21% of pairs, against 92-94% in blocks 4-6). Claimants pile onto the first malus step (5.3-6.8% vs 1.5-1.7%). This points to a value recorded after the claims in blocks 0-4, about 85% of rows.
-- What is not shown: no source statement exists, and every paper on freMTPL2 uses BonusMalus as its main factor. That is why LEAK-3 (read the source first) comes before acting.
-- Remedies, mildest first:
-  - (a) check the source;
-  - (b) blank BonusMalus where it fails to behave like history, keep it in blocks 4-6. This follows the online_shoppers precedent ("keep only the period where it behaves like history"), and the rows can be located from IDpol in `_clean`;
-  - (c) drop it. In blocks 5-6 it adds nothing measurable.
-- The dataset survives every option. Only "keep as is without a source" departs from a Must.
+5. The signal is real. The no_signal flag comes from an R²-type skill. (TP-1 Must: a flag is a question; TP-2 Should)
+   - Evidence:
+     - On the declared deviance a weighted Poisson LightGBM beats the constant on every fold: by 0.0109 / 0.0127 / 0.0096, D² about 2.3% (claim auditor, item 14).
+     - The practitioner measured A/E 1.000 and an exposure-weighted Gini of 0.195, against 0.2-0.3 for published MTPL frequency models.
+     - The probe itself says "beats the dummy on 100% of the splits".
+     - A Poisson count has R² near 0.01 by nature.
+   - Precedents: forest_fires, kept at R² 0.013 under TP-2; clock_protein_toxicity, kept.
+   - Remedy: record in REVIEW.md why the flag is overruled.
 
-**6. DrivAge 99: concede, cheap fix (CLEAN-10, Should, P7).**
-- 66 of the 70 rows are in block 0 and never continue to a next year, which is the pattern that made VehAge 99 missing.
-- Set them to missing, or write down the top-coding reason. Under principles step 3 this is a quality issue, not a reason to hold.
+6. The cleaning choices the blind reviewer questions are settled, and they help an honest model. (CLEAN-11, CLEAN-10; P7)
+   - Not capping: ClaimNb is not capped at 4 and Exposure is not capped at 1 (CLEAN-11, 2026-11-04: whole contract periods). The gamer measured that capping in training hurts: 0.46909 against 0.46850; capping the claims only, 0.46915; dropping ClaimNb >= 5, 0.46995.
+   - The VehAge 99/100 values (48 rows) and the block-0 DrivAge 99 values (66 rows) are made missing as default codes, and the notes document it (CLEAN-10, issue 9 settled; claim auditor, item 24 holds).
+   - The 677,991 rows match the CASdatasets 1.2-1 documentation (blind reviewer).
+   - These are P7 quality points. They are documented and do not change what the target means.
 
-**7. Wording fixes (writing.md; MET-11).**
-- "Machine epsilon" should be 1e-6.
-- "21 of 23" should be 14 of 14 by the shipped rule.
-- "28,768 rows equal another" should be 28,768 copies (40,903 rows in groups).
-- Name the links behind the 430,298 groups.
-- Qualify "consecutive years": the BonusMalus is frozen from block 0 to 1 and 2 to 3, and blocks 4-6 look like split contract years.
-- Report the IID cost on the same rows (+0.00049).
-- The link counts are lower bounds.
+7. Concessions. Each is real; each is fixed by text, not by changing the data.
+   a. LEAK-41 reporting clause (Must, its reporting part). Add one sentence to the Exposure bullet with:
+      - Poisson gain +0.0082 on the declared scale;
+      - L2 gain +0.0075 on the full data (+0.0067 in probe 22);
+      - the Exposure-alone score, 0.47114 against the constant's 0.47929;
+      - probe 22's R² 0.17, and that no feature carries the weight above noise.
+      The decision does not change: the column is out either way. bemtpl97 needs the same sentence (precedent checker, C1).
+   b. Stale accepted-warning reasons:
+      - conflicting duplicates: now 8,128, not 520;
+      - exact copies: now 181,197, and most feature-identical groups look like one policy-year split into records.
+      Rewrite both with today's counts. The harm is measured as small (point 4).
+   c. Stale numbers in "Copies kept".
+   d. Count-scale numbers and old-target numbers given without a label. One clause fixes it: the declared score is 1.891 times the count deviance.
+   e. The "seven policies, 72 claims over 3.63 years" wording: those are the 19 profile rows, not the seven policies.
+   f. Exposure share "21-30%": it is 43% on the declared scale, so state that or drop the share.
+   g. The Exposure description: in blocks 5-6 the short records are mostly cut at a calendar date (block 6 stops at 0.74 of a year).
+   h. The SPLIT-8 Cases row in splits.md misquotes the +0.00049 (precedent checker, reflection prompt 1, option a).
+   i. Protocol and README note: methods must receive sample_weight, and one that ignores it scores worse than the constant.
+   j. The record's latest Assessment line and the tag "Two-Regime Zeros" predate today.
+   Why these do not block shipping:
+   - They are independent failures, not conflicts.
+   - The one Must among them (LEAK-41's reporting clause) is fully met by the mildest step of the remedy ladder, fixing the definition's notes.
+   - None touches validity: the claim auditor found no refutation of the target, the weight, the metric or the leak decision.
 
-**Judgment record**
-- Validity: P3 and P5 hold. SPLIT-8 holds (forced IID, with a consistency check against the SPLIT-8 precedents). LEAK-17 is triggered weakly and not fixed by grouping, so it is kept with a note. LEAK-10 Exposure: the note is corrected, and the curator re-rules. LEAK-10 BonusMalus: likely; LEAK-3 first, then blank by block.
-- Value: real, small signal; MET-5 holds.
-- Quality: CLEAN-10 DrivAge fix; wording.
-- For the curator: the BonusMalus ruling, the Exposure re-confirmation, and IID vs grouped on the chains.
+Judgment record as I argue it:
+- Verdict: ship after text changes. The data, the target, the weight, the metric and the split stay as defined.
+- Validity:
+  - LEAK-41 holds; its reporting part is to be completed.
+  - LEAK-10 holds: the BonusMalus blanking, issue 5, settled.
+  - SPLIT-8 holds, with SPLIT-4 and SPLIT-30 holding: IID, plus a fleet note.
+  - MET-14 and MET-15 hold.
+- Value: TP-2, a small real signal (deviance skill 0.0096-0.0127 on every fold); the no_signal flag is overruled with its reason.
+- Quality: CLEAN-11 and CLEAN-10 hold as settled; the notes need refreshing.
+- For the curator: the split auditor's option (b), grouping on identical rating factors, is a weighing call. My recommendation is option (a), the note.
 
 </details>
 
 <details><summary>Critic</summary>
 
-**Verdict: do not ship fremtpl2 as defined. It can ship after changes.** Two features break a Must under P4: BonusMalus and Exposure. The split also leaks the label through the policy's next-year record. Points 4 to 7 can be fixed by editing the text or with a cheap cleaning step.
+**fremtpl2: critic's opening brief (exposure re-review, 2026-11-06, full tier)**
 
-**1. BonusMalus looks like it was recorded after the row's own claims in blocks 0-4 (P4, LEAK-10 Must).**
-- **Problem.** In blocks 4-6, where the 4→5 and 5→6 pairs give a check, BonusMalus behaves like a value read at the start of the year. It follows the French CRM rule: among claim-free rows above 50, 92-94% fall the next year. It is tied to the previous year's claims (×8.3 and ×5.7) and hardly to its own row's claims (×1.4 and ×1.9). In blocks 0-3 it is frozen across the two years: 94.5% are unchanged in 0→1. There it is tied to its own row's claims as strongly as to the other year's (×4.3-5.9).
-- **Where the data points.** The first malus step from the floor (62-63) holds 5.3-6.8% of claimants in blocks 0-3, against 1.5-1.7% of rows without a claim. The same pattern shows inside block 4, among rows that have no next-year row: 7.8% against 1.3%. Block 4 rows that do continue, and blocks 5-6, show 1.1-2.2% against 1.4-1.6%. A riskier set of drivers would not put the claimants on exactly one malus step. (Column auditor; the frozen values are confirmed by the claim and split auditors.)
-- **Effect on the task.** BonusMalus carries 42% of the model's gain (0.0112 of 0.0269). Removing it costs 0.0131 deviance in blocks 0-3 but gains 0.0005 in blocks 5-6. So most of what the main feature contributes comes from rows where it may encode the target.
-- **The other side.** The column auditor labels this "likely, not shown". The actuary reads BonusMalus as the CRM at renewal.
-- **Remedy.**
-  - First look for a source statement on when BonusMalus was recorded (LEAK-3).
-  - If none is found, blank it where the late values can be located: blocks 0-3 plus the block-4 rows without a next-year row, about 577k rows. That is the second clause of LEAK-10, applied as in zillow_prize and melbourne_housing_market.
-  - Keeping it with a note departs from a Must, so it needs an amendment, not an exception.
+My position is that fremtpl2 should ship only after changes. None of my points justifies excluding it. Today's design holds on every test the panel ran: the target ClaimNb/Exposure, Exposure used only as the weight, a deviance that ranks models exactly as the source's offset deviance does (ratio 1.886-1.896 per fold), and the 1e-4 floor. My case is about two things. First, a settled split decision now rests on a fact that one entity refutes. Second, the Must reporting duty of LEAK-41 is unmet, and much of the text describes a frame that no longer ships.
 
-**2. Exposure as a free feature carries post-quote information, and no rule allows keeping it (P4, LEAK-10 Must).**
-- **The mechanism is measured.**
-  - Records of 0.01 years or less have 104 claims where an exposure offset predicts 9 (task gamer).
-  - In block 0, short rows that do not continue claim 0.258 a year, against 0.117 for those that continue (claim auditor). The actuary's numbers are 0.144 against 0.095.
-  - In a GLM, log(Exposure) gets a free coefficient of 0.641, where a pure offset would be 1.
-- **Size.** Using Exposure beyond the offset is worth 0.0039-0.0045 deviance, which is 14-19% of the skill. Three agents measured this independently.
-- **The note gives the wrong number.** Its "about a fifth" (0.2595 → 0.2534) is the legitimate proportional part, not the kept leak.
-- **No exception covers it.** LEAK-11 is for values that weaken the signal, and this one strengthens it. LEAK-38 does not cover it either. Lennart ruled on the split and the fit on 2026-11-04, not on Exposure. Precedents went the other way: heart_failure `time` and kick `WheelType` were dropped.
-- **Remedy (fix the definition).** Take Exposure out of the features and keep it as a scoring column. Score with Poisson deviance against prediction × Exposure, which is the source's offset form (Noll et al.). This needs a metric in `src/data_foundry/v2/metrics.py`, and bemtpl97 should be reopened to match. If the curator keeps the current form, that is an amendment of LEAK-10, recorded with 0.0039-0.0045 as the leak's size.
+1. One 20-row entity produces the whole gap between the IID and the grouped split. It refutes the fact issue 7 was settled on. (P4; SPLIT-29 and LEAK-17, both Must, put to the curator as a question under SPLIT-30.)
+   - **Problem:** Issue 7 option B, as implemented, kept IID because "the entity carries almost none of the label (pair correlation 0.017, so SPLIT-29 does not fire)". One profile breaks that.
+     - The profile: power 4, B1, Regular, area D, density 824, Languedoc-Roussillon, BonusMalus blank, car/driver 12/52, then 13/53.
+     - It has 20 rows, 77 claims and 4.63 years, a rate of 16.6 claims a year against a portfolio rate of 0.07.
+     - Wüthrich and Merz suspect it is one driver or a rental fleet.
+   - **Effect:**
+     - Under IID its rows fall 6/7/7 across the folds. LightGBM predicts 3.8-17.2 claims a year for its test rows from their training copies. Grouped, it predicts 0.073-0.078.
+     - LightGBM's grouped-minus-IID gap is +0.0008 to +0.0017. That is 7-15% of its skill over the constant.
+     - 94-102% of that gap sits in these rows. Without them the gap is -0.0002 to +0.00015.
+     - So the only memorization the shipped split rewards is recognising this one entity. Part of the forced-temporal cost (+0.0009) comes from the same profile; without it the cost is +0.00046.
+   - **Evidence:** split_auditor item 2 and claim_auditor item 12, measured independently and in agreement. Neither found any gain for a twin memorizer outside the fleet (claim_auditor +0.0001; split_auditor best blend 0.46823 against 0.46813).
+   - **Strength of the case:** SPLIT-29 needs "many rows", and 20 rows of 677,991 is not many. SPLIT-24 bars grouping on a hash of the feature vector. So this is not a clear Must breach. But the stated fact behind the IID exception no longer holds, and the principles require such a decision to be put back to the curator ("a documented decision is not a correct one").
+   - **Remedy:** Reopen issue 7 with this fact. Mildest acceptable fix:
+     - correct the issue-7 rationale in REVIEW.md and the notes;
+     - add one sentence to splits_comment and the "Counts of 5 to 16" bullet: the profile, its 77 claims, and that the IID score depends on how its 20 rows fall.
+     - Alternative for the curator: group on the identical shipped rating factors, as Schelldorfer and Lorentzen-Mayer do (splits.md "Composite keys"). It costs nothing elsewhere: 488,666 groups, folds of 224,778-226,838 rows.
+     - I do not ask to drop the rows; that would undo the keep of 2026-11-04.
 
-**3. The split leaks the label through the next-year record (P4, LEAK-17 Must; SPLIT-8's wording).**
-- **What leaks.** In every test fold, 16% of rows have their next-year row on the training side. Built from the shipped columns alone, the true partner is the only candidate for 54.6% of linked rows.
-  - The actuary's stacked GLM, linking without IDpol, gains +0.0057 skill on 3 of 3 folds.
-  - In the claim auditor's lookup, the true partners alone are worth about 0.0014 deviance, and the information is future, not history: the next-year row is worth 0.0021 when linked through IDpol, the previous-year row 0.00015.
-- **"Changes the score by nothing" is not a reason under the rules.** SPLIT-4 and SPLIT-30 say the size of the gap never decides.
-- **The links can be grouped on.** SPLIT-24 allows a key "constructed exactly from the data", and the chance rate of these links is 0.02-0.05% (161,883 matches against 16-75 under the controls). So SPLIT-25's bar on grouping on a guess does not apply.
-- **SPLIT-8's text names this case.** Its regime for stacked periods with recurring entities is `ForcedGroupedFromTemporal`, as nba and open_university were shipped.
-- **Remedy (re-split).** Group on the `next_year_rows` chains, with the offsets made symmetric. Row-wise models lose nothing (skill 0.0825 shipped, 0.0813 grouped), and the actuary's channel is halved (+0.0057 → +0.0024).
-- **The renewal signal remains under any split** (-0.0017 deviance). It gets a "Potential leak, kept on purpose" note (LEAK-30 tension).
+2. The reporting clause of LEAK-41 is not met. (P4; LEAK-41, Must.)
+   - **Problem:** LEAK-41 asks the definition to report, on the declared metric, the gain from an L2 fit and from the weighted actuarial fit, to decide on the worse, and to state the score of 1/weight alone as the ceiling a leak would reach. The notes give only a count-scale offset gain (0.0039-0.0045) and nothing from probe 22.
+   - **Effect:** A reader cannot see on the shipped metric how large the removed leak was, or that no shipped feature carries it.
+   - **Evidence:**
+     - Claim auditor item 9 (full data): Poisson +0.0082, L2 +0.0075. Exposure alone scores 0.47114 against the constant's 0.47929, which is 74% of what the 9 honest features reach.
+     - Probe 22 (50k cap): Poisson +0.0048, L2 +0.0067. The features predict Exposure at R² 0.17. No feature's gain runs through Exposure above 2 SD; Region and DrivAge sit at 1.1-1.4 SD (column auditor).
+     - The precedent checker found the same gap in bemtpl97 (C1).
+   - **Strength of the case:** The precedent checker reads the ceiling as needed only for a Gini metric. The rule's text does not say so.
+   - **Remedy:** A note, not a design change. One sentence in the Exposure bullet with these numbers, naming Region and DrivAge as the probe's top features. Both are known at the quote and stay (USE-6). The same fix goes into bemtpl97.
 
-**4. The cost of the forced split is misreported (P4, SPLIT-8 Must: the cost has to be measured).** "0.0847 against 0.0820" compares different rows. On the same rows, the IID split is slightly optimistic: +0.00049 deviance (SE 0.00016). "Consecutive years of three sub-portfolios" is also weak at both ends:
-- in 0→1 and 2→3, BonusMalus is frozen;
-- in blocks 4-6 almost no linked row covers a full year (0.2%), and 63-66% of the pairs' exposures add up to at most 1.01. These look like split contract years.
+3. Both accepted duplicate warnings are justified by numbers and a reading that today's frame refutes. (P4/P6; EV-7, with LEAK-17 behind the reading.)
+   - **Problem:**
+     - The conflicting-duplicates reason says 520 rows. With Exposure no longer a feature, the check sees 8,128 rows (1.2%).
+     - The duplicate-rows reason says "each copy is a distinct policy ... the repetition is the portfolio". The check now counts 181,197 exact copies (26.7%). 327,862 rows (48.4%) sit in 138,537 groups with identical features, and 92.9% of those groups sum to at most 1.01 years. That is the signature of one policy-year split into records, as the notes themselves say ("renewals during the year recorded as two records"). 66.5% of the linked pairs straddle the folds.
+   - **Effect:** Small on the score:
+     - a twin memorizer gains +0.0001;
+     - group size and the siblings' exposure, without the row's own Exposure, gain 0.0004 (noise);
+     - the transductive count over train and test gains +0.0005.
+     - But the acceptance argues from a fact the data contradicts.
+   - **Evidence:** claim_auditor items 17, 18 and 25; task_gamer findings 1 and 3; split_auditor item 4.
+   - **Remedy:** Rewrite both accepted_check_warnings with today's counts and the split-records reading, citing the measured harm above.
 
-Remedy: rewrite the "Split forced IID" bullet with the same-rows number, and qualify which blocks are years.
+4. The value flag is left unanswered. (P6; TP-1 Must, TP-2 Should.)
+   - **Problem:** The task probe flags no_signal (TP-1, TP-2), and REVIEW.md does not say why it is overruled. The 2026-11-04 call "real and small signal (keep)" rested on numbers that included the Exposure leak and the unblanked BonusMalus (precedent checker C3).
+   - **Effect:** The flag itself is an artefact: the probe reads an R²-type skill. But the honest headroom is thin, and readers should see it:
+     - deviance skill over the constant is 0.0096-0.0127 per fold (about 2.3% D², A/E 1.00, Gini 0.19);
+     - a random-column control moves fold scores by up to about 0.0006 (task gamer);
+     - strong methods will differ in the fourth decimal (blind reviewer concern 3).
+   - **Evidence:** probes/task.txt; claim_auditor item 14; domain_practitioner measurements; task_gamer noise reference.
+   - **Remedy:** A recorded TP call in REVIEW.md and fit_reason. It should give the deviance skill per fold, explain why the R² flag misleads for a Poisson frequency, and attribute the drop from about 0.064 to about 0.023 to the BonusMalus blanking, not to option A. Check against tuned methods when they exist (TP-1). This is not grounds to retire (TP-2).
 
-**5. Wrong statements in the notes (EV-7 Must, MET-11).**
-- "Machine epsilon" should read 1e-6.
-- "21 of the 23 cars aged 99 are 100 a year later": the shipped rule pairs only 14 of the 23, all 14 aged 100 the next year. This also sits in the `DEFAULT_VEHICLE_AGE` docstring.
-- "28,768 rows equal another" should say they copy an earlier row; 40,903 rows sit in groups of equal rows.
-- The 48-60% link shares are lower bounds: widening the offset to ±30 gives up to 75.3% in block 6.
+5. The task works only if the method uses the weight, and the definition does not say so where a benchmarker will look. (P6; MET-15, Must, on its consequence.)
+   - **Problem:** MET-15 makes Exposure the sample_weight. A method that cannot take a weight does not just score worse; it loses to the constant.
+   - **Effect:** An unweighted LightGBM scores 0.50043 against the constant's 0.47980 (fold 0, A/E 0.64). The unweighted constant scores 0.49892 against 0.47929 for the weighted one. A leaderboard that mixes weighted and unweighted methods ranks weight support, not modelling.
+   - **Evidence:** domain_practitioner Q4 and gap 2; claim_auditor item 6.
+   - **Remedy:** A note. One sentence in fit_reason or the task description: the task needs the sample weight, a method that ignores it scores worse than the constant rate, and results should record whether a method used it.
 
-Remedy: edit the text.
+6. Many numbers in the notes are stale, on another scale, or wrong. (P7 and the writing rules; EV-7.)
+   - The declared score is 1.891 times the count deviance, but the notes mix in, without a label:
+     - count-scale numbers (0.2534, 0.0012, 0.0021, 0.0008);
+     - old-target numbers from runs with Exposure as a feature (0.23316 against 0.23267, +0.00049; 0.0821 against 0.0819; 0.2327 against 0.2435).
+   - Restated on the shipped metric:
+     - the forced-temporal cost is +0.0009 (+0.00046 without the profile);
+     - the renewal flags are worth about 0.0010, and the full oracle 0.0015-0.0025 (split_auditor items 3 and 5).
+   - "21-30% of LightGBM's gain" for Exposure is 43% on the shipped baseline (claim_auditor item 8).
+   - The "Copies kept" counts include Exposure as a column. The rows in feature-identical groups now number 327,862 (claim_auditor item 25).
+   - "Seven of the eight policies ... 72 claims over 3.63 years" is wrong: the seven have 66 claims over 1.38 years, and 72 claims over 3.63 years belong to the 19 profile rows (claim_auditor item 22).
+   - The Exposure scoring-column description, "shorter when the policy ended early, often after a claim", misses how blocks 5-6 are cut. There Exposure is cut mostly by a date: block 6 never exceeds 0.74 years, and 99.8% of block 5 is a partial year (split_auditor item 4).
+   - **Remedy:** Restate these numbers on the declared metric. Add one clause dating the older numbers ("before 2026-11-06, on the count target with Exposure a feature"). Add one clause on date-cut exposures in blocks 5-6.
 
-**6. DrivAge 99 is treated differently from VehAge 99 (P7, CLEAN-10 Should).** 66 of the 70 rows are in block 0. None of them has a next-year row, against 62.7% of block 0, and block 1 has no driver older than 97. This is the same default-code pattern as VehAge, which the definition sets to missing. Remedy: set those values to missing. This is a quality issue, not a reason to exclude.
+7. The surrounding records lag today's design. (Principles, "Keeping the rules current"; SPLIT-4 and SPLIT-30 for the Cases row.)
+   - The SPLIT-8 Cases row for fremtpl2 (splits.md line 257) gives "grouping by the inferred chains costs +0.00049" as the reason for IID. That number is the temporal hold-out, not the grouping cost. The size of a gap is a reason SPLIT-4 and SPLIT-30 bar. A later case would follow this row (precedent checker C2).
+   - REVIEW.md's Outcome header still describes the count target.
+   - The record's latest Assessment (2026-11-04) says "realised exposure kept, 10 features, three Must issues open".
+   - The tag "Two-Regime Zeros" comes from the amount task that D12 keeps out.
+   - **Remedy:**
+     - rewrite the Cases row to the 2026-11-05 reason (precedent checker reflection prompt 1, option a);
+     - update the Outcome header;
+     - add an Assessment line for today's change and review the tag.
 
-**7. Citations nobody checked (EV-7 Must).** No agent opened the Wüthrich and Merz quotes (pp. 553-554, Eq. 5.28), and nobody recomputed the 9,942 claims and the LightGBM figure of 292.6. Remedy: verify them or remove them.
-
-**What I concede.**
-- The use case is real, and the metric is right (MET-1, MET-5).
-- Keeping the uncapped counts and the exposures above one year is consistent with CLEAN-11 and the precedents.
-- The leaks in points 1-3 change scores by 0.001-0.013 deviance. None of them makes the task unfixable, so none of them is grounds for exclusion.
+Not raised: the BonusMalus blanking, which is settled in issue 5 (LEAK-10) and not reopened by today's change. Both outside reviewers took it for a preparation defect. The task gamer measured a restore at 0.040 and guessed at "a parsing step that failed". It is a deliberate curator decision, and the size of a gap does not override a leak rule. The fact that two independent readers misread it argues only for keeping it prominent, which task_summary.known and changes already do.
 
 </details>
 
 <details><summary>Advocate rebuttal</summary>
 
-**Rebuttal (advocate), fremtpl2**
+**ADVOCATE REBUTTAL: fremtpl2, exposure re-review 2026-11-06**
 
-Verdict sought: ship after changes. The critic now asks for the same verdict ("it can ship after changes"). We still disagree on three remedies: which BonusMalus rows to blank, whether Exposure can stay with a note, and whether a re-split fixes the split leak. I concede the critic's points 1, 2, 4, 5 and 6 on substance. I dispute point 3, and I answer point 7 with a check I made in this round.
+Summary: the critic and I agree on the verdict ("ship only after changes"; "None of my points justifies excluding it"). I concede six of the seven points in full. I dispute one point only in its framing: what the 20-row fleet refutes. Every remedy left on the table is text. None changes the target, the weight, the metric, the features or the split.
 
-**New fact (critic point 7, EV-7).** I opened the task gamer's saved Wüthrich and Merz chapter. It is "Appendix B: Data and Examples", pp. 553-575.
-- Both quotes in the definition appear word for word:
-  - "do not seem to be correct because these claims do not have claim severity counterparts";
-  - "policies with more than 5 claims may be data error because they all seem to belong to the same driver (and they have very short exposures)".
-- The exact page split 553/554 and Eq. 5.28 (chapter 5) remain unchecked. The 9,942 count and the 292.6 figure were not recomputed.
-- The same page says: "policy renewals during the year account for two separate records in the data set. Of course, such split policies should be merged ... we do not have the necessary information". This bears on points 2 and 4 below.
+1. The 20-row entity and issue 7: conceded in part, disputed in part.
+   - Conceded:
+     - The fact is new and measured twice: split_auditor item 2 and claim_auditor item 12.
+     - Issue 7 never weighed it, and SPLIT-30 (Must) says a probe hit is a question. It goes to the curator.
+     - The note in splits_comment and in the "Counts of 5 to 16" bullet is required, not optional.
+   - Disputed: the claim that it "refutes the fact issue 7 was settled on".
+     - Issue 7 concerns another entity: the inferred next-year chains (REVIEW.md lines 197, 210, 1065: "The links are inferred ... between blocks"). Its fact is the pair correlation of claims along those links, 0.017. Nothing today measures that again or contradicts it.
+     - The fleet is a separate entity, rows with identical rating factors. It adds a new fact beside the old one; it does not overturn the old one.
+     - The critic's own rule reading stands: SPLIT-29 needs "many rows", and 20 of 677,991 are not many. SPLIT-24 (Must) lets us group only on a true id or a key "constructed exactly from the data". An identical profile is a composite key whose status as one entity rests on one inference (Wüthrich and Merz suspect one driver or a fleet). So no Must breach is shown.
+     - The ranking (LightGBM over the GLM) is the same under every split. The gap is 0.0008-0.0017, and SPLIT-4 and SPLIT-30 bar deciding on gap size.
+   - What follows: add an issue-7 row ("a 20-row profile with 77 claims makes the IID-vs-grouped gap") with the split auditor's options (a) note and (b) group on identical factors. I recommend (a). Correct the rationale's wording in REVIEW.md only so it does not suggest that the 0.017 covers the fleet.
 
-**1. BonusMalus (LEAK-10 Must): concede the Must. I dispute only which rows to blank.**
-- I concede the evidence:
-  - The first malus step holds 5.3-6.8% of claimants against 1.5-1.7% of other rows in blocks 0-3.
-  - BonusMalus carries 42% of the gain.
-  - Removing it costs 0.0131 deviance in blocks 0-3 and gains 0.0005 in blocks 5-6.
-- I concede that keeping it with a note needs an amendment, not an exception. LEAK-3 (Should) comes first: the chapter above describes BonusMalus but says nothing about when it was recorded, so the source check is still open.
-- I dispute part of the critic's mask. Blanking "block-4 rows without a next-year row" makes the missing flag mean "this policy was not renewed". Non-renewed rows claim about twice as often (0.141 vs 0.070 per year in block 0, split auditor). That is "missingness that encodes the outcome", a LEAK-10 clause, so this fix would create a new leak.
-  - Mildest remedy that resolves it: blank by block, all of blocks 0-4, which every row shows without a link. This follows the online_shoppers precedent (the period where the value behaves like history).
-  - Or drop BonusMalus (option c). It costs nothing measurable in blocks 5-6.
-- What follows for point 3: either fix also closes most of the actuary's backward channel, which reads this year's claim from a rise in next year's BonusMalus. With blocks 0-4 blanked, only the 5→6 pairs can carry it. Dropping the column closes it fully.
+2. The LEAK-41 reporting clause: conceded in full, including the ceiling.
+   - The rule's text is general: "it states the score of 1/weight alone as the ceiling a leak would reach". I find no Gini-only limit in it. The precedent checker's reading is narrower than the rule, and rules win over readings.
+   - The sentence should give:
+     - Poisson +0.0082 and L2 +0.0075 (full data), or +0.0048 and +0.0067 (probe 22), deciding on the worse;
+     - the ceiling: Exposure alone scores 0.47114 against the constant's 0.47929;
+     - R² 0.17, with Region and DrivAge at 1.1-1.4 SD, both kept under USE-6.
+   - My opening brief (point 7a) already listed these numbers.
+   - The same fix goes into bemtpl97. This is the mildest step of the remedy ladder and fully meets the Must.
 
-**2. Exposure (LEAK-10 Must): concede that a note does not resolve it. The offset scoring column is the rung to take.**
-- I concede three things:
-  - LEAK-11 does not apply, because Exposure strengthens the signal.
-  - Lennart's 2026-11-04 marks ruled on the split and the fit, not on Exposure.
-  - Under the remedy ladder (principles step 5), a note does not resolve a Must, so my opening's "rewrite the note" is not enough on its own.
-- Evidence the critic did not use: Wüthrich and Merz say mid-year renewals are split into two records. So part of the 0.0039-0.0045 excess is record splitting, not cancellation. That fits the median group sum of 0.85 years (task gamer). The leak is mixed. It is not refuted: in block 0, short rows that do not continue claim 0.258 a year against 0.117 for those that continue.
-- Why this keeps the dataset: the heart_failure precedent dropped `time`, but here Exposure is the source's own denominator. The matching definition fix is the one the critic names: Exposure as a scoring column, with Poisson deviance on prediction × Exposure (Noll et al.'s offset form).
-  - It removes the free 0.641 coefficient.
-  - It costs a metric in `src/data_foundry/v2/metrics.py` and reopening bemtpl97 (consistency).
-  - Ship after that change, or after an explicit LEAK-10 amendment by the curator that records 0.0039-0.0045 as the leak's size. The curator chooses.
-- Residual: the gamer's record-count statistic (0.0006) survives either way. It falls under LEAK-30 (weak) and gets a note.
+3. The stale accepted-warning reasons: conceded.
+   - The new counts are 8,128 conflicting rows and 181,197 exact copies. The "distinct policy" reading is contradicted by the 92.9% of groups that sum to at most 1.01 years.
+   - The measured harm is noise-level: +0.0001 for the twin memorizer, 0.0004 for the siblings, +0.0005 for the transductive count. So the warnings stay accepted, with the reasons rewritten as the critic proposes.
 
-**3. The split leak (LEAK-17, SPLIT-8): dispute. A re-split does not resolve it.**
-- I concede three things:
-  - The leak is real. 16% of test rows have their next-year row on the train side. The true partner can be recovered from shipped columns for 54.6% of linked rows.
-  - SPLIT-4 and SPLIT-30 bar "the gap is small" as a reason, so I withdraw that wording.
-  - SPLIT-8's letter names `ForcedGroupedFromTemporal` for stacked periods with recurring entities.
-- Why grouping does not resolve it: a participant sees test features, so the next-year row stays visible inside the test fold. Measured:
-  - The renewal signal is −0.0017 under random folds and −0.0018 under grouped folds (split auditor).
-  - The actuary's channel shrinks from +0.0057 only to +0.0024.
-  - LEAK-17 grouping is a remedy because it separates the entity. Here it does not, so it is not the remedy that resolves the problem (principles step 5).
-- What does resolve most of it: the label-carrying part runs through BonusMalus rises, and the point 1 fix removes it.
-  - Without labels, the renewal fact is a weak leak in the data as published. The principles' tension table says to keep it with a "Potential leak, kept on purpose" note.
-- SPLIT-29 does not fire. It needs an entity "that new data would not have" which "carries the label". Pricing serves renewals, which are known policies (USE-10, SPLIT-13), and the pair correlation is 0.017.
-- SPLIT-24 is open, not settled for the critic. The chains come from a matching rule (IDpol offset 1-9, driver age +1), not from identical values. The precedent checker says this "needs a SPLIT-24 ruling".
-- Net: IID with the forced tag, plus a note with the numbers, holds SPLIT-8 by its "closest regime" clause. Grouping on the chains is also acceptable at no cost (0.0825 vs 0.0813). The consistency check against nba, open_university and distribution_transformers goes to the curator.
+4. The value flag: conceded.
+   - The TP call belongs in REVIEW.md and fit_reason. It should give:
+     - the per-fold deviance skill, 0.0109 / 0.0127 / 0.0096;
+     - D² about 2.3%, A/E 1.00 and Gini 0.19;
+     - why the R² flag misleads for a Poisson frequency;
+     - that the drop from 0.064 to 0.023 comes from the BonusMalus blanking (issue 5), not option A.
+   - The thin headroom is a fact readers should see. Two qualifications:
+     - The honest gain is 16-21 times the gamer's noise reference of 0.0006, so the folds tell models apart. TP-2 says a small real signal is no reason to retire, and the critic agrees.
+     - The TP-1 recheck with tuned methods is a later step, not a condition for shipping.
 
-**4. The cost of the forced split: concede.** The same-row figure is +0.00049 deviance (SE 0.00016): IID is slightly optimistic and the ranking is unchanged. Rewrite the "Split forced IID" bullet. Qualify blocks 0→1 and 2→3 (BonusMalus frozen) and blocks 4-6 (split contract years, now backed by the book's sentence above).
+5. A method must use the weight: conceded.
+   - Unweighted, LightGBM scores 0.50043 against the constant's 0.47980. Name the requirement in fit_reason or the task description, and record whether each method used the weight.
+   - This is the consequence MET-15 (Must) intends: a model that ignores time insured misprices the book (A/E 0.64). So it is a note, not a design change.
 
-**5. Wrong statements: concede all four** (EV-7, MET-11): 1e-6 not machine epsilon; 14 of 14 not 21 of 23, also in the `DEFAULT_VEHICLE_AGE` docstring; 28,768 copies and 40,903 rows in groups; link shares are lower bounds (up to 75.3% at ±30).
+6. Stale, unlabelled and wrong numbers: conceded.
+   - The fixes, as listed:
+     - restate the numbers on the declared scale (forced-temporal +0.0009, or +0.00046 without the profile; renewal flags about 0.0010, oracle 0.0015-0.0025);
+     - the Exposure share is 43%, not 21-30%;
+     - "Copies kept": 327,862 rows in feature-identical groups;
+     - the seven policies have 66 claims over 1.38 years;
+     - add the date-cut clause for blocks 5-6 to the Exposure description;
+     - add one dating clause for the older numbers.
+   - These are P7 and writing fixes.
 
-**6. DrivAge 99: concede** (CLEAN-10, P7). 66 of the 70 rows are in block 0 and none continues to a next year. Set them to missing, as VehAge 99 is.
+7. Records that lag today's design: conceded.
+   - The fixes:
+     - rewrite the SPLIT-8 Cases row (splits.md line 257) to the 2026-11-05 reason; option (a) of the precedent checker. The row today cites a gap size, which SPLIT-4 and SPLIT-30 bar, and calls the temporal hold-out a grouping cost;
+     - update REVIEW.md's Outcome header;
+     - add a 2026-11-06 Assessment line to the record;
+     - review the tag "Two-Regime Zeros".
 
-**7. Citations: partly resolved** (see the new fact above). The quoted text is verified. The pages, Eq. 5.28, 9,942 and 292.6 are still open: verify them or cut them.
+On BonusMalus: the critic and I agree. The blanking is settled (issue 5, LEAK-10), and the restore gain of 0.040 measures the leak, not lost signal.
 
-**Judgment record (revised)**
-- Verdict: ship after changes.
-- Validity:
-  - P3 and P5 hold.
-  - LEAK-10 BonusMalus: LEAK-3 first, then blank blocks 0-4 or drop (not the renewal-status mask).
-  - LEAK-10 Exposure: offset scoring column, or a curator amendment that records 0.0039-0.0045.
-  - SPLIT-8 holds with forced IID, or grouping at no cost if the curator chooses. SPLIT-29 does not fire.
-  - LEAK-17: kept with a note, because grouping does not remove it.
-- Value: MET-5 holds; the signal is real and small.
-- Quality: CLEAN-10 DrivAge; the wording fixes; EV-7 open items.
-- For the curator:
-  - the BonusMalus remedy;
-  - Exposure: offset or amendment, with bemtpl97 matched;
-  - IID vs grouped on the chains (SPLIT-24 ruling).
+Joint position for the mediator: ship after text changes 1(a), 2-7. The one curator question is issue 7's new row, (a) note against (b) grouping on identical factors. My recommendation is (a). Nothing in either brief calls for changing the data, the target, the weight, the metric or the feature set.
 
 </details>
 
 <details><summary>Critic rebuttal</summary>
 
-**Rebuttal (critic), fremtpl2**
+**fremtpl2: the critic's rebuttal (exposure re-review, 2026-11-06)**
 
-**Verdict: unchanged. Do not ship fremtpl2 as defined; it can ship after changes.** The advocate wants to ship after wording changes. Their own points 4 and 5 contradict that. They agree that keeping BonusMalus without a source statement departs from a Must. They also agree that the next step for Exposure, if it breaks a Must, is to change the definition. Neither is a wording fix.
+**Where we stand:** we agree on the verdict: ship after text changes, with the data, target, weight, metric and features left as they are. The advocate's point 7 concedes my points 2, 3, 5, 6 and 7 in substance, and my point 4 mostly, through its own point 5. One dispute is left, on the split (advocate's point 4). I narrow my own claim there and keep only one ask: issue 7 goes back to the curator with the new fact, not just a note.
 
-**Advocate 1 (task, target, metric): concede.** P3, P5, P6, MET-1 and MET-5 hold. The measured signal is clear: the LightGBM-GLM gap is 0.0071 against seed noise of 0.0002. None of my points asks for exclusion.
+**Point 1 (the target, weight and metric are the source's design): concede.** The scorer equals the source's offset count deviance times n/sum(Exposure) to 1e-15 on every fold (claim auditor, item 3). An unweighted fit loses to the constant. The floor never binds. The precedent checker finds the definition consistent. MET-11, MET-13, MET-14 and MET-15 hold.
 
-**Advocate 2 (IID with `ForcedIIDFromTemporal`): dispute.**
-- **Two channels are mixed up.** The figures "-0.0017 random against -0.0018 grouped" measure the label-free renewal signal: whether a later record exists. My opening already accepts that signal with a note. The label channel is a different thing, and grouping does cut it:
-  - The actuary's BonusMalus-rise channel falls from +0.0057 to +0.0024 skill.
-  - The split auditor's matching against training rows falls from -0.0012 to -0.0004 deviance.
-  - The advocate's rule that "a fix that does not remove the leak is not the remedy" therefore fails on the split auditor's and the actuary's own numbers.
-- **LEAK-17 is a Must with no weak tier.** LEAK-30 is the rule that reads "Must when strong, Should when weak", and it covers scaling over all rows. The tension row in principles.md that the advocate cites ("weak transductive leak") lists only scaling cases (sf_permit_time, home_credit). Repeated entities fall under LEAK-17, and its remedy is "keep one row per entity … or group". Neither the split auditor's "Should-strength" label nor the advocate's "triggered weakly" has a basis in the rule text.
-- **"Needs a participant who deliberately matches rows."** That is the case LEAK-17 guards against. The task gamer and the actuary both rebuilt the links from the shipped columns alone: 54.6% of linked rows have the true partner as the only candidate, and the gain held on 3 of 3 folds.
-- **"Grouping changes nothing" cannot be a reason.** SPLIT-4 and SPLIT-30 say "the size of the gap never decides". The advocate's other distinguishing facts:
-  - *No source key.* SPLIT-24 allows a key "constructed exactly from the data", and its cases include "consecutive blocks … in the raw file order" (in_vehicle_coupon) and a mix rebuilt from its ingredients (concrete). An IDpol offset of +1..+9, equal factors and driver age +1 is the same kind of exact rule, with a chance rate of 0.02-0.05%. SPLIT-25 covers groups that "cannot be recovered", and these can. The column auditor's appeal to SPLIT-25 does not apply.
-  - *Attributes change between years.* They change by a fixed rule (driver age exactly +1 in 99.9% of pairs). That is not a similarity threshold.
-  - *Renewals are known entities (USE-10, SPLIT-13).* This is the advocate's best argument, and it argues against IID. Renewal pricing gets the policy's past. IID gives it the future: the next-year row is worth 0.0021 deviance, the previous-year row 0.00015, and last year's claim +0.00001. Grouping removes the future and costs nothing legitimate.
-- **Concede:** grouping is a call for the curator through the consistency check. The advocate agrees that SPLIT-8's text names `ForcedGroupedFromTemporal` for stacked periods with recurring entities. If the curator keeps IID, that departs from the letter of a Must and needs a recorded fact or an amendment (option (d) of the precedent checker), not a sentence in `splits_comment`. A count of four of five agents is not evidence. Two of those agents (claim auditor, actuary) also offered grouping, and the precedent checker found that IID departs from precedent.
+**Point 2 (no feature carries the realized weight): concede.** In probe 22 and the column auditor's extension to all 9 features, no feature passes 2 SD, under the Poisson fit or the L2 fit. Region and DrivAge are fixed at the quote, so they stay (LEAK-41, USE-6). The gamer's twins' summed Exposure is a feature a participant builds, not one that ships. LEAK-41 names that kind of feature as off limits, and the kit already blocks it. What remains is the reporting clause, which point 7a concedes.
 
-**Advocate 3 (no cap, exposures above one year kept): concede.** This follows CLEAN-11, qsar_tid_11 and bemtpl97. The task gamer measured that capping makes the score worse (0.233173 capped against 0.233023). The blind reviewer's concern about the cap assumed an RMSE metric.
+**Point 3 (the BonusMalus blanking is settled): concede the conclusion, dispute one sentence.**
 
-**Advocate 4 (Exposure stays as a feature under LEAK-37): dispute.**
-- **LEAK-37 covers "an input the actor knows at the prediction point."** The advocate names the planned term, but the shipped column is realised exposure. The actuary says: "At quote I know the contract term and start date, not a later cancellation." LEAK-37 would cover a planned-term column, and none is shipped.
-- **"Mostly new business, likely not shown (EV-6)" is refuted by the conditional test.**
-  - The column auditor looked only at rows that have an earlier-year row, so no new business. Even there, rows with exposure ≤0.1 claim 0.255 a year against 0.056 for full-year rows (4.5×).
-  - Within each exposure bin, a claim lowers the chance of a next-year row (0.19 vs 0.27, 0.28 vs 0.35, 0.44 vs 0.51, 0.47 vs 0.53).
-  - In block 0, short rows that stop claim 0.258 a year against 0.117 for those that continue (claim auditor).
-  - This is the standard that kick `WheelType` was dropped on, on 2026-10-22: the conditional test measured the mechanism. heart_failure `time` was dropped for the same mechanism, a duration cut short by the outcome.
-- **Records split within a year do not save it.** A record ended mid-year after a claim, for example by a change of vehicle, is also a post-outcome event. The groups of identical rows with a median summed exposure of 0.85 are the task gamer's exploit #2, which "a deployed model would not have".
-- **LEAK-11 does not apply,** because the value strengthens the signal (free coefficient 0.641 where a pure offset would be 1; 0.0039-0.0045 deviance, 14-19% of the skill).
-- **Concede:** the advocate offers the offset scoring column as the next step. Given the facts above, that step is the one that applies: Exposure becomes a scoring column, with a new metric in `src/data_foundry/v2/metrics.py`, and bemtpl97 is reopened. A note alone keeps a Must breach without an amendment.
+- Issue 5 stands, and today's change does not reopen it. I did not raise it either.
+- The sentence I dispute: "The +0.040 measures the leak, not lost honest signal." That claims more than the evidence shows.
+  - Issue 5 rests on "likely, not shown" (EV-6). No statement from the source dates the value. The finding is a distribution footprint, as the advocate concedes.
+  - The gamer's restore is one number covering blocks 0-4. It cannot separate the post-claim part from what a quote-time coefficient would legitimately give.
+  - The earlier panel's number is +0.0127 on the count scale in blocks 0-3, about 0.024 on the rate scale. It was measured with Exposure as a feature.
+  - The rule is untouched: LEAK-10 is a Must, the size of a gap never decides, and the curator's B stands.
+- Remedy: the notes and fit_reason keep "likely" wording. They should not present 0.040 as the size of the leak. The practitioner's sentence on 0.064 down to 0.023 is fine, as long as it is worded as the cost of the blanking.
 
-**Advocate 5 (BonusMalus): largely concede; one dispute.**
-- We agree on the order: LEAK-3 first, then blank by block, then drop.
-- **Dispute:** the advocate's option (b) keeps all of blocks 4-6. But block-4 rows without a next-year row show the same footprint: 7.8% of claimants at the first malus step against 1.3% of rows without a claim. Block-4 rows that continue show 1.1-2.2% against 1.4-1.6%. The blanking has to cover those rows too, about 577k in total. This is the zillow / melbourne form, "blank … for those rows", and online_shoppers' "keep only the period where it behaves like history" leads to the same cut.
-- "Every paper uses BonusMalus" is not a timing statement. LEAK-3 asks for the source, not for common practice.
-- Since both sides agree that shipping BonusMalus as it is departs from a Must, the dataset cannot ship "after wording changes" until this is resolved.
+**Point 4 (the IID split stays; the gap is one fleet; gap size never decides): partly concede, keep one ask.**
 
-**Advocate 6 (DrivAge 99): concede.** This is CLEAN-10, a Should and a quality issue, fixed by setting the 66 block-0 values to missing.
+What I concede:
+- The curator's resolution of 2026-11-05 (REVIEW.md issue 7) rests on prior work: "prior work gives no reason to group". It does not rest on the correlation of 0.017 that option B listed. My opening wrongly treated that fact as the decisive reason.
+- SPLIT-29 needs "many rows", and 20 of 677,991 is not many. So no Must forces a re-split.
+- The size of the gap decides nothing (SPLIT-4, SPLIT-30), whether for grouping or against it.
+- The explicit memorizer gains nothing outside the fleet. The ranking is the same under every split.
 
-**Advocate 7 (wording): concede the list, with one addition.** The advocate leaves out my point 7 (EV-7, a Must). No agent opened the Wüthrich and Merz quotes (pp. 553-554, Eq. 5.28), and nobody recomputed the 9,942 claims or the LightGBM figure of 292.6. They need to be verified or removed. The "21 of 23" fix also applies to the `DEFAULT_VEHICLE_AGE` docstring.
+What I dispute: that option (a), a note, closes the issue. The reason is the prior-work reason itself.
+- The 2026-11-05 survey in REVIEW.md lists Schelldorfer (2021) and Lorentzen and Mayer, who use an 80/20 split grouped on identical rating factors. They group because ignoring the groups lifts LightGBM's pseudo-R² from 5.0% to 6.0%. So one strand of the prior work the curator relied on does group, on exactly this key.
+- Today's measurement shows what that grouping guards against here:
+  - 94-102% of the IID-vs-grouped gap sits in one profile: 20 rows, 77 claims, 16.6 claims a year.
+  - Under IID, LightGBM predicts 3.8-17.2 claims a year for its test rows. Grouped, it predicts 0.073-0.078.
+  - Sources: split auditor item 2, claim auditor item 12.
+- That is a new fact about the reason the decision rests on, not a size. The principles require a call whose evidence has moved to be put back to the curator. They do not say the AI settles it ("surface it, do not override it").
+- SPLIT-24 does not bar the factor key. It allows "identical values in the columns that define the entity" (splits.md, "Composite keys"). What it bars is a hash standing in for an unknown entity. Which of the two the factor key is here is the curator's ruling.
 
-**Changes I still ask for before shipping, mildest that works:**
-1. BonusMalus: the LEAK-3 source search, then blank blocks 0-3 plus the block-4 rows without a next-year row (LEAK-10, Must).
-2. Exposure: make it an offset scoring column with a new metric, and reopen bemtpl97. Otherwise the curator amends LEAK-10, recording 0.0039-0.0045 as the leak's size (LEAK-10, Must).
-3. Split: `ForcedGroupedFromTemporal` on the `next_year_rows` chains. Otherwise a recorded departure from SPLIT-8 and LEAK-17, with the label-channel numbers above. The renewal signal gets a "Potential leak, kept on purpose" note.
-4. Wording fixes, including the IID cost on the same rows (+0.00049), and the EV-7 citations.
+Remedy, still the mildest:
+- Option (a) now: one sentence in splits_comment and in the "Counts of 5 to 16" bullet, as the advocate also proposes.
+- Issue 7 reopened as a question, with this fact added and options (a) and (b) set out for the curator. This is not a demand to re-split.
 
-Neither side asks for exclusion.
+**Point 5 (the signal is real): concede, with one addition to the remedy.**
+
+- The deviance skill is 0.0096-0.0127 on every fold, and TP-2 keeps a small real signal.
+- The recorded TP call should also give the resolution. Per fold, a random-column control moves scores by up to about 0.0006 (gamer), so strong methods will differ in the fourth decimal. That is a fact for readers of the leaderboard, not a reason to retire (TP-1, TP-2).
+
+**Point 6 (cleaning choices are settled): concede.**
+
+- CLEAN-11: capping in training hurts (0.46909 against 0.46850; dropping counts of 5 or more, 0.46995).
+- CLEAN-10: the default codes are set to missing and documented.
+- Both are P7 and settled.
+
+**Point 7 (concessions a to j): agreed.** These match my points 2, 3, 5, 6 and 7, and the remedies are the same. Two additions:
+- (a) LEAK-41's text asks for the ceiling score of 1/weight alone, with no exception for a deviance metric. The advocate includes it (0.47114 against 0.47929), so we agree; the precedent checker's reading that it applies only to Gini should not be followed.
+- (h) The SPLIT-8 Cases row should also drop the gap-size reason, not only correct the number, since SPLIT-4 and SPLIT-30 bar that reason.
+
+**Joint judgment record as I would now put it:**
+
+- Verdict: ship after text changes.
+- Validity:
+  - LEAK-41 holds; its reporting clause is to be completed with the L2 gain, the gain on the declared metric and the 1/weight ceiling.
+  - LEAK-10 holds (issue 5), in "likely" wording.
+  - MET-14 and MET-15 hold.
+  - SPLIT-8 holds as IID with a fleet note. Issue 7 goes back to the curator as a question on the factor-grouped option (b), with today's fact: the gap is one 20-row profile, and that profile is what the prior-work grouping guards against.
+- Value: TP-2 keeps it. The no_signal flag is overruled, with the deviance skill and the per-fold noise of about 0.0006 recorded.
+- Quality: all the stale numbers, scales, warning reasons, descriptions and record lines are restated.
 
 </details>

@@ -64,8 +64,8 @@ that:
   reads, so the scoring columns are the complete set of the extra data a metric needs, and no metric reads a feature
   (amended 2026-11-02, Andrej, on liberty_mutual_fire_peril_loss_cost's sum insured `var11` and
   noaa_afsc_bottom_trawl_survey_cpue's taxon; reworded 2026-11-05, Lennart: "duplicate as needed ... so we keep a
-  clean set of extra data"). A value the models must not get (a rating's output such as a premium) is a scoring
-  column only. The test fold holds what the metric reads:
+  clean set of extra data"). A value the models must not get (a rating's output such as a premium, or a realized
+  amount at risk) is a scoring column only. The test fold holds what the metric reads:
   whole patient stays for a per-patient utility, several eras or weeks per window for a per-era correlation or a
   slope over weeks, enough positives for the top k, every class the cost matrix names;
 * the metric means on our task what it meant on the source's: same target, same classes, same class balance. A task
@@ -207,22 +207,95 @@ k, the weights, the time offsets) are its parameters. One metric has one spellin
 force_2020's `force_2020_penalty_matrix` and amex_non_iid_1m's `amex_metric` renamed to general names.
 
 **MET-13 (Must).** A custom metric is shipped with the dataset that needs it, as a reference implementation in the
-shared metric library, in the same change. It is the fastest well-tested code available: a statistics library where
-it covers the metric, otherwise vectorised array code, or for a competition whose official code is slow, the faster
-versions posted in its discussions, checked. It is tested to equal the official implementation on random inputs (to
-1e-9 or exactly), on one case computed by hand, and timed on 1M rows. A metric only one definition holds is never
-shipped: a reader of the files could not compute it. A metric undefined at the edge of its prediction domain floors
-the predictions, so a method gets a score rather than none (P6). The floor is a parameter the definition states, at
-a value below the smallest plausible prediction, as practice clips a model's output before scoring; the library's
-default is machine epsilon, as `log_loss` clips probabilities (Lennart, 2026-11-04, on bemtpl97: "in pratice we
-would also clip to a reasonable number"; `min_prediction=1e-6` for claim counts). Where the floor sets the scale of
-the worst error (a Tweedie deviance above power 1, whose cost of a near-zero prediction grows without bound), it has
-no default: the definition states it. A metric is stable at its edges (amended 2026-11-05, Lennart): any prediction
-a model can make gets a finite score that does not depend on the row order (ties count by the mean over their
-orderings), a NaN or infinite prediction is an error, and a fold or group the metric cannot score gives NaN or is
-left out by a stated rule, never an infinite value or a number made of rounding noise. How in Data Foundry, with the
-checklist: [definitions.md](../../knowledge-data-foundry/references/definitions.md), "Metrics" and "Metric
-stability".
+shared metric library, in the same change. It is the fastest well-tested code available: a statistics library where it
+covers the metric, otherwise vectorised array code, or for a competition whose official code is slow, the faster
+versions posted in its discussions, checked. It is tested to equal the official implementation on random inputs (to 1e-9
+or exactly), on one case computed by hand, and timed on 1M rows. A metric only one definition holds is never shipped: a
+reader of the files could not compute it. A metric undefined at the edge of its prediction domain floors the
+predictions, so a method gets a score rather than none (P6). The floor is a parameter the definition states, as practice
+clips a model's output before scoring (Lennart, 2026-11-04, on bemtpl97: "in pratice we would also clip to a reasonable
+number"): the lowest value the use case's actor acts on (a minimum premium, the smallest amount the source records),
+stated with its fact, and never above the smallest plausible mean on the scale the metric scores (amended 2026-11-09,
+Andrej: "I go with your suggestion to define it per dataset"; it replaces the convention of 2026-11-06, two orders below
+the smallest plausible mean, under which a floor no actor acts on ranked squared-error fits by their near-zero
+outputs), and the task probe reports the share of predictions at the floor.
+The floor sets the scale of a deviance's worst error (above power 1 a Tweedie deviance's cost of a near-zero prediction
+grows without bound), so `min_prediction` is a required parameter of `mean_poisson_deviance`, `mean_tweedie_deviance`
+and `rescaled_mean_tweedie_deviance`, with no library default. A deviance gets no per-row cap: a cap makes the metric
+improper (on fremtpl2 a cap of 10 binds on honest predictions for 4% of the claim rows and moves the best constant 8%
+below the portfolio rate). A metric is stable at its edges (amended 2026-11-05, Lennart): any prediction a model can
+make gets a finite score that does not depend on the row order (ties count by the mean over their orderings), a NaN or
+infinite prediction is an error, and a fold or group the metric cannot score gives NaN or is left out by a stated rule,
+never an infinite value or a number made of rounding noise. How in Data Foundry, with the checklist:
+[definitions.md](../../knowledge-data-foundry/references/definitions.md), "Metrics" and "Metric stability".
+
+### Rates over an amount at risk, and weights
+
+**MET-14 (Should; applies USE-5; 2026-11-06, Lennart, on fremtpl2 and bemtpl97; amended 2026-11-08, Lennart, on
+spanish_motor_insurance_2015_2018 and australian_vehicle_insurance_2004_2005).** A count or amount accrued over a
+varying amount at risk (time on risk, vehicle-years, area swept) ships as the rate per unit when the decision prices or
+maps per unit. The count or amount leaves the frame as a part of the target (LEAK-10), and, when the source releases the
+count, `_clean` asserts that target x denominator rebuilds it; when the source ships only the rate, the notes say so
+(amended 2026-11-08, Lennart: boreal_postfire_lichen_biomass and wadden_sea_sibes_macoma_abundance ship a density,
+noaa_afsc_bottom_trawl_survey_cpue the counts that rebuild). A per-contract target stays when the planned term is
+constant and known at the prediction point and the data record each contract to its end, a cut one included. A cut known
+only at the policy's end leaves the target per contract when no feature set after the quote carries it and the cut
+contracts claim per contract like the full ones; the notes give the share cut short and the most a price per year in
+force would differ (spanish_motor_insurance_2015_2018: 2,055 of 37,090 cut by a lapse, a claim in 35.4% of cut and full
+years alike, at most about 6% between annual and half-yearly payers). When the data observe each term only in part, as
+an extract window that cuts the policies at its edges, the recorded amount is the window's, not the contract's, and the
+rate ships weighted by the time observed (australian_vehicle_insurance_2004_2005: 98.1% of its policies observed for
+part of their year, a model of the window scoring 0.057 Gini on the cost per contract against the GLM's 0.119). For
+Poisson the rate weighted by its denominator is the source's offset model (MET-11). A weighted Tweedie deviance weights
+the rate by v (the compound-Poisson convention); an offset on the total corresponds to weight v^(2-p) and is used only
+when the source scores that form.
+
+**MET-15 (Must; 2026-11-06, Lennart, on fremtpl2 and bemtpl97).** When a rate target's denominator is realized and the
+decision's quantity is a sum over it (a premium earned pro rata, a book's claims), the denominator is the metric's row
+weight (a weight scoring column read through the metric's `weight` input) and the task's `sample_weight`, never a
+feature (LEAK-41). The rule fixes the weight, not the metric: the metric is chosen per table (MET-10). When the decision
+is per unit of an equal-area map, per loan or per contract, the rate is scored unweighted and no sample weight is
+declared. A declared sample weight is always the metric's row weight. A metric weight that is a function of the features
+(liberty_mutual_fire_peril_loss_cost's `var11_weight`, g_research_crypto_forecasting_1m's asset `Weight`,
+boreal_postfire_lichen_biomass's `plot_weight`, superconductivity's `composition_weight`) needs no sample weight: the
+weighted score's best prediction at each input is the unweighted one. A unit weight that gives each unit one vote
+(MET-17) is for scoring only also when the inputs differ within the unit (pancreatic_cancer_mouse_detection's
+`mouse_weight`, dementia_prediction's `person_weight`; amended 2026-11-08, Lennart): it is no amount at risk, and it
+moves the best prediction only as far as a unit's number of rows tells about the target given the inputs (a fit with the
+weight: dementia -0.004 log loss, SE 0.003; pancreatic -0.015 AUC). Either way the bundle check
+`task_metric_weight_without_sample_weight` is accepted with that reason. Why: an unweighted fit of the rate
+estimates E[N/v | x], not the rate E[N | x] / E[v | x] that breaks even per unit; on fremtpl2 that is 1.61 times the
+portfolio rate (0.1186 against 0.0738 claims per year), and it scores worse than the constant rate (0.26187 against
+0.25342). Why the same column is a weight and never a feature (Andrej, 2026-11-09): a realized denominator is part of
+the label. It is recorded with the outcome when the period ends, and the outcome can cut it short. So it is known when
+the model is trained (past periods, all closed) and when it is scored (the test periods are closed too), but not at the
+prediction point, where a quote prices the period before it runs. The model therefore predicts the rate, which does not
+depend on the length still to come, and the length multiplies the rate afterwards: in the score, as in a premium earned
+pro rata. The training rows' weights shape the fit; the test rows' are read by the scorer only, never when predicting
+(LEAK-41; [definitions.md](../../knowledge-data-foundry/references/definitions.md), `sample_weight` under "Field
+mapping"). The task summary says so in `known_at_scoring` (Lennart, 2026-11-09).
+
+**MET-16 (Should; 2026-11-06, Lennart).** A survey or design weight is never a feature. The task is scored unweighted
+unless the use case is a population estimate; then one weight ships as a scoring column and as the sample weight, and
+folds follow the design when it is known. A weight for training alone cannot be declared, since a sample weight is
+always the metric's row weight (MET-15); the notes name it when sampling depends on the outcome. A unit weight of our
+own that gives each unit one vote (MET-17) is no survey or design weight in this sense (2026-11-08, Lennart). Cases:
+anes_voting_2026 (its nine survey-weight columns dropped from the features).
+
+**MET-17 (Should; 2026-11-08, Lennart, on boreal_postfire_lichen_biomass, superconductivity,
+pancreatic_cancer_mouse_detection, dementia_prediction, asp_potassco_classification and
+video_transcoding_time_prediction).** When the source's rows come in units with unequal numbers of rows, the score
+counts each unit once if the actor decides once per unit and the unit's further rows are repeats the source's protocol
+made (the quadrats of a plot, the SuperCon entries of a composition, the bleeds of a mouse, the visits of a person).
+Each row then weighs 1 over its unit's rows, through a weight scoring column the metric reads, for scoring only
+(MET-15), and the rows stay (SPLIT-26); the task declares it as its `unit_weight` (the weight column and the unit's
+column), so downstream tools weight their validation loss alike. The score stays per row when each row is a decision of
+its own (an instance a solver selector runs, a job a scheduler places); the notes then say how unequal the units are and
+how far one vote per unit moves the ranking. The weight changes how much a prediction counts, never what one prediction
+is (SPLIT-23). A score that departs this way from the source's per-row score is declared from context and names the
+source's score as the original (MET-11). Why: a unit the protocol happened to measure five times would otherwise count
+five times in a decision the actor makes once; on the six cases one vote per unit ranks models at Kendall tau 0.66 to
+0.98 per split against the per-row score.
 
 ## Patterns
 
@@ -237,6 +310,7 @@ stability".
 | A range of costs or thresholds | the fallback | MET-7 |
 | A metric on the raw scale, a target shipped transformed | the metric with `target_transform` (the inverse before scoring) | MET-3 |
 | RMSLE | `rmsle` with `target_transform="log1p"` on a log1p target | MET-3, MET-11 |
+| A count or amount over a realized time on risk (an offset or weight in the source) | the rate per unit; the time on risk as the metric's row weight and the `sample_weight`, never a feature | MET-14, MET-15, LEAK-41 |
 | No metric anywhere | the fallback, with where we looked | MET-1, MET-11 |
 
 ## Cases
@@ -277,6 +351,27 @@ and wait for the curator; the others are decided.
 | MET-2 (amended 2026-11-02, Andrej), MET-1, MET-12 | blogfeedback | `mean_group_top_k_overlap` (k = 10) with the time column `basetime_day` as its group, Buza's Hits@10 per test day (2026-11-02, Andrej) | the source scores each test day's top 10; the day is the task's time column, which the metric reads where it is, as sat11 reads its group column | applied |
 | MET-2 (amended 2026-11-02, Andrej), MET-4 | liberty_mutual_fire_peril_loss_cost | the competition's `normalized_weighted_gini`; `var11` stays a feature and its copy ships as the weight scoring column (2026-11-02, Andrej; the copy 2026-11-05, Lennart) | `var11`, the sum insured, is a policy characteristic the host shipped in the test file for every team, set at underwriting and known for train and test rows alike; on a weighted Gini the best order is by expected loss whatever the weights, and as a feature it moved an untuned model's score by -0.010 (within fold noise) | applied |
 | MET-13 (amended 2026-11-05, Lennart) | the metric library (`gini_top_capture`, `par_k`, the correlations, the normalized Ginis, `mean_group_normalized_rmse`, `mean_group_top_k_overlap`, `gini_stability`, `rmsle`, `mape`, `mean_tweedie_deviance`, `normalized_early_detection_utility`) | every metric checked against the stability checklist on edge cases: tied predictions now count by the mean over their orderings (`gini_top_capture`, `par_k` had taken the row order), a constant prediction of a correlation scores 0, NaN predictions raise, and folds or groups the metric cannot score give NaN or are left out | a constant 0.1 group gave `mean_group_normalized_rmse` 1.2e17 from rounding; `normalized_gini` raised `ZeroDivisionError` when every loss was equal; `gini_top_capture` scored 0.447 or 0.420 on the same tied predictions in two row orders; a 6-row day lifted a random model's top-3 overlap from 0.2 to 0.6; the sepsis utility gave -inf on a fold without a septic patient | applied |
+| MET-14, MET-15, MET-13 (2026-11-06, Lennart) | fremtpl2 | claims per year insured (`ClaimNb / Exposure`, uncapped); `Exposure` the weight scoring column and the `sample_weight`, never a feature; `mean_poisson_deviance` weighted by `Exposure`, `min_prediction=1e-4` claims per year, origin `source` | `Exposure` as a free feature gained 0.0040 (25% of the skill) and was never better at quotation; the weighted rate deviance equals the source's mean count deviance (Noll et al.) times n / sum(Exposure) on every fold (1.891 on the full frame), so models rank the same | applied |
+| MET-14, MET-15, MET-13 (2026-11-06, Lennart) | bemtpl97 | claims per year insured (`nclaims / expo`); `expo` the weight scoring column and the `sample_weight`, never a feature; `mean_poisson_deviance` weighted by `expo`, `min_prediction=1e-4` claims per year (the floor of 1e-6 on the expected count, 2026-11-04, moved to the rate scale), origin `source` | `expo` as a free feature gained 0.0043 (17% of the skill) and was 0.0002 to 0.0011 worse at quotation; Henckaerts et al. score the count deviance of the prediction e x f (Eq. 5); this score is that deviance times n / sum(expo) (about 1.12), so models rank the same | applied |
+| MET-14, MET-15 (2026-11-06, Lennart) | australian_vehicle_insurance_2004_2005 | claim cost per year insured (`claimcst0 / exposure`, identity scale); `exposure` the weight scoring column and the `sample_weight`, never a feature; `normalized_weighted_gini` on the rate (from context) | on claim counts 47 to 82% of a free model's gain over the null is the leak the row Gini hid; with the weight, reading `exposure` adds +0.09 to +0.12 weighted Gini on 9 of 9 shipped splits, and 1/exposure alone scores 0.205; kept on 2026-11-08 (Lennart, review issue 8 (a)) under the clause's window sentence: the extract's window records 98.1% of the one-year contracts only in part (0.469 of a year per contract on average), so the recorded cost is the window's; a model of the window scores 0.056 Gini on the cost per contract (GLM 0.124) and -0.034 on the cost per year | applied |
+| MET-14, MET-15 (2026-11-06, Lennart; scale 2026-11-08, Lennart) | frempl_french_motor_personal_line | the loss per realized year, on the identity scale since 2026-11-08 (log1p before; its issue 7 (b): of CLEAN-16's two remedies only the identity scale keeps the length to 31 December, the part known at the start that LEAK-41 ships as its own column); the realized length the weight scoring column and the `sample_weight`; `ordered_lorenz_gini` with `per_unit=True` (the unnormalised CAS Gini on the rate) until 2026-11-09, then `normalized_weighted_gini` (Andrej, its issue 11: the same order of models on every fold, on the 0-to-1 scale of australian_vehicle_insurance_2004_2005 and spanish_motor_insurance_coverage_level_2022_2024) | under the rate a weighted constant scores 0; the honest Tweedie fit scores 0.183, squared error on the rate 0.154 (led by the tail of records as short as a day), 1/length alone 0.184 (LEAK-41's weight-alone score for a Gini; unnormalised); normalized on 2026-11-09: 0.178, 0.146 and 0.191 (other fit settings; the perfect order's Gini 0.959 to 0.966 per fold) | applied |
+| MET-14, MET-15 (2026-11-06, Lennart) | pricing_game_2016_french_fleet | the claim charge per vehicle-year over the realized `Exposition_au_risque`; the realized period the weight scoring column and the `sample_weight`; `normalized_weighted_gini` (stand-in) | the honest weighted Tweedie fit scores 0.114 / 0.158 / 0.190 against 0 for the weighted constant; the windows' training sides are open (its issue 6) | applied |
+| MET-15 (2026-11-06, Lennart) | spanish_motor_insurance_coverage_level_2022_2024 | `actual_exposure` stays the weight of `normalized_weighted_gini` on the log1p rate and becomes the `sample_weight`; the earned premiums are annualised; `total_exposure` dropped (LEAK-41) | the weighted fits score 0.317 (Tweedie and L2 on log1p); no proxy of the cancellation gains beyond noise through the premiums' values (0% to 6% of the leak reference); their decimals marked a cut year (ROC AUC 0.965) until the premiums were rounded to the cent on 2026-11-08 (review issue 7, Lennart; 0.565 after, the decimal counts' gain +0.0001 under weighted Tweedie); exposure as a free feature gains +0.033 under Tweedie | applied |
+| MET-14 (2026-11-06, Lennart) | spanish_motor_insurance_2015_2018 | the per-contract target stays: every first year has a planned term of exactly one calendar year, known when it is written; 2,055 of 37,090 are cut short; the clause amended 2026-11-08 (Lennart), a price per year in force differing by at most about 6% (0.992 / 0.936 of the year in force for annual and half-yearly payers) | per contract cut years claim as full years (35.4%), per year at risk 1.9 times as often; the written annual premium is not prorated, so no feature set after the quote carries the cut; the quote-time factors predict it through risk selection (ROC AUC 0.71, mostly `Premium`), which LEAK-41 allows | applied |
+| MET-14, LEAK-41 (2026-11-08, Lennart) | allstate_claim_prediction_challenge_1m | the renewal book: only the cars on the policy at the start of 2006 (insured in 2005 too; 2,754,936 of 4,447,729 vehicle-years) stay, filtered on a fact of 2005 known at the renewal, never on presence in 2007 (review issue 6 (B)); where no exposure exists to build a rate, the remedy ladder's filter, not an exception | the 38.1% of cars that joined during 2006 claim per row at 0.46 and 0.54 times the same cars' 2007 rate (0.98 for the carried cars), so they are part years of unknown start; their flag alone scored 0.046 to 0.052 Gini of the full model's 0.058 to 0.102; on the book untuned LightGBM scores 0.106 / 0.091 / 0.061 against 0 for the dummy | applied |
+| MET-14 (2026-11-08, Lennart) | allstate_claim_prediction_challenge_1m | the per-contract target stays where a claim ends a car's cover (a write-off or a replacement): the clause as amended 2026-11-08 confirmed for a cut the claim causes (review issue 7 (A)), distinct from spanish_motor_insurance_2015_2018's lapses; without dates a cut cannot be told from a non-renewal, so the notes bound the share cut short (at most 39.3% of the renewal book's cars not seen in 2007; 15.8% of the cars of households that continued gone) and say the most a price per year would differ cannot be bounded without an exposure | the cut cars claim more per contract, not like the full ones (1.39% against 0.72% for cars insured since 2005 whose household continued into 2007), because the claim causes the cut; no feature set after the quote carries it (the in-year vehicle count dropped; `household_vehicles_carried` counts the cars of 2005 whatever their claims); counted per contract, the claim that ended the cover is the insurer's cost of the cover it wrote, counted once, and no rate can be built without an exposure | applied |
+| MET-1, MET-15, SPLIT-23 (2026-11-08, Lennart) | boreal_postfire_lichen_biomass | the fallback `rmse` on kg/ha weighted by `plot_weight`, 1 over the plot's number of quadrats (0.2 in NT, 0.5 in SK), so each survey plot counts once; a weight scoring column for the metric only, no `sample_weight` (`task_metric_weight_without_sample_weight` accepted: a function of `jurisdiction`); the first weight that gives each unit one vote when units have unequal numbers of rows | every input is constant within a plot, so a model predicts one value per plot; unweighted, an NT plot (5 quadrats) counted 2.5 times an SK plot (2), a weighting the two survey protocols set, while the planner acts on stands; the weighted score ranks models exactly as the RMSE of the plot means with each plot counted once (tau 1 on 30 of 30 splits), and against the per-quadrat RMSE at tau 0.81 per split (two pairs swap, within noise) | applied |
+| MET-1, MET-11, MET-17 (2026-11-08, Lennart) | superconductivity | the source's per-entry RMSE (Hamidieh 2018) overruled on the unit: `rmse` weighted by `composition_weight`, 1 over the composition's SuperCon entries, declared from context with the original named, and the task's `unit_weight`; scoring only, no `sample_weight` | every input is computed from the formula (equal within 2,416 of the 2,422 multi-entry compositions, within 3e-15 in the other 6), so a model predicts per composition and the scientist decides per composition; 15,164 compositions of 1 to 110 entries, the 2,422 with several holding 40% of the rows; Stanev et al. (2018) count each material once; ranks 8 untuned models like per entry at tau 0.98 per split (lowest 0.93) and 0.93 for the mean ranking | exception |
+| MET-1, MET-15, MET-17 (2026-11-08, Lennart) | pancreatic_cancer_mouse_detection | the fallback `roc_auc` weighted by `mouse_weight`, 1 over the mouse's serum samples, each sample still read on its own; the task's `unit_weight`; scoring only, no `sample_weight`, although the weight does not follow from the inputs | 73 mice of 1 to 6 samples (median 2), the label the mouse's, each mouse one patient; tau 0.66 per split (lowest -0.07, on 24 test mice) and 0.86 for the mean ranking; training with the weight -0.015 ROC AUC (SE 0.006, lower on 39 of 60) | applied |
+| MET-1, MET-15, MET-17 (2026-11-08, Lennart) | dementia_prediction | the fallback `log_loss` weighted by `person_weight`, 1 over the person's visits, follow-ups still scored as first visits; the task's `unit_weight`; scoring only, no `sample_weight` | 150 people of 1 to 5 visits, the clinic acts once per person; tau 0.94 per split (lowest 0.71) and 1.0 for the mean ranking; first visits only was the alternative (tau 0.87, 48 to 52 scored visits per fold); training with the weight -0.004 log loss (SE 0.003, within noise) | applied |
+| MET-1, MET-17 (2026-11-08, Lennart) | asp_potassco_classification | per instance, unweighted, with a note on the imbalance | each instance is a decision of the selector; the held-out unit is the problem class, and the largest 10% of the 96 classes hold 51% of the instances; one vote per class ranks at tau 0.86 per split and changes the best model on 13 of 30 | applied |
+| MET-1, MET-17 (2026-11-08, Lennart) | video_transcoding_time_prediction | per job, unweighted, with a note on the full-grid videos | each job is a decision of the scheduler; 80 of 1,099 videos (the experimenters' grid of 841 settings) hold 97.8% of the jobs, and one vote per video would give the 1,018 single-job videos 93% of the weight; tau 0.90 per split | applied |
+| MET-13 (2026-11-08, Lennart) | pricing_game_2017_french_mtpl | `min_prediction` 0.1 EUR, two orders below the smallest plausible mean policy cost (16.8 EUR), in place of Andrej's 1 EUR (2026-11-03); a convention of the collection, not of the source, kept because the rule says so and open to change with the rule | task probe (5 of 9 splits): random forest 62.22 against the constant's 63.10, 0.1% of its predictions at the floor; linear 81.97 (6.7%) and LightGBM 90.30 (3.8%), against 66.28 and 70.90 at 1 EUR; the best family does not move | applied |
+| MET-1, MET-11, MET-13 (2026-11-08, Lennart) | noaa_storm_events_damage | the target in dollars (`property_damage_usd`, no `target_transform`: CLEAN-16), scored by the mean Tweedie deviance at power 1.5 from context with `min_prediction` 1 dollar; supersedes RMSLE (Andrej, 2026-11-03: issue 3 A for the triage actor, checked again when issue 5 made the planner the actor) | the actor changed to the planner, who sums the expected damage of events: the deviance is minimised by the mean, RMSLE by a geometric mean that understates the sum (its best constant for 2024 is $16 against a mean of $355,555); trained each for its own metric the two pick different models in 3 of 3 windows; the floor is two orders below the cheapest event type's training mean ($909, Dense Smoke), rounded down to a power of ten; under the deviance the task probe flags `no_signal` and a Tweedie-fitted LightGBM beats the mean per event type clearly in one window of three (open: review issue 10) | applied |
+| MET-11, MET-13 (2026-11-08, Lennart) | pricing_game_2016_french_fleet | `rescaled_mean_tweedie_deviance` (new: each scored set's predictions multiplied by sum(w y) / sum(w p), then the exposure-weighted Tweedie deviance; power 1.5, `min_prediction` 0.1 per vehicle-year), the stand-in for the game's market in place of the normalized weighted Gini (issue 8 (B): "Agree. GO with the change in metric and use it going forward"); the stand-in for a pricing game whose market rescales every tariff by one uniform factor, for later datasets of that kind | the game scaled every player's premiums to one total before each insured went to the cheapest, rewarding the relative prices, order and spread; in a simulation of that market it picks the two-player winner in 76 of 84 pairs on the windows of 2013 against 44 for the Gini (21 ties: a Gini cannot see a change of spread), 225 of 252 against 128 on the contract folds; it separates a Tweedie GLM from the constant on every fold (1.39, contract-bootstrap SE 0.46; on the folds after issue 9's join of 2026-11-08: 217 of 252 against 136, and 1.06, SE 0.65, ahead on all 9 folds, beyond 2 SE on 5) and scores an untuned LightGBM below the constant; what sets it apart from australian_vehicle_insurance_2004_2005 and spanish_motor_insurance_coverage_level_2022_2024, which keep the Gini: a market that rescaled uniformly, with the closeness measured; the factor reads the scored rows' labels, so a validation fold works the same way | applied |
+| MET-1, MET-17 (2026-11-09, Andrej) | noaa_storm_events_damage | the mean Tweedie deviance weighted by `cell_weight`, 1 over the entries of the entry's county or zone, event type and year (`cell`); the task's `unit_weight`; scoring only, no `sample_weight`; an extension of the rule from repeats of one decision to entries whose dollars add | a mitigation planner decides per jurisdiction and hazard on a year's expected loss (44 CFR 201.6, FEMA's planning guide, the National Risk Index); 11,765 to 12,676 cells per test year of 3.5 to 3.7 entries, 88% of the test entries sharing a cell; summing each cell's dollars and predictions would need a `sum` aggregation the scorer lacks; one vote per cell ranks 8 models as the cell sums do (tau 1.00, 0.86, 1.00) and against per entry at tau 0.86, 0.79, 1.00; the weight moves the best prediction to the cell-weighted mean (training mean $863,406 weighted against $453,533), yet training tuned LightGBM with it scored worse in 3 of 3 windows | applied |
+| MET-13 (2026-11-09, Andrej) | noaa_storm_events_damage | `min_prediction` $10, the smallest damage the source records, in place of the $1 (Lennart, 2026-11-08) that the two-orders formula gave from the $909 training mean of the cheapest event type | none of the 268,670 entries with damage lies between $0 and $10 (423 at $10, 0.17% below $100); a planner reads $1 and $10 as the same nothing; no prediction of a Tweedie-fitted LightGBM or CatBoost, a Tweedie GLM or the means falls below $10 and their scores are the same at $1 and $10; a squared-error LightGBM has 1.7% to 2.3% below and scores 12,103 at $10 against 22,656 at $1 (2023) | applied |
+| MET-1, MET-11 (2026-11-10, Andrej) | wadden_sea_sibes_macoma_abundance | `mean_group_normalized_rmse` over the 15 survey years on the density (after the inverse of log1p), from context, with `survey_year` (the year of `date`) as the group scoring column; the original named is RMSE on the density pooled over the years, the fallback of 2026-11-02; each survey's map one vote, as noaa_afsc_bottom_trawl_survey_cpue gives each species' map | the use case is the map of one past survey and the source checks a map within one year; pooled, 2014 (spat patches, yearly SD 2,899 per m2 against 93 in 2008) held 75.5% of the squared deviation; 8 untuned models on the 9 splits ranked at Kendall tau 0.51 between the pooled and the per-year score, and LightGBM fit by squared error on the density beat the constant pooled but not per year; the Tweedie LightGBM was first under both; within a year a few dense cores still weigh most (the 10 densest a median 55% of a year's squared deviation) | applied |
 
 ## In Data Foundry
 

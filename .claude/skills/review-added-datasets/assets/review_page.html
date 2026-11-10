@@ -549,7 +549,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   // The task summary, labelled and judged as on the TabArena Task Summaries page.
   const SUM_LABELS = [
     ["use_case", "Use case"], ["row", "One row"], ["predicted", "Predicted"], ["known", "Known at prediction time"],
-    ["split", "What the test data stands for"], ["changes", "Our changes to the source"],
+    ["known_at_scoring", "Known only when scoring"], ["split", "What the test data stands for"], ["changes", "Our changes to the source"],
   ];
   const FIT = { direct: "Direct", approximate: "Approximate", none: "None" };
   const FIT_LONG = {
@@ -563,7 +563,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   const fitOf = (d) => (d.summary && FIT[d.summary.fit] ? d.summary.fit : null);
 
   const S = { reviews: {}, crosscut: {} };
-  const ui = { view: "datasets", current: DS[0].name, filter: "all", q: "", hideReviewed: false, detailOpen: false };
+  const ui = { view: "datasets", current: DS.length ? DS[0].name : null, filter: "all", q: "", hideReviewed: false, detailOpen: false };
   let mode = "connecting";
   let db = null;
   let userId = null;
@@ -780,7 +780,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     });
     let xdone = 0;
     XITEMS.forEach((_, id) => { if (S.crosscut[id] && S.crosscut[id].d) xdone++; });
-    const pct = (n) => (100 * n / DS.length).toFixed(2) + "%";
+    const pct = (n) => (DS.length ? (100 * (n || 0)) / DS.length : 0).toFixed(2) + "%";
     document.getElementById("progress").innerHTML =
       '<span><b>' + reviewed + "</b>/" + DS.length + " verdicts</span>" +
       '<span class="meter" aria-hidden="true">' +
@@ -1732,6 +1732,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   const h = (location.hash || "").slice(1);
   if (h === "across" || h === "summary") showView(h);
   else if (h && byName.has(h)) { select(h, true); }
+  else if (!DS.length) showView("across");
   connect();
 })();
 </script>

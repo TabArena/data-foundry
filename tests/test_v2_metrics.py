@@ -10,12 +10,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+import scipy.special
 import scipy.stats
 from data_foundry import bundle_checks
 from data_foundry.schema import MetricSpec, PredictiveMLTaskMetadataV2, ScoringColumn
 from data_foundry.v2 import metrics as m
 from data_foundry.v2.dataset import metric_spec
-from data_foundry.v2.metrics import METRICS, Metric, score, scorer, to_sklearn_scorer
+from data_foundry.v2.metrics import METRICS, Metric, row_weight_column, score, scorer, to_sklearn_scorer
 from pydantic import TypeAdapter
 from sklearn import metrics as skm
 from sklearn.linear_model import LinearRegression, LogisticRegression
@@ -63,7 +64,10 @@ EXPECTED = {
     "spearmanr": (Y_REG, P_REG, scipy.stats.spearmanr(Y_REG, P_REG).statistic),
     "mean_tweedie_deviance": (Y_REG, P_REG, skm.mean_tweedie_deviance(Y_REG, P_REG, power=1.5)),
 }
-PARAMS = {"mean_tweedie_deviance": {"power": 1.5, "min_prediction": 1e-9}}
+PARAMS = {
+    "mean_tweedie_deviance": {"power": 1.5, "min_prediction": 1e-9},
+    "mean_poisson_deviance": {"min_prediction": 1e-9},
+}
 """The params a standard metric needs for its reference value."""
 
 
@@ -209,6 +213,38 @@ def test_scorer_takes_the_group_input_by_row_index(monkeypatch: pytest.MonkeyPat
         scorer(_Container(df, task))(df["y"].to_numpy()[rows], y_pred)
     with pytest.raises(ValueError, match="needs the input"):
         score(spec, df["y"].to_numpy()[rows], y_pred)
+
+
+def test_scorer_weights_a_rate_by_its_exposure_and_checks_the_true_values() -> None:
+    """A claims-per-year target scored with its exposure as the row weight; passing the old count is refused."""
+    exposure = np.array([0.25, 1.0, 0.5, 1.0, 0.1, 0.75])
+    counts = np.array([1, 0, 2, 0, 0, 1])
+    df = pd.DataFrame({"x": np.arange(6.0), "claim_frequency": counts / exposure, "Exposure": exposure})
+    spec = metric_spec(
+        Metric.source(
+            "mean_poisson_deviance",
+            reference="https://example.org",
+            params={"min_prediction": 1e-4},
+            inputs={"weight": "Exposure"},
+        ),
+        "regression",
+    )
+    task = PredictiveMLTaskMetadataV2(
+        target_column_name="claim_frequency",
+        problem_type="regression",
+        objective_metric=spec,
+        scoring_columns=[
+            ScoringColumn(column="Exposure", role="weight", used_by="mean_poisson_deviance", description="years")
+        ],
+        sample_weight="Exposure",
+    )
+    rows = np.array([0, 2, 4, 5])
+    y_pred = np.full(len(rows), 0.8)
+    got = scorer(_Container(df, task))(df["claim_frequency"].to_numpy()[rows], y_pred, rows)
+    rate = df["claim_frequency"].to_numpy()[rows]
+    assert got == pytest.approx(skm.mean_poisson_deviance(rate, y_pred, sample_weight=exposure[rows]))
+    with pytest.raises(ValueError, match="is not the container's target"):
+        scorer(_Container(df, task))(counts[rows].astype(float), y_pred, rows)
 
 
 def _classification_task(problem_type: str, metric: Metric | None = None) -> PredictiveMLTaskMetadataV2:
@@ -449,20 +485,24 @@ def test_target_transform_round_trips_through_json() -> None:
     assert any("target_transform" in line for line in spec.describe_lines())
 
 
+def _poisson(floor: float = 1e-12, **inputs: str) -> Metric:
+    return Metric.source("mean_poisson_deviance", params={"min_prediction": floor}, inputs=inputs)
+
+
 @pytest.mark.parametrize("bad", [np.nan, np.inf, -np.inf])
 def test_poisson_deviance_rejects_non_finite_means(bad) -> None:
     """A NaN or infinite prediction raises: the floor covers only finite means at or below zero."""
     with pytest.raises(ValueError, match=r"deviance|NaN|infinity"):
-        score(Metric.source("mean_poisson_deviance"), [0, 1, 3], [0.2, bad, 2.0])
+        score(_poisson(1e-6), [0, 1, 3], [0.2, bad, 2.0])
 
 
-@pytest.mark.parametrize("low", [0.0, -1.0, 1e-300])
-def test_poisson_deviance_floors_means_at_machine_epsilon(low) -> None:
-    """A mean at or below zero scores as machine epsilon, the large loss the deviance gives a near-zero mean."""
-    eps = np.finfo(float).eps
-    expected = skm.mean_poisson_deviance([0, 1, 3], [0.2, eps, 2.0])
-    assert score(Metric.source("mean_poisson_deviance"), [0, 1, 3], [0.2, low, 2.0]) == pytest.approx(expected)
-    assert expected > 20  # a claim predicted at about zero is heavily penalised, not dropped
+def test_poisson_deviance_needs_a_stated_floor() -> None:
+    """``min_prediction`` is required (MET-13): no silent machine-epsilon default sets the worst error."""
+    with pytest.raises(ValueError, match="min_prediction"):
+        Metric.source("mean_poisson_deviance")
+    # one claim scored at the floor costs 2 * (log(1/f) - 1 + f): 16.4 at 1e-4, 25.6 at 1e-6
+    assert score(_poisson(1e-4), [1], [0.0]) == pytest.approx(2 * (np.log(1e4) - 1 + 1e-4))
+    assert score(_poisson(1e-6), [1], [-1.0]) == pytest.approx(2 * (np.log(1e6) - 1 + 1e-6))
 
 
 def test_poisson_deviance_matches_source_likelihood_with_zero_observations() -> None:
@@ -471,10 +511,253 @@ def test_poisson_deviance_matches_source_likelihood_with_zero_observations() -> 
     y = rng.poisson(0.2, 1000)
     p = rng.lognormal(-2, 1, 1000)
     expected = -2 * np.mean(scipy.stats.poisson.logpmf(y, p) - scipy.stats.poisson.logpmf(y, y))
-    assert score(Metric.source("mean_poisson_deviance"), y, p) == pytest.approx(expected, abs=1e-12)
-    assert score(Metric.source("mean_poisson_deviance"), [0], [0.25]) == pytest.approx(0.5)
+    assert score(_poisson(), y, p) == pytest.approx(expected, abs=1e-12)
+    assert score(_poisson(), [0], [0.25]) == pytest.approx(0.5)
     with pytest.raises(ValueError, match="deviance"):
-        score(Metric.source("mean_poisson_deviance"), [-1, 0], [1, 1])
+        score(_poisson(), [-1, 0], [1, 1])
+
+
+# --- weighted deviances: a rate per unit at risk, weighted by its denominator (MET-14, MET-15) ----------------------
+
+
+def _claims(n: int = 5000, seed: int = 11) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Counts over realized exposures in (0, 1] years, and a predicted yearly rate."""
+    rng = np.random.default_rng(seed)
+    exposure = rng.integers(1, 366, n) / 365
+    rate = rng.gamma(2.0, 0.05, n)
+    return rng.poisson(rate * exposure), exposure, rate * rng.lognormal(0, 0.3, n)
+
+
+def test_weighted_poisson_deviance_equals_scikit_learn_with_sample_weight() -> None:
+    """``sum(w * d) / sum(w)`` on the rate, scikit-learn's ``sample_weight``; zero weights drop a row."""
+    counts, exposure, pred = _claims()
+    rate = counts / exposure
+    expected = skm.mean_poisson_deviance(rate, pred, sample_weight=exposure)
+    assert score(_poisson(weight="w"), rate, pred, weight=exposure) == pytest.approx(expected, rel=1e-9)
+    by_hand = 2 * np.sum(exposure * (scipy.special.xlogy(rate, rate / pred) - rate + pred)) / exposure.sum()
+    assert score(_poisson(weight="w"), rate, pred, weight=exposure) == pytest.approx(by_hand, rel=1e-9)
+    w = exposure.copy()
+    w[:10] = 0.0
+    assert score(_poisson(weight="w"), rate, pred, weight=w) == pytest.approx(
+        skm.mean_poisson_deviance(rate[10:], pred[10:], sample_weight=w[10:]), rel=1e-9
+    )
+
+
+def test_weighted_rate_deviance_is_the_count_deviance_with_an_offset() -> None:
+    """d(N, v * l) = v * d(N / v, l): the count deviance of the same predictions is (sum v / n) x the weighted rate
+    deviance, so the two rank models alike on every fold (the source's offset model).
+    """
+    counts, exposure, pred = _claims()
+    count_deviance = score(_poisson(), counts, exposure * pred)
+    rate_deviance = score(_poisson(weight="w"), counts / exposure, pred, weight=exposure)
+    assert count_deviance == pytest.approx(exposure.sum() / len(counts) * rate_deviance, rel=1e-12)
+
+
+def test_the_floor_applies_to_the_predicted_rate() -> None:
+    """A rate below ``min_prediction`` counts as it: a claim on a quarter year at a predicted rate of 0."""
+    floor = 1e-4
+    got = score(_poisson(floor, weight="w"), [4.0], [0.0], weight=[0.25])
+    assert got == pytest.approx(2 * (4.0 * np.log(4.0 / floor) - 4.0 + floor))
+
+
+@pytest.mark.parametrize("name", ["mean_poisson_deviance", "rmse"])
+@pytest.mark.parametrize("bad", [[np.nan, 1.0], [-0.5, 1.0], [0.0, 0.0], [np.inf, 1.0]])
+def test_an_invalid_row_weight_raises(name, bad) -> None:
+    """A row weight is finite and >= 0, with weight on some row."""
+    spec = _poisson(weight="w") if name == "mean_poisson_deviance" else _weighted_rmse()
+    with pytest.raises(ValueError, match="weight"):
+        score(spec, [0.0, 2.0], [0.5, 0.5], weight=bad)
+
+
+# --- weighted RMSE: how much each row counts, e.g. each unit once whatever its number of rows ------------------------
+
+
+def _weighted_rmse(column: str = "w") -> Metric:
+    return Metric.from_context("rmse", reason="r", inputs={"weight": column})
+
+
+def test_weighted_rmse_equals_scikit_learn_with_sample_weight() -> None:
+    """``sqrt(sum(w * (y - p)^2) / sum(w))``: scikit-learn's weighted MSE, square-rooted; zero weights drop a row."""
+    rng = np.random.default_rng(7)
+    y = rng.gamma(1.0, 800.0, 2000) * (rng.random(2000) < 0.6)
+    pred = y + rng.normal(0.0, 300.0, 2000)
+    w = rng.choice([0.2, 0.5], 2000)
+    got = score(_weighted_rmse(), y, pred, weight=w)
+    assert got == pytest.approx(np.sqrt(skm.mean_squared_error(y, pred, sample_weight=w)), rel=1e-12)
+    assert got == pytest.approx(np.sqrt(np.sum(w * (y - pred) ** 2) / w.sum()), rel=1e-12)
+    w[:10] = 0.0
+    assert score(_weighted_rmse(), y, pred, weight=w) == pytest.approx(
+        np.sqrt(skm.mean_squared_error(y[10:], pred[10:], sample_weight=w[10:])), rel=1e-12
+    )
+
+
+def test_unweighted_rmse_is_unchanged() -> None:
+    """Without a weight, RMSE is scikit-learn's, as before the weight input, and equal weights change nothing."""
+    unweighted = Metric.fallback(reason="r").resolve("regression")
+    assert score(unweighted, Y_REG, P_REG) == skm.root_mean_squared_error(Y_REG, P_REG)
+    ones = np.full(N, 3.0)
+    assert score(_weighted_rmse(), Y_REG, P_REG, weight=ones) == pytest.approx(score(unweighted, Y_REG, P_REG), 1e-12)
+
+
+def test_weight_one_over_the_rows_of_a_unit_counts_each_unit_once() -> None:
+    """With w = 1 / (the unit's number of rows) the squared score is the mean over units of each unit's MSE."""
+    rng = np.random.default_rng(8)
+    sizes = rng.choice([2, 5], 300)
+    unit = np.repeat(np.arange(300), sizes)
+    y = rng.gamma(1.0, 800.0, len(unit))
+    pred = np.repeat(rng.gamma(1.0, 800.0, 300), sizes)  # one prediction per unit
+    got = score(_weighted_rmse(), y, pred, weight=1.0 / sizes[unit])
+    per_unit = pd.Series((y - pred) ** 2).groupby(unit).mean().mean()
+    assert got**2 == pytest.approx(per_unit, rel=1e-12)
+
+
+def test_a_weighted_rmse_states_its_formula_and_the_unweighted_spec_stays_as_built() -> None:
+    """The weighted formula appears only when the spec maps a weight: the unweighted spec, and so the checksum of
+    every container built with it, is unchanged.
+    """
+    assert Metric.fallback(reason="r").spec("regression") == {
+        "name": "rmse",
+        "kind": "standard",
+        "prediction": "value",
+        "greater_is_better": False,
+        "origin": "fallback",
+        "params": {},
+        "inputs": {},
+        "original": None,
+        "reference": None,
+        "definition": "sqrt(mean((y - p)^2))",
+        "reason": "r",
+        "target_transform": "identity",
+    }
+    weighted = metric_spec(_weighted_rmse("plot_weight"), "regression")
+    assert weighted.inputs == {"weight": "plot_weight"}
+    assert weighted.definition == "sqrt(sum(w * (y - p)^2) / sum(w)), w the weight input (finite, >= 0)"
+    assert metric_spec(_poisson(weight="w"), "regression").definition == METRICS["mean_poisson_deviance"].definition
+
+
+# --- weighted ROC AUC and log loss: each unit once (a mouse, a person), whatever its number of rows -----------------
+
+
+def _weighted(name: str, column: str = "w") -> Metric:
+    return Metric.from_context(name, reason="r", inputs={"weight": column})
+
+
+def test_weighted_roc_auc_and_log_loss_equal_scikit_learn_with_sample_weight() -> None:
+    """Both pass the weight to scikit-learn's ``sample_weight``; zero weights drop a row."""
+    w = np.random.default_rng(9).choice([1 / 6, 0.5, 1.0], N)
+    auc = score(_weighted("roc_auc"), Y_BIN, P_BIN, labels=["no", "yes"], weight=w)
+    assert auc == pytest.approx(skm.roc_auc_score(Y01, P_BIN, sample_weight=w), rel=1e-12)
+    ll = score(_weighted("log_loss"), Y_MULTI, P_MULTI, labels=CLASSES, weight=w)
+    assert ll == pytest.approx(skm.log_loss(Y_CODES, P_MULTI, labels=range(4), sample_weight=w), rel=1e-12)
+    assert ll == pytest.approx(-np.sum(w * np.log(P_MULTI[np.arange(N), Y_CODES])) / w.sum(), rel=1e-12)
+    w0 = w.copy()
+    w0[:20] = 0.0
+    assert score(_weighted("roc_auc"), Y_BIN, P_BIN, labels=["no", "yes"], weight=w0) == pytest.approx(
+        skm.roc_auc_score(Y01[20:], P_BIN[20:], sample_weight=w0[20:]), rel=1e-12
+    )
+
+
+def test_weighted_roc_auc_counts_each_pair_by_the_product_of_its_weights() -> None:
+    """A positive and a negative row count with w_pos * w_neg: two copies of a row at weight 1/2 score as the row."""
+    y = np.array(["no", "yes", "no", "yes", "yes"])
+    p = np.array([0.2, 0.9, 0.6, 0.4, 0.4])
+    one = score(_weighted("roc_auc"), y[:4], p[:4], labels=["no", "yes"], weight=np.ones(4))
+    halves = score(_weighted("roc_auc"), y, p, labels=["no", "yes"], weight=np.array([1, 1, 1, 0.5, 0.5]))
+    assert halves == pytest.approx(one, rel=1e-12)
+
+
+def test_unweighted_roc_auc_and_log_loss_specs_stay_as_built() -> None:
+    """The weighted formula appears only when the spec maps a weight, so built containers keep their checksum."""
+    for name, problem, formula in (
+        ("roc_auc", "binary_classification", "area under the ROC curve"),
+        ("log_loss", "multiclass_classification", "mean of -log p(true class)"),
+    ):
+        assert metric_spec(Metric.from_context(name, reason="r"), problem).definition == formula
+        weighted = metric_spec(_weighted(name, "mouse_weight"), problem)
+        assert weighted.inputs == {"weight": "mouse_weight"}
+        assert weighted.definition == METRICS[name].weighted_definition
+    assert score(Metric.fallback(reason="r").resolve("binary_classification"), Y_BIN, P_BIN, labels=["no", "yes"]) == (
+        skm.roc_auc_score(Y01, P_BIN)
+    )
+
+
+@pytest.mark.parametrize("name", ["roc_auc", "log_loss"])
+@pytest.mark.parametrize("bad", [[np.nan, 1.0], [-0.5, 1.0], [0.0, 0.0], [np.inf, 1.0]])
+def test_an_invalid_classification_weight_raises(name, bad) -> None:
+    """A weight is finite, >= 0 and has a positive sum, as for the deviances and RMSE."""
+    with pytest.raises(ValueError, match="weight"):
+        score(_weighted(name), ["no", "yes"], [0.3, 0.7], labels=["no", "yes"], weight=bad)
+
+
+def test_the_regression_fallback_takes_a_weight_and_stays_the_fallback() -> None:
+    """A source without a metric still gets the fallback rmse when each row should count by a weight: the origin
+    stays ``fallback`` and the spec states the weighted formula.
+    """
+    spec = metric_spec(Metric.fallback(reason="r", inputs={"weight": "plot_weight"}), "regression")
+    assert (spec.name, spec.origin, spec.inputs) == ("rmse", "fallback", {"weight": "plot_weight"})
+    assert spec.definition == metric_spec(_weighted_rmse("plot_weight"), "regression").definition
+    w = np.array([0.2, 0.2, 0.5, 0.5, 1.0])
+    y, p = np.array([1.0, 2.0, 3.0, 4.0, 5.0]), np.array([1.5, 2.0, 2.0, 4.5, 4.0])
+    expected = np.sqrt(np.sum(w * (y - p) ** 2) / np.sum(w))
+    assert score(spec, y, p, weight=w) == pytest.approx(expected, rel=1e-12)
+
+
+def test_a_rank_only_metric_scores_a_log_target_without_inverting_the_predictions() -> None:
+    """A Gini reads the predictions only through their order, which an increasing inverse keeps, so a log-scale
+    prediction beyond expm1's range scores instead of raising; the score equals the one on the original scale.
+    """
+    y_log = np.log1p(np.array([0.0, 10.0, 0.0, 250.0, 3.0, 0.0, 40.0]))
+    p_log = np.array([0.1, 2.0, 0.3, 800.0, 1.0, 0.2, 2.5])
+    for name, inputs in (("normalized_gini", {}), ("normalized_weighted_gini", {"weight": "w"})):
+        spec = metric_spec(Metric.from_context(name, reason="r", inputs=inputs, target_transform="log1p"), "regression")
+        extra = {"weight": np.ones(7)} if inputs else {}
+        got = score(spec, y_log, p_log, **extra)
+        capped = np.minimum(p_log, 700.0)  # the same order, within expm1's range
+        expected = score(spec, y_log, capped, **extra)
+        assert np.isfinite(got)
+        assert got == pytest.approx(expected, abs=1e-12)
+    rmse = metric_spec(Metric.fallback(reason="r", target_transform="log1p"), "regression")
+    with pytest.raises(ValueError, match="overflow"):
+        score(rmse, y_log, p_log)  # a metric of the level still refuses an overflow
+
+
+def test_weighted_tweedie_deviance_equals_scikit_learn_with_sample_weight() -> None:
+    """The compound-Poisson convention: an amount per unit at risk weighted by the units."""
+    rng = np.random.default_rng(5)
+    exposure = rng.uniform(0.05, 1.0, 2000)
+    cost = rng.gamma(2.0, 400.0, 2000) * rng.binomial(1, 0.08, 2000) / exposure
+    pred = rng.gamma(1.0, 60.0, 2000) + 1e-3
+    spec = Metric.source("mean_tweedie_deviance", params={"power": 1.5, "min_prediction": 1e-3}, inputs={"weight": "w"})
+    expected = skm.mean_tweedie_deviance(cost, pred, power=1.5, sample_weight=exposure)
+    assert score(spec, cost, pred, weight=exposure) == pytest.approx(expected, rel=1e-9)
+
+
+def test_an_input_the_metric_does_not_take_is_refused() -> None:
+    """A weight passed to a metric that ignores it raises, at scoring and when the definition declares it."""
+    with pytest.raises(ValueError, match="not \\['weight'\\]"):
+        score(Metric.source("mae"), [1.0, 2.0], [1.5, 2.5], weight=[1.0, 2.0])
+    with pytest.raises(ValueError, match="takes the input role"):
+        Metric.source("mae", inputs={"weight": "w"})
+    with pytest.raises(ValueError, match="not \\['group'\\]"):
+        score(Metric.source("rmse"), [1.0, 2.0], [1.5, 2.5], group=[1, 2])
+    assert score(_poisson(), [1.0, 2.0], [1.5, 2.5]) == pytest.approx(skm.mean_poisson_deviance([1, 2], [1.5, 2.5]))
+
+
+def test_row_weight_column_names_the_weight_a_task_may_train_with() -> None:
+    """The deviances, RMSE and the weighted Gini read a row weight; the Lorenz base on totals and a key column
+    do not.
+    """
+    assert row_weight_column(_poisson(weight="Exposure")) == "Exposure"
+    assert row_weight_column(_weighted_rmse("plot_weight")) == "plot_weight"
+    assert row_weight_column(_poisson()) is None
+    assert row_weight_column(Metric.source("normalized_weighted_gini", inputs={"weight": "w"})) == "w"
+    base = Metric.source("ordered_lorenz_gini", inputs={"weight": "Premium"})
+    assert row_weight_column(base) is None
+    per_unit = Metric.source("ordered_lorenz_gini", inputs={"weight": "years"}, params={"per_unit": True})
+    assert row_weight_column(per_unit) == "years"
+    keyed = Metric.source("weighted_pearsonr", inputs={"weight": "asset"}, params={"weights": {"btc": 6.78}})
+    assert row_weight_column(keyed) is None
+    assert row_weight_column(Metric.source("rmse")) is None
 
 
 def test_poisson_deviance_floor_is_a_stated_param() -> None:

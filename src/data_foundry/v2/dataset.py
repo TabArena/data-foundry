@@ -71,6 +71,7 @@ from data_foundry.schema import (
     PredictiveMLTaskMetadataV2,
     RowBudget,
     ScoringColumn,
+    UnitWeight,
     as_column_list,
     resolve_warehouse_dir,
     rows_text,
@@ -207,6 +208,9 @@ class Decision:
 USE_CASE_FITS = ("direct", "approximate", "none")
 """How closely a dataset simulates its use case (:attr:`TaskSummary.fit`)."""
 
+OPTIONAL_SUMMARY_FIELDS = ("changes", "known_at_scoring")
+"""The :class:`TaskSummary` fields that may stay empty."""
+
 SUMMARY_MAX_WORDS = 70
 """A field of :class:`TaskSummary` above this many words is flagged (`definition_summary_long`)."""
 
@@ -231,6 +235,9 @@ class TaskSummary:
             stand-in with a known gap) or ``"none"`` (no decision fits; such a dataset is retired, not shipped).
         fit_reason: Why, in one or two sentences: the gap for ``"approximate"``, what is missing for ``"none"``.
         changes: Our changes to the source a reader needs to know, in plain words ("" when there are none).
+        known_at_scoring: What the scorer knows that the model does not, in plain words ("" when it knows only the
+            target): a metric input recorded with the outcome, such as the time on risk a rate is weighted by, read
+            with the test rows' labels and never when predicting (MET-15).
     """
 
     question: str
@@ -242,10 +249,21 @@ class TaskSummary:
     fit: str
     fit_reason: str
     changes: str = ""
+    known_at_scoring: str = ""
 
     def fields(self) -> dict[str, str]:
         """The text fields, dedented, in display order."""
-        names = ("question", "use_case", "row", "predicted", "known", "split", "changes", "fit_reason")
+        names = (
+            "question",
+            "use_case",
+            "row",
+            "predicted",
+            "known",
+            "known_at_scoring",
+            "split",
+            "changes",
+            "fit_reason",
+        )
         return {name: clean_text(getattr(self, name)) or "" for name in names}
 
 
@@ -351,6 +369,16 @@ class AbstractCuratedDataset(ABC):
     """The columns the metric needs (``ScoringColumn(column=..., role=..., used_by=..., description=...)``, e.g.
     Numerai's ``era`` as the ``group`` of a per-era correlation): kept in the frame, never model features. Each one is
     an input of the metric (``Metric.source(..., inputs={"group": "era"})``)."""
+    sample_weight: ClassVar[str | None] = None
+    """The training weight, a scoring column every model is fitted with as each row's weight, never a feature: the
+    metric's row weight (``inputs={"weight": col}``). Declare it when the weight is a realized amount at risk, the
+    denominator of a rate target (the years insured of a claims-per-year target, MET-15); a weight that is a function
+    of the features (a sum insured) needs none. ``None``: models train unweighted."""
+    unit_weight: ClassVar[UnitWeight | None] = None
+    """A score that counts each unit once (MET-17): ``UnitWeight(column="plot_weight", unit="plot")``, the metric's
+    weight scoring column (1 over the unit's rows, ``inputs={"weight": column}``) and the column naming the unit, kept
+    in the frame as metadata, never a feature. For scoring and validation only, never a ``sample_weight``; the check
+    tests that each unit's weights sum to 1. Downstream tools read it to weight their validation loss alike."""
     special_features: ClassVar[tuple[SpecialFeatureSpec, ...]] = ()
     """Model inputs that need handling beyond their dtype, declared like the target. Each entry is one special
     feature, in one of two layouts (:mod:`data_foundry.v2.special`):
@@ -665,6 +693,9 @@ class AbstractCuratedDataset(ABC):
             declared["grouping.on"] = as_column_list(self.grouping.on)
             declared["grouping.time_on"] = as_column_list(self.grouping.time_on)
         declared["scoring_columns"] = [c.column for c in task.scoring_columns]
+        declared["sample_weight"] = as_column_list(task.sample_weight)
+        if task.unit_weight is not None:
+            declared["unit_weight"] = [task.unit_weight.column, task.unit_weight.unit]
         self.special_feature_records(df)  # every declared special feature finds its columns
         declared["metric inputs"] = list(task.objective_metric.inputs.values())
         for attribute, columns in declared.items():
@@ -1457,6 +1488,8 @@ def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadata,
         time_on=cls.temporal.on if cls.temporal is not None else None,
         grouping=grouping,
         scoring_columns=[dataclasses.replace(c, description=clean_text(c.description)) for c in cls.scoring_columns],
+        sample_weight=cls.sample_weight,
+        unit_weight=cls.unit_weight,
     )
     return dataset, task
 
@@ -1552,6 +1585,10 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         isinstance(c, ScoringColumn) for c in cls.scoring_columns
     ):
         fail("`scoring_columns` must be a tuple of `ScoringColumn(...)`.")
+    if cls.sample_weight is not None and not isinstance(cls.sample_weight, str):
+        fail("`sample_weight` names one scoring column (a string), or is None.")
+    if cls.unit_weight is not None and not isinstance(cls.unit_weight, UnitWeight):
+        fail("`unit_weight` is a `UnitWeight(column=..., unit=...)`, or None.")
     from data_foundry.v2.special import SpecialFeatureSpec  # noqa: PLC0415 - the kinds import this module
 
     moved = [a for a in ("smiles_columns", "spectra") if a in vars(cls)]
@@ -1600,7 +1637,9 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             fail("`task_summary` must be a `TaskSummary(...)`.")
         if cls.task_summary.fit not in USE_CASE_FITS:
             fail(f"`TaskSummary(fit=...)` is one of {', '.join(USE_CASE_FITS)}, not {cls.task_summary.fit!r}.")
-        empty = [name for name, text in cls.task_summary.fields().items() if name != "changes" and not text]
+        empty = [
+            name for name, text in cls.task_summary.fields().items() if name not in OPTIONAL_SUMMARY_FIELDS and not text
+        ]
         if empty:
             fail(f"`TaskSummary` needs text in: {', '.join(empty)}.")
 

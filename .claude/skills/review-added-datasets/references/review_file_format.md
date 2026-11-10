@@ -15,12 +15,13 @@ Fix the file, not the scripts.
 A review file keeps every issue, so the page shows how each dataset was decided. When the curator settles an issue,
 the decision goes to the definition and the record, and the issue stays in the file with a closing
 `**Resolved (<date>, <who>):**` turn that states the decision; the page hides it behind "Show resolved issues". A
-REVIEW.md is never deleted, so a decided dataset stays on the page (Andrej, 2026-11-02). A settled record-field row
-leaves the file. A REVIEW.md with a `**Review panel:**` block may have no issue and no field row: the panel found
-nothing for the curator, who only sets the verdict; without a panel such a file is an error. How to write an
-issue (evidence, links, what is no evidence) is in
-[`../../knowledge-curation/references/writing.md`](../../knowledge-curation/references/writing.md); the
-REVIEW.md convention of the working copy in
+REVIEW.md is never deleted, so a decided dataset's decisions stay in git (Andrej, 2026-11-02); the collector leaves a
+record with nothing left to decide off the page, unless `--keep-settled` (Lennart, 2026-11-08). A settled record-field
+row leaves the file. A REVIEW.md with a `**Review panel:**` block may have no issue and no field row: the panel found
+nothing for the curator, who only sets the verdict; without a panel such a file is an error. How to write an issue
+(evidence, links, what is no evidence) is in
+[`../../knowledge-curation/references/writing.md`](../../knowledge-curation/references/writing.md); the REVIEW.md
+convention of the working copy in
 [`../../knowledge-data-foundry/references/working_copy.md`](../../knowledge-data-foundry/references/working_copy.md).
 
 ## REVIEW.md of a dataset
@@ -195,7 +196,10 @@ block at most, and none when its folder exists: then the issues belong in the fo
 
 ## Items across datasets
 
-The working copy's own `REVIEW.md` holds the items that span datasets:
+The working copy's own `REVIEW.md` holds the items that span datasets: one decision for many datasets at once (a
+rule, a framework change, a family stance). A choice taken per dataset goes into each dataset's own `REVIEW.md` as an
+issue, one per dataset, even when one scan found it in several; a cross-dataset item then covers only the rule or code
+change itself, if any (Lennart, 2026-11-08: "too many per dataset choice in the across dataset tab"):
 
 ```markdown
 # Across datasets

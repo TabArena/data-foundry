@@ -19,6 +19,9 @@ Python run):
 * the regime the use case implies (new entity or known entity; a stream over time), against the one declared;
 * temporal: the time column's meaning, windows and their sizes, the train side, the gap against the label delay,
   training rows whose label is not known at the prediction point, the training history, a season-shaped test window;
+  a time on risk (a training weight) is cut at the release date and at each window's cutoff, not only by the outcome,
+  so check which rows a training side admits by it (pricing_game_2016_french_fleet: from 2013 on, only the periods
+  that ended early; SPLIT-9, LEAK-41);
 * grouped: a true group id (never a similarity cluster or a hash), what one prediction is, what is known about a new
   group, the aggregation;
 * IID: hidden groups and near copies across the split, and what the score drops to under a grouped split;
