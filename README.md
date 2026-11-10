@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-10 21:03 UTC: 138 claim(s) (Andrej 116, Myunghwan 22).
+As of 2026-11-10 21:04 UTC: 150 claim(s) (Andrej 116, Lennart 12, Myunghwan 22).
 
 ## Andrej
 
@@ -124,6 +124,23 @@ As of 2026-11-10 21:03 UTC: 138 claim(s) (Andrej 116, Myunghwan 22).
 | `wine_quality` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `wine_world_cost` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `wisconsin_local_government_property_insurance_fund` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+
+## Lennart
+
+| Dataset | Stage | Since | Until | Note |
+|---|---|---|---|---|
+| `aeolus_rebuilt` | review | 2026-11-10 | 2026-11-17 | test windows (#78): window decisions, switch and re-check; delivery_eta data change |
+| `ashrae_great_energy_predictor_iii` | review | 2026-11-10 | 2026-11-17 | test windows (#78): window decisions, switch and re-check; delivery_eta data change |
+| `climate_model_weather_forecasting` | review | 2026-11-10 | 2026-11-17 | test windows (#78): window decisions, switch and re-check; delivery_eta data change |
+| `consumer_complaints` | review | 2026-11-10 | 2026-11-17 | test windows (#78): window decisions, switch and re-check; delivery_eta data change |
+| `cooking_time` | review | 2026-11-10 | 2026-11-17 | test windows (#78): window decisions, switch and re-check; delivery_eta data change |
+| `delivery_eta` | review | 2026-11-10 | 2026-11-17 | test windows (#78): window decisions, switch and re-check; delivery_eta data change |
+| `g_research_crypto_forecasting` | review | 2026-11-10 | 2026-11-17 | test windows (#78): window decisions, switch and re-check; delivery_eta data change |
+| `home_credit_default_stability` | review | 2026-11-10 | 2026-11-17 | test windows (#78): window decisions, switch and re-check; delivery_eta data change |
+| `maps_router_eta` | review | 2026-11-10 | 2026-11-17 | test windows (#78): window decisions, switch and re-check; delivery_eta data change |
+| `numerai_v5_2` | review | 2026-11-10 | 2026-11-17 | test windows (#78): window decisions, switch and re-check; delivery_eta data change |
+| `nyc_taxi_trip_duration` | review | 2026-11-10 | 2026-11-17 | test windows (#78): window decisions, switch and re-check; delivery_eta data change |
+| `pkdd_15_taxi_trip_time_prediction_ii` | review | 2026-11-10 | 2026-11-17 | test windows (#78): window decisions, switch and re-check; delivery_eta data change |
 
 ## Myunghwan
 

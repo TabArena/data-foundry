@@ -1,0 +1,6 @@
+name: pkdd_15_taxi_trip_time_prediction_ii
+holder: Lennart
+stage: review
+claimed_at: '2026-11-10T21:04:05Z'
+expires_at: '2026-11-17T21:04:05Z'
+note: 'test windows (#78): window decisions, switch and re-check; delivery_eta data change'
