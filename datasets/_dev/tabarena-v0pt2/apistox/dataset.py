@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     Smiles,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -69,11 +70,28 @@ class Apistox(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "apistox"
-    year = "2024"
     domain = "chemistry & material science"
-    source = "Other"  # Zenodo, with the Scientific Data descriptor; UCI 995 only links to the Zenodo DOI
-    source_url = "https://doi.org/10.5281/zenodo.11062076"
-    license = "CC BY-NC 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # Zenodo, with the Scientific Data descriptor; UCI 995 only links to the Zenodo DOI
+            url="https://doi.org/10.5281/zenodo.11062076",
+            license="CC BY-NC 4.0",
+            year="2024",
+            bibtex="""
+                @article{adamczyk2025apistox,
+                  title={{ApisTox}: a new benchmark dataset for the classification of small molecules toxicity on honey bees},
+                  author={Adamczyk, Jakub and Poziemski, Jakub and Siedlecki, Pawe{\\l}},
+                  journal={Scientific Data},
+                  volume={12},
+                  number={1},
+                  pages={5},
+                  year={2025},
+                  doi={10.1038/s41597-024-04232-w}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the main file of ApisTox from Zenodo: version 2 of the record (13350981), the version the
         Scientific Data descriptor cites. Version 1 (https://zenodo.org/records/11062077) holds the identical file, and
@@ -83,18 +101,6 @@ class Apistox(AbstractCuratedDataset):
 
         md5 of dataset_final.csv (as Zenodo lists it): 61ad9ef27a80987105a4cdb074eb102f
         sha256: de4b160a23601a44ac5ec5b23aae95973acba060135630a6df8f73d128baea9e
-    """
-    bibtex = """
-        @article{adamczyk2025apistox,
-          title={{ApisTox}: a new benchmark dataset for the classification of small molecules toxicity on honey bees},
-          author={Adamczyk, Jakub and Poziemski, Jakub and Siedlecki, Pawe{\\l}},
-          journal={Scientific Data},
-          volume={12},
-          number={1},
-          pages={5},
-          year={2025},
-          doi={10.1038/s41597-024-04232-w}
-        }
     """
     curation_comments = """
         We start with dataset_final.csv of ApisTox from Zenodo (record 13350981): 1,035 agrochemicals with their acute toxicity to honey bees.

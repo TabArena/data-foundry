@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     drop_columns,
 )
@@ -122,11 +123,28 @@ class SpanishMotorInsuranceCoverageLevel20222024(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "spanish_motor_insurance_coverage_level_2022_2024"
-    year = "2026"
     domain = "insurance"
-    source = "Other"  # Mendeley Data, the repository of the data article; no closer schema value
-    source_url = "https://doi.org/10.17632/sw4jmdb2sm.1"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # Mendeley Data, the repository of the data article; no closer schema value
+            url="https://doi.org/10.17632/sw4jmdb2sm.1",
+            license="CC BY 4.0",
+            year="2026",
+            bibtex=r"""
+                @article{espinosa2026motor,
+                  title = {A detailed dataset of motor insurance policies with coverage-specific financial information},
+                  author = {Espinosa, Priscila and Lled{\'o}, Josep and Atance, David},
+                  journal = {Data in Brief},
+                  volume = {66},
+                  pages = {112883},
+                  year = {2026},
+                  doi = {10.1016/j.dib.2026.112883},
+                  note = {Data: Mendeley Data, version 1, doi:10.17632/sw4jmdb2sm.1}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedGroupedFromTemporal",)
     download_description = """
         Version 1 of the Mendeley Data record (DOI 10.17632/sw4jmdb2sm.1, published 2026-02-16, CC BY 4.0) holds two
@@ -142,18 +160,6 @@ class SpanishMotorInsuranceCoverageLevel20222024(AbstractCuratedDataset):
         sha256sum "Dataset of motor insurance portfolio.csv" "Descriptive of variables.xlsx"
         # 6a47d19d5278a049ea0aeaf39c955cc26068639bdc58cb4523b201e740f0faf4  Dataset of motor insurance portfolio.csv
         # cde44e797a7fd34de29199c78c9301d6f00ed94fd725b4fe8e67e6c2c4cc2e41  Descriptive of variables.xlsx
-    """
-    bibtex = r"""
-        @article{espinosa2026motor,
-          title = {A detailed dataset of motor insurance policies with coverage-specific financial information},
-          author = {Espinosa, Priscila and Lled{\'o}, Josep and Atance, David},
-          journal = {Data in Brief},
-          volume = {66},
-          pages = {112883},
-          year = {2026},
-          doi = {10.1016/j.dib.2026.112883},
-          note = {Data: Mendeley Data, version 1, doi:10.17632/sw4jmdb2sm.1}
-        }
     """
     curation_comments = """
         We start with "Dataset of motor insurance portfolio.csv" of Mendeley Data sw4jmdb2sm, version 1 (Espinosa, Lledó and Atance 2026, Data in Brief 66:112883).

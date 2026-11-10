@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -122,11 +123,25 @@ class LoanDefaultPredictionImperialCollege(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "loan_default_prediction_imperial_college"
-    year = "2014"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/loan-default-prediction"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/loan-default-prediction",
+            license="Kaggle Competition Rules",
+            year="2014",
+            bibtex=r"""
+                @misc{ImperialCollegeLondon2014LoanDefaultPrediction,
+                  author = {{Imperial College London} and Kaggle},
+                  title  = {Loan Default Prediction - Imperial College London},
+                  year   = {2014},
+                  howpublished = {\url{https://www.kaggle.com/competitions/loan-default-prediction}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         We use train_v2.csv from the Kaggle research competition loan-default-prediction ("Loan Default Prediction -
@@ -135,15 +150,6 @@ class LoanDefaultPredictionImperialCollege(AbstractCuratedDataset):
 
         kaggle competitions download -c loan-default-prediction -f train_v2.csv.zip && unzip train_v2.csv.zip && rm train_v2.csv.zip
         mkdir -p local-data-warehouse/loan_default_prediction_imperial_college && mv train_v2.csv local-data-warehouse/loan_default_prediction_imperial_college/
-    """
-    bibtex = r"""
-        @misc{ImperialCollegeLondon2014LoanDefaultPrediction,
-          author = {{Imperial College London} and Kaggle},
-          title  = {Loan Default Prediction - Imperial College London},
-          year   = {2014},
-          howpublished = {\url{https://www.kaggle.com/competitions/loan-default-prediction}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with train_v2.csv from the Kaggle research competition "Loan Default Prediction - Imperial College London" (2014-01-17 to 2014-03-14), data of an unnamed lender that the data page calls standardized, de-trended and anonymized (as read in screening).

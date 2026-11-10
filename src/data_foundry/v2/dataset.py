@@ -64,13 +64,14 @@ from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
     RETIRED_DATA_TAGS,
-    DatasetMetadata,
+    DatasetMetadataV2,
     Grouping,
     MetricSpec,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadataV2,
     RowBudget,
     ScoringColumn,
+    Source,
     UnitWeight,
     as_column_list,
     resolve_warehouse_dir,
@@ -147,8 +148,7 @@ class RawLineage:
     note: str
 
 
-_TEXT_FIELDS = ("download_description", "bibtex", "curation_comments", "version_comment", "splits_comment")
-_BIBTEX_KEY = re.compile(r"@\w+\s*\{\s*([^,\s}]+)\s*,")
+_TEXT_FIELDS = ("download_description", "curation_comments", "splits_comment")
 
 
 def clean_text(text: str | None) -> str | None:
@@ -322,38 +322,29 @@ class AbstractCuratedDataset(ABC):
     # --- dataset ------------------------------------------------------------------------------------
     unique_name: ClassVar[str]
     """Snake-case name; equal to the folder name. A version sub-sampled to a :attr:`row_budget` is named
-    ``<version_of>_<suffix>`` after its train budget (``_1m``, ``_10m``)."""
-    year: ClassVar[str]
-    """Year the data was first published, at the publication ``source_url`` names (a competition's launch, a
-    dataset's release or donation, the online date of the paper or supplement that holds the rows), not the year it
-    was collected or the year of a later copy."""
+    ``<name>_<suffix>`` after its train budget (``_1m``, ``_10m``) and reads the raw files of ``<name>``."""
     domain: ClassVar[str]
     """One of :data:`data_foundry.schema.Domain`."""
-    source: ClassVar[str]
-    """Where the data was first published (not a later re-upload): one of :data:`data_foundry.schema.DatasetSource`."""
-    source_url: ClassVar[str]
-    """Link to the original publication of the data."""
+    sources: ClassVar[tuple[Source, ...]]
+    """Where the data comes from (:class:`~data_foundry.schema.Source`), the publication first::
+
+        sources = (
+            Source(role="publication", platform="UCI", url="https://doi.org/...", license="CC BY 4.0", year="2014",
+                   bibtex=\"\"\"@misc{...}\"\"\"),
+            Source(role="copy", platform="Kaggle", url="https://www.kaggle.com/...", license="CC0 1.0"),
+        )
+
+    The publication is where the data were first published, not a later re-upload; its ``year`` (a competition's
+    launch, a dataset's release or donation, the online date of the paper or supplement that holds the rows, not the
+    year of collection) and ``bibtex`` are the dataset's. A ``part`` is a piece the dataset is assembled from (each
+    with its own license), a ``copy`` a later copy of the data, such as the one we download."""
     download_description: ClassVar[str]
     """Commands (and notes) that recreate the raw files in ``local-data-warehouse/<unique_name>/``."""
-    bibtex: ClassVar[str]
-    """BibTeX of the work that published the data."""
-    bibtex_key: ClassVar[str | None] = None
-    """Citation key(s), comma-separated; parsed from ``bibtex`` when None."""
-    license: ClassVar[str | None]
-    """The license the source states."""
     data_tags: ClassVar[tuple[str, ...]] = ()
     """Context tags (``Spatial``, ``Anonymized``, ...). The regime tags (``IID`` or ``Non-IID`` plus
     ``Temporal``/``Grouped``) are added from the task unless one is listed here."""
     curation_comments: ClassVar[str] = ""
     """The audit trail: the starting artifact, then one bullet per non-obvious decision."""
-    version_of: ClassVar[str | None] = None
-    """For a version (a ``_1m`` version sub-sampled to its :attr:`row_budget`): the ``unique_name`` it was made from
-    (its raw files are read)."""
-    version_comment: ClassVar[str | None] = None
-    """For a version: how it differs from the dataset it was made from."""
-    raw_data_from: ClassVar[str | None] = None
-    """Read the raw files of another dataset (for example an alternative-target ``<name>_clf`` of ``<name>``).
-    Defaults to ``version_of``, then ``unique_name``."""
 
     # --- task ---------------------------------------------------------------------------------------
     target: ClassVar[str]
@@ -415,7 +406,7 @@ class AbstractCuratedDataset(ABC):
     """The most rows a split trains and tests on, for a version sub-sampled to it. None (the default): no budget, the
     splits use the full frame and no side is capped.
 
-    ``RowBudget(train=..., test=...)`` makes a sub-sampled version, named ``<version_of>_<suffix>`` after its train
+    ``RowBudget(train=..., test=...)`` makes a sub-sampled version, named ``<name>_<suffix>`` after its train
     budget (:attr:`~data_foundry.schema.RowBudget.suffix`), and the container records the budget
     (``experiment_metadata.row_budget``). IID / grouped: a frame above ``train + test`` rows is sub-sampled to it
     (whole groups, stratified), then each fold tests on up to ``test`` rows of its third and trains on every other
@@ -437,7 +428,7 @@ class AbstractCuratedDataset(ABC):
     SPLIT_RANDOM_STATE: ClassVar[int] = SPLIT_RANDOM_STATE
 
     # --- built from the attributes -----------------------------------------------------------------
-    dataset_metadata: ClassVar[DatasetMetadata]
+    dataset_metadata: ClassVar[DatasetMetadataV2]
     task_metadata: ClassVar[PredictiveMLTaskMetadataV2]
 
     # --- hooks --------------------------------------------------------------------------------------
@@ -535,8 +526,8 @@ class AbstractCuratedDataset(ABC):
 
     @property
     def raw_dir(self) -> Path:
-        """Where the raw download lives: ``<warehouse>/<raw_data_from or version_of or unique_name>``."""
-        return resolve_warehouse_dir() / (self.raw_data_from or self.version_of or self.unique_name)
+        """Where the raw download lives: ``<warehouse>/<raw_name>`` (:func:`raw_name`)."""
+        return resolve_warehouse_dir() / raw_name(type(self))
 
     @property
     def report_path(self) -> Path:
@@ -1017,7 +1008,6 @@ class AbstractCuratedDataset(ABC):
                 task_metadata=self.task_metadata_for(plan.df),
                 experiment_metadata=splits_metadata,
                 test_dataset=test,
-                version_comment=self.dataset_metadata.version_comment,
             )
 
     def check(self, *, write_report: bool = True, verbose: bool = True) -> CurationResult:
@@ -1189,12 +1179,13 @@ class AbstractCuratedDataset(ABC):
                     hint=f"Coarsen `{time_on}` in `_clean`; within a period the rows then follow the content order.",
                 ),
             )
-        if re.search(r"\bTODO\b", str(self.license)):
+        placeholders = [s.license for s in self.sources if re.search(r"\bTODO\b", str(s.license))]
+        if placeholders:
             findings.append(
                 CheckResult(
                     "definition_license_placeholder",
                     "error",
-                    f"`license = {self.license!r}` is a placeholder; the shared placeholder check does not scan it.",
+                    f"`Source(license={placeholders[0]!r})` is a placeholder.",
                     hint="Write the license the source states, or None when it states none.",
                 ),
             )
@@ -1457,23 +1448,32 @@ def _regime_tags(cls: type[AbstractCuratedDataset]) -> list[str]:
     return regime + tags
 
 
-def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadata, PredictiveMLTaskMetadataV2]:
-    bibtex = clean_text(cls.bibtex) + "\n"
-    key = cls.bibtex_key or ",".join(dict.fromkeys(_BIBTEX_KEY.findall(bibtex)))
-    dataset = DatasetMetadata(
+def raw_name(cls: type[AbstractCuratedDataset]) -> str:
+    """The warehouse folder of a definition's raw files.
+
+    Its ``unique_name``, without the suffix of its :attr:`~AbstractCuratedDataset.row_budget`
+    (``cooking_time_1m`` reads ``cooking_time``).
+    """
+    budget = cls.row_budget
+    suffix = f"_{budget.suffix}" if budget is not None else ""
+    if suffix and cls.unique_name.endswith(suffix):
+        return cls.unique_name[: -len(suffix)]
+    return cls.unique_name
+
+
+def _clean_source(source: Source) -> Source:
+    """``source`` with its BibTeX dedented, ending in one newline (its citation key is read when it is built)."""
+    return dataclasses.replace(source, bibtex=clean_text(source.bibtex) + "\n") if source.bibtex else source
+
+
+def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadataV2, PredictiveMLTaskMetadataV2]:
+    dataset = DatasetMetadataV2(
         unique_name=cls.unique_name,
-        dataset_year=str(cls.year),
-        domain_str=cls.domain,
-        dataset_source=cls.source,
-        original_dataset_source_download_link=cls.source_url,
+        domain=cls.domain,
+        sources=[_clean_source(source) for source in cls.sources],
         download_description=clean_text(cls.download_description),
-        academic_reference_bibtex=bibtex,
-        academic_reference_bibtex_key=key,
-        license=cls.license,
         data_tags=_regime_tags(cls),
         curation_comments=clean_text(cls.curation_comments),
-        version_from_unique_name=cls.version_of,
-        version_comment=clean_text(cls.version_comment),
     )
     is_classification = cls.problem_type != "regression"
     stratify_on = (cls.target if is_classification else None) if cls.stratify_on is AUTO else cls.stratify_on
@@ -1518,15 +1518,24 @@ _FLAT_REGIME_ATTRIBUTES = (
 )
 """The flat regime attributes of earlier v2 definitions, now declared as `grouping` / `temporal`."""
 
+_REMOVED = {
+    **dict.fromkeys(
+        ("year", "source", "source_url", "license", "bibtex", "bibtex_key"),
+        'declare the provenance as `sources = (Source(role="publication", platform=..., url=..., license=..., '
+        "year=..., bibtex=...),)` (`from data_foundry.v2 import Source`)",
+    ),
+    "version_of": "a version sub-sampled to its `row_budget` is named `<name>_<suffix>` and reads the raw files of "
+    "`<name>`; drop `version_of`",
+    "version_comment": "say how a sub-sampled version differs in `curation_comments`",
+    "raw_data_from": "a definition reads the raw files of its own name (without a row-budget suffix)",
+}
+"""Attributes of earlier v2 definitions, with what replaced them."""
+
 _REQUIRED = (
     "unique_name",
-    "year",
     "domain",
-    "source",
-    "source_url",
+    "sources",
     "download_description",
-    "bibtex",
-    "license",
     "target",
     "problem_type",
     "metric",
@@ -1541,6 +1550,9 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
     def fail(problem: str) -> None:
         raise DatasetDefinitionError(f"{name}: {problem}")
 
+    removed = [attr for attr in _REMOVED if hasattr(cls, attr)]
+    if removed:
+        fail("; ".join(f"`{attr}` is gone: {_REMOVED[attr]}" for attr in removed) + ".")
     if "dataset_metadata" in vars(cls) or "task_metadata" in vars(cls):
         fail("declare the metadata as flat attributes (`unique_name = ...`, `target = ...`), not metadata objects.")
     missing = [attr for attr in _REQUIRED if not hasattr(cls, attr)]
@@ -1553,6 +1565,8 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         value = getattr(cls, attr, None)
         if value is not None and not isinstance(value, str):
             fail(f"`{attr}` must be a string.")
+    if not isinstance(cls.sources, tuple) or not all(isinstance(s, Source) for s in cls.sources):
+        fail("`sources` must be a tuple of `Source(...)`, the publication first.")
     if isinstance(cls.data_tags, str):
         fail("`data_tags` must be a tuple of tags, not one string.")
     retired = [tag for tag in cls.data_tags if tag in RETIRED_DATA_TAGS]
@@ -1626,10 +1640,11 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
     for slug, reason in cls.accepted_check_warnings.items():
         if not str(reason).strip():
             fail(f"accepted check warning {slug!r} needs a reason.")
-    if not re.fullmatch(r"(19|20)\d{2}", str(cls.year).strip()):
+    year = cls.dataset_metadata.publication.year
+    if not re.fullmatch(r"(19|20)\d{2}", str(year).strip()):
         fail(
-            f"`year={cls.year!r}` is not a year. Give the best guess of the first publication (PROV-9) and say in "
-            "`curation_comments` that it is a guess, and why."
+            f"the publication's `year={year!r}` is not a year. Give the best guess of the first publication (PROV-9) "
+            "and say in `curation_comments` that it is a guess, and why."
         )
 
     if cls.task_summary is not None:
@@ -1672,12 +1687,11 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
     if budget is not None:
         if custom_splits:
             fail("`row_budget` is ignored when the class implements `_make_splits`; sample there instead.")
-        if cls.version_of is None:
-            fail("`row_budget` makes a sub-sampled version: set `version_of` (and `version_comment`).")
-        if cls.unique_name != f"{cls.version_of}_{budget.suffix}":
-            fail(f"a version sub-sampled to `row_budget` is named `{cls.version_of}_{budget.suffix}`.")
-    if cls.version_of is not None and not clean_text(cls.version_comment or ""):
-        fail("a version (`version_of`) needs a `version_comment`.")
+        if not cls.unique_name.endswith(f"_{budget.suffix}"):
+            fail(
+                f"a version sub-sampled to `row_budget` is named `<name>_{budget.suffix}` and reads the raw files of "
+                "`<name>`."
+            )
     if cls.prepared_raw_files and cls._prepare_raw_files is AbstractCuratedDataset._prepare_raw_files:
         fail("`prepared_raw_files` is set but `_prepare_raw_files` is not implemented.")
 

@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -127,11 +128,25 @@ class AirqoLowCostAirQualityMonitorCalibrationChallenge(AbstractCuratedDataset):
         ),
     )
     unique_name = "airqo_low_cost_air_quality_monitor_calibration_challenge"
-    year = "2021"
     domain = "environmental science & climate"
-    source = "Zindi"
-    source_url = "https://zindi.world/competitions/airqo-low-cost-air-quality-monitor-calibration-challenge"
-    license = "Zindi competition data terms: private participant use; redistribution to nonparticipants prohibited."
+    sources = (
+        Source(
+            role="publication",
+            platform="Zindi",
+            url="https://zindi.world/competitions/airqo-low-cost-air-quality-monitor-calibration-challenge",
+            license="Zindi competition data terms: private participant use; redistribution to nonparticipants prohibited.",
+            year="2021",
+            bibtex="""
+                @misc{AirQoCalibration2021,
+                  author = {{AirQo} and {Zindi}},
+                  title = {AirQo Low-Cost Air Quality Monitor Calibration Challenge},
+                  year = {2021},
+                  howpublished = {https://zindi.world/competitions/airqo-low-cost-air-quality-monitor-calibration-challenge},
+                  note = {Three Kampala collocations; source evaluation uses RMSE}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         Download Train.csv, Test.csv and optionally SampleSubmission.csv through an authorized account at
@@ -143,15 +158,6 @@ class AirqoLowCostAirQualityMonitorCalibrationChallenge(AbstractCuratedDataset):
         Its SHA-256 must be e856a03d70873f70630a1cb39c30ec9214f3710a8f343b72ca148081b66c5d92.
         Test.csv and SampleSubmission.csv are provenance/partition checks, not additional training labels.
         Keep competition data private under the published terms.
-    """
-    bibtex = """
-        @misc{AirQoCalibration2021,
-          author = {{AirQo} and {Zindi}},
-          title = {AirQo Low-Cost Air Quality Monitor Calibration Challenge},
-          year = {2021},
-          howpublished = {https://zindi.world/competitions/airqo-low-cost-air-quality-monitor-calibration-challenge},
-          note = {Three Kampala collocations; source evaluation uses RMSE}
-        }
     """
     curation_comments = """
         We start with the 10,932 labeled rows of the supplied 2021 competition Train.csv; 10,828 ship.

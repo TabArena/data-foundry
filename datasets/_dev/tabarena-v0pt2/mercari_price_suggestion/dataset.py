@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -51,25 +51,30 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "mercari_price_suggestion"
-    year = "2017"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/mercari-price-suggestion-challenge"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/mercari-price-suggestion-challenge",
+            license="Kaggle Competition Rules",
+            year="2017",
+            bibtex=r"""
+                @misc{Howard2017MercariPriceSuggestionChallenge,
+                  author = {{Kaggle} and Addison Howard and kaoriiida and Kei Otagaki and Mark McDonald and mueno and Wendy Kan and Zhang and zyaga},
+                  title  = {Mercari Price Suggestion Challenge},
+                  year   = {2017},
+                  howpublished = {\url{https://kaggle.com/competitions/mercari-price-suggestion-challenge}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     download_description = """
         train.tsv.7z
 
         kaggle competitions download -c mercari-price-suggestion-challenge -f train.tsv.7z && 7z x train.tsv.7z && rm train.tsv.7z
         mkdir -p local-data-warehouse/mercari_price_suggestion && mv train.tsv local-data-warehouse/mercari_price_suggestion
-    """
-    bibtex = r"""
-        @misc{Howard2017MercariPriceSuggestionChallenge,
-          author = {{Kaggle} and Addison Howard and kaoriiida and Kei Otagaki and Mark McDonald and mueno and Wendy Kan and Zhang and zyaga},
-          title  = {Mercari Price Suggestion Challenge},
-          year   = {2017},
-          howpublished = {\url{https://kaggle.com/competitions/mercari-price-suggestion-challenge}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start from the Kaggle competition dataset.

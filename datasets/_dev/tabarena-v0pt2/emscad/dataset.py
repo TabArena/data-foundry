@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids, decode
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    anonymize_ids,
+    decode,
+)
 
 CONTACT_PATTERN = r"#(?:EMAIL|PHONE|URL)_[0-9a-f]{8,}#"
 """EMSCAD masks e-mails, phones and URLs as ``#(EMAIL|PHONE|URL)_Keyed_SHA2#``, so one hash is one contact."""
@@ -114,12 +123,27 @@ class Emscad(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "emscad"
-    year = "2017"
     domain = "business & marketing"
-    source = "Other"
-    source_url = "https://doi.org/10.3390/fi9010006"  # the dataset paper; the EMSCAD site is down, Kaggle is a copy
-    license = (
-        "CC0: Public Domain"  # from Kaggle, paper does not state anything, website is down to check -> so maybe None...
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://doi.org/10.3390/fi9010006",  # the dataset paper; the EMSCAD site is down, Kaggle is a copy
+            license="CC0: Public Domain",
+            year="2017",
+            bibtex="""
+                @article{vidros2017automatic,
+                  title={Automatic detection of online recruitment frauds: Characteristics, methods, and a public dataset},
+                  author={Vidros, Sokratis and Kolias, Constantinos and Kambourakis, Georgios and Akoglu, Leman},
+                  journal={Future Internet},
+                  volume={9},
+                  number={1},
+                  pages={6},
+                  year={2017},
+                  publisher={MDPI}
+                }
+            """,
+        ),
     )
     data_tags = ("Spatial",)
     download_description = """
@@ -129,18 +153,6 @@ class Emscad(AbstractCuratedDataset):
 
         kaggle datasets download -d shivamb/real-or-fake-fake-jobposting-prediction -f fake_job_postings.csv && unzip fake_job_postings.csv.zip fake_job_postings.csv&& rm fake_job_postings.csv.zip
         mkdir -p local-data-warehouse/emscad && mv fake_job_postings.csv local-data-warehouse/emscad
-    """
-    bibtex = """
-        @article{vidros2017automatic,
-          title={Automatic detection of online recruitment frauds: Characteristics, methods, and a public dataset},
-          author={Vidros, Sokratis and Kolias, Constantinos and Kambourakis, Georgios and Akoglu, Leman},
-          journal={Future Internet},
-          volume={9},
-          number={1},
-          pages={6},
-          year={2017},
-          publisher={MDPI}
-        }
     """
     curation_comments = """
         We have no access to the original state and the data already contains some preprocessed features.

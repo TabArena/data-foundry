@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
 
 YEARS = (2019, 2020)
 """One file per year: the same 15,873 transformers in the same row order, labelled with that year's burns."""
@@ -117,11 +117,34 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "distribution_transformers_at_cauca_department"
-    year = "2021"
     domain = "industry & manufacturing"
-    source = "Other"  # Mendeley Data (doi:10.17632/yzyj46xpmy.4) with its Data in Brief article
-    source_url = "https://doi.org/10.17632/yzyj46xpmy.4"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # Mendeley Data (doi:10.17632/yzyj46xpmy.4) with its Data in Brief article
+            url="https://doi.org/10.17632/yzyj46xpmy.4",
+            license="CC BY 4.0",
+            year="2021",
+            bibtex=r"""
+                @article{bravo2021dataset,
+                  title = {Dataset of distribution transformers for predictive maintenance},
+                  author = {Bravo M., Diego-A. and Alvarez Q., Laura-I. and Lozano M., Carlos-A.},
+                  journal = {Data in Brief},
+                  volume = {38},
+                  pages = {107454},
+                  year = {2021},
+                  doi = {10.1016/j.dib.2021.107454}
+                }
+                @misc{bravo2021mendeley,
+                  title = {Dataset of Distribution Transformers at Cauca Department (Colombia)},
+                  author = {Bravo M., Diego A. and Lozano, Carlos and Alvarez, Laura},
+                  howpublished = {Mendeley Data, version 4},
+                  year = {2021},
+                  doi = {10.17632/yzyj46xpmy.4}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the two yearly files of version 4 of the Mendeley Data release (doi:10.17632/yzyj46xpmy.4) by
@@ -134,24 +157,6 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
         sha256sum Dataset_Year_2019.xlsx Dataset_Year_2020.xlsx
         # e7dd9283eb0870ef29fff83c4573373941dfd24b2842a665263ae2ea02c27d77  Dataset_Year_2019.xlsx
         # 22e0d23fd5d2efd4888737edf0657f9fb0044a89e8d66e91f0cda16682de93ca  Dataset_Year_2020.xlsx
-    """
-    bibtex = r"""
-        @article{bravo2021dataset,
-          title = {Dataset of distribution transformers for predictive maintenance},
-          author = {Bravo M., Diego-A. and Alvarez Q., Laura-I. and Lozano M., Carlos-A.},
-          journal = {Data in Brief},
-          volume = {38},
-          pages = {107454},
-          year = {2021},
-          doi = {10.1016/j.dib.2021.107454}
-        }
-        @misc{bravo2021mendeley,
-          title = {Dataset of Distribution Transformers at Cauca Department (Colombia)},
-          author = {Bravo M., Diego A. and Lozano, Carlos and Alvarez, Laura},
-          howpublished = {Mendeley Data, version 4},
-          year = {2021},
-          doi = {10.17632/yzyj46xpmy.4}
-        }
     """
     curation_comments = """
         We start with Dataset_Year_2020.xlsx of version 4 of the Mendeley Data release by Bravo, Lozano and Alvarez (2021, Data in Brief). Dataset_Year_2019.xlsx, the same transformers labelled with the 2019 burns, is read only for the decision tables.

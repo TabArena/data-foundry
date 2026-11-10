@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Spectrum, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, Spectrum, TaskSummary
 
 
 class MicroMass(AbstractCuratedDataset):
@@ -38,25 +38,30 @@ class MicroMass(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "micro_mass"
-    year = "2013"
     domain = "biology & life sciences"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5T61S"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5T61S",
+            license="CC BY 4.0",
+            year="2013",
+            bibtex=r"""
+                @article{mahe2014automatic,
+                  title={Automatic identification of mixed bacterial species fingerprints in a MALDI-TOF mass-spectrum},
+                  author={Mahe, Pierre and Arsac, Maud and Chatellier, Sonia and Monnin, Val{\'e}rie and Perrot, Nadine and Mailler, Sandrine and Girard, Victoria and Ramjeet, Mahendrasingh and Surre, J{\'e}r{\'e}my and Lacroix, Bruno and others},
+                  journal={Bioinformatics},
+                  volume={30},
+                  number={9},
+                  pages={1280--1286},
+                  year={2014},
+                  publisher={Oxford University Press}
+                }
+            """,
+        ),
+    )
     download_description = """
         wget https://archive.ics.uci.edu/static/public/253/micromass.zip && unzip micromass.zip micromass_un_anonymized.zip && rm micromass.zip && mkdir -p local-data-warehouse/micro_mass && unzip micromass_un_anonymized.zip -d local-data-warehouse/micro_mass/ && rm micromass_un_anonymized.zip
-    """
-    bibtex = r"""
-        @article{mahe2014automatic,
-          title={Automatic identification of mixed bacterial species fingerprints in a MALDI-TOF mass-spectrum},
-          author={Mahe, Pierre and Arsac, Maud and Chatellier, Sonia and Monnin, Val{\'e}rie and Perrot, Nadine and Mailler, Sandrine and Girard, Victoria and Ramjeet, Mahendrasingh and Surre, J{\'e}r{\'e}my and Lacroix, Bruno and others},
-          journal={Bioinformatics},
-          volume={30},
-          number={9},
-          pages={1280--1286},
-          year={2014},
-          publisher={Oxford University Press}
-        }
     """
     curation_comments = """
         We use the pure spectra version (without mixing) and replicate a grouped-based task to predict the species of strains.

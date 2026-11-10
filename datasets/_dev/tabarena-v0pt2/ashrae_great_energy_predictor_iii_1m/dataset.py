@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     RowBudget,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -149,23 +150,46 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "ashrae_great_energy_predictor_iii_1m"
-    version_of = "ashrae_great_energy_predictor_iii"
-    version_comment = """
-        The cleaned frame has 39.1M hourly readings, so the dataset ships only as this `_1m` version. We sample per
-        test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M
-        of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. As
-        in TabReD, the train side is a random sample of the whole history rather than its newest part, so every
-        window trains on all seasons seen so far.
-    """
-    year = "2019"
     domain = "environmental science & climate"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/ashrae-energy-prediction"
-    license = (
-        "Kaggle Competition Rules (7A: use for any purpose, commercial or non-commercial; 7B: no redistribution to "
-        "anyone not participating in the competition); the 2017 readings and the readings in kWh from BDG2: MIT License at the pinned commit "
-        "(2020), CC BY 4.0 on its Zenodo release v1.0 (doi 10.5281/zenodo.3887306), and a LICENSE headed "
-        "'Attribution-ShareAlike 4.0 Unported' in the repository since 2023-10-14"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/ashrae-energy-prediction",
+            license="Kaggle Competition Rules (7A: use for any purpose, commercial or non-commercial; 7B: no redistribution to "
+            "anyone not participating in the competition); the 2017 readings and the readings in kWh from BDG2: MIT License at the pinned commit "
+            "(2020), CC BY 4.0 on its Zenodo release v1.0 (doi 10.5281/zenodo.3887306), and a LICENSE headed "
+            "'Attribution-ShareAlike 4.0 Unported' in the repository since 2023-10-14",
+            year="2019",
+            bibtex=r"""
+                @misc{Howard2019ASHRAEGreatEnergyPredictorIII,
+                  author = {Addison Howard and Chris Balbach and Clayton Miller and Jeff Haberl and Krishnan Gowri and Sohier Dane},
+                  title = {ASHRAE - Great Energy Predictor III},
+                  year = {2019},
+                  howpublished = {\url{https://kaggle.com/competitions/ashrae-energy-prediction}},
+                  note = {Kaggle competition}
+                }
+                @article{Miller2020GEPIII,
+                  author = {Clayton Miller and Pandarasamy Arjunan and Anjukan Kathirgamanathan and Chun Fu and Jonathan Roth and June Young Park and Chris Balbach and Krishnan Gowri and Zoltan Nagy and Anthony D. Fontanini and Jeff Haberl},
+                  title = {The {ASHRAE} Great Energy Predictor {III} competition: Overview and results},
+                  journal = {Science and Technology for the Built Environment},
+                  volume = {26},
+                  number = {10},
+                  pages = {1427--1447},
+                  year = {2020},
+                  doi = {10.1080/23744731.2020.1795514}
+                }
+                @article{Miller2020BDG2,
+                  author = {Clayton Miller and Anjukan Kathirgamanathan and Bianca Picchetti and Pandarasamy Arjunan and June Young Park and Zoltan Nagy and Paul Raftery and Brodie W. Hobson and Zixiao Shi and Forrest Meggers},
+                  title = {The Building Data Genome Project 2, energy meter data from the {ASHRAE} Great Energy Predictor {III} competition},
+                  journal = {Scientific Data},
+                  volume = {7},
+                  pages = {368},
+                  year = {2020},
+                  doi = {10.1038/s41597-020-00712-x}
+                }
+            """,
+        ),
     )
     download_description = """
         We download four files of the Kaggle competition (train.csv holds 2016) and, from the Building Data Genome
@@ -181,34 +205,6 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         BDG2=https://media.githubusercontent.com/media/buds-lab/building-data-genome-project-2/9581aafed95b28e3d5ac39929c15fbc0ba36af5b/data
         mkdir -p bdg2/raw && wget -O bdg2/kaggle.csv $BDG2/meters/kaggle/kaggle.csv && wget -O bdg2/metadata.csv $BDG2/metadata/metadata.csv
         for m in electricity chilledwater steam hotwater; do wget -O bdg2/raw/$m.csv $BDG2/meters/raw/$m.csv; done
-    """
-    bibtex = r"""
-        @misc{Howard2019ASHRAEGreatEnergyPredictorIII,
-          author = {Addison Howard and Chris Balbach and Clayton Miller and Jeff Haberl and Krishnan Gowri and Sohier Dane},
-          title = {ASHRAE - Great Energy Predictor III},
-          year = {2019},
-          howpublished = {\url{https://kaggle.com/competitions/ashrae-energy-prediction}},
-          note = {Kaggle competition}
-        }
-        @article{Miller2020GEPIII,
-          author = {Clayton Miller and Pandarasamy Arjunan and Anjukan Kathirgamanathan and Chun Fu and Jonathan Roth and June Young Park and Chris Balbach and Krishnan Gowri and Zoltan Nagy and Anthony D. Fontanini and Jeff Haberl},
-          title = {The {ASHRAE} Great Energy Predictor {III} competition: Overview and results},
-          journal = {Science and Technology for the Built Environment},
-          volume = {26},
-          number = {10},
-          pages = {1427--1447},
-          year = {2020},
-          doi = {10.1080/23744731.2020.1795514}
-        }
-        @article{Miller2020BDG2,
-          author = {Clayton Miller and Anjukan Kathirgamanathan and Bianca Picchetti and Pandarasamy Arjunan and June Young Park and Zoltan Nagy and Paul Raftery and Brodie W. Hobson and Zixiao Shi and Forrest Meggers},
-          title = {The Building Data Genome Project 2, energy meter data from the {ASHRAE} Great Energy Predictor {III} competition},
-          journal = {Scientific Data},
-          volume = {7},
-          pages = {368},
-          year = {2020},
-          doi = {10.1038/s41597-020-00712-x}
-        }
     """
     curation_comments = """
         We start with the Kaggle competition's train.csv (2016), building_metadata.csv and weather files and, from the BDG2 repository of its technical team, the 2017 readings (kaggle.csv), the raw meter files in kWh and their building metadata.
@@ -226,6 +222,7 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         - `cloud_coverage` is in oktas (0-8), and 9 means the sky is obscured (fog or precipitation), so the cloud
           amount cannot be estimated (ISD's code table): 9,905 rows, missing (CLEAN-10; the curator's marks of
           2026-10-31, as in rain_in_australia).
+        - The row budget: The cleaned frame has 39.1M hourly readings, so the dataset ships only as this `_1m` version. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. As in TabReD, the train side is a random sample of the whole history rather than its newest part, so every window trains on all seasons seen so far.
     """
 
     # Task

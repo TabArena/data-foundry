@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, set_missing
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode, set_missing
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -91,24 +91,29 @@ class HorseColicSurvival(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "horse_colic_survival"
-    year = "1989"
     domain = "biology & life sciences"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C58W23"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C58W23",
+            license="CC BY 4.0",
+            year="1989",
+            bibtex="""
+                @misc{McLeish1989HorseColic,
+                  author       = {McLeish, Mary and Cecile, Matt},
+                  title        = {{Horse Colic}},
+                  year         = {1989},
+                  howpublished = {UCI Machine Learning Repository},
+                  note         = {{DOI}: https://doi.org/10.24432/C58W23}
+                }
+            """,
+        ),
+    )
     download_description = """
         Get the train and test data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/47/horse+colic.zip && unzip horse+colic.zip horse-colic.data horse-colic.test && rm horse+colic.zip && mkdir -p local-data-warehouse/horse_colic_survival && mv horse-colic.data horse-colic.test local-data-warehouse/horse_colic_survival/
-    """
-    bibtex = """
-        @misc{McLeish1989HorseColic,
-          author       = {McLeish, Mary and Cecile, Matt},
-          title        = {{Horse Colic}},
-          year         = {1989},
-          howpublished = {UCI Machine Learning Repository},
-          note         = {{DOI}: https://doi.org/10.24432/C58W23}
-        }
     """
     curation_comments = """
         We start with the data from UCI and merge the train and test data.

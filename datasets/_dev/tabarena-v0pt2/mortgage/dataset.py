@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -116,15 +117,37 @@ class Mortgage(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "mortgage"
-    year = "2016"
     domain = "finance"
-    source = "Other"
-    source_url = "http://www.creditriskanalytics.net/datasets-private2.html"
-    license = (
-        "Use only in conjunction with the Credit Risk Analytics textbooks; commercial use prohibited (the agreement "
-        "on the book's download form, http://www.creditriskanalytics.net/datasets.html). Note: the site's terms "
-        '(http://www.creditriskanalytics.net/terms.html) say "You must not: Republish material from Credit Risk '
-        'Analytics [...] Redistribute content from Credit Risk Analytics".'
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="http://www.creditriskanalytics.net/datasets-private2.html",
+            license="Use only in conjunction with the Credit Risk Analytics textbooks; commercial use prohibited (the agreement "
+            "on the book's download form, http://www.creditriskanalytics.net/datasets.html). Note: the site's terms "
+            '(http://www.creditriskanalytics.net/terms.html) say "You must not: Republish material from Credit Risk '
+            'Analytics [...] Redistribute content from Credit Risk Analytics".',
+            year="2016",
+            bibtex=r"""
+                @book{baesens2016credit,
+                  title={Credit Risk Analytics: Measurement Techniques, Applications, and Examples in {SAS}},
+                  author={Baesens, Bart and R{\"o}sch, Daniel and Scheule, Harald},
+                  publisher={John Wiley \& Sons},
+                  address={Hoboken, NJ},
+                  year={2016},
+                  isbn={978-1-119-14398-7},
+                  doi={10.1002/9781119449560}
+                }
+
+                @misc{fred_mortgage30us,
+                  title={30-Year Fixed Rate Mortgage Average in the United States [MORTGAGE30US]},
+                  author={{Freddie Mac}},
+                  howpublished={retrieved from FRED, Federal Reserve Bank of St. Louis, https://fred.stlouisfed.org/series/MORTGAGE30US},
+                  year={2026},
+                  note={Primary Mortgage Market Survey, weekly; retrieved 2026-10-22}
+                }
+            """,
+        ),
     )
     download_description = """
         We download mortgage_csv.rar from the data page of the book "Credit Risk Analytics" (Baesens, Roesch and
@@ -150,25 +173,6 @@ class Mortgage(AbstractCuratedDataset):
         The file grows by one row a week, so its checksum changes; we use the weeks of 1999 Q4 to 2014 Q4 only. sha256
         of the copy downloaded on 2026-10-22 (2,899 weeks, 1971-04-02 to 2026-10-15):
         869ba44fd0e3633fcb57f0c782875e340b272b21895abb9f581c3f269a4d730c (46,979 bytes)
-    """
-    bibtex = r"""
-        @book{baesens2016credit,
-          title={Credit Risk Analytics: Measurement Techniques, Applications, and Examples in {SAS}},
-          author={Baesens, Bart and R{\"o}sch, Daniel and Scheule, Harald},
-          publisher={John Wiley \& Sons},
-          address={Hoboken, NJ},
-          year={2016},
-          isbn={978-1-119-14398-7},
-          doi={10.1002/9781119449560}
-        }
-
-        @misc{fred_mortgage30us,
-          title={30-Year Fixed Rate Mortgage Average in the United States [MORTGAGE30US]},
-          author={{Freddie Mac}},
-          howpublished={retrieved from FRED, Federal Reserve Bank of St. Louis, https://fred.stlouisfed.org/series/MORTGAGE30US},
-          year={2026},
-          note={Primary Mortgage Market Survey, weekly; retrieved 2026-10-22}
-        }
     """
     curation_comments = """
         We start with mortgage.csv from the data page of the book Credit Risk Analytics (Baesens, Roesch and Scheule 2016): one row per loan and period for 50,000 US mortgage borrowers.

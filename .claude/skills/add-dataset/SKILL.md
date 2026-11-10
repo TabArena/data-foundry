@@ -42,7 +42,8 @@ You have not seen the data until it is downloaded. Pre-fill structure, never fac
 * anything that needs a look at the data, write as an ordered, commented step with a `# TODO(verify): ...` marker
   saying what to check, in the method where it belongs;
 * never invent a column name, a class label, a leak or a horizon. `"TODO"` is a safe value in a free-text field; a
-  plausible guess is not. `domain`, `source` and `problem_type` take fixed values, so pick the closest match and say so.
+  plausible guess is not. `domain`, a source's `platform` and `problem_type` take fixed values, so pick the closest
+  match and say so.
 
 The markers are enforced: `meta_placeholder_left`, `definition_license_placeholder` and `definition_todo_left` are
 errors, and `dataset build` refuses to save while any remains.

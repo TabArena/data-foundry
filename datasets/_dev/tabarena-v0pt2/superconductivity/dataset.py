@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     UnitWeight,
 )
@@ -65,26 +66,31 @@ class Superconductivity(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "superconductivity"
-    year = "2018"
     domain = "physics & astronomy"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C53P47"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C53P47",
+            license="CC BY 4.0",
+            year="2018",
+            bibtex="""
+                @article{hamidieh2018data,
+                  title={A data-driven statistical model for predicting the critical temperature of a superconductor},
+                  author={Hamidieh, Kam},
+                  journal={Computational Materials Science},
+                  volume={154},
+                  pages={346--354},
+                  year={2018},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/superconductivity/ && wget -P local-data-warehouse/superconductivity/ https://archive.ics.uci.edu/static/public/464/superconductivty+data.zip && unzip local-data-warehouse/superconductivity/superconductivty+data.zip -d local-data-warehouse/superconductivity/ && rm local-data-warehouse/superconductivity/superconductivty+data.zip
-    """
-    bibtex = """
-        @article{hamidieh2018data,
-          title={A data-driven statistical model for predicting the critical temperature of a superconductor},
-          author={Hamidieh, Kam},
-          journal={Computational Materials Science},
-          volume={154},
-          pages={346--354},
-          year={2018},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         - The 81 features are computed from the element shares of the chemical formula alone. `unique_m.csv` (row-aligned with `train.csv`, same critical temperatures) has each row's element counts and formula; from it we add the group column `composition` (see `composition_labels`): 15,164 compositions, 2,422 of them with 2 to 110 SuperCon entries (6,099 repeated rows). Their temperatures differ by a median standard deviation of 1.3 K, by more than 30 K for 132 compositions (other samples, phases or pressures, which the release does not record).

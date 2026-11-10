@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     drop_columns,
 )
@@ -141,11 +142,26 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "frempl_french_motor_personal_line"
-    year = "2014"
     domain = "insurance"
-    source = "Other"  # the R package CASdatasets (Dutang and Charpentier); no closer schema value
-    source_url = "https://dutangc.github.io/CASdatasets/reference/freMPL.html"
-    license = "GPL (>= 2)"  # CASdatasets DESCRIPTION
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # the R package CASdatasets (Dutang and Charpentier); no closer schema value
+            url="https://dutangc.github.io/CASdatasets/reference/freMPL.html",
+            license="GPL (>= 2)",  # CASdatasets DESCRIPTION
+            year="2014",
+            bibtex=r"""
+                @manual{Dutang2026CASdatasets,
+                  title = {{CASdatasets}: Insurance Datasets},
+                  author = {Dutang, Christophe and Charpentier, Arthur},
+                  year = {2026},
+                  note = {R package version 1.2-1; the data sets freMPL1 to freMPL10 entered the package on 9 September 2014},
+                  doi = {10.57745/P0KHAG},
+                  url = {https://dutangc.github.io/CASdatasets/reference/freMPL.html}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedGroupedFromTemporal",)
     download_description = """
         The R package CASdatasets (Dutang and Charpentier; DOI 10.57745/P0KHAG) holds freMPL1 to freMPL10, "ten
@@ -171,16 +187,6 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
         # 7b760c18457a9d0eb5a146f8828fab596f83a0778a92d2c9ff9c2182792456b9  freMPL7.csv
         # e8e8215963d599c8d11566fc52b12cae2b902347b94989e73c0fbb1e8ccafa13  freMPL8.csv
         # cc64d8948983a4ed4850a12d826a04a390681953deeff61764359fd8e966274a  freMPL9.csv
-    """
-    bibtex = r"""
-        @manual{Dutang2026CASdatasets,
-          title = {{CASdatasets}: Insurance Datasets},
-          author = {Dutang, Christophe and Charpentier, Arthur},
-          year = {2026},
-          note = {R package version 1.2-1; the data sets freMPL1 to freMPL10 entered the package on 9 September 2014},
-          doi = {10.57745/P0KHAG},
-          url = {https://dutangc.github.io/CASdatasets/reference/freMPL.html}
-        }
     """
     curation_comments = """
         We start with freMPL5 to freMPL9 of CASdatasets 1.2-1, five samples of one French motor portfolio of 2004.

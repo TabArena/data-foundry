@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -61,27 +61,32 @@ class GallstoneDisease(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "gallstone_disease"
-    year = "2025"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://archive.ics.uci.edu/dataset/1150/gallstone-1"  # the paper says its data are not public
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://archive.ics.uci.edu/dataset/1150/gallstone-1",  # the paper says its data are not public
+            license="CC BY 4.0",
+            year="2025",
+            bibtex=r"""
+                @article{esen2024early,
+                  title={Early prediction of gallstone disease with a machine learning-based method from bioimpedance and laboratory data},
+                  author={Esen, {\.I}rfan and Arslan, Hilal and Esen, Selin Akt{\"u}rk and G{\"u}l{\c{s}}en, Mervenur and K{\"u}ltekin, Nimet and {\"O}zdemir, O{\u{g}}uzhan},
+                  journal={Medicine},
+                  volume={103},
+                  number={8},
+                  pages={e37258},
+                  year={2024},
+                  publisher={LWW}
+                }
+            """,
+        ),
+    )
     download_description = """
         We get the data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/1150/gallstone-1.zip && unzip gallstone-1.zip && rm gallstone-1.zip && unzip dataset-uci.zip && rm dataset-uci.zip && mkdir -p local-data-warehouse/gallstone_disease && mv dataset-uci.xlsx local-data-warehouse/gallstone_disease/
-    """
-    bibtex = r"""
-        @article{esen2024early,
-          title={Early prediction of gallstone disease with a machine learning-based method from bioimpedance and laboratory data},
-          author={Esen, {\.I}rfan and Arslan, Hilal and Esen, Selin Akt{\"u}rk and G{\"u}l{\c{s}}en, Mervenur and K{\"u}ltekin, Nimet and {\"O}zdemir, O{\u{g}}uzhan},
-          journal={Medicine},
-          volume={103},
-          number={8},
-          pages={e37258},
-          year={2024},
-          publisher={LWW}
-        }
     """
     curation_comments = """
         We use the data without any further curation.

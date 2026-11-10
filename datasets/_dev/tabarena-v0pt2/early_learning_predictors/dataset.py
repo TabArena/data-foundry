@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Grouping,
     Metric,
+    Source,
     TaskSummary,
     decode,
     drop_columns,
@@ -809,11 +810,29 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "early_learning_predictors"
-    year = "2024"
     domain = "education"
-    source = "Other"
-    source_url = "https://www.datafirst.uct.ac.za/dataportal/index.php/catalog/962"
-    license = "Creative Commons CC-BY (Attribution-only) License"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://www.datafirst.uct.ac.za/dataportal/index.php/catalog/962",
+            license="Creative Commons CC-BY (Attribution-only) License",
+            year="2024",
+            bibtex="""
+                @dataset{DataDrive2030_2024_elom_thrivebyfive,
+                    author       = {{DataDrive2030}},
+                    title        = {ELOM and Thrive by Five Index 2016--2023, Merged Data},
+                    version      = {1},
+                    year         = {2024},
+                    address      = {Cape Town},
+                    publisher    = {DataDrive2030},
+                    note         = {[dataset]. Producer: DataDrive2030; Distributor: DataFirst},
+                    doi          = {10.25828/WG0D-Y909},
+                    url          = {https://doi.org/10.25828/WG0D-Y909}
+                }
+            """,
+        ),
+    )
     download_description = r"""
         No automatic download possible!
 
@@ -824,19 +843,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         && mv local-data-warehouse/early_learning_predictors/elom-tb5i-2016-2023-v1-csv/* local-data-warehouse/early_learning_predictors \
         && rm local-data-warehouse/early_learning_predictors/elom-tb5i-2016-2023-v1-csv.zip \
         && rm -r local-data-warehouse/early_learning_predictors/elom-tb5i-2016-2023-v1-csv
-    """
-    bibtex = """
-        @dataset{DataDrive2030_2024_elom_thrivebyfive,
-            author       = {{DataDrive2030}},
-            title        = {ELOM and Thrive by Five Index 2016--2023, Merged Data},
-            version      = {1},
-            year         = {2024},
-            address      = {Cape Town},
-            publisher    = {DataDrive2030},
-            note         = {[dataset]. Producer: DataDrive2030; Distributor: DataFirst},
-            doi          = {10.25828/WG0D-Y909},
-            url          = {https://doi.org/10.25828/WG0D-Y909}
-        }
     """
     curation_comments = """
         - The data is collected for predictive analytics to find major drivers of early learning outcomes. Nevertheless, predictive performance matters and the data could also be used for identifying at risk children.

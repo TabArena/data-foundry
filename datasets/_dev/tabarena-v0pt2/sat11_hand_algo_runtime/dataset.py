@@ -7,7 +7,7 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, anonymize_ids
 
 
 class Sat11HandAlgoRuntime(AbstractCuratedDataset):
@@ -49,38 +49,43 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "sat11_hand_algo_runtime"
-    year = "2011"
     domain = "technology & internet"
-    source = "ASlib"
-    source_url = "https://github.com/coseal/aslib_data/tree/master/SAT11-HAND-ALGO"
-    license = "GPLv3"
+    sources = (
+        Source(
+            role="publication",
+            platform="ASlib",
+            url="https://github.com/coseal/aslib_data/tree/master/SAT11-HAND-ALGO",
+            license="GPLv3",
+            year="2011",
+            bibtex="""
+                @inproceedings{xu-sat12a,
+                  author    = {L. Xu and F. Hutter and H. Hoos and K. Leyton-Brown},
+                  title     = {Evaluating Component Solver Contributions to Portfolio-Based Algorithm Selectors},
+                  pages     = {228-241},
+                  crossref  = {sat12}
+                }
+                @Proceedings{sat12,
+                  editor =         {A. Cimatti and R. Sebastiani},
+                  title =         {Proceedings of the Fifteenth International Conference on Theory and Applications of Satisfiability Testing (SAT'12)},
+                  booktitle = {Proceedings of the Fifteenth International Conference on Theory and Applications of Satisfiability Testing (SAT'12)},
+                  publisher =         springer,
+                  series =         lncs,
+                  volume =         7317,
+                  year =         2012
+                }
+                @article{bischl_aslib_2016,
+                	title = {{ASlib}: {A} {Benchmark} {Library} for {Algorithm} {Selection}},
+                	number = {237},
+                	journal = {Artificial Intelligence Journal (AIJ)},
+                	author = {Bischl, Bernd and Kerschke, Pascal and Kotthoff, Lars and Lindauer, Marius and Malitsky, Yuri and Fréchette, Alexandre and Hoos, Holger H. and Hutter, Frank and Leyton-Brown, Kevin and Tierney, Kevin and Vanschoren, Joaquin},
+                	year = {2016},
+                	pages = {41--58}
+                }
+            """,
+        ),
+    )
     download_description = """
         wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/feature_values.arff && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/algorithm_feature_values.arff && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/algorithm_runs.arff && mkdir -p local-data-warehouse/sat11_hand_algo_runtime && mv feature_values.arff algorithm_feature_values.arff algorithm_runs.arff local-data-warehouse/sat11_hand_algo_runtime/
-    """
-    bibtex = """
-        @inproceedings{xu-sat12a,
-          author    = {L. Xu and F. Hutter and H. Hoos and K. Leyton-Brown},
-          title     = {Evaluating Component Solver Contributions to Portfolio-Based Algorithm Selectors},
-          pages     = {228-241},
-          crossref  = {sat12}
-        }
-        @Proceedings{sat12,
-          editor =         {A. Cimatti and R. Sebastiani},
-          title =         {Proceedings of the Fifteenth International Conference on Theory and Applications of Satisfiability Testing (SAT'12)},
-          booktitle = {Proceedings of the Fifteenth International Conference on Theory and Applications of Satisfiability Testing (SAT'12)},
-          publisher =         springer,
-          series =         lncs,
-          volume =         7317,
-          year =         2012
-        }
-        @article{bischl_aslib_2016,
-        	title = {{ASlib}: {A} {Benchmark} {Library} for {Algorithm} {Selection}},
-        	number = {237},
-        	journal = {Artificial Intelligence Journal (AIJ)},
-        	author = {Bischl, Bernd and Kerschke, Pascal and Kotthoff, Lars and Lindauer, Marius and Malitsky, Yuri and Fréchette, Alexandre and Hoos, Holger H. and Hutter, Frank and Leyton-Brown, Kevin and Tierney, Kevin and Vanschoren, Joaquin},
-        	year = {2016},
-        	pages = {41--58}
-        }
     """
     curation_comments = """
         We get the data from ASlib and merge them into one file.

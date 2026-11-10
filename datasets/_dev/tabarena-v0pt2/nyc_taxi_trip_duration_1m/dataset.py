@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     RowBudget,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -109,15 +110,39 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "nyc_taxi_trip_duration_1m"
-    version_of = "nyc_taxi_trip_duration"
-    version_comment = """
-        Every train side holds 1.28M to 1.39M trips, above the 1M-row budget, so the dataset ships only as this version (definitions.md, Lennart 2026-10-21). We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (none reaches it), and its train side is a random 1M of all trips picked up at least a day before the window, drawn in one random order for all windows so the train sides overlap; the frame keeps only the rows a split uses. As in delivery_eta_1m, the sample is random rather than the latest trips, so the train sides cover the whole half-year.
-    """
-    year = "2016"
     domain = "industry & manufacturing"  # transport has no value of its own; as for delivery_eta_1m, maps_router_eta_1m
-    source = "GOV Website"  # the NYC TLC trip records; we download the Kaggle competition's sample of them
-    source_url = "https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page"
-    license = "Kaggle Competition Rules"  # the TLC trip records carry no explicit licence (NYC Open Data terms)
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",  # the NYC TLC trip records; we download the Kaggle competition's sample of them
+            url="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page",
+            license=None,  # the TLC trip records carry no explicit licence (NYC Open Data terms)
+            year="2016",
+            bibtex=r"""
+                @misc{nyctlc2016trips,
+                  author = {{NYC Taxi and Limousine Commission}},
+                  title = {{TLC} Trip Record Data: Yellow Taxi Trip Records, January to June 2016},
+                  year = {2016},
+                  howpublished = {\url{https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page}}
+                }
+                @misc{risdal2017nyctaxi,
+                  author = {Meg Risdal},
+                  title = {New York City Taxi Trip Duration},
+                  year = {2017},
+                  howpublished = {\url{https://kaggle.com/competitions/nyc-taxi-trip-duration}},
+                  note = {Kaggle playground competition on a sample of the 2016 yellow taxi trip records of the NYC Taxi and Limousine Commission}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="Kaggle",
+            url="https://www.kaggle.com/c/nyc-taxi-trip-duration",
+            license="Kaggle Competition Rules",
+            year="2017",
+            name="the Kaggle competition's sample of the 2016 trips, which we download",
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We download the training file of the Kaggle competition (its rules must be accepted on the competition page
@@ -130,21 +155,6 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
         kaggle competitions download -c nyc-taxi-trip-duration -f train.zip -p local-data-warehouse/nyc_taxi_trip_duration
         unzip local-data-warehouse/nyc_taxi_trip_duration/train.zip -d local-data-warehouse/nyc_taxi_trip_duration/
         rm local-data-warehouse/nyc_taxi_trip_duration/train.zip
-    """
-    bibtex = r"""
-        @misc{nyctlc2016trips,
-          author = {{NYC Taxi and Limousine Commission}},
-          title = {{TLC} Trip Record Data: Yellow Taxi Trip Records, January to June 2016},
-          year = {2016},
-          howpublished = {\url{https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page}}
-        }
-        @misc{risdal2017nyctaxi,
-          author = {Meg Risdal},
-          title = {New York City Taxi Trip Duration},
-          year = {2017},
-          howpublished = {\url{https://kaggle.com/competitions/nyc-taxi-trip-duration}},
-          note = {Kaggle playground competition on a sample of the 2016 yellow taxi trip records of the NYC Taxi and Limousine Commission}
-        }
     """
     curation_comments = """
         We start with train.csv of the Kaggle playground competition "New York City Taxi Trip Duration" (2017): 1,458,644 yellow-cab trips with pickup times from 2016-01-01 to 2016-06-30, sampled from the trip records of the NYC Taxi and Limousine Commission (TLC).
@@ -164,7 +174,14 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
         - Split: weekly test windows over the last 3 weeks of June 2016 (splits_comment). The competition's test set is a random 30% of every day of the same half-year, so its leaderboard measures interpolation within the period; we do not use test.csv.
         - Note: pickup_datetime is the only time feature, and the hour matters most. LightGBM (300 trees, learning rate 0.1, 63 leaves, a random 200k of each train side, one fit per window) scores RMSE 0.373, 0.357 and 0.381 on the weekly windows (newest first) when the encoding keeps the hour (skrub's DatetimeEncoder in tabarena_default) and 0.429, 0.414 and 0.441 with AutoGluon's date parts, which lose it.
         - Note: the Kaggle rules (Sec. 7) allow academic research and other non-commercial use and forbid redistribution; the TLC publishes the same records on NYC Open Data without an explicit licence.
+        - The row budget: Every train side holds 1.28M to 1.39M trips, above the 1M-row budget, so the dataset ships only as this version (definitions.md, Lennart 2026-10-21). We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (none reaches it), and its train side is a random 1M of all trips picked up at least a day before the window, drawn in one random order for all windows so the train sides overlap; the frame keeps only the rows a split uses. As in delivery_eta_1m, the sample is random rather than the latest trips, so the train sides cover the whole half-year.
     """
+    accepted_check_warnings = {
+        "meta_license_unknown": (
+            "The TLC trip records carry no explicit licence (NYC Open Data terms of use); the Kaggle sample we "
+            "download is under the competition's rules."
+        ),
+    }
 
     # Task
     target = "log1p_trip_duration"

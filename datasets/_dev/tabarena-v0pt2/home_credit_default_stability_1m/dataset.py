@@ -15,6 +15,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     RowBudget,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -196,29 +197,30 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "home_credit_default_stability_1m"
-    version_of = "home_credit_default_stability"
-    version_comment = """
-        We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
-    """
-    year = "2024"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability",
+            license="Kaggle Competition Rules",
+            year="2024",
+            bibtex=r"""
+                @misc{Herman2024HomeCreditCreditRiskModelStability,
+                  author = {Daniel Herman and Tomas Jelinek and Walter Reade and Maggie Demkin and Addison Howard},
+                  title  = {Home Credit - Credit Risk Model Stability},
+                  year   = {2024},
+                  howpublished = {\url{https://kaggle.com/competitions/home-credit-credit-risk-model-stability}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     download_description = """
         We get the data from the Kaggle competition.
 
         kaggle competitions download -c home-credit-credit-risk-model-stability
         mkdir -p local-data-warehouse/home_credit_default_stability && mv home-credit-credit-risk-model-stability.zip local-data-warehouse/home_credit_default_stability/ && cd local-data-warehouse/home_credit_default_stability/ && unzip home-credit-credit-risk-model-stability.zip && rm home-credit-credit-risk-model-stability.zip && rm -rf csv_files && rm -rf parquet_files/test && rm sample_submission.csv feature_definitions.csv
-    """
-    bibtex = r"""
-        @misc{Herman2024HomeCreditCreditRiskModelStability,
-          author = {Daniel Herman and Tomas Jelinek and Walter Reade and Maggie Demkin and Addison Howard},
-          title  = {Home Credit - Credit Risk Model Stability},
-          year   = {2024},
-          howpublished = {\url{https://kaggle.com/competitions/home-credit-credit-risk-model-stability}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with the data from Kaggle and follow the preprocessing from TabRed (https://github.com/yandex-research/tabred/tree/main/preprocessing#homecredit-default-stability-homecredit-20), which in turn follows two Kaggle solutions (https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability/discussion/507946, https://www.kaggle.com/code/yuuniekiri/fork-of-home-credit-catboost-inference).
@@ -234,6 +236,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
+        - The row budget: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
     """
 
     # Task

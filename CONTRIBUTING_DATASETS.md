@@ -76,7 +76,10 @@ dtypes, accepted warnings) are in [`definitions.md`](.claude/skills/knowledge-da
   (`Anomaly:`, `Note:`), and sampling choices. Someone re-curating the data in two years reads it first.
 * **One task per container.** Two reasonable targets or two split regimes are two datasets with their own
   `unique_name`.
-* **Versions.** A derived version (for example sub-sampled) sets `version_of` and `version_comment`.
+* **Sources.** `sources` lists the publication first (its year and BibTeX are the dataset's), then the copy you
+  download when it is not the publication, and the parts of an assembled dataset, each with its own license.
+* **Versions.** A version sub-sampled to a row budget is named `<name>_1m` (after `RowBudget.suffix`), declares
+  `row_budget`, reads the raw files of `<name>` and says why in `curation_comments`.
 * **Same result everywhere.** Sort with `kind="stable"`, sort file listings, seed every random step; the
   definition check refuses the common nondeterministic calls.
 * **Raw data stays out of git.** Only the definition folder lands in the PR.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -66,25 +66,30 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "wids_diabetes_mellitus"
-    year = "2021"
     domain = "medical & healthcare"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/widsdatathon2021"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/widsdatathon2021",
+            license="Kaggle Competition Rules",
+            year="2021",
+            bibtex=r"""
+                @misc{Matthys2021WiDSDatathon2021,
+                  author = {Karen Matthys and Meredith Lee and Neha Goel and Sharada Kalanidhi and Valerie and Vani M.},
+                  title  = {WiDS Datathon 2021},
+                  year   = {2021},
+                  howpublished = {\url{https://kaggle.com/competitions/widsdatathon2021}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from Kaggle.
 
         kaggle competitions download -c widsdatathon2021 -f TrainingWiDS2021.csv && unzip TrainingWiDS2021.csv.zip &&  rm TrainingWiDS2021.csv.zip
         mkdir -p local-data-warehouse/wids_diabetes_mellitus && mv TrainingWiDS2021.csv local-data-warehouse/wids_diabetes_mellitus/
-    """
-    bibtex = r"""
-        @misc{Matthys2021WiDSDatathon2021,
-          author = {Karen Matthys and Meredith Lee and Neha Goel and Sharada Kalanidhi and Valerie and Vani M.},
-          title  = {WiDS Datathon 2021},
-          year   = {2021},
-          howpublished = {\url{https://kaggle.com/competitions/widsdatathon2021}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with the Kaggle dataset.

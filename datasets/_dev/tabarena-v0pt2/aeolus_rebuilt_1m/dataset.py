@@ -16,6 +16,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     RowBudget,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -328,17 +329,39 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "aeolus_rebuilt_1m"
-    version_of = "aeolus_rebuilt"
-    version_comment = """
-        The BTS files hold 13,708,650 operated flights from 2023 on with an arrival delay (13,926,960 scheduled). We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (all of them here), and its train side is a random 1M of the earlier flights, drawn in one random order for all windows; the frame keeps only the rows a split uses.
-    """
-    year = "2026"  # the snapshot we pin; the BTS table and Meteostat's archive grow every month
     domain = "industry & manufacturing"  # transport has no value of its own; as for aeolus_1m, nyc_taxi_trip_duration
-    source = "GOV Website"
-    source_url = "https://www.transtats.bts.gov/Fields.asp?gnoyr_VQ=FGJ"
-    license = (
-        "BTS on-time data and the NOAA ISD station list: US government works (public domain); Meteostat weather and "
-        "station data: CC BY 4.0 (https://dev.meteostat.net/license)"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",
+            url="https://www.transtats.bts.gov/Fields.asp?gnoyr_VQ=FGJ",
+            license="BTS on-time data and the NOAA ISD station list: US government works (public domain); Meteostat weather and "
+            "station data: CC BY 4.0 (https://dev.meteostat.net/license)",
+            year="2026",  # the snapshot we pin; the BTS table and Meteostat's archive grow every month
+            bibtex="""
+                @misc{bts2026ontime,
+                  title        = {Airline On-Time Performance Data: Reporting Carrier On-Time Performance (1987-present)},
+                  author       = {{Bureau of Transportation Statistics}},
+                  howpublished = {\\url{https://www.transtats.bts.gov/Fields.asp?gnoyr_VQ=FGJ}},
+                  year         = {2026},
+                  note         = {US Department of Transportation, TranStats; files of December 2022 to December 2024},
+                }
+                @misc{meteostat2026hourly,
+                  title        = {Meteostat Hourly Data},
+                  author       = {{Meteostat}},
+                  howpublished = {\\url{https://dev.meteostat.net/data/timeseries/hourly}},
+                  year         = {2026},
+                  note         = {Station data dumps of 2022 to 2025, CC BY 4.0},
+                }
+                @inproceedings{xu2025aeolus,
+                  title     = {Aeolus: A Multi-structural Flight Delay Dataset},
+                  author    = {Xu, Lin and Yuan, Xinyun and Liang, Yuxuan and Yin, Suwan and Wu, Yuankai},
+                  booktitle = {Advances in Neural Information Processing Systems (NeurIPS 2025), Datasets and Benchmarks Track},
+                  year      = {2025},
+                  note      = {arXiv:2510.26616; the task this dataset rebuilds},
+                }
+            """,
+        ),
     )
     data_tags = ("Spatial",)
     download_description = """
@@ -403,29 +426,6 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
         4f329439fd6892aa, 2024_7 4d992fee134137b3, 2024_8 58d651379af90cc4, 2024_9 c0df7503b0050ca4, 2024_10
         a417136d6c166373, 2024_11 26b6e89e7c1f6616, 2024_12 a324577aa76d1f0a.
     """
-    bibtex = """
-        @misc{bts2026ontime,
-          title        = {Airline On-Time Performance Data: Reporting Carrier On-Time Performance (1987-present)},
-          author       = {{Bureau of Transportation Statistics}},
-          howpublished = {\\url{https://www.transtats.bts.gov/Fields.asp?gnoyr_VQ=FGJ}},
-          year         = {2026},
-          note         = {US Department of Transportation, TranStats; files of December 2022 to December 2024},
-        }
-        @misc{meteostat2026hourly,
-          title        = {Meteostat Hourly Data},
-          author       = {{Meteostat}},
-          howpublished = {\\url{https://dev.meteostat.net/data/timeseries/hourly}},
-          year         = {2026},
-          note         = {Station data dumps of 2022 to 2025, CC BY 4.0},
-        }
-        @inproceedings{xu2025aeolus,
-          title     = {Aeolus: A Multi-structural Flight Delay Dataset},
-          author    = {Xu, Lin and Yuan, Xinyun and Liang, Yuxuan and Yin, Suwan and Wu, Yuankai},
-          booktitle = {Advances in Neural Information Processing Systems (NeurIPS 2025), Datasets and Benchmarks Track},
-          year      = {2025},
-          note      = {arXiv:2510.26616; the task this dataset rebuilds},
-        }
-    """
     curation_comments = """
         We start with the monthly files of the BTS Reporting Carrier On-Time Performance table for December 2022 to December 2024 (14,484,055 scheduled flights), the BTS Master Coordinate table, NOAA's ISD station history, and Meteostat's station database and hourly station dumps of 2022 to 2025. The task is the classification task of Aeolus (Xu et al., NeurIPS 2025), rebuilt from these origins instead of the authors' Kaggle release (aeolus_1m).
 
@@ -449,6 +449,7 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
           by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
           is simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
+        - The row budget: The BTS files hold 13,708,650 operated flights from 2023 on with an arrival delay (13,926,960 scheduled). We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (all of them here), and its train side is a random 1M of the earlier flights, drawn in one random order for all windows; the frame keeps only the rows a split uses.
     """
 
     # Task

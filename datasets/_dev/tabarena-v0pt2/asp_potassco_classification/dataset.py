@@ -6,7 +6,7 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, anonymize_ids
 
 
 class AspPotasscoClassification(AbstractCuratedDataset):
@@ -47,36 +47,41 @@ class AspPotasscoClassification(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "asp_potassco_classification"
-    year = "2014"
     domain = "technology & internet"
-    source = "ASlib"
-    source_url = "https://github.com/coseal/aslib_data/tree/master/ASP-POTASSCO"
-    license = "GPLv3"
+    sources = (
+        Source(
+            role="publication",
+            platform="ASlib",
+            url="https://github.com/coseal/aslib_data/tree/master/ASP-POTASSCO",
+            license="GPLv3",
+            year="2014",
+            bibtex="""
+                @article{hoos2014claspfolio,
+                  title={claspfolio 2: Advances in algorithm selection for answer set programming},
+                  author={Hoos, Holger and Lindauer, Marius and Schaub, Torsten},
+                  journal={Theory and Practice of Logic Programming},
+                  volume={14},
+                  number={4-5},
+                  pages={569--585},
+                  year={2014},
+                  publisher={Cambridge University Press}
+                }
+                @article{bischl_aslib_2016,
+                	title = {{ASlib}: {A} {Benchmark} {Library} for {Algorithm} {Selection}},
+                	number = {237},
+                	journal = {Artificial Intelligence Journal (AIJ)},
+                	author = {Bischl, Bernd and Kerschke, Pascal and Kotthoff, Lars and Lindauer, Marius and Malitsky, Yuri and Fréchette, Alexandre and Hoos, Holger H. and Hutter, Frank and Leyton-Brown, Kevin and Tierney, Kevin and Vanschoren, Joaquin},
+                	year = {2016},
+                	pages = {41--58}
+                }
+            """,
+        ),
+    )
     download_description = r"""
         wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/ASP-POTASSCO/algorithm_runs.arff \
         && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/ASP-POTASSCO/feature_values.arff \
         && mkdir -p local-data-warehouse/asp_potassco_classification \
         && mv feature_values.arff algorithm_runs.arff local-data-warehouse/asp_potassco_classification/
-    """
-    bibtex = """
-        @article{hoos2014claspfolio,
-          title={claspfolio 2: Advances in algorithm selection for answer set programming},
-          author={Hoos, Holger and Lindauer, Marius and Schaub, Torsten},
-          journal={Theory and Practice of Logic Programming},
-          volume={14},
-          number={4-5},
-          pages={569--585},
-          year={2014},
-          publisher={Cambridge University Press}
-        }
-        @article{bischl_aslib_2016,
-        	title = {{ASlib}: {A} {Benchmark} {Library} for {Algorithm} {Selection}},
-        	number = {237},
-        	journal = {Artificial Intelligence Journal (AIJ)},
-        	author = {Bischl, Bernd and Kerschke, Pascal and Kotthoff, Lars and Lindauer, Marius and Malitsky, Yuri and Fréchette, Alexandre and Hoos, Holger H. and Hutter, Frank and Leyton-Brown, Kevin and Tierney, Kevin and Vanschoren, Joaquin},
-        	year = {2016},
-        	pages = {41--58}
-        }
     """
     curation_comments = """
         We get the data from ASlib and merge them into one file.

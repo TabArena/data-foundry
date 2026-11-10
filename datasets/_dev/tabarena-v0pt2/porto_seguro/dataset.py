@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 
 class PortoSeguro(AbstractCuratedDataset):
@@ -35,26 +35,31 @@ class PortoSeguro(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "porto_seguro"
-    year = "2017"
     domain = "insurance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/c/porto-seguro-safe-driver-prediction"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/c/porto-seguro-safe-driver-prediction",
+            license="Kaggle Competition Rules",
+            year="2017",
+            bibtex=r"""
+                @misc{Howard2017PortoSegurosSafeDriverPrediction,
+                  author = {Addison Howard and Adriano Moala and Walter Reade},
+                  title  = {Porto Seguro’s Safe Driver Prediction},
+                  year   = {2017},
+                  howpublished = {\url{https://kaggle.com/competitions/porto-seguro-safe-driver-prediction}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         We use the train.csv from the Kaggle competition.
 
         kaggle competitions download -c porto-seguro-safe-driver-prediction -f train.csv && unzip train.csv.zip &&  rm train.csv.zip
         mkdir -p local-data-warehouse/porto_seguro && mv train.csv local-data-warehouse/porto_seguro/
-    """
-    bibtex = r"""
-        @misc{Howard2017PortoSegurosSafeDriverPrediction,
-          author = {Addison Howard and Adriano Moala and Walter Reade},
-          title  = {Porto Seguro’s Safe Driver Prediction},
-          year   = {2017},
-          howpublished = {\url{https://kaggle.com/competitions/porto-seguro-safe-driver-prediction}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with the train.csv from Kaggle.

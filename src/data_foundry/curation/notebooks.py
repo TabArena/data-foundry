@@ -22,6 +22,7 @@ correct.
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from functools import lru_cache
 from pathlib import Path
@@ -170,6 +171,9 @@ def sync_notebook_paths(
     return changed
 
 
+_BUDGET_SUFFIX = re.compile(r"\d+(p\d+)?[km]")
+"""The name suffix of a version sub-sampled to a row budget (:attr:`data_foundry.schema.RowBudget.suffix`)."""
+
 V2_TREE = "datasets/_dev/tabarena-v0pt2"
 """Where the TabArena v0.2 working copy keeps one v2 dataset folder (``<name>/dataset.py``) per dataset."""
 
@@ -177,8 +181,9 @@ V2_TREE = "datasets/_dev/tabarena-v0pt2"
 def resolve_v2_definition(record: CurationRecord, datasets_dir: str | Path | None = None) -> str | None:
     """Repo-relative path of the record's v2 definition in the TabArena v0.2 working copy, or None.
 
-    ``<name>/dataset.py`` first; otherwise the one version of it, a ``<name>_*/dataset.py`` that declares
-    ``version_of = "<name>"`` (a ``_1m`` version replaces the full-size dataset in the working copy).
+    ``<name>/dataset.py`` first; otherwise the one version of it sub-sampled to a row budget, a
+    ``<name>_<suffix>/dataset.py`` (``_1m``, ``_10m``, ``_2p5m``, ``_300k``) that declares ``row_budget`` (it replaces
+    the full-size dataset in the working copy).
     """
     root = resolve_curation_root().parent
     base = (Path(datasets_dir) if datasets_dir is not None else root / "datasets").parent
@@ -186,8 +191,11 @@ def resolve_v2_definition(record: CurationRecord, datasets_dir: str | Path | Non
     exact = tree / record.unique_name / "dataset.py"
     if exact.is_file():
         return exact.relative_to(base).as_posix()
-    marker = f'version_of = "{record.unique_name}"'
-    variants = [p for p in sorted(tree.glob(f"{record.unique_name}_*/dataset.py")) if marker in p.read_text()]
+    variants = [
+        p
+        for p in sorted(tree.glob(f"{record.unique_name}_*/dataset.py"))
+        if _BUDGET_SUFFIX.fullmatch(p.parent.name[len(record.unique_name) + 1 :]) and "row_budget =" in p.read_text()
+    ]
     if len(variants) == 1:
         return variants[0].relative_to(base).as_posix()
     return None

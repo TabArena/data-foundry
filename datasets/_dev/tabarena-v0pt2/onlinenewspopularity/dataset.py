@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -124,11 +125,29 @@ class Onlinenewspopularity(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "onlinenewspopularity"
-    year = "2015"
     domain = "technology & internet"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5NS3V"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5NS3V",
+            license="CC BY 4.0",
+            year="2015",
+            bibtex=r"""
+                @inproceedings{fernandes2015proactive,
+                  author = {Fernandes, Kelwin and Vinagre, Pedro and Cortez, Paulo},
+                  title = {A Proactive Intelligent Decision Support System for Predicting the Popularity of Online News},
+                  booktitle = {Progress in Artificial Intelligence. 17th Portuguese Conference on Artificial Intelligence, EPIA 2015},
+                  series = {Lecture Notes in Computer Science},
+                  volume = {9273},
+                  pages = {535--546},
+                  publisher = {Springer},
+                  year = {2015},
+                  doi = {10.1007/978-3-319-23485-4_53}
+                }
+            """,
+        ),
+    )
     download_description = """
         mkdir -p local-data-warehouse/onlinenewspopularity
         wget -P local-data-warehouse/onlinenewspopularity https://archive.ics.uci.edu/static/public/332/online+news+popularity.zip
@@ -138,19 +157,6 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         dated 2015-05-31) holds OnlineNewsPopularity/OnlineNewsPopularity.csv and OnlineNewsPopularity.names; the
         definition reads the CSV. UCI states the license (CC BY 4.0) on the dataset page; the articles themselves
         belong to Mashable, so the release holds statistics of each article and its URL, not its text.
-    """
-    bibtex = r"""
-        @inproceedings{fernandes2015proactive,
-          author = {Fernandes, Kelwin and Vinagre, Pedro and Cortez, Paulo},
-          title = {A Proactive Intelligent Decision Support System for Predicting the Popularity of Online News},
-          booktitle = {Progress in Artificial Intelligence. 17th Portuguese Conference on Artificial Intelligence, EPIA 2015},
-          series = {Lecture Notes in Computer Science},
-          volume = {9273},
-          pages = {535--546},
-          publisher = {Springer},
-          year = {2015},
-          doi = {10.1007/978-3-319-23485-4_53}
-        }
     """
     curation_comments = """
         We start with OnlineNewsPopularity.csv from the UCI repository (dataset 332): Mashable articles published from 2013-01-07 to 2014-12-27, with 58 features extracted from each article's HTML and its shares at the crawl of 2015-01-08 (Fernandes et al. 2015). The R^2 values below are LightGBM on our 9 windows, averaged over 3 seeds.

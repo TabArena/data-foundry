@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
 
 
 class ClockProteinToxicity(AbstractCuratedDataset):
@@ -34,27 +34,32 @@ class ClockProteinToxicity(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "clock_protein_toxicity"
-    year = "2022"
     domain = "chemistry & material science"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C59313"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C59313",
+            license="CC BY 4.0",
+            year="2022",
+            bibtex="""
+                @article{gul2021structure,
+                  title={Structure-based design and classifications of small molecules regulating the circadian rhythm period},
+                  author={Gul, Seref and Rahim, Fatih and Isin, Safak and Yilmaz, Fatma and Ozturk, Nuri and Turkay, Metin and Kavakli, Ibrahim Halil},
+                  journal={Scientific reports},
+                  volume={11},
+                  number={1},
+                  pages={18510},
+                  year={2021},
+                  publisher={Nature Publishing Group UK London}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/clock_protein_toxicity && wget -P local-data-warehouse/clock_protein_toxicity/ https://archive.ics.uci.edu/static/public/728/toxicity-2.zip && unzip local-data-warehouse/clock_protein_toxicity/toxicity-2.zip -d local-data-warehouse/clock_protein_toxicity/ && rm local-data-warehouse/clock_protein_toxicity/toxicity-2.zip
-    """
-    bibtex = """
-        @article{gul2021structure,
-          title={Structure-based design and classifications of small molecules regulating the circadian rhythm period},
-          author={Gul, Seref and Rahim, Fatih and Isin, Safak and Yilmaz, Fatma and Ozturk, Nuri and Turkay, Metin and Kavakli, Ibrahim Halil},
-          journal={Scientific reports},
-          volume={11},
-          number={1},
-          pages={18510},
-          year={2021},
-          publisher={Nature Publishing Group UK London}
-        }
     """
     curation_comments = """
         - We remove duplicated columns (same values for all rows).

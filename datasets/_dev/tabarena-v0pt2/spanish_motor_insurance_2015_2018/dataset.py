@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -125,11 +126,28 @@ class SpanishMotorInsurance20152018(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "spanish_motor_insurance_2015_2018"
-    year = "2023"
     domain = "insurance"
-    source = "Other"  # Mendeley Data, the repository the authors published in; no closer schema value
-    source_url = "https://doi.org/10.17632/5cxyb5fp4f.2"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # Mendeley Data, the repository the authors published in; no closer schema value
+            url="https://doi.org/10.17632/5cxyb5fp4f.2",
+            license="CC BY 4.0",
+            year="2023",
+            bibtex=r"""
+                @article{seguragisbert2025motor,
+                  title = {Dataset of an actual motor vehicle insurance portfolio},
+                  author = {Segura-Gisbert, Jorge and Lled{\'o}, Josep and Pav{\'i}a, Jose M.},
+                  journal = {European Actuarial Journal},
+                  volume = {15},
+                  pages = {241--253},
+                  year = {2025},
+                  doi = {10.1007/s13385-024-00398-0},
+                  note = {Data: Mendeley Data, version 2, doi:10.17632/5cxyb5fp4f.2; version 1 published 10 August 2023}
+                }
+            """,
+        ),
+    )
     data_tags = ()
     download_description = """
         Version 2 of the Mendeley Data record (DOI 10.17632/5cxyb5fp4f.2, published 2024-07-30, CC BY 4.0) holds
@@ -148,18 +166,6 @@ class SpanishMotorInsurance20152018(AbstractCuratedDataset):
         # 00061a64e355a7f9bbd06f1bcd3f0846b1f849955119a812acf2bc7781ee293a  Motor vehicle insurance data.csv
         # 8b451e1898ca42e7092d4011c8e7071235fdc6e859a4e24070960580df433cc2  Descriptive of the variables.xlsx
         # d35d967d66563ea291fd6d450cbfdf52f5118c5e7b3625b7b3a9bfa5a9361c3d  sample type claim.csv
-    """
-    bibtex = r"""
-        @article{seguragisbert2025motor,
-          title = {Dataset of an actual motor vehicle insurance portfolio},
-          author = {Segura-Gisbert, Jorge and Lled{\'o}, Josep and Pav{\'i}a, Jose M.},
-          journal = {European Actuarial Journal},
-          volume = {15},
-          pages = {241--253},
-          year = {2025},
-          doi = {10.1007/s13385-024-00398-0},
-          note = {Data: Mendeley Data, version 2, doi:10.17632/5cxyb5fp4f.2; version 1 published 10 August 2023}
-        }
     """
     curation_comments = """
         We start with "Motor vehicle insurance data.csv" of Mendeley Data 5cxyb5fp4f, version 2 (Lledó and Pavía; described by Segura-Gisbert, Lledó and Pavía 2025, European Actuarial Journal 15:241-253, read through the publisher's open-access page, CC BY 4.0).

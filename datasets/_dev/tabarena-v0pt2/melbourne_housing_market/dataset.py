@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -154,11 +155,25 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "melbourne_housing_market"
-    year = "2017"  # the Kaggle upload's first version (public by March 2017); it grew to version 27 in 2018 (PROV-9)
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/anthonypino/melbourne-housing-market"
-    license = "CC BY-NC-SA 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/anthonypino/melbourne-housing-market",
+            license="CC BY-NC-SA 4.0",
+            year="2017",  # the Kaggle upload's first version (public by March 2017); it grew to version 27 in 2018 (PROV-9)
+            bibtex=r"""
+                @misc{pino2018melbourne,
+                  author = {Tony Pino},
+                  title = {Melbourne Housing Market},
+                  year = {2018},
+                  howpublished = {\url{https://www.kaggle.com/datasets/anthonypino/melbourne-housing-market}},
+                  note = {Kaggle dataset; weekly auction results of Domain.com.au, January 2016 to October 2018}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We download version 27 of the Kaggle dataset anthonypino/melbourne-housing-market (2018-10-14, the current
@@ -171,15 +186,6 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
         kaggle datasets download anthonypino/melbourne-housing-market -p local-data-warehouse/melbourne_housing_market
         unzip local-data-warehouse/melbourne_housing_market/melbourne-housing-market.zip -d local-data-warehouse/melbourne_housing_market
         rm local-data-warehouse/melbourne_housing_market/melbourne-housing-market.zip
-    """
-    bibtex = r"""
-        @misc{pino2018melbourne,
-          author = {Tony Pino},
-          title = {Melbourne Housing Market},
-          year = {2018},
-          howpublished = {\url{https://www.kaggle.com/datasets/anthonypino/melbourne-housing-market}},
-          note = {Kaggle dataset; weekly auction results of Domain.com.au, January 2016 to October 2018}
-        }
     """
     curation_comments = """
         We start with Melbourne_housing_FULL.csv of the Kaggle dataset anthonypino/melbourne-housing-market: results of properties scheduled for auction in Melbourne (January 2016 to March 2018) from the weekly result sheets of Domain.com.au, with attributes scraped from realestate.com.au.

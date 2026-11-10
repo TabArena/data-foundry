@@ -47,9 +47,10 @@ def main(path: Path) -> None:
 
     print("\n-- Dataset metadata --")
     dsm = container.dataset_metadata
-    print(f"  domain:    {dsm.domain_str}")
-    print(f"  source:    {dsm.dataset_source}")
-    print(f"  license:   {dsm.license}")
+    print(f"  domain:    {dsm.domain}")
+    for source in dsm.sources:  # the publication first, then the parts and copies (format 1: the publication only)
+        print(f"  {source.role + ':':10s} {source.platform} ({source.year or 'year not given'}), {source.url}")
+        print(f"  {'license:':10s} {source.license}")
     print(f"  data_tags: {dsm.data_tags}")
 
     print("\n-- Task metadata --")

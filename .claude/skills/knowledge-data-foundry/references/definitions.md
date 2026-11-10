@@ -31,7 +31,7 @@ from pathlib import Path
 
 import pandas as pd
 from data_foundry.v2 import (
-    AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits, drop_columns,
+    AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits, drop_columns,
 )
 
 
@@ -40,20 +40,25 @@ class MyDataset(AbstractCuratedDataset):
 
     # Dataset (field mapping)
     unique_name = "my_dataset"
-    year = "2024"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://..."
-    license = "CC BY 4.0"
+    sources = (                         # the publication first; its year and BibTeX are the dataset's
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://...",
+            license="CC BY 4.0",
+            year="2024",
+            bibtex="""
+                @misc{key2024,
+                  ...
+                }
+            """,                         # the key is parsed from the entry
+        ),
+    )
     data_tags = ("Spatial",)            # context tags only; regime tags are added from the task
     download_description = """
         kaggle datasets download ... && unzip ...
     """                                  # indented like code: dedented by the base class
-    bibtex = """
-        @misc{key2024,
-          ...
-        }
-    """                                  # the key is parsed from the entry
     curation_comments = """
         We start with <file> from <source>.
 
@@ -107,8 +112,10 @@ The class is validated when `dataset.py` is imported: the required attributes ar
 validates, `unique_name` equals the folder name, every accepted warning has a reason, the regime is one `Grouping` or
 `Temporal` (the flat `time_on`, `group_on`, `group_labels`, `group_time_on`, `temporal_splits`, `time_horizon`,
 `time_horizon_unit` attributes are refused), a grouping has a `definition`, a temporal task has windows or
-`_make_splits` and a horizon, a `row_budget` needs `version_of` and the name `<version_of>_<suffix>` (`_1m`), a
-version needs a `version_comment`, `prepared_raw_files` needs `_prepare_raw_files`, a multi-column `stratify_on` is
+`_make_splits` and a horizon, `sources` is a tuple of `Source` with exactly one publication (listed first, with a
+four-digit `year` and a `bibtex`), a `row_budget` needs the name `<name>_<suffix>` (`_1m`), the removed `year`,
+`source`, `source_url`, `license`, `bibtex`, `bibtex_key`, `version_of`, `version_comment` and `raw_data_from` are
+refused with what replaced them, `prepared_raw_files` needs `_prepare_raw_files`, a multi-column `stratify_on` is
 refused (build one key in `_clean`), `Temporal(splits=...)` or `row_budget` together with a custom `_make_splits` is
 refused, the old `subsample_to_budget` is refused with a pointer to `row_budget`, and
 `TemporalSplits` needs `n_windows`, `cutoffs` or `min_train_fraction`. After `_clean`, a declared column that is
@@ -124,11 +131,11 @@ ignore list).
 
 Do not re-implement any of this.
 
-*  Metadata: it builds `DatasetMetadata` / `PredictiveMLTaskMetadataV2` (container format 2) from the attributes.
-  Multi-line text (`download_description`, `bibtex`, `curation_comments`, `version_comment`, `splits_comment`) is
-  indented like code and dedented for you. The BibTeX key is parsed from `bibtex` (set `bibtex_key` only when it must
-  differ). The regime tags (`IID`, or `Non-IID` with `Temporal`, `Grouped` or `GroupedTemporal`) are added from the
-  task.
+*  Metadata: it builds `DatasetMetadataV2` / `PredictiveMLTaskMetadataV2` (container format 2) from the attributes.
+  Multi-line text (`download_description`, a source's `bibtex`, `curation_comments`, `splits_comment`) is indented
+  like code and dedented for you. A source's BibTeX key is parsed from its `bibtex` (set `Source(bibtex_key=...)` only
+  when it must differ). The regime tags (`IID`, or `Non-IID` with `Temporal`, `Grouped` or `GroupedTemporal`) are
+  added from the task.
 * Defaults: `stratify_on` is the target for classification; set it only to deviate. `metric` has no default: it is
   required, and `Metric.fallback(reason=...)` resolves to the problem type's `roc_auc`, `log_loss` or `rmse` at build.
 * After `_clean`: it casts the columns `_feature_types` names (a dict gives datetime formats; unused categories are
@@ -191,13 +198,22 @@ A metric input known at the prediction point (a weight that is a function of the
   `"business & marketing"`, `"insurance"`; the closest match when the record's value differs. A molecule-property
   dataset (the input is the molecule: QSAR, toxicity, bioactivity) is `"chemistry & material science"` (Lennart,
   2026-10-21, the ten QSAR siblings).
-* `source`: exactly one of `"Kaggle"`, `"Zindi"`, `"OpenML"`, `"GitHub"`, `"UCI"`, `"HuggingFace"`, `"GOV Website"`,
-  `"Customer"`, `"Other"`, `"ASlib"`: where the data was first published, with `source_url` pointing there
-  (PROV-8 in [provenance.md](../../knowledge-curation/references/provenance.md)). `download_description` says where
-  the files are downloaded from and names the original when the download is a copy.
-* `year`: the year of that first publication (PROV-9 in
-  [provenance.md](../../knowledge-curation/references/provenance.md)), always four digits: when it cannot be pinned,
-  the best guess, with the reason in `curation_comments`. A definition with another value does not load.
+* `sources`: a tuple of `Source(role=..., platform=..., url=..., license=..., year=..., bibtex=..., name=...,
+  files=...)`, the publication first.
+  * The **publication** (`role="publication"`, exactly one) is where the data was first published, with `url`
+    pointing there (PROV-8 in [provenance.md](../../knowledge-curation/references/provenance.md)). `platform` is
+    exactly one of `"Kaggle"`, `"Zindi"`, `"OpenML"`, `"GitHub"`, `"UCI"`, `"HuggingFace"`, `"GOV Website"`,
+    `"Customer"`, `"Other"`, `"ASlib"`. Its `year` is the year of that first publication (PROV-9), always four digits:
+    when it cannot be pinned, the best guess, with the reason in `curation_comments`; a definition with another value
+    does not load. Its `bibtex` is the work that published the data (below), its `license` the one it states (None
+    when it states none).
+  * A **copy** (`role="copy"`) is a later copy of the data, such as the re-upload we download (a Kaggle or UCI copy of
+    a paper's supplement): its own `platform`, `url` and `license`, a `name` ("UCI 291") and, if known, its `year`.
+    List it when the download is not the publication; `download_description` still says how the files are fetched.
+  * A **part** (`role="part"`) is a piece the dataset is assembled from (one of several datasheets, a second table
+    joined in), each with its own `license` and a `name` that tells the parts apart.
+  * `files=("sheets/*.txt",)` names the raw files that come from a source, as paths or glob patterns under the raw
+    folder.
 * `data_tags`: context tags only, since listing a regime tag yourself switches the automatic ones off. `"Anonymized"`
   when the source hid what the features are, by replacing their names or values on purpose (common for competition
   data; the record gets the `Anonymized` marker, and the cases without it are in
@@ -332,9 +348,9 @@ A metric input known at the prediction point (a weight that is a function of the
 * `download_description`: for a Kaggle dataset `kaggle datasets download <slug> && unzip ... && rm ...`, then the move
   into `local-data-warehouse/<unique_name>/`; for a competition `kaggle competitions download -c <name>`; otherwise
   `wget <url>`. Pin a DOI or an archived release where one exists.
-* `bibtex`: the work that published the data. For a Kaggle dataset a `@misc` entry with `howpublished = {\url{...}}`
-  and `note = {Kaggle dataset}`. Balance every brace and escape `&`, `%`, `#`, `_` in typeset fields; the bundle checks
-  catch broken entries and a key that does not match.
+* A source's `bibtex`: the work that published the data. For a Kaggle dataset a `@misc` entry with
+  `howpublished = {\url{...}}` and `note = {Kaggle dataset}`. Balance every brace and escape `&`, `%`, `#`, `_` in
+  typeset fields; the bundle checks catch broken entries and a key that does not match.
 * The task attributes: IID needs nothing beyond `target` and `problem_type` (set `stratify_on = None` only with a
   reason). Temporal: `temporal = Temporal(on=..., splits=TemporalSplits(...))`. Grouped: `grouping = Grouping(...)`.
   A task is grouped or temporal, never both; an order inside groups is `Grouping(time_on=...)`.
@@ -554,9 +570,9 @@ TabArena v0.2 sub-samples to 1M train / 500k test rows (Lennart, 2026-10-21: at 
 dataset whose splits, without a budget, have a side over that ships only as a sub-sampled version, whatever the size
 of its frame (nyc_taxi_trip_duration: 1.45M rows, train sides of 1.28M to 1.39M), and `tests/test_v2_datasets.py`
 holds every v0.2 README to it. The version has its own folder and class, `<unique_name>_1m/dataset.py`, with
-`unique_name = "<name>_1m"`, `version_of = "<name>"`, a `version_comment` and
-`row_budget = RowBudget(train=1_000_000, test=500_000)`. It reads the raw files of `<name>`. The name is
-`<version_of>_<suffix>`, the suffix from the train budget (`RowBudget.suffix`: `_1m`; `_10m` for
+`unique_name = "<name>_1m"` and `row_budget = RowBudget(train=1_000_000, test=500_000)`; `curation_comments` says
+why it is sub-sampled. It reads the raw files of `<name>`, its name without the budget suffix, and is saved under its
+own name. The name is `<name>_<suffix>`, the suffix from the train budget (`RowBudget.suffix`: `_1m`; `_10m` for
 `RowBudget(train=10_000_000, test=250_000)`, `_2p5m`, `_300k`), for larger versions in large-data experiments. The
 splits adapt to the budget:
 
@@ -613,8 +629,8 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 * Definition bugs the audit found in shipped datasets: a numeric column listed as categorical (a 125k-level category in
   give_me_some_credit); a target stored as `log1p` with metric `rmsle` and no
   `target_transform`, which logs it again (santander_transaction_value); BibTeX citing a different competition
-  (sberbank_housing_market_forecasting); a tag in `license` (cirrhosis: `"IID"`). Read the class attributes once more
-  for these before handing off.
+  (sberbank_housing_market_forecasting); a tag in a source's `license` (cirrhosis: `"IID"`). Read the class
+  attributes once more for these before handing off.
 
 ## Bundle checks and what to do at scaffold time
 
@@ -802,7 +818,7 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
 | Grouped | `airfoil_self_noise/dataset.py`, `early_learning_predictors/dataset.py`, `musk/dataset.py`, `emscad/dataset.py` | `Grouping` with a `definition` citing the source (airfoil: a setup built from two columns, with the source's prediction use quoted; musk: one prediction per molecule, `aggregation="any"`), rule-based leak drops in `_clean`, long feature lists (early_learning), a group id built from the data and an accepted group finding (emscad). |
 | Temporal | `kick/dataset.py` | `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)`, a datetime in `_feature_types`, and `_decisions` with a table and a figure. |
 | Temporal with late labels | `brazilian_ecommerce/dataset.py`, `sf_permit_time/dataset.py` | `_make_splits` training on rows whose label had arrived, with the gap on `Temporal`. |
-| Sub-sampled `_1m` | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | `version_of`, `version_comment`, `row_budget = RowBudget(train=1_000_000, test=500_000)`, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
+| Sub-sampled `_1m` | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | `row_budget = RowBudget(train=1_000_000, test=500_000)` with the name `<name>_1m`, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
 | Heavy raw data | `acquire_valued_shoppers_challenge/dataset.py` | `prepared_raw_files` + `_prepare_raw_files` (a polars join run once), fixed calendar windows. |
 
 ## What the benchmark harness does with a definition

@@ -5,7 +5,14 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns  # noqa: F401
+from data_foundry.v2 import (  # noqa: F401
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    drop_columns,
+)
 
 
 class ClassName(AbstractCuratedDataset):
@@ -26,20 +33,28 @@ class ClassName(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "<unique_name>"
-    year = "TODO"
     domain = "TODO"  # one of data_foundry.schema.Domain
-    source = "TODO"  # where the data first appeared: one of data_foundry.schema.DatasetSource
-    source_url = "TODO"
-    license = "TODO"
+    sources = (
+        # The publication: where the data first appeared, not a later re-upload; its year and BibTeX are the
+        # dataset's. Add Source(role="copy", platform=..., url=..., license=...) for the copy we download when it is
+        # not the publication, and Source(role="part", name=..., ..., files=("...",)) per piece of an assembled dataset.
+        Source(
+            role="publication",
+            platform="TODO",  # one of data_foundry.schema.DatasetSource
+            url="TODO",
+            license="TODO",
+            year="TODO",
+            bibtex="""
+                @misc{TODO,
+                  title = {TODO},
+                }
+            """,
+        ),
+    )
     data_tags = ()  # context tags only (Spatial, Anonymized, ...); the regime tags are added from the task
     download_description = """
         TODO(verify): commands that recreate the raw files.
         mkdir -p local-data-warehouse/<unique_name> && mv data_files local-data-warehouse/<unique_name>/
-    """
-    bibtex = """
-        @misc{TODO,
-          title = {TODO},
-        }
     """
     curation_comments = """
         We start with <file> from <source>.
@@ -47,7 +62,7 @@ class ClassName(AbstractCuratedDataset):
         - TODO(verify): what was dropped and why (identifiers, leaking features, constant columns).
     """
     # TabArena v0.2 ships data over its row budget (a split side over 1M train / 500k test rows) as a sub-sampled
-    # `<name>_1m` version, which also sets: version_of = "<name>", version_comment = "...",
+    # version named `<name>_1m` (it reads the raw files of `<name>`), which also sets
     # row_budget = RowBudget(train=1_000_000, test=500_000)  (from data_foundry.v2 import RowBudget).
 
     # Task (stratifying on a classification target is the default)

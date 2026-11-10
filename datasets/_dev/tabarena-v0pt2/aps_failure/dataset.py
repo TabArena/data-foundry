@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
 
 
 class ApsFailure(AbstractCuratedDataset):
@@ -49,25 +49,37 @@ class ApsFailure(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "aps_failure"
-    year = "2016"
     domain = "industry & manufacturing"
-    source = "Other"  # the IDA 2016 Industrial Challenge (Scania); its site is gone, UCI 421 re-hosts its zip
-    source_url = "https://web.archive.org/web/20161011/http://ida2016.blogs.dsv.su.se/"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # the IDA 2016 Industrial Challenge (Scania); its site is gone, UCI 421 re-hosts its zip
+            url="https://web.archive.org/web/20161011/http://ida2016.blogs.dsv.su.se/",
+            license="CC BY 4.0",
+            year="2016",
+            bibtex=r"""
+                @misc{ida2016challenge,
+                  author       = {{IDA2016Challenge}},
+                  title        = {IDA2016Challenge [Dataset]},
+                  year         = {2016},
+                  howpublished = {\url{https://doi.org/10.24432/C5V60Q}},
+                  note         = {UCI Machine Learning Repository},
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5V60Q",
+            license="CC BY 4.0",
+            name="UCI 414, the re-hosted challenge zip",
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal", "Anonymized")
     download_description = """
         We download UCI's copy (https://doi.org/10.24432/C5V60Q) of the IDA 2016 Industrial Challenge files.
 
         mkdir -p local-data-warehouse/aps_failure && wget -P local-data-warehouse/aps_failure/ https://archive.ics.uci.edu/static/public/414/ida2016challenge.zip && unzip local-data-warehouse/aps_failure/ida2016challenge.zip -d local-data-warehouse/aps_failure/ && rm local-data-warehouse/aps_failure/ida2016challenge.zip
-    """
-    bibtex = r"""
-        @misc{ida2016challenge,
-          author       = {{IDA2016Challenge}},
-          title        = {IDA2016Challenge [Dataset]},
-          year         = {2016},
-          howpublished = {\url{https://doi.org/10.24432/C5V60Q}},
-          note         = {UCI Machine Learning Repository},
-        }
     """
     curation_comments = """
         - We combined the original training and testing data into a single dataset.

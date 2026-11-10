@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, anonymize_ids
 
 
 class Musk(AbstractCuratedDataset):
@@ -43,22 +43,27 @@ class Musk(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "musk"
-    year = "1994"
     domain = "chemistry & material science"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C51608"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C51608",
+            license="CC BY 4.0",
+            year="1994",
+            bibtex="""
+                @article{dietterich1993comparison,
+                  title={A comparison of dynamic reposing and tangent distance for drug activity prediction},
+                  author={Dietterich, Thomas and Jain, Ajay and Lathrop, Richard and Lozano-Perez, Tomas},
+                  journal={Advances in neural information processing systems},
+                  volume={6},
+                  year={1993}
+                }
+            """,
+        ),
+    )
     download_description = """
         wget https://archive.ics.uci.edu/static/public/75/musk+version+2.zip && unzip musk+version+2.zip clean2.data.Z && uncompress clean2.data.Z && rm musk+version+2.zip && mkdir -p local-data-warehouse/musk && mv clean2.data local-data-warehouse/musk/
-    """
-    bibtex = """
-        @article{dietterich1993comparison,
-          title={A comparison of dynamic reposing and tangent distance for drug activity prediction},
-          author={Dietterich, Thomas and Jain, Ajay and Lathrop, Richard and Lozano-Perez, Tomas},
-          journal={Advances in neural information processing systems},
-          volume={6},
-          year={1993}
-        }
     """
     curation_comments = """
         - We rename the molecule IDs to remove the target leakage from the names.

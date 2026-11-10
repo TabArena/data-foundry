@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     drop_columns,
 )
@@ -151,11 +152,28 @@ class PricingGame2016FrenchFleet(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "pricing_game_2016_french_fleet"
-    year = "2016"
     domain = "insurance"
-    source = "Other"  # the organisers' files on Arthur Charpentier's site; no closer schema value
-    source_url = "https://actinfo.hypotheses.org/69"
-    license = None  # none stated by the organisers; CASdatasets, which redistributes the tables, is GPL (>= 2)
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # the organisers' files on Arthur Charpentier's site; no closer schema value
+            url="https://actinfo.hypotheses.org/69",
+            license=None,  # none stated by the organisers; CASdatasets, which redistributes the tables, is GPL (>= 2)
+            year="2016",
+            bibtex=r"""
+                @misc{Charpentier2016PricingGame,
+                  author = {Charpentier, Arthur and Elie, Romuald and Jakubowicz, J{\'e}r{\'e}mie},
+                  title = {Pricing Game 100\% Data Science},
+                  year = {2016},
+                  howpublished = {\url{https://actinfo.hypotheses.org/69}},
+                  note = {Second actuarial pricing game, Institut des Actuaires, 100\% Data Science day of 8 November 2016;
+                    data files train\_contrats.csv and train\_sinistres.csv at http://freakonometrics.free.fr/pricinggame/;
+                    DOI 10.58079/al7p; distributed as pg16trainpol and pg16trainclaim in the R package CASdatasets (Dutang
+                    and Charpentier)}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized", "Spatial", "ForcedGroupedFromTemporal")
     download_description = """
         The second actuarial pricing game (Arthur Charpentier, Romuald Elie and Jérémie Jakubowicz, for the 100% Data
@@ -173,18 +191,6 @@ class PricingGame2016FrenchFleet(AbstractCuratedDataset):
         sha256sum train_contrats.csv train_sinistres.csv
         # d0f9caeb8146a03bdfe8ef67be2a5df576f35ae31a34d91f4c10946885c4f14a  train_contrats.csv
         # d41f7b18afea4767c50d750909be669c272696fd9d75587ca83a00d1ce6e45fe  train_sinistres.csv
-    """
-    bibtex = r"""
-        @misc{Charpentier2016PricingGame,
-          author = {Charpentier, Arthur and Elie, Romuald and Jakubowicz, J{\'e}r{\'e}mie},
-          title = {Pricing Game 100\% Data Science},
-          year = {2016},
-          howpublished = {\url{https://actinfo.hypotheses.org/69}},
-          note = {Second actuarial pricing game, Institut des Actuaires, 100\% Data Science day of 8 November 2016;
-            data files train\_contrats.csv and train\_sinistres.csv at http://freakonometrics.free.fr/pricinggame/;
-            DOI 10.58079/al7p; distributed as pg16trainpol and pg16trainclaim in the R package CASdatasets (Dutang
-            and Charpentier)}
-        }
     """
     curation_comments = """
         We start with train_contrats.csv and train_sinistres.csv, the files the organisers of the second actuarial pricing game (2016) gave its players.

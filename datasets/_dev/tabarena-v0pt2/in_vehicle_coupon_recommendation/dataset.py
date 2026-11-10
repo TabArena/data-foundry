@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids, decode
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    anonymize_ids,
+    decode,
+)
 
 RESPONDENT_COLUMNS = [
     "gender",
@@ -113,27 +122,39 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "in_vehicle_coupon_recommendation"
-    year = "2017"
     domain = "business & marketing"
-    source = "Other"  # the authors' ResearchGate deposit, cited in Wang et al. (2017) Sec. 6; UCI 603 is a copy
-    source_url = "https://www.researchgate.net/publication/318645502_in-vehicle_coupon_recommendation"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # the authors' ResearchGate deposit, cited in Wang et al. (2017) Sec. 6; UCI 603 is a copy
+            url="https://www.researchgate.net/publication/318645502_in-vehicle_coupon_recommendation",
+            license="CC BY 4.0",
+            year="2017",
+            bibtex="""
+                @article{wang2017bayesian,
+                  title={A bayesian framework for learning rule sets for interpretable classification},
+                  author={Wang, Tong and Rudin, Cynthia and Doshi-Velez, Finale and Liu, Yimin and Klampfl, Erica and MacNeille, Perry},
+                  journal={Journal of Machine Learning Research},
+                  volume={18},
+                  number={70},
+                  pages={1--37},
+                  year={2017}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5GS4P",
+            license="CC BY 4.0",
+            name="UCI 603",
+        ),
+    )
     download_description = """
         We download UCI's copy (https://doi.org/10.24432/C5GS4P) of the data the authors deposited on ResearchGate,
         and unzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/in_vehicle_coupon_recommendation/ && wget -P local-data-warehouse/in_vehicle_coupon_recommendation/ https://archive.ics.uci.edu/static/public/603/in+vehicle+coupon+recommendation.zip && unzip local-data-warehouse/in_vehicle_coupon_recommendation/in+vehicle+coupon+recommendation.zip -d local-data-warehouse/in_vehicle_coupon_recommendation/
-    """
-    bibtex = """
-        @article{wang2017bayesian,
-          title={A bayesian framework for learning rule sets for interpretable classification},
-          author={Wang, Tong and Rudin, Cynthia and Doshi-Velez, Finale and Liu, Yimin and Klampfl, Erica and MacNeille, Perry},
-          journal={Journal of Machine Learning Research},
-          volume={18},
-          number={70},
-          pages={1--37},
-          year={2017}
-        }
     """
     curation_comments = """
         - We renamed the target feature and its value to be more descriptive.

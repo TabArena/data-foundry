@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, RowBudget, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    RowBudget,
+    Source,
+    TaskSummary,
+    drop_columns,
+)
 
 TARGET = "CHURN"
 
@@ -82,15 +91,25 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "expresso_churn_prediction_1m"
-    version_of = "expresso_churn_prediction"
-    version_comment = """
-        We sub-sample the frame (2,154,048 customers) to 1.5M customers, stratified on the target, and use 3-fold cross-validation, so every fold trains on 1M and tests on 500k customers (v2 split protocol).
-    """
-    year = "2020"
     domain = "business & marketing"
-    source = "Zindi"
-    source_url = "https://zindi.africa/competitions/umojahack-ghana-expresso-churn-prediction-challenge"
-    license = "Zindi Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Zindi",
+            url="https://zindi.africa/competitions/umojahack-ghana-expresso-churn-prediction-challenge",
+            license="Zindi Competition Rules",
+            year="2020",
+            bibtex=r"""
+                @misc{zindi2020expressochurn,
+                  author = {{Zindi} and {Expresso}},
+                  title = {UmojaHack Ghana: Expresso Churn Prediction Challenge},
+                  year = {2020},
+                  howpublished = {\url{https://zindi.africa/competitions/umojahack-ghana-expresso-churn-prediction-challenge}},
+                  note = {Zindi hackathon, 27 June 2020. Re-run with the same files as the Zindi competition Expresso Churn Prediction Challenge, 27 August to 28 November 2021, \url{https://zindi.africa/competitions/expresso-churn-prediction}}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         Train.csv of the Zindi hackathon "UmojaHack Ghana: Expresso Churn Prediction Challenge" (27 June 2020), re-run
@@ -107,15 +126,6 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         mkdir -p local-data-warehouse/expresso_churn_prediction
         unzip expresso-churn-prediction-challenge.zip Train.csv -d local-data-warehouse/expresso_churn_prediction
         rm expresso-churn-prediction-challenge.zip
-    """
-    bibtex = r"""
-        @misc{zindi2020expressochurn,
-          author = {{Zindi} and {Expresso}},
-          title = {UmojaHack Ghana: Expresso Churn Prediction Challenge},
-          year = {2020},
-          howpublished = {\url{https://zindi.africa/competitions/umojahack-ghana-expresso-churn-prediction-challenge}},
-          note = {Zindi hackathon, 27 June 2020. Re-run with the same files as the Zindi competition Expresso Churn Prediction Challenge, 27 August to 28 November 2021, \url{https://zindi.africa/competitions/expresso-churn-prediction}}
-        }
     """
     curation_comments = """
         We start with Train.csv of the Zindi hackathon UmojaHack Ghana: Expresso Churn Prediction Challenge (2020), re-run with the same files as the Expresso Churn Prediction Challenge (2021): 2,154,048 customers of the telecom operator Expresso in Senegal, one row each. Zindi's Test.csv has no labels and is not used.
@@ -134,6 +144,7 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         - Note: Zindi's rules forbid redistributing the data, uploads to Kaggle or GitHub included; the Kaggle copies we name are such uploads.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - The row budget: We sub-sample the frame (2,154,048 customers) to 1.5M customers, stratified on the target, and use 3-fold cross-validation, so every fold trains on 1M and tests on 500k customers (v2 split protocol).
     """
 
     # Task

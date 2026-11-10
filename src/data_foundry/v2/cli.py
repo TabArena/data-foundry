@@ -118,13 +118,14 @@ def _prefill(text: str, record: object | None) -> str:
     def put(field: str, value: str | None) -> None:
         nonlocal text
         if value:
-            text = re.sub(rf'({field} = )"TODO"', lambda m: f"{m.group(1)}{json.dumps(value)}", text, count=1)
+            text = re.sub(rf'(\b{field}\s*=\s*)"TODO"', lambda m: f"{m.group(1)}{json.dumps(value)}", text, count=1)
 
-    put("year", getattr(record, "year", None))
     put("domain", RECORD_DOMAINS.get(getattr(record, "domain", None) or ""))
-    put("source", RECORD_SOURCES.get(getattr(record, "original_source", None) or ""))
+    # the publication source of the template's `sources`
+    put("platform", RECORD_SOURCES.get(getattr(record, "original_source", None) or ""))
     links = getattr(record, "source_links", None) or []
-    put("source_url", links[0] if links else None)
+    put("url", links[0] if links else None)
+    put("year", getattr(record, "year", None))
     problem = PROBLEM_TYPES.get((getattr(record, "problem_type", None) or "").strip().lower())
     if problem:
         put("problem_type", problem[0])

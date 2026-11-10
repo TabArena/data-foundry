@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, object_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode, object_columns
 
 TABLES = {
     "application": "application_train.csv",
@@ -99,26 +99,31 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "home_credit_default_risk"
-    year = "2018"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/c/home-credit-default-risk"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/c/home-credit-default-risk",
+            license="Kaggle Competition Rules",
+            year="2018",
+            bibtex=r"""
+                @misc{Montoya2018HomeCreditDefaultRisk,
+                  author = {Anna Montoya and inversion and Kirill Odintsov and Martin Kotek},
+                  title  = {Home Credit Default Risk},
+                  year   = {2018},
+                  howpublished = {\url{https://kaggle.com/competitions/home-credit-default-risk}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the files from the Kaggle data. This dataset starts as a SQL database with multiple tables, so it has multiple files.
 
         kaggle competitions download -c home-credit-default-risk && unzip home-credit-default-risk.zip -d data_files && rm home-credit-default-risk.zip
         mkdir -p local-data-warehouse/home_credit_default_risk && mv data_files local-data-warehouse/home_credit_default_risk/
-    """
-    bibtex = r"""
-        @misc{Montoya2018HomeCreditDefaultRisk,
-          author = {Anna Montoya and inversion and Kirill Odintsov and Martin Kotek},
-          title  = {Home Credit Default Risk},
-          year   = {2018},
-          howpublished = {\url{https://kaggle.com/competitions/home-credit-default-risk}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with the SQL tables from Kaggle. We then merge these tables into a single file following the top Kaggle solutions.

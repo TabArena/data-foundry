@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class BankCustomerChurn(AbstractCuratedDataset):
@@ -35,25 +35,30 @@ class BankCustomerChurn(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "bank_customer_churn"
-    year = "2022"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset",
+            license=None,  # Kaggle says "Other (specified in description)", and the description names none
+            year="2022",
+            bibtex="""
+                @misc{Topre2022BankCustomerChurn,
+                  title={Bank Customer Churn Dataset},
+                  author={Gaurav Topre},
+                  year={2022},
+                  publisher={Kaggle},
+                  url={https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal",)
-    license = None  # Kaggle says "Other (specified in description)", and the description names none
     download_description = """
         We download the data from Kaggle to a .csv file in a predefined folder.
 
         mkdir -p local-data-warehouse/bank_customer_churn && cd local-data-warehouse/bank_customer_churn && kaggle datasets download gauravtopre/bank-customer-churn-dataset && unzip bank-customer-churn-dataset.zip && rm bank-customer-churn-dataset.zip && cd ../../
-    """
-    bibtex = """
-        @misc{Topre2022BankCustomerChurn,
-          title={Bank Customer Churn Dataset},
-          author={Gaurav Topre},
-          year={2022},
-          publisher={Kaggle},
-          url={https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset}
-        }
     """
     curation_comments = """
         - We remove the customer_id column.

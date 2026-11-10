@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     SplitPlan,
     TaskSummary,
     Temporal,
@@ -513,15 +514,27 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "alfa_battle_2_0_task_2"
-    year = "2020"
     domain = "finance"
-    source = "Other"
-    source_url = "https://boosters.pro/championship/alfabattle2/overview"
-    license = (
-        "Competition rules (Alfa Battle 2.0 Rules, Sec. 3.10 and 5.6): participants must not publish or pass on the "
-        "data. Alfa-Bank later allowed its use in scientific publications and theses "
-        "(habr.com/ru/companies/alfa/articles/551130) and re-hosted it for its 2022 ODS.ai competition; the Kaggle "
-        "mirror mrmorj/alfabattle-20 labels it CC0-1.0 (the uploader's label)"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://boosters.pro/championship/alfabattle2/overview",
+            license="Competition rules (Alfa Battle 2.0 Rules, Sec. 3.10 and 5.6): participants must not publish or pass on the "
+            "data. Alfa-Bank later allowed its use in scientific publications and theses "
+            "(habr.com/ru/companies/alfa/articles/551130) and re-hosted it for its 2022 ODS.ai competition; the Kaggle "
+            "mirror mrmorj/alfabattle-20 labels it CC0-1.0 (the uploader's label)",
+            year="2020",
+            bibtex=r"""
+                @misc{AlfaBank2020AlfaBattle2,
+                  author = {{Alfa-Bank}},
+                  title  = {{AlfaBattle} 2.0, Task 2: Credit Scoring from Card Transactions},
+                  year   = {2020},
+                  howpublished = {\url{https://boosters.pro/championship/alfabattle2/overview}},
+                  note   = {Data science competition on Boosters.pro, 12 December 2020 to 18 January 2021, final on 29 January 2021}
+                }
+            """,
+        ),
     )
     data_tags = ("Anonymized",)
     download_description = """
@@ -533,15 +546,6 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
         unzip train_transactions_contest.zip -x '__MACOSX/*' && rm train_transactions_contest.zip
 
         This gives train_target.csv (10,498,134 bytes, sha256 470ea19c...3d74) and the 50 files train_transactions_contest/part_*.parquet (4,242,459,450 bytes). Fallback: the Kaggle mirror mrmorj/alfabattle-20 (uploaded 2020-12-12) holds byte-identical files (sha256 compared 2026-10-07) as alfabattle2_train_target.csv and alfabattle2_train_transactions_contest/train_transactions_contest/part_*.parquet; rename them to the paths above. `_prepare_raw_files` aggregates the transactions once into train_features.parquet.
-    """
-    bibtex = r"""
-        @misc{AlfaBank2020AlfaBattle2,
-          author = {{Alfa-Bank}},
-          title  = {{AlfaBattle} 2.0, Task 2: Credit Scoring from Card Transactions},
-          year   = {2020},
-          howpublished = {\url{https://boosters.pro/championship/alfabattle2/overview}},
-          note   = {Data science competition on Boosters.pro, 12 December 2020 to 18 January 2021, final on 29 January 2021}
-        }
     """
     curation_comments = """
         We start with train_target.csv and the 50 train transaction files of AlfaBattle 2.0, task 2 (Alfa-Bank on Boosters.pro, 2020), from the organizer's archive on ODS.ai.

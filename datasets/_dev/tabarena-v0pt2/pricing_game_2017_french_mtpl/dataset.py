@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    drop_columns,
+)
 
 # The rules' three keys of a claim and of a policy-year ("When merging claims with contracts, don't forget to use the
 # three IDs as keys", 3rdPricingGame.pdf, Sec. 4.4).
@@ -87,11 +96,34 @@ class PricingGame2017FrenchMtpl(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "pricing_game_2017_french_mtpl"
-    year = "2017"
     domain = "insurance"
-    source = "Other"  # the 2017 actuarial pricing game's toolbox (Charpentier); no closer schema value
-    source_url = "https://actinfo.hypotheses.org/86"
-    license = "GPL (>= 2)"  # CASdatasets DESCRIPTION; the game's pages state no terms
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # the 2017 actuarial pricing game's toolbox (Charpentier); no closer schema value
+            url="https://actinfo.hypotheses.org/86",
+            license="GPL (>= 2)",  # CASdatasets DESCRIPTION; the game's pages state no terms
+            year="2017",
+            bibtex=r"""
+                @misc{Charpentier2017PricingGame,
+                  author = {Charpentier, Arthur},
+                  title = {Third Actuarial Pricing Game},
+                  year = {2017},
+                  howpublished = {\url{https://actinfo.hypotheses.org/86}},
+                  note = {With the ACTINFO chair of the Institut Louis Bachelier and the Institut des Actuaires; data released
+                    to the players on 10 January 2017; distributed as pg17trainpol and pg17trainclaim in the R package
+                    CASdatasets (Dutang and Charpentier), DOI 10.57745/P0KHAG}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="Other",
+            url="https://dutangc.github.io/CASdatasets/",
+            license="GPL (>= 2)",
+            name="R package CASdatasets",
+        ),
+    )
     data_tags = ("ForcedGroupedFromTemporal", "Spatial")
     download_description = """
         The third actuarial pricing game (Arthur Charpentier with the ACTINFO chair and the Institut des Actuaires,
@@ -113,17 +145,6 @@ class PricingGame2017FrenchMtpl(AbstractCuratedDataset):
         sha256sum pg17train*.csv
         # 7597871a99636332cd02bd7d1d4104ce89b9f9dff07cc32fafe2358dd3bf6c8b  pg17trainclaim.csv
         # 6029c702700f45e803e5c9a3cdd299e59084868e45f329268d3793a295427de5  pg17trainpol.csv
-    """
-    bibtex = r"""
-        @misc{Charpentier2017PricingGame,
-          author = {Charpentier, Arthur},
-          title = {Third Actuarial Pricing Game},
-          year = {2017},
-          howpublished = {\url{https://actinfo.hypotheses.org/86}},
-          note = {With the ACTINFO chair of the Institut Louis Bachelier and the Institut des Actuaires; data released
-            to the players on 10 January 2017; distributed as pg17trainpol and pg17trainclaim in the R package
-            CASdatasets (Dutang and Charpentier), DOI 10.57745/P0KHAG}
-        }
     """
     curation_comments = """
         We start with pg17trainpol and pg17trainclaim of CASdatasets, the Year-0 underwriting and claims files of the third actuarial pricing game (2017).

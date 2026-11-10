@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
 
 # Entries of one sale scraped twice: the same home (address, ZIP code, year built) with the same sold price, a median
 # 61 Kaggle IDs apart (51 pairs).
@@ -52,26 +52,31 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "california_house_prices_2020"
-    year = "2021"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/california-house-prices/data?select=train.csv"
-    license = "Custom Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/california-house-prices/data?select=train.csv",
+            license="Custom Kaggle Competition Rules",
+            year="2021",
+            bibtex=r"""
+                @misc{d2lcourse2021california_house_prices,
+                  author       = {d2lcourse},
+                  title        = {California House Prices},
+                  year         = {2021},
+                  howpublished = {\url{https://kaggle.com/competitions/california-house-prices}},
+                  note         = {Kaggle}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We utilize the train.csv from the Kaggle competition. We use the following commands to download and organize the data:
 
         kaggle competitions download -c california-house-prices -f train.csv && unzip train.csv.zip train.csv && rm train.csv.zip
         mkdir -p local-data-warehouse/california_house_prices_2020 && mv train.csv local-data-warehouse/california_house_prices_2020
-    """
-    bibtex = r"""
-        @misc{d2lcourse2021california_house_prices,
-          author       = {d2lcourse},
-          title        = {California House Prices},
-          year         = {2021},
-          howpublished = {\url{https://kaggle.com/competitions/california-house-prices}},
-          note         = {Kaggle}
-        }
     """
     curation_comments = """
         We follow some common preprocessing steps from Kaggle and enhance features as much as possible.

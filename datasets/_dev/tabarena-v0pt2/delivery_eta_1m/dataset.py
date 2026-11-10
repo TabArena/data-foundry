@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     RowBudget,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -48,28 +49,29 @@ class DeliveryEta1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "delivery_eta_1m"
-    version_of = "delivery_eta"
-    version_comment = """
-        We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
-    """
-    year = "2024"
     domain = "industry & manufacturing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/pcovkrd84mejm/delivery-eta"
-    license = "CC-BY-NC-SA-4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/pcovkrd84mejm/delivery-eta",
+            license="CC-BY-NC-SA-4.0",
+            year="2024",
+            bibtex="""
+                @inproceedings{rubachev2025tabred,
+                  title={TabReD: Analyzing Pitfalls and Filling the Gaps in Tabular Deep Learning Benchmarks},
+                  author={Rubachev, Ivan and Kartashev, Nikolay and Gorishniy, Yury and Babenko, Artem},
+                  booktitle={The Thirteenth International Conference on Learning Representations},
+                  year={2025},
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         We download the data from Kaggle.
 
         kaggle datasets download -d pcovkrd84mejm/delivery-eta -f delivery_eta.parquet && unzip delivery_eta.parquet.zip && rm delivery_eta.parquet.zip && mkdir -p local-data-warehouse/delivery_eta && mv delivery_eta.parquet local-data-warehouse/delivery_eta/
-    """
-    bibtex = """
-        @inproceedings{rubachev2025tabred,
-          title={TabReD: Analyzing Pitfalls and Filling the Gaps in Tabular Deep Learning Benchmarks},
-          author={Rubachev, Ivan and Kartashev, Nikolay and Gorishniy, Yury and Babenko, Artem},
-          booktitle={The Thirteenth International Conference on Learning Representations},
-          year={2025},
-        }
     """
     curation_comments = """
         We start with data from TabRed, which already comes preprocessed.
@@ -79,6 +81,7 @@ class DeliveryEta1m(AbstractCuratedDataset):
         - The target is the natural log of the minutes, as in TabReD (the column keeps its name). TabReD's reason, stated for its cooking-time data and applied here too: the times are right-skewed, and squared error on the log is close to absolute error on the minutes, the error that matters for the task.
         - We drop a duplicated column `cat_2` in the preprocessing.
         - We drop `num_29`, `num_36` and `num_71`, which are constant except in the same 2 of 16.7M rows (both hold 5.199 in all three columns), and `num_101`, which has a single value and is missing in exactly the rows where 19 other columns are missing, so it carries no information of its own.
+        - The row budget: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
     """
 
     # Task

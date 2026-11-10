@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -60,11 +61,24 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
     )
 
     unique_name = "lt_vehicle_loan_default_prediction"
-    year = "2019"
     domain = "finance"
-    source = "Other"
-    source_url = "https://www.analyticsvidhya.com/datahack/contest/ltfs-datascience-finhack-an-online-hackathon/"
-    license = "Not stated in the inspected organizer task and dictionary; resolve terms before release."
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://www.analyticsvidhya.com/datahack/contest/ltfs-datascience-finhack-an-online-hackathon/",
+            license="Not stated in the inspected organizer task and dictionary; resolve terms before release.",
+            year="2019",
+            bibtex=r"""
+                @misc{ltfs2019finhack,
+                  author = {{L\&T Financial Services} and {Analytics Vidhya}},
+                  title = {LTFS Data Science FinHack: Vehicle Loan Default Prediction},
+                  year = {2019},
+                  howpublished = {\url{https://www.analyticsvidhya.com/datahack/contest/ltfs-datascience-finhack-an-online-hackathon/}}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial", "Anonymized")
     download_description = """
         Original organizer archive, retained intact; extract train.csv and Data Dictionary.xlsx without modification.
@@ -76,14 +90,6 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
         train.csv SHA-256: f515a34e7f72446b520b128f4ccfab7cf7761860b44e789765eb640a4e6383d6.
         The original unlabeled test_bqCt9Pv.csv was inspected previously for provenance only, not joined or scored;
         it was not available for fresh rereading in the 2026-10-27 qualification.
-    """
-    bibtex = r"""
-        @misc{ltfs2019finhack,
-          author = {{L\&T Financial Services} and {Analytics Vidhya}},
-          title = {LTFS Data Science FinHack: Vehicle Loan Default Prediction},
-          year = {2019},
-          howpublished = {\url{https://www.analyticsvidhya.com/datahack/contest/ltfs-datascience-finhack-an-online-hackathon/}}
-        }
     """
     curation_comments = """
         - Direct add/review recheck (2026-10-28): all source rows/labels, categorical network codes and exact nine temporal splits remain unchanged; Myunghwan's existing final ship and four task choices remain authoritative. Fresh full independent review found no new demonstrated timing or leakage mechanism requiring a scientific change.
@@ -117,7 +123,7 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
     metric = Metric.source(
         "roc_auc",
         original="area under the ROC curve",
-        reference=source_url,
+        reference="https://www.analyticsvidhya.com/datahack/contest/ltfs-datascience-finhack-an-online-hackathon/",
         definition="ROC AUC between predicted default probabilities and the original observed first-EMI outcome.",
     )
     temporal = Temporal(

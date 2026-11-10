@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
 
 
 class BloodTestsDrinkPrediction(AbstractCuratedDataset):
@@ -43,25 +43,30 @@ class BloodTestsDrinkPrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "blood_tests_drink_prediction"
-    year = "1990"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C54G67"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C54G67",
+            license="CC BY 4.0",
+            year="1990",
+            bibtex=r"""
+                @misc{UCILiverDisorders2016,
+                  title        = {Liver Disorders},
+                  author       = {{UCI Machine Learning Repository}},
+                  year         = {2016},
+                  howpublished = {\url{https://doi.org/10.24432/C54G67}},
+                  note         = {Dataset}
+                }
+            """,
+        ),
+    )
     download_description = """
         We get the data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/60/liver+disorders.zip &&  unzip liver+disorders.zip bupa.data && rm liver+disorders.zip
         mkdir -p local-data-warehouse/blood_tests_drink_prediction && mv bupa.data local-data-warehouse/blood_tests_drink_prediction/
-    """
-    bibtex = r"""
-        @misc{UCILiverDisorders2016,
-          title        = {Liver Disorders},
-          author       = {{UCI Machine Learning Repository}},
-          year         = {2016},
-          howpublished = {\url{https://doi.org/10.24432/C54G67}},
-          note         = {Dataset}
-        }
     """
     curation_comments = """
         The task is framed as a liver disorder prediction task, but we only have data bout the amount of drinks consumed. So instead, we will frame it as a task to predict the number of drinks based on the blood work data. This is a proxy for the original task, where later based on the number of drinks the liver disorder was determined.

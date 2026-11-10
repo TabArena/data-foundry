@@ -147,7 +147,8 @@ in `tests/test_records_integrity.py`.
 ## The definition pointers (`v2_path`, `notebook_path`)
 
 `v2_path` is the record's v2 `dataset.py` in the TabArena v0.2 working copy (`datasets/_dev/tabarena-v0pt2/<name>/`,
-or the `<name>_*/` folder whose class declares `version_of = "<name>"`); it points into `_dev` until v0.2 ships.
+or the `<name>_<suffix>/` folder of a version sub-sampled to a `row_budget`, such as `<name>_1m/`); it points into
+`_dev` until v0.2 ships.
 `notebook_path` is the v1 notebook a dataset was curated in; a new dataset only ever gets a `v2_path`
 ([DATA_FOUNDRY_V1.md](../../../../DATA_FOUNDRY_V1.md)). The pointers live in the record, so it names its definition on
 its own (in the file, in a PR diff), and a reorganisation of `datasets/` is a path edit. The dashboard links them as 📓

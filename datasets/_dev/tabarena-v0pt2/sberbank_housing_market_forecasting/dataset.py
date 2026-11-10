@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -197,26 +198,31 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "sberbank_housing_market_forecasting"
-    year = "2017"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/sberbank-russian-housing-market"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/sberbank-russian-housing-market",
+            license="Kaggle Competition Rules",
+            year="2017",
+            bibtex=r"""
+                @misc{Matveev2017SberbankRussianHousingMarket,
+                  author = {Alex Matveev and Anastasia Sidorova and DataCanary},
+                  title  = {Sberbank Russian Housing Market},
+                  year   = {2017},
+                  howpublished = {\url{https://kaggle.com/competitions/sberbank-russian-housing-market}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We use the data from Kaggle:
 
         kaggle competitions download -c sberbank-russian-housing-market
         mkdir -p local-data-warehouse/sberbank_housing_market_forecasting && mv sberbank-russian-housing-market.zip local-data-warehouse/sberbank_housing_market_forecasting/ && cd local-data-warehouse/sberbank_housing_market_forecasting/ && unzip sberbank-russian-housing-market.zip && rm test.csv.zip sample_submission.csv.zip data_dictionary.txt sberbank-russian-housing-market.zip
-    """
-    bibtex = r"""
-        @misc{Matveev2017SberbankRussianHousingMarket,
-          author = {Alex Matveev and Anastasia Sidorova and DataCanary},
-          title  = {Sberbank Russian Housing Market},
-          year   = {2017},
-          howpublished = {\url{https://kaggle.com/competitions/sberbank-russian-housing-market}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We follow the preprocessing from TabRed (https://github.com/yandex-research/tabred/tree/main/preprocessing#sberbank-housing-market-forecasting).

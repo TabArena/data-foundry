@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     Smiles,
+    Source,
     TaskSummary,
     canonical_smiles,
     drop_columns,
@@ -99,11 +100,45 @@ class QsarOralToxicity(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "qsar_oral_toxicity"
-    year = "2019"
     domain = "chemistry & material science"
-    source = "Other"  # the Milano group's package of the paper; UCI 508 is a copy of two of its three sets
-    source_url = "https://michem.unimib.it/download/data/acute-oral-systemic-toxicity/"
-    license = "Freeware, to be used with a reference to the paper (the package's readme); the UCI copy is CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # the Milano group's package of the paper; UCI 508 is a copy of two of its three sets
+            url="https://michem.unimib.it/download/data/acute-oral-systemic-toxicity/",
+            license="Freeware, to be used with a reference to the paper (the package's readme)",
+            year="2019",
+            bibtex="""
+                @article{ballabio2019integrated,
+                  title={Integrated {QSAR} Models to Predict Acute Oral Systemic Toxicity},
+                  author={Ballabio, Davide and Grisoni, Francesca and Consonni, Viviana and Todeschini, Roberto},
+                  journal={Molecular Informatics},
+                  volume={38},
+                  number={8-9},
+                  pages={1800124},
+                  year={2019},
+                  doi={10.1002/minf.201800124}
+                }
+                @article{mansouri2021catmos,
+                  title={{CATMoS}: Collaborative Acute Toxicity Modeling Suite},
+                  author={Mansouri, Kamel and Karmaus, Agnes L. and Fitzpatrick, Jeremy and Patlewicz, Grace and Pradeep, Prachi and others},
+                  journal={Environmental Health Perspectives},
+                  volume={129},
+                  number={4},
+                  pages={047013},
+                  year={2021},
+                  doi={10.1289/EHP8495}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="UCI",
+            url="https://archive.ics.uci.edu/dataset/508/qsar+oral+toxicity",
+            license="CC BY 4.0",
+            name="UCI 508, two of the package's three sets",
+        ),
+    )
     download_description = """
         The data comes from the Milano Chemometrics and QSAR Research Group's package of Ballabio et al. (2019):
         download form on their site (source_url; freeware, cite the paper). The package is a RAR archive of MATLAB
@@ -123,28 +158,6 @@ class QsarOralToxicity(AbstractCuratedDataset):
 
         On first use, `_prepare_raw_files` decodes the three sets of vt_data.mat (bits, classes and the text fields,
         which MATLAB stores as string objects) into vt_data_02.csv.
-    """
-    bibtex = """
-        @article{ballabio2019integrated,
-          title={Integrated {QSAR} Models to Predict Acute Oral Systemic Toxicity},
-          author={Ballabio, Davide and Grisoni, Francesca and Consonni, Viviana and Todeschini, Roberto},
-          journal={Molecular Informatics},
-          volume={38},
-          number={8-9},
-          pages={1800124},
-          year={2019},
-          doi={10.1002/minf.201800124}
-        }
-        @article{mansouri2021catmos,
-          title={{CATMoS}: Collaborative Acute Toxicity Modeling Suite},
-          author={Mansouri, Kamel and Karmaus, Agnes L. and Fitzpatrick, Jeremy and Patlewicz, Grace and Pradeep, Prachi and others},
-          journal={Environmental Health Perspectives},
-          volume={129},
-          number={4},
-          pages={047013},
-          year={2021},
-          doi={10.1289/EHP8495}
-        }
     """
     curation_comments = """
         We start with vt_data.mat of the authors' package: the very toxic (VT) endpoint of the ICCVAM "Predictive Models for Acute Oral Systemic Toxicity" project (rat oral LD50 data; its consensus models became CATMoS) with the fingerprints of Ballabio et al. (2019). It holds the project's three sets, 11,886 chemicals (6,744 training, 2,248 test, 2,894 evaluation), each with 1,024 ECFP bits in two variants, the class, and the chemical's CASRN, name, QSAR-ready SMILES and InChIKey. UCI 508 is the ECFP_1024_02 block of the first two sets: its 8,992 rows and classes equal them row by row (decision table), so the dataset UCI gives is this one without the evaluation set (Lennart, 2026-10-21: extend, and use the further feature data).

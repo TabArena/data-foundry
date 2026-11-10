@@ -6,7 +6,7 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -57,27 +57,32 @@ class WebsitePhishing(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "website_phishing"
-    year = "2016"
     domain = "technology & internet"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5B301"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5B301",
+            license="CC BY 4.0",
+            year="2016",
+            bibtex="""
+                @article{abdelhamid2014phishing,
+                  title={Phishing detection based associative classification data mining},
+                  author={Abdelhamid, Neda and Ayesh, Aladdin and Thabtah, Fadi},
+                  journal={Expert Systems with Applications},
+                  volume={41},
+                  number={13},
+                  pages={5948--5959},
+                  year={2014},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/website_phishing/ && wget -P local-data-warehouse/website_phishing/ https://archive.ics.uci.edu/static/public/379/website+phishing.zip && unzip local-data-warehouse/website_phishing/website+phishing.zip && rm local-data-warehouse/website_phishing/website+phishing.zip
-    """
-    bibtex = """
-        @article{abdelhamid2014phishing,
-          title={Phishing detection based associative classification data mining},
-          author={Abdelhamid, Neda and Ayesh, Aladdin and Thabtah, Fadi},
-          journal={Expert Systems with Applications},
-          volume={41},
-          number={13},
-          pages={5948--5959},
-          year={2014},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         - Binary since 2026-10-14 (Lennart): phishing (`Result` -1, 702 sites) against legitimate (1, 548 sites). We

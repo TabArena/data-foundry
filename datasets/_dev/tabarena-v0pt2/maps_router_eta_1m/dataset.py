@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     RowBudget,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -45,34 +46,36 @@ class MapsRouterEta1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "maps_router_eta_1m"
-    version_of = "maps_router_eta"
-    version_comment = """
-        We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
-    """
-    year = "2024"
     domain = "industry & manufacturing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/pcovkrd84mejm/maps-routing"
-    license = "CC-BY-NC-SA-4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/pcovkrd84mejm/maps-routing",
+            license="CC-BY-NC-SA-4.0",
+            year="2024",
+            bibtex="""
+                @inproceedings{rubachev2025tabred,
+                  title={TabReD: Analyzing Pitfalls and Filling the Gaps in Tabular Deep Learning Benchmarks},
+                  author={Rubachev, Ivan and Kartashev, Nikolay and Gorishniy, Yury and Babenko, Artem},
+                  booktitle={The Thirteenth International Conference on Learning Representations},
+                  year={2025},
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         We get the TabRed data from Kaggle.
 
         kaggle datasets download -d pcovkrd84mejm/maps-routing -f maps_routing.parquet && unzip maps_routing.parquet.zip && rm maps_routing.parquet.zip && mkdir -p local-data-warehouse/maps_router_eta && mv maps_routing.parquet local-data-warehouse/maps_router_eta/
     """
-    bibtex = """
-        @inproceedings{rubachev2025tabred,
-          title={TabReD: Analyzing Pitfalls and Filling the Gaps in Tabular Deep Learning Benchmarks},
-          author={Rubachev, Ivan and Kartashev, Nikolay and Gorishniy, Yury and Babenko, Artem},
-          booktitle={The Thirteenth International Conference on Learning Representations},
-          year={2025},
-        }
-    """
     curation_comments = """
         We start with data from TabRed, which already comes preprocessed.
         We perform no additional preprocessing steps.
 
         - Potential leak, kept on purpose: TabReD releases the 984 numeric features only after a quantile transform to a normal distribution (all within ±5.1993, the clip of scikit-learn's QuantileTransformer; 624 reach it); which rows it was fit on is not documented, and the raw features are not published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if the TabReD authors say the fit used all rows.
+        - The row budget: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
     """
 
     # Task

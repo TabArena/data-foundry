@@ -143,10 +143,15 @@ if __name__ == "__main__":
 
 
 def source_links(name: str, records: Path, folder_class: type | None = None) -> list[str]:
-    """The record's source links without the note lines (``#``); the record of a ``version_of`` folder if needed."""
+    """The record's source links without the note lines (``#``).
+
+    For a version sub-sampled to a row budget (``<name>_1m``), the record of ``<name>`` if it has none of its own.
+    """
     path = records / f"{name}.md"
-    if not path.exists() and folder_class is not None and getattr(folder_class, "version_of", None):
-        path = records / f"{folder_class.version_of}.md"
+    if not path.exists() and folder_class is not None:
+        from data_foundry.v2.dataset import raw_name  # noqa: PLC0415 - the scripts import the package lazily
+
+        path = records / f"{raw_name(folder_class)}.md"
     if not path.exists():
         return []
     return [link for link in load_record(path).source_links if not link.lstrip().startswith("#")]

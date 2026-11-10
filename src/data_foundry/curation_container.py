@@ -24,6 +24,7 @@ from data_foundry.row_table import (
 )
 from data_foundry.schema import (
     DatasetMetadata,
+    DatasetMetadataV2,
     Grouping,
     MultilineStr,
     PredictiveMLSplitsMetadata,
@@ -49,6 +50,7 @@ logger = logging.getLogger(__name__)
 
 MetadataRegistry = {
     DatasetMetadata.type_adapter_id: DatasetMetadata,
+    DatasetMetadataV2.type_adapter_id: DatasetMetadataV2,
     PredictiveMLTaskMetadata.type_adapter_id: PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2.type_adapter_id: PredictiveMLTaskMetadataV2,
     PredictiveMLSplitsMetadata.type_adapter_id: PredictiveMLSplitsMetadata,
@@ -146,8 +148,10 @@ class CuratedContainer:
 
     dataset: pd.DataFrame
     """The curated dataset as a pandas DataFrame."""
-    dataset_metadata: DatasetMetadata
-    """Metadata about the dataset."""
+    dataset_metadata: DatasetMetadata | DatasetMetadataV2
+    """Metadata about the dataset: :class:`DatasetMetadataV2` from a v2 definition, :class:`DatasetMetadata` in the
+    containers of the v1 notebooks. Both read the same through ``domain``, ``publication``, ``sources``,
+    ``derived_from`` and ``derivation``."""
     task_metadata: PredictiveMLTaskMetadata | PredictiveMLTaskMetadataV2
     """Metadata about the task for the dataset; its class sets the container format (:attr:`format_version`)."""
     experiment_metadata: PredictiveMLSplitsMetadata
@@ -243,13 +247,11 @@ class CuratedContainer:
         assert self.uuid is not None, "UUID must be set."
         assert self.checksum is not None, "Checksum must be set."
 
-        metadata = {
-            "uuid": self.uuid,
-            "checksum": self.checksum,
-            "version_comment": self.version_comment,
-        }
+        metadata: dict[str, str | int | None] = {"uuid": self.uuid, "checksum": self.checksum}
         if self.format_version >= 2:  # format 1 keeps the file its readers know
             metadata["format_version"] = self.format_version
+        else:  # a format-2 version says how it differs in its dataset metadata (`derivation`)
+            metadata["version_comment"] = self.version_comment
         if self.test_dataset_checksum is not None:
             metadata["test_dataset_checksum"] = self.test_dataset_checksum
         return metadata
@@ -483,20 +485,17 @@ class CuratedContainer:
     def _save_path(self, save_dir: Path) -> Path:
         """Resolve the on-disk save directory for this container under ``save_dir``."""
         meta = self.dataset_metadata
-        path_name = meta.version_from_unique_name or meta.unique_name
-        base = save_dir / path_name
-        if meta.version_from_unique_name is not None:
-            base = base / "versions"
-        return base / self.uuid
+        version_of = getattr(meta, "version_from_unique_name", None)  # format 1 only
+        if version_of is not None:
+            return save_dir / version_of / "versions" / self.uuid
+        return save_dir / meta.unique_name / self.uuid
 
     def save(self, save_dir: Path | str | None = None) -> Path:
         """Save the curated data collection under ``save_dir`` (default: the warehouse,
         ``$DATA_FOUNDRY_WAREHOUSE`` or ``local-data-warehouse/``).
 
-        The container is written to
-        ``<save_dir>/<unique_name>/<uuid>/`` (or
-        ``<save_dir>/<version_from_unique_name>/versions/<uuid>/`` for
-        versioned datasets).
+        The container is written to ``<save_dir>/<unique_name>/<uuid>/`` (a format-1 version of another dataset:
+        ``<save_dir>/<version_from_unique_name>/versions/<uuid>/``).
         """
         save_dir = resolve_warehouse_dir() if save_dir is None else Path(save_dir)
         final_path = self._save_path(save_dir)

@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     RowBudget,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -50,15 +51,24 @@ class CookingTime1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "cooking_time_1m"
-    version_of = "cooking_time"
-    version_comment = """
-        We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
-    """
-    year = "2024"
     domain = "industry & manufacturing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/pcovkrd84mejm/cooking-time"
-    license = "CC-BY-NC-SA-4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/pcovkrd84mejm/cooking-time",
+            license="CC-BY-NC-SA-4.0",
+            year="2024",
+            bibtex="""
+                @inproceedings{rubachev2025tabred,
+                  title={TabReD: Analyzing Pitfalls and Filling the Gaps in Tabular Deep Learning Benchmarks},
+                  author={Rubachev, Ivan and Kartashev, Nikolay and Gorishniy, Yury and Babenko, Artem},
+                  booktitle={The Thirteenth International Conference on Learning Representations},
+                  year={2025},
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         We get the TabRed data from Kaggle.
@@ -66,20 +76,13 @@ class CookingTime1m(AbstractCuratedDataset):
         kaggle datasets download -d pcovkrd84mejm/cooking-time -f cooking_time.parquet && unzip cooking_time.parquet.zip && rm cooking_time.parquet.zip
         mkdir -p local-data-warehouse/cooking_time && mv cooking_time.parquet local-data-warehouse/cooking_time/
     """
-    bibtex = """
-        @inproceedings{rubachev2025tabred,
-          title={TabReD: Analyzing Pitfalls and Filling the Gaps in Tabular Deep Learning Benchmarks},
-          author={Rubachev, Ivan and Kartashev, Nikolay and Gorishniy, Yury and Babenko, Artem},
-          booktitle={The Thirteenth International Conference on Learning Representations},
-          year={2025},
-        }
-    """
     curation_comments = """
         We start with data from TabRed, which already comes preprocessed.
 
         - Potential leak, kept on purpose: TabReD releases the 186 numeric features only after a quantile transform to a normal distribution (all within ±5.1993, the clip of scikit-learn's QuantileTransformer; 155 reach it); which rows it was fit on is not documented, and the raw features are not published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if the TabReD authors say the fit used all rows.
         - We drop orders with a cooking time under one minute (168 of 12.8M, 26 of them zero or negative), as TabReD's preprocessing does.
         - The target is the natural log of the minutes, as in TabReD (the column keeps its name). TabReD's reason: the times are right-skewed, and squared error on the log is close to absolute error on the minutes, the error that matters for the task.
+        - The row budget: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
     """
 
     # Task

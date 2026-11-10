@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
 
 
 class RossmannStoreSales(AbstractCuratedDataset):
@@ -38,26 +38,31 @@ class RossmannStoreSales(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "rossmann_store_sales"
-    year = "2015"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/rossmann-store-sales/overview"
-    license = "Kaggle License"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/rossmann-store-sales/overview",
+            license="Kaggle License",
+            year="2015",
+            bibtex=r"""
+                @misc{kaggle_rossmann_store_sales,
+                    title        = {Rossmann Store Sales},
+                    author       = {{Kaggle}},
+                    howpublished = {\url{https://www.kaggle.com/competitions/rossmann-store-sales/overview}},
+                    note         = {Kaggle competition page. Accessed: 2026-03-19},
+                    year         = {2015}
+                }
+            """,
+        ),
+    )
     download_description = r"""
         kaggle competitions download -c rossmann-store-sales \
         && mkdir -p local-data-warehouse/rossmann_store_sales \
         && mv rossmann-store-sales.zip local-data-warehouse/rossmann_store_sales \
         && unzip local-data-warehouse/rossmann_store_sales/rossmann-store-sales.zip -d local-data-warehouse/rossmann_store_sales \
         && rm local-data-warehouse/rossmann_store_sales/rossmann-store-sales.zip
-    """
-    bibtex = r"""
-        @misc{kaggle_rossmann_store_sales,
-            title        = {Rossmann Store Sales},
-            author       = {{Kaggle}},
-            howpublished = {\url{https://www.kaggle.com/competitions/rossmann-store-sales/overview}},
-            note         = {Kaggle competition page. Accessed: 2026-03-19},
-            year         = {2015}
-        }
     """
     curation_comments = """
         - We merge the store data with the train data.

@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -227,13 +228,41 @@ class RainInAustralia(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "rain_in_australia"
-    year = "2026"
     domain = "environmental science & climate"
-    source = "GOV Website"  # the Bureau of Meteorology's Daily Weather Observations; we download rattle's compilation
-    source_url = "https://www.bom.gov.au/climate/dwo/"
-    license = (
-        "Copyright Commonwealth of Australia, Bureau of Meteorology; used with the Bureau's permission (rattle "
-        "documentation of weatherAUS); rattle package GPL (>= 2)"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",  # the Bureau of Meteorology's Daily Weather Observations; we download rattle's compilation
+            url="https://www.bom.gov.au/climate/dwo/",
+            license="Copyright Commonwealth of Australia, Bureau of Meteorology; used with the Bureau's permission (rattle "
+            "documentation of weatherAUS)",
+            year="2026",
+            bibtex=r"""
+                @book{williams2011rattle,
+                  title = {Data Mining with {Rattle} and {R}: The Art of Excavating Data for Knowledge Discovery},
+                  author = {Williams, Graham J.},
+                  publisher = {Springer},
+                  series = {Use R!},
+                  year = {2011},
+                  doi = {10.1007/978-1-4419-9890-3}
+                }
+                @misc{williams2026weatheraus,
+                  author = {Williams, Graham J.},
+                  title = {weatherAUS: Daily Weather Observations from Multiple Australian Weather Stations},
+                  year = {2026},
+                  howpublished = {\url{https://rattle.togaware.com/weatherAUS.csv}},
+                  note = {Dataset of the R package rattle (version of 2026-02-07, as in rattle 5.6.2); observations from the
+                    Australian Bureau of Meteorology}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="Other",
+            url="https://rattle.togaware.com/weatherAUS.csv",
+            license="GPL (>= 2)",
+            name="weatherAUS of the R package rattle",
+        ),
     )
     data_tags = ("Spatial",)
     download_description = r"""
@@ -255,24 +284,6 @@ class RainInAustralia(AbstractCuratedDataset):
         8b226e45f9438d5402214a0fb8374a15bc9fbefb3c2dffa2744eddbba7cd22fd). Its data/weatherAUS.RData holds the same
         275,410 x 24 values as the CSV (compared cell by cell with pyreadr); export it in R with
         write.csv(weatherAUS, "weatherAUS_20260207.csv", row.names = FALSE).
-    """
-    bibtex = r"""
-        @book{williams2011rattle,
-          title = {Data Mining with {Rattle} and {R}: The Art of Excavating Data for Knowledge Discovery},
-          author = {Williams, Graham J.},
-          publisher = {Springer},
-          series = {Use R!},
-          year = {2011},
-          doi = {10.1007/978-1-4419-9890-3}
-        }
-        @misc{williams2026weatheraus,
-          author = {Williams, Graham J.},
-          title = {weatherAUS: Daily Weather Observations from Multiple Australian Weather Stations},
-          year = {2026},
-          howpublished = {\url{https://rattle.togaware.com/weatherAUS.csv}},
-          note = {Dataset of the R package rattle (version of 2026-02-07, as in rattle 5.6.2); observations from the
-            Australian Bureau of Meteorology}
-        }
     """
     curation_comments = """
         We start with weatherAUS.csv of the R package rattle: daily observations of 49 Australian locations (BoM Daily

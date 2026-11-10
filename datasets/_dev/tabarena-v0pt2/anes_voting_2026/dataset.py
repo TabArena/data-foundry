@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -12192,27 +12193,32 @@ class AnesVoting2026(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "anes_voting_2026"
-    year = "2026"
     domain = "social science"
-    source = "Other"
-    source_url = "https://electionstudies.org/data-center/anes-time-series-cumulative-data-file/"
-    license = "Use for research or statistical purposes"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://electionstudies.org/data-center/anes-time-series-cumulative-data-file/",
+            license="Use for research or statistical purposes",
+            year="2026",
+            bibtex=r"""
+                @misc{anes2026timeseries,
+                    author       = {{American National Election Studies}},
+                    title        = {{ANES Time Series Cumulative Data File [dataset and documentation]}},
+                    year         = {2026},
+                    month        = feb,
+                    note         = {February 5, 2026 version},
+                    howpublished = {\url{https://www.electionstudies.org}}
+                }
+            """,
+        ),
+    )
     download_description = """
         No automatic download supported!
 
         mkdir -p local-data-warehouse/anes_voting_2026/
 
         Download the February 5, 2026 CSV version, unzip and place the .csv in local-data-warehouse/anes_voting_2026/anes_timeseries_cdf_csv_20260205.csv.
-    """
-    bibtex = r"""
-        @misc{anes2026timeseries,
-            author       = {{American National Election Studies}},
-            title        = {{ANES Time Series Cumulative Data File [dataset and documentation]}},
-            year         = {2026},
-            month        = feb,
-            note         = {February 5, 2026 version},
-            howpublished = {\url{https://www.electionstudies.org}}
-        }
     """
     curation_comments = """
         - We remove all samples with missing pre-election data, missing post-election data or a missing target.

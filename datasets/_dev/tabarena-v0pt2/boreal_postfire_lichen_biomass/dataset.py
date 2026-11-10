@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     UnitWeight,
     drop_columns,
@@ -171,11 +172,29 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "boreal_postfire_lichen_biomass"
-    year = "2021"
     domain = "biology & life sciences"
-    source = "Other"  # two Dryad deposits of Greuel et al. (2021), first versions 2021-02-03 (NT) and 2021-02-18 (SK)
-    source_url = "https://doi.org/10.5061/dryad.t1g1jwt15"
-    license = "CC0 1.0"  # both Dryad deposits and the Zenodo copies of their lichen sheets
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # two Dryad deposits of Greuel et al. (2021), first versions 2021-02-03 (NT) and 2021-02-18 (SK)
+            url="https://doi.org/10.5061/dryad.t1g1jwt15",
+            license="CC0 1.0",  # both Dryad deposits and the Zenodo copies of their lichen sheets
+            year="2021",
+            bibtex=r"""
+                @article{greuel2021predicting,
+                  title = {Predicting patterns of terrestrial lichen biomass recovery following boreal wildfires},
+                  author = {Greuel, Ruth J. and Degr{\'e}-Timmons, Genevi{\`e}ve {\'E}. and Baltzer, Jennifer L. and Johnstone, Jill F. and McIntire, Eliot J. B. and Day, Nicola J. and Hart, Sarah J. and McLoughlin, Philip D. and Schmiegelow, Fiona K. A. and Turetsky, Merritt R. and Truchon-Savard, Alexandre and van Telgen, Mario D. and Cumming, Steven G.},
+                  journal = {Ecosphere},
+                  volume = {12},
+                  number = {4},
+                  pages = {e03481},
+                  year = {2021},
+                  doi = {10.1002/ecs2.3481},
+                  note = {Data: \url{https://doi.org/10.5061/dryad.t1g1jwt15} (Northwest Territories) and \url{https://doi.org/10.5061/dryad.tb2rbnzzj} (Saskatchewan), CC0}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         The data is the two Dryad deposits of Greuel et al. (2021), CC0: doi:10.5061/dryad.t1g1jwt15 (Northwest Territories, version 5 of 2026-05-18) and doi:10.5061/dryad.tb2rbnzzj (Saskatchewan, version of 2021-02-18). Dryad's per-file API answers 401 without a token, but the version download of its API redirects without a token to a zip of each version; the SHA-256 digests below equal those Dryad lists (checked 2026-11-01). The two lichen sheets are also on Zenodo, byte-identical (records 4499194 and 4552434); the NT site sheet is only on Dryad.
@@ -187,19 +206,6 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
         sha256sum Lichen_data_NT.xlsx  # 03a3f3f497415fe1843d140aff621941ae2079db3437ef4186699f463d856b90
         sha256sum Lichen_data_SK.xlsx  # 74ad1fe59d2a3364e0b78f552a8b0581e8f37cd085ddcf9b222c42bcd81292a6
         sha256sum All_site_info_NT.xlsx  # 24493a7427adeecb04c694f515729d90c2a831d44ad2d8fccd453a781e7cdf6c
-    """
-    bibtex = r"""
-        @article{greuel2021predicting,
-          title = {Predicting patterns of terrestrial lichen biomass recovery following boreal wildfires},
-          author = {Greuel, Ruth J. and Degr{\'e}-Timmons, Genevi{\`e}ve {\'E}. and Baltzer, Jennifer L. and Johnstone, Jill F. and McIntire, Eliot J. B. and Day, Nicola J. and Hart, Sarah J. and McLoughlin, Philip D. and Schmiegelow, Fiona K. A. and Turetsky, Merritt R. and Truchon-Savard, Alexandre and van Telgen, Mario D. and Cumming, Steven G.},
-          journal = {Ecosphere},
-          volume = {12},
-          number = {4},
-          pages = {e03481},
-          year = {2021},
-          doi = {10.1002/ecs2.3481},
-          note = {Data: \url{https://doi.org/10.5061/dryad.t1g1jwt15} (Northwest Territories) and \url{https://doi.org/10.5061/dryad.tb2rbnzzj} (Saskatchewan), CC0}
-        }
     """
     curation_comments = """
         We start with `Lichen_data_NT.xlsx` (1,630 quadrats) and `Lichen_data_SK.xlsx` (380 quadrats), the quadrat sheets of the two Dryad deposits of Greuel et al. (2021), and the NT deposit's site sheet `All_site_info_NT.xlsx`, from Dryad's version downloads (NT version 5 of 2026-05-18, SK version of 2021-02-18).

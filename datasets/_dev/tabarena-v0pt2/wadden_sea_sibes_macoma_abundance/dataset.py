@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     drop_columns,
 )
@@ -163,11 +164,35 @@ class WaddenSeaSibesMacomaAbundance(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "wadden_sea_sibes_macoma_abundance"
-    year = "2024"  # a yearly growing release: the year of the pinned snapshot, version 6 of 2024-12-21 (PROV-9)
     domain = "biology & life sciences"
-    source = "Other"  # NIOZ's data repository (DAS), the first publication of the survey data
-    source_url = "https://doi.org/10.25850/nioz/7b.b.ug"
-    license = "CC BY-SA 4.0"  # stated on the NIOZ dataset page
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # NIOZ's data repository (DAS), the first publication of the survey data
+            url="https://doi.org/10.25850/nioz/7b.b.ug",
+            license="CC BY-SA 4.0",  # stated on the NIOZ dataset page
+            year="2024",  # a yearly growing release: the year of the pinned snapshot, version 6 of 2024-12-21 (PROV-9)
+            bibtex="""
+                @misc{bijleveld2024sibes,
+                  title = {{SIBES} dataset, version 6},
+                  author = {Bijleveld, Allert Imre and Tacoma, Marten and Koolhaas, Anita},
+                  year = {2024},
+                  publisher = {NIOZ Royal Netherlands Institute for Sea Research},
+                  doi = {10.25850/nioz/7b.b.ug},
+                  howpublished = {\\url{https://doi.org/10.25850/nioz/7b.b.ug}},
+                  note = {Data descriptor: Bijleveld et al. (2025), SIBES: Long-term and large-scale monitoring of intertidal macrozoobenthos and sediment in the Dutch Wadden Sea, Scientific Data 12:239, doi:10.1038/s41597-025-04540-9}
+                }
+                @misc{rijkswaterstaat2026vaklodingen,
+                  title = {Vaklodingen: bathymetry and topography measurements along the {D}utch coast},
+                  author = {{Rijkswaterstaat}},
+                  year = {2026},
+                  publisher = {Deltares OpenEarth},
+                  howpublished = {\\url{https://opendap.deltares.nl/thredds/catalog/opendap/rijkswaterstaat/vaklodingen/catalog.html}},
+                  note = {Release vaklodingen\\_release20260303}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We download version 6 (published 2024-12-21) of the SIBES dataset from the NIOZ data repository (doi:10.25850/nioz/7b.b.ug). The repository replaces the files with each yearly release (the newest three years stay embargoed), so a later download holds more years than these 2008-2022.
@@ -182,25 +207,6 @@ class WaddenSeaSibesMacomaAbundance(AbstractCuratedDataset):
         V=https://opendap.deltares.nl/thredds/fileServer/opendap/rijkswaterstaat/vaklodingen
         for t in 122_2120 122_2322 123_1716 123_1918 123_2120 123_2322 124_1514 124_1716 124_1918 124_2120 125_1514 125_1716 125_1918 126_1312 126_1514 126_1716 126_1918 127_1312 127_1514 127_1716 128_1312 128_1514 129_1312 129_1514 130_1312 131_1312 132_1110 132_1312 133_1110 133_1312 134_1110 134_1312 135_1110 135_1312 136_1312 136_1514 137_1514 137_1716 138_1514 138_1716; do curl -L -o vaklodingenKB$t.nc $V/vaklodingenKB$t.nc; done
         The sha256 of the 40 sums (`sha256sum *.nc | sha256sum`) is 3935cf21...; the definition asserts the release id of every tile.
-    """
-    bibtex = """
-        @misc{bijleveld2024sibes,
-          title = {{SIBES} dataset, version 6},
-          author = {Bijleveld, Allert Imre and Tacoma, Marten and Koolhaas, Anita},
-          year = {2024},
-          publisher = {NIOZ Royal Netherlands Institute for Sea Research},
-          doi = {10.25850/nioz/7b.b.ug},
-          howpublished = {\\url{https://doi.org/10.25850/nioz/7b.b.ug}},
-          note = {Data descriptor: Bijleveld et al. (2025), SIBES: Long-term and large-scale monitoring of intertidal macrozoobenthos and sediment in the Dutch Wadden Sea, Scientific Data 12:239, doi:10.1038/s41597-025-04540-9}
-        }
-        @misc{rijkswaterstaat2026vaklodingen,
-          title = {Vaklodingen: bathymetry and topography measurements along the {D}utch coast},
-          author = {{Rijkswaterstaat}},
-          year = {2026},
-          publisher = {Deltares OpenEarth},
-          howpublished = {\\url{https://opendap.deltares.nl/thredds/catalog/opendap/rijkswaterstaat/vaklodingen/catalog.html}},
-          note = {Release vaklodingen\\_release20260303}
-        }
     """
     curation_comments = """
         We start with samples.csv and biota.csv of the SIBES dataset, version 6 (NIOZ, 2024-12-21): 59,463 core samples from 2008-2022 at 5,105 stations of the Dutch Wadden Sea flats.

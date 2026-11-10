@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, set_missing
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -55,24 +55,29 @@ class AudiologyDiagnosis(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "audiology_diagnosis"
-    year = "1987"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5TP4R"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5TP4R",
+            license="CC BY 4.0",
+            year="1987",
+            bibtex="""
+                @incollection{bareiss1990protos,
+                  title={Protos: An exemplar-based learning apprentice},
+                  author={Bareiss, E Ray and Porter, Bruce W and Wier, Craig C},
+                  booktitle={Machine learning},
+                  pages={112--127},
+                  year={1990},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         We get the data from UCI.
         wget https://archive.ics.uci.edu/static/public/8/audiology+standardized.zip && unzip audiology+standardized.zip && rm audiology+standardized.zip audiology.standardized.names && mkdir -p local-data-warehouse/audiology_diagnosis && mv audiology.standardized.data audiology.standardized.test local-data-warehouse/audiology_diagnosis/
-    """
-    bibtex = """
-        @incollection{bareiss1990protos,
-          title={Protos: An exemplar-based learning apprentice},
-          author={Bareiss, E Ray and Porter, Bruce W and Wier, Craig C},
-          booktitle={Machine learning},
-          pages={112--127},
-          year={1990},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         We start with the data from UCI and merge train and test data.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -68,25 +68,30 @@ class ObesityEstimation(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "obesity_estimation"
-    year = "2019"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5H31Z"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5H31Z",
+            license="CC BY 4.0",
+            year="2019",
+            bibtex="""
+                @article{palechor2019dataset,
+                    title={Dataset for estimation of obesity levels based on eating habits and physical condition in individuals from Colombia, Peru and Mexico},
+                    author={Palechor, Fabio Mendoza and De la Hoz Manotas, Alexis},
+                    journal={Data in brief},
+                    volume={25},
+                    pages={104344},
+                    year={2019},
+                    publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         wget https://archive.ics.uci.edu/static/public/544/estimation+of+obesity+levels+based+on+eating+habits+and+physical+condition.zip && unzip estimation+of+obesity+levels+based+on+eating+habits+and+physical+condition.zip && rm estimation+of+obesity+levels+based+on+eating+habits+and+physical+condition.zip
         mkdir -p local-data-warehouse/obesity_estimation && mv *.csv local-data-warehouse/obesity_estimation/
-    """
-    bibtex = """
-        @article{palechor2019dataset,
-            title={Dataset for estimation of obesity levels based on eating habits and physical condition in individuals from Colombia, Peru and Mexico},
-            author={Palechor, Fabio Mendoza and De la Hoz Manotas, Alexis},
-            journal={Data in brief},
-            volume={25},
-            pages={104344},
-            year={2019},
-            publisher={Elsevier}
-        }
     """
     curation_comments = """
         - We use only the real data, throwing away the SMOTE samples. The real answers are the first 498 rows: their class counts equal Fig. 1 of the data paper (Palechor & De la Hoz 2019), and all its Normal_Weight rows are among them. A filter on whole-number values would let in 15 synthetic rows, so we cut by position.

@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, decode, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    decode,
+    drop_columns,
+)
 
 FIVE_YEARS = 5 * 365.25  # days; N_Days is whole days, so an event on day 1,826 or earlier is within 5 years
 LAST_TRIAL_ID = 312  # IDs 1-312 are the trial patients, 313-418 the patients outside the trial
@@ -80,27 +89,39 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "cirrhosis_patient_survival_prediction"
-    year = "1991"
     domain = "medical & healthcare"
-    source = "Other"  # the Mayo Clinic PBC trial data (Fleming and Harrington 1991); UCI 878 is a later copy
-    source_url = "https://www.mayo.edu/research/documents/pbchtml/doc-10027635"
-    license = "CC BY 4.0"  # stated on UCI 878, the copy we download
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # the Mayo Clinic PBC trial data (Fleming and Harrington 1991); UCI 878 is a later copy
+            url="https://www.mayo.edu/research/documents/pbchtml/doc-10027635",
+            license="CC BY 4.0",  # stated on UCI 878, the copy we download
+            year="1991",
+            bibtex="""
+                @article{dickson1989prognosis,
+                  title={Prognosis in primary biliary cirrhosis: model for decision making},
+                  author={Dickson, E Rolland and Grambsch, Patricia M and Fleming, Thomas R and Fisher, Lloyd D and Langworthy, Alice},
+                  journal={Hepatology},
+                  volume={10},
+                  number={1},
+                  pages={1--7},
+                  year={1989},
+                  publisher={Wiley Online Library}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="UCI",
+            url="https://archive.ics.uci.edu/dataset/878/cirrhosis+patient+survival+prediction+dataset-1",
+            license="CC BY 4.0",
+            name="UCI 878",
+        ),
+    )
     download_description = """
         We get the UCI data.
 
         wget https://archive.ics.uci.edu/static/public/878/cirrhosis+patient+survival+prediction+dataset-1.zip && unzip cirrhosis+patient+survival+prediction+dataset-1.zip && rm cirrhosis+patient+survival+prediction+dataset-1.zip && mkdir -p local-data-warehouse/cirrhosis_patient_survival_prediction && mv cirrhosis.csv local-data-warehouse/cirrhosis_patient_survival_prediction/
-    """
-    bibtex = """
-        @article{dickson1989prognosis,
-          title={Prognosis in primary biliary cirrhosis: model for decision making},
-          author={Dickson, E Rolland and Grambsch, Patricia M and Fleming, Thomas R and Fisher, Lloyd D and Langworthy, Alice},
-          journal={Hepatology},
-          volume={10},
-          number={1},
-          pages={1--7},
-          year={1989},
-          publisher={Wiley Online Library}
-        }
     """
     curation_comments = """
         We start with the UCI copy (878) of the Mayo Clinic PBC data (Fleming and Harrington 1991, appendix D): 418 patients, 312 in the D-penicillamine trial and 106 outside it who agreed to be followed.

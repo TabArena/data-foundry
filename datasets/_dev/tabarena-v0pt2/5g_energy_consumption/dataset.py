@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
 
 
 class Dataset5gEnergyConsumption(AbstractCuratedDataset):
@@ -50,11 +50,41 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "5g_energy_consumption"
-    year = "2023"
     domain = "technology & internet"
-    source = "Zindi"  # first released for the Zindi challenge (2023); the Hugging Face copy is from 2025
-    source_url = "https://zindi.africa/competitions/aiml-for-5g-energy-consumption-modelling"
-    license = "MIT"
+    sources = (
+        Source(
+            role="publication",
+            platform="Zindi",  # first released for the Zindi challenge (2023); the Hugging Face copy is from 2025
+            url="https://zindi.africa/competitions/aiml-for-5g-energy-consumption-modelling",
+            license="MIT",
+            year="2023",
+            bibtex=r"""
+                @misc{huawei_netop_5g_energy_consumption,
+                  author       = {{HUAWEI Netop Team}},
+                  title        = {5G Network Energy Consumption Dataset},
+                  year         = {n.d.},
+                  howpublished = {\url{https://huggingface.co/datasets/netop/5G-Network-Energy-Consumption}},
+                  note         = {Dataset hosted on Hugging Face, accessed 2026-04-15}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="GitHub",
+            url="https://github.com/ITU-AI-ML-in-5G-Challenge/5G-Energy-Consumption-Modelling-Solution-Team-Farzi-Data-Scientists",
+            license=None,  # the repository states no license
+            year="2023",
+            name="the dataset zip of a top solution's repository, which we download",
+        ),
+        Source(
+            role="copy",
+            platform="HuggingFace",
+            url="https://huggingface.co/datasets/netop/5G-Network-Energy-Consumption",
+            license="MIT",
+            year="2025",
+            name="netop/5G-Network-Energy-Consumption",
+        ),
+    )
     download_description = r"""
         We use the dataset version uploaded by a top solution from the Zindi challenge.
 
@@ -62,15 +92,6 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
         && wget https://github.com/ITU-AI-ML-in-5G-Challenge/5G-Energy-Consumption-Modelling-Solution-Team-Farzi-Data-Scientists/raw/refs/heads/main/ITU-5G-energy-Consumption-Dataset.zip \
         && unzip ITU-5G-energy-Consumption-Dataset.zip -d local-data-warehouse/5g_energy_consumption/ \
         && rm ITU-5G-energy-Consumption-Dataset.zip
-    """
-    bibtex = r"""
-        @misc{huawei_netop_5g_energy_consumption,
-          author       = {{HUAWEI Netop Team}},
-          title        = {5G Network Energy Consumption Dataset},
-          year         = {n.d.},
-          howpublished = {\url{https://huggingface.co/datasets/netop/5G-Network-Energy-Consumption}},
-          note         = {Dataset hosted on Hugging Face, accessed 2026-04-15}
-        }
     """
     curation_comments = """
         - Note: The dataset was used in a Zindi challenge, but also uploaded to Huggingface under a MIT license by the company (Huawei).
@@ -91,6 +112,12 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
           1.5 is Monday noon), and the source ships it as a number; named weekdays and months are ordered categories
           instead.
     """
+    accepted_check_warnings = {
+        "meta_license_unknown": (
+            "The GitHub repository whose zip we download states no licence (checked 2026-11-10); the Hugging Face "
+            "copy is MIT."
+        ),
+    }
 
     # Task
     target = "Energy"

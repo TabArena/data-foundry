@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, Decision, Metric, Source, TaskSummary, decode
 
 N_ORDER_BLOCKS = 10
 """File-order blocks for the decision table on hidden weeks (the raw file's row order)."""
@@ -40,23 +40,28 @@ class Numerai286(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "numerai28_6"
-    year = "2016"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/numerai/encrypted-stock-market-data-from-numerai"
-    license = "CC0: Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/numerai/encrypted-stock-market-data-from-numerai",
+            license="CC0: Public Domain",
+            year="2016",
+            bibtex=r"""
+                @misc{Numerai2016EncryptedStockMarketData,
+                  author = {{Numerai}},
+                  title  = {Encrypted Stock Market Data from Numerai},
+                  year   = {2016},
+                  howpublished = {\url{https://www.kaggle.com/datasets/numerai/encrypted-stock-market-data-from-numerai}},
+                  note   = {Kaggle dataset}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal", "Anonymized")
     download_description = """
         kaggle datasets download numerai/encrypted-stock-market-data-from-numerai --unzip -p numerai_download && mkdir -p local-data-warehouse/numerai28_6 && mv numerai_download/numerai_training_data.csv local-data-warehouse/numerai28_6/ && rm -r numerai_download
-    """
-    bibtex = r"""
-        @misc{Numerai2016EncryptedStockMarketData,
-          author = {{Numerai}},
-          title  = {Encrypted Stock Market Data from Numerai},
-          year   = {2016},
-          howpublished = {\url{https://www.kaggle.com/datasets/numerai/encrypted-stock-market-data-from-numerai}},
-          note   = {Kaggle dataset}
-        }
     """
     curation_comments = """
         We start with numerai_training_data.csv from Numerai's own Kaggle dataset (owner `numerai`, CC0, "a sample of the training data used in the Numerai machine learning competition"; version 1, last updated 2016-12-02).

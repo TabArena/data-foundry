@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class Splice(AbstractCuratedDataset):
@@ -31,27 +31,32 @@ class Splice(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "splice"
-    year = "1992"
     domain = "biology & life sciences"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5M888"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5M888",
+            license="CC BY 4.0",
+            year="1992",
+            bibtex="""
+                @article{towell1994knowledge,
+                  title={Knowledge-based artificial neural networks},
+                  author={Towell, Geoffrey G and Shavlik, Jude W},
+                  journal={Artificial intelligence},
+                  volume={70},
+                  number={1-2},
+                  pages={119--165},
+                  year={1994},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/splice/ && wget -P local-data-warehouse/splice/ https://archive.ics.uci.edu/static/public/69/molecular+biology+splice+junction+gene+sequences.zip && unzip local-data-warehouse/splice/molecular+biology+splice+junction+gene+sequences.zip -d local-data-warehouse/splice/
-    """
-    bibtex = """
-        @article{towell1994knowledge,
-          title={Knowledge-based artificial neural networks},
-          author={Towell, Geoffrey G and Shavlik, Jude W},
-          journal={Artificial intelligence},
-          volume={70},
-          number={1-2},
-          pages={119--165},
-          year={1994},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         - We tabularized the fixed-size DNA sequences from the original dataset based on the nucleotide position.

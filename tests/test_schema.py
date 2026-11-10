@@ -6,11 +6,13 @@ from data_foundry.schema import (
     DATA_FOUNDRY_WAREHOUSE_ENV,
     DEFAULT_LOCAL_DATA_DIR,
     DatasetMetadata,
+    DatasetMetadataV2,
     Grouping,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
     RowBudget,
+    Source,
     SpecialFeature,
     SpectrumDetails,
     resolve_warehouse_dir,
@@ -627,3 +629,99 @@ def test_special_features_are_features_each_column_once(features, grouping, matc
             grouping=grouping,
             special_features=features,
         )
+
+
+# --- sources and the v2 dataset metadata ----------------------------------------------------------------------
+PUBLICATION = {
+    "role": "publication",
+    "platform": "UCI",
+    "url": "https://doi.org/10.24432/C5TEST",
+    "license": "CC BY 4.0",
+    "year": "2014",
+    "bibtex": "@misc{toy2014,\n  title = {Toy}\n}\n@misc{toy2015,\n  title = {Toy 2}\n}",
+}
+
+
+def test_a_source_reads_its_citation_keys_from_its_bibtex() -> None:
+    source = Source(**PUBLICATION, files=("sheets/*.txt",))
+    assert source.bibtex_key == "toy2014,toy2015"
+    assert source.files == ["sheets/*.txt"]
+    assert Source(**{**PUBLICATION, "bibtex_key": "toy2014"}).bibtex_key == "toy2014"  # a declared key is kept
+
+
+@pytest.mark.parametrize(
+    ("changes", "match"),
+    [
+        ({"year": None}, "needs its `year`"),
+        ({"bibtex": None}, "needs its `bibtex`"),
+        ({"url": " "}, "needs a `url`"),
+        ({"platform": "Somewhere"}, "Input should be"),
+        ({"files": ("../outside.csv",)}, "paths under the raw folder"),
+        ({"files": ("/abs.csv",)}, "paths under the raw folder"),
+    ],
+)
+def test_a_source_is_validated(changes: dict, match: str) -> None:
+    with pytest.raises((ValueError, pydantic.ValidationError), match=match):
+        Source(**{**PUBLICATION, **changes})
+
+
+def test_a_copy_or_part_needs_no_year_or_bibtex() -> None:
+    copy = Source(role="copy", platform="Kaggle", url="https://www.kaggle.com/x", license=None)
+    assert (copy.year, copy.bibtex, copy.bibtex_key) == (None, None, None)
+    assert copy.label() == "Kaggle copy"
+    assert Source(role="part", platform="Other", url="https://x", license=None, name="Sheet A").label() == "Sheet A"
+
+
+def _v2_metadata(**changes: object):
+    kwargs = {
+        "unique_name": "toy_ds",
+        "domain": "finance",
+        "sources": [Source(**PUBLICATION), Source(role="copy", platform="Kaggle", url="https://k", license="CC0")],
+        "download_description": "desc",
+        "data_tags": ["IID"],
+        **changes,
+    }
+    return DatasetMetadataV2(**kwargs)
+
+
+def test_v2_dataset_metadata_round_trips_and_names_its_publication() -> None:
+    meta = _v2_metadata(derived_from="toy_base", derivation="COP as the target.")
+    assert meta.type_adapter_id == "dataset-mold-v2"
+    assert meta.publication.year == "2014"
+    adapter = pydantic.TypeAdapter(DatasetMetadataV2)
+    assert adapter.validate_python(adapter.dump_python(meta, mode="json")) == meta
+    assert "derived_from:         toy_base: COP as the target." in meta.describe()
+
+
+@pytest.mark.parametrize(
+    ("changes", "match"),
+    [
+        ({"sources": []}, "exactly one publication"),
+        ({"sources": "reverse"}, "exactly one publication, first"),
+        ({"derived_from": "toy_base"}, "set both or neither"),
+        ({"derivation": "How it differs."}, "set both or neither"),
+        ({"derived_from": "toy_ds", "derivation": "x"}, "equals unique_name"),
+        ({"unique_name": "Toy DS"}, "snake_case"),
+    ],
+)
+def test_v2_dataset_metadata_is_validated(changes: dict, match: str) -> None:
+    if changes.get("sources") == "reverse":
+        changes["sources"] = list(reversed(_v2_metadata().sources))
+    with pytest.raises((ValueError, pydantic.ValidationError), match=match):
+        _v2_metadata(**changes)
+
+
+def test_format_1_metadata_reads_like_v2(base_dataset_metadata_kwargs: dict) -> None:
+    dm = DatasetMetadata(**base_dataset_metadata_kwargs)
+    assert dm.domain == dm.domain_str
+    assert dm.sources == [dm.publication]
+    pub = dm.publication
+    assert (pub.role, pub.platform, pub.url, pub.license, pub.year, pub.bibtex_key) == (
+        "publication",
+        dm.dataset_source,
+        dm.original_dataset_source_download_link,
+        dm.license,
+        dm.dataset_year,
+        dm.academic_reference_bibtex_key,
+    )
+    assert (dm.derived_from, dm.derivation) == (dm.version_from_unique_name, dm.version_comment)

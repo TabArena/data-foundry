@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode, drop_columns
 
 ROUNDED_LABS = ["ALB", "ALT", "AST", "BIL", "CREA", "GGT", "PROT"]
 
@@ -50,26 +50,31 @@ class HepatitisCPrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "hepatitis_c_prediction"
-    year = "2020"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5D612"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5D612",
+            license="CC BY 4.0",
+            year="2020",
+            bibtex="""
+                @article{hoffmann2018using,
+                  title={Using machine learning techniques to generate laboratory diagnostic pathways—a case study},
+                  author={Hoffmann, Georg and Bietenbeck, Andreas and Lichtinghagen, Ralf and Klawonn, Frank},
+                  journal={Journal of Laboratory and Precision Medicine},
+                  volume={3},
+                  number={6},
+                  year={2018},
+                  publisher={AME Publishing Company}
+                }
+            """,
+        ),
+    )
     download_description = """
         We get the data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/571/hcv+data.zip && unzip hcv+data.zip && rm hcv+data.zip && mkdir -p local-data-warehouse/hepatitis_c_prediction && mv hcvdat0.csv local-data-warehouse/hepatitis_c_prediction/
-    """
-    bibtex = """
-        @article{hoffmann2018using,
-          title={Using machine learning techniques to generate laboratory diagnostic pathways—a case study},
-          author={Hoffmann, Georg and Bietenbeck, Andreas and Lichtinghagen, Ralf and Klawonn, Frank},
-          journal={Journal of Laboratory and Precision Medicine},
-          volume={3},
-          number={6},
-          year={2018},
-          publisher={AME Publishing Company}
-        }
     """
     curation_comments = """
         We start with the data from UCI.

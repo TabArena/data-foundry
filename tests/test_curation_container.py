@@ -7,15 +7,18 @@ import pandas as pd
 import pandas.testing as pdt
 import pydantic
 import pytest
+from data_foundry.bundle_checks import verify_saved_container
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE, splits_from_row_table, splits_to_row_table
 from data_foundry.schema import (
     DatasetMetadata,
+    DatasetMetadataV2,
     Grouping,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
     RowBudget,
+    Source,
 )
 
 from tests.test_bundle_checks import make_spec
@@ -833,6 +836,35 @@ def test_format_2_task_rejects_what_does_not_fit(problem_type, kwargs, match):
         PredictiveMLTaskMetadataV2(
             target_column_name="y", problem_type=problem_type, objective_metric=make_spec(), **kwargs
         )
+
+
+def test_v2_dataset_metadata_saves_under_its_own_name_and_round_trips(tmp_path):
+    publication = Source(
+        role="publication",
+        platform="UCI",
+        url="https://doi.org/x",
+        license="CC BY 4.0",
+        year="2014",
+        bibtex="@misc{k,}",
+    )
+    copy = Source(role="copy", platform="Kaggle", url="https://www.kaggle.com/x", license="CC0 1.0")
+    meta = DatasetMetadataV2(
+        unique_name="toy_ds_1m",
+        domain="finance",
+        sources=[publication, copy],
+        download_description="desc",
+        data_tags=["Non-IID", "Grouped"],
+    )
+    container = dataclasses.replace(_grouped_toy(_v2_task(TOY_GROUPING)), dataset_metadata=meta, checksum=None)
+    path = container.save(save_dir=tmp_path)
+    assert path.parent == tmp_path / "toy_ds_1m"  # no `versions/` folder: a v2 version is saved under its own name
+    assert (path / "dataset_metadata.dataset-mold-v2.json").is_file()
+    assert "version_comment" not in json.loads((path / "container_metadata.json").read_text())
+    loaded = CuratedContainer.load(path)
+    assert loaded.dataset_metadata == meta
+    assert [s.role for s in loaded.dataset_metadata.sources] == ["publication", "copy"]
+    assert loaded.checksum == loaded._create_checksum() == container.checksum
+    assert verify_saved_container(path, container=container, verbose=False).ok
 
 
 def test_every_field_added_after_the_release_is_omitted_while_unset():

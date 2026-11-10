@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
 
 
 class VideoTranscodingTimePrediction(AbstractCuratedDataset):
@@ -38,23 +38,28 @@ class VideoTranscodingTimePrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "video_transcoding_time_prediction"
-    year = "2015"
     domain = "technology & internet"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C58C9K"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C58C9K",
+            license="CC BY 4.0",
+            year="2015",
+            bibtex="""
+                @inproceedings{deneke2014video,
+                  title={Video transcoding time prediction for proactive load balancing},
+                  author={Deneke, Tewodors and Haile, Habtegebreil and Lafond, S{'e}bastien and Lilius, Johan},
+                  booktitle={2014 IEEE International Conference on Multimedia and Expo (ICME)},
+                  pages={1--6},
+                  year={2014},
+                  organization={IEEE}
+                }
+            """,
+        ),
+    )
     download_description = """
         wget https://archive.ics.uci.edu/static/public/335/online+video+characteristics+and+transcoding+time+dataset.zip && unzip online+video+characteristics+and+transcoding+time+dataset.zip transcoding_mesurment.tsv && rm online+video+characteristics+and+transcoding+time+dataset.zip && mkdir -p local-data-warehouse/video_transcoding_time_prediction && mv transcoding_mesurment.tsv local-data-warehouse/video_transcoding_time_prediction/
-    """
-    bibtex = """
-        @inproceedings{deneke2014video,
-          title={Video transcoding time prediction for proactive load balancing},
-          author={Deneke, Tewodors and Haile, Habtegebreil and Lafond, S{'e}bastien and Lilius, Johan},
-          booktitle={2014 IEEE International Conference on Multimedia and Expo (ICME)},
-          pages={1--6},
-          year={2014},
-          organization={IEEE}
-        }
     """
     curation_comments = """
         We use the tabular prediction task from the UCI archive, which is a video transcoding time prediction task. The data is non-IID and grouped by video, with multiple transcoding measurements per video. The target variable is the transcoding time, and the features include various characteristics of the videos and transcoding settings.

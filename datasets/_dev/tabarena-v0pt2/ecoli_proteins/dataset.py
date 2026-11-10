@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class EcoliProteins(AbstractCuratedDataset):
@@ -38,25 +38,30 @@ class EcoliProteins(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "ecoli_proteins"
-    year = "1996"
     domain = "biology & life sciences"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5388M"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5388M",
+            license="CC BY 4.0",
+            year="1996",
+            bibtex="""
+                @inproceedings{horton1996probabilistic,
+                  title={A probabilistic classification system for predicting the cellular localization sites of proteins.},
+                  author={Horton, Paul and Nakai, Kenta},
+                  booktitle={Ismb},
+                  volume={4},
+                  pages={109--115},
+                  year={1996},
+                  organization={St. Louis, Missouri, USA}
+                }
+            """,
+        ),
+    )
     download_description = """
         wget https://archive.ics.uci.edu/static/public/39/ecoli.zip && unzip ecoli.zip && rm ecoli.zip ecoli.names
         mkdir -p local-data-warehouse/ecoli_proteins && mv ecoli.data local-data-warehouse/ecoli_proteins/
-    """
-    bibtex = """
-        @inproceedings{horton1996probabilistic,
-          title={A probabilistic classification system for predicting the cellular localization sites of proteins.},
-          author={Horton, Paul and Nakai, Kenta},
-          booktitle={Ismb},
-          volume={4},
-          pages={109--115},
-          year={1996},
-          organization={St. Louis, Missouri, USA}
-        }
     """
     curation_comments = """
         We start with the dataset from UCI.

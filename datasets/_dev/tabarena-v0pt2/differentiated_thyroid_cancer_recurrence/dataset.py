@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -62,30 +62,35 @@ class DifferentiatedThyroidCancerRecurrence(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "differentiated_thyroid_cancer_recurrence"
-    year = "2023"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5632J"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5632J",
+            license="CC BY 4.0",
+            year="2023",
+            bibtex="""
+                @article{borzooei2024machine,
+                  title={Machine learning for risk stratification of thyroid cancer patients: a 15-year cohort study},
+                  author={Borzooei, Shiva and Briganti, Giovanni and Golparian, Mitra and Lechien, Jerome R and Tarokhian, Aidin},
+                  journal={European Archives of Oto-Rhino-Laryngology},
+                  volume={281},
+                  number={4},
+                  pages={2095--2104},
+                  year={2024},
+                  publisher={Springer},
+                  doi={10.1007/s00405-023-08299-w}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from UCI (dataset 915, donated by the authors; the zip holds one file, Thyroid_Diff.csv,
         sha256 a2c65f7c8fa0e78a65aa4946961aafd45218c92760d10375fe2c778045c97b44). OpenML 46605 is a 2025 re-upload
         of the same 383 rows.
 
         mkdir -p local-data-warehouse/differentiated_thyroid_cancer_recurrence && wget -P local-data-warehouse/differentiated_thyroid_cancer_recurrence/ https://archive.ics.uci.edu/static/public/915/differentiated+thyroid+cancer+recurrence.zip && unzip local-data-warehouse/differentiated_thyroid_cancer_recurrence/differentiated+thyroid+cancer+recurrence.zip -d local-data-warehouse/differentiated_thyroid_cancer_recurrence/
-    """
-    bibtex = """
-        @article{borzooei2024machine,
-          title={Machine learning for risk stratification of thyroid cancer patients: a 15-year cohort study},
-          author={Borzooei, Shiva and Briganti, Giovanni and Golparian, Mitra and Lechien, Jerome R and Tarokhian, Aidin},
-          journal={European Archives of Oto-Rhino-Laryngology},
-          volume={281},
-          number={4},
-          pages={2095--2104},
-          year={2024},
-          publisher={Springer},
-          doi={10.1007/s00405-023-08299-w}
-        }
     """
     curation_comments = """
         We start with Thyroid_Diff.csv from UCI: 383 patients with well-differentiated thyroid cancer followed after thyroidectomy in Hamadan, Iran; the source states at least 10 years of follow-up.

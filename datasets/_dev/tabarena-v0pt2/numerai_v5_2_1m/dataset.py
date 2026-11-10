@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     Decision,
     Metric,
     RowBudget,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -70,17 +71,25 @@ class NumeraiV521m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "numerai_v5_2_1m"
-    version_of = "numerai_v5_2"
-    version_comment = """
-        We sample per test window (v2 split protocol): each test window keeps at most 500k of its rows (all of them here: 327,025 to 361,712), and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. As in TabReD, the train data is sub-sampled at random rather than cut in time, so it keeps rows of every era. The full data has 6,881,281 rows (eras 1-1235); the frame has 2,025,745.
-    """
-    year = "2025"
     domain = "finance"
-    source = "Other"
-    source_url = "https://numer.ai/data/v5.2"
-    license = (
-        "Numerai Terms of Service (updated 2026-08-31), section 4.2: use solely to participate in Numerai tournaments; "
-        "no commercial use outside its services, no redistribution, keep the data confidential"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://numer.ai/data/v5.2",
+            license="Numerai Terms of Service (updated 2026-08-31), section 4.2: use solely to participate in Numerai tournaments; "
+            "no commercial use outside its services, no redistribution, keep the data confidential",
+            year="2025",
+            bibtex=r"""
+                @misc{numerai2025v52,
+                  author = {{Numerai}},
+                  title = {Numerai Tournament Dataset v5.2 (Faith2)},
+                  year = {2025},
+                  howpublished = {\url{https://numer.ai/data/v5.2}},
+                  note = {Obfuscated global equity data, downloaded with numerapi; documentation at \url{https://docs.numer.ai/numerai-tournament/data}}
+                }
+            """,
+        ),
     )
     data_tags = ("Anonymized",)
     download_description = """
@@ -96,15 +105,6 @@ class NumeraiV521m(AbstractCuratedDataset):
         64cd254cba63c0966eeeb71c7c83c99cacb81d4acd8b36524195d20c92dd5c35  features.json
         73b41e084c91e50618227aca3759be46f59367a4506d0f3f43a5112fb83bbeca  train.parquet
         04f74ad99dd1afcee046a12c52d1a98b51dab4bf978fa042aa3f5fbaeb4601c0  validation.parquet
-    """
-    bibtex = r"""
-        @misc{numerai2025v52,
-          author = {{Numerai}},
-          title = {Numerai Tournament Dataset v5.2 (Faith2)},
-          year = {2025},
-          howpublished = {\url{https://numer.ai/data/v5.2}},
-          note = {Obfuscated global equity data, downloaded with numerapi; documentation at \url{https://docs.numer.ai/numerai-tournament/data}}
-        }
     """
     curation_comments = """
         We start with train.parquet and validation.parquet of the Numerai tournament data v5.2 ("Faith2"), with all features of features.json except the Faith family.
@@ -123,6 +123,7 @@ class NumeraiV521m(AbstractCuratedDataset):
         - History: each train side is a random 1M of all earlier eras (TabReD's convention); Numerai's example models train on all eras, so the whole history is what a participant trains on.
         - Note: feature neutralization post-processes predictions per era, so it belongs to a model or a scorer and is not applied.
         - Note: numerai28_6 (OpenML 23517), an older sample of this data, is not added separately.
+        - The row budget: We sample per test window (v2 split protocol): each test window keeps at most 500k of its rows (all of them here: 327,025 to 361,712), and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. As in TabReD, the train data is sub-sampled at random rather than cut in time, so it keeps rows of every era. The full data has 6,881,281 rows (eras 1-1235); the frame has 2,025,745.
     """
 
     # Task

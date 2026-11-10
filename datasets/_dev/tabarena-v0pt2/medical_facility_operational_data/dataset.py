@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     SplitPlan,
     TaskSummary,
     Temporal,
@@ -59,11 +60,30 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
         fit_reason="The source's own delay task on the facilities' own records, in real time order, with this patient's arrival against the appointment added. The gap: the source's aggregation removed this patient's exam type, contrast and inpatient status, so the other inputs describe the facility's state for whoever comes next. Kept on purpose as potential leaks: the expected-delay table, of undocumented origin, and the schedule fields, which reflect the final schedule.",
     )
     unique_name = "medical_facility_operational_data"
-    year = "2020"
     domain = "medical & healthcare"
-    source = "Other"
-    source_url = "https://medicalanalytics.group/operational-data-challenge/"
-    license = "CC0 1.0 (Harvard Dataverse doi:10.7910/DVN/X4SJWS, author deposit by Pianykh, 2020-05-24)"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://medicalanalytics.group/operational-data-challenge/",
+            license="CC0 1.0 (Harvard Dataverse doi:10.7910/DVN/X4SJWS, author deposit by Pianykh, 2020-05-24)",
+            year="2020",
+            bibtex=r"""
+                @article{Pianykh2020,
+                  author = {Pianykh, Oleg S. and Guitron, Steven and Parke, Darren and Zhang, Chengzhao and Pandharipande, Pari and Brink, James and Rosenthal, Daniel},
+                  title = {Improving healthcare operations management with machine learning},
+                  journal = {Nature Machine Intelligence}, volume = {2}, pages = {266--273}, year = {2020},
+                  doi = {10.1038/s42256-020-0176-3}
+                }
+                @article{Crowley2020,
+                  author = {Crowley, Colm and Guitron, Steven and Son, Joseph and Pianykh, Oleg S.},
+                  title = {Modeling workflows: Identifying the most predictive features in healthcare operational processes},
+                  journal = {PLOS ONE}, volume = {15}, number = {6}, pages = {e0233810}, year = {2020},
+                  doi = {10.1371/journal.pone.0233810}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         Primary author release, linked by Pianykh et al. (2020), Nature Machine Intelligence:
@@ -77,20 +97,6 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
         https://www.kaggle.com/api/v1/datasets/download/weirdolucifer/medical-facility-operational-data?datasetVersionNumber=1
         Mirror archive SHA256 d2427f01c225122fd406bcd28d55e78439e60a1465f7514caf22e593ebd9f256.
         Read the four worksheets F1-F4; the definition keeps the scheduled facilities F1-F3. Counts differ from the related PLOS analytical cohort; exact cohort equivalence is not claimed.
-    """
-    bibtex = r"""
-        @article{Pianykh2020,
-          author = {Pianykh, Oleg S. and Guitron, Steven and Parke, Darren and Zhang, Chengzhao and Pandharipande, Pari and Brink, James and Rosenthal, Daniel},
-          title = {Improving healthcare operations management with machine learning},
-          journal = {Nature Machine Intelligence}, volume = {2}, pages = {266--273}, year = {2020},
-          doi = {10.1038/s42256-020-0176-3}
-        }
-        @article{Crowley2020,
-          author = {Crowley, Colm and Guitron, Steven and Son, Joseph and Pianykh, Oleg S.},
-          title = {Modeling workflows: Identifying the most predictive features in healthcare operational processes},
-          journal = {PLOS ONE}, volume = {15}, number = {6}, pages = {e0233810}, year = {2020},
-          doi = {10.1371/journal.pone.0233810}
-        }
     """
     curation_comments = """
         We start with worksheets F1-F3 of the authenticated author workbook WaitData.Published.xlsx (all four sheets are read; F4 is left out).

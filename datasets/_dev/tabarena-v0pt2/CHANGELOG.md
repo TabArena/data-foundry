@@ -1,5 +1,39 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10, sources as a list, slim v2 dataset metadata, no `version_of` (no container built)
+
+- Every definition declares `sources = (Source(role="publication", platform=..., url=..., license=..., year=...,
+  bibtex=...),)` in place of `year`, `source`, `source_url`, `license`, `bibtex` and `bibtex_key`, rewritten by a
+  codemod: the values, comments and BibTeX are unchanged (checked field by field against the previous files).
+  `2024_lusaka_mobility_prediction_hackathon` and `lt_vehicle_loan_default_prediction` wrote the URL into
+  `Metric.source(reference=...)`, which had read the removed `source_url`.
+- 14 definitions list the copy they download as a second source (`role="copy"`, with its link and license), as their
+  comments already said: airfoil_self_noise, aps_failure, australian_vehicle_insurance_2004_2005,
+  biogeographical_ancestry_prediction, biomechanical_orthopaedic_prediction, cirrhosis_patient_survival_prediction,
+  heart_failure_followup_survival, in_vehicle_coupon_recommendation, mic, mobile_churn, qsar_oral_toxicity,
+  rain_in_australia, sepsis_survival_minimal_clinical_records, pricing_game_2017_french_mtpl. The publication's
+  license of qsar_oral_toxicity and rain_in_australia no longer repeats the copy's.
+- 13 more list their copies, researched from their download, their record's links and the copies' own pages (Kaggle
+  and Hugging Face data cards, OpenML, GitHub, Zenodo, Crossref; 2026-11-10): 5g_energy_consumption,
+  body_density_prediction, heloc, house_sales, hr_analytics, jm1, lending_club (its Zenodo cut and the Kaggle file are
+  two `part`s, joined by loan id), lung_cancer, nyc_taxi_trip_duration_1m, sdss_17, sepsis_prediction_1m,
+  south_africa_coronary_heart_disease, immoscout_german_house_prices. A publication's license that was the copy's
+  moved to the copy: lending_club (CC0 of the Kaggle uploader), nyc_taxi_trip_duration_1m (the competition rules),
+  south_africa_coronary_heart_disease (CC BY-SA 4.0 of the Kaggle copy; the ESL page states none). The publication of
+  immoscout_german_house_prices is the deleted Kaggle dataset (license unknown), seen in the notebook of November 2020
+  that read it; OpenML 43342, the copy we download, keeps its CC BY-NC-SA 4.0 and its BibTeX entry.
+- Six licenses written as the text `"None"` are `None`: biogeographical_ancestry_prediction (now CC BY-NC-ND 4.0, the
+  open-access license of the article that holds Table S1A; its GitHub copy states none), body_density_prediction
+  (now the StatLib file's terms: free to distribute and use for non-commercial purposes), coffee_rating_prediction,
+  kickstarter, lung_cancer, pancreatic_cancer_mouse_detection.
+- 12 definitions accept `meta_license_unknown` with the reason, as the other datasets without a known license do.
+- The 18 `_1m` versions drop `version_of` and `version_comment`: a version sub-sampled to a `row_budget` reads the raw
+  files of its name without the suffix. The version comment is a `curation_comments` bullet ("The row budget: ...").
+  `protein_model_quality_rf_pcp` drops `raw_data_from`, which named itself.
+- The containers write the new `dataset-mold-v2` metadata (sources, no flat duplicates), so every checksum changes:
+  every README is stale until the next `dataset check`. A v2 version is saved under its own name, not under
+  `<name>/versions/`.
+
 ## 2026-11-10, australian and loan_default: the same frame under pandas 2 and 3 (no container built)
 
 - The opt-in data check (`DATA_FOUNDRY_V2_DATA_CHECKS=1`) failed for both on pandas 3: the READMEs had been written

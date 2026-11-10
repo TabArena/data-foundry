@@ -147,8 +147,8 @@ git; the rebuild runs it ([rebuild.md](rebuild.md), step 6).
 
 ## Checks only Data Foundry has
 
-* Record pointer: the record's `v2_path` names this dataset's `dataset.py` (a `_1m` folder only when its class declares
-  `version_of` the record), and its `README.md` carries the UUID once built (`build.uuid`, `build_stale` false).
+* Record pointer: the record's `v2_path` names this dataset's `dataset.py` (a `<name>_1m` folder only when its class
+  declares a `row_budget`), and its `README.md` carries the UUID once built (`build.uuid`, `build_stale` false).
   `.venv/bin/python -m data_foundry.curation.cli sync-notebooks --check` is clean ([records.md](records.md)).
 * Template conformance: the class validates on import (`dataset list --root datasets/_dev/tabarena-v0pt2` lists it),
   follows the current `datasets/_template/dataset.py`, keeps diagnostics out of `dataset.py`, and `README.md` was

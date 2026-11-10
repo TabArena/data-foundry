@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
 
 
 class Kickstarter(AbstractCuratedDataset):
@@ -46,11 +46,26 @@ class Kickstarter(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "kickstarter"
-    year = "2026"  # the snapshot we pin; the source grows over time
     domain = "business & marketing"
-    source = "Other"
-    source_url = "https://webrobots.io/kickstarter-datasets/"
-    license = "None"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://webrobots.io/kickstarter-datasets/",
+            license=None,  # Web Robots states none for its datasets; its terms cover its scraping service
+            year="2026",  # the snapshot we pin; the source grows over time
+            bibtex=r"""
+                @misc{webrobots2026kickstarter,
+                  title        = {Kickstarter Datasets},
+                  author       = {{Web Robots}},
+                  howpublished = {\url{https://webrobots.io/kickstarter-datasets/}},
+                  note         = {Accessed: 2026-01-25},
+                  year         = {2026},
+                  organization = {Web Robots}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         There exists data from Kaggle (https://www.kaggle.com/datasets/yashkantharia/kickstarter-campaign).
@@ -58,16 +73,6 @@ class Kickstarter(AbstractCuratedDataset):
 
         wget https://s3.amazonaws.com/weruns/forfun/Kickstarter/Kickstarter_2026-01-12T09_37_51_016Z.zip
         mkdir -p local-data-warehouse/kickstarter && mv Kickstarter_2026-01-12T09_37_51_016Z.zip local-data-warehouse/kickstarter && mkdir -p local-data-warehouse/kickstarter/data_files && unzip local-data-warehouse/kickstarter/Kickstarter_2026-01-12T09_37_51_016Z.zip -d local-data-warehouse/kickstarter/data_files
-    """
-    bibtex = r"""
-        @misc{webrobots2026kickstarter,
-          title        = {Kickstarter Datasets},
-          author       = {{Web Robots}},
-          howpublished = {\url{https://webrobots.io/kickstarter-datasets/}},
-          note         = {Accessed: 2026-01-25},
-          year         = {2026},
-          organization = {Web Robots}
-        }
     """
     curation_comments = """
         Similar to the Kaggle task, we aim to predict whether a Kickstarter project will be funded successfully. We simulate predicting at launch: only information known when the campaign starts is used.
@@ -87,6 +92,12 @@ class Kickstarter(AbstractCuratedDataset):
         - We found 150 rows without location information. We drop these rows as it is unclear which issue caused this and how the rows' data might be affected by this.
         - We drop duplicates (20%) which seems to have occurred from multiple scrapes of the same project.
     """
+    accepted_check_warnings = {
+        "meta_license_unknown": (
+            "Web Robots publishes its Kickstarter scrapes without a licence; its terms and conditions cover its "
+            "scraping service, not the datasets (checked 2026-11-10)."
+        ),
+    }
 
     # Task
     target = "state"

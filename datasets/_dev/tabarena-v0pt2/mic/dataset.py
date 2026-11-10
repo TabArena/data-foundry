@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -184,27 +184,39 @@ class Mic(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "mic"
-    year = "2020"
     domain = "medical & healthcare"
-    source = "Other"  # the University of Leicester deposit (2020); UCI 579 is a later copy
-    source_url = "https://doi.org/10.25392/leicester.data.12045261"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # the University of Leicester deposit (2020); UCI 579 is a later copy
+            url="https://doi.org/10.25392/leicester.data.12045261",
+            license="CC BY 4.0",
+            year="2020",
+            bibtex="""
+                @article{golovenkin2020trajectories,
+                  title={Trajectories, bifurcations, and pseudo-time in large clinical datasets: applications to myocardial infarction and diabetes data},
+                  author={Golovenkin, Sergey E and Bac, Jonathan and Chervov, Alexander and Mirkes, Evgeny M and Orlova, Yuliya V and Barillot, Emmanuel and Gorban, Alexander N and Zinovyev, Andrei},
+                  journal={GigaScience},
+                  volume={9},
+                  number={11},
+                  pages={giaa128},
+                  year={2020},
+                  publisher={Oxford University Press}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="UCI",
+            url="https://archive.ics.uci.edu/dataset/579/myocardial+infarction+complications",
+            license="CC BY 4.0",
+            name="UCI 579",
+        ),
+    )
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/mic/ && wget -P local-data-warehouse/mic/ https://archive.ics.uci.edu/static/public/579/myocardial+infarction+complications.zip && unzip local-data-warehouse/mic/myocardial+infarction+complications.zip -d local-data-warehouse/mic/ && rm local-data-warehouse/mic/myocardial+infarction+complications.zip
-    """
-    bibtex = """
-        @article{golovenkin2020trajectories,
-          title={Trajectories, bifurcations, and pseudo-time in large clinical datasets: applications to myocardial infarction and diabetes data},
-          author={Golovenkin, Sergey E and Bac, Jonathan and Chervov, Alexander and Mirkes, Evgeny M and Orlova, Yuliya V and Barillot, Emmanuel and Gorban, Alexander N and Zinovyev, Andrei},
-          journal={GigaScience},
-          volume={9},
-          number={11},
-          pages={giaa128},
-          year={2020},
-          publisher={Oxford University Press}
-        }
     """
     curation_comments = """
         - There are 12 possible targets and four possible time moments to predict the targets for this dataset. We use the categorical target as it summarizes the other possible targets. We predict at the time of admission, the first of the four time points in the dataset description (Golovenkin et al., Leicester data 2020, "Problems to solve"): all inputs except columns 93-95 and 100-105, i.e. we drop the 9 day-1..3 ICU columns R_AB_{1,2,3}_n, NA_R_{1,2,3}_n and NOT_NA_{1,2,3}_n. The end of day 3, which allows all inputs, leaks the target: LET_IS counts any death in hospital, and a patient who died before day 2 or 3 has no day-2/3 records, so their missingness encodes death (91% of the 138 rows missing a day-3 field died, vs 16% overall).

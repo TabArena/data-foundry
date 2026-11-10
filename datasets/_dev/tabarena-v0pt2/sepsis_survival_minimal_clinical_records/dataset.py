@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class SepsisSurvivalMinimalClinicalRecords(AbstractCuratedDataset):
@@ -40,28 +40,40 @@ class SepsisSurvivalMinimalClinicalRecords(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "sepsis_survival_minimal_clinical_records"
-    year = "2017"
     domain = "medical & healthcare"
-    source = "Other"  # S1 Dataset of Knoop et al. 2017 (PLoS ONE); UCI is a later copy
-    source_url = "https://doi.org/10.1371/journal.pone.0187990"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # S1 Dataset of Knoop et al. 2017 (PLoS ONE); UCI is a later copy
+            url="https://doi.org/10.1371/journal.pone.0187990",
+            license="CC BY 4.0",
+            year="2017",
+            bibtex="""
+                @article{chicco2020survival,
+                  title={Survival prediction of patients with sepsis from age, sex, and septic episode number alone},
+                  author={Chicco, Davide and Jurman, Giuseppe},
+                  journal={Scientific reports},
+                  volume={10},
+                  number={1},
+                  pages={17156},
+                  year={2020},
+                  publisher={Nature Publishing Group UK London}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="UCI",
+            url="https://archive.ics.uci.edu/dataset/827/sepsis+survival+minimal+clinical+records",
+            license="CC BY 4.0",
+            name="UCI 827",
+        ),
+    )
     download_description = """
         We download the data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/827/sepsis+survival+minimal+clinical+records.zip && unzip sepsis+survival+minimal+clinical+records.zip && unzip s41598-020-73558-3_sepsis_survival_dataset.zip -d data_files &&  rm sepsis+survival+minimal+clinical+records.zip && rm s41598-020-73558-3_sepsis_survival_dataset.zip
         mkdir -p local-data-warehouse/sepsis_survival_minimal_clinical_records && mv data_files local-data-warehouse/sepsis_survival_minimal_clinical_records/
-    """
-    bibtex = """
-        @article{chicco2020survival,
-          title={Survival prediction of patients with sepsis from age, sex, and septic episode number alone},
-          author={Chicco, Davide and Jurman, Giuseppe},
-          journal={Scientific reports},
-          volume={10},
-          number={1},
-          pages={17156},
-          year={2020},
-          publisher={Nature Publishing Group UK London}
-        }
     """
     curation_comments = """
         We use only the primary cohort from Norway and ignore the subset and the small data (137 samples) from the South Korea cohort.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -39,23 +39,28 @@ class TourTravelsChurn(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "tour_travels_churn"
-    year = "2021"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/tejashvi14/tour-travels-customer-churn-prediction/"
-    license = "CC0: Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/tejashvi14/tour-travels-customer-churn-prediction/",
+            license="CC0: Public Domain",
+            year="2021",
+            bibtex=r"""
+                @misc{Tejashvi2023TourTravelsCustomerChurnPrediction,
+                  author = {Tejashvi},
+                  title  = {Tour & Travels Customer Churn Prediction},
+                  year   = {2023},
+                  howpublished = {\url{https://www.kaggle.com/datasets/tejashvi14/tour-travels-customer-churn-prediction}},
+                  note   = {Kaggle dataset}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         kaggle datasets download tejashvi14/tour-travels-customer-churn-prediction --unzip && mkdir -p local-data-warehouse/tour_travels_churn && mv Customertravel.csv local-data-warehouse/tour_travels_churn/
-    """
-    bibtex = r"""
-        @misc{Tejashvi2023TourTravelsCustomerChurnPrediction,
-          author = {Tejashvi},
-          title  = {Tour & Travels Customer Churn Prediction},
-          year   = {2023},
-          howpublished = {\url{https://www.kaggle.com/datasets/tejashvi14/tour-travels-customer-churn-prediction}},
-          note   = {Kaggle dataset}
-        }
     """
     curation_comments = """
         The source of the data from Kaggle is unknown but the data distributions look reasonable enough to use. But I would also not be surprised if we find out the data is artificially created.

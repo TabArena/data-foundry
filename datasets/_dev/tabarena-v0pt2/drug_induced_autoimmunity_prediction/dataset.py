@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     Smiles,
+    Source,
     TaskSummary,
     canonical_smiles,
     decode,
@@ -50,24 +51,29 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "drug_induced_autoimmunity_prediction"
-    year = "2025"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5332M"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5332M",
+            license="CC BY 4.0",
+            year="2025",
+            bibtex="""
+                @article{huang2025interdia,
+                  title={InterDIA: Interpretable prediction of drug-induced autoimmunity through ensemble machine learning approaches},
+                  author={Huang, Lina and Liu, Peineng and Huang, Xiaojie},
+                  journal={Toxicology},
+                  volume={511},
+                  pages={154064},
+                  year={2025},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         wget https://archive.ics.uci.edu/static/public/1104/drug_induced_autoimmunity_prediction.zip && unzip drug_induced_autoimmunity_prediction.zip && rm drug_induced_autoimmunity_prediction.zip RDKit_ChemDes.xlsx && mkdir -p local-data-warehouse/drug_induced_autoimmunity_prediction && mv DIA_trainingset_RDKit_descriptors.csv local-data-warehouse/drug_induced_autoimmunity_prediction/ && mv DIA_testset_RDKit_descriptors.csv local-data-warehouse/drug_induced_autoimmunity_prediction/
-    """
-    bibtex = """
-        @article{huang2025interdia,
-          title={InterDIA: Interpretable prediction of drug-induced autoimmunity through ensemble machine learning approaches},
-          author={Huang, Lina and Liu, Peineng and Huang, Xiaojie},
-          journal={Toxicology},
-          volume={511},
-          pages={154064},
-          year={2025},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         We start with the dataset from UCI.

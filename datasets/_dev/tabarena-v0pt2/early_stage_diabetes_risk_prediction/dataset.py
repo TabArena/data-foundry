@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class EarlyStageDiabetesRiskPrediction(AbstractCuratedDataset):
@@ -37,25 +37,30 @@ class EarlyStageDiabetesRiskPrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "early_stage_diabetes_risk_prediction"
-    year = "2020"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5VG8H"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5VG8H",
+            license="CC BY 4.0",
+            year="2020",
+            bibtex="""
+                @inproceedings{islam2019likelihood,
+                  title={Likelihood prediction of diabetes at early stage using data mining techniques},
+                  author={Islam, MM Faniqul and Ferdousi, Rahatara and Rahman, Sadikur and Bushra, Humayra Yasmin},
+                  booktitle={Computer Vision and Machine Intelligence in Medical Image Analysis: International Symposium, ISCMM 2019},
+                  pages={113--125},
+                  year={2019},
+                  organization={Springer}
+                }
+            """,
+        ),
+    )
     download_description = """
         We get the data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/529/early+stage+diabetes+risk+prediction+dataset.zip && unzip early+stage+diabetes+risk+prediction+dataset.zip && rm early+stage+diabetes+risk+prediction+dataset.zip && mkdir -p local-data-warehouse/early_stage_diabetes_risk_prediction && mv diabetes_data_upload.csv local-data-warehouse/early_stage_diabetes_risk_prediction/
-    """
-    bibtex = """
-        @inproceedings{islam2019likelihood,
-          title={Likelihood prediction of diabetes at early stage using data mining techniques},
-          author={Islam, MM Faniqul and Ferdousi, Rahatara and Rahman, Sadikur and Bushra, Humayra Yasmin},
-          booktitle={Computer Vision and Machine Intelligence in Medical Image Analysis: International Symposium, ISCMM 2019},
-          pages={113--125},
-          year={2019},
-          organization={Springer}
-        }
     """
     curation_comments = """
         We start with diabetes_data_upload.csv from UCI.
