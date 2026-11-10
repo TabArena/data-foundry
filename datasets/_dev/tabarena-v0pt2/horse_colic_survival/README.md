@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: horse_colic_survival
 container_format: 2
-checksum: v2:d967ea7c632fd99f8bd34fae3e67ac8e34f7602bd6f8bc9e79fa84192c0f1c49
+checksum: v2:ade0085995f6926c33b2d09d573da1136c5e6da1a603896db87e310150c163f3
 build:
   uuid: 01a111fc-df0b-7d08-9ad5-3bfee18c9b55
   checksum: v2:3edea035ca49ff4f42bfa2eb137a98817c67387f49f0fb111c2fd7cf979fa727
@@ -20,45 +20,44 @@ build:
 build_stale: true
 data:
   n_rows: 344
-  n_features: 20
+  n_features: 21
   dtypes:
     category: 14
     float64: 7
+    int64: 1
   n_test_dataset_rows: null
 task:
-  target: outcome
-  problem_type: multiclass_classification
-  metric: log_loss
+  target: did_not_survive
+  problem_type: binary_classification
+  metric: roc_auc
   metric_origin: fallback
   scoring_columns: null
-  split_regime: iid
-  stratify_on: outcome
-  time_on: null
+  split_regime: temporal_non_iid
+  stratify_on: did_not_survive
+  time_on: case_number
   group_on: null
   group_labels: null
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 20
-  n_folds: 3
+  n_repeats: 3
+  n_folds: 1
   random_state: 4267
-  time_horizon: null
-  time_horizon_unit: null
+  time_horizon: 57
+  time_horizon_unit: steps
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 229
-    max: 230
+    min: 173
+    max: 287
   n_test:
-    min: 114
-    max: 115
+    min: 57
+    max: 57
 bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - dataset_duplicate_rows
-  - dataset_conflicting_duplicate_rows
+  infos: []
   accepted: {}
 decisions: []
 ---
@@ -67,27 +66,27 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `outcome`, scored with `log_loss` on IID splits. 344 rows and 20 features. Source: UCI (1989).
+Binary classification of `did_not_survive`, scored with `roc_auc` on temporal splits by `case_number`. 344 rows and 21 features. Source: UCI (1989).
 
-Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d967ea7c632fd99f8bd34fae3e67ac8e34f7602bd6f8bc9e79fa84192c0f1c49`, so the build is stale. See [Build](#build).
+Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ade0085995f6926c33b2d09d573da1136c5e6da1a603896db87e310150c163f3`, so the build is stale. See [Build](#build).
 
 ## In brief
 
-**Question.** Will a horse with colic live, die or be put down?
+**Question.** Will a horse with colic survive to leave the hospital?
 
-**Use case.** For example, a veterinarian examining a horse with colic on arrival estimates whether it will survive, to advise the owner on surgery, treatment or euthanasia.
+**Use case.** For example, a veterinarian examining a horse with colic on arrival estimates whether it will survive, to advise the owner on surgery, treatment or euthanasia, with a model built on the hospital's earlier admissions; the horse may be on its first or a return visit.
 
-**One row.** One horse with colic at its first visit to a veterinary hospital (344 horses; place and period not stated).
+**One row.** One admission of a horse with colic to the teaching hospital of the Ontario Veterinary College, Guelph (344 admissions of 334 horses, in the order of their case numbers; the period is not stated, likely the 1980s).
 
-**Predicted.** What eventually happened to the horse; it lived (62.5%), died (23%) or was euthanized (14.5%).
+**Predicted.** Whether the horse did not survive, that is died or was euthanized: 129 of 344 (37.5%).
 
 **Known at prediction time.** Age group, rectal temperature, pulse and breathing rate, the state of the legs, gums and gut (pain, gut sounds, distension, rectal exam, abdomen), stomach-tube reflux and its acidity, and blood and belly-fluid values (packed cell volume, total protein).
 
-**What the test data stands for.** Random horses, so the test data stands for new cases of the same hospital.
+**What the test data stands for.** Three windows of 57 horses in case-number order, each trained on all earlier horses, so a model meets later admissions, including the hospital's change in how it recorded some lab values.
 
-**Our changes to the source.** We drop whether the horse had surgery and the lesion found, which come after the examination, and keep each horse's first visit only.
+**Our changes to the source.** We merge died and euthanized into did not survive, drop whether the horse had surgery and the lesion found, which come after the examination, and keep one row per hospital number.
 
-> **Use case fit: approximate (a stand-in with a known gap).** One of the three outcomes, euthanasia, is a decision by owner and vet that the prediction would inform, and the source states neither when the examination values were taken nor how long the horses were followed.
+> **Use case fit: approximate (a stand-in with a known gap).** Not surviving includes euthanasia, a decision by owner and vet that the prediction would inform, and the source states neither when the examination values were taken nor the calendar period of the cases.
 
 ## Files in this folder
 
@@ -127,28 +126,29 @@ Only curators run `build`, when the dataset ships.
 | year | 1989 |
 | domain | biology & life sciences |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | Non-IID, Temporal |
 | reference | McLeish1989HorseColic |
-| rows x columns | 344 x 21 |
-| task.target | outcome |
-| task.problem_type | multiclass_classification |
-| task.metric | log_loss |
-| task.split_regime | iid |
-| task.stratify_on | outcome |
+| rows x columns | 344 x 22 |
+| task.target | did_not_survive |
+| task.problem_type | binary_classification |
+| task.metric | roc_auc |
+| task.split_regime | temporal_non_iid |
+| task.stratify_on | did_not_survive |
+| task.time_on | case_number |
 
 **Metric**
 
 | field | value |
 |---|---|
-| name | `log_loss` (standard; takes proba; lower is better) |
+| name | `roc_auc` (standard; takes proba; higher is better) |
 | origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
-| definition | mean of -log p(true class) |
-| reason | The UCI donation (McLeish & Cecile, 1989) defines no metric; its stated class attribute is the surgical lesion (attr 24), not the outcome we predict, and no paper defines an evaluation for the outcome task. |
+| definition | area under the ROC curve |
+| reason | The UCI donation (McLeish & Cecile, 1989) defines no metric; its stated class attribute is the surgical lesion (attr 24), not the outcome we predict, and the survival models of the field (Pascoe et al. 1990, Bishop et al. 2022) report sensitivity and specificity at a chosen cut, not a ranking metric. |
 
 <details>
 <summary>Feature types: 6 categorical, 8 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (6): `age`, `mucous_membranes`, `pain`, `abdomen`, `abdominocentesis_appearance`, `outcome`
+- categorical (6): `age`, `mucous_membranes`, `pain`, `abdomen`, `abdominocentesis_appearance`, `did_not_survive`
 - ordinal (8): `temperature_of_extremities (cold < cool < normal < warm)`, `peripheral_pulse (absent < reduced < normal < increased)`, `capillary_refill_time (< 3 seconds < >= 3 seconds)`, `peristalsis (absent < hypomotile < normal < hypermotile)`, `abdominal_distension (none < slight < moderate < severe)`, `nasogastric_tube (none < slight < significant)`, `nasogastric_reflux (none < < 1 liter < > 1 liter)`, `rectal_exam_feces (absent < decreased < normal < increased)`
 - string (0): none
 - datetime (0): none
@@ -172,15 +172,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 344 rows of the final frame (random rows: the frame is shuffled); 12 of 21 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 344 rows of the final frame (the oldest rows: the frame is sorted by `case_number`); 12 of 22 columns, the target first. Cells are cut at 40 characters.
 
-| outcome | age | rectal_temperature | pulse | respiratory_rate | temperature_of_extremities | peripheral_pulse | mucous_membranes | capillary_refill_time | pain | peristalsis | abdominal_distension |
+| did_not_survive | age | rectal_temperature | pulse | respiratory_rate | temperature_of_extremities | peripheral_pulse | mucous_membranes | capillary_refill_time | pain | peristalsis | abdominal_distension |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Lived | adult | nan | 112 | 13 | cold | absent | pale cyanotic | &lt; 3 seconds | depressed | hypomotile | none |
-| Lived | adult | 37.8 | 42 | 40 | normal | normal | normal pink | &lt; 3 seconds | alert, no pain | hypomotile | none |
-| Died | adult | 38.9 | 80 | 44 | cool | reduced | pale pink | >= 3 seconds | depressed | hypomotile | moderate |
-| Lived | young (&lt; 6 months) | 39.5 | 84 | 30 | nan | nan | nan | &lt; 3 seconds | nan | nan | nan |
-| Lived | adult | 38.6 | 42 | 34 | warm | normal | pale cyanotic | nan | depressed | hypomotile | none |
+| No | adult | nan | 36 | 12 | normal | normal | normal pink | &lt; 3 seconds | alert, no pain | normal | none |
+| Yes | adult | nan | nan | nan | cool | absent | dark cyanotic | nan | intermittent severe pain | nan | severe |
+| Yes | adult | 38.5 | 96 | 36 | cool | reduced | nan | >= 3 seconds | depressed | absent | slight |
+| No | adult | 38.6 | 42 | 34 | warm | normal | pale cyanotic | nan | depressed | hypomotile | none |
+| Yes | adult | 36 | 42 | 30 | nan | nan | bright red / injected | &lt; 3 seconds | nan | nan | nan |
 
 ## Curation notes
 
@@ -188,8 +188,24 @@ We start with the data from UCI and merge the train and test data.
 
 - We encode missing values as NaN.
 - We drop features that leak the target.
-- We keep only the first instance (hospital number) per horse, as they can be treated multiple times and otherwise leaks information about the target.
-- We use the target "outcome" to model a task where we aim to predict if the horse survives or not. We drop cases that have not outcome recorded.
+- We keep the first row per hospital number. The 22 repeated hospital numbers are one visit with several lesion
+  codes (one pair with conflicting outcomes), not repeat visits; the first row is kept (corrected 2026-11-10).
+- Target (2026-11-10, Andrej, review issue 1 B): `did_not_survive`, "Yes" when the horse died or was
+  euthanized (129 of 344), "No" when it lived, the usual survival-to-discharge outcome of colic prognosis
+  (Bishop et al. 2022, Vet Surg 51:891, https://doi.org/10.1111/vsu.13839). Died against euthanized follows the
+  admission period (earlier case numbers 58 died / 14 euthanized among non-survivors, later ones 4 / 34) with
+  similar clinical findings, so the three classes are not kept. We drop cases with no outcome recorded.
+- Collection (2026-11-10, from the creators' papers): the horses came to the teaching hospital of the Ontario
+  Veterinary College, Guelph, one hospital; the rows come from its patient information system, which stores
+  the presenting complaint, treatment, diagnosis and outcome, with much of the clinical pathology "electronically
+  generated by the lab equipment" (Cecile & McLeish, arXiv:1304.2344; McLeish et al., arXiv:1304.1519). No
+  admission date is given; the hospital number is "the case number assigned to the horse" (UCI codebook) and
+  orders the admissions. The first 229 case numbers (up to 530,560; 60% lived) match in size and survival the
+  231 teaching-hospital horses of Pascoe et al. 1990 (Can J Vet Res, PMC1255672, 61% survivors); the later 115
+  (67% lived) mostly follow a second recording route (below). This reading rests on the counts, not on a
+  statement of the source. Missing values can follow the outcome: "sometimes records ended because euthanasia
+  was chosen as a solution for cost reasons" (arXiv:1304.2344). UCI's 300/68 files are not a time split (both
+  span the whole range of case numbers).
 - We keep the duplicates occurring in the data.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 8 columns are ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`); 8 of them decoded from the source's codes
@@ -202,95 +218,54 @@ We start with the data from UCI and merge the train and test data.
   each level is carries the words, a score without them is a number): 8 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order; 5 unordered codes carry their words: `mucous_membranes`, `pain`,
   `abdomen`, `abdominocentesis_appearance`, `age`.
-- Class-dependent recording (record marker `Class-dependent Recording`): `total_protein` is recorded in two units, g/L (above 15) for 95 horses, of which 1 died and 27 were euthanized, and g/dL for 209, of which 64 died and 16 were euthanized. The switch follows the hospital number, that is the admission period, so the unit tells died from euthanized (ROC AUC 0.79 alone). Not harmonised yet: one unit for all rows removes the cue (TabPFN 3.5 log loss 0.682 to 0.724).
+- Recording change, kept (Exception to CLEAN-21, 2026-11-10, Andrej, review issue 2 A): `total_protein` is
+  recorded in g/L (values above 15) for 95 horses, 92 of them with case numbers above 530,560, and in g/dL for
+  209; in the g/L rows every measured `abdominocentesis_total_protein` (44 values) and `nasogastric_reflux_ph`
+  (11) is exactly 1 or 2, codes the source does not explain, while elsewhere these columns hold measurements.
+  All three stay as recorded: the recording changes once, along the time order, and is unrelated to the label
+  (Fisher p = 0.16), so the middle window tests what the hospital met, a model trained on the old recording (3
+  g/L rows of 230) scoring later horses recorded the new way (45 g/L of 57). Serves P4 (a split that mirrors
+  the application) and P5 (the data as recorded). Untuned, three windows newest first: as recorded LightGBM
+  log loss 0.549 / 0.783 / 0.917, logistic regression 0.548 / 2.324 / 0.768; harmonised 0.611 / 0.841 / 0.911
+  and 0.587 / 0.720 / 0.809. Under the source's three classes the unit told died from euthanized (ROC AUC 0.79
+  alone), which the `Class-dependent Recording` marker records.
+- Time order (2026-11-10, Andrej, review issue 3 B): `case_number` is the hospital number's first six digits (the
+  42 seven-digit numbers are a six-digit case number with one digit appended, a 9 for 25 of 28 foals); the
+  frame is sorted by case number, then by the full number, so a case's suffixed later visits come after its
+  first visit. It is the time column and ships as a feature.
+- Return visits kept (2026-11-10, Andrej, review issue 4 A): nine cases appear two or three times under one
+  six-digit case number with a suffix (10 later rows; the codebook: "may not be unique if the horse is treated >
+  1 time"), all first visits survived. A return visit is an admission to score; the time order keeps each
+  later visit after its first, so no window trains on a later visit and tests the first.
 
 ## Splits
 
-Default splits.
+Three test windows of 57 horses in case-number order, walking back from the newest; each trains on all earlier
+horses (50%, 67% and 83% of the rows), so no window trains on less than half of the data (SPLIT-14). The case
+number orders the admissions but gives no dates, so the windows are counts of horses, not calendar periods.
+The outcome is known by discharge, far sooner than a window, so there is no gap. The oldest window tests
+horses recorded the old way, the middle one is the first to meet the second recording route (trained on
+almost none of it), the newest is tested after a refit that has seen it (2026-11-10, Andrej, review issue 3 B).
 
-20 repeat(s) x 3 fold(s) with seed 4267; train 229 to 230 rows, test 114 to 115 rows.
+3 repeat(s) x 1 fold(s) with seed 4267; train 173 to 287 rows, test 57 rows. Prediction horizon: 57 steps.
 
-<details>
-<summary>Show all 60 splits</summary>
-
-| repeat | fold | n_train | n_test |
-|---|---|---|---|
-| 0 | 0 | 229 | 115 |
-| 0 | 1 | 229 | 115 |
-| 0 | 2 | 230 | 114 |
-| 1 | 0 | 229 | 115 |
-| 1 | 1 | 229 | 115 |
-| 1 | 2 | 230 | 114 |
-| 2 | 0 | 229 | 115 |
-| 2 | 1 | 229 | 115 |
-| 2 | 2 | 230 | 114 |
-| 3 | 0 | 229 | 115 |
-| 3 | 1 | 229 | 115 |
-| 3 | 2 | 230 | 114 |
-| 4 | 0 | 229 | 115 |
-| 4 | 1 | 229 | 115 |
-| 4 | 2 | 230 | 114 |
-| 5 | 0 | 229 | 115 |
-| 5 | 1 | 229 | 115 |
-| 5 | 2 | 230 | 114 |
-| 6 | 0 | 229 | 115 |
-| 6 | 1 | 229 | 115 |
-| 6 | 2 | 230 | 114 |
-| 7 | 0 | 229 | 115 |
-| 7 | 1 | 229 | 115 |
-| 7 | 2 | 230 | 114 |
-| 8 | 0 | 229 | 115 |
-| 8 | 1 | 229 | 115 |
-| 8 | 2 | 230 | 114 |
-| 9 | 0 | 229 | 115 |
-| 9 | 1 | 229 | 115 |
-| 9 | 2 | 230 | 114 |
-| 10 | 0 | 229 | 115 |
-| 10 | 1 | 229 | 115 |
-| 10 | 2 | 230 | 114 |
-| 11 | 0 | 229 | 115 |
-| 11 | 1 | 229 | 115 |
-| 11 | 2 | 230 | 114 |
-| 12 | 0 | 229 | 115 |
-| 12 | 1 | 229 | 115 |
-| 12 | 2 | 230 | 114 |
-| 13 | 0 | 229 | 115 |
-| 13 | 1 | 229 | 115 |
-| 13 | 2 | 230 | 114 |
-| 14 | 0 | 229 | 115 |
-| 14 | 1 | 229 | 115 |
-| 14 | 2 | 230 | 114 |
-| 15 | 0 | 229 | 115 |
-| 15 | 1 | 229 | 115 |
-| 15 | 2 | 230 | 114 |
-| 16 | 0 | 229 | 115 |
-| 16 | 1 | 229 | 115 |
-| 16 | 2 | 230 | 114 |
-| 17 | 0 | 229 | 115 |
-| 17 | 1 | 229 | 115 |
-| 17 | 2 | 230 | 114 |
-| 18 | 0 | 229 | 115 |
-| 18 | 1 | 229 | 115 |
-| 18 | 2 | 230 | 114 |
-| 19 | 0 | 229 | 115 |
-| 19 | 1 | 229 | 115 |
-| 19 | 2 | 230 | 114 |
-
-</details>
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 287 | 57 | 514279 | 534519 | 534523 | 535415 |
+| 1 | 0 | 230 | 57 | 514279 | 530561 | 530562 | 534519 |
+| 2 | 0 | 173 | 57 | 514279 | 529796 | 529812 | 530561 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 2 exact duplicate row(s) (0.6% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `dataset_conflicting_duplicate_rows`: 1 row(s) (0.3%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (21 rows)</summary>
+<summary>Show the table (22 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -307,24 +282,24 @@ Default splits.
 | mucous_membranes | category | 48 | 13.95 | 6 | normal pink, pale pink, pale cyanotic, bright pink, bright red / injected, dark… |
 | capillary_refill_time | category | 39 | 11.34 | 2 | &lt; 3 seconds, >= 3 seconds |
 | age | category | 0 | 0 | 2 | adult, young (&lt; 6 months) |
-| outcome | category | 0 | 0 | 3 | Lived, Died, Euthanized |
-| nasogastric_reflux_ph | float64 | 281 | 81.69 | 24 | 2.0, 5.0, 7.0, 6.5, 5.5, 6.0, 4.5, 4.0, 7.5, 3.0 |
-| abdominocentesis_total_protein | float64 | 220 | 63.95 | 44 | 2.0, 1.0, 2.8, 3.9, 5.0, 2.6, 4.3, 3.4, 3.6, 1.4 |
+| did_not_survive | category | 0 | 0 | 2 | No, Yes |
+| nasogastric_reflux_ph | float64 | 281 | 81.69 | 24 | 2.0, 5.0, 7.0, 6.5, 5.5, 6.0, 4.5, 7.5, 4.0, 3.0 |
+| abdominocentesis_total_protein | float64 | 220 | 63.95 | 44 | 2.0, 1.0, 3.9, 2.8, 5.0, 2.6, 4.3, 1.4, 3.4, 3.6 |
 | respiratory_rate | float64 | 67 | 19.48 | 40 | 20.0, 24.0, 12.0, 16.0, 30.0, 40.0, 36.0, 28.0, 32.0, 60.0 |
 | rectal_temperature | float64 | 65 | 18.9 | 40 | 38.0, 38.2, 38.3, 38.5, 37.8, 37.5, 38.1, 38.6, 38.4, 37.7 |
-| total_protein | float64 | 40 | 11.63 | 83 | 6.5, 7.5, 7.0, 65.0, 6.6, 6.0, 6.8, 6.7, 6.2, 7.2 |
-| packed_cell_volume | float64 | 35 | 10.17 | 54 | 37.0, 45.0, 44.0, 35.0, 50.0, 40.0, 43.0, 36.0, 47.0, 38.0 |
-| pulse | float64 | 24 | 6.98 | 54 | 48.0, 60.0, 40.0, 44.0, 42.0, 88.0, 120.0, 52.0, 72.0, 100.0 |
+| total_protein | float64 | 40 | 11.63 | 83 | 6.5, 7.5, 7.0, 6.0, 65.0, 6.6, 6.8, 6.7, 7.2, 6.2 |
+| packed_cell_volume | float64 | 35 | 10.17 | 54 | 37.0, 45.0, 50.0, 35.0, 44.0, 40.0, 43.0, 47.0, 36.0, 33.0 |
+| pulse | float64 | 24 | 6.98 | 54 | 60.0, 48.0, 40.0, 44.0, 42.0, 88.0, 52.0, 72.0, 120.0, 100.0 |
+| case_number | int64 | 0 | 0 | 334 | 526254, 528109, 527982, 527521, 527944, 529048, 529925, 529960, 527833, 530695 |
 
 </details>
 
 ### Target distribution
 
-| outcome | count | pct |
+| did_not_survive | count | pct |
 |---|---|---|
-| Lived | 215 | 62.5 |
-| Died | 79 | 22.97 |
-| Euthanized | 50 | 14.53 |
+| No | 215 | 62.5 |
+| Yes | 129 | 37.5 |
 
 ### Numeric features
 
@@ -337,11 +312,12 @@ Default splits.
 | packed_cell_volume | 309 | 45.4576 | 10.9945 | 4 | 75 |
 | total_protein | 304 | 25.3661 | 27.9062 | 3.3 | 89 |
 | abdominocentesis_total_protein | 124 | 2.87016 | 1.87543 | 0.1 | 10.1 |
+| case_number | 344 | 530589 | 3036.44 | 514279 | 535415 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (60 rows)</summary>
+<summary>Show the table (59 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -364,6 +340,8 @@ Default splits.
 | capillary_refill_time | 1 | &lt; 3 seconds | 220 | 63.95 |
 | capillary_refill_time | 2 | >= 3 seconds | 85 | 24.71 |
 | capillary_refill_time | 3 | &lt;NA> | 39 | 11.34 |
+| did_not_survive | 1 | No | 215 | 62.5 |
+| did_not_survive | 2 | Yes | 129 | 37.5 |
 | mucous_membranes | 1 | normal pink | 92 | 26.74 |
 | mucous_membranes | 2 | pale pink | 72 | 20.93 |
 | mucous_membranes | 3 | pale cyanotic | 48 | 13.95 |
@@ -377,9 +355,6 @@ Default splits.
 | nasogastric_tube | 2 | slight | 111 | 32.27 |
 | nasogastric_tube | 3 | none | 83 | 24.13 |
 | nasogastric_tube | 4 | significant | 24 | 6.98 |
-| outcome | 1 | Lived | 215 | 62.5 |
-| outcome | 2 | Died | 79 | 22.97 |
-| outcome | 3 | Euthanized | 50 | 14.53 |
 | pain | 1 | intermittent mild pain | 77 | 22.38 |
 | pain | 2 | depressed | 72 | 20.93 |
 | pain | 3 | &lt;NA> | 62 | 18.02 |
@@ -419,4 +394,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d967ea7c632fd99f8bd34fae3e67ac8e34f7602bd6f8bc9e79fa84192c0f1c49` |
+| stale | yes: the definition now gives checksum `v2:ade0085995f6926c33b2d09d573da1136c5e6da1a603896db87e310150c163f3` |

@@ -1,5 +1,20 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10, PR #55: horse_colic_survival decided (Andrej; no container built)
+
+- Target `did_not_survive` ("Yes" for died or euthanized, 129 of 344), `binary_classification` with the fallback ROC
+  AUC: died against euthanized followed the admission period, survival does not.
+- Split: three windows of 57 horses in case-number order (`Temporal(on="case_number", TemporalSplits(window=57,
+  unit="rows", n_windows=3, min_train_fraction=0.5))`), `case_number` the hospital number's first six digits, the
+  frame sorted by it and then the full number.
+- The two recordings of `total_protein` and the 1/2 codes of the later recording kept as a shift between earlier
+  and later admissions, an exception to CLEAN-21 (curation note, record line, a Cases row in cleaning_features.md);
+  the 10 return visits kept, `use_case` and `row` name admissions; `Class-dependent Recording` stays.
+- Curation notes on the collection (one teaching hospital, no dates, the first 229 case numbers matching Pascoe et al.
+  1990's 231 horses) and the corrected repeated-hospital-number note. Record: `Binary Classification`,
+  `Temporal (NON-IID)`, `Non-IID (Temporal)`, `## Reference`, CC, Assessment and exception lines, `checked_by`.
+  `dataset check` passes; README regenerated.
+
 ## 2026-11-10, sources as a list, slim v2 dataset metadata, no `version_of` (no container built)
 
 - Every definition declares `sources = (Source(role="publication", platform=..., url=..., license=..., year=...,
