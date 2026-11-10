@@ -7,6 +7,7 @@ suggestion: TBD -> 2nd Tier
 priority: 1
 tags:
 - AI-Filled (Verify)
+- Spectral Data
 original_source: GOV Website
 year: '? (2005)'
 domain: medical & healthcare

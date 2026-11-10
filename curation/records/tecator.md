@@ -6,6 +6,8 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - Data Quality Issue
+tags:
+- Spectral Data
 collections:
 - TabArena Reject
 - TabSTAR
