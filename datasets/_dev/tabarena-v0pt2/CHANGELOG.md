@@ -1,5 +1,33 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10: Chromophore integrated into the accepted draft batch
+
+- Add the curator-accepted and built `chromophore_optical_properties_db` package, preserving the clean source/build commits and resolved review history. Its generated definition, README and REVIEW are byte-identical to the verified build version; no dataset build or model fit is repeated for integration.
+- Preserve the existing six accepted packages, all decision-only records, shared history and main-branch framework changes. Add only the Chromophore record/package and scoped shared documentation.
+- Mark the accepted record `DF: Yes` for the PR while retaining the official claim mirror until merge. The one-name no-steal claim update refreshes its completed build/PR note and expiry, preserving stage and original claim time.
+
+## 2026-11-10: Chromophore built and reproduced
+
+- Built the accepted `chromophore_optical_properties_db` definition at clean Git revision `8a50be6ccb71d6b8fb77047ba7603028dd37e596`: format 2, 17,510 rows, three predictors, 3,335 groups and nine folds. UUID `01a1c4ae-5ada-74a4-b90e-d5924662a442`; checksum `v2:97decdfc67653a344bdbc617300599730e279e24d81cdd2d821e68525f89ccb2`.
+- Saved-container reload and checksum verification pass. The complete ordered frame and all nine ordered train/test memberships equal the accepted qualification; no new task-probe sweep was needed. Existing signal and family-variation findings remain applicable.
+- The build read one pinned CSV (3,213,377 bytes). Reproduction using only that traced input gives the same checksum; a local raw-input ZIP with SHA256 manifest was verified. No containers or raw data enter Git, and no previous container was removed.
+- Native build has zero errors or unaccepted warnings; the specific accepted gas/no-solvent warning and conflicting-response information are unchanged. Tests: 2,017 passed, 286 skipped; exact CI lint scope passes. Repository-wide lint retains pre-existing legacy-notebook findings outside CI scope; no unrelated formatting changes were made.
+- This selected local build preserves the curator's 1A/2A, declared RMSE and gas acceptance. The active claim stays until normal integration; no push or publication is included.
+
+## 2026-11-10: Chromophore accepted by curator
+
+- Myunghwan chose "1A, 2A, RMSE as declared, accept gas warning, ship" for `chromophore_optical_properties_db`. Independent decision-register/precedent review found zero conflicts; no rule exception or amendment is required.
+- Keep the implemented input/target weighting (193 removals; only 50 full-source-record repeats; 143 additional weighting removals) and retain 61 conflicting input sets / 124 current rows with approximate fit and unresolved individual causes. Preserve all qualification and panel history; resolve both numbered issues without removing them.
+- Record fallback RMSE as checked and accept only `dataset_smiles_column` for the 20 gas observations with no solvent molecule. Regenerate the README through the native check. Data, target, predictor contract, metric and grouping/fold logic remain unchanged; existing fitted evidence remains applicable.
+- Scientific acceptance only. The dataset stays unbuilt and locally uncommitted with the active claim preserved; no build, push or publication follows this verdict.
+
+## 2026-11-09: Chromophore qualification for added review
+
+- Added `chromophore_optical_properties_db` from pinned Figshare v3 experimental measurements: first absorption-peak wavelength in nm, two typed SMILES inputs and medium state, fallback RMSE and approximate fit.
+- The implemented repeat policy retains 17,510 rows / 6,498 dyes / 3,335 groups. Join dye scaffolds by nonempty InChI and canonical tautomer identity; all nine current folds pass tested identity separation. Historical pre-correction scores remain separate.
+- Native checks: 27, zero errors, one proposed gas/no-solvent warning. Completed task, leakage, raw, dtype and bounded group probes, strict train-only diagnostics and full independent panel with debate, mediation and cold editing. Strict exploratory LightGBM mean RMSE 56.655 nm versus native mean baseline 106.481; held-out-family variation remains material.
+- Two independent curator choices remain: equal-response multiplicity (193 input/target repeats versus 50 full-record repeats) and retention of differing responses (61 sets / 124 current rows). Priority 3; earlier source-count, metric-origin and scope claims are corrected in the dated assessment. No human final-inclusion mark, container build, commit or publication.
+
 ## 2026-11-09: Football deferred by curator
 
 - Myunghwan deferred `football_match_probability_prediction` because the demonstrated incremental model-performance gain is weak. Set `TBD -> 2nd Tier` / `DF: Suspended`, preserving priority 4, the settled ordinary-temporal choice and all exploratory evidence.
