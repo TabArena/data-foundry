@@ -1,9 +1,8 @@
 # Changelog: TabArena v0.2 working copy
 
-## 2026-11-10, PR #58: biomechanical_orthopaedic_prediction and blood_tests_drink_prediction retired (moved from #57)
+## 2026-11-10, PR #58: biomechanical_orthopaedic_prediction and blood_tests_drink_prediction retired
 
-Both were retired on 2026-11-05 (Andrej's marks on the BeyondArena v0.2 review page) and carried out in #57; they move
-here, with the other retirements on the use case. Each record is `No (Retired)` with
+Both were retired on 2026-11-05 (Andrej's marks on the BeyondArena v0.2 review page). Each record is `No (Retired)` with
 `No Good Target / Scientific Discovery` and a CC line, its folder is removed and `v2_path` cleared; `DF: Yes`, the
 collection tags and the pinned BeyondArena containers stay.
 - `biomechanical_orthopaedic_prediction`: `degree_spondylolisthesis` is the criterion of half the labels (one threshold,
