@@ -4,7 +4,7 @@ name: Experimental database of optical properties of organic compounds (DB for c
 checked_by:
 - Myunghwan
 data_foundry_status:
-- WIP (DF)
+- WIP (Triage)
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
