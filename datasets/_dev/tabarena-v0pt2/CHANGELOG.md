@@ -1,5 +1,11 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10: Papyrus addition to the existing curation draft (Myunghwan)
+
+- Integrate the accepted, verified Papyrus package into draft PR59, retaining original clean source/build commits and exact definition/generated report/full review. Set the record's DF:Yes integration proposal while retaining ownership/WIP until main.
+- Refresh only Papyrus's claim note and expiry, preserving Myunghwan, triage and original claim time. All six previous accepted packages and prior rejection/holds remain unchanged. No new build/model, data upload, collection registration, ready transition or merge.
+
+
 ## 2026-11-10: Papyrus requested build and local commits
 
 - Build only `papyrus_bioactivity`: format 2, UUID `01a1c4a3-5dd9-7593-8c3b-19181baab684`, checksum `v2:08eb2e46164bb6dbb4f13509ecae23b7f124da5557b178805cc24bb11ddaf47c`, from clean accepted-definition commit `f3f5797fde2b9cd7eeca788bb5bbf35e5f905499`, using pinned Data Foundry runtime `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`. Preserve all 692,017 rows, seven inputs, three scaffold folds, fallback RMSE and pointwise protocol. Zero build errors/warnings.

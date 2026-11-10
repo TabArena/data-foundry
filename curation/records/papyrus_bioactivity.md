@@ -4,7 +4,8 @@ name: 'Papyrus: a large-scale curated dataset aimed at bioactivity predictions'
 checked_by:
 - Myunghwan
 data_foundry_status:
-- WIP (DF)
+- WIP (Triage)
+- 'DF: Yes'
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
@@ -71,3 +72,7 @@ CC (2026-11-10, Myunghwan): requested tabarena-build-commit on the accepted Papy
 **Assessment (AI, 2026-11-10):** built format 2 as `01a1c4a3-5dd9-7593-8c3b-19181baab684`, checksum `v2:08eb2e46164bb6dbb4f13509ecae23b7f124da5557b178805cc24bb11ddaf47c`, from clean accepted-definition commit `f3f5797fde2b9cd7eeca788bb5bbf35e5f905499`, using pinned Data Foundry runtime `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`. Native build reports 692,017 rows/seven predictors, three unchanged scaffold folds, zero errors/warnings. Save/reload checksum and check-only reproduction from traced inputs both match. Safe isolated source preparation regenerates both prepared tables exactly without writing through cached-file symlinks. Local manifested backup contains 5 files/856,881,288bytes and passes archive/source hash checks; actual inputs/container remain outside Git. Exhaustive built-frame/split/prediction-label equality with qualification supports reuse of the completed strict models and probes, with their original budgets and limits. No model or split redesign.
 
 - Checks: pinned Ruff0.15.15 lint/format, strict2091-record vocabulary, pointers, review parser and diffs pass. Framework tests2014passed/285skipped across initial run plus18socket-fixture reruns. Full catalog retains 17 pre-existing RowBudget import failures; isolated owned-definition catalog passes. Local commit-only build, not final repository integration; preserve Yes/WIP(DF), priority3 and current claim. No DF:Yes, collection registration, claim release, push, PR change or deletion.
+
+CC (2026-11-10, Myunghwan): update the Papyrus claim and add its verified build to the existing draft PR.
+
+**Assessment (AI, 2026-11-10):** integrate the accepted Papyrus package into draft PR59, preserving original source/build commits f3f5797fde2b9cd7eeca788bb5bbf35e5f905499 and9b5ce230726f7afb2893208f356a57793750609b and the exact three package files. DF:Yes is the accepted integration proposal; retain actual Myunghwan/triage/WIP mirror until main. Official claim note and expiry refreshed at520660544f9453244dc4a84f69209624faf71152; original claim time/stage preserved, expiry2026-11-17T09:13:56Z. All six previous packages and all seven prior rejection/hold decisions remain unchanged. No rebuild/model fit, raw/container upload, legacy retirement, registry change, ready transition, merge or control plane.
