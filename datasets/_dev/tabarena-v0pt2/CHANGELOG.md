@@ -1,5 +1,12 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10, retirement records after the review page's marks
+
+- early_stage_diabetes_risk_prediction: reassessed on the review page and kept retired on several reasons together
+  (a selection that makes the fit none; an untrained symptom rule at ROC AUC 0.905 and near-perfect models are
+  unrealistic); the record adds `Not Representative` next to `Selection Bias`.
+- blood_tests_drink_prediction: the refuted `Trivial` removed from the record (issue 2, B).
+
 ## 2026-11-10, PR #58: biomechanical_orthopaedic_prediction and blood_tests_drink_prediction retired
 
 Both were retired on 2026-11-05 (Andrej's marks on the BeyondArena v0.2 review page). Each record is `No (Retired)` with
