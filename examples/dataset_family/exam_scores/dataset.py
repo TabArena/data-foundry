@@ -7,10 +7,15 @@ pick one target and one split. `examples/dataset_family.py` generates the raw fi
 
 from __future__ import annotations
 
-from pathlib import Path
-
-import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, DataSummary, FeatureTypes, Source
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    DataSummary,
+    FeatureTypes,
+    NonFeature,
+    Source,
+    provenance_columns,
+    read_files,
+)
 
 
 class ExamScores(AbstractCuratedDataset):
@@ -30,7 +35,7 @@ class ExamScores(AbstractCuratedDataset):
         Source(
             role="publication",
             platform="GitHub",
-            url="https://github.com/TabArena/data-foundry/tree/main/examples/family",
+            url="https://github.com/TabArena/data-foundry/tree/main/examples/dataset_family",
             license="Apache-2.0",
             year="2026",
             bibtex="""
@@ -38,10 +43,17 @@ class ExamScores(AbstractCuratedDataset):
                   author = {{Data Foundry}},
                   title = {Exam scores: an example family of dataset definitions},
                   year = {2026},
-                  howpublished = {\\url{https://github.com/TabArena/data-foundry/tree/main/examples/family}}
+                  howpublished = {\\url{https://github.com/TabArena/data-foundry/tree/main/examples/dataset_family}}
                 }
             """,
+            files=("*.csv",),  # one file per school: listed with their hashes in the container (`raw_files`)
         ),
+    )
+    # kept in the frame, never a feature: every task drops these unless it uses one (its target, its group key)
+    non_features = (
+        NonFeature("math_score", "outcome", "The math score of the end-of-year exam."),
+        NonFeature("reading_score", "outcome", "The reading score of the same exam."),
+        *provenance_columns(),  # source_file, source_row, source_id from `read_files`
     )
     download_description = """
         Generated, not downloaded: `python examples/dataset_family.py` writes one CSV per school into
@@ -50,21 +62,24 @@ class ExamScores(AbstractCuratedDataset):
     curation_comments = """
         We start with one CSV per school, named after the school.
 
-        - The files are stacked in the order of their names; `school` comes from the file name, the key a task holds
+        - The files are stacked in the order of their names (`read_files`), which records where each row comes
+          from (`source_file`, `source_row`, `source_id`); `school` comes from the file name, the key a task holds
           schools out by.
-        - Both exam scores stay in the frame: each task keeps its target and drops the other, which is written at
-          the same exam and not known when predicting.
+        - Both exam scores stay in the frame, declared as outcomes in `non_features`: each task keeps its target and
+          drops the other, which is written at the same exam and not known when predicting.
     """
 
-    def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
-        files = sorted(raw_dir.glob("*.csv"))
-        return pd.concat([pd.read_csv(f).assign(school=f.stem.replace("_", " ")) for f in files], ignore_index=True)
+    def _load_raw(self, raw_dir):
+        return read_files(raw_dir, "*.csv")
 
-    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
-        return raw  # the generated files need no cleaning; a real source would be cleaned here, once for all tasks
+    def _clean(self, raw):
+        df = raw  # the generated files need no more cleaning; a real source is cleaned here, once for all tasks
+        df["school"] = df["source_file"].str.removesuffix(".csv").str.replace("_", " ")
+        return df
 
-    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+    def _feature_types(self, df):
         return FeatureTypes(
-            categorical=["school"],
+            categorical=["school", "source_file"],
+            string=["source_id"],
             ordinal={"parents_education": ["primary", "secondary", "tertiary"]},
         )

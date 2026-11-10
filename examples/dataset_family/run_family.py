@@ -96,16 +96,23 @@ def main(warehouse: Path | None = None) -> dict[str, Any]:
         parent = get_dataset(FAMILY, "exam_scores")
         checked = parent.check(write_report=False, verbose=False)
         print(f"  {len(checked.frame)} rows, columns {list(checked.frame.columns)}")
+        print(f"  never features: {[f'{nf.column} ({nf.reason})' for nf in parent.non_features]}")
         print(f"  data checksum {checked.data_checksum}; children {checked.children}")
+        print(
+            "  raw files: " + ", ".join(f"{f.path} ({f.rows} rows, sha256 {f.sha256[:8]})" for f in checked.raw_files)
+        )
         out: dict[str, Any] = {"exam_scores": checked.data_checksum}
 
         print("\n-- The tasks: one container each --")
         for name in checked.children:
-            result = get_dataset(FAMILY, name).check(write_report=False, verbose=False)
+            task_definition = get_dataset(FAMILY, name)
+            result = task_definition.check(write_report=False, verbose=False)
             container = result.container
             meta, task = container.dataset_metadata, container.task_metadata
             print(f"  {name}: target `{task.target_column_name}`, {task.split_regime}, {len(container.dataset)} rows")
             print(f"    columns {list(container.dataset.columns)}")
+            print(f"    dropped as no features: {[nf.column for nf in task_definition.dropped_non_features]}")
+            print(f"    raw files in its metadata: {[f.path for f in meta.raw_files]}")
             print(f"    derived from `{meta.derived_from}`: {' '.join(meta.derivation.split())}")
             print(f"    bundle checks: {len(result.bundle_report.errors)} error(s), checksum {container.checksum}")
             out[name] = container.checksum
@@ -129,9 +136,6 @@ def main(warehouse: Path | None = None) -> dict[str, Any]:
             target = "math_score"
             problem_type = "regression"
             metric = Metric.fallback(reason="Generated example data: there is no source metric.")
-
-            def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
-                return super()._clean(raw).drop(columns=["reading_score"])
 
         trial = TryMathIid()
         splits = trial.preview_splits()

@@ -213,8 +213,8 @@ A metric input known at the prediction point (a weight that is a function of the
     List it when the download is not the publication; `download_description` still says how the files are fetched.
   * A **part** (`role="part"`) is a piece the dataset is assembled from (one of several survey waves, a second table
     joined in), each with its own `license` and a `name` that tells the parts apart.
-  * `files=("sheets/*.txt",)` names the raw files that come from a source, as paths or glob patterns under the raw
-    folder.
+  * `files=("*.csv",)` names the raw files that come from a source, as paths or glob patterns under the raw folder.
+    The container lists them with their SHA-256, size and rows (`raw_files`, "The raw-file manifest" below).
 * `data_tags`: context tags only, since listing a regime tag yourself switches the automatic ones off. `"Anonymized"`
   when the source hid what the features are, by replacing their names or values on purpose (common for competition
   data; the record gets the `Anonymized` marker, and the cases without it are in
@@ -610,10 +610,16 @@ class ExamScores(AbstractCuratedDataset):
     data_summary = DataSummary(data=..., row=..., goals=..., limits=...)   # required on a parent
     unique_name = "exam_scores"
     domain = ...
-    sources = (...)
+    sources = (Source(..., files=("*.csv",)),)   # one file per school, listed in `raw_files`
     download_description = ...   # the family's raw files, read by every member
-    def _load_raw(self, raw_dir): ...
-    def _clean(self, raw): ...   # the shared cleaning: every outcome stays in the frame
+    non_features = (             # kept in the frame, never a feature: every task drops them
+        NonFeature("math_score", "outcome", "The math score of the exam."),
+        NonFeature("reading_score", "outcome", "The reading score of the same exam."),
+        *provenance_columns(),   # source_file, source_row, source_id
+    )
+    def _load_raw(self, raw_dir):
+        return read_files(raw_dir, "*.csv")   # stacks the files and records where each row comes from
+    def _clean(self, raw): ...   # the shared cleaning
 
 # exam_scores_math/dataset.py: a child (a task)
 ExamScores = import_definition("exam_scores")
@@ -622,12 +628,10 @@ class ExamScoresMath(ExamScores):
     unique_name = "exam_scores_math"
     derivation = "The math score as the target; the reading score, written at the same exam, is dropped."
     task_summary = TaskSummary(...)
-    target = "math_score"
+    target = "math_score"        # a declared outcome given a role: kept
     problem_type = "regression"
     metric = Metric.fallback(reason=...)
-
-    def _clean(self, raw):
-        return super()._clean(raw).drop(columns=["reading_score"])   # the other outcome is no feature
+    # the reading score and the provenance columns are dropped by the standard steps
 ```
 
 * **Kinds.** A definition without a `target` is a parent: it is never built and never discovered as a dataset
@@ -646,8 +650,10 @@ class ExamScoresMath(ExamScores):
 * **Summaries.** A child inherits the parent's `data_summary`, shown above its own `task_summary` in its README. An
   inherited `task_summary` or `splits_comment` is refused when the child's task differs (target, problem type,
   grouping, temporal); `dataclasses.replace(Parent.task_summary, split=...)` changes single fields.
-* **Outcomes.** The parent keeps every outcome (both scores); each task keeps its target and drops the others in its
-  `_clean`, since an outcome measured with the target is not known at the prediction point (LEAK rules).
+* **Never features.** The parent keeps every outcome (both scores) and declares it in `non_features`, with the
+  provenance columns; each task drops every declared column after `_clean` unless it gives one a role (its target,
+  `grouping.on`, a scoring or weight column), since an outcome measured with the target is not known at the
+  prediction point (LEAK rules). Section "Columns that are never features" below.
 * **The container** records the parent: `dataset_metadata.derived_from` (its `unique_name`) and `derivation`. A
   benchmark groups the tasks of one family by it.
 * **Checking.** `dataset check <parent>` checks the parent as data: its frame (in content order), a data checksum, its
@@ -695,6 +701,41 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
   (sberbank_housing_market_forecasting); a tag in a source's `license` (cirrhosis: `"IID"`). Read the class
   attributes once more for these before handing off.
 
+## Columns that are never features: `non_features`
+
+`non_features = (NonFeature(column, reason, description), ...)` declares columns a definition keeps in its frame but
+no task may use as a feature. The reasons: `outcome` (a result measured with or after the target, such as a second
+score of the same exam), `provenance` (where a row comes from: its file, row number, id), `identifier` (a key with no
+meaning as an input; a running id often encodes the order of collection or the origin) and `other` (with a
+`description` saying why).
+
+* A parent declares them; its children inherit them and may add more (`non_features = (*Parent.non_features,
+  NonFeature(...))`), never remove one. A standalone task may declare them too.
+* The standard steps drop every declared column after `_clean`, unless the task gives it a role: its target, a group
+  or time key, a scoring or weight column. So `revenue` declared as an outcome is the target of one child and dropped
+  by another, and a `source_file` declared as provenance may be the group key of a task that holds files out.
+* The parent's README lists them ("Never features"); a task's README names the ones it dropped. Nothing about them
+  enters the container: a task container holds only its features, target and the columns its task uses.
+* A declared column that the declaring definition's `_clean` does not return stops the run (a misspelling).
+
+## Assembled from several files: `read_files`
+
+`read_files(raw_dir, "*.csv")` (from `data_foundry.v2`) stacks the files that match a pattern, in the order of their
+sorted paths, and adds three columns: `source_file` (the file's path under the raw folder), `source_row` (the row's
+number in its file, from 1) and `source_id` (the file's own id column with `id_column=...`, else a hash of the row's
+values, which survives a re-saved or reordered file). `(source_file, source_id)` identifies a row. `read=` takes
+another reader (`pd.read_parquet`, `partial(pd.read_csv, sep="\t")`). Declare the three columns with
+`non_features = (*provenance_columns(), ...)`, so every task drops them.
+
+## The raw-file manifest
+
+A source that names its files (`Source(files=("*.csv",))`) gets them listed in the container's dataset metadata,
+`raw_files`: each file's path, SHA-256, size, source and the rows it gave (counted on `source_file`). With the build's
+git commit, the hashes pin what a container was built from: a changed file changes the checksum. The hashes are
+cached in the raw folder (`.raw_manifest.json`, by size and modification time), so a large file is read once. The
+README front matter records them, and the next check compares: `raw_files_changed` (warning) names the files that
+changed, appeared or went; `raw_files_missing` (error) a pattern that matches no file.
+
 ## Bundle checks and what to do at scaffold time
 
 `dataset check` runs them (and `dataset build` refuses to save on an error). Pre-empt them:
@@ -704,6 +745,8 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 | `dataset_index_range` | handled by the base class |
 | `dataset_object_dtype` | name every non-numeric column in `_feature_types` |
 | `dataset_identifier_column` | drop uninformative identifiers (recipe step 3) |
+| `dataset_sequential_id_column` | an integer column numbered densely, one value per row (a running id): drop it, or declare it `NonFeature(column, "identifier")` in the parent |
+| `raw_files_missing`, `raw_files_changed` | a source's `files` pattern matches nothing; a raw file differs from the README's (the raw-file manifest) |
 | `dataset_constant_column`, `dataset_all_missing_column`, `dataset_duplicate_columns` | drop them (step 7) |
 | `dataset_feature_equals_target` | drop target components |
 | `dataset_pure_feature_value` | a value (100 rows or more), or present against missing, that holds one class only: look the column up in the source's documentation; drop it if derived from or recorded after the outcome, else accept with the reason. On a target with a 94-98% base rate it is usually an ordinary category effect |

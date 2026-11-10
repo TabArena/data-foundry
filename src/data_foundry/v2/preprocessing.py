@@ -11,12 +11,17 @@ fails on a misspelled name), and ``anonymize_ids`` gives stable anonymous ids. T
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
 
 from data_foundry.utils.dtypes import is_str_dtype
+
+if TYPE_CHECKING:
+    from data_foundry.v2.dataset import NonFeature
 
 SHUFFLE_RANDOM_STATE = 42
 """The seed of the final shuffle of IID and grouped data (the collection has always used 42)."""
@@ -285,3 +290,70 @@ def anonymize_ids(values: pd.Series, *, length: int = 12) -> pd.Series:
 def _id_text(value: object) -> str:
     """The text :func:`anonymize_ids` hashes: a string itself, anything else prefixed with its type name."""
     return value if isinstance(value, str) else f"{type(value).__name__}:{value}"
+
+
+PROVENANCE_COLUMNS = ("source_file", "source_row", "source_id")
+"""The columns :func:`read_files` adds: the file a row comes from, its row number there, and its id."""
+
+
+def read_files(
+    raw_dir: Path | str,
+    pattern: str = "*.csv",
+    *,
+    read: Callable[..., pd.DataFrame] = pd.read_csv,
+    id_column: str | None = None,
+    **kwargs: Any,
+) -> pd.DataFrame:
+    r"""Stack the raw files that match ``pattern`` under ``raw_dir``, and record where each row comes from.
+
+    For a dataset assembled from several files (one per school, one per measurement campaign). The files are read in
+    the order of their sorted paths and stacked; three columns say where each row comes from:
+
+    * ``source_file``: the file's path under ``raw_dir`` (the ``path`` of its entry in the raw-file manifest);
+    * ``source_row``: the row's number in its file, from 1 (the first data row), for a person opening the file;
+    * ``source_id``: the row's id in its file: the values of ``id_column`` when the file has one (as strings), else a
+      hash of the row's values, which does not change when the file is re-saved or reordered.
+
+    ``(source_file, source_id)`` identifies a row, since the same id may occur in two files. The three columns are
+    no features: declare them with ``non_features = (*provenance_columns(), ...)`` and every task drops them.
+
+    Args:
+        raw_dir: The raw folder (``self.raw_dir`` in ``_load_raw``).
+        pattern: A glob under ``raw_dir``, such as ``"*.csv"`` or ``"campaigns/*.parquet"``.
+        read: Reads one file into a frame, e.g. ``pd.read_parquet`` or ``partial(pd.read_csv, sep="\t")``.
+        id_column: A column that identifies a row within its file, if the files have one.
+        **kwargs: Passed to ``read``.
+
+    Raises:
+        FileNotFoundError: No file matches ``pattern``.
+    """
+    raw_dir = Path(raw_dir)
+    paths = sorted(p for p in raw_dir.glob(pattern) if p.is_file())
+    if not paths:
+        raise FileNotFoundError(f"No file matches {pattern!r} under {raw_dir}.")
+    frames = []
+    for path in paths:
+        df = read(path, **kwargs)
+        if id_column is not None:
+            ids = df[id_column].astype(str).to_numpy()
+        else:
+            ids = [f"{h:016x}" for h in pd.util.hash_pandas_object(df, index=False).to_numpy()]
+        frames.append(
+            df.assign(
+                source_file=path.relative_to(raw_dir).as_posix(), source_row=np.arange(1, len(df) + 1), source_id=ids
+            )
+        )
+    return pd.concat(frames, ignore_index=True)
+
+
+def provenance_columns() -> tuple[NonFeature, ...]:
+    """The non-feature declarations of the columns :func:`read_files` adds, for ``non_features``."""
+    from data_foundry.v2.dataset import NonFeature  # noqa: PLC0415 - the dataset module imports this one
+
+    return (
+        NonFeature("source_file", "provenance", "The raw file the row comes from."),
+        NonFeature("source_row", "provenance", "The row's number in its file, from 1."),
+        NonFeature(
+            "source_id", "provenance", "The row's id in its file: its own id column, else a hash of its values."
+        ),
+    )

@@ -149,6 +149,8 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
         "checksum": container.checksum,
         "build": build,
         "build_stale": bool(build) and build.get("checksum") != container.checksum,
+        # only where a source names its files, so every other README's front matter stays as it was
+        **_raw_files_front(getattr(container.dataset_metadata, "raw_files", None)),
         "data": {
             "n_rows": len(df),
             # the target, the group and the scoring columns are not features
@@ -223,7 +225,7 @@ def render_report(
     out += _header(result, fm)
     out += _brief_section(result.dataset)
     out += _files_section(result.dataset, has_figures=bool(figures))
-    out += _rebuild_section(result.dataset)
+    out += _rebuild_section(result.dataset, getattr(result.container.dataset_metadata, "raw_files", None))
     out += _dataset_section(result, fm)
     out += _sample_section(result)
     out += _curation_notes_section(result)
@@ -383,11 +385,28 @@ def _files_section(ds: AbstractCuratedDataset, *, has_figures: bool) -> list[str
     return [*out, *links, ""]
 
 
-def _rebuild_section(ds: AbstractCuratedDataset) -> list[str]:
+def _raw_files_front(raw_files: list[Any] | None) -> dict[str, Any]:
+    """The front matter of the raw-file manifest, ``{"raw_files": {path: sha256}}``, or nothing without one."""
+    return {"raw_files": {f.path: f.sha256 for f in raw_files}} if raw_files else {}
+
+
+def _raw_files_table(raw_files: list[Any] | None) -> list[str]:
+    if not raw_files:
+        return []
+    rows = [
+        (f"`{f.path}`", f.source, f"{f.size:,}", "" if f.rows is None else f"{f.rows:,}", f"`{f.sha256[:16]}`")
+        for f in raw_files
+    ]
+    table = _table(pd.DataFrame(rows, columns=["file", "source", "bytes", "rows", "sha256 (start)"]), full=True)
+    return [*_maybe_collapsed(f"The {len(rows)} raw files the sources name", table, len(rows))]
+
+
+def _rebuild_section(ds: AbstractCuratedDataset, raw_files: list[Any] | None = None) -> list[str]:
     meta = ds.dataset_metadata
     raw = f"local-data-warehouse/{ds.raw_dir.name}/"
     out = ["## Rebuild", "", f"`{DEFINITION_FILENAME}` reads its raw files from `{raw}`. To get them:", ""]
     out += [_fence(meta.download_description, "text"), ""]
+    out += _raw_files_table(raw_files)
     if ds.prepared_raw_files:
         files = ", ".join(f"`{f}`" for f in ds.prepared_raw_files)
         out += [f"On first use, `_prepare_raw_files` writes {files} into the same folder.", ""]
@@ -467,6 +486,10 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     if special:
         counts += ", " + ", ".join(f"{f.kind} `{f.name}`" for f in special)
     out += _details(f"Feature types: {counts}", "\n".join(lines))
+    dropped = result.dataset.dropped_non_features
+    if dropped:  # listed only where a definition declares non-features, so every other README stays as it was
+        listed = ", ".join(f"`{nf.column}` ({nf.reason})" for nf in dropped)
+        out += [f"Dropped as no features (declared in `non_features`): {listed}.", ""]
     out += _details("BibTeX", _fence("\n".join(s.bibtex.strip() for s in meta.sources if s.bibtex) + "\n", "bibtex"))
     return out
 
@@ -804,6 +827,7 @@ def parent_frontmatter(result: ParentCheckResult) -> dict[str, Any]:
         "kind": "parent",
         "data_checksum": result.data_checksum,
         "children": result.children,
+        **_raw_files_front(result.raw_files),
         "data": {
             "n_rows": len(frame),
             "n_columns": frame.shape[1],
@@ -844,9 +868,20 @@ def render_parent_report(result: ParentCheckResult) -> str:
     else:
         out += ["None yet: no definition next to this one derives from it.", ""]
     out += _files_section(ds, has_figures=False)
-    out += _rebuild_section(ds)
+    out += _rebuild_section(ds, result.raw_files)
     out += _sources_section(meta)
     out += _columns_section(frame)
+    if ds.non_features:
+        rows = [(f"`{nf.column}`", nf.reason, nf.description) for nf in ds.non_features]
+        out += [
+            "## Never features",
+            "",
+            "Kept in the frame, but every task drops them unless it gives one a role (its target, group key, scoring "
+            "or weight column):",
+            "",
+            _table(pd.DataFrame(rows, columns=["column", "reason", "description"]), full=True),
+            "",
+        ]
     if meta.curation_comments and meta.curation_comments.strip():
         out += ["## Curation notes", "", meta.curation_comments.strip(), ""]
     out += ["## Checks", ""]

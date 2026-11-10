@@ -30,6 +30,3 @@ class ExamScoresReading(ExamScores):
     target = "reading_score"
     problem_type = "regression"
     metric = Metric.fallback(reason="Generated example data: there is no source metric.")
-
-    def _clean(self, raw):
-        return super()._clean(raw).drop(columns=["math_score"])  # the other outcome

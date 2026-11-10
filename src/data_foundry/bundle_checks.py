@@ -467,6 +467,7 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
         return
 
     constant, all_missing, id_like, unused_categories, sentinel_hits, string_missing = [], [], [], [], [], []
+    sequential = []
     # a special feature's columns are checked by its kind: a SMILES is unique per molecule by nature (an input, not a
     # row id), and a spectrum's intensity of 999 is a reading, not a code for a missing value
     special = {c for f in getattr(ctx.task, "special_features", None) or () for c in f.columns}
@@ -482,6 +483,14 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
         unique_per_row = n_unique == ctx.n_rows and ctx.n_rows > 1
         if column != ctx.target and column not in special and is_labelish and unique_per_row:
             id_like.append(column)
+        is_integer = pd.api.types.is_integer_dtype(series.dtype) and not pd.api.types.is_bool_dtype(series.dtype)
+        if (
+            column != ctx.target
+            and is_integer
+            and unique_per_row
+            and int(series.max()) - int(series.min()) < 2 * ctx.n_rows
+        ):
+            sequential.append(column)  # a row counter or a running id: it orders the rows by date or by origin
 
         if isinstance(series.dtype, pd.CategoricalDtype):
             unused = set(series.dtype.categories) - set(series.dropna().unique())
@@ -522,6 +531,15 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
             f"{len(id_like)} column(s) have one distinct value per row: {id_like[:5]}.",
             hint="Uninformative sample identifiers should be dropped (curation guidelines); keep and process only "
             "informative ones (e.g. a time index).",
+        )
+    if sequential:
+        yield CheckResult(
+            "dataset_sequential_id_column",
+            "warning",
+            f"{len(sequential)} integer column(s) hold one value per row, densely numbered like a running id: "
+            f"{sequential[:5]}.",
+            hint="A running id often encodes the order of collection (time) or the origin (a prefix per source), which "
+            "a model then learns. Drop it, or declare it `NonFeature(column, 'identifier')` in the parent.",
         )
     if unused_categories:
         formatted = ", ".join(f"{c} (+{n})" for c, n in unused_categories[:5])

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from data_foundry.schema import (
     Grouping,
+    RawFile,
     RowBudget,
     ScoringColumn,
     Source,
@@ -37,6 +38,7 @@ from data_foundry.v2.dataset import (
     DataSummary,
     Decision,
     FeatureTypes,
+    NonFeature,
     TaskSummary,
     clean_text,
 )
@@ -48,7 +50,16 @@ from data_foundry.v2.encodings import (
     recommended_encodings,
 )
 from data_foundry.v2.metrics import Metric, score, scorer
-from data_foundry.v2.preprocessing import anonymize_ids, cast_dtypes, decode, drop_columns, order_rows, set_missing
+from data_foundry.v2.preprocessing import (
+    anonymize_ids,
+    cast_dtypes,
+    decode,
+    drop_columns,
+    order_rows,
+    provenance_columns,
+    read_files,
+    set_missing,
+)
 from data_foundry.v2.registry import (
     discover_datasets,
     discover_definitions,
@@ -74,6 +85,8 @@ __all__ = [
     "FeatureTypes",
     "Grouping",
     "Metric",
+    "NonFeature",
+    "RawFile",
     "RowBudget",
     "ScoringColumn",
     "Smiles",
@@ -111,7 +124,9 @@ __all__ = [
     "murcko_scaffolds",
     "object_columns",
     "order_rows",
+    "provenance_columns",
     "rdkit_descriptors",
+    "read_files",
     "read_report",
     "recommended_encodings",
     "scaffold_groups",
