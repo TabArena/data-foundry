@@ -82,8 +82,7 @@ spondylolisthesis by the size of the slip). Drop the rule's inputs first and tes
   it passes.
 
 Marker: the one the branch names. Cases: account_debt_south_africa,
-central_international_medical_college_and_hospital_health_risk_prediction (NEWS2), audiology_diagnosis; the rest kept
-and reassessed, then out under USE-2 ([use_case.md](use_case.md)): biomechanical_orthopaedic_prediction.
+central_international_medical_college_and_hospital_health_risk_prediction (NEWS2), audiology_diagnosis.
 
 **SEL-6 (Must; narrows SEL-3).** A label counted over one calendar window shared by all rows, instead of a fixed time
 after each row, supports only a look back at which rows drew the outcome. Marker:
