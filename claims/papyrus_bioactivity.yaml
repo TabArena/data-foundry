@@ -2,5 +2,5 @@ name: papyrus_bioactivity
 holder: Myunghwan
 stage: triage
 claimed_at: '2026-11-10T01:02:44Z'
-expires_at: '2026-11-17T01:02:44Z'
-note: Myunghwan requested non-pending dependency candidates reserved; Papyrus screening review first. Label collection must finish before held-out prediction starts.
+expires_at: '2026-11-17T09:13:56Z'
+note: 'Myunghwan: review accepted with RMSE as declared; Papyrus source-mean potency build verified and committed. Integrating into existing draft PR59. Scaffold holdout across proteins; pointwise prediction; retain claim until main. No control plane.'

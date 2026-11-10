@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-10 08:45 UTC: 126 claim(s) (Andrej 16, Lennart 88, Myunghwan 22).
+As of 2026-11-10 09:13 UTC: 126 claim(s) (Andrej 16, Lennart 88, Myunghwan 22).
 
 ## Andrej
 
@@ -138,7 +138,7 @@ As of 2026-11-10 08:45 UTC: 126 claim(s) (Andrej 16, Lennart 88, Myunghwan 22).
 | `medical_facility_operational_data` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `meituan_food_delivery_time` | triage | 2026-11-05 | 2026-11-16 | Forecast-free accepted-at ETA approved and built; 568545 rows,15 predictors; reload and traced-input reproduction pass. Publishing draft PR from myunghwan/meituan-forecast-free-20261109; retain ownership pending main integration. |
 | `open_soil_spectral_library` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
-| `papyrus_bioactivity` | triage | 2026-11-10 | 2026-11-17 | Myunghwan requested non-pending dependency candidates reserved; Papyrus screening review first. Label collection must finish before held-out prediction starts. |
+| `papyrus_bioactivity` | triage | 2026-11-10 | 2026-11-17 | Myunghwan: review accepted with RMSE as declared; Papyrus source-mean potency build verified and committed. Integrating into existing draft PR59. Scaffold holdout across proteins; pointwise prediction; retain claim until main. No control plane. |
 | `prc_2024_aircraft_takeoff_weight` | triage | 2026-11-10 | 2026-11-17 | Myunghwan requested non-pending dependency candidates reserved; Papyrus screening review first. Label collection must finish before held-out prediction starts. |
 | `protein_model_quality_rf_pcp` | review | 2026-10-28 | 2026-11-06 (expired) | Curator accepted; build, reload and traced-input reproduction complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 . Accepted approximations and source/descriptor limits are documented. Awaiting PR review/merge; retain Myunghwan ownership until merged. |
 | `riiid_answer_correctness` | triage | 2026-11-10 | 2026-11-17 | Myunghwan requested non-pending dependency candidates reserved; Papyrus screening review first. Label collection must finish before held-out prediction starts. |
