@@ -1,5 +1,19 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10: Chromophore accepted by curator
+
+- Myunghwan chose "1A, 2A, RMSE as declared, accept gas warning, ship" for `chromophore_optical_properties_db`. Independent decision-register/precedent review found zero conflicts; no rule exception or amendment is required.
+- Keep the implemented input/target weighting (193 removals; only 50 full-source-record repeats; 143 additional weighting removals) and retain 61 conflicting input sets / 124 current rows with approximate fit and unresolved individual causes. Preserve all qualification and panel history; resolve both numbered issues without removing them.
+- Record fallback RMSE as checked and accept only `dataset_smiles_column` for the 20 gas observations with no solvent molecule. Regenerate the README through the native check. Data, target, predictor contract, metric and grouping/fold logic remain unchanged; existing fitted evidence remains applicable.
+- Scientific acceptance only. The dataset stays unbuilt and locally uncommitted with the active claim preserved; no build, push or publication follows this verdict.
+
+## 2026-11-09: Chromophore qualification for added review
+
+- Added `chromophore_optical_properties_db` from pinned Figshare v3 experimental measurements: first absorption-peak wavelength in nm, two typed SMILES inputs and medium state, fallback RMSE and approximate fit.
+- The implemented repeat policy retains 17,510 rows / 6,498 dyes / 3,335 groups. Join dye scaffolds by nonempty InChI and canonical tautomer identity; all nine current folds pass tested identity separation. Historical pre-correction scores remain separate.
+- Native checks: 27, zero errors, one proposed gas/no-solvent warning. Completed task, leakage, raw, dtype and bounded group probes, strict train-only diagnostics and full independent panel with debate, mediation and cold editing. Strict exploratory LightGBM mean RMSE 56.655 nm versus native mean baseline 106.481; held-out-family variation remains material.
+- Two independent curator choices remain: equal-response multiplicity (193 input/target repeats versus 50 full-record repeats) and retention of differing responses (61 sets / 124 current rows). Priority 3; earlier source-count, metric-origin and scope claims are corrected in the dated assessment. No human final-inclusion mark, container build, commit or publication.
+
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 
 - `eryhemato_squamous_disease`: the 10 clinical scores 0-3 ship as numbers; a blanket `_feature_types` had cast them

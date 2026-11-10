@@ -340,3 +340,11 @@ them as named columns or in sorted order. A score computed with the columns alig
   its own row, or check that a method's predictions do not change when the other test rows change. A method that
   learns from the test block is called out and not benchmarked (LEAK-9, amended 2026-11-05, Lennart: "we investigate
   models, and would find out if they do transductive learning which we can call out and not benchmark").
+
+- [ ] **Chromophore: encode both structures and enforce independent queries.** For
+  `chromophore_optical_properties_db`, encode dye and solvent/host SMILES as typed structures;
+  preserve gas's absent solvent with medium state. Fit learned transforms on training rows only,
+  exclude scaffold metadata from predictors, and predict each query without held-out-batch counts
+  or group labels (`grouping.context="none"`). The bounded participant attack found no robust gain
+  from forbidden batch counts; that does not verify downstream adapters. Actual benchmark
+  enforcement and inner-tuning paths remain to be checked before using their scores.
