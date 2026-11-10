@@ -11,6 +11,7 @@ decision_markers:
 tags:
 - New IID
 - Many features
+- Spectral Data
 collections:
 - FS Benchmark
 original_source: Other

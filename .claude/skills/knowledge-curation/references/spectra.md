@@ -7,7 +7,9 @@ spectra: the background, what ships, the encodings and their evidence, and the p
 Data Foundry implements each part.
 
 Read it when screening or adding a dataset whose features are intensities along an axis (m/z, wavenumber, wavelength),
-or bins numbered along one.
+or bins numbered along one. Such a record carries the tag `Spectral Data`, set at screening from the source
+([records.md](../../knowledge-data-foundry/references/records.md), `tags`), so the tag says to read this guide before
+the definition is written, whether or not the definition declares a `Spectrum` yet.
 
 ## The background in brief
 
