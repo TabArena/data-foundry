@@ -501,6 +501,19 @@ def test_several_group_columns_make_one_group_per_combination() -> None:
 def test_plain_cutoffs_apply_to_a_time_zone_aware_column() -> None:
     times = pd.date_range("2020-01-01", periods=400, freq="D", tz="Europe/Berlin")
     df = pd.DataFrame({"t": times, "x": np.arange(400)})
-    splits = protocol.temporal_window_splits(df, time_on="t", window=1, unit="months", cutoffs=["2020-03", "2020-06"])
-    first_test = splits[0][0][1]
-    assert df["t"].iloc[first_test[0]] == pd.Timestamp("2020-06-01", tz="Europe/Berlin")
+    splits = protocol.temporal_window_splits(df, time_on="t", window=1, unit="months", cutoffs=["2020-06", "2021-02"])
+    assert df["t"].iloc[splits[0][0][1][0]] == pd.Timestamp("2021-02-01", tz="Europe/Berlin")
+    assert df["t"].iloc[splits[1][0][1][0]] == pd.Timestamp("2020-06-01", tz="Europe/Berlin")
+
+
+@pytest.mark.parametrize(
+    ("unit", "window", "cutoffs"),
+    [("months", 1, ["2020-03", "2020-06"]), ("unique", 30, ["2020-02-01", "2020-06-01"]), ("rows", 30, [100, 200])],
+)
+def test_cutoffs_must_test_the_newest_data(unit: str, window: int, cutoffs: list) -> None:
+    df = pd.DataFrame({"t": pd.date_range("2020-01-01", periods=400, freq="D")})
+    cutoffs = [pd.Timestamp(c) for c in cutoffs] if unit == "unique" else cutoffs
+    with pytest.raises(ValueError, match="the newest window is always a test window"):
+        protocol.temporal_window_splits(df, time_on="t", window=window, unit=unit, cutoffs=cutoffs)
+    whole = protocol.temporal_window_splits(df, time_on="t", window=None, unit=unit, cutoffs=cutoffs)
+    assert whole[0][0][1][-1] == len(df) - 1  # a window to the end of the data holds the newest row

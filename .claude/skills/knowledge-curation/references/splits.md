@@ -136,8 +136,21 @@ window that trains on at least 40% of the rows, when most test entities recur (t
 folds by entity would test unseen ones; the notes give the score on the valid windows next to all windows and what the
 short window changes (Lennart, 2026-11-08: "the task is too good to remove because of the 50% floor").
 
-**SPLIT-15 (Should).** Roll the windows back from the newest data: as many windows as an IID or grouped task of that
-size would get folds. Then check that the windows are still meaningful (SPLIT-16 to SPLIT-18).
+**SPLIT-15 (Must for the newest window, Should for the others; amended 2026-11-10, Lennart and Andrej).** The newest
+window is always a test window: it is the deployment period. The other windows are the curator's choice, per dataset,
+argued from the use case: which periods a deployed model must handle (other years, seasons, holidays, events, a
+change of rules or of the data collection). The evidence is statistics of the data, never a model's score: the
+candidate windows of the declared length and gap with their months and weekdays, their rows and train share, the
+target's distribution, and how far the features drift from the train side (`dataset windows <name>`,
+[definitions.md](../../knowledge-data-foundry/references/definitions.md), "Choosing the test windows"). Prefer windows
+in other years, then other seasons, then other months, weeks or days, over the windows just before the newest
+(Andrej, 2026-11-10). Walking back from the newest is one choice among others and needs its reason too, such as a
+history too short for others, or a use case that only cares about the weeks after a refit. Every choice stays above
+SPLIT-14's floor; the length and the gap come from SPLIT-12; as many windows as an IID or grouped task of that size
+would get folds, then check that they are still meaningful (SPLIT-16 to SPLIT-18). The splits comment names the
+windows, the reasons and the numbers they rest on. Why: on aeolus, climate_model and delivery_eta the newest three
+windows ranked a model pair the other way round than the whole eligible history did, and three windows spread over it
+cut that error 5 to 15 times, while three windows drawn at random did worse than three spread evenly (closed PR #69).
 
 **SPLIT-16 (Must).** Do not fall back to an IID split for a non-stationary sequence whose windows hold too few
 positives. Counting the positives per window and the `Too Small` verdict are TP-9 ([task_probes.md](task_probes.md)).

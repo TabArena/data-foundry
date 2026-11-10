@@ -78,7 +78,9 @@ from data_foundry.v2.splits import (
     TemporalSplits,
     sample_train_positions,
     subsample_train,
+    window_bounds,
 )
+from data_foundry.v2.windows import Window, candidate_windows, window_stats
 from data_foundry.v2.workbench import workbench
 
 __all__ = [
@@ -111,7 +113,9 @@ __all__ = [
     "TemporalSplits",
     "TrainSampling",
     "UnitWeight",
+    "Window",
     "anonymize_ids",
+    "candidate_windows",
     "canonical_smiles",
     "cast_dtypes",
     "clean_text",
@@ -145,5 +149,7 @@ __all__ = [
     "set_missing",
     "spectrum_encoding",
     "subsample_train",
+    "window_bounds",
+    "window_stats",
     "workbench",
 ]

@@ -23,6 +23,8 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, get_args
 
+import pandas as pd
+
 from data_foundry.curation._paths import records_dir
 from data_foundry.curation.store import load_record
 from data_foundry.schema import DatasetSource, Domain
@@ -99,6 +101,55 @@ def _cmd_check(args: argparse.Namespace) -> int:
         return 1
     print(f"Wrote {ds.report_path}")
     return 0 if result.ok else 1
+
+
+WINDOW_COLUMNS = (
+    "window",
+    "chosen",
+    "test_start",
+    "test_end",
+    "period",
+    "weekdays",
+    "n_test",
+    "train_share",
+    "target_test",
+    "target_train",
+    "psi_max",
+    "psi_median",
+    "top_drift",
+    "unseen_categories",
+)
+"""The columns ``dataset windows`` prints; ``--csv`` writes every column."""
+
+
+def _cmd_windows(args: argparse.Namespace) -> int:
+    try:
+        ds = instance(load_definition(_folder(args)))
+        table = ds.window_stats(
+            window=args.window,
+            unit=args.unit,
+            gap=args.gap,
+            gap_unit=args.gap_unit,
+            step=args.step,
+            min_train_fraction=args.min_train_fraction,
+            n_rows=args.rows,
+        )
+    except DatasetDefinitionError as error:
+        print(error, file=sys.stderr)
+        return 1
+    if args.csv:
+        table.to_csv(args.csv, index=False)
+        print(f"Wrote {args.csv}")
+    shown = table[[c for c in WINDOW_COLUMNS if c in table.columns]].copy()
+    shown["chosen"] = shown["chosen"].map({True: "*", False: ""})
+    with pd.option_context("display.width", 250, "display.max_columns", None, "display.max_colwidth", 60):
+        print(shown.to_string(index=False))
+    print(
+        f"{len(table)} window(s); * marks the definition's own. Data statistics only, never a model's score: choose "
+        "the windows from the use case (SPLIT-15), always with the newest, and declare them with "
+        "`TemporalSplits(cutoffs=...)`."
+    )
+    return 0
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -270,3 +321,15 @@ def add_dataset_parser(sub: argparse._SubParsersAction) -> None:
     dsub.choices["new"].add_argument(
         "--parent", default=None, help="Scaffold a child of this definition (a folder under --root) instead."
     )
+    add("windows", _cmd_windows, "Print the candidate test windows of a temporal dataset with their data statistics.")
+    windows = dsub.choices["windows"]
+    windows.add_argument("--window", type=int, default=None, help="Window length (default: the declared one).")
+    windows.add_argument("--unit", default=None, help="Window unit (default: the declared one).")
+    windows.add_argument("--gap", type=int, default=None, help="Gap before each window (default: the declared one).")
+    windows.add_argument("--gap-unit", default=None, help="Unit of the gap (default: the declared one).")
+    windows.add_argument("--step", type=int, default=None, help="How far candidates move back (default: the window).")
+    windows.add_argument(
+        "--min-train-fraction", type=float, default=0.5, help="Every train side keeps this share of the rows (0.5)."
+    )
+    windows.add_argument("--rows", type=int, default=100_000, help="Rows sampled per side for the statistics.")
+    windows.add_argument("--csv", default=None, help="Also write the full table to this CSV file.")

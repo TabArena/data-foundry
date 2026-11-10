@@ -51,6 +51,7 @@ import ast
 import contextlib
 import dataclasses
 import datetime as dt
+import functools
 import hashlib
 import inspect
 import io
@@ -111,7 +112,8 @@ from data_foundry.v2.preprocessing import (
     order_positions,
     order_rows,
 )
-from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal
+from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal, TemporalSplits
+from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
 if TYPE_CHECKING:
     from data_foundry.schema import SpecialFeature
@@ -1191,6 +1193,92 @@ class AbstractCuratedDataset(ABC):
                 "(numerai's weekly eras: `time_unit='weeks'`)."
             )
             raise DatasetDefinitionError(msg)
+
+    def window_stats(
+        self,
+        *,
+        window: int | None = None,
+        unit: str | None = None,
+        gap: int | None = None,
+        gap_unit: str | None = None,
+        step: int | None = None,
+        min_train_fraction: float = 0.5,
+        n_rows: int = 100_000,
+    ) -> pd.DataFrame:
+        """The candidate test windows of this temporal task and their statistics, for choosing its windows (SPLIT-15).
+
+        The candidates have the length, gap and step of the declared windows (``temporal.splits``) unless given here,
+        walking back from the newest data while every train side keeps ``min_train_fraction`` of the rows. The
+        definition's own windows are marked ``chosen``; one that no candidate matches (a cutoff on another date) is
+        listed as a row of its own. Statistics of the data only, never of a model
+        (:func:`~data_foundry.v2.windows.window_stats`): the dates and months, the sizes and train share, the target,
+        and the drift of the features from the train side. ``dataset windows <name>`` prints the table.
+        """
+        if self.temporal is None:
+            msg = f"{type(self).__name__}: window statistics are for a temporal task (`temporal = Temporal(...)`)."
+            raise DatasetDefinitionError(msg)
+        declared, on = self.temporal.splits, self.temporal.on
+        if declared is None and (window is None or unit is None):
+            msg = (
+                f"{type(self).__name__}: the splits are custom (`_make_splits`); give the candidates' window and unit."
+            )
+            raise DatasetDefinitionError(msg)
+        candidates = TemporalSplits(
+            window=window if window is not None else declared.window,
+            unit=unit if unit is not None else declared.unit,
+            gap=gap if gap is not None else (declared.gap if declared is not None else 0),
+            gap_unit=gap_unit if gap_unit is not None else (declared.gap_unit if declared is not None else None),
+            step=step if step is not None else (declared.step if declared is not None else None),
+            min_train_fraction=min_train_fraction,
+        )
+        df = self.df
+        task = self.task_metadata
+        drop = {task.target_column_name, on, *as_column_list(task.group_on), *(c.column for c in task.scoring_columns)}
+        stats = functools.partial(
+            window_stats,
+            time_on=on,
+            target=task.target_column_name,
+            problem_type=task.problem_type,
+            features=[c for c in df.columns if c not in drop],
+            time_unit=self.temporal.time_unit,
+            n_rows=n_rows,
+            random_state=self.SPLIT_RANDOM_STATE,
+        )
+        if declared is None:  # custom splits: their own positions, on the frame they return
+            plan = self.make_splits(df)
+            own = [(train, test) for folds in plan.splits.values() for train, test in folds.values()]
+        else:  # the declared windows as position ranges: no index lists, however long the history
+            plan = SplitPlan(splits={}, df=df)
+            own = [
+                (range(b.train_stop), range(b.test_start, b.test_stop))
+                for b in protocol.window_bounds(
+                    df,
+                    time_on=on,
+                    window=declared.window,
+                    unit=declared.unit,
+                    n_windows=declared.n_windows,
+                    step=declared.step,
+                    gap=declared.gap,
+                    gap_unit=declared.gap_unit,
+                    cutoffs=list(declared.cutoffs) if declared.cutoffs is not None else None,
+                    min_train_fraction=declared.min_train_fraction,
+                )
+            ]
+        own_tests = {(test[0], test[-1]) for _train, test in own}
+        windows = [
+            dataclasses.replace(w, chosen=(w.test[0], w.test[-1]) in own_tests)
+            for w in candidate_windows(df, on, candidates, min_train_fraction=min_train_fraction)
+        ]
+        matched = {(w.test[0], w.test[-1]) for w in windows if w.chosen}
+        extra = [
+            Window(train=train, test=test, chosen=True) for train, test in own if (test[0], test[-1]) not in matched
+        ]
+        table = stats(df, windows)
+        if extra:
+            table = pd.concat([table, stats(plan.df, extra)], ignore_index=True)
+        table = table.sort_values("test_start", ascending=False, kind="stable").reset_index(drop=True)
+        table["window"] = range(len(table))
+        return table
 
     def preview_splits(self, df: pd.DataFrame | None = None) -> pd.DataFrame:
         """One row per outer split with its train/test sizes, and time ranges for a temporal task."""

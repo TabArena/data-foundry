@@ -100,7 +100,10 @@ domain and source from the record.
    of `_feature_types` (CLEAN-26); [spectra.md](../knowledge-curation/references/spectra.md) has what ships, the
    encodings, grouping the spectra of one sample (SPLIT-23) and the pitfalls.
 4. The regime: nothing for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)` with a `splits_comment`
-   saying why this window (and any gap, sub-sampling or trimming).
+   saying why this window (and any gap, sub-sampling or trimming). For a temporal task, run `dataset windows <name>`
+   and choose the windows from the use case and those statistics, never a model's score (SPLIT-15: the newest always,
+   the others argued; definitions.md, "Choosing the test windows"); the choice goes into REVIEW.md as the curator's
+   decision, with the alternatives you weighed.
 5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
    `Metric.stand_in(name, original=..., reason=..., reference=...)` or `Metric.fallback(reason=<where we looked, and
    which source metric was rejected and why>)` (definitions.md, "Field mapping", `metric`; MET-11). A standard name

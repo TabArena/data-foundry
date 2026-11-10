@@ -26,7 +26,7 @@ as the v1 ones, so a dataset below 1.25M rows keeps its splits.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import pandas as pd
@@ -495,7 +495,24 @@ class Temporal:
         return None, None
 
 
-def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and stop rule
+@dataclass(frozen=True)
+class WindowBounds:
+    """One temporal window as row positions of a frame sorted by time (:func:`window_bounds`).
+
+    The train side is the positions ``[0, train_stop)``, the test window ``[test_start, test_stop)``. ``start``,
+    ``end`` and ``train_end`` are the window's bounds on its axis (a time for a calendar unit, a position among the
+    distinct values for ``"unique"``, a row for ``"rows"``; ``end`` None runs to the end of the data).
+    """
+
+    start: Any
+    end: Any
+    train_end: Any
+    train_stop: int
+    test_start: int
+    test_stop: int
+
+
+def temporal_window_splits(
     df: pd.DataFrame,
     *,
     time_on: str,
@@ -517,7 +534,8 @@ def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and sto
     the layout the bundle checks expect.
 
     Windows stop when ``n_windows`` are built, when a window or its train side would be empty, or when the train
-    side falls below ``min_train_fraction`` of all rows.
+    side falls below ``min_train_fraction`` of all rows. Explicit ``cutoffs`` must include the newest window: the
+    newest cutoff's window holds the newest row (SPLIT-15).
 
     Args:
         df: The frame, sorted ascending by ``time_on`` with a RangeIndex (splits are positions).
@@ -533,12 +551,47 @@ def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and sto
         gap_unit: The unit of ``gap`` for a calendar ``unit`` when it differs from ``unit`` (``"minutes"``,
             ``"hours"`` or a calendar unit); None counts the gap in ``unit``.
         cutoffs: Explicit test-window starts (for example ``[2023, 2024, 2025]``) instead of walking back from the
-            newest data. They are ordered newest first; ``n_windows`` and ``step`` are ignored.
+            newest data: the curator's choice of windows (SPLIT-15). They are ordered newest first; ``n_windows``
+            and ``step`` are ignored.
         min_train_fraction: Stop before a window whose train side has less than this share of the data: of the
             distinct time values for ``"unique"``, of the rows otherwise.
 
     Returns:
         The outer splits ``{window_i: {0: (train_positions, test_positions)}}``, newest window first.
+    """
+    bounds = window_bounds(
+        df,
+        time_on=time_on,
+        window=window,
+        unit=unit,
+        n_windows=n_windows,
+        step=step,
+        gap=gap,
+        gap_unit=gap_unit,
+        cutoffs=cutoffs,
+        min_train_fraction=min_train_fraction,
+    )
+    return {i: {0: (list(range(b.train_stop)), list(range(b.test_start, b.test_stop)))} for i, b in enumerate(bounds)}
+
+
+def window_bounds(  # noqa: C901, PLR0912 - one branch per unit and stop rule
+    df: pd.DataFrame,
+    *,
+    time_on: str,
+    window: int | None = 1,
+    unit: TemporalUnit = "days",
+    n_windows: int | None = None,
+    step: int | None = None,
+    gap: int = 0,
+    gap_unit: GapUnit | None = None,
+    cutoffs: list | tuple | None = None,
+    min_train_fraction: float | None = None,
+) -> list[WindowBounds]:
+    """The windows of :func:`temporal_window_splits` as position ranges (:class:`WindowBounds`), newest first.
+
+    The frame is sorted by ``time_on``, so every train side and every test window is a range of positions; a frame
+    of tens of millions of rows and hundreds of candidate windows (:func:`~data_foundry.v2.windows.candidate_windows`)
+    needs no index lists. The arguments are those of :func:`temporal_window_splits`.
     """
     times = df[time_on]
     if not times.is_monotonic_increasing:
@@ -552,7 +605,6 @@ def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and sto
         raise ValueError(f"gap_unit={gap_unit!r} needs a calendar unit and one of {_GAP_UNITS}.")
     gap_unit = gap_unit or unit
     n_rows = len(df)
-    positions = np.arange(n_rows)
 
     # Express every window as a half-open interval [start, end) on an ordered "axis": timestamps for
     # calendar units, positions in the sorted unique values for "unique", row positions for "rows".
@@ -561,7 +613,7 @@ def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and sto
         axis = values.get_indexer(times)
         axis_max = len(values)
     elif unit == "rows":
-        axis = positions
+        axis = np.arange(n_rows)
         axis_max = n_rows
     else:
         axis = times
@@ -588,6 +640,7 @@ def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and sto
                 end = None if window is None else start + window
                 train_end = start - gap
             intervals.append((start, end, train_end))
+        _require_newest_window(intervals[0][1], times, None if unit in _CALENDAR_UNITS else axis_max, unit)
     else:
         i = 0
         while n_windows is None or i < n_windows:
@@ -608,25 +661,41 @@ def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and sto
             if n_windows is None and i > 10_000:
                 break
 
-    splits: Splits = {}
+    def before(value: Any) -> int:  # how many rows lie before ``value`` on the axis
+        if unit in _CALENDAR_UNITS:
+            return int(times.searchsorted(value, side="left"))
+        return int(np.searchsorted(axis, value, side="left"))
+
+    bounds: list[WindowBounds] = []
     for start, end, train_end in intervals:
-        test_mask = (axis >= start) & ((axis < end) if end is not None else True)
-        train_mask = axis < train_end
-        test_idx = positions[np.asarray(test_mask)].tolist()
-        train_idx = positions[np.asarray(train_mask)].tolist()
-        if not test_idx or not train_idx:
+        test_start, test_stop = before(start), (n_rows if end is None else before(end))
+        train_stop = before(train_end)
+        if test_stop <= test_start or not train_stop:
             if cutoffs is not None:
                 raise ValueError(f"The window starting at {start} has an empty train or test side.")
             break
         if min_train_fraction is not None:
             # Share of the axis: distinct time values for "unique", rows otherwise.
-            share = train_end / axis_max if unit == "unique" else len(train_idx) / n_rows
+            share = train_end / axis_max if unit == "unique" else train_stop / n_rows
             if share < min_train_fraction - 1e-9:
                 break
-        splits[len(splits)] = {0: (train_idx, test_idx)}
-    if not splits:
+        bounds.append(WindowBounds(start, end, train_end, train_stop, test_start, test_stop))
+    if not bounds:
         raise ValueError("No temporal window could be built; check window, unit and the data's time range.")
-    return splits
+    return bounds
+
+
+def _require_newest_window(end: Any, times: pd.Series, axis_max: int | None, unit: str) -> None:
+    """Explicit cutoffs include the newest window: the newest cutoff's window holds the newest row (SPLIT-15)."""
+    if end is None:
+        return
+    reaches = times.iloc[-1] < end if unit in _CALENDAR_UNITS else end >= axis_max
+    if not reaches:
+        msg = (
+            f"The newest cutoff's window ends at {end}, before the newest data ({times.iloc[-1]}): the newest window "
+            "is always a test window (SPLIT-15). Add a cutoff whose window holds the newest rows."
+        )
+        raise ValueError(msg)
 
 
 def _calendar_offset(unit: str, n: int) -> pd.DateOffset:
