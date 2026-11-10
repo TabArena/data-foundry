@@ -2,28 +2,6 @@
 
 ## 2026-11-16, wine_world_cost: the use case kept as a merchant's listing decision (Lennart's decision, no container built)
 
-## 2026-11-09: Football deferred by curator
-
-- Myunghwan deferred `football_match_probability_prediction` because the demonstrated incremental model-performance gain is weak. Set `TBD -> 2nd Tier` / `DF: Suspended`, preserving priority 4, the settled ordinary-temporal choice and all exploratory evidence.
-- The bounded study gives engineered LightGBM log loss 1.018451 versus logistic regression 1.023423 (0.486% reduction, wins two of three windows), and best tested heuristic 1.056243. Preserve the measured small gain and model/preprocessing limits; no scientific rejection, No Signal/Trivial marker or general gain threshold is inferred.
-- Release the named active reservation through the official workflow. Publish only this decision record and changelog to the existing draft; no Football build, exploratory package or raw data is published.
-
-
-## 2026-11-09, Meituan addition to the existing curation draft (Myunghwan)
-
-- Integrate the approved forecast-free Meituan package into existing draft PR59, preserving original build/source commits and all five prior dataset packages plus rejection/hold decisions. Set the accepted record's DF: Yes integration proposal, retaining its actual ownership/WIP mirror. No new data, split, feature, model or build change. Separate draft PR66 is superseded.
-
-## 2026-11-09 (SuperLender addition to the existing curation draft)
-
-
-- Review issue 7 (whether any real use case exists), A: kept, fit approximate. The actor is a UK wine merchant's buyer
-  who, offered a wine from a producer the merchant does not stock yet, estimates the shelf price it would sell at, to
-  decide whether to list it and what supplier price that price point allows. The trade fixes the price point first and
-  works the supplier price back from it, so the merchant's costs set its margin, not the price.
-- `use_case`, the last sentence of `fit_reason`, the curation bullet on the use case and the grouping definition
-  rewritten; README regenerated. Text only: the data and the split are unchanged.
-- The record: the AI's answer, Lennart's turn and the resolution in issue 7, a CC line, `Main points` updated.
-
 ## 2026-11-16, regensburg_pediatric_appendicitis kept with fixes, no longer retired (no container built)
 
 - Lennart, 2026-11-16, and Andrej: the label of the children not operated is an outcome, not the surgeon's decision.
@@ -750,6 +728,34 @@ wisconsin. Open: noaa_storm issue 15 (the AI now recommends keeping the damage u
   one-row swing and read the first tuned run under TP-3 and TP-2.
 - `dataset check`: 0 errors, 0 warnings on every changed definition; READMEs regenerated.
 
+## 2026-11-10: Chromophore accepted by curator
+
+- Myunghwan chose "1A, 2A, RMSE as declared, accept gas warning, ship" for `chromophore_optical_properties_db`. Independent decision-register/precedent review found zero conflicts; no rule exception or amendment is required.
+- Keep the implemented input/target weighting (193 removals; only 50 full-source-record repeats; 143 additional weighting removals) and retain 61 conflicting input sets / 124 current rows with approximate fit and unresolved individual causes. Preserve all qualification and panel history; resolve both numbered issues without removing them.
+- Record fallback RMSE as checked and accept only `dataset_smiles_column` for the 20 gas observations with no solvent molecule. Regenerate the README through the native check. Data, target, predictor contract, metric and grouping/fold logic remain unchanged; existing fitted evidence remains applicable.
+- Scientific acceptance only. The dataset stays unbuilt and locally uncommitted with the active claim preserved; no build, push or publication follows this verdict.
+
+## 2026-11-09: Football deferred by curator
+
+- Myunghwan deferred `football_match_probability_prediction` because the demonstrated incremental model-performance gain is weak. Set `TBD -> 2nd Tier` / `DF: Suspended`, preserving priority 4, the settled ordinary-temporal choice and all exploratory evidence.
+- The bounded study gives engineered LightGBM log loss 1.018451 versus logistic regression 1.023423 (0.486% reduction, wins two of three windows), and best tested heuristic 1.056243. Preserve the measured small gain and model/preprocessing limits; no scientific rejection, No Signal/Trivial marker or general gain threshold is inferred.
+- Release the named active reservation through the official workflow. Publish only this decision record and changelog to the existing draft; no Football build, exploratory package or raw data is published.
+
+## 2026-11-09, Meituan addition to the existing curation draft (Myunghwan)
+
+- Integrate the approved forecast-free Meituan package into existing draft PR59, preserving original build/source commits and all five prior dataset packages plus rejection/hold decisions. Set the accepted record's DF: Yes integration proposal, retaining its actual ownership/WIP mirror. No new data, split, feature, model or build change. Separate draft PR66 is superseded.
+
+## 2026-11-09 (SuperLender addition to the existing curation draft)
+
+
+- Review issue 7 (whether any real use case exists), A: kept, fit approximate. The actor is a UK wine merchant's buyer
+  who, offered a wine from a producer the merchant does not stock yet, estimates the shelf price it would sell at, to
+  decide whether to list it and what supplier price that price point allows. The trade fixes the price point first and
+  works the supplier price back from it, so the merchant's costs set its margin, not the price.
+- `use_case`, the last sentence of `fit_reason`, the curation bullet on the use case and the grouping definition
+  rewritten; README regenerated. Text only: the data and the split are unchanged.
+- The record: the AI's answer, Lennart's turn and the resolution in issue 7, a CC line, `Main points` updated.
+
 ## 2026-11-09, PR #47 re-review, second round: Andrej's marks of the evening applied (no container built)
 
 Verdict ship: noaa_afsc_bottom_trawl_survey_cpue, spanish_motor_insurance_2015_2018,
@@ -974,7 +980,6 @@ only when scoring. The task summary is not stored in the container, so no checks
 - Full tests: 1,999 pass and 286 skip in the sandbox; all 18 socket-blocked tests pass with localhost access. Repository-wide lint reports inherited issues in unchanged files; changed Python passes lint and formatting. No unrelated formatting fixes.
 - First container for this task; no superseded container removed. No raw data or container committed, and no push or publication requested.
 
-
 ## 2026-11-09, Meituan forecast-free primary (Myunghwan)
 
 - Curator chose independent delivery-time prediction without either platform forecast. Remove both derived forecast features; recorded promise remains only an external baseline. Preserve accepted-at point, total target, prebooks and strict all-event training cutoffs. Requalify the changed feature set; assisted results remain sensitivity evidence. No build.
@@ -982,6 +987,13 @@ only when scoring. The task summary is not stored in the container, so no checks
 ## 2026-11-09, Meituan human review page (Myunghwan)
 
 - Corrected issue-body indentation so the supported collector separates the short problem from its evidence and options. No task, data or split change; the local page is scoped to Meituan, excluding unrelated cross-dataset issues.
+
+## 2026-11-09: Chromophore qualification for added review
+
+- Added `chromophore_optical_properties_db` from pinned Figshare v3 experimental measurements: first absorption-peak wavelength in nm, two typed SMILES inputs and medium state, fallback RMSE and approximate fit.
+- The implemented repeat policy retains 17,510 rows / 6,498 dyes / 3,335 groups. Join dye scaffolds by nonempty InChI and canonical tautomer identity; all nine current folds pass tested identity separation. Historical pre-correction scores remain separate.
+- Native checks: 27, zero errors, one proposed gas/no-solvent warning. Completed task, leakage, raw, dtype and bounded group probes, strict train-only diagnostics and full independent panel with debate, mediation and cold editing. Strict exploratory LightGBM mean RMSE 56.655 nm versus native mean baseline 106.481; held-out-family variation remains material.
+- Two independent curator choices remain: equal-response multiplicity (193 input/target repeats versus 50 full-record repeats) and retention of differing responses (61 sets / 124 current rows). Priority 3; earlier source-count, metric-origin and scope claims are corrected in the dated assessment. No human final-inclusion mark, container build, commit or publication.
 
 ## 2026-11-08, PR #47: main merged in (#63 row table, #64 row budget; no container built)
 
@@ -1797,7 +1809,6 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
 - A `REVIEW.md` in both folders, two of the 108 written for the BeyondArena v0.2 review page, without a panel, from
   the evidence gathered so far: the records, earlier experiments and model runs on the shipped data. Both records carry
   a `priority` and an `**Assessment (AI, 2026-11-04):**` line with its factors.
-
 
 
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
