@@ -1,5 +1,16 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10, PR #58: south_africa_coronary_heart_disease retired (Andrej, review page; no container built)
+
+- Andrej's marks of 2026-11-10 on the BeyondArena v0.2 review page: retired (`No (Retired)`,
+  `No Good Target / Scientific Discovery`), the folder removed and `v2_path` cleared; `DF: Yes`, the collection tags
+  and the pinned BeyondArena container stay. Reason, in the record's CC line: the positives are men who had already had
+  a heart attack and were measured afterwards, some after treatment and a healthier diet, so the label is one the man
+  already knows, and the file has no follow-up to re-target (as stroke_prediction and cdc_diabetes_health_indicators).
+- Decided for the case it returns, not applied to a definition: the ESL data page as the source with no licence stated
+  (the Kaggle copy's `CC BY-SA 4.0` is that uploader's), a random split with a line and no time-basis tag, and no
+  `Trivial` (the published Framingham points reach ROC AUC 0.748 against 0.773 for TabPFN 3.5).
+
 ## 2026-11-10, PR #58: hepatitis_c_prediction retired (Andrej, 2026-10-27; no container built)
 
 - Andrej set the record to `No (Retired)` on 2026-10-27; its folder is removed and `v2_path` cleared. `DF: Yes`, the
