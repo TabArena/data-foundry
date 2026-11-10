@@ -100,7 +100,7 @@ sources; they go into the comments. Cases: nyc_taxi_trip_duration, melbourne_hou
 all rows, labels taken from the wrong rating), check whether the origin has the clean data before keeping the damage
 or retiring the dataset, and repair or rebuild from the origin when it has them. Scaling over all rows is a weak leak:
 LEAK-30 in [leak_checks.md](leak_checks.md). Cases: SUPPORT2, ashrae, coad_colon_adenocarcinoma,
-corporate_credit_rating.
+corporate_credit_rating, lung_cancer.
 
 **PROV-14 (Must).** A repair stays under its record: the same units and the same features, with the damaged values
 restored from the origin (PROV-13), even when the table then differs from the release. Only a rebuild from other

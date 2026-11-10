@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: lung_cancer
 container_format: 2
-checksum: v2:05ca38597f7d4737d92bd236bedf7e08aeaace55017e6cdec10cd24503ae8d30
+checksum: v2:6f336f6d65cae2421ab5c46da5e2a71a6c8e32af7bac191f8579ca28209001f6
 build:
   uuid: 01a111fa-f2d2-7673-a757-142728cdfd4c
   checksum: v2:6972b53e8d88f2ce4f384612e30af8d5814ee00e2631e91f51f8f322b97a51d0
@@ -20,10 +20,10 @@ build:
 build_stale: true
 data:
   n_rows: 197
-  n_features: 12600
+  n_features: 12625
   dtypes:
-    category: 1
-    float64: 12600
+    category: 2
+    float64: 12625
   n_test_dataset_rows: null
 task:
   target: CancerType
@@ -31,13 +31,20 @@ task:
   metric: log_loss
   metric_origin: fallback
   scoring_columns: null
-  split_regime: iid
+  split_regime: grouped_non_iid
   stratify_on: CancerType
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: patient
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 196
+    test_groups_per_fold:
+      min: 64
+      max: 66
 splits:
   n_repeats: 20
   n_folds: 3
@@ -47,17 +54,17 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 131
-    max: 132
+    min: 130
+    max: 133
   n_test:
-    min: 65
-    max: 66
+    min: 64
+    max: 67
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - dataset_missing_value_sentinel
-  infos: []
+  warnings: []
+  infos:
+  - groups_not_clustered
   accepted: {}
 decisions: []
 ---
@@ -66,9 +73,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `CancerType`, scored with `log_loss` on IID splits. 197 rows and 12,600 features. Source: Other (2001).
+Multiclass classification of `CancerType`, scored with `log_loss` on grouped splits by `patient`. 197 rows and 12,625 features. Source: Other (2001).
 
-Built as `01a111fa-f2d2-7673-a757-142728cdfd4c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:05ca38597f7d4737d92bd236bedf7e08aeaace55017e6cdec10cd24503ae8d30`, so the build is stale. See [Build](#build).
+Built as `01a111fa-f2d2-7673-a757-142728cdfd4c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6f336f6d65cae2421ab5c46da5e2a71a6c8e32af7bac191f8579ca28209001f6`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -76,15 +83,15 @@ Built as `01a111fa-f2d2-7673-a757-142728cdfd4c` on 2026-10-06, but `dataset.py` 
 
 **Use case.** For example, a pathology lab assigns a lung specimen to its tissue type from its gene expression profile, as a check on the microscope reading.
 
-**One row.** One lung tissue specimen of a 2001 study (Bhattacharjee et al., its Dataset A without the 6 small-cell carcinomas: 197 specimens); the place and period are not stated in the definition.
+**One row.** One lung tissue specimen of a 2001 study in Boston (Bhattacharjee et al.), profiled on one microarray: 197 specimens of 196 patients, without the 6 small-cell carcinomas.
 
 **Predicted.** The tissue type by histology: adenocarcinoma (71%, including 12 suspected metastases of adenocarcinomas from other organs), squamous cell carcinoma (11%), pulmonary carcinoid (10%) or normal lung (9%).
 
-**Known at prediction time.** The expression of 12,600 gene probes measured by microarray on the specimen.
+**Known at prediction time.** The expression of 12,625 probe sets on the specimen's array, summarised on that array alone (MAS5).
 
-**What the test data stands for.** Random specimens, so the test data stands for new specimens of the same study.
+**What the test data stands for.** Random patients, so the test data stands for specimens of new patients of the same study.
 
-**Our changes to the source.** We drop the 6 small-cell carcinomas. The source already merges lung adenocarcinomas with 12 suspected metastases from other organs, which we cannot separate.
+**Our changes to the source.** We rebuild the study's Dataset A from its arrays: one array per specimen (the first piece and first hybridisation) instead of the mean of up to four, and each array's own MAS5 signal instead of the published MAS4 values. We drop the 6 small-cell carcinomas. The source merges lung adenocarcinomas with 12 suspected metastases from other organs, which we cannot separate.
 
 > **Use case fit: approximate (a stand-in with a known gap).** The label is the histology pathologists already read under the microscope, so the profile reproduces a known diagnosis; the adenocarcinoma class mixes lung tumours with metastases, and whether expression would be measured for this purpose is unclear (record). The study itself used the data to find subclasses.
 
@@ -93,10 +100,11 @@ Built as `01a111fa-f2d2-7673-a757-142728cdfd4c` on 2026-10-06, but `dataset.py` 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/lung_cancer.md`](../../../../curation/records/lung_cancer.md)
-- The original source: <https://www.pnas.org/doi/10.1073/pnas.191502998#supplementary-materials>
+- The original source: <https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE83227>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
@@ -104,10 +112,14 @@ Built as `01a111fa-f2d2-7673-a757-142728cdfd4c` on 2026-10-06, but `dataset.py` 
 `dataset.py` reads its raw files from `local-data-warehouse/lung_cancer/`. To get them:
 
 ```text
-Cannot download automatically!
+We download the study's own deposit of its arrays from GEO (GSE83227, "caArray_meyer-00191"): the series
+matrix (sample titles and histology) and each array's MAS5 output file (`.txt.gz`, 248 of the 254 arrays,
+without the small-cell carcinomas, are used).
 
-Click and download yourself: "https://www.pnas.org/doi/suppl/10.1073/pnas.191502998/suppl_file/dataseta_12600gene.xls"
-mkdir -p local-data-warehouse/lung_cancer/ && mv dataseta_12600gene.xls local-data-warehouse/lung_cancer/
+W=local-data-warehouse/lung_cancer && mkdir -p $W/gse83227_txt
+wget -P $W https://ftp.ncbi.nlm.nih.gov/geo/series/GSE83nnn/GSE83227/matrix/GSE83227_series_matrix.txt.gz
+zcat $W/GSE83227_series_matrix.txt.gz | grep '^!Sample_supplementary_file' | tr '\t' '\n' \
+  | tr -d '"' | grep '\.txt\.gz$' | wget -q -P $W/gse83227_txt -i -
 ```
 
 Then, from the repository root:
@@ -123,18 +135,20 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| source | Other: https://www.pnas.org/doi/10.1073/pnas.191502998#supplementary-materials |
+| source | Other: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE83227 |
 | year | 2001 |
 | domain | medical & healthcare |
 | license | None |
-| data_tags | IID |
+| data_tags | Non-IID, Grouped |
 | reference | bhattacharjee2001classification |
-| rows x columns | 197 x 12,601 |
+| rows x columns | 197 x 12,627 |
 | task.target | CancerType |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
 | task.stratify_on | CancerType |
+| task.group_on | patient |
+| task.group_labels | per_sample |
 
 **Metric**
 
@@ -146,9 +160,9 @@ Only curators run `build`, when the dataset ships.
 | reason | The source paper clusters the samples (hierarchical and probabilistic clustering) to find adenocarcinoma subclasses and declares no classification metric for predicting the class. |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `CancerType`
+- categorical (2): `patient`, `CancerType`
 - string (0): none
 - datetime (0): none
 
@@ -174,172 +188,205 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 197 rows of the final frame (random rows: the frame is shuffled); 12 of 12,601 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 197 rows of the final frame (random rows: the frame is shuffled); 12 of 12,627 columns, the target first. Cells are cut at 40 characters.
 
-| CancerType | AFFX-MurIL2_at | AFFX-MurIL10_at | AFFX-MurIL4_at | AFFX-MurFAS_at | AFFX-BioB-5_at | AFFX-BioB-M_at | AFFX-BioB-3_at | AFFX-BioC-5_at | AFFX-BioC-3_at | AFFX-BioDn-5_at | AFFX-BioDn-3_at |
+| CancerType | patient | AFFX-MurIL2_at | AFFX-MurIL10_at | AFFX-MurIL4_at | AFFX-MurFAS_at | AFFX-BioB-5_at | AFFX-BioB-M_at | AFFX-BioB-3_at | AFFX-BioC-5_at | AFFX-BioC-3_at | AFFX-BioDn-5_at |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| lung adenocarcinoma | -24.61 | -18.71 | -11.96 | -0.15 | -26.3 | -25.45 | -12.8 | -0.15 | -25.45 | -61.71 | 61.44 |
-| pulmonary carcinoid | 47.38 | 61.01 | 54.52 | 75.96 | 31.15 | 14.27 | 57.77 | 101.95 | 11.68 | -15.56 | 123.41 |
-| lung adenocarcinoma | -11.6 | 13.89 | 11.06 | 64.85 | 5.39 | -14.44 | 9.17 | 19.55 | -16.32 | -43.71 | 77.12 |
-| lung adenocarcinoma | 6.82 | 30.11 | 18.97 | 32.14 | 6.82 | 4.8 | 37.2 | 60.5 | -1.28 | -32.65 | 65.57 |
-| lung adenocarcinoma | -16.5133 | 0.836667 | 3.88333 | 30.7067 | -4.73333 | -11.5667 | -3.30333 | 28.3033 | -10.2667 | -33.49 | 99.1267 |
+| lung adenocarcinoma | 299 | 28.1 | 14.5 | 10 | 13.7 | 17.8 | 7.7 | 4.2 | 79.8 | 8.7 | 4.8 |
+| lung adenocarcinoma | 122 | 27.5 | 20.9 | 33.8 | 13.7 | 19 | 17.7 | 8 | 136.5 | 20.5 | 5.1 |
+| squamous cell carcinoma | SQ5T1 | 81.7 | 35.1 | 28.9 | 9.3 | 9.7 | 13.3 | 6.5 | 17.8 | 11.2 | 5.8 |
+| lung adenocarcinoma | 360 | 19.1 | 12.4 | 64.2 | 24.6 | 8.9 | 14.4 | 6.2 | 19.7 | 5 | 4.2 |
+| pulmonary carcinoid | COID7T1 | 177.2 | 27.4 | 15.4 | 49.7 | 28.5 | 6.1 | 21.7 | 32.6 | 33.2 | 6.8 |
 
 ## Curation notes
 
-- The original data comes with lung adenocarcinoma and other adenocarcinomas merged into one class already. We keep the same and were not able to find a way to reverse this from the public data.
-- We also drop the class "small-cell lung carcinoma" as it only has 6 samples, which is not a meaningful sample size for benchmarking, or the predictive task.  We could add another version with all classes in the future.
+- Source: GEO GSE83227, the study's deposit of all 254 arrays (Affymetrix HG-U95Av2), each with its raw scan, its MAS5 output and the specimen's histology. The paper's Dataset A (PNAS supplement, `dataseta_12600gene.xls`; OpenML 45093 is a copy) is a summary of the same arrays: it averages all arrays of one adenocarcinoma patient (up to four: pieces `T1`, `T2` of one tumour, repeat hybridisations `T1-1`, `T1-2`) and uses the older MAS4 "average difference" values, where each array's overall intensity stays in. The arrays give the same 197 specimens (139 / 21 / 20 / 17) once the small-cell carcinomas are dropped.
+- CC (2026-11-10, Andrej): rebuilt from GEO (issue 1, D); whether it stays under this record is open (issue 4). One array per specimen, the first piece and first hybridisation (the first title in sorted order: `157T1` before `157T2`, `347T1-1` before `347T1-2`; Dataset A averaged them), because a lab profiles a new specimen once; the value is the array's MAS5 `Signal`, scaled on that array alone, so no test array depends on the training arrays (RMA from the raw scans would normalise all arrays together). All 12,625 probe sets ship, the 67 `AFFX` control probes included.
+- Class-dependent recording (record marker `Class-dependent Recording`), found in Dataset A and gone in the rebuild (2026-11-10, logistic regression, 20 repeats of 3 folds): Dataset A's per-patient means occurred in the adenocarcinomas only, and its 41 non-human spike-in controls alone separated the classes (one-vs-rest ROC AUC 0.85). On one MAS5 array per specimen the spike-ins reach 0.57, the scan date (in each array's file name, 16 March to 25 April 2001, spread over all classes, chi-squared p = 0.15) 0.58, and the array's QC values (scale factor, background, noise) 0.65. The 26 human control probes (GAPDH, actin and others) still separate the classes (0.94): they are tissue genes. Log loss on all human probes is 0.123 here, 0.141 on Dataset A.
+- Not features: GEO also gives age, sex, stage and pack-years, but only for adenocarcinomas (blank in every other class), so each would give the class away.
+- The source merges lung adenocarcinomas and 12 suspected extrapulmonary metastases into one class, and we keep that: the public data does not mark which they are.
+- We drop the class "small-cell lung carcinoma" as it only has 6 samples, which is not a meaningful sample size for benchmarking, or the predictive task.
+- Time basis: Timeless: the label is the histology of an excised specimen, which does not change; the profiles
+  were measured on banked specimens for one study (Bhattacharjee et al. 2001), so when a specimen was resected
+  plays no role. The order of array processing acts on the features only, and the scan date carries no class
+  signal (the class-dependent recording note). Not tested: specimens from another hospital, or arrays
+  processed in another laboratory.
 
 ## Splits
 
-Default splits.
+Grouped splits on the patient. All but one patient have one specimen, so the split is close to random specimens; grouping keeps patient 268's adenocarcinoma and normal lung on one side (log loss 0.126 grouped against 0.123 at random, logistic regression, 2026-11-10).
 
-20 repeat(s) x 3 fold(s) with seed 4267; train 131 to 132 rows, test 65 to 66 rows.
+20 repeat(s) x 3 fold(s) with seed 4267; train 130 to 133 rows, test 64 to 67 rows.
 
 <details>
 <summary>Show all 60 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 131 | 66 |
-| 0 | 1 | 131 | 66 |
+| 0 | 0 | 132 | 65 |
+| 0 | 1 | 130 | 67 |
 | 0 | 2 | 132 | 65 |
-| 1 | 0 | 131 | 66 |
-| 1 | 1 | 131 | 66 |
+| 1 | 0 | 132 | 65 |
+| 1 | 1 | 130 | 67 |
 | 1 | 2 | 132 | 65 |
-| 2 | 0 | 131 | 66 |
+| 2 | 0 | 132 | 65 |
 | 2 | 1 | 131 | 66 |
-| 2 | 2 | 132 | 65 |
+| 2 | 2 | 131 | 66 |
 | 3 | 0 | 131 | 66 |
 | 3 | 1 | 131 | 66 |
 | 3 | 2 | 132 | 65 |
-| 4 | 0 | 131 | 66 |
-| 4 | 1 | 131 | 66 |
+| 4 | 0 | 132 | 65 |
+| 4 | 1 | 130 | 67 |
 | 4 | 2 | 132 | 65 |
-| 5 | 0 | 131 | 66 |
-| 5 | 1 | 131 | 66 |
-| 5 | 2 | 132 | 65 |
+| 5 | 0 | 132 | 65 |
+| 5 | 1 | 132 | 65 |
+| 5 | 2 | 130 | 67 |
 | 6 | 0 | 131 | 66 |
 | 6 | 1 | 131 | 66 |
 | 6 | 2 | 132 | 65 |
-| 7 | 0 | 131 | 66 |
-| 7 | 1 | 131 | 66 |
+| 7 | 0 | 132 | 65 |
+| 7 | 1 | 130 | 67 |
 | 7 | 2 | 132 | 65 |
-| 8 | 0 | 131 | 66 |
-| 8 | 1 | 131 | 66 |
+| 8 | 0 | 132 | 65 |
+| 8 | 1 | 130 | 67 |
 | 8 | 2 | 132 | 65 |
-| 9 | 0 | 131 | 66 |
-| 9 | 1 | 131 | 66 |
+| 9 | 0 | 132 | 65 |
+| 9 | 1 | 130 | 67 |
 | 9 | 2 | 132 | 65 |
 | 10 | 0 | 131 | 66 |
 | 10 | 1 | 131 | 66 |
 | 10 | 2 | 132 | 65 |
-| 11 | 0 | 131 | 66 |
+| 11 | 0 | 132 | 65 |
 | 11 | 1 | 131 | 66 |
-| 11 | 2 | 132 | 65 |
-| 12 | 0 | 131 | 66 |
-| 12 | 1 | 131 | 66 |
-| 12 | 2 | 132 | 65 |
+| 11 | 2 | 131 | 66 |
+| 12 | 0 | 133 | 64 |
+| 12 | 1 | 130 | 67 |
+| 12 | 2 | 131 | 66 |
 | 13 | 0 | 131 | 66 |
 | 13 | 1 | 131 | 66 |
 | 13 | 2 | 132 | 65 |
-| 14 | 0 | 131 | 66 |
+| 14 | 0 | 132 | 65 |
 | 14 | 1 | 131 | 66 |
-| 14 | 2 | 132 | 65 |
-| 15 | 0 | 131 | 66 |
+| 14 | 2 | 131 | 66 |
+| 15 | 0 | 132 | 65 |
 | 15 | 1 | 131 | 66 |
-| 15 | 2 | 132 | 65 |
+| 15 | 2 | 131 | 66 |
 | 16 | 0 | 131 | 66 |
 | 16 | 1 | 131 | 66 |
 | 16 | 2 | 132 | 65 |
-| 17 | 0 | 131 | 66 |
+| 17 | 0 | 132 | 65 |
 | 17 | 1 | 131 | 66 |
-| 17 | 2 | 132 | 65 |
-| 18 | 0 | 131 | 66 |
+| 17 | 2 | 131 | 66 |
+| 18 | 0 | 132 | 65 |
 | 18 | 1 | 131 | 66 |
-| 18 | 2 | 132 | 65 |
+| 18 | 2 | 131 | 66 |
 | 19 | 0 | 131 | 66 |
 | 19 | 1 | 131 | 66 |
 | 19 | 2 | 132 | 65 |
 
 </details>
 
+## Group structure
+
+One group is a patient: the specimen title's number (`157T1` and `NL157n1` are patient 157), every other specimen its own patient. 196 patients for 197 specimens: patient 268 gave both an adenocarcinoma and a normal lung specimen, which stay on one side. The use case is a specimen of a new patient (the study profiled resected specimens of its patients, Bhattacharjee et al. 2001); each specimen is one prediction.
+
+| field | value |
+|---|---|
+| group column | `patient` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 196 |
+| rows per group (min / median / max) | 1 / 1.0 / 2 |
+| largest group | 1.0% of the rows |
+| test groups per fold | 64 to 66 |
+| groups of two or more rows with a single label | 0.0% |
+| nearest neighbour in the same group | 0.5% of the rows (chance: 0.0%) |
+| label variance explained by the group | 0.99 (shuffled groups: 1.00) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+
 ## Bundle checks
 
-0 error(s), 1 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_missing_value_sentinel`: 2 numeric column(s) are dominated by a sentinel-looking value: 34220_at=-9 (1.0%), 39498_at=-1 (1.0%). (hint: If it encodes 'missing', replace it with `np.nan` (curation guidelines); if it is a real value, ignore this finding.)
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.5% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.99 vs 1.00). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (12,601 rows)</summary>
+<summary>Show the table (12,627 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | CancerType | category | 0 | 0 | 4 | lung adenocarcinoma, squamous cell carcinoma, pulmonary carcinoid, normal lung |
-| AFFX-MurIL2_at | float64 | 0 | 0 | 197 | -24.61, 47.38, -11.6, 6.82, -16.5133, -14.5, 1.23, -16.05, 5.34, -7.54 |
-| AFFX-MurIL10_at | float64 | 0 | 0 | 196 | 11.93, -18.71, 13.89, 61.01, 30.11, 0.8367, 24.74, -10.48, 20.205, -3.61 |
-| AFFX-MurIL4_at | float64 | 0 | 0 | 192 | 11.06, -13.45, 14.48, -24.56, 0.01, 3.8833, 54.52, 3.61, 8.25, -4.92 |
-| AFFX-MurFAS_at | float64 | 0 | 0 | 194 | 7.83, 15.68, 9.15, 75.96, 30.7067, -0.15, 32.96, 28.98, 26.225, 64.85 |
-| AFFX-BioB-5_at | float64 | 0 | 0 | 194 | -25.82, -5.54, -26.24, 5.39, 31.15, 6.82, -19.93, -32.59, -4.7333, -17.52 |
-| AFFX-BioB-M_at | float64 | 0 | 0 | 196 | -36.98, -25.45, -14.44, 14.27, 4.8, -11.5667, -17.58, -20.54, -9.135, -28.48 |
-| AFFX-BioB-3_at | float64 | 0 | 0 | 194 | -27.9, 1.79, -14.69, 9.17, 57.77, 37.2, -1.12, -17.89, -3.3033, 0.59 |
-| AFFX-BioC-5_at | float64 | 0 | 0 | 196 | 21.05, -0.15, 19.55, 101.95, 60.5, 28.3033, 62.35, 28.78, 32.255, 1.62 |
-| AFFX-BioC-3_at | float64 | 0 | 0 | 196 | 11.68, -25.45, -16.32, -1.28, -10.2667, -22.55, -31.68, -26.16, -14.43, -18.66 |
-| AFFX-BioDn-5_at | float64 | 0 | 0 | 194 | -49.42, -63.14, -56.38, -15.56, -43.71, -61.71, -42.25, -64.73, -33.49, -32.65 |
-| AFFX-BioDn-3_at | float64 | 0 | 0 | 197 | 61.44, 123.41, 77.12, 65.57, 99.1267, 78.18, 56.48, 9.68, 89.825, 35.03 |
-| AFFX-CreX-5_at | float64 | 0 | 0 | 195 | -19.73, -31.2, -30.51, -16.32, 25.31, 0.75, -10.5, -24.32, -8.28, -22.55 |
-| AFFX-CreX-3_at | float64 | 0 | 0 | 197 | -20.39, 51.92, 16.72, 18.97, 2.1067, 4.62, 27.09, -6.87, 16.185, -6.88 |
-| AFFX-BioB-5_st | float64 | 0 | 0 | 195 | 83.54, 29.05, 52.16, 110.19, 41.56, 54.99, 98.8, 3.24, 34.68, 60.61 |
-| AFFX-BioB-M_st | float64 | 0 | 0 | 196 | 5.51, 0.69, 15.78, 88.3, 15.93, 7.74, -3.47, -35.62, 21.225, -15.39 |
-| AFFX-BioB-3_st | float64 | 0 | 0 | 197 | -67.62, -44.73, -69.21, -29.61, -59.6533, -111.96, -49.3, -95.94, -58.85, -90.6 |
-| AFFX-BioC-5_st | float64 | 0 | 0 | 195 | -36.95, -30.56, -25.45, -15.38, -29.18, -31.6, -10.39, -45.45, -31.225, -16.7 |
-| AFFX-BioC-3_st | float64 | 0 | 0 | 196 | -12.44, -28.83, -0.27, 12.33, -11.2033, -25.56, 9.46, -50.04, -7.875, -0.34 |
-| AFFX-BioDn-5_st | float64 | 0 | 0 | 194 | 2.87, -6.45, 2.26, 11.06, 29.85, 3.78, 45.9, -56.47, 2.3033, -5.45 |
-| AFFX-BioDn-3_st | float64 | 0 | 0 | 196 | -3.95, -1.84, 12.95, 90.9, -6.34, -4.4167, 5.93, 39.87, -12.235, 6.86 |
-| AFFX-CreX-5_st | float64 | 0 | 0 | 195 | 8.99, -32.6, -19.55, -4.05, 38.29, 15.93, -4.2433, -7.78, -10.035, -18.52 |
-| AFFX-CreX-3_st | float64 | 0 | 0 | 195 | -29.85, -8.89, 40.88, -29.54, -6.34, -52.71, -27.1033, -44.53, -14.645, -66.41 |
-| AFFX-hum_alu_at | float64 | 0 | 0 | 197 | 7015.32, 8333.42, 7551.45, 7980.27, 6863.82, 6766.43, 6318.98, 7095.82, 7382.86… |
-| AFFX-DapX-5_at | float64 | 0 | 0 | 197 | -11.96, 54.52, 7.28, 29.1, 6.9333, 5.63, 16.51, -2.27, 14.23, 7.52 |
-| AFFX-DapX-M_at | float64 | 0 | 0 | 195 | 10.79, 23.565, 82.45, 29.94, 53.41, 30.8, 24.0733, 7.84, 19.675, 5.55 |
-| AFFX-DapX-3_at | float64 | 0 | 0 | 196 | -7.28, -13.65, -7.83, 40.88, 0.3833, -5.45, 4.75, -9.62, -2.88, -8.19 |
-| AFFX-LysX-5_at | float64 | 0 | 0 | 195 | 5.24, -3.1, 59.72, 5.39, 17.96, 0.59, 5.93, -2.27, 10.985, -6.88 |
-| AFFX-LysX-M_at | float64 | 0 | 0 | 194 | -16.99, -22.27, -1.71, -9.71, -17.57, -10.48, 0.05, 14.92, -0.21, -14.74 |
-| AFFX-LysX-3_at | float64 | 0 | 0 | 195 | -0.99, 5.77, 68.81, 36.19, 18.1833, 29.79, 17.68, 3.24, 19.565, -1.65 |
-| AFFX-PheX-5_at | float64 | 0 | 0 | 195 | -3.1, -1.81, -18.71, 34.39, 12.89, -7.46, -4.76, -28.92, -2.285, -12.78 |
-| AFFX-PheX-M_at | float64 | 0 | 0 | 194 | -32.59, -16.7, -6.23, 48.03, -4.99, -17.02, -16.51, -7.3633, 17.68, 8.84 |
-| AFFX-PheX-3_at | float64 | 0 | 0 | 193 | 15.33, -9.28, -36.13, -24.4, -16.18, -11.2467, 10.66, 28.08, 52.57, -19.32 |
-| AFFX-ThrX-5_at | float64 | 0 | 0 | 197 | -7.74, 45.43, -4.05, 34.16, -1.4633, -6.45, 16.51, -6.87, 1.53, -1.65 |
-| AFFX-ThrX-M_at | float64 | 0 | 0 | 194 | -11.82, 11.16, -13.14, 47.38, -3.46, -19.55, 8.28, -8.7, 9.79, -1.22 |
-| AFFX-ThrX-3_at | float64 | 0 | 0 | 193 | -47.24, -42.65, -24.12, -31.16, -44.01, -44.67, -12.87, -9.38, -0.65, -41.56 |
-| AFFX-TrpnX-5_at | float64 | 0 | 0 | 195 | -0.62, -1.88, 49.97, 5.39, 28.08, 1.6, 10.5567, -4.11, 12.205, -2.3 |
-| AFFX-TrpnX-M_at | float64 | 0 | 0 | 194 | -42.39, -37.43, -42.63, 12.33, -16.2433, -33.04, -7.0, -22.49, -6.24, -26.71 |
-| AFFX-TrpnX-3_at | float64 | 0 | 0 | 195 | -2.16, 2.72, -10.27, 19.98, 0.62, -3.43, 3.58, -4.11, 9.495, -8.85 |
-| AFFX-HUMISGF3A/M97935_5_at | float64 | 0 | 0 | 194 | 25.47, 0.71, 0.73, 34.66, 70.11, 44.29, 52.95, 6.92, 22.3067, 21.73 |
-| AFFX-HUMISGF3A/M97935_MA_at | float64 | 0 | 0 | 197 | 83.39, 102.6, 121.44, 136.56, 69.6233, 124.64, 188.18, 77.75, 34.29, 113.18 |
-| AFFX-HUMISGF3A/M97935_MB_at | float64 | 0 | 0 | 197 | 53.85, 107.16, 95.04, 91.93, 55.2833, 77.18, 219.93, 70.39, 34.12, 117.79 |
-| AFFX-HUMISGF3A/M97935_3_at | float64 | 0 | 0 | 197 | 200.89, 273.23, 317.99, 275.71, 171.177, 296.14, 615.85, 246.74, 141.735, 464.74 |
-| AFFX-HUMRGE/M10098_5_at | float64 | 0 | 0 | 196 | -3.99, -33.89, -4.05, 62.31, 5.8833, 23.75, 15.33, -29.83, 13.305, -16.7 |
-| AFFX-HUMRGE/M10098_M_at | float64 | 0 | 0 | 195 | -51.06, -20.22, 10.38, -43.71, -5.33, 1.6, -8.1333, -64.73, -27.235, -50.06 |
-| AFFX-HUMRGE/M10098_3_at | float64 | 0 | 0 | 196 | -29.77, -36.42, -43.71, -51.21, -8.55, -13.49, -17.58, -55.55, -9.66, -57.26 |
-| AFFX-HUMGAPDH/M33197_5_at | float64 | 0 | 0 | 197 | 3697.52, 2141.4, 1916.94, 2654.11, 2631.11, 2669.67, 2035.24, 1110.97, 1412.59,… |
-| AFFX-HUMGAPDH/M33197_M_at | float64 | 0 | 0 | 197 | 3974.48, 2050.53, 1919.47, 2616.3, 2674.22, 2467.85, 2074.51, 916.89, 1452.01, … |
-| AFFX-HUMGAPDH/M33197_3_at | float64 | 0 | 0 | 197 | 4587.66, 3098.43, 3121.42, 4122.86, 3356.89, 3753.37, 3085.19, 2440.02, 2707.16… |
-| AFFX-HSAC07/X00351_5_at | float64 | 0 | 0 | 197 | 3814.62, 1655.24, 3248.73, 3994.37, 3078.56, 3716.98, 2933.78, 3654.69, 2771.08… |
-| AFFX-HSAC07/X00351_M_at | float64 | 0 | 0 | 197 | 4717.12, 1730.03, 3759.46, 4537.35, 3863.47, 4627.29, 3501.41, 4658.25, 3712.37… |
-| AFFX-HSAC07/X00351_3_at | float64 | 0 | 0 | 197 | 4570.15, 2387.64, 3677.74, 5012.95, 4063.16, 4643.42, 4135.12, 5003.28, 4353.41… |
-| AFFX-HUMTFRR/M11507_5_at | float64 | 0 | 0 | 196 | 49.25, -6.9, 18.61, 79.85, 39.3367, 15.69, 22.39, 10.6, 35.81, 29.79 |
-| AFFX-HUMTFRR/M11507_M_at | float64 | 0 | 0 | 193 | 12.38, 5.02, -13.9, -6.12, -7.74, -1.42, 10.11, 33.15, 54.52, 7.52 |
-| AFFX-HUMTFRR/M11507_3_at | float64 | 0 | 0 | 196 | 23.84, 30.22, 30.88, 72.71, 104.923, 33.82, 48.25, 58.42, 31.485, 46.18 |
-| AFFX-M27830_5_at | float64 | 0 | 0 | 192 | -31.51, 53.09, -20.9, 18.63, -17.87, -4.37, 7.28, 68.16, 54.11, -5.58 |
-| AFFX-M27830_M_at | float64 | 0 | 0 | 196 | 113.48, 43.72, 99.75, 135.12, 55.44, 137.823, 168.18, 161.07, 224.595, 18.0 |
-| AFFX-M27830_3_at | float64 | 0 | 0 | 194 | 54.21, 54.24, 78.32, 59.19, 106.487, 47.93, 72.93, 78.75, 58.305, 94.76 |
-| AFFX-HSAC07/X00351_3_st | float64 | 0 | 0 | 197 | 172.12, 214.56, 272.94, 325.51, 196.91, 202.62, 155.25, 285.7, 379.935, 97.39 |
-| AFFX-HUMGAPDH/M33197_5_st | float64 | 0 | 0 | 197 | -0.15, 33.74, -9.71, 14.92, 9.5167, 7.64, 24.74, -19.73, -16.41, -23.25 |
+| patient | category | 0 | 0 | 196 | 268, 043, 114, 111, 118, 119, 120, 122, 123, 127 |
+| AFFX-MurIL2_at | float64 | 0 | 0 | 175 | 32.3, 38.1, 25.6, 34.6, 25.8, 44.1, 50.1, 32.6, 35.2, 26.9 |
+| AFFX-MurIL10_at | float64 | 0 | 0 | 175 | 29.0, 19.2, 20.7, 51.7, 14.5, 18.0, 29.8, 19.0, 20.8, 46.2 |
+| AFFX-MurIL4_at | float64 | 0 | 0 | 151 | 10.0, 9.1, 33.8, 4.8, 7.4, 10.2, 8.6, 12.4, 10.8, 15.4 |
+| AFFX-MurFAS_at | float64 | 0 | 0 | 176 | 25.8, 13.7, 16.3, 109.1, 16.8, 60.5, 26.6, 27.9, 27.1, 46.0 |
+| AFFX-BioB-5_at | float64 | 0 | 0 | 154 | 22.6, 14.8, 32.7, 15.9, 25.4, 12.4, 16.9, 25.6, 35.5, 31.5 |
+| AFFX-BioB-M_at | float64 | 0 | 0 | 134 | 13.3, 15.1, 12.5, 12.3, 13.9, 10.8, 7.1, 8.1, 9.0, 6.4 |
+| AFFX-BioB-3_at | float64 | 0 | 0 | 159 | 14.7, 6.6, 6.7, 25.8, 12.1, 22.8, 9.4, 36.6, 7.9, 26.3 |
+| AFFX-BioC-5_at | float64 | 0 | 0 | 189 | 179.8, 112.8, 33.3, 158.5, 139.0, 104.1, 99.8, 34.8, 69.8, 32.6 |
+| AFFX-BioC-3_at | float64 | 0 | 0 | 132 | 11.2, 12.8, 8.0, 12.5, 14.1, 18.8, 10.1, 16.9, 15.4, 13.4 |
+| AFFX-BioDn-5_at | float64 | 0 | 0 | 92 | 5.8, 3.9, 7.6, 7.3, 10.7, 8.1, 8.2, 8.0, 7.4, 6.1 |
+| AFFX-BioDn-3_at | float64 | 0 | 0 | 192 | 123.8, 127.8, 113.4, 177.9, 463.4, 246.0, 348.6, 487.9, 296.4, 869.2 |
+| AFFX-CreX-5_at | float64 | 0 | 0 | 89 | 3.5, 4.8, 3.2, 2.9, 4.0, 4.6, 4.5, 2.5, 3.9, 3.8 |
+| AFFX-CreX-3_at | float64 | 0 | 0 | 181 | 30.2, 27.4, 75.8, 22.6, 21.1, 22.7, 28.8, 154.2, 22.5, 47.4 |
+| AFFX-BioB-5_st | float64 | 0 | 0 | 190 | 139.8, 30.5, 134.8, 79.9, 169.5, 109.2, 57.0, 121.8, 146.3, 35.6 |
+| AFFX-BioB-M_st | float64 | 0 | 0 | 179 | 35.9, 36.3, 45.8, 50.0, 41.5, 47.7, 36.8, 33.8, 155.9, 38.8 |
+| AFFX-BioB-3_st | float64 | 0 | 0 | 169 | 28.1, 41.0, 42.3, 52.7, 49.0, 20.6, 49.9, 34.9, 32.2, 39.7 |
+| AFFX-BioC-5_st | float64 | 0 | 0 | 161 | 37.5, 25.5, 27.6, 36.2, 43.5, 43.9, 22.2, 31.2, 17.3, 24.8 |
+| AFFX-BioC-3_st | float64 | 0 | 0 | 160 | 15.8, 16.7, 9.8, 7.4, 13.2, 10.6, 25.3, 7.8, 18.7, 32.7 |
+| AFFX-BioDn-5_st | float64 | 0 | 0 | 151 | 16.9, 11.7, 14.0, 20.9, 13.2, 11.1, 8.8, 15.8, 15.6, 11.5 |
+| AFFX-BioDn-3_st | float64 | 0 | 0 | 189 | 51.0, 58.6, 29.4, 88.9, 62.2, 32.5, 32.8, 60.4, 39.3, 52.5 |
+| AFFX-CreX-5_st | float64 | 0 | 0 | 156 | 14.7, 6.6, 13.3, 15.1, 22.6, 16.0, 14.9, 19.5, 19.3, 23.3 |
+| AFFX-CreX-3_st | float64 | 0 | 0 | 158 | 34.2, 18.7, 18.4, 26.3, 26.1, 27.8, 13.4, 33.4, 25.3, 34.3 |
+| AFFX-hum_alu_at | float64 | 0 | 0 | 197 | 30925.2, 61411.6, 36055.7, 29398.4, 76573.7, 51685.6, 54919.8, 70633.8, 57694.6… |
+| AFFX-DapX-5_at | float64 | 0 | 0 | 185 | 26.0, 76.9, 83.5, 84.1, 46.6, 80.6, 5.1, 6.3, 38.8, 16.8 |
+| AFFX-DapX-M_at | float64 | 0 | 0 | 180 | 58.8, 115.0, 42.6, 101.1, 23.1, 93.6, 17.1, 15.4, 46.4, 57.9 |
+| AFFX-DapX-3_at | float64 | 0 | 0 | 143 | 17.7, 15.1, 9.0, 12.8, 7.2, 14.0, 18.2, 14.3, 15.4, 14.9 |
+| AFFX-LysX-5_at | float64 | 0 | 0 | 183 | 13.5, 3.9, 7.1, 60.8, 10.6, 21.2, 19.8, 6.8, 50.3, 6.7 |
+| AFFX-LysX-M_at | float64 | 0 | 0 | 168 | 24.4, 21.9, 22.1, 85.7, 35.5, 89.6, 25.0, 14.5, 109.3, 19.1 |
+| AFFX-LysX-3_at | float64 | 0 | 0 | 172 | 3.4, 7.5, 31.2, 72.3, 12.5, 17.1, 10.3, 4.1, 29.8, 19.8 |
+| AFFX-PheX-5_at | float64 | 0 | 0 | 125 | 7.8, 8.4, 6.1, 6.9, 9.4, 10.9, 4.9, 14.5, 4.3, 7.4 |
+| AFFX-PheX-M_at | float64 | 0 | 0 | 145 | 12.2, 12.8, 7.3, 22.5, 8.8, 20.6, 11.3, 9.0, 18.6, 19.2 |
+| AFFX-PheX-3_at | float64 | 0 | 0 | 173 | 35.0, 43.7, 30.8, 21.6, 26.2, 31.9, 51.1, 49.8, 37.7, 22.6 |
+| AFFX-ThrX-5_at | float64 | 0 | 0 | 173 | 21.3, 16.5, 25.5, 17.5, 25.3, 20.8, 34.9, 28.0, 16.9, 28.2 |
+| AFFX-ThrX-M_at | float64 | 0 | 0 | 177 | 32.9, 18.1, 14.9, 26.9, 60.8, 8.0, 28.4, 8.7, 21.4, 31.1 |
+| AFFX-ThrX-3_at | float64 | 0 | 0 | 148 | 18.8, 14.6, 15.1, 17.6, 19.8, 18.4, 26.5, 19.5, 13.2, 26.3 |
+| AFFX-TrpnX-5_at | float64 | 0 | 0 | 177 | 26.5, 16.1, 15.6, 26.4, 23.6, 25.2, 14.8, 15.4, 60.1, 16.5 |
+| AFFX-TrpnX-M_at | float64 | 0 | 0 | 120 | 10.8, 12.4, 11.1, 10.3, 10.9, 5.9, 12.8, 8.8, 11.5, 15.0 |
+| AFFX-TrpnX-3_at | float64 | 0 | 0 | 151 | 5.5, 9.6, 4.7, 4.5, 11.4, 5.2, 7.1, 3.1, 3.5, 8.0 |
+| AFFX-HUMISGF3A/M97935_5_at | float64 | 0 | 0 | 192 | 266.2, 67.6, 138.1, 143.5, 187.6, 96.0, 95.2, 263.9, 91.0, 126.9 |
+| AFFX-HUMISGF3A/M97935_MA_at | float64 | 0 | 0 | 196 | 655.9, 1737.4, 603.9, 1131.8, 487.5, 576.4, 493.1, 487.1, 1279.4, 725.6 |
+| AFFX-HUMISGF3A/M97935_MB_at | float64 | 0 | 0 | 194 | 561.7, 285.7, 291.1, 562.8, 331.2, 1057.4, 357.8, 199.4, 534.7, 278.0 |
+| AFFX-HUMISGF3A/M97935_3_at | float64 | 0 | 0 | 194 | 916.6, 1549.6, 1475.0, 1616.7, 1297.0, 4228.4, 833.2, 902.8, 793.5, 1420.9 |
+| AFFX-HUMRGE/M10098_5_at | float64 | 0 | 0 | 173 | 10.8, 45.2, 17.6, 27.3, 32.7, 24.4, 37.9, 21.1, 23.8, 18.0 |
+| AFFX-HUMRGE/M10098_M_at | float64 | 0 | 0 | 155 | 31.8, 13.5, 9.7, 9.2, 10.2, 8.7, 28.8, 11.3, 11.6, 23.1 |
+| AFFX-HUMRGE/M10098_3_at | float64 | 0 | 0 | 180 | 32.1, 30.0, 34.8, 22.8, 33.3, 48.3, 34.6, 37.3, 30.4, 41.8 |
+| AFFX-HUMGAPDH/M33197_5_at | float64 | 0 | 0 | 197 | 17311.6, 17715.5, 30253.7, 13834.3, 14888.6, 11536.9, 15198.4, 4357.6, 22181.2,… |
+| AFFX-HUMGAPDH/M33197_M_at | float64 | 0 | 0 | 197 | 16499.5, 21442.8, 29850.0, 15604.1, 20461.5, 15735.8, 18444.4, 8679.5, 34308.1,… |
+| AFFX-HUMGAPDH/M33197_3_at | float64 | 0 | 0 | 197 | 15676.7, 23094.1, 29569.7, 15122.3, 23551.2, 20658.4, 22161.6, 11963.7, 31519.0… |
+| AFFX-HSAC07/X00351_5_at | float64 | 0 | 0 | 197 | 14618.8, 21590.2, 16122.8, 16966.1, 11508.5, 16750.5, 19900.5, 12777.4, 19140.0… |
+| AFFX-HSAC07/X00351_M_at | float64 | 0 | 0 | 197 | 18577.4, 40519.8, 24142.6, 22866.4, 20644.5, 30021.4, 31929.7, 33313.4, 33564.8… |
+| AFFX-HSAC07/X00351_3_at | float64 | 0 | 0 | 197 | 20257.8, 35109.0, 28082.0, 24571.4, 23946.3, 38398.3, 32595.6, 38231.6, 32339.8… |
+| AFFX-HUMTFRR/M11507_5_at | float64 | 0 | 0 | 189 | 127.0, 113.2, 151.5, 96.9, 204.1, 142.1, 149.7, 175.9, 135.5, 202.9 |
+| AFFX-HUMTFRR/M11507_M_at | float64 | 0 | 0 | 188 | 34.0, 26.1, 65.2, 124.4, 92.5, 40.8, 19.8, 84.1, 71.4, 89.9 |
+| AFFX-HUMTFRR/M11507_3_at | float64 | 0 | 0 | 193 | 190.9, 259.9, 201.0, 335.1, 1523.1, 287.5, 288.2, 198.0, 171.0, 382.9 |
+| AFFX-M27830_5_at | float64 | 0 | 0 | 194 | 104.7, 115.0, 112.9, 158.0, 200.1, 134.7, 91.9, 192.0, 169.1, 64.0 |
+| AFFX-M27830_M_at | float64 | 0 | 0 | 195 | 344.6, 660.8, 471.3, 179.5, 295.5, 891.1, 251.0, 428.1, 257.8, 1915.5 |
+| AFFX-M27830_3_at | float64 | 0 | 0 | 191 | 226.2, 171.8, 269.9, 290.5, 156.2, 324.4, 188.4, 191.5, 250.0, 221.3 |
+| AFFX-HSAC07/X00351_3_st | float64 | 0 | 0 | 196 | 605.1, 383.1, 706.0, 1553.0, 302.4, 1110.4, 600.0, 1537.6, 1407.5, 1266.9 |
 
-(12,541 more rows not shown)
+(12,567 more rows not shown)
 
 </details>
 
@@ -355,72 +402,72 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (12,600 rows)</summary>
+<summary>Show the table (12,625 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| AFFX-MurIL2_at | 197 | -8.54257 | 20.3089 | -59.53 | 92.68 |
-| AFFX-MurIL10_at | 197 | 4.50065 | 21.8774 | -33.2 | 106.16 |
-| AFFX-MurIL4_at | 197 | 0.16209 | 18.9382 | -31.18 | 70.5 |
-| AFFX-MurFAS_at | 197 | 19.5071 | 20.3197 | -18.63 | 91.79 |
-| AFFX-BioB-5_at | 197 | -15.5926 | 19.0916 | -67 | 46.34 |
-| AFFX-BioB-M_at | 197 | -21.7839 | 26.261 | -263.47 | 53.66 |
-| AFFX-BioB-3_at | 197 | -4.62703 | 25.3928 | -44 | 210.1 |
-| AFFX-BioC-5_at | 197 | 22.37 | 26.2501 | -34.81 | 114.5 |
-| AFFX-BioC-3_at | 197 | -23.9431 | 16.027 | -57.04 | 22.295 |
-| AFFX-BioDn-5_at | 197 | -53.0421 | 17.086 | -98.67 | 16.42 |
-| AFFX-BioDn-3_at | 197 | 57.8742 | 43.8101 | -96.97 | 221.45 |
-| AFFX-CreX-5_at | 197 | -20.0207 | 16.4641 | -47.35 | 41.225 |
-| AFFX-CreX-3_at | 197 | 2.54775 | 19.6561 | -30.045 | 71.305 |
-| AFFX-BioB-5_st | 197 | 58.3442 | 41.9596 | -25.66 | 212.67 |
-| AFFX-BioB-M_st | 197 | -3.70687 | 60.6133 | -748.77 | 88.3 |
-| AFFX-BioB-3_st | 197 | -79.7873 | 24.9415 | -135.51 | 1.07 |
-| AFFX-BioC-5_st | 197 | -33.1087 | 22.1401 | -116.63 | 30.29 |
-| AFFX-BioC-3_st | 197 | -14.0845 | 16.8155 | -50.04 | 54.12 |
-| AFFX-BioDn-5_st | 197 | -4.76852 | 25.3216 | -73.36 | 59.6 |
-| AFFX-BioDn-3_st | 197 | 4.31059 | 27.1769 | -55.69 | 125.28 |
-| AFFX-CreX-5_st | 197 | -9.063 | 17.8855 | -54.28 | 44.845 |
-| AFFX-CreX-3_st | 197 | -37.643 | 22.3406 | -88.84 | 40.88 |
-| AFFX-hum_alu_at | 197 | 7144.91 | 766.488 | 5226.86 | 9379.1 |
-| AFFX-DapX-5_at | 197 | 4.3712 | 18.8731 | -28.625 | 80.25 |
-| AFFX-DapX-M_at | 197 | 17.9895 | 20.7812 | -70.95 | 82.45 |
-| AFFX-DapX-3_at | 197 | -5.77572 | 18.9179 | -38.69 | 63.505 |
-| AFFX-LysX-5_at | 197 | 2.0828 | 20.4236 | -31.18 | 95.34 |
-| AFFX-LysX-M_at | 197 | -11.6294 | 18.1719 | -46.57 | 65.59 |
-| AFFX-LysX-3_at | 197 | 12.9665 | 19.5916 | -32.65 | 69.61 |
-| AFFX-PheX-5_at | 197 | -9.49459 | 18.4216 | -43.74 | 52.05 |
-| AFFX-PheX-M_at | 197 | -9.38076 | 17.1199 | -42.43 | 48.03 |
-| AFFX-PheX-3_at | 197 | -3.20077 | 22.2344 | -44.79 | 87.38 |
-| AFFX-ThrX-5_at | 197 | -2.48604 | 18.5827 | -43.33 | 68.72 |
-| AFFX-ThrX-M_at | 197 | -1.90072 | 17.9747 | -36.91 | 57.7 |
-| AFFX-ThrX-3_at | 197 | -32.175 | 18.3277 | -65.38 | 44.78 |
-| AFFX-TrpnX-5_at | 197 | 4.89144 | 18.8957 | -29.4 | 65.245 |
-| AFFX-TrpnX-M_at | 197 | -24.8913 | 16.6812 | -57.43 | 43.135 |
-| AFFX-TrpnX-3_at | 197 | -2.26065 | 18.9988 | -38.37 | 79.37 |
-| AFFX-HUMISGF3A/M97935_5_at | 197 | 20.4064 | 25.3781 | -36.64 | 152.85 |
-| AFFX-HUMISGF3A/M97935_MA_at | 197 | 95.7033 | 79.6485 | -14.69 | 485.97 |
-| AFFX-HUMISGF3A/M97935_MB_at | 197 | 82.3588 | 60.6505 | -7.28 | 405.86 |
-| AFFX-HUMISGF3A/M97935_3_at | 197 | 315.286 | 176.2 | 52.32 | 993 |
-| AFFX-HUMRGE/M10098_5_at | 197 | -2.65018 | 30.5953 | -47.91 | 234.245 |
-| AFFX-HUMRGE/M10098_M_at | 197 | -32.2819 | 31.0846 | -93.55 | 132.725 |
-| AFFX-HUMRGE/M10098_3_at | 197 | -37.0157 | 48.3678 | -89.84 | 522.29 |
-| AFFX-HUMGAPDH/M33197_5_at | 197 | 2471.63 | 944.027 | 497.32 | 5234.21 |
-| AFFX-HUMGAPDH/M33197_M_at | 197 | 2518.11 | 970.352 | 774.95 | 5262.77 |
-| AFFX-HUMGAPDH/M33197_3_at | 197 | 3343.9 | 903.246 | 1066.63 | 5436.39 |
-| AFFX-HSAC07/X00351_5_at | 197 | 3084.81 | 731.692 | 963.33 | 4872.47 |
-| AFFX-HSAC07/X00351_M_at | 197 | 3939.14 | 731.952 | 1730.03 | 5511.78 |
-| AFFX-HSAC07/X00351_3_at | 197 | 4260.21 | 596.688 | 2387.64 | 5520.63 |
-| AFFX-HUMTFRR/M11507_5_at | 197 | 26.9276 | 23.9035 | -22.66 | 122.42 |
-| AFFX-HUMTFRR/M11507_M_at | 197 | 7.16889 | 24.711 | -30.59 | 189.45 |
-| AFFX-HUMTFRR/M11507_3_at | 197 | 51.9018 | 50.467 | -10.9 | 539.03 |
-| AFFX-M27830_5_at | 197 | 11.7735 | 41.9314 | -38.57 | 392.9 |
-| AFFX-M27830_M_at | 197 | 110.713 | 74.2335 | -39.37 | 497.185 |
-| AFFX-M27830_3_at | 197 | 67.8076 | 40.9078 | -121.48 | 216.26 |
-| AFFX-HSAC07/X00351_3_st | 197 | 186.647 | 111.327 | 16.94 | 576.02 |
-| AFFX-HUMGAPDH/M33197_5_st | 197 | -7.13114 | 28.0787 | -72.34 | 84.11 |
-| AFFX-HUMGAPDH/M33197_M_st | 197 | 19.8624 | 28.685 | -38.54 | 98.89 |
+| AFFX-MurIL2_at | 197 | 64.9355 | 59.9054 | 18 | 462.5 |
+| AFFX-MurIL10_at | 197 | 57.7005 | 59.7255 | 8.6 | 450.4 |
+| AFFX-MurIL4_at | 197 | 23.7929 | 27.2879 | 2.1 | 194.7 |
+| AFFX-MurFAS_at | 197 | 58.5619 | 46.3421 | 8.4 | 311.5 |
+| AFFX-BioB-5_at | 197 | 30.5635 | 23.3775 | 7.5 | 183.1 |
+| AFFX-BioB-M_at | 197 | 16.0071 | 11.2551 | 5.2 | 110.8 |
+| AFFX-BioB-3_at | 197 | 26.4848 | 43.1731 | 3.3 | 539.8 |
+| AFFX-BioC-5_at | 197 | 110.664 | 74.9854 | 14.1 | 533.4 |
+| AFFX-BioC-3_at | 197 | 16.1274 | 7.06308 | 5 | 46.8 |
+| AFFX-BioDn-5_at | 197 | 7.65584 | 3.19066 | 2.7 | 23.8 |
+| AFFX-BioDn-3_at | 197 | 475.006 | 334.967 | 79.7 | 1725.3 |
+| AFFX-CreX-5_at | 197 | 6.50761 | 5.9142 | 1.7 | 61.4 |
+| AFFX-CreX-3_at | 197 | 55.5426 | 45.2503 | 9.4 | 260.4 |
+| AFFX-BioB-5_st | 197 | 130.76 | 91.8382 | 12 | 644.9 |
+| AFFX-BioB-M_st | 197 | 68.3883 | 50.5031 | 16.2 | 271.3 |
+| AFFX-BioB-3_st | 197 | 42.5112 | 19.9846 | 10.1 | 154.7 |
+| AFFX-BioC-5_st | 197 | 37.1822 | 28.1678 | 13.3 | 372.9 |
+| AFFX-BioC-3_st | 197 | 27.7107 | 36.9315 | 4.2 | 346.1 |
+| AFFX-BioDn-5_st | 197 | 25.168 | 23.0217 | 7.5 | 181.3 |
+| AFFX-BioDn-3_st | 197 | 108.647 | 84.3369 | 17 | 460.7 |
+| AFFX-CreX-5_st | 197 | 29.4086 | 28.1592 | 5.5 | 194.6 |
+| AFFX-CreX-3_st | 197 | 32.9203 | 23.1715 | 4.5 | 193.5 |
+| AFFX-hum_alu_at | 197 | 63503.5 | 24890.4 | 27123.5 | 165731 |
+| AFFX-DapX-5_at | 197 | 60.8056 | 41.006 | 2.4 | 213.9 |
+| AFFX-DapX-M_at | 197 | 73.8548 | 44.0596 | 3.4 | 241 |
+| AFFX-DapX-3_at | 197 | 21.4066 | 27.4911 | 3.2 | 202.5 |
+| AFFX-LysX-5_at | 197 | 45.9858 | 42.8824 | 1.7 | 303.3 |
+| AFFX-LysX-M_at | 197 | 55.2157 | 44.8122 | 5.7 | 260.6 |
+| AFFX-LysX-3_at | 197 | 32.0863 | 35.9113 | 1.4 | 339.5 |
+| AFFX-PheX-5_at | 197 | 15.0025 | 18.9106 | 2.8 | 142.6 |
+| AFFX-PheX-M_at | 197 | 19.397 | 18.2419 | 3 | 154.3 |
+| AFFX-PheX-3_at | 197 | 50.0548 | 34.4215 | 13 | 229 |
+| AFFX-ThrX-5_at | 197 | 41.0812 | 31.7556 | 6.6 | 196.2 |
+| AFFX-ThrX-M_at | 197 | 41.4893 | 33.3599 | 2.8 | 150.5 |
+| AFFX-ThrX-3_at | 197 | 24.9142 | 20.3058 | 6.2 | 201.6 |
+| AFFX-TrpnX-5_at | 197 | 48.4538 | 44.0919 | 5.7 | 219.2 |
+| AFFX-TrpnX-M_at | 197 | 12.2122 | 8.67358 | 2 | 97.9 |
+| AFFX-TrpnX-3_at | 197 | 23.6457 | 28.0559 | 1.7 | 154.9 |
+| AFFX-HUMISGF3A/M97935_5_at | 197 | 183.145 | 131.515 | 7.7 | 806.2 |
+| AFFX-HUMISGF3A/M97935_MA_at | 197 | 946.142 | 663.063 | 72 | 3767 |
+| AFFX-HUMISGF3A/M97935_MB_at | 197 | 503.761 | 258.702 | 128.8 | 1736.2 |
+| AFFX-HUMISGF3A/M97935_3_at | 197 | 1726.38 | 1061.77 | 271.2 | 4989.5 |
+| AFFX-HUMRGE/M10098_5_at | 197 | 55.7792 | 64.5906 | 4.7 | 438.9 |
+| AFFX-HUMRGE/M10098_M_at | 197 | 46.2736 | 72.005 | 4 | 477.8 |
+| AFFX-HUMRGE/M10098_3_at | 197 | 107.791 | 130.268 | 13.4 | 637.7 |
+| AFFX-HUMGAPDH/M33197_5_at | 197 | 16617.4 | 7261 | 3422.9 | 42109.1 |
+| AFFX-HUMGAPDH/M33197_M_at | 197 | 20539.2 | 8323.07 | 5854.5 | 44655.9 |
+| AFFX-HUMGAPDH/M33197_3_at | 197 | 22649.3 | 8344.49 | 6310.3 | 54411.6 |
+| AFFX-HSAC07/X00351_5_at | 197 | 19707 | 6203.27 | 6190.2 | 45429.7 |
+| AFFX-HSAC07/X00351_M_at | 197 | 31661.6 | 9069.87 | 11798 | 63324.8 |
+| AFFX-HSAC07/X00351_3_at | 197 | 33293.6 | 9187.87 | 15278.3 | 61433.6 |
+| AFFX-HUMTFRR/M11507_5_at | 197 | 181.503 | 102.446 | 15.9 | 942.4 |
+| AFFX-HUMTFRR/M11507_M_at | 197 | 106.389 | 85.9552 | 9.6 | 793.2 |
+| AFFX-HUMTFRR/M11507_3_at | 197 | 361.435 | 320.515 | 28.9 | 3561.5 |
+| AFFX-M27830_5_at | 197 | 187.5 | 158.185 | 9.1 | 1171 |
+| AFFX-M27830_M_at | 197 | 720.327 | 788.104 | 64.6 | 5428.4 |
+| AFFX-M27830_3_at | 197 | 292.455 | 147.183 | 91.6 | 1167 |
+| AFFX-HSAC07/X00351_3_st | 197 | 1303.65 | 747.224 | 232.8 | 4554.3 |
+| AFFX-HUMGAPDH/M33197_5_st | 197 | 131.529 | 135.501 | 10.3 | 730.8 |
+| AFFX-HUMGAPDH/M33197_M_st | 197 | 363.449 | 178.173 | 51.2 | 899.2 |
 
-(12,540 more rows not shown)
+(12,565 more rows not shown)
 
 </details>
 
@@ -432,6 +479,11 @@ Default splits.
 | CancerType | 2 | squamous cell carcinoma | 21 | 10.66 |
 | CancerType | 3 | pulmonary carcinoid | 20 | 10.15 |
 | CancerType | 4 | normal lung | 17 | 8.63 |
+| patient | 1 | 268 | 2 | 1.02 |
+| patient | 2 | 043 | 1 | 0.51 |
+| patient | 3 | 114 | 1 | 0.51 |
+| patient | 4 | 111 | 1 | 0.51 |
+| patient | 5 | 118 | 1 | 0.51 |
 
 ## Build
 
@@ -444,4 +496,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:05ca38597f7d4737d92bd236bedf7e08aeaace55017e6cdec10cd24503ae8d30` |
+| stale | yes: the definition now gives checksum `v2:6f336f6d65cae2421ab5c46da5e2a71a6c8e32af7bac191f8579ca28209001f6` |

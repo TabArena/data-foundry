@@ -1,5 +1,18 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10, lung_cancer rebuilt from the study's arrays in GEO (Andrej; no container built)
+
+- lung_cancer (BeyondArena v0.2 review page, issue 1, D): the source is GEO GSE83227, the study's deposit of its
+  254 arrays, instead of the PNAS Dataset A, which averaged all arrays of each adenocarcinoma patient (47 rows, that
+  class only) and kept each array's overall intensity in its MAS4 values, so its spike-in control probes separated
+  the classes (ROC AUC 0.85). The definition downloads the series matrix and each array's MAS5 file and keeps one
+  array per specimen (a patient's tumour or its normal lung; the first piece and first hybridisation): 197
+  specimens, 196 patients, all 12,625 probe sets, split grouped by `patient` (patient 268 has an adenocarcinoma and
+  a normal lung). Spike-ins then reach 0.57, the scan date 0.58; logistic regression log loss 0.123 (0.141 on
+  Dataset A). `dataset check` passes (one info, `groups_not_clustered`). Record: CC and Assessment lines,
+  `required_split` Grouped, `source_links`, `checked_by`. LEAK-15 and LEAK-39 list it as repaired (was kept with a
+  note), PROV-13 as a case. Evidence in `~/claude_jobs/lung_raw/`.
+
 ## 2026-11-10, PR #58: south_africa_coronary_heart_disease retired (Andrej, review page; no container built)
 
 - Andrej's marks of 2026-11-10 on the BeyondArena v0.2 review page: retired (`No (Retired)`,
