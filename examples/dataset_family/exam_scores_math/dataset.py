@@ -38,6 +38,3 @@ class ExamScoresMath(ExamScores):
             has not seen.
         """,
     )
-
-    def _clean(self, raw):
-        return super()._clean(raw).drop(columns=["reading_score"])  # the other outcome

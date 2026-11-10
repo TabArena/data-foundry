@@ -84,6 +84,7 @@ from data_foundry.schema import (
     MetricSpec,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadataV2,
+    RawFile,
     RowBudget,
     ScoringColumn,
     Source,
@@ -308,6 +309,31 @@ class DataSummary:
         return {name: clean_text(getattr(self, name)) or "" for name in ("data", "row", "goals", "limits")}
 
 
+NON_FEATURE_REASONS = ("outcome", "provenance", "identifier", "other")
+"""Why a column is kept but never a feature (:class:`NonFeature`)."""
+
+
+@dataclass(frozen=True)
+class NonFeature:
+    """A column a definition keeps in its frame but no task may use as a feature, with the reason.
+
+    A parent declares them in ``non_features``; its children inherit the declarations, and every task drops the
+    declared columns after ``_clean`` unless it gives one a role (its target, its group key, a scoring or weight
+    column). A child may extend the declarations, never remove one.
+
+    Attributes:
+        column: The column of the frame.
+        reason: ``"outcome"`` (a result measured with or after the target: a sibling target), ``"provenance"`` (where
+            the row comes from: a file, a row number, an id; :func:`~data_foundry.v2.preprocessing.provenance_columns`),
+            ``"identifier"`` (a key with no meaning as an input, sequential ids among them) or ``"other"``.
+        description: What the column is and why it is no feature; required for ``"other"``.
+    """
+
+    column: str
+    reason: str
+    description: str = ""
+
+
 @dataclass
 class CurationResult:
     """The outcome of :meth:`AbstractCuratedDataset.check` or :meth:`AbstractCuratedDataset.build`.
@@ -353,6 +379,7 @@ class ParentCheckResult:
         data_checksum: :func:`data_checksum` of the frame.
         findings: The definition findings (markers, nondeterminism, summary, a parent without children).
         children: The ``unique_name`` of each definition that derives from it directly, found next to it.
+        raw_files: The raw-file manifest of its sources (:meth:`AbstractCuratedDataset.raw_manifest`).
         created_at: When the result was produced (UTC).
     """
 
@@ -361,6 +388,7 @@ class ParentCheckResult:
     data_checksum: str
     findings: list[CheckResult] = field(default_factory=list)
     children: list[str] = field(default_factory=list)
+    raw_files: list[RawFile] = field(default_factory=list)
     created_at: dt.datetime = field(default_factory=lambda: dt.datetime.now(dt.timezone.utc))
 
     @property
@@ -390,6 +418,10 @@ class AbstractCuratedDataset(ABC):
     a ``target``), inherited by its children."""
 
     # --- family -------------------------------------------------------------------------------------
+    non_features: ClassVar[tuple[NonFeature, ...]] = ()
+    """Columns kept in the frame that no task may use as a feature (:class:`NonFeature`): the outcomes a task does not
+    predict, provenance, identifiers. Inherited; every task drops them after ``_clean`` unless it gives one a role (its
+    target, group key, scoring or weight column)."""
     derivation: ClassVar[str | None] = None
     """For a child (a class derived from another definition, ``class Math(import_definition("exam_scores"))``): how it
     differs from its parent, in one or two sentences (another target, split or preprocessing). Required on a child,
@@ -701,6 +733,7 @@ class AbstractCuratedDataset(ABC):
         with _copy_on_write():
             cleaned = self._clean(_copy(self.raw))
             df, test = cleaned if isinstance(cleaned, tuple) else (cleaned, None)
+            df, test = self._drop_non_features(df, test)
             self._check_declared_columns(df)
             df = self._standardize(df)
             if test is not None:
@@ -757,11 +790,52 @@ class AbstractCuratedDataset(ABC):
                 df = df.reset_index(drop=True)
             if not len(rows) or np.isnan(rows).any() or rows.min() < 0 or rows.max() >= n:
                 return None
+            df, test = self._drop_non_features(df, test)
             self._check_declared_columns(df)
             df, positions = self._standardize(df, positions=True)
             if test is not None:
                 test = _categories_like(self._standardize(test, order=False), df)
         return df, test, rows.astype(np.int64)[positions]
+
+    def _drop_non_features(
+        self, df: pd.DataFrame, test: pd.DataFrame | None
+    ) -> tuple[pd.DataFrame, pd.DataFrame | None]:
+        """Check the columns this class declares as non-features, count the rows per raw file, and for a task drop
+        every declared non-feature it gives no role (:attr:`non_features`).
+        """
+        own = vars(type(self)).get("non_features", ())
+        inherited = {nf.column for k in type(self).__mro__[1:] for nf in vars(k).get("non_features", ())}
+        missing = [nf.column for nf in own if nf.column not in inherited and nf.column not in df.columns]
+        if missing:
+            msg = f"{type(self).__name__}: `non_features` names {missing}, which `_clean` does not return."
+            raise DatasetDefinitionError(msg)
+        if "source_file" in df.columns:  # the rows each raw file gave, for the manifest
+            self._rows_per_file = {str(k): int(v) for k, v in df["source_file"].value_counts(sort=False).items()}
+        if not self.is_task:
+            return df, test
+        roles = self._column_roles()
+        dropped = [nf for nf in self.non_features if nf.column in df.columns and nf.column not in roles]
+        self._dropped_non_features = dropped
+        columns = [nf.column for nf in dropped]
+        if test is not None:
+            test = test.drop(columns=[c for c in columns if c in test.columns])
+        return df.drop(columns=columns), test
+
+    @property
+    def dropped_non_features(self) -> list[NonFeature]:
+        """The declared non-features the last run of :meth:`process` dropped (a task's; a parent drops none)."""
+        return list(getattr(self, "_dropped_non_features", ()))
+
+    def _column_roles(self) -> set[str]:
+        """The columns a task uses other than as features: target, split keys, scoring and weight columns."""
+        task = self.task_metadata
+        roles = {task.target_column_name, *as_column_list(task.group_on), *as_column_list(task.group_time_on)}
+        roles |= {task.time_on} - {None}
+        roles |= {c.column for c in task.scoring_columns}
+        roles |= {task.sample_weight} - {None}
+        if task.unit_weight is not None:
+            roles |= {task.unit_weight.column, task.unit_weight.unit}
+        return roles
 
     def _check_declared_columns(self, df: pd.DataFrame) -> None:
         """Fail with the attribute's name when a declared column is missing, or a split key has missing values."""
@@ -804,12 +878,18 @@ class AbstractCuratedDataset(ABC):
         if order:  # the full cleaned frame, before its dtypes are cast; the README lists these types
             self._applied_feature_types = types
         present = set(df.columns)
+        # a name that is not in the frame is a misspelling and fails the cast; the non-features a task dropped are not
+        dropped = {nf.column for nf in getattr(self, "_dropped_non_features", ())} - present
+
+        def keep(c: str) -> bool:
+            return c in present or (order and c not in dropped)
+
         df = cast_dtypes(
             df,
-            categorical=[c for c in types.categorical if c in present or order],
-            ordinal={c: levels for c, levels in types.ordinal.items() if c in present or order},
-            string=[c for c in (*types.string, *self._special_columns(df, "string")) if c in present or order],
-            datetime={c: f for c, f in types.datetime_formats.items() if c in present or order},
+            categorical=[c for c in types.categorical if keep(c)],
+            ordinal={c: levels for c, levels in types.ordinal.items() if keep(c)},
+            string=[c for c in (*types.string, *self._special_columns(df, "string")) if keep(c)],
+            datetime={c: f for c, f in types.datetime_formats.items() if keep(c)},
         )
         df = canonical_nans(canonical_dtypes(df))
         if not order:
@@ -1101,10 +1181,12 @@ class AbstractCuratedDataset(ABC):
             time_gap_unit=gap_unit,
             row_budget=self.row_budget,
         )
+        manifest = self.raw_manifest(getattr(self, "_rows_per_file", None))
+        metadata = dataclasses.replace(self.dataset_metadata, raw_files=manifest) if manifest else self.dataset_metadata
         with _quiet():
             return CuratedContainer(
                 dataset=plan.df,
-                dataset_metadata=self.dataset_metadata,
+                dataset_metadata=metadata,
                 task_metadata=self.task_metadata_for(plan.df),
                 experiment_metadata=splits_metadata,
                 test_dataset=test,
@@ -1159,7 +1241,8 @@ class AbstractCuratedDataset(ABC):
         with _copy_on_write():
             frame, _ = self.process()
         children = family_children(type(self))
-        findings = self._definition_checks()
+        manifest = self.raw_manifest(getattr(self, "_rows_per_file", None))
+        findings = self._definition_checks() + self._raw_file_findings(manifest)
         if not children:
             findings.append(
                 CheckResult(
@@ -1176,6 +1259,7 @@ class AbstractCuratedDataset(ABC):
             data_checksum=data_checksum(frame),
             findings=sorted(findings, key=lambda r: SEVERITY_ORDER[r.severity]),
             children=children,
+            raw_files=manifest,
         )
         if verbose:
             print(
@@ -1251,6 +1335,7 @@ class AbstractCuratedDataset(ABC):
             ("group", lambda: group_checks.group_findings(container, group_stats)),
             ("task", lambda: task_checks.task_findings(container)),
             ("extra", lambda: self._extra_checks(container)),
+            ("raw files", lambda: self._raw_file_findings(container.dataset_metadata.raw_files)),
         ):
             try:
                 own += run()
@@ -1392,6 +1477,82 @@ class AbstractCuratedDataset(ABC):
             )
         return findings
 
+    def raw_manifest(self, rows_per_file: dict[str, int] | None = None) -> list[RawFile]:
+        """The raw files the sources name (``Source(files=...)``, globs under :attr:`raw_dir`), with their hashes.
+
+        Hashes are cached in :data:`RAW_MANIFEST_CACHE` in the raw folder, by size and modification time, so a large
+        file is read once. ``rows_per_file`` gives each file's rows (from the ``source_file`` column). A pattern that
+        matches no file is reported by the checks (``raw_files_missing``).
+        """
+        raw_dir = self.raw_dir
+        cache_path = raw_dir / RAW_MANIFEST_CACHE
+        try:
+            cache = json.loads(cache_path.read_text()) if cache_path.is_file() else {}
+        except (OSError, ValueError):
+            cache = {}
+        manifest: dict[str, RawFile] = {}
+        unmatched = []
+        for source in getattr(self, "sources", ()):
+            for pattern in source.files:
+                paths = sorted(p for p in raw_dir.glob(pattern) if p.is_file() and not p.name.startswith("."))
+                if not paths:
+                    unmatched.append(pattern)
+                for path in paths:
+                    rel = path.relative_to(raw_dir).as_posix()
+                    if rel in manifest:
+                        continue
+                    stat = path.stat()
+                    entry = cache.get(rel, {})
+                    if entry.get("size") != stat.st_size or entry.get("mtime_ns") != stat.st_mtime_ns:
+                        entry = {"size": stat.st_size, "mtime_ns": stat.st_mtime_ns, "sha256": _sha256(path)}
+                        cache[rel] = entry
+                    rows = (rows_per_file or {}).get(rel)
+                    manifest[rel] = RawFile(
+                        path=rel, sha256=entry["sha256"], size=stat.st_size, source=source.label(), rows=rows
+                    )
+        self._unmatched_raw_files = unmatched
+        if manifest:
+            with contextlib.suppress(OSError):  # a read-only warehouse hashes again next time
+                cache_path.write_text(json.dumps(cache, indent=1, sort_keys=True))
+        return list(manifest.values())
+
+    def _raw_file_findings(self, manifest: list[RawFile]) -> list[CheckResult]:
+        """A source's file pattern that matches nothing, and raw files changed since the README was written."""
+        from data_foundry.v2.report import read_report  # noqa: PLC0415 - report imports this module
+
+        findings = []
+        unmatched = getattr(self, "_unmatched_raw_files", [])
+        if unmatched:
+            findings.append(
+                CheckResult(
+                    "raw_files_missing",
+                    "error",
+                    f"`Source(files=...)` names {unmatched}, which match no file under {self.raw_dir}.",
+                    hint="Download the files (`download_description`), or fix the pattern.",
+                ),
+            )
+        before = read_report(self.report_path).get("raw_files") if self.report_path is not None else None
+        if before:
+            now = {f.path: f.sha256 for f in manifest}
+            changed = sorted(p for p in now if p in before and before[p] != now[p])
+            added, removed = sorted(set(now) - set(before)), sorted(set(before) - set(now))
+            if changed or added or removed:
+                parts = [
+                    f"{label}: {paths[:10]}"
+                    for label, paths in (("changed", changed), ("new", added), ("gone", removed))
+                    if paths
+                ]
+                findings.append(
+                    CheckResult(
+                        "raw_files_changed",
+                        "warning",
+                        f"The raw files differ from those {REPORT_FILENAME} was written from; {'; '.join(parts)}.",
+                        hint="A source may have published a new version: check what changed before writing the "
+                        "README again.",
+                    ),
+                )
+        return findings
+
     def _write_report(self, result: CurationResult) -> Path:
         from data_foundry.v2.report import write_report  # noqa: PLC0415 - report imports this module
 
@@ -1482,6 +1643,18 @@ def nondeterministic_calls(tree: ast.AST) -> list[tuple[int, str]]:  # noqa: C90
         elif (owner == "random" and name in _STDLIB_RANDOM) or (owner == "uuid" and name in ("uuid1", "uuid4")):
             found.append((node.lineno, f"unseeded `{owner}.{name}`"))
     return sorted(found)
+
+
+RAW_MANIFEST_CACHE = ".raw_manifest.json"
+"""The file in a raw folder that caches the hashes of its raw files, by size and modification time."""
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as f:
+        for block in iter(lambda: f.read(1 << 20), b""):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 PREPARED_MARKER = ".prepared_raw_files.json"
@@ -1919,6 +2092,7 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             "with its source."
         )
     _validate_summary(cls, fail)
+    _validate_non_features(cls, fail)
     _validate_family(cls, parent, fail)
     file = definition_file(cls)
     if file is not None and file.name == DEFINITION_FILENAME and file.parent.name != cls.unique_name:
@@ -2004,6 +2178,31 @@ def _validate_summary(cls: type[AbstractCuratedDataset], fail: Any) -> None:
     empty = [name for name, text in summary.fields().items() if name != "limits" and not text]
     if empty:
         fail(f"`DataSummary` needs text in: {', '.join(empty)}.")
+
+
+def _validate_non_features(cls: type[AbstractCuratedDataset], fail: Any) -> None:
+    """Valid :class:`NonFeature` declarations, each column once, and a child that keeps every inherited one."""
+    declared = cls.non_features
+    if not isinstance(declared, tuple) or not all(isinstance(nf, NonFeature) for nf in declared):
+        fail("`non_features` must be a tuple of `NonFeature(column, reason, description)`.")
+    other = [nf.column for nf in declared if nf.reason not in NON_FEATURE_REASONS]
+    if other:
+        fail(f"`NonFeature(reason=...)` is one of {', '.join(NON_FEATURE_REASONS)}; {other} have another.")
+    columns = [nf.column for nf in declared]
+    twice = sorted({c for c in columns if columns.count(c) > 1})
+    if twice:
+        fail(f"`non_features` declares {twice} twice.")
+    undescribed = [nf.column for nf in declared if nf.reason == "other" and not nf.description.strip()]
+    if undescribed:
+        fail(f"a `NonFeature(reason='other')` says why in its `description`: {undescribed}.")
+    if "non_features" in vars(cls):
+        base = next((k for k in cls.__mro__[1:] if "non_features" in vars(k)), None)
+        left_out = [nf.column for nf in getattr(base, "non_features", ()) if nf.column not in set(columns)]
+        if left_out:
+            fail(
+                f"a child keeps every non-feature it inherits and may add more (`non_features = "
+                f"(*{base.__name__}.non_features, NonFeature(...))`); it leaves out {left_out}."
+            )
 
 
 def _validate_family(cls: type[AbstractCuratedDataset], parent: type | None, fail: Any) -> None:  # noqa: C901

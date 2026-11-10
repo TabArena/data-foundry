@@ -464,6 +464,27 @@ class Source:
 
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class RawFile:
+    """One raw file a dataset is built from, listed in its metadata (``raw_files``) when a source names its files.
+
+    Together with the definition's code (the build's git commit), the hashes pin what a container was built from:
+    a changed file changes the container's checksum.
+    """
+
+    path: str
+    """Its path under the raw folder, e.g. ``"Ashford.csv"``."""
+    sha256: str
+    """The SHA-256 of its bytes."""
+    size: int
+    """Its size in bytes."""
+    source: str
+    """The source it comes from (:meth:`Source.label`)."""
+    rows: int | None = None
+    """How many rows of the frame it gave, counted on the ``source_file`` column before the split step (None
+    without one)."""
+
+
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
 class DatasetMetadata:
     """Schema for metadata about a dataset (format 1, the v1 notebooks and BeyondArena).
 
@@ -688,6 +709,8 @@ class DatasetMetadataV2:
     """The ``unique_name`` of the definition this one derives from (its parent in a family), else None."""
     derivation: MultilineStr | None = None
     """How this dataset differs from :attr:`derived_from`; set exactly when it is."""
+    raw_files: list[RawFile] = pydantic.Field(default_factory=list)
+    """The raw files its sources name (``Source(files=...)``), with their hashes; empty when none names any."""
 
     type_adapter_id: str = "dataset-mold-v2"
     """Identifier for name of the type adapter used to serialize/deserialize."""
