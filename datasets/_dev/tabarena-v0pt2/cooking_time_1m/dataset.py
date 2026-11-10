@@ -40,7 +40,8 @@ class CookingTime1m(AbstractCuratedDataset):
         ),
         split=(
             "Each test window is one of the last three weeks (14 December 2023 to 3 January 2024), up to 500,000 "
-            "orders each; training is a random million of all earlier orders, as for a model refit every week."
+            "orders each; training is every earlier order, of which a benchmark fits on a random million, as for a "
+            "model refit every week."
         ),
         fit="direct",
         fit_reason=(
@@ -82,7 +83,7 @@ class CookingTime1m(AbstractCuratedDataset):
         - Potential leak, kept on purpose: TabReD releases the 186 numeric features only after a quantile transform to a normal distribution (all within ±5.1993, the clip of scikit-learn's QuantileTransformer; 155 reach it); which rows it was fit on is not documented, and the raw features are not published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if the TabReD authors say the fit used all rows.
         - We drop orders with a cooking time under one minute (168 of 12.8M, 26 of them zero or negative), as TabReD's preprocessing does.
         - The target is the natural log of the minutes, as in TabReD (the column keeps its name). TabReD's reason: the times are right-skewed, and squared error on the log is close to absolute error on the minutes, the error that matters for the task.
-        - The row budget: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+        - The row budget: Each test window keeps at most 500k of its rows, drawn at random within the window (v2 split protocol), and each train side holds every earlier order outside the one-day gap; the container keeps every row a split uses. The container records the 1M train budget, and a benchmark sub-samples each train side to 1M rows before a fit (`subsample_train`; by default a random 1M of the newest year before the window). The orders start on 15 November 2023, so the newest year is all of the history and the default is a random 1M of all earlier orders, as in TabReD: a random sample keeps data from all periods of the history.
     """
 
     # Task
@@ -100,7 +101,7 @@ class CookingTime1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We use each of the last 3 weeks as a test window (newest first) and the orders placed at least one day before it as train data. The gap of one day is part of the task: a cooking time is known only when the order is cooked (up to 2 hours after it is placed), so at a weekly refit the last orders before it have no label yet; without the gap 172, 126 and 108 train orders per window (start + cooking time) would end after the window start, with it none. The gap removes 280k, 264k and 239k of the 11.1M, 9.1M and 7.2M earlier orders (2.5 to 3.3%). Each window keeps at most 500k of its rows (1.7M to 2.0M before sampling); each train side is a random 1M of the eligible earlier rows (one random order for all windows).
+        We use each of the last 3 weeks as a test window (newest first) and the orders placed at least one day before it as train data. The gap of one day is part of the task: a cooking time is known only when the order is cooked (up to 2 hours after it is placed), so at a weekly refit the last orders before it have no label yet; without the gap 172, 126 and 108 train orders per window (start + cooking time) would end after the window start, with it none. The gap removes 280k, 264k and 239k of the 11.1M, 9.1M and 7.2M earlier orders (2.5 to 3.3%). Each window keeps at most 500k of its rows (1.7M to 2.0M before sampling); each train side holds every eligible earlier row, and a benchmark sub-samples it to 1M rows, by default a random 1M of the newest year before the window, here all of the history (`subsample_train`).
     """
     temporal = Temporal(
         on="timestamp",

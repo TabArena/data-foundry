@@ -40,8 +40,9 @@ class ClimateModelWeatherForecasting1m(AbstractCuratedDataset):
             "cloud, precipitation); and the station's climate averages of temperature and pressure."
         ),
         split=(
-            "Each of the last three weeks of July 2023 is a test window; training is a random million of all earlier "
-            "measurements, as for a model refit every week."
+            "Each of the last three weeks of July 2023 is a test window, as for a model refit every week; training is "
+            "every earlier measurement, of which a benchmark fits on a random million of the newest year (almost all "
+            "of the history)."
         ),
         changes=(
             "We test on one-week windows instead of TabReD's one month, which the curator judged long for weather."
@@ -86,7 +87,7 @@ class ClimateModelWeatherForecasting1m(AbstractCuratedDataset):
         - Note: TabReD states no unit for the target ("the true temperature"). Its values, mostly whole numbers with median 27, fit degrees Celsius, the unit of Shifts.
         - We drop duplicated columns `cmc_0_1_66_0` , `cmc_0_1_67_0`, `cmc_0_1_68_0`, and `cmc_0_1_11_0`, which is like them 0.0 or missing in every row.
         - We set -9999 to missing in `gfs_soil_temperature` (31% of rows), `cmc_0_0_0_2_grad` (1.9%) and `gfs_temperature_sea_grad` (0.3%): it is a fill value, as the other values of these columns lie between about -21 and 52, and every row with -9999 in `gfs_temperature_sea_grad` also has it in `gfs_soil_temperature`.
-        - The row budget: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+        - The row budget: Each test window keeps at most 500k of its rows (v2 split protocol; all of them here, 341k to 396k), and each train side holds every earlier row, so the container holds every row. The container records the 1M train budget, and a benchmark sub-samples each train side to 1M rows before a fit (`subsample_train`; by default a random 1M of the newest year before the window). The data start in July 2022, so the newest year leaves out only part of July 2022 and the default is close to the random sub-sampling of TabReD, which keeps data from all periods of the history.
     """
 
     # Task
@@ -105,8 +106,9 @@ class ClimateModelWeatherForecasting1m(AbstractCuratedDataset):
     # Splits
     splits_comment = (
         "We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. Each "
-        "window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order "
-        "for all windows)."
+        "window keeps at most 500k of its rows (all of them here); each train side holds every earlier row, and a "
+        "benchmark sub-samples it to 1M rows, by default a random 1M of the newest year before the window "
+        "(`subsample_train`)."
     )
     temporal = Temporal(
         on="fact_time",

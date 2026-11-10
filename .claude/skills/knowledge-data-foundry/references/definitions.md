@@ -471,7 +471,7 @@ version (all found in the v0.2 copy, 2026-10-06):
 Keep the default: no split attributes. The base class runs the v2 split protocol (`src/data_foundry/v2/splits.py`):
 always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of the train side (`recommended_dimensions`),
 built by `iid_splits` / `grouped_splits` with the benchmark seed, on the full frame: Data Foundry caps no split unless
-the definition declares a `row_budget` (a sub-sampled version, below). The comment is "Default splits."; set
+the definition declares a `row_budget` (a `_1m` version, below). The comment is "Default splits."; set
 `splits_comment` only when there is something to say (a split that deliberately differs from the source's protocol,
 what a grouped test fold holds).
 
@@ -561,42 +561,55 @@ hotel_booking_demand). The training history the use case calls for is set in `_l
 
 ### Larger than the row budget: the `_1m` version
 
-Data Foundry sets no row budget: by default every split uses the full frame and no side is capped. A definition that
-should train and test on fewer rows declares the budget itself, `row_budget = RowBudget(train=..., test=...)` (from
-`data_foundry.v2`), which makes it a sub-sampled version. The container records the budget
-(`experiment_metadata.row_budget`, None without one), the README states it (`splits.row_budget`), and the split
-checks hold the container to it (`splits_train_over_budget` error, `splits_test_over_budget` warning).
+Data Foundry sets no row budget: by default every split uses the full frame and no side is capped. A benchmark's
+budget, `row_budget = RowBudget(train=N, test=M)` (from `data_foundry.v2`), works on the two sides differently
+(issue #70, Lennart 2026-11-10):
 
-TabArena v0.2 sub-samples to 1M train / 500k test rows (Lennart, 2026-10-21: at most 1M training rows). A v0.2
-dataset whose splits, without a budget, have a side over that ships only as a sub-sampled version, whatever the size
-of its frame (nyc_taxi_trip_duration: 1.45M rows, train sides of 1.28M to 1.39M), and `tests/test_v2_datasets.py`
-holds every v0.2 README to it. The version has its own folder and class, `<unique_name>_1m/dataset.py`, with
-`unique_name = "<name>_1m"` and `row_budget = RowBudget(train=1_000_000, test=500_000)`; `curation_comments` says
-why it is sub-sampled. It reads the raw files of `<name>`, its name without the budget suffix, and is saved under its
-own name. The name is `<name>_<suffix>`, the suffix from the train budget (`RowBudget.suffix`: `_1m`; `_10m` for
-`RowBudget(train=10_000_000, test=250_000)`, `_2p5m`, `_300k`), for larger versions in large-data experiments. The
-splits adapt to the budget:
+* **The test side is capped in the container.** Every split tests on at most M rows, drawn at random within its
+  window or fold (stratified, whole groups, or whole time values).
+* **The train side keeps every row available to it.** All history before a temporal window (minus the gap), or
+  every row of an IID or grouped fold outside its test side. N is recorded, not applied: a benchmark sub-samples each
+  train side to N rows before a fit, with `subsample_train(container, repeat, fold)` (from `data_foundry.v2`) or a
+  sampler of its own that keeps the constraints the container records (`experiment_metadata.train_sampling`: what to
+  keep whole, the stratum). A model can so see more history or bring its own sub-sampling, and the sampling can be
+  studied.
+* **The default sampler** (`sample_train_positions`): for temporal data on a datetime time column, a random N of the
+  newest year before the window (the newest N rows when that year holds fewer); for an ordinal time (eras), a random N
+  of all earlier rows; whole groups at random for a grouped task; random rows, stratified, for an IID one. The study
+  behind it (issue #70): the newest N rows lose seasons and weekdays on dense data and changed the model ranking twice,
+  a random N of all history dilutes recent data on long histories, and a random sample of the newest year never lost
+  much and changed no ranking.
 
-* IID or grouped data: a frame above `train + test` rows is sub-sampled to it before splitting (`subsample_frame`:
-  rows stratified on the target, or whole groups). The usual 3-fold splits are built, then each fold tests on up to
-  `test` rows of its third and trains on every other row, at most `train` (`fit_splits_to_budget`; a grouped fold
-  up to whole groups). At 1M / 500k that is plain 3-fold cross-validation on 1.5M rows; at 10M / 250k each fold
-  trains on 10M and tests on 250k rows of a 10.25M-row frame. A test budget above half the train budget is not
-  reached (a fold tests on at most its third). A version whose budget changes nothing (the frame fits and no side is
-  over) is an error: take the dataset fully.
-* Temporal data: the frame is not sampled. The windows (at least 3) are built on the full data, then
-  `sample_temporal_splits` keeps at most `test` rows of each test window and a random `train` of all earlier rows
-  for each train side, drawn in one random order so the train sides overlap; the frame keeps only the rows a split
-  uses. A temporal version whose windows all fit is an error. When the rows of one time value form a cross-section
-  the target or the features are relative to (the 14 coins of a minute), `TemporalSplits(..., sample_by="time")`
-  draws whole time values instead of rows: one random order of the values, each side taking whole values while it
-  stays within its budget (the value that would cross it is dropped), without stratification
-  (g_research_crypto_forecasting_1m; Lennart, 2026-10-22). Random rows would leave about one coin per minute.
-  `sample_by` without a `row_budget` is an error.
+The container records the budget (`experiment_metadata.row_budget`) and the sampling
+(`experiment_metadata.train_sampling`); the README states both (`splits.row_budget`, `splits.train_sampling`). The
+split checks warn on a test side over M (`splits_test_over_budget`) and fail a budget without its sampling
+(`splits_train_sampling_missing`).
 
-The rows a version's sampled test sides leave out are never tested; the coverage check (`splits_rows_never_tested`)
-does not flag them when the container records a budget. A dataset that sets `splits_comment` itself states the
-sub-sampling there.
+TabArena v0.2 uses 1M train / 500k test rows (Lennart, 2026-10-21: at most 1M training rows). A v0.2 dataset whose
+splits, without a budget, have a side over that ships as a version that declares the budget, whatever the size of its
+frame (nyc_taxi_trip_duration: 1.45M rows, train sides of 1.28M to 1.39M), and `tests/test_v2_datasets.py` holds every
+v0.2 README to it. The version has its own folder and class, `<unique_name>_1m/dataset.py`, with
+`unique_name = "<name>_1m"` and `row_budget = RowBudget(train=1_000_000, test=500_000)`; `curation_comments` says why
+it carries a budget. It reads the raw files of `<name>`, its name without the budget suffix, and is saved under its own
+name. The suffix marks the benchmark's N that the container records (`RowBudget.suffix`: `_1m`; `_10m` for
+`RowBudget(train=10_000_000, test=250_000)`, `_2p5m`, `_300k`). The splits adapt to the budget:
+
+* IID or grouped data: the full frame is split into the usual 3 folds; each fold tests on up to `test` rows of its
+  third (stratified, or whole groups) and trains on every other row (`fit_splits_to_budget`). A test budget above
+  a third of the frame changes nothing.
+* Temporal data: the windows (at least 3) are built on the full data, then `sample_temporal_splits` keeps at most
+  `test` rows of each test window; every train side keeps all earlier rows, and the frame drops only the newest
+  window's unsampled rows. When the rows of one time value form a cross-section the target or the features are
+  relative to (the 14 coins of a minute), `TemporalSplits(..., sample_by="time")` draws whole time values instead of
+  rows: one random order of the values, each test side taking whole values while it stays within its budget (the
+  value that would cross it is dropped), without stratification (g_research_crypto_forecasting_1m; Lennart,
+  2026-10-22). Random rows would leave about one coin per minute. The default train sampler then draws whole time
+  values too. `sample_by` without a `row_budget` is an error.
+
+A version whose budget changes nothing (no test side over `test` and no train side over `train`) is an error: take the
+dataset fully. The rows a version's sampled test sides leave out are never tested; the coverage check
+(`splits_rows_never_tested`) does not flag them when the container records a budget. A dataset that sets
+`splits_comment` itself states the test sampling and the train budget there.
 
 ## Families: one parent, several tasks
 
@@ -924,7 +937,7 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
 | Grouped | `airfoil_self_noise/dataset.py`, `early_learning_predictors/dataset.py`, `musk/dataset.py`, `emscad/dataset.py` | `Grouping` with a `definition` citing the source (airfoil: a setup built from two columns, with the source's prediction use quoted; musk: one prediction per molecule, `aggregation="any"`), rule-based leak drops in `_clean`, long feature lists (early_learning), a group id built from the data and an accepted group finding (emscad). |
 | Temporal | `kick/dataset.py` | `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)`, a datetime in `_feature_types`, and `_decisions` with a table and a figure. |
 | Temporal with late labels | `brazilian_ecommerce/dataset.py`, `sf_permit_time/dataset.py` | `_make_splits` training on rows whose label had arrived, with the gap on `Temporal`. |
-| Sub-sampled `_1m` | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | `row_budget = RowBudget(train=1_000_000, test=500_000)` with the name `<name>_1m`, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
+| A `_1m` version (row budget) | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | `row_budget = RowBudget(train=1_000_000, test=500_000)` with the name `<name>_1m`, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
 | Heavy raw data | `acquire_valued_shoppers_challenge/dataset.py` | `prepared_raw_files` + `_prepare_raw_files` (a polars join run once), fixed calendar windows. |
 
 ## What the benchmark harness does with a definition

@@ -17,9 +17,11 @@ and **grouped** (generalise to unseen entities such as patients or customers).
 > **Large datasets are a priority.** Real tasks with roughly 1M–10M usable training rows are rare in public
 > benchmarks, and most of them are non-IID. Candidates of that size carry the tag **`Review Prio 1 (Atlas)`** in
 > the curation log (the tag comes from the earlier Atlas plan for a large-data collection, now folded into
-> TabArena v0.2); pick from them first (section 7). Data Foundry itself sets no row budget; TabArena v0.2
-> sub-samples to 1M train / 500k test rows: a dataset whose splits have a side over that ships as a `<name>_1m`
-> version with `row_budget = RowBudget(train=1_000_000, test=500_000)`, and the container records that budget.
+> TabArena v0.2); pick from them first (section 7). Data Foundry itself sets no row budget; TabArena v0.2 tests on
+> at most 500k rows per split and trains on at most 1M: a dataset whose splits have a side over that ships as a
+> `<name>_1m` version with `row_budget = RowBudget(train=1_000_000, test=500_000)`. Its container caps each test
+> side at 500k rows and keeps every training row; the benchmark draws the 1M it fits on (a random sample of the
+> newest year of a temporal side, by default).
 
 The selection criteria (unique source, a real predictive task, no irreversible leakage, ethically unambiguous, not
 trivial) are the same for every dataset; the [**📖 Guidelines**](https://tabarena.github.io/data-foundry/guidelines.html)
@@ -172,7 +174,7 @@ the split, and judge whether the result is a sound benchmark task. Then run `/ad
 folder for the verification and the review panel, and open the PR; a curator builds the container after review.
 
 **Learn from the definitions in this folder.** The Data Foundry knowledge names a reference definition for each
-regime (IID, grouped, temporal, late labels, a sub-sampled `_1m` version, heavy raw data) in
+regime (IID, grouped, temporal, late labels, a `_1m` version with a row budget, heavy raw data) in
 [`definitions.md`](../../../.claude/skills/knowledge-data-foundry/references/definitions.md), "Reference
 definitions"; read the closest one in full before you write your own.
 

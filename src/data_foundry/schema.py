@@ -1156,17 +1156,25 @@ def rows_text(n: int) -> str:
 
 @pydantic.dataclasses.dataclass(frozen=True, config=pydantic.ConfigDict(extra="forbid"))
 class RowBudget:
-    """The most rows any outer split trains and tests on, for data sub-sampled to a budget.
+    """A benchmark's row budget for data larger than it: the most rows a split tests on, and the most it trains on.
 
     Data Foundry sets no budget by default: the splits use the full frame. A v2 definition that declares one
-    (``row_budget = RowBudget(train=..., test=...)``) is a sub-sampled version named after its train budget
-    (:attr:`suffix`), and the container records the budget in
-    :attr:`PredictiveMLSplitsMetadata.row_budget`. TabArena v0.2 sub-samples its larger datasets to
-    ``RowBudget(train=1_000_000, test=500_000)`` (its ``_1m`` versions).
+    (``row_budget = RowBudget(train=..., test=...)``) is a version named after its train budget (:attr:`suffix`), and
+    the container records the budget in :attr:`PredictiveMLSplitsMetadata.row_budget`. The two caps work
+    differently:
+
+    * ``test`` is applied in the container: every split's test side keeps at most this many rows, drawn at random
+      within its window or fold;
+    * ``train`` is recorded, not applied: every train side keeps all the rows available to it (all history before a
+      window), and a benchmark sub-samples it to ``train`` rows before a fit, with
+      :func:`data_foundry.v2.splits.subsample_train` (the default) or a sampler of its own that keeps
+      :attr:`PredictiveMLSplitsMetadata.train_sampling`.
+
+    TabArena v0.2 uses ``RowBudget(train=1_000_000, test=500_000)`` (its ``_1m`` versions).
 
     Attributes:
-        train: No split trains on more rows than this.
-        test: No split tests on more rows than this.
+        train: A benchmark trains every split on at most this many rows (N).
+        test: No split tests on more rows than this (M).
     """
 
     train: pydantic.PositiveInt
@@ -1181,8 +1189,35 @@ class RowBudget:
         return rows_text(self.train).lower().replace(".", "p")
 
     def describe(self) -> str:
-        """``"at most 1M train / 500k test rows per split"``."""
-        return f"at most {rows_text(self.train)} train / {rows_text(self.test)} test rows per split"
+        """``"at most 500k test rows per split; a benchmark trains on at most 1M"``."""
+        return (
+            f"at most {rows_text(self.test)} test rows per split; a benchmark trains on at most {rows_text(self.train)}"
+        )
+
+
+SamplingUnit = Literal["rows", "groups", "time_values"]
+"""What a sampler of a train side keeps whole: single rows, whole groups (a grouped task) or whole values of the time
+column (``TemporalSplits(sample_by="time")``)."""
+
+
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class TrainSampling:
+    """How a benchmark sub-samples a split's train side to the train budget (``row_budget.train``) before a fit.
+
+    Recorded with a :class:`RowBudget`. A benchmark reads it to enable only the samplers that keep its constraints,
+    and uses :func:`data_foundry.v2.splits.subsample_train` as the default.
+
+    Attributes:
+        default: The default sampler: ``"newest_year"`` (a temporal task on a datetime time column: a random sample of
+            the newest year of the train side, or its newest rows when that year holds fewer than the budget) or
+            ``"random"`` (a random sample of the train side).
+        unit: What any sampler keeps whole (:data:`SamplingUnit`).
+        stratify_on: The column the default sampler stratifies on, or None.
+    """
+
+    default: Literal["newest_year", "random"]
+    unit: SamplingUnit
+    stratify_on: str | None = None
 
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
@@ -1251,14 +1286,23 @@ class PredictiveMLSplitsMetadata:
     (a label known minutes after its row)."""
 
     row_budget: RowBudget | None = None
-    """The budget the data was sub-sampled to: no split trains on more than ``row_budget.train`` or tests on more
-    than ``row_budget.test`` rows, and the split checks hold the container to it. ``None``: no budget, the splits use
+    """The benchmark's row budget (:class:`RowBudget`): no split tests on more than ``row_budget.test`` rows, and a
+    benchmark sub-samples each train side to ``row_budget.train`` rows before a fit. ``None``: no budget, the splits use
     the full frame (and splits recorded before this field existed)."""
+    train_sampling: TrainSampling | None = None
+    """How a benchmark sub-samples the train sides to ``row_budget.train`` (:class:`TrainSampling`); set exactly with a
+    ``row_budget`` by a v2 definition."""
 
     type_adapter_id: str = "predictive-ml-splits-mold-v1"
     """Identifier for name of the type adapter used to serialize/deserialize."""
 
-    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("split_random_state", "time_gap", "time_gap_unit", "row_budget")
+    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = (
+        "split_random_state",
+        "time_gap",
+        "time_gap_unit",
+        "row_budget",
+        "train_sampling",
+    )
     """Fields added after containers shipped: dropped from the checksum and the saved JSON while ``None``, so a
     container saved before they existed keeps verifying."""
 
@@ -1272,7 +1316,7 @@ class PredictiveMLSplitsMetadata:
         """
         if not self.splits:
             raise ValueError("splits must contain at least one repeat with one train/test split.")
-
+        self._check_budget()
         self._check_split_ids()
         folds_per_repeat = {repeat_id: len(folds) for repeat_id, folds in self.splits.items()}
         empty_repeats = [repeat_id for repeat_id, n_folds in folds_per_repeat.items() if n_folds == 0]
@@ -1311,6 +1355,11 @@ class PredictiveMLSplitsMetadata:
             )
         if self.time_gap is not None and self.time_gap <= 0:
             raise ValueError(f"time_gap must be positive (None for no gap), got {self.time_gap!r}.")
+
+    def _check_budget(self) -> None:
+        """A train sampler needs the row budget it samples to."""
+        if self.train_sampling is not None and self.row_budget is None:
+            raise ValueError("train_sampling says how train sides are sub-sampled to a row budget; set row_budget.")
 
     def _check_split_ids(self) -> None:
         """Repeat ids ``0..R-1``, and fold ids ``0..F-1`` in every repeat (consumers index them by position)."""

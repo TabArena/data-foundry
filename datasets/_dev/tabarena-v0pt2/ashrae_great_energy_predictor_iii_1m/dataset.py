@@ -119,7 +119,8 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         ),
         row=(
             "One hourly reading of one meter (electricity, chilled water, steam or hot water) of one building of the "
-            "competition, 2016-2017; the 2,500,000 of 39.1M readings that the splits use."
+            "competition, 2016-2017; of the 39.1M readings, the splits use every one before September 2017 and "
+            "500,000 of September-December 2017."
         ),
         predicted=(
             "The meter's reading in that hour in kWh (the heating and cooling meters converted to kWh by the "
@@ -131,8 +132,9 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
             "reading after the cutoff."
         ),
         split=(
-            "Three four-month windows tile 2017, newest first, each trained on a random million of all earlier "
-            "readings; the oldest window is the competition's setting, train on 2016 and predict early 2017."
+            "Three four-month windows tile 2017, newest first, each trained on all earlier readings, of which a "
+            "benchmark fits on a random million of the newest year; the oldest window is the competition's setting, "
+            "train on 2016 and predict early 2017."
         ),
         changes=(
             "We add the competition's 2017 readings, which its organisers released later with every meter in kWh, "
@@ -210,7 +212,7 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         We start with the Kaggle competition's train.csv (2016), building_metadata.csv and weather files and, from the BDG2 repository of its technical team, the 2017 readings (kaggle.csv), the raw meter files in kWh and their building metadata.
 
         - Prediction point: after a cutoff, the model gives each known meter's reading for a later hour from the building's metadata, the meter type, the local time and the site's weather, as in the competition; no later reading is an input. The top five teams fit boosted trees and neural networks on these inputs, with no lagged readings (GEPIII overview, Table 2).
-        - Not a naive forecast: each meter's hour-of-week profile from the same month a year earlier scores RMSE 1.393 / 1.273 / 1.372 on the three windows, LightGBM with 1,000 trees on the shipped 1M training rows 1.261 / 1.176 / 1.223. One model per site does no better than one large model (1.238 / 1.178 / 1.222), so meter types and sites stay one task.
+        - Not a naive forecast: each meter's hour-of-week profile from the same month a year earlier scores RMSE 1.393 / 1.273 / 1.372 on the three windows, LightGBM with 1,000 trees on a random 1M of all earlier rows per window 1.261 / 1.176 / 1.223. One model per site does no better than one large model (1.238 / 1.178 / 1.222), so meter types and sites stay one task.
         - We stack 2016 and 2017, the competition's public test year ("matches seamlessly with the training data", BDG2 paper, p. 8), keeping the hours with a reading; 2018 is not public.
         - Units: the competition kept each site's own unit (ton-hours, pounds of steam, mmBTU, kBTU; BDG2 paper, Table 4). We take the readings in kWh from BDG2's raw files, converted and corrected by the same team (p. 8); per meter they differ from Kaggle's by one constant factor in 99.9% of the hours (decision table).
         - The weather is in UTC and the readings in local time (p. 8): we shift it by the 1st place solution's offsets and join it on site and hour. Daylight saving time at 8 sites changed RMSE by -0.007 to +0.005 per window, so we keep standard time.
@@ -222,7 +224,7 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         - `cloud_coverage` is in oktas (0-8), and 9 means the sky is obscured (fog or precipitation), so the cloud
           amount cannot be estimated (ISD's code table): 9,905 rows, missing (CLEAN-10; the curator's marks of
           2026-10-31, as in rain_in_australia).
-        - The row budget: The cleaned frame has 39.1M hourly readings, so the dataset ships only as this `_1m` version. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. As in TabReD, the train side is a random sample of the whole history rather than its newest part, so every window trains on all seasons seen so far.
+        - The row budget: The cleaned frame has 39.1M hourly readings, so the dataset ships only as this `_1m` version. Each test window keeps at most 500k of its rows, drawn at random within the window (v2 split protocol), and each train side holds every earlier reading, so the container holds every reading before September 2017 and 500k of September-December 2017. The container records the 1M train budget, and a benchmark sub-samples each train side to 1M rows before a fit (`subsample_train`; by default a random 1M of the newest year before the window). A year covers every season, so the default sample keeps all seasons.
     """
 
     # Task
@@ -245,7 +247,7 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         splits=TemporalSplits(window=4, unit="months", cutoffs=("2017-01-01", "2017-05-01", "2017-09-01")),
     )
     splits_comment = """
-        Three test windows of 4 months tile 2017, the competition's first test year: September-December, May-August and January-April 2017, newest first; train is all earlier hours. The oldest window is the competition's own setting: train on the year 2016 and predict the first months of 2017. 2016 holds 50.07% of the hours (8,784 of 17,544) but 49.12% of the rows, as it has more gaps and drops (site 0's recording gap); we keep the window because it is the competition's setting. A window is the horizon: the competition asked for the two years after its training year, and 4 months is the longest window that gives three windows inside 2017. Each test window keeps at most 500k of its rows and each train side is a random 1M of all earlier rows (one random order for all windows); the frame keeps only the rows a split uses.
+        Three test windows of 4 months tile 2017, the competition's first test year: September-December, May-August and January-April 2017, newest first; train is all earlier hours. The oldest window is the competition's own setting: train on the year 2016 and predict the first months of 2017. 2016 holds 50.07% of the hours (8,784 of 17,544) but 49.12% of the rows, as it has more gaps and drops (site 0's recording gap); we keep the window because it is the competition's setting. A window is the horizon: the competition asked for the two years after its training year, and 4 months is the longest window that gives three windows inside 2017. Each test window keeps at most 500k of its rows, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows, by default a random 1M of the newest year before the window (`subsample_train`).
     """
     row_budget = RowBudget(train=1_000_000, test=500_000)
 

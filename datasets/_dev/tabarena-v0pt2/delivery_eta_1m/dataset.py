@@ -38,7 +38,8 @@ class DeliveryEta1m(AbstractCuratedDataset):
         ),
         split=(
             "Each test window is one of the last three weeks (18 December 2023 to 7 January 2024), up to 500,000 "
-            "orders each; training is a random million of all earlier orders, as for a model refit every week."
+            "orders each; training is every earlier order, of which a benchmark fits on a random million, as for a "
+            "model refit every week."
         ),
         fit="direct",
         fit_reason=(
@@ -81,7 +82,7 @@ class DeliveryEta1m(AbstractCuratedDataset):
         - The target is the natural log of the minutes, as in TabReD (the column keeps its name). TabReD's reason, stated for its cooking-time data and applied here too: the times are right-skewed, and squared error on the log is close to absolute error on the minutes, the error that matters for the task.
         - We drop a duplicated column `cat_2` in the preprocessing.
         - We drop `num_29`, `num_36` and `num_71`, which are constant except in the same 2 of 16.7M rows (both hold 5.199 in all three columns), and `num_101`, which has a single value and is missing in exactly the rows where 19 other columns are missing, so it carries no information of its own.
-        - The row budget: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+        - The row budget: Each test window keeps at most 500k of its rows, drawn at random within the window (v2 split protocol), and each train side holds every earlier order; the container keeps every row a split uses. The container records the 1M train budget, and a benchmark sub-samples each train side to 1M rows before a fit (`subsample_train`; by default a random 1M of the newest year before the window). The orders start on 20 October 2023, so the newest year is all of the history and the default is a random 1M of all earlier orders, as in TabReD: a random sample keeps data from all periods of the history.
     """
 
     # Task
@@ -99,7 +100,7 @@ class DeliveryEta1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. No gap is needed: the orders pause overnight, and the last train order of each window is delivered 57 minutes to 6 hours before the window start (order time + delivery time), so no train label is unknown at a weekly refit (0 late orders in each of the 3 windows). Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
+        We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. No gap is needed: the orders pause overnight, and the last train order of each window is delivered 57 minutes to 6 hours before the window start (order time + delivery time), so no train label is unknown at a weekly refit (0 late orders in each of the 3 windows). Each window keeps at most 500k of its rows; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows, by default a random 1M of the newest year before the window, here all of the history (`subsample_train`).
     """
     temporal = Temporal(
         on="timestamp",

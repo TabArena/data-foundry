@@ -311,8 +311,8 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
             "where the aircraft's previous flight is (not yet left, in the air or landed, with its delays so far)."
         ),
         split=(
-            "Each test window is two weeks at the end of 2024; training is a random million earlier flights from 2023"
-            " on, as for a model refit every two weeks."
+            "Each test window is two weeks at the end of 2024, as for a model refit every two weeks; training is "
+            "every earlier flight from 2023 on, of which a benchmark fits on a random million of the newest year."
         ),
         changes=(
             "Rebuilt from the DOT's flight records and Meteostat's station weather instead of the Aeolus release: the "
@@ -449,7 +449,7 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
           by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
           is simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
-        - The row budget: The BTS files hold 13,708,650 operated flights from 2023 on with an arrival delay (13,926,960 scheduled). We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (all of them here), and its train side is a random 1M of the earlier flights, drawn in one random order for all windows; the frame keeps only the rows a split uses.
+        - The row budget: The BTS files hold 13,708,650 operated flights from 2023 on with an arrival delay (13,926,960 scheduled). Each test window keeps at most 500k of its rows (v2 split protocol; all of them here), and each train side holds every earlier flight, so the container holds all 13,708,650. The container records the 1M train budget, and a benchmark sub-samples each train side to 1M flights before a fit (`subsample_train`; by default a random 1M of the newest year before the window).
     """
 
     # Task
@@ -465,7 +465,7 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        As in aeolus_1m: a delay model is refit every two weeks and predicts the flights of the two weeks ahead. The last six weeks of 2024 are three two-week test windows (2024-12-18 to 12-31, 12-04 to 12-17 and 11-20 to 12-03, newest first; 25.9%, 16.7% and 17.5% of the operated flights late), so that one window falls in the holiday peak. Train is every flight from 2023 on dated at least two days before the window (a one-day gap): a flight's arrival delay is known only once it has landed, and the previous evening's flights land after midnight. Each window keeps all of its flights (264,245, 259,738 and 273,891); each train side is a random 1M of the earlier flights (one random order for all windows). The authors split 1-15 June 2024 chronologically 6:2:2 (Sec. 4.1), one test stretch of about three days and no season, so we depart from it. All three windows lie in late November and December: the score measures early-winter delays.
+        As in aeolus_1m: a delay model is refit every two weeks and predicts the flights of the two weeks ahead. The last six weeks of 2024 are three two-week test windows (2024-12-18 to 12-31, 12-04 to 12-17 and 11-20 to 12-03, newest first; 25.9%, 16.7% and 17.5% of the operated flights late), so that one window falls in the holiday peak. Train is every flight from 2023 on dated at least two days before the window (a one-day gap): a flight's arrival delay is known only once it has landed, and the previous evening's flights land after midnight. Each window keeps all of its flights (264,245, 259,738 and 273,891); each train side holds every earlier flight, and a benchmark samples 1M of them, by default at random from the newest year before the window (`subsample_train`). The authors split 1-15 June 2024 chronologically 6:2:2 (Sec. 4.1), one test stretch of about three days and no season, so we depart from it. All three windows lie in late November and December: the score measures early-winter delays.
     """
     temporal = Temporal(on="FL_DATE", splits=TemporalSplits(window=14, unit="days", n_windows=3, gap=1))
     row_budget = RowBudget(train=1_000_000, test=500_000)

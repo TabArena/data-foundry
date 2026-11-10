@@ -170,10 +170,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
             "history, scores the client's default risk to decide on the loan; its scorecard is refit regularly and "
             "should stay stable over time."
         ),
-        row=(
-            "One loan application decided between January 2019 and early October 2020 (the frame keeps 1,224,927 of "
-            "them)."
-        ),
+        row=("One loan application decided between January 2019 and early October 2020 (1,526,659 of them)."),
         predicted=("Whether the client defaulted (3.1% did); the time span in which a default counts is not stated."),
         known=(
             "The application, the client's personal data, earlier applications to Home Credit, credit-bureau and "
@@ -181,8 +178,9 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
             "date; some categories (district, employer, education, contract status and the like) are masked codes."
         ),
         split=(
-            "Three two-month test windows from May to early October 2020; each trains on a random million of all "
-            "earlier applications, as for a model refit every two months."
+            "Three two-month test windows from May to early October 2020, as for a model refit every two months; "
+            "training is all earlier applications, which a benchmark sub-samples to a million from the newest 12 to "
+            "14 months."
         ),
         changes=(
             "We split TabReD's test period into three two-month windows and keep columns TabReD dropped (the decision"
@@ -228,7 +226,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         - We follow TabRed and use temporal splits for the task. The Kaggle experts used various strategies and most commonly StratifiedGroupKFold to align offline CV with the temporal-split data on the leaderboard. That is, the split used for training can be StratifiedGroupKFold, but not for testing.
         - Metric: ROC AUC stands in for the competition's Gini Stability, whose slope term is noise on our 5-10 week test windows (Lennart, 2026-10-21).
         - Note, the original competition was heavily influenced by metric hacking, which is not relevant for our offline benchmark tasks. Thus, results are not directly comparable ot transferable.
-        - We change the preprocessing from Kaggle and TabRed in specific steps: (A) we depart from the TabRed and Kaggle solutions in that we do not drop high-cardinality string columns, (B) we do not drop month and week, as it was only dropped due to the metric leak in the competition, (C) we only drop constant columns if they are constant w.r.t. NaN and non-NaN values, (D) we do not perform ordinal encoding and drop minor categories, (E) we sub-sample only to the row budget of this _1m version (each train side is a random 1M of all earlier rows, see the splits comment), (F) we keep the date column without transformations for the pipelines to handle, and (G) the code from TabRed is outdated and does not function the same anymore when it comes to down-casting string and categorical data of the data from Kaggle, we fix this by treating categorical data as categorical following the original Kaggle scripts, moreover, we had to remove getting the std() of a date column, which is not supported anymore.
+        - We change the preprocessing from Kaggle and TabRed in specific steps: (A) we depart from the TabRed and Kaggle solutions in that we do not drop high-cardinality string columns, (B) we do not drop month and week, as it was only dropped due to the metric leak in the competition, (C) we only drop constant columns if they are constant w.r.t. NaN and non-NaN values, (D) we do not perform ordinal encoding and drop minor categories, (E) we keep every row: the 1M train budget of this _1m version is applied by a benchmark, which sub-samples each train side before a fit (see the splits comment), (F) we keep the date column without transformations for the pipelines to handle, and (G) the code from TabRed is outdated and does not function the same anymore when it comes to down-casting string and categorical data of the data from Kaggle, we fix this by treating categorical data as categorical following the original Kaggle scripts, moreover, we had to remove getting the std() of a date column, which is not supported anymore.
         - We drop case_id as it is already collapsed and thus does not contain extra information.
         - We cast all object and string columns to be categorical. Note that they are anonymized and string preprocessing likely does not add a lot of value as a result.
         - We drop name-related columns as they do not hold relevant information. These were otherwise dropped as high-cardinality string columns in TabRed or on Kaggle.
@@ -236,7 +234,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
-        - The row budget: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+        - The row budget: each test window keeps at most 500k of its rows (all of them here), and each train side holds every earlier row, so the frame keeps all 1,526,659 applications. The 1M train budget is recorded, not applied: a benchmark sub-samples each train side to 1M rows before a fit with `subsample_train`. Its default is a random 1M of the newest year before the window, or the newest 1M rows where that year holds fewer (splits comment), in place of TabReD's random sub-sampling of all earlier rows: the study of issue #70 found the newest year best for dated data.
     """
 
     # Task
@@ -252,11 +250,12 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We follow TabRed's test period (2020-05-01 to 2020-10-05) and split it into 3 test windows of 2 months (May-June, July-August, September to 2020-10-05), simulating a model refit every 2 months; each window trains on all previous data. Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
+        We follow TabRed's test period (2020-05-01 to 2020-10-05) and split it into 3 test windows of 2 months (May-June, July-August, September to 2020-10-05), simulating a model refit every 2 months; each window trains on all previous data. Each window keeps all its rows (under the 500k budget), and each train side holds every earlier row (1.30M to 1.46M); a benchmark sub-samples it to 1M before a fit (`subsample_train`): by default a random 1M of the newest year before the window, or the newest 1M rows where that year holds fewer (825k rows before the September window, 940k before July), so each window trains on the 12 to 14 months before it.
     """
     # 3 windows of 2 months replace TabRed's single 4.5-month test period (v2 split protocol, 2026-10), so the horizon
-    # drops from 5 to 2 months and results are not comparable with TabRed's. Before sampling the windows hold 74,687 /
-    # 79,743 / 70,497 rows (about 1.8k / 1.7k / 1.5k defaults); every train side is capped at 1M. 5-month windows
+    # drops from 5 to 2 months and results are not comparable with TabRed's. The windows hold 74,687 / 79,743 /
+    # 70,497 rows (about 1.8k / 1.7k / 1.5k defaults), under the 500k test budget; every train side keeps all earlier
+    # rows, and a benchmark sub-samples it to 1M. 5-month windows
     # (cutoffs 2019-07-01, 2019-12-01, 2020-05-01) would keep the horizon, but the oldest would train on 439k rows
     # (Jan-Jun 2019) and test 506k pre-COVID rows, and the middle one would span the April 2020 drop in volume and
     # default rate.
