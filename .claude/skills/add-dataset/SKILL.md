@@ -95,7 +95,10 @@ domain and source from the record.
 1. The attributes: `task_summary` first, then every field of Step 1; `"TODO"` where the data must be seen first.
 2. `_load_raw(self, raw_dir)`: reading only (and a join along the source's own keys). It is cached.
 3. `_clean(self, raw)`: the recipe as ordered, commented steps with `TODO(verify)` markers, and
-   `_feature_types(self, df)` for the dtypes.
+   `_feature_types(self, df)` for the dtypes. A record tagged `Spectral Data` holds measured spectra: the spectrum
+   ships as the source publishes it and is declared in `special_features` as a `Spectrum(...)`, its columns left out
+   of `_feature_types` (CLEAN-26); [spectra.md](../knowledge-curation/references/spectra.md) has what ships, the
+   encodings, grouping the spectra of one sample (SPLIT-23) and the pitfalls.
 4. The regime: nothing for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)` with a `splits_comment`
    saying why this window (and any gap, sub-sampling or trimming).
 5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
