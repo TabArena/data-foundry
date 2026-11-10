@@ -10,6 +10,7 @@ data_foundry_status:
 suggestion: No (Retired)
 decision_markers:
 - Selection Bias
+- Not Representative
 tags:
 - Tiny Data
 collections:
@@ -48,6 +49,8 @@ Ransohoff DF, Feinstein AR. Problems of spectrum and bias in evaluating the effi
 Islam MMF, Ferdousi R, Rahman S, Bushra HY. Likelihood prediction of diabetes at early stage using data mining techniques. In: Computer Vision and Machine Intelligence in Medical Image Analysis. Advances in Intelligent Systems and Computing, vol 992. Singapore: Springer; 2019:113-125. doi:10.1007/978-981-13-8798-2_12
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Islam et al. 2019 report accuracy with precision, recall and F-measure, no unique metric and no threshold or costs (MET-5, MET-6).
+
+CC (2026-11-10, Andrej): stays retired, for several reasons that hold together, not one: the selection bias (69% diabetic, late symptoms such as partial paresis in 57% of positives, negatives mostly men) makes the task not even an approximate fit for early-stage screening; an untrained symptom rule reaching ROC AUC 0.905 is far too high for the noisy real task; and models solving it almost perfectly (TabPFN 3.5 0.972) is unrealistic. Markers `Selection Bias` and `Not Representative`.
 
 ## Reference
 
