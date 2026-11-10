@@ -18,6 +18,10 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
+- Selected build on 2026-11-10: one accepted dataset, container format 2, one traced raw file (3,213,377 bytes).
+  Reload verification and reproduction using only that input passed with identical checksums. This was a selected
+  build, not a rebuild of the full working copy; the dataset's generated card records its UUID and checksum.
+
 Scoped build on 2026-11-08 (November 9 UTC): one requested definition, container format 2,
 four traced input files totaling 5,003,658 bytes. Reload and minimal-input reproduction passed
 with zero build errors or warnings. The dated changelog records its UUID and checksum; each dataset's generated
