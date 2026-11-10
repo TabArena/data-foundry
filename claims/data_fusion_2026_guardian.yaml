@@ -1,6 +1,0 @@
-name: data_fusion_2026_guardian
-holder: Lennart
-stage: add
-claimed_at: '2026-11-08T16:54:26Z'
-expires_at: '2026-11-15T18:12:55Z'
-note: 'add-dataset: large-datasets batch (stacked PR on #47)'

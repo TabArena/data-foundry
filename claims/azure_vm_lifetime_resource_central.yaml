@@ -1,6 +1,0 @@
-name: azure_vm_lifetime_resource_central
-holder: Lennart
-stage: add
-claimed_at: '2026-11-08T17:05:18Z'
-expires_at: '2026-11-15T18:24:41Z'
-note: 'add-dataset: large-datasets batch (stacked PR on #47)'
