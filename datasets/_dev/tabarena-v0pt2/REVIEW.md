@@ -219,3 +219,194 @@
   Decision needed: go ahead or leave as is.
   **Resolved (2026-11-08, Lennart):** go ahead, applied: the `row` text, the notes, the splits comment and decision
   table 4 now say one row per loan; README regenerated, checksum changed (not built).
+
+### From the information audit of 2026-11-09 (what the actor knows when it fits, predicts and scores)
+
+- **Give format 2 a training-only column role?**
+  * **Problem:**
+    - In 15 of the 16 definitions of the zero-inflated batch, columns the actor holds for past rows and would fit on are dropped from the dataset altogether, because the format can pass only one such column to the fit, the training weight.
+    - The rules require the drop today: a count behind a rate leaves the frame, a column recorded after the prediction point leaves the inputs, and a training weight must also be the metric's weight[^xa1].
+    - pricing_game_2016 shows the cost: a Poisson model of the claim counts times the mean charge beats the Tweedie model of the charge on the shipped folds, but no participant can fit it, since the count never reaches the fit.
+  * **Background:**
+    - The audit asked, per dataset, what the actor has at three moments: when it fits (past rows, with every column recorded for them, also after their own prediction point), when it predicts (the new unit's attributes and own history), and when it scores (what the business evaluates with).
+    - The columns that only exist for past rows, by dataset: australian `numclaims`; frempl how each record ended (`RecordEnd` and the link to a successor), the claim-type counter rises, the sign of `ClaimAmount` (recourse claims); spanish coverage the claim counts and incurred costs per cover, `policy_status`; pricing_game_2016 the claim count, per-claim charges, IDA flag, responsibility and closure year; pricing_game_2017 the claim count and per-claim amounts; spanish homeowners `Retention`, `NClaims1`, `NClaims2`, `Claims1`, `Types`; spanish 2015-2018 `N_claims_year` and the realized exposure from `Date_lapse`; wisconsin `Freq` and the claim lines; loan_default f527, f528, f468, f471, f536 and the f221 family; noaa_storm the tornado rating and path, end point, casualties, crop damage, estimated wind speeds, the blanked durations and the narratives; noaa_afsc the area swept, catch weight, vessel and gear; boreal the cover-based estimate and the NT ground covers; wadden the measured sediment, platform, core area and the other taxa; walmart (not in PR #47) the observed weather.
+    - Liberty releases none; allstate only the in-year vehicle count.
+  * **Effect on the task:**
+    - Models the business fits are out of reach: frequency times severity, an offset on the time on risk, auxiliary targets (crop damage, casualties, a lapse), and methods that learn from information only training rows have.
+    - Scores do not change until a model uses the new columns, so the change is about fidelity to the application and about which methods the benchmark can test.
+  * **Experiments:** pricing_game_2016, shipped folds: the weighted Poisson LightGBM of claims per vehicle-year times the training side's mean charge per claim scores 81.06 on the declared metric, 0.92 better (SE 0.34) than the Tweedie model of the charge (the definition's notes).
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | Keep as is (implemented) | columns known only after the prediction point stay dropped; one training weight at most | no format, adapter or rule change | the actor's training information is lost in 15 datasets; frequency-severity and offset models cannot be fit |
+    | B | A training-only role | a task field lists training columns: in the frame, passed to the fit with the training rows, never to predict, never scored; the rules move such a column to this role instead of dropping it | the benchmark holds what the actor holds at fit time; one change serves 15 datasets; per-dataset issues then pick the columns | format, adapter and probe changes; the test rows' values sit in the container, as the weights' do now |
+    | C | Training weights only | allow a training weight that differs from the metric's weight (the trawl's area swept) | a smaller change | counts, flags and claim lines stay lost |
+
+  * **Recommendation:** B: it is the one change behind most of the audit's training-side gaps, and the per-dataset choice of columns stays with each dataset's issue in the next round.
+  * **Decision:** A, B or C?
+
+  **Notes for the AI:** B: an optional task field `train_columns` (`TrainColumn(column, role, description)`, roles such as `count`, `amount`, `flag`, `weight`, `auxiliary_target`), left out of the checksum while unset as `sample_weight` was; reader `train_columns(container)`; `feature_columns()` unchanged; bundle checks that a training column is no feature and no scoring column; README section; `BENCHMARK_CHANGES_TODO.md` entry (the adapter passes them to fit only; a contract test shuffles the test rows' values and expects the same predictions); probes leave them out of the inputs. Rules: MET-14 ("leaves the frame" becomes "leaves the features; it may ship as a training column"), LEAK-10 and LEAK-41 (never an input at the prediction point; may be a training column), MET-15 and MET-16 (a training weight may differ from the metric's weight). Then one issue per dataset on which columns move.
+
+  **Andrej (2026-11-09, discuss):** Please add a curation note to each dataset where features that would actually be available at train time are not used because we wouldn't have them at test time. But otherwise we leave them out for now.
+
+  **Resolved (2026-11-09, Andrej):** A for now, no training-only role. Each definition whose source holds columns known only for past rows names them in one notes bullet, "Note: held for training rows only, not shipped (cross-dataset item of 2026-11-09, Andrej): ...", with a CC line in its record: australian, frempl, spanish coverage, pricing_game_2016, pricing_game_2017, spanish homeowners, spanish 2015-2018, wisconsin, loan_default, noaa_storm, noaa_afsc, wadden and allstate; boreal with its issues 8 and 9. Liberty releases no such column; walmart's definition is not on this branch and gets its note with its own review.
+
+  [^xa1]: **MET-14** (Should, 2026-11-06, Lennart): "The count or amount leaves the frame as a part of the target (LEAK-10)". **LEAK-41** (Must): a realized weight "is never a model input". **MET-15** (Must): "A declared sample weight is always the metric's row weight". **MET-16** (Should): "A weight for training alone cannot be declared".
+
+- **Keep sex out of every insurance pricing task, or decide by each use case's actor?**
+  * **Problem:**
+    - Since 2026-11-08 sex leaves every insurance pricing task, whatever the actor's jurisdiction, "as if we were to simulate the case in europe always"[^xb1].
+    - In three of the five datasets it touches, the actor the use case names could price on sex: an Australian insurer in 2004-05, a French insurer in 2004, and the 2017 pricing game, whose rules offered it and whose data year predates the EU ban.
+    - The audit counts it as information available at prediction time that the benchmark withholds.
+  * **Background:**
+
+    | Dataset | Actor in the use case | May the actor price on sex? | Measured effect of keeping it |
+    |---|---|---|---|
+    | bemtpl97 | EU insurer pricing today | no, barred since 21 December 2012 | (dropped on 2026-11-05 under either option) |
+    | australian_vehicle_insurance_2004_2005 | Australian insurer | likely yes (the statute was not read) | +0.004 Tweedie GLM, better on 7 of 9 splits |
+    | frempl_french_motor_personal_line | French insurer, 2004 | yes in 2004; no for an EU insurer today | not measured |
+    | pricing_game_2017_french_mtpl | the game's players | yes: the game's file and rules offered it | not measured |
+    | spanish_homeowners_motor_insurance_2010_2014 | Spanish insurer at renewal | until 21 December 2012; not after | -0.004 to +0.017 Gini across five models |
+
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | Family stance (implemented) | sex leaves every insurance pricing task | one rule; matches EU practice today | withholds a factor three of the named actors may use |
+    | B | By the use case's actor | sex stays where the actor and the period the use case names allow it, and leaves where they bar it; each dataset decides in its own issue | the inputs are what the actor has | five calls; the family differs in its inputs |
+    | C | Restate the actors | keep A, and rewrite the use cases of australian, frempl and pricing_game_2017 as an EU insurer pricing today | stance and actor agree | the data are neither EU nor today's; a stand-in actor in three more tasks |
+
+  * **Recommendation:** B: the curator's standard is the information the actor has at each moment, and the law that binds the named actor is part of that; the per-dataset issues follow in the next round.
+  * **Decision:** A, B or C?
+
+  **Notes for the AI:** B: amend the Tensions row in principles.md ("sex leaves the rating factors of every insurance pricing task" goes; the actor's legal constraint in the use case decides, USE-6), reopen one issue per dataset (australian, frempl, pricing_game_2017, spanish homeowners) with the law that binds its actor, restore the column where the issue decides so.
+
+  **Andrej (2026-11-09, discuss):** If the EU bans it today, we treat it as if it also has been banned before. For non-banned countries, we use it. Is that already the policy? If not what is it?
+
+  **Answer (AI, 2026-11-09): Make your rule the policy: sex leaves an insurance pricing task where the law of the data's country bars it today, and stays where it allows it?**
+  * **Problem:**
+    - It is not the policy now: since 2026-11-08 sex leaves every insurance pricing task, whatever the country, "as if we were to simulate the case in europe always"[^xb1].
+    - Your rule reads today's law in the country the data come from; it differs from the policy now only where that law allows sex, and from option B in reading today's law rather than the law of the data's year.
+  * **Background:**
+    - Under your rule the four EU tables stay as they are, sex dropped (bemtpl97, frempl_french_motor_personal_line, pricing_game_2017_french_mtpl, spanish_homeowners_motor_insurance_2010_2014), and australian_vehicle_insurance_2004_2005 gets `gender` back.
+    - Australia allows it today: the Sex Discrimination Act 1984, s41 (compilation of 1 November 2025, now read), exempts discrimination on sex in the terms of an insurance policy when it is "based on actuarial or statistical data from a source on which it is reasonable for the insurer to rely" and reasonable having regard to the data, with the data shown to a client who asks[^xb2].
+    - Of the 15 insurance tables among the 190 definitions, only these five have a sex column. The credit tables that keep one (home_credit_default_risk, credit_card_clients_default, credit_g) are credit, not insurance, and outside this rule.
+    - A future US table would read its state's law: several states bar sex in car insurance rating (California, Massachusetts and Pennsylvania among them), most do not.
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | a | Your rule: today's law of the data's country | sex leaves the tables from countries that bar it today, as if the ban had always applied, and stays where today's law allows it; today this restores `gender` in australian only | one test per table, easy to check; the EU tables match EU pricing today | an EU table from before December 2012 loses a factor its actor then used |
+    | b | Keep the policy of 2026-11-08 | sex leaves every insurance pricing task | one rule, no law to look up | withholds a factor an Australian insurer may use today |
+    | c | Option B above: the law in the use case's year | sex stays where the actor could use it then (australian, frempl in 2004, pricing_game_2017, spanish homeowners before 21 December 2012) | the inputs the actor had then | four per-dataset calls; spanish homeowners straddles the ban |
+
+  * **Recommendation:** a: it is the rule you state, it needs one check per table, and today it changes only australian, where keeping `gender` measured +0.004 on the Tweedie GLM, better on 7 of 9 splits. **Decision:** a, b or c?
+
+  **Notes for the AI:** on a: rewrite the Tensions row in principles.md ("sex leaves the rating factors of an insurance pricing task when the law of the country the data come from bars it today, as if the ban had always applied; where that law allows it, sex stays (USE-6)"), with australian as a Cases row; restore `gender` in australian_vehicle_insurance_2004_2005 (its issue 7 reopened and resolved, CC line, CHANGELOG, `dataset check` and the leak probes); close this item and option B above.
+
+  **Andrej (2026-11-09, go ahead):** I go with a.
+
+  **Resolved (2026-11-09, Andrej):** a: sex leaves an insurance pricing task where the law of the country the data come from bars it today, as if the ban had always applied, and stays where that law allows it. It replaces the family stance of 2026-11-08 in the Tensions row of principles.md. australian_vehicle_insurance_2004_2005 ships `gender` again (a new issue in its REVIEW.md, reopening its issue 7); bemtpl97, frempl_french_motor_personal_line, pricing_game_2017_french_mtpl and spanish_homeowners_motor_insurance_2010_2014 keep it dropped under EU law.
+
+  [^xb2]: Sex Discrimination Act 1984 (Cth), s41(1)(c) to (e), https://www.legislation.gov.au/C2004A02868/2025-11-01/2025-11-01/text/original/epub/OEBPS/document_1/document_1.html. The EU ban: CJEU C-236/09 (Test-Achats), in force for new contracts from 21 December 2012.
+
+  [^xb1]: The Tensions row on rating factors in principles.md, amended 2026-11-08 (Lennart, on australian_vehicle_insurance_2004_2005, issue 7), against the panel's recommendation there that Australian law decide. The row's default, a use case set in the data's own time keeping a factor known then (**USE-6**), stays for every other factor.
+
+- **State how mature the training labels are, in every claims definition?**
+  * **Problem:**
+    - Every release gives the claims as finally recorded, while at a refit the newest year's claims are partly reserves and some are not yet reported.
+    - Where the source lets us measure it, the share is large: in pricing_game_2016, 37% to 39% of each year's claims closed only after the year ended (`ANNEE_CLOTURE`, counted on the raw file); spanish homeowners and wisconsin train with no gap on final amounts.
+    - No rule asks a definition to state it, so a reader of the notes cannot tell how much more the training labels know than the actor would.
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | As is (implemented) | some definitions mention it, most do not | no work | the training side's extra maturity is invisible |
+    | B | A note in every claims definition | one bullet: how the labels were valued, and the share still open at a refit where the source gives closure dates or a status | the gap is stated where it exists; cheap | text only; the gap stays |
+    | C | B, and a gap that covers the claims' development | where closure dates exist, a temporal split's gap or a mask covers the claims still open at the refit | removes the extra maturity where it can be measured | fewer training rows; only a few sources give closure dates |
+
+  * **Recommendation:** B now; C where a dataset's own split issue reopens.
+  * **Decision:** A, B or C?
+
+  **Andrej (2026-11-09, go ahead):** B.
+
+  **Resolved (2026-11-09, Andrej):** B: the ten claims definitions of PR #47 carry one bullet "Note: how mature the labels are (cross-dataset item of 2026-11-09, Andrej): ..." with what the amounts are, as of when, the share still open at a refit where the source tells, and whether both sides of the split share it, plus a CC line in each record. Only pricing_game_2016 gives closure years: 38.5%, 39.2% and 39.2% of the claims of 2011 to 2013 were still open at the next 1 January (the 41 claims open at the extract counted as open; the Problem's 37% to 39% counted them as closed); spanish_motor_insurance_2015_2018 is the one table whose test labels are the less developed. Not yet covered: bemtpl97 and fremtpl2 (Lennart), allstate_claims_severity and porto_seguro (unclaimed).
+
+- **Add a `sum` aggregation and a per-group mean RMSE to the scorer?**
+  * **Problem:**
+    - noaa_storm's planner judges the summed damage per county and hazard, but the scorer can only take the last, the mean or the maximum of a group's rows.
+    - wadden's mapper judges each survey's map, but the library has only a per-group RMSE normalised by the group's spread, not a plain mean of per-group RMSE.
+    - Whether to use either is decided in noaa_storm's issue 12 and wadden's issue 8; this item is only the code.
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | As is (implemented) | no new aggregation or metric | nothing to maintain | the two scores cannot follow the actor's unit |
+    | B | Add what the dataset issues choose | `sum` as a per-group aggregation (both the truth and the predictions summed per group) and `mean_group_rmse`, each with the metric tests | small code; serves the two issues | two more library entries |
+
+  * **Recommendation:** B, added only for what noaa_storm's issue 12 or wadden's issue 8 chooses.
+  * **Decision:** A or B?
+
+  **Andrej (2026-11-09, leave as is):** A.
+
+  **Resolved (2026-11-09, Andrej):** A: no new aggregation or metric now. wadden's issue 8 can choose its option C with what the library has (`mean_group_normalized_rmse`); noaa_storm's issue 12, whose option C needs `sum`, brings this item back if it chooses the cell sums.
+
+### From the review of rule-following of 2026-11-09 (calls a convention made rather than the task)
+
+- **Set a deviance's floor where the actor would clip, instead of two orders below the smallest plausible mean?**
+  * **Problem:**
+    - Since 2026-11-06 a deviance's floor sits two orders of magnitude below the smallest plausible mean, a convention of the collection, which put pricing_game_2017's floor at 0.1 EUR and noaa_storm's at $1[^xc1].
+    - On both, the floor decides how far the models fitted by squared error fall behind a constant, while the best model does not move: on pricing_game_2017 untuned LightGBM scores 74.9 at a 1 EUR floor and 102.8 at 0.1 EUR, against 63.3 for the constant.
+    - Neither actor acts on a prediction that low: no insurer quotes a premium of 0.1 EUR, and the storm files hold no damage below $10, so the convention scores differences no decision uses.
+  * **Background:**
+    - The floor's reason when it was introduced was practice: "in pratice we would also clip to a reasonable number" (Lennart, 2026-11-04, on bemtpl97); the factor of 100 came with the amendment of 2026-11-06[^xc1].
+    - A floor changes the score only for predictions below it, and above power 1 the Tweedie deviance's cost of such a prediction on a row with a claim grows as the prediction falls, without bound, so the lower the floor, the more a few near-zero predictions decide the rank.
+    - Where the floor binds, by dataset: pricing_game_2017 0.1 EUR, 3.9% to 6.6% of the probe's linear and LightGBM predictions at the floor; noaa_storm $1, 44%; pricing_game_2016 0.1 per vehicle-year, 6 of 261,684 untuned predictions and none of the GLM's or a regularised LightGBM's, so it does not matter there; fremtpl2 and bemtpl97 1e-4 claims per year, not measured here.
+  * **Effect on the task:** under the convention, a benchmark on these two tasks ranks methods partly by whether a squared-error fit outputs values near zero, which no pricing or planning decision reads.
+  * **Experiments:** pricing_game_2017, the mediator's run of 2026-11-06 (shipped repeat 0, folds 0 to 2, untuned, mean Tweedie deviance, lower is better): the constant 63.31 at every floor; the random forest 60.57 at 1 EUR and 60.59 at 0.1 EUR; ridge 61.61 and 66.33; LightGBM with squared-error loss 74.94 and 102.83; LightGBM with the Tweedie loss 75.51 and 78.11.
+  * **Consistency:** the per-dataset values are each dataset's own issue: pricing_game_2017 issue 7 and noaa_storm issue 14.
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | Two orders below the smallest plausible mean (implemented) | one formula for every deviance | no judgement per dataset; nothing to change | the floor scores predictions no actor acts on; it ranks squared-error fits by their near-zero outputs |
+    | B | Where the actor would clip | each definition states the lowest value its actor acts on, with the fact behind it (the smallest premium an insurer quotes, the smallest amount the source records), never above the smallest plausible mean | the floor's first reason, practice; a score difference below the floor is not a decision anyway | a value and a fact per dataset; no single formula |
+    | C | Keep A and fit with the metric's loss | the benchmark side fits models with the deviance's own loss where they have one (the next item), so fewer predictions reach the floor | no rule change | methods without such a loss still predict by squared error, and the floor still ranks them |
+
+  * **Recommendation:** B, with the values picked in pricing_game_2017 issue 7 and noaa_storm issue 14; pricing_game_2016's floor stays, as no reasonable model reaches it.
+  * **Decision:** A, B or C?
+
+  **Notes for the AI:** On B: amend MET-13's floor sentence in `metrics.md` to: "the lowest value the use case's actor acts on (a minimum premium, the smallest amount the source records), stated with its fact, and never above the smallest plausible mean on the scale the metric scores", with the curator and the date, keeping the task probe's share at the floor; a Cases row for each dataset whose floor changes; fremtpl2's and bemtpl97's 1e-4 checked against the new wording in one sentence each (no change unless a fact says so). Then apply the two per-dataset issues.
+
+  **Andrej (2026-11-09, go ahead):** I go with your suggestion to define it per dataset
+
+  **Resolved (2026-11-09, Andrej):** B: MET-13's floor is the lowest value the use case's actor acts on, stated with its fact, never above the smallest plausible mean; it replaces the two-orders convention of 2026-11-06 in metrics.md, definitions.md and the metric library's descriptions. noaa_storm issue 14 sets $10; pricing_game_2017 issue 7 stays open; fremtpl2, bemtpl97 (1e-4) and pricing_game_2016 (0.1) keep theirs, as no honest prediction reaches them.
+
+  [^xc1]: **MET-13** (Must, amended 2026-11-06, Lennart; in main): "The floor is a parameter the definition states, as practice clips a model's output before scoring (Lennart, 2026-11-04, on bemtpl97: "in pratice we would also clip to a reasonable number"): two orders below the smallest plausible mean, on the scale the metric scores (...; applied 2026-11-08, Lennart: 0.1 EUR on pricing_game_2017_french_mtpl, a convention of the collection that can change later)".
+
+- **Fit the benchmark's models with the metric's own loss on deviance-scored tasks?**
+  * **Problem:**
+    - Six tasks of the working copy are scored by a Poisson or Tweedie deviance, yet most methods of the benchmark fit a regression by squared error, so on a zero-heavy target they output values near zero or below, which the floor then scores.
+    - `BENCHMARK_CHANGES_TODO.md` plans weighted validation and the floor in early stopping, but no change to the loss a model fits.
+    - A practitioner on these tasks fits a Poisson or Tweedie loss with a log link; should the benchmark do the same where a method has one?
+  * **Background:**
+    - The deviance-scored tasks: fremtpl2 and bemtpl97 (Poisson), pricing_game_2016 (rescaled Tweedie), pricing_game_2017 and noaa_storm (Tweedie), plus any later one.
+    - LightGBM, XGBoost and CatBoost have Poisson and Tweedie objectives with a variance power; the neural and in-context methods (RealMLP, TabM, the TabPFN wrappers, TabICL) do not, and would keep squared error (an AI reading of their interfaces, not checked per version).
+    - On pricing_game_2017 LightGBM fitted with the Tweedie loss moves from 75.51 to 78.11 between the 1 EUR and 0.1 EUR floors, the squared-error LightGBM from 74.94 to 102.83 (the item above).
+  * **Effect on the task:** with the loss matched, the score compares how well methods price; without it, partly how they behave near zero.
+  * **Unknown:** whether TabArena's protocol allows a method's loss to follow the task's metric, which is TabArena's call, not Data Foundry's.
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | As planned (implemented) | weighted validation and the floor in early stopping only | methods run as configured elsewhere | squared-error fits on zero-heavy targets; rankings partly by near-zero outputs |
+    | B | The metric's loss where a method has one | the adapter reads the metric (`mean_poisson_deviance`, `mean_tweedie_deviance` with its power, `rescaled_mean_tweedie_deviance`) and sets the matching objective on LightGBM, XGBoost and CatBoost; the others clip to the floor | what a practitioner fits; fewer predictions at the floor | methods differ in what they are allowed; a TabArena change |
+
+  * **Recommendation:** B, as a `BENCHMARK_CHANGES_TODO.md` entry for TabArena to decide.
+  * **Decision:** A or B?
+
+  **Notes for the AI:** On B: a section "Losses for deviance-scored tasks" in `BENCHMARK_CHANGES_TODO.md` under the training-weights part: the metric-to-objective map (Poisson: `poisson`; Tweedie: `tweedie` with `tweedie_variance_power` = the metric's `power`; the rescaled deviance as Tweedie), the floor as `min_prediction` on every method's output, the list of tasks; no Data Foundry code change.
+
+  **Andrej (2026-11-09, go ahead):** Yes, we should definitely stick to what practitioners do wherever possible, but we also need more research on that.
+
+  **Resolved (2026-11-09, Andrej):** B, as a TabArena call: `BENCHMARK_CHANGES_TODO.md` has the section "Losses for deviance-scored tasks" (each deviance's Poisson or Tweedie objective on LightGBM, XGBoost and CatBoost, the floor on every method's output, the five tasks) with an open-research list: which methods have such a loss, whether matched losses change the rankings, what practitioners fit per task.

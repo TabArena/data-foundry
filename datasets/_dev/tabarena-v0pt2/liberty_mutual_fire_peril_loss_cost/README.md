@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: liberty_mutual_fire_peril_loss_cost
 container_format: 2
-checksum: v2:80afe60dff8aac5e39e80a11c937707d7d12b682a220b206b827fd5d0ed9096b
+checksum: v2:7c7158712051b610bc54e55d2df451751cdec23bbc9c80fb9fe88deaf7339ce7
 build: null
 build_stale: false
 data:
@@ -66,7 +66,7 @@ decisions:
 
 Regression of `log1p_transformed_loss_ratio`, scored with `normalized_weighted_gini` on IID splits. 452,061 rows and 299 features. Source: Kaggle (2014).
 
-Not built yet. The current definition gives checksum `v2:80afe60dff8aac5e39e80a11c937707d7d12b682a220b206b827fd5d0ed9096b`.
+Not built yet. The current definition gives checksum `v2:7c7158712051b610bc54e55d2df451751cdec23bbc9c80fb9fe88deaf7339ce7`.
 
 ## In brief
 
@@ -198,6 +198,7 @@ We start with train.csv from the Kaggle competition (452,061 policies; the test 
 
 - Prediction point: Liberty Mutual underwrites a commercial policy's fire cover, before the term. The host ships every feature in its test file, so it treats them as known then. The features are anonymised, but three checks pass. The weather block is the location's climate, not the term's weather: it stays the same in 94.6-96.9% of the consecutive terms of a risk, and the crime and geodemographic blocks never change (LEAK-10). `var13` changes at 23.1% of the terms with a loss against 28.3% of those without, so it is not updated after a loss (LEAK-38). The newest term of a risk has a loss as often as its earlier terms (0.261% against 0.292%, Fisher p 0.47), so recent losses are not missing (LEAK-24).
 - The target is the host's "transformed ratio of loss to total insured value" (data page), shipped as its log1p, `log1p_transformed_loss_ratio`, and scored on the published scale (`target_transform="log1p"`, MET-3), as in allstate_claim_prediction_challenge_1m. The transform is not disclosed, and 58% of the losses exceed 1, so the published value is not a plain ratio of loss to insured value (USE-5). The release records no term length, so the share of terms cut short is unknown and cannot be given; no feature carries a cut (`var17` is no share of a year, `var11` does not fall at loss terms), and the target is a ratio over the insured value, so it stays per contract (MET-14). 450,873 policies (99.74%) are exactly 0, the 1,188 losses run from 0.006 to 25.9 (skew 1.90 on the published scale, -0.16 on the log scale), none is negative or missing. A regularised LightGBM trained on the log1p scores 0.314 / 0.306 / 0.320 on the shipped folds, against 0.300 / 0.317 / 0.276 trained on the published scale (ahead on 2 of 3 folds, 0.313 against 0.298 on average).
+- Note: how mature the labels are (cross-dataset item of 2026-11-09, Andrej): the data page says neither whether the loss in the target is paid or incurred nor when it was valued (the competition ran in 2014; the release holds no dates). No claim date, closure date or status is published, so the share still open at a refit cannot be counted. Both sides of the random split come from one extract, so they carry the same maturity.
 - We drop `id`: Kaggle randomised it ("We randomized the id column", forum thread 10026), and the loss rate is 0.25-0.28% in every id decile.
 - We drop `dummy`, a "Nuisance variable used to control the model, but not working as a predictor" (data page): it is `B` exactly where `var9` is `Z` (forum thread 10101), which `var9` keeps.
 - The level `Z` of `var1` to `var9` becomes missing ("Level "Z" in these variable represents a missing value", data page). These nine are categorical, as the data page lists them; the rest is numeric.

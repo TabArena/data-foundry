@@ -38,7 +38,9 @@ semi-annual < quarterly, 2026-11-08, as in the two other pricing tables); LEAK-1
 where the panel found it overstated.
 Weighed: the original files +, a real fleet-pricing task +, the family's only commercial-fleet damage table +; weak,
 anonymised covariates -, held-out fleets of the same years standing in for next year's book -.
-Left for Andrej and Lennart: nothing. The split (issue 6), the organisers' floor of 30 days (issue 7), the stand-in
+Left for Andrej: nothing open. Issue 14 settled on 2026-11-10 (the split by contract kept, A, for its larger test
+size; the hold-out of 2013 the reference it approximates); issues 13 (no fleet record, provisional, standing with the
+split) and 15 (the rescaled deviance kept) settled on 2026-11-09. Settled earlier: the split (issue 6), the organisers' floor of 30 days (issue 7), the stand-in
 metric (issue 8) and the group of the three contracts that share a registration (issue 9) were settled on 2026-11-08;
 the build is stale until a rebuild (the split and its group column, the metric, the ordered bands).
 
@@ -73,7 +75,12 @@ changes, the splits comment, Decision 2 and the notes' "Dropped:" bullet follow;
 probe 23's flag was no leak; every fold number of the notes, the metric reason and the splits comment is measured again
 on the reshuffled folds (the CC lines keep the numbers of their day).
 
-**Main points:** No issue is open. Issues 1 to 5 are resolved, 2 and 4 superseded by 5; issues 6 to 9 on 2026-11-08
+**Main points:** No issue open. Resolved on 2026-11-10 (Andrej): the split by contract kept, every year tested (14,
+A over E for its larger test size: about 1,240 positives per fold against 437 to 477); the hold-out of 2013 trained
+on 2011-2012 is the reference design, which allows no repeats, and A ranks the models as it does. Resolved on
+2026-11-09 (Andrej): no record of the fleet's earlier periods, provisional, and standing since issue 14 kept the
+split by contract (13), and the rescaled deviance kept, as stable across folds as the Gini (15). Issues 1 to 5 are
+resolved, 2 and 4 superseded by 5; issues 6 to 9 on 2026-11-08
 (the split by contract, forced from temporal; the rule amended for a selection the source made before release; the
 uniformly rescaled weighted Tweedie deviance as the stand-in; the three contracts that share a registration joined in
 one group, the shared rating profiles across the folds natural repeats). To note before the rebuild: under the new
@@ -81,6 +88,9 @@ metric untuned models and the task probe's families score worse than the weighte
 the relativities in check (a Tweedie GLM, a regularised LightGBM, a frequency model) beat it; on the reshuffled folds
 the GLM's margin over the constant is 1.06 (standard error 0.65) where the folds before gave 1.39 (0.46), so the draw
 of the folds moves it by about a standard error.
+
+**Verdict (2026-11-10, Andrej):** changes (review page of 2026-11-10): issue 14 (A) applied, the split by contract
+kept with your note on the hold-out in `splits_comment`; rows, target, split and metric unchanged.
 
 **Issues for Andrej and Lennart:**
 
@@ -892,6 +902,552 @@ of the folds moves it by about a standard error.
      may continue another (starting the day the other ends, ages advanced) ... (Andrej, 2026-11-03), widened to a
      successor with one profile column changed and no counter lower (Lennart, 2026-11-08)".
    [^proof]: **EV-6** (Should): "A claim is proven by a test that could have refuted it."
+
+13. **Give each period the fleet's own record from its earlier periods: claims, vehicle-years and years insured?**
+
+   * **Problem:**
+     - A fleet insurer prices a fleet it already covers knowing its claims and vehicle-years of earlier years, and
+       79.5% of the 2013 periods belong to a contract insured in an earlier year (dataset.py:294), but no feature
+       carries a contract's or a vehicle's record.
+     - The game's players had that record: 82.0% of the periods they priced for 2014 carry a contract number of
+       2011-2013 (counted by the audit of 2026-11-09 in CASdatasets' `pg16test`, not re-checked here).
+     - Add features built from strictly earlier periods of the same contract and vehicle, or keep each period without
+       its fleet's record as now?
+   * **Background:**
+     - The definition once measured the contract's and the vehicle's claims and exposure of the previous year, on the
+       claim indicator over 2013 trained on 2011-2012, and found nothing (ROC AUC 0.667 with them, 0.668 without), so
+       left them out (dataset.py:200).
+     - A new fleet's cold start costs 1.13 on the declared metric (SD 0.73; dataset.py:314-316), about the Tweedie
+       GLM's whole margin over the weighted constant (1.06, standard error 0.65; dataset.py:198); that model also
+       trained on about two thirds of the training periods, so the 1.13 holds the cost of fewer rows as well as of the
+       unseen fleets.
+     - Strictly earlier: a period counts only the periods of its contract group (`fleet_group`) or its vehicle that
+       ended before it starts, so its own claims and those of periods running beside it stay out; every period of a
+       fleet sits on one side of the split by contract, so the record never crosses it (issue 14).
+     - Counted on the raw files: 67.2% of the 2012 periods and 79.5% of the 2013 periods have their contract in an
+       earlier year, but only 25.2% of the 2013 periods have their vehicle in one; 38.4%, 38.8% and 37.2% of the
+       claims of 2011, 2012 and 2013 closed after their year (`ANNEE_CLOTURE`), with 37% to 38% of the positive
+       charge, so an earlier year's charge at a period's start is partly a reserve, while its claim count is close to
+       final.
+   * **Effect on the task:** a fleet the insurer knows is priced with its record, as the insurer and the game's
+     players priced it; the rules count a known entity's own earlier outcomes as a legitimate input, not a
+     leak[^13a].
+   * **Experiments:** none on the declared metric; the claim-indicator test above (one previous year, ROC AUC) is the
+     only one.
+   * **Consistency:**
+     - spanish_homeowners_motor_insurance_2010_2014 ships the customer's previous-year claim counts and costs;
+       allstate_claim_prediction_challenge_1m ships the household's and the car's 2005 claim counts but not the
+       amounts, read years after the renewal.
+     - spanish_motor_insurance_coverage_level_2022_2024 is asked the same for its renewals (its issue 9).
+   * **Unknown:** the gain on the declared metric, and how much of the cold start's 1.13 is the fleet's own record; a
+     cluster run of the GLM and a regularised LightGBM with and without the record on the 9 shipped folds would settle
+     both.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | No record (implemented) | periods carry their classes, start and length to 31 December only | no change; the one earlier test found no gain | a known fleet is priced as if new, which neither the insurer nor the game's players did |
+     | B | Claims, vehicle-years and years insured | per period, from the contract group's and the vehicle's periods that ended before its start: claim count, vehicle-years, years insured; missing where the file holds no earlier period | what the insurer knows at the start; counts close to final | derived columns to check against the weight rules; 2011 periods have little or none; a rebuild |
+     | C | B and the charges | B, plus the earlier periods' summed charges | the full record | 37% to 39% of a year's claims were still open at the next 1 January, so the charge holds more than was known |
+
+   * **Recommendation:** B: the record is what the insurer and the game's players had, and its counts are close to
+     final at a period's start while its charges are not; run the measurement on the cluster before the rebuild and
+     report it, and keep B even if its gain is within noise, as information the actor has, unless you want a gain
+     shown first. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B or C, in `_clean` before `vehicle_id` and `contract_id` leave the frame: for each period,
+   the sums over the periods of the same `fleet_group` with `period_end < period_start` of `nombre_de_sinistre` (the
+   count, B), `exposure` (vehicle-years) and, on C, the clipped charge, plus the number of distinct earlier years
+   insured; the same over `vehicle_id`; missing, not 0, for a 2011 period with no earlier period in the file (its
+   history is cut by the file's start). The earlier vehicle-years sum past periods' realized weights, never the
+   period's own: run probe 22 (LEAK-41's "a sum of a group's exposures" clause) and probe 23 on the shipped folds,
+   `dataset check`, the leak probes, and on the cluster (sbatch) the gain with and without the record; rewrite the
+   notes' "Not added" bullet (dataset.py:200), `task_summary.known` and `changes`; a CC line and a CHANGELOG entry.
+   Re-count the 2014 share (82.0%) in `pg16test` if CASdatasets is installed.
+
+   **Andrej (2026-11-09, change):** We go with A, but add this as an explicit curation decision that might be revisited
+
+   **Consistency check (AI, 2026-11-09): Which reason does the curation decision for A name, so it stands beside your other calls on a unit's history?**
+   * **Problem:**
+     - A holds back a record the insurer has for 79.5% of the 2013 periods, while your calls on spanish homeowners
+       (2026-11-02, previous-year claim counts and costs shipped) and allstate (2026-11-03, the 2005 claim counts)
+       ship such a record, and so does today's standard; the decision needs a fact that sets this table apart[^13b].
+     - spanish 2015-2018's issue 10 found one today (15 to 44 training rows with history); here none is written yet.
+   * **Background:**
+     - Under the split by contract a fleet's earlier periods sit on the test side with it, so its record would be
+       built from other test rows' claims: one test row's target in another test row's features, the reason you
+       accepted for frempl's issue 10 today. The siblings split by time, where the record comes from training years.
+     - The one earlier test found no gain (claim indicator, ROC AUC 0.667 against 0.668).
+     - Issue 14 may move the split to a temporal design, where that reason falls away.
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | A, with the split as the reason | no record; a recorded decision: under the split by contract the record would carry test rows' claims into test rows' features, and the one test found no gain; revisited when issue 14 settles the split | a fact sets the table apart, as frempl's today; provisional by design | the insurer's record stays out while the split by contract stands |
+     | b | B | ship the record as the siblings do | the insurer's information | the test-to-test link above |
+     | c | A without a stated reason | as you marked | none | stands against the siblings and the standard without a fact |
+
+   * **Recommendation:** a: it is your A with the reason it rests on, and it reopens itself with issue 14.
+     **Decision:** a, b or c?
+
+   **Andrej (2026-11-09, change):** I go with your recommendation.
+
+   **Resolved (2026-11-09, Andrej):** (a): A as a recorded, provisional decision. No record of the fleet's earlier
+   periods: under the split by contract the record would carry test periods' claims into test periods' features (as
+   frempl's issue 10), and the one test found no gain; revisited when issue 14 settles the split. Applied: a Note in
+   the curation notes in place of the "Not added" bullet, a Decision entry with the share of periods that have an
+   earlier closed period (contract 0.85, vehicle 0.31 in 2013), CC lines in the notes and the record, and the exception
+   in the record and the cleaning rules' Cases[^13c].
+
+   [^13b]: **USE-10** (Must): "For a known entity, its history is legitimate: the split is temporal and the previous
+     outcome is a feature." **CLEAN-19** (Should): features built from other rows of the release that the actor reads
+     at the prediction point. **LEAK-9** (Should, amended 2026-11-05): the test-to-test link frempl's issue 10 rests on.
+
+   [^13c]: **CLEAN-19** (Should): a feature is built when "it is an input the actor reads at the prediction point
+     from other rows of the same release"; recorded as an exception for this table, provisional.
+
+   [^13a]: **USE-10** (Must): "For a known entity, its history is legitimate: the split is temporal and the previous
+     outcome is a feature." **LEAK-34** (Must; narrows LEAK-10): an entity's own history is legitimate, also when it
+     carries labels forward. **USE-6** (Must): "Anything known at the prediction point is a legitimate input." These
+     are in main; that every piece of information the actor has should ship is the position of the information audit
+     of 2026-11-09, not yet a rule.
+
+14. **Keep the split by contract, or go back to a temporal design: the one 2013 window, or the expanding windows of 2026-11-02?**
+
+   * **Problem:**
+     - On 2026-11-08 the periods went to a split by contract, forced from temporal (issue 6 (b)), rather than the one
+       valid window, 2013 trained on 2011-2012, which the windows rule admits only by an amendment[^14a].
+     - The audit of 2026-11-09 adds two facts: the fleet's own record, absent today (issue 13), and the claims'
+       maturity, as 37% to 39% of each year's claims closed only after the year, so every training charge is more
+       developed than a tariff fit on 1 January would have seen.
+     - Do these facts, and the standard that a model gets what the insurer holds at each refit (Andrej, 2026-11-09),
+       move the call to a temporal design, or does the split by contract stand?
+   * **Background:**
+     - The expanding windows (Andrej, 2026-11-02): three four-month windows of 2013 by start date, each trained on
+       every period that had ended before the window starts, so 2011-2012 plus the 2013 periods already closed, with
+       no gap[^14b]; nothing of a test period reaches training, and they were dropped for one reason only.
+     - That reason: the 2013 periods closed before a window starts are the ones that ended early, and they claim more
+       (0.127 and 0.131 claims per vehicle-year in the September and May windows, against 0.115 and 0.116 for the 2013
+       periods still running), so they were barred as training rows chosen by their length[^14c]; training every
+       window on 2011-2012 instead (2026-11-06) left three windows on one training side, which count as one window.
+     - An insurer refitting on 1 September 2013 holds exactly the closed periods, and also the claims to date of the
+       periods still running, which this release cannot give (claims carry no dates and rows are cut at 31 December),
+       so the early-ended tilt is one the insurer faces too, diluted by those running periods (an AI reading).
+     - The record: every period of a fleet sits on one side of the split by contract, so the features of issue 13 can
+       be built from strictly earlier periods under either design.
+     - The maturity: the release holds every charge as of one extract (claims closed up to 2014, 41 still open), on
+       both sides of either design; a window could locate the 2012 claims still open on 1 January 2013 by their
+       closing year, but not their reserve on that day, so neither design trains on the charges a 1 January refit saw.
+     - The split by contract trains on other fleets' 2013 periods and on 2011-2012 periods, the years mixed; the
+       charge per vehicle-year rises from 160 in 2011 to 184 in 2013, a level a model can read from the start date
+       (dataset.py:318-321).
+   * **Effect on the task:** under the split by contract a test fleet is new to the model and the training labels are
+     as mature as the test labels; under the window most test fleets are known (79.5% of the 2013 periods) and the
+     model has to carry 2011-2012 forward to 2013, as the tariff did.
+   * **Experiments:** repo, on the shipped folds (dataset.py:310-327): on the folds' 2013 periods the forced model
+     scores 84.27 on the declared metric against 84.11 for the valid window's model (+0.16, SD 0.45, better on 4 of
+     9); the test year's own training periods gain -0.33 pooled (SD 0.33), so no year-level leak crosses the folds.
+     Hiding the claims of the last 30 or 90 days of 2012 moved the January window of 2013 from 0.190 to 0.192 and
+     0.187 on the Gini, within noise (dataset.py:209); the charges' maturity was never simulated.
+   * **Consistency:** spanish_motor_insurance_coverage_level_2022_2024 has the same facts and is asked the same
+     question (its issue 10); the window there and here would be one amendment of the windows rule for the family, and
+     it would reopen open_university_learning_analytics_dataset and distribution_transformers_at_cauca_department,
+     which ship forced with one valid window.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Split by contract (implemented) | 3 x 3 folds by `fleet_group` over 2011-2013, tagged forced from temporal | Lennart's call of 2026-11-08; the rules' remedy; scores 2013 as the window does; the record of issue 13 fits it | trains on the test year and on later periods; tests fleets the model never saw |
+     | B | One window | 31,050 test periods of 2013 trained on the 56,178 of 2011-2012 (64.4% of the rows); the windows rule amended for one valid window | the game's design and the yearly refit; known fleets; no later periods in training | one evaluation; an amendment for the family, decided with spanish coverage; the charges stay as of the extract; reverses a call of 2026-11-08 |
+     | C | The expanding windows of 2026-11-02 | three four-month windows of 2013 (5,312, 6,509 and 19,229 test periods, newest first), trained on the 67,886, 61,797 and 56,178 periods closed before each starts (77.8%, 70.8% and 64.4% of the rows); no gap; the charge per vehicle-year and its weight unchanged | what the insurer holds at each refit; three training sides, so three windows; known fleets; no later periods in training; Andrej's call of 2026-11-02 | the early-ended 2013 periods tilt training (10.8% and 4.0% of two windows' vehicle-years, claiming 10% to 13% more); needs the rule on rows chosen by their length amended; the newest window has 7% of the vehicle-years and 123 positives yet counts a third; reverses calls of 2026-11-06 and 2026-11-08 |
+     | D | As on 2026-11-02, before Lennart's changes (for reference) | the expanding windows of C; the target the period's summed claim charge (net recoveries at 0), not per vehicle-year; the length to 31 December a feature; no weight in training or scoring; the row Gini as the stand-in for the game's market | Andrej's definition as shipped on 2026-11-02; shows what the later calls changed | rewards guessing how long a vehicle stays in the fleet (about 0.03 of the row Gini); the early-ended training rows of C; reverses the calls of 2026-11-06 and 2026-11-08 on the target, the weight and the metric (issues 5, 8 and 9) |
+     | E | Split by contract, scored on 2013 (added 2026-11-10) | the folds of A (3 x 3 by `fleet_group`), each test side kept to the held-out fleets' 2013 periods; their 2011-2012 periods unused in that fold; still forced from temporal | closest of the repeated designs to the 2013 hold-out (answer of 2026-11-10); tests the last year, as the hold-out does; 9 folds, spread 0.34 | inherits A's same-quarter gain and unseen fleets; each period of 2013 tested 3 times, the earlier years never |
+     | F | Leave one year out (added 2026-11-10) | 3 folds grouped by year: each year tested on a model trained on the other two | ranks the models as the hold-out does; its 2013 fold is the hold-out | trains on later years in 2 of 3 folds; triples the regularised LightGBM's margin (0.89 against 0.33); 3 folds, not reshuffled |
+
+   * **Recommendation:** E (updated 2026-11-10), the closest repeated approximation of the 2013 hold-out (the answer
+     of 2026-11-10); A if the test side should keep covering all three years. Until 2026-11-10: C, if the standard of
+     2026-11-09 is to hold as a rule: the training side is then what the
+     insurer holds at each refit, and the rule on rows chosen by their length gets a clause for the rows the actor
+     itself holds then; otherwise A, since neither new fact favours the single window (the record fits the split by
+     contract and the charges' maturity is the same under both designs) and B only as one amendment with spanish
+     coverage's issue 10. D is the definition before Lennart's changes, listed for reference[^14d].
+     **Decision:** A, B, C, D, E or F?
+
+   **Notes for the AI:** on B, as issue 6's notes for B and the spanish coverage issue 10 notes: the main session
+   drafts the SPLIT-14 amendment for one valid window, worded for both tables; `_make_splits` with 2013 tested on the
+   periods that started before 2013, the SPLIT-10 exception for no gap restated for that window (it lapsed with the
+   windows on 2026-11-08), `ForcedGroupedFromTemporal` out of `data_tags`; rewrite `task_summary.split`, `fit`,
+   `splits_comment`, Decision 2 and the record's split fields; a CC line, the Cases rows and a CHANGELOG entry. The
+   maturity could be sized under B by refitting with the charges of the 2012 claims that closed after 2012 replaced by
+   a development factor (a cluster run). On C: bring back `Temporal(on="period_start", horizon=4,
+   horizon_unit="months")`, the `WINDOWS` constant and `_make_splits` from `2c1823ea` (each window's training side: the
+   periods whose `Date_Fin_Situ` precedes the window's start), keep D11's target, weight and `exposure_to_year_end`, drop
+   `grouping`, `fleet_group` and `ForcedGroupedFromTemporal`; restate the SPLIT-10 exception for no gap; amend LEAK-41's
+   selection clause ("rows selected by the realized weight" exempts the rows the actor itself holds at the refit, the
+   periods closed by then, sized in the notes), with a Cases row for this table; if issue 13 adds the fleet's record,
+   build it from periods closed before each test period starts; rewrite `task_summary.split`, `fit`, `splits_comment`
+   and the record's split fields; CC line, CHANGELOG entry; re-run `dataset check` and probes 22 and 23. On D: the
+   definition at `2c1823ea` (`git show 2c1823ea:datasets/_dev/tabarena-v0pt2/pricing_game_2016_french_fleet/dataset.py`)
+   is the reference: target `claim_charge`, `Metric.stand_in("normalized_gini", ...)`, `exposure` as the length to 31
+   December, the three windows; choosing it reopens issues 5, 8 and 9 and needs exceptions to MET-14, MET-15 and LEAK-41.
+
+   **Andrej (2026-11-09, discuss):** Would B allow for repeated multiple test splits?
+
+   **Answer (AI, 2026-11-09):**
+   - B: no. It has one test set (the 31,050 periods of 2013) and one training side (2011-2012), so it scores once;
+     repeats would only change the model's seed. Cutting 2013 into several test slices on that one training side does
+     not help, since windows that share a training side count as one window[^14b].
+   - C, added on your request of 2026-11-09 (option C above), is the design with several test splits: three four-month
+     windows of 2013, each with its own training side (77.8%, 70.8% and 64.4% of the rows).
+   - A has 3 x 3 = 9 folds, but they repeat a random deal of the contracts over all three years, not refits over time.
+
+   **Andrej (2026-11-09, discuss):** We need to test if the grouped split leaks. Also, we need to try to construct a
+   temporal split with all issues fixed
+
+   **Answer (AI, 2026-11-09):** The split by contract leaks a small same-quarter signal, and no temporal design meets
+   every constraint: keep the split with the leak stated, or take a temporal design that breaches one named rule?
+
+   * **Problem:**
+     - Other fleets' periods that started in the same quarter of the same year help price a test period more than the
+       same quarter of other years does, a gain no tariff fit before that quarter has, larger for LightGBM than for the
+       GLM[^14e].
+     - Every temporal design breaks one constraint: the expanding windows train on 2013 periods chosen by their early
+       end, the lagged sides hold back periods known at the window's start, the yearly windows and the one window give
+       too few windows[^14f][^14g].
+     - The expanding windows' tilt is measured, the same in 2011-2012 and correctable, and neither the tilt nor its
+       correction moves a score beyond noise, so the choice is between two rule breaches, not between scores.
+   * **Background:** LightGBM Tweedie with probe 23's regularised settings (the start as a date) and the Tweedie GLM of
+     the notes (it reproduces their 81.58 on the shipped folds), the vehicle-years as weight, predictions averaged over
+     3 seeds; the declared deviance (lower is better; a gain is positive when the rows tested help) and the weighted
+     Gini; the spread is the SD over the 9 shipped folds unless a standard error is named.
+   * **Experiments, the leak:**
+     - Same year, no gain: on the folds' 2013 periods, other fleets' 2011-2013 periods against their 2011-2012 periods
+       at equal size (37,860) gain +0.08 for the GLM (SD 0.31, 5 of 9 folds) and +0.24 for LightGBM (SD 0.88, 6 of 9),
+       Gini +0.002 and +0.009; trained on one year at a time, no year predicts its own year better than the other years
+       do (2013: GLM +0.01, SD 0.85), and 2011 is predicted better from 2012's periods than from its own (GLM 79.63
+       against 81.15, SD 2.3), so later years carry no time effect either.
+     - Same quarter, a small gain: each test quarter scored by a fit without the training periods that started in that
+       quarter of that year, against a fit without as many periods of the same quarter of the other years (the season
+       kept): the quarter's own periods gain +0.14 for the GLM (SD 0.09, 8 of 9), which has no date input, +0.53 for
+       LightGBM given the day of the year only (SD 0.38, 9 of 9) and +0.71 given the date (SD 0.45, 8 of 9); Gini
+       +0.005, +0.020 and +0.017. It sits in the second to fourth quarters (the first, mostly the 1 January cohort,
+       shows none). Probe 23 by quarter flags the same, +0.55 within a quarter (SE 0.22, 7 of 9 splits). Claims per
+       vehicle-year by zone and quarter vary no more than chance, so it is no regional claims shock; its source was not
+       traced further.
+     - Size: for the GLM about an eighth of its margin over the constant (1.06) and of its fold SD (1.17); for LightGBM
+       of the order of the gap between the two models (0.77 here), so it can change their order.
+     - On all of 2013 the shipped folds score as the one valid window does on the same periods (GLM 83.45 against
+       83.43, bootstrap SE 0.12; LightGBM 84.73 against 84.69, 0.41): the window knows the test fleets' earlier years,
+       the shipped folds have the quarter's own periods, and the two offset.
+     - No other link between fleets: registration ids follow the contract numbers (one vehicle under three contracts,
+       already joined); contracts that start the day after another ended with the same contract classes share no
+       group and claim together no more than chance (0.9% against 0.6%, correlation of their rates 0.02); 13 pairs of
+       claims in two groups carry one charge in the same year, of 4,568 claims.
+     - Probes 22 and 23 on the shipped folds give the notes' numbers: the weight as a feature +0.31 (SD 0.94) in the
+       Tweedie arm and -14.9 (SD 16) in the L2 arm, no feature's gain through it; by year the year's own training
+       periods gain -0.38 (SE 0.25), a shared profile's lookup -0.23 (SE 0.17); no flag but the quarter's above.
+   * **Experiments, temporal designs:** the four-month windows of 2013 (September, May, January); each design on its
+     own test periods, against the shipped folds' out-of-fold predictions on the same periods (in brackets):
+
+     | Design | Training sides | What it breaks, by how much | GLM, mean of windows | LightGBM |
+     |---|---|---|---|---|
+     | Expanding windows (2026-11-02) | 77.8%, 70.8%, 64.4% | rows chosen by their end: the added 2013 periods (10.8% and 4.0% of the training vehicle-years) claim 8% and 12% more per vehicle-year than the 2013 periods started before the window (SE 5% and 9%) | 89.68 (89.57) | 91.45 (91.02) |
+     | The same, tilt corrected | as above | rows still chosen by their end; dividing their target by the ratio of 2011-2012 (1.22) leaves -5% and -1% (SE 5% and 10%); needs a training target per window | 89.66 | 91.42 |
+     | The same, weighted by the inverse chance of ending early | as above | the tilt grows (0.143 against 0.117 claims per vehicle-year in May) | 89.71 | 98.25 |
+     | Lagged sides | 64.4%, 58.3%, 51.1% | trains on the periods started at least 8 months before the window, holding back the later 2012 periods (6.1% and 13.3% of the rows), known at its start | 89.61 | 91.16 |
+     | Only ends known at the start added | 64.6%, 64.5%, 64.4% | about 2% of the periods end where the contract's age class changes: 140 and 67 periods added, one training side in practice | not fitted | |
+     | Yearly windows | 30.4%, 64.4% | two windows, the older below 40% | 82.89 (82.82) | 84.83 (84.02) |
+     | One window, 2013 | 64.4% | one window | 83.43 (83.45) | 84.69 (84.73) |
+
+     - Every design scores within noise of the others and of the shipped folds (bootstrap SE of a difference about
+       0.17 for the GLM and 0.8 to 1.0 for LightGBM), except the inverse weighting and LightGBM's 2012 window trained
+       on 2011 (worse by 1.65, SE 0.52).
+     - The claims' maturity costs nothing measurable: 22% to 31% of the training claims closed only in the window's
+       year or later; given the mean charge of the claims closed before, with the claims of the last 30 days left out
+       as unreported (placed uniformly in their period), the corrected windows score 89.67 for the GLM and 90.13 for
+       LightGBM, which gains as the stand-in removes severity noise, so no gap is needed on this evidence[^14h].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Split by contract (implemented) | as now; the notes state the same-quarter gain (+0.14 for the GLM, +0.53 to +0.71 for LightGBM) and probe 23's flag by quarter | Lennart's call of 2026-11-08; no amendment; scores 2013 as the one window does | a test period's own quarter is in training; the gain favours flexible models over the GLM; fleets the model never saw |
+     | b | Expanding windows (C above) | three four-month windows of 2013 on the periods closed before each (77.8%, 70.8%, 64.4%), the rate and weight of 2026-11-06, no gap, the tilt in the notes | nothing of a test period's time in training; what the insurer holds at each refit; known fleets, so issue 13's record could come from training years; scores as a | the rule on rows chosen by their length amended for the periods closed at a refit (tilt +8% and +12%); the newest window holds 7% of the test vehicle-years; reverses calls of 2026-11-06 and 2026-11-08 |
+     | c | b with the tilt corrected | b, each window's added 2013 periods' target divided by the ratio learned on 2011-2012 | the tilt removed within noise | a training target per window, which the format does not have; the rows are still chosen by their end, so the same amendment; no score moves |
+     | d | Lagged sides | each window on the periods that started at least 8 months before it (64.4%, 58.3%, 51.1%) | no row chosen by its end; three sides above the floor | holds back the later 2012 periods (6.1% and 13.3% of the rows), known at a window's start, which the windows rule asks a window to train on; a refit nobody runs |
+
+   * **Recommendation:** b: it is the only design that keeps a test period's own time out of training, which the
+     same-quarter gain under a shows matters for flexible models; its one breach is measured, small, the same as in
+     2011-2012 and correctable, and the correction moves no score; it is your standard of 2026-11-09 and your call of
+     2026-11-02. a if the rule on rows chosen by their length stays as it is, with the same-quarter gain in the notes.
+     **Decision:** a, b, c or d?
+
+   **Andrej (2026-11-09, discuss):** Wait, if we go with windows that are not a year, is the exposure still handled
+   correctly or does the metric break?
+
+   **Answer (AI, 2026-11-09):** Yes, the exposure stays correct and the metric holds under the four-month windows
+   (option b); nothing in the target, the weight, `exposure_to_year_end` or the metric changes, only the split code.
+   - A row enters a window whole, never cut at the window's edge: a test period by its start, a training period only
+     once it has closed before the window starts. So its charge per vehicle-year and its realized vehicle-years are
+     those of the full period on both sides. A training period that ended early has a short weight because it was
+     short, which is right: the weight is the vehicle-years its claims came from.
+   - Test periods run to their own end, up to 31 December, past the window's four months (13,610 of the January
+     window's 19,229 end after 1 May). They are scored on the full period, as a tariff applied at the start is, and
+     none is in its own window's training side, since it is not closed by then.
+   - `exposure_to_year_end` is the length from the period's start to 31 December on every row, known at the start
+     and independent of the window; a window narrows its test range (September: 0.08 to 0.33), which training covers.
+   - The rescaling factor sum(w y) / sum(w p) is taken per scored set, so each window is rescaled to its own claim
+     total (the newest: 103 positive charges, the largest 3.9% of its total); it is undefined only for a window with
+     no claim cost, which none is. The vehicle-years are the right weight for a rate under the Tweedie deviance at
+     any period length, so short periods are not over-counted.
+   - What stays a con, not a break: the per-window rescaling absorbs the windows' levels (180, 197 and 205 per
+     vehicle-year, oldest first), and a mean over windows counts the newest (7% of the test vehicle-years) as much as
+     the January one (77%); the early-closed training periods' tilt is the selection question of option b.
+
+   **Andrej (2026-11-10, note):** One thing we have to note in the curation notes is the following: The best split we
+   can make is holding out the last year. But this does not allow for repeated splits, which is why we need to find the
+   best approximation.
+
+   **Andrej (2026-11-10, discuss, in chat):** Compare the statistics that matter for each option of a split: how many
+   splits, how many samples per split, model performance. Under the view that holding out the last year is the best
+   split, what is the best solution? Could we also do grouped CV by year?
+
+   **Answer (AI, 2026-11-10):** E, the split by contract scored only on 2013, is the closest repeated approximation of
+   the hold-out; A comes second, within the hold-out's own noise; the windows inside 2013 (C) approximate it worst.
+   * **What was run:** 8 models fitted with the vehicle-years as weight (the constant; Tweedie and Poisson-frequency
+     GLMs; regularised, untuned and deep Tweedie LightGBM; a Poisson-frequency LightGBM; a random forest; LightGBM over
+     3 seeds), on the hold-out (2013 trained on 2011-2012) and on each repeated design. Each design's margins over the
+     constant (the declared metric, higher better) are compared with the hold-out's. The hold-out's own noise sets the
+     ceiling: a bootstrap of its test fleets gives each margin an SE of 0.33 to 0.54 and agrees with its own ranking at
+     Kendall's tau 0.87.
+   * **Sizes:** every temporal design tests the same 31,050 periods of 2013 (1,361 with a claim cost); A tests every
+     period 3 times (about 1,240 positives per fold, 2.7 times the positives of any temporal design).
+
+     | Design | Splits (training sides) | Training share | Test periods per split | Positives per split | Test fleets seen in training |
+     |---|---|---|---|---|---|
+     | A by contract | 9 (9) | 66-67% | ~29,000 | ~1,240 | 0% |
+     | E by contract, scored on 2013 | 9 (9) | 66-67% | 10,169 to 10,545 | 437 to 477 | 0% |
+     | F leave one year out | 3 (3) | 64-70% | 26,530 to 31,050 | 1,081 to 1,361 | 67-80% |
+     | B hold-out 2013 | 1 (1) | 64.4% | 31,050 | 1,361 | 80% |
+     | C expanding 4-month windows | 3 (3) | 64.4, 70.8, 77.8% | 19,229, 6,509, 5,312 | 1,026, 232, 103 | 81-84% |
+     | Lagged sides | 3 (3) | 51.1, 58.3, 64.4% | as C | as C | 74-76% |
+     | 4-month windows on 2011-2012 | 3 (1) | 64.4% | as C | as C | 76-81% |
+     | Expanding quarters | 4 (4) | 64-80% | 16,789 to 3,925 | 925 to 73 | 81-85% |
+     | Yearly windows | 2 (2) | 30.4%, 64.4% | ~30,000 | ~1,300 | 67-80% |
+
+   * **Agreement with the hold-out:**
+
+     | Design | Ranking agreement, 7 models / the 5 sound ones | Mean distance from the hold-out's margins (5 sound) | Regularised LightGBM's margin (hold-out 0.33) | Spread of GLM minus LightGBM over splits |
+     |---|---|---|---|---|
+     | E by contract, scored on 2013 | 0.90 / 0.80 | 0.14 | 0.43 | 0.34 |
+     | A by contract | 1.00 / 1.00 | 0.20 | 0.46 | 0.57 |
+     | F leave one year out | 1.00 / 1.00 | 0.19 | 0.89 | 0.55 |
+     | 2013 by fleet, training on 2011-2012 plus the other fleets' 2013 | 0.71 / 0.40 | 0.21 | 0.86 | 0.36 |
+     | 2013 by fleet, training on the other fleets' 2011-2012 | 0.90 / 0.80 | 0.23 | -0.36 | 0.57 |
+     | C expanding 4-month windows | 0.81 / 0.60 | 0.32 | -0.47 | 1.39 |
+     | 4-month windows on 2011-2012 | 0.71 / 0.40 | 0.25 | -0.10 | 0.41 |
+     | Lagged sides | 0.62 / 0.20 | 0.27 | -0.19 | 0.35 |
+
+   * **Findings:**
+     - E and A come closest; mixing the years in training does not distort the ranking, as the shipped folds'
+       out-of-fold scores on 2013 already matched the hold-out (83.45 against 83.43). E is preferred over A by its
+       design, testing the last year as the hold-out does; their difference is within the hold-out's noise.
+     - F (grouped by year): its 2013 fold is the hold-out, so its agreement is partly built in; the 2011 fold, trained
+       on 2012-2013, gives the regularised LightGBM 1.81 over the constant, so F overrates flexible models, as the design
+       that adds the other fleets' 2013 periods to the hold-out's training does; it trains on later years in 2 of 3
+       folds[^14i].
+     - The windows inside 2013 rank worst: two of three are small (232 and 103 positives), and an equal mean over them
+       doubles the noise against the hold-out on the same periods (SE of GLM minus LightGBM 0.76 against 0.39). Three
+       training sides add no precision.
+     - Every design ranks the top three (Poisson LightGBM, Poisson GLM, Tweedie GLM) within noise of each other, as the
+       hold-out does; the designs differ on the middle (regularised LightGBM against the random forest).
+   * **Recommendation:** E (options table above). It needs no amendment: still forced from temporal[^14i]. Your note
+     goes into the splits comment with the decision: the hold-out of the last year is the reference design, and the
+     split the approximation measured against it.
+
+   **Notes for the AI:** on E: `_make_splits` builds the 3 x 3 folds by `fleet_group` as now and keeps each test side
+   to its periods of 2013 (training sides unchanged); `ForcedGroupedFromTemporal` stays; rewrite `task_summary.split`,
+   `splits_comment` (with Andrej's note of 2026-11-10 and this comparison) and Decision 2; CC line, CHANGELOG entry;
+   re-run `dataset check` and probes 22 and 23. Run folder: `~/workdir/ta_clones/ta_data_curation/runs/2026-11-10_pg16_splits/`
+   (`pg16_splits.py`, `pg16_approx.py`, `pg16_loyo.py`; `res.csv`, `approx.csv`, `loyo.csv`).
+
+   **Andrej (2026-11-10, discuss):** Disagree: We go with A over E because it provides the larger test size.
+
+   **Resolved (2026-11-10, Andrej):** A, the split by contract as implemented: 3 x 3 folds by `fleet_group` over
+   2011-2013, forced from temporal, every year tested. The reason is the larger test size: about 1,240 positive
+   charges per fold against 437 to 477 for E. A agrees with the hold-out's ranking at 1.00 for the 7 models and 1.00
+   for the 5 sound ones; its mean distance from the hold-out's margins is 0.20 against E's 0.14, a difference within the
+   hold-out's own noise (SE of a margin 0.33 to 0.54). Applied: `splits_comment` states your note of 2026-11-10 (the
+   hold-out of the last year, 2013 trained on 2011-2012, is the reference design but allows no repeated splits, so the
+   shipped split is its approximation, measured against it; the shipped folds' out-of-fold score on 2013 matched the
+   hold-out, 83.45 against 83.43) and why A over E; a CC line in the notes and the record. Issue 13's provisional
+   decision stands, since the split by contract it rests on stays.
+
+   [^14a]: **SPLIT-14** (Must; amended 2026-11-08, Lennart): "A temporal task has at least 3 windows, and no window's
+     train side holds less than 50% of the data. ... A task that cannot meet it ships under SPLIT-8." **SPLIT-8**
+     (Must): "grouped by the entity when the periods are stacked and the entities recur across them". principles.md:
+     "A Must has no exceptions". Lennart, 2026-11-08, issue 6: "Reply (b): Forced by contract".
+   [^14b]: Issue 2, resolved 2026-11-02 (Andrej): "(d), expanding four-month windows without a gap, with SPLIT-14
+     amended (windows that share one train side count as one window)"; it followed Andrej's question "Why don't you
+     employ a rolling window approach".
+   [^14c]: **LEAK-41** (Must, 2026-11-06, Lennart): "No model is trained or scored on rows selected by the realized
+     weight (such as full-year rows only)"; its last clause, amended 2026-11-08 on this table, exempts "a selection the
+     source made before release, the same in train and test". Issue 5 (D11, Lennart, 2026-11-06) listed C ("Rate with
+     its weight, expanding windows") with the con "the selection stays".
+   [^14d]: The state of `2c1823ea`, Andrej's head before Lennart took the PR over (Lennart's PR comment of
+     2026-11-08: "the charge per period and the expanding 2013 windows are gone"). The 0.03 is issue 5's rough
+     attribution: the direct model of the total scored 0.210 on the row Gini, its rate times the length to 31 December
+     0.182. **MET-14** (Should) and **MET-15** (Must) ask for the rate per vehicle-year with the vehicle-years as the
+     weight; **LEAK-41** (Must) bars the training rows chosen by their length.
+   [^14e]: **SPLIT-8** (Must): a forced split "gets a leak test across the split and the leak probes"; "a leak found is
+     weighed case by case like any other: removed where it can be, otherwise the task may still ship as an approximate
+     fit with the leak measured in the notes". Probe 23 (leak_checks.md) read this table's earlier flag by quarter
+     (+0.46, SE 0.17) as a seasonal feature extrapolated by a fit without a quarter's rows; with the season kept in
+     both fits, the gain stays.
+   [^14f]: **SPLIT-14** (Must; amended 2026-11-08, Lennart): "at least 3 windows, and no window's train side holds less
+     than 50% of the data", "each window trains on what is known before it starts", and one older window may train on
+     40% when two are above the floor. **SPLIT-11** (Should): train on everything before the window.
+   [^14g]: **LEAK-41** (Must): "No model is trained or scored on rows selected by the realized weight". b and c need a
+     clause such as: a window may train on the rows the actor holds at its start (the periods closed by then), their
+     tilt against the periods still running measured and sized in the notes.
+   [^14h]: **SPLIT-10** (Should; amended 2026-11-04 and 2026-11-05, Lennart): "the measurements decide"; "No gap is
+     needed where the collection covers what the gap guards against and the measurements show neither".
+   [^14i]: **SPLIT-8** (Must): a temporal task that cannot meet SPLIT-14 ships "grouped by the entity when the periods
+     are stacked and the entities recur across them", with a leak test across the split; E keeps A's groups and leak
+     test and changes only which test rows are scored. **SPLIT-14** (Must): "each window trains on what is known before
+     it starts", which F's folds for 2011 and 2012 break.
+
+15. **Keep the rescaled weighted Tweedie deviance, go back to the weighted Gini, or first measure how stably each orders the models across folds?**
+
+   * **Problem:**
+     - Since 2026-11-08 the score is the uniformly rescaled, exposure-weighted Tweedie deviance, the stand-in that
+       follows the game's market most closely (217 of 252 two-player markets against 136 for the Gini on the shipped
+       folds)[^15a].
+     - On it an untuned LightGBM scores worse than the weighted constant (86.21 against 82.64), the task probe flags no
+       signal, and the Tweedie GLM's margin over the constant is 1.06 with a standard error of 0.65 (dataset.py:198).
+     - A metric that orders models nearly by chance from fold to fold ranks a benchmark's methods by noise, which is
+       why fremtpl2's claim cost was not shipped, and whether this one does is not measured[^15b].
+   * **Background:**
+     - The rescaled deviance is level-free, as the game was, and punishes relativities that run too steep, as the
+       market did; the Gini sees only the order, so a tariff and the same tariff with doubled relativities score alike
+       (the metric's reason).
+     - Under the Gini each fitted model beats the constant by about 9 standard errors, and the GLM beats the
+       regularised LightGBM by 0.013 (standard error 0.013) (dataset.py:198).
+     - Only the claim frequency carries signal: the charge among periods with a claim is not predictable from the
+       classes (R^2 -0.06; dataset.py:194).
+     - Kendall's W measures how well the models' order agrees across folds: 1 for the same order on every fold, near
+       0 for none; it is low on small folds even when the mean ranking is stable, and these folds hold 1,216 to 1,271
+       positive charges each.
+   * **Effect on the task:** under the deviance, methods that keep their relativities flat win and default boosted
+     trees lose to the constant; under the Gini all of them beat it, and the spread of the relativities goes unscored.
+   * **Experiments:** none on the ranking's stability; the bootstrap standard errors above compare pairs of models,
+     not their order across folds.
+   * **Consistency:** fremtpl2's issue 12 (Lennart, 2026-11-08) left the claim cost per year out, as its weighted Gini
+     ordered five models at W 0.43 against 0.89 for the claims per year under the Poisson deviance; the cost's
+     Tweedie deviance there reached 0.78.
+   * **Unknown:** each metric's W over the 9 shipped folds for 6 to 8 models (the weighted constant, the Tweedie GLM,
+     a regularised and an untuned LightGBM, the frequency model times the mean charge, a random forest, a tuned
+     method if one runs).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Rescaled deviance (implemented) | the score set on 2026-11-08 | closest to the game's market as measured; level-free | default models lose to the constant; the stability of its ranking is unmeasured |
+     | B | Weighted Gini | the normalized weighted Gini of the rate, the stand-in until 2026-11-08 | every fitted model beats the constant by far; the stand-in of australian and spanish coverage | further from the market (136 against 217 of 252); blind to the spread of the relativities; reverses a call of 2026-11-08 |
+     | C | Measure, then decide | A stays; a cluster job computes both metrics' W over the 9 folds | decides on what a benchmark metric needs | a cluster run; the decision waits |
+
+   * **Recommendation:** C, keeping A meanwhile: A stands if the deviance orders the models about as stably as the
+     Gini (W within about 0.1 of it, or above about 0.7); B if its W falls toward fremtpl2's 0.43 while the Gini's
+     stays high, since a stand-in that ranks methods by chance serves no comparison, however close to the market (the
+     thresholds are the AI's proposal). **Decision:** A, B or C?
+
+   **Notes for the AI:** on C, a cluster job (sbatch, not the login node) on the 9 shipped folds: the models above,
+   each fitted with the weight, predictions averaged over 3 seeds, scored by `rescaled_mean_tweedie_deviance` and the
+   normalized weighted Gini; Kendall's W per metric over the folds, with the per-fold ranks and the bootstrap standard
+   errors of the GLM against the constant; the result goes into this issue as an answer. On B: `Metric.stand_in` back
+   to `normalized_weighted_gini` with its reason, a CC line naming the fact that reverses issue 8 (the W measured),
+   and the MET-11 Cases row.
+
+   **Andrej (2026-11-09, change):** Option C: Measure, then decide.
+
+   **Answer (AI, 2026-11-09):** Measured: the rescaled deviance orders the models across the folds as stably as the
+   weighted Gini. Keep it (a), or go back to the Gini (b)?
+
+   * **Problem:**
+     - On the 9 shipped folds the rescaled deviance orders 8 models at Kendall's W 0.85 and the weighted Gini at 0.87
+       (chance gives about 0.11), and five models in fremtpl2's terms (two GLMs, three LightGBMs) at 0.82 and 0.78,
+       where fremtpl2's cost Gini gave 0.43.
+     - That is A's case under the thresholds proposed above: the deviance's W is above 0.7 and within 0.1 of the
+       Gini's, for every set of models compared and on each of 1,000 resamples of the test groups.
+     - Neither metric separates the best methods: under both, the tuned LightGBM and the two frequency models (under
+       the Gini also the Tweedie GLM) lie within about half a standard error of each other.
+   * **Experiments:** a cluster job on the 9 shipped folds (3 x 3 by `fleet_group`); every model fitted with the weight
+     `exposure`, its predictions averaged over 3 seeds; each fold scored by `rescaled_mean_tweedie_deviance` through the
+     dataset's scorer and by the normalized weighted Gini of the rate; standard errors from 1,000 bootstrap resamples of
+     each test fold's groups. The 8 models:
+     - the weighted constant;
+     - the Tweedie GLM of the notes (power 1.5, log link, a light ridge: 81.55 and 0.196, the notes' 81.58 and 0.196);
+     - a Poisson GLM and a regularised Poisson LightGBM of the claims per vehicle-year, each times the training side's
+       mean charge per claim;
+     - a regularised Tweedie LightGBM (300 trees, learning rate 0.03, 15 leaves), an untuned one, and a random forest
+       of the rate (300 trees, at least 50 periods a leaf);
+     - a LightGBM tuned by a random search of 30 configurations, 3 inner folds by group on the training side, picked by
+       the inner score of the metric it is scored by (under a minute a seed and fold).
+
+     | | Rescaled deviance (lower is better) | Weighted Gini |
+     |---|---|---|
+     | Kendall's W: 8 models; 7 without the constant; fremtpl2's five | 0.85; 0.82; 0.82 | 0.87; 0.80; 0.78 |
+     | W of the five that beat the constant under both | 0.57 | 0.48 |
+     | W of the 8 over the resamples (5% to 95%) | 0.78 to 0.88 | 0.77 to 0.87 |
+     | Mean rank (mean score): tuned LightGBM | 1.9 (81.00) | 2.2 (0.199) |
+     | Poisson LightGBM x mean charge | 2.3 (81.09) | 2.2 (0.200) |
+     | Poisson GLM x mean charge | 2.3 (81.08) | 2.9 (0.197) |
+     | Tweedie GLM | 3.8 (81.55) | 2.8 (0.196) |
+     | Regularised Tweedie LightGBM | 5.1 (82.16) | 5.0 (0.177) |
+     | Weighted constant | 6.2 (82.64) | 8.0 (0) |
+     | Random forest | 6.3 (82.58) | 6.0 (0.152) |
+     | Untuned Tweedie LightGBM | 8.0 (86.81) | 6.9 (0.139) |
+     | Folds the mean-rank winner wins | 5 of 9 (the tuned LightGBM) | the tuned and the Poisson LightGBM tie at 2.2 and win 2 and 4 of 9 |
+     | Tweedie GLM over the constant (bootstrap SE; folds beyond 2 SE) | 1.09 (0.63; 5 of 9) | 0.196 (0.021; 9 of 9) |
+
+   * **What else the run shows:**
+     - The two metrics differ at the bottom, not the top: each has one model last on every fold, the untuned LightGBM
+       under the deviance (4.17 below the constant, standard error 1.20) and the constant under the Gini; the deviance
+       puts the random forest and the regularised LightGBM level with the constant (+0.06, SE 0.53; +0.48, SE 0.57),
+       where the Gini puts every fitted model 6 to 10 standard errors above it.
+     - Between two fitted models they resolve alike within a fold: the Tweedie GLM leads the regularised LightGBM by
+       1.1 standard errors under the deviance and by 1.4 under the Gini.
+     - On the task's signal: the tuned LightGBM beats the constant on the declared metric by 1.64 (SE 0.29) and the
+       Poisson LightGBM by 1.55 (SE 0.39), each beyond 2 standard errors on 9 of 9 folds, so tuned methods answer the
+       task probe's `no_signal` flag[^15c]; the Tweedie GLM's 1.09 (SE 0.63) reproduces the notes' 1.06 (0.65).
+     - The tuned picks are small, slowly learned models under either metric (the most frequent: 4 to 14 leaves, 65 to
+       580 trees at learning rates of 0.01 to 0.04).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep the rescaled deviance (implemented) | A of the issue: the metric stays; the notes and the record get the W measured | the closest to the game's market (217 of 252 two-player markets); orders the models as stably as the Gini (W 0.85 against 0.87; 0.57 against 0.48 among the five best); sees the spread of the relativities | the Tweedie GLM beats the constant by under 2 standard errors (the tuned and frequency models by 4 to 6); untuned trees lose to the constant |
+     | b | Weighted Gini | B of the issue: `Metric.stand_in` back to `normalized_weighted_gini`, with its reason and a CC line | every fitted model 6 to 10 standard errors above the constant; the stand-in of australian and spanish coverage | no more stable than the deviance; further from the market (136 of 252); blind to the spread of the relativities; reverses issue 8 of 2026-11-08 without a new fact |
+
+   * **Recommendation:** a. The measurement leaves issue 8's reason standing: the deviance ranks the methods as stably
+     as the Gini, both far from fremtpl2's 0.43, so the stand-in closer to the market keeps its place[^15d].
+     **Decision:** a or b?
+
+   **Andrej (2026-11-09, change):** Reply (a): Keep the rescaled deviance
+
+   **Resolved (2026-11-09, Andrej):** (a): the metric stays `rescaled_mean_tweedie_deviance`. The notes' metric bullet
+   states the measured stability (Kendall's W 0.85 against 0.87 for the weighted Gini, 8 models, 9 folds); CC lines in
+   the notes and the record.
+
+   [^15a]: **MET-11** (Must): a stand-in is "the closest computable metric ... and the closeness is measured on the
+     shipped splits where possible". Lennart, 2026-11-08, issue 8: "Agree. GO with the change in metric and use it
+     going forward".
+   [^15b]: task_probes.md, "How to check a flag": "Kendall's W says how well the method ranks agree across folds; it
+     is low on small folds even when the mean ranking is stable." **TP-1** (Must): a flag is a question, checked
+     against tuned methods before acting on it. fremtpl2 issue 12, resolved 2026-11-08 (Lennart): "A, as implemented:
+     one task, the claims per year insured".
+   [^15c]: **TP-1** (Must): "A flag is a question, not a verdict ... check every flag against the benchmark's tuned
+     methods before acting on it."
+   [^15d]: **MET-10** (Weigh): a factor of the choice is "the resolution on our folds"; **MET-11** (Must): a stand-in is
+     "the closest computable metric".
 
 **Review panel:** ship after changes (mediator). Tier full, a re-review of 2026-11-06 under LEAK-41 and MET-14 to MET-16
 after D11 (issue 5): the claim, column and split auditors, the domain practitioner, the precedent checker, the blind

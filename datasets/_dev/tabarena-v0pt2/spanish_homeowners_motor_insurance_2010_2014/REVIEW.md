@@ -7,9 +7,8 @@ insurer in 2010, followed until they lapsed either one, 2010-2014. The target is
 98.2%), shipped as log1p and scored unweighted on the amount by the normalized Gini; the inputs are 12 rating fields and
 the customer's earlier home and motor claims; three yearly test windows, 2014, 2013 and 2012, each trained on all
 earlier years. Validity: SEL-1, SEL-2, USE-1, USE-5, LEAK-34, PROV-1 hold; USE-8 approximate (no current premium, closed
-2010 cohort); USE-6 and the Tensions row on rating factors as amended on 2026-11-08: `gender` is dropped, as sex is no
-rating factor of an insurance pricing task, whatever the actor's jurisdiction (australian_vehicle_insurance_2004_2005's
-issue 7); the split rules SPLIT-9, SPLIT-11 and SPLIT-14 hold; LEAK-10 fixed (the year's own outcomes dropped); the
+2010 cohort); USE-6 and the Tensions row on rating factors as amended on 2026-11-09 (Andrej): `gender` is dropped, as
+Spanish law under EU law bars it today and the rule treats the ban as if it had always applied; the split rules SPLIT-9, SPLIT-11 and SPLIT-14 hold; LEAK-10 fixed (the year's own outcomes dropped); the
 rating fields read once kept with a note (issue 1; a new test finds no update of the insured values after a claim);
 LEAK-41 not triggered (no weight, time on risk or earned amount; the year-end lapse, alone or as a feature, marks more
 loss, not less); SPLIT-10 departed from, no gap (issue 2). Value: TP-9 holds (240 / 310 / 448 claimants per window);

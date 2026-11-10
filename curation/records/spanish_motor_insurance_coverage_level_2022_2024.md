@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Lennart
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -133,6 +133,24 @@ CC (2026-11-08, Lennart): `payment_frequency` is an ordered category, fewest pay
 **Assessment (AI, 2026-11-08):** both CC lines above applied in the definition. Re-run on the rebuilt frame (premiums rounded to the cent; untuned LightGBM; the run folder of the exposure review, `apply_2026-11-08`): the eight premiums' decimal counts and cent-grid flags rank the 32,626 located cancellations among the 169,919 policy-years in force from 1 January at ROC AUC 0.565 (0.965 on the unrounded frame, same script, folds grouped by policy), and no grid from 1 EUR to 1e-5 separates them (AUC at most 0.501); the decimal counts as features gain +0.0001 under weighted Tweedie (SE 0.0017, 5 of 9) and -0.0012 under weighted L2 (SE 0.0013, 3 of 9), against +0.0035 and -0.0052 before (9 splits x 2 seeds). The premiums' values still mark a located cancellation at ROC AUC 0.795 from the shipped features (0.81 unrounded, 0.62 without the premiums; first shipped repeat), the flat-amount trace kept with its note. Probe 22 (3 splits x 3 seeds): the time on risk from the features at R^2 0.340 (0.350 before), 1/time on risk alone 0.070, no feature whose gain goes through it under weighted Tweedie or L2. Task probe (5 of 9 splits): LightGBM 0.3187 on the declared metric (0.3165 before), no flags. `dataset check`: 0 errors, 0 warnings.
 
 CC (2026-11-08, Lennart): the declared metric (`normalized_weighted_gini`) is checked, as declared on the PR #47 review board.
+
+CC (2026-11-09, Andrej): columns held only for training rows stay out for now, no training-only role (cross-dataset item of 2026-11-09; MET-14, LEAK-41, MET-16); the notes list them.
+
+CC (2026-11-09, Andrej): metric (REVIEW.md issue 11): A, as implemented: the normalized Gini of the cost per year weighted by the time on risk stays; the Gini against the premium charged is not adopted, and the call of 2026-11-02 (issue 3) stands.
+
+**Assessment (AI, 2026-11-09):** answers to REVIEW.md issues 9 and 10, both open (9 shipped splits; untuned LightGBM weighted by the time on risk, L2 on log1p and Tweedie, 3 seeds, and a weighted Tweedie GLM). A model that reads one row gets about half of the year before's claims from this year's premiums: as features they gain +0.004 to +0.007 on renewals with the premiums among the inputs and +0.012 to +0.013 without them; the claim-history class carries almost none (ROC AUC 0.51 for the year before's claim). Under the split by policy all years of a test policy are in its test fold, linked by `insured_id` or, for 82.9% of the test rows with a next year, by the car, the driver's birth year, the age at licence and the area; a model that reads the next year's row gains +0.12 to +0.13 for LightGBM (9 of 9; +0.027 for the GLM), almost all from next year's premium, and the notes have no line against reading other test rows (LEAK-9). With the history shipped, the next row would carry each test row's own claims and cost (0.70 to 0.74 when read). No date finer than the year: the days in force date most new policies' starts, but each row is a calendar-year slice with undated claims, so every window inside 2024 trains on 2022-2023 only. Recommended: no history and the split by policy, with a protocol line in the notes; the curator has the call.
+
+CC (2026-11-09, Andrej): the training labels' maturity is stated in the notes (cross-dataset item of 2026-11-09, option B).
+
+CC (2026-11-09, Andrej): no claims of the year before for renewals, and a protocol line against reading other test rows (REVIEW.md issue 9 (a), "No history, a protocol line"): the notes and `splits_comment` say that each test policy-year is predicted from the training rows and its own features only and that no feature or model step may use other test rows (LEAK-9, an evaluation leak: a test policy's next year sits in its test fold, and its price gives this year's claims away, +0.12 for LightGBM that reads it). Recorded as a LEAK-9 Cases row.
+
+CC (2026-11-09, Andrej): the forced split by policy stays (REVIEW.md issue 10 (a), "Split by policy"), with issue 9's protocol line; the one 2024 window is not adopted, and the release has no date finer than the year.
+
+CC (2026-11-09, Andrej): ship (review page of 2026-11-09).
+
+CC (2026-11-10, Andrej): the cost per year stays on the log1p scale (REVIEW.md issue 12, A, as implemented).
+
+CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
 
 ## Reference
 

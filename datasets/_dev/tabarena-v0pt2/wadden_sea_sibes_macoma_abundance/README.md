@@ -2,23 +2,24 @@
 report_format: data-foundry-report-v2
 unique_name: wadden_sea_sibes_macoma_abundance
 container_format: 2
-checksum: v2:ff3029a347a053375fc09af5c8c488455644a0b7563100865b234dc6bcb53724
+checksum: v2:b2bdb395dd2901cf1afffbe8eedf56c1a5f75a35afe87e3e8b3a885663b93f59
 build: null
 build_stale: false
 data:
   n_rows: 59044
   n_features: 8
   dtypes:
-    category: 3
+    category: 4
     datetime64[ns]: 1
     float64: 6
   n_test_dataset_rows: null
 task:
   target: log1p_macoma_per_m2
   problem_type: regression
-  metric: rmse
-  metric_origin: fallback
-  scoring_columns: null
+  metric: mean_group_normalized_rmse
+  metric_origin: context
+  scoring_columns:
+  - survey_year
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
@@ -66,9 +67,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log1p_macoma_per_m2`, scored with `rmse` on grouped splits by `station`. 59,044 rows and 8 features. Source: Other (2024).
+Regression of `log1p_macoma_per_m2`, scored with `mean_group_normalized_rmse` on grouped splits by `station`. 59,044 rows and 8 features. Source: Other (2024).
 
-Not built yet. The current definition gives checksum `v2:ff3029a347a053375fc09af5c8c488455644a0b7563100865b234dc6bcb53724`.
+Not built yet. The current definition gives checksum `v2:b2bdb395dd2901cf1afffbe8eedf56c1a5f75a35afe87e3e8b3a885663b93f59`.
 
 ## In brief
 
@@ -138,10 +139,10 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY-SA 4.0 |
 | data_tags | Non-IID, Grouped, Spatial |
 | reference | bijleveld2024sibes,rijkswaterstaat2026vaklodingen |
-| rows x columns | 59,044 x 10 |
+| rows x columns | 59,044 x 11 |
 | task.target | log1p_macoma_per_m2 |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | mean_group_normalized_rmse |
 | task.split_regime | grouped_non_iid |
 | task.group_on | station |
 | task.group_labels | per_sample |
@@ -150,16 +151,25 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
-| definition | sqrt(mean((y - p)^2)) |
-| reason | Lyashevska et al. 2016 (Materials and Methods, Cross-validation) score their leave-one-out predictions by several measures side by side: overall, user's and producer's accuracy for the prevalence, and mean error and mean squared error for the intensity and for the unconditional intensity, with no single criterion (MET-5); the SIBES descriptor and data page define no metric. By construction (density = count / core area, 0.0173 or 0.0177 m2 in nearly every sample) RMSE on the density ranks models nearly as the paper's MSE on the unconditional count per core; version 6 does not reproduce the paper's 2010 counts (variance per core 97.5 against 24), so this is not checked on the paper's data. |
+| name | `mean_group_normalized_rmse` (custom; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | mean over groups of RMSE within the group / standard deviation of the group's true values (ddof 0); groups whose true values do not vary are left out |
+| reason | The use case is the map of one past survey, and Lyashevska et al. 2016 (Materials and Methods, Cross-validation) check such a map within one year, by several measures side by side with no single criterion (MET-5); the SIBES descriptor and data page define no metric. The original is RMSE on the density pooled over the 15 survey years, the fallback kept on 2026-11-02 (Andrej); pooled, 2014, the year of the dense spat patches, holds 75.5% of the squared deviation and decides the ranking. Each year's RMSE on the density over the spread of its true densities, averaged, keeps RMSE within a year (a fixed divisor ranks models as RMSE does) and gives each survey's map one vote (Andrej, 2026-11-10). |
+| inputs | group: `survey_year` |
 | target scale | ships on the `log1p` scale for modelling; scored on the original scale after the inverse of `log1p` |
 
-<details>
-<summary>Feature types: 3 categorical, 0 string, 1 datetime</summary>
+**Scoring columns**
 
-- categorical (3): `station`, `tidal_basin`, `tidal_flat`
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+
+| column | role | how the metric uses it | model input |
+|---|---|---|---|
+| `survey_year` | group | mean_group_normalized_rmse: the survey year, the year of `date` as text (15 years, 2008-2022): the metric divides each year's RMSE on the density by the spread of its true densities and averages the 15; never a feature, and `date` stays a feature | never a feature |
+
+<details>
+<summary>Feature types: 4 categorical, 0 string, 1 datetime</summary>
+
+- categorical (4): `station`, `tidal_basin`, `tidal_flat`, `survey_year`
 - string (0): none
 - datetime (1): `date (%Y-%m-%d)`
 
@@ -194,13 +204,13 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 59,044 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| log1p_macoma_per_m2 | station | date | tidal_basin | tidal_flat | longitude | latitude | interpolated_median_grain_size_um | interpolated_mud_percent | elevation_m_nap |
-|---|---|---|---|---|---|---|---|---|---|
-| 4.75778 | 4764 | 2014-07-16 00:00:00 | Pinkegat | Engelsmanplaat | 6.01317 | 53.446 | 188.726 | 2.07351 | 0.1 |
-| 0 | 4950 | 2016-08-26 00:00:00 | Marsdiep | Lutjewaard | 4.988 | 53.012 | 198.744 | 9.00445 | -1.27 |
-| 5.16038 | 2646 | 2014-08-05 00:00:00 | Vlie | Westwad Griend | 5.22883 | 53.248 | 242.663 | 4.75471 | -0.05 |
-| 4.07318 | 1732 | 2018-08-05 00:00:00 | Dollard | Dollard | 7.10833 | 53.2705 | 80.8861 | 40.1488 | 0.22 |
-| 0 | 317 | 2015-07-24 00:00:00 | Marsdiep | Balgzand | 4.8405 | 52.949 | 183.069 | 3.62897 | -0.19 |
+| log1p_macoma_per_m2 | station | date | tidal_basin | tidal_flat | longitude | latitude | interpolated_median_grain_size_um | interpolated_mud_percent | elevation_m_nap | survey_year |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 5.44662 | 4881 | 2010-09-25 00:00:00 | Lower Ems | Groninger Wad | 6.61117 | 53.523 | 104.759 | 31.2178 | -0.36 | 2010 |
+| 0 | 1869 | 2015-08-04 00:00:00 | Dollard | Dollard | 7.186 | 53.3158 | 121.699 | 21.5974 | -0.42 | 2015 |
+| 4.75778 | 4332 | 2016-08-22 00:00:00 | Lauwers | Groninger Wad | 6.52583 | 53.4835 | 161.948 | 5.81476 | -0.15 | 2016 |
+| 0 | 3318 | 2015-06-24 00:00:00 | Vlie | Groote Plaat | 5.25217 | 53.3295 | 226.723 | 1.99802 | -0.64 | 2015 |
+| 0 | 254 | 2010-07-29 00:00:00 | Marsdiep | Balgzand | 4.91033 | 52.904 | 103.155 | 28.2788 | 0.21 | 2010 |
 
 ## Curation notes
 
@@ -214,13 +224,16 @@ We start with samples.csv and biota.csv of the SIBES dataset, version 6 (NIOZ, 2
 - Dropped the 71 samples with Tellinoidea (sibes_id 339, 2015-2022): tellinoids below 3 mm are classified at the superfamily level, which "Includes ... Macoma balthica" (species.csv), so their Macoma count is a lower bound (CLEAN-15). All 71 go, not only the 29 without Macoma, so the rule reads another taxon's record, not the label. The 12 samples with Tellininae (3-5 mm) and no Macoma stay as zeros: "So far, only Macomangulus tenuis and Fabulina fabula were found" (species.csv).
 - Six 2022 sample ids appear twice in samples.csv with two different sediment measurements (149.8 and 47.2 um in one) and one fauna record: one row kept, and neither measurement is a source of the interpolation.
 - Dropped how the sample was taken, `sampling_type` (grid or random station), `platform` (boat or on foot) and `total_surface_m2` (the core area, set by the platform), and `sample_id`: an unsampled place has no visit (USE-3), and the density is already per m2. The other taxa of the sample are measured with the target and are not inputs.
+- Note: held for training rows only, not shipped (cross-dataset item of 2026-11-09, Andrej): what each sample measured at its visit, which a place between the stations lacks: the sediment measured in the jar (`median_grain_size`, `percentage_mud`, in 55,776 of the release's 59,463 samples; it enters only as the interpolation for other samples), how the sample was taken (`sampling_type`, `platform`, the core area `total_surface_m2`), and the rest of biota.csv for the sample, the 170 other taxa and the tellins' biomass (`afdm_m2`). They are known for the sampled stations when the map is fit, but not for a place it predicts. They would need a training-only role, which the format does not have yet (MET-14, LEAK-41, MET-16), so they stay out for now.
 - Exposure (MET-14, MET-15, USE-3; 2026-11-06): the effort behind a count is the core area, planned by the platform (two boat cores of 0.0173 m2 together, one core of 0.0177 m2 on foot; CV 1.4% over the shipped rows), and, for samples with many individuals, a subsample fraction the lab picks after seeing the sample and does not release ("For the species and samples that contained many individuals, a subsample was selected and analyzed", descriptor). The source folds both into `abundance_m2`, "standardized for differences in sampled surface area and subsampling" (descriptor, Table 4), so the target is a density: 2,480 of the 25,974 positive counts per core (density x core area, 9.55%) are more than 0.02 from a whole number. The 608 below one tellin per core (on a 0.1 lattice, mostly in samples poor in fauna) are not explained by the area or the subsample correction, which can only raise a count; the descriptor documents fractional counts only for polychaete fragments, so their cause is unknown; they ship as published with this note, and NIOZ is not asked for now (CC 2026-11-08, Lennart; REVIEW.md issue 7). They are 1.0% of the rows, at small densities (median about 29 per m2), which the RMSE on the density does not feel. No count is released, so MET-14's check that the target times the core area rebuilds the count has nothing to rebuild; the source's density ships as it is. The map predicts the density of each place, an equal-area cell, so the task scores it unweighted and declares no sample weight (the equal-area clause of LEAK-41's time-on-risk row in the leak rules, 2026-11-08, with noaa_afsc_bottom_trawl_survey_cpue); the core area is no feature, as an unsampled place has no core (above), and a Poisson deviance on the count per core would not be a likelihood for counts that are not whole.
 - Note: 117 station-days hold two samples, a grid and a random sample at the same coordinates (log1p correlation 0.53). With the interpolated sediment the two share every feature (the duplicate rows the checks report); both are kept, in one fold through the station.
 - Note: for lack of funding, many 2017 and 2018 samples were processed years later (descriptor, Table 1: 2,831 and 2,274 processed then; version 6 holds 4,139 and 4,140), and Tellininae occur almost only in 2018. Bivalvia sp. ("Parts of individuals", 874 samples) is kept: no species list ties it to Macoma.
-- Note: the metric is RMSE on the density, which a few dense spat patches dominate (up to 99,780 per m2): 2014 holds 75.5% of the squared deviation of the density and the 10 densest samples 58.0%. An untuned LightGBM fit on log1p explains R^2 0.33 of log1p but 0.01 of the density (9 shipped folds, before the elevation was joined). Back-transformed, it puts the mean density of a tidal basin in a year at a median 0.19 of the observed (143 basin-years with at least 100 test samples, one repeat), yet its RMSE is only 4% above that of a Tweedie fit on the density (879.7 against 847.1, the training mean 883.9; the Tweedie fit wins in 9 of 9 folds). RMSE kept (CC 2026-11-02, Andrej): the fallback, as the source names no single criterion; nantucket_sound_sea_duck_aerial_survey_counts takes the mean Poisson deviance as a stand-in for its source's one likelihood criterion.
+- Metric (Andrej, 2026-11-10, review issue 8, option C): the per-year normalised RMSE on the density, `mean_group_normalized_rmse` over the 15 survey years: each year's RMSE on the density (after the inverse of log1p) divided by the standard deviation of that year's true densities, averaged over the years, so each survey's map counts once. The original is RMSE on the density pooled over the years, the fallback kept on 2026-11-02 (CC, Andrej) since the source names no single criterion. Pooled, a few dense spat patches decide it (up to 99,780 per m2): 2014 holds 75.5% of the squared deviation of the density (the yearly standard deviation runs from 93 per m2 in 2008 to 2,899 in 2014) and the 10 densest samples 58.0%. Within a year a fixed divisor ranks models as RMSE does, so only the equal weight per year is ours; within a year a few cores still weigh most (a year's 10 densest samples hold a median 55% of its squared deviation, 25% to 82%). On 2026-11-09 (8 untuned models, the 9 shipped splits, 3 seeds) the pooled RMSE and the per-year score agreed only at Kendall tau 0.51 (0.36 to 0.71 per split): LightGBM fit by squared error on the density beat the constant pooled but not per year (a difference of +0.013, SE 0.015), and LightGBM with a Tweedie loss was first under both. Task probe on the new score (2026-11-10, untuned, fit on log1p, 5 of the 9 splits): random forest 0.962, LightGBM 0.967, linear 1.005, the dummy (the training mean of log1p, back-transformed) 1.046, where 1 is each year's own mean density; the random forest beats the dummy on 5 of 5 splits by 0.084 (SE 0.005); no flag. `survey_year`, the year of `date` as text, is the metric's group, a scoring column and never a feature; `date` stays a feature. Every fold holds every year, since whole stations are held out with all their years. On the pooled RMSE (before 2026-11-10): an untuned LightGBM fit on log1p explains R^2 0.33 of log1p but 0.01 of the density (9 shipped folds, before the elevation was joined). Back-transformed, it puts the mean density of a tidal basin in a year at a median 0.19 of the observed (143 basin-years with at least 100 test samples, one repeat), yet its RMSE is only 4% above that of a Tweedie fit on the density (879.7 against 847.1, the training mean 883.9; the Tweedie fit wins in 9 of 9 folds). RMSE kept (CC 2026-11-02, Andrej): the fallback, as the source names no single criterion; nantucket_sound_sea_duck_aerial_survey_counts takes the mean Poisson deviance as a stand-in for its source's one likelihood criterion.
 - Note (CC 2026-11-06, Lennart): 39 samples are a single boat core of 0.00866 m2, which the data descriptor does not describe (from a boat "two cores ... combined area of 0.0173 m2", on foot "a single core of 0.0177 m2"): 20 in 2008, 9 in 2010 and 10 in 2009-2019, each at its own station (32 grid, 7 random). 79.5% hold no tellin, against 60.6% in the same stations' 452 other samples and 67.2% in the two-core boat samples of the same year and basin; one tellin in such a core is 115.5 per m2, against 57.7 in two, and halving the area of a random scatter at those rates gives 77.8% and 82.0% zeros. Kept (CLEAN-11: unusual, not wrong): the source standardised their density for the area, they are 0.07% of the rows, and the zeros a small core adds are the chance part of a zero that the next note names.
 - Note: a core of 0.017 m2 can miss tellins where the habitat suits them ("even when environmental conditions are perfectly suitable, it is possible to encounter no animals in the core", Lyashevska et al. 2016, Introduction), so a zero mixes unsuitable habitat and chance.
 - CC (2026-11-06, Lennart): decision D13 of the exposure study (#51; review issue 6): the 39 single boat cores stay, with the note above, and the notes name the effort the density folds in (the core area and the subsample fraction, chosen after the sample is seen and not released). No earlier call covered them: the definition has kept them without a note since the review panel of 2026-11-01, which counted them and raised nothing; the exposure study of 2026-11-05 found that the descriptor does not describe them and measured their zeros (79.5% against 57.4% for two-core boat samples).
+- CC (2026-11-10, Andrej): review issue 8, "Reply (b): Per-year normalised RMSE (C)": the score is `mean_group_normalized_rmse` over the survey years on the density, each survey's map one vote, in place of the pooled RMSE of 2026-11-02.
+- CC (2026-11-09, Andrej): review issue 9, A as implemented, "Go ahead" on the consistency check's (a): the elevation stays the latest vaklodingen survey stamped on or before the sample's date, though the map of a past survey could also take a later one. The reason: the survey nearest in time would move the elevation by a median 0.08 m (90th percentile 0.30 m, for the 49.7% of the samples it changes), about the median 0.07 m between two successive surveys of a cell, too little to move a settled join.
 
 ## Splits
 
@@ -259,7 +272,7 @@ One group is a SIBES sampling station, a fixed position on the 500 m grid or a r
 | largest group | 0.0% of the rows |
 | test groups per fold | 1,697 to 1,698 |
 | groups of two or more rows with a single label | 13.5% |
-| nearest neighbour in the same group | 31.1% of the rows (chance: 0.0%) |
+| nearest neighbour in the same group | 31.4% of the rows (chance: 0.0%) |
 | label variance explained by the group | 0.42 (shuffled groups: 0.09) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
@@ -317,18 +330,24 @@ Accepted on purpose:
 
 ### Feature summary
 
+<details>
+<summary>Show the table (11 rows)</summary>
+
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| station | category | 0 | 0 | 5092 | 2403, 2748, 3175, 452, 3929, 2639, 1524, 852, 812, 1075 |
+| station | category | 0 | 0 | 5092 | 452, 2748, 2403, 3175, 3929, 2639, 1524, 852, 812, 1075 |
 | tidal_basin | category | 0 | 0 | 12 | Vlie, Borndiep, Marsdiep, Eierlandse Gat, Zoutkamperlaag, Lauwers, Lower Ems, P… |
 | tidal_flat | category | 0 | 0 | 41 | Balgzand, Waardgronden, Simonszand, Groninger Wad, Vlakte van Oosterbierum, Zwa… |
+| survey_year | category | 0 | 0 | 15 | 2021, 2022, 2019, 2014, 2016, 2017, 2018, 2015, 2009, 2010 |
 | date | datetime64\[ns\] | 0 | 0 | 538 | 2012-06-19 00:00:00, 2021-07-02 00:00:00, 2021-07-01 00:00:00, 2017-06-26 00:00… |
 | elevation_m_nap | float64 | 5 | 0.01 | 397 | -0.43, -0.63, -0.4, -0.25, -0.58, -0.56, -0.46, -0.45, -0.37, -0.27 |
 | longitude | float64 | 0 | 0 | 743 | 5.0347, 4.9958, 5.0268, 5.0192, 5.0423, 5.0035, 4.988, 4.9027, 5.0113, 5.3918 |
 | latitude | float64 | 0 | 0 | 509 | 53.4382, 53.2615, 53.4428, 53.4337, 53.411, 53.2705, 53.47, 53.4157, 53.257, 53… |
-| interpolated_median_grain_size_um | float64 | 0 | 0 | 58927 | 198.0875, 196.5999, 197.8187, 201.111, 169.4122, 197.1012, 198.7616, 106.3188, … |
-| interpolated_mud_percent | float64 | 0 | 0 | 58922 | 0.0, 5.1402, 3.7086, 3.1433, 2.1849, 7.6971, 2.4332, 2.6381, 30.6287, 7.8732 |
-| log1p_macoma_per_m2 | float64 | 0 | 0 | 1186 | 0.0, 4.0732, 4.7578, 5.1604, 5.4466, 5.6689, 5.8506, 4.0533, 6.0044, 4.7377 |
+| interpolated_median_grain_size_um | float64 | 0 | 0 | 58927 | 120.9413, 196.5999, 109.2111, 145.6622, 169.4122, 162.4472, 151.9973, 235.667, … |
+| interpolated_mud_percent | float64 | 0 | 0 | 58922 | 0.0, 0.5921, 3.8984, 3.7485, 3.5171, 9.8596, 5.0866, 30.3229, 2.6381, 5.7514 |
+| log1p_macoma_per_m2 | float64 | 0 | 0 | 1176 | 0.0, 4.0732, 4.7578, 5.1604, 5.4466, 5.6689, 5.8506, 4.0533, 6.0044, 4.7377 |
+
+</details>
 
 ### Target distribution
 
@@ -350,7 +369,7 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (20 rows)</summary>
+<summary>Show the table (25 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -359,11 +378,16 @@ Accepted on purpose:
 | date | 3 | 2021-07-01 00:00:00 | 277 | 0.47 |
 | date | 4 | 2017-06-26 00:00:00 | 261 | 0.44 |
 | date | 5 | 2021-07-08 00:00:00 | 259 | 0.44 |
-| station | 1 | 2403 | 28 | 0.05 |
+| station | 1 | 452 | 28 | 0.05 |
 | station | 2 | 2748 | 28 | 0.05 |
-| station | 3 | 3175 | 28 | 0.05 |
-| station | 4 | 452 | 28 | 0.05 |
+| station | 3 | 2403 | 28 | 0.05 |
+| station | 4 | 3175 | 28 | 0.05 |
 | station | 5 | 3929 | 26 | 0.04 |
+| survey_year | 1 | 2021 | 4414 | 7.48 |
+| survey_year | 2 | 2022 | 4411 | 7.47 |
+| survey_year | 3 | 2019 | 4207 | 7.13 |
+| survey_year | 4 | 2014 | 4177 | 7.07 |
+| survey_year | 5 | 2016 | 4152 | 7.03 |
 | tidal_basin | 1 | Vlie | 17853 | 30.24 |
 | tidal_basin | 2 | Borndiep | 8670 | 14.68 |
 | tidal_basin | 3 | Marsdiep | 7546 | 12.78 |

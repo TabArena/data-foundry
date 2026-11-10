@@ -88,7 +88,9 @@ Built as `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` on 2026-10-30, but `dataset.py` 
 
 **Predicted.** Claims per year insured: the claims of 1997 (0 to 5) divided by the share of 1997 insured. Each policyholder counts in proportion to that share, in training and scoring.
 
-**Known at prediction time.** At policy start the insurer knows the policyholder, vehicle, coverage and municipality; sex is left out, as EU insurers may no longer price on it. The share of 1997 insured is no input: it is shorter when a policy started or was surrendered during the year, often after a claim, so it is the rate's denominator and each policyholder's weight.
+**Known at prediction time.** At policy start the insurer knows the policyholder, vehicle, coverage and municipality; sex is left out, as EU insurers may no longer price on it.
+
+**Known only when scoring.** The share of 1997 each policyholder was insured. It is shorter when a policy started or was surrendered during the year, often after a claim, so it is no input: it is the rate's denominator and each policyholder's weight in training and scoring.
 
 **What the test data stands for.** Random policyholders are held out, representing comparable unseen customers of the same year; the portfolio has no dates, so no later year can be held out.
 

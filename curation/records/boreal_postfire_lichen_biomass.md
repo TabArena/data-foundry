@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Lennart
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -112,6 +112,18 @@ CC (2026-11-08, Lennart): issue 7 (B) in boreal_postfire_lichen_biomass, "Each p
 CC (2026-11-08, Lennart): the declared metric (the fallback `rmse`, weighted by `plot_weight` so each plot counts once) is checked: as marked, with issue 7 (B).
 
 CC (2026-11-08, Lennart): the score's `plot_weight` is declared as the task's `unit_weight` (column `plot_weight`, unit `plot`), so downstream tools can read that each plot counts once and weight their validation loss alike ("make sure to somehow add it to the metadata that this kind of group type ... exists and can be read by downstream tools"; MET-17). The `plot` column stays in the frame as metadata, never a feature.
+
+CC (2026-11-09, Andrej): issue 9 (B) in boreal_postfire_lichen_biomass, "Option B: Site-sheet coordinates as features." Every NT plot ships its transect start from the authors' site sheet `All_site_info_NT.xlsx` as its coordinates; the 0.01 degree grid of the lichen sheet (three plots repaired) only links CG2 and F2 and is not shipped, so the groups are unchanged.
+
+**Assessment (AI, 2026-11-09):** issue 9 (B): on the same 30 splits the random forest's weighted RMSE moves by +4.2 kg/ha (SE 3.3), LightGBM's by +3.9 (SE 8.9), within noise; the duplicate warnings are recounted (518 copies, 506 at 0, all within one plot; 976 conflicting rows; 28.8% of the variance within a plot). Issue 8 (B, Andrej's change mark asked for an ablation first): the SK plots joined point in polygon to Canada's fire maps (NFDB agency perimeters and NBAC, Open Government Licence - Canada), keeping a polygon within 1 year of the plot's fire year: 94 of 190 plots get a burn (94 of the 124 dated 1945 or later; 44 of the 71 with a same-year plot within 5 km), 45 burns of which 20 hold 2 to 9 plots (69 plots); the map year equals the field fire year in 157 of 165 matches; 42 plots lie inside a later mapped fire and none of their own year (33 dated before 1945) and stay on their own. Ablation (untuned, container inputs, 3 seeds, 30 splits each): 216 groups and an SK test quadrat 3.4 km from training with one group per SK plot, 167 groups and 4.3 km on the burns; the random forest's RMSE 1,166.8 (SE 29) against 1,186.3 (SE 24) overall and 1,230.3 (SE 40) against 1,254.1 (SE 47) on the SK rows, within the fold draw (the unchanged NT part moves as much); paired on the former folds, removing the test plots' burn-mates from training raises the forest's RMSE on those plots by 31 kg/ha (SE 9) against +2 to +6 for removing other SK plots, about 5 kg/ha on the SK RMSE and 2 kg/ha overall. B was implemented in the definition that day (`_prepare_raw_files` read the 2 GB of maps once); superseded on 2026-11-10: B is removed and the SK plots are one group each again (CC 2026-11-10 below).
+
+CC (2026-11-09, Andrej): columns held only for training rows stay out for now, no training-only role (cross-dataset item of 2026-11-09; MET-14, LEAK-41, MET-16); the notes list them.
+
+CC (2026-11-10, Andrej): issue 8 (a) in boreal_postfire_lichen_biomass, "Reply (a): Back to A, with the note". Each SK plot is its own group again (216 groups); the grouping by Canada's fire maps of 2026-11-09 is removed (no NFDB or NBAC download, no prepared polygon table), and the notes give its measured effect: 71 of 190 SK plots have a same-fire-year plot within 5 km, 94 of 190 lie inside a mapped burn of their year, burn-mates in training flatter the SK RMSE by about 5 kg/ha against a fold-draw SE of about 40, and no model changes rank. The site-sheet coordinates of issue 9 stay.
+
+**Assessment (AI, 2026-11-10):** issue 8 (a) applied; the probes give the numbers of before 2026-11-09 again: task probe random forest 1,164.3 kg/ha against the training mean's 1,250.0 (better on 77% of the 30 splits), no flag; group probe LightGBM R^2 0.408 on random folds against -0.035 on the burn-area folds; leak probes no flag; an SK test quadrat lies a median 3.4 km from the nearest training plot (SD 0.6 over the splits), NT 22 km. `dataset check`: 0 errors, 0 warnings. Verdict mark of 2026-11-10 (Andrej): changes, now made.
+
+CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
 
 ## Reference
 

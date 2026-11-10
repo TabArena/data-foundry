@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: noaa_afsc_bottom_trawl_survey_cpue
 container_format: 2
-checksum: v2:910322bc66e70731a6e844c17bed72ba81f316a55806b2f9eae6f20875401f06
+checksum: v2:50ca57cdae696abd29fe68b51fda416dd1bf0e9fa1831793ceb6648c7cebf78d
 build: null
 build_stale: false
 data:
@@ -65,7 +65,7 @@ decisions:
 
 Regression of `log1p_cpue_no_km2`, scored with `mean_group_normalized_rmse` on temporal splits by `date`. 391,044 rows and 9 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:910322bc66e70731a6e844c17bed72ba81f316a55806b2f9eae6f20875401f06`.
+Not built yet. The current definition gives checksum `v2:50ca57cdae696abd29fe68b51fda416dd1bf0e9fa1831793ceb6648c7cebf78d`.
 
 ## In brief
 
@@ -79,7 +79,7 @@ Not built yet. The current definition gives checksum `v2:910322bc66e70731a6e844c
 
 **Known at prediction time.** The prediction is for a species at a place in a given survey year, under that year's conditions. Known: the taxon, the survey region and design stratum, the position, the date, the depth, and that year's bottom and surface temperatures at the place, given by the readings taken during the haul; not the vessel or the hour.
 
-**What the test data stands for.** Nine two-year windows of survey years (2025-2026 back to 2009-2010), each trained on every earlier survey and holding the eastern Bering Sea shelf, the Gulf of Alaska and, except 2019, the Aleutians; a model refit after each season is tested on the next survey cycle.
+**What the test data stands for.** Nine two-year windows of survey years (2025-2026 back to 2009-2010), each trained on every earlier survey and holding the eastern Bering Sea shelf, the Gulf of Alaska and, except 2019, the Aleutians; a model refit after each two-year survey cycle is tested on the next cycle.
 
 **Our changes to the source.** We chose 11 taxa (three of them groups the survey does not tell apart reliably), made one row per haul and taxon with zero for no catch, put the Gulf of Alaska hauls of 2025 in the strata used before that year's redesign, and left out the tow's gear and effort (the label's denominator) and the vessel and hour.
 
@@ -237,14 +237,16 @@ We start with the FOSS tables HAUL (35,561 standard hauls, 1982-2026) and CATCH 
 - `longitude_east` is the start longitude in degrees east (0-360): the Aleutian survey crosses 180 degrees (2,567 hauls west of it), where the signed longitude jumps from +180 to -180.
 - `depth_m`: in 1993-95 the depth is the headrope depth, without the net height (TM-459, p. 8), a median 1.25 m shallower at the EBS stations than from 1996 on. These are training rows in every window and stay as published.
 - Missing bottom (4.5%) and surface (2.4%) temperatures stay missing.
-- Note: the newest season is provisional. FOSS has not yet rated the 2026 catches (all 3,968 of the 11 taxa lack a `taxon_confidence`), though the 722 hauls of 2026 (44% of the newest window) match a full season (EBS 350 of 350 stations). Before a build, compare with a fresh download: if the 2026 rows change, build from the newer download or end the newest window at 2025. The lower EBS presence of rex sole in 2026 (0.169 against 0.209-0.293 in 2018-2025) alone is no reason to cut.
+- Note: the newest season is provisional. FOSS has not yet rated the 2026 catches (all 3,968 of the 11 taxa lack a `taxon_confidence`), though the 722 hauls of 2026 (44% of the newest window) match a full season (EBS 350 of 350 stations). Before a build, compare with a fresh download: if the 2026 rows change, build from the newer download or end the newest window at 2025. The lower EBS presence of rex sole in 2026 (0.169 against 0.209-0.293 in 2018-2025) alone is no reason to cut. Andrej kept 2026 with this check on 2026-11-09 (review issue 11, A, as implemented).
 - Metric: the source's RMSE on numbers per km^2, taken per taxon and given one vote per species' map (Andrej, 2026-11-02, "Let's do RMSE", then "I follow your suggestions": the AI's option (c), REVIEW.md issue 1). The review draws one EFH map per species: the places with a predicted chance of a catch of at least 5%, cut into the areas holding 95%, 75%, 50% and 25% of the species' predicted abundance (TM-459, pp. 27-28; EFH is "the area inhabited by 95% of a species' population", NMFS 2005, quoted p. 1). Pooled into one RMSE on counts, walleye pollock and rock sole held 79-93% of an untuned model's squared error in every window (pollock 34-84%), seven taxa under 1% each, and the pooled score picked LightGBM fit on raw counts, whose error per taxon is 1.72 times the taxon's spread (0.92 for LightGBM on log1p, 1.08 for each taxon's training mean). `mean_group_normalized_rmse` divides each taxon's RMSE by the spread of its true catches in the window: within a taxon a fixed divisor ranks models as RMSE does, so only the equal weight per taxon is ours. On the nine windows LightGBM on log1p scores 0.90-0.93 and beats the taxon means (1.01-1.23) in all nine; Poisson LightGBM scores 0.88-1.24 (two runs, five windows each). `taxon` stays a feature, and its copy `taxon_group` is the metric's group, a scoring column (MET-2 as reworded on 2026-11-05; CC below). Every taxon has a varying catch in every window, so none is left out. From 2017 on Greenland turbot is scored without the slope survey (ended 2016; 70% of its hauls caught the species) and on smaller EBS catches: its spread in a test window is 12-35 per km^2, against 162-543 before.
 - Not shipped: the catch of other species in the same haul (unknown at a place nobody sampled, though the 2017 models used concurrent coral, sponge and sea-whip presence, p. 14), and the source's raster covariates (sediment, currents, tides, slope, ocean colour), which FOSS does not hold.
+- Note: held for training rows only, not shipped (cross-dataset item of 2026-11-09, Andrej): what each haul measured beyond the target, which a place nobody sampled lacks: the catch's count and weight (`count`, `weight_kg`, `cpue_kgkm2`) and its `taxon_confidence`, the tow's realized effort (`area_swept_km2`, `distance_fished_km`, `duration_hr`, `net_width_m`, `net_height_m` and the end position; the source fits the counts with an area-swept offset), the vessel, the time of day and the performance code (positive for 2,659 of the 35,561 hauls). AFSC holds them for its surveyed hauls when it fits, but not for a place it maps. They would need a training-only role (for the area swept, an offset or a weight in training alone), which the format does not have yet (MET-14, LEAK-41, MET-16), so they stay out for now.
 - Note: the source fits each region and each life stage (by length) apart; FOSS's CATCH has no lengths, so the target counts all sizes, and one table holds all regions with `srvy` as a feature.
 - Anomaly: the timestamps end in "Z" but are local times (Alaska time, AKDT, in GAP's column metadata; hauls run from 05:00 to 23:00); only the date is used. The EBS shelf survey has 350 stations from 2024 (376 before).
 - CC (2026-11-06, Lennart): issue 4 resolved. `taxon` stays a feature and its copy `taxon_group` is the group the metric reads, a scoring column (MET-2 as reworded on 2026-11-05, asked in PR #47's review that day); the tow's effort stays out, the cut is claimed for walleye pollock only, and the score stays unweighted on the density (USE-3, LEAK-10, LEAK-41, MET-15). Supersedes the metric's reading of the feature `taxon` (Andrej, 2026-11-02, under MET-2 as amended then) and the note that the tow length responds to the catch, measured on pollock and read for every taxon: the exposure study of 2026-11-05 found the densities of short tows that catch a taxon higher for nearly every taxon, which a smaller area swept explains, while over all hauls only pollock's short tows stand well above their cells (+0.36 on log1p, the others -0.36 to +0.08). The scores do not change: the copy holds the same values.
 - CC (2026-11-08, Lennart): issue 5 resolved, "Pollock and, to a lesser degree, Pacific cod": the cut claimed for pollock and, to a lesser degree, Pacific cod; the stop is the likely reading, not isolated. Supersedes the claim of the CC of 2026-11-06 (Lennart) above that the cut shows for walleye pollock only: against an area-only null Pacific cod's short tows stand about 4 standard deviations above it over all hauls and 9 with a catch (the tow-cut bullet). Features, rows and scores do not change.
 - CC (2026-11-08, Lennart): issue 6 resolved, "A clause in the row's remedy": the leak rules' Cases row on an amount at risk cut short by the outcome (LEAK-10, LEAK-7, LEAK-41) states the case in its remedy: where the decision is per unit of an equal-area map, the rate is scored unweighted and no sample weight is declared (MET-15), the notes naming the cut's bias; this dataset (the area swept released and left out as a weight, the cut not located row by row) and wadden_sea_sibes_macoma_abundance are its cases. An application of MET-15, not an exception; nothing changes in the data or the score.
+- CC (2026-11-09, Andrej): issue 10 resolved, "Go ahead" on the consistency check's (a): the nine two-year windows stay, each fitted once; the split text, the no-gap sentence of the splits comment and the record's exception to SPLIT-10 now name a refit after each two-year survey cycle, not after each season, since each window's second year (42.6% of the test hauls) is predicted without the season before it. Rows, split and score do not change.
 
 ## Splits
 
@@ -258,7 +260,8 @@ GOA and, except 2019, the AI; the slope survey ended in 2016, and the northern B
 (SPLIT-15); the oldest trains on 54% of the rows, and a tenth (2007-2008) would train on 49%. No gap, an
 exception to SPLIT-10: the 2022 review states no delay between a survey and its use, only the surveys it used
 (1982-2019, TM-459, p. 3), and FOSS held the hauls of the 2026 summer by 30 October 2026, so a model refit
-after each season has every earlier season.
+after each two-year survey cycle has every earlier survey when the next cycle starts; the cycle's second year
+is predicted a season after the model's newest data (42.6% of the test hauls).
 All rows of a haul share its date, so a haul's taxa stay on one side. The source scored its models on hauls
 held out at random (Laman et al. 2017, p. 16; TM-459, p. 20); the windows ask how a model holds up on the
 next survey cycle instead, as the same team tests its models by retrospective forecasts (Barnes, Essington,
@@ -363,16 +366,16 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| taxon | category | 0 | 0 | 11 | shortspine thornyhead, Greenland turbot, Pacific halibut, sablefish, walleye po… |
+| taxon | category | 0 | 0 | 11 | shortspine thornyhead, Pacific halibut, Greenland turbot, sablefish, walleye po… |
 | srvy | category | 0 | 0 | 5 | EBS, GOA, AI, BSS, NBS |
 | stratum | category | 0 | 0 | 149 | EBS-31, EBS-61, EBS-10, EBS-41, EBS-20, EBS-42, EBS-50, EBS-43, GOA-11, GOA-31 |
-| taxon_group | category | 0 | 0 | 11 | shortspine thornyhead, Greenland turbot, Pacific halibut, sablefish, walleye po… |
+| taxon_group | category | 0 | 0 | 11 | shortspine thornyhead, Pacific halibut, Greenland turbot, sablefish, walleye po… |
 | date | datetime64\[ns\] | 0 | 0 | 2970 | 2007-06-26 00:00:00, 2005-06-11 00:00:00, 2003-07-07 00:00:00, 2005-06-21 00:00… |
 | bottom_temperature_c | float64 | 17571 | 4.49 | 159 | 4.0, 4.1, 4.4, 4.2, 3.9, 4.3, 3.8, 4.6, 4.5, 3.7 |
 | surface_temperature_c | float64 | 9436 | 2.41 | 185 | 7.0, 5.8, 7.4, 7.8, 5.6, 6.6, 5.4, 6.5, 5.5, 6.1 |
-| latitude | float64 | 0 | 0 | 32588 | 57.3395, 57.6828, 58.326, 56.6602, 56.3458, 58.9893, 58.3272, 58.9878, 56.6707,… |
-| longitude_east | float64 | 0 | 0 | 34667 | 195.9935, 199.666, 197.2322, 195.9962, 196.61, 196.002, 194.2083, 196.5985, 196… |
-| log1p_cpue_no_km2 | float64 | 0 | 0 | 177490 | 0.0, 3.1585, 3.0914, 3.0873, 3.8522, 3.8248, 3.7871, 3.6536, 4.5752, 4.3582 |
+| latitude | float64 | 0 | 0 | 32588 | 57.3395, 58.326, 56.6602, 58.3272, 57.6828, 58.9893, 56.3458, 58.9878, 58.0068,… |
+| longitude_east | float64 | 0 | 0 | 34667 | 195.9935, 199.666, 197.2322, 195.9962, 195.399, 194.7485, 195.4063, 192.834, 19… |
+| log1p_cpue_no_km2 | float64 | 0 | 0 | 177490 | 0.0, 3.0914, 3.8248, 3.6536, 3.8522, 4.3582, 3.0873, 3.1585, 4.5752, 3.7871 |
 | depth_m | int64 | 0 | 0 | 911 | 70, 68, 73, 71, 66, 75, 64, 95, 135, 77 |
 
 </details>
@@ -405,7 +408,7 @@ Accepted on purpose:
 | date | 2 | 2005-06-11 00:00:00 | 330 | 0.08 |
 | date | 3 | 2003-07-07 00:00:00 | 319 | 0.08 |
 | date | 4 | 2005-06-21 00:00:00 | 316 | 0.08 |
-| date | 5 | 1996-06-15 00:00:00 | 308 | 0.08 |
+| date | 5 | 2007-07-05 00:00:00 | 308 | 0.08 |
 | srvy | 1 | EBS | 178893 | 45.75 |
 | srvy | 2 | GOA | 124337 | 31.8 |
 | srvy | 3 | AI | 64669 | 16.54 |
@@ -417,13 +420,13 @@ Accepted on purpose:
 | stratum | 4 | EBS-41 | 21185 | 5.42 |
 | stratum | 5 | EBS-20 | 14780 | 3.78 |
 | taxon | 1 | shortspine thornyhead | 35559 | 9.09 |
-| taxon | 2 | Greenland turbot | 35558 | 9.09 |
-| taxon | 3 | Pacific halibut | 35558 | 9.09 |
+| taxon | 2 | Pacific halibut | 35558 | 9.09 |
+| taxon | 3 | Greenland turbot | 35558 | 9.09 |
 | taxon | 4 | sablefish | 35558 | 9.09 |
 | taxon | 5 | walleye pollock | 35552 | 9.09 |
 | taxon_group | 1 | shortspine thornyhead | 35559 | 9.09 |
-| taxon_group | 2 | Greenland turbot | 35558 | 9.09 |
-| taxon_group | 3 | Pacific halibut | 35558 | 9.09 |
+| taxon_group | 2 | Pacific halibut | 35558 | 9.09 |
+| taxon_group | 3 | Greenland turbot | 35558 | 9.09 |
 | taxon_group | 4 | sablefish | 35558 | 9.09 |
 | taxon_group | 5 | walleye pollock | 35552 | 9.09 |
 

@@ -8,8 +8,9 @@ SEL holds; USE-1 holds, fit approximate (anonymised fields, no dates); LEAK-10 t
 golden features f527/f528, a family of 28 columns that record the entity's previous loan's loss after the fact (f221
 gives it at ROC AUC 0.993 even when that loan was granted 1-10 loans earlier), and f468, f471, f536, whose top values
 record the loan's own period; f533 goes with the six aggregates as one block (issue 1, settled); LEAK-38: f615, f617
-and f13 tested and kept with a `Potential leak, kept on purpose:` note (f615/f617 give the previous loan's loss well
-only when it lies far back, as history would; f13's low values follow the own period as a smooth gradient, like
+and f13 tested and kept with a `Potential leak, kept on purpose:` note (f615/f617 flag the previous loan's default and
+add nothing on the row's own loss; read from the entity's next test row they give it away, an evaluation leak closed
+by a LEAK-9 protocol line, issue 6; f13's low values follow the own period as a smooth gradient, like
 ordinary columns); LEAK-21 holds (a loss does not end a chain, unlike iranian_churn); LEAK-41 holds (no weight, no
 denominator, no column set after the grant); SPLIT-1, 9, 11 and 14 hold; SPLIT-10 met by a 5,800-loan gap (issue 2,
 settled). Value: a small real signal after all drops (TP-2: normalized Gini 0.196, 0.146 to 0.230, above 0 on 9 of 9
@@ -41,8 +42,14 @@ warning for -1 in nine columns is accepted: -1 is a change of -100%, and it pred
 (f648: 14.4% against 8.5%). The metric reason adds that the Gini also leans on the tail (the 1% of loans with the
 largest losses hold 38-46% of a window's loss sum, against 71-82% of RMSE's squared error).
 
-**Main points:** Open: none. Settled on 2026-11-08: issue 4, the record's `Data Quality Issue` marker removed (the chain
-pattern it stood for is refuted, the leak columns are dropped). Issues 1 to 3 are settled (Andrej, 2026-11-03).
+**Main points:** No issue open. Settled on 2026-11-10 (Andrej): issue 6, f615 and f617 stay with a LEAK-9 protocol
+line against reading other test rows (their gain read from the entity's next test row is an evaluation leak; with the
+row alone they add nothing on its own loss). Settled on 2026-11-09 (Andrej): issue 5, the seven aggregates stay out
+under the exception of 2026-11-03. Settled on 2026-11-08: issue 4, the record's `Data Quality Issue` marker removed
+(the chain pattern it stood for is refuted, the leak columns are dropped).
+Issues 1 to 3 are settled (Andrej, 2026-11-03).
+
+**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
 
 **Issues for Andrej:**
 
@@ -255,6 +262,253 @@ pattern it stood for is refuted, the leak columns are dropped). Issues 1 to 3 ar
 
    [^ld4a]: records.md, `decision_markers`: "Issue flags ...; a clean dataset has none". selection.md, `Data Quality
      Issue`: "damage that cannot be undone or repaired".
+
+5. **Restore f529-f531, f533-f535 and f537, which your exception of 2026-11-03 keeps out as one block?**
+
+   * **Problem:**
+     - Seven running averages of the hidden value x leave with the two leaking golden features f527 and f528 as one
+       block, on your exception of 2026-11-03 (issue 1, A; dataset.py:145), although two tests without labels read
+       them as known at the grant.
+     - The audit of 2026-11-09 asks that every piece of information known at the grant ship, and by those tests the
+       seven are, while nothing new has been measured since your call.
+     - Keep the block out, or restore the seven with a note?
+   * **Background:**
+     - Each row is one period of a hidden entity, and these columns average a hidden value x that changes once a
+       period. f527 and f528 average in x of the loan's own period, the period its loss arises in; their changes from
+       the earlier row rank a loss at ROC AUC 0.973 and 0.931 (dataset.py:145).
+     - Your exception names the fact that sets the seven apart from aggregates that were kept (online_shoppers
+       `PageValues`, account_debt_south_africa's billing totals): "aggregates of the same hidden x as two measured
+       leaks (f527, f528), and with anonymised fields a test without labels is indirect"[^ld5a].
+   * **Experiments:** from issue 1 (2026-11-03), not re-run since:
+     - The changes of the seven follow the own period's change of x at rank correlation 0.02-0.21, as ordinary
+       columns do; f528's change does at 0.75 (dataset.py:145).
+     - Among their highest values (rows without a loss), x changed in the own period in 69% of the cases against
+       62-63% in the previous period (f529, f533); in f468, f471 and f536, dropped on their own, it changed in
+       86-100% against 33% over all such rows.
+     - Restoring the seven moves the Gini by -0.021, +0.010 and -0.011 and the ROC AUC for a loss by 0.000, +0.003
+       and +0.006 on 3 windows, within noise (untuned LightGBM, one fit per window).
+   * **Effect on the task:** none measurable either way, since the score moves within noise. The choice is which of
+     two readings of indirect evidence the dataset ships with.
+   * **Consistency:** B follows online_shoppers `PageValues` and account_debt_south_africa, kept once the data showed
+     them behaving like history[^ld5b]; A keeps your exception, recorded in the leak rule's cases[^ld5a]. No
+     measurement is new, so B would rest on a change of the standing position, not on a new fact (an AI reading).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the block out (implemented) | the seven stay dropped under your exception of 2026-11-03 | aggregates of the same hidden x as two measured leaks; a test without labels is indirect; your call stands | withholds seven columns the tests read as known at the grant |
+     | B | Restore the seven | f529-f531, f533-f535 and f537 ship with a `Potential leak, kept on purpose:` note; the exception and its cases row are withdrawn | every column the tests read as known at the grant ships; as `PageValues` and account_debt | reverses your call on the same evidence; they share x with two measured leaks |
+
+   * **Recommendation:** A by default, since no fact has changed since your exception; B if the position that every
+     piece of information known at the grant ships is meant to override an exception made on indirect evidence. The
+     score moves within noise either way. **Decision:** A or B?
+
+   **Notes for the AI:** on B, remove f529-f531, f533, f534, f535 and f537 from `CURRENT_PERIOD_AGGREGATES` (f527 and
+   f528 stay); rewrite the LEAK-10 bullet of the notes (dataset.py:145), the first decision's text ("go by the
+   curator's call") and `task_summary.changes` ("with seven related aggregates"); add a `Potential leak, kept on
+   purpose:` bullet with the two tests' numbers; withdraw the exception from the record (a CC line) and from the
+   LEAK-10 exception row of `leak_checks.md`, naming this issue. Re-run `dataset check`, the leak probes and the
+   tests without labels. f468, f471 and f536 stay dropped either way.
+
+   **Andrej (2026-11-09, as implemented):** A, as implemented.
+
+   **Resolved (2026-11-09, Andrej):** A: f529-f531, f533-f535 and f537 stay out with f527 and f528 as one block, under
+   the exception of 2026-11-03; nothing measured since then changes it.
+
+   [^ld5a]: **LEAK-10** (Must): out goes "an aggregate that may include the row's own outcome"; amended 2026-10-26
+     (Lennart): a window sum stays when the data shows it does not move with the outcome, case by case. Its cases
+     table: "LEAK-10 (exception, Andrej, 2026-11-03) | Aggregates of the same hidden value as measured leaking
+     aggregates, with no sign of a leak in tests without labels | drop them with the leaking ones as one block, and
+     still measure each next to it ... | loan_default_prediction_imperial_college". In main.
+   [^ld5b]: Lennart, 2026-10-26: online_shoppers `PageValues` and account_debt_south_africa's billing totals kept.
+     principles.md ranks P4 (honest evaluation, validity) above P7 (the expert state, quality), the ground issue 1
+     gave for the drop.
+
+6. **Keep f615 and f617, which give the previous loan's loss, though that loan is unsettled at the grant?**
+
+   * **Problem:**
+     - f615 and f617 give the loss of the entity's previous loan at ROC AUC 0.65-0.68 when that loan was granted 1-10
+       loans earlier and 0.91-0.95 when over 1,000 loans earlier, and they ship with a note that reads the rise with
+       distance as history arriving over time (dataset.py:148).
+     - The split assumes a loss is known only about 5,800 loans after its grant (dataset.py:200), and counted on the
+       raw file 98.96% of the 73,319 links between a loan and the entity's previous one lie within 5,800 loans
+       (median 165), so almost every previous loan these columns describe was unsettled at the grant.
+     - Keep them with the note, blank them where the previous loan lies inside the gap, or drop both?
+   * **Background:**
+     - The 28-column family dropped on the same test gives the previous loan's loss at 0.993 already at 1-10 loans,
+       so it was filled in after the fact; f615 and f617 gain signal with distance instead (dataset.py:146, 148).
+     - The gap stands for the time until the final loss is settled, the term and the workout (dataset.py:200). A
+       lender learns that an earlier loan is in arrears or has defaulted well before its loss is settled, so a field
+       that grows with the earlier loan's age fits interim status known at the grant; the 0.65 at 1-10 loans fits
+       the entity's shared risk rather than knowledge of a loss that cannot have happened yet (both an AI reading).
+     - With anonymised fields neither reading can be proven; host-released fields whose timing no test can establish
+       stay with a note[^ld6a].
+     - These columns were kept on the AI's reading at the review of 2026-11-01 and have not been put to you before.
+   * **Experiments:** counted on the raw file, ROC AUC of each column's level for the previous loan's loss, by how
+     many loans earlier that loan was granted:
+
+     | Loans between them | Links | f615 | f617 |
+     |---|---|---|---|
+     | 1-10 | 8,073 | 0.654 | 0.659 |
+     | 11-100 | 23,106 | 0.677 | 0.683 |
+     | 101-1,000 | 31,360 | 0.764 | 0.777 |
+     | 1,001-5,800 | 9,618 | 0.909 | 0.943 |
+     | over 5,800 | 650 | 0.944 | 0.987 |
+
+     - Blanking where the previous loan lies within 5,800 loans removes 72,179 of the 104,322 values of each column
+       (69%).
+   * **Effect on the task:** if the columns carry the settled loss, the test rows read the loss of loans the lender
+     could not yet value, and the score is optimistic for the 68-72% of a window's loans that have the entity's
+     previous row (dataset.py:201); if they carry interim status, blanking or dropping them withholds history the
+     lender has.
+   * **Consistency:** f221 and its family went because their signal was flat with distance (dataset.py:146); f13 and
+     the changes of f519, f520, f523 and f526 stay with the same kind of note (dataset.py:148).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep with the note (implemented) | f615 and f617 ship with the note as now | the signal grows with distance, as history arriving over time would; fields of untestable timing stay with a note | if they carry the settled loss, 69% of their values read a loss the lender could not yet know |
+     | B | Blank inside the gap | values set missing where the entity's previous loan lies within 5,800 loans (72,179 of 104,322) | no value describes a loan unsettled under the split's own gap | blanks most values, also any interim status the lender had; the missingness then marks a recent previous loan |
+     | C | Drop both | f615 and f617 leave | no doubt left | loses history the lender may have; a drop the distance test does not call for |
+
+   * **Recommendation:** A, with one sentence added to the note: the 99% within the gap, and the reading that the
+     columns hold interim status, since their signal rises with distance as history arriving over time would, unlike
+     the family dropped for a flat signal. **Decision:** A, B or C?
+
+   **Notes for the AI:** on A, add to the f615/f617 bullet of the notes (dataset.py:148): "98.96% of the 73,319 links
+   lie within the 5,800-loan gap (median 165 loans), so the columns describe loans unsettled at the grant under that
+   gap; their signal rises with distance (0.65 at 1-10 loans, 0.91-0.94 at 1,001-5,800), read as interim status
+   known before the loss settles." On B, in `_clean` compute `_period_links` on the raw frame before step 3 drops
+   f274, f271 and f527, and set f615 and f617 to missing at each row j whose link has j - i at most 5,800. On C, add
+   both to the drops and to `fit_reason`. Either way re-run `dataset check`, the leak probes and the decisions table.
+
+   **Andrej (2026-11-09, discuss):** Shouldn't we measure the amount of potential leakage?
+
+   **Answer (AI, 2026-11-09):** Measured: a model that reads one row at a time gets nothing from the two columns, but
+   read from the entity's next row they give the loan's own loss away; keep them, blank them inside the gap, or drop
+   them?
+
+   * **Problem:**
+     - On the 9 shipped windows f615 and f617 add +0.008 ± 0.007 to the normalized Gini of a model that reads each row
+       alone, -0.003 ± 0.008 on the test rows whose previous loan lies inside the gap, and even the previous loan's
+       actual loss, given as an input, adds 0.000 ± 0.007.
+     - They record that the entity's previous loan went bad, news that arrives after that loan's grant (28% of the
+       later losses are flagged within 1-10 loans), so the 0.65 at short gaps is not the entity's shared risk, and the
+       file cannot tell whether that news was on file at the current grant.
+     - Read from the entity's next row, which the shipped f521 finds, the same flag gives a loan's own loss away (Gini
+       0.63 against 0.20), so the choice between keeping, blanking and dropping now turns on that channel.
+   * **Experiments:** the 9 shipped windows and the declared normalized Gini; a hurdle LightGBM (P(loss > 0) x
+     E[loss given a loss], 400 trees, rows and columns subsampled) averaged over 3 seeds per window, and a logistic
+     regression for a loss as a second model family. ± is the SE of the paired difference over the 9 windows (first
+     table) or of a paired bootstrap over the pooled test rows (second table); the seed SD of a difference is at most
+     0.008.
+
+     | Inputs (all 45,000 test rows) | Gini, LightGBM | vs A | Gini, logistic | vs A |
+     |---|---|---|---|---|
+     | A as shipped | 0.200 (0.128 to 0.242) | | 0.066 | |
+     | B blanked inside the gap | 0.205 | +0.004 ± 0.004 (5 of 9) | 0.071 | +0.005 ± 0.001 (8 of 9) |
+     | C both dropped | 0.193 | -0.008 ± 0.007 (4 of 9) | 0.064 | -0.003 ± 0.002 (4 of 9) |
+     | A + the dropped f221 family (28 columns) | 0.208 | +0.008 ± 0.007 (6 of 9) | 0.072 | +0.005 ± 0.001 (9 of 9) |
+     | C + the previous loan's actual loss | 0.193 | vs C 0.000 ± 0.007 | 0.064 | vs C 0.000 ± 0.001 |
+     | A + the next row's f615/f617 | 0.630 | +0.430 ± 0.016 (9 of 9) | 0.517 | +0.451 ± 0.020 (9 of 9) |
+     | B + the next row's f615/f617 | 0.271 | vs B +0.066 ± 0.008 (9 of 9) | 0.132 | vs B +0.060 ± 0.007 (9 of 9) |
+
+     | Previous loan, loans back | Test rows (losses) | Gini, A - C | Gini, B - C | ROC AUC gain, previous loan's loss | ROC AUC gain, current loan's loss |
+     |---|---|---|---|---|---|
+     | 1-10 | 3,567 (308) | -0.003 ± 0.024 | +0.007 ± 0.025 | +0.16 ± 0.02 | 0.000 ± 0.002 |
+     | 11-100 | 9,657 (1,012) | -0.018 ± 0.012 | 0.000 ± 0.011 | +0.21 ± 0.01 | 0.000 ± 0.001 |
+     | 101-1,000 | 13,503 (1,335) | +0.011 ± 0.011 | +0.022 ± 0.010 | +0.25 ± 0.01 | -0.001 ± 0.001 |
+     | 1,001-5,800 | 4,448 (352) | +0.005 ± 0.025 | +0.003 ± 0.019 | +0.35 ± 0.02 | 0.000 ± 0.002 |
+     | over 5,800 | 396 (28) | -0.19 ± 0.11 | -0.10 ± 0.10 | +0.22 ± 0.05 | +0.010 ± 0.025 |
+     | any | 31,571 (3,035) | -0.003 ± 0.008 | +0.009 ± 0.007 | +0.24 ± 0.01 | 0.000 ± 0.000 |
+
+     - Row by row, no distance bin shows a gain from the two columns beyond its noise (the bin over 5,800 holds 28
+       losses). The last two columns are the conditional test: cross-fitted logistic regressions on the test rows that
+       have a previous row, from model C's risk (all other features), with and without f615/f617. They add more to
+       the previous loan's loss the further back it lies and nothing to the current loan's at any distance, with or
+       without the previous loan's actual loss in the model. So no signal on the current loan rises with distance,
+       whether the columns hold a settled loss or an interim status.
+     - The ceiling: once the other features are in, the previous loan's actual outcome adds nothing to the current
+       loan's ranking (0.000 ± 0.007 Gini; 0.000 ± 0.002 ROC AUC in every bin up to 5,800), though 12.7% of the
+       current loans after a previous loss have a loss, against 9.3%. A column that carries that outcome, early or
+       late, cannot raise this score for a model that reads one row.
+     - What the data tell apart: the previous row's own value gives its loss at ROC AUC 0.50-0.54, so the 0.65 at
+       1-10 loans is news about that loan from after its grant, not the entity's shared risk as the Background reads
+       it. Between the two grants the columns turn non-zero for 28%, 32-33%, 46-49% and 66-78% of the previous loans
+       that end with a loss (1-10 up to 1,001-5,800 loans back) and for 0.2% of the others, and among those flagged
+       the value does not follow the size of the loss (rank correlation 0.01-0.06): they record that the loan went
+       bad and carry nothing of the size of its settled loss. Without labels they follow the previous period's
+       change of x (ROC AUC 0.54-0.60) rather than the loan's own period's (0.50-0.52).
+     - What they cannot: whether the default was on file at the current grant or written in later. The file has no
+       clock (f521 counts an entity's periods, rank correlation 0.03 with the row order). If 1-10 loans are hours or
+       days apart, 28% of the later losses flagged that soon is hard to square with status known at the grant (an AI
+       reading).
+     - The next-row channel: the nearest later row whose f521 is one higher is the entity's next row in 88.7% of the
+       cases, and 61-64% of a window's loans have it in the same window, so a participant who reads it sees the flag
+       about the loan being predicted (ROC AUC for a loss 0.86 against 0.72). B leaves +0.066 of it open through the
+       31,515 values on rows without a found link; C closes it for these columns, and the next best shipped columns
+       read the same way reach 0.67 (f213) against 0.77 for f615. A model that reads later rows reads the future, which
+       a protocol line can rule out instead[^ld6b].
+     - B's blanks cost nothing (+0.004 ± 0.004 over A); a 0/1 flag for a recent previous loan alone adds
+       +0.003 ± 0.006 to C, so B's small edge does not come from its missingness. The f221 family, for scale, adds as
+       much as f615/f617 do (+0.008 ± 0.007; logistic +0.005 ± 0.001, 9 of 9): it was dropped for its timing,
+       whatever its score.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep, note corrected (implemented) | f615/f617 ship; the note gives these numbers; a protocol line rules out inputs read from later rows | a model that reads each row gains +0.008 ± 0.007, within noise; fields whose timing no test can fix stay with a note | read from the next row they lift the Gini from 0.20 to 0.63; news of a default sooner than the gap allows stays |
+     | b | Blank inside the gap | f615/f617 missing where a found link lies 1-5,800 loans back (72,157 of 104,322 values each) | closes most of the next-row channel (+0.43 down to +0.07); costs nothing (+0.004 ± 0.004) | leaves +0.07 open through rows without a found link; blanks history the lender may have had |
+     | c | Drop both | f615 and f617 leave, named in `fit_reason` | closes the channel for these columns; costs -0.008 ± 0.007, within noise | drops history the lender may have had at the grant; a weaker next-row signal stays in other columns (ROC AUC 0.67) |
+
+   * **Recommendation:** c: the drop costs nothing a model reading one row can measure, and it removes the only way
+     these columns move the score, the next row (+0.43), which b leaves partly open and a leaves to a protocol line;
+     their timing stays in doubt under every option. **Decision:** a, b or c?
+
+   **Andrej (2026-11-09, discuss):** I don't get it, if there is leakage we should drop, otherwise keep maximum
+   information for models to decide on their own. What do you recommend?
+
+   **Answer (AI, 2026-11-09):** Keep f615 and f617 (option a) with the protocol line: they leak nothing about the
+   row's own loss; the only leak is reading another test row, which you closed by a protocol line, not a drop, in
+   spanish_motor_insurance_coverage_level_2022_2024's issue 9.
+
+   * Read with the row alone, the two columns add 0.000 to the ranking of the current loan's loss once the other
+     features are in (ROC AUC, every distance bin), and their Gini gain, +0.008 ± 0.007, is within noise.
+   * The large gain (Gini 0.20 to 0.63) comes only from the entity's next row, a test row whose f615/f617 record this
+     loan's default: an evaluation leak across test rows[^ld6c].
+   * Dropping would not close that channel anyway: other shipped columns read from the next row still give a loss at
+     ROC AUC 0.67 (f213); the protocol line "no feature or model step may use other test rows" closes it for all.
+   * My earlier c rested on the drop costing nothing; by your rule that is no reason to drop.
+
+   * **Recommendation:** a, with the protocol line in the notes. **Decision:** a or c?
+
+   **Andrej (2026-11-10, as implemented):** Agree.
+
+   **Resolved (2026-11-10, Andrej):** a. f615 and f617 stay. The f615/f617 bullet of the notes now says they record
+   that the entity's previous loan defaulted, not the size of its settled loss (non-zero for 28% to 66-78% of the
+   previous loans that end with a loss, 0.2% of the others; rank correlation with the loss 0.01-0.06), that 98.96% of
+   the 73,319 links lie within the 5,800-loan gap (median 165), and that read with the row alone they add 0.000 ROC
+   AUC on the row's own loss (+0.008 ± 0.007 Gini, within noise). A LEAK-9 protocol line went into the notes and
+   `splits_comment`, worded as in spanish_motor_insurance_coverage_level_2022_2024: each test loan is predicted from
+   the training rows and its own features only, no feature or model step may use other test rows, and a method that
+   reads another test row of the same entity is called out and not benchmarked (the next row is found from f521 in
+   88.7% of the cases; reading its f615/f617 lifts the Gini from 0.20 to 0.63)[^ld6c].
+
+   [^ld6a]: **LEAK-38** (Should; narrows LEAK-10): fields that may be post-outcome, whose timing the source leaves
+     undocumented and no test can establish, in data the data owner released for its own competition, stay with a
+     `Potential leak, kept on purpose:` note; when a conditional test measures the mechanism, LEAK-10 applies and the
+     field is dropped. **LEAK-10** (Must): a feature holds only what existed at the prediction point. **SPLIT-10**
+     (Should): a gap of about the label's delay between train and test. All in main.
+   [^ld6b]: **LEAK-9** (Should; amended 2026-11-05, Lennart): "An evaluation-level leak, where the test set holds
+     complete trajectories that end at the outcome or a model can read other test rows, is fixed in the scoring
+     (causal per-entity predictions, the task's own utility) or by a protocol line the benchmark checks, not in the
+     data". In main. Option a follows it for the next-row channel. The conditional test above measures no mechanism on
+     the loan's own loss, so LEAK-38 does not by itself call for the drop; c rests on the drop costing nothing while
+     the columns carry the channel (an AI reading).
+   [^ld6c]: **LEAK-9** (Should; amended 2026-11-05, Lennart; in main): an evaluation-level leak, where "a model can
+     read other test rows, is fixed in the scoring ... or by a protocol line the benchmark checks, not in the data".
+     **LEAK-10** (Must): a feature holds only what existed at the prediction point; the conditional test measures no
+     gain on the row's own loss.
 
 **Review panel:** ship after changes (mediator), wording and one accepted warning, now made. Tier focused, a re-review
 of 2026-11-08 under LEAK-41, MET-14 to MET-16, after the raw data arrived: the claim auditor, the column auditor and the

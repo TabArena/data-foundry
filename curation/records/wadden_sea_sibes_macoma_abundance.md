@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Lennart
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -130,6 +130,16 @@ CC (2026-11-06, Lennart): decision D13 of the exposure study (#51; issue 6 of th
 CC (2026-11-08, Lennart): issue 7 of the folder's REVIEW.md, as implemented (ok): the note only. The 608 positive counts below one tellin per core ship as published, with the exposure note that their cause is unknown; NIOZ is not asked for now, and a question can go with a later version.
 
 CC (2026-11-08, Lennart): the declared metric (`rmse`) is checked, as declared on the PR #47 review board.
+
+CC (2026-11-09, Andrej): columns held only for training rows stay out for now, no training-only role (cross-dataset item of 2026-11-09; MET-14, LEAK-41, MET-16); the notes list them.
+
+CC (2026-11-09, Andrej): review issue 9, "Go ahead" on the consistency check's (a): the elevation stays the latest vaklodingen survey on or before the sample's date (A, as implemented), though the map of a past survey could take a later one; the reason: the survey nearest in time moves the elevation by a median 0.08 m, about the 0.07 m between two successive surveys of a cell, too little to move a settled join.
+
+CC (2026-11-10, Andrej): issue 8 of the folder's REVIEW.md, "Reply (b): Per-year normalised RMSE (C)". The score is `mean_group_normalized_rmse` over the 15 survey years on the density (each year's RMSE over the spread of its true densities, averaged), so each survey's map counts once; it replaces the pooled RMSE of 2026-11-02, named as the original, in which 2014 held 75.5% of the squared deviation. `survey_year` (the year of `date`) is the metric's group, a scoring column, never a feature.
+
+**Assessment (AI, 2026-11-10):** issue 8 (C) applied: declared from context with `inputs={"group": "survey_year"}` and `target_transform="log1p"`. `dataset check`: 0 errors, 0 warnings. Task probe (untuned, fit on log1p, 5 of 9 splits): random forest 0.962, LightGBM 0.967, linear 1.005, the back-transformed training mean 1.046; the random forest beats it on 5 of 5 splits by 0.084 (SE 0.005); no flag. Verdict mark of 2026-11-10 (Andrej): changes, now made.
+
+CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
 
 ## Reference
 

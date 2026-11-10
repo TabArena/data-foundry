@@ -2,11 +2,14 @@
 
 **Outcome:** added. The AI recommends shipping it after changes: the re-review panel of 2026-11-06 under the exposure
 rules (LEAK-41, MET-14 to MET-16) found no exposure, weight or offset to add and the split right; its changes that need
-no decision are made (below), issues 7, 8, 10 and 11 are decided and applied (2026-11-08), so no question is open. NOAA
+no decision are made (below), issues 7, 8, 10 and 11 are decided and applied (2026-11-08), so no question of that round is open; issues 12 to 14 of 2026-11-09 are decided and
+applied (12: each county or zone, hazard and year counts once; 13: `SOURCE` stays dropped; 14: floor $10), and issue 15,
+the $10M cap, waits for a decision. NOAA
 NCEI's Storm Events Database, 2007-2025: 843,144 entries of the property damage an NWS office entered for one event in
 one county or zone, 68% of them $0, for a state hazard-mitigation planner who estimates the damage of storm events
 before it is assessed (Diaz and Joseph 2019); tested on the calendar years 2023-2025 with a 3-month gap, scored by the
-mean Tweedie deviance at power 1.5 on the dollars (by context; the source has none; RMSLE until 2026-11-08).
+mean Tweedie deviance at power 1.5 on the dollars, each county or zone, hazard and year counting once (by context; the
+source has none; RMSLE until 2026-11-08).
 
 Validity:
 * SEL-3 holds on the `Yes` of 2026-10-30. USE-1 and USE-5 hold with the planner as the actor (issue 5); USE-8: fit
@@ -31,7 +34,8 @@ Validity:
 * SPLIT-9, SPLIT-10 and SPLIT-13 hold: a 3-month gap against a public lag of 75-80 days, no storm crosses a window, no
   training event ends after its cutoff, 98.6-99.6% of the test rows in a county or zone seen in training.
 * MET-14, MET-15, MET-16 and LEAK-41 are not triggered: the target is one event's damage, not an amount accrued over a
-  time at risk, so there is no weight and no offset (county population does not scale with the damage).
+  time at risk, so there is no exposure weight and no offset (county population does not scale with the damage); the
+  cell weight of issue 12 gives each cell one vote and is no exposure.
 
 Value: under the declared deviance (issue 8, 2026-11-08) the signal is weak and unstable. The task probe flags
 `no_signal`, `drift_baseline` and `unstable` (TP-1, TP-2, TP-5): its families, fitted by squared error on the dollars,
@@ -43,8 +47,8 @@ or 1,500 trees score worse. Tuned per window with early stopping (issue 10, kept
 2023 within noise (bootstrap SE 1,580 for a difference of +802); a GLM on event type and month beats the per-type mean
 in all three windows (2,553, 2,130, 1,598). Under RMSLE (until 2026-11-08) untuned LightGBM scored 2.67, 2.93 and 2.94
 (2025, 2024, 2023) against 4.05, 4.28 and 4.20 for a constant, and methods spread (TP-3). MET-11: the deviance by
-context. MET-1: the reason names the planner, who sums expected dollars, which RMSLE does not score. MET-13: floor $1,
-two orders below the $909 training mean of Dense Smoke, the cheapest event type with a positive mean, rounded down.
+context. MET-1: the reason names the planner, who sums expected dollars, which RMSLE does not score. MET-13: floor $10,
+the smallest damage the source records (issue 14; $1 until 2026-11-09).
 
 Quality: LEAK-19 (918 double entries dropped), CLEAN-21 (`magnitude` split into wind speed and hail size), CLEAN-11 (24
 impossible wind speeds, all estimates, blank). EV: the counts left from before issue 2's drop are restated on the
@@ -62,7 +66,7 @@ REVIEW.md. The mediator asks to record Andrej's release of D13 (the study's deci
 merging; not needed on the AI's reading: you took over this round as main reviewer on 2026-11-06 and decided D13
 yourself (CC of 2026-11-06).
 
-For the curator: no issue is open.
+For the curator: issue 15 (the $10M cap, measured on the new unit); issues 12, 13 and 14 are resolved (2026-11-09).
 
 Changes made after the re-review panel (AI, 2026-11-06), no decision needed (`dataset check`: 0 errors, 0 warnings):
 the 51 Seiche durations are blank by type, as for Strong Wind; the kept-span note drops "cannot be located row by row"
@@ -87,11 +91,18 @@ the use case became the planner's (issue 5); on 2026-11-06 D13 (issue 6); on 202
 deviance with a $1 floor (issue 8, B); then issue 10 kept that metric with the tuned results in the notes, and issue 11
 moved the Flash Flood duration to the spans kept with a note (no data change; `dataset check`: 0 errors, 0 warnings).
 
-**Main points:** Nothing is open; issues 2 to 11 are resolved. On 2026-11-08 issue 7 blanked the duration on the wind
-entries the first report gives as damage, issue 8 made the target the dollars, scored by the mean Tweedie deviance with
-a $1 floor, issue 10 kept that metric with its signal stated (tuned LightGBM beats the mean per event type in 2024 and
-2025, not in 2023, within noise), and issue 11 moved the Flash Flood duration to the spans kept with a note. Made
-without a decision, say if you disagree: the 51 Seiche durations are blank, an extension of D13.
+**Main points:** No issue open. Resolved on 2026-11-10 (Andrej): issue 15, the damage stays uncapped, the
+planner's sum with the catastrophes in; uncapped the score orders the methods at Kendall's W 0.62 across the test
+years and separates tuned LightGBM from a mean per event type only in 2025, stated in the notes as the noise of the
+task (the task's representation comes before how well methods separate). Issues 2 to 14 are resolved; on
+2026-11-09 issue 12 made each county or zone, hazard and year count once (each entry weighs 1 over its cell's
+entries), issue 13 kept `SOURCE` dropped and issue 14 set the floor to $10. On 2026-11-08 issue 7 blanked the duration on the wind entries the
+first report gives as damage, issue 8 made the target the dollars, scored by the mean Tweedie deviance with a $1 floor,
+issue 10 kept that metric with its signal stated (tuned LightGBM beats the mean per event type in 2024 and 2025, not in
+2023, within noise), and issue 11 moved the Flash Flood duration to the spans kept with a note. Made without a decision,
+say if you disagree: the 51 Seiche durations are blank, an extension of D13.
+
+**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
 
 **Issues for Andrej and Lennart:**
 
@@ -719,6 +730,437 @@ without a decision, say if you disagree: the 51 Seiche durations are blank, an e
    leak, kept on purpose:` note with the Sec. 14 onset, the narrative shares (6.8% name a building) and its worth on the
    declared metric (+31% to +102% of the deviance on its rows when blanked); Flood, Hurricane (Typhoon) and Tropical
    Storm stay read as outcome-free, and no data changes (`dataset check`: 0 errors, 0 warnings).
+
+12. **Score the damage summed per county or zone, hazard and year, the planner's unit, instead of each entry?**
+
+   * **Problem:**
+     - The planner sums expected dollars per county and hazard (dataset.py:77-82, :193-195), while the score is the
+       mean Tweedie deviance of each entry, one reason the fit is approximate (REVIEW.md:12-13)[^12a].
+     - In the test years 2023-2025 the entries fall into 37,077 cells of one county or zone, one event type and one
+       year, with 3.62 entries per cell on average and 56.9% of the cells holding more than one (counted on the raw
+       files with the definition's filters).
+     - Issue 8 settled what is scored, the dollars by the Tweedie deviance, so the open question is only the unit:
+       each entry, or each cell's sum[^12b]?
+   * **Background:**
+     - The Tweedie deviance is minimised by the mean, and means add, so a model that predicts each entry's expected
+       dollars also predicts each cell's expected sum; the two scores aim at the same predictions and differ in how
+       they weigh the errors (an AI reading of the loss).
+     - Per entry, a cell counts once for every entry it holds, and 88.1% of the test entries share their cell with
+       another entry; per cell, each county or zone, hazard and year counts once, and the errors on two entries of one
+       cell offset each other as they do in the planner's total (counted on the raw files).
+     - The cells look like the entries: 67.0% sum to $0 against 68.5% of the entries, and the largest 0.1% hold 71%
+       of the dollars against 83% for the entries (counted on the raw files), so the deviance at power 1.5 suits the
+       sums as it suits the entries.
+     - The scorer cannot sum a group's truth and predictions today: its per-group choices keep one label per group
+       (last, mean, any, lowest or highest); the cross-dataset item "Add a `sum` aggregation and a per-group mean RMSE
+       to the scorer?" adds the sum if this issue chooses it.
+     - The source models single events: Diaz and Joseph (2019) predict and score each tornado's damage
+       (dataset.py:190-193).
+   * **Effect on the task:** per entry, a county hit by many reports of one hazard in a year (hail and thunderstorm
+     wind come as many entries) weighs more than a county with one large event, and a model gains by splitting a
+     storm's damage right among the entries of one county, which the planner never looks at; per cell, only the total
+     of each county, hazard and year counts.
+   * **Experiments:** none on models in this round; the counts above are on the raw files of 2023-2025 with the
+     definition's filters (134,183 entries).
+   * **Consistency:**
+     - pricing_game_2017_french_mtpl scores the deviance per policy although the insurer sums its book; there each
+       policy gets its own price, a decision per row[^12c].
+     - The rule of 2026-11-08 that gives a unit one vote covers rows that repeat one decision, not entries whose
+       dollars add, so it does not decide this; the sum is its analogue for an amount (an AI reading)[^12d].
+     - FEMA's National Risk Index, which uses SHELDUS, built from these entries (issue 5), gives the expected annual
+       loss of 18 natural hazards at the county or census-tract level: the planner's unit in practice is a place and
+       a hazard over a year (an AI reading of its documentation)[^12e].
+   * **Unknown:** whether models rank differently on the cell sums, and whether 2023, where no tuned model beats the
+     mean per event type (issue 10), stays as unstable; issue 10's tuned Tweedie LightGBM scored both ways on the
+     three windows would settle it.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Tweedie per entry | the mean Tweedie deviance at power 1.5 of each entry's dollars, floor $1, as since issue 8 | scores each event's expected dollars, which add up to the planner's sum; the source's unit; no code change | a cell counts once per entry; errors that offset in the planner's total are still penalised |
+     | B | RMSLE per entry | the target back on log1p and scored by RMSLE, as before issue 8 (the panel's and the mediator's recommendation there) | a clear signal in every window (issue 10: 2.7 to 3.0 against 3.6 to 3.9 for the mean per event type) | scores the order of magnitude, whose sum understates the dollars; reverses issue 8; still per entry |
+     | C | Tweedie on the cell sums | the scorer sums the dollars and the predictions of each county or zone, event type and year, then takes the mean Tweedie deviance at power 1.5 over the cells (about 12,000 per test year) | the planner's unit; each cell counts once | needs a `sum` aggregation in the scorer; how models rank on it is not measured; the source scores per event |
+
+   * **Recommendation:** C, once the scorer can sum, with the run of the Unknown bullet as part of applying it: the
+     planner acts on the total of a county and a hazard, and since the per-entry score already aims at the same
+     predictions, the change only makes each county, hazard and year count once and lets errors offset as in the
+     planner's total; A stays until the code exists, and B would reopen issue 8. **Decision:** A, B or C?
+
+   **Notes for the AI:** On C: (1) the cross-dataset item adds `sum` (the truth and the predictions summed per group)
+   to `_aggregate` in `src/data_foundry/v2/metrics.py`; check how a per-group prediction unit is declared for a
+   temporal task without turning the split into a grouped one (`Grouping` drives the grouped splits today); (2) in
+   `_clean` add a scoring column `cell`, `county_zone`, `event_type` and the begin year joined as text, role `group`,
+   never a feature (`county_zone` and `event_type` stay features); (3) the $1 floor (`min_prediction`) then applies to
+   each cell's summed prediction; (4) rewrite the metric reason (the unit and the cell counts), `fit_reason` (its first
+   gap) and the notes' signal bullet; (5) re-run `dataset check`, the task probe and `tune_tweedie.py` of the run folder
+   of 2026-11-08 scored per entry and per cell, on the cluster; CHANGELOG entry and a CC line. On B: as issue 10's
+   notes for its option B. The rules: MET-1 (Must), MET-11 (context), MET-13 (the floor), MET-17 (Should, not binding
+   here).
+
+   **Andrej (2026-11-09, discuss):** What are the units planners make decisions for individually? entries or cells? Or
+   is it a global aggregation? We want the final aggregation to one score be over the individual decision units.
+
+   **Answer (AI, 2026-11-09):** Planners decide per county and hazard, not per entry and not on a national total; score
+   over those cells by summing (needs code) or by giving each cell one vote (no code)?
+
+   * **Problem:**
+     - A mitigation planner decides per jurisdiction and hazard on the loss expected in a year (44 CFR 201.6, FEMA's
+       planning guide, the National Risk Index), so the decision unit is a county or tract and a hazard, and its
+       realisation in one test year is a county or zone, hazard and year cell[^12f].
+     - One score over those units is the mean over cells of the deviance of each cell's summed dollars (the issue's
+       C), which the scorer cannot compute without the `sum` aggregation you marked to leave today, while weighting each
+       entry by 1 over its cell's entries gives a mean over the same cells with no code.
+     - The definition's inputs describe an event already reported, which a planner who plans before the year does not
+       have, so the use case and the features disagree whichever unit is scored.
+   * **Background:** who decides on what, in the primary sources:
+     - Local plans, 44 CFR 201.6(c)(2) (https://www.law.cornell.edu/cfr/text/44/201.6): the risk assessment gives "the
+       type, location, and extent of all natural hazards that can affect the jurisdiction", "information on previous
+       occurrences of hazard events and on the probability of future hazard events", "an overall summary of each hazard
+       and its impact on the community" and "An estimate of the potential dollar losses to vulnerable structures"; a
+       plan of several jurisdictions must "assess each jurisdiction's risks where they vary", and a plan is resubmitted
+       "within 5 years" (201.6(d)(3)). State plans (44 CFR 201.4(c)(2), https://www.law.cornell.edu/cfr/text/44/201.4)
+       build on "estimates provided in local risk assessments" and describe vulnerability "in terms of the jurisdictions
+       most threatened by the identified hazards".
+     - FEMA's Local Mitigation Planning Policy Guide (released April 2022, in force since 19 April 2023, pp. 22-24,
+       https://www.fema.gov/sites/default/files/documents/fema_local-mitigation-planning-policy-guide_042022.pdf, read
+       in the copy at https://www.caloes.ca.gov/wp-content/uploads/Hazard-Mitigation/Documents/FEMA-Local-Mitigation-Planning-Policy-Guide-04.2022.pdf):
+       "B1-d. The plan must include information on previous hazard events for each hazard"; probability "may be defined
+       in historical frequencies"; "B2-b. The plan must describe the potential impacts on each participating
+       jurisdiction", for example "by referencing historical disaster damages with an estimate of potential future
+       losses".
+     - National Risk Index, Technical Documentation (December 2025, v1.20,
+       https://www.fema.gov/sites/default/files/documents/fema_national-risk-index_technical-documentation.pdf), Sec.
+       4.4: "The Expected Annual Loss for each Census tract or county is the average economic loss in dollars resulting
+       from natural hazards each year. Expected Annual Loss is computed for each hazard type"; it multiplies the
+       exposure, "the probability of that hazard type's occurrence each year (Annualized Frequency)" and the share lost
+       per occurrence (Historic Loss Ratio, from SHELDUS, with this database for tornado and inland flood, Sec. 5.4.1).
+       Its users are "planners and emergency managers", to "Enhance hazard mitigation plans" and "Prioritize and
+       allocate resources" (Sec. 1). Its hazards group this database's types, and "Multiple event records that occur
+       on the same day in the same county are counted as a single Inland Flooding event" (Sec. 15.3.1).
+     - After a storm the unit is the disaster and the county: FEMA weighs a declaration request's damage per capita
+       statewide and "at the county and local government level" (44 CFR 206.48(a),
+       https://www.law.cornell.edu/cfr/text/44/206.48). This actor's moment matches the inputs (first reports, before
+       the damage is assessed); its unit is one storm in one county or zone (`EPISODE_ID`), all its types summed.
+     - Diaz and Joseph (2019, abstract) fit a model per tornado, then "provide static and interactive gridded maps of
+       monthly predicted probabilities of damage and property damages for the year 2019": the event is the model's
+       unit, a place and a period the planner's.
+     - Insurers and reinsurers decide per policy and per portfolio on insured values, which this database does not
+       hold, so they are not this task's actor (an AI reading, no source read).
+     - A global total is nobody's decision unit (the National Risk Index ranks counties and tracts, a state plan names
+       the jurisdictions most threatened), and as a score it is one number per window: the tuned LightGBM below sums to
+       24%, 48% and 77% of the test dollars of 2023, 2024 and 2025, the mean per event type to 106%, 185% and 356%.
+   * **Use case and features:**
+     - The prediction point is after the event, "logged from the first reports ... before any damage survey"
+       (dataset.py:151); a planner plans before the year from past occurrences and their frequency, when no begin time,
+       duration, measured wind or hail size of that year's events exists, so `use_case` pairs the planner's unit
+       with a responder's moment ("to plan where disaster resources and mitigation go").
+     - Re-unitising the rows to cells with only what is known before the year gives the planner's task, and a
+       different one: a yearly loss forecast per county and hazard from place and history, which the forecasting rules
+       put in scope only after the naive-profile test[^12g]; and 72-74% of the county and hazard pairs of the earlier
+       years have no entry in a test year, so a cell table built from the entries keeps only the cells where something
+       was logged.
+     - With the event inputs, the moment the data supports is a planner totalling the estimates of events already
+       reported per county and hazard (or a responder after a storm, per storm and county): the task is the loss per
+       event that the planner's county total is built from, as the National Risk Index's loss per occurrence is.
+   * **Experiments:** the shipped splits; 8 models fitted on each window's training side as in issues 8 and 10 (the
+     training mean, the mean per event type, a Tweedie GLM on event type and month, LightGBM with the Tweedie loss at
+     100 and 400 trees and tuned per window over 24 configurations with early stopping on the last 12 months, each of
+     the three with 3 seeds, and squared-error LightGBMs on the dollars and on log1p); each scored by the declared
+     deviance per entry, on the sums per unit (the $1 floor on each unit's sum) and per entry with each cell one vote;
+     the top model with the share of 1,000 bootstrap resamples that keep it on top (test days for entries, cells for
+     cells), Kendall's tau of the 8-model order against the per-entry order, and the tuned model minus the mean per
+     event type with its bootstrap standard error:
+
+     | Window | Per entry: top | Cell sums: top | Each cell one vote: top | Tau against per entry: sums / one vote | Tuned minus per-type mean: per entry | The same: cell sums |
+     |---|---|---|---|---|---|---|
+     | 2023 | GLM (57%) | GLM (65%) | GLM (60%) | 0.86 / 0.86 | +1,143 (SE 1,871) | +6,308 (SE 7,280) |
+     | 2024 | tuned LightGBM (63%) | GLM (81%) | GLM (68%) | 0.79 / 0.79 | -266 (SE 320) | +74 (SE 371) |
+     | 2025 | LightGBM, 100 trees (83%) | LightGBM, 100 trees (74%) | LightGBM, 100 trees (70%) | 1.00 / 1.00 | -882 (SE 49) | -1,551 (SE 117) |
+
+     - The unit moves one call: in 2024 the tuned LightGBM leads the per-type mean per entry (ahead in 79% of the
+       resamples) and is level with it on the cell sums (49%); in 2023 every score puts the GLM and the per-type mean
+       first, in 2025 the 100-tree LightGBM.
+     - Without the two squared-error fits, last under every score, tau per entry against the cell sums is 0.73, 0.60
+       and 1.00 over 6 models.
+     - Each cell one vote orders the models as the cell sums do (tau 1.00, 0.86 and 1.00) and has their top model in
+       all three windows; one storm in one county or zone (the responder's unit) and one county or zone over all
+       hazards have the same top models (GLM, GLM, 100-tree LightGBM).
+     - The test years hold 11,765, 12,676 and 12,636 cells (3.5 to 3.7 entries each), 40% to 44% of them forecast
+       zones rather than counties.
+     - Per entry the run reproduces issue 10 within its seed range (tuned 3,803, 2,035 and 858; the GLM 2,553, 2,130
+       and 1,598, the same as issue 10's); its run folder of 2026-11-08 is not on this machine, so the set-up was
+       rebuilt from issue 10's description.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Per entry | the mean deviance over entries, as now | no code; the unit the inputs describe and the source records | a busy cell counts once per entry; in 2024 another top model than every per-cell score |
+     | b | Cell sums | the dollars and the predictions summed per county or zone, event type and year, the mean deviance over cells (the issue's C) | the planner's total for one year; errors offset within a cell as in that total; each entry's mean stays the best prediction | needs `sum` in the scorer and a per-group unit on a temporal task, so the cross-dataset item reopens; zone cells are not jurisdictions |
+     | c | Each cell one vote (implemented) | a weight scoring column, 1 over the entries of the entry's cell, read by the metric's weight input and declared as the task's unit weight | no code; the final mean runs over cells; the cell sums' top model in 3 of 3 windows | errors within a cell do not offset; the weight can move the best prediction (not measured); the one-vote rule was written for repeated rows, not amounts that add |
+     | d | Rows re-unitised to cells | one row per county or zone, hazard and year, the summed dollars as target, inputs known before the year | the planner's unit and moment | another task, a yearly loss forecast from place and history; cells without an entry are missing; the event inputs go |
+
+   * **Recommendation:** c now[^12h]: the final mean runs over the cells the planner decides on, it needs no code, and
+     here it picks the same top model as the cell sums in all three windows; b if you want the planner's summed total
+     itself, which reopens the `sum` item. Either way `use_case` should say what the inputs allow, a planner totalling
+     the estimates of events already reported per county or zone and hazard, since before the year none of them
+     exists; `fit` stays approximate[^12a]. **Decision:** a, b, c or d?
+
+   **Andrej (2026-11-09, discuss):** Reply (c): Each cell one vote
+
+   **Resolved (2026-11-09, Andrej):** c: each county or zone, event type and year counts once. Each entry weighs 1
+   over its cell's entries (`cell_weight`, a weight scoring column the deviance reads), and the task declares it as its
+   `unit_weight` with `cell` as the unit; neither is a feature or a training weight, and `known_at_scoring` says the
+   count is known only once the year is over. `use_case` now reads as a planner who totals the damage of the events
+   already reported per county or zone and hazard; the metric reason, `fit_reason` (still approximate) and the notes
+   give the unit and its counts; a CC line in the notes and the record, and a Cases row for the extension of the
+   one-vote rule to entries whose dollars add[^12i]. On the new score with issue 14's $10 floor, the task probe still
+   flags no signal (its squared-error families lose to the training mean, 7,555 for the random forest against 5,615),
+   the leak probe finds nothing new, and training tuned LightGBM with the weight scored worse in all three windows than
+   without it. `dataset check`: 0 errors, 0 warnings.
+
+   [^12a]: **MET-1** (Must, in main): "The declared metric scores the real task: the decision of the use case (USE-1),
+     at the unit the actor acts on, the way a practitioner would have chosen a model for it in practice." **USE-8**
+     (Must): the fit says how closely the data mirrors the use case; the Validity block names the per-county sum as a
+     gap.
+   [^12b]: Issue 8 (Lennart, 2026-11-08, B): "i think this is a similiar discussion that we should start from the
+     right metric and maybe ignore prior claims if they dont match the task", against the panel's and the mediator's
+     lean to RMSLE.
+   [^12c]: pricing_game_2017_french_mtpl: the mean Tweedie deviance at power 1.5 per policy, "Chosen over the Gini by
+     the curator (Andrej, 2026-11-03)".
+   [^12d]: **MET-17** (Should; 2026-11-08, Lennart, in main): a unit counts once "if the actor decides once per unit
+     and the unit's further rows are repeats the source's protocol made"; "The score stays per row when each row is a
+     decision of its own".
+   [^12e]: FEMA, National Risk Index (https://www.fema.gov/flood-maps/products-tools/national-risk-index, read on
+     2026-11-09): a baseline measure of expected annual loss for 18 natural hazards at the census-tract or county
+     level.
+   [^12f]: **MET-1** (Must, in main): the metric scores the decision "at the unit the actor acts on". **USE-1** (Must):
+     "A use case is an actor, a moment and a decision". **USE-3** (Must): "Name the prediction point: when the model is
+     used and what is known then."
+   [^12g]: **SEL-10** (Must): "Time-series forecasting, future values of a series (demand, sales or a price over a
+     horizon), is out". **SEL-11** (Must): "A panel that looks like forecasting is in scope when it passes TP-10 ...: a
+     model on the features clearly beats each entity's naive profile, and the source's top solutions used no lagged
+     target."
+   [^12h]: **MET-17** (Should; 2026-11-08, Lennart, in main): the weight is "a weight scoring column the metric reads,
+     for scoring only (MET-15)", and "the task declares it as its `unit_weight`"; the rule covers units whose further
+     rows "are repeats the source's protocol made", so giving one vote to cells whose entries add their dollars is an
+     extension (an AI reading) that needs a Cases row.
+   [^12i]: **MET-17** (Should; 2026-11-08, Lennart, in main): one vote per unit "if the actor decides once per unit
+     and the unit's further rows are repeats the source's protocol made"; here the entries of a cell add their dollars,
+     an extension the Cases row records (Andrej, 2026-11-09).
+
+13. **Keep the reporter (`SOURCE`), with the damage survey's value replaced by the first report's source, instead of dropping the column?**
+
+   * **Problem:**
+     - `SOURCE` is dropped for every entry because one of its 44 values, "NWS Storm Survey", marks a damage survey
+       the office makes after the event (dataset.py:163, :279)[^13a].
+     - The drop also removes the reporter of the other 820,426 entries (a trained spotter, the public, an emergency
+       manager, law enforcement, a 911 call centre, a utility), which the office has from the first report and the
+       planner could use (counted on the raw files, before the 918 double entries go).
+     - Blanking the survey value alone keeps the marker, as the column has no other blank (dataset.py:163), so keeping
+       the reporter needs another value for the 23,636 surveyed entries.
+   * **Background:**
+     - The surveyed entries are 2.8% of the rows: 16,043 tornado entries (68% of all tornado entries), 6,183
+       thunderstorm wind entries (2.4% of theirs) and a few hundred of other types (counted on the raw files).
+     - The NWS issues a Local Storm Report (LSR) for each report it receives while the storm happens, with its source;
+       the Iowa Environmental Mesonet keeps them (its request page offers 2003 to 2026, with a field "Who reported the
+       LSR"), and the review matched its 2024 reports to these entries for issue 7.
+     - A rough match of the 1,967 surveyed county entries of 2024 with a begin point to the LSRs of the same office
+       finds a report from another source for 1,590 (81%) within 30 minutes and 15 km, and for 1,799 (91%) from 1
+       hour before to 2 hours after and within 25 km; the others had only the survey's own LSR or none, events nobody
+       reported before the survey (counted on the raw files and the review's 2024 LSRs; a nearby report can belong to
+       another event of the same storm).
+     - The definition's measurement, untuned LightGBM trained to September 2023 and tested on 2024, gives RMSLE 2.626
+       without the column and 2.559 with it as published or with the survey value merged into "Unknown"
+       (dataset.py:151, :163); that gain includes the survey marker and was measured under RMSLE, not under the
+       deviance declared since issue 8.
+   * **Effect on the task:** without the reporter a model cannot tell an entry an emergency manager or law enforcement
+     sent, often a damage report, from one an automated station measured (an AI reading of who reports what); with the
+     survey value kept or blanked it learns which events the office surveyed, a step taken after damage was seen.
+   * **Consistency:**
+     - The drop follows kick and expresso_churn_prediction (dataset.py:163), where a whole field's fill or
+       missingness differed by the outcome; here one value is late and the others are first-report facts, so the rule
+       that the smallest fix keeping a valid signal beats a drop points to a fix (an AI reading of which precedent
+       applies)[^13b].
+     - The duration blanks of issues 6 and 7 go by event type and speed type, never by reporter, so they do not mark
+       the survey (dataset.py:165).
+   * **Unknown:**
+     - The reporter's worth under the declared deviance on the entries that were not surveyed: a fit with and without
+       `SOURCE`, scored on those test entries only, on the cluster.
+     - How well the LSR match holds for 2007-2023, and whether Storm Data's `SOURCE` is the first report's source or
+       the one the preparer picked among several (the NWS directive was not re-read for this).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Drop the column (implemented) | `SOURCE` leaves for every entry | no survey marker; no outside data | the first reporter of 97% of the entries is lost |
+     | B | Keep it, survey value blanked | `SOURCE` ships with "NWS Storm Survey" set to missing | one line of code | the blank is the survey marker, as no other entry is blank; merged into "Unknown" the column scored as published (2.559) |
+     | C | Keep it, surveyed entries re-sourced from the LSRs | "NWS Storm Survey" becomes the source of the nearest LSR of another source from the same office, near in time and place; an entry with no such report keeps a blank | the first reporter on nearly every entry; the survey value gone | an outside archive and an approximate match for 23,636 entries over 2007-2025; the blank still marks the entries nobody reported before the survey (9% to 19% of the surveyed ones in 2024) |
+
+   * **Recommendation:** C: the reporter is a first-report fact the planner has, the smallest fix that keeps it beats a
+     drop, and in 2024 a report from another source exists for 81% to 91% of the surveyed entries; check the match on
+     a few early years and the reporter's worth on the entries not surveyed first, and keep A if the match fails for
+     the early years[^13c]. **Decision:** A, B or C?
+
+   **Notes for the AI:** On C: download the IEM LSR archive for 2007-2025 (the CSV export of
+   https://mesonet.agron.iastate.edu/request/gis/lsrs.phtml; `s05_lsr_match.py` in the claim auditor's scratch of the
+   run folder of 2026-10-30 is the match recipe, with the 2024 months); match each "NWS Storm Survey" entry to the LSRs
+   of the same `WFO` whose source is not "NWS Storm Survey", within a window around the begin time and a radius around
+   the begin point (zone entries, which have no begin point, by the zone's UGC code and the time); take the earliest
+   such report's source, mapped to Storm Data's spellings (`Emergency Mngr` to "Emergency Manager", `CO-OP Observer` to
+   "COOP Observer"); the rest get a blank, or, if you prefer, leave as events not known at the prediction point (say
+   which in the CC). Add the LSR download to `download_description`, take `SOURCE` out of `post_outcome` and ship it
+   as `reporter`, rewrite the notes' bullet (dataset.py:163) and `changes`; re-run `dataset check`, the leak probes
+   (the blank's damage rate) and the task probe on the cluster; CHANGELOG and a CC line. On B: the blank is a kept
+   leak, which LEAK-10 (Must) does not allow without an exception. The rules: LEAK-10, LEAK-7, LEAK-37, LEAK-38.
+
+   **Andrej (2026-11-09, as implemented):** A, as implemented.
+
+   **Resolved (2026-11-09, Andrej):** A: `SOURCE` stays dropped for every entry. The column as published carries the
+   post-event "NWS Storm Survey" marker on the surveyed entries (23,621 on the task's rows), so neither the column as
+   published nor a blank in place of that value can ship, and the fix that would keep the reporter needs an outside
+   archive (the Iowa Environmental Mesonet's Local Storm Reports) and an approximate match in time and place, which in
+   2024 finds another source for 81% to 91% of the surveyed county entries and leaves the rest marked by a blank. No
+   data change; a CC line in the notes and the record records the call (`dataset check`: 0 errors, 0 warnings).
+
+   [^13a]: **LEAK-10** (Must, in main): out are "a column recorded after the outcome" and "missingness that encodes
+     the outcome"; "Fix it in the definition the smallest way (LEAK-7), else drop it". **LEAK-7** (Should, in main):
+     "The smallest fix that keeps a valid signal beats dropping the column"; its cases include "re-source settled
+     labels (consumer_complaints)". **LEAK-37** (Must): "An input the actor knows at the prediction point is not a
+     leak".
+   [^13b]: kick and expresso_churn_prediction (Lennart, 2026-10-22; **LEAK-10** with **LEAK-38**): a named field
+     "whose missingness or fill, given the covariates known at the prediction point, differs by outcome" is dropped.
+     That this covers a whole field and not one late value among first-report values is an AI reading.
+   [^13c]: The curator's standard for the information audit of 2026-11-09: every piece of information the actor has at
+     a point is available to the benchmark there, and nothing more.
+
+14. **Raise the metric's floor from $1 to $10, the smallest damage the source ever records?**
+
+   * **Problem:**
+     - The $1 floor follows the collection's convention, two orders below the cheapest event type's training mean ($909, Dense Smoke), rounded down[^14a].
+     - No entry records a damage between $0 and $10: of the 843,144 entries 268,670 have damage, the smallest is $10, 0.17% are below $100 and 6.1% below $1,000 (counted on the definition's frame, 2026-11-09).
+     - In the task probe 44% of the linear model's and LightGBM's predictions (squared error on the dollars) sit at the floor, so the floor, not the planner's sum, sets how far they rank behind: keep $1, or clip at the label's resolution?
+   * **Background:**
+     - A prediction below the floor is scored as the floor; at power 1.5 the cost of a low prediction on an entry with damage y grows like 4y/sqrt(mu), so raising the floor tenfold divides that cost by about 3.2, while an entry without damage costs almost nothing either way.
+     - The floor's first reason was practice, a clip "to a reasonable number" (Lennart, 2026-11-04)[^14a].
+     - Offices enter round values ($1,000, $5,000, $10,000); 44% of the positive figures have one significant digit (issue 8).
+     - For the tuned Tweedie LightGBM at 400 trees, 5.6% to 8.1% of the predictions fall below $1 and its score moves by 1% to 10% between floors of $0.1 and $10 (the notes' "Metric floor" bullet).
+   * **Effect on the task:** a planner reads an expected $1 and an expected $10 for one entry as the same nothing; above $10, the floor leaves every score unchanged that a planner could act on.
+   * **Consistency:** the rule is the cross-dataset item "Set a deviance's floor where the actor would clip"; pricing_game_2017_french_mtpl asks the same for its 0.1 EUR (its issue 7). Under issue 12's option C the floor applies to each cell's summed prediction, where $10 is still below every cell's plausible sum.
+   * **Unknown:** how the benchmark's tuned methods rank at $1, $10 and $100 on the three windows; a cluster run would show it.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | $1 | as since issue 8 | follows the collection's rule as it stands | scores predictions ten times finer than anything recorded; 44% of the squared-error fits' predictions decided by it |
+     | B | $10 (implemented) | the smallest damage the source records | the label's own resolution; a fact, not a formula | needs the rule changed (the cross-dataset item, B) |
+     | C | $100 | one order below the cheapest type's mean; 0.17% of the positive entries lie below it | further from the near-zero outputs | above 457 recorded damages; a round number without a fact of its own |
+
+   * **Recommendation:** B, with the rule changed by the cross-dataset item: $10 is the smallest amount anyone entered, so a finer prediction is not a planning difference. **Decision:** A, B or C?
+
+   **Notes for the AI:** On B: `params={"power": 1.5, "min_prediction": 10.0}` in `dataset.py`; rewrite the notes' "Metric floor" bullet (the fact: the smallest recorded damage, with the counts above), the metric reason and `predicted`; re-run the task probe (share at the floor) and `dataset check`; re-run `tune_tweedie.py` of the run folder of 2026-11-08 on the cluster (`sbatch`, gpua100*) for the signal bullet; a CC line naming the $1 of 2026-11-08 as superseded; a MET-13 Cases row; CHANGELOG entry. The count script is `storm_small.py` (build the frame, quantiles of the positive target).
+
+   **Andrej (2026-11-09, change):** Option B: $10.
+
+   **Resolved (2026-11-09, Andrej):** B: `min_prediction` is $10, the smallest damage the source records (none of the
+   268,670 entries with damage lies between $0 and $10). The metric reason, the notes' floor bullet and `predicted`
+   say so; a CC line in the notes and the record, and a Cases row under the floor rule[^14b]. At $10 no prediction of
+   LightGBM or CatBoost fitted with the Tweedie loss, of the GLM or of the means falls below the floor, and their
+   scores are the same at $1 and $10; a squared-error LightGBM has 1.7% to 2.3% of its predictions below it and scores
+   better at $10 (12,103 against 22,656 in 2023); in the task probe the linear model and LightGBM still have 43.8% at
+   the floor.
+
+   [^14a]: **MET-13** (Must, in main; amended 2026-11-06, Lennart): "The floor is a parameter the definition states, as practice clips a model's output before scoring (Lennart, 2026-11-04, on bemtpl97: "in pratice we would also clip to a reasonable number"): two orders below the smallest plausible mean". The definition's notes call the $1 "a convention of this collection that can change later, not a property of the source".
+   [^14b]: **MET-13** (Must, amended 2026-11-06, Lennart): the floor sits "two orders below the smallest plausible
+     mean"; the $10 is the label's resolution instead (Andrej, 2026-11-09), about two orders below the $909 of Dense
+     Smoke too. The rule's text is the cross-dataset item "Set a deviance's floor where the actor would clip".
+
+15. **Decide issue 10's cap again on this task's own facts, once issue 12 has set the unit?**
+
+   * **Problem:**
+     - Issue 10 kept the uncapped dollars partly because "caps were declined elsewhere", but those precedents are a claim count (fremtpl2) and one large claim in a motor book (frempl), not a catastrophe tail in which 0.1% of the 2024 test rows hold 74% of the dollars[^15a].
+     - In 2023 no tuned model can be told from a mean per event type (+802, standard error 1,580), so the declared score orders methods mostly by the few largest events of each test year.
+     - Once issue 12 sets the unit, decide cap or no cap by how stably the score orders methods on this task, or leave issue 10's call as it is?
+   * **Background:**
+     - For the cap: at $10M the tuned model beats the mean per event type in every window and seed (-18% to -32%), and the cap binds on 1,761 entries.
+     - Against the cap: it removes 87% of the dollars, the catastrophes, and a planner's expected annual loss (FEMA's National Risk Index, issue 12) counts them; so the cap trades the planner's sum for a stable ranking.
+     - Lennart's own standard in issue 8 points to this task's facts first: "start from the right metric and maybe ignore prior claims if they dont match the task".
+     - Summing per county, hazard and year (issue 12, C) leaves the tail about as heavy (the largest 0.1% of the cells hold 71% of the dollars against 83% for the entries), so the unit alone may not settle the stability.
+   * **Effect on the task:** none until decided; the question is whether the score ranks methods or years.
+   * **Experiments:** issue 10's tuned runs (3 seeds per window, bootstrap over test rows and test days); no run yet on the cells or on a measure of rank stability.
+   * **Unknown:** how stably the benchmark's tuned methods are ordered across the three windows and across bootstrap resamples of the test days, uncapped and capped, under the unit issue 12 picks.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Uncapped, as decided (implemented) | issue 10 stands | the planner's whole sum, catastrophes included | a few events per year order the methods; the call rests partly on precedents of other kinds |
+     | B | Cap at $10M now | as issue 10's option C | a signal in every window and seed | drops the catastrophes the planner counts; tested at one value |
+     | C | Measure, then decide | after issue 12: rank stability of 4 to 5 tuned methods (Kendall's W across windows, share of bootstrap resamples that keep the top method) uncapped and at $10M, then A or B with the numbers | the call rests on this task's facts | a cluster run; the decision waits |
+
+   * **Recommendation:** C: the uncapped sum is the planner's quantity, so A should stand unless the measured ranking is mostly noise; the precedents of other targets should not decide it either way. **Decision:** A, B or C?
+
+   **Notes for the AI:** On C, after issue 12 is decided: extend `tune_tweedie.py` of the run folder of 2026-11-08 to 4 or 5 methods (Tweedie LightGBM, the GLM with event type and month, CatBoost with the Tweedie loss, a squared-error LightGBM, the per-type mean), score each window per entry or per cell as issue 12 says, uncapped and capped at $10M, with 2,000 bootstrap resamples of test days; report Kendall's W across windows and the share of resamples that keep the top method; run with `sbatch` on gpua100*; then put A or B again with the table.
+
+   **Andrej (2026-11-09, change):** Option C: Measure, then decide.
+
+   **Answer (AI, 2026-11-09):** Cap at $10M, since uncapped the score cannot order the methods in two of three test
+   years; cap, or keep the whole sum?
+
+   * Measured on the shipped score (each cell one vote, floor $10): the GLM on event type and month, the mean per event
+     type, tuned Tweedie LightGBM, Tweedie CatBoost and squared-error LightGBM, 3 seeds, 2,000 bootstrap resamples of
+     test days.
+   * Uncapped, the top method differs in every year (GLM 2023, CatBoost 2024, tuned LightGBM 2025) and stays on top in
+     57%, 59% and 78% of the resamples; Kendall's W of the ranks across the years is 0.62.
+   * Uncapped, tuned LightGBM minus the per-type mean is +6,781 (SE 7,458), +13 (SE 753) and -1,040 (SE 120): only 2025
+     separates a model from a lookup table.
+   * Capped at $10M (fitted and scored on the capped dollars): W 0.91, the top kept in 81%, 92% and 95%, tuned LightGBM
+     below the per-type mean in every year (-247, SE 70; -137, SE 90; -255, SE 30).
+   * The cap binds on 1,761 entries (0.2%) and removes 87% of the dollars; $10M is the only value tested.
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Uncapped (implemented) | issue 10 stands | the planner's whole sum, catastrophes included | in 2023 and 2024 the order of methods is mostly noise, so the task adds little to a benchmark ranking |
+     | b | Cap at $10M | target min(dollars, $10M); metric, unit and floor unchanged; the notes say what the cap leaves out | the same methods lead across years and resamples; models beat the per-type mean every year | leaves out the catastrophes, 87% of the dollars the planner sums; one cap value tested |
+
+   **Recommendation:** b: the issue's own test for keeping the uncapped sum, a ranking that is not mostly noise, fails
+   in two of three years, and the cap keeps every entry and its expected dollars up to $10M[^15b]. **Decision:** a or
+   b?
+
+   **Andrej (2026-11-10, discuss):** That methods separate well should never be the main objective, the main objective
+   should always be representing the task correctly. It can always happen that methods perform equally well and noisy
+   tasks are normal.
+
+   **Answer (AI, 2026-11-10):** Keep the sum uncapped (a): the planner's task includes the catastrophes, so the cap
+   would score a different quantity; I withdraw the recommendation of the cap, which rested on ranking stability.
+
+   * The planner's quantity is the expected annual loss of a county and hazard; FEMA's National Risk Index, the
+     reference for that planner (issue 12), builds it from the recorded losses with the large events in, not capped.
+   * A $10M cap removes 87% of the dollars (1,761 entries, 0.2%), so a capped score would rank methods on the 13% of
+     the loss a planner cares least about[^15c].
+   * The stability numbers stay as facts in the notes: uncapped, Kendall's W across years 0.62 and the top method kept
+     in 57%, 59% and 78% of the resamples; tuned LightGBM separates from the mean per event type only in 2025. That is
+     a noisy task, not a wrong one.
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Uncapped (implemented) | issue 10 stands; the notes state the measured noise | the planner's whole sum | methods hard to tell apart in 2023 and 2024 |
+     | b | Cap at $10M | target min(dollars, $10M) | stable ranking | scores 13% of the dollars, not the planner's sum |
+
+   **Recommendation:** a. **Decision:** a or b?
+
+   **Andrej (2026-11-10, discuss):** Reply (a): Uncapped
+
+   **Resolved (2026-11-10, Andrej):** (a), the damage stays uncapped in training and scoring. The planner's expected
+   annual loss includes the large events, and a $10M cap would score 13% of the dollars; the ranking's instability
+   (Kendall's W 0.62 across the windows, tuned LightGBM apart from the mean per event type only in 2025) is a fact of a
+   noisy task, stated in the notes' signal bullet. Applied: that bullet states the measured W 0.62 uncapped as a fact
+   and no longer calls the cap open; a CC line in the notes and the record.
+
+   [^15a]: Issue 10 (resolved 2026-11-08, Lennart, A), its Problem: "it scores another target than the dollars Lennart chose, and caps were declined elsewhere"; its footnote cites fremtpl2 ("A cap is a modelling choice of the literature, not a shown error") and frempl_french_motor_personal_line (its largest claim, 802,620, kept). **MET-13** (Must, in main): "a cap on the target changes the task, not the metric".
+   [^15b]: **MET-13** (Must, in main): "a cap on the target changes the task, not the metric". **MET-1** (Must): the
+     metric scores the decision of the use case, here the planner's sum of expected dollars.
+   [^15c]: **MET-1** (Must, in main): "The declared metric scores the real task: the decision of the use case
+     (USE-1), at the unit the actor acts on". **TP-2** (Should, in main): "A small but real signal is no reason to
+     retire".
 
 **Review panel:** ship after changes (mediator). Tier full, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
 MET-16, after decision D13 (issue 6): 12 reports. The mediator's issues 1 and 2 are issues 7 and 8 here (its option (a)

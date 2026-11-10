@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Lennart
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -103,6 +103,18 @@ CC (2026-11-08, Lennart): the target stays the year's claim cost per contract (R
 **Assessment (AI, 2026-11-08):** applied in the definition: the exposure paragraph of the notes gives the 6% bound (re-computed on the 37,090 kept first years: 0.9923 for 24,470 annual payers, 0.9356 for 12,620 half-yearly payers) and names the amended clause without quoting its wording, which waits for australian_vehicle_insurance_2004_2005's issue 8. On the curator's mark of REVIEW.md issue 8 (B), "Reword", the CC line of 2026-11-06 above was reworded in place: "so no feature carries a cut" now reads "so no feature set after the quote carries the cut, while the quote-time factors predict it through risk selection", as in the definition's CC bullet and issue 6's resolved turn. `dataset check`: 0 errors, 0 warnings.
 
 CC (2026-11-08, Lennart): the declared metric (`normalized_gini`) is checked, as declared on the PR #47 review board.
+
+CC (2026-11-09, Andrej): no column for the customer's earlier policy-years at the insurer; a note in the definition measures the gap (review issue 10, C: "Option C: A, with the gap measured in the notes").
+
+**Assessment (AI, 2026-11-09):** recounted on the raw file with the definition's filters, the issue's numbers hold: 442 of the 4,362 test rows (10.1%) have an earlier policy-year under the same birth-date and licence-date key that ended by the quote; they claim in 26.9% of the cases after an earlier claim (182 rows) and 11.5% after claim-free years (260), against 38.0% without one (3,920); the training sides hold 15, 18, 24, 32 and 44 such rows (the windows of August to December 2017).
+
+CC (2026-11-09, Andrej): columns held only for training rows stay out for now, no training-only role (cross-dataset item of 2026-11-09; MET-14, LEAK-41, MET-16); the notes list them.
+
+CC (2026-11-09, Andrej): the training labels' maturity is stated in the notes (cross-dataset item of 2026-11-09, option B).
+
+CC (2026-11-09, Andrej): a curation decision on the metric (REVIEW.md issue 9, A; consistency check option (a)): "We keep A because it was how the Kaggle competition looked like. But note this decision as a curation decision." `normalized_gini` ordered by the prediction stays, each policy weighted 1, not the Gini against the premium. The source is a data article with no task and no metric, so the ground is the form of the insurers' Kaggle competitions (Allstate 2011, Liberty Mutual 2014) and the 2022-2024 sibling's call of 2026-11-02 (MET-11: a context metric names its basis); the use case now reads "to rank the risk and set the premium", as the sibling's, which is what this form scores (MET-1). Provisional; revisit with wisconsin_local_government_property_insurance_fund issue 4 and spanish_motor_insurance_coverage_level_2022_2024 issue 11: both were settled on 2026-11-09 with their metrics kept, so it stands.
+
+CC (2026-11-09, Andrej): ship (review page of 2026-11-09).
 
 ## Reference
 

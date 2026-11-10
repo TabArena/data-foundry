@@ -7,8 +7,9 @@ Wadden Sea flats (version 6 of 2024-12-21, CC BY-SA 4.0): one row per fauna samp
 by the data descriptor's own join; shipped as log1p and scored after the inverse. Known: the position, tidal basin and
 flat, the survey's date, the sediment interpolated from that year's other stations and the elevation from
 Rijkswaterstaat's depth surveys (vaklodingen). Whole stations are held out with all their years, so a test station
-stands for a place between the stations of a survey already run. The metric is RMSE on the density (fallback),
-unweighted, with no sample weight.
+stands for a place between the stations of a survey already run. The metric is the per-year normalised RMSE on the
+density (`mean_group_normalized_rmse` over the 15 survey years, each survey's map one vote; issue 8, 2026-11-10), in
+place of the pooled RMSE of 2026-11-02; unweighted, with no sample weight.
 
 Validity:
 * SEL-2 holds: Andrej's `Yes` of 2026-10-30, with his answer of the same day to policy question 1 of the
@@ -36,7 +37,8 @@ Validity:
 Value: TP-2 holds (untuned LightGBM R^2 0.373 on log1p at unseen stations, against 0.235 for a linear model, in the
 task probe of 2026-11-06 after the elevation fix, on 5 of 9 splits as on 2026-11-02); TP-5 holds (about 1,700 test
 stations per fold). MET-5 gives the fallback `rmse` on the density, kept by Andrej's call of 2026-11-02 (the Poisson
-deviance went only to nantucket_sound_sea_duck_aerial_survey_counts, whose source names it); MET-2 holds, finite on
+deviance went only to nantucket_sound_sea_duck_aerial_survey_counts, whose source names it); since 2026-11-10 that
+RMSE is taken per survey year over the year's spread and averaged (MET-1, MET-11; issue 8, C); MET-2 holds, finite on
 all 9 folds. MET-15 and MET-16 hold: the map predicts an
 equal-area cell, so the density is scored unweighted with no sample weight, and weighting by the core area changes no
 ranking (Kendall tau 1.0 between the unweighted and the area-weighted RMSE, 7 models, 9 of 9 folds). MET-14 holds:
@@ -68,11 +70,15 @@ same values, and 400 of 400 sampled rows match a re-read of the source tiles. Th
 (claim auditor, column auditor, task gamer, mediator) found wording only, and its four changes are made (Mediator,
 "Changes to make now"). `dataset check`: 0 errors, 0 warnings.
 
-**Main points:** Open: none. Settled: the interpolated sediment (issue 5), the split by station after a clean leak test
-(1), the 2008 samples without a fauna record dropped (2), the elevation joined (4) and RMSE on the density kept
-(Andrej's call, no issue in this file) on 2026-11-02; the 39 single boat cores kept with a note (6) on 2026-11-06; the
-608 counts below one tellin per core kept with the note only (7) on 2026-11-08. Across datasets: X3, whether the check that the density times the core area rebuilds the count applies only
-when the source releases the count.
+**Main points:** No issue open. Settled on 2026-11-10 (Andrej): the score gives each survey year's map one vote, the
+per-year normalised RMSE on the density (8, C). Settled on 2026-11-09 (Andrej): the elevation stays the latest survey before the sample, its change being
+small (9). Settled: the interpolated sediment (issue 5), the split by station after a clean leak test (1),
+the 2008 samples without a fauna record dropped (2), the elevation joined (4) and RMSE on the density kept (Andrej's
+call, no issue in this file) on 2026-11-02; the 39 single boat cores kept with a note (6) on 2026-11-06; the 608 counts
+below one tellin per core kept with the note only (7) on 2026-11-08. Across datasets: X3, whether the check that the
+density times the core area rebuilds the count applies only when the source releases the count.
+
+**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
 
 **Issues for Andrej and Lennart:**
 
@@ -349,6 +355,225 @@ when the source releases the count.
    **Resolved (2026-11-08, Lennart):** A, as implemented. The 608 densities ship as published, and the exposure note
    says their cause is unknown, now with the CC of 2026-11-08; NIOZ is not asked for now. `dataset check`: 0 errors,
    0 warnings.
+
+8. **Score each survey year's map once, instead of one RMSE pooled over the 15 years?**
+
+   * **Problem:**
+     - The use case is the map of one past survey (dataset.py:129-133), and the source checks such a map within one
+       year by leave-one-out over that year's stations (Lyashevska et al. 2016; dataset.py:250), but the score pools
+       all 15 years into one RMSE on the density[^8a].
+     - 2014, the year of the dense spat patches, holds 75.5% of the pooled squared deviation, as the yearly standard
+       deviation of the density runs from 93 per m2 in 2008 to 2,899 in 2014 (dataset.py:218; recounted on the raw
+       files with the definition's filters, 59,044 rows).
+     - So the pooled score ranks models mostly by how they map 2014: keep it, or give each survey's map one vote?
+   * **Background:**
+     - After 2014, the largest shares of the pooled squared deviation are 2013 (7.1%) and 2018 (4.7%), and eleven
+       years hold under 3% each (counted on the raw files).
+     - RMSE on the density is Andrej's call of 2026-11-02, the fallback, as the source names no single
+       criterion[^8b]; this issue keeps RMSE within a year and asks only how the years are pooled.
+     - The metric library has `mean_group_normalized_rmse`, each group's RMSE divided by the spread of its true values
+       and averaged, which noaa_afsc_bottom_trawl_survey_cpue uses for its 11 species' maps; it has no plain mean of
+       per-group RMSE, which the cross-dataset item "Add a `sum` aggregation and a per-group mean RMSE to the scorer?"
+       would add.
+     - Under a mean of per-year RMSE a year still counts by its error's scale: the training mean's RMSE in a year is
+       about that year's standard deviation, and 2014's is 34% of the sum over the years; under the normalised form
+       each year counts one fifteenth (counted on the raw files).
+     - Every fold holds every year, since whole stations are held out with all their years (dataset.py:254), and the
+       years hold 2,369 to 4,414 samples each.
+   * **Effect on the task:** under the pooled score a model that maps 2014's spat patches well wins even when it maps
+     the other 14 surveys worse; scored per survey, each map counts and the spat year is one of fifteen.
+   * **Consistency:**
+     - noaa_afsc_bottom_trawl_survey_cpue: pooled into one RMSE, two species held 79-93% of the squared error and the
+       score picked the model worst for the other maps, so each species' map gets one vote through the per-group
+       normalised RMSE, within a species ranking models as RMSE does (Andrej, 2026-11-02)[^8b].
+     - boreal_postfire_lichen_biomass (Lennart, 2026-11-08) counts each plot once, the unit the actor decides on;
+       the rule written from it is about units with unequal numbers of rows, which the years are not, so it does not
+       bind here (an AI reading)[^8c].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Pooled RMSE on the density | as now | Andrej's RMSE of 2026-11-02 as declared; the density's own scale | 2014 holds 75.5% of the squared deviation, so one survey decides the ranking |
+     | B | Mean of per-year RMSE | the survey year as a scoring column (role group); RMSE per year on the density, averaged | each map scored in tellins per m2; RMSE kept | 2014 still weighs about a third; needs a new metric in the library |
+     | C | Per-year normalised RMSE (implemented) | the survey year as a scoring column; `mean_group_normalized_rmse`: each year's RMSE over the spread of its true densities, averaged | each survey's map one vote; in the library today; the form chosen for noaa_afsc's maps; within a year it ranks models as RMSE does | a ratio, not tellins per m2; a year with little spread (2008, SD 93) counts as much as 2014 |
+
+   * **Recommendation:** C: the use case and the source judge one survey's map at a time, the score then follows each
+     map, and it is the form chosen for noaa_afsc's species' maps; within a year a fixed divisor ranks models as RMSE
+     does, so the RMSE of 2026-11-02 stays inside each map. B if you want the score in tellins per m2 and accept
+     2014's larger share. **Decision:** A, B or C?
+
+   **Notes for the AI:** On C: in `_clean` add `survey_year`, the date's year as text, as a
+   `ScoringColumn(column="survey_year", role="group", used_by="mean_group_normalized_rmse", ...)`; the date stays a
+   feature. The metric becomes `Metric.from_context("mean_group_normalized_rmse", reason=..., inputs={"group":
+   "survey_year"}, target_transform="log1p")`, the reason naming RMSE (the fallback of 2026-11-02) as the original and
+   the 75.5% share. Rewrite the notes' metric bullet (dataset.py:218), regenerate the README, re-run `dataset check`
+   and the task probe on the cluster; CHANGELOG and a CC line. On B: the cross-dataset item first adds
+   `mean_group_rmse` to `src/data_foundry/v2/metrics.py` with its tests, then the same scoring column. The rules:
+   MET-1, MET-5, MET-11, MET-17.
+
+   **Andrej (2026-11-09, discuss):** Is this actually a temporal dataset? Why do you suggest score per year with a
+   grouped split?
+
+   **Answer (AI, 2026-11-09):** The data are a yearly series; the task is not temporal: it maps a survey already run,
+   between its stations, so the split holds out places, and a score per year follows the map, not the split. Part of
+   the case the issue makes for C is weaker than written (below). Counted on the raw files with the definition's
+   filters (59,044 rows).
+
+   * **The data:** 15 yearly surveys, 2008-2022, of the same 5,092 stations, a median 13 visits each (65.9% at 13 or
+     more); 2,369 to 4,414 samples a year.
+   * **The use case:** the abundance map of a past survey, the tellin density at places between the stations of a
+     year whose survey has been run, drawn from the whole archive (dataset.py:129-133, 207): interpolation in space
+     within a surveyed year, not a forecast of a later one. The paper behind it maps the 2010 survey and checks the
+     map by leave-one-out over that year's stations; neither it nor the data descriptor predicts a later survey.
+   * **The split:** grouped by station, every year of a station on one side, 3 repeats of 3 folds, tagged `Spatial`
+     only: grouped by design, not forced from temporal. A test station is a place without a sample; the same
+     survey's other stations, a median 500 m away, are in training, as they are for the map maker.
+   * **Temporal was weighed in issue 1 and set aside (Andrej, 2026-11-02):** no source forecasts the next survey, and
+     expanding yearly windows scored R^2 0.16-0.33 (mean 0.25) against 0.343 grouped. Removing the test year's
+     training rows costs R^2 0.085 (as many random rows, 0.002): the score leans on the same survey, which is the
+     map's input. A forecast would have to guess the year's level, which jumps: the mean density changes from one year
+     to the next by a factor of 0.23 to 4.69 (526 per m2 in 2014, 121 in 2015).
+   * **Why a score per year with a split by station:** the split decides which places are unseen; the score decides
+     how the maps' errors add up. Every fold holds every year, since a station is held out in all its years, so each
+     year's map is scored at about a third of that year's samples, whichever stations the split picked.
+     noaa_afsc_bottom_trawl_survey_cpue does the same with another key: split by year, scored per species' map.
+   * **Where the issue's case for C is weaker than written:**
+     - The paper scores one year because it holds one year, 2010: that shows a map is one survey's, not that 15 maps
+       should count alike. No source names a decision taken on the maps (fit approximate), so one vote per map is our
+       reading; an actor who adds up tellins over the years, as a stock, would weigh 2014 more, as the pooled score
+       does.
+     - Within a year a few cores still decide: a year's 10 densest samples hold a median 55% of its squared
+       deviation (25% to 82%; 77% in 2014). C hands the weight from 2014's spat cores to each year's densest cores; it
+       does not score the broad pattern of a map. The RMSE on the density (Andrej, 2026-11-02) is what puts the
+       weight on dense cores.
+     - The issue's consistency bullet calls the years equal in rows; they hold 2,369 (2020) to 4,414 (2021). The
+       per-unit rule still does not bind, for another reason: each sample is a place of the map, not a repeat of one
+       decision[^8d], and the pooled imbalance comes from the spread (SD 93 to 2,899), not from the counts.
+   * **If the task were temporal:** it would need a use case that predicts a survey before it is run (none found),
+     seven expanding yearly windows, 2016 to 2022 (the first trains on 52.9% of the rows, 2015 would train on 45.9%),
+     and each station's earlier densities as features (a known station's history)[^8e]; its score per window would be
+     per year anyway.
+   * **For this issue:** the split stays grouped, as settled in issue 1; the choice is still A, B or C. C stays the
+     recommendation on the narrower ground: each survey's map counts once, and each year's densest cores decide in
+     place of 2014's alone. A if you read the actor as adding up tellins over the years.
+
+   **Andrej (2026-11-09, discuss):** So what do you finally recommend?
+
+   **Answer (AI, 2026-11-09):** C, one vote per survey year: measured now, the pooled RMSE ranks models by how they fit
+   2014's spat, and picks models that map the other years no better than a constant.
+
+   * Eight untuned models on the 9 shipped splits (3 seeds): the pooled RMSE and the per-year score agree only at a
+     Kendall tau of 0.51 (0.36 to 0.71 per split).
+   * LightGBM fitted by squared error on the density beats the constant under the pooled RMSE (-24 ± 4, 8 of 9
+     splits), but per year it is no better than the constant (+0.013 ± 0.015) and worse than the same model on log1p
+     (+0.13 ± 0.02, 9 of 9).
+   * The random forest on the density is second of eight pooled and fifth per year.
+   * The best model, LightGBM with a Tweedie loss, is first under both, so C does not punish a good map; it stops
+     rewarding one year's spat.
+   * The same pattern made you give each species' map one vote in noaa_afsc_bottom_trawl_survey_cpue.
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Pooled RMSE (A) | as now | tellins per m2; no change | 2014 decides the ranking |
+     | b | Per-year normalised RMSE (C, implemented) | the survey year as the metric's group; `mean_group_normalized_rmse` | each survey's map one vote; in the library; as noaa_afsc | a ratio, not tellins per m2 |
+
+   * **Recommendation:** b. **Decision:** a or b?
+
+   **Andrej (2026-11-10, change):** Reply (b): Per-year normalised RMSE (C)
+
+   **Resolved (2026-11-10, Andrej):** b (C). The metric is `mean_group_normalized_rmse`, declared from context with
+   RMSE on the density pooled over the years (the fallback of 2026-11-02) named as the original and 2014's 75.5% share
+   as the reason; `survey_year`, the year of `date` as text, is its group, a scoring column and never a feature; the
+   score is taken on the density after the inverse of log1p. `dataset check`: 0 errors, 0 warnings. Task probe
+   (untuned, fit on log1p, 5 of 9 splits): random forest 0.962, LightGBM 0.967, linear 1.005, the back-transformed
+   training mean 1.046; the random forest beats it on 5 of 5 splits by 0.084 (SE 0.005); no flag.
+
+   [^8a]: **MET-1** (Must, in main): the declared metric scores the decision of the use case "at the unit the actor
+     acts on".
+   [^8b]: The notes (dataset.py:218): "RMSE kept (CC 2026-11-02, Andrej): the fallback, as the source names no single
+     criterion". noaa_afsc_bottom_trawl_survey_cpue (Andrej, 2026-11-02, "Let's do RMSE", then "I follow your
+     suggestions"): `mean_group_normalized_rmse` per taxon, which "gives each species' map one vote".
+   [^8c]: **MET-17** (Should; 2026-11-08, Lennart, in main): "When the source's rows come in units with unequal
+     numbers of rows, the score counts each unit once if the actor decides once per unit". **MET-11** (Must): a
+     declared metric names the original when it departs from it; B or C is declared from context with RMSE as the
+     original.
+   [^8d]: **MET-17** (Should): one vote per unit when "the unit's further rows are repeats the source's protocol made";
+     "The score stays per row when each row is a decision of its own".
+   [^8e]: **USE-10** (Must): "For a known entity, its history is legitimate: the split is temporal and the previous
+     outcome is a feature." **SPLIT-14** (Must): "A temporal task has at least 3 windows, and no window's train side
+     holds less than 50% of the data". **SPLIT-3** (Must) and issue 1: one regime, the one the use case implies.
+
+9. **Take the bed elevation from the depth survey nearest in time, a later one included, instead of the latest before the sample?**
+
+   * **Problem:**
+     - The elevation comes from the latest vaklodingen survey stamped on or before the sample's date
+       (dataset.py:283-294), a median 2.7 years earlier and more than 5.5 years for one sample in ten (dataset.py:209;
+       counted on the raw files).
+     - The moment is the map of a past survey drawn from the whole archive, later surveys included (dataset.py:209,
+       :254), and `station_elevation_series` already returns every survey of the station's cell (dataset.py:71-100),
+       so the map maker also holds the surveys made after the sample[^9a].
+     - Keep the latest survey before the sample, or take the survey nearest in time?
+   * **Background:** counted on the raw files, the shipped rows rebuilt without a model:
+     - Nearest in time, the gap is a median 1.46 years (90th percentile 2.53) against 2.7 (5.54); 38.0% of the
+       samples get a survey within one year against 19.3%; for 52.2% the nearest survey is a later one; the 5 samples
+       with no earlier survey get one.
+     - The elevation changes for 49.7% of the samples, by a median 0.08 m (90th percentile 0.30 m), against a spread
+       of 0.47 m (standard deviation) over the rows; two successive surveys of a cell differ by a median 0.07 m.
+     - The survey stamps are mostly a nominal 1 January, so 19.3% of the samples already take a survey that may have
+       been made after the sample (dataset.py:209).
+   * **Effect on the task:** small; a map maker takes the bed nearest the survey's date, and the latest-before rule is
+     a forecaster's rule this moment does not have; the tellins do not shape the bed (dataset.py:209), so a later
+     survey carries no outcome; the change in the scores is not measured.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Latest survey before the sample (implemented) | as now | no change; by its stamp, never a survey after the sample | an older bed than the map maker holds (median 2.7 years); 5 samples without elevation |
+     | B | Survey nearest in time | the join takes the station's survey nearest the sample's date, before or after | the bed closest to the survey's date, from the archive the moment already uses; median gap 1.46 years; no sample without elevation | half the samples take a later survey; a small change (median 0.08 m) for a rebuild and a probe run |
+
+   * **Recommendation:** B, a small gain: it follows the moment the split already states and the standard that what
+     the actor holds is available, and the elevation moves by a few centimetres for most samples, so expect little
+     change in the scores; A is defensible if a settled join should not move for that. **Decision:** A or B?
+
+   **Notes for the AI:** On B: in `_clean` step 3 set `direction="nearest"` in `pd.merge_asof` and reword its comment;
+   the notes' elevation bullet (dataset.py:209) becomes "the survey nearest the sample's date, before or after (a
+   median 1.46 years away, 38.0% within one year, a later survey for 52.2%); no sample lacks it"; `task_summary.known`
+   ("latest depth survey" becomes the survey nearest in time); re-run `dataset check`, the leak probes and the task
+   probe on the cluster; CHANGELOG and a CC line. The rules: USE-3, USE-6, LEAK-10.
+
+   **Andrej (2026-11-09, as implemented):** A, as implemented.
+
+   **Consistency check (AI, 2026-11-09): Keep the latest survey before the sample, and record the reason that sets it apart?**
+   * **Problem:**
+     - A holds back later bed surveys the map maker has: the moment you kept in issue 1 (2026-11-02) is a map of a
+       past survey drawn from the whole archive, later surveys included, your elevation call was "Join it if it is
+       available" (issue 4), and today's standard asks for what the actor holds[^9b].
+     - The notes already accept surveys stamped in the sample's year that may postdate it (19.3% of the samples).
+     - A reason that sets it apart is not written yet; the one the data offer is that the change is small.
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | A, the reason recorded | the join as now; a CC line: the nearest survey moves the elevation by a median 0.08 m, about the 0.07 m between two successive surveys of a cell, too little to move a settled join | your A with its fact | a later survey the map maker has stays out |
+     | b | B | the survey nearest in time | follows issue 1's moment and the standard | moves a settled join for a few centimetres; a rebuild |
+
+   * **Recommendation:** a, if the size of the change is your reason; b if the standard should hold also where the
+     gain is small. **Decision:** a or b?
+
+   **Andrej (2026-11-09, ok):** Go ahead
+
+   **Resolved (2026-11-09, Andrej):** a: the elevation stays the latest survey before the sample (A), with the reason
+   recorded in the notes and the record: the survey nearest in time would move it by a median 0.08 m, about the
+   0.07 m between two successive surveys of a cell. No change to rows or features.
+
+   [^9b]: **USE-6** (Must): "Anything known at the prediction point is a legitimate input". **USE-3** (the moment of
+     the prediction), as kept in issue 1. **LEAK-10** (Must) does not bar a later survey here, since the tellins do
+     not shape the bed.
+
+   [^9a]: **USE-6** (Must, in main): "Anything known at the prediction point is a legitimate input". **LEAK-10**
+     (Must): a feature holds only what existed at the prediction point; for a map of a past survey drawn from the
+     whole archive that includes later bed surveys (the splits comment, kept with issue 1, Andrej, 2026-11-02), an AI
+     reading of how the moment covers the bed. The elevation was joined on Andrej's call "Join it if it is available"
+     (issue 4, 2026-11-02).
 
 **Review panel:** ship after changes (mediator). The changes are wording only and are made. Tier focused, a re-review of
 2026-11-06 under LEAK-41 and MET-14 to MET-16, after decision D13 and the elevation fix: the claim auditor, the column

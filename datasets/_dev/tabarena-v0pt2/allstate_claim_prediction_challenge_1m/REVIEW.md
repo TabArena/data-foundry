@@ -70,10 +70,17 @@ book's numbers. `household_vehicles_carried`, which had lowered the score on all
 3 folds and stays. The exposure paragraph gives the cuts by claims on the book and names the confirmation of issue 7
 (A). `dataset check`: 0 errors, 0 warnings.
 
-**Main points:** nothing open. Resolved on 2026-11-08 (Lennart): the rows are the 2006 renewal book, only the cars on
-the policy at the start of the year (6), and the target stays per contract where a claim ends the cover (7). Resolved on
-2026-11-03: 2007 stays dropped (2), the 2006 renewal book with the 2005 history (3), the Gini regression (4), households
-at random (5); verdict ship (2026-11-03).
+Changed on Andrej's marks of 2026-11-09 (issues 8 and 9, both A, as implemented), text only: the splits comment gives
+the 2005-to-2006 score of 0.064 as above the household folds of that build and adds the training side's year and the
+maturity of its amounts; the notes carry both decisions as CC lines and list the columns held only for training rows,
+which stay out (the cross-dataset item of 2026-11-09). `dataset check`: 0 errors, 0 warnings.
+
+**Main points:** Nothing open. Resolved on 2026-11-09 (Andrej), from the information audit of that day: the folds keep
+testing on all rows, gaps kept as missing (8), and the split stays by household, the training side's year and maturity
+named in the splits comment (9). Resolved on 2026-11-08 (Lennart): the rows are the 2006 renewal book,
+only the cars on the policy at the start of the year (6), and the target stays per contract where a claim ends the cover
+(7). Resolved on 2026-11-03: 2007 stays dropped (2), the 2006 renewal book with the 2005 history (3), the Gini
+regression (4), households at random (5); verdict ship (2026-11-03).
 
 **Issues for Andrej and Lennart:**
 
@@ -640,6 +647,116 @@ at random (5); verdict ship (2026-11-03).
    39.3% of its cars not seen in 2007; 15.8% of the cars of households that continued are gone and claimed at 1.39%
    against 0.72%) and name the confirmation; the record's CC line records it, and the Cases row under MET-14 (the cut
    caused by a claim, distinct from spanish_motor_insurance_2015_2018's lapses) is the main session's.
+
+8. **Test only on the rows without a missing value, as the competition's test file was, or keep testing on all rows?**
+
+   * **Problem:**
+     - 73.0% of the renewal book's rows have a missing value (dataset.py:151), while Allstate removed such records from
+       its test file and said that "when the model is applied, all of the features will be collected" (forum thread
+       826, quoted in the definition).
+     - So most test rows have gaps the application never has, though in the panel's test the gaps carried no outcome
+       beyond the vehicle type (dataset.py:151).
+     - Test on the complete rows only, training on all rows as now, or keep testing on every row?
+   * **Background:**
+     - Counted on the raw file (the 2,754,936 rows of the book, matched to 2005 on household, model year and submodel
+       as the definition does): 27.0% of the rows and 22.1% of the households are complete; complete rows claim at
+       0.90% and the others at 0.79%, with the same mean amount (1.53 against 1.54).
+     - The complete rows are no closer to the book a deployed rating scores: 91.9% of the cars built before 2000 have
+       a missing value against 55.4% of the newer ones, so cars before 2000 are 48.3% of the book but 14.5% of its
+       complete rows (counted on the raw file).
+     - The complete rows hold 29% of the book's claims, so a test fold would keep about 1,200 of its 4,006 to 4,210
+       claims; the Gini, which already moves from 0.022 to 0.106 over nine folds (dataset.py:148), would get about 1.8
+       times noisier by the square root of the claims (an AI estimate).
+   * **Effect on the task:** testing on complete rows asks how the model ranks newer, fully recorded cars, as the
+     competition's test did; testing on all rows ranks every car of the book, most with gaps a deployed rating would
+     not have.
+   * **Experiments:** repo (review panel, on the 2005-2006 build): missingness carried no outcome beyond the vehicle
+     type in a leave-one-out test, random draws in place of the missing values scored no better, and training on
+     complete rows only scored worse (dataset.py:151); a test on complete rows only was not run.
+   * **Consistency:** the rules keep the missing values of an input as missing and drop only a row that lacks the
+     input the prediction acts on[^8a], and they ask the notes to name what the folds do not test, which these notes
+     do[^8b]; no shipped dataset restricts its test rows to complete records.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | All rows (implemented) | train and test on the book's rows, gaps kept as missing; the notes name the mismatch | the whole book; about 4,100 claims per test fold; the gaps measured to carry no outcome | 73% of the test rows have gaps the application never has |
+     | B | Test on complete rows | training as now; each test fold keeps only its rows without a missing value (about 135,000 of 500,000) | the competition's test population; complete records, as the application has | about 1,200 claims per test fold and a noisier Gini; mostly newer cars, so the test population shifts in another way; the splits rebuilt |
+
+   * **Recommendation:** A: the gaps carry no outcome beyond the vehicle type, and B spends 70% of the test claims on a
+     population of mostly newer cars, which is no closer to a book where every car's features are collected.
+     **Decision:** A or B?
+
+   **Notes for the AI:** on B, check whether the v2 split API takes a test mask; otherwise a custom `_make_splits` that
+   keeps the household folds and drops the incomplete rows from each test fold (the training sides unchanged), or a
+   test budget filled with complete rows from more households (the book holds about 744,000). Then `splits_comment`,
+   the missing-values bullet, `fit_reason` and the record's notes; re-run `dataset check` and the task probe on the
+   cluster; a CC line and a CHANGELOG entry. The counts above: a chunked read of `train_set.csv` (Calendar_Year 2006,
+   a 2005 row of the same household, model year and submodel; "?" in any shipped categorical column).
+
+   **Andrej (2026-11-09, as implemented):** A, as implemented.
+
+   **Resolved (2026-11-09, Andrej):** A: the folds train and test on all rows of the renewal book, the gaps kept as
+   missing, and the notes keep naming the mismatch with the competition's complete test rows.
+
+   [^8a]: **USE-7** (Must): "A row that lacks the input the prediction acts on is no task row: drop it rather than
+     keep it as missing. Missing values of the other inputs stay missing."
+   [^8b]: **USE-8** (Must): write how closely the data mirrors the use case, its fit; an approximate fit names its
+     known gap.
+
+9. **Keep the split by household, or train on an earlier year as Allstate rating the 2006 renewal would have?**
+
+   * **Problem:**
+     - The folds train on other households' 2006 rows with claim amounts read years later, while Allstate rating at
+       the 2006 renewal would have trained on 2005 and earlier, with the amounts as known then.
+     - Before the 2005 history was built, a model trained on 2005 and scored on 2006 reached a Gini of 0.064, above the
+       household folds of that build (0.022 to 0.054) and inside the nine folds of the renewal book (0.022 to 0.106)
+       (dataset.py:183), so the forced split shows no cost at this noise.
+     - Each temporal design collides with a settled call, as 2005 rows have no 2004 history for the features the
+       2006 rows carry (issue 3), and 2006 to 2007 needs the 2007 rows, dropped for their unsettled large claims
+       (issue 2).
+   * **Background:**
+     - The rows are calendar vehicle-years of 2005 to 2007 with no dates; the competition trained on 2005-2007 and
+       scored 2008 and 2009, whose claims were never published.
+     - Both sides of every fold hold amounts read at one extract, so inside the benchmark no training label is more
+       developed than a test label; the excess is against Allstate's position on the renewal date.
+     - One year to train and one to test is one window where the windows rule asks for three, so either temporal
+       design would also need an amendment of that rule[^9a].
+   * **Effect on the task:** the folds test households new to the model with a model fit on the same year's other
+     households at the same label maturity; Allstate would have fit on older, less developed amounts, and the
+     household's own 2005 record reaches the model through the history counts in both cases.
+   * **Consistency:** spanish_motor_insurance_coverage_level_2022_2024 and pricing_game_2016_french_fleet, with more
+     years, are asked whether one window should replace their forced split (their issues 10 and 14); here no window
+     keeps both settled calls.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Split by household, with a note (implemented) | folds by household over the 2006 book; the notes add the training side's year and maturity | keeps the 2005 history and the drop of 2007; no cost measurable | trains on the test year with matured amounts |
+     | B | Train on 2005, test on 2006 | 2005 vehicle-years train, the 2006 book tests, without the history counts | the year order Allstate had | drops the household's record (issue 3); the amounts are still read years later; one window, an amendment |
+     | C | Train on 2006, test on 2007 | the 2006 book with its history trains, 2007's renewal book tests | the year order with the record | brings back 2007, dropped for its unsettled large claims (issue 2); one window, an amendment |
+
+   * **Recommendation:** A, with a sentence in the notes: no temporal design here keeps both settled calls, the forced
+     split's cost is not measurable at this noise, and the amounts' maturity is the same on both sides of the folds.
+     A low-stakes issue. **Decision:** A, B or C?
+
+   **Notes for the AI:** on A, the splits comment says the 2005 to 2006 score of 0.064 was "inside the range of the
+   folds by household (0.022 to 0.054 then ...)": it was above that range and inside only the renewal book's; reword,
+   and add that the training rows are the test year's, their amounts read at the release (about 2011, the file's
+   date), more developed than at a 2006 renewal. On B or C, the main session first weighs the SPLIT-14 amendment with
+   spanish coverage's issue 10 and pricing_game_2016's issue 14; C also reopens issue 2 (LEAK-24).
+
+   **Andrej (2026-11-09, as implemented):** A, as implemented.
+
+   **Resolved (2026-11-09, Andrej):** A: the split stays by household over the 2006 book. The splits comment now gives
+   the 2005-to-2006 score of 0.064 as above the household folds of that build (0.022 to 0.054) and inside the nine
+   folds of the renewal book, and says that the training rows are the test year's, their amounts read at the release
+   (about 2011), more developed than at a 2006 renewal.
+
+   [^9a]: **SPLIT-14** (Must; amended 2026-11-08, Lennart): "A temporal task has at least 3 windows ... A task that
+     cannot meet it ships under SPLIT-8." **SPLIT-8** (Must): the closest regime that keeps the rows, grouped by the
+     entity when the periods are stacked. Andrej, 2026-11-03, issue 2: "We can drop 2007 because we still have 1
+     million of samples and the current limit is 1M."
 
 **Review panel:** ship after changes, once issue 6 is decided (mediator). Tier focused, re-review of 2026-11-08 under
 LEAK-41, MET-14 to MET-16, after the raw data arrived: the claim auditor, the column auditor and the mediator ran, with

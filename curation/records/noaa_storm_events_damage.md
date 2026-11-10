@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Lennart
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 2
 tags:
@@ -132,6 +132,24 @@ CC (2026-11-08, Lennart): review issue 11, B ("Option B: Flash Flood kept with a
 CC (2026-11-08, Lennart, in chat): X4 of the PR #47 board: LEAK-10 gets a third clause for spans the outcome or an outcome-free criterion can draw (blank what features locate; keep the rest with a note only when the outcome can draw a minority of the spans and the span keeps its worth where it did not; the size of the worth alone never decides). The Flash Flood duration stays under it, and its note gives the worth by narrative class.
 
 **Assessment (AI, 2026-11-08):** where the Flash Flood duration's worth comes from, with the narratives used only to split the test rows (`apply_2026-11-08/x4_diagnostic/`): threat-only narratives (60,264 rows; 11,229 test rows) +40% to +48% of the deviance, 24 of 24 fits positive (tuned z about 18); narratives naming a building (5,369; 718 test rows) +55% to +97%, 68% to 81% of the total cut; other damage named (8,498; 1,683) +24% to +38%. On threat-only rows the duration does not predict whether damage happens (share with damage flat at 0.27 to 0.30 by tercile) but how large it is (median positive $5k, $5k, $15k). Building-class spans are longer (median 2.75 h against 2.0 h). Coastal Flood: +17% to +19% where no damage is named; Storm Surge/Tide and Dust Storm: no worth; Lakeshore Flood and Volcanic Ashfall: too few test rows.
+
+CC (2026-11-09, Andrej): columns held only for training rows stay out for now, no training-only role (cross-dataset item of 2026-11-09; MET-14, LEAK-41, MET-16); the notes list them.
+
+CC (2026-11-09, Andrej): review issue 13, A (as implemented): `SOURCE` stays dropped for every entry, since the column as published carries the post-event "NWS Storm Survey" marker on the surveyed entries, and keeping the reporter would need those entries re-sourced from an outside archive (the Iowa Environmental Mesonet's Local Storm Reports) by an approximate match in time and place.
+
+**Assessment (AI, 2026-11-09):** issue 13, A is in the definition's notes as a CC line; no data change. The surveyed entries are 23,621 of the task's 843,144 rows; in 2024 the match to the Local Storm Reports found a report from another source for 81% (within 30 minutes and 15 km) to 91% (1 hour before to 2 hours after, 25 km) of the 1,967 surveyed county entries with a begin point, so the rest would still be marked by a blank. `dataset check`: 0 errors, 0 warnings, 2 info; README regenerated (the checksum moves with the notes). Open in the folder's REVIEW.md: issue 12 (the scoring unit), 14 (the floor) and 15 (the cap).
+
+**Assessment (AI, 2026-11-09):** issue 12 answered (still open, Andrej's question of 2026-11-09 on the planner's decision unit). In 44 CFR 201.6, FEMA's Local Mitigation Planning Policy Guide and the National Risk Index (expected annual loss per hazard and county or tract) the planner decides per jurisdiction and hazard on a yearly expected loss, so one test year's unit is a county or zone, hazard and year cell; no planner decides per entry or on a national total. The definition's inputs describe an event already reported, which a planner who plans before the year does not have, so the use case and the features disagree. Re-scored on the shipped splits (8 models as in issues 8 and 10, 1,000 bootstrap resamples): the order per entry against the cell sums agrees at Kendall's tau 0.86, 0.79 and 1.00 (2023, 2024, 2025), and the top model differs only in 2024 (tuned LightGBM per entry, the GLM on event type and month on the cell sums); weighting each entry by 1 over its cell's entries, which needs no code, orders the models as the cell sums do (tau 1.00, 0.86, 1.00, same top model in every window). Recommended there: that weight now, the cell sums if Andrej wants the planner's total (it reopens the cross-dataset `sum` item), and a `use_case` that names the moment the inputs allow.
+
+CC (2026-11-09, Andrej): review issue 12, c ("Reply (c): Each cell one vote"): the score counts each county or zone, event type and year once: an entry weighs 1 over its cell's entries (`cell_weight`, the task's `unit_weight` with `cell` as the unit), a scoring column, never a feature or a training weight; the use case is reworded to a planner who totals the damage of events already reported per county or zone and hazard, the moment the inputs allow. Supersedes the per-entry unit of issue 8's score (Lennart, 2026-11-08); the metric stays.
+
+CC (2026-11-09, Andrej): review issue 14, B ("Option B: $10."): the metric's floor (`min_prediction`) is $10, the smallest damage the source records, in place of the $1 of 2026-11-08 (Lennart, issue 8) from the collection's two-orders rule.
+
+**Assessment (AI, 2026-11-09):** issues 12 (c) and 14 (B) are in the definition: `cell` (county or zone, event type, year) and `cell_weight` (1 over the cell's entries; 258,067 cells, 11,765 to 12,676 per test year of 3.5 to 3.7 entries) as the metric's weight input, scoring column and `unit_weight`, `known_at_scoring` filled; floor $10 (none of the 268,670 entries with damage lies between $0 and $10). `dataset check`: 0 errors, 0 warnings. Task probe on the new score: still `no_signal`, `drift_baseline`, `unstable` (training mean 5,615; random forest 7,555, linear 48,331, LightGBM 95,058, all by squared error); leak probe: nothing new. Issue 15 measured on this score (5 methods, 3 seeds, 2,000 resamples of test days): uncapped the top method differs every year, kept in 57%, 59% and 78% of resamples, Kendall's W 0.62, tuned LightGBM minus the per-type mean +6,781 (SE 7,458), +13 (SE 753), -1,040 (SE 120); capped at $10M W 0.91, top kept 81% to 95%, tuned LightGBM ahead of the per-type mean every year. Recommend the cap (issue 15, b); the curator has the call.
+
+CC (2026-11-10, Andrej): REVIEW.md issue 15 (a), "Reply (a): Uncapped": the damage stays uncapped in training and scoring. The planner's expected annual loss includes the large events; the ranking's instability (Kendall's W 0.62 across the windows, tuned LightGBM apart from the mean per event type only in 2025) is a fact of a noisy task, stated in the notes. Supersedes the AI's recommendation of the cap (2026-11-09).
+
+CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
 
 ## Reference
 

@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Lennart
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 1
 tags:
@@ -141,6 +141,16 @@ CC (2026-11-08, Lennart): the declared metric (`normalized_gini`) is checked, as
 **Assessment (AI, 2026-11-08):** review panel (focused: claim auditor, column auditor, mediator; re-review under LEAK-41, MET-14 to MET-16, after the raw data arrived): ship after changes (wording and one accepted warning, now made); disputed: none; for the curator: issue 4 (remove `Data Quality Issue`; both auditors' data support B: `f528 - f527` ranks a loss at ROC AUC 0.916 on the raw file and is dropped, and a chain's last row has a loss in 9.42% of cases against 9.38%).
 
 CC (2026-11-08, Lennart): issue 4, B: the `Data Quality Issue` marker removed: the chain pattern it was set for is refuted (a chain's last row has a loss as often as its other rows, 9.42% against 9.38%), and the leak columns of the screening's other risk are dropped (f527, f528 and their block).
+
+CC (2026-11-09, Andrej): f529-f531, f533-f535 and f537 stay out with f527 and f528 as one block, under the exception to LEAK-10 of 2026-11-03 (review issue 5, A, as implemented).
+
+CC (2026-11-09, Andrej): columns held only for training rows stay out for now, no training-only role (cross-dataset item of 2026-11-09; MET-14, LEAK-41, MET-16); the notes list them.
+
+CC (2026-11-10, Andrej): f615 and f617 stay, with a LEAK-9 protocol line in the notes and `splits_comment` (REVIEW.md issue 6 (a), "Agree."): each test loan is predicted from the training rows and its own features only, no feature or model step may use other test rows, and a method that reads another test row of the same entity is called out and not benchmarked.
+
+**Assessment (AI, 2026-11-10):** f615/f617 record that the entity's previous loan defaulted, not the size of its settled loss; read with the row alone they add 0.000 ROC AUC on the row's own loss (+0.008 ± 0.007 normalized Gini, within noise); the entity's next row is found from f521 in 88.7% of the cases, and reading its f615/f617 lifts the Gini from 0.20 to 0.63.
+
+CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
 
 ## Reference
 

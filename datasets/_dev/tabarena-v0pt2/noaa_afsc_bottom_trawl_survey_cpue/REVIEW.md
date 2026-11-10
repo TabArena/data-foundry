@@ -66,10 +66,14 @@ tier) made the nine changes that need no decision (Mediator, "Changes to make no
 panel's: Greenland turbot's spread, which the metric takes per test window, is 12-35 per km^2 from 2017 on against
 162-543 before (the panel's 8-38 and 47-639 are per survey year). `dataset check`: 0 errors, 0 warnings.
 
-**Main points:** Open: none. Settled: the 11 taxa (issue 1), the temporal split (2) and RMSE (3) on 2026-11-02; the
-copy `taxon_group` and the dropped effort (4) on 2026-11-06; the cut claimed for walleye pollock and, to a lesser
-degree, Pacific cod (5) and a clause in the remedy of the leak rules' time-on-risk row (6) on 2026-11-08. Across
-datasets: X2 and X3.
+**Main points:** Nothing is open. Settled on 2026-11-09 (Andrej): the two-year windows stay, their text reworded to
+a refit after each two-year survey cycle (10), and the 2026 catches stay, with the build check (11). Settled: the 11
+taxa (issue 1), the temporal split (2) and RMSE (3) on 2026-11-02; the copy
+`taxon_group` and the dropped effort (4) on 2026-11-06; the cut claimed for walleye pollock and, to a lesser degree,
+Pacific cod (5) and a clause in the remedy of the leak rules' time-on-risk row (6) on 2026-11-08. Across datasets: X2
+and X3.
+
+**Verdict (2026-11-09, Andrej):** ship (review page of 2026-11-09).
 
 **Verdict (2026-11-02, Andrej):** ship. The metric is marked as declared (`mean_group_normalized_rmse`). The
 dataset joins the accepted set; a build waits for your ask.
@@ -543,6 +547,159 @@ dataset joins the accepted set; a build waits for your ask.
    for a decision per unit of an equal-area map (the rate scored unweighted, no sample weight, the notes naming the
    cut's bias), with this dataset and wadden_sea_sibes_macoma_abundance as its cases, an application of the rule for
    rates; the notes' Effort bullet cites it. Nothing else changes in this folder.
+
+10. **Test each survey year with every earlier season in training, or keep the two-year windows fitted once?**
+
+   * **Problem:**
+     - Each two-year window is fitted once, on the seasons before its first year, so the 6,969 hauls of each window's
+       second year, 42.6% of the 16,359 test hauls, are predicted without the season just before them (counted on the
+       raw file).
+     - The split text says a model refit after each season is tested on the next cycle (dataset.py:229-230, :383-384),
+       and that refit is the fact behind issue 2's call for no gap, while the use case is the five-yearly habitat
+       review (dataset.py:206-209), so the windows follow neither actor[^10a].
+     - Should the windows become one year long, or should the split text name a refit after each two-year survey cycle
+       as the actor's cadence?
+   * **Background:**
+     - Two years is the survey cycle since 2005 (the Gulf of Alaska in odd years, the Aleutians in even years, the
+       eastern Bering Sea shelf every year), so each window holds every region (dataset.py:377-380); that was the
+       reason given for the two years Andrej asked for in issue 2.
+     - Of the 6,969 second-year hauls, 3,241 are eastern and northern Bering Sea hauls whose own region was surveyed
+       the year before; for the other 3,728 (Aleutians and slope) the region's previous survey, two years back, is in
+       training, and what they miss is the neighbouring regions' newest season (counted on the raw file).
+     - Nine one-year windows, the number the window rule gives for this size, would test the survey years 2026 back
+       to 2017 (none ran in 2020): 8,183 hauls, the oldest window training on 77% of the hauls; each window holds the
+       eastern Bering Sea shelf and either the Gulf or the Aleutians, and every taxon still has catches in every year,
+       Dover sole and Greenland turbot in at least 29 hauls (counted on the raw files)[^10c].
+   * **Effect on the task:** the second year's hauls are predicted from data a season older than a model refit each
+     season would have, so they are scored somewhat harder than the split text's actor would be, and easier than the
+     review's five-year horizon; the size is not measured, and the windows may not be chosen by such a
+     comparison[^10c].
+   * **Consistency:**
+     - Issue 2's exception to the gap rests on a season being published before the next one (Andrej,
+       2026-11-02)[^10a].
+     - Each window trains on what is known before it starts (a rule of 2026-11-02, reframed 2026-11-05): with one-year
+       windows this holds for every test year, with two-year windows only for the first year of each (an AI reading
+       of a sentence written about windows)[^10b].
+     - noaa_storm_events_damage refits once a year and tests one calendar year per window.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Two-year windows (implemented) | nine windows, 2025-2026 back to 2009-2010, one fit each | Andrej's call of 2026-11-02; each window holds every region; 16,359 test hauls | 42.6% of the test hauls lack the season before them, which the text's refit and the no-gap reason assume |
+     | B | One-year windows | nine windows, the survey years 2026 back to 2017 (none in 2020), each trained on every earlier season | every test haul has every earlier season, as the split text and the no-gap call say | 8,183 test hauls and no test year before 2017; each window holds only one of the Gulf and the Aleutians |
+     | C | Keep the windows, rewrite the text | the split text and the splits comment name a refit after each two-year survey cycle as the cadence | no data or split change | the cadence is ours, neither the review's five years nor a refit each season; the no-gap reason needs rewording, as the second year sits a season after its training data |
+
+   * **Recommendation:** B: it gives every test year the history the split text and issue 2's no-gap call describe, at
+     the cost of fewer test hauls and a region mix that alternates by year; C if you want each window to keep holding
+     every region. **Decision:** A, B or C?
+
+   **Notes for the AI:** On B: `TemporalSplits(window=1, unit="years", cutoffs=(2017, 2018, 2019, 2021, 2022, 2023,
+   2024, 2025, 2026))` (check that the empty 2020 needs no cutoff); seventeen windows (2009 to 2026) would keep the old
+   test span but exceed the nine of SPLIT-15. Rewrite `task_summary.split`, `splits_comment` (the cycle sentences; the
+   oldest train share goes from 54% to 77%), the notes' Greenland turbot spread and the Metric bullet's "scorable in 9
+   of 9 windows with at least 71 positives" (recount: the minimum becomes 29, Dover sole and Greenland turbot); re-run
+   `dataset check`, the task probe and the leak probes on the cluster; CHANGELOG and a CC line. With issue 11's B the
+   2026 window goes. On C: rewrite `task_summary.split` and `splits_comment` ("a model refit after each two-year
+   survey cycle is tested on the next cycle") and the no-gap reason. The rules: SPLIT-10 (issue 2's exception),
+   SPLIT-12, SPLIT-14, SPLIT-15, SPLIT-21.
+
+   **Andrej (2026-11-09, as implemented):** A, as implemented.
+
+   **Consistency check (AI, 2026-11-09): Keep the two-year windows and reword the three sentences that describe a refit after each season?**
+   * **Problem:**
+     - Kept as they stand, three sentences become untrue: the split text, the no-gap reason and your exception to the
+       gap rule of 2026-11-02 say a model is refit after each season, while 42.6% of the test hauls, each window's
+       second year, are predicted without the season before them[^10d].
+     - The two-year windows themselves follow your call of 2026-11-02 and your pricing_game_2016 rule of the same day,
+       one fit per test set; only the text is at odds.
+   * **Background:** the three places are `task_summary.split` (dataset.py about line 229), the no-gap sentence of
+     `splits_comment` (about line 383), and the record's exception of 2026-11-02, whose "as a model refit after each
+     season would" becomes "after each survey cycle"; the exception's fact, a delay shorter than the windows' step,
+     still holds.
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Two-year windows, the text reworded | the windows as now; the three sentences say "a model refit after each two-year survey cycle is tested on the next cycle" (option C's text) | no data or split change; the text true again | the cadence is ours, not the source's |
+     | b | One-year windows | option B | every test haul has every earlier season | fewer test hauls; no test year before 2017 |
+
+   * **Recommendation:** a: it keeps your windows and only makes the text say what they do. **Decision:** a or b?
+
+   **Andrej (2026-11-09, ok):** Go ahead
+
+   **Resolved (2026-11-09, Andrej):** a: the nine two-year windows stay, each fitted once; `task_summary.split`, the
+   no-gap sentence of `splits_comment` and the record's exception to SPLIT-10 now say "a model refit after each
+   two-year survey cycle", and the splits comment adds that each window's second year (42.6% of the test hauls) is
+   predicted a season after the model's newest data. Rows, split and score unchanged.
+
+   [^10a]: Issue 2 (Andrej, 2026-11-02): "Temporal is good, but there is no need to do five years. Also no planning
+     gap is required. Instead of five years, I suggest 2."; resolved as nine two-year windows without a gap, an
+     exception to **SPLIT-10** (Should), the fact being that "the source states no delay and a season is published
+     before the next one". **SPLIT-12** (Should): the horizon is a judgment from the source, including "the refit
+     cadence".
+   [^10b]: **SPLIT-14** (Must, in main): "As time moves on, a refit sees the data that arrived since, so each window
+     trains on what is known before it starts (Andrej, 2026-11-02; reframed 2026-11-05, Lennart)." Applying it within
+     a window is an AI reading.
+   [^10c]: **SPLIT-15** (Should): "as many windows as an IID or grouped task of that size would get folds".
+     **SPLIT-21** (Must): "Decide neither the training history nor the windows from a comparison over a few test
+     windows."
+   [^10d]: **USE-8** (Must): "Write how closely the data mirrors the use case, its fit"; a split text naming a refit
+     the windows do not have misstates it. The exception to **SPLIT-10** (Should) of
+     2026-11-02 rests on the delay being shorter than the windows' step, which holds under either wording.
+
+11. **Keep the 2026 catches, which FOSS has not yet rated, in the newest test window?**
+
+   * **Problem:**
+     - FOSS has not yet rated the 2026 catches: all 3,968 catches of the 11 taxa lack a `taxon_confidence`
+       (dataset.py:314), while every catch of 2021-2025 has one (counted on the raw files).
+     - The 722 hauls of 2026 are 44% of the newest window, so its score rests in part on catches not yet through the
+       survey's own identification check.
+     - Keep them, end the newest window at 2025, or download FOSS again right before the build and keep 2026 only
+       once it is rated?
+   * **Background:**
+     - `taxon_confidence` grades how sure the identification of a catch is (High, Moderate, Low); in 2021-2025 every
+       catch of the 11 taxa is High (82% to 86% per year) or Moderate (counted on the raw files); it is no feature.
+     - The 2025 catches were rated in the download of 2 November 2026, so a season's rating seems to arrive within
+       about a year (inferred from one season).
+     - Three of the 11 taxa are already groups of species the survey does not tell apart reliably (Atheresthes,
+       Lepidopsetta, Hippoglossoides), where a re-identification would most likely fall (an AI reading).
+     - The notes already ask to compare with a fresh download before a build, and to build from it or end the window
+       at 2025 if the 2026 rows change (dataset.py:314).
+   * **Effect on the task:** the review scores its models on checked catches, years after the survey; if rating
+     changes some 2026 counts or species codes, the newest window is scored on labels the review would not use, and if
+     it changes nothing the score is the same.
+   * **Consistency:** noaa_storm_events_damage compared two downloads of its 2024 file, 16 months apart, and found
+     99.83% of the damage values unchanged (its notes); no rule in main covers a provisional season, so this is a
+     weighing call[^11a].
+   * **Unknown:** whether rating changes counts or only adds the grade (FOSS's documentation was not read for this),
+     and when FOSS will rate 2026.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep 2026, checked at the build (implemented) | the 2026 hauls stay; before a build a fresh download is compared and used if the 2026 rows changed | keeps 44% of the newest window; the check is already in the notes | until FOSS rates 2026, part of the window is scored on unchecked identifications |
+     | B | End the newest window at 2025 | the 722 hauls of 2026 (7,942 rows) leave; the newest window holds 2025 alone | every scored catch is rated | loses the newest season; one window of one year among two-year windows |
+     | C | Keep 2026 only once rated | at the build, download FOSS again; build from it if 2026 is rated, otherwise end at 2025 for that build | rated catches always, and the newest season once it is rated | what a build holds depends on FOSS's timing; a fresh download can change older rows too, so the notes' counts are restated |
+
+   * **Recommendation:** A: a rating grades how sure an identification is, every catch of these taxa was High or
+     Moderate in five seasons, the taxa most open to re-identification are already merged into groups, and the build
+     check in the notes catches any change to the 2026 rows; C if you want no unrated catch in any build.
+     **Decision:** A, B or C?
+
+   **Notes for the AI:** On B: drop the 2026 hauls in `_clean` by the date's year, with a note, or with issue 10's B
+   drop the 2026 window; restate the window counts. On C: at the build, re-run the FOSS download of
+   `download_description`, check `taxon_confidence` for 2026, and restate every count the notes take from FOSS (hauls,
+   catches, positives per window, the GOA 2025 note); CHANGELOG entry. On A: nothing; the note at dataset.py:314
+   stays.
+
+   **Andrej (2026-11-09, as implemented):** A, as implemented.
+
+   **Resolved (2026-11-09, Andrej):** A: the 2026 hauls stay in the newest test window; before a build a fresh FOSS
+   download is compared, and if the 2026 rows changed the build uses it or ends the newest window at 2025 (the notes'
+   check).
+
+   [^11a]: The curator's standard for the information audit of 2026-11-09: every piece of information actually
+     available at a point is available to the benchmark there, and nothing more; when the review scores, it has the
+     checked catches.
 
 **Review panel:** ship after changes (mediator); the changes (text and one assert) are made. Tier full, a re-review of
 2026-11-06 under LEAK-41 and MET-14 to MET-16 after issue 4 was resolved: claim auditor, column auditor, split auditor,

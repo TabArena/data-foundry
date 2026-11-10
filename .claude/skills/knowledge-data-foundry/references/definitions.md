@@ -169,9 +169,17 @@ task_summary = TaskSummary(
 ```
 
 (Written with implicit string concatenation in the file, so no line passes 120 characters.) The fields: `use_case`
-(settled first), `question`, `row`, `predicted`, `known` (in plain words, never column names), `split` (what the test
-data stands for), `changes` (only our changes that alter the task for a reader; empty when none), `fit`
-(`"direct"`, `"approximate"`, `"none"`) and `fit_reason`.
+(settled first), `question`, `row`, `predicted`, `known` (in plain words, never column names), `known_at_scoring`
+(what the scorer knows that the model does not; empty when it knows only the target), `split` (what the test data
+stands for), `changes` (only our changes that alter the task for a reader; empty when none), `fit` (`"direct"`,
+`"approximate"`, `"none"`) and `fit_reason`.
+
+`known_at_scoring` is for a metric input recorded with the outcome, such as a realized time on risk that weights a
+rate (MET-15): known for the training rows and when scoring, since those periods are over, but not at the prediction
+point. Say what it is and why the model cannot have it, in plain words: "How long each policy was actually insured,
+which a claim or a cancellation can cut short; it weights the claims per year insured in training and in the score."
+A metric input known at the prediction point (a weight that is a function of the features) goes in `known` or nowhere
+(Lennart, 2026-11-09).
 
 ## Field mapping (record to definition)
 
@@ -260,8 +268,9 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   `data_foundry.v2.metrics.row_weight_column(spec)` returns a spec's row-weight column, or `None`. The regression
   fallback takes the weight too (`Metric.fallback(reason=..., inputs={"weight": ...})`); the spec of a weighted `rmse`
   states the weighted formula, while the unweighted spec keeps `sqrt(mean((y - p)^2))`, so the containers built before
-  keep their checksum. The three deviances require `min_prediction`, the floor on the predicted mean, two orders below
-  the smallest plausible mean on the scale the metric scores (MET-13: `1e-4` claims per year for fremtpl2 and bemtpl97).
+  keep their checksum. The three deviances require `min_prediction`, the floor on the predicted mean, the lowest value
+  the use case's actor acts on, stated with its fact, never above the smallest plausible mean on the scale the metric
+  scores (MET-13 as amended 2026-11-09; `1e-4` claims per year for fremtpl2 and bemtpl97, $10 for noaa_storm).
   `score()` refuses an input the metric does not take, so a weight is never dropped without notice.
 
   The build writes the spec into the task metadata as `objective_metric`: `name`, `kind` (`standard`, `custom` or
@@ -744,8 +753,9 @@ and the rest is checked when the metric is written or reviewed.
    * A prediction outside the metric's domain is floored, not refused: `rmsle` at 0, the Poisson and Tweedie
      deviances at `min_prediction` (with `prediction_domain="positive"`, so the bundle check draws valid dummies).
      The three deviances require the floor, with no library default (`task_metric_param_invalid` without it): the
-     definition states it two orders below the smallest plausible mean, on the scale the metric scores (MET-13: 1e-4
-     claims per year on fremtpl2 and bemtpl97), and `task_probes.py` reports the share of predictions at it. The floor
+     definition states it at the lowest value the use case's actor acts on, with its fact, never above the smallest
+     plausible mean on the scale the metric scores (MET-13 as amended 2026-11-09; 1e-4 claims per year on fremtpl2 and
+     bemtpl97), and `task_probes.py` reports the share of predictions at it. The floor
      sets the scale of the worst error: one claim predicted at f costs `2 * (log(1/f) - 1 + f)` in Poisson deviance
      (25.6 at 1e-6, 16.4 at 1e-4), and above power 1 a Tweedie deviance charges a claim about `y * p^(1-q)`, so a 2000
      EUR claim predicted at 0 costs about 2e6 at a floor of 1e-6 and 2e3 at 1 EUR. No per-row cap: it makes the

@@ -181,25 +181,33 @@ def definition(name: str, root: Path | str) -> AbstractCuratedDataset:
 
 
 def _without_scoring_columns(df: pd.DataFrame, task: Any) -> tuple[pd.DataFrame, tuple[str, ...]]:
-    """``df`` without the task's scoring columns (metric inputs), keeping the target, group and time columns."""
+    """``df`` without the task's scoring columns (metric inputs) and the unit of a unit weight, keeping the target,
+    group and time columns; the names of the scoring columns dropped. The unit is no model input (``feature_columns``
+    leaves it out), so no probe reads it.
+    """
     keep = {task.target_column_name, *as_column_list(task.group_on), task.time_on}
     drop = tuple(
         c.column
         for c in getattr(task, "scoring_columns", None) or ()
         if c.column in df.columns and c.column not in keep
     )
-    return (df.drop(columns=list(drop)) if drop else df), drop
+    unit = getattr(task, "unit_weight", None)
+    unit_col = [unit.unit] if unit is not None and unit.unit in df.columns and unit.unit not in keep else []
+    columns = [*drop, *unit_col]
+    return (df.drop(columns=columns) if columns else df), drop
 
 
 def _excluded_columns(task: Any) -> set[str]:
-    """The columns that are never model inputs: the target, the group column(s), the scoring columns and the
-    training weight (a scoring column too).
+    """The columns that are never model inputs: the target, the group column(s), the scoring columns, the
+    training weight (a scoring column too) and the unit of a unit weight, as ``feature_columns`` leaves them out.
     """
+    unit = getattr(task, "unit_weight", None)
     return {
         task.target_column_name,
         *as_column_list(task.group_on),
         *(c.column for c in getattr(task, "scoring_columns", None) or ()),
         *as_column_list(getattr(task, "sample_weight", None)),
+        *((unit.unit,) if unit is not None else ()),
     }
 
 

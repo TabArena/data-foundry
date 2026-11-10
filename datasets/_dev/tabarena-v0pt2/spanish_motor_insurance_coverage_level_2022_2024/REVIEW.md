@@ -33,8 +33,8 @@ liability cover); CLEAN-14 departed from and fixed (`bonus_score` and `payment_f
 on issue 8);
 CLEAN-16 holds (the log1p scale kept on Lennart's call of 2026-11-06, at no measured cost). Weighed: recent real insurer
 data with costs and premiums per cover +, a data article with a variable table +, size +; core rating factors absent
-(vehicle age, postcode) -, low signal -, unnamed insurer -. Nothing is left open: issues 7 and 8 were settled on
-2026-11-08 (Lennart).
+(vehicle age, postcode) -, low signal -, unnamed insurer -. Issues 7 and 8 were settled on 2026-11-08 (Lennart),
+9 to 11 on 2026-11-09 (Andrej), 12 on 2026-11-10 (Andrej: log1p stays).
 
 Changes made after the review panel (AI, 2026-11-01): the full-year fix now also covers the 13,842 cancelled
 new-business years of policies already in force on 1 January (they had a row the year before), which lowers no score
@@ -58,9 +58,16 @@ ask): the annualised premiums are rounded to the cent (issue 7) and `payment_fre
 < quarterly, as in the two pricing games (issue 8); the dated AI note after D10's CC gave way to Lennart's CC; the
 decimal check, probe 22 and the task probe were re-run (issue 7's resolved turn).
 
-**Main points:** Nothing open. Resolved: 3, 4 and 5 on 2026-11-02, 6 on 2026-11-06, 7 (the annualised premiums rounded
-to the cent, which changes the wording of Andrej's issue 4 call and of D10's CC) and 8 (`payment_frequency` ordered here
-and in the two pricing games) on 2026-11-08.
+**Main points:** No issue open. Resolved on 2026-11-10: issue 12, the cost per year stays on the log1p scale
+(Andrej, A). Resolved: 3, 4 and 5 on 2026-11-02, 6 on 2026-11-06, 7 (the annualised premiums rounded to
+the cent, which changes the wording of Andrej's issue 4 call and of D10's CC) and 8 (`payment_frequency` ordered here
+and in the two pricing games) on 2026-11-08; on 2026-11-09, 9 (no claims of the year before for renewals, and a
+protocol line in the notes that no feature or model step may use other test rows), 10 (the split by policy stays) and
+11 (the exposure-weighted Gini stays, not the Gini against the premium).
+
+**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
+
+**Verdict (2026-11-09, Andrej):** ship (review page of 2026-11-09).
 
 **Verdict (2026-11-02, Andrej):** ship. The metric is marked as declared (`normalized_weighted_gini` on the cost per
 year on risk, weighted by `actual_exposure`). The dataset joins the accepted set; a build waits for your ask.
@@ -419,6 +426,437 @@ year on risk, weighted by `actual_exposure`). The dataset joins the accepted set
    quarterly, and the same order by payments a year is applied in pricing_game_2016_french_fleet (annual < semi-annual
    < quarterly) and pricing_game_2017_french_mtpl (Yearly < Biannual < Quarterly < Monthly, its four levels in the
    data), each with its notes and a CC line; `dataset check` 0 errors, 0 warnings on all three.
+
+9. **Give each renewal the policy's claims and claim cost of the year before?**
+
+   * **Problem:**
+     - When a policy renews, the insurer knows its claims and their cost in the year before, but the features carry
+       that history only through the claim-history class (`bonus_score`) and the renewal premiums.
+     - 168,414 policy-years (47.6%) follow a year of the same policy in the file, and after a year with a claim 25.2%
+       of them claim again, against 17.4% after a claim-free year (counted on the raw file).
+     - Add the previous year's claims and cost, built from the policy number, or leave renewals without their own
+       history as now?
+   * **Background:**
+     - The features would be built from `insured_id` and `year` before the claim columns are dropped: the year before's
+       claim count, its incurred cost and a flag for a previous year, missing where the policy has no row the year
+       before.
+     - The file starts in 2022, so no 2022 row has a history: 53.1% of the 2023 rows and 62.7% of the 2024 rows have
+       the year before (counted on the raw file); a 2022 row without one is not a new policy, which the new-business
+       flag and the year tell apart.
+     - The cost is as of the extract, paid plus reserved, while on 1 January the year before's reserves were young:
+       liability is 64% of the cost and its bodily-injury part 33% (counted on the raw file), claims that develop for
+       years; the counts are close to final.
+     - Every year of a policy sits on one side of the split by policy, so a row's history comes from its own policy's
+       earlier rows, never across the split.
+   * **Effect on the task:** a renewal is priced with the record the insurer holds for it, as in practice; the rules
+     count a known policy's own earlier outcomes as a legitimate input, not a leak[^9a].
+   * **Experiments:** repo: last year's claims as a feature gained +0.001 to +0.007 Gini on renewal rows (first three
+     splits, under the row Gini of the definition before 2026-11-02; dataset.py:245-247); not re-measured on the
+     declared weighted Gini with the weighted fits.
+   * **Consistency:**
+     - spanish_homeowners_motor_insurance_2010_2014 ships the customer's previous-year claim counts and costs, home
+       and motor, missing in its first year, with a note that the costs may not have developed by the renewal[^9b].
+     - allstate_claim_prediction_challenge_1m ships the household's and the car's 2005 claim counts but leaves out the
+       amounts, as its bodily-injury payments were read years after the renewal (its definition's notes).
+     - pricing_game_2016_french_fleet is asked the same for its fleets (its issue 13).
+   * **Unknown:** the gain on the declared metric with both weighted fits, which a cluster run on the 9 shipped splits
+     would give, and how much of the year before's cost was still reserved on 1 January, which the release cannot tell
+     without a valuation date.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | No history (implemented) | renewals carry the claim-history class and the premiums only | no change; no amounts more developed than at the renewal | a renewal is priced without the claims of last year, which the insurer holds |
+     | B | Claims and cost of the year before | the year before's claim count and incurred cost and a flag for a previous year, from `insured_id`; missing without a previous row (all of 2022) | what the insurer knows at the renewal; as spanish_homeowners_motor_insurance_2010_2014 | the cost is more developed than on 1 January; a rebuild |
+     | C | Claims only | the year before's claim count and the flag; the cost left out | close to final at the renewal; as allstate's history counts | leaves out the cost, which spanish_homeowners keeps |
+
+   * **Recommendation:** B, with a note on the cost's maturity: the insurer prices renewals with this record, nearly
+     half the rows have it, and spanish_homeowners_motor_insurance_2010_2014, a Spanish insurer's yearly rows like
+     these, ships the same; C if you weigh the long-tail liability cost as allstate's bodily-injury amounts were
+     weighed. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B or C, in `_clean` before `drop_columns`: merge the year before's `total_claims` (and on B
+   `total_incurred`) on `insured_id` and `year - 1` as `prev_year_claims` (`prev_year_incurred`), with `has_prev_year`
+   a 0/1 category; leave the year before's time on risk out (a realized weight; probe 22 would have to clear it). Add
+   the columns to `task_summary.known` and `changes`, a notes bullet with the counts above and the maturity caveat
+   (as spanish_homeowners' "Note: the release's previous-year claims are as finally recorded"), rewrite the sentence
+   "What a dated window would change: a renewal would be a known policy whose last-year claims are a feature" in
+   `splits_comment`, then re-run `dataset check`, probe 22, the leak probes and, on the cluster (sbatch, not the login
+   node), the task probe and the gain with both weighted fits on the 9 splits; a CC line and a CHANGELOG entry.
+
+   **Andrej (2026-11-09, discuss):** If we don't add it, would some models be able to implictly exploit this
+   information?
+
+   **Answer (AI, 2026-11-09):** Models already read part of it, so keep the renewals without the year before's claims
+   and add a line against reading other test rows, or ship the history?
+   * **Problem:**
+     - A model that reads one row at a time gets about half of what the year before's claims add on renewals from this
+       year's premiums, and almost nothing from the claim-history class.
+     - A model that reads other test rows gets more, since all years of a test policy sit in its test fold, and there
+       next year's price gives this year's claims away (+0.12 for LightGBM), a channel the shipped data has now.
+     - Added as features, the year before's claims gain +0.004 to +0.007 on renewals, but under the split by policy
+       they put each test row's own claims into its next year's row, where a model that reads them scores 0.70 to 0.74
+       against 0.31.
+   * **Background:** the 9 shipped splits; untuned LightGBM (100 trees, rows and columns bagged at 0.8) fitted with the
+     time on risk as the row weight, by L2 on log1p and by Tweedie on the cost per year, 3 seeds averaged, and a
+     Tweedie GLM with the same weight; scored by the declared metric. A difference is the mean over the 9 splits ± its
+     standard error over the splits, with the splits ahead in brackets; the base models score 0.315 (L2), 0.313
+     (Tweedie) and 0.310 (GLM), and a seed moves one split's score by about 0.004.
+   * **Experiments, a model that reads one row:**
+     - On the renewals whose year before was a full year on risk (about 20,600 test rows a split, 19.3% with a claim
+       that year), this row's features rank the year before's claim at ROC AUC 0.652 and its log1p cost at R^2 0.083,
+       against 0.625 and 0.043 from the year before's own row, the risk known before those claims.
+     - The excess sits in this year's premiums (0.652 and 0.084 from the premiums and the class alone). The class alone
+       ranks it at 0.51: 97% of the renewals are "good", 94.9% after a year with a claim and 97.4% after one without.
+     - On renewals, the year before's claims as features gain +0.012 to +0.013 when the premiums are left out of the
+       inputs (9 of 9 splits, all three models) and +0.004 to +0.007 with them, so the premiums carry about half of
+       their value.
+   * **Experiments, a model that reads other test rows:**
+     - No policy is on both sides of any split, so all years of a test policy are in its test fold: in each fold 47.6%
+       of the test rows have their year before there and 47.6% their year after.
+     - `insured_id`, which ships as the group column, links them all. Without it, the car (brand, value, seats, weight
+       per horsepower, fuel), the driver's birth year (the year minus the age, to within one), the age at licence and
+       the area link 82.9% of the test rows that have a next year to that row, uniquely within the fold, and give a
+       false link for 0.3% of the others.
+     - Read together, this row and the year before's rank the year before's claim at ROC AUC 0.694 and its log1p cost
+       at R^2 0.166. On the declared metric, this year's premium over last year's gains +0.012 ± 0.002 (L2) and
+       +0.022 ± 0.002 (Tweedie) on all rows (9 of 9) and +0.035 on renewals: partly last year's claims priced in at
+       the renewal, partly maybe this year's own changes kept in the year's last record (issue 4), which the data
+       cannot separate.
+     - From the next year's row, its premium over this year's, its claim-history class and whether it exists gain
+       +0.121 ± 0.005 (L2) and +0.129 ± 0.006 (Tweedie) for LightGBM (0.44 against 0.31, 9 of 9), +0.10 and +0.11
+       with the links from the features alone, and +0.027 ± 0.002 for the GLM, which takes the ratio as a straight
+       line. Nearly all of it is the premium: whether a next year exists gives +0.006 and +0.010 alone. This reads
+       this year's claims from next year's price; the notes have no line against it, as frempl's have[^9c].
+   * **Experiments, the history added (all rows; renewals):**
+     - Claims and flag (C): LightGBM L2 -0.0046 ± 0.0011 (1 of 9) and +0.0055 ± 0.0017 (8 of 9), LightGBM Tweedie
+       +0.0036 ± 0.0015 (8) and +0.0071 ± 0.0015 (8), GLM +0.0047 ± 0.0005 (9) and +0.0062 ± 0.0010 (9).
+     - Claims, cost and flag (B): -0.0036 ± 0.0017 (2) and +0.0070 ± 0.0024 (8), +0.0037 ± 0.0026 (6) and +0.0043 ±
+       0.0024 (8), +0.0046 ± 0.0005 (9) and +0.0061 ± 0.0009 (9). The cost adds nothing over the count (B against C
+       between -0.0001 and +0.0010, each within its standard error).
+     - The L2 fit loses on all rows while it gains on the renewals and changes little on the first years (-0.0014 ±
+       0.0029 with B), so it orders the two groups against each other worse.
+     - Read from the next test row too, the history hands each row its own claims: LightGBM scores 0.70 (L2) and 0.71
+       (Tweedie) with C, 0.72 and 0.74 with B (+0.38 to +0.42, SE at most 0.007, 9 of 9), and 0.95 to 1.00 on the
+       rows that have a next year; the GLM 0.60 and 0.65; with the links from the features alone B gives 0.66 and
+       0.67.
+   * **Consistency:** frempl_french_motor_personal_line's issue 10 was decided today without the predecessor's amount,
+     which under its folds would sit in another test row's features; pricing_game_2016_french_fleet's issue 13 asks the
+     same with the same reason; spanish_homeowners_motor_insurance_2010_2014 ships the history under a split by year,
+     where it comes from training years[^9d].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | No history, a protocol line (A, implemented) | as now; the notes add the next-year channel as an evaluation leak, with frempl's line that each test row is predicted from the training rows and its own features only | no test row's claims in another test row's features, as in frempl's issue 10; a one-row model already gets about half of the history from the premiums | the renewals' own claims stay out (+0.004 to +0.007 on renewals); the next-year channel (+0.12) is closed by a line, not in the data |
+     | b | Claim counts (C) | the year before's claim count and the flag from `insured_id`, with the line of a | what the insurer holds at the renewal; GLM +0.005 (9 of 9), LightGBM Tweedie +0.004 (8 of 9) | the L2 fit loses (-0.005, 1 of 9); each test row's claim count in its next year's features (0.70 to 0.71 when read) |
+     | c | Claims and cost (B) | b plus the year before's cost | as spanish_homeowners_motor_insurance_2010_2014 | the cost adds nothing over the count; each test row's cost in its next year's features (0.72 to 0.74 when read) |
+     | d | History with the 2024 window | b or c with issue 10's one window, where the 2024 test rows' year before is training data | the history as the siblings that split by year ship it; 2024 has no later row in the file, so neither channel exists | issue 10's amendment and its one evaluation |
+
+   * **Recommendation:** a: a model that reads one row already gets about half of the history from the premiums and
+     the rest is worth +0.004 to +0.007 on renewals, while under the split by policy the history would put test rows'
+     claims into other test rows' features, as in frempl's issue 10; the protocol line belongs in the notes under every
+     option, since the next-year channel is in the shipped data now. d if issue 10 goes to the window.
+     **Decision:** a, b, c or d?
+
+   **Andrej (2026-11-09, as implemented):** Reply (a): No history, a protocol line (A, implemented)
+
+   **Resolved (2026-11-09, Andrej):** a: the renewals get no claims or cost of the year before (A stays), and the
+   notes and `splits_comment` carry the protocol line[^9e]: all years of a test policy sit in its test fold, where next
+   year's price gives this year's claims away (+0.12 for LightGBM that reads it), so each test policy-year is
+   predicted from the training rows and its own features only, no feature or model step may use other test rows, and
+   a method that reads a test policy's other years is called out and not benchmarked. A model that reads one row
+   already gets about half of the history from this year's premiums; the rest (+0.004 to +0.007 on renewals) would put
+   each test row's claims into its next year's row under the split by policy. Recorded as a Cases row of the leak
+   rules.
+
+   [^9a]: **USE-10** (Must): "For a known entity, its history is legitimate: the split is temporal and the previous
+     outcome is a feature." **LEAK-34** (Must; narrows LEAK-10): "An entity's own history under a temporal split is
+     legitimate, also when it carries labels forward." **USE-6** (Must): "Anything known at the prediction point is a
+     legitimate input." These are in main; that every piece of information the actor has at the prediction point
+     should ship is the position of the information audit of 2026-11-09, not yet a rule.
+   [^9b]: spanish_homeowners_motor_insurance_2010_2014's notes: "Added: the customer's claims of the previous year
+     (`prev_home_claims`, `prev_home_claim_cost`, `prev_motor_claims`, `prev_motor_claim_cost`) ... all missing in
+     2010, whose history the release does not hold. A known customer's history is a legitimate input (USE-10,
+     LEAK-34)".
+   [^9c]: **LEAK-9** (Should; amended 2026-11-05, Lennart): "An evaluation-level leak, where the test set holds
+     complete trajectories that end at the outcome or a model can read other test rows, is fixed in the scoring
+     (causal per-entity predictions, the task's own utility) or by a protocol line the benchmark checks, not in the
+     data"; "A method that learns from the test block is called out and not benchmarked".
+     frempl_french_motor_personal_line's notes: "Each test record is predicted from the training rows and its own features only; no feature or model step
+     may use other test rows". In main.
+   [^9d]: frempl_french_motor_personal_line, issue 10, resolved 2026-11-09 (Andrej): "A: no predecessor amount and no
+     flag"; its option A's pro: "no test row's target in another test row's features". pricing_game_2016_french_fleet,
+     issue 13, consistency check of 2026-11-09: "Under the split by contract a fleet's earlier periods sit on the test
+     side with it, so its record would be built from other test rows' claims". **USE-10** (Must): "For a known entity,
+     its history is legitimate: the split is temporal and the previous outcome is a feature."
+   [^9e]: **LEAK-9** (Should; amended 2026-11-05, Lennart): an evaluation-level leak "is fixed in the scoring ... or by
+     a protocol line the benchmark checks, not in the data". frempl_french_motor_personal_line's notes carry the same
+     line for its later records.
+
+10. **Keep the split by policy, or test 2024 on a model trained on 2022-2023, as the insurer refits?**
+
+   * **Problem:**
+     - The split by policy trains on the test rows' own year and on later years, and keeps each test policy's earlier
+       years out of training, while the insurer prices a year with a tariff fit on the years before, knowing its
+       policies' past.
+     - The one valid temporal window, 2024 trained on 2022-2023 (52.5% of the rows in training), is one window where
+       the windows rule asks for three, and that rule takes no exception, so the window ships only under an
+       amendment[^10a].
+     - Keep the forced split by policy, Andrej's call of 2026-11-02[^10b], or amend the rule and ship the one window?
+   * **Background:**
+     - 2023 trained on 2022 would train on 19.0% of the rows (67,171 of 354,091, counted on the raw file), below the
+       floor of half the rows; the clause of 2026-11-08 that admits an older window on 40% needs two windows above the
+       floor first.
+     - The test year's own training rows: a model that sees them gains +0.010 under L2 (SE 0.002, 9 of 9 splits) and
+       +0.0045 under Tweedie (SE 0.003, 6 of 9) pooled, at most +0.029 in one year, within each year and carried by no
+       column (dataset.py:258-266).
+     - The renewal history of issue 9 can be built under either split, since every year of a policy stays on one
+       side, so the window is not needed for it.
+   * **Effect on the task:** under the split by policy a model learns each year's mapping from prices and factors to
+     cost from other policies of the same year, which a tariff fit on 1 January cannot; measured, at most 3% of the
+     score.
+   * **Experiments:** repo, on the shipped definition (2026-11-06; untuned LightGBM weighted by the time on risk, L2 on
+     log1p and Tweedie; dataset.py:248-252): the 2024 window scores 0.300 to 0.307 (L2) and 0.305 to 0.316 (Tweedie)
+     over 3 seeds, bootstrap SE 0.011 to 0.012, against means of 0.309 and 0.311 on the 2024 rows of the 9 folds, so
+     the split by policy is no more optimistic for 2024 than the window.
+   * **Consistency:**
+     - pricing_game_2016_french_fleet has the same facts (three stacked years, one valid yearly window above the
+       floor, recurring entities) and went to a split by contract on 2026-11-08, citing this table (its issue 6); its
+       issue 14 asks the same question again, and the two are best decided together.
+     - One window here would also reopen open_university_learning_analytics_dataset and
+       distribution_transformers_at_cauca_department, which ship forced with one valid window.
+     - wisconsin_local_government_property_insurance_fund keeps three yearly windows under the amendment of
+       2026-11-08, its oldest on 40.6% of the rows; here no second window reaches 40%.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Split by policy (implemented) | 3 x 3 folds by `insured_id` over 2022-2024, tagged forced from temporal | Andrej's call; the rules' remedy; the same as pricing_game_2016_french_fleet since 2026-11-08; its cost measured and small | trains on the test year and later years; the test policies' earlier years stay out of training |
+     | B | One window | test 2024 (168,085 rows), train 2022-2023 (186,006 rows, 52.5%); the windows rule amended for one valid window | what the insurer does; no same-year or later rows in training; the test policies' earlier years train the model | one test year, one evaluation; an amendment that reopens pricing_game_2016_french_fleet and two other datasets; a rebuild |
+
+   * **Recommendation:** A: the forced split's measured cost is small (+0.010 under L2, at most 3% of the score,
+     within the window's standard error), the history of issue 9 enters under it as well, and B needs an amendment
+     that reverses the call of 2026-11-08 on pricing_game_2016_french_fleet; B only as one amendment for both tables,
+     decided with that dataset's issue 14. **Decision:** A or B?
+
+   **Notes for the AI:** on B, the main session first drafts the SPLIT-14 amendment (one valid window, for a release
+   of stacked years whose entities recur), worded for this table and pricing_game_2016_french_fleet together, and
+   lists what it reopens (open_university_learning_analytics_dataset, distribution_transformers_at_cauca_department).
+   Then in `dataset.py`: a `temporal` split on `year` (test 2024, train before 2024), `ForcedGroupedFromTemporal` out
+   of `data_tags`, `insured_id` dropped once the history of issue 9 is built; rewrite `task_summary.split`, `fit`,
+   `fit_reason`, the grouping definition and `splits_comment`; the record's `required_split` and tag; a CC line, the
+   SPLIT-8 and SPLIT-14 Cases rows, and a CHANGELOG entry.
+
+   **Andrej (2026-11-09, discuss):** Do we only have the year or can we do finer splits?
+
+   **Answer (AI, 2026-11-09):** Only the year is a date, and no finer design gets a training side of its own, so the
+   choice stays between the split by policy and the one 2024 window: which?
+   * **Problem:**
+     - The release has one date column, the calendar year; the days in force give the start of most new policies and
+       from it their anniversaries, but no claim is dated.
+     - A row is one policy's slice of one calendar year, so its claims are complete only after 31 December, and every
+       window inside 2024 trains on 2022-2023 alone, which the windows rule counts as one window.
+     - The split by policy keeps a test policy's next year in the test fold, where its price gives this year's claims
+       away (issue 9's answer), while the 2024 window has no later row in the file.
+   * **Background, the raw file:**
+     - Of the 47 columns only `year` is a date ("Calendar year" in the variable sheet): no start, renewal,
+       anniversary, effective or claim date and no month. `total_exposure` is the days in force within the calendar
+       year over 365 (every value on the 1/365 grid, at most 1), so no row spans more than one calendar year.
+     - `insured_id` is assigned "based on the first appearance of each policy number", so its order follows the start
+       of the new policies (Spearman 0.67 to 0.73 with the start day, within a year).
+   * **Background, what can be dated:**
+     - An active row shorter than a year without a row the year before started on day 366 minus its days in force:
+       168,321 rows (51,851, 54,782 and 61,688 in 2022 to 2024). From that start, the anniversary of the policy's later
+       rows: 147,903 rows (51,850 in 2023, 96,053 in 2024).
+     - Not dated: 5,892 cancelled rows without a row the year before, whose days in force are cut, and 31,975 rows in
+       force from 1 January whose anniversary the file does not show (the 11,257 full years of 2022 and their later
+       years).
+     - In 2024, 157,741 of the 168,085 rows (93.8%) get a quarter of start or anniversary: 33,066, 41,653, 43,447 and
+       39,575 from the first quarter to the fourth.
+   * **Experiments:** counted on the raw file; no model fitted, since no finer design passes the rules:
+     - Quarters of 2024: a window trains on the rows whose claims are complete before it starts, and the only 2024 rows
+       that end before 31 December are the 20,736 cancelled ones (and 9 others). So every quarter of 2024 trains on
+       2022-2023 (52.5% of the rows): four test slices on one training side, which the rule counts as one
+       window[^10c]. The quarters of 2023 would train on 2022 (19.0%).
+     - Adding to each quarter's training side the 2024 rows that ended before it adds only cancelled years, rows chosen
+       by their realized length that claim about twice as often per year on risk, which the rule on realized lengths
+       bars[^10d]. The dates come from the realized length too: a start is day 366 minus the days in force only for a
+       year that ran to 31 December, so a cancelled first year cannot be dated and would drop out of dated windows.
+     - By renewal date: a renewal's row runs from 1 January to 31 December with the anniversary inside it (136,018
+       full-year rows follow a row of the policy), so the price set at the anniversary comes after the row's first
+       months of claims, and the file cannot split a row's claims at that date.
+   * **Correction:** the Background above says issue 9's history can be built under either split. Under the split by
+     policy each test row's own claims would sit in its next year's row, a test row too, where a model that reads it
+     scores 0.70 to 0.74 against 0.31 (issue 9's answer). Under the 2024 window the test rows have no later row in the
+     file and their year before is training data, so neither that channel nor the next-year channel the shipped data
+     has now (+0.12 for LightGBM) arises.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Split by policy (A, implemented) | as now, with issue 9's protocol line against reading other test rows | your call of 2026-11-02; no amendment; 9 folds; its cost against the window measured small | a test policy's next year in the test fold (+0.12 for a model that reads it), closed by a line only; no clean history for renewals (issue 9) |
+     | b | One window (B) | test 2024 on 2022-2023 (52.5% of the rows) | no later row of a test policy in the file; the year before's claims from training years (issue 9's d) | one evaluation; an amendment, best decided with pricing_game_2016_french_fleet's issue 14 |
+     | c | Quarters of 2024 | four test windows by the quarter of start or anniversary (33,066 to 43,447 rows), each trained on 2022-2023 | finer test slices | one training side, so one window as in b; 10,344 rows of 2024 undated; dates read from the realized length |
+     | d | Quarters with the ended 2024 rows | c, each training side adding the 2024 rows that ended before its quarter | training sides above 52.5% | only cancelled years end early: rows chosen by their realized length |
+
+   * **Recommendation:** a, with issue 9's protocol line: no finer design exists (c is b cut into slices, d is barred),
+     the split by policy keeps the rules as they are, and the next-year channel is ruled out by a line as frempl's is;
+     b only as the one amendment decided with pricing_game_2016_french_fleet's issue 14, and then with issue 9's d.
+     **Decision:** a or b?
+
+   **Andrej (2026-11-09, as implemented):** Reply (a): Split by policy (A, implemented)
+
+   **Resolved (2026-11-09, Andrej):** a: the forced split by policy stays (A, Andrej's call of 2026-11-02), with issue
+   9's protocol line against reading other test rows. The one 2024 window is not adopted and no amendment of the
+   windows rule is drafted; the release has no date finer than the year. `splits_comment` now names the protocol line
+   and says why the renewals carry no claims of the year before.
+
+   [^10a]: **SPLIT-14** (Must; amended 2026-11-08, Lennart): "A temporal task has at least 3 windows, and no window's
+     train side holds less than 50% of the data. ... A task that cannot meet it ships under SPLIT-8 ... A release with
+     two windows above the floor may add one older window that trains on at least 40% of the rows, when most test
+     entities recur". **SPLIT-8** (Must): such a release "ships in the closest regime that keeps the rows ... grouped
+     by the entity when the periods are stacked and the entities recur across them (tag
+     `ForcedGroupedFromTemporal`)". principles.md: "A Must has no exceptions: only a higher-ranked Must overrides it,
+     and anything else is an amendment."
+   [^10b]: Andrej, 2026-11-02 (the record's CC, issue 1 (a)): "Forced group splits should be fine. Regarding forced
+     IID, did you make sure there are no leaks? Whenever there are no leaks we can ship." Lennart, 2026-11-08,
+     pricing_game_2016_french_fleet issue 6: "Reply (b): Forced by contract".
+   [^10c]: **SPLIT-14** (Must; amended 2026-11-08, Lennart): "Each window has its own train side: windows that share one
+     train side test one model on several test periods, which is one evaluation, not several. As time moves on, a refit
+     sees the data that arrived since, so each window trains on what is known before it starts".
+   [^10d]: **LEAK-41** (Must; 2026-11-06, Lennart): "No model is trained or scored on rows selected by the realized
+     weight (such as full-year rows only)". In main.
+
+11. **Score the model against the premium the insurer charged, or keep the exposure-weighted Gini?**
+
+   * **Problem:**
+     - The metric's reason cites two forms (dataset.py:191-198), the actuaries' Gini of the cost per year on risk
+       accumulated by exposure, which ships, and Frees, Meyers and Cummings' Gini, which orders by the prediction over
+       the premium and accumulates premium, but the premium charged is no scoring column.
+     - An insurer judges a new tariff by what it adds to the premium it charges, which only the second form scores: a
+       model that repeats the premium scores 0 there.
+     - Keep the exposure-weighted Gini, Andrej's call of 2026-11-02 (issue 3), or score the Gini against the premium?
+   * **Background:**
+     - The premium-based Gini is in the library (`ordered_lorenz_gini`) and is the source's metric of
+       wisconsin_local_government_property_insurance_fund, with the fund's premium as the base.
+     - The annual premiums are features here, so the premium would also ship as a scoring copy; the earned premium is
+       the annual premium times the time on risk, both in the frame.
+     - The raw loss ratio, the year's cost over the earned premium, is 0.656, 0.665 and 0.747 for 2022 to 2024
+       (counted on the raw file).
+   * **Effect on the task:** under the premium form a model scores by the policies the current price gets wrong; pooled
+     over years whose loss ratios differ by 14%, a model that learns the year's loss ratio from the same year's
+     training rows, as the split by policy allows (issue 10), would gain there (an AI reading, not measured).
+   * **Experiments:** issue 3 compared the two forms on the definition of 2026-11-02, before the training weights and
+     the annualised premiums: the premium form gave no stable order of the models (log1p ahead of Tweedie on 2 of 3
+     folds, behind on 1), while the exposure-weighted form kept their order on 3 of 3; neither was re-run since.
+   * **Consistency:**
+     - wisconsin_local_government_property_insurance_fund scores the premium form, as its source does;
+       frempl_french_motor_personal_line and australian_vehicle_insurance_2004_2005 score a Gini of the cost per year
+       with no premium.
+     - With no source metric here, the form is a call on this table alone, and when in doubt the metric that adds
+       diversity wins[^11a], which slightly favours the premium form, as only wisconsin has it.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Exposure-weighted Gini (implemented) | the normalized Gini of the cost per year, weighted by the time on risk | Andrej's call of 2026-11-02; kept the models' order on 3 of 3 folds; level-free | does not score what a model adds to the price charged |
+     | B | Gini against the premium | `ordered_lorenz_gini` with the earned premium as the base; the premium ships as a scoring copy | the cited source's form; scores the gain over the insurer's price; adds diversity | gave no stable order on 3 folds (issue 3); pooled over years it can reward reading the year's loss ratio; changes Andrej's call; may need a library change |
+     | C | Measure, then decide | A stays; a cluster job scores both forms on the 9 shipped splits for 5 to 6 models and compares how stably each orders them | decides on the current definition | a cluster run; the decision waits |
+
+   * **Recommendation:** A: Andrej weighed the premium form on 2026-11-02 with a measurement in hand, and the loss
+     ratios found now make a pooled premium form more exposed to the same-year rows of the split by policy; C if you
+     want the premium form tested on the current definition, since issue 3's numbers predate the training weights.
+     **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, check whether `ordered_lorenz_gini` can score a rate per year on risk against the
+   earned premium (relativity = predicted cost per year over the annual premium, x the cumulative earned premium, y
+   the cumulative cost); if not, a parameter in the shared library with its tests (MET-13, the main session's). The
+   annual `total_premium` ships a second time as a scoring column (MET-2: a valid feature is copied, not moved); the
+   reason says why the form changed and that a per-year score is an alternative to the pooled one. On C, the job
+   (sbatch): the constant, the premium alone, a GLM, LightGBM under L2 on log1p and under weighted Tweedie, each fitted
+   with the weight, scored by both forms, pooled and per year; Kendall's W of the models' order over the 9 splits.
+
+   **Andrej (2026-11-09, as implemented):** A, as implemented.
+
+   **Resolved (2026-11-09, Andrej):** A: the normalized Gini of the cost per year weighted by the time on risk stays
+   the metric, the Gini against the premium charged is not adopted, and the call of 2026-11-02 (issue 3) stands.
+
+   [^11a]: **MET-10** (Weigh; amended 2026-11-02, Andrej): "the metric is chosen per dataset, never as one call for a
+     family of datasets, and when the call stays in doubt, the metric that adds diversity to the collection wins".
+     **MET-11** (Must): a context metric names why the task makes it obvious. Andrej, 2026-11-02, issue 3: "Use
+     exposure-weighted Gini on annualised claim costs for this dataset."
+
+12. **Keep the cost per year on the log1p scale, or ship it on the identity scale like the other cost-rate tasks?**
+    (raised 2026-11-09 by the AI, in Andrej's review of how the working copy handles exposure; for discussion)
+
+   * **Problem:**
+     - This is the only task of the working copy that ships a rate over a realized time on risk on the log1p scale.
+       australian_vehicle_insurance_2004_2005, frempl_french_motor_personal_line and pricing_game_2016_french_fleet
+       ship the cost per year untransformed.
+     - On the log1p scale the target's mean depends on the time on risk again, which dividing by it was meant to
+       remove: among active policy-years the weighted mean of log1p(cost per year) rises from 0.117 below 0.1 years
+       on risk to 1.074 for a full year, while the cost per year stays at 221 to 336 (dataset.py, "Why log1p" bullet).
+       A short year is mostly 0 and now and then very large, and the log averages these lower.
+     - Keep log1p, Lennart's call of 2026-11-06[^12a], or ship the cost per year as it is?
+   * **Background:**
+     - The rules are met as implemented: the time on risk is no feature, which is one of the two remedies the rule on
+       log-scale rates names[^12b]. The features still predict the time on risk at R^2 0.340 (probe 22, 2026-11-08),
+       so a squared-error fit on log1p can learn part of the length through them.
+     - The metric scores the cost per year either way (`target_transform="log1p"` is inverted before the Gini), so
+       only the shipped column and what a default squared-error fit estimates change.
+     - The reason for log1p: squared error on the raw cost chases the largest claims (the 50 largest hold 75% of the
+       sum of squares). On the rate the tail is longer: 5.5% of the rows have under 0.1 years on risk, and the
+       largest rate is 3.7 million per year.
+   * **Effect on the task:** under B the shipped target is the quantity the insurer prices and the metric orders,
+     as in the three other cost-rate tasks; under A a user who fits squared error on the shipped column estimates a
+     log-mean that falls with the predicted time on risk.
+   * **Experiments:** no new run. On the 9 shipped splits (untuned LightGBM weighted by the time on risk, 3 seeds),
+     squared error on log1p scores 0.3166 and Tweedie on the cost per year 0.3165; the task gamer's 0.3077 against
+     0.3064. Squared error on the cost per year itself is not measured here; in frempl it scored 0.153 against
+     Tweedie's 0.182, led by the tail of records as short as a day.
+   * **Consistency:**
+     - frempl moved to the identity scale on 2026-11-08 because its length to 31 December, the part of the time on
+       risk known at the start, must stay a feature, and with it a log1p fit lost 0.029[^12c]. This table has no such
+       feature (no start date in the release), which sets it apart: frempl's reason does not carry over.
+     - The blind reviewer of 2026-11-06 asked for the identity scale (its point 1); the panel weighed it as a quality
+       point at a measured zero cost and kept log1p.
+     - The scale is chosen per table, not for the family[^12d], so the other three tables' scale is no reason alone.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | log1p (implemented) | as now | Lennart's call of 2026-11-06; rules met; no measured cost; squared-error fits do not chase the tail | the shipped mean depends on the time on risk; the only cost-rate task on a log scale |
+     | B | Identity scale | the target becomes `incurred_per_exposure_year`, the cost per year, no `target_transform` | the quantity priced and scored; as the other three cost-rate tasks; the blind reviewer's ask | changes Lennart's call without a measured gain; squared-error fits likely lose on the tail (frempl: -0.03); a rebuild |
+     | C | Measure, then decide | A stays; a cluster job scores squared error on the cost per year next to the two fits above, on the 9 shipped splits | decides on the missing number | a cluster run; the decision waits |
+
+   * **Recommendation:** A: the rules are met, the measured cost is zero, and the one new fact since Lennart's call,
+     frempl's move, rests on a feature this table lacks. C if you want the identity scale's cost for squared-error fits
+     known first; B only for one scale across the cost-rate tasks, which the rules do not ask for.
+     **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, in `_clean`: `TARGET = "incurred_per_exposure_year"`, the cost over `actual_exposure`
+   without `np.log1p`, the assertion without `np.expm1`; drop `target_transform` from the metric; rewrite the target
+   and "Why log1p" bullets, the task summary's target text and the metric reason's scale sentences; Lennart's CC of
+   2026-11-06 stays, with a CC line for the change; re-run `dataset check`, probe 22 and, on the cluster (sbatch), the
+   task probe and the three fits; a CHANGELOG entry. On C, the job (sbatch): untuned LightGBM weighted by the time on
+   risk, squared error on the cost per year, squared error on log1p and Tweedie, 9 splits x 3 seeds, the declared
+   metric with paired differences per split.
+
+   **Andrej (2026-11-10, as implemented):** A, as implemented.
+
+   **Resolved (2026-11-10, Andrej):** A. The cost per year stays on the log1p scale (Lennart's call of 2026-11-06);
+   no change[^12b].
+
+   [^12a]: Lennart, 2026-11-06, the record's CC on D10: "the log1p target and the weighted Gini stay".
+   [^12b]: **CLEAN-16** (Should; amended 2026-11-06, Lennart, on fremtpl2 and this table): "A rate scored by a Gini
+     keeps the scale the curator chose for the table, and the notes say what a weighted fit on that scale estimates. A
+     log-scale rate with its denominator as a feature misleads L2 fits ...; drop the feature or ship the identity
+     scale." The amendment is on this branch, not yet in main.
+   [^12c]: frempl_french_motor_personal_line, issue 7 (b), resolved 2026-11-08 (Lennart): "Identity scale, the length
+     kept"; squared error on log1p scored 0.156 with the length and 0.185 without.
+   [^12d]: Andrej, 2026-11-02, while reviewing pricing_game_2016_french_fleet: "It is case by case and when in doubt
+     we go for diversity" (quoted in issue 3's answer).
 
 **Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
 after decision D10 (issue 6): 12 reports. Claims: 16 audited, 10 hold (one a tautology the rules ask for, one except the

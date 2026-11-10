@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Lennart
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -125,6 +125,14 @@ CC (2026-11-08, Lennart): the rows are the 2006 renewal book, only the cars on t
 CC (2026-11-08, Lennart): the target stays per contract where a claim ends a car's cover (issue 7 (A) in allstate_claim_prediction_challenge_1m, `ok`): confirmed under MET-14's per-contract clause (amended 2026-11-08) as the case where the claim causes the cut, distinct from spanish_motor_insurance_2015_2018's lapses. The cut cars claim more per contract (1.39% against 0.72% for the book's cars of households that continued into 2007), no feature carries the cut, and no rate can be built without an exposure.
 
 **Assessment (AI, 2026-11-08):** rebuilt on the renewal book (issue 6 (B)); `dataset check` 0 errors, 0 warnings. Rows: 2,754,936 of the 4,447,729 vehicle-years of 2006 stay (61.9%; 1,942,447 households, 22,632 claims, 0.82%), the 1,692,793 cars that joined during 2006 (claim rate 0.54%) leave; the 1.5M sample holds 0.82% claims, 4,006 to 4,210 per test fold, and the history is never missing. Signal (TP-2): untuned LightGBM on the shipped folds scores a normalized Gini of 0.106 / 0.091 / 0.061 against 0 for the dummy (random predictions SD 0.023 to 0.025 per fold), and 0.022 to 0.106 over nine folds of three random household splits (mean 0.069, SD 0.024); the task probe (sides capped at 200,000 rows) puts LightGBM above the dummy on 3 of 3 splits (+0.037, SE 0.004), its linear model and random forest at chance, and flags `no_signal` and `unstable`, which read its R^2-type skill (EV-3). The panel's 0.063 / 0.057 / 0.003 trained on about 0.62M carried rows; on the rebuilt 1M-row training sides the renewal book scores as all rows did (0.058 to 0.102). The 2005 history adds +0.005 to +0.012 on the amount and +0.001 to +0.003 on claim yes/no; `household_vehicles_carried` adds +0.001 to +0.009 on 3 of 3 folds (on all rows it had lowered the score), so it stays. Leak probes: no feature scores alone, all features -0.072 R^2 on log1p, 74.4% of the test rows have an exact feature copy in training; probe 23: no period gain (-0.016, SE 0.030) and no shared-unit gain (0 households shared; the exact profile -0.005, SE 0.024). Residual: 38,728 rows of the book (1.41%) share a vehicle key with more rows in 2006 than in 2005 (claiming at 0.69% against 0.82%), so a few same-type cars added in 2006 stay; dropping them would select on the cars added later in the year. The Assessment of the review panel above is superseded where it gives the shipped rows as all of 2006 and the signal on the carried rows as 0.003 to 0.063.
+
+CC (2026-11-09, Andrej): the folds keep testing on all rows of the 2006 renewal book, the gaps kept as missing (review issue 8, A, as implemented).
+
+CC (2026-11-09, Andrej): the split stays by household (review issue 9, A, as implemented); the splits comment now gives the 2005-to-2006 score of 0.064 as above the household folds of that build and names the training side's year and the maturity of its amounts.
+
+CC (2026-11-09, Andrej): columns held only for training rows stay out for now, no training-only role (cross-dataset item of 2026-11-09; MET-14, LEAK-41, MET-16); the notes list them.
+
+CC (2026-11-09, Andrej): the training labels' maturity is stated in the notes (cross-dataset item of 2026-11-09, option B).
 
 ## Reference
 

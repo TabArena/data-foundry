@@ -2,31 +2,32 @@
 
 **Outcome:** added. The AI recommends shipping it: the re-review panel of 2026-11-06 under the exposure rules found no
 validity rule broken in the rows, features, target or split, its text changes are made (below), and its three
-questions were settled on 2026-11-08: `gender` leaves the features (issue 7), the cost per year insured stays with
-MET-14's per-contract clause amended (issue 8), the age bands are ordered categories (issue 9). Like every container
+questions were settled on 2026-11-08: the cost per year insured stays with MET-14's per-contract clause amended (issue
+8), the age bands are ordered categories (issue 9), and `gender` left the features (issue 7), back since 2026-11-09
+under the rule that today's law of the data's country decides on sex in insurance pricing (issue 10). Like every container
 with a `sample_weight`, it enters no
 run before the collection's training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate"). The
 "Car" table of de Jong and Heller (2008) from the R package insuranceData (CASdatasets holds the same rows): 67,856
 one-year Australian vehicle policies of 2004-2005, target the claim cost per year insured (the cost of the part of the
-policy's year the data observed, over that time, in dollars; 0 for 93.2%), five rating factors, the observed time as
+policy's year the data observed, over that time, in dollars; 0 for 93.2%), six rating factors, the observed time as
 each policy's weight in training and scoring, random 3x3 split tagged forced from temporal, scored by the
 exposure-weighted normalized Gini as a context metric. Validity: USE-1 holds (pricing a policy at underwriting, "for
 example"); LEAK-41 holds: `exposure`, which some claims cut short, is only the weight scoring column, the metric's
 weight input and the `sample_weight` (issue 6, Lennart, 2026-11-06); the rating factors predict it only weakly (R^2
-0.076, and 0.081 on the policies without a claim, whose exposure no claim cut), so what they predict is when the
+0.074, and about 0.08 on the policies without a claim, whose exposure no claim cut), so what they predict is when the
 policy started, which is known at the quote (USE-6); probe 22 finds in both arms (an L2 and a weighted Tweedie fit)
-that the exposure as a feature gains +0.078 and +0.062 and that no rating factor gains through it above noise
-(re-run on 2026-11-08 without `gender`); LEAK-10 holds (`clm`, `numclaims` and `claimcst0`
+that the exposure as a feature gains +0.112 and +0.085 and that no rating factor gains through it above noise
+(re-run on 2026-11-09 with `gender`); LEAK-10 holds (`clm`, `numclaims` and `claimcst0`
 dropped as parts of the target); SPLIT-8 holds: the forced IID split ships on Andrej's call of 2026-11-02 (issue 1),
 and on the rate it shows no drop when later file blocks or whole rating cells are held out; PROV-4 and PROV-16 hold
 (the book's Table 1.1, CASdatasets row by row, the book's pages read, issue 3); USE-6 and the Tensions row on rating
-factors as amended on 2026-11-08: sex is no rating factor of an insurance pricing task, whatever the actor's
-jurisdiction, so `gender` is dropped, as bemtpl97's `sex` (issue 7); USE-5 and MET-14 hold: the per-contract clause,
+factors as amended on 2026-11-09: sex leaves an insurance pricing task only where today's law of the data's country
+bars it, and s41 of the Sex Discrimination Act 1984 allows it in Australia, so `gender` stays (issue 10); USE-5 and MET-14 hold: the per-contract clause,
 amended on 2026-11-08, needs the data to record each contract to its end, and the extract's window cuts 98.1% of
 these policies (issue 8). Value: TP-2, a small real signal: the three families fitted with the weight beat the
-weighted constant on 9 of 9 splits (Tweedie GLM 0.119, Tweedie LightGBM 0.075, L2 LightGBM 0.076); the task probe
-flags `no_signal`, but the flag reads an R^2-type skill (weighted squared error, best R^2 0.0002), while on the
-declared metric the probe's linear family scores 0.117 and beats the dummy on all 5 splits it ran (EV-3); re-check
+weighted constant on 9 of 9 splits (Tweedie GLM 0.133, Tweedie LightGBM 0.062, L2 LightGBM 0.074); the task probe
+flags `no_signal`, but the flag reads an R^2-type skill (weighted squared error, best R^2 0.000), while on the
+declared metric the probe's linear family scores 0.122 and beats the dummy on all 5 splits it ran (EV-3); re-check
 with the first tuned run (TP-1), as for sf_permit_time, heart_disease and
 open_university_learning_analytics_dataset; TP-4: the observed time, which alone earned 82% of the
 old score, is no input now; MET-11 and MET-13 hold: the exposure-weighted Gini of the cost per year as a context
@@ -37,10 +38,11 @@ call on fremtpl2's fixed amounts (2026-10-20); dollars kept on Andrej's call of 
 amended 2026-11-06: a rate scored by a Gini keeps the curator's scale); the 7 costs per year of 1M dollars or more
 kept, since no row may be selected by the realized weight (LEAK-41); CLEAN-14: the age bands ship as ordered categories
 (issue 9, 2026-11-08). Weighed: a documented textbook table +, the standard actuarial formulation (a rate with its
-weight) +, five coarse rating factors -, a thin signal (best honest score 0.117 to 0.125) -. For Andrej: Lennart's
+weight) +, six coarse rating factors -, a thin signal (best honest score 0.122 to 0.133) -. For Andrej: Lennart's
 decision D8 of 2026-11-06 (issue 6) supersedes his call on issue 2 (`exposure` kept as a feature) and changes the form
 of his Gini of issue 4 (unweighted on the cost, now weighted on the rate), and Lennart's stance of 2026-11-08 (issue
-7) drops the `gender` his ship of 2026-11-02 kept; the newer curator decision wins. Nothing is left open.
+7) dropped the `gender` his ship of 2026-11-02 kept, which his rule of 2026-11-09 brings back (issue 10); the newer
+curator decision wins. Nothing is left open.
 
 Changes made after the review panel (AI, 2026-11-01), text only (rows, split and metric unchanged): `exposure` is
 described as the share of the year observed, cut short after some claims, and named in `fit_reason` as a kept leak;
@@ -64,10 +66,17 @@ was not chosen (issue 8). Dropping a column changes the rows' content order and 
 number of the notes, the metric reason and this page was re-measured on the new splits (the probes, the honest and
 exposure-fed fits, the grouped, file-order and copy checks).
 
-**Main points:** nothing open. On 2026-11-08: `gender` dropped, as sex leaves every insurance pricing task (7); the
-cost per year insured kept, with MET-14's per-contract clause amended together with spanish_motor_insurance_2015_2018's
-issue 7 (8); the age bands as ordered categories (9). Issues 1 to 6 are resolved (6 supersedes 2 and changes the form
-of 4).
+Changed on Andrej's decision of 2026-11-09 (target, weight, metric and split design unchanged; no container built):
+`gender` is back among the rating factors (issue 10), as sex in insurance pricing now follows today's law of the
+data's country, and Australian law allows it. Adding the column changes the rows' content order and so the shipped
+splits; the model numbers of the notes, the metric reason and this page are re-measured on the new splits (the probes,
+the honest and exposure-fed fits, the grouped, file-order and copy checks), except the claim-frequency comparison of
+the metric reason, which keeps its date.
+
+**Main points:** nothing open. On 2026-11-09: `gender` ships again, as Australian law allows sex in insurance pricing
+today (10, reopening 7, where it was dropped on 2026-11-08 under the family stance). On 2026-11-08: the cost per year
+insured kept, with MET-14's per-contract clause amended together with spanish_motor_insurance_2015_2018's issue 7 (8);
+the age bands as ordered categories (9). Issues 1 to 6 are resolved (6 supersedes 2 and changes the form of 4).
 
 **Issues for Andrej and Lennart:**
 
@@ -424,6 +433,9 @@ of 4).
    so the shipped splits; the notes' model numbers are re-measured on the new ones (task probe: linear 0.117 against the
    dummy's 0, 5 of 5 splits). `dataset check`: 0 errors, 0 warnings.
 
+   **Resolved (2026-11-09, Andrej):** reopened and settled again in issue 10: `gender` ships again, under the rule of
+   2026-11-09 that sex leaves an insurance pricing task only where today's law of the data's country bars it.
+
 8. **Record the cost per year insured as an exception to the per-contract rule, or amend the rule?**
 
    * **Problem:**
@@ -679,6 +691,70 @@ of 4).
    `driver_age_band` (levels 1 to 6) as ordered categories, youngest first, the codes kept as levels since the band
    limits are unpublished; the notes' bullet says so, with a CC. `dataset check`: 0 errors, 0 warnings; the dtype probe
    flags 0 of 6 columns.
+
+10. **Ship `gender` again, now that today's law of the data's country decides on sex in insurance pricing?**
+
+   * **Problem:**
+     - On 2026-11-08 `gender` left the features under the family stance that sex leaves every insurance pricing task,
+       whatever the jurisdiction (issue 7)[^i10-old].
+     - On 2026-11-09 Andrej replaced that stance: sex leaves an insurance pricing task when the law of the country the
+       data come from bars it today, as if the ban had always applied, and stays where that law allows it[^i10-rule].
+     - Australian law allows it, so the drop of issue 7 has no ground left and that issue reopens.
+   * **Background:**
+     - Section 41(1) of the Sex Discrimination Act 1984 (Cth), compilation of 1 November 2025, read on 2026-11-09:
+       discrimination on the ground of the client's sex in the terms on which an insurance policy is offered is not
+       unlawful when it "is based on actuarial or statistical data from a source on which it is reasonable for the
+       insurer to rely" and "is reasonable having regard to the data", the data to be shown to a client who asks in
+       writing[^i10-law].
+     - The four EU tables keep sex dropped under the same rule, as EU law bars it today: bemtpl97,
+       frempl_french_motor_personal_line, pricing_game_2017_french_mtpl and
+       spanish_homeowners_motor_insurance_2010_2014.
+   * **Effect on the task:** six rating factors instead of five. Adding the column changes the rows' content order and
+     so the shipped splits. On the new splits, every fit weighted, the score with `gender` minus without on the same 9
+     splits (SE over the splits): a Tweedie GLM 0.133 against 0.130 (+0.004, SE 0.001, higher with it on 7 of 9), the
+     300-round Tweedie LightGBM -0.004 (SE 0.004, 3 of 9), the L2 LightGBM -0.007 (SE 0.008, 6 of 9), a regularised
+     Tweedie LightGBM over 3 seeds -0.002 (SE 0.001, 2 of 9; seed SD 0.001) and a regularised L2 LightGBM +0.002 (SE
+     0.002, 6 of 9). A small gain for the GLM, as on 2026-11-08 (+0.004, 7 of 9), none above noise for boosting.
+   * **Experiments:** on the new definition `dataset check` gives 0 errors and 0 warnings. The leak probes find no
+     feature alone above an R^2 of 0, and 42.7% of the test rows have an exact copy of the six factors in train (coarse
+     rating cells, as before). The weight-proxy probe finds that the factors predict the exposure at R^2 0.074 and that
+     none gains through it above noise. The shared-unit lookup adds -0.002 (SE 0.003), the hidden-group probe finds no
+     group and the dtype probe flags 0 of 6 columns. The task probe's linear family scores 0.122 on the declared metric
+     against the dummy's 0, on 5 of 5 splits (its `no_signal` flag reads the squared-error skill, as before).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Ship `gender` again (implemented) | `gender` back among the rating factors; the notes name s41 and the rule of 2026-11-09 | the input an Australian insurer may use at the quote; follows the rule as amended | the family's inputs differ by country |
+     | b | Keep it dropped | five rating factors, as on 2026-11-08 | one input set for the whole family | against the rule of 2026-11-09; withholds an input the actor may use |
+
+   * **Recommendation:** a, as the rule of 2026-11-09 says; the measured effect is small either way. **Decision:** a or
+     b?
+
+   **Notes for the AI:** on a (done): `gender` back in `_clean` and `_feature_types`, `known`, `changes` and
+   `fit_reason` without the drop, the notes' gender bullet with s41 and the measured effect, a CC bullet, the model
+   numbers of the notes and the metric reason re-measured on the new splits, the record's CC line, a CHANGELOG entry;
+   the Tensions row in principles.md amended and a USE-6 Cases row in use_case.md.
+
+   **Andrej (2026-11-09, as implemented):** I go with a. (his mark on the cross-dataset item "Keep sex out of every
+   insurance pricing task, or decide by each use case's actor?", option a)
+
+   **Resolved (2026-11-09, Andrej):** a. `gender` ships again as a rating factor: sex leaves an insurance pricing task
+   when the law of the country the data come from bars it today, as if the ban had always applied, and stays where that
+   law allows it, and Australian law allows it (s41 of the Sex Discrimination Act 1984). This reopens issue 7 (Lennart,
+   2026-11-08), whose drop rested on the family stance this rule replaces. The Tensions row on rating factors in
+   principles.md is amended so. `dataset check`: 0 errors, 0 warnings.
+
+   [^i10-old]: principles.md, "Tensions", the row on "a rating factor known at the prediction point against a factor the
+     actor may no longer use", as amended on 2026-11-08 (Lennart, this table's issue 7): "sex leaves the rating factors
+     of every insurance pricing task, whatever the actor's jurisdiction, as if the actor priced in the EU".
+   [^i10-rule]: The same row, amended 2026-11-09 (Andrej, on the cross-dataset item of the information audit: "If the EU
+     bans it today, we treat it as if it also has been banned before. For non-banned countries, we use it."); **USE-6**
+     (Must): "Anything known at the prediction point is a legitimate input"; **USE-1** (Must).
+   [^i10-law]: Sex Discrimination Act 1984 (Cth), s41(1)(a) to (e),
+     https://www.legislation.gov.au/C2004A02868/2025-11-01/2025-11-01/text/original/epub/OEBPS/document_1/document_1.html.
+     The EU ban: CJEU C-236/09 (Test-Achats), in force for new contracts from 21 December 2012.
+
 
 **Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
 after decision D8 (issue 6): 12 reports. Claims: 39 audited, 34 hold (a few only approximately), 3 refuted in their

@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Lennart
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -127,6 +127,14 @@ CC (2026-11-08, Lennart): issue 8 of the folder's REVIEW.md, (a) on the answer: 
 **Assessment (AI, 2026-11-08):** both applied in the definition (target, weight, metric and split design unchanged). `gender` is dropped in `_clean`; five rating factors remain. It carried little: a Tweedie GLM scores 0.124 with it and 0.119 without (+0.004, SE 0.002, higher with it on 7 of 9 shipped splits), a regularised LightGBM 0.103 either way. Dropping a column changes the rows' content order and so the shipped splits; on the new splits the Tweedie GLM scores 0.119, the 300-round Tweedie LightGBM 0.075 and the L2 LightGBM 0.076, each above the weighted constant on 9 of 9; `exposure` as a feature adds +0.071 to +0.119 (9 of 9), 1/exposure alone 0.206. Task probe: linear 0.117 against the dummy's 0 (5 of 5 splits), `no_signal` on the R^2-type skill as before. Leak probe: no single feature or shallow tree scores; 56.3% of the test rows have an exact copy of their five factors in train (coarse rating cells; grouped by them the GLM scores 0.133, the LightGBM 0.077). Probe 22: the factors predict the exposure at R^2 0.076; the exposure as a feature gains +0.078 (L2) and +0.062 (Tweedie); no factor gains through it above noise. Hidden groups: none. Issue 8 on the new splits: a model of the window scores 0.056 Gini on the cost per contract (the GLM 0.124) and -0.034 on the cost per year; on the claims per year the GLMs and a regularised LightGBM tie (-0.0003, GLM ahead on 4 of 9); on the weighted Gini of the cost per year the GLM leads it by +0.016 (8 of 9; +0.031 on the old splits). `dataset check`: 0 errors, 0 warnings.
 
 CC (2026-11-08, Lennart): the declared metric (`normalized_weighted_gini` on the cost per year insured, weighted by `exposure`) is checked, as declared on the PR #47 review board; the target kept in issue 8 (a).
+
+CC (2026-11-09, Andrej): columns held only for training rows stay out for now, no training-only role (cross-dataset item of 2026-11-09; MET-14, LEAK-41, MET-16); the notes list them.
+
+CC (2026-11-09, Andrej): the training labels' maturity is stated in the notes (cross-dataset item of 2026-11-09, option B).
+
+CC (2026-11-09, Andrej): `gender` ships again as a rating factor (issue 10 of the folder's REVIEW.md; the cross-dataset item of the information audit, option a: "If the EU bans it today, we treat it as if it also has been banned before. For non-banned countries, we use it.", then "I go with a."). Sex leaves an insurance pricing task when the law of the country the data come from bars it today, as if the ban had always applied, and stays where that law allows it; Australian law allows it (Sex Discrimination Act 1984 (Cth), s41). The Tensions row on rating factors in principles.md is amended so. Supersedes Lennart's CC of 2026-11-08 on issue 7, which dropped `gender` under the family stance.
+
+**Assessment (AI, 2026-11-09):** applied in the definition: `gender` is back among the six rating factors (target, weight, metric and split design unchanged; adding the column changes the rows' content order and so the shipped splits). s41(1) of the Sex Discrimination Act 1984 (Cth), compilation of 1 November 2025, read: discrimination on the client's sex in the terms of an insurance policy is not unlawful when it is based on actuarial or statistical data from a source on which it is reasonable for the insurer to rely and is reasonable having regard to the data. On the new splits, every fit weighted, `gender` adds +0.004 to a Tweedie GLM (0.133 against 0.130, SE 0.001, higher with it on 7 of 9) and nothing above noise to boosting (-0.007 to +0.002 over four LightGBM settings, the regularised ones over 3 seeds). `dataset check`: 0 errors, 0 warnings; the leak probes, the weight-proxy and shared-unit probes, the hidden-group and dtype probes find nothing; the task probe's linear family scores 0.122 on the declared metric against the dummy's 0 (5 of 5 splits).
 
 ## Reference
 

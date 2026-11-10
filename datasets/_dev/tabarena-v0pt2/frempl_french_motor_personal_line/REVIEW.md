@@ -82,7 +82,8 @@ declared metric (0.203).
 
 **Main points:** Nothing open. Resolved: 1, 3 and 4 on 2026-11-03, 6 on 2026-11-06, 8, 7 and 9 on 2026-11-08 (the
 component widened; the cost per year on the identity scale with the length to 31 December kept; that length unrounded,
-with Andrej's two superseded calls named). Verdict: ship (2026-11-03).
+with Andrej's two superseded calls named), 10 on 2026-11-09 (no predecessor amount, from the information audit of that
+day), 11 on 2026-11-09 (the normalized weighted Gini, as the other cost-per-year tasks; no ranking changes). Verdict: ship (2026-11-03).
 Changed on 2026-11-08 without an issue: `Gender` left the features, on Lennart's stance that sex is no rating factor
 of any insurance pricing task (australian_vehicle_insurance_2004_2005's issue 7); it still builds the policy
 component, whose 61,091 groups are unchanged, and it carried nothing measurable (-0.0004 with a weighted Tweedie fit).
@@ -858,6 +859,120 @@ component, whose 61,091 groups are unchanged, and it carried nothing measurable 
    [^9c]: principles.md, "Consistent judgement, the curator's included": a decision that departs from a precedent
      names the fact that sets the case apart. Andrej, 2026-11-02, on spanish_motor_insurance_coverage_level_2022_2024:
      "do not round the premiums".
+
+10. **Give a record the claim amount of the record its contract change continues, with a flag that it continues one?**
+
+   * **Problem:**
+     - When a contract changes, a new record starts the day the old one ends, and the insurer then knows the old
+       record's claims, but the inputs carry only their count and type, through the counters that rise at the next
+       record (dataset.py:200), not their amount.
+     - The link exists for 34,324 within-file, 10,292 cross-file and about 3,200 one-column successors
+       (dataset.py:198), and the folds keep a record and its successors in one policy component (dataset.py:199), so
+       for a test record the predecessor is a test row too, while the notes allow no feature that uses other test rows
+       (dataset.py:198).
+     - Add `prev_record_claim_amount` and a has-predecessor flag, or keep the counters and the bonus-malus as the
+       history?
+   * **Background:**
+     - In deployment the predecessor's claims are history of a period that has ended, and a known entity's history is
+       an input[^f10a]. In the benchmark the predecessor of a test record is scored too, so the successor's new column
+       would hold another test row's target (its amount, the target times the length), which is why the notes' line
+       on other test rows needs your call here.
+     - Counted on the raw file, a predecessor's period lasts a median of 0.33 year (within-file links), so its claims
+       are at most months old at the successor's start. The file's amount, whose basis and valuation date are not
+       stated (dataset.py:131-136), is likely valued later than that start (an AI reading).
+     - The counters and the bonus-malus already carry the predecessor's claim: at least one counter rises at the next
+       record after 95% of the claims (dataset.py:200), and the counter that rises gives the claim's type.
+   * **Effect on the task:** small at best (an AI reading backed by the counts below). A participant who matches a
+     test record to its successor (the notes link 39% of the records from the features and `Exposure`,
+     dataset.py:198) would read the record's own amount from the successor's features: a sharper form of the
+     evaluation leak the notes already call out, which gains +0.26 to +0.44 from the successor's counters and start.
+   * **Experiments:** counted on the raw file, the 34,324 within-file links, no model fitted:
+
+     | Predecessor's claim amount | Links | Successor with a claim | Successor's cost per year |
+     |---|---|---|---|
+     | 0 (no claim) | 31,593 | 9.2% | 418 |
+     | up to 391 | 910 | 7.6% | 335 |
+     | 391 to 1,419 | 980 | 9.7% | 709 |
+     | above 1,419 | 841 | 7.4% | 911 |
+
+     - The successor's claim share does not rise after a predecessor's claim. Its cost per year rises across the
+       thirds of the amount, but each third holds 62 to 95 successor claims, so that order rests on a few claims.
+     - Among records that start after 1 January, those with a predecessor and those without claim 0.205 and 0.219
+       times a year and cost 432 and 435 a year: the flag alone separates nothing.
+   * **Consistency:** wisconsin_local_government_property_insurance_fund's issue 5, raised today, recommends the
+     previous year's claim count but not its amount, because the newest amounts were not final at rating time.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Counters and bonus-malus only (implemented) | no predecessor amount, no flag | no test row's target in another test row's features; the counters hold the count and type | the amount the insurer knows at the start is held back |
+     | B | Amount and flag | `prev_record_claim_amount` (0 after no claim, missing without a predecessor) and `has_predecessor`, from all three kinds of link | the history the insurer has at the start | a test row's target in another test row's features; an amount valued later than the start[^f10b]; no gain in the counts |
+     | C | Flag only | `has_predecessor`, known at the start | no outcome in it | separates nothing (0.205 against 0.219 claims a year) |
+
+   * **Recommendation:** A: the counters already give the predecessor's claim and its type, the amount shows no
+     signal beyond them in the counts and is valued later than the start, and under the folds it would put one test
+     row's target into another's features[^f10c]. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, build the links in `_clean` before `ClaimAmount` and `RecordEnd` leave: the
+   within-file link of `_continues_next` and the cross-file and one-column links of `_policy_components` (return the
+   pairs as well as the components; where a record has several candidate predecessors, leave the amount missing).
+   `prev_record_claim_amount` is the predecessor's `ClaimAmount` after the clip at 0; `has_predecessor` a 0/1
+   category. Reword the LEAK-9 line of the notes (dataset.py:198) to say which test-row values a feature may carry,
+   add both to `task_summary.known`, re-run `dataset check`, the leak probes and the successor lookup of the notes
+   with the new column, then through sbatch the weighted Tweedie fit on the 9 splits with and without them. On C,
+   only `has_predecessor`.
+
+   **Andrej (2026-11-09, as implemented):** A, as implemented.
+
+   **Resolved (2026-11-09, Andrej):** A: no predecessor amount and no flag; the claim counters and the bonus-malus stay
+   the history a record carries from the record its contract change continues.
+
+   [^f10a]: **USE-10** (Must): "For a known entity, its history is legitimate: the split is temporal and the previous
+     outcome is a feature." In main.
+   [^f10b]: **LEAK-10** (Must): a feature holds only what existed at the prediction point; out goes "a column recorded
+     after the outcome".
+   [^f10c]: **LEAK-9** (Should; amended 2026-11-05, Lennart): an evaluation-level leak, where a model can read other
+     test rows, is fixed by a protocol line, and a method that learns from the test block is called out and not
+     benchmarked. **SPLIT-9** (Must): the folds keep the policy component on one side, so a later record's counters
+     do not tell a test record's claim from the training side (review issue 8).
+
+11. **Score the cost per year by the normalized weighted Gini, as the other cost-per-year tasks do?** (raised
+    2026-11-09 by the AI, in Andrej's review of how the working copy handles exposure)
+
+   * **Problem:**
+     - The metric was `ordered_lorenz_gini` per unit of `Exposure` (D9, 2026-11-06), the unnormalised weighted Gini
+       of the cost per year. australian_vehicle_insurance_2004_2005 and
+       spanish_motor_insurance_coverage_level_2022_2024, the other cost-per-year tasks without a source metric, score
+       the same Gini normalized by the perfect order (`normalized_weighted_gini`).
+     - The notes gave no reason specific to this table for the unnormalised form: "not normalized" was listed as a
+       con in issue 4 and withdrawn there as no real con.
+   * **Background:** in the code (`src/data_foundry/v2/metrics.py`) both are one helper, the weighted Gini: the
+     unnormalised form returns it, the normalized form divides it by the same Gini of the perfect order on the same
+     test rows, which depends on the targets and weights alone.
+   * **Effect on the task:** none on which model wins a fold; the scores move from a fold-dependent top (0.959 to
+     0.966 here) to a top of 1 on every fold and every table.
+   * **Experiments:** run of 2026-11-09 on the 9 shipped splits (untuned LightGBM, 3 seeds; script in
+     `runs/2026-11-09_frempl_norm/` next to the repository): ten predictors (the honest weighted Tweedie and squared-error fits, the
+     same with `Exposure` as a feature, the same unweighted, squared error on log1p with and without the length, 1/
+     `Exposure`, the length alone) come in the same order under both forms on each split and on the mean; each score
+     reads 3.5% to 4.3% higher normalized (Tweedie 0.178 against 0.171, squared error 0.146 against 0.141).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Unnormalised (implemented until 2026-11-09) | `ordered_lorenz_gini` per unit of `Exposure` | D9 as decided; no change | a fold-dependent top; this table's scores not on the scale of the other two |
+     | B | Normalized | `normalized_weighted_gini` with `Exposure` as the weight | the same order of models on every fold; a top of 1 everywhere; as the other cost-per-year tasks | changes D9's metric; the notes' older numbers stay in the unnormalised form, labelled |
+
+   * **Recommendation:** B: it changes no ranking and puts the scores on one scale with the other two.
+     **Decision:** A or B?
+
+   **Andrej (2026-11-09, change):** "Following your point on frempl, I would like to change it as you said and also
+   add an explanation why to the curation notes."
+
+   **Resolved (2026-11-09, Andrej):** B. The metric is `normalized_weighted_gini` weighted by `Exposure`; the reason and
+   a metric bullet in the notes say why, and the three bullets on the metric's stand-ins, the learners and the paired
+   comparisons are re-measured in the declared form; the older numbers are labelled unnormalised. `dataset check`: 0
+   errors, 0 warnings. The container is rebuilt only on your ask.
 
 **Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
 after decision D9 (issue 6): 12 reports. Claims: 30 audited, 26 hold (one within seed noise, one by reasoning), 1

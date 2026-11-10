@@ -1265,6 +1265,20 @@ def test_the_summary_comes_first_in_the_report(tmp_path: Path, warehouse: Path) 
     assert "**Question.** Is a generated row positive?" in text
     # the description first, then the judgement of the use case
     assert text.index("**What the test data stands for.**") < text.index("**Use case fit: direct")
+    assert "Known only when scoring" not in text  # optional: shown only when set
+
+
+def test_the_summary_says_what_only_the_scorer_knows(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    known = 'known="A number and a colour.",'
+    body = DEFINITION.format(name="toy_ds", comment="x").replace(
+        known, known + ' known_at_scoring="How long each row was observed, recorded with its label.",'
+    )
+    folder = write_definition(tmp_path / "datasets", body=body)
+    get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    text = (folder / "README.md").read_text()
+    line = "**Known only when scoring.** How long each row was observed, recorded with its label."
+    assert text.index("**Known at prediction time.**") < text.index(line) < text.index("**What the test data")
 
 
 @pytest.mark.parametrize(

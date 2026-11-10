@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Lennart
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -124,7 +124,7 @@ CC (2026-11-02, Andrej): RMSE as the metric ("Let's do RMSE"), the source's sele
 
 CC (2026-11-02, Andrej): the 11 taxa the AI proposed ("I go with the 11 taxa you suggest"): walleye pollock, Pacific cod, sablefish, Pacific halibut, flathead sole, rex sole, Dover sole, Greenland turbot, shortspine thornyhead, Atheresthes and Lepidopsetta (groups of species told apart only from 1992 and 1996), one row per haul and taxon with the taxon as a feature. The scale of RMSE over the taxa is open (REVIEW.md, issue 1: "Explain what the decision value function of the use case would be and how it would align with the metric"). Split: nine two-year windows (2025-2026 back to 2009-2010), each trained on every earlier survey, no gap ("Unless the original paper says so, we should go with no planning gap for this use case"); the paper states none.
 
-**Exception to SPLIT-10 (2026-11-02, Andrej):** no planning gap. The 2022 review states no delay between a survey and its use, only the surveys it used (1982-2019, TM-459 p. 3); catches are counted at sea, and FOSS held the 2026 summer's hauls by 30 October 2026, before the next season, so the delay is shorter than the windows' step. Serves P4: each window trains on every survey before it, as a model refit after each season would. The third case resting on a delay shorter than the time column's step (after ames_housing and perth_house_prices), so the amendment proposed in splits.md is due.
+**Exception to SPLIT-10 (2026-11-02, Andrej):** no planning gap. The 2022 review states no delay between a survey and its use, only the surveys it used (1982-2019, TM-459 p. 3); catches are counted at sea, and FOSS held the 2026 summer's hauls by 30 October 2026, before the next season, so the delay is shorter than the windows' step. Serves P4: each window trains on every survey before it, as a model refit after each two-year survey cycle would (reworded 2026-11-09, review issue 10). The third case resting on a delay shorter than the time column's step (after ames_housing and perth_house_prices), so the amendment proposed in splits.md is due.
 
 **Assessment (AI, 2026-11-02):** rebuilt as 391,048 rows (11 taxa x 35,561 hauls, less 123 rows with a catch weighed but not counted), 52.5% zeros; `dataset check` clean but the zero-share warning; probes without a flag (random forest skill +0.79, LightGBM +0.74; taxon alone 0.32). Mean R^2 on log1p per taxon 0.46-0.76 (untuned LightGBM, nine windows). Pooled RMSE on counts: walleye pollock and rock sole hold 79-93% of the squared error; the AI recommends RMSE per taxon over the taxon's spread, averaged (each species' EFH map counts once), and grouping flathead sole with Bering flounder (FOSS rates every Bering Sea flathead sole catch moderate confidence); the curator has the call. Correction: the two-year windows without a gap are nine, not eight as written above.
 
@@ -147,6 +147,14 @@ CC (2026-11-08, Lennart): issue 5 of the folder's REVIEW.md resolved, "Pollock a
 CC (2026-11-08, Lennart): issue 6 resolved, "A clause in the row's remedy": the leak rules' Cases row on an amount at risk cut short by the outcome (LEAK-10, LEAK-7, LEAK-41) gains a clause in its remedy: where the decision is per unit of an equal-area map, the rate is scored unweighted and no sample weight is declared (MET-15), the notes naming the cut's bias. This dataset (the area swept released and left out as a weight; the cut not located row by row: 149 of the 256 tows under half the median duration carry performance code 0) and wadden_sea_sibes_macoma_abundance (the subsample fraction, set after the sample is seen, not released) are its cases, an application of MET-15, not an exception. The notes cite the clause; nothing changes in the data or the score.
 
 CC (2026-11-08, Lennart): the declared metric (`mean_group_normalized_rmse`) is checked, as declared on the PR #47 review board.
+
+CC (2026-11-09, Andrej): the 2026 hauls stay in the newest test window with the build check of the notes: before a build a fresh FOSS download is compared, and if the 2026 rows changed the build uses it or ends the newest window at 2025 (review issue 11, A, as implemented).
+
+CC (2026-11-09, Andrej): columns held only for training rows stay out for now, no training-only role (cross-dataset item of 2026-11-09; MET-14, LEAK-41, MET-16); the notes list them.
+
+CC (2026-11-09, Andrej): review issue 10, "Go ahead" on the consistency check's (a): the nine two-year windows stay, each fitted once; the split text, the splits comment's no-gap sentence and the exception to SPLIT-10 above name a refit after each two-year survey cycle, not after each season, as each window's second year (42.6% of the test hauls) is predicted without the season before it. Rows, split and score unchanged.
+
+CC (2026-11-09, Andrej): ship (review page of 2026-11-09).
 
 ## Reference
 

@@ -208,6 +208,9 @@ class Decision:
 USE_CASE_FITS = ("direct", "approximate", "none")
 """How closely a dataset simulates its use case (:attr:`TaskSummary.fit`)."""
 
+OPTIONAL_SUMMARY_FIELDS = ("changes", "known_at_scoring")
+"""The :class:`TaskSummary` fields that may stay empty."""
+
 SUMMARY_MAX_WORDS = 70
 """A field of :class:`TaskSummary` above this many words is flagged (`definition_summary_long`)."""
 
@@ -232,6 +235,9 @@ class TaskSummary:
             stand-in with a known gap) or ``"none"`` (no decision fits; such a dataset is retired, not shipped).
         fit_reason: Why, in one or two sentences: the gap for ``"approximate"``, what is missing for ``"none"``.
         changes: Our changes to the source a reader needs to know, in plain words ("" when there are none).
+        known_at_scoring: What the scorer knows that the model does not, in plain words ("" when it knows only the
+            target): a metric input recorded with the outcome, such as the time on risk a rate is weighted by, read
+            with the test rows' labels and never when predicting (MET-15).
     """
 
     question: str
@@ -243,10 +249,21 @@ class TaskSummary:
     fit: str
     fit_reason: str
     changes: str = ""
+    known_at_scoring: str = ""
 
     def fields(self) -> dict[str, str]:
         """The text fields, dedented, in display order."""
-        names = ("question", "use_case", "row", "predicted", "known", "split", "changes", "fit_reason")
+        names = (
+            "question",
+            "use_case",
+            "row",
+            "predicted",
+            "known",
+            "known_at_scoring",
+            "split",
+            "changes",
+            "fit_reason",
+        )
         return {name: clean_text(getattr(self, name)) or "" for name in names}
 
 
@@ -1620,7 +1637,9 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             fail("`task_summary` must be a `TaskSummary(...)`.")
         if cls.task_summary.fit not in USE_CASE_FITS:
             fail(f"`TaskSummary(fit=...)` is one of {', '.join(USE_CASE_FITS)}, not {cls.task_summary.fit!r}.")
-        empty = [name for name, text in cls.task_summary.fields().items() if name != "changes" and not text]
+        empty = [
+            name for name, text in cls.task_summary.fields().items() if name not in OPTIONAL_SUMMARY_FIELDS and not text
+        ]
         if empty:
             fail(f"`TaskSummary` needs text in: {', '.join(empty)}.")
 

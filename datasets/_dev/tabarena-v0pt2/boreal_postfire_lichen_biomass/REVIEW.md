@@ -6,9 +6,10 @@ Greuel et al. (2021) surveyed caribou forage
 lichen after boreal wildfires in the Northwest Territories (NT) and Saskatchewan (SK), in two Dryad deposits (CC0). One
 row is one ground quadrat: 2,010 quadrats of 516 plots, 40.4% of them at 0. The target is the authors' lichen biomass
 in kg/ha, estimated from cover and height. The inputs are the years since fire, the stand type, the coordinates, the
-ecoprovince, the ecozone and the jurisdiction. Whole NT burn scars or unburned areas are held out, and each SK plot on
-its own. The metric is RMSE on kg/ha with each plot counted once: a quadrat weighs 1 over its plot's quadrats (0.2 in
-NT, 0.5 in SK), where unweighted an NT plot (5 quadrats) would count 2.5 times an SK plot (2).
+ecoprovince, the ecozone and the jurisdiction. Whole NT burn scars or unburned areas are held out, and each SK plot
+on its own (issue 8: SK burns from Canada's fire maps were tried on 2026-11-09 and taken back on 2026-11-10). The
+metric is RMSE on kg/ha with each plot counted once: a quadrat weighs 1 over its plot's quadrats (0.2 in NT, 0.5 in
+SK), where unweighted an NT plot (5 quadrats) would count 2.5 times an SK plot (2).
 
 Validity:
 * SEL-2 holds: Andrej's `Yes` of 2026-10-30 (policy call 1).
@@ -18,7 +19,8 @@ Validity:
 * LEAK-10 holds: the cover-based biomass (61.934 x cover in every row) and the presence flag are dropped.
 * LEAK-41 holds, nothing to remove: the quadrat's area (1 m2 in NT, 4 m2 in SK) is fixed by each protocol and set by
   `jurisdiction`, not realized.
-* SPLIT-1/SPLIT-4 triggered, fixed: re-split on the burn area (issue 1).
+* SPLIT-1/SPLIT-4 triggered, fixed: re-split on the burn area (issue 1); SK plots stay one group each, with the
+  measured effect of their shared burns in the notes (issue 8, a).
 * SPLIT-23 holds: every prediction is constant within a plot, so the RMSE weighted by 1 over the plot's quadrats ranks
   models exactly like the plot score with each plot counted once (Kendall tau 1 on 30 of 30 splits; issue 7, B).
 * SPLIT-26 holds: the source's quadrat rows are kept.
@@ -26,7 +28,8 @@ Validity:
 * MET-15 not triggered as a weight rule (no realized denominator); the plot weight of issue 7 is a function of
   `jurisdiction`, so it needs no sample weight, and the bundle warning is accepted.
 * MET-16 holds: neither sheet has a survey or design weight; the sites were chosen by fire-age class, an input.
-* PROV-13 triggered, fixed: three plots' coordinates repaired from the authors' site sheet.
+* PROV-13 triggered, fixed: three plots' coordinates repaired from the authors' site sheet; since 2026-11-09 every NT
+  plot ships the site sheet's coordinates (issue 9).
 * PROV-8 holds: the download is Dryad's own version zips, which the repair needs.
 * PROV-16 holds: the paper is read (issue 4, resolved 2026-11-03); the notes cite it by section.
 
@@ -45,16 +48,23 @@ bullet's reason now follows MET-14.
 Weighed: source + (CC0, two documented deposits, a paper); use case + (range plans against the 40-year rule); signal -
 (skill about 0.1); size 0 (2,010 quadrats, 216 groups).
 
-Left for the curator: nothing; issue 7 is settled (B, each plot counted once; Lennart, 2026-11-08).
+Left for the curator: nothing. Issue 8 is settled (a, back to one group per SK plot with the note; Andrej,
+2026-11-10); issue 9 is settled (B, site-sheet coordinates; Andrej, 2026-11-09) and issue 7 too (B, each
+plot counted once; Lennart, 2026-11-08).
 
 The first panel (2026-11-01) reviewed the first draft (site split, Zenodo download, unrepaired coordinates); its eleven
 changes that need no decision were made. The focused re-review of 2026-11-06 (claim auditor and mediator) found
 wording only, and its changes are made (Mediator, "Changes to make now"). The numbers below are measured on the changed
 definition and its 30 shipped splits (untuned) unless marked as the panel's.
 
-**Main points:** Open: none. Resolved on 2026-11-08: each plot counts once in the RMSE, weighted by 1 over its
-quadrats (7, B). Resolved on 2026-11-03: the paper's own forecast (1), the tree-ring stand age (2), the duplicate
-warnings (3), the paper read (4), kg/ha (5) and RMSE (6); verdict: ship.
+**Main points:** No issue open. Resolved on 2026-11-10: one group per SK plot again, the fire-map burns of 2026-11-09
+removed and their measured effect (about 5 kg/ha on the SK RMSE) in the notes (8, a). Resolved on 2026-11-09: the NT
+plots ship the site sheet's coordinates (9, B). Resolved on 2026-11-08:
+each plot counts once in the RMSE, weighted by 1 over its quadrats (7, B). Resolved on 2026-11-03: the paper's own
+forecast (1), the tree-ring stand age (2), the duplicate warnings (3), the paper read (4), kg/ha (5) and RMSE (6);
+verdict: ship.
+
+**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
 
 **Issues for Andrej and Lennart:**
 
@@ -550,6 +560,208 @@ warnings (3), the paper read (4), kg/ha (5) and RMSE (6); verdict: ship.
    on kg/ha is now weighted by `plot_weight`, 1 over the plot's number of quadrats (0.2 in NT, 0.5 in SK), a scoring
    column for the metric only with no sample weight (the bundle warning accepted); the notes, the metric's reason and
    the record say so.
+
+8. **Group the Saskatchewan plots by burn, taken from the national fire maps, instead of one group per plot?**
+
+   * **Problem:**
+     - Saskatchewan (SK) plot names carry no burn key, so each SK plot is its own group (dataset.py:269), while the use
+       case asks for stands in burns nobody surveyed (dataset.py:112-118)[^8a].
+     - 71 of the 190 SK plots have another SK plot of the same fire year (the survey year in the plot name minus the
+       years since fire) within 5 km, and 26 within 1 km (counted on the raw file), so many SK test plots likely have
+       a plot of their own burn in training.
+     - Keep one group per plot with a note, or recover each SK plot's burn from the national fire polygons?
+   * **Background:**
+     - At 5 km the 71 plots form 24 clusters of 2 to 7 plots; a quarter of them are 4 or 5 years after fire, the
+       median 34 years, and for old stands the fire year is a field estimate from tree rings, so a shared year is a
+       weaker sign of one burn there (counted on the raw file; dataset.py:198).
+     - Issue 1 already calls SK the laxer region (REVIEW.md:99): an SK test quadrat lies a median 3.7 km from the
+       nearest training plot against 22 km in the Northwest Territories (NT), and SK plot means correlate at r 0.73
+       under 1 km (16 pairs) and 0.42 at 2 to 5 km (dataset.py:200).
+     - Canada's National Fire Database (CNFDB) and the National Burned Area Composite (NBAC) publish burn polygons
+       with a fire id and a year; an SK plot inside a polygon of its fire year would take that burn's id, and a plot
+       outside every polygon (an old or unmapped fire) would stay on its own (an AI reading; their SK coverage by year
+       was not checked).
+     - The SK sheet gives the coordinates to 12 or 13 decimals, so a point-in-polygon join is possible (counted on the
+       raw file).
+   * **Effect on the task:** an SK test plot with a burn-mate in training is scored as filling in a burn already
+     surveyed, which is easier than the burn nobody surveyed that the use case names, so the SK part of each fold
+     flatters models that lean on the coordinates (an AI reading); the size is not measured.
+   * **Consistency:** NT is grouped on the recorded burn-area key of its plot names because under the site split 94.3%
+     of NT test quadrats had another site of their own burn area in training (issue 1, Andrej, 2026-11-03); SK has the
+     same problem without a recorded key[^8c].
+   * **Unknown:** how many of the 71 plots, and of the 190, fall inside a CNFDB or NBAC polygon of their fire year;
+     the join would settle it.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | One group per plot, with a note (implemented) | as now; the notes add that 71 of 190 SK plots have a same-fire-year plot within 5 km | no outside data; a group from a recorded key | SK test plots can have a burn-mate in training, against the use case's burn nobody surveyed |
+     | B | Burn id from the national fire polygons | each SK plot's coordinates and fire year joined to the CNFDB / NBAC polygons; plots inside one burn form one group, the rest stay on their own | gives SK the test the use case names; an exact key from a recorded source | an outside dataset; old or unmapped fires stay per plot; a polygon's year and the field fire year may disagree |
+     | C | Cluster by distance and fire year | plots of one fire year within 5 km form one group (24 groups of 2 to 7 plots) | no outside data | a distance-threshold cluster, which the group rules forbid; a shared year can be chance for old stands |
+
+   * **Recommendation:** B: it gives SK the test the use case states while the group still comes from a recorded key,
+     and the plots no polygon covers stay on their own as now; A if the join finds few of the 71 inside a polygon of
+     their year[^8b]. **Decision:** A, B or C?
+
+   **Notes for the AI:** On B: download the CNFDB fire polygons (`NFDB_poly`, Natural Resources Canada) and NBAC, check
+   their licence (Open Government Licence - Canada is expected) and add them to `download_description`; join the 190
+   SK plot coordinates point-in-polygon and keep a polygon whose year equals the plot's fire year (survey year minus
+   `TSSRF`; allow 1 year for the mapping); the group is `SK:` plus the fire id, else `SK:` plus the plot; feed the key
+   to `_linked_groups`; recount the groups, the fold sizes and the SK distance to training; rewrite
+   `task_summary.split`, the grouping definition and `splits_comment`; re-run `dataset check`, the group probe and the
+   task probe on the cluster; CHANGELOG and a CC line. On A: add the 71 / 26 counts to the notes' SK bullet
+   (dataset.py:200). The rules: SPLIT-1, SPLIT-4, SPLIT-24, SPLIT-25, SPLIT-26.
+
+   **Andrej (2026-11-09, change):** Option B: Burn id from the national fire polygons. Before finally adding this,
+   ablate it and analyze the impact of this decision
+
+   **Answer (AI, 2026-11-09):** B is now implemented; mark as implemented to settle it.
+
+   * **The join:** the 190 SK plots against the agencies' fire perimeters (NFDB, SK from 1945) and the National Burned
+     Area Composite (NBAC, from 1972), both Open Government Licence - Canada, point in polygon, keeping a polygon whose
+     year is within 1 of the plot's fire year:
+     - 94 of the 190 plots fall inside one (NFDB 87, NBAC 76): 94 of the 124 dated 1945 or later, none of the 66 dated
+       earlier; 44 of the 71 plots with a same-year plot within 5 km (of the other 27, 23 are dated before 1972 and
+       four are of 1981 and inside no polygon of 1980 to 1982).
+     - They form 45 burns: 20 of 2 to 9 plots hold 69 plots, 25 hold one. Burn-mates lie a median 3.9 km apart (at
+       most 65 km, in a fire of 1981 of 355,000 ha); the key is polygon membership, an exact key, not a distance
+       cluster[^8d].
+     - The map's year equals the field fire year in 157 of the 165 matches (the rest 1 year off), and NFDB and NBAC
+       put 66 of the 67 plot pairs they both cover in one burn.
+     - Disagreement: 42 plots lie inside a fire the maps date after their field fire year (and before the survey) and
+       inside none of their own year, 33 of them dated before 1945: unburned stands inside a perimeter, or a field age
+       the maps contradict. They stay on their own, as do the plots outside every polygon.
+   * **The ablation:** untuned ridge, random forest and LightGBM on the container's inputs (no `plot`), 3 seeds, each
+     grouping on its own 30 shipped splits; RMSE in kg/ha weighted by `plot_weight`, mean over the splits with its
+     standard error; the SK distance is the median distance of an SK test quadrat to the nearest training plot, per
+     split, mean over the splits with the SD:
+
+     | Grouping | Groups (NT + SK) | SK test to training | Forest RMSE, all | Forest RMSE, SK rows | Forest skill, SK rows |
+     |---|---|---|---|---|---|
+     | One group per SK plot | 216 (26 + 190) | 3.4 km (SD 0.6) | 1,166.8 (SE 29) | 1,230.3 (SE 40) | +0.117 (SE 0.053) |
+     | B, burns from the fire maps | 167 (26 + 141) | 4.3 km (SD 0.7) | 1,186.3 (SE 24) | 1,254.1 (SE 47) | +0.072 (SE 0.063) |
+
+     - On the SK rows LightGBM (skill +0.102, then +0.105) and ridge (+0.163, then +0.166) do not move; the forest's
+       drop is within its spread. The NT part, whose groups did not change, moves as much through the new fold draw
+       (forest 1,134.0 to 1,120.1, ridge 1,234.8 to 1,153.6), so the switch is within the fold draw.
+     - Whether the burn-mates inflated the score, paired on the former folds: taking the burn-mates of the SK test
+       plots out of training (about 23 test plots and 29 training plots per split) raises the forest's RMSE on those
+       plots by 31 kg/ha (SE 9; 5% of 572) and LightGBM's by 36 (SE 17), ridge's by 5 (SE 3); taking out as many
+       other SK plots moves them by +2 to +6, -2 to -3 and +1 to +4. So the burn-mates did help the trees, but those
+       plots are a third of the SK test plots and low in lichen: about 5 kg/ha on the SK RMSE and 2 kg/ha overall.
+     - Task probe on B, on the model inputs (without `plot`): forest 1,182.6 against the training mean's 1,245.6,
+       better on 90% of the splits, no flag (1,164.3 against 1,250.0 and 77% with one group per SK plot). Group probe:
+       LightGBM R^2 0.380 on random folds against -0.015 on the burn folds (0.408 and -0.035 before). Leak probes: no
+       flag.
+     - Cost: about 2 GB of fire maps next to the raw files, read once in about 20 s by `_prepare_raw_files` (a
+       shapefile reader on numpy and matplotlib, since the build extras have no geo library; it finds the same
+       plot-polygon pairs as geopandas) into a table of the polygons that hold an SK plot. NFDB keeps only its current
+       version online, so a newer one stops the build until its file names are updated.
+
+   **Andrej (2026-11-09, discuss):** Rethink what you recommend now after the experiment. And explain it concisely.
+
+   **Answer (AI, 2026-11-09):** Go back to A, one group per SK plot with the measured effect in the notes: B removes a
+   bias too small to move any score or ranking, and costs an outside download that can break the build.
+
+   * Burn-mates in training flattered the SK RMSE by about 5 kg/ha (2 kg/ha overall), against an SK RMSE of about
+     1,230 with a fold-draw SE of 40.
+   * No model moves in rank: ridge and LightGBM score the same on the SK rows under both groupings; the forest's drop
+     is within its spread.
+   * B reaches only the 94 of 190 SK plots inside a mapped fire; the 66 dated before 1945 and the other unmapped burns
+     stay one group per plot under B too.
+   * B's cost: 2 GB of fire maps, a hand-written shapefile reader in the definition, and NFDB keeps only its current
+     version online, so a later build can stop until the file names are updated.
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Back to A, with the note (implemented) | one group per SK plot; the notes add that 94 of 190 SK plots share a mapped burn and that burn-mates flatter the SK RMSE by about 5 kg/ha | no outside data; the build depends on the source alone | SK test plots can have a burn-mate in training |
+     | b | Keep B | burns from the fire maps | the use case's unsurveyed burn for half the SK plots | an outside download that can break the build, for a 5 kg/ha effect |
+
+   * **Recommendation:** a. **Decision:** a or b?
+
+   **Andrej (2026-11-10, change):** Reply (a): Back to A, with the note
+
+   **Resolved (2026-11-10, Andrej):** a. Each SK plot is its own group again (216 groups, 26 NT and 190 SK, the folds
+   of before 2026-11-09). The fire-map join is removed from the definition (no NFDB or NBAC download, no prepared
+   polygon table, no Decision); the issue-9 site-sheet coordinates stay. A notes bullet gives the measured effect: 71
+   of 190 SK plots have a same-fire-year plot within 5 km, 94 of 190 lie inside a mapped burn of their year,
+   burn-mates in training flatter the SK RMSE by about 5 kg/ha against a fold-draw SE of about 40, no model changes
+   rank, and why the maps are not used. Re-run on 2026-11-10: `dataset check` clean; task probe random forest 1,164.3
+   kg/ha against the training mean's 1,250.0 (better on 77% of the splits), no flag; group probe LightGBM R^2 0.408 on
+   random folds against -0.035 on the burn-area folds; leak probes no flag; the same numbers as before 2026-11-09.
+
+   [^8a]: **SPLIT-1** (Must, in main): the split mirrors the real application. **SPLIT-4** (Must, in main): "If the
+     deployed model predicts for an entity new data would not contain ..., the test entities must be new".
+   [^8b]: **SPLIT-24** (Must, in main): "Group on a true group id, or on one constructed exactly from the data ...
+     Never on a similarity-threshold cluster". That a burn id from a point-in-polygon join counts as a true group id is
+     an AI reading. **SPLIT-26** (Should): "Take the group key from the source's own data"; B departs from it for a key
+     the source does not record.
+   [^8c]: Issue 1 (Andrej, 2026-11-03): A, "the range-plan actor and the burn-area split", with the con "SK stays the
+     laxer region (test median 3.7 km from training)".
+   [^8d]: **SPLIT-24** (Must, in main): "Group on a true group id, or on one constructed exactly from the data ...
+     Never on a similarity-threshold cluster". **SPLIT-26** (Should): "Take the group key from the source's own data";
+     the burn comes from a second recorded source, the plot's own fire year and coordinates matched exactly to it. That
+     polygon membership counts as a true group id is an AI reading.
+
+9. **Ship the NT plots' coordinates at the precision of the authors' site sheet instead of the 0.01 degree grid?**
+
+   * **Problem:**
+     - The NT coordinates ship on a 0.01 degree grid (dataset.py:92-93, :194), while the authors' site sheet
+       `All_site_info_NT.xlsx` in the same deposit gives each plot's transect start to 4 to 6 decimals (counted on the
+       raw file).
+     - The grid is how the published NT lichen sheet gives its coordinates (two decimals), and the definition keeps it
+       because the one link between two burn areas, CG2 with F2, rests on an exact shared grid coordinate
+       (dataset.py:194, :199).
+     - Ship the site sheet's coordinates as the features and keep the grid only to build that link[^9a]?
+   * **Background:**
+     - For the 323 NT plots that were not repaired, the grid point lies a median 0.31 km from the site sheet's start
+       (90th percentile 0.51 km, at most 0.59 km); on the grid 244 of the 326 NT plots share their coordinate with
+       another plot (94 shared points, mostly the A and B plots of one site), in the site sheet none do (counted on
+       the raw files).
+     - The SK sheet gives its coordinates to 12 or 13 decimals, so only NT is coarse (counted on the raw file).
+     - Why the authors rounded is not stated: the lichen sheet's metadata says only "Degree, decimal"; privacy is
+       unlikely to be the reason, since the same authors put the precise starts in the same CC0 deposit (Dryad
+       version 5 of 2026-05-18; dataset.py:23-24, :161) (an AI reading).
+     - The site sheet's coordinate is the start of the plot's belt transect, so it places the plot, not each quadrat
+       along it.
+   * **Effect on the task:** the grid gives the A and B plots of one site the same position, part of the 36 copies
+     between sibling plots in the duplicate warning (dataset.py:248-250), and moves a plot by up to 0.6 km; the
+     planner knows where the stand is; under the burn-area split the test burns lie a median 22 km from training, so
+     the effect on the score is likely small (an AI reading; not measured).
+   * **Consistency:** the definition already takes three plots' coordinates from the site sheet, where the grid was
+     wrong by 8 to 162 km, but rounds them back to the grid (dataset.py:79, :194)[^9b].
+   * **Unknown:** why the lichen sheet was rounded; the contact in its metadata (Jennifer Baltzer) could say.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | The 0.01 degree grid | as now | the lichen sheet as published; the CG2 and F2 link unchanged | up to 0.6 km off; the plots of one site share a position |
+     | B | Site-sheet coordinates as features (implemented) | latitude and longitude from the site sheet's transect start for all 326 NT plots; the grid values only build the burn-area link and are not shipped | the stand's position as the planner knows it, at SK's precision; the three repairs need no rounding | the duplicate warnings' counts and reasons change; the start of the transect, not each quadrat's spot |
+
+   * **Recommendation:** B: the stand's location is known when the planner predicts, the authors published it in the
+     same deposit, and the link can keep using the grid; the change is small in code and likely in score.
+     **Decision:** A or B?
+
+   **Notes for the AI:** On B: in `_repair_nt` (or a new step) map every NT plot to the site sheet's `Lat_start` and
+   `Long_start` (text with a decimal comma), keep the grid copy for `_linked_groups` only and drop it before the
+   return; the ecoprovince repair of CG3-31A stays; update the repair Decision, the notes (dataset.py:194, :199-200),
+   `changes`, the two accepted duplicate warnings (the 36 sibling-plot copies go; recount 532 and 32.5% / 28.8%),
+   then `dataset check`, the leak probes and the task probe on the cluster; CHANGELOG and a CC line. The rules: USE-6,
+   PROV-13, SPLIT-24.
+
+   **Andrej (2026-11-09, change):** Option B: Site-sheet coordinates as features.
+
+   **Resolved (2026-11-09, Andrej):** B. Every NT plot now ships its transect start from `All_site_info_NT.xlsx` as
+   its coordinates; the 0.01 degree grid, with the three repaired plots on it, only builds the CG2 and F2 link and is
+   not shipped, so the groups are unchanged. The duplicate warnings are recounted (518 copies, 506 at 0, all within
+   one plot; 976 conflicting rows; 28.8% of the variance within a plot), and on the same 30 splits the random forest's
+   RMSE moves by +4.2 kg/ha (SE 3.3), within noise.
+
+   [^9a]: **USE-6** (Must, in main): "Anything known at the prediction point is a legitimate input". **SPLIT-24**
+     (Must): the CG2 and F2 link is a key constructed exactly from the data (an exact shared coordinate), which B
+     keeps.
+   [^9b]: **PROV-13** (Must, in main): damaged data is repaired from the origin when the origin has the clean data;
+     the repair of 2026-11-01 used the site sheet for the three mislocated plots.
 
 **Review panel:** ship after changes (mediator), wording only, now made. Tier focused, a re-review of 2026-11-06
 under LEAK-41 and MET-14 to MET-16 after the exposure rework: the claim auditor and the mediator; no blind review, task

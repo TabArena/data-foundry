@@ -142,6 +142,42 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
 - [ ] **Report the effective sample size.** For a task scored per group, the number of test groups per fold is the
   sample size of the score (34 molecules per fold in `musk`); show it next to the results.
 
+## Losses for deviance-scored tasks
+
+A TODO for TabArena to decide (Andrej, 2026-11-09, cross-dataset review: "Yes, we should definitely stick to what
+practitioners do wherever possible, but we also need more research on that."). Nothing changes in Data Foundry. A
+practitioner on a count or claim-cost task fits a Poisson or Tweedie loss with a log link; most benchmark methods fit
+squared error, so on a zero-heavy target they predict values near zero or below, which the metric's floor then scores.
+On pricing_game_2017_french_mtpl (repeat 0, folds 0 to 2, untuned) LightGBM fitted by squared error scores 74.94 at a
+1 EUR floor and 102.83 at 0.1 EUR, LightGBM fitted with the Tweedie loss 75.51 and 78.11, the constant 63.31 at both.
+
+- [ ] **The metric's loss where a method has one.** The adapter reads `task_metadata.objective_metric` and sets the
+  matching objective with a log link on LightGBM, XGBoost and CatBoost; a method without such a loss (RealMLP, TabM,
+  the TabPFN wrappers, TabICL: an AI reading of their interfaces, not checked per version) keeps its own loss.
+
+  | Metric | Objective | Parameter |
+  |---|---|---|
+  | `mean_poisson_deviance` | Poisson (LightGBM `poisson`, XGBoost `count:poisson`, CatBoost `Poisson`) | none |
+  | `mean_tweedie_deviance` | Tweedie (LightGBM `tweedie`, XGBoost `reg:tweedie`, CatBoost `Tweedie`) | the variance power = the metric's `power` (LightGBM and XGBoost `tweedie_variance_power`; CatBoost `Tweedie:variance_power=<power>`) |
+  | `rescaled_mean_tweedie_deviance` | Tweedie, as above (the rescaling only multiplies each scored set's predictions by one factor) | the metric's `power` |
+
+  The training weight (`sample_weight(container)`, above) is passed with the objective as it is with any other loss.
+- [ ] **The floor on every method's output.** Every method's predictions are floored at the metric's `min_prediction`
+  before scoring, in validation as in test (the scorer does it on the test rows already; early stopping and tuning do
+  the same), whatever loss the method fitted.
+- [ ] **The tasks.** fremtpl2 and bemtpl97 (`mean_poisson_deviance`, weighted by the exposure),
+  pricing_game_2016_french_fleet (`rescaled_mean_tweedie_deviance`, power 1.5), pricing_game_2017_french_mtpl and
+  noaa_storm_events_damage (`mean_tweedie_deviance`, power 1.5), and any later task scored by one of the three
+  deviances.
+- [ ] **Open research** (Andrej's note above), before the protocol fixes the rule:
+  - which methods have a Poisson or Tweedie loss, or can be given one (a custom loss for the neural methods, a log
+    link on the output), and how each behaves with it: convergence, tuning and early stopping on the deviance;
+  - whether matched losses change the rankings on these tasks against squared error with the floor, over several
+    seeds, with the fold-level spread;
+  - what practitioners fit per task (the source papers and the competitions' winning solutions: a Poisson GLM or GBM
+    for frequency, Tweedie or frequency times severity for the claim cost, and what loss is used for storm damage),
+    and whether the benchmark should follow the task's practice or one rule per metric.
+
 ## Recommended scoring of grouped tasks
 
 The metadata is meant to determine the official score, so every method is scored the same way. The resolution we

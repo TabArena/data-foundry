@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Lennart
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 4
 tags:
@@ -129,6 +129,22 @@ CC (2026-11-06, Lennart): issue 3, the three yearly windows stay (A), the 2008 w
 CC (2026-11-08, Lennart): the declared metric (`ordered_lorenz_gini`) is checked, as declared on the PR #47 review board.
 
 CC (2026-11-08, Lennart): issue 3, reply (a) to the consistency check: the floor of half the rows is amended on this fund's facts (SPLIT-14: a release with two windows above the floor may add one older window that trains on at least 40% of the rows, when most test entities recur and folds by entity would test unseen ones), so the three yearly windows stay as an application of the amended rule, not an exception; the no-gap departure from SPLIT-10 is recorded with a fact of its own (every policy year ships with its final claim amounts; a one-year gap would put two windows below the floor).
+
+CC (2026-11-09, Andrej): columns held only for training rows stay out for now, no training-only role (cross-dataset item of 2026-11-09; MET-14, LEAK-41, MET-16); the notes list them.
+
+CC (2026-11-09, Andrej): the training labels' maturity is stated in the notes (cross-dataset item of 2026-11-09, option B).
+
+CC (2026-11-09, Andrej): the fund's premium stays a scoring column only, the Gini's base and no input (REVIEW.md issue 4 (a), "Scoring column only"): it is the outside agency's price that the project's engine was built to replace; as an input it is no leak and gains nothing.
+
+CC (2026-11-09, Andrej): the member's claim count of the year before is added as `prev_year_claims` (REVIEW.md issue 5 (b), "The previous year's claim count"), missing where the file lacks that year; the year before's amount stays out.
+
+**Assessment (AI, 2026-11-09):** issue 5 applied in the definition. `dataset check` 0 errors, 0 warnings; the leak probes flag nothing (`prev_year_claims` alone R^2 0.027 on dollars, no exact copies across the split). On the declared Gini the count moves the scores in no consistent direction: the Tweedie GLM of the notes 0.260 against 0.285 without it, while the task probe's untuned families score higher with it (linear 0.202 against 0.119, random forest 0.202 against 0.142, LightGBM 0.073 against 0.020; SD across the 3 windows 0.075 to 0.152). The notes now say that `NoClaimCredit` looks computed from the file's own claims, not read from the fund's rating.
+
+CC (2026-11-09, Andrej): ship (review page of 2026-11-09).
+
+CC (2026-11-10, Andrej): the losses stay uncapped in scoring; the notes state each window's swing from its largest claim, and the first tuned benchmark run decides whether the table tells methods apart (REVIEW.md issue 6, A, as implemented).
+
+CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
 
 ## Reference
 

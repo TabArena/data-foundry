@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: allstate_claim_prediction_challenge_1m
 container_format: 2
-checksum: v2:9a7d721139b9e67d54130eae07e57a289caf6647dee29261d812998293ad30ac
+checksum: v2:70642a18cac6f2f27b02e3705709ccddbe287b3dd715dcac3055ba01e27ad480
 build: null
 build_stale: false
 data:
@@ -77,7 +77,7 @@ decisions:
 
 Regression of `log1p_claim_amount`, scored with `normalized_gini` on grouped splits by `Household_ID`. 1,500,000 rows and 31 features. Source: Kaggle (2011).
 
-Not built yet. The current definition gives checksum `v2:9a7d721139b9e67d54130eae07e57a289caf6647dee29261d812998293ad30ac`.
+Not built yet. The current definition gives checksum `v2:70642a18cac6f2f27b02e3705709ccddbe287b3dd715dcac3055ba01e27ad480`.
 
 ## In brief
 
@@ -219,12 +219,16 @@ We start with train_set.csv of the Kaggle competition (13,184,290 vehicle-years 
 - Note: 81.8% of the book's rows share every feature with a row of another household (one vehicle type, policy profile and history): natural repeats, kept (LEAK-18).
 - Note: the competition rules say "Participants will not use the data for purposes unrelated to the competition"; a 2022 forum question about the licence (thread 309810) has no answer.
 - Exposure (LEAK-41, MET-14; 2026-11-06, measured 2026-11-08): the release publishes no exposure; the rows are vehicle-years of the cars on the policy at the start of 2006 (the cars that joined during the year are left out, above), some cut short by a claim. The book's cars gone by 2007 had claimed at 0.98% in 2006, against 0.72% for the cars still insured; among the cars of households that continued into 2007, at 1.39% against 0.72%, as a claim ends the cover (a write-off or a replacement), while the cars whose whole household left claimed at 0.81%. Without dates a cut cannot be told from a non-renewal, so the share cut short is only bounded: at most 39.3% of the book's cars are not seen in 2007 (28.0% with their whole household), and 15.8% of the cars of households that continued are gone (11.4% of the book); without an exposure, the most a price per year would differ cannot be bounded. For these cuts the target stays per contract, the insurer's cost of the cover it wrote (Lennart, 2026-11-08, review issue 7: confirmed): a rate per year would raise the cut rows further, and none can be built. No feature carries the cut: the in-year vehicle count, which the outcome cuts, is already dropped, and `household_vehicles_carried` counts the cars on the policy from 2005 whatever their claims. The Kaggle metric is an unweighted Gini, so no weight is declared. If a later release adds an exposure, it is a realized time on risk: the rate's denominator and weight, never a feature.
+- Note: how mature the labels are (cross-dataset item of 2026-11-09, Andrej): `Claim_Amount` is the year's bodily-injury "claim payments" (description page), adjusted, as read at the release (about 2011, the file's date; no valuation date is given). The file gives no closure date or status, so the share still open at the 2006 renewal cannot be counted; the large claims missing from 2007 (the bullet on 2007) show payments still growing years later. Every fold trains and tests on 2006 rows of one extract, so both sides carry the same maturity (splits_comment).
+- Note: held for training rows only, not shipped (cross-dataset item of 2026-11-09, Andrej): `Vehicle`, the car's number within its household, whose values run over every car the household insured during the year, and the household's count of cars in the year, built from the rows, which counts the cars added after the rating, replacements after a crash among them (10.7% of the 2006 vehicle-years are cars a household of 2005 added during the year). Allstate holds both for the rows of a past year when it fits, but not for a car it rates at the renewal. They would need a training-only role, which the format does not have yet (MET-14, LEAK-41, MET-16), so they stay out for now.
+- CC (2026-11-09, Andrej): the folds test on all rows of the renewal book, the gaps kept as missing (review issue 8, A, as implemented); the missing-values bullet names the mismatch with the competition's complete test rows.
+- CC (2026-11-09, Andrej): the split stays by household over the 2006 book (review issue 9, A, as implemented); the splits comment gives the 2005-to-2006 score as above the household folds of that build and names the training side's year and the maturity of its amounts.
 
 Version of `allstate_claim_prediction_challenge`: We sub-sample the 2006 renewal book (2.75M rows) to 1.5M by whole households and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol). The households are drawn at random, not stratified (a regression target), so the claim rate stays that of the book. The 2005 history is built on the full file before the filter and the sampling.
 
 ## Splits
 
-Default splits, grouped by household (Household_ID): 3 folds over 1.5M rows of whole households drawn at random from the 2.75M of the 2006 renewal book (claim rate 0.82%, as in the book), each training on about 1M and testing on about 500k rows with 4,006 to 4,210 claims. The task is temporal by its use case: the competition gave 2005-2007 for training and scored 2008 (public leaderboard) and 2009 (final ranking), whose claims were never published. With 2007 dropped (its large claims look unsettled) and 2005 used as the history of 2006, one labelled target year is left, so no window of a temporal split exists and the task ships under SPLIT-8 (ForcedGroupedFromTemporal): the folds hold out whole households, whose vehicles share the household's record, so random rows would put a household's other cars on both sides. Before the history was built, trained on 2005 and scored on 2006 all rows reached 0.064, inside the range of the folds by household (0.022 to 0.054 then; 0.022 to 0.106 now over nine folds of the renewal book), so the forced split shows no cost this noise can measure. What the folds do not test: new business (the cars that joined during 2006 are left out), vehicle series not seen in training (0.02% of test rows on the earlier folds), and a rating at a known date within the year. A release with dates beyond 2007 should get a temporal split. Shipped forced on the curator's call (Andrej, 2026-11-02: "Forced group splits should be fine"; 2026-11-03: the 2006 renewal book; Lennart, 2026-11-08: only the cars on the policy at the start of 2006).
+Default splits, grouped by household (Household_ID): 3 folds over 1.5M rows of whole households drawn at random from the 2.75M of the 2006 renewal book (claim rate 0.82%, as in the book), each training on about 1M and testing on about 500k rows with 4,006 to 4,210 claims. The task is temporal by its use case: the competition gave 2005-2007 for training and scored 2008 (public leaderboard) and 2009 (final ranking), whose claims were never published. With 2007 dropped (its large claims look unsettled) and 2005 used as the history of 2006, one labelled target year is left, so no window of a temporal split exists and the task ships under SPLIT-8 (ForcedGroupedFromTemporal): the folds hold out whole households, whose vehicles share the household's record, so random rows would put a household's other cars on both sides. Before the history was built, trained on 2005 and scored on 2006 all rows reached 0.064, above the folds by household of that build (0.022 to 0.054) and inside the nine folds of the renewal book (0.022 to 0.106), so the forced split shows no cost this noise can measure. The training rows are the test year's other households, their amounts read at the release (about 2011, the file's date), more developed than Allstate had at the 2006 renewal, when it would have trained on 2005 and earlier; both sides of every fold hold amounts of the same maturity. What the folds do not test: new business (the cars that joined during 2006 are left out), vehicle series not seen in training (0.02% of test rows on the earlier folds), and a rating at a known date within the year. A release with dates beyond 2007 should get a temporal split. Shipped forced on the curator's call (Andrej, 2026-11-02: "Forced group splits should be fine"; 2026-11-03: the 2006 renewal book; Lennart, 2026-11-08: only the cars on the policy at the start of 2006; Andrej, 2026-11-09: the split by household stays).
 
 1 repeat(s) x 3 fold(s) with seed 4267; train 1,000,000 rows, test 499,915 to 500,000 rows. Row budget: at most 1M train / 500k test rows per split.
 
@@ -338,7 +342,7 @@ Accepted on purpose:
 | Var3 | float64 | 0 | 0 | 191 | -1.2399, -1.2862, -0.4532, -0.9622, 0.2179, -0.6151, 1.0972, -1.078, -0.3837, -… |
 | Var4 | float64 | 0 | 0 | 283 | 0.1472, 0.3164, -0.5293, -0.6985, -0.0219, 0.4855, -0.3602, -1.2904, 0.2318, -1… |
 | Var5 | float64 | 0 | 0 | 636 | 0.5272, -0.1567, -0.1984, -0.1151, 0.6997, 0.5034, -0.0437, 0.3785, 0.5807, -0.… |
-| Var6 | float64 | 0 | 0 | 2445 | -0.6794, -0.5858, -1.1964, -0.6888, -0.5461, -1.1344, -1.0654, -0.2887, -0.6268… |
+| Var6 | float64 | 0 | 0 | 2445 | -0.5858, -0.6794, -1.1964, -0.6888, -0.5461, -1.1344, -1.0654, -0.2887, -0.6268… |
 | Var7 | float64 | 0 | 0 | 348 | -0.9353, -0.5913, -0.8616, -0.837, -0.9845, -0.8125, -1.0582, -0.8985, -1.0091,… |
 | Var8 | float64 | 0 | 0 | 5490 | -0.2536, -0.218, -0.3315, -0.2979, -0.3843, -0.2249, -0.3495, -0.3515, -0.3085,… |
 | NVVar1 | float64 | 0 | 0 | 22 | -0.2315, 3.1978, 2.0547, 1.4831, 6.6271, 1.1402, 2.5119, 0.9116, 4.3409, 0.7483 |
@@ -349,7 +353,7 @@ Accepted on purpose:
 | household_claims_2005 | float64 | 0 | 0 | 3 | 0.0, 1.0, 2.0 |
 | vehicle_claims_2005 | float64 | 0 | 0 | 3 | 0.0, 1.0 |
 | log1p_claim_amount | float64 | 0 | 0 | 12258 | 0.0, 1.806, 3.75, 0.9188, 3.134, 1.0294, 2.6623, 4.4651, 5.9314, 2.4548 |
-| Household_ID | int64 | 0 | 0 | 1.05758e+06 | 2628554, 2559242, 6231746, 6560893, 2777633, 2155351, 227307, 6278868, 2446870,… |
+| Household_ID | int64 | 0 | 0 | 1.05758e+06 | 2628554, 2559242, 6342079, 6524024, 2432348, 2151008, 2029719, 227307, 6878326,… |
 | Model_Year | int64 | 0 | 0 | 26 | 2004, 2002, 2001, 2000, 2003, 2005, 1999, 1998, 1997, 1995 |
 | household_vehicles_carried | int64 | 0 | 0 | 11 | 1, 2, 3, 4, 5, 6, 7, 8, 11, 9 |
 

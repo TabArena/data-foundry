@@ -85,7 +85,9 @@ Not built yet. The current definition gives checksum `v2:0933d52ef1b69c0701b49f4
 
 **Predicted.** Claims per year insured: the claims with a recorded cost in the record's period divided by the time it was insured (96.3% have none). Each record counts in proportion to that time, in training and scoring.
 
-**Known at prediction time.** The car's power, age, brand and fuel, the driver's age, the bonus-malus level (in 12% of the records only: blank in the rest, where it looks recorded after the year's own claims), and the density, area and region of residence. The time insured is no input: a claim can cut it short, so it is the rate's denominator and each record's weight.
+**Known at prediction time.** The car's power, age, brand and fuel, the driver's age, the bonus-malus level (in 12% of the records only: blank in the rest, where it looks recorded after the year's own claims), and the density, area and region of residence.
+
+**Known only when scoring.** How long each record was insured, recorded with its claims. A claim can cut it short, so it is no input: it is the rate's denominator and each record's weight in training and scoring.
 
 **What the test data stands for.** Random policy records are held out, standing for comparable policies of the same portfolio and years; the release has no dates, and a policy's record of another year can be on the training side.
 

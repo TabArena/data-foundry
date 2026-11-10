@@ -17,6 +17,7 @@ class ClassName(AbstractCuratedDataset):
         row="TODO(verify): what one row is.",
         predicted="TODO(verify): the target in plain words, by when after the prediction point.",
         known="TODO(verify): what the model knows then, in plain words.",
+        known_at_scoring="",  # a metric input recorded with the outcome (a realized time on risk); "" when none
         split="TODO(verify): what the test data stands for (new customers, the next weeks, unseen patients).",
         changes="",  # our changes to the source a reader needs to know
         fit="direct",  # TODO(verify): "direct", "approximate" (a stand-in with a known gap) or "none" (retire)

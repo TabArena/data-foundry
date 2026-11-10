@@ -7,9 +7,8 @@ French actuarial pricing game, from the R package CASdatasets (the organiser's c
 total for the year in euros (0 for 88.9%), predicted when the premium is set, with no exposure column and no weight; all
 policies of a client stay on one side of the split, tagged as forced from temporal; the score is the mean Tweedie
 deviance (power 1.5, predictions floored at 0.1 EUR) as a stand-in for the game's market profit. Validity: SEL-1 holds;
-USE-6 and the Tensions row on rating factors as amended on 2026-11-08: the drivers' sex is dropped, as sex is no
-rating factor of an insurance pricing task, whatever the actor's jurisdiction (australian_vehicle_insurance_2004_2005's
-issue 7); USE-1 holds, fit
+USE-6 and the Tensions row on rating factors as amended on 2026-11-09 (Andrej): the drivers' sex is dropped, as French
+law under EU law bars it today and the rule treats the ban as if it had always applied; USE-1 holds, fit
 approximate (USE-8: next year's renewals with their claim history are the real task); USE-5 holds (negative totals from
 legal recourse set to 0, +4.8% on total cost); LEAK-10 holds for all 27 features; SPLIT-1 and SPLIT-4 hold (grouped by
 client); SPLIT-8: the forced split ships on Andrej's call of 2026-11-02, its cost stated, and the leak test across it
@@ -22,9 +21,9 @@ on the declared deviance the random forest scores 62.44 against the constant's 6
 probe) and 60.57 against 63.31 (skill 0.043, 3 folds, mediator), a small real signal (EV-3); at the 0.1 EUR floor
 and without the drivers' sex the task probe's random forest scores 62.30 against 63.10 (62.22 with them); MET-11
 holds (the deviance follows the game's profit at a
-Kendall tau of 0.58 to 0.79 in simulated markets); MET-13 holds since 2026-11-08: the floor is 0.1 EUR, two orders of
-magnitude below the smallest plausible mean policy cost (16.8 EUR), where Andrej's 1 EUR sat 1.2 orders below (issue
-5). Quality: impossible values masked (CLEAN-11), make and model joined (CLEAN-12), the commune typed as text
+Kendall tau of 0.58 to 0.79 in simulated markets); MET-13 holds: the floor is 0.1 EUR (issue 5, 2026-11-08), kept under the
+rule as amended on 2026-11-09 on the curator's call, since no fact favours a higher value and the floor ranks only
+squared-error fits (issue 7, 2026-11-10). Quality: impossible values masked (CLEAN-11), make and model joined (CLEAN-12), the commune typed as text
 (CLEAN-14), `pol_pay_freq` ordered by payments a year (2026-11-08, as in the two other pricing tables), the target in
 euros as an exception to CLEAN-16 (2026-11-03). Weighed: the organiser's copy with documented columns (+), a canonical
 pricing task (+), one claim year and a weak signal (-). Nothing is left open.
@@ -44,12 +43,17 @@ metric unchanged): `drv_sex1` and `drv_sex2` are dropped, since sex is no rating
 of this collection; the task probe was re-run without them (random forest 62.30 against the constant's 63.10, 62.22
 with them). The notes' other model scores were measured with the two columns in and say so.
 
-**Main points:** nothing open. Resolved on 2026-11-03: the deviance is in (2), euros stay (3) and the name stays (4);
-verdict ship (Andrej). On 2026-11-08 the floor was lowered from Andrej's 1 EUR to 0.1 EUR, following the collection's
-rule for a deviance floor, a convention that can change later (5, Lennart); `pol_pay_freq` is ordered by payments a
-year (from issue 8 of spanish_motor_insurance_coverage_level_2022_2024). The drivers' sex left the features on
-2026-11-08, on Lennart's stance that sex is no rating factor of any insurance pricing task
-(australian_vehicle_insurance_2004_2005's issue 7).
+**Main points:** No issue open. Resolved on 2026-11-10 (Andrej): issue 6, the task stays on Year 0 split by client,
+with a sentence on the yearly drift of the claim level (0% to 6% a year on the AIcrowd copy); issue 7, the floor stays
+at 0.1 EUR, its reason restated under MET-13 as amended on 2026-11-09 (no fact favours a higher value; the floor ranks
+only squared-error fits). Resolved on 2026-11-03: the
+deviance is in (2), euros stay (3) and the name stays (4); verdict ship (Andrej). On 2026-11-08 the floor was lowered
+from Andrej's 1 EUR to 0.1 EUR, following the collection's rule for a deviance floor, a convention that can change later
+(5, Lennart); `pol_pay_freq` is ordered by payments a year (from issue 8 of
+spanish_motor_insurance_coverage_level_2022_2024). The drivers' sex left the features on 2026-11-08, on Lennart's stance
+that sex is no rating factor of any insurance pricing task (australian_vehicle_insurance_2004_2005's issue 7).
+
+**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
 
 **Issues for Andrej and Lennart:**
 
@@ -318,6 +322,223 @@ year (from issue 8 of spanish_motor_insurance_coverage_level_2022_2024). The dri
    1 EUR of 2026-11-03 as superseded. Task probe at the new floor (5 of 9 splits): the random forest 62.22 against the
    constant's 63.10, the linear model 81.97 and LightGBM 90.30 (66.28 and 70.90 at 1 EUR), with 0.1%, 6.7% and 3.8% of
    their predictions at the floor.
+
+6. **Keep training and testing on Year 0 without the policies' claim history, measure what that hides, or rebuild on the AIcrowd years?**
+
+   * **Problem:**
+     - The insurer, like the game's players, fit its tariff on Year 0 and priced Year 1 knowing each policy's Year 0
+       claims, while the benchmark trains and tests on Year 0, held out by client, so a model learns the test year's
+       claim level and sees no claim history (dataset.py:198-203).
+     - The plain Tweedie deviance scores the level as well as the order, so the same-year training gives every model
+       a level a real tariff would have had to forecast, and the leak test across the split ran on the Gini, which
+       cannot see a level (dataset.py:206-209).
+     - On the AIcrowd copy of this portfolio the policy's past claims lift the Gini of next year's policies from 0.277
+       to 0.305 (dataset.py:201-203), a record CASdatasets does not hold.
+   * **Background:**
+     - CASdatasets holds claims for Year 0 only; Years 1 to 4 ship without claims, and the bonus-malus `pol_bonus`,
+       set at the start of the year, carries part of a policy's past (dataset.py:132, 140).
+     - The AIcrowd Insurance Pricing Game (2020-21) reused the portfolio with claims for four years of 57,054 policies
+       (228,216 rows), but noised the features (driver age off by a median 3 years, vehicle value by 2,945, make and
+       model hashed), needs an account, and the copy on GitHub states no data licence (the record).
+     - Four claim years give at most two windows that train on half the rows or more (years 3 and 4; year 2 would
+       train on 25%), so a rebuild would still fall short of the three windows the rules ask for[^6a].
+   * **Effect on the task:** the benchmark is easier on the level than Year 1 pricing, since the level comes from the
+     test year itself, and harder on the ranking, since the model lacks the claim record; the skill against the
+     constant, which learns the same level, is free of the first.
+   * **Consistency:**
+     - frempl_french_motor_personal_line, also one claim year, ships the same way.
+     - pricing_game_2016_french_fleet and spanish_motor_insurance_coverage_level_2022_2024 are asked whether to add
+       their units' records (their issues 13 and 9); there the record is in the release, here only in the AIcrowd copy.
+   * **Unknown:** how much the claim level moves from one year to the next; on the AIcrowd copy, the mean cost per
+     policy of each year and the deviance of a model fit on one year and scored on the next, against one fit on the
+     scored year, would size it.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep, with the note (implemented) | Year 0 split by client, as now; the notes give the AIcrowd figures (0.268, 0.277, 0.305) | the organiser's copy with clean, documented features under GPL; no change | the level comes from the test year; no claim record |
+     | B | Keep, and size the year-to-year shift | A, plus the shift of the mean cost per policy between years and its effect on the deviance, measured on the AIcrowd copy and stated in the notes and the fit | says what the free level is worth; no rebuild | measured on noised features and part of the policies; a cluster run for the fits |
+     | C | Rebuild on the AIcrowd years | years 1 to 3 train and year 4 tests, each policy's earlier claims as features | the next-year task with its record | noised features; an account and no stated licence; 57,054 policies; two windows at most, so forced again or an amendment; a new definition |
+
+   * **Recommendation:** B: the claim record is not in this release, and the AIcrowd years bring it only with noised
+     features, an unclear licence and a split that still falls short of the windows rule, so the task stays as
+     defined; what the same-year level is worth should be measured and stated rather than assumed. **Decision:** A, B
+     or C?
+
+   **Notes for the AI:** on B, fetch AIcrowd's `training.csv` (the JuliaComputing/ScoringEngineDemo.jl copy behind the
+   earlier measurement) into its own empty folder and read it with `python -I`; the mean claim per policy and the
+   share with a claim per year are light pandas; the paired fits (year k to k+1 against k+1 on itself, the same
+   policies, the deviance at power 1.5 and floor 0.1) run on the cluster (sbatch). Then state both in
+   `splits_comment` and `fit_reason`, with a CC line and a CHANGELOG entry. On C, a new record and definition: check
+   AIcrowd's terms, test the noise under PROV-3 (values perturbed for privacy are kept when no test measures damage),
+   and the windows under SPLIT-14 and SPLIT-8.
+
+   **Andrej (2026-11-09, discuss):** Can we do a split where we first do the grouped split, and then move the earlier
+   points from groups with two entries to train? Or do we have year 0 and 1 for all clients?
+
+   **Answer (AI, 2026-11-09):** Not on the shipped table, whose groups hold no earlier points. On the AIcrowd years the
+   design can be built: it gives every test policy its own earlier years, and it also trains on the test year's claims
+   of the other policies, which a split by year does not. Counted on the raw files, no model fitted.
+
+   * **The shipped table (`pg17trainpol.csv`, `pg17trainclaim.csv`):**
+     - Every row and every claim is of Year 0 (`id_year` has one value in both files); the split's group is the
+       client.
+     - 91,488 clients: 83,576 with one row, 7,385 with two, 470 with three and 57 with four to nine; the 7,912 clients
+       with two rows or more hold 16,424 rows (16.4%).
+     - A client's rows are its vehicles (16,424 distinct), each insured over the same Year 0. For 6,560 of the 7,912
+       clients the policies started in different years (`pol_duration` differs), but the older policy's claims fall in
+       the same year as the newer one's, so no row is an earlier point of another.
+     - Moving each client's older policies to training (7,050 rows; 1,352 clients have all their policies of one age,
+       so no order) would give 6,626 test rows, over the three folds of a repeat, a sibling vehicle's claims of the
+       same year: the one part of the test year the grouping keeps out, as a client's other claims of the year are not
+       known when its premiums are set. The split audit of 2026-11-01 found that part worth nothing: removing the test
+       clients' siblings from training moved the random forest's Gini by -0.002 +- 0.003 (6 splits), and 11.5% of the
+       vehicles have a claim when a sibling has one, 9.4% otherwise.
+   * **Year 1 for all clients:** CASdatasets' `pg17testyear1` holds the same 100,000 policies of all 91,488 clients,
+     but no claims, so Year 1 has no target and cannot hold a test row; it is the organiser's ageing of Year 0
+     (dataset.py:148).
+   * **The AIcrowd copy (the public `training.csv` of the split audit):** 57,054 policies, 57% of the 100,000, each
+     with claims in four years (AIcrowd year k is pg17 Year k-1), so Years 0 and 1 have claims for those policies. It
+     has no client key, so a client's vehicles cannot be kept together, and the features are noised (Background).
+   * **Your design on AIcrowd:** 3 folds by policy; each test policy's years 1 to 3 go to training and its year 4 is
+     tested. Per fold: 19,018 test rows, each with its three earlier years in training (26.8% with a claim there; a
+     policy claims in year 4 at 7.7% after no earlier claim, 12.3% after one, 27.7% after three), and 209,198
+     training rows.
+   * **What it brings into training from the test year:** the year-4 rows of the other 38,036 policies, 18.2% of the
+     training side. The level moves between years: the mean claim cost per policy is 119.3, 119.0, 112.3 and 106.2
+     EUR in years 1 to 4 (a claim in 11.0%, 10.6%, 10.1% and 9.2% of the policies). A model learns year 4's level
+     from those rows, where a tariff for year 4 would forecast it from years 1 to 3, and the deviance scores the level
+     (problem, second bullet). The organisers may have built the later years, so the drift may be theirs (split
+     audit's caveat).
+   * **The clean form is a split by year:** year 4 trained on years 1 to 3 of all policies (75% of the rows) and year
+     3 on years 1 and 2 (50%), the earlier claims as features: the same history for every test row and nothing of the
+     test year in training. Year 2 on year 1 trains on 25%, so two windows, one short of the rules' three[^6a]; that
+     is option C.
+   * **What your design would need from the rules:** the forced split has two forms, IID or grouped with all of an
+     entity's rows on one side; a test entity's earlier periods in training is a third form, so an amendment or an
+     exception, and its leak test across the split would have to measure what the test year's rows in training give
+     (wisconsin's member folds leaked the year's level, pricing_game_2016_french_fleet's contract folds did not)[^6b].
+     The history itself is legitimate[^6a], and as features it needs no row moved: every year of a policy stays on
+     one side and each row carries its own policy's earlier claims, as spanish_motor_insurance_coverage_level_2022_2024
+     (issue 9) and pricing_game_2016_french_fleet (issue 13) propose.
+   * **For this issue:** no new option. On CASdatasets the design moves only same-year siblings; on AIcrowd it is C
+     with the test year's other policies added to training. B stays the recommendation; if you take C, its split by
+     year, or the split by policy with the history as features, rather than this design.
+
+   **Andrej (2026-11-09, discuss):** I don't want to read this amount of text. Distill to me what I can do and
+   revisit what the right decision is
+
+   **Answer (AI, 2026-11-09):** Keep the task as it is (A) and add one sentence on how far the claim level moves from
+   year to year; no rebuild and no cluster run.
+
+   * The claim history is not in this release: CASdatasets holds claims for Year 0 only, and Year 1 has no target.
+   * Learning the test year's level helps every model and the constant alike, so the skill against the constant is
+     untouched; the drift it hides is already counted on the AIcrowd years: the mean cost per policy is 119.3, 119.0,
+     112.3 and 106.2 EUR, so 0% to 6% a year.
+   * The only way to the history is the AIcrowd rebuild, which brings noised features, no stated licence, 57% of the
+     policies and two windows, one short of the rule.
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep, with the drift sentence (implemented) | as now; the notes add the yearly level from the AIcrowd years | no change; the free level is sized | no claim history |
+     | b | Rebuild on the AIcrowd years (C) | years 1-3 train, year 4 tests, past claims as features | the next-year task with the claim record | noised features, no licence, a forced split or an amendment |
+
+   * **Recommendation:** a. **Decision:** a or b?
+
+   **Andrej (2026-11-10, change):** Reply (a): Keep, with the drift sentence
+
+   **Resolved (2026-11-10, Andrej):** a. The task stays on Year 0 split by client; `splits_comment` now says that
+   training on the test year gives every model, the constant included, that year's claim level, which drifts by 0% to
+   6% a year on the AIcrowd copy (mean cost per policy 119.3, 119.0, 112.3 and 106.2 EUR in years 1 to 4). No rebuild
+   on the AIcrowd years[^6a].
+
+   [^6a]: **SPLIT-14** (Must; amended 2026-11-08, Lennart): "A temporal task has at least 3 windows, and no window's
+     train side holds less than 50% of the data", with one older window on at least 40% when two windows are above
+     the floor; otherwise **SPLIT-8** (Must): the closest regime that keeps the rows, tagged forced from temporal.
+     **USE-10** (Must): "For a known entity, its history is legitimate: the split is temporal and the previous outcome
+     is a feature." Andrej, 2026-11-02: "Forced group splits should be fine" (the split comment).
+   [^6b]: **SPLIT-8** (Must): "The closest regime is IID (tag `ForcedIIDFromTemporal`), or grouped by the entity when
+     the periods are stacked and the entities recur across them (tag `ForcedGroupedFromTemporal`)", and "A forced
+     split, grouped or IID, gets a leak test across the split and the leak probes: does a row share its outcome, its
+     unit's outcome or its period's outcome with the other side". **SPLIT-14** (Must): "each window trains on what is
+     known before it starts". splits.md's Cases: wisconsin_local_government_property_insurance_fund (member folds
+     leaked the year's claim level, so yearly windows) and pricing_game_2016_french_fleet (the contract folds pass the
+     test, so forced by contract).
+
+7. **Set the metric's floor back to 1 EUR, where an insurer would clip, now that the 0.1 EUR floor decides how model families rank?**
+
+   * **Problem:**
+     - The floor went from 1 EUR to 0.1 EUR on 2026-11-08 by the collection's convention, two orders below the smallest plausible mean, which Lennart named "us following a rule that we can change in the future"[^7a].
+     - Between the two floors the best model does not move, but untuned LightGBM fitted by squared error goes from 74.9 to 102.8 against the constant's 63.3, and ridge from ahead of the constant to behind it.
+     - No insurer quotes a premium of 0.1 EUR or of 1 EUR, so what the lower floor adds to the score is how a model behaves on prices nobody charges: keep 0.1 EUR, or clip at 1 EUR?
+   * **Background:**
+     - A prediction below the floor is scored as the floor; at power 1.5 the cost of a low prediction on a policy that claims y euros grows like 4y/sqrt(mu), so dividing the floor by 10 multiplies that cost by about 3.2, while a policy without a claim costs almost nothing either way.
+     - The floor's first reason was practice: "in pratice we would also clip to a reasonable number" (Lennart, 2026-11-04)[^7a].
+     - The smallest plausible mean is 16.8 EUR (the cheapest rating cell with at least 500 policies), the portfolio mean 123 EUR; 1 EUR is 1.2 orders of magnitude below the former.
+     - The game's rules and CASdatasets' page give no minimum premium (not checked further; the Unknown bullet).
+   * **Effect on the task:** at 0.1 EUR the benchmark ranks the methods that fit squared error partly by their share of near-zero predictions (3.9% to 6.6% of the probe's linear and LightGBM predictions sit at the floor); at 1 EUR those predictions count as a minimum price, which is what an insurer would do with them.
+   * **Experiments:** issue 5's run (the mediator, 2026-11-06; shipped repeat 0, folds 0 to 2, untuned, mean Tweedie deviance, lower is better):
+
+     | Model | Floor 1 EUR | Floor 0.2 EUR | Floor 0.1 EUR | Floor 0.01 EUR |
+     |---|---|---|---|---|
+     | Constant (training mean) | 63.31 | 63.31 | 63.31 | 63.31 |
+     | Random forest | 60.57 | 60.59 | 60.59 | 60.59 |
+     | Ridge | 61.61 | 64.31 | 66.33 | 81.37 |
+     | LightGBM, squared-error loss | 74.94 | 90.92 | 102.83 | 190.85 |
+     | LightGBM, Tweedie loss | 75.51 | 77.58 | 78.11 | 78.48 |
+
+   * **Consistency:**
+     - The rule itself is the cross-dataset item "Set a deviance's floor where the actor would clip"; noaa_storm_events_damage asks the same for its $1 (its issue 14).
+     - pricing_game_2016_french_fleet's 0.1 per vehicle-year is never reached by its GLM or a regularised LightGBM, so it has no such issue.
+   * **Unknown:** the lowest premium the game accepted or a French insurer quotes for third-party cover; and how the benchmark's tuned methods rank at each floor, which a cluster run on the 9 shipped splits at 0.1, 1 and 5 EUR would show.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 0.1 EUR (implemented) | as since 2026-11-08 | follows the collection's rule as it stands | ranks squared-error fits by outputs no insurer would charge |
+     | B | 1 EUR | Andrej's value of 2026-11-03, as the clip an insurer applies | a near-zero prediction counts as a minimum price; the best model does not move | needs the rule changed (the cross-dataset item, B); 1 EUR is a round number, not a quoted minimum |
+     | C | Measure first | the cluster run of the Unknown bullet, then A or B | the call on tuned methods, not untuned ones | the decision waits |
+
+   * **Recommendation:** B, with the rule changed by the cross-dataset item: a price of 0.1 EUR and one of 1 EUR are the same decision for an insurer, so the score should not tell them apart; C if you want the tuned methods first. **Decision:** A, B or C?
+
+   **Notes for the AI:** On B (after the cross-dataset item's B): `params={"power": 1.5, "min_prediction": 1.0}` in `dataset.py`; the notes' "Metric floor" bullet and the metric reason say the floor is the clip an insurer applies, with the fact and the curator's call, and keep the probe's share at the floor; re-run the task probe and `dataset check`; a CC line naming the 0.1 EUR of 2026-11-08 as superseded; a MET-13 Cases row; CHANGELOG entry. On C: `sbatch` on gpua100*, the benchmark's tuned LightGBM, CatBoost and RealMLP (squared error as configured) on the 9 splits at the three floors; then put A or B again with the table.
+
+   **Andrej (2026-11-09, discuss):** Wait, this shouldn't matter at all, your pro and con arguments for one or the
+   other don't make any sense, are there actual reasons for anything?
+
+   **Answer (AI, 2026-11-09):** You are right for every model fitted with a cost-shaped loss: the floor moves only
+   squared-error fits. Set 1 EUR, since the rule you accepted today puts the floor where the insurer would clip, and
+   the old reason for 0.1 EUR (two orders below the smallest mean) is gone.
+
+   * Between 1 and 0.1 EUR the random forest (60.57, 60.59), the Tweedie-loss LightGBM (75.51, 78.11) and the
+     constant (63.31) keep their order.
+   * Only ridge (61.61 to 66.33, ahead of the constant, then behind it) and squared-error LightGBM (74.94 to 102.83)
+     change, through their 4-5% of predictions near zero or negative.
+   * No fact picks 1 EUR over 0.1 EUR: no minimum premium is published. 1 EUR is your value of 2026-11-03 and lies
+     far below the cheapest rating cell's mean (16.8 EUR), so it is a clip an insurer would apply to any price that
+     low.
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | 1 EUR | the clip of 2026-11-03 back | the reason of the rule accepted today; a near-zero or negative output counts as a minimum price | 1 EUR is a round value, not a quoted minimum |
+     | b | 0.1 EUR (implemented) | as now | no change | its only reason, the two-orders formula, was dropped today |
+
+   * **Recommendation:** a. **Decision:** a or b?
+
+   **Andrej (2026-11-10, change):** Reply (b): 0.1 EUR
+
+   **Resolved (2026-11-10, Andrej):** b. The floor stays at 0.1 EUR; its reason in the notes and the metric reason is
+   restated under MET-13 as amended on 2026-11-09[^7b]: no fact favours a higher value (neither the rules nor
+   CASdatasets give a minimum premium; the source records claim amounts down to 0.02 EUR, 8 of the 12,391 positive
+   claims below 1 EUR), and between 0.1 and 1 EUR the floor ranks only fits by squared error (ridge 66.33 against
+   61.61, squared-error LightGBM 102.83 against 74.94), while the random forest, the Tweedie-loss LightGBM and the
+   constant keep their scores and order.
+
+   [^7a]: **MET-13** (Must, in main; amended 2026-11-06, Lennart): "The floor is a parameter the definition states, as practice clips a model's output before scoring (Lennart, 2026-11-04, on bemtpl97: "in pratice we would also clip to a reasonable number"): two orders below the smallest plausible mean". Issue 5 (Lennart, 2026-11-08): "Lower the floor to 0.1 EUR. highlight this mostly as us following a rule that we can change in the future".
+   [^7b]: **MET-13** (Must; amended 2026-11-09, Andrej; not yet in main): the floor is "the lowest value the use
+     case's actor acts on (a minimum premium, the smallest amount the source records), stated with its fact, and never
+     above the smallest plausible mean on the scale the metric scores". 0.1 EUR lies below the cheapest cell's mean
+     (16.8 EUR).
 
 **Review panel:** ship after changes (mediator). A focused re-review of 2026-11-06 under LEAK-41 and MET-14 to MET-16,
 by a claim auditor and a mediator. Claims: 13; 9 hold (one with an off citation, now fixed), 1 holds only as a

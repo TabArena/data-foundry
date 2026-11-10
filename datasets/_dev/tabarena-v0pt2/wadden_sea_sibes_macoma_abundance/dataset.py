@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Grouping,
     Metric,
+    ScoringColumn,
     TaskSummary,
     drop_columns,
 )
@@ -212,29 +213,46 @@ class WaddenSeaSibesMacomaAbundance(AbstractCuratedDataset):
         - Dropped the 71 samples with Tellinoidea (sibes_id 339, 2015-2022): tellinoids below 3 mm are classified at the superfamily level, which "Includes ... Macoma balthica" (species.csv), so their Macoma count is a lower bound (CLEAN-15). All 71 go, not only the 29 without Macoma, so the rule reads another taxon's record, not the label. The 12 samples with Tellininae (3-5 mm) and no Macoma stay as zeros: "So far, only Macomangulus tenuis and Fabulina fabula were found" (species.csv).
         - Six 2022 sample ids appear twice in samples.csv with two different sediment measurements (149.8 and 47.2 um in one) and one fauna record: one row kept, and neither measurement is a source of the interpolation.
         - Dropped how the sample was taken, `sampling_type` (grid or random station), `platform` (boat or on foot) and `total_surface_m2` (the core area, set by the platform), and `sample_id`: an unsampled place has no visit (USE-3), and the density is already per m2. The other taxa of the sample are measured with the target and are not inputs.
+        - Note: held for training rows only, not shipped (cross-dataset item of 2026-11-09, Andrej): what each sample measured at its visit, which a place between the stations lacks: the sediment measured in the jar (`median_grain_size`, `percentage_mud`, in 55,776 of the release's 59,463 samples; it enters only as the interpolation for other samples), how the sample was taken (`sampling_type`, `platform`, the core area `total_surface_m2`), and the rest of biota.csv for the sample, the 170 other taxa and the tellins' biomass (`afdm_m2`). They are known for the sampled stations when the map is fit, but not for a place it predicts. They would need a training-only role, which the format does not have yet (MET-14, LEAK-41, MET-16), so they stay out for now.
         - Exposure (MET-14, MET-15, USE-3; 2026-11-06): the effort behind a count is the core area, planned by the platform (two boat cores of 0.0173 m2 together, one core of 0.0177 m2 on foot; CV 1.4% over the shipped rows), and, for samples with many individuals, a subsample fraction the lab picks after seeing the sample and does not release ("For the species and samples that contained many individuals, a subsample was selected and analyzed", descriptor). The source folds both into `abundance_m2`, "standardized for differences in sampled surface area and subsampling" (descriptor, Table 4), so the target is a density: 2,480 of the 25,974 positive counts per core (density x core area, 9.55%) are more than 0.02 from a whole number. The 608 below one tellin per core (on a 0.1 lattice, mostly in samples poor in fauna) are not explained by the area or the subsample correction, which can only raise a count; the descriptor documents fractional counts only for polychaete fragments, so their cause is unknown; they ship as published with this note, and NIOZ is not asked for now (CC 2026-11-08, Lennart; REVIEW.md issue 7). They are 1.0% of the rows, at small densities (median about 29 per m2), which the RMSE on the density does not feel. No count is released, so MET-14's check that the target times the core area rebuilds the count has nothing to rebuild; the source's density ships as it is. The map predicts the density of each place, an equal-area cell, so the task scores it unweighted and declares no sample weight (the equal-area clause of LEAK-41's time-on-risk row in the leak rules, 2026-11-08, with noaa_afsc_bottom_trawl_survey_cpue); the core area is no feature, as an unsampled place has no core (above), and a Poisson deviance on the count per core would not be a likelihood for counts that are not whole.
         - Note: 117 station-days hold two samples, a grid and a random sample at the same coordinates (log1p correlation 0.53). With the interpolated sediment the two share every feature (the duplicate rows the checks report); both are kept, in one fold through the station.
         - Note: for lack of funding, many 2017 and 2018 samples were processed years later (descriptor, Table 1: 2,831 and 2,274 processed then; version 6 holds 4,139 and 4,140), and Tellininae occur almost only in 2018. Bivalvia sp. ("Parts of individuals", 874 samples) is kept: no species list ties it to Macoma.
-        - Note: the metric is RMSE on the density, which a few dense spat patches dominate (up to 99,780 per m2): 2014 holds 75.5% of the squared deviation of the density and the 10 densest samples 58.0%. An untuned LightGBM fit on log1p explains R^2 0.33 of log1p but 0.01 of the density (9 shipped folds, before the elevation was joined). Back-transformed, it puts the mean density of a tidal basin in a year at a median 0.19 of the observed (143 basin-years with at least 100 test samples, one repeat), yet its RMSE is only 4% above that of a Tweedie fit on the density (879.7 against 847.1, the training mean 883.9; the Tweedie fit wins in 9 of 9 folds). RMSE kept (CC 2026-11-02, Andrej): the fallback, as the source names no single criterion; nantucket_sound_sea_duck_aerial_survey_counts takes the mean Poisson deviance as a stand-in for its source's one likelihood criterion.
+        - Metric (Andrej, 2026-11-10, review issue 8, option C): the per-year normalised RMSE on the density, `mean_group_normalized_rmse` over the 15 survey years: each year's RMSE on the density (after the inverse of log1p) divided by the standard deviation of that year's true densities, averaged over the years, so each survey's map counts once. The original is RMSE on the density pooled over the years, the fallback kept on 2026-11-02 (CC, Andrej) since the source names no single criterion. Pooled, a few dense spat patches decide it (up to 99,780 per m2): 2014 holds 75.5% of the squared deviation of the density (the yearly standard deviation runs from 93 per m2 in 2008 to 2,899 in 2014) and the 10 densest samples 58.0%. Within a year a fixed divisor ranks models as RMSE does, so only the equal weight per year is ours; within a year a few cores still weigh most (a year's 10 densest samples hold a median 55% of its squared deviation, 25% to 82%). On 2026-11-09 (8 untuned models, the 9 shipped splits, 3 seeds) the pooled RMSE and the per-year score agreed only at Kendall tau 0.51 (0.36 to 0.71 per split): LightGBM fit by squared error on the density beat the constant pooled but not per year (a difference of +0.013, SE 0.015), and LightGBM with a Tweedie loss was first under both. Task probe on the new score (2026-11-10, untuned, fit on log1p, 5 of the 9 splits): random forest 0.962, LightGBM 0.967, linear 1.005, the dummy (the training mean of log1p, back-transformed) 1.046, where 1 is each year's own mean density; the random forest beats the dummy on 5 of 5 splits by 0.084 (SE 0.005); no flag. `survey_year`, the year of `date` as text, is the metric's group, a scoring column and never a feature; `date` stays a feature. Every fold holds every year, since whole stations are held out with all their years. On the pooled RMSE (before 2026-11-10): an untuned LightGBM fit on log1p explains R^2 0.33 of log1p but 0.01 of the density (9 shipped folds, before the elevation was joined). Back-transformed, it puts the mean density of a tidal basin in a year at a median 0.19 of the observed (143 basin-years with at least 100 test samples, one repeat), yet its RMSE is only 4% above that of a Tweedie fit on the density (879.7 against 847.1, the training mean 883.9; the Tweedie fit wins in 9 of 9 folds). RMSE kept (CC 2026-11-02, Andrej): the fallback, as the source names no single criterion; nantucket_sound_sea_duck_aerial_survey_counts takes the mean Poisson deviance as a stand-in for its source's one likelihood criterion.
         - Note (CC 2026-11-06, Lennart): 39 samples are a single boat core of 0.00866 m2, which the data descriptor does not describe (from a boat "two cores ... combined area of 0.0173 m2", on foot "a single core of 0.0177 m2"): 20 in 2008, 9 in 2010 and 10 in 2009-2019, each at its own station (32 grid, 7 random). 79.5% hold no tellin, against 60.6% in the same stations' 452 other samples and 67.2% in the two-core boat samples of the same year and basin; one tellin in such a core is 115.5 per m2, against 57.7 in two, and halving the area of a random scatter at those rates gives 77.8% and 82.0% zeros. Kept (CLEAN-11: unusual, not wrong): the source standardised their density for the area, they are 0.07% of the rows, and the zeros a small core adds are the chance part of a zero that the next note names.
         - Note: a core of 0.017 m2 can miss tellins where the habitat suits them ("even when environmental conditions are perfectly suitable, it is possible to encounter no animals in the core", Lyashevska et al. 2016, Introduction), so a zero mixes unsuitable habitat and chance.
         - CC (2026-11-06, Lennart): decision D13 of the exposure study (#51; review issue 6): the 39 single boat cores stay, with the note above, and the notes name the effort the density folds in (the core area and the subsample fraction, chosen after the sample is seen and not released). No earlier call covered them: the definition has kept them without a note since the review panel of 2026-11-01, which counted them and raised nothing; the exposure study of 2026-11-05 found that the descriptor does not describe them and measured their zeros (79.5% against 57.4% for two-core boat samples).
+        - CC (2026-11-10, Andrej): review issue 8, "Reply (b): Per-year normalised RMSE (C)": the score is `mean_group_normalized_rmse` over the survey years on the density, each survey's map one vote, in place of the pooled RMSE of 2026-11-02.
+        - CC (2026-11-09, Andrej): review issue 9, A as implemented, "Go ahead" on the consistency check's (a): the elevation stays the latest vaklodingen survey stamped on or before the sample's date, though the map of a past survey could also take a later one. The reason: the survey nearest in time would move the elevation by a median 0.08 m (90th percentile 0.30 m, for the 49.7% of the samples it changes), about the median 0.07 m between two successive surveys of a cell, too little to move a settled join.
     """
 
     # Task
     target = "log1p_macoma_per_m2"
     problem_type = "regression"
-    metric = Metric.fallback(
+    metric = Metric.from_context(
+        "mean_group_normalized_rmse",
         reason=(
-            "Lyashevska et al. 2016 (Materials and Methods, Cross-validation) score their leave-one-out predictions "
-            "by several measures side by side: overall, user's and producer's accuracy for the prevalence, and mean "
-            "error and mean squared error for the intensity and for the unconditional intensity, with no single "
-            "criterion (MET-5); the SIBES descriptor and data page define no metric. By construction (density = "
-            "count / core area, 0.0173 or 0.0177 m2 in nearly every sample) RMSE on the density ranks models nearly "
-            "as the paper's MSE on the unconditional count per core; version 6 does not reproduce the paper's 2010 "
-            "counts (variance per core 97.5 against 24), so this is not checked on the paper's data."
+            "The use case is the map of one past survey, and Lyashevska et al. 2016 (Materials and Methods, "
+            "Cross-validation) check such a map within one year, by several measures side by side with no single "
+            "criterion (MET-5); the SIBES descriptor and data page define no metric. The original is RMSE on the "
+            "density pooled over the 15 survey years, the fallback kept on 2026-11-02 (Andrej); pooled, 2014, the year "
+            "of the dense spat patches, holds 75.5% of the squared deviation and decides the ranking. Each year's RMSE "
+            "on the density over the spread of its true densities, averaged, keeps RMSE within a year (a fixed divisor "
+            "ranks models as RMSE does) and gives each survey's map one vote (Andrej, 2026-11-10)."
         ),
+        inputs={"group": "survey_year"},
         target_transform="log1p",
+    )
+    scoring_columns = (
+        ScoringColumn(
+            column="survey_year",
+            role="group",
+            used_by="mean_group_normalized_rmse",
+            description=(
+                "the survey year, the year of `date` as text (15 years, 2008-2022): the metric divides each year's "
+                "RMSE on the density by the spread of its true densities and averages the 15; never a feature, and "
+                "`date` stays a feature"
+            ),
+        ),
     )
     accepted_check_warnings = {
         "task_target_value_dominant": (
@@ -319,13 +337,14 @@ class WaddenSeaSibesMacomaAbundance(AbstractCuratedDataset):
             }
         )
         df["station"] = df["station"].astype(str)
+        df["survey_year"] = df["date"].str[:4]  # the metric's group (one vote per survey's map), never a feature
 
         # 8. The visit's own sediment and how the sample was taken are no property of an unsampled place (USE-3).
         return drop_columns(df, ["sample_id", "sampling_type", "platform", "total_surface_m2", *SEDIMENT])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            categorical=["station", "tidal_basin", "tidal_flat"],
+            categorical=["station", "tidal_basin", "tidal_flat", "survey_year"],  # survey_year: the metric's group
             datetime={"date": "%Y-%m-%d"},
         )
 

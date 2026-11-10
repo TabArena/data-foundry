@@ -26,7 +26,8 @@ alone leads the untuned models in every design but A (0.368 against 0.30-0.31 fo
 windows, 0.198 against 0.139 under F); the task probes flag `no_signal`, which reads an R^2 on dollars, while on the
 declared Gini the untuned GLM without the member id scores 0.244, 0.256 and 0.346 on the shipped windows against the
 premium's 0 (the split auditor's run, which the claim auditor matches; issue 3's run of the same models differs by its
-setup, within noise). TP-2 keep; re-read TP-4 on the first benchmark run. Quality: CLEAN-10 triggered, fixed
+setup, within noise). TP-2 keep; re-read TP-4 on the first benchmark run, and TP-3 there against each window's
+one-row swing of about 0.1 to 0.3 (issue 6). Quality: CLEAN-10 triggered, fixed
 (`NoClaimCredit` missing without two earlier years; `Fire5`'s unknown class kept with a note); CLEAN-16 exception kept
 (dollars, issue 2). Weighed: documented source and real decision +; small test sets, one claim that is 35% of 2010's
 losses, rating inputs the public file lacks (endorsements, county, the full fire class) and unseen members under any
@@ -40,13 +41,23 @@ curator's marks (AI, 2026-11-02): the member folds replaced by three expanding y
 input, `ForcedGroupedFromTemporal` dropped; every split figure re-measured. Changes after the re-review (AI,
 2026-11-06): text only (the exposure note's reasons, the metric note's baselines, the licence reason, the no-gap
 precedent marked stale). Changes after the curator's replies (AI, 2026-11-08): the split note cites the floor rule as
-amended on this fund and states what the 2008 window changes; the no-gap departure has a fact of its own. The review
+amended on this fund and states what the 2008 window changes; the no-gap departure has a fact of its own. Changes
+after the curator's marks of 2026-11-09 (AI): `prev_year_claims`, the member's claim count of the year before, is an
+input (issue 5, b); the premium note gives the source's reason for keeping the premium out (issue 4, a); the notes no
+longer imply that `NoClaimCredit` was read from the fund's rating. A build waits for your ask. The review
 panel below is that re-review; the full panel of 2026-11-01, which saw the
 definition before the changes of 2026-11-02, is in this file's git history.
 
-**Main points:** Open: none. Resolved: issue 3 (the three yearly windows, under the floor rule as amended on
+**Main points:** No issue open. Resolved: on 2026-11-10 issue 6 (the losses stay uncapped; the first tuned run
+decides whether methods spread beyond each window's one-row swing); on 2026-11-09 issue 4 (the premium stays a scoring
+column only, the outside agency's price the source's engine replaces) and issue 5 (the member's claim count of the
+year before added as `prev_year_claims`); issue 3 (the three yearly windows, under the floor rule as amended on
 2026-11-08 on this fund's facts), issue 1 (the three windows, on the curator's call of 2026-11-02) and issue 2 (the
 claims in dollars).
+
+**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
+
+**Verdict (2026-11-09, Andrej):** ship (review page of 2026-11-09).
 
 **Issues for Andrej and Lennart:**
 
@@ -349,6 +360,399 @@ claims in dollars).
    [^ladder]: principles.md, "How to decide", step 5, the remedy ladder: "Take the mildest remedy that resolves the
      problem: repair from the origin; fix the definition (drop, lag, filter, re-split, re-target); keep it with a
      documented note (an exception); exclude the dataset."
+
+4. **Give the fund's current premium to the models as an input, with a copy as the base of the Gini?**
+
+   * **Problem:**
+     - The year's `Premium`, the fund's current rating, is known when the new rating is set but is kept out of the
+       inputs as the comparator of the source's models (dataset.py:151), while spanish_motor_insurance_2015_2018
+       ships its insurer's premium as a feature (its dataset.py:185).
+     - The Gini against the premium credits only what a prediction adds to the premium (a prediction proportional to
+       it scores 0.000 in every window, dataset.py:162), so a model given the premium cannot score by echoing it.
+     - Ship `Premium` as a feature with a copy as the Gini's base, or keep it a scoring column only?
+   * **Background:**
+     - The stance cites 2_month_survival_rate_prediction, where the physicians' own survival estimates are no input
+       because the source built an objective estimate to be set beside the physician's, who was interviewed only as
+       its comparator[^w4a]. The metric rule, in main, says the same of a premium: a value the models must not get, "a
+       rating's output such as a premium", is a scoring column only[^w4b].
+     - A least-squares fit of log premium on the shipped rating variables explains 98.1-98.5% of its variance within
+       each year (decision 1; dataset.py:151). The rest carries a little of what the public file lacks (the
+       endorsements, the county, the full fire class; dataset.py:103-108).
+     - Whether the fund's actuaries would feed the current premium into a new rating is not stated by the source. A
+       revised rating plan is stated in the rating variables, while a rate revision commonly measures the experience
+       against the current premium, the loss-ratio method (an AI reading of ratemaking practice).
+   * **Does the precedent apply?** In part (an AI reading). As in SUPPORT, the source fits its models on the rating
+     variables only (Lee 2017, Table 5.8) and sets their scores beside the premium. Unlike SUPPORT, the premium is the
+     actor's own current price, held when it rates, as the radiologist's own reading in breast_cancer_prediction is,
+     and the score already sets every prediction against the premium, so a model given it gains nothing by copying
+     it.
+   * **Effect on the task:** the models get the fund's price, as an actuary revising the rating has it, and with it
+     the 1.5-1.9% of the log premium the shipped variables do not explain. The metric, rows and split stay; the
+     premium ships twice.
+   * **Experiments:** no model fitted. Counted on the raw file, the residual of log premium beyond the rating
+     variables (fit within each year, no labels used) ranks a claim at ROC AUC 0.554, 0.526, 0.533, 0.520 and 0.523
+     in 2006 to 2010: a small signal beyond the shipped inputs.
+   * **Consistency:**
+     - spanish_motor_insurance_2015_2018 ships its premium as a feature (Andrej, 2026-11-03), and its issue 9, raised
+       today, proposes a copy as the base of this same Gini; under B the two premium tables match.
+     - liberty_mutual_fire_peril_loss_cost ships its metric's weight as a feature and a copy for the metric[^w4c].
+     - medical_facility_operational_data and breast_cancer_prediction keep the actor's own number as an input and
+       were set apart from 2_month_survival_rate_prediction on that fact[^w4a].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Scoring column only (implemented) | `Premium` is the Gini's base and no input | the source's models take the rating variables only; the metric rule as written | the fund holds its premium when it rates and the table withholds it; unlike the Spanish table |
+     | B | Feature and scoring copy | `Premium` becomes a feature; a copy `premium_base` is the Gini's base and scoring column | every input the fund has at rating time; echoing it still scores 0; as the Spanish table | departs from the source's choice of inputs; the metric rule's sentence on a premium is amended |
+
+   * **Recommendation:** B: the premium is the fund's own price, known when it rates, and the Gini against it already
+     keeps a model from scoring by copying it; the source's choice of inputs is a modelling choice, not a limit of
+     what the fund knows. The precedent's reason, an estimate kept apart from the comparator it is set beside, is met
+     here by the metric. **Decision:** A or B?
+
+   **Notes for the AI:** on B, in `_clean` add `df["premium_base"] = df["Premium"]`; the `ScoringColumn` reads
+   `premium_base` (its description: a copy of the feature `Premium`, the base of the source's Gini) and the metric
+   `inputs={"weight": "premium_base"}`; `Premium` stays numeric. Rewrite the notes at dataset.py:151 and the "never
+   an input" sentence of :157, `task_summary.known` and `changes` (:87-91, :97-101) and decision 1's title. Amend
+   MET-2's sentence "A value the models must not get (a rating's output such as a premium, or a realized amount at
+   risk) is a scoring column only" with the curator's wording, for example "(a comparator the use case sets the
+   prediction beside and the actor does not hold, or a realized amount at risk)", in one change with
+   spanish_motor_insurance_2015_2018 issue 9, and add a USE-6 Cases row. Re-run `dataset check` and the leak probes,
+   then through sbatch the GLM and the LightGBM Tweedie of the notes on the 3 windows with and without `Premium`.
+
+   **Andrej (2026-11-09, discuss):** Is there a reason why the source did not define this as an input? Might this be a
+   leak?
+
+   **Answer (AI, 2026-11-09):** Keep the premium a scoring column only, now that the source's reason is known and the
+   premium shows no leak and no gain as an input?
+
+   * **Problem:**
+     - The source leaves the premium out on purpose: it is the price of an outside rating agency, generated "based on a
+       very expensive process", which the project's own rating engine was built to reproduce and replace, and the
+       Gini sets each new model against it.
+     - It is no leak: the premium is set before the year, follows the claims of the year before and not those of its
+       own year, and the leak probes flag nothing with it as a feature.
+     - As a feature it gains nothing: the GLM scores the same, the LightGBM within noise or lower (table below).
+   * **Why the source leaves it out:**
+     - Frees and Lee (2016), [Rating Endorsements Using Generalized Linear
+       Models](https://www.casact.org/sites/default/files/2021-07/Rating-Endorsements-Frees-Lee.pdf), Variance 10(1),
+       Sec. 5: "We also have available a Premium variable that was generated by an external agency (based on a very
+       expensive process)". Their Tweedie scores correlate with it at 94% (Spearman), which "suggests that our
+       analysis is able to reproduce (expensive) external agency scores effectively".
+     - Lee (2017, UW-Madison dissertation), Ch. 1: the agreed goal was "a more accurate and cost efficient rating
+       engine". The engine it documents (Sec. 7.2) is "BC Rate = Base Rate × Offset × Deductible Factor ×
+       NoClaimCredit Factor × EntityType Factor × Endorsement Factors", the rating variables only, and its Table 7.9
+       names the comparator "Rating Agency Premium".
+     - Frees, Lee and Yang (2016, [Risks 4(1):4](https://doi.org/10.3390/risks4010004)), Sec. 6.2: the premium is the
+       Gini's denominator only, "This means we are looking for improvements over the original premium scores used by
+       the LGPIF". Their explanatory variables (Table 8; Lee 2017, Table 5.8) and the textbook's ([Loss Data
+       Analytics, Sec. 1.3.2](https://openacttexts.github.io/Loss-Data-Analytics/ChapIntro.html)) hold no premium.
+       No source uses it as an exposure or an offset: the size of a risk enters as the coverage, and Frees and Lee's
+       offset is the alarm credit.
+     - So the reason is the use case: an engine that took the agency's premium as an input would still need the
+       agency every year, which is the cost the fund wanted to cut.
+   * **Experiments, leak** (least squares of log premium on the shipped rating variables within each year, no labels;
+     the claims are the same member's):
+     - What the rating variables leave of the premium (1.5-1.9% of its variance) ranks a claim in the year before, the
+       same year and the year after about alike: ROC AUC 0.570, 0.529 and 0.557 for 2007; 0.525, 0.533 and 0.549 for
+       2008; 0.523, 0.520 and 0.517 for 2009. Fitted jointly (2007-2009, 3,227 member-years, SE clustered by member),
+       a claim moves it by +0.010 (SE 0.008) in the year before, -0.002 (0.007) in the same year and +0.011 (0.008) in
+       the year after: a lasting trait of the member (the endorsements, the county, the full fire class), with no
+       response to the year's own claims.
+     - From one year to the next (2008-2010), the change of log premium beyond the change of the rating variables
+       follows a claim in the year before (+0.008, SE 0.004; the raw change +0.018, SE 0.006) and not one in the same
+       year (+0.000, SE 0.004; raw -0.003, SE 0.006): a price set at the start of the year with last year's
+       experience. It follows whether the member claimed (+0.015, SE 0.003), not visibly the size (a claim of $100,000
+       or more adds +0.013, SE 0.013).
+     - The fund's premium was lowest in 2010 ($15.9M against $16.6M-17.1M), the storm year with $36.7M of claims; the
+       agency's premium rose only after it, to $16.8M, $19.2M and $23.5M in 2011-2013 (Lee 2017, Table 7.9).
+     - The leak probes on a scratch build with `Premium` a feature and a copy as the Gini's base flag nothing:
+       `Premium` alone R^2 -0.085 on dollars (`LnCoverage` alone -0.156), no test row with an exact copy of its
+       inputs in training.
+     - Not settled by the file: the day the premium was set. The papers call it "the actual premium collected", which
+       could hold changes made during the year; none shows in the tests above[^w4d].
+   * **Experiments, models** (the shipped windows, the declared Gini; the difference with `Premium` against without
+     it, with the SE of a paired bootstrap of the test rows, 1,000 draws):
+
+     | Model | Without (2008, 2009, 2010; mean) | With | Difference (SE) |
+     |---|---|---|---|
+     | Tweedie GLM of the notes | 0.254, 0.251, 0.350; 0.285 | 0.251, 0.252, 0.345; 0.283 | -0.003 (0.004), +0.000 (0.001), -0.005 (0.003) |
+     | LightGBM Tweedie of the notes | 0.146, 0.254, 0.327; 0.242 | -0.012, 0.218, 0.369; 0.192 | -0.158 (0.075), -0.037 (0.024), +0.042 (0.042) |
+     | LightGBM Tweedie, bagged, 3 seeds | 0.131, 0.249, 0.234; 0.205 (seed SD 0.031) | 0.076, 0.229, 0.329; 0.212 (0.012) | -0.054 (0.051), -0.020 (0.020), +0.095 (0.105) |
+
+     - Every difference is within noise except the default LightGBM's in 2008, the window with two training years,
+       which loses 0.16 (2 SE). The default LightGBM gives the same fit for every seed, so a bagged one (rows and
+       columns sampled at 0.8) carries the seed spread.
+   * **Consistency:** spanish_motor_insurance_2015_2018's premium is its insurer's own price; this one is an outside
+     agency's, which the source built its engine to replace. That fact sets the two apart, and places this premium
+     with the comparator of 2_month_survival_rate_prediction rather than with the actor's own reading of
+     breast_cancer_prediction[^w4a]. Option a keeps the metric rule as written[^w4b].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Scoring column only (implemented) | `Premium` the Gini's base and no input | the source's inputs and use case, an engine that replaces the agency's price; no score lost; the metric rule as written | an actuary revising the rating holds the current premium; unlike the Spanish table |
+     | b | Feature and scoring copy | the issue's B: `Premium` a feature, a copy `premium_base` the Gini's base | every number the fund holds at renewal; no leak found | no gain measured, and the LightGBM loses in the 2008 window; departs from the source's use case; amends the metric rule |
+
+   * **Recommendation:** a: the source keeps the premium out because its engine is meant to replace the agency's
+     costly price, and the premium, though no leak, gains the models nothing as an input; this moves the issue's
+     recommendation from B to a. **Decision:** a or b?
+
+   **Andrej (2026-11-09, as implemented):** Reply (a): Scoring column only
+
+   **Resolved (2026-11-09, Andrej):** a: `Premium` stays a scoring column only, the base of the source's Gini and no
+   input. It is the price of an outside rating agency, which the project's engine was built to reproduce and replace,
+   and as an input it is no leak (it follows the claims of the year before, not its own year's) and gains nothing (the
+   GLM 0.283 against 0.285, LightGBM within noise or lower). The metric rule stays as written; the premium note in the
+   definition now gives the source's reason.
+
+   [^w4a]: **USE-6** (Must): anything known at the prediction point is a legitimate input, including a number the
+     company itself computed. Its cases: 2_month_survival_rate_prediction, "the physicians' day-3 survival estimates
+     and DNR orders are not inputs: the source's task is an objective estimate set beside the physician's, who was
+     interviewed only as its comparator (Knaus et al. 1995); differs from breast_cancer_prediction, where the
+     radiologist's BI-RADS reading is the actor's own input (2026-10-26, Lennart)"; medical_facility_operational_data
+     (2026-11-05, Lennart): it "differs from 2_month_survival_rate_prediction, whose physician estimates are the
+     comparator the source's task is set beside, not an input of its actor".
+   [^w4b]: **MET-2** (Must; amended 2026-11-02, Andrej; reworded 2026-11-05, Lennart): "An input that is also a valid
+     feature, known at the prediction point for train and test rows alike, stays a feature and ships a second time as
+     a scoring column, a copy the metric reads ... A value the models must not get (a rating's output such as a
+     premium, or a realized amount at risk) is a scoring column only." A Must takes no exception, so B amends this
+     sentence (principles.md, "Exceptions and amendments").
+   [^w4c]: liberty_mutual_fire_peril_loss_cost: `var11` a feature (Andrej, 2026-11-02) and its copy `var11_weight`
+     the scoring column (Lennart, 2026-11-05).
+   [^w4d]: **LEAK-10** (Must; amended 2026-11-08, Lennart): "A feature holds only what existed at the prediction point
+     (LEAK-1) and never gives the target away. Out: a column recorded after the outcome; ..." A premium set at the
+     start of the year passes; one changed during the year on its own claims would not.
+
+5. **Give the member's claims of earlier years as inputs, beyond the two-year no-claim credit?**
+
+   * **Problem:**
+     - The only claim history the inputs hold is `NoClaimCredit`, set when the member had no claim in the two years
+       before (dataset.py:154), while the fund knows each member's claims by year and every member-year links to the
+       member's earlier rows through `PolicyNum`, an input (dataset.py:153).
+     - Counted on the raw file, of the 4,408 member-years with the previous year in the file, 54.7% have a claim
+       after a claim in the previous year against 21.1% after none, and among members whose credit is 0 the split is
+       54.6% (a claim in the previous year) against 36.8% (a claim two years back only).
+     - Add the previous year's claims, lagged by `PolicyNum`, although at rating time the previous year's amounts
+       were known only in part?
+   * **Background:**
+     - `NoClaimCredit` agrees with the file's claims in every row that has both earlier years (1,852 credits, none
+       after a claim; dataset.py:154), so the fund's own rating read whether the previous year had a claim when it
+       rated.
+     - The file holds final amounts, "only claims that are closed, with obligations fully met" (dataset.py:160). When
+       the fund rated year t, year t-1 had just ended, so its count was mostly known and its amounts in part (an AI
+       reading: a building and contents claim can take months to settle, a large one longer). The no-gap exception of
+       2026-11-08 speaks of selection by the release end, not of this maturity (dataset.py:229-233).
+     - `PolicyNum` already lets a model learn a member's average level over its training years; a lag gives the most
+       recent year directly, also to a model that handles a code of 1,227 levels poorly (an AI reading).
+   * **Effect on the task:** a test member-year gets its previous year's claims, as the fund has them when it rates.
+     The previous year is in the file for 1,110, 1,082 and 1,094 of the 1,125, 1,112 and 1,110 test member-years of
+     2008, 2009 and 2010; on the training sides it is missing for every 2006 row. A lagged amount would be the final
+     one, more than the fund knew of the newest claims at rating time.
+   * **Experiments:** counted on the raw file, no model fitted (share of member-years with a claim):
+
+     | Test year | After a claim in the previous year | After none |
+     |---|---|---|
+     | 2008 | 53.4% | 15.7% |
+     | 2009 | 50.2% | 18.0% |
+     | 2010 | 60.5% | 27.4% |
+
+   * **Consistency:** a known entity's history is legitimate under a temporal split and its previous outcome is a
+     feature[^w5a]; the definition already ships the member as an input on that ground (dataset.py:153).
+     spanish_motor_insurance_2015_2018's issue 10, raised today, asks the same for a customer's earlier policy-years,
+     where the training sides lack them; here they hold them from 2007 on.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | The two-year credit only | no lagged claims | nothing the fund knew only in part | the fund's latest claim history held back; the credit cannot tell last year's claim from one two years back |
+     | B | The previous year's claim count (implemented) | `prev_year_claims`, the previous year's `Freq` by `PolicyNum`, missing where that year is not in the file | what the fund's own credit already reads; 54.7% against 21.1% | missing on every 2006 row, half of the 2008 window's training side |
+     | C | B and the previous year's amount | also `prev_year_claim_cost`, the previous year's `y` (and optionally its claim lines by peril from CLAIMLEVEL.csv) | the size of the claims too, which the fund partly knew | the final amount, more than the fund knew of the claims still open at rating time[^w5b] |
+
+   * **Recommendation:** B: the count is history the fund had when it rated, as its own credit shows, while the final
+     amount of the newest claims was not yet known; C if you read the amounts as close enough to what the fund held,
+     as the training labels already are (fit approximate). **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, in `_clean` before `Freq` leaves, merge each row with the same `PolicyNum` and
+   `Year - 1` to get `prev_year_claims` (numeric, missing where that year is not in the file); a notes bullet with
+   the counts above and the maturity; `task_summary.known`. On C also `prev_year_claim_cost` from `y` the same way
+   (and, if wanted, the previous year's claim lines by `Description` or `CoverageCode` from CLAIMLEVEL.csv, 0 for a
+   member without claims), with a note on the maturity in `fit_reason`. Re-run `dataset check` and the leak probes,
+   then through sbatch the GLM and the LightGBM Tweedie of the notes on the 3 windows with and without the lags.
+
+   **Andrej (2026-11-09, discuss):** Compute how much this would gain models and if it might introduce leaks
+
+   **Answer (AI, 2026-11-09):** Add the previous year's claim count, which gains nothing measurable but is history the
+   fund holds at renewal, or keep the two-year credit alone?
+
+   * **Problem:**
+     - Neither lag gains the models anything measurable on the three windows: every difference is within its
+       bootstrap noise, and on the mean the GLM and the default LightGBM score a little lower with them.
+     - The count is no leak, while the amount holds the final values of claims the fund knew only in part at renewal,
+       and the files cannot mark which claims were still open.
+     - So the count is a call on fidelity alone, and the amount should stay out.
+   * **Built:** `prev_year_claims` (the previous year's `Freq`) and `prev_year_claim_cost` (its `y`), joined on
+     `PolicyNum` and `Year - 1` in a scratch copy of the shipped frame (dataset.py unchanged); missing on every 2006
+     row and on 1.3-2.7% of the later rows (members new to the file or back after a gap).
+   * **Experiments, models** (the shipped windows, the declared Gini against the premium; mean over 2008, 2009 and
+     2010):
+
+     | Model | Shipped inputs | + count | + amount | + count and amount | + `Premium`, count and amount |
+     |---|---|---|---|---|---|
+     | Tweedie GLM of the notes | 0.285 | 0.260 | 0.255 | 0.280 | 0.280 |
+     | LightGBM Tweedie of the notes | 0.242 | 0.221 | 0.204 | 0.189 | 0.219 |
+     | LightGBM Tweedie, bagged, 3 seeds (seed SD) | 0.205 (0.031) | 0.206 (0.015) | 0.208 (0.008) | 0.220 (0.013) | 0.217 (0.011) |
+     | LightGBM Tweedie without `PolicyNum` | 0.149 | 0.178 | 0.193 | 0.198 | 0.151 |
+
+     - By window (2008, 2009, 2010), the difference against the shipped inputs, with the SE of a paired bootstrap of
+       the test rows (1,000 draws): the GLM with the count -0.054 (0.056), +0.019 (0.041) and -0.038 (0.051), with
+       count and amount -0.038 (0.048), +0.024 (0.043) and -0.000 (0.037); the LightGBM with the count -0.031
+       (0.039), +0.002 (0.027) and -0.037 (0.022), with count and amount -0.014 (0.057), -0.012 (0.036) and -0.132
+       (0.068); the bagged LightGBM with count and amount -0.032 (0.045), +0.021 (0.028) and +0.058 (0.082; seed SD
+       0.108). All within noise.
+     - Without the member id the lags recover part of what `PolicyNum` gives (0.149 to 0.198) but stay below the
+       model with it (0.242): the member id already lets a model learn each member's level from its training years.
+     - The ROC AUC of a claim barely moves either: the GLM 0.735 to 0.739 with the count, the LightGBM 0.758 to
+       0.760.
+     - Two reasons the history adds little here: among the members with a claim the year before, the count ranks the
+       next year's claims better than the amount does (Spearman 0.378 against 0.172, 1,253 member-years); and the
+       premium, the Gini's base, already rises after a claim the year before (issue 4's answer), so part of the
+       history is in the base.
+     - In the 2008 window the lags are known only on the 2007 training rows, so the GLM cannot tell their effect from
+       the year's; that window loses most.
+   * **Experiments, leaks:**
+     - Across the window boundary: every training row's lag comes from two or more years before the test year, every
+       test row's from the year just before it, the newest training year (checked on all three windows). A test
+       row's lag is the member's own label of the year before, its history[^w5a].
+     - The open claims: CLAIMLEVEL.csv has no date of loss, report or closing; `ClaimStatus` is "Closed" on all
+       6,258 lines, and `ClaimNum` takes 4 values (20081656 on 6,253 lines). So the claims of year t-1 still open on
+       1 January t cannot be marked, and their share cannot be measured. The textbook says why the file stops in
+       2010: "To mitigate the effect of open claims, we consider policy years prior to 2011" ([Loss Data Analytics,
+       Sec. 1.3.2](https://openacttexts.github.io/Loss-Data-Analytics/ChapIntro.html)).
+     - What can be counted: 22, 17 and 15 test member-years (2.0%, 1.5% and 1.4%) of the 2008, 2009 and 2010
+       windows had a claim of $100,000 or more the year before, the claims most likely still open at renewal, and
+       they hold 63%, 60% and 55% of the lagged dollars. Capping the lagged amount at $100,000 moves the scores
+       within noise (with the count: GLM 0.279 against 0.280, LightGBM 0.186 against 0.189).
+     - The fund's price followed whether a member claimed the year before (+0.015, SE 0.003), not visibly the size
+       (issue 4's answer). A claim reported after the renewal would still be counted by the lag; the file cannot
+       show how many, and `NoClaimCredit` cannot either, as it is computed from the file's own claims (0 on every
+       2006-2007 row) rather than read from the fund's rating.
+     - The leak probes on the scratch build flag nothing: `prev_year_claims` alone R^2 0.027 on dollars, the highest
+       single feature but small, `prev_year_claim_cost` alone -0.056, no exact copies across the split.
+   * **Consistency:** allstate_claim_prediction_challenge_1m took the year before's counts as inputs and left its
+     amounts out[^w5d]. A building and contents claim settles faster than a bodily injury, but here the largest
+     claims, the slowest to settle, carry most of the amount. The literature on this fund rates renewals from each
+     member's past claims (Shi and Yang 2018, [JASA 113:122-133](https://doi.org/10.1080/01621459.2017.1330692),
+     experience rating on these data).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | The two-year credit only | no lagged claims | nothing the fund knew only in part; no score lost | the claim history of the year before held back |
+     | b | The previous year's claim count (implemented) | the issue's B: `prev_year_claims` | history the fund held and priced at renewal; no leak found; as allstate | no gain measured; missing on every 2006 row |
+     | c | Count and amount | the issue's C: also `prev_year_claim_cost` | the size of the claims too | final amounts of claims still open at renewal, which cannot be marked; no gain over the count |
+
+   * **Recommendation:** b, on fidelity: the fund held the count at renewal and its price followed it, as in allstate;
+     the score does not move either way, so a is a fair choice too. Not c: the amount gains nothing and holds what
+     the fund did not yet know[^w5c]. **Decision:** a, b or c?
+
+   **Andrej (2026-11-09, change):** Reply (b): The previous year's claim count
+
+   **Resolved (2026-11-09, Andrej):** b: `prev_year_claims`, the member's claim count of the year before (`Freq` of
+   the same `PolicyNum` and `Year` - 1), is an input, missing where the file lacks that year (every 2006 row, 1.3% to
+   2.7% of the later ones); the amount stays out. Implemented in the definition with a notes bullet (the counts, the
+   maturity and the measured effect), `task_summary.known` and `changes`.
+   * Checks after the change: `dataset check` 0 errors, 0 warnings; the leak probes flag nothing (`prev_year_claims`
+     alone R^2 0.027 on dollars, the highest single feature; no exact copies across the split).
+   * The task probe's untuned families score the declared Gini higher with it (linear 0.202 against 0.119, random
+     forest 0.202 against 0.142, LightGBM 0.073 against 0.020; SD across the 3 windows 0.075 to 0.152), while the
+     answer's Tweedie GLM scored lower (0.260 against 0.285): no direction holds across models, so the count ships
+     for fidelity, not for a gain. The probe adds the flag `unstable` (the random forest's R^2 skill beats the dummy
+     in 2 of 3 windows).
+   * Correction: the Background above says the fund's own rating read the previous year's claim through
+     `NoClaimCredit`. The answer found the credit computed from the file's own claims (0 on every 2006-2007 row); the
+     notes now say so.
+
+   [^w5a]: **USE-10** (Must): "For a known entity, its history is legitimate: the split is temporal and the previous
+     outcome is a feature." **LEAK-34** (Must; narrows LEAK-10): an entity's own history under a temporal split is
+     legitimate, also when it carries labels forward. Both in main.
+   [^w5b]: **LEAK-10** (Must): a feature holds only what existed at the prediction point; out goes "a column recorded
+     after the outcome". The final amount of a claim still open at rating time is in part recorded after it.
+   [^w5c]: **LEAK-10** (Must; amended 2026-10-26 and 2026-11-08, Lennart): "A value read at a later pull goes where its
+     late cells can be located: they are blanked ...; where they cannot be located row by row, the values go when they
+     may carry a gain ... and stay with a note only when the part that can be traced shows none." No part of the
+     lagged amount can be traced here.
+   [^w5d]: allstate_claim_prediction_challenge_1m, issue 3 (Resolved, 2026-11-03, Andrej): "five columns from 2005 (the
+     household's vehicles and claims, its cars carried over, whether this car was insured and its claims) ... the 2005
+     amounts stay out, because bodily-injury amounts grow for years after the renewal."
+
+6. **One claim decides the score of two of the three windows: keep the losses uncapped and let the first tuned run
+   decide whether the task tells methods apart, or cap the large losses in scoring?** (raised 2026-11-09 by the AI, in
+   Andrej's review of how the working copy handles exposure)
+
+   * **Problem:**
+     - Each window's Gini moves by 0.1 to 0.3 when its largest claim's row leaves the test set: in 2009 one member
+       ($2.16M, 20% of the year's claims) is half of a model's score, and in 2010 one school ($12.9M, 35%) turns the
+       constant from -0.218 into +0.061.
+     - The notes read `PolicyNum` as worth 0.327 against 0.081 in 2010 (dataset.py:153). Here it acts only through
+       where the model ranks that one school, whose training years held small claims ($0, $53k, $11k, $0): without its
+       row the model *without* `PolicyNum` scores higher (0.342 against 0.257).
+     - So differences between methods on this table may say where each ranked one or two members, not how well it
+       rates the fund's members.
+   * **Background:**
+     - The metric is the source's Gini against the agency's premium (MET-11, origin source), on dollars, uncapped. The
+       fund's real cost includes these claims, and 2010 was the storm year (dataset.py:167).
+     - In 2009 the member's history does warn (training claims of $5.0M, $1.9M and $1.5M), and every model ranks it
+       12th to 16th of 1,112, so that window rewards reading history, but through one row.
+     - The scores in the notes are single default fits; the run below averages 5 bagged seeds, so its levels differ
+       (2010 with `PolicyNum` 0.250 against the notes' 0.327).
+   * **Effect on the task:** as shipped, a benchmark ranking on this table can turn on one row per window. That is
+     acceptable if tuned methods spread by more than the swing; otherwise the table cannot tell methods apart.
+   * **Experiments:** run of 2026-11-09 on the three shipped windows (untuned LightGBM Tweedie, power 1.5, rows and
+     columns bagged at 0.8, 5 seeds averaged; the declared Gini; script in `runs/2026-11-09_wisconsin_2010/` next to
+     the repository). Each cell: all test rows / without the window's largest claim's row.
+
+     | Test year | Largest claim (share of the year's claims) | With `PolicyNum` | Without `PolicyNum` | Coverage alone | Constant |
+     |---|---|---|---|---|---|
+     | 2008 | $1.57M (13%) | 0.133 / 0.147 | 0.111 / 0.131 | 0.019 / 0.054 | -0.004 / 0.014 |
+     | 2009 | $2.16M (20%) | 0.253 / 0.110 | 0.238 / 0.087 | 0.195 / 0.045 | -0.124 / 0.060 |
+     | 2010 | $12.9M (35%) | 0.250 / 0.257 | 0.108 / 0.342 | 0.540 / 0.412 | 0.061 / -0.218 |
+
+     - The row is left out only to measure the swing; leaving a row out by its outcome is no remedy (it selects on
+       the label).
+   * **Consistency:** frempl_french_motor_personal_line kept its largest claim (802,620; one fold moves by 0.05 to
+     0.07 when losses are capped at 50,000 in scoring) and did not cap[^w6a]; the source scores uncapped.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Uncapped, with notes and a gate (implemented) | the metric as now; the notes state each window's one-row swing and correct the `PolicyNum` reading; the first tuned benchmark run decides: keep if tuned methods spread beyond the swing (TP-3), else retire for that reason (TP-2) | the source's metric; the fund's real cost; as frempl | the score stays noisy until then |
+     | B | Cap the losses in scoring | each loss capped in the Gini's claims (for example at $1M: 15 of the 5,639 member-years exceed it, and it removes 33% of all claim dollars); the target and the training labels unchanged | smaller swings | departs from the source's metric (MET-11); a cap level to choose and defend; frempl declined it |
+     | C | Retire now | `No` for low resolution | no noisy table in the collection | TP-2: a small signal is no reason to retire before tuned results; no tuned run yet |
+
+   * **Recommendation:** A: the metric is the source's and the claims are real; what the swing means for the benchmark
+     is a question the tuned results answer, and TP-2 asks for that concrete reason before retiring. **Decision:** A,
+     B or C?
+
+   **Notes for the AI:** under every option, rewrite the `PolicyNum` bullet (dataset.py:153): its 2010 gap is where
+   the model ranks the $12.9M claim's member, whose history did not foretell it, and without that row the model
+   without `PolicyNum` scores higher; add to the metric bullet (dataset.py:164) each window's swing from its largest
+   claim. On A, add to the Outcome that TP-3 is read on the first tuned run against a swing of about 0.1 to 0.15 per
+   window. On B, a `cap` parameter of `ordered_lorenz_gini` in the shared library with its tests, the cap level
+   argued in the metric reason, and the notes' scores re-measured.
+
+   **Andrej (2026-11-10, as implemented):** A, as implemented.
+
+   **Resolved (2026-11-10, Andrej):** A. The losses stay uncapped in scoring. The notes now state each window's swing
+   from its largest claim and read the 2010 `PolicyNum` gap as where a model ranks the $12.9M claim's school, not as
+   the member id's worth; the Outcome says that TP-3 is read on the first tuned run against that swing, and that the
+   table is retired for that reason if tuned methods do not spread beyond it[^w6a].
+
+   [^w6a]: frempl_french_motor_personal_line, review issue 4, "Not proposed: capping the losses at 50,000 ... It
+     changes the recorded target, and unusual values stay, so the 802,620 claim is kept"; its notes: "The scores keep
+     every loss uncapped." **TP-2** (Should): "A small but real signal is no reason to retire ... Retire, fix or keep a
+     task for a concrete reason found in the task itself; until one is found, the task stays." **TP-3** (Must): "If
+     tuned methods spread, keep the dataset." Both in main.
 
 **Review panel:** ship after changes (mediator). Tier focused, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
 MET-16, after the notes gained an exposure paragraph and issue 3 moved here from PR #47's conversation: the claim

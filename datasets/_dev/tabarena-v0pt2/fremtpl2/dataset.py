@@ -92,8 +92,11 @@ class Fremtpl2(AbstractCuratedDataset):
         known=(
             "The car's power, age, brand and fuel, the driver's age, the bonus-malus level (in 12% of the records "
             "only: blank in the rest, where it looks recorded after the year's own claims), and the density, area "
-            "and region of residence. The time insured is no input: a claim can cut it short, so it is the rate's "
-            "denominator and each record's weight."
+            "and region of residence."
+        ),
+        known_at_scoring=(
+            "How long each record was insured, recorded with its claims. A claim can cut it short, so it is no input: "
+            "it is the rate's denominator and each record's weight in training and scoring."
         ),
         split=(
             "Random policy records are held out, standing for comparable policies of the same portfolio and years; the "

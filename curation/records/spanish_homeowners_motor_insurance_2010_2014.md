@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Lennart
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -60,6 +60,10 @@ CC (2026-11-08, Lennart): the declared metric (`normalized_gini`) is checked, as
 CC (2026-11-08, Lennart): `gender` leaves the features, on the stance Lennart set in australian_vehicle_insurance_2004_2005's issue 7 ("A stance for the family; as if we were to simulate the case in europe always"): sex is no rating factor of any insurance pricing task of this collection, whatever the actor's jurisdiction, as if the actor priced in the EU (Test-Achats, CJEU C-236/09, in force for new contracts from 21 December 2012; this Spanish insurer is in the EU); the Tensions row on rating factors in principles.md is amended so. Supersedes Andrej's calls of 2026-11-02: issue 1 (a), which kept all 13 rating fields, `gender` among them, under LEAK-10's later-pull clause, and his ship of that day.
 
 **Assessment (AI, 2026-11-08):** applied in the definition: `gender` is dropped in `_clean` (19 features, 12 rating fields); the rows, the target, the metric and the three yearly windows are unchanged. `known` and `changes` say so, the notes gain a Dropped bullet and a CC bullet. Gender carried little, none of it above twice its standard error (3 shipped windows, the declared Gini, with minus without on the 3-window mean, paired bootstrap SE): untuned LightGBM on log1p -0.001 (SE 0.017), 10 subsampled LightGBM runs +0.016 (SE 0.010), Tweedie LightGBM +0.017 (SE 0.012), a Tweedie GLM -0.002 (SE 0.003), ridge -0.004 (SE 0.003); alone it ranks a home claim at ROC AUC 0.485 to 0.523 by year, with no steady direction. Task probe without it: ridge 0.282 (0.279 with it), random forest 0.243 (0.262), LightGBM 0.209 (0.214), flags `no_signal` and `drift_baseline` on the R^2-type skill as before (best R^2 0.008). Leak probe: no flag (all features R^2 -0.021, no single feature or shallow tree scores, 0.0% exact copies across the split). Re-running the Exposure bullet's lapse test showed that its "adds no Gini" rested on one LightGBM run: on four models the year-end lapse as a feature raises the mean Gini by +0.011 to +0.038 (SE 0.013 to 0.018; +0.012 to +0.016 on three of them with `gender` in), and alone it scores 0.054 / 0.023 / 0.124, so lapse years carry more of the loss, not less; the bullet now says so, and its conclusion (no sign of a cut, no LEAK-41 suspect) stands. The conditional elasticities of the cost to the insured values stay below 0.5 without `gender` (building 0.31 [0.18, 0.49]). `dataset check`: 0 errors, 0 warnings.
+
+CC (2026-11-09, Andrej): columns held only for training rows stay out for now, no training-only role (cross-dataset item of 2026-11-09; MET-14, LEAK-41, MET-16); the notes list them.
+
+CC (2026-11-09, Andrej): the training labels' maturity is stated in the notes (cross-dataset item of 2026-11-09, option B).
 
 ## Reference
 

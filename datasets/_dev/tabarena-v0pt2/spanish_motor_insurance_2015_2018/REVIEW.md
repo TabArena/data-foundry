@@ -50,12 +50,16 @@ and 8); the splits comment no longer says the test windows hold new contracts on
 and they stay) and gives 763 rows, not 766, for the smallest window; the exposure paragraph says that no feature set
 after the quote carries the cut, and that the quote-time factors predict it through risk selection.
 
-**Main points:** nothing open. Resolved: on 2026-11-03 first-year pricing (1), every first year kept with the
+**Main points:** Nothing is open. Resolved: on 2026-11-09 the Gini ordered by the prediction kept as a curation
+decision, on the ground of the insurers' Kaggle competitions and the 2022-2024 sibling, with the use case reworded to
+match (9, A), and no column for the customer's earlier policy-years, the gap measured in a note (10, C); on 2026-11-03 first-year pricing (1), every first year kept with the
 customer's other policies in force at the start (2, design S), `Value_vehicle` kept (3), no request to the authors now
 (4), ship and re-check `Trivial` (5); on 2026-11-06 the per-contract target under the exposure rules, with the count of
 first years cut short corrected to 2,055 (6); on 2026-11-08 the per-contract target with MET-14's clause amended for
 this case, its wording settled with australian_vehicle_insurance_2004_2005's issue 8 (7), and the sentence of your CC
 reworded (8).
+
+**Verdict (2026-11-09, Andrej):** ship (review page of 2026-11-09).
 
 **Issues for Andrej and Lennart:**
 
@@ -601,6 +605,188 @@ reworded (8).
    feature set after the quote carries the cut, while the quote-time factors predict it through risk selection" now
    stands in the definition's CC bullet, the record's CC line of 2026-11-06 (through the store API) and issue 6's
    resolved turn; the decision is unchanged.
+
+9. **Score the claim cost against the premium charged, with `Premium` kept as a feature?**
+
+   * **Problem:**
+     - The metric orders the policies by the prediction alone, each weighted 1 (dataset.py:198-211), while the use
+       case is to find the risks the quote prices too high or too low (dataset.py:87-91) and the metric's own reason
+       cites the Gini that orders policies by the ratio of a score to the premium (dataset.py:203-206).
+     - As declared, a model also earns credit for the risk the insurer's own price already ranks: the premium alone
+       scores a mean normalized Gini of 0.162 over the five windows (dataset.py:185).
+     - Switch to the Gini against the premium, read from a scoring copy of `Premium`, with `Premium` kept as a
+       feature, as wisconsin_local_government_property_insurance_fund scores against its fund's premium?
+   * **Background:**
+     - The Gini against the premium (Frees, Meyers and Cummings 2011; `ordered_lorenz_gini` in the library) sorts the
+       policies by prediction over premium and sets the cumulative share of the claim cost against the cumulative
+       share of the premium. A prediction proportional to the premium scores 0, and a positive score means the model
+       finds policies whose cost outruns their price. It is not normalized.
+     - `Premium` is the year's net premium, set at the quote and kept as a feature on your call[^s9a]. A metric input
+       that is also a valid feature stays a feature and ships a second time as a scoring column, so no metric reads a
+       feature[^s9b], as liberty_mutual_fire_peril_loss_cost's `var11_weight` copies `var11`.
+     - The metric reads each prediction on the amount, after the inverse of log1p. Under a ratio to the premium the
+       size of a prediction counts, not only its order: wisconsin ships dollars for that reason (its issue 2), and the
+       log1p scale here was chosen under the declared Gini (dataset.py:174).
+   * **Effect on the task:** the score then credits only what a model adds to the insurer's price, which is the
+     decision of the use case; echoing the premium scores 0 in every window instead of 0.162. Rows, features and
+     split stay.
+   * **Experiments:** counted on the raw file, the five shipped windows, no model fitted:
+
+     | Window | Premium alone, Gini as declared | Premium alone, Gini against the premium | Constant, Gini against the premium |
+     |---|---|---|---|
+     | 2017-08 | 0.177 | 0.000 | 0.116 |
+     | 2017-09 | 0.244 | 0.000 | 0.025 |
+     | 2017-10 | 0.258 | 0.000 | 0.017 |
+     | 2017-11 | 0.076 | 0.000 | 0.168 |
+     | 2017-12 | 0.054 | 0.000 | 0.169 |
+
+     - A constant orders the policies by the inverse of their premium and scores 0.099 on average: in the test
+       windows the dearest fifth of the policies runs a loss ratio of 0.73, against 0.97 to 1.16 for the other
+       fifths. So the level a model has to beat is above 0.
+     - TabPFN (mean 0.221 as declared) and LightGBM were not re-scored under the Gini against the premium.
+   * **The re-check of issue 5:** your call of 2026-11-03 ships the dataset and re-checks `Trivial` on the first
+     benchmark run (dataset.py:185). B does not settle that re-check by itself; it changes its yardstick. The premium
+     alone then scores 0 by construction, so the re-check asks whether a tuned method beats the best single input
+     under the new metric (a constant already scores 0.025 to 0.169) in at least one window.
+   * **Consistency:**
+     - wisconsin_local_government_property_insurance_fund scores the same Gini against its premium, the source's
+       metric there, and keeps the premium out of the inputs; its issue 4, raised today, asks whether to ship it as a
+       feature with a copy as the base, which would make the two tables alike.
+     - spanish_motor_insurance_coverage_level_2022_2024 keeps its premiums as features and scores the actuarial Gini
+       ordered by the prediction and weighted by exposure, on Andrej's call of 2026-11-02; its metric reason names
+       both forms. Under B the two Spanish tables are scored in different forms unless that one follows.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Gini ordered by the prediction (implemented) | `normalized_gini`, each policy weighted 1, as now | the form the insurers' Kaggle competitions took; nothing to re-measure | credits the ranking the premium already gives (0.162 for the premium alone); departs from the reference its own reason cites |
+     | B | Gini against the premium, `Premium` still a feature | `ordered_lorenz_gini` on a scoring copy `premium_base`; the target stays log1p | scores the decision of the use case; echoing the premium scores 0; as wisconsin | not normalized, and a constant scores 0.099; the log1p scale was chosen under the old metric; the Spanish siblings then differ |
+     | C | B with the target in euros | as B, and the target ships as the amount, untransformed | the ratio reads each prediction's size, which a fit on the amount targets, as wisconsin's dollars | a scale change on top of the metric change, not yet measured |
+
+   * **Recommendation:** B: the use case is to find the risks the quote misprices, which is what the Gini against the
+     premium scores[^s9c], and the premium stays an input as you decided; the scale is re-measured under the new
+     metric before it ships, and C follows only if the amount does clearly better. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, in `_clean` add `df["premium_base"] = df["Premium"]` (all positive, the smallest
+   40.14); `scoring_columns = (ScoringColumn(column="premium_base", role="weight", used_by="ordered_lorenz_gini",
+   description=...),)`; `Metric.from_context("ordered_lorenz_gini", reason=..., target_transform="log1p",
+   inputs={"weight": "premium_base"})`. Rewrite the metric reason (the Frees, Meyers and Cummings form; the
+   constant's 0.025 to 0.169), the `Premium` bullet of the notes (dataset.py:185: the premium alone now scores 0, so
+   the comparison with TabPFN is restated) and `task_summary.predicted`. MET-2's sentence "A value the models must
+   not get (a rating's output such as a premium, ...) is a scoring column only" needs wording that keeps the actor's
+   own quote a feature; settle it with wisconsin's issue 4. Re-run `dataset check` and the task probes, then through
+   sbatch on a GPU partition TabPFN and a Tweedie LightGBM, fit on log1p and on the amount, on the 5 windows under
+   the new metric; on C also drop `target_transform` and rename the target. The baseline counts:
+   `_ordered_lorenz_gini` and `_normalized_gini` of `data_foundry.v2.metrics` on the shipped test windows.
+
+   **Andrej (2026-11-09, as implemented):** We keep A because it was how the Kaggle competition looked like. But note this decision as a curation decision.
+
+   **Consistency check (AI, 2026-11-09): Keep A on the ground of the insurers' Kaggle competitions and the 2022-2024 sibling, with the use case reworded to match?**
+   * **Problem:**
+     - This dataset had no Kaggle competition: it comes from a data article (European Actuarial Journal 15:241-253,
+       2025) and its Mendeley record, which name no task and no metric (dataset.py:201-203), so the reason as written
+       would not hold in the record.
+     - What does support A: the metric's reason cites the form the insurers' own Kaggle competitions took (Allstate
+       2011, Liberty Mutual 2014: the losses ordered by the prediction, each policy weighted 1), and your call on the
+       2022-2024 sibling (2026-11-02) scores the same way[^s9d].
+     - The use case here reads "to find the risks the quote prices too high or too low", which is what B scores; the
+       sibling's reads "to rank the risk and set the premium", which is what A scores.
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | A, the reason restated | the metric stays; the recorded decision names the insurers' Kaggle competitions and the 2022-2024 sibling as its ground; the use case reworded to "to rank the risk and set the premium", as the sibling's; the sibling's issue 11 decided the same way | your A, with a reason that holds; use case and metric agree; the two Spanish tables match | the premium alone still scores 0.162 as declared |
+     | b | B | the Gini against the premium, as wisconsin | scores the use case as now written | departs from your A |
+
+   * **Recommendation:** a: it keeps your call and records it on the ground that holds. **Decision:** a or b?
+
+   **Resolved (2026-11-09, Andrej):** a (marked as implemented on the review page of 2026-11-09, no new note): A stays,
+   `normalized_gini` ordered by the prediction, each policy weighted 1. The metric reason now states its ground: the
+   source is a data article with no task and no metric, so the form follows the insurers' Kaggle competitions (Allstate
+   2011, Liberty Mutual 2014) and the 2022-2024 sibling's call of 2026-11-02. The use case reads "to rank the risk and
+   set the premium", as the sibling's. Recorded as a curation decision (a CC in the notes and the record). It was
+   provisional until wisconsin_local_government_property_insurance_fund issue 4 and the sibling's issue 11 were
+   decided; both kept their metrics on 2026-11-09, so it stands.
+
+   [^s9d]: **MET-11** (Must): a `context` metric names its basis; here the form of the insurers' Kaggle competitions,
+     since the source names none (**MET-4** on a competition's own metric does not apply). **MET-1** (Must): the
+     metric scores the decision of the use case, so the use case's wording and the metric agree under a.
+
+   [^s9a]: **USE-6** (Must): anything known at the prediction point is a legitimate input, including a number the
+     company itself computed. **TP-4** (Must): the natural core of a task (a listed price for a sale price) is
+     expected to dominate. Andrej, 2026-11-03, issue 5: ship with design S and re-check `Trivial` on the first
+     benchmark run.
+   [^s9b]: **MET-2** (Must; amended 2026-11-02, Andrej; reworded 2026-11-05, Lennart): "An input that is also a valid
+     feature, known at the prediction point for train and test rows alike, stays a feature and ships a second time as
+     a scoring column, a copy the metric reads"; the same rule adds "A value the models must not get (a rating's
+     output such as a premium, or a realized amount at risk) is a scoring column only", which wisconsin applies to its
+     premium. The rule is in main.
+   [^s9c]: **MET-1** (Must): the declared metric scores the real task, the decision of the use case, the way a
+     practitioner would have chosen a model for it. **MET-11** `context`: with no source metric, the metric the task
+     makes obvious.
+
+10. **Give the customer's earlier policy-years at the insurer as features at the quote?**
+
+   * **Problem:**
+     - When a customer with earlier policies at the insurer takes a new contract, the insurer knows how those
+       policies' years went, but the only history the table gives is the count of the customer's other policies
+       running at the start (dataset.py:172).
+     - Counted on the raw file, 442 of the 4,362 test rows (10.1%) have an earlier policy-year of the same customer
+       that ended before the quote, and they claim in 26.9% of the cases after an earlier claim against 11.5% after
+       claim-free years (38.0% for the rows without one).
+     - Ship that history as features, although the training sides hold it in only 15 to 44 rows per window (the
+       release starts in November 2015, so a training row's earlier years are not in it)?
+   * **Background:**
+     - No customer id is published: the definition takes a customer to be a birth date and a driving-licence date,
+       the key `other_policies_at_start` already uses (your design S of issue 2). Counted on the raw file, the
+       policies under one key share the area and the sales channel in 98.7% of the keys, against 60% and 50% for
+       random pairs of policies, so most links are one customer; false links would gather on dates such as 1
+       January (1.5% of the birth dates and 1.6% of the licence dates).
+     - An earlier policy-year counts when it ended, at its renewal or a lapse, on or before the new contract's start.
+       The claim flag reads only the other policies' first years, since a later row holds a remnant of the first
+       year's claims (dataset.py:170).
+     - The audit of 2026-11-09 counted 486 rows (11.1%; 27.3% against 10.6%): it also counted as earlier years the
+       renewals that never came into force, which the table drops (dataset.py:169).
+   * **Effect on the task:** in deployment the insurer prices a returning customer with its record; the benchmark's
+     models would meet the history almost only in the test rows. Per window the training side holds 15, 18, 24, 32
+     and 44 rows with an earlier policy-year (August to December), the test window 72 to 103.
+   * **Experiments:** counted on the raw file, the 4,362 test rows, no model fitted:
+     - Among customers with another policy running at the start, an earlier claim gives 28.6% (140 rows), claim-free
+       earlier years 11.3% (177), no earlier year 28.0% (254), so the history adds to `other_policies_at_start`.
+     - Among customers without one: 21.4% (42), 12.0% (83) and 38.7% (3,666).
+   * **Unknown:** whether part of the 26.9% is a remnant of an earlier claim booked onto the new policy. The release
+     cannot tell claims booked across a customer's policies from customers who claim together (dataset.py:172), and a
+     policy's later rows carry a remnant of its first year's claims (dataset.py:170).
+   * **Consistency:** a known entity's history is legitimate and its previous outcome a feature[^s10a];
+     wisconsin_local_government_property_insurance_fund's issue 5, raised today, asks the same for a member's earlier
+     years, where the training sides hold that history from 2007 on.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | No customer history | only `other_policies_at_start`; `fit_reason` names the driver's claims history as missing | no feature the training sides lack; no claim flag on an inferred key | holds back what the insurer knows of a returning customer (10.1% of the test rows) |
+     | B | Earlier policy-years as features | `earlier_policy_years` (count) and `earlier_claim` (any claim in their first years), by the birth-date and licence-date key, missing without a known key | the history the insurer has at the quote; 26.9% against 11.5% | 15 to 44 training rows per window hold it, so a model meets it almost only in the test rows; rests on an inferred key; a claim booked across policies would read as history |
+     | C | A, with the gap measured in the notes (implemented) | no new column; a notes bullet gives the share of test rows with earlier years, their claim shares and why no column ships | the gap is stated; no column a model cannot learn | the information stays out |
+
+   * **Recommendation:** C: the history is real and known at the quote, but with the release starting in November
+     2015 and the 12-month gap, the training sides hold it in 15 to 44 rows, too few to learn from; the note records
+     what the table lacks. **Decision:** A, B or C?
+
+   **Notes for the AI:** the counts: other policies' first rows with cover (`_covered`, `k == 0`) under the same key
+   (`Date_birth` + `Date_driving_licence`), ended (the earlier of `Date_next_renewal` and `Date_lapse`) on or before
+   the row's `Date_last_renewal`. On C, add a `Note:` bullet after the `other_policies_at_start` bullet with the
+   numbers above. On B, build both columns in `_clean` before the later rows go (step 4), numeric, missing where the
+   key is unknown; add them to `task_summary.known`; re-run `dataset check`, the leak probes, and through sbatch
+   TabPFN on the 5 windows with and without them.
+
+   **Andrej (2026-11-09, change):** Option C: A, with the gap measured in the notes.
+
+   **Resolved (2026-11-09, Andrej):** C: no column for the customer's earlier policy-years; a `Note:` bullet after the
+   `other_policies_at_start` bullet gives the gap, recounted on the raw file with the definition's filters (the issue's
+   numbers hold: 442 of the 4,362 test rows, 26.9% against 11.5% and 38.0%, 15 to 44 training rows per window).
+
+   [^s10a]: **USE-10** (Must): "For a known entity, its history is legitimate: the split is temporal and the previous
+     outcome is a feature." **CLEAN-19** (Should): we build a feature that is an input the actor reads at the
+     prediction point from other rows of the same release, kept only where they are known by then. Both in main.
 
 **Review panel:** ship after changes, text only (mediator). A focused re-review of 2026-11-06 under LEAK-41 and
 MET-14 to MET-16, by a claim auditor and a mediator. Claims: 19; 14 hold, 4 refuted and 1 partly refuted, all

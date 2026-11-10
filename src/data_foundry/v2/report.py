@@ -265,6 +265,7 @@ BRIEF_LABELS = {
     "row": "One row",
     "predicted": "Predicted",
     "known": "Known at prediction time",
+    "known_at_scoring": "Known only when scoring",
     "split": "What the test data stands for",
     "changes": "Our changes to the source",
 }

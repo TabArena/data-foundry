@@ -300,10 +300,11 @@ def _poisson_deviance(y_true, y_pred, *, params, weight=None, **_):
     the optional ``weight`` input (``sum(w * d) / sum(w)``, scikit-learn's ``sample_weight``).
 
     The floor is required: a mean at or below 0 is no valid Poisson mean, and in practice a model's output is clipped
-    at a small mean before it is scored. The definition states it two orders below the smallest plausible mean, on the
-    scale the metric scores (MET-13). With a weight the target is a rate per unit of the weight (claims per year
-    insured, the weight the years) and the score equals the count deviance of the same predictions times
-    ``n / sum(w)`` (the Poisson model with the weight as offset). NaN and infinite predictions still raise.
+    at a small mean before it is scored. The definition states it at the lowest value the use case's actor acts on,
+    never above the smallest plausible mean on the scale the metric scores (MET-13). With a weight the target is a rate
+    per unit of the weight (claims per year insured, the weight the years) and the score equals the count deviance of
+    the same predictions times ``n / sum(w)`` (the Poisson model with the weight as offset).
+    NaN and infinite predictions still raise.
     """
     return _sklearn_metrics().mean_poisson_deviance(
         np.asarray(y_true, dtype=float), _floored(y_pred, params), sample_weight=_row_weight(weight)
@@ -643,8 +644,8 @@ METRICS: dict[str, MetricDef] = {
             prediction_domain="positive",
             params={
                 "min_prediction": "required floor on the predictions, on the original scale (after the inverse of "
-                "target_transform): a smaller prediction counts as this value; a finite number above 0, two orders "
-                "below the smallest plausible mean"
+                "target_transform): a smaller prediction counts as this value; a finite number above 0, the lowest "
+                "value the actor acts on, never above the smallest plausible mean"
             },
             check_params=_check_poisson,
             optional_inputs=("weight",),
@@ -1524,7 +1525,7 @@ _CUSTOM_METRICS = (
             "power": "the Tweedie power q >= 1, required (1.5 for a pure premium with many zero claims)",
             "min_prediction": "required floor on the predictions before the rescaling, on the original scale (after "
             "the inverse of target_transform): a smaller prediction counts as this value; a finite number above 0, "
-            "two orders below the smallest plausible mean",
+            "the lowest value the actor acts on, never above the smallest plausible mean",
         },
         check_params=_check_tweedie,
         prediction_domain="positive",

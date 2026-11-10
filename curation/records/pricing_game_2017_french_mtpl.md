@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Lennart
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -134,6 +134,18 @@ CC (2026-11-08, Lennart, in chat): `pol_coverage` is an ordered category, Mini <
 CC (2026-11-08, Lennart): `drv_sex1` and `drv_sex2` leave the features, on the stance Lennart set in australian_vehicle_insurance_2004_2005's issue 7 ("A stance for the family; as if we were to simulate the case in europe always"): sex is no rating factor of any insurance pricing task of this collection, whatever the actor's jurisdiction or the data's year, as under EU law (Test-Achats, CJEU C-236/09, in force for new contracts from 21 December 2012); the Tensions row on rating factors in principles.md says so. Supersedes the note that kept them as a legal rating factor in the data's year (AI, 2026-11-01), which shipped with Andrej's verdict of 2026-11-03.
 
 **Assessment (AI, 2026-11-08):** applied in the definition: both columns are dropped in `_clean` (27 features); `known` and `changes` say so, and the notes' drop bullet says that the notes' other model scores, the metric reason's and the splits comment's were measured with them in. Task probe without them, on the same 5 of 9 splits (the dummy's loss per split is unchanged, so the split sets are the same): the random forest scores 62.30 against the constant's 63.10 (62.22 with them), the linear model 80.04 (81.97) and LightGBM 88.84 (90.30); 0.1%, 6.6% and 3.9% of their predictions sit at the 0.1 EUR floor. `dataset check`: 0 errors, 0 warnings.
+
+CC (2026-11-09, Andrej): columns held only for training rows stay out for now, no training-only role (cross-dataset item of 2026-11-09; MET-14, LEAK-41, MET-16); the notes list them.
+
+CC (2026-11-09, Andrej): the training labels' maturity is stated in the notes (cross-dataset item of 2026-11-09, option B).
+
+CC (2026-11-10, Andrej): the task stays on Year 0 split by client, with the yearly drift of the claim level in `splits_comment` (REVIEW.md issue 6 (a), "Keep, with the drift sentence"); no rebuild on the AIcrowd years.
+
+CC (2026-11-10, Andrej): the metric floor stays at 0.1 EUR (REVIEW.md issue 7 (b), "0.1 EUR"), its reason restated under MET-13 as amended on 2026-11-09.
+
+**Assessment (AI, 2026-11-10):** on the AIcrowd copy the mean cost per policy is 119.3, 119.0, 112.3 and 106.2 EUR in years 1 to 4 (0% to 6% a year). No fact favours a floor above 0.1 EUR: no minimum premium is published and the source records claim amounts down to 0.02 EUR (8 of 12,391 positive claims below 1 EUR); between 0.1 and 1 EUR only squared-error fits move (ridge 66.33 against 61.61, squared-error LightGBM 102.83 against 74.94; repeat 0, folds 0 to 2).
+
+CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
 
 ## Reference
 

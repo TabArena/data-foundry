@@ -53,9 +53,12 @@ class Bemtpl97(AbstractCuratedDataset):
         ),
         known=(
             "At policy start the insurer knows the policyholder, vehicle, coverage and municipality; sex is left out, "
-            "as EU insurers may no longer price on it. The share of 1997 insured is no input: it is shorter when a "
-            "policy started or was surrendered during the year, often after a claim, so it is the rate's denominator "
-            "and each policyholder's weight."
+            "as EU insurers may no longer price on it."
+        ),
+        known_at_scoring=(
+            "The share of 1997 each policyholder was insured. It is shorter when a policy started or was surrendered "
+            "during the year, often after a claim, so it is no input: it is the rate's denominator and each "
+            "policyholder's weight in training and scoring."
         ),
         split=(
             "Random policyholders are held out, representing comparable unseen customers of the same year; the "
