@@ -4,31 +4,53 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 - **New here?** [`GETTING_STARTED.md`](GETTING_STARTED.md): set-up, the two workflows (settling a record, adding a
   dataset) and the large-data candidates to start with.
-- **How a dataset is split** (folds, repeats, the 1M / 500k row budget and the `_1m` versions): the decision tree in
-  [`split_protocol.md`](../../../.claude/skills/knowledge-data-foundry/references/split_protocol.md) of the knowledge-data-foundry skill.
 - **Every change is logged** in [`CHANGELOG.md`](CHANGELOG.md): edits, added or removed files, re-runs that change a
   container.
 - Changes the benchmark harness (TabArena) needs for these datasets, for example scoring grouped tasks per group, are
   in [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md).
 - Each dataset folder has a `README.md` that `.venv/bin/python -m data_foundry.curation.cli dataset check` generates
   from its `dataset.py`: links to the curation record and the source, how to rebuild, and the evidence.
-- A dataset's review, the questions for the curator and how each was settled, is the `## Review` section of its
-  curation record (`curation/records/<name>.md`), never a file in its folder; the review page of
-  `/review-added-datasets` is built from these sections. [`REVIEW.md`](REVIEW.md) here holds only the items that span
-  datasets. The decisions are in the records, the definitions and the `CHANGELOG.md` entries. How curation works
-  here: the knowledge skills [`knowledge-curation`](../../../.claude/skills/knowledge-curation/SKILL.md) and
+- Open questions for the curator are in a folder's `REVIEW.md` while they are open (the review page of
+  `/review-added-datasets` is built from them); settled decisions are in the curation records
+  (`curation/records/<name>.md`), the definitions and the `CHANGELOG.md` entries. How curation works here: the
+  knowledge skills [`knowledge-curation`](../../../.claude/skills/knowledge-curation/SKILL.md) and
   [`knowledge-data-foundry`](../../../.claude/skills/knowledge-data-foundry/SKILL.md).
 
 ## Rebuild
 
-The seven packages in PR59 retain their November 5–10 build identities and checksums. Their definitions and
-reviews were migrated on November 16 for current main; the cards are marked stale until the migrated definitions
-are checked and rebuilt. No container or model was built during the rebase. Duolingo and Fugaku still need a
-decision on migrating their accepted training caps to the current full-history container protocol; Fugaku's
-custom split declaration and Duolingo's variant-name pointer are incompatible with current main. The PR remains
-a draft with these checks unresolved. SuperLender remains excluded under the November 12 redistribution decision.
-The dated changelog and each dataset's card preserve the historical build evidence.
+Latest scoped build, 2026-11-10: one requested definition, container format 2,
+5 traced input files totaling 856,881,288 bytes. Saved reload and minimal-input
+reproduction pass with zero build errors/warnings; both prepared tables also
+regenerate exactly from publisher inputs. The local input backup is manifested
+and verified. See the dated changelog and generated dataset report for build
+identity. Other definitions' build records are unchanged.
 
+
+Scoped build on 2026-11-08 (November 9 UTC): one requested definition, container format 2,
+four traced input files totaling 5,003,658 bytes. Reload and minimal-input reproduction passed
+with zero build errors or warnings. The dated changelog records its UUID and checksum; each dataset's generated
+README identifies its own latest build. This scoped run does not update the other definitions' build records.
+
+
+- 2026-11-05 (internal-skill refresh): rebuilt GeoAI as one format-2 dataset with the same checksum.
+  Reload and reproduction from the single 10,000,397-byte Train.csv pass; the new raw-input backup stays local.
+
+- 2026-11-05: rebuilt GeoAI against updated main as one format-2 dataset. The single traced raw file is
+  Train.csv (10,000,397 bytes); saved-container reload and reproduction from only that input both pass.
+  The raw-input backup remains local. See the GeoAI README and dated changelog for the build identity.
+
+Economic Well-being: the 2026-11-05 installed-skill alignment rebuild used the same qualified scientific source and reproduced the preceding checksum. One format-2 dataset, one traced raw CSV (5,829,604 bytes); reload, minimal-input reproduction and the local manifested backup are verified. The dated CHANGELOG records the new UUID.
+
+Economic Well-being targeted rebuild on 2026-11-05: one format-2 dataset from one traced raw CSV (5,829,604 bytes). Saved-container reload and a check using only that input reproduce the checksum. The dated CHANGELOG entry records the UUID and accepted protocol. The manifested raw-input backup remains local, outside Git.
+
+Duolingo latest scoped build, 2026-11-05: repeated through the updated installed workflow for one format-2 definition and one traced raw input (379,004,009 bytes). Saved reload and reproduction using only that input passed, with zero errors or warnings and an unchanged checksum. This was a single-dataset rebuild, not a rebuild of the full working copy.
+
+- Fugaku latest requested scoped build (2026-11-06): one format-2 container, with 43 input dependencies (29,687,404,633
+  bytes). Saved-container reload and minimal-input reproduction match the checked checksum; the current trace matches
+  the existing input archive, whose payloads and current sources were freshly reverified. Details and remaining
+  limitations are in CHANGELOG.
+
+- Latest scoped build, November 9, 2026: one Meituan container, format 2, from one traced CSV (121,698,401 bytes). Reload verification and reproduction from the traced input pass; see the dataset report and dated CHANGELOG. Other datasets were not rebuilt.
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows

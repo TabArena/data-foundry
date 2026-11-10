@@ -494,6 +494,7 @@ the precedent check found them consistent; the README files follow at the next `
 - Built rows, labels, features, order, splits and saved prediction labels exactly match qualification, so existing models/probes remain applicable. No new sweep or retraining needed. Checks: 2014 tests passed/285 skipped, including 18 temporary-socket reruns; pinned Ruff, records/pointers, review parser and diff checks pass. Full catalog retains 17 pre-existing RowBudget import failures; owned-definition import passes.
 - Local build/commit only; current claim and Yes/WIP(DF)/priority3 retained. No DF:Yes, registry membership, claim release, push, PR or merge. Other staged records and datasets untouched. No superseded Papyrus container existed to remove.
 
+
 ## 2026-11-10: Papyrus scientific inclusion accepted (Myunghwan)
 
 - Record Myunghwan's explicit "ship it" on the completed `papyrus_bioactivity` review, keeping fallback RMSE as declared. Independent consistency review finds no departure or additional issue. Preserve original source means, all692,017rows/seven inputs, scaffold folds, repaired label-independent ordering and pointwise prediction restrictions.
