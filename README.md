@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-10 09:26 UTC: 227 claim(s) (Andrej 117, Lennart 88, Myunghwan 22).
+As of 2026-11-10 15:41 UTC: 226 claim(s) (Andrej 116, Lennart 88, Myunghwan 22).
 
 ## Andrej
 
@@ -109,7 +109,6 @@ As of 2026-11-10 09:26 UTC: 227 claim(s) (Andrej 117, Lennart 88, Myunghwan 22).
 | `sdss_17` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `sepsis_survival_minimal_clinical_records` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `sf_permit_time` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
-| `south_africa_coronary_heart_disease` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `spanish_homeowners_motor_insurance_2010_2014` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `spanish_motor_insurance_2015_2018` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `spanish_motor_insurance_coverage_level_2022_2024` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
