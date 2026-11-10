@@ -13,7 +13,7 @@ decision_markers:
 - Not Representative
 - No Good Target (yet)
 - Selection Bias
-- No Good Target / Scientific Discovery
+- Trivial
 tags:
 - Tiny Data
 collections:
@@ -66,6 +66,12 @@ CC (2026-11-05, Andrej): retired (`No (Retired)`, `No Good Target / Scientific D
 - **Before the tests there is no signal:** the case history alone, the only point where a prediction could guide which test to run, gives 0.728, the majority class (balanced accuracy 0.355).
 - **Why Lennart's keep does not hold:** the three types are the field's standard grouping, but a grouping defined by columns of the same table is a lookup, not a prediction; what the textbook rule leaves over (46 sensorineural cases with a normal air-conduction code, 11 conductive or mixed cases without a gap) reads as the coarse coding of a teaching set.
 Marker `No Good Target / Scientific Discovery` added: a label read off the tests that define it is no real prediction target; `Trivial` is not the reason for retiring it. `year` set to 1987, the collection's date, from the definition.
+
+CC (2026-11-10, Andrej): marker changed to `Trivial`: a textbook rule, not fitted on these data, beats every model, so nothing learnable is left beyond what the field already writes down.
+- **The rule:** conductive or mixed when there is an air-bone gap or the tympanogram is not type A; otherwise sensorineural when air conduction is abnormal or any of the audiogram's 40 pattern codes (`m_sn_gt_2k`, `notch_4k` and the like) is set; otherwise normal. It assigns 194 of 195 cases (accuracy 0.995, balanced 0.998), against 0.968 for the best of logistic regression, random forest and gradient boosting (5-fold x 5 repeats).
+- **How it came about:** read on air conduction alone the rule reached 0.764: the coarse air-conduction code reads normal for 45 sensorineural ears whose high-frequency losses sit in the pattern codes, which name the type themselves; no normal ear has one set.
+- **What is left without the audiogram:** the 11 case-history answers keep a small signal (log loss 0.713 against 0.762 for the class shares, outside 20 shuffled runs), so "the majority class" above holds for accuracy only; reassessed as a task of its own it has no decision, as the audiogram is the routine first test of a hearing complaint.
+Marker `No Good Target / Scientific Discovery` removed. Evidence: Slurm jobs 1374813 and the rule check of 2026-11-10.
 
 ## Reference
 

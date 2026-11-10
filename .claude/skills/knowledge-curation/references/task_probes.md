@@ -36,8 +36,13 @@ part still wins). Cases: gallstone_disease, electric_motor_temperature_predictio
 
 **TP-4 (Must).** `Trivial` needs proof. Read what the dominant feature means first: the natural core of a task (a
 listed price for a sale price, age for survival) is expected to dominate. Then test it: the raw feature, chosen on
-each split's training side, has to match or beat the methods fold by fold. Marker: `Trivial`. Cases: fitness_club
-(yes, retired); sepsis_survival, california (no, kept).
+each split's training side, has to match or beat the methods fold by fold. The same holds for a rule not fitted on
+these data (a formula the source or the field publishes, the field's definition of the label, a textbook or clinical
+score): if the methods learn nothing better than such a rule, the data cannot be used for prediction. Take the rule
+from the field's sources, not from the rows; it needs no training side, so it is scored as it stands on every test
+fold. Before ruling it out, look at where its misses go: the field's measurement can be spread over more columns than
+the rule read. Marker: `Trivial`. Cases: fitness_club (yes, retired); audiology_diagnosis (a textbook rule, yes,
+retired); sepsis_survival, california (no, kept).
 
 **TP-5 (Must).** `Too Small` means a handful of units of a class, per test fold and in total, counted in the unit the
 task is scored on (parkinsons: 8 healthy people, 2-3 per fold; retired). A small dataset as such is a tiny-data task
@@ -330,8 +335,9 @@ task-probe flags the decision answers. The decisions on metrics (2026-10-21) are
 | Rule | Dataset | Flags | Decision | Decisive evidence | Kind |
 |---|---|---|---|---|---|
 | TP-4 | fitness_club | one_feature | retired, `Trivial` (2026-10-05) | `months_as_member` alone, chosen on all 30 training sides, AUC 0.822, above all 37 configurations; `days_before` = 2 × weekday in 1,251 of 1,500 rows (generated) | applied |
+| TP-4 | audiology_diagnosis | none (a rule check) | retired, `Trivial` (2026-11-10, Andrej) | the textbook definition, not fitted: conductive or mixed for an air-bone gap or a tympanogram other than type A, sensorineural for abnormal air conduction or any of the audiogram's 40 pattern codes, otherwise normal; 194 of 195 cases (accuracy 0.995) against 0.968 for the best of logistic regression, random forest and gradient boosting; reading air conduction alone it reached 0.764, as the coarse code reads normal for 45 high-frequency losses that the pattern codes carry | applied |
 | TP-5 | parkinsons_biomedical_voice_measurements | no_spread, one_feature, unstable | retired, `Too Small` (2026-10-05) | 8 healthy people, 2-3 per test fold; ranks less stable than on 98% of BeyondArena | applied |
-| TP-7 | audiology_diagnosis | no_spread, unstable | target re-defined, rebuilt (2026-10-06); retired (2026-11-05) | our own 3-class merge replaced by hearing loss with or without a conductive part; duplicates and non-hearing-loss diagnoses dropped; no flags since, but the new type is read off five of its features (accuracy 0.903 of 0.938) and the case history alone gives the majority class | applied |
+| TP-7 | audiology_diagnosis | no_spread, unstable | target re-defined, rebuilt (2026-10-06); retired (2026-11-05) | our own 3-class merge replaced by hearing loss with or without a conductive part; duplicates and non-hearing-loss diagnoses dropped; no flags since, but the new type is read off five of its features (accuracy 0.903 of 0.938) and an unfitted textbook rule on the audiogram assigns 194 of 195 cases (TP-4) | applied |
 | TP-6 | eryhemato_squamous_disease | solved | clinical features only, rebuilt (2026-10-06) | macro AUC 0.999 with the biopsy features, 0.98 and 87% accuracy before the biopsy | applied |
 | TP-2 | forest_fires | no_signal | kept (2026-10-06); re-split by day; retired (2026-11-05) | TabPFN-3.5 beats the mean on 26 of 32 folds (R² 0.013); a hurdle model adds nothing. Fires of one day share the station's daily fire weather index values; split by day, R² -0.002, within shuffled labels (p = 0.16; random splits p = 0.005) | applied |
 | TP-1 | clock_protein_toxicity | no_signal | kept (2026-10-06); retired (2026-11-05) | LightGBM above AUC 0.5 on 44 of 60 folds (0.539); the probe's single feature was a selection effect; shuffled labels do as well (p = 0.71) | applied |

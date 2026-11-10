@@ -37,9 +37,9 @@ binarizes), run the probes against the source's original labels too, and check t
 depth-2 or depth-3 tree on its defining columns shows whether the target is a rule. A label the definition builds uses
 a convention of the field ([task_probes.md](task_probes.md), TP-7). Why: a merge can hide a column that spells out the
 fine label, or the fine label can turn out to be read off a few features. A label the field defines by columns we
-ship is no prediction target (SEL-19, [selection.md](selection.md)). Cases: audiology_diagnosis's three merged classes
-hid that its four cochlear diagnoses are set by two history answers, age over 60 and noise exposure (139 of 147
-cases).
+ship follows SEL-5 ([selection.md](selection.md)): test the rest first. Cases: audiology_diagnosis's three merged
+classes hid that its four cochlear diagnoses are set by two history answers, age over 60 and noise exposure (139 of
+147 cases).
 
 ### Deciding on a suspect
 

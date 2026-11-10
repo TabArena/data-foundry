@@ -1,5 +1,19 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10, labels a rule assigns from shipped columns: one rule; audiology_diagnosis is `Trivial` (nothing built)
+
+- SEL-19 of 2026-11-05 is folded into SEL-5: a label a published formula or the field's definition assigns from columns
+  we ship is handled one way. Drop the rule's inputs and test the rest: a real task ships without them, no signal is
+  `No Signal`, too few features left is `No Good Target / Scientific Discovery`, and inputs at hand at the decision
+  with a rule that matches the methods are `Trivial`, the rest reassessed from scratch when it still carries signal.
+- TP-4: the proof of `Trivial` can be a rule not fitted on the data (a published formula, the field's definition, a
+  textbook or clinical score): if the methods learn nothing better than it, the data cannot be used for prediction.
+- `audiology_diagnosis`: marker `Trivial` in place of `No Good Target / Scientific Discovery`. The textbook rule on
+  the audiogram assigns 194 of 195 cases (accuracy 0.995) against 0.968 for the best model; the case history alone
+  keeps a small signal (log loss 0.713 against 0.762) but no decision.
+- `biomechanical_orthopaedic_prediction`: unchanged; its case row moves to SEL-5, and the reassessment of the five
+  other measures (hernia against normal, ROC AUC 0.889) is open on the review page.
+
 ## 2026-11-10, PR #55: horse_colic_survival decided (Andrej; no container built)
 
 - Target `did_not_survive` ("Yes" for died or euthanized, 129 of 344), `binary_classification` with the fallback ROC
@@ -800,7 +814,8 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
   cleared. `DF: Yes`, the collection tags and the pinned BeyondArena containers stay. The records also carry the
   October disagreement notes the retirements build on.
   - `audiology_diagnosis` (`No Good Target / Scientific Discovery`): the type of hearing loss is read off the five
-    tests that define it (accuracy 0.903 of 0.938), and the case history alone gives the majority class. `year` 1987.
+    tests that define it (accuracy 0.903 of 0.938), and the case history alone predicts little (the majority class in
+    accuracy). `year` 1987.
   - `biomechanical_orthopaedic_prediction` (`No Good Target / Scientific Discovery`): `degree_spondylolisthesis` is
     the criterion of half the labels, and hernia against normal is diagnosed from MRI and symptoms the table lacks.
     `year` 2006, `problem_type` Multiclass Classification.

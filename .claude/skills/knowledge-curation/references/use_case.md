@@ -17,10 +17,10 @@ whether to approve it". Write it down before anything else, and check every colu
 against it. Why: the written prediction point finds columns no probe flags. How: the use-case checklist under Methods.
 Cases: kickstarter.
 
-**USE-2 (Must).** A task no decision fits is out. The kinds of labels no decision fits are SEL-4 to SEL-7 and SEL-19
+**USE-2 (Must).** A task no decision fits is out. The kinds of labels no decision fits are SEL-4 to SEL-7
 in [selection.md](selection.md), and data that serves only a study looking back is SEL-3. A label that stands in for
 what the features already measure fits no decision either: once the actor holds the inputs, they act on those. Marker:
-`No Good Target / Scientific Discovery` (the fit None, USE-8). Cases: under SEL-3 to SEL-7 and SEL-19;
+`No Good Target / Scientific Discovery` (the fit None, USE-8). Cases: under SEL-3 to SEL-7;
 blood_tests_drink_prediction.
 
 ### The prediction point

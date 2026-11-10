@@ -69,18 +69,20 @@ table, is out. Marker: `No Good Target / Scientific Discovery`.
 defined by clustering (PAM50, expression subtypes, NMF clusters). Cases: brca_breast_cancer, glioblastoma,
 ov_ovarian_cancer (Lennart, 2026-10-12).
 
-**SEL-5 (Must; narrows SEL-3).** A label the source computes with a published, deterministic rule from the columns:
-drop the rule's inputs when the rest still makes a real task; when the inputs are the whole task, it is `Trivial`
-(TP-4). Marker: `Trivial`. Cases: account_debt_south_africa,
-central_international_medical_college_and_hospital_health_risk_prediction (NEWS2).
+**SEL-5 (Must; narrows SEL-3).** A label a rule assigns from columns we ship: a formula the source publishes (NEWS2),
+or the field's definition of the label by measurements in the table (the type of hearing loss by the audiogram,
+spondylolisthesis by the size of the slip). Drop the rule's inputs first and test what the rest predicts:
+* the rest makes a real task with a decision: ship it without the inputs;
+* the rest does not beat a constant, or stays within what shuffled labels give: the task is out, `No Signal` (TP-2);
+* too few features are left to carry the task: the label was likely no good target, and the task is out,
+  `No Good Target / Scientific Discovery`;
+* the inputs are at hand at the decision and the rule, not fitted on these data, matches the methods: `Trivial`
+  (TP-4). When the rest still carries a signal, it is kept and reassessed from scratch as a new task (use case,
+  signal, split), and ships only if it passes.
 
-**SEL-19 (Must; narrows SEL-3).** A label the field defines by measurements that ship as columns is no prediction
-target: the defining columns read it off, also when they settle only one class (the type of hearing loss by the
-audiogram and tympanogram, spondylolisthesis by the size of the slip). Test it two ways: the defining columns alone
-against all features, and the label from the features known before the defining test is run. When the rest still makes
-a real task with a decision, drop the defining columns; otherwise the task is out. Unlike SEL-5, the rule is the
-field's definition, not a formula the source publishes, so the marker is not `Trivial`. Marker:
-`No Good Target / Scientific Discovery`. Cases: audiology_diagnosis, biomechanical_orthopaedic_prediction.
+Marker: the one the branch names. Cases: account_debt_south_africa,
+central_international_medical_college_and_hospital_health_risk_prediction (NEWS2), audiology_diagnosis,
+biomechanical_orthopaedic_prediction.
 
 **SEL-6 (Must; narrows SEL-3).** A label counted over one calendar window shared by all rows, instead of a fixed time
 after each row, supports only a look back at which rows drew the outcome. Marker:
@@ -261,13 +263,13 @@ A table without a genuine predictive target is `No Good Target / Scientific Disc
 
 ### Trivial, too small, empty
 
-`Trivial` (one feature or a simple rule matches the best methods, or the task is solved perfectly) is `No` (TP-4), and
-`Too Small` (a handful of units of a class per test fold) is `No` or `TBD -> 2nd Tier` (TP-5). Both need evidence from
-the task's own splits; the rules are in [task_probes.md](task_probes.md). A small but real signal, or methods that tie
-on a hard task, is not trivial and no reason to retire (TP-2); methods that stay within what shuffled labels give are
-`No Signal`, and the task is retired (TP-2). A label read off the columns the field defines it by is
-`No Good Target / Scientific Discovery` (SEL-19), not `Trivial`. Under class imbalance, accuracy against the majority
-class is no evidence in either direction ([evidence.md](evidence.md), EV-5; Lennart, 2026-09-23): judge learnability
+`Trivial` (one feature, or a rule not fitted on these data, matches the best methods, or the task is solved perfectly)
+is `No` (TP-4), and `Too Small` (a handful of units of a class per test fold) is `No` or `TBD -> 2nd Tier` (TP-5). Both
+need evidence from the task's own splits; the rules are in [task_probes.md](task_probes.md). A small but real signal, or
+methods that tie on a hard task, is not trivial and no reason to retire (TP-2); methods that stay within what shuffled
+labels give are `No Signal`, and the task is retired (TP-2). A label a rule assigns from columns we ship, by a published
+formula or by the field's definition, follows SEL-5. Under class imbalance, accuracy against the majority class is no
+evidence in either direction ([evidence.md](evidence.md), EV-5; Lennart, 2026-09-23): judge learnability
 with ROC AUC or log loss against the class prior, and fit a quick gradient-boosting model on the features known at
 prediction time when the data loads (`us_accidents`: its published "78% accuracy" settled nothing).
 
@@ -424,9 +426,9 @@ marker records where a record stands, not an issue of the data.
 | `Time-series (Classification)` | classification of a series or signal (readings over time, a recording), where time-series models are the tool | none (SEL-12 on vectorized time-series data) |
 | `Outdated` | an old dataset or experiment: today the task would use other data, features or models; a note on a kept dataset, an exclusion only when the task itself is gone | SEL-18 |
 | `No Good Target (yet)` | real data without a predictive target so far (a listing, a survey, a table built for another purpose); one may be defined later, and such records mostly wait as `TBD -> 2nd Tier` | none |
-| `No Good Target / Scientific Discovery` | no genuine predictive target: a discovery, survey or look-back table, a label no decision fits | SEL-3, SEL-4, SEL-6, SEL-7, SEL-19; USE-2, USE-8 ([use_case.md](use_case.md)) |
+| `No Good Target / Scientific Discovery` | no genuine predictive target: a discovery, survey or look-back table, a label no decision fits | SEL-3, SEL-4, SEL-5, SEL-6, SEL-7; USE-2, USE-8 ([use_case.md](use_case.md)) |
 | `Data Quality Issue` | damage that cannot be undone or repaired: a supervised transform fit on the whole labelled set, a manipulated real table | LEAK-27 ([leak_checks.md](leak_checks.md)); PROV-3 ([provenance.md](provenance.md)) |
-| `Trivial` | one feature or a simple rule matches the best methods, or the task is solved perfectly | TP-4; SEL-5 |
+| `Trivial` | one feature, or a rule not fitted on these data (a published formula, the field's definition, a textbook or clinical score), matches the best methods, or the task is solved perfectly | TP-4; SEL-5 |
 | `Image` | an image or video task, including features computed from an image to describe its content | SEL-12, SEL-13 |
 | `Time-series (Forecasting)` | future values of a series over a horizon | SEL-10 |
 | `NLP (Text)` | a raw-text task where language models dominate | SEL-12 |
@@ -434,7 +436,7 @@ marker records where a record stands, not an issue of the data.
 | `Out-of-scope Task (CTR/RecSys/Ranking)` | a recommendation, ranking, click-through-rate or information-retrieval task | SEL-9 (SEL-8) |
 | `Ethical Issue` | an ethical concern, such as subjects or creators who object to ML use | SEL-1 |
 | `Too Small` | a handful of units of a class per test fold and in total | TP-5 (TP-8 for a short class, TP-9 for the windows of a temporal task) |
-| `No Signal` | no signal on the split the use case needs: the best methods do not beat a constant, or stay within what the same methods reach on shuffled labels; a small but real signal is no reason to retire | TP-2 ([task_probes.md](task_probes.md)); SPLIT-28 ([splits.md](splits.md)) |
+| `No Signal` | no signal on the split the use case needs: the best methods do not beat a constant, or stay within what the same methods reach on shuffled labels; a small but real signal is no reason to retire | TP-2 ([task_probes.md](task_probes.md)); SPLIT-28 ([splits.md](splits.md)); SEL-5 |
 | `Not Representative` | the task or its setup does not represent the real application (features practitioners no longer use for the task, a prediction no decision rests on); a selective sample is `Selection Bias` | none |
 | `Selection Bias` | the rows are not drawn from the population the use case predicts for (cases and controls collected apart, only typical or confirmed cases, a volunteer or teaching collection, objects picked for measurement when the use case predicts for the others); a concern flag, usually on `Yes` records | none (Patterns, "Selection bias") |
 | `Anonymized` | feature names or values replaced on purpose (symbols, `var_<n>`, hashed codes), so what a column measures, its timing and leaks cannot be checked; a concern flag, no exclusion reason; goes with the definition's `Anonymized` data tag | none (Patterns, "Anonymized data") |
@@ -456,8 +458,8 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SEL-4 | brca_breast_cancer, glioblastoma, ov_ovarian_cancer | labels are molecular subtypes defined by clustering: no real predictive task (2026-10-12, Lennart) | applied |
 | SEL-5 | account_debt_south_africa | the deterministic rule's inputs dropped; the rest still makes a real task | applied |
 | SEL-5 | central_international_medical_college_and_hospital_health_risk_prediction | the label is NEWS2, and its inputs are the whole task: `Trivial` | applied |
-| SEL-19 | audiology_diagnosis | the type of hearing loss (normal, sensorineural, conductive or mixed) read off the five tests that define it (accuracy 0.903 against 0.938 with all 65 features); the case history, known before the tests, gives the majority class: retired with `No Good Target / Scientific Discovery` | applied |
-| SEL-19 | biomechanical_orthopaedic_prediction | `degree_spondylolisthesis` is the slip that defines one of the three classes (one threshold, ROC AUC 0.9918, half the rows); disc hernia against normal is diagnosed by MRI and symptoms the table lacks, so no decision waits on the rest: retired with `No Good Target / Scientific Discovery` | applied |
+| SEL-5 | audiology_diagnosis | the type of hearing loss (normal, sensorineural, conductive or mixed), defined by the audiogram: a textbook rule on it, not fitted (an air-bone gap or a tympanogram other than type A, then abnormal air conduction or any of the 40 pattern codes), assigns 194 of 195 cases (accuracy 0.995) against 0.968 for the best model; the rule took in the pattern codes after its first form (0.764) called 45 sensorineural ears normal, codes that name the type themselves; without the audiogram the 11 history answers keep a small signal (log loss 0.713 against 0.762) and no decision: retired with `Trivial` (2026-11-10, Andrej) | applied |
+| SEL-5 | biomechanical_orthopaedic_prediction | `degree_spondylolisthesis` is the slip that defines one of the three classes (one threshold, accuracy 0.974); without it the five other measures still separate disc hernia from normal (ROC AUC 0.889, shuffled labels at most 0.59), so the rest is reassessed as a new task; disc hernia is diagnosed from MRI and symptoms the table lacks: retired with `No Good Target / Scientific Discovery` (2026-11-05), the reassessment open on the review page | applied |
 | SEL-6 | analcatdata_supreme | Congress's responses in 1979-1988 to Supreme Court rulings of 1953-1988, counted over one shared window: `No Good Target / Scientific Discovery` (2026-10-14, Lennart) | applied |
 | SEL-7 | cdc_diabetes_health_indicators | "ever told you have diabetes", told a median of 10 years earlier, with the undiagnosed in the negative class (2026-10-15, Lennart) | applied |
 | SEL-7 | stroke_prediction | a stroke the patient already had, undated, in a hackathon release rather than an interview: retired as cdc_diabetes_health_indicators, since no decision is made with it (a screening task would need a first stroke within a horizon, from dated records); with `Data Quality Issue` for the columns that look generated; SEL-7 not amended (2026-10-26, Lennart: "This looks too bad, dont ship it") | applied |
