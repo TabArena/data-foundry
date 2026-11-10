@@ -1,5 +1,18 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10, australian and loan_default: the same frame under pandas 2 and 3 (no container built)
+
+- The opt-in data check (`DATA_FOUNDRY_V2_DATA_CHECKS=1`) failed for both on pandas 3: the READMEs had been written
+  under pandas 2, whose parsers read some values a unit off in the last place. Those bits change the content hash that
+  orders the rows, so the shuffle (australian) and the ties of the time sort (loan_default) came out differently.
+- `australian_vehicle_insurance_2004_2005`: `dataCar.csv` is read with `float_precision="round_trip"`, as bemtpl97 and
+  spanish_motor_insurance_coverage_level_2022_2024 already do (`exposure` and the target were off).
+- `loan_default_prediction_imperial_college`: the 19 integers too long for int64 are converted with Python's `float`
+  instead of `pd.to_numeric` (pandas 2 was off on up to 19,795 rows of a column); `train_v2.csv` is read with
+  `float_precision="round_trip"`.
+- Both now give the same checksum under pandas 2.3 and 3.1; READMEs regenerated (new checksums, new sample rows).
+  The rows change order, so the shipped splits change; no value changes under pandas 3.
+
 ## 2026-11-10, PR #47 re-review, fourth round: the last two issues settled and the verdicts (no container built)
 
 - `pricing_game_2016_french_fleet`, issue 14 (A, Andrej: "We go with A over E because it provides the larger test

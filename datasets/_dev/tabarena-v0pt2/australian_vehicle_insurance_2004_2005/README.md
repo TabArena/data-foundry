@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: australian_vehicle_insurance_2004_2005
 container_format: 2
-checksum: v2:0345a5853025ee9d4a288f87711cd5b6f1f35f26b603be8b8d0524917db34812
+checksum: v2:162997fe137c6b721570e0e11183fe69843c936f4b6cf1231ab6c29d7fb17abf
 build: null
 build_stale: false
 data:
@@ -72,7 +72,7 @@ decisions:
 
 Regression of `claim_cost_per_year`, scored with `normalized_weighted_gini` on IID splits. 67,856 rows and 6 features. Source: Other (2008).
 
-Not built yet. The current definition gives checksum `v2:0345a5853025ee9d4a288f87711cd5b6f1f35f26b603be8b8d0524917db34812`.
+Not built yet. The current definition gives checksum `v2:162997fe137c6b721570e0e11183fe69843c936f4b6cf1231ab6c29d7fb17abf`.
 
 ## In brief
 
@@ -212,11 +212,11 @@ The first 5 of 67,856 rows of the final frame (random rows: the frame is shuffle
 
 | claim_cost_per_year | vehicle_value | exposure | vehicle_body | vehicle_age_band | gender | area | driver_age_band |
 |---|---|---|---|---|---|---|---|
-| 0 | 1.57 | 0.80219 | Hatchback | 2 | F | C | 4 |
-| 0 | 4.16 | 0.991102 | Station wagon | 2 | F | C | 3 |
-| 655.967 | 1.47 | 0.539357 | Utility | 4 | M | B | 1 |
-| 0 | 1.17 | 0.72553 | Hatchback | 2 | M | D | 3 |
-| 0 | 1.61 | 0.44627 | Sedan | 2 | F | A | 4 |
+| 0 | 4.45 | 0.0657084 | Station wagon | 1 | F | F | 2 |
+| 14583.1 | 1.33 | 0.15332 | Sedan | 3 | M | B | 1 |
+| 0 | 0.39 | 0.66256 | Sedan | 4 | M | E | 5 |
+| 0 | 1.3 | 0.84052 | Sedan | 3 | F | C | 3 |
+| 4503.39 | 1.37 | 0.930869 | Hatchback | 1 | M | A | 1 |
 
 ## Curation notes
 
@@ -322,9 +322,9 @@ Accepted on purpose:
 | gender | category | 0 | 0 | 2 | F, M |
 | area | category | 0 | 0 | 6 | C, A, B, D, E, F |
 | driver_age_band | category | 0 | 0 | 6 | 4, 3, 2, 5, 6, 1 |
-| vehicle_value | float64 | 53 | 0.08 | 985 | 1.36, 0.71, 1.26, 1.3, 1.5, 1.37, 1.74, 1.29, 1.22, 1.31 |
+| vehicle_value | float64 | 53 | 0.08 | 985 | 1.36, 1.26, 0.71, 1.3, 1.5, 1.37, 1.74, 1.29, 1.22, 1.31 |
 | exposure | float64 | 0 | 0 | 383 | 0.9993, 0.0027, 0.2546, 0.3368, 0.0849, 0.2136, 0.0821, 0.0794, 0.0301, 0.2519 |
-| claim_cost_per_year | float64 | 0 | 0 | 4115 | 0.0, 200.137, 354.0123, 204.0503, 521.7857, 390.2171, 358.0882, 394.8649, 274.6… |
+| claim_cost_per_year | float64 | 0 | 0 | 4115 | 0.0, 200.137, 354.0123, 204.0503, 521.7857, 394.8649, 274.6241, 212.3547, 358.0… |
 
 ### Target distribution
 
