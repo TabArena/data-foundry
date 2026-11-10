@@ -23,6 +23,20 @@
   Dataset A). `dataset check` passes (one info, `groups_not_clustered`). Record: CC and Assessment lines,
   `required_split` Grouped, `source_links`, `checked_by`. LEAK-15 and LEAK-39 list it as repaired (was kept with a
   note), PROV-13 as a case. Evidence in `~/claude_jobs/lung_raw/`.
+## 2026-11-10, PR #58: biomechanical_orthopaedic_prediction and blood_tests_drink_prediction retired (moved from #57)
+
+Both were retired on 2026-11-05 (Andrej's marks on the BeyondArena v0.2 review page) and carried out in #57; they move
+here, with the other retirements on the use case. Each record is `No (Retired)` with
+`No Good Target / Scientific Discovery` and a CC line, its folder is removed and `v2_path` cleared; `DF: Yes`, the
+collection tags and the pinned BeyondArena containers stay.
+- `biomechanical_orthopaedic_prediction`: `degree_spondylolisthesis` is the criterion of half the labels (one threshold,
+  accuracy 0.974). Reassessed on 2026-11-10 under SEL-5: the five other measures still predict (hernia against normal
+  ROC AUC 0.889), but neither task they leave has a decision behind it, since disc hernia is diagnosed from MRI and
+  symptoms the table lacks. `year` 2006, `problem_type` Multiclass Classification.
+- `blood_tests_drink_prediction`: no decision rests on estimating drinks from blood values the doctor already has.
+- Guidelines: USE-2, a label that stands in for what the features already measure fits no decision (blood_tests); its
+  Cases rows hold both datasets, and SEL-5 names biomechanical as the case whose rest was reassessed and is out under
+  USE-2.
 
 ## 2026-11-10, PR #58: south_africa_coronary_heart_disease retired (Andrej, review page; no container built)
 
@@ -65,8 +79,6 @@
 - `audiology_diagnosis`: marker `Trivial` in place of `No Good Target / Scientific Discovery`. The textbook rule on
   the audiogram assigns 194 of 195 cases (accuracy 0.995) against 0.968 for the best model; the case history alone
   keeps a small signal (log loss 0.713 against 0.762) but no decision.
-- `biomechanical_orthopaedic_prediction`: unchanged; its case row moves to SEL-5, and the reassessment of the five
-  other measures (hernia against normal, ROC AUC 0.889) is open on the review page.
 
 ## 2026-11-10, PR #55: horse_colic_survival decided (Andrej; no container built)
 
@@ -872,7 +884,7 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
   - `early_stage_diabetes_risk_prediction`: patients of a diabetes hospital, not the adults the screening use case is
     for; 52% of the rows repeat another row.
 
-## 2026-11-05, five tasks without a real target retired; new marker `No Signal`
+## 2026-11-05, three tasks without a real target retired; new marker `No Signal`
 
 - Retired: each record is `No (Retired)` with a CC line giving the reasons, its folder is removed and `v2_path`
   cleared. `DF: Yes`, the collection tags and the pinned BeyondArena containers stay. The records also carry the
@@ -880,23 +892,17 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
   - `audiology_diagnosis` (`No Good Target / Scientific Discovery`): the type of hearing loss is read off the five
     tests that define it (accuracy 0.903 of 0.938), and the case history alone predicts little (the majority class in
     accuracy). `year` 1987.
-  - `biomechanical_orthopaedic_prediction` (`No Good Target / Scientific Discovery`): `degree_spondylolisthesis` is
-    the criterion of half the labels, and hernia against normal is diagnosed from MRI and symptoms the table lacks.
-    `year` 2006, `problem_type` Multiclass Classification.
-  - `blood_tests_drink_prediction` (`No Good Target / Scientific Discovery`): no decision rests on estimating drinks
-    from blood values the doctor already has.
   - `clock_protein_toxicity` (`No Signal`): the 40 benchmark methods score within what shuffled labels give (best ROC
     AUC 0.539); the one weak signal found was picked after about 137 screens of the same molecules.
   - `forest_fires` (`No Signal`): with fires of one day kept together, no model beats the training median.
 - New marker `No Signal`: the best methods do not beat a constant, or stay within what shuffled labels give, on the
   split the use case needs. `telemonitoring_parkinsons_biomedical_voice_measurements` (retired 2026-10-02) gets it too.
 - Guidelines:
-  - selection.md: SEL-19, a label the field defines by columns we ship is no prediction target (audiology,
-    biomechanical); LEAK-4 and USE-2 point to it. The marker table lists `No Signal`.
+  - selection.md: SEL-19, a label the field defines by columns we ship is no prediction target (audiology); LEAK-4
+    and USE-2 point to it. The marker table lists `No Signal`.
   - TP-2: a real signal beats shuffled labels on the split the use case needs (forest_fires, 2026-10-19); a task within
     shuffled labels is retired with `No Signal`, and a signal found by screening many scores on the same rows counts
     only on rows it was not chosen on (clock). SPLIT-28 names the marker.
-  - USE-2: a label that stands in for what the features already measure fits no decision (blood_tests).
   - task_probes.md: values a source computes once per day, site or batch are a hidden group key (forest_fires' daily
     fire weather values). The Cases rows in task_probes.md, evidence.md, leak_checks.md and use_case.md say retired.
 

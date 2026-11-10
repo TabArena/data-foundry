@@ -21,7 +21,7 @@ Cases: kickstarter.
 in [selection.md](selection.md), and data that serves only a study looking back is SEL-3. A label that stands in for
 what the features already measure fits no decision either: once the actor holds the inputs, they act on those. Marker:
 `No Good Target / Scientific Discovery` (the fit None, USE-8). Cases: under SEL-3 to SEL-7;
-blood_tests_drink_prediction.
+blood_tests_drink_prediction; biomechanical_orthopaedic_prediction (the rest after SEL-5).
 
 ### The prediction point
 
@@ -154,6 +154,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | USE-1 | glioma_grading_clinical_and_mutation_features | `No` + `No Good Target / Scientific Discovery`: the grade is the pathologist's diagnosis, made before the DNA is sequenced, so a model can only cross-check a label that already exists; a cross-check of a known label is no use case, and the source names no clinical setting (2026-10-26, Lennart) | applied |
 | USE-1 | lung_cancer | `No (Retired)` + `No Good Target / Scientific Discovery` (2026-11-10, Andrej): the histology of resected tumours, which the slide already settles; molecular typing matters on ambiguous small biopsies and tumours of unknown origin, which the data lacks, and the study's other targets fail (16 metastases; survival carried by stage and age, not the arrays). The expert annotation stays a valid target in general | applied |
 | USE-2 | blood_tests_drink_prediction | drinks per day estimated from five blood tests that respond to alcohol: as a stand-in for liver damage the blood tests are the better measure, and as a check of a patient's account the doctor already holds the blood values and can ask; no decision rests on the estimate: retired with `No Good Target / Scientific Discovery` | applied |
+| USE-2 | biomechanical_orthopaedic_prediction | `degree_spondylolisthesis` is the slip that defines one of the three classes (one threshold, accuracy 0.974); without it the five other measures still separate disc hernia from normal (ROC AUC 0.889, shuffled labels at most 0.59) and spondylolisthesis from the rest (0.913), so the rest was reassessed as a new task (SEL-5): disc hernia is diagnosed from MRI and symptoms the table lacks, and nobody reads spondylolisthesis from pelvic shape with the slip on the same radiograph. Retired with `No Good Target / Scientific Discovery` (2026-11-05), the reason restated on 2026-11-10 (Andrej) | applied |
 | USE-4 | eryhemato_squamous_disease | offered on the 12 clinical features, before the skin biopsy | applied |
 | USE-5 | corporate_credit_rating | 17% of the checkable labels were not the issuer rating; retired for a rebuild from the agencies' own histories (2026-10-16) | applied |
 | USE-5 | xente_fraud_detection_challenge | the fraud label follows a review applied above about 500k UGX on a shipped input: within the same customers' spans, 109 of 110 rows at 500k-1M are fraud against 16 of 149 at 100k-490k, minutes apart, so a 0 below the step means "not reviewed" as much as "not fraud"; `No` for now with `Data Quality Issue`, to revisit with a second curator's reading or the host's account of how `FraudResult` was set (2026-11-04, Lennart). It differs from ieee_fraud_detection, whose chargeback rule labels every transaction | applied |
