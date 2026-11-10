@@ -1,5 +1,13 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10: Papyrus requested build and local commits
+
+- Build only `papyrus_bioactivity`: format 2, UUID `01a1c4a3-5dd9-7593-8c3b-19181baab684`, checksum `v2:08eb2e46164bb6dbb4f13509ecae23b7f124da5557b178805cc24bb11ddaf47c`, from clean accepted-definition commit `f3f5797fde2b9cd7eeca788bb5bbf35e5f905499`, using pinned Data Foundry runtime `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`. Preserve all 692,017 rows, seven inputs, three scaffold folds, fallback RMSE and pointwise protocol. Zero build errors/warnings.
+- Saved reload and a check from only traced inputs reproduce the checksum. Independently regenerate both prepared tables from the original publisher inputs in private scratch; every value/dtype/order matches. Manifested local backup: 5 files, 856,881,288bytes, archive/source hashes verified. No input/container enters Git.
+- Built rows, labels, features, order, splits and saved prediction labels exactly match qualification, so existing models/probes remain applicable. No new sweep or retraining needed. Checks: 2014 tests passed/285 skipped, including 18 temporary-socket reruns; pinned Ruff, records/pointers, review parser and diff checks pass. Full catalog retains 17 pre-existing RowBudget import failures; owned-definition import passes.
+- Local build/commit only; current claim and Yes/WIP(DF)/priority3 retained. No DF:Yes, registry membership, claim release, push, PR or merge. Other staged records and datasets untouched. No superseded Papyrus container existed to remove.
+
+
 ## 2026-11-10: Papyrus scientific inclusion accepted (Myunghwan)
 
 - Record Myunghwan's explicit "ship it" on the completed `papyrus_bioactivity` review, keeping fallback RMSE as declared. Independent consistency review finds no departure or additional issue. Preserve original source means, all692,017rows/seven inputs, scaffold folds, repaired label-independent ordering and pointwise prediction restrictions.
