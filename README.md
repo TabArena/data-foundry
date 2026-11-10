@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-10 21:04 UTC: 150 claim(s) (Andrej 116, Lennart 12, Myunghwan 22).
+As of 2026-11-10 21:35 UTC: 151 claim(s) (Andrej 117, Lennart 12, Myunghwan 22).
 
 ## Andrej
 
@@ -41,6 +41,7 @@ As of 2026-11-10 21:04 UTC: 150 claim(s) (Andrej 116, Lennart 12, Myunghwan 22).
 | `diamonds` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `drug_induced_autoimmunity_prediction` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `early_learning_predictors` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
+| `early_stage_diabetes_risk_prediction` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej): retirement reassessed |
 | `ecoli_proteins` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `electric_motor_temperature_prediction` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `emscad` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
