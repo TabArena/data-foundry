@@ -1,5 +1,20 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10: Papyrus scientific inclusion accepted (Myunghwan)
+
+- Record Myunghwan's explicit "ship it" on the completed `papyrus_bioactivity` review, keeping fallback RMSE as declared. Independent consistency review finds no departure or additional issue. Preserve original source means, all692,017rows/seven inputs, scaffold folds, repaired label-independent ordering and pointwise prediction restrictions.
+- Scientific review is complete; retain approximate assay/endpoint/stereo/cohort/sequence limits and the distinct protein-conditioned-task rationale with864same-thrombin matches. Preserve the full review history, Yes/WIP(DF), priority3 and current reservation.
+- No definition/generated README/data/model/split change, build, curation commit, DF:Yes, claim release, push or PR update. Ready for a separately requested build.
+
+
+## 2026-11-09: Papyrus pooled bioactivity qualification (Myunghwan)
+
+- Add `papyrus_bioactivity`: 692,017 original mean-pChEMBL labels across 5,057 proteins, seven intrinsic compound/protein inputs and three scaffold-disjoint folds. Retain recognized complete source means; no new aggregate or Ki-only cut. Explicit approximate pre-assay structural generalization, without chronological validity.
+- Repair inherited label-dependent row ordering using a known-input sort and fixed shuffle, confirmed by independent attacks and full target-perturbation controls. Merge exact source-connectivity aliases before splitting; mask unknown classification. Keep train-fitted transformations and frozen per-query inference, excluding held-out-record statistics.
+- Full independent panel recommends inclusion after applied documentation fixes, with zero separate issues. Strict bounded LightGBM RMSE0.977244 versus converged Ridge1.080116 and protein mean1.130486; final27checks pass without warnings. Document mixed-endpoint/stereo/cohort/sequence limits and864 same-thrombin overlaps under the distinct protein-conditioned-task rationale.
+- Record remains WIP(DF), priority3, with human inclusion verdict pending. No build, container, curation commit or publication.
+
+
 ## 2026-11-09: Football deferred by curator
 
 - Myunghwan deferred `football_match_probability_prediction` because the demonstrated incremental model-performance gain is weak. Set `TBD -> 2nd Tier` / `DF: Suspended`, preserving priority 4, the settled ordinary-temporal choice and all exploratory evidence.
