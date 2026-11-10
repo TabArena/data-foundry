@@ -10,7 +10,6 @@ data_foundry_status:
 suggestion: No (Retired)
 decision_markers:
 - Outdated
-- No Good Target (yet)
 - Not Representative
 - Selection Bias
 - No Good Target / Scientific Discovery
