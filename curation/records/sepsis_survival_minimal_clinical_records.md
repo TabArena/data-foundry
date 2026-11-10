@@ -3,10 +3,13 @@ unique_name: sepsis_survival_minimal_clinical_records
 name: Sepsis Survival Minimal Clinical Records
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-suggestion: 'Yes'
+suggestion: No (Retired)
+decision_markers:
+- Trivial
 tags:
 - Larger IID Data
 - Tiny Data
@@ -23,7 +26,6 @@ source_links:
 - https://archive.ics.uci.edu/dataset/827/sepsis+survival+minimal+clinical+records
 - https://doi.org/10.24432/C53C8N
 notebook_path: datasets/beyond_iid/new_iid/sepsis_survival_minimal_clinical_records/sepsis_survival_minimal_clinical_records.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/sepsis_survival_minimal_clinical_records/dataset.py
 source_row: 662
 type_adapter_id: curation-record-v1
 ---
@@ -41,6 +43,13 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid task by design after 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Chicco & Jurman 2020 call PR AUC with Alive (92.6%) as positive their 'principal indicator', with ROC AUC, MCC, F1 and others; on our folds PR AUC sits at its floor 0.926 with a best of 0.966, so it resolves models poorly (MET-9). Original rejected: PR AUC on the majority class. roc_auc is the binary fallback.
 
 CC (2026-10-21, Lennart): the roc_auc fallback, as proposed, over average_precision with Alive as positive (the paper's principal indicator): AUPRC on the 92.6% majority class sits between its floor of 0.926 and a best of 0.966 and resolves models poorly, while ROC AUC (about 0.7) separates them.
+
+CC (2026-11-10, Andrej): retired (`No (Retired)`, `Trivial`): a clinician's rule, age plus about five years for men, ranks the patients within 0.001 of ROC AUC of TabPFN 3.5, and nothing learnable from the three columns lies beyond it.
+- **The rule matches the best method:** on the 9 shipped splits, age alone reaches ROC AUC 0.7044, age + 5 years for men (not fitted) 0.7059, the best train-only smoother (an age spline per sex with a repeat-episode term by age, regularisation by inner cross-validation) 0.7065, TabPFN 3.5 0.7068; the rule trails TabPFN by 0.0010 ± 0.0002, while the splits' own ROC AUC runs from 0.699 to 0.710. An offset fitted per training side comes out at 3 to 5 years and scores the same (0.7058).
+- **Nothing is left beyond the age-and-sex curve:** the best achievable ranking, each cell's true death rate, is estimated at about 0.709 (cell rates measured on all rows reach 0.722, of which 0.013 is the noise the same estimate shows on labels simulated from the smooth curve alone); shrinking each of the 975 cells toward the curve, with the strength chosen by inner cross-validation, takes it all the way to the curve on every split.
+- **What TabPFN adds over age:** it keeps age's order on 94% of (died, survived) pairs; its gain (+0.0024) is men counted a few years older (+0.0019 net of large gains and losses) and a repeat episode in younger patients (+0.0005).
+- **Why the earlier keep does not hold:** age alone below the best on every fold (Lennart, 2026-10-06) met the single-feature test of the time; the amended test counts a rule within the spread of the folds as a match, and a task whose methods all fall within 0.003 of a clinician's rule ranks nothing but smoothing.
+Marker `Trivial` added, `v2_path` cleared, folder removed. Evidence: `~/claude_jobs/sepsis_tabpfn/` (TabPFN 3.5 on an A100, Slurm 1376270 and 1376610; `offset_fit.py`, `optimal.py`, `oracle_null.py`, `train_optimal.py`, `pairs.py`).
 
 ## Reference
 
