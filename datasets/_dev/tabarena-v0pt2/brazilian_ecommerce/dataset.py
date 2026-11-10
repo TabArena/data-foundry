@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     SplitPlan,
     TaskSummary,
     Temporal,
@@ -78,11 +79,26 @@ class BrazilianEcommerce(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "brazilian_ecommerce"
-    year = "2018"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce"
-    license = "CC BY-NC-SA 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce",
+            license="CC BY-NC-SA 4.0",
+            year="2018",
+            bibtex=r"""
+                @misc{Olist2018BrazilianEcommerce,
+                  author = {{Olist} and Andr{\'e} Sionek},
+                  title = {Brazilian E-Commerce Public Dataset by Olist},
+                  year = {2018},
+                  howpublished = {\url{https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce}},
+                  doi = {10.34740/KAGGLE/DSV/195341},
+                  note = {Kaggle dataset}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We download the Kaggle dataset published by Olist (version 2, the current one since 2021-10-01; DOI
@@ -96,16 +112,6 @@ class BrazilianEcommerce(AbstractCuratedDataset):
         rm local-data-warehouse/brazilian_ecommerce/brazilian-ecommerce.zip
 
         The zip holds nine CSV files; the definition reads eight of them (not olist_geolocation_dataset.csv).
-    """
-    bibtex = r"""
-        @misc{Olist2018BrazilianEcommerce,
-          author = {{Olist} and Andr{\'e} Sionek},
-          title = {Brazilian E-Commerce Public Dataset by Olist},
-          year = {2018},
-          howpublished = {\url{https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce}},
-          doi = {10.34740/KAGGLE/DSV/195341},
-          note = {Kaggle dataset}
-        }
     """
     curation_comments = """
         We start with olist_orders_dataset.csv of the Kaggle release by Olist (version 2), joined on their keys with the customers, order items, products, sellers and payments files; one row per order.

@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, Spectrum, TaskSummary
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    Spectrum,
+    TaskSummary,
+)
 
 KEY = ["dataset.code_ascii_txt", "id.layer_uuid_txt"]
 TARGET_SOURCE = "oc_usda.c729_w.pct"
@@ -33,19 +42,24 @@ class OpenSoilSpectralLibrary(AbstractCuratedDataset):
         fit_reason="The task is the source's own calibration within one laboratory and one instrument. A laboratory using the OSSL models scans on its own instrument, and that transfer, where the source's independent evaluation finds the errors grow, is not tested. Nor are later scans or new survey projects, where one model scored about 8 to 26% worse.",
     )
     unique_name = "open_soil_spectral_library"
-    year = "2023"
     domain = "environmental science & climate"
-    source = "Other"
-    source_url = "https://zenodo.org/records/7599269"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://zenodo.org/records/7599269",
+            license="CC BY 4.0",
+            year="2023",
+            bibtex=r"""
+                @dataset{safanelli2023ossl,
+                  author={Safanelli, Jose L. and Hengl, Tomislav and Sanderman, Jonathan and Parente, Leandro},
+                  title={Open Soil Spectral Library (training data and calibration models)},
+                  year={2023}, version={v1.2}, publisher={Zenodo}, doi={10.5281/zenodo.7599269}
+                }
+            """,
+        ),
+    )
     download_description = "Recreate the lossless raw inputs with Python 3, R 4.3 or later and qs 0.27.3.\nThe following complete Python script downloads the four immutable Zenodo v1.2 files,\nchecks their published MD5 values and decodes them without fitting or cleaning.\nSave it as prepare_raw.py, then run:\n\n```sh\npython3 prepare_raw.py --raw-dir local-data-warehouse/open_soil_spectral_library\n```\n\nUse --existing-only when source files were fetched through a download gateway.\nNo model is fitted. The archived QS originals remain beside the exports.\nA network failure is an access limitation, never evidence against the dataset.\n\n```python\n# Standalone raw-input preparation; no fitting or curation decisions.\nimport argparse,hashlib,subprocess,urllib.request\nfrom pathlib import Path\nFILES={\n 'ossl_soillab_L0_v1.2.qs':'6817a47891b2281545917e543bf3b7f0',\n 'ossl_soillab_L1_v1.2.qs':'652f7bf633d969d6d45cf21007c91a31',\n 'ossl_soilsite_L0_v1.2.qs':'232fb5bef505a8b5bfa4fe2120c913d9',\n 'ossl_mir_L0_v1.2.qs':'de56ed6d11ea9ca8c54475a674586b00'}\na=argparse.ArgumentParser();a.add_argument('--raw-dir',type=Path,required=True);a.add_argument('--rscript',default='Rscript');a.add_argument('--existing-only',action='store_true');args=a.parse_args();d=args.raw_dir;d.mkdir(parents=True,exist_ok=True)\nfor name,expected in FILES.items():\n f=d/name\n if not f.exists():\n  if args.existing_only:raise SystemExit('Missing '+str(f))\n  urllib.request.urlretrieve('https://zenodo.org/records/7599269/files/'+name+'?download=1',f)\n h=hashlib.md5()\n with f.open('rb') as s:\n  for block in iter(lambda:s.read(8*1024*1024),b''):h.update(block)\n if h.hexdigest()!=expected:raise SystemExit('Checksum mismatch '+name)\nLAB_R=\"args <- commandArgs(trailingOnly=TRUE)\\nlibrary(qs)\\noptions(digits=17)\\nfor (path in args) {\\n cat('\\\\nFILE ', basename(path), '\\\\n', sep='')\\n x <- qread(path, nthreads=2)\\n cat('CLASS ', paste(class(x),collapse=','), ' DIM ', paste(dim(x),collapse=' x '), '\\\\n', sep='')\\n cat('COLUMNS\\\\n'); cat(paste(names(x),collapse='\\\\n'),'\\\\n')\\n if ('dataset.code_ascii_txt' %in% names(x)) {cat('DATASET_COUNTS\\\\n'); print(table(x[['dataset.code_ascii_txt']],useNA='always'))}\\n cols <- grep('(^oc_|^c.tot_|^caco3_|^id[.]|^layer[.]|^scan)',names(x),value=TRUE)\\n write.csv(data.frame(column=names(x),type=sapply(x,function(z)paste(class(z),collapse=':'))), paste0(path,'.schema.csv'),row.names=FALSE)\\n # Export all lab/site columns for exact source-key qualification. Decimal strings preserve 17 significant digits.\\n y <- as.data.frame(x)\\n for (n in names(y)) if(is.numeric(y[[n]])) y[[n]] <- ifelse(is.na(y[[n]]),NA,format(y[[n]],digits=17,scientific=TRUE,trim=TRUE))\\n write.csv(y,gzfile(paste0(path,'.csv.gz')),row.names=FALSE,na='')\\n cat('EXPORTED ',nrow(y),' ROWS\\\\n',sep='')\\n}\\n\"\nMIR_R=\"args <- commandArgs(trailingOnly=TRUE)\\nlibrary(qs)\\nx <- qread(args[1],nthreads=2)\\ncat('DIM ',paste(dim(x),collapse=' x '),'\\\\n');cat('DATASET_COUNTS\\\\n');print(table(x[['dataset.code_ascii_txt']],useNA='always'))\\nbins <- grep('^scan_mir[.]',names(x),value=TRUE)\\ncat('BIN_COUNT ',length(bins),'\\\\n');cat('NONBIN_COLUMNS\\\\n');cat(paste(setdiff(names(x),bins),collapse='\\\\n'),'\\\\n')\\nk <- x[x[['dataset.code_ascii_txt']]=='KSSL.SSL',,drop=FALSE]\\ncat('KSSL_ROWS ',nrow(k),'\\\\n');writeLines(bins,paste0(args[2],'.bins.txt'))\\n# R columns are written sequentially; Python reconstructs with Fortran order.\\nwriteBin(as.double(as.matrix(k[,bins])),paste0(args[2],'.float64.bin'),size=8,endian='little')\\nm <- as.data.frame(k[,setdiff(names(k),bins)])\\nfor(n in names(m))if(is.numeric(m[[n]]))m[[n]]<-ifelse(is.na(m[[n]]),NA,format(m[[n]],digits=17,scientific=TRUE,trim=TRUE))\\nwrite.csv(m,gzfile(paste0(args[2],'.metadata.csv.gz')),row.names=FALSE,na='')\\nwrite.csv(data.frame(column=names(x),type=sapply(x,function(z)paste(class(z),collapse=':'))),paste0(args[2],'.schema.csv'),row.names=FALSE)\\n\"\nlab=d/'decode-lab.R';mir=d/'decode-mir.R';lab.write_text(LAB_R);mir.write_text(MIR_R)\nsubprocess.run([args.rscript,str(lab),*[str(d/n) for n in FILES if 'mir_L0' not in n]],check=True)\nsubprocess.run([args.rscript,str(mir),str(d/'ossl_mir_L0_v1.2.qs'),str(d/'kssl_mir')],check=True)\nprint('Verified source checksums and prepared lossless inputs in',d)\n```\n"
-    bibtex = r"""
-        @dataset{safanelli2023ossl,
-          author={Safanelli, Jose L. and Hengl, Tomislav and Sanderman, Jonathan and Parente, Leandro},
-          title={Open Soil Spectral Library (training data and calibration models)},
-          year={2023}, version={v1.2}, publisher={Zenodo}, doi={10.5281/zenodo.7599269}
-        }
-    """
     curation_comments = """
         We start with the lab L1, site L0 and MIR L0 tables of Zenodo record 7599269, v1.2, with archived L0 lab references retained for auditing.
 

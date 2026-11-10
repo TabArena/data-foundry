@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     RowBudget,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -113,15 +114,26 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "pkdd_15_taxi_trip_time_prediction_ii_1m"
-    version_of = "pkdd_15_taxi_trip_time_prediction_ii"
-    version_comment = """
-        The cleaned frame holds 1,636,276 trips, above the 1.5M-row budget, and the train side of every window holds more than 1M. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (all of them here), and its train side is a random 1M of the trips that start at least one day earlier, drawn in one random order for all windows; the frame keeps only the rows a split uses.
-    """
-    year = "2015"
     domain = "industry & manufacturing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/c/pkdd-15-taxi-trip-time-prediction-ii"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/c/pkdd-15-taxi-trip-time-prediction-ii",
+            license="CC BY 4.0",
+            year="2015",
+            bibtex=r"""
+                @misc{moreiramatias2013taxi,
+                  author       = {Moreira-Matias, Luis and Ferreira, Michel and Mendes-Moreira, Jo{\~a}o and others},
+                  title        = {{Taxi Service Trajectory - Prediction Challenge, ECML PKDD 2015}},
+                  year         = {2013},
+                  howpublished = {UCI Machine Learning Repository},
+                  doi          = {10.24432/C55W25},
+                  note         = {Training set of the ECML/PKDD 2015 Discovery Challenge (Kaggle: pkdd-15-taxi-trip-time-prediction-ii)}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         The training set of the ECML/PKDD 2015 Discovery Challenge, which its organisers donated to the UCI repository
@@ -135,16 +147,6 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
         mkdir -p local-data-warehouse/pkdd_15_taxi_trip_time_prediction_ii && cd local-data-warehouse/pkdd_15_taxi_trip_time_prediction_ii
         wget -O taxi_service_trajectory.zip "https://archive.ics.uci.edu/static/public/339/taxi+service+trajectory+prediction+challenge+ecml+pkdd+2015.zip"
         unzip taxi_service_trajectory.zip train.csv.zip && unzip train.csv.zip && rm taxi_service_trajectory.zip train.csv.zip
-    """
-    bibtex = r"""
-        @misc{moreiramatias2013taxi,
-          author       = {Moreira-Matias, Luis and Ferreira, Michel and Mendes-Moreira, Jo{\~a}o and others},
-          title        = {{Taxi Service Trajectory - Prediction Challenge, ECML PKDD 2015}},
-          year         = {2013},
-          howpublished = {UCI Machine Learning Repository},
-          doi          = {10.24432/C55W25},
-          note         = {Training set of the ECML/PKDD 2015 Discovery Challenge (Kaggle: pkdd-15-taxi-trip-time-prediction-ii)}
-        }
     """
     curation_comments = """
         We start with train.csv of the ECML/PKDD 2015 Discovery Challenge (UCI id 339): 1,710,670 Porto taxi trips from 2013-07-01 to 2014-06-30, each with its GPS trajectory (`POLYLINE`, one point every 15 s).
@@ -161,6 +163,7 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
         - `call_type` A, B and C become dispatch_central, taxi_stand and street. `origin_stand` is empty unless the taxi was hired at a stand; we set the empty strings missing.
         - `taxi_id` stays a categorical feature, since the taxi is known at pickup; it adds 0.008 to 0.014 to LightGBM's R^2 (same setup) and is its top feature by gain. The fleet is the same in every month (decision table), so the split is temporal and not grouped by taxi.
         - Anomaly: we keep the 1.2% of trips that jump more than 1 km between two GPS points (missing points, Lam et al. 2015), trips with a drive back on the meter, and the 45,171 (2.8%) that end 100 to 500 m from their start: a meter left on or a round trip is unusual, not impossible.
+        - The row budget: The cleaned frame holds 1,636,276 trips, above the 1.5M-row budget, and the train side of every window holds more than 1M. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (all of them here), and its train side is a random 1M of the trips that start at least one day earlier, drawn in one random order for all windows; the frame keeps only the rows a split uses.
     """
 
     # Task

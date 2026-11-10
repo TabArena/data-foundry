@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, drop_columns
 
 
 class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
@@ -43,44 +43,57 @@ class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "biogeographical_ancestry_prediction"
-    year = "2023"
     domain = "biology & life sciences"
-    source = "Other"  # Supplementary Table S1A of Ruiz-Ramirez et al. 2023; the GitHub file is a later copy
-    source_url = "https://doi.org/10.1016/j.fsigen.2023.102853"
-    license = "None"  # Data from GitHub does not have a license, source is Apache-2.0 license (I think)
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # Supplementary Table S1A of Ruiz-Ramirez et al. 2023; the GitHub file is a later copy
+            url="https://doi.org/10.1016/j.fsigen.2023.102853",
+            license="CC BY-NC-ND 4.0",  # the article's open-access license (Crossref), which covers its supplement
+            year="2023",
+            bibtex=r"""
+                @article{heinzel2025advancing,
+                  title={Advancing biogeographical ancestry predictions through machine learning},
+                  author={Heinzel, Carola Sophia and Purucker, Lennart and Hutter, Frank and Pfaffelhuber, Peter},
+                  journal={Forensic Science International: Genetics},
+                  volume={79},
+                  pages={103290},
+                  year={2025},
+                  publisher={Elsevier}
+                }
+                @article{ruiz2023development,
+                  title={Development and evaluations of the ancestry informative markers of the VISAGE Enhanced Tool for Appearance and Ancestry},
+                  author={Ruiz-Ram{\'\i}rez, Jorge and de La Puente, M and Xavier, Catarina and Ambroa-Conde, Adri{\'a}n and {\'A}lvarez-Dios, J and Freire-Aradas, A and Mosquera-Miguel, Ana and Ralf, Arwin and Amory, Christina and Katsara, Maria Alexandra and others},
+                  journal={Forensic Science International: Genetics},
+                  volume={64},
+                  pages={102853},
+                  year={2023},
+                  publisher={Elsevier}
+                }
+                @article{xavier2020development,
+                  title={Development and validation of the VISAGE AmpliSeq basic tool to predict appearance and ancestry from DNA},
+                  author={Xavier, Catarina and de la Puente, Maria and Mosquera-Miguel, Ana and Freire-Aradas, Ana and Kalamara, Vivian and Vidaki, Athina and Gross, Theresa E and Revoir, Andrew and Po{\'s}piech, Ewelina and Kartasi{\'n}ska, Ewa and others},
+                  journal={Forensic Science International: Genetics},
+                  volume={48},
+                  pages={102336},
+                  year={2020},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="GitHub",
+            url="https://github.com/CarolaHeinzel/BGA-Classification",
+            license=None,  # the repository states no license
+            year="2025",
+            name="the authors' GitHub copy of Table S1A",
+        ),
+    )
     download_description = """
         We download the data from the GitHub repository and save it to a predefined folder.
 
         mkdir -p local-data-warehouse/biogeographical_ancestry_prediction/ && curl -L -o local-data-warehouse/biogeographical_ancestry_prediction/filter_population.xlsx https://raw.githubusercontent.com/CarolaHeinzel/BGA-Classification/main/datat/filtered_population_eur_update.xlsx
-    """
-    bibtex = r"""
-        @article{heinzel2025advancing,
-          title={Advancing biogeographical ancestry predictions through machine learning},
-          author={Heinzel, Carola Sophia and Purucker, Lennart and Hutter, Frank and Pfaffelhuber, Peter},
-          journal={Forensic Science International: Genetics},
-          volume={79},
-          pages={103290},
-          year={2025},
-          publisher={Elsevier}
-        }
-        @article{ruiz2023development,
-          title={Development and evaluations of the ancestry informative markers of the VISAGE Enhanced Tool for Appearance and Ancestry},
-          author={Ruiz-Ram{\'\i}rez, Jorge and de La Puente, M and Xavier, Catarina and Ambroa-Conde, Adri{\'a}n and {\'A}lvarez-Dios, J and Freire-Aradas, A and Mosquera-Miguel, Ana and Ralf, Arwin and Amory, Christina and Katsara, Maria Alexandra and others},
-          journal={Forensic Science International: Genetics},
-          volume={64},
-          pages={102853},
-          year={2023},
-          publisher={Elsevier}
-        }
-        @article{xavier2020development,
-          title={Development and validation of the VISAGE AmpliSeq basic tool to predict appearance and ancestry from DNA},
-          author={Xavier, Catarina and de la Puente, Maria and Mosquera-Miguel, Ana and Freire-Aradas, Ana and Kalamara, Vivian and Vidaki, Athina and Gross, Theresa E and Revoir, Andrew and Po{\'s}piech, Ewelina and Kartasi{\'n}ska, Ewa and others},
-          journal={Forensic Science International: Genetics},
-          volume={48},
-          pages={102336},
-          year={2020},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         We use this dataset as one of the most recent example of a machine learning task based on the Human Genome project.
@@ -90,6 +103,12 @@ class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
         - "NN" genotypes are no-calls and are set to missing. They occur only in the HGDP classes (24 rows: Russian 8, French 7, Sardinian 5, Basque 4), never in 1000 Genomes, so missingness weakly hints at the source.
         - rs2789823 is AG in 7 rows, all Iberian; it may be a smaller artefact of the same kind and is kept.
     """
+    accepted_check_warnings = {
+        "meta_license_unknown": (
+            "The authors' GitHub repository, which we download from, states no licence (checked 2026-11-10); the "
+            "article and its supplement are CC BY-NC-ND 4.0."
+        ),
+    }
 
     # Task
     target = "Population"

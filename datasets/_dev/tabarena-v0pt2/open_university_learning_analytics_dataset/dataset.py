@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Grouping,
     Metric,
+    Source,
     SplitPlan,
     TaskSummary,
     drop_columns,
@@ -151,11 +152,27 @@ class OpenUniversityLearningAnalyticsDataset(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "open_university_learning_analytics_dataset"
-    year = "2015"
     domain = "education"
-    source = "Other"
-    source_url = "https://research.stem.open.ac.uk/ouanalyse/open-dataset-more/"  # the OU's page, first release 2015
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://research.stem.open.ac.uk/ouanalyse/open-dataset-more/",  # the OU's page, first release 2015
+            license="CC BY 4.0",
+            year="2015",
+            bibtex="""
+                @article{kuzilek2017oulad,
+                  author = {Kuzilek, Jakub and Hlosta, Martin and Zdrahal, Zdenek},
+                  title = {Open University Learning Analytics dataset},
+                  journal = {Scientific Data},
+                  volume = {4},
+                  pages = {170171},
+                  year = {2017},
+                  doi = {10.1038/sdata.2017.171}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial", "ForcedGroupedFromTemporal")
     download_description = """
         The OU first published the release on its own page in 2015 (see below). We download it (anonymisedData.zip)
@@ -175,17 +192,6 @@ class OpenUniversityLearningAnalyticsDataset(AbstractCuratedDataset):
         (https://archive.ics.uci.edu/static/public/349/open+university+learning+analytics+dataset.zip) holds the
         same tables with empty values written as "?": its files equal these once "?" is replaced by "" and these
         files' CRLF line ends by LF.
-    """
-    bibtex = """
-        @article{kuzilek2017oulad,
-          author = {Kuzilek, Jakub and Hlosta, Martin and Zdrahal, Zdenek},
-          title = {Open University Learning Analytics dataset},
-          journal = {Scientific Data},
-          volume = {4},
-          pages = {170171},
-          year = {2017},
-          doi = {10.1038/sdata.2017.171}
-        }
     """
     curation_comments = """
         We start with the seven tables of the Open University Learning Analytics Dataset (OULAD): studentInfo.csv, one row per registration of a student on a module-presentation (32,593 rows; 22 presentations of 7 modules in 2013 and 2014), joined with the registration dates, the assessment results and the daily VLE click log.

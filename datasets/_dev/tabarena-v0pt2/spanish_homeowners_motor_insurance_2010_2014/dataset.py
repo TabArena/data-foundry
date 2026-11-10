@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -118,11 +119,28 @@ class SpanishHomeownersMotorInsurance20102014(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "spanish_homeowners_motor_insurance_2010_2014"
-    year = "2021"
     domain = "insurance"
-    source = "Other"  # Mendeley Data, the repository the authors published in; no closer schema value
-    source_url = "https://doi.org/10.17632/vfchtm5y7j.1"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # Mendeley Data, the repository the authors published in; no closer schema value
+            url="https://doi.org/10.17632/vfchtm5y7j.1",
+            license="CC BY 4.0",
+            year="2021",
+            bibtex=r"""
+                @article{guillen2021homeowners,
+                  title = {Case study data for joint modeling of insurance claims and lapsation},
+                  author = {Guillen, Montserrat and Bolanc{\'e}, Catalina and Frees, Edward W. and Valdez, Emiliano A.},
+                  journal = {Data in Brief},
+                  volume = {39},
+                  pages = {107639},
+                  year = {2021},
+                  doi = {10.1016/j.dib.2021.107639},
+                  note = {Data: Mendeley Data, version 1, doi:10.17632/vfchtm5y7j.1, published 3 June 2021}
+                }
+            """,
+        ),
+    )
     data_tags = ()
     download_description = """
         Version 1 of the Mendeley Data record (DOI 10.17632/vfchtm5y7j.1, published 2021-06-03, CC BY 4.0) holds one
@@ -135,18 +153,6 @@ class SpanishHomeownersMotorInsurance20102014(AbstractCuratedDataset):
         wget -O data_ex.csv https://data.mendeley.com/public-files/datasets/vfchtm5y7j/files/6a105b8a-fd66-443a-9866-8e7ed11c63e1/file_downloaded
         sha256sum data_ex.csv
         # 904906d5bd00566bd60af40be7ea12b2cb253c2724799ffa761f77d574354eeb  data_ex.csv
-    """
-    bibtex = r"""
-        @article{guillen2021homeowners,
-          title = {Case study data for joint modeling of insurance claims and lapsation},
-          author = {Guillen, Montserrat and Bolanc{\'e}, Catalina and Frees, Edward W. and Valdez, Emiliano A.},
-          journal = {Data in Brief},
-          volume = {39},
-          pages = {107639},
-          year = {2021},
-          doi = {10.1016/j.dib.2021.107639},
-          note = {Data: Mendeley Data, version 1, doi:10.17632/vfchtm5y7j.1, published 3 June 2021}
-        }
     """
     curation_comments = """
         We start with data_ex.csv of Mendeley Data vfchtm5y7j, version 1 (Guillen, Bolancé, Frees and Valdez; described in Data in Brief 39:107639, 2021, read on the University of Barcelona's open copy; the model paper is Frees, Bolancé, Guillen and Valdez 2021, Expert Systems with Applications 185:115552, read on the ANU open copy).

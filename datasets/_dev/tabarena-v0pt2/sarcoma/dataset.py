@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, Metric, Source, TaskSummary
 
 OMICS = {"exp": "mRNA", "methy": "Methy", "mirna": "miRNA"}
 """The omic files of the benchmark (features x samples) and the prefix their columns get."""
@@ -99,14 +99,39 @@ class Sarcoma(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "sarcoma"
-    year = "2018"
     domain = "medical & healthcare"
-    # the preprocessed TCGA benchmark of the Shamir lab (Tel Aviv University); the measurements are TCGA's
-    source = "Other"
-    source_url = "https://acgt.cs.tau.ac.il/multi_omic_benchmark/download.html"
-    license = (
-        "TCGA open-access data (NCI GDC open tier); the benchmark page's footer reads 'All rights reserved'; "
-        "the reviewed histology is a supplement of the TCGA publication on the GDC"
+    sources = (
+        Source(
+            role="publication",
+            # the preprocessed TCGA benchmark of the Shamir lab (Tel Aviv University); the measurements are TCGA's
+            platform="Other",
+            url="https://acgt.cs.tau.ac.il/multi_omic_benchmark/download.html",
+            license="TCGA open-access data (NCI GDC open tier); the benchmark page's footer reads 'All rights reserved'; "
+            "the reviewed histology is a supplement of the TCGA publication on the GDC",
+            year="2018",
+            bibtex="""
+                @article{rappoport2018multi,
+                  title={Multi-omic and multi-view clustering algorithms: review and cancer benchmark},
+                  author={Rappoport, Nimrod and Shamir, Ron},
+                  journal={Nucleic Acids Research},
+                  volume={46},
+                  number={20},
+                  pages={10546--10562},
+                  year={2018},
+                  doi={10.1093/nar/gky889}
+                }
+                @article{tcga2017sarcoma,
+                  title={Comprehensive and Integrated Genomic Characterization of Adult Soft Tissue Sarcomas},
+                  author={{Cancer Genome Atlas Research Network}},
+                  journal={Cell},
+                  volume={171},
+                  number={4},
+                  pages={950--965.e28},
+                  year={2017},
+                  doi={10.1016/j.cell.2017.10.014}
+                }
+            """,
+        ),
     )
     download_description = """
         We download the preprocessed TCGA sarcoma omics and the clinical data of Rappoport & Shamir (2018) from the
@@ -121,28 +146,6 @@ class Sarcoma(AbstractCuratedDataset):
         wget https://acgt.cs.tau.ac.il/multi_omic_benchmark/data/clinical.zip
         unzip sarcoma.zip exp methy mirna && unzip clinical.zip clinical/sarcoma && rm sarcoma.zip clinical.zip
         wget -O SARC_Master_Patient_Table.xlsx https://api.gdc.cancer.gov/data/20cb9a7c-28a9-49ff-9e7d-8e7af0c722d9
-    """
-    bibtex = """
-        @article{rappoport2018multi,
-          title={Multi-omic and multi-view clustering algorithms: review and cancer benchmark},
-          author={Rappoport, Nimrod and Shamir, Ron},
-          journal={Nucleic Acids Research},
-          volume={46},
-          number={20},
-          pages={10546--10562},
-          year={2018},
-          doi={10.1093/nar/gky889}
-        }
-        @article{tcga2017sarcoma,
-          title={Comprehensive and Integrated Genomic Characterization of Adult Soft Tissue Sarcomas},
-          author={{Cancer Genome Atlas Research Network}},
-          journal={Cell},
-          volume={171},
-          number={4},
-          pages={950--965.e28},
-          year={2017},
-          doi={10.1016/j.cell.2017.10.014}
-        }
     """
     curation_comments = """
         We start with the sarcoma files of the multi-omic cancer benchmark of Rappoport & Shamir (2018): gene expression (`exp`), DNA methylation (`methy`, 450k array) and miRNA expression (`mirna`), plus the clinical file `clinical/sarcoma`. The label comes from the master patient table of the TCGA sarcoma study (`SARC_Master_Patient_Table.xlsx`, GDC publication page).

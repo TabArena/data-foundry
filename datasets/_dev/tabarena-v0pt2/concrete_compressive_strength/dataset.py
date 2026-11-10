@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
 
 
 class ConcreteCompressiveStrength(AbstractCuratedDataset):
@@ -41,27 +41,32 @@ class ConcreteCompressiveStrength(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "concrete_compressive_strength"
-    year = "2007"
     domain = "chemistry & material science"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5PK67"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5PK67",
+            license="CC BY 4.0",
+            year="2007",
+            bibtex="""
+                @article{yeh1998modeling,
+                  title={Modeling of strength of high-performance concrete using artificial neural networks},
+                  author={Yeh, I-C},
+                  journal={Cement and Concrete research},
+                  volume={28},
+                  number={12},
+                  pages={1797--1808},
+                  year={1998},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/concrete_compressive_strength/ && wget -P local-data-warehouse/concrete_compressive_strength/ https://archive.ics.uci.edu/static/public/165/concrete+compressive+strength.zip && unzip local-data-warehouse/concrete_compressive_strength/concrete+compressive+strength.zip -d local-data-warehouse/concrete_compressive_strength/
-    """
-    bibtex = """
-        @article{yeh1998modeling,
-          title={Modeling of strength of high-performance concrete using artificial neural networks},
-          author={Yeh, I-C},
-          journal={Cement and Concrete research},
-          volume={28},
-          number={12},
-          pages={1797--1808},
-          year={1998},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         - We rename features to be shorter while similar to the original names.

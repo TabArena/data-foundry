@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     RowBudget,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -54,27 +55,28 @@ class ClimateModelWeatherForecasting1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "climate_model_weather_forecasting_1m"
-    version_of = "climate_model_weather_forecasting"
-    version_comment = """
-        We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
-    """
-    year = "2024"
     domain = "environmental science & climate"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/pcovkrd84mejm/tabred-weather"
-    license = "CC-BY-NC-SA-4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/pcovkrd84mejm/tabred-weather",
+            license="CC-BY-NC-SA-4.0",
+            year="2024",
+            bibtex="""
+                @inproceedings{rubachev2025tabred,
+                  title={TabReD: Analyzing Pitfalls and Filling the Gaps in Tabular Deep Learning Benchmarks},
+                  author={Rubachev, Ivan and Kartashev, Nikolay and Gorishniy, Yury and Babenko, Artem},
+                  booktitle={The Thirteenth International Conference on Learning Representations},
+                  year={2025},
+                }
+            """,
+        ),
+    )
     download_description = """
         We get the TabRed data from Kaggle.
 
         kaggle datasets download -d pcovkrd84mejm/tabred-weather -f weather.parquet && unzip weather.parquet.zip && rm weather.parquet.zip && mkdir -p local-data-warehouse/climate_model_weather_forecasting && mv weather.parquet local-data-warehouse/climate_model_weather_forecasting/
-    """
-    bibtex = """
-        @inproceedings{rubachev2025tabred,
-          title={TabReD: Analyzing Pitfalls and Filling the Gaps in Tabular Deep Learning Benchmarks},
-          author={Rubachev, Ivan and Kartashev, Nikolay and Gorishniy, Yury and Babenko, Artem},
-          booktitle={The Thirteenth International Conference on Learning Representations},
-          year={2025},
-        }
     """
     curation_comments = """
         We start with data from TabRed, which already comes preprocessed.
@@ -84,6 +86,7 @@ class ClimateModelWeatherForecasting1m(AbstractCuratedDataset):
         - Note: TabReD states no unit for the target ("the true temperature"). Its values, mostly whole numbers with median 27, fit degrees Celsius, the unit of Shifts.
         - We drop duplicated columns `cmc_0_1_66_0` , `cmc_0_1_67_0`, `cmc_0_1_68_0`, and `cmc_0_1_11_0`, which is like them 0.0 or missing in every row.
         - We set -9999 to missing in `gfs_soil_temperature` (31% of rows), `cmc_0_0_0_2_grad` (1.9%) and `gfs_temperature_sea_grad` (0.3%): it is a fill value, as the other values of these columns lie between about -21 and 52, and every row with -9999 in `gfs_temperature_sea_grad` also has it in `gfs_soil_temperature`.
+        - The row budget: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
     """
 
     # Task

@@ -43,8 +43,8 @@ evidence scripts) stays in the local run folder `local-data-warehouse/_runs/<dat
 ## Builds
 
 `.venv/bin/python -m data_foundry.curation.cli dataset build <folder>` runs the definition end to end, saves a new
-container with a new UUID under the warehouse (`<warehouse>/<unique_name>/<uuid>/`, or
-`<version_of>/versions/<uuid>/` for a `_1m` version), verifies the export, and records the UUID, checksum and git
+container with a new UUID under the warehouse (`<warehouse>/<unique_name>/<uuid>/`, a `_1m` version under its own
+name too), verifies the export, and records the UUID, checksum and git
 commit in the README front matter. There is no v0.2 collection in the registry yet: record the UUID in a dated
 CHANGELOG entry and never add it to `BEYOND_ARENA_UUIDS`. A build happens only when the
 curator asks; `dataset check` gives the same container without saving. How to rebuild and verify many

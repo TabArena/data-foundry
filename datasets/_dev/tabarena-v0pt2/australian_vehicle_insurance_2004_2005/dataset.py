@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     drop_columns,
 )
@@ -84,13 +85,36 @@ class AustralianVehicleInsurance20042005(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "australian_vehicle_insurance_2004_2005"
-    year = "2008"
     domain = "insurance"
-    source = "Other"  # the companion website of de Jong and Heller (2008), now offline; no closer schema value
-    source_url = "https://doi.org/10.1017/CBO9780511755408"
-    # The licence of the insuranceData package we download from (CASdatasets: GPL >= 2); the book's companion site,
-    # now offline, could not be read.
-    license = "GPL-2"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # the companion website of de Jong and Heller (2008), now offline; no closer schema value
+            url="https://doi.org/10.1017/CBO9780511755408",
+            # The licence of the insuranceData package we download from (CASdatasets: GPL >= 2); the book's companion site,
+            # now offline, could not be read.
+            license="GPL-2",
+            year="2008",
+            bibtex=r"""
+                @book{dejong2008generalized,
+                  title = {Generalized Linear Models for Insurance Data},
+                  author = {de Jong, Piet and Heller, Gillian Z.},
+                  series = {International Series on Actuarial Science},
+                  publisher = {Cambridge University Press},
+                  address = {Cambridge},
+                  year = {2008},
+                  doi = {10.1017/CBO9780511755408}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="Other",
+            url="https://cran.r-project.org/package=insuranceData",
+            license="GPL-2",
+            name="R package insuranceData 1.0",
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         The data ("Car", car.csv) was first published on the companion website of de Jong and Heller (2008),
@@ -109,17 +133,6 @@ class AustralianVehicleInsurance20042005(AbstractCuratedDataset):
         rm -r insuranceData insuranceData_1.0.tar.gz
         sha256sum dataCar.csv
         # 16966b96a628814c876c0b8684c5c5c744f5a574891b04053de5d4971ed2700f
-    """
-    bibtex = r"""
-        @book{dejong2008generalized,
-          title = {Generalized Linear Models for Insurance Data},
-          author = {de Jong, Piet and Heller, Gillian Z.},
-          series = {International Series on Actuarial Science},
-          publisher = {Cambridge University Press},
-          address = {Cambridge},
-          year = {2008},
-          doi = {10.1017/CBO9780511755408}
-        }
     """
     curation_comments = """
         We start with `dataCar` of the R package insuranceData 1.0, the "Car" data of de Jong and Heller (2008).

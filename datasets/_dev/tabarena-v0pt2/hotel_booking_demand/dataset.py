@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, SplitPlan, TaskSummary, Temporal, decode
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    SplitPlan,
+    TaskSummary,
+    Temporal,
+    decode,
+)
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -68,27 +77,32 @@ class HotelBookingDemand(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "hotel_booking_demand"
-    year = "2018"
     domain = "business & marketing"
-    source = "Other"
-    source_url = "https://www.sciencedirect.com/science/article/pii/S2352340918315191#s0005"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://www.sciencedirect.com/science/article/pii/S2352340918315191#s0005",
+            license="CC BY 4.0",
+            year="2018",
+            bibtex="""
+                @article{antonio2019hotel,
+                  title={Hotel booking demand datasets},
+                  author={Antonio, Nuno and de Almeida, Ana and Nunes, Luis},
+                  journal={Data in brief},
+                  volume={22},
+                  pages={41--49},
+                  year={2019},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         mkdir -p local-data-warehouse/hotel_booking_demand
         wget -P local-data-warehouse/hotel_booking_demand/ https://ars.els-cdn.com/content/image/1-s2.0-S2352340918315191-mmc2.zip
         unzip local-data-warehouse/hotel_booking_demand/1-s2.0-S2352340918315191-mmc2.zip -d local-data-warehouse/hotel_booking_demand/
         rm local-data-warehouse/hotel_booking_demand/1-s2.0-S2352340918315191-mmc2.zip
-    """
-    bibtex = """
-        @article{antonio2019hotel,
-          title={Hotel booking demand datasets},
-          author={Antonio, Nuno and de Almeida, Ana and Nunes, Luis},
-          journal={Data in brief},
-          volume={22},
-          pages={41--49},
-          year={2019},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         - We concatenate the two datasets H1 (resort hotels) and H2 (city hotels). We add a column "hotel" to indicate the hotel type.

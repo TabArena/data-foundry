@@ -396,12 +396,80 @@ class SpecialFeature:
             raise ValueError(f"A {self.kind} special feature takes no details.")
 
 
-# TODO: fields that might be cool to add in the future
-#   - derived_from (to check for duplicates)
-#   - dataset_version (unlikely, we track versions of these files in code repos?)
+SourceRole = Literal["publication", "part", "copy"]
+"""What a :class:`Source` is to its dataset: ``publication``, where the data were first published (the dataset's
+year and citation are this source's); ``part``, a piece the dataset is assembled from (one of several datasheets, a
+second table joined in); ``copy``, a later copy of the data, such as the re-upload we download (Kaggle, UCI)."""
+
+_BIBTEX_KEY = re.compile(r"@\w+\s*\{\s*([^,\s}]+)\s*,")
+
+
+def bibtex_keys(bibtex: str | None) -> list[str]:
+    """The citation keys of the entries of ``bibtex``, in order."""
+    return list(dict.fromkeys(_BIBTEX_KEY.findall(bibtex or "")))
+
+
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class Source:
+    """One source of a dataset's data: where it was first published, a part it is assembled from, or a copy.
+
+    A v2 definition lists its sources in ``sources``, the publication first::
+
+        sources = (
+            Source(role="publication", platform="UCI", url="https://doi.org/10.24432/C5...", license="CC BY 4.0",
+                   year="2014", bibtex="@misc{...}"),
+            Source(role="copy", platform="Kaggle", url="https://www.kaggle.com/...", license="CC0 1.0"),
+        )
+
+    Exactly one source is the publication; it needs a year and a BibTeX entry.
+    """
+
+    role: SourceRole
+    """What the source is to the dataset (:data:`SourceRole`)."""
+    platform: DatasetSource
+    """Where the source is published: one of :data:`DatasetSource` ("Other" when none fits)."""
+    url: str
+    """A link to the source: its DOI where it has one, else the page that holds the data."""
+    license: str | None
+    """The license the source states, e.g. "CC BY 4.0"; None when it states none."""
+    year: str | None = None
+    """The year the source was first published (the publication's is the dataset's year)."""
+    bibtex: MultilineStr | None = None
+    """BibTeX of the work that published the source; required for the publication."""
+    bibtex_key: str | None = None
+    """The citation key(s) of :attr:`bibtex`, comma-separated; read from it when None."""
+    name: str | None = None
+    """A short label that tells sources apart, e.g. "Hoval Belaria pro 8 datasheet"."""
+    files: list[str] = pydantic.Field(default_factory=list)
+    """The raw files that come from this source: paths or glob patterns under the raw folder."""
+
+    def __post_init__(self):
+        """A link, a parsed citation key, and a year and BibTeX for the publication."""
+        if not (self.url or "").strip():
+            raise ValueError(f"A {self.role} source needs a `url`.")
+        if self.role == "publication":
+            if not str(self.year or "").strip():
+                raise ValueError("The publication source needs its `year`.")
+            if not (self.bibtex or "").strip():
+                raise ValueError("The publication source needs its `bibtex`.")
+        if self.bibtex_key is None and self.bibtex:
+            self.bibtex_key = ",".join(bibtex_keys(self.bibtex)) or None
+        bad = [f for f in self.files if not f or f.startswith("/") or ".." in Path(f).parts]
+        if bad:
+            raise ValueError(f"Source files are paths under the raw folder; got {bad}.")
+
+    def label(self) -> str:
+        """A short name for messages and tables: the name, else the platform and role."""
+        return self.name or f"{self.platform} {self.role}"
+
+
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
 class DatasetMetadata:
-    """Schema for metadata about a dataset."""
+    """Schema for metadata about a dataset (format 1, the v1 notebooks and BeyondArena).
+
+    A v2 definition writes :class:`DatasetMetadataV2`. The properties :attr:`domain`, :attr:`publication`,
+    :attr:`sources`, :attr:`derived_from` and :attr:`derivation` read both the same way.
+    """
 
     unique_name: str
     """A unique name for the dataset."""
@@ -559,6 +627,116 @@ class DatasetMetadata:
                 f"  version_comment:                      {_one_line(self.version_comment)}",
             ]
         )
+
+    # --- the v2 names, so readers handle both formats the same way ------------------------------------------------
+    @property
+    def domain(self) -> str:
+        """:attr:`domain_str`."""
+        return self.domain_str
+
+    @property
+    def publication(self) -> Source:
+        """The flat source fields as the publication :class:`Source`."""
+        return Source(
+            role="publication",
+            platform=self.dataset_source,
+            url=self.original_dataset_source_download_link,
+            license=self.license,
+            year=self.dataset_year,
+            bibtex=self.academic_reference_bibtex,
+            bibtex_key=self.academic_reference_bibtex_key,
+        )
+
+    @property
+    def sources(self) -> list[Source]:
+        """[:attr:`publication`]: a format-1 dataset names one source."""
+        return [self.publication]
+
+    @property
+    def derived_from(self) -> str | None:
+        """:attr:`version_from_unique_name`."""
+        return self.version_from_unique_name
+
+    @property
+    def derivation(self) -> str | None:
+        """:attr:`version_comment`."""
+        return self.version_comment
+
+
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class DatasetMetadataV2:
+    """The dataset-level metadata of a format-2 container, built from a v2 definition.
+
+    The provenance is a list of :class:`Source` (the publication first, then the parts it is assembled from and the
+    copies); the dataset's year and citation are its publication's. A definition derived from another one (a family's
+    child) names its parent in :attr:`derived_from` and says how it differs in :attr:`derivation`.
+    """
+
+    unique_name: str
+    """The dataset's name, snake_case; equal to its definition's folder."""
+    domain: Domain
+    """The real-world application domain (one of :data:`Domain`), chosen by the context of the data."""
+    sources: list[Source]
+    """Where the data comes from: the publication first, then parts and copies."""
+    download_description: MultilineStr
+    """Commands (and notes) that recreate the raw files in the local data warehouse."""
+    data_tags: list[DataTags]
+    """Context tags and the split-regime tags (:data:`DataTags`)."""
+    curation_comments: MultilineStr | None = None
+    """The audit trail of the curation: the starting artifact, then one bullet per non-obvious decision."""
+    derived_from: str | None = None
+    """The ``unique_name`` of the definition this one derives from (its parent in a family), else None."""
+    derivation: MultilineStr | None = None
+    """How this dataset differs from :attr:`derived_from`; set exactly when it is."""
+
+    type_adapter_id: str = "dataset-mold-v2"
+    """Identifier for name of the type adapter used to serialize/deserialize."""
+
+    def __post_init__(self):
+        """A snake_case name, exactly one publication (listed first), and a derivation exactly with a parent."""
+        if not SNAKE_CASE_PATTERN.fullmatch(self.unique_name or ""):
+            raise ValueError(f"unique_name must be non-empty snake_case ([a-z0-9_]), got {self.unique_name!r}.")
+        roles = [s.role for s in self.sources]
+        if roles.count("publication") != 1 or roles[0] != "publication":
+            raise ValueError(f"`sources` lists exactly one publication, first; got the roles {roles}.")
+        if self.derived_from is not None and self.derived_from == self.unique_name:
+            raise ValueError(f"derived_from equals unique_name ({self.unique_name!r}).")
+        if (self.derived_from is None) != (not (self.derivation or "").strip()):
+            raise ValueError("`derivation` says how the dataset differs from `derived_from`: set both or neither.")
+
+    @property
+    def publication(self) -> Source:
+        """The source where the data were first published."""
+        return self.sources[0]
+
+    @property
+    def path(self) -> Path:
+        """``<warehouse>/<unique_name>/``, where this dataset's containers are saved."""
+        return resolve_warehouse_dir() / self.unique_name
+
+    def describe(self) -> str:
+        """A human-readable summary of the dataset-level fields, long text cut to one line."""
+
+        def one_line(value: str | None, limit: int = 80) -> str:
+            first = (value or "").strip().splitlines()[0] if (value or "").strip() else ""
+            return first if len(first) <= limit else first[: limit - 1] + "…"
+
+        lines = [
+            "DatasetMetadataV2:",
+            f"  unique_name:          {self.unique_name}",
+            f"  domain:               {self.domain}",
+            f"  data_tags:            {self.data_tags}",
+        ]
+        for source in self.sources:
+            year = f" ({source.year})" if source.year else ""
+            lines.append(f"  {source.role + ':':21s} {source.platform}{year} {source.url}  license: {source.license}")
+        lines += [
+            f"  download_description: {one_line(self.download_description)}",
+            f"  curation_comments:    {one_line(self.curation_comments)}",
+        ]
+        if self.derived_from is not None:
+            lines.append(f"  derived_from:         {self.derived_from}: {one_line(self.derivation)}")
+        return "\n".join(lines)
 
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))

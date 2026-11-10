@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     UnitWeight,
 )
@@ -63,27 +64,32 @@ class DementiaPrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "dementia_prediction"
-    year = "2010"
     domain = "medical & healthcare"
-    source = "Other"
-    source_url = "https://sites.wustl.edu/oasisbrains/"  # OASIS-2; the Mendeley deposit is a later copy
-    license = "CC BY NC 3.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://sites.wustl.edu/oasisbrains/",  # OASIS-2; the Mendeley deposit is a later copy
+            license="CC BY NC 3.0",
+            year="2010",
+            bibtex="""
+                @article{marcus2010open,
+                  title={Open access series of imaging studies: longitudinal MRI data in nondemented and demented older adults},
+                  author={Marcus, Daniel S and Fotenos, Anthony F and Csernansky, John G and Morris, John C and Buckner, Randy L},
+                  journal={Journal of cognitive neuroscience},
+                  volume={22},
+                  number={12},
+                  pages={2677--2684},
+                  year={2010},
+                }
+            """,
+        ),
+    )
     data_tags = ("WrongDomain",)
     download_description = """
         We get the data from Mendeley version of another paper (https://www.sciencedirect.com/science/article/pii/S2352914819300917?via%3Dihub).
 
         wget https://data.mendeley.com/public-files/datasets/tsy6rbc5d4/files/b4978a7c-df15-46b2-be69-891d4935b652/file_downloaded && mv file_downloaded oasis_longitudinal_demographics.xlsx && mkdir -p local-data-warehouse/dementia_prediction && mv oasis_longitudinal_demographics.xlsx local-data-warehouse/dementia_prediction/
-    """
-    bibtex = """
-        @article{marcus2010open,
-          title={Open access series of imaging studies: longitudinal MRI data in nondemented and demented older adults},
-          author={Marcus, Daniel S and Fotenos, Anthony F and Csernansky, John G and Morris, John C and Buckner, Randy L},
-          journal={Journal of cognitive neuroscience},
-          volume={22},
-          number={12},
-          pages={2677--2684},
-          year={2010},
-        }
     """
     curation_comments = """
         We start with the data from Mendeley.

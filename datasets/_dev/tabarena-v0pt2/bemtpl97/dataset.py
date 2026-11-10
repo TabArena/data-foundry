@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     decode,
     drop_columns,
@@ -78,13 +79,40 @@ class Bemtpl97(AbstractCuratedDataset):
     )
 
     unique_name = "bemtpl97"
-    year = "2019"
     domain = "insurance"
-    source = "GitHub"
-    source_url = "https://github.com/katrienantonio/PE-pricing-analytics/tree/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e"
-    license = (
-        "No licence stated by the 2019 course repository; CASdatasets declares GPL (>= 2) for the 2020 release of "
-        "the same portfolio; insurer-specific terms not verified"
+    sources = (
+        Source(
+            role="publication",
+            platform="GitHub",
+            url="https://github.com/katrienantonio/PE-pricing-analytics/tree/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e",
+            license="No licence stated by the 2019 course repository; CASdatasets declares GPL (>= 2) for the 2020 release of "
+            "the same portfolio; insurer-specific terms not verified",
+            year="2019",
+            bibtex=r"""
+                @misc{Antonio2019PricingAnalytics,
+                  author = {Antonio, Katrien},
+                  title = {PE-pricing-analytics: Pricing analytics in R, course material},
+                  year = {2019},
+                  howpublished = {\url{https://github.com/katrienantonio/PE-pricing-analytics}},
+                  note = {First public copy of the portfolio, data/P\&Cdata.txt (163,231 policies), added on 26 September
+                          2019; commit 0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e}
+                }
+                @misc{Henckaerts2020TreeMLData,
+                  author = {Henckaerts, Roel},
+                  title = {treeML: Motor third party liability insurance portfolio and code},
+                  year = {2020},
+                  howpublished = {\url{https://github.com/henckr/treeML}},
+                  note = {Data file mtpl\_data.rds added on 30 April 2020; commit 2ee8accc6df49168bd865cdf49efa1b7a5c8f4de}
+                }
+                @misc{Henckaerts2020Boosting,
+                  author = {Henckaerts, Roel and Côté, Marie-Pier and Antonio, Katrien and Verbelen, Roel},
+                  title = {Boosting insights in insurance tariff plans with tree-based machine learning methods},
+                  year = {2020},
+                  eprint = {1904.10890},
+                  note = {Version 3, 2 March 2020; accompanying author data release cited separately}
+                }
+            """,
+        ),
     )
     data_tags = ("Spatial", "ForcedIIDFromTemporal")
     download_description = """
@@ -93,30 +121,6 @@ class Bemtpl97(AbstractCuratedDataset):
         curl -L --fail "https://raw.githubusercontent.com/katrienantonio/PE-pricing-analytics/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e/data/P%26Cdata.txt" -o "${DATA_FOUNDRY_WAREHOUSE:-local-data-warehouse}/bemtpl97/P&Cdata.txt"
         Expected SHA-256: 90915897ec158f5e54f54ef1bbdbf9ce415d3fb29bd60aaa7f159b7b2a418aff.
         From the repository root, set DATA_FOUNDRY_DATASETS_ROOT=datasets/_dev/tabarena-v0pt2.
-    """
-    bibtex = r"""
-        @misc{Antonio2019PricingAnalytics,
-          author = {Antonio, Katrien},
-          title = {PE-pricing-analytics: Pricing analytics in R, course material},
-          year = {2019},
-          howpublished = {\url{https://github.com/katrienantonio/PE-pricing-analytics}},
-          note = {First public copy of the portfolio, data/P\&Cdata.txt (163,231 policies), added on 26 September
-                  2019; commit 0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e}
-        }
-        @misc{Henckaerts2020TreeMLData,
-          author = {Henckaerts, Roel},
-          title = {treeML: Motor third party liability insurance portfolio and code},
-          year = {2020},
-          howpublished = {\url{https://github.com/henckr/treeML}},
-          note = {Data file mtpl\_data.rds added on 30 April 2020; commit 2ee8accc6df49168bd865cdf49efa1b7a5c8f4de}
-        }
-        @misc{Henckaerts2020Boosting,
-          author = {Henckaerts, Roel and Côté, Marie-Pier and Antonio, Katrien and Verbelen, Roel},
-          title = {Boosting insights in insurance tariff plans with tree-based machine learning methods},
-          year = {2020},
-          eprint = {1904.10890},
-          note = {Version 3, 2 March 2020; accompanying author data release cited separately}
-        }
     """
     curation_comments = """
         We start with data/P&Cdata.txt of [katrienantonio/PE-pricing-analytics](https://github.com/katrienantonio/PE-pricing-analytics/tree/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e) commit 0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e, the first public copy (2019, all 163,231 policies), read with exact float parsing; its column names, coverage labels (PO as TPL+, FO as TPL++) and fleet codes (N and Y as 0 and 1) become those of the author's 2020 release (superseded 2026-11-05: until then we started with data/beMTPL97.rda from CASdatasets commit 227fb56b8734bdb7c0327a41180e01d2ddaeaf26, the release's 163,212 rows, equal as a parsed table to the author's mtpl_data.rds).

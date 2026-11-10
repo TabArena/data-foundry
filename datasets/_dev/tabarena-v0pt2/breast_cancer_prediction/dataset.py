@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     decode,
     drop_columns,
@@ -124,14 +125,29 @@ class BreastCancerPrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "breast_cancer_prediction"
-    year = "2014"
     domain = "medical & healthcare"
-    source = "GOV Website"
-    source_url = "https://www.bcsc-research.org/index.php/datasets/mammography_dataset"
-    license = (
-        "BCSC data terms: download after registration, citation of the BCSC required, 'recommended for use as a "
-        "teaching tool only; they should not be used to conduct primary research'; no licence named "
-        "(the Kaggle mirror states CC0-1.0)"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",
+            url="https://www.bcsc-research.org/index.php/datasets/mammography_dataset",
+            license="BCSC data terms: download after registration, citation of the BCSC required, 'recommended for use as a "
+            "teaching tool only; they should not be used to conduct primary research'; no licence named "
+            "(the Kaggle mirror states CC0-1.0)",
+            year="2014",
+            bibtex="""
+                @misc{bcsc2014digitalmammography,
+                  author = {{Breast Cancer Surveillance Consortium}},
+                  title = {Digital Mammography Dataset},
+                  year = {2014},
+                  howpublished = {\\url{https://www.bcsc-research.org/index.php/datasets/mammography_dataset}},
+                  note = {The Breast Cancer Surveillance Consortium and its data collection and sharing activities are funded
+                    by the National Cancer Institute (P01CA154292). Downloaded 10/07/2026 from the Breast Cancer Surveillance
+                    Consortium Web site - \\url{http://www.bcsc-research.org/}. Data collection and sharing was supported by
+                    the National Cancer Institute-funded Breast Cancer Surveillance Consortium (HHSN261201100031C)}
+                }
+            """,
+        ),
     )
     download_description = """
         The Breast Cancer Surveillance Consortium distributes the BCSC Digital Mammography Dataset after a
@@ -152,18 +168,6 @@ class BreastCancerPrediction(AbstractCuratedDataset):
         The Kaggle and OpenML copies (kaggle datasets download haithemhermessi/breast-cancer-screening-data-set;
         OpenML 43687, via a JohnSnowLabs re-upload) hold the same rows with decoded labels and without the two exact
         duplicate rows: after `_clean`'s duplicate drop, all 39,998 rows match.
-    """
-    bibtex = """
-        @misc{bcsc2014digitalmammography,
-          author = {{Breast Cancer Surveillance Consortium}},
-          title = {Digital Mammography Dataset},
-          year = {2014},
-          howpublished = {\\url{https://www.bcsc-research.org/index.php/datasets/mammography_dataset}},
-          note = {The Breast Cancer Surveillance Consortium and its data collection and sharing activities are funded
-            by the National Cancer Institute (P01CA154292). Downloaded 10/07/2026 from the Breast Cancer Surveillance
-            Consortium Web site - \\url{http://www.bcsc-research.org/}. Data collection and sharing was supported by
-            the National Cancer Institute-funded Breast Cancer Surveillance Consortium (HHSN261201100031C)}
-        }
     """
     curation_comments = """
         We start with the BCSC Digital Mammography Dataset (`mammography.csv`, 40,000 rows) from the Breast Cancer Surveillance Consortium: a random sample of 20,000 digital and 20,000 film screening mammograms of women aged 60-89, January 2005 to December 2008.

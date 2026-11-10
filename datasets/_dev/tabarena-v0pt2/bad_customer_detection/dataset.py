@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -51,24 +51,29 @@ class BadCustomerDetection(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "bad_customer_detection"
-    year = "2020"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/podsyp/is-this-a-good-customer"
-    license = "Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/podsyp/is-this-a-good-customer",
+            license="Public Domain",
+            year="2020",
+            bibtex="""
+                @misc{Podsyp2020IsThisAGoodCustomer,
+                  title={Is This a Good Customer?},
+                  author={Podsyp},
+                  year={2020},
+                  publisher={Kaggle},
+                  url={https://www.kaggle.com/datasets/podsyp/is-this-a-good-customer}
+                }
+            """,
+        ),
+    )
     download_description = """
         Download the dataset from Kaggle using the Kaggle API.
 
         mkdir -p local-data-warehouse/bad_customer_detection/ && cd local-data-warehouse/bad_customer_detection && kaggle datasets download podsyp/is-this-a-good-customer && unzip is-this-a-good-customer.zip && rm is-this-a-good-customer.zip && cd ../../
-    """
-    bibtex = """
-        @misc{Podsyp2020IsThisAGoodCustomer,
-          title={Is This a Good Customer?},
-          author={Podsyp},
-          year={2020},
-          publisher={Kaggle},
-          url={https://www.kaggle.com/datasets/podsyp/is-this-a-good-customer}
-        }
     """
     curation_comments = """
         - We renamed the values of the target variable to be more descriptive.

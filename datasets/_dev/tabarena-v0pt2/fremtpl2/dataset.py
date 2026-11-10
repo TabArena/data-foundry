@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     drop_columns,
 )
@@ -118,11 +119,34 @@ class Fremtpl2(AbstractCuratedDataset):
     )
 
     unique_name = "fremtpl2"
-    year = "2014"
     domain = "insurance"
-    source = "Other"
-    source_url = "https://dutangc.github.io/CASdatasets/reference/freMTPL.html"
-    license = "GPL (>= 2), declared by CASdatasets; the insurer's terms not stated"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://dutangc.github.io/CASdatasets/reference/freMTPL.html",
+            license="GPL (>= 2), declared by CASdatasets; the insurer's terms not stated",
+            year="2014",
+            bibtex=r"""
+                @manual{DutangCharpentierCASdatasets,
+                  author = {Dutang, Christophe and Charpentier, Arthur},
+                  title = {{CASdatasets}: Insurance Datasets},
+                  year = {2026},
+                  note = {R package version 1.2-1, GitHub commit 227fb56b8734bdb7c0327a41180e01d2ddaeaf26; freMTPL2freq and freMTPL2sev entered on 14 October 2014},
+                  doi = {10.57745/P0KHAG},
+                  url = {https://github.com/dutangc/CASdatasets}
+                }
+                @misc{NollSalzmannWuthrich2018,
+                  author = {Noll, Alexander and Salzmann, Robert and W{\"u}thrich, Mario V.},
+                  title = {Case Study: {French} Motor Third-Party Liability Claims},
+                  year = {2018},
+                  howpublished = {SSRN},
+                  doi = {10.2139/ssrn.3164764},
+                  note = {Code: https://github.com/JSchelldorfer/ActuarialDataScience, folder 1}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial", "ForcedIIDFromTemporal")
     download_description = """
         Download the two tables of the CASdatasets R package (Dutang and Charpentier) at a pinned commit of its
@@ -135,24 +159,6 @@ class Fremtpl2(AbstractCuratedDataset):
         OpenML 41214 and 41215 are copies of the older CASdatasets 1.0-8 (2018), before the package's update of
         June 2022: 678,013 policies whose claim counts do not all match the claims table, so they are not this data.
         From the repository root, set DATA_FOUNDRY_DATASETS_ROOT=datasets/_dev/tabarena-v0pt2.
-    """
-    bibtex = r"""
-        @manual{DutangCharpentierCASdatasets,
-          author = {Dutang, Christophe and Charpentier, Arthur},
-          title = {{CASdatasets}: Insurance Datasets},
-          year = {2026},
-          note = {R package version 1.2-1, GitHub commit 227fb56b8734bdb7c0327a41180e01d2ddaeaf26; freMTPL2freq and freMTPL2sev entered on 14 October 2014},
-          doi = {10.57745/P0KHAG},
-          url = {https://github.com/dutangc/CASdatasets}
-        }
-        @misc{NollSalzmannWuthrich2018,
-          author = {Noll, Alexander and Salzmann, Robert and W{\"u}thrich, Mario V.},
-          title = {Case Study: {French} Motor Third-Party Liability Claims},
-          year = {2018},
-          howpublished = {SSRN},
-          doi = {10.2139/ssrn.3164764},
-          note = {Code: https://github.com/JSchelldorfer/ActuarialDataScience, folder 1}
-        }
     """
     curation_comments = """
         We start with data/freMTPL2freq.rda (677,991 policies) and data/freMTPL2sev.rda (26,444 claims) from CASdatasets commit 227fb56b8734bdb7c0327a41180e01d2ddaeaf26, joined on IDpol, the link the help page names.

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 
 class SantanderCustomerSatisfaction(AbstractCuratedDataset):
@@ -35,26 +35,31 @@ class SantanderCustomerSatisfaction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "santander_customer_satisfaction"
-    year = "2016"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/santander-customer-satisfaction"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/santander-customer-satisfaction",
+            license="Kaggle Competition Rules",
+            year="2016",
+            bibtex=r"""
+                @misc{Jimenez2016SantanderCustomerSatisfaction,
+                  author = {Soraya Jimenez and Will Cukierski},
+                  title  = {Santander Customer Satisfaction},
+                  year   = {2016},
+                  howpublished = {\url{https://kaggle.com/competitions/santander-customer-satisfaction}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         We use the train.csv from the Kaggle competition.
 
         kaggle competitions download -c santander-customer-satisfaction -f train.csv && unzip train.csv.zip &&  rm train.csv.zip
         mkdir -p local-data-warehouse/santander_customer_satisfaction && mv train.csv local-data-warehouse/santander_customer_satisfaction/
-    """
-    bibtex = r"""
-        @misc{Jimenez2016SantanderCustomerSatisfaction,
-          author = {Soraya Jimenez and Will Cukierski},
-          title  = {Santander Customer Satisfaction},
-          year   = {2016},
-          howpublished = {\url{https://kaggle.com/competitions/santander-customer-satisfaction}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with the train.csv from Kaggle.

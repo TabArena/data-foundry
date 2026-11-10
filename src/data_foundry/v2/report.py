@@ -27,7 +27,14 @@ from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation_container import feature_columns
 from data_foundry.schema import resolve_warehouse_dir
 from data_foundry.v2 import group_checks
-from data_foundry.v2.dataset import CLI_COMMAND, DEFINITION_FILENAME, REPORT_FILENAME, provenance, split_summary
+from data_foundry.v2.dataset import (
+    CLI_COMMAND,
+    DEFINITION_FILENAME,
+    REPORT_FILENAME,
+    provenance,
+    raw_name,
+    split_summary,
+)
 
 if TYPE_CHECKING:
     from data_foundry.v2.dataset import AbstractCuratedDataset, CurationResult
@@ -244,7 +251,7 @@ def _header(result: CurationResult, fm: dict[str, Any]) -> list[str]:
         size += f", plus {data['n_test_dataset_rows']:,} unlabeled test rows"
     summary = (
         f"{PROBLEM_TYPES.get(task['problem_type'], task['problem_type'])} of `{task['target']}`, scored with "
-        f"`{task['metric']}` on {regime}. {size}. Source: {meta.dataset_source} ({meta.dataset_year})."
+        f"`{task['metric']}` on {regime}. {size}. Source: {meta.publication.platform} ({meta.publication.year})."
     )
     return [
         f"# {meta.unique_name}",
@@ -326,7 +333,9 @@ def _files_section(ds: AbstractCuratedDataset, *, has_figures: bool) -> list[str
     record = _record_link(ds)
     if record:
         links.append(f"- The curation record, with the triage decision and its sources: {record}")
-    links.append(f"- The original source: <{ds.dataset_metadata.original_dataset_source_download_link}>")
+    for source in ds.dataset_metadata.sources:
+        what = {"publication": "The original source", "part": "A part of the data", "copy": "A copy"}[source.role]
+        links.append(f"- {what}{f' ({source.name})' if source.name else ''}: <{source.url}>")
     collection = [
         f"[`{folder.parent.name}/{name}`](../{name})"
         for name in ("README.md", "CHANGELOG.md")
@@ -365,16 +374,21 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     container = result.container
     meta = container.dataset_metadata
     df = container.dataset
+    publication = meta.publication
     rows = [
-        ("source", f"{meta.dataset_source}: {meta.original_dataset_source_download_link}"),
-        ("year", meta.dataset_year),
-        ("domain", meta.domain_str),
-        ("license", meta.license),
+        ("source", f"{publication.platform}: {publication.url}"),
+        ("year", publication.year),
+        ("domain", meta.domain),
+        ("license", publication.license),
         ("data_tags", ", ".join(meta.data_tags)),
-        ("reference", meta.academic_reference_bibtex_key),
+        ("reference", ", ".join(s.bibtex_key for s in meta.sources if s.bibtex_key)),
     ]
-    if meta.version_from_unique_name:
-        rows.append(("version of", meta.version_from_unique_name))
+    for source in meta.sources[1:]:  # the parts and copies, each with its own license
+        year = f" ({source.year})" if source.year else ""
+        label = source.role + (f": {source.name}" if source.name else "")
+        rows.append((label, f"{source.platform}{year}: {source.url}; license: {source.license}"))
+    if meta.derived_from:
+        rows.append(("derived from", meta.derived_from))
     rows += [("rows x columns", f"{df.shape[0]:,} x {df.shape[1]:,}")]
     skip = ("grouping", "metric_origin", "scoring_columns", "special_features")
     rows += [(f"task.{k}", v) for k, v in fm["task"].items() if v is not None and k not in skip]
@@ -405,7 +419,7 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     if special:
         counts += ", " + ", ".join(f"{f.kind} `{f.name}`" for f in special)
     out += _details(f"Feature types: {counts}", "\n".join(lines))
-    out += _details("BibTeX", _fence(meta.academic_reference_bibtex, "bibtex"))
+    out += _details("BibTeX", _fence("\n".join(s.bibtex.strip() for s in meta.sources if s.bibtex) + "\n", "bibtex"))
     return out
 
 
@@ -547,8 +561,8 @@ def _curation_notes_section(result: CurationResult) -> list[str]:
     out = []
     if meta.curation_comments and meta.curation_comments.strip():
         out += [meta.curation_comments.strip(), ""]
-    if meta.version_comment and meta.version_comment.strip():
-        out += [f"Version of `{meta.version_from_unique_name}`: {_one_line(meta.version_comment)}", ""]
+    if meta.derivation and meta.derivation.strip():
+        out += [f"Derived from `{meta.derived_from}`: {_one_line(meta.derivation)}", ""]
     return ["## Curation notes", "", *out] if out else []
 
 
@@ -748,7 +762,7 @@ def _record_link(ds: AbstractCuratedDataset) -> str | None:
     """A relative link to the curation record of ``ds`` (its own, else the one of the dataset it derives from)."""
     if _repo_root(ds.folder) is None:
         return None
-    for name in (ds.unique_name, ds.version_of, ds.raw_data_from):
+    for name in dict.fromkeys((ds.unique_name, raw_name(type(ds)))):
         record = records_dir() / f"{name}.md" if name else None
         if record is not None and record.is_file():
             rel = Path(os.path.relpath(record.resolve(), ds.folder.resolve())).as_posix()

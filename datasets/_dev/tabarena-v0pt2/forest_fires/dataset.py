@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -43,25 +43,30 @@ class ForestFires(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "forest_fires"
-    year = "2008"
     domain = "environmental science & climate"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5D88D"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5D88D",
+            license="CC BY 4.0",
+            year="2008",
+            bibtex=r"""
+                @article{cortez2007data,
+                  title={A data mining approach to predict forest fires using meteorological data},
+                  author={Cortez, Paulo and Morais, An{\'\i}bal de Jesus Raimundo},
+                  year={2007},
+                  publisher={Associa{\c{c}}{\~a}o Portuguesa para a Intelig{\^e}ncia Artificial (APPIA)}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial", "ForcedIIDFromTemporal")
     download_description = """
         We get the data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/162/forest+fires.zip && unzip forest+fires.zip && rm forest+fires.zip forestfires.names
         mkdir -p local-data-warehouse/forest_fires && mv forestfires.csv local-data-warehouse/forest_fires/
-    """
-    bibtex = r"""
-        @article{cortez2007data,
-          title={A data mining approach to predict forest fires using meteorological data},
-          author={Cortez, Paulo and Morais, An{\'\i}bal de Jesus Raimundo},
-          year={2007},
-          publisher={Associa{\c{c}}{\~a}o Portuguesa para a Intelig{\^e}ncia Artificial (APPIA)}
-        }
     """
     curation_comments = """
         We start with the data from UCI.

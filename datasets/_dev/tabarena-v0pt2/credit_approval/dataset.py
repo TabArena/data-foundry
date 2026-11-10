@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class CreditApproval(AbstractCuratedDataset):
@@ -36,28 +36,33 @@ class CreditApproval(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "credit_approval"
-    year = "1987"
     domain = "finance"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5FS30"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5FS30",
+            license="CC BY 4.0",
+            year="1987",
+            bibtex="""
+                @article{quinlan1987simplifying,
+                  title={Simplifying decision trees},
+                  author={Quinlan, J. Ross},
+                  journal={International journal of man-machine studies},
+                  volume={27},
+                  number={3},
+                  pages={221--234},
+                  year={1987},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         We get the credit screening data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/27/credit+approval.zip && unzip credit+approval.zip  crx.data && rm credit+approval.zip  && mkdir -p local-data-warehouse/credit_approval && mv crx.data  local-data-warehouse/credit_approval/
-    """
-    bibtex = """
-        @article{quinlan1987simplifying,
-          title={Simplifying decision trees},
-          author={Quinlan, J. Ross},
-          journal={International journal of man-machine studies},
-          volume={27},
-          number={3},
-          pages={221--234},
-          year={1987},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         We get the data from UCI.

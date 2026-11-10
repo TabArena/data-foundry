@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     Smiles,
+    Source,
     TaskSummary,
     canonical_smiles,
     drop_columns,
@@ -100,11 +101,36 @@ class QsarBioconcentration(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "qsar_bioconcentration"
-    year = "2016"
     domain = "chemistry & material science"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C56S46"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C56S46",
+            license="CC BY 4.0",
+            year="2016",
+            bibtex="""
+                @article{grisoni2016investigating,
+                  title={Investigating the mechanisms of bioconcentration through {QSAR} classification trees},
+                  author={Grisoni, Francesca and Consonni, Viviana and Vighi, Marco and Villa, Sara and Todeschini, Roberto},
+                  journal={Environment International},
+                  volume={88},
+                  pages={198--205},
+                  year={2016},
+                  doi={10.1016/j.envint.2015.12.024}
+                }
+                @article{grisoni2015qsar,
+                  title={{QSAR} models for bioconcentration: is the increase in the complexity justified by more accurate predictions?},
+                  author={Grisoni, Francesca and Consonni, Viviana and Villa, Sara and Vighi, Marco and Todeschini, Roberto},
+                  journal={Chemosphere},
+                  volume={127},
+                  pages={171--179},
+                  year={2015},
+                  doi={10.1016/j.chemosphere.2015.01.047}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from the UCI repository (dataset 510, donated in 2019 by the Milano Chemometrics and QSAR
         Research Group) and unzip it to a predefined folder.
@@ -119,26 +145,6 @@ class QsarBioconcentration(AbstractCuratedDataset):
         wget -O local-data-warehouse/qsar_bioconcentration/1-s2.0-S0045653515000879-mmc2.xlsx https://ars.els-cdn.com/content/image/1-s2.0-S0045653515000879-mmc2.xlsx
 
         sha256 of 1-s2.0-S0045653515000879-mmc2.xlsx: 537874779929946820c175542650266a53a70d3d4f0b90c34c01658a5ee5ce8b
-    """
-    bibtex = """
-        @article{grisoni2016investigating,
-          title={Investigating the mechanisms of bioconcentration through {QSAR} classification trees},
-          author={Grisoni, Francesca and Consonni, Viviana and Vighi, Marco and Villa, Sara and Todeschini, Roberto},
-          journal={Environment International},
-          volume={88},
-          pages={198--205},
-          year={2016},
-          doi={10.1016/j.envint.2015.12.024}
-        }
-        @article{grisoni2015qsar,
-          title={{QSAR} models for bioconcentration: is the increase in the complexity justified by more accurate predictions?},
-          author={Grisoni, Francesca and Consonni, Viviana and Villa, Sara and Vighi, Marco and Todeschini, Roberto},
-          journal={Chemosphere},
-          volume={127},
-          pages={171--179},
-          year={2015},
-          doi={10.1016/j.chemosphere.2015.01.047}
-        }
     """
     curation_comments = """
         We start with Grisoni_et_al_2016_EnvInt88.csv from UCI 510: 779 organic chemicals with CAS number, SMILES, the authors' Train/Test set, 9 Dragon descriptors, the mechanistic class and the measured fish logBCF. From the authors' 2015 BCF table (Chemosphere SI) we add the logKOW.

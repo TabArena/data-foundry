@@ -8,8 +8,8 @@ Usage::
 Rebuilds each definition's frame from the raw files as the split step leaves it (typed by ``_feature_types``) and
 runs ``curation_probes.dtypes`` on it, with the target, the group columns and the scoring columns left out;
 ``.claude/skills/knowledge-curation/scripts/curation_probes/dtypes.py`` says what each flag means. The codebook is read
-from the first UCI or OpenML link of the definition (``source_url``, then ``download_description``), one request per
-dataset; ``--codebook URL`` names another, ``--no-fetch`` reads none. ``--all`` probes every definition under
+from the first UCI or OpenML link of the definition (its sources' ``url``, then ``download_description``), one request
+per dataset; ``--codebook URL`` names another, ``--no-fetch`` reads none. ``--all`` probes every definition under
 ``--root``; ``--jobs`` sets the datasets probed in parallel. ``--out DIR`` writes one JSON per dataset and
 ``flagged.csv`` there. A flag is a question: the column's meaning decides, by CLEAN-14 of
 ``.claude/skills/knowledge-curation/references/cleaning_features.md``.
@@ -36,8 +36,9 @@ from joblib import Parallel, delayed
 
 
 def codebook_link(ds: object) -> str | None:
-    """The first UCI or OpenML link of the definition's source link and download description."""
-    text = f"{getattr(ds, 'source_url', '') or ''} {getattr(ds, 'download_description', '') or ''}"
+    """The first UCI or OpenML link of the definition's source links and download description."""
+    urls = " ".join(source.url for source in getattr(ds, "sources", ()))
+    text = f"{urls} {getattr(ds, 'download_description', '') or ''}"
     return next((u for u in re.findall(r"https?://[^\s\"'<>)]+", text) if dtypes.codebook_api_url(u)), None)
 
 

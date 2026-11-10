@@ -83,7 +83,7 @@ versions is one publication and takes the year of its first version (melbourne_h
 2026-10-22). The year is always a year. When the first publication cannot be pinned, take the best guess the evidence
 gives and say in the notes that it is a guess and why; never `Unknown` or `Unverified`, and never an accepted year
 warning (Lennart, 2026-11-04, on eucalyptus: "it should pick the best guess and maybe add a comment about this but it
-should be a year in the end"). A definition whose `year` is not a year does not load.
+should be a year in the end"). A definition whose publication `year` is not a year does not load.
 
 **PROV-10 (Must).** The citation is the work that published the data, not a paper that used it.
 
@@ -263,7 +263,8 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 ## In Data Foundry
 
 The record fields for source, year and links, the `_duplicate` naming and how to note a third-party problem:
-[records.md](../../knowledge-data-foundry/references/records.md). The definition's `source`, `year`, `source_url`,
-`download_description` and `bibtex`: [definitions.md](../../knowledge-data-foundry/references/definitions.md). The
+[records.md](../../knowledge-data-foundry/references/records.md). The definition's `sources` (the publication with
+its platform, link, license, year and BibTeX; the copies and parts) and `download_description`:
+[definitions.md](../../knowledge-data-foundry/references/definitions.md). The
 Kaggle command line and other access recipes:
 [sources_access.md](../../knowledge-data-foundry/references/sources_access.md).

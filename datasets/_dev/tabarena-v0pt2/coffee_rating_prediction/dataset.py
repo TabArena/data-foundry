@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -48,26 +48,31 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "coffee_rating_prediction"
-    year = "2023"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/hanifalirsyad/coffee-scrap-coffeereview"
-    license = "None"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/hanifalirsyad/coffee-scrap-coffeereview",
+            license=None,  # Kaggle says "Other (specified in description)", and the description names none
+            year="2023",
+            bibtex=r"""
+                @misc{AlIrsyad2023CoffeeDataCoffeeReview,
+                  author = {Hanif Al Irsyad},
+                  title  = {Coffee Data CoffeeReview},
+                  year   = {2023},
+                  howpublished = {\url{https://www.kaggle.com/datasets/hanifalirsyad/coffee-scrap-coffeereview}},
+                  note   = {Kaggle dataset}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We download the data from Kaggle, which comes from scrapping www.coffeereview.com.
 
         kaggle datasets download hanifalirsyad/coffee-scrap-coffeereview -f coffee_clean.csv && unzip coffee_clean.csv.zip && rm coffee_clean.csv.zip
         mkdir -p local-data-warehouse/coffee_rating_prediction && mv coffee_clean.csv local-data-warehouse/coffee_rating_prediction
-    """
-    bibtex = r"""
-        @misc{AlIrsyad2023CoffeeDataCoffeeReview,
-          author = {Hanif Al Irsyad},
-          title  = {Coffee Data CoffeeReview},
-          year   = {2023},
-          howpublished = {\url{https://www.kaggle.com/datasets/hanifalirsyad/coffee-scrap-coffeereview}},
-          note   = {Kaggle dataset}
-        }
     """
     curation_comments = """
         We start with the Kaggle version. Note, we acknowledge that the dataset is not of the highest quality and likely does not represent a real-world prediction task. Nevertheless, it can be used to test models.
@@ -82,6 +87,12 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
     """
+    accepted_check_warnings = {
+        "meta_license_unknown": (
+            "Kaggle gives the licence as 'Other (specified in description)', but the description names none (checked "
+            "2026-11-10)."
+        ),
+    }
 
     # Task
     target = "rating"

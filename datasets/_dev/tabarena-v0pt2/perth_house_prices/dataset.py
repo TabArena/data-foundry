@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -87,11 +88,25 @@ class PerthHousePrices(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "perth_house_prices"
-    year = "2021"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/syuzai/perth-house-prices"
-    license = "CC BY-NC-SA 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/syuzai/perth-house-prices",
+            license="CC BY-NC-SA 4.0",
+            year="2021",
+            bibtex=r"""
+                @misc{syuzai2021perth,
+                  author = {syuzai},
+                  title = {Perth House Prices},
+                  year = {2021},
+                  howpublished = {\url{https://www.kaggle.com/datasets/syuzai/perth-house-prices}},
+                  note = {Kaggle dataset, scraped from http://house.speakingsame.com/}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         We download all_perth_310121.csv from Kaggle (33,656 rows, 19 columns; sha256
@@ -102,15 +117,6 @@ class PerthHousePrices(AbstractCuratedDataset):
         kaggle datasets download syuzai/perth-house-prices -p local-data-warehouse/perth_house_prices
         unzip local-data-warehouse/perth_house_prices/perth-house-prices.zip -d local-data-warehouse/perth_house_prices
         rm local-data-warehouse/perth_house_prices/perth-house-prices.zip
-    """
-    bibtex = r"""
-        @misc{syuzai2021perth,
-          author = {syuzai},
-          title = {Perth House Prices},
-          year = {2021},
-          howpublished = {\url{https://www.kaggle.com/datasets/syuzai/perth-house-prices}},
-          note = {Kaggle dataset, scraped from http://house.speakingsame.com/}
-        }
     """
     curation_comments = """
         We start with all_perth_310121.csv from the Kaggle dataset syuzai/perth-house-prices: 33,656 sales in 321 suburbs of Perth, dated by month from April 1988 to December 2020, scraped from house.speakingsame.com.

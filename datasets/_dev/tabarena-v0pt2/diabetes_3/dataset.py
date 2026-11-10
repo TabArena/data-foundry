@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary
 
 # The file's headers and the names we give them, in the file's column order. The names spell out the authors' own
 # headers in the 2002 version of the file (age sex bmi map tc ldl hdl tch tg glu y), checked in `_decisions`.
@@ -56,11 +56,28 @@ class Diabetes3(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "diabetes_3"
-    year = "2002"
     domain = "medical & healthcare"
-    source = "Other"  # published with the paper; the file is on Trevor Hastie's LARS page at Stanford (paper, Sec. 7)
-    source_url = "https://doi.org/10.1214/009053604000000067"
-    license = None  # none stated on the page or in the paper; lars (GPL-2) and scikit-learn (BSD-3) redistribute it
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # published with the paper; the file is on Trevor Hastie's LARS page at Stanford (paper, Sec. 7)
+            url="https://doi.org/10.1214/009053604000000067",
+            license=None,  # none stated on the page or in the paper; lars (GPL-2) and scikit-learn (BSD-3) redistribute it
+            year="2002",
+            bibtex="""
+                @article{efron2004least,
+                  title={Least angle regression},
+                  author={Efron, Bradley and Hastie, Trevor and Johnstone, Iain and Tibshirani, Robert},
+                  journal={The Annals of Statistics},
+                  volume={32},
+                  number={2},
+                  pages={407--499},
+                  year={2004},
+                  doi={10.1214/009053604000000067}
+                }
+            """,
+        ),
+    )
     download_description = """
         The file is `diabetes.data` on Trevor Hastie's LARS page at Stanford
         (https://hastie.su.domains/Papers/LARS/diabetes.data, formerly under web.stanford.edu/~hastie/), which the paper
@@ -73,18 +90,6 @@ class Diabetes3(AbstractCuratedDataset):
         # when the Wayback Machine is offline, the NCSU copy gives the same bytes:
         # wget -O local-data-warehouse/diabetes_3/diabetes.data "https://www4.stat.ncsu.edu/~boos/var.select/diabetes.tab.txt"
         echo "af0c583c28547d76cd2db5f5c67de7e8  local-data-warehouse/diabetes_3/diabetes.data" | md5sum -c
-    """
-    bibtex = """
-        @article{efron2004least,
-          title={Least angle regression},
-          author={Efron, Bradley and Hastie, Trevor and Johnstone, Iain and Tibshirani, Robert},
-          journal={The Annals of Statistics},
-          volume={32},
-          number={2},
-          pages={407--499},
-          year={2004},
-          doi={10.1214/009053604000000067}
-        }
     """
     curation_comments = """
         We start with `diabetes.data` from Trevor Hastie's LARS page at Stanford: the unstandardised data of Efron, Hastie, Johnstone & Tibshirani (2004), 442 patients with the headers AGE, SEX, BMI, BP, S1-S6 and Y.

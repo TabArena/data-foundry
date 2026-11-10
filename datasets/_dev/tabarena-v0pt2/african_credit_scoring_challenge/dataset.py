@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     SplitPlan,
     TaskSummary,
     Temporal,
@@ -106,11 +107,25 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "african_credit_scoring_challenge"
-    year = "2024"
     domain = "finance"
-    source = "Zindi"
-    source_url = "https://zindi.africa/competitions/african-credit-scoring-challenge"
-    license = "Zindi Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Zindi",
+            url="https://zindi.africa/competitions/african-credit-scoring-challenge",
+            license="Zindi Competition Rules",
+            year="2024",
+            bibtex=r"""
+                @misc{Zindi2024AfricanCreditScoringChallenge,
+                  author = {{Zindi}},
+                  title = {African Credit Scoring Challenge},
+                  year = {2024},
+                  howpublished = {\url{https://zindi.africa/competitions/african-credit-scoring-challenge}},
+                  note = {Zindi competition, 2024-11-29 to 2025-01-12}
+                }
+            """,
+        ),
+    )
     download_description = """
         The Zindi data page needs a login. We download a Kaggle copy of the competition files that a participant
         (Kaggle user thelastsmilodon, 32nd place) uploaded on 2025-01-14, two days after submissions closed, with the
@@ -124,15 +139,6 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
         uvx --from kaggle==2.2.2 kaggle datasets download thelastsmilodon/african-credit-scoring-challenge-data -p local-data-warehouse/african_credit_scoring_challenge
         unzip local-data-warehouse/african_credit_scoring_challenge/african-credit-scoring-challenge-data.zip -d local-data-warehouse/african_credit_scoring_challenge/
         rm local-data-warehouse/african_credit_scoring_challenge/african-credit-scoring-challenge-data.zip
-    """
-    bibtex = r"""
-        @misc{Zindi2024AfricanCreditScoringChallenge,
-          author = {{Zindi}},
-          title = {African Credit Scoring Challenge},
-          year = {2024},
-          howpublished = {\url{https://zindi.africa/competitions/african-credit-scoring-challenge}},
-          note = {Zindi competition, 2024-11-29 to 2025-01-12}
-        }
     """
     curation_comments = """
         We start with Train.csv of the Zindi African Credit Scoring Challenge, from a Kaggle copy of the competition files.

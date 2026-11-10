@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     SplitPlan,
     TaskSummary,
     Temporal,
@@ -63,11 +64,24 @@ class ChicagoTrafficCrashes(AbstractCuratedDataset):
         ),
     )
     unique_name = "chicago_traffic_crashes"
-    year = "2026"  # the snapshot we pin; the source grows over time (PROV-9)
     domain = "social science"
-    source = "GOV Website"
-    source_url = "https://data.cityofchicago.org/Transportation/Traffic-Crashes-Crashes/85ca-t3if"
-    license = "See Terms of Use (City of Chicago Data Portal)"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",
+            url="https://data.cityofchicago.org/Transportation/Traffic-Crashes-Crashes/85ca-t3if",
+            license="See Terms of Use (City of Chicago Data Portal)",
+            year="2026",  # the snapshot we pin; the source grows over time (PROV-9)
+            bibtex=r"""
+                @misc{chicago_crashes,
+                  author = {{City of Chicago, Chicago Police Department}},
+                  title = {Traffic Crashes - Crashes},
+                  year = {2026},
+                  howpublished = {\url{https://data.cityofchicago.org/Transportation/Traffic-Crashes-Crashes/85ca-t3if}}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         Download the official CSV export to local-data-warehouse/chicago_traffic_crashes/crashes.csv:
@@ -76,14 +90,6 @@ class ChicagoTrafficCrashes(AbstractCuratedDataset):
         4bf63b07d869d992887c08d70bc017a357f731e6bf563dd6098546417b29027b). The 2026-10-29 bytes are no longer kept.
         The live portal amends historical records, so downloading again need not reproduce those bytes, and the
         export URL stops working on 2026-12-22.
-    """
-    bibtex = r"""
-        @misc{chicago_crashes,
-          author = {{City of Chicago, Chicago Police Department}},
-          title = {Traffic Crashes - Crashes},
-          year = {2026},
-          howpublished = {\url{https://data.cityofchicago.org/Transportation/Traffic-Crashes-Crashes/85ca-t3if}}
-        }
     """
     target = "most_severe_injury"
     problem_type = "multiclass_classification"

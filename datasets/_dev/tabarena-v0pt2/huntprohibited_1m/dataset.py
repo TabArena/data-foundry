@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, RowBudget, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    RowBudget,
+    Source,
+    TaskSummary,
+    drop_columns,
+)
 
 TARGET = "is_blocked"
 
@@ -45,15 +54,25 @@ class Huntprohibited1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "huntprohibited_1m"
-    version_of = "huntprohibited"
-    version_comment = """
-        We sub-sample the frame (3,963,488 ads after dropping duplicates) to 1.5M ads, stratified on the target, and use 3-fold cross-validation, so every fold trains on 1M and tests on 500k ads (v2 split protocol).
-    """
-    year = "2014"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/avito-prohibited-content"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/avito-prohibited-content",
+            license="Kaggle Competition Rules",
+            year="2014",
+            bibtex=r"""
+                @misc{avito2014HuntProhibitedContent,
+                  author = {{Avito}},
+                  title = {The Hunt for Prohibited Content},
+                  year = {2014},
+                  howpublished = {\url{https://www.kaggle.com/competitions/avito-prohibited-content}},
+                  note = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         The training file of the Kaggle competition "The Hunt for Prohibited Content" (Avito, 2014); the rules must be
@@ -62,15 +81,6 @@ class Huntprohibited1m(AbstractCuratedDataset):
 
         mkdir -p local-data-warehouse/huntprohibited
         kaggle competitions download -c avito-prohibited-content -f avito_train.zip -p local-data-warehouse/huntprohibited
-    """
-    bibtex = r"""
-        @misc{avito2014HuntProhibitedContent,
-          author = {{Avito}},
-          title = {The Hunt for Prohibited Content},
-          year = {2014},
-          howpublished = {\url{https://www.kaggle.com/competitions/avito-prohibited-content}},
-          note = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with avito_train.tsv from the Kaggle competition "The Hunt for Prohibited Content": 3,995,803 ads posted on Avito.ru from December 2013 to March 2014. The unlabelled test file (April 2014) is not used.
@@ -91,6 +101,7 @@ class Huntprohibited1m(AbstractCuratedDataset):
         - Note: text carries most of the signal. On fold 0, LightGBM on the structured columns reaches ROC AUC 0.932 and a logistic regression on TF-IDF of the three text columns 0.994 (average precision 0.51 against 0.95), so a pipeline that encodes Russian text poorly loses most of the remaining error and most of the average precision.
         - Note: the hidden-group probe hits on subcategory and attrs, but every ad has a subcategory, and attrs is its category's form (missing for the 2.8% of ads in categories without one), so both describe a new ad and the split stays IID.
         - Metric: AP@k as the competition, with k = 12,500 per 500,000-ad test fold, the competition's 2.5% (k = 32,500 of about 1.3M test ads, per the participants). The rules restrict the data to use within the competition, and the ads include illicit or offensive content (rules page).
+        - The row budget: We sub-sample the frame (3,963,488 ads after dropping duplicates) to 1.5M ads, stratified on the target, and use 3-fold cross-validation, so every fold trains on 1M and tests on 500k ads (v2 split protocol).
     """
 
     # Task

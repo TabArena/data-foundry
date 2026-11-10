@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary
 
 # The order's events up to the prediction point (pickup), in order; each clock ships as seconds after midnight.
 KNOWN_EVENTS = ["Placement", "Confirmation", "Arrival at Pickup", "Pickup"]
@@ -59,11 +59,25 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
         "between the rider's taps but possibly a GPS total recorded after delivery.",
     )
     unique_name = "sendy_logistics_challenge"
-    year = "2019"
     domain = "business & marketing"
-    source = "Zindi"
-    source_url = "https://zindi.world/competitions/sendy-logistics-challenge/data"
-    license = "Zindi competition terms; no standalone open-data licence specified"
+    sources = (
+        Source(
+            role="publication",
+            platform="Zindi",
+            url="https://zindi.world/competitions/sendy-logistics-challenge/data",
+            license="Zindi competition terms; no standalone open-data licence specified",
+            year="2019",
+            bibtex=r"""
+                @misc{sendy2019logistics,
+                  author = {{Sendy} and {insight2impact}},
+                  title = {Sendy Logistics Challenge},
+                  year = {2019},
+                  howpublished = {Zindi},
+                  url = {https://zindi.world/competitions/sendy-logistics-challenge}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal", "Anonymized", "Spatial")
     download_description = """
         Sign in to Zindi, obtain the Sendy Logistics Challenge files from
@@ -72,15 +86,6 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
         Original Train.csv SHA256: df36319528b756bb015010eabc3eaf9179f75d6b2222402f7772f88e83017c3c.
         Preserve Test.csv, Riders.csv, VariableDefinitions.csv and the archive manifest for source verification.
         Contest test labels are not supplied, so Test.csv cannot serve as a scored test set here.
-    """
-    bibtex = r"""
-        @misc{sendy2019logistics,
-          author = {{Sendy} and {insight2impact}},
-          title = {Sendy Logistics Challenge},
-          year = {2019},
-          howpublished = {Zindi},
-          url = {https://zindi.world/competitions/sendy-logistics-challenge}
-        }
     """
     curation_comments = """
         We start with Train.csv of the Zindi Sendy Logistics Challenge (21,201 labelled orders).

@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     Smiles,
+    Source,
     TaskSummary,
     canonical_smiles,
     scaffold_groups,
@@ -57,11 +58,28 @@ class QsarFishToxicity(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "qsar_fish_toxicity"
-    year = "2015"
     domain = "chemistry & material science"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5JG7B"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5JG7B",
+            license="CC BY 4.0",
+            year="2015",
+            bibtex=r"""
+                @article{cassotti2015similarity,
+                  title={A similarity-based QSAR model for predicting acute toxicity towards the fathead minnow (Pimephales promelas)},
+                  author={Cassotti, Matteo and Ballabio, Davide and Todeschini, Roberto and Consonni, Viviana},
+                  journal={SAR and QSAR in Environmental Research},
+                  volume={26},
+                  number={3},
+                  pages={217--243},
+                  year={2015},
+                  publisher={Taylor \& Francis}
+                }
+            """,
+        ),
+    )
     special_features = (Smiles(column="SMILES"),)
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
@@ -76,18 +94,6 @@ class QsarFishToxicity(AbstractCuratedDataset):
 
         toxicity_data_fish.xlsx (90,196 bytes), sha256
         98ae9433bcf8ffd5b32b3954a9571a4ec97d2d93f66119c9e36b8130925be721
-    """
-    bibtex = r"""
-        @article{cassotti2015similarity,
-          title={A similarity-based QSAR model for predicting acute toxicity towards the fathead minnow (Pimephales promelas)},
-          author={Cassotti, Matteo and Ballabio, Davide and Todeschini, Roberto and Consonni, Viviana},
-          journal={SAR and QSAR in Environmental Research},
-          volume={26},
-          number={3},
-          pages={217--243},
-          year={2015},
-          publisher={Taylor \& Francis}
-        }
     """
     curation_comments = """
         - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).

@@ -6,7 +6,7 @@ import hashlib
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
 
 
 class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
@@ -50,11 +50,25 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
     )
 
     unique_name = "ai4d_lab_tanzania_tourism_classification_challenge"
-    year = "2022"
     domain = "business & marketing"
-    source = "Zindi"
-    source_url = "https://zindi.africa/competitions/ai4d-lab-tanzania-tourism-classification-challenge"
-    license = "CC BY-SA 4.0; publisher also states non-commercial research or education use (competition rules)."
+    sources = (
+        Source(
+            role="publication",
+            platform="Zindi",
+            url="https://zindi.africa/competitions/ai4d-lab-tanzania-tourism-classification-challenge",
+            license="CC BY-SA 4.0; publisher also states non-commercial research or education use (competition rules).",
+            year="2022",
+            bibtex=r"""
+                @misc{Zindi2022TanzaniaTourismClassification,
+                  author = {{AI4D Africa's Anglophone Research Lab} and {Zindi}},
+                  title = {Tanzania Tourism Classification Challenge},
+                  year = {2022},
+                  howpublished = {\url{https://zindi.africa/competitions/ai4d-lab-tanzania-tourism-classification-challenge}},
+                  note = {Tourist expenditure survey attributed by the publisher to Tanzania's National Bureau of Statistics}
+                }
+            """,
+        ),
+    )
     download_description = """
         We use Train.csv from the original 2022 classification task. The curator-provided official Zindi
         archive passed its ZIP CRC check, and all four extracted files match the retained competition bytes
@@ -71,15 +85,6 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
         PY
-    """
-    bibtex = r"""
-        @misc{Zindi2022TanzaniaTourismClassification,
-          author = {{AI4D Africa's Anglophone Research Lab} and {Zindi}},
-          title = {Tanzania Tourism Classification Challenge},
-          year = {2022},
-          howpublished = {\url{https://zindi.africa/competitions/ai4d-lab-tanzania-tourism-classification-challenge}},
-          note = {Tourist expenditure survey attributed by the publisher to Tanzania's National Bureau of Statistics}
-        }
     """
     curation_comments = """
         We start with the 18,506 labeled rows in Train.csv; the 6,169 unlabeled Test.csv rows are not training labels.

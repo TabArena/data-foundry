@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     RowBudget,
+    Source,
     TaskSummary,
     drop_columns,
 )
@@ -111,15 +112,25 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "allstate_claim_prediction_challenge_1m"
-    version_of = "allstate_claim_prediction_challenge"
-    version_comment = """
-        We sub-sample the 2006 renewal book (2.75M rows) to 1.5M by whole households and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol). The households are drawn at random, not stratified (a regression target), so the claim rate stays that of the book. The 2005 history is built on the full file before the filter and the sampling.
-    """
-    year = "2011"
     domain = "insurance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/ClaimPredictionChallenge"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/ClaimPredictionChallenge",
+            license="Kaggle Competition Rules",
+            year="2011",
+            bibtex=r"""
+                @misc{Allstate2011ClaimPredictionChallenge,
+                  author = {{Allstate Insurance Company}},
+                  title = {Allstate Claim Prediction Challenge},
+                  year = {2011},
+                  howpublished = {\url{https://www.kaggle.com/competitions/ClaimPredictionChallenge}},
+                  note = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("ForcedGroupedFromTemporal", "Anonymized")
     download_description = """
         We use train_set.csv of the Kaggle competition (2005-2007); the test rows of 2008 and 2009 were never labelled publicly.
@@ -127,15 +138,6 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
         kaggle competitions download -c ClaimPredictionChallenge -f train_set.zip && unzip train_set.zip && rm train_set.zip
         sha256sum train_set.csv  # e8809676c72e976c659687bc35c0f132c651e77e691b50b9baf7128112019679
         mkdir -p local-data-warehouse/allstate_claim_prediction_challenge && mv train_set.csv local-data-warehouse/allstate_claim_prediction_challenge/
-    """
-    bibtex = r"""
-        @misc{Allstate2011ClaimPredictionChallenge,
-          author = {{Allstate Insurance Company}},
-          title = {Allstate Claim Prediction Challenge},
-          year = {2011},
-          howpublished = {\url{https://www.kaggle.com/competitions/ClaimPredictionChallenge}},
-          note = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with train_set.csv of the Kaggle competition (13,184,290 vehicle-years of 2005 to 2007; the 4,314,865 test rows of 2008 and 2009 were never labelled publicly) and keep the renewal book of 2006: the 2,754,936 cars insured in 2005 too, 61.9% of the 4,447,729 vehicle-years of 2006 (1,942,447 households, 22,632 claims), with 2005 as their history (decision 1; Andrej, 2026-11-03: "2006 renewal book with the 2005 history (counts)"; Lennart, 2026-11-08: "Option B: The renewal book.").
@@ -163,6 +165,7 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
         - Note: held for training rows only, not shipped (cross-dataset item of 2026-11-09, Andrej): `Vehicle`, the car's number within its household, whose values run over every car the household insured during the year, and the household's count of cars in the year, built from the rows, which counts the cars added after the rating, replacements after a crash among them (10.7% of the 2006 vehicle-years are cars a household of 2005 added during the year). Allstate holds both for the rows of a past year when it fits, but not for a car it rates at the renewal. They would need a training-only role, which the format does not have yet (MET-14, LEAK-41, MET-16), so they stay out for now.
         - CC (2026-11-09, Andrej): the folds test on all rows of the renewal book, the gaps kept as missing (review issue 8, A, as implemented); the missing-values bullet names the mismatch with the competition's complete test rows.
         - CC (2026-11-09, Andrej): the split stays by household over the 2006 book (review issue 9, A, as implemented); the splits comment gives the 2005-to-2006 score as above the household folds of that build and names the training side's year and the maturity of its amounts.
+        - The row budget: We sub-sample the 2006 renewal book (2.75M rows) to 1.5M by whole households and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol). The households are drawn at random, not stratified (a regression target), so the claim rate stays that of the book. The 2005 history is built on the full file before the filter and the sampling.
     """
 
     # Task

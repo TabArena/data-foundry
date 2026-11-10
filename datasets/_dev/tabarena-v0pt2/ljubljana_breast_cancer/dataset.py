@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -47,24 +47,29 @@ class LjubljanaBreastCancer(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "ljubljana_breast_cancer"
-    year = "1988"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C51P4M"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C51P4M",
+            license="CC BY 4.0",
+            year="1988",
+            bibtex="""
+                @misc{Zwitter1988BreastCancer,
+                  author       = {Zwitter, Matjaz and Soklic, Milan},
+                  title        = {{Breast Cancer}},
+                  year         = {1988},
+                  howpublished = {UCI Machine Learning Repository},
+                  note         = {{DOI}: https://doi.org/10.24432/C51P4M}
+                }
+            """,
+        ),
+    )
     download_description = """
         We get the data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/14/breast+cancer.zip && unzip breast+cancer.zip breast-cancer.data && rm breast+cancer.zip && mkdir -p local-data-warehouse/ljubljana_breast_cancer && mv breast-cancer.data local-data-warehouse/ljubljana_breast_cancer/
-    """
-    bibtex = """
-        @misc{Zwitter1988BreastCancer,
-          author       = {Zwitter, Matjaz and Soklic, Milan},
-          title        = {{Breast Cancer}},
-          year         = {1988},
-          howpublished = {UCI Machine Learning Repository},
-          note         = {{DOI}: https://doi.org/10.24432/C51P4M}
-        }
     """
     curation_comments = """
         We start with the data from UCI.

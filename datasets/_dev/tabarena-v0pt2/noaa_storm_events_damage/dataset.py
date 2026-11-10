@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -129,11 +130,25 @@ class NoaaStormEventsDamage(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "noaa_storm_events_damage"
-    year = "2026"
     domain = "environmental science & climate"
-    source = "GOV Website"
-    source_url = "https://www.ncei.noaa.gov/access/storm-events-database/"
-    license = "Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",
+            url="https://www.ncei.noaa.gov/access/storm-events-database/",
+            license="Public Domain",
+            year="2026",
+            bibtex=r"""
+                @misc{ncei_storm_events_database,
+                  author = {{NOAA National Centers for Environmental Information}},
+                  title = {Storm Events Database},
+                  year = {2026},
+                  howpublished = {\url{https://www.ncei.noaa.gov/access/storm-events-database/}},
+                  note = {Bulk CSV files (details), 2007-2025, downloaded 2026-10-30 from https://www.ncei.noaa.gov/pub/data/swdi/stormevents/csvfiles/}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         # The yearly details files of the Storm Events Database (NOAA NCEI bulk CSV), as downloaded on 2026-10-30.
@@ -147,15 +162,6 @@ class NoaaStormEventsDamage(AbstractCuratedDataset):
         done
         # Column documentation: Storm-Data-Bulk-csv-Format.pdf in the same directory; the preparation rules:
         # NWS Instruction 10-1605 (https://www.weather.gov/media/directives/010_pdfs/pd01016005curr.pdf).
-    """
-    bibtex = r"""
-        @misc{ncei_storm_events_database,
-          author = {{NOAA National Centers for Environmental Information}},
-          title = {Storm Events Database},
-          year = {2026},
-          howpublished = {\url{https://www.ncei.noaa.gov/access/storm-events-database/}},
-          note = {Bulk CSV files (details), 2007-2025, downloaded 2026-10-30 from https://www.ncei.noaa.gov/pub/data/swdi/stormevents/csvfiles/}
-        }
     """
     curation_comments = """
         We start with the yearly details files 2007-2025 of NOAA NCEI's Storm Events Database (bulk CSV, one row per Storm Data event in one county, forecast zone or marine zone), the archive of the National Weather Service's Storm Data publication. The source defines no prediction task.

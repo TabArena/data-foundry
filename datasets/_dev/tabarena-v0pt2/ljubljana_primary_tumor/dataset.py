@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -48,24 +48,29 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "ljubljana_primary_tumor"
-    year = "1988"  # UCI names file: "Date: November 1988"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5WK5Q"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5WK5Q",
+            license="CC BY 4.0",
+            year="1988",  # UCI names file: "Date: November 1988"
+            bibtex="""
+                @misc{Zwitter1987primarytumor,
+                  author       = {Zwitter, M. and Soklic, M.},
+                  title        = {{Primary Tumor}},
+                  year         = {1987},
+                  howpublished = {UCI Machine Learning Repository},
+                  note         = {{DOI}: https://doi.org/10.24432/C5WK5Q}
+                }
+            """,
+        ),
+    )
     download_description = """
         We get the data from UCI.
 
         wget https://archive.ics.uci.edu/static/public/83/primary+tumor.zip && unzip primary+tumor.zip primary-tumor.data && rm primary+tumor.zip && mkdir -p local-data-warehouse/ljubljana_primary_tumor && mv primary-tumor.data local-data-warehouse/ljubljana_primary_tumor/
-    """
-    bibtex = """
-        @misc{Zwitter1987primarytumor,
-          author       = {Zwitter, M. and Soklic, M.},
-          title        = {{Primary Tumor}},
-          year         = {1987},
-          howpublished = {UCI Machine Learning Repository},
-          note         = {{DOI}: https://doi.org/10.24432/C5WK5Q}
-        }
     """
     curation_comments = """
         We start with the data from UCI.

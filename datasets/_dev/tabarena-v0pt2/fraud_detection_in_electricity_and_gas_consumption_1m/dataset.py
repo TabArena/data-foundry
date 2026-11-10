@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     RowBudget,
+    Source,
     TaskSummary,
     drop_columns,
 )
@@ -103,17 +104,25 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "fraud_detection_in_electricity_and_gas_consumption_1m"
-    version_of = "fraud_detection_in_electricity_and_gas_consumption"
-    version_comment = """
-        We sub-sample the frame (1,862,650 invoices of 81,531 clients, all before 2013) to 1.5M rows by whole clients
-        (stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and
-        tests on about 500k rows (v2 split protocol).
-    """
-    year = "2019"
     domain = "industry & manufacturing"
-    source = "Zindi"
-    source_url = "https://zindi.africa/competitions/fraud-detection-in-electricity-and-gas-consumption-challenge"
-    license = "Zindi Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Zindi",
+            url="https://zindi.africa/competitions/fraud-detection-in-electricity-and-gas-consumption-challenge",
+            license="Zindi Competition Rules",
+            year="2019",
+            bibtex=r"""
+                @misc{zindi2019stegfraud,
+                  author       = {{Zindi} and {STEG}},
+                  title        = {Fraud Detection in Electricity and Gas Consumption Challenge},
+                  year         = {2019},
+                  howpublished = {\url{https://zindi.africa/competitions/fraud-detection-in-electricity-and-gas-consumption-challenge}},
+                  note         = {Zindi competition, first run as AI Hack Tunisia \#4 -- Predictive analytics challenge \#1 (20--22 September 2019); data from the Soci\'{e}t\'{e} Tunisienne de l'\'{E}lectricit\'{e} et du Gaz (STEG)}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         The Zindi files need a Zindi login (train.zip holds client_train.csv and invoice_train.csv:
@@ -132,15 +141,6 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
 
         sha256 (2026-10-06): client_train.csv ba15926524d57058945ddccdd5bd2e1add0e00286c7940d7d8201900f2f126c3,
         invoice_train.csv 03d6b05c74962b04d40e5609644fc14166fc13270923272ac2c3de66399c7743.
-    """
-    bibtex = r"""
-        @misc{zindi2019stegfraud,
-          author       = {{Zindi} and {STEG}},
-          title        = {Fraud Detection in Electricity and Gas Consumption Challenge},
-          year         = {2019},
-          howpublished = {\url{https://zindi.africa/competitions/fraud-detection-in-electricity-and-gas-consumption-challenge}},
-          note         = {Zindi competition, first run as AI Hack Tunisia \#4 -- Predictive analytics challenge \#1 (20--22 September 2019); data from the Soci\'{e}t\'{e} Tunisienne de l'\'{E}lectricit\'{e} et du Gaz (STEG)}
-        }
     """
     curation_comments = """
         We start with client_train.csv and invoice_train.csv of the Zindi challenge, from its Kaggle mirror.
@@ -204,6 +204,7 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
           reading (Zindi: "If the counter shows something wrong, the agent gives a bad score"); the codes 6-9 are not
           described and their use changes over time (7 only up to 1995, 8 and 9 from 1996, 9 replacing 6 from 2012), so
           which end is bad is unknown.
+        - The row budget: We sub-sample the frame (1,862,650 invoices of 81,531 clients, all before 2013) to 1.5M rows by whole clients (stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol).
     """
 
     # Task

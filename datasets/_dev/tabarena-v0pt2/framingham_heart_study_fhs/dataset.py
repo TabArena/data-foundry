@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
 
 TEN_YEARS = 3652
 """Days in 10 years (10 x 365.25, rounded down). No event, death or censor date of the cohort falls on days
@@ -186,15 +186,43 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "framingham_heart_study_fhs"
-    year = "2004"
     domain = "medical & healthcare"
-    source = "GOV Website"
-    source_url = "https://biolincc.nhlbi.nih.gov/teaching/"
-    license = (
-        "NHLBI BioLINCC teaching dataset, free on request; BioLINCC: 'teaching datasets are completely unsuitable "
-        "for publication purposes since specific statistical measures were used to create anonymous versions'. "
-        "Redistributed 'with permission from the National Heart, Lung, and Blood Institute' in the R package "
-        "riskCommunicator (GPL-3)"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",
+            url="https://biolincc.nhlbi.nih.gov/teaching/",
+            license="NHLBI BioLINCC teaching dataset, free on request; BioLINCC: 'teaching datasets are completely unsuitable "
+            "for publication purposes since specific statistical measures were used to create anonymous versions'. "
+            "Redistributed 'with permission from the National Heart, Lung, and Blood Institute' in the R package "
+            "riskCommunicator (GPL-3)",
+            year="2004",
+            bibtex=r"""
+                @misc{nhlbi2004framingham,
+                  author = {{National Heart, Lung, and Blood Institute}},
+                  title = {Framingham Heart Study Longitudinal Data Documentation (Teaching Dataset)},
+                  year = {2004},
+                  howpublished = {\url{https://biolincc.nhlbi.nih.gov/teaching/}},
+                  note = {BioLINCC teaching dataset; documentation version 2021a,
+                    \url{https://biolincc.nhlbi.nih.gov/media/teachingstudies/FHS_Teaching_Longitudinal_Data_Documentation_2021a.pdf}}
+                }
+                @manual{grembi2022riskcommunicator,
+                  author = {Grembi, Jessica},
+                  title = {{riskCommunicator}: G-Computation to Estimate Interpretable Epidemiological Effects},
+                  year = {2022},
+                  note = {R package version 1.0.0; data set framingham},
+                  doi = {10.32614/CRAN.package.riskCommunicator}
+                }
+                @misc{bertsimas2017analyticsedge,
+                  author = {Bertsimas, Dimitris},
+                  title = {15.071 The Analytics Edge, Spring 2017},
+                  year = {2017},
+                  howpublished = {Massachusetts Institute of Technology: MIT OpenCourseWare,
+                    \url{https://ocw.mit.edu/courses/15-071-the-analytics-edge-spring-2017/}},
+                  note = {Unit 3, The Framingham Heart Study: the cut of the Kaggle uploads}
+                }
+            """,
+        ),
     )
     download_description = r"""
         The Framingham Heart Study teaching dataset of NHLBI BioLINCC (https://biolincc.nhlbi.nih.gov/teaching/) is sent
@@ -221,31 +249,6 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
         wget -O framingham_mit_15071.csv https://ocw.mit.edu/courses/15-071-the-analytics-edge-spring-2017/5d689a024551e672313f7fd7eb1bee8d_framingham.csv
         sha256sum framingham_mit_15071.csv
         # 2c0e57dc0361b420becf1facec0a054af06c420eae0ae2faf0fdc8591fadb018
-    """
-    bibtex = r"""
-        @misc{nhlbi2004framingham,
-          author = {{National Heart, Lung, and Blood Institute}},
-          title = {Framingham Heart Study Longitudinal Data Documentation (Teaching Dataset)},
-          year = {2004},
-          howpublished = {\url{https://biolincc.nhlbi.nih.gov/teaching/}},
-          note = {BioLINCC teaching dataset; documentation version 2021a,
-            \url{https://biolincc.nhlbi.nih.gov/media/teachingstudies/FHS_Teaching_Longitudinal_Data_Documentation_2021a.pdf}}
-        }
-        @manual{grembi2022riskcommunicator,
-          author = {Grembi, Jessica},
-          title = {{riskCommunicator}: G-Computation to Estimate Interpretable Epidemiological Effects},
-          year = {2022},
-          note = {R package version 1.0.0; data set framingham},
-          doi = {10.32614/CRAN.package.riskCommunicator}
-        }
-        @misc{bertsimas2017analyticsedge,
-          author = {Bertsimas, Dimitris},
-          title = {15.071 The Analytics Edge, Spring 2017},
-          year = {2017},
-          howpublished = {Massachusetts Institute of Technology: MIT OpenCourseWare,
-            \url{https://ocw.mit.edu/courses/15-071-the-analytics-edge-spring-2017/}},
-          note = {Unit 3, The Framingham Heart Study: the cut of the Kaggle uploads}
-        }
     """
     curation_comments = """
         We start with the Framingham Heart Study teaching dataset of NHLBI BioLINCC, as redistributed in the R package

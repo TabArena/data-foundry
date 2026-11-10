@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     RowBudget,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -60,15 +61,25 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "consumer_complaints_1m"
-    version_of = "consumer_complaints"
-    version_comment = """
-        We use the last three quarters of 2025 as test windows. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
-    """
-    year = "2026"  # the snapshot we pin; the source grows over time
     domain = "finance"
-    source = "GOV Website"
-    source_url = "https://www.consumerfinance.gov/data-research/consumer-complaints/"
-    license = "U.S. Government Works"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",
+            url="https://www.consumerfinance.gov/data-research/consumer-complaints/",
+            license="U.S. Government Works",
+            year="2026",  # the snapshot we pin; the source grows over time
+            bibtex=r"""
+                @misc{cfpb2025ConsumerComplaintDatabase,
+                  author       = {{Consumer Financial Protection Bureau}},
+                  title        = {Consumer Complaint Database},
+                  year         = {2025},
+                  howpublished = {\url{https://www.consumerfinance.gov/data-research/consumer-complaints/}},
+                  note         = {Narratives archive (FOIA reading room), exported 2026-09-14. Accessed: 2026-10-01},
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         The CFPB removed the complaint narratives from the live database download on 2026-09-14 and archived every
@@ -95,15 +106,6 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
             wget https://files.consumerfinance.gov/f/documents/CCDB_Export_${f}.zip
         done
     """
-    bibtex = r"""
-        @misc{cfpb2025ConsumerComplaintDatabase,
-          author       = {{Consumer Financial Protection Bureau}},
-          title        = {Consumer Complaint Database},
-          year         = {2025},
-          howpublished = {\url{https://www.consumerfinance.gov/data-research/consumer-complaints/}},
-          note         = {Narratives archive (FOIA reading room), exported 2026-09-14. Accessed: 2026-10-01},
-        }
-    """
     curation_comments = """
         The dataset on Kaggle (https://www.kaggle.com/datasets/selener/consumer-complaint-database) has data from up until 2019. We use the government data up to the end of 2025.
 
@@ -125,6 +127,7 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
         - We drop duplicates (2% of the data) as the data should not contain naturally occurring duplicates and this likely results from some overlap in data collection or data entry or faulty re-submissions. We investigated some of the duplicates and they appear to be identical complaints. There exist duplicates with different target labels, we also drop these as we have no way to determine what the correct label is (all copies are dropped).
         - We drop constant columns, the complaint ID, and when the complaint was send to the company (as it does not related to the target task)
         - The class shares shift over time (from the v1 exploration, counted 2026-10-22 on the cleaned data): "Closed with explanation" is 85% of 2017, 54% of 2024 and 63% of 2025, "Closed with non-monetary relief" 10%, 44% and 35%, and "Closed with monetary relief" 4.5%, 1.7% and 1.3%. In the three test quarters of 2025 (Q2-Q4) explanation is 57%, 65% and 67%, monetary relief 1.2-1.8%.
+        - The row budget: We use the last three quarters of 2025 as test windows. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
     """
 
     # Task

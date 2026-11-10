@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     Metric,
     RowBudget,
     ScoringColumn,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -97,30 +98,31 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "g_research_crypto_forecasting_1m"
-    version_of = "g_research_crypto_forecasting"
-    version_comment = """
-        We sample per test window (v2 split protocol) by whole minutes: each window keeps at most 500k of its rows and its train side at most 1M of all earlier rows, drawn as whole minutes (every asset of a drawn minute kept; one random order of the minutes for all windows); the frame keeps only the rows a split uses. The full frame has 23,486,468 rows (14 assets, one row per minute, 2018-01-01 to 2021-09-20). The train sides cover the whole history.
-    """
-    year = "2021"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/g-research-crypto-forecasting"
-    license = "Kaggle Competition Rules (data access and use: competition use only)"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/g-research-crypto-forecasting",
+            license="Kaggle Competition Rules (data access and use: competition use only)",
+            year="2021",
+            bibtex=r"""
+                @misc{GResearchCryptoForecasting2021,
+                  author = {Alessandro Ticchi and Andrew Scherer and Carla McIntyre and Carlos Stein N Brito and Derek Snow and Develra and dstern and James Colless and Kieran Garvey and Maggie and Maria Perez Ortiz and Ryan Lynch and Sohier Dane},
+                  title = {G-Research Crypto Forecasting},
+                  year = {2021},
+                  howpublished = {\url{https://kaggle.com/competitions/g-research-crypto-forecasting}},
+                  note = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download two files of the Kaggle competition (accept its rules on Kaggle first). The files were last updated on 2022-01-26; train.csv has 24,236,806 rows.
 
         kaggle competitions download -c g-research-crypto-forecasting -f train.csv -p local-data-warehouse/g_research_crypto_forecasting
         kaggle competitions download -c g-research-crypto-forecasting -f asset_details.csv -p local-data-warehouse/g_research_crypto_forecasting
         cd local-data-warehouse/g_research_crypto_forecasting && unzip train.csv.zip && rm train.csv.zip
-    """
-    bibtex = r"""
-        @misc{GResearchCryptoForecasting2021,
-          author = {Alessandro Ticchi and Andrew Scherer and Carla McIntyre and Carlos Stein N Brito and Derek Snow and Develra and dstern and James Colless and Kieran Garvey and Maggie and Maria Perez Ortiz and Ryan Lynch and Sohier Dane},
-          title = {G-Research Crypto Forecasting},
-          year = {2021},
-          howpublished = {\url{https://kaggle.com/competitions/g-research-crypto-forecasting}},
-          note = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with train.csv (one row per asset and minute, 14 cryptocurrencies, 2018-01-01 to 2021-09-21) and asset_details.csv of the Kaggle competition.
@@ -140,6 +142,7 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
         - Metric: the competition's weighted Pearson correlation, each row weighted by its asset's `Weight` (Bitcoin 6.78 ... IOTA and Maker 1.10). It replaces the pooled `pearsonr` declared before as its stand-in, which ranked seven predictions per window as the weighted correlation does (Kendall tau 1.0).
         - Training weight (MET-15, 2026-11-06): none. `Weight` is a function of `Asset_Name`, which the model sees, so MET-15 needs no sample weight: a weight that is a function of the features leaves the best squared-error prediction of each row unchanged. Fitting with it as the sample weight (and in the validation loss) moved the weighted Pearson by +0.0045, +0.0034 and +0.0001 in the three windows (mean of 12 seeds; better in 25 of 36 window-seed pairs; +0.0010 with a fixed 50 rounds instead of early stopping, every interval including 0), within the spread across windows (mean +0.0026, SD 0.0023, t about 1.96 on 2 df); only the newest window's interval excludes 0 (12-seed ensembles, +0.0050 [+0.0005, +0.0099], 95% day-block interval).
         - Note: the task probes flag no_signal, drift_baseline and unstable (untuned models, scored by R^2; by the declared weighted Pearson their LightGBM scores 0.028, the linear model 0.023 and the dummy 0, mean of the 3 splits). LightGBM (learning rate 0.05, 31 leaves, at least 200 rows per leaf) early-stopped on the newest 10% of each train side reaches R^2 +0.0008, +0.0008 and -0.0023 on the shipped splits (mean of 4 seeds; their ensemble +0.0010 [-0.0002, +0.0026], +0.0009 [+0.0001, +0.0017] and -0.0019 [-0.0046, +0.0011], 95% day-block intervals, only the middle window's excluding 0). Under the declared weighted Pearson the same signal is clear in the two newer windows and pooled over the three (Scope bullet); drift_baseline comes from a target centred on zero.
+        - The row budget: We sample per test window (v2 split protocol) by whole minutes: each window keeps at most 500k of its rows and its train side at most 1M of all earlier rows, drawn as whole minutes (every asset of a drawn minute kept; one random order of the minutes for all windows); the frame keeps only the rows a split uses. The full frame has 23,486,468 rows (14 assets, one row per minute, 2018-01-01 to 2021-09-20). The train sides cover the whole history.
     """
 
     # Task

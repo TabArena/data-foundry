@@ -15,6 +15,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -111,14 +112,26 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "wisconsin_local_government_property_insurance_fund"
-    year = "2017"
     domain = "insurance"
-    source = "GitHub"
-    source_url = (
-        "https://github.com/OpenActTexts/Loss-Data-Analytics/blob/38859ed741b21d41a26b5abb668e1172c088a216/Data/"
-        "PropertyFundInsample.csv"
+    sources = (
+        Source(
+            role="publication",
+            platform="GitHub",
+            url="https://github.com/OpenActTexts/Loss-Data-Analytics/blob/38859ed741b21d41a26b5abb668e1172c088a216/Data/"
+            "PropertyFundInsample.csv",
+            license=None,  # the shipped first edition states none; the second edition is CC0 (see meta_license_unknown)
+            year="2017",
+            bibtex=r"""
+                @misc{OpenActTexts2017LossDataAnalytics,
+                  title = {Loss Data Analytics},
+                  author = {{Open Actuarial Textbooks Project}},
+                  year = {2017},
+                  howpublished = {\url{https://github.com/OpenActTexts/Loss-Data-Analytics}},
+                  note = {Ch. 1, Case Study: Wisconsin Property Fund; data file PropertyFundInsample.csv, first committed on 27 June 2017. The task and its metric: E.W. Frees, G. Lee and L. Yang, Multivariate Frequency-Severity Regression Models in Insurance, Risks 4(1):4, 2016, doi:10.3390/risks4010004}
+                }
+            """,
+        ),
     )
-    license = None  # the shipped first edition states none; the second edition is CC0 (see meta_license_unknown)
     download_description = """
         The open textbook Loss Data Analytics (Open Actuarial Textbooks project, E.W. Frees and co-authors) ships the
         data of its Wisconsin Property Fund case study (Ch. 1) in its GitHub repository. We pin the repository's first
@@ -132,15 +145,6 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
         sha256sum PropertyFundInsample.csv CLAIMLEVEL.csv
         # 436cc782e87b401e34d00c4d5e7cf801c683f7063c5018fc2d067c104e0b1c96  PropertyFundInsample.csv
         # e338a1bd130cb07ffdb2e6a82af8b5eef393cfc703e9a2cf90758c12c5246c95  CLAIMLEVEL.csv
-    """
-    bibtex = r"""
-        @misc{OpenActTexts2017LossDataAnalytics,
-          title = {Loss Data Analytics},
-          author = {{Open Actuarial Textbooks Project}},
-          year = {2017},
-          howpublished = {\url{https://github.com/OpenActTexts/Loss-Data-Analytics}},
-          note = {Ch. 1, Case Study: Wisconsin Property Fund; data file PropertyFundInsample.csv, first committed on 27 June 2017. The task and its metric: E.W. Frees, G. Lee and L. Yang, Multivariate Frequency-Severity Regression Models in Insurance, Risks 4(1):4, 2016, doi:10.3390/risks4010004}
-        }
     """
     curation_comments = """
         We start with PropertyFundInsample.csv of the open textbook Loss Data Analytics (OpenActTexts on GitHub), the building and contents (BC) cover of Wisconsin's Local Government Property Insurance Fund, 2006-2010: a close extract of the sample Frees, Lee and Yang (2016, Risks 4:4, Sec. 5) model (5,639 member-years with 1,679 claimants, against their 5,660 and 1,684).

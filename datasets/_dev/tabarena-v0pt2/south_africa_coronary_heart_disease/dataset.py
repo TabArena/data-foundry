@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 
 class SouthAfricaCoronaryHeartDisease(AbstractCuratedDataset):
@@ -39,27 +39,47 @@ class SouthAfricaCoronaryHeartDisease(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "south_africa_coronary_heart_disease"
-    year = "2001"
     domain = "medical & healthcare"
-    source = "Other"  # the data page of The Elements of Statistical Learning; the Kaggle file is a copy
-    source_url = "https://hastie.su.domains/ElemStatLearn/"
-    license = "CC BY-SA 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # the data page of The Elements of Statistical Learning; the Kaggle file is a copy
+            url="https://hastie.su.domains/ElemStatLearn/",
+            license=None,  # the ESL data page and SAheart.info.txt state none
+            year="2001",
+            bibtex=r"""
+                @article{rossouw1983coronary,
+                  title={Coronary risk factor screening in three rural communities. The CORIS baseline study.},
+                  author={Rossouw, JE and Du Plessis, JP and Benad{\'e}, AJ and Jordaan, PC and Kotze, JP and Jooste, PL and Ferreira, JJ},
+                  journal={South African medical journal= Suid-Afrikaanse tydskrif vir geneeskunde},
+                  volume={64},
+                  number={12},
+                  pages={430--436},
+                  year={1983}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/waalbannyantudre/south-african-heart-disease-dataset",
+            license="CC BY-SA 4.0",
+            name="the Kaggle copy we download",
+        ),
+        Source(
+            role="copy",
+            platform="OpenML",
+            url="https://www.openml.org/d/1498",
+            license="Public",
+            year="2015",
+            name="OpenML 1498 (sa-heart)",
+        ),
+    )
     download_description = """
         We get the data from Kaggle, as it has the best curation and documentation.
 
         kaggle datasets download waalbannyantudre/south-african-heart-disease-dataset && unzip south-african-heart-disease-dataset.zip && rm south-african-heart-disease-dataset.zip
         mkdir -p local-data-warehouse/south_africa_coronary_heart_disease && mv SAHeart.csv local-data-warehouse/south_africa_coronary_heart_disease/
-    """
-    bibtex = r"""
-        @article{rossouw1983coronary,
-          title={Coronary risk factor screening in three rural communities. The CORIS baseline study.},
-          author={Rossouw, JE and Du Plessis, JP and Benad{\'e}, AJ and Jordaan, PC and Kotze, JP and Jooste, PL and Ferreira, JJ},
-          journal={South African medical journal= Suid-Afrikaanse tydskrif vir geneeskunde},
-          volume={64},
-          number={12},
-          pages={430--436},
-          year={1983}
-        }
     """
     curation_comments = """
         We start with the data from Kaggle.
@@ -69,6 +89,12 @@ class SouthAfricaCoronaryHeartDisease(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `chd` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
     """
+    accepted_check_warnings = {
+        "meta_license_unknown": (
+            "Neither the ESL data page nor SAheart.info.txt states a licence (checked 2026-11-10); the Kaggle copy is "
+            "CC BY-SA 4.0 and OpenML 1498 'Public'."
+        ),
+    }
 
     # Task
     target = "chd"

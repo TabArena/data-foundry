@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     Smiles,
+    Source,
     TaskSummary,
     canonical_smiles,
     scaffold_groups,
@@ -56,11 +57,28 @@ class QsarBiodeg(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "qsar_biodeg"
-    year = "2013"
     domain = "chemistry & material science"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5H60M"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5H60M",
+            license="CC BY 4.0",
+            year="2013",
+            bibtex="""
+                @article{mansouri2013quantitative,
+                  title={Quantitative structure--activity relationship models for ready biodegradability of chemicals},
+                  author={Mansouri, Kamel and Ringsted, Tine and Ballabio, Davide and Todeschini, Roberto and Consonni, Viviana},
+                  journal={Journal of chemical information and modeling},
+                  volume={53},
+                  number={4},
+                  pages={867--878},
+                  year={2013},
+                  publisher={ACS Publications}
+                }
+            """,
+        ),
+    )
     special_features = (Smiles(column="SMILES"),)
     download_description = """
         mkdir -p local-data-warehouse/qsar_biodeg/ && wget -P local-data-warehouse/qsar_biodeg/ https://archive.ics.uci.edu/static/public/254/qsar+biodegradation.zip && unzip local-data-warehouse/qsar_biodeg/qsar+biodegradation.zip -d local-data-warehouse/qsar_biodeg/ && rm local-data-warehouse/qsar_biodeg/qsar+biodegradation.zip
@@ -72,18 +90,6 @@ class QsarBiodeg(AbstractCuratedDataset):
 
         ci4000213_si_001.xlsx (503,427 bytes), sha256
         64355cd79cedbcc5a6e1fc9178215d22d716643f2ce6ad60fa1aa45c45fc5f98
-    """
-    bibtex = """
-        @article{mansouri2013quantitative,
-          title={Quantitative structure--activity relationship models for ready biodegradability of chemicals},
-          author={Mansouri, Kamel and Ringsted, Tine and Ballabio, Davide and Todeschini, Roberto and Consonni, Viviana},
-          journal={Journal of chemical information and modeling},
-          volume={53},
-          number={4},
-          pages={867--878},
-          year={2013},
-          publisher={ACS Publications}
-        }
     """
     curation_comments = """
         - biodeg.csv has no header row, so we read it with `header=None` and keep the first chemical: 1,055 rows,

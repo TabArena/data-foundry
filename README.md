@@ -149,21 +149,26 @@ shortened:
 
 ```python
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset
+from data_foundry.v2 import AbstractCuratedDataset, Source
 
 
 class BloodTransfusion(AbstractCuratedDataset):
     unique_name = "blood_transfusion"
-    year = "2008"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5GS39"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5GS39",
+            license="CC BY 4.0",
+            year="2008",
+            bibtex="""
+                @article{yeh2009knowledge, title={Knowledge discovery on RFM model using Bernoulli sequence}, ...}
+            """,
+        ),
+    )
     download_description = """
         mkdir -p local-data-warehouse/blood_transfusion/ && wget -P local-data-warehouse/blood_transfusion/ <UCI zip> && unzip ...
-    """
-    bibtex = """
-        @article{yeh2009knowledge, title={Knowledge discovery on RFM model using Bernoulli sequence}, ...}
     """
     curation_comments = """
         - We renamed the target and mapped binary values to "Yes"/"No".

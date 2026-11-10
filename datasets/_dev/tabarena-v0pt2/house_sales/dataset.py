@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -296,11 +297,54 @@ class HouseSales(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "house_sales"
-    year = "2015"
     domain = "business & marketing"
-    source = "GOV Website"  # King County's recorded sales; the file is a course cut of them, downloaded from Kaggle
-    source_url = "https://info.kingcounty.gov/assessor/DataDownload/default.aspx"
-    license = "CC0 1.0 Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",  # King County's recorded sales; the file is a course cut of them, downloaded from Kaggle
+            url="https://info.kingcounty.gov/assessor/DataDownload/default.aspx",
+            license="CC0 1.0 Public Domain",
+            year="2015",
+            bibtex=r"""
+                @misc{fox2015kchousedata,
+                  author = {Fox, Emily and Guestrin, Carlos},
+                  title = {kc\_house\_data: House sales in King County, Washington},
+                  year = {2015},
+                  howpublished = {Machine Learning Specialization, University of Washington, Coursera; \url{https://www.coursera.org/specializations/machine-learning}},
+                  note = {Re-uploaded to Kaggle in 2016 as harlfoxem/housesalesprediction}
+                }
+                @misc{kingcounty2015assessor,
+                  author = {{King County Department of Assessments}},
+                  title = {Assessor data download: real property sales, residential building and change history extracts},
+                  year = {2015},
+                  howpublished = {\url{https://info.kingcounty.gov/assessor/DataDownload/default.aspx}}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="GitHub",
+            url="https://github.com/learnml/machine-learning-specialization",
+            license=None,  # the repository states no license
+            year="2015",
+            name="the course's first distribution of kc_house_data",
+        ),
+        Source(
+            role="copy",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/harlfoxem/housesalesprediction",
+            license="CC0: Public Domain",
+            name="kc_house_data.csv, which we download",
+        ),
+        Source(
+            role="copy",
+            platform="OpenML",
+            url="https://www.openml.org/d/42731",
+            license="CC0 Public Domain",
+            year="2020",
+            name="OpenML 42731",
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         kc_house_data.csv is a cut of the sales and property records of the King County Department of Assessments
@@ -319,21 +363,6 @@ class HouseSales(AbstractCuratedDataset):
         wget -O "local-data-warehouse/house_sales/Real Property Sales.zip" "https://aqua.kingcounty.gov/extranet/assessor/Real%20Property%20Sales.zip"
 
         The first build filters the extracts to three files in the same folder. With the downloads of 2026-10-07 (change log, building file) and 2026-10-19 (sales) their md5 are: house_sales_changes.csv 06491065b3ddbc8b0d9d20fb82444cad, house_sales_bath_counts.csv dc04ef1d66b0f1374a5b541bfb76c9ea, house_sales_sale_warnings.csv 06e45bc786381590dfcf24822e1ce221. A different md5 after a new download means the county changed its 2014-2015 records.
-    """
-    bibtex = r"""
-        @misc{fox2015kchousedata,
-          author = {Fox, Emily and Guestrin, Carlos},
-          title = {kc\_house\_data: House sales in King County, Washington},
-          year = {2015},
-          howpublished = {Machine Learning Specialization, University of Washington, Coursera; \url{https://www.coursera.org/specializations/machine-learning}},
-          note = {Re-uploaded to Kaggle in 2016 as harlfoxem/housesalesprediction}
-        }
-        @misc{kingcounty2015assessor,
-          author = {{King County Department of Assessments}},
-          title = {Assessor data download: real property sales, residential building and change history extracts},
-          year = {2015},
-          howpublished = {\url{https://info.kingcounty.gov/assessor/DataDownload/default.aspx}}
-        }
     """
     curation_comments = """
         We start with kc_house_data.csv from Kaggle: 21,613 sales of houses in King County, Washington, dated 2014-05-02 to 2015-05-27. Three extracts of the King County Department of Assessments give the house as it stood at each sale and the county's flags on each sale.
@@ -365,6 +394,12 @@ class HouseSales(AbstractCuratedDataset):
           each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 1 scores with no words per level are numbers (`SCORES`): `view`.
     """
+    accepted_check_warnings = {
+        "meta_license_unknown": (
+            "The course repository, the first distribution of kc_house_data, states no licence; the Kaggle copy we "
+            "download and OpenML 42731 are CC0."
+        ),
+    }
 
     # Task
     target = "log_price"

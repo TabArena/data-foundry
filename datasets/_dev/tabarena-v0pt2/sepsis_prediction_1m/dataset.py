@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, RowBudget, TaskSummary, decode
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    RowBudget,
+    Source,
+    TaskSummary,
+    decode,
+)
 
 
 class SepsisPrediction1m(AbstractCuratedDataset):
@@ -47,15 +56,35 @@ class SepsisPrediction1m(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "sepsis_prediction_1m"
-    version_of = "sepsis_prediction"
-    version_comment = """
-        We sub-sample the frame to 1.5M rows by whole patients (stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol).
-    """
-    year = "2019"
     domain = "medical & healthcare"
-    source = "Other"
-    source_url = "https://physionet.org/content/challenge-2019/1.0.0/"  # the Kaggle file is a copy
-    license = "ODC Open Database License"  # CC BY-NC-SA 4.0 on Kaggle...
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://physionet.org/content/challenge-2019/1.0.0/",  # the Kaggle file is a copy
+            license="ODC Open Database License",
+            year="2019",
+            bibtex="""
+                @article{reyna2020early,
+                  title={Early prediction of sepsis from clinical data: the PhysioNet/Computing in Cardiology Challenge 2019},
+                  author={Reyna, Matthew A and Josef, Christopher S and Jeter, Russell and Shashikumar, Supreeth P and Westover, M Brandon and Nemati, Shamim and Clifford, Gari D and Sharma, Ashish},
+                  journal={Critical care medicine},
+                  volume={48},
+                  number={2},
+                  pages={210--217},
+                  year={2020},
+                  publisher={LWW}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/salikhussaini49/prediction-of-sepsis",
+            license="CC BY-NC-SA 4.0",
+            name="the Kaggle copy we download (PhysioNet's download was down)",
+        ),
+    )
     # Regime tags by hand: the automatic ones would read `GroupedTemporal` from `Grouping(time_on=...)`, but the split
     # uses the groups only (`time_on` orders the hours inside a stay).
     data_tags = ("Non-IID", "Grouped")
@@ -64,18 +93,6 @@ class SepsisPrediction1m(AbstractCuratedDataset):
 
         kaggle datasets download -d salikhussaini49/prediction-of-sepsis && unzip prediction-of-sepsis.zip all_files && rm prediction-of-sepsis.zip
         mkdir -p local-data-warehouse/sepsis_prediction && mv all_files local-data-warehouse/sepsis_prediction/
-    """
-    bibtex = """
-        @article{reyna2020early,
-          title={Early prediction of sepsis from clinical data: the PhysioNet/Computing in Cardiology Challenge 2019},
-          author={Reyna, Matthew A and Josef, Christopher S and Jeter, Russell and Shashikumar, Supreeth P and Westover, M Brandon and Nemati, Shamim and Clifford, Gari D and Sharma, Ashish},
-          journal={Critical care medicine},
-          volume={48},
-          number={2},
-          pages={210--217},
-          year={2020},
-          publisher={LWW}
-        }
     """
     curation_comments = """
         We start with all files from Kaggle.
@@ -94,6 +111,7 @@ class SepsisPrediction1m(AbstractCuratedDataset):
           (as it shows the target), but it is group metadata, not a model feature: the 42 features leave it out.
         - The target (2026-11-01, CLEAN-25): `SepsisLabel` ships its classes as words (1 is the event). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
+        - The row budget: We sub-sample the frame to 1.5M rows by whole patients (stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol).
     """
 
     # Task

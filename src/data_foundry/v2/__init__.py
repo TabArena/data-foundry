@@ -9,7 +9,15 @@ their scorers, :mod:`data_foundry.v2.chemistry` for SMILES columns, :mod:`data_f
 
 from __future__ import annotations
 
-from data_foundry.schema import Grouping, RowBudget, ScoringColumn, SpecialFeature, SpectrumDetails, UnitWeight
+from data_foundry.schema import (
+    Grouping,
+    RowBudget,
+    ScoringColumn,
+    Source,
+    SpecialFeature,
+    SpectrumDetails,
+    UnitWeight,
+)
 from data_foundry.utils.dtypes import object_columns
 from data_foundry.v2.chemistry import (
     DEFAULT_SMILES_ENCODING,
@@ -61,6 +69,7 @@ __all__ = [
     "RowBudget",
     "ScoringColumn",
     "Smiles",
+    "Source",
     "SpecialColumn",
     "SpecialColumnGroup",
     "SpecialFeature",

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary, decode, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary, decode, drop_columns
 
 
 class SantanderCustomerTransactionPrediction(AbstractCuratedDataset):
@@ -35,26 +35,31 @@ class SantanderCustomerTransactionPrediction(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "santander_customer_transaction_prediction"
-    year = "2019"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/c/santander-customer-transaction-prediction"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/c/santander-customer-transaction-prediction",
+            license="Kaggle Competition Rules",
+            year="2019",
+            bibtex=r"""
+                @misc{Piedra2019SantanderCustomerTransactionPrediction,
+                  author = {Mercedes Piedra and Sohier Dane and Soraya Jimenez},
+                  title  = {Santander Customer Transaction Prediction},
+                  year   = {2019},
+                  howpublished = {\url{https://kaggle.com/competitions/santander-customer-transaction-prediction}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         We use the train.csv from the Kaggle competition.
 
         kaggle competitions download -c santander-customer-transaction-prediction -f train.csv && unzip train.csv.zip &&  rm train.csv.zip
         mkdir -p local-data-warehouse/santander_customer_transaction_prediction && mv train.csv local-data-warehouse/santander_customer_transaction_prediction/
-    """
-    bibtex = r"""
-        @misc{Piedra2019SantanderCustomerTransactionPrediction,
-          author = {Mercedes Piedra and Sohier Dane and Soraya Jimenez},
-          title  = {Santander Customer Transaction Prediction},
-          year   = {2019},
-          howpublished = {\url{https://kaggle.com/competitions/santander-customer-transaction-prediction}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with the train.csv from Kaggle.

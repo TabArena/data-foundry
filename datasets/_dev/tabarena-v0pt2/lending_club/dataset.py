@@ -9,6 +9,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -64,11 +65,44 @@ class LendingClub(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "lending_club"
-    year = "2018"
     domain = "finance"
-    source = "Other"  # LendingClub's own download portal (gone); we read the archived copy on Zenodo
-    source_url = "https://www.lendingclub.com"
-    license = "CC0: Public Domain"  # On Kaggle, likely not true TOS from the website.
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",  # LendingClub's own download portal (gone); we read the archived copy on Zenodo
+            url="https://www.lendingclub.com",
+            license=None,  # LendingClub's terms of use; the CC0 of the Kaggle file is its uploader's
+            year="2018",
+            bibtex="""
+                @article{sanz2025credit,
+                  title={Credit Risk Meets Large Language Models: Building a Risk Indicator from Loan Descriptions in P2P Lending},
+                  author={Sanz-Guerrero, Mario and Arroyo, Javier},
+                  journal={Inteligencia Artificial},
+                  volume={28},
+                  number={75},
+                  pages={220--247},
+                  year={2025}
+                }
+            """,
+        ),
+        Source(
+            role="part",
+            platform="Other",
+            url="https://doi.org/10.5281/zenodo.11295916",
+            license="CC BY 4.0",
+            year="2024",
+            name="the loan-granting cut of arXiv:2401.16458 on Zenodo, the base table",
+            files=("LC_loans_granting_model_dataset.csv?download=1",),
+        ),
+        Source(
+            role="part",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/wordsforthewise/lending-club",
+            license="CC0: Public Domain",  # set by its uploader
+            name="All Lending Club loan data, joined in by loan id",
+            files=("accepted_2007_to_2018Q4.csv.gz",),
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         It seems the official download portal from https://www.lendingclub.com is gone. So we can only utilize artifacts from the past, which seem to go up to 2018.
@@ -84,17 +118,6 @@ class LendingClub(AbstractCuratedDataset):
         wget https://zenodo.org/records/11295916/files/LC_loans_granting_model_dataset.csv?download=1
         mkdir -p local-data-warehouse/lending_club && mv LC_loans_granting_model_dataset.csv?download=1 local-data-warehouse/lending_club
         kaggle datasets download wordsforthewise/lending-club -f accepted_2007_to_2018Q4.csv.gz && mv accepted_2007_to_2018Q4.csv.gz local-data-warehouse/lending_club/
-    """
-    bibtex = """
-        @article{sanz2025credit,
-          title={Credit Risk Meets Large Language Models: Building a Risk Indicator from Loan Descriptions in P2P Lending},
-          author={Sanz-Guerrero, Mario and Arroyo, Javier},
-          journal={Inteligencia Artificial},
-          volume={28},
-          number={75},
-          pages={220--247},
-          year={2025}
-        }
     """
     curation_comments = """
         We start with the data from Sanz-Guerrero et al. (2025), which is already preprocessed for this task and used for tabular-text learning. It lacks many variables of the original data that can be added without changing the task or leaking the label, so we merge them in from the original data.
@@ -112,6 +135,12 @@ class LendingClub(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
           (CLEAN-10).
     """
+    accepted_check_warnings = {
+        "meta_license_unknown": (
+            "LendingClub published the loans under its terms of use, without a licence; the Zenodo cut is CC BY 4.0 "
+            "and the Kaggle file CC0, set by its uploader."
+        ),
+    }
 
     # Task
     target = "Default"

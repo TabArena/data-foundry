@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -205,11 +206,26 @@ class CollegeScorecard(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "college_scorecard"
-    year = "2026"
     domain = "education"
-    source = "GOV Website"
-    source_url = "https://collegescorecard.ed.gov/data/"
-    license = "CC BY (data.gov catalog entry of the U.S. Department of Education)"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",
+            url="https://collegescorecard.ed.gov/data/",
+            license="CC BY (data.gov catalog entry of the U.S. Department of Education)",
+            year="2026",
+            bibtex=r"""
+                @misc{usdoe2026collegescorecard,
+                    author       = {{U.S. Department of Education}},
+                    title        = {{College Scorecard}: All Data Files (Institution-Level Data, 1996-97 to 2025-26)},
+                    year         = {2026},
+                    month        = jun,
+                    note         = {Data release of June 10, 2026},
+                    howpublished = {\url{https://collegescorecard.ed.gov/data/}}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         College Scorecard "All Data Files" release of June 10, 2026 (U.S. Department of Education). The official link
@@ -233,16 +249,6 @@ class CollegeScorecard(AbstractCuratedDataset):
         2025, the pages cited in the curation notes), pinned as Internet Archive snapshots:
         https://web.archive.org/web/20260830015514/https://collegescorecard.ed.gov/files/CollegeScorecardDataDictionary.xlsx
         https://web.archive.org/web/20260630125853/https://collegescorecard.ed.gov/files/InstitutionDataDocumentation.pdf
-    """
-    bibtex = r"""
-        @misc{usdoe2026collegescorecard,
-            author       = {{U.S. Department of Education}},
-            title        = {{College Scorecard}: All Data Files (Institution-Level Data, 1996-97 to 2025-26)},
-            year         = {2026},
-            month        = jun,
-            note         = {Data release of June 10, 2026},
-            howpublished = {\url{https://collegescorecard.ed.gov/data/}}
-        }
     """
     curation_comments = """
         We start with the files MERGED1996_97_PP.csv to MERGED2025_26_PP.csv of the College Scorecard release of June 10, 2026 (U.S. Department of Education).

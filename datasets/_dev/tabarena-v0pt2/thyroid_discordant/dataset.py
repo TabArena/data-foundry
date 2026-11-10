@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
 
 class ThyroidDiscordant(AbstractCuratedDataset):
@@ -39,27 +39,32 @@ class ThyroidDiscordant(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "thyroid_discordant"
-    year = "1987"
     domain = "medical & healthcare"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5D010"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5D010",
+            license="CC BY 4.0",
+            year="1987",
+            bibtex="""
+                @article{quinlan1987simplifying,
+                  title={Simplifying decision trees},
+                  author={Quinlan, J. Ross},
+                  journal={International journal of man-machine studies},
+                  volume={27},
+                  number={3},
+                  pages={221--234},
+                  year={1987},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the dis.data from the UCI files. All other files are corrupted or versions of the same data as far as we know (see the dataset curation sheet for more information).
 
         wget https://archive.ics.uci.edu/static/public/102/thyroid+disease.zip && unzip thyroid+disease.zip  dis.data dis.test && rm thyroid+disease.zip && mkdir -p local-data-warehouse/thyroid_discordant && mv dis.data dis.test local-data-warehouse/thyroid_discordant/
-    """
-    bibtex = """
-        @article{quinlan1987simplifying,
-          title={Simplifying decision trees},
-          author={Quinlan, J. Ross},
-          journal={International journal of man-machine studies},
-          volume={27},
-          number={3},
-          pages={221--234},
-          year={1987},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         We start with the .data file from UCI and add columns and encode nan values.

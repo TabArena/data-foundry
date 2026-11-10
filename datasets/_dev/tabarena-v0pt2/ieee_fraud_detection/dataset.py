@@ -7,7 +7,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits, decode
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    decode,
+)
 
 # The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
 # (CLEAN-12; the curator's rule of 2026-11-01).
@@ -80,25 +89,30 @@ class IeeeFraudDetection(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "ieee_fraud_detection"
-    year = "2019"
     domain = "finance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/ieee-fraud-detection/overview"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/ieee-fraud-detection/overview",
+            license="non-commercial purposes only, including academic research",
+            year="2019",
+            bibtex=r"""
+                @misc{ieee-fraud-detection,
+                    author = {Addison Howard and Bernadette Bouchon-Meunier and IEEE CIS and inversion and John Lei and Lynn@Vesta and Marcus2010 and Prof. Hussein Abbass},
+                    title = {IEEE-CIS Fraud Detection},
+                    year = {2019},
+                    howpublished = {\url{https://kaggle.com/competitions/ieee-fraud-detection}},
+                    note = {Kaggle}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
-    license = "non-commercial purposes only, including academic research"
     download_description = r"""
         kaggle competitions download -c ieee-fraud-detection -p local-data-warehouse/ieee_fraud_detection \
         && unzip local-data-warehouse/ieee_fraud_detection/ieee-fraud-detection.zip -d local-data-warehouse/ieee_fraud_detection/ \
         && rm local-data-warehouse/ieee_fraud_detection/ieee-fraud-detection.zip
-    """
-    bibtex = r"""
-        @misc{ieee-fraud-detection,
-            author = {Addison Howard and Bernadette Bouchon-Meunier and IEEE CIS and inversion and John Lei and Lynn@Vesta and Marcus2010 and Prof. Hussein Abbass},
-            title = {IEEE-CIS Fraud Detection},
-            year = {2019},
-            howpublished = {\url{https://kaggle.com/competitions/ieee-fraud-detection}},
-            note = {Kaggle}
-        }
     """
     curation_comments = """
         - We use insights of the first place solution on Kaggle for conceptualizing the task: https://www.kaggle.com/competitions/ieee-fraud-detection/discussion/111284

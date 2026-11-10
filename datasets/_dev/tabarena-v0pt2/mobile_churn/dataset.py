@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
 
 RAW_FILE = "mobile-churn-data.xlsx"
 """The one file of the Kaggle dataset dimitaryanev/mobilechurndataxlsx; one sheet, "Churn prediction data"."""
@@ -77,11 +77,32 @@ class MobileChurn(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "mobile_churn"
-    year = "2019"
     domain = "business & marketing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/datasets/dimitaryanev/mobilechurndataxlsx"
-    license = None  # the Kaggle data card states "unknown"; OpenML 44231 states "Unknown"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/datasets/dimitaryanev/mobilechurndataxlsx",
+            license=None,  # the Kaggle data card states "unknown"; OpenML 44231 states "Unknown"
+            year="2019",
+            bibtex="""
+                @misc{dimitaryanev2019mobilechurn,
+                  author = {dimitaryanev},
+                  title = {mobile-churn-data.xlsx},
+                  year = {2019},
+                  howpublished = {\\url{https://www.kaggle.com/datasets/dimitaryanev/mobilechurndataxlsx}},
+                  note = {Kaggle dataset uploaded on 2019-10-31 without a description; also OpenML 44231}
+                }
+            """,
+        ),
+        Source(
+            role="copy",
+            platform="OpenML",
+            url="https://www.openml.org/d/44231",
+            license=None,
+            name="OpenML 44231 (its license: Unknown)",
+        ),
+    )
     data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the Kaggle dataset dimitaryanev/mobilechurndataxlsx (uploaded on 2019-10-31, never updated). It
@@ -94,15 +115,6 @@ class MobileChurn(AbstractCuratedDataset):
         mkdir -p local-data-warehouse/mobile_churn && cd local-data-warehouse/mobile_churn
         kaggle datasets download dimitaryanev/mobilechurndataxlsx && unzip mobilechurndataxlsx.zip
         rm mobilechurndataxlsx.zip
-    """
-    bibtex = """
-        @misc{dimitaryanev2019mobilechurn,
-          author = {dimitaryanev},
-          title = {mobile-churn-data.xlsx},
-          year = {2019},
-          howpublished = {\\url{https://www.kaggle.com/datasets/dimitaryanev/mobilechurndataxlsx}},
-          note = {Kaggle dataset uploaded on 2019-10-31 without a description; also OpenML 44231}
-        }
     """
     curation_comments = """
         We start with mobile-churn-data.xlsx (66,469 rows) from the Kaggle dataset dimitaryanev/mobilechurndataxlsx (2019; OpenML 44231 is the same file): prepaid accounts of one unnamed mobile operator in June to August 2013. No paper or operator behind the data was found (the record keeps "Missing source information").

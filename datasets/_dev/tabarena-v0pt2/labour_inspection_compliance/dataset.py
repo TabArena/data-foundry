@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
 
 
 class LabourInspectionCompliance(AbstractCuratedDataset):
@@ -41,25 +41,30 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "labour_inspection_compliance"
-    year = "2022"
     domain = "industry & manufacturing"
-    source = "Other"
-    source_url = "https://doi.org/10.18710/7U6TZP"
-    license = "CC0 1.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://doi.org/10.18710/7U6TZP",
+            license="CC0 1.0",
+            year="2022",
+            bibtex="""
+                @inproceedings{flogard2022dataset,
+                  title={A dataset for efforts towards achieving the sustainable development goal of safe working environments},
+                  author={Flogard, Eirik Lund and Mengshoel, Ole Jakob},
+                  booktitle={Thirty-sixth Conference on Neural Information Processing Systems Datasets and Benchmarks Track},
+                  year={2022}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial", "ForcedIIDFromTemporal")
     download_description = """
         Get the data from dataverse.
 
         wget https://dataverse.no/api/access/datafile/:persistentId?persistentId=doi:10.18710/7U6TZP/HAV8AG &&  mv  ':persistentId?persistentId=doi:10.18710%2F7U6TZP%2FHAV8AG' data.csv
         mkdir -p local-data-warehouse/labour_inspection_compliance && mv data.csv local-data-warehouse/labour_inspection_compliance
-    """
-    bibtex = """
-        @inproceedings{flogard2022dataset,
-          title={A dataset for efforts towards achieving the sustainable development goal of safe working environments},
-          author={Flogard, Eirik Lund and Mengshoel, Ole Jakob},
-          booktitle={Thirty-sixth Conference on Neural Information Processing Systems Datasets and Benchmarks Track},
-          year={2022}
-        }
     """
     curation_comments = """
         We start with the data from dataverse. We create a task for the Non-compliance Classification Problem (NCP).

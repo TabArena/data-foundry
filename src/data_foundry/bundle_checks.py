@@ -47,7 +47,7 @@ import pandas as pd
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.curation_recommendations import SPLIT_TEST_ROW_BUDGET, SPLIT_TRAIN_ROW_BUDGET
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
-from data_foundry.schema import as_column_list
+from data_foundry.schema import DatasetMetadata, as_column_list
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
 
@@ -55,10 +55,11 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
 
     from data_foundry.schema import (
-        DatasetMetadata,
+        DatasetMetadataV2,
         PredictiveMLSplitsMetadata,
         PredictiveMLTaskMetadata,
         PredictiveMLTaskMetadataV2,
+        Source,
         UnitWeight,
     )
 
@@ -321,7 +322,7 @@ class _Ctx:
         return self.container.dataset
 
     @property
-    def dataset_metadata(self) -> DatasetMetadata:
+    def dataset_metadata(self) -> DatasetMetadata | DatasetMetadataV2:
         return self.container.dataset_metadata
 
     @property
@@ -1942,13 +1943,29 @@ def _check_data_tags(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_bibtex(ctx: _Ctx) -> Iterator[CheckResult]:
-    """Lightweight BibTeX validation: it must parse, balance, and define the declared key(s)."""
-    metadata = ctx.dataset_metadata
-    bibtex = metadata.academic_reference_bibtex or ""
-    declared = [k.strip() for k in (metadata.academic_reference_bibtex_key or "").split(",") if k.strip()]
+    """Lightweight BibTeX validation of every source that has one (the publication must).
+
+    Each must parse, balance, and define the declared key(s).
+    """
+    for source in ctx.dataset_metadata.sources:
+        if source.role != "publication" and not (source.bibtex or "").strip():
+            continue
+        yield from _bibtex_findings(source.bibtex or "", source.bibtex_key, _where(ctx, source))
+
+
+def _where(ctx: _Ctx, source: Source) -> str:
+    """How a message names a source: the field of a format-1 container, the source of a v2 one."""
+    if isinstance(ctx.dataset_metadata, DatasetMetadata):
+        return "`academic_reference_bibtex`"
+    return f"the BibTeX of the {source.role} source{f' {source.name!r}' if source.name else ''}"
+
+
+def _bibtex_findings(bibtex: str, key: str | None, where: str) -> Iterator[CheckResult]:
+    """The findings on one BibTeX text and its declared key(s); ``where`` names it in the messages."""
+    declared = [k.strip() for k in (key or "").split(",") if k.strip()]
 
     if not bibtex.strip():
-        yield CheckResult("meta_bibtex_empty", "error", "`academic_reference_bibtex` is empty.")
+        yield CheckResult("meta_bibtex_empty", "error", f"{where} is empty.")
         return
 
     n_open, n_close = bibtex.count("{"), bibtex.count("}")
@@ -1956,7 +1973,7 @@ def _check_bibtex(ctx: _Ctx) -> Iterator[CheckResult]:
         yield CheckResult(
             "meta_bibtex_unbalanced_braces",
             "error",
-            f"BibTeX has {n_open} '{{' but {n_close} '}}' — it will not compile.",
+            f"{where} has {n_open} '{{' but {n_close} '}}' — it will not compile.",
         )
 
     entries = re.findall(r"@(\w+)\s*\{\s*([^,\s}]+)\s*,", bibtex)
@@ -1964,7 +1981,7 @@ def _check_bibtex(ctx: _Ctx) -> Iterator[CheckResult]:
         yield CheckResult(
             "meta_bibtex_no_entry",
             "error",
-            "`academic_reference_bibtex` contains no `@type{key, ...}` entry.",
+            f"{where} contains no `@type{{key, ...}}` entry.",
             hint="Paste a real BibTeX entry (the template ships `@` as a placeholder).",
         )
         return
@@ -1974,7 +1991,7 @@ def _check_bibtex(ctx: _Ctx) -> Iterator[CheckResult]:
         yield CheckResult(
             "meta_bibtex_key_empty",
             "error",
-            f"`academic_reference_bibtex_key` is empty; the BibTeX defines {entry_keys}.",
+            f"The citation key of {where} is empty; the BibTeX defines {entry_keys}.",
             hint="Set it to the citation key(s), comma-separated for multiple entries.",
         )
     else:
@@ -1983,14 +2000,14 @@ def _check_bibtex(ctx: _Ctx) -> Iterator[CheckResult]:
             yield CheckResult(
                 "meta_bibtex_key_not_defined",
                 "error",
-                f"`academic_reference_bibtex_key` names {unknown} but the BibTeX defines {entry_keys}.",
+                f"The citation key of {where} names {unknown} but the BibTeX defines {entry_keys}.",
             )
         if len(entry_keys) != len(declared):
             yield CheckResult(
                 "meta_bibtex_key_count",
                 "warning",
-                f"BibTeX defines {len(entry_keys)} entry/entries {entry_keys} but "
-                f"`academic_reference_bibtex_key` lists {len(declared)}: {declared}.",
+                f"{where} defines {len(entry_keys)} entry/entries {entry_keys} but its citation key lists "
+                f"{len(declared)}: {declared}.",
                 hint="List every key, comma-separated, so citing the dataset pulls in all entries.",
             )
 
@@ -2011,7 +2028,7 @@ def _check_bibtex(ctx: _Ctx) -> Iterator[CheckResult]:
         yield CheckResult(
             "meta_bibtex_latex_hazard",
             "warning",
-            f"BibTeX contains characters LaTeX treats as markup outside of `\\url{{}}`: {hazards}.",
+            f"{where} contains characters LaTeX treats as markup outside of `\\url{{}}`: {hazards}.",
             hint="Escape them (`\\&`, `\\%`, `\\#`, `\\_`) or wrap the value in `\\url{...}` so the citation compiles.",
         )
 
@@ -2056,29 +2073,30 @@ def _check_dataset_metadata_completeness(ctx: _Ctx) -> Iterator[CheckResult]:
     """Provenance fields a consumer needs: license, link, year, download recipe, no placeholders."""
     metadata = ctx.dataset_metadata
 
-    if metadata.license is None:
+    unlicensed = [source.label() for source in metadata.sources if source.license is None]
+    if unlicensed:
         yield CheckResult(
             "meta_license_unknown",
             "warning",
-            "`license` is None (unknown or missing).",
+            f"The license is None (unknown or missing) for {unlicensed}.",
             hint="Record the license if one exists — downstream users need it to redistribute the data.",
         )
 
-    link = (metadata.original_dataset_source_download_link or "").strip()
-    if not re.match(r"(https?://|doi:|10\.\d{4})", link):
-        yield CheckResult(
-            "meta_source_link",
-            "warning",
-            f"`original_dataset_source_download_link={link!r}` does not look like a URL or DOI.",
-        )
-
-    year = str(metadata.dataset_year).strip()
-    if not re.fullmatch(r"(19|20)\d{2}", year):
-        yield CheckResult(
-            "meta_dataset_year",
-            "warning",
-            f"`dataset_year={metadata.dataset_year!r}` is not a plausible 4-digit year.",
-        )
+    for source in metadata.sources:
+        link = (source.url or "").strip()
+        if not re.match(r"(https?://|doi:|10\.\d{4})", link):
+            yield CheckResult(
+                "meta_source_link",
+                "warning",
+                f"The link of {source.label()} ({link!r}) does not look like a URL or DOI.",
+            )
+        year = str(source.year or "").strip()
+        if (source.role == "publication" or year) and not re.fullmatch(r"(19|20)\d{2}", year):
+            yield CheckResult(
+                "meta_dataset_year",
+                "warning",
+                f"The year of {source.label()} ({source.year!r}) is not a plausible 4-digit year.",
+            )
 
     if not (metadata.download_description or "").strip():
         yield CheckResult(
@@ -2104,10 +2122,13 @@ def _check_dataset_metadata_completeness(ctx: _Ctx) -> Iterator[CheckResult]:
     fields_to_scan = {
         "unique_name": metadata.unique_name,
         "download_description": metadata.download_description,
-        "academic_reference_bibtex": metadata.academic_reference_bibtex,
-        "academic_reference_bibtex_key": metadata.academic_reference_bibtex_key,
+        **{
+            f"sources[{i}].{name}": getattr(source, name)
+            for i, source in enumerate(metadata.sources)
+            for name in ("url", "license", "year", "bibtex", "bibtex_key", "name")
+        },
         "curation_comments": metadata.curation_comments,
-        "version_comment": metadata.version_comment,
+        "derivation": metadata.derivation,
         "target_column_name": ctx.task.target_column_name,
         **_metric_text_fields(ctx.task),
         "splits_comment": ctx.splits_metadata.splits_comment,
@@ -2243,12 +2264,12 @@ def run_bundle_checks(
     return report
 
 
-def _task_metadata_file(path: Path, container: CuratedContainer | None) -> str:
-    """The task metadata file a saved container must hold: the container's own format, else whichever is there."""
+def _metadata_file(path: Path, container: CuratedContainer | None, name: str, default_type: str) -> str:
+    """The ``<name>`` metadata file a saved container must hold: of the container's type, else whichever is there."""
     if container is not None:
-        return f"task_metadata.{container.task_metadata.type_adapter_id}.json"
-    found = sorted(f.name for f in path.glob("task_metadata.*.json"))
-    return found[0] if found else "task_metadata.predictive-ml-task-mold-v1.json"
+        return f"{name}.{getattr(container, name).type_adapter_id}.json"
+    found = sorted(f.name for f in path.glob(f"{name}.*.json"))
+    return found[0] if found else f"{name}.{default_type}.json"
 
 
 def _expected_files(path: Path, container: CuratedContainer | None) -> list[str]:
@@ -2261,8 +2282,8 @@ def _expected_files(path: Path, container: CuratedContainer | None) -> list[str]
         "dataset.parquet",
         "dtypes.json",
         "container_metadata.json",
-        "dataset_metadata.dataset-mold-v1.json",
-        _task_metadata_file(path, container),
+        _metadata_file(path, container, "dataset_metadata", "dataset-mold-v1"),
+        _metadata_file(path, container, "task_metadata", "predictive-ml-task-mold-v1"),
         *(
             [f"experiment_metadata.{SPLITS_TABLE_TYPE}.json", ROWS_FILE]
             if table

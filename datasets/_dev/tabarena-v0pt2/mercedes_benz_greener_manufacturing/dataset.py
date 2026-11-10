@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
 
 
 class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
@@ -38,26 +38,31 @@ class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "mercedes_benz_greener_manufacturing"
-    year = "2017"
     domain = "industry & manufacturing"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/mercedes-benz-greener-manufacturing"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/mercedes-benz-greener-manufacturing",
+            license="Kaggle Competition Rules",
+            year="2017",
+            bibtex=r"""
+                @misc{Novy2017MercedesBenzGreenerManufacturing,
+                  author = {Alexander Novy and CH1Mercedes and Christian Drescher and Christian Pfaundler and KOESIM and Will Cukierski},
+                  title  = {Mercedes-Benz Greener Manufacturing},
+                  year   = {2017},
+                  howpublished = {\url{https://kaggle.com/competitions/mercedes-benz-greener-manufacturing}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized",)
     download_description = """
         We use the train.csv from the Kaggle competition.
 
         kaggle competitions download -c mercedes-benz-greener-manufacturing -f train.csv.zip && unzip train.csv.zip &&  rm train.csv.zip
         mkdir -p local-data-warehouse/mercedes_benz_greener_manufacturing && mv train.csv local-data-warehouse/mercedes_benz_greener_manufacturing/
-    """
-    bibtex = r"""
-        @misc{Novy2017MercedesBenzGreenerManufacturing,
-          author = {Alexander Novy and CH1Mercedes and Christian Drescher and Christian Pfaundler and KOESIM and Will Cukierski},
-          title  = {Mercedes-Benz Greener Manufacturing},
-          year   = {2017},
-          howpublished = {\url{https://kaggle.com/competitions/mercedes-benz-greener-manufacturing}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with the train.csv from Kaggle.

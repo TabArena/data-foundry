@@ -15,6 +15,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -245,11 +246,27 @@ class NoaaAfscBottomTrawlSurveyCpue(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "noaa_afsc_bottom_trawl_survey_cpue"
-    year = "2026"
     domain = "biology & life sciences"
-    source = "GOV Website"
-    source_url = "https://www.fisheries.noaa.gov/foss/f?p=215:28"
-    license = "Public Domain"
+    sources = (
+        Source(
+            role="publication",
+            platform="GOV Website",
+            url="https://www.fisheries.noaa.gov/foss/f?p=215:28",
+            license="Public Domain",
+            year="2026",
+            bibtex=r"""
+                @misc{afsc_gap_foss_2026,
+                  author = {{NOAA Fisheries Alaska Fisheries Science Center, Groundfish Assessment Program}},
+                  title = {Fisheries One Stop Shop public data: {RACE} division bottom trawl survey data query
+                           (tables {AFSC\_GROUNDFISH\_SURVEY\_HAUL}, {AFSC\_GROUNDFISH\_SURVEY\_CATCH},
+                           {AFSC\_GROUNDFISH\_SURVEY\_SPECIES})},
+                  year = {2026},
+                  howpublished = {\url{https://www.fisheries.noaa.gov/foss/f?p=215:28}},
+                  note = {Public domain; accessed 2026-10-30 to 2026-11-02}
+                }
+            """,
+        ),
+    )
     data_tags = ("Spatial",)
     download_description = """
         The FOSS (Fisheries One Stop Shop) REST tables of the AFSC Groundfish Assessment Program, paged 10,000 rows at
@@ -282,17 +299,6 @@ class NoaaAfscBottomTrawlSurveyCpue(AbstractCuratedDataset):
         AKGFMAPS=https://raw.githubusercontent.com/afsc-gap-products/akgfmaps/1fcc7fa598e66a13cdca95be407e1f93c11f50d3
         curl -fsSL -o afsc_bts_strata.gpkg "$AKGFMAPS/inst/extdata/afsc_bts_strata.gpkg"
         echo "1319eb3485c9ee75be96dcbfa5cba44c9d43374d1a8e6a74b7dadfdd62e6fb27  afsc_bts_strata.gpkg" | sha256sum -c
-    """
-    bibtex = r"""
-        @misc{afsc_gap_foss_2026,
-          author = {{NOAA Fisheries Alaska Fisheries Science Center, Groundfish Assessment Program}},
-          title = {Fisheries One Stop Shop public data: {RACE} division bottom trawl survey data query
-                   (tables {AFSC\_GROUNDFISH\_SURVEY\_HAUL}, {AFSC\_GROUNDFISH\_SURVEY\_CATCH},
-                   {AFSC\_GROUNDFISH\_SURVEY\_SPECIES})},
-          year = {2026},
-          howpublished = {\url{https://www.fisheries.noaa.gov/foss/f?p=215:28}},
-          note = {Public domain; accessed 2026-10-30 to 2026-11-02}
-        }
     """
     curation_comments = """
         We start with the FOSS tables HAUL (35,561 standard hauls, 1982-2026) and CATCH of 17 species codes (201,859 positive catches) from NOAA AFSC's Groundfish Assessment Program, and with GAP's survey strata (akgfmaps), for the Gulf of Alaska strata of the 1984 design. One row per haul and taxon: 391,044 rows.

@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
+    Source,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -62,26 +63,31 @@ class BankMarketing(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "bank_marketing"
-    year = "2012"
     domain = "finance"
-    source = "UCI"
-    source_url = "https://archive.ics.uci.edu/dataset/222/bank+marketing"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://archive.ics.uci.edu/dataset/222/bank+marketing",
+            license="CC BY 4.0",
+            year="2012",
+            bibtex=r"""
+                @article{moro2014bank-marketing,
+                  title={A data-driven approach to predict the success of bank telemarketing},
+                  author={Moro, S{\'e}rgio and Cortez, Paulo and Rita, Paulo},
+                  journal={Decision Support Systems},
+                  volume={62},
+                  pages={22--31},
+                  year={2014},
+                  publisher={Elsevier}
+                }
+            """,
+        ),
+    )
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
         mkdir -p local-data-warehouse/bank_marketing/ && wget -P local-data-warehouse/bank_marketing/ https://archive.ics.uci.edu/static/public/222/bank+marketing.zip && unzip -o "local-data-warehouse/bank_marketing/bank+marketing.zip" -d local-data-warehouse/bank_marketing && unzip -o "local-data-warehouse/bank_marketing/bank.zip" -d local-data-warehouse/bank_marketing
-    """
-    bibtex = r"""
-        @article{moro2014bank-marketing,
-          title={A data-driven approach to predict the success of bank telemarketing},
-          author={Moro, S{\'e}rgio and Cortez, Paulo and Rita, Paulo},
-          journal={Decision Support Systems},
-          volume={62},
-          pages={22--31},
-          year={2014},
-          publisher={Elsevier}
-        }
     """
     curation_comments = """
         - Prediction point (USE-3; CC 2026-11-08, Lennart, REVIEW.md issue 2): before the campaign's first call to the client, when the team picks whom to call. Known then: the client's profile and the earlier campaigns, nothing of this campaign's calls; so `duration`, `campaign`, `day` and `month` leave (below).

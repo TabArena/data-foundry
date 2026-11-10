@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     ScoringColumn,
+    Source,
     TaskSummary,
     drop_columns,
 )
@@ -65,26 +66,31 @@ class LibertyMutualFirePerilLossCost(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "liberty_mutual_fire_peril_loss_cost"
-    year = "2014"
     domain = "insurance"
-    source = "Kaggle"
-    source_url = "https://www.kaggle.com/competitions/liberty-mutual-fire-peril"
-    license = "Kaggle Competition Rules"
+    sources = (
+        Source(
+            role="publication",
+            platform="Kaggle",
+            url="https://www.kaggle.com/competitions/liberty-mutual-fire-peril",
+            license="Kaggle Competition Rules",
+            year="2014",
+            bibtex=r"""
+                @misc{LibertyMutual2014FirePerilLossCost,
+                  author = {{Liberty Mutual Group}},
+                  title  = {Liberty Mutual Group - Fire Peril Loss Cost},
+                  year   = {2014},
+                  howpublished = {\url{https://www.kaggle.com/competitions/liberty-mutual-fire-peril}},
+                  note   = {Kaggle competition}
+                }
+            """,
+        ),
+    )
     data_tags = ("Anonymized", "Spatial", "ForcedIIDFromTemporal")
     download_description = """
         We use the train.csv of the Kaggle competition (the test half was never labelled publicly).
 
         kaggle competitions download -c liberty-mutual-fire-peril -f train.csv.zip && unzip train.csv.zip && rm train.csv.zip
         mkdir -p local-data-warehouse/liberty_mutual_fire_peril_loss_cost && mv train.csv local-data-warehouse/liberty_mutual_fire_peril_loss_cost/
-    """
-    bibtex = r"""
-        @misc{LibertyMutual2014FirePerilLossCost,
-          author = {{Liberty Mutual Group}},
-          title  = {Liberty Mutual Group - Fire Peril Loss Cost},
-          year   = {2014},
-          howpublished = {\url{https://www.kaggle.com/competitions/liberty-mutual-fire-peril}},
-          note   = {Kaggle competition}
-        }
     """
     curation_comments = """
         We start with train.csv from the Kaggle competition (452,061 policies; the test half was never labelled publicly).

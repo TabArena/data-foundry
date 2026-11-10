@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     Smiles,
+    Source,
     TaskSummary,
     canonical_smiles,
     scaffold_groups,
@@ -57,11 +58,28 @@ class QsarAquaticToxicity(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "qsar_aquatic_toxicity"
-    year = "2014"
     domain = "chemistry & material science"
-    source = "UCI"
-    source_url = "https://doi.org/10.24432/C5SG7H"
-    license = "CC BY 4.0"
+    sources = (
+        Source(
+            role="publication",
+            platform="UCI",
+            url="https://doi.org/10.24432/C5SG7H",
+            license="CC BY 4.0",
+            year="2014",
+            bibtex="""
+                @article{cassotti2014prediction,
+                  title={Prediction of acute aquatic toxicity toward daphnia magna by using the ga-k nn method},
+                  author={Cassotti, Matteo and Ballabio, Davide and Consonni, Viviana and Mauri, Andrea and Tetko, Igor V and Todeschini, Roberto},
+                  journal={Alternatives to Laboratory Animals},
+                  volume={42},
+                  number={1},
+                  pages={31--41},
+                  year={2014},
+                  publisher={SAGE Publications Sage UK: London, England}
+                }
+            """,
+        ),
+    )
     special_features = (Smiles(column="SMILES"),)
     download_description = """
         We get the data from UCI.
@@ -76,18 +94,6 @@ class QsarAquaticToxicity(AbstractCuratedDataset):
 
         toxicity_data.xlsx (67,506 bytes), sha256
         61bcf1b04e60f4b7e7750568c197f1889db796076f06fbed94a78c8aaf581a0d
-    """
-    bibtex = """
-        @article{cassotti2014prediction,
-          title={Prediction of acute aquatic toxicity toward daphnia magna by using the ga-k nn method},
-          author={Cassotti, Matteo and Ballabio, Davide and Consonni, Viviana and Mauri, Andrea and Tetko, Igor V and Todeschini, Roberto},
-          journal={Alternatives to Laboratory Animals},
-          volume={42},
-          number={1},
-          pages={31--41},
-          year={2014},
-          publisher={SAGE Publications Sage UK: London, England}
-        }
     """
     curation_comments = """
         We start with the data from UCI and add the structures from the authors' own workbook.
