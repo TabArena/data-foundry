@@ -31,11 +31,11 @@ horizon of three weekly sheets without a gap.
   2018).
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | Three weekly sheets, no gap (implemented) | windows of three auction dates, up to 7 calendar weeks where sheets are missing or over the holiday break; ten keep half the sales for training, from 15 July 2017 (51.2%) | within the campaign of about four weeks, so a price estimated during it looks one to four sheets ahead; room for the nine windows an IID task of this size gets | chosen for the window count, not from a source; the January lull leaves one window of 93 sales |
-  | B | Four weekly sheets | the campaign's length: 7 windows above the floor, training on 53.8% to 92.2%, 620 to 1,717 sales each; the January lull joins a window with December | closer to the campaign; no window as small as 93 sales | 7 windows, two fewer than nine |
-  | C | One calendar month | monthly windows | a fixed calendar length, where three sheets span up to 7 calendar weeks | January 2018 would hold 18 sales (the definition's decision table), too few for a window |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | Three weekly sheets, no gap (implemented) | windows of three auction dates, up to 7 calendar weeks where sheets are missing or over the holiday break; ten keep half the sales for training, from 15 July 2017 (51.2%) | 9 windows of 93 to 1,550 sales | within the campaign of about four weeks, so a price estimated during it looks one to four sheets ahead; room for the nine windows an IID task of this size gets | chosen for the window count, not from a source; the January lull leaves one window of 93 sales |
+  | B | Four weekly sheets | the campaign's length: 7 windows above the floor, training on 53.8% to 92.2%, 620 to 1,717 sales each; the January lull joins a window with December | 7 candidates above the floor, 620 to 1,717 sales each | closer to the campaign; no window as small as 93 sales | 7 windows, two fewer than nine |
+  | C | One calendar month | monthly windows | 8 candidates above the floor, 18 to 1,930 sales each | a fixed calendar length, where three sheets span up to 7 calendar weeks | January 2018 would hold 18 sales (the definition's decision table), too few for a window |
 
 * **Recommendation:** A: three sheets stay within the four-week campaign and leave room for nine windows above the
   floor, where four sheets leave seven. **Decision:** A, B or C?

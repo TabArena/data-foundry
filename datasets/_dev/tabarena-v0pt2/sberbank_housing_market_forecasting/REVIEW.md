@@ -27,13 +27,13 @@ January 2013, so every train side keeps half the sales (issue 1)?
   windows open are March 2014 to June 2015 (16 months, 13,914 sales); today's windows reach back to January 2013.
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | Six months (implemented) | half-year windows, as for a refit every half year: only July to December 2014 and January to June 2015 keep half the sales for training | today's length; within TabReD's analysis windows of "roughly 5-7 month" | a half-year refit is our assumption: no source gives Sberbank's cadence; two windows above the floor, not three |
-  | B | Five months | three separate windows from April 2014 to June 2015, within the sixteen months open | the longest length that keeps three separate windows above the floor; the low end of TabReD's analysis windows | shorter than the sources' test periods of seven to eleven months; three windows, the fewest allowed |
-  | C | Four months | four windows over all sixteen months open | four windows; every month open tested | shorter than any source's test period |
-  | D | Six months stepping by three | today's length, four windows three months apart | keeps today's length; four windows | the windows overlap: the sales of July 2014 to March 2015 are tested twice |
-  | E | Three months | five quarters from April 2014 | five windows | half the shortest source period |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | Six months (implemented) | half-year windows, as for a refit every half year: only July to December 2014 and January to June 2015 keep half the sales for training | 5 windows of 3,051 to 6,434 sales (2 above the floor) | today's length; within TabReD's analysis windows of "roughly 5-7 month" | a half-year refit is our assumption: no source gives Sberbank's cadence; two windows above the floor, not three |
+  | B | Five months | three separate windows from April 2014 to June 2015, within the sixteen months open | 3 windows of 2,670 to 5,234 sales | the longest length that keeps three separate windows above the floor; the low end of TabReD's analysis windows | shorter than the sources' test periods of seven to eleven months; three windows, the fewest allowed |
+  | C | Four months | four windows over all sixteen months open | 4 windows of 2,219 to 4,562 sales | four windows; every month open tested | shorter than any source's test period |
+  | D | Six months stepping by three | today's length, four windows three months apart | 4 overlapping windows of 3,064 to 6,288 sales | keeps today's length; four windows | the windows overlap: the sales of July 2014 to March 2015 are tested twice |
+  | E | Three months | five quarters from April 2014 | 5 windows of 1,430 to 3,791 sales | five windows | half the shortest source period |
 
 * **Recommendation:** B: five months is the longest length that keeps three separate windows above the floor in the
   sixteen months open, nearest the sources' test periods. **Decision:** A, B, C, D or E?

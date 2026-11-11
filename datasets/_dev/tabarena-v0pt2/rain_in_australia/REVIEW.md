@@ -29,11 +29,11 @@ spread them over 2018-2026 (issue 7)?
   Evaporation missing in 66-79% of the rows). Today's windows cover one year, February 2025 to January 2026.
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | 14 days (implemented) | 14-day windows, no gap: 208 candidates above the floor, from 10 February 2018 | the one to two weeks you set for weather (climate_model_weather_forecasting); 619 to 642 location-days per window | no source names a refit cadence; the actor could refit every day |
-  | B | 7 days | a weekly refit: about 416 candidates from February 2018, about 315 location-days each | within the one to two weeks you set for weather | halves the rows per window; no documented cadence |
-  | C | One calendar month | a monthly refit: about 96 candidates, about 1,350 location-days each | more location-days per window | leaves up to a month of next-morning labels unused; a month mixes weeks of different weather; longer than the one to two weeks you set for weather |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | 14 days (implemented) | 14-day windows, no gap: 208 candidates above the floor, from 10 February 2018 | 26 windows of 606 to 669 location-days (issue 7's B; today's 26: 619 to 642) | the one to two weeks you set for weather (climate_model_weather_forecasting); 619 to 642 location-days per window | no source names a refit cadence; the actor could refit every day |
+  | B | 7 days | a weekly refit: 416 candidates from February 2018, 280 to 340 location-days each | 416 candidates of 280 to 340 location-days | within the one to two weeks you set for weather | halves the rows per window; no documented cadence |
+  | C | One calendar month | a monthly refit: 95 candidates, 1,223 to 1,472 location-days each | 95 candidates of 1,223 to 1,472 location-days | more location-days per window | leaves up to a month of next-morning labels unused; a month mixes weeks of different weather; longer than the one to two weeks you set for weather |
 
 * **Recommendation:** A: two weeks is the length you set for weather, and no source names a cadence that would set
   another. **Decision:** A, B or C?

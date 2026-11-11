@@ -26,12 +26,12 @@ September 2016 to May 2017 (issue 1)?
   2016 on keep half the bookings for training (issue 1).
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | Three months (implemented) | at each first-of-month date, the open bookings that arrive within three months; the newest complete date is 1 June 2017 | 38% to 69% of the open bookings where measured; the newest complete date reaches June 2017 | no source sets three months: the length and the dates are ours, from the task summary's revenue manager |
-  | B | One month | ten dates from November 2016 to August 2017 | ten dates | 15% to 36% of the open bookings |
-  | C | Six months | the newest complete date is 1 March 2017: five dates above the floor | closer to the source's whole book (71% to 82% of the open bookings) | five dates |
-  | D | Every open booking | all future arrivals at each date | the source's own scope | this release can never complete it: bookings are made up to 737 days ahead |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | Three months (implemented) | at each first-of-month date, the open bookings that arrive within three months; the newest complete date is 1 June 2017 | 9 dates of 2,474 to 6,390 open bookings (issue 1's B: 8 of 2,474 to 6,511), counted with the split's own filters | 38% to 69% of the open bookings where measured; the newest complete date reaches June 2017 | no source sets three months: the length and the dates are ours, from the task summary's revenue manager |
+  | B | One month | ten dates from November 2016 to August 2017 | 10 dates of 968 to 2,439 open bookings | ten dates | 15% to 36% of the open bookings |
+  | C | Six months | the newest complete date is 1 March 2017: five dates above the floor | 5 dates of 4,494 to 10,257 open bookings | closer to the source's whole book (71% to 82% of the open bookings) | five dates |
+  | D | Every open booking | all future arrivals at each date | 8 dates (issue 1's B) of 6,305 to 10,257 open bookings, arrivals up to 31 August 2017 | the source's own scope | this release can never complete it: bookings are made up to 737 days ahead |
 
 * **Recommendation:** A: three months hold 38% to 69% of the open bookings and reach June 2017, where one month holds
   15% to 36% and six months stop at March 2017 with five dates. **Decision:** A, B, C or D?

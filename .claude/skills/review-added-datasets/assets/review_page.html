@@ -305,6 +305,10 @@ textarea.note.big { min-height: 4.2rem; }
 .md table.opttab col.c-key { width: 2.6rem; }
 .md table.opttab col.c-option { width: 19%; }
 .md table.opttab col.c-pro, .md table.opttab col.c-con { width: 22%; }
+/* A horizon's options table (issue H) adds the size of the test windows each option tests. */
+.md table.opttab col.c-test { width: 15%; }
+.md table.opttab:has(col.c-test) col.c-pro, .md table.opttab:has(col.c-test) col.c-con { width: 18%; }
+.md table.opttab td.c-test { color: var(--ink-2); font-variant-numeric: tabular-nums; }
 .md table.opttab td.c-key { font: 600 .95rem var(--font-display); color: var(--ink-2); text-align: center; }
 .md table.opttab th.c-pro { color: var(--ok); }
 .md table.opttab th.c-con { color: var(--stop); }

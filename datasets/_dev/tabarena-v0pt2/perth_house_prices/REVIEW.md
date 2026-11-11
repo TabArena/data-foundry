@@ -29,11 +29,11 @@ April 2018 (issue 15)? Sign off the one-month horizon without a gap.
   eligible months; December 2020 is short.
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | One month, no gap (implemented) | one-month windows: 36 candidates above the floor, January 2018 to December 2020 (51.1% to 98.8%), 12 of them on the every-third-month grid | the shortest window the month-dated sales allow; the house-price family's convention (zillow_prize's one-month windows); Cotality checks its model's accuracy monthly | our use case, not a source's; the slow end of practice, as Cotality's estimates move continuously; April and May 2020 hold only 316 and 284 sales |
-  | B | Three months | a quarterly refit: 12 windows above the floor, from January 2018; 974 to 1,619 sales in the newest nine | larger windows | a slower refit than a valuation service runs; no source |
-  | C | Two months | 18 windows above the floor; the newest nine, back to July 2019, hold 658 to 1,197 sales each | larger windows than one month | no source; the newest nine fall in 2019 and 2020 only |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | One month, no gap (implemented) | one-month windows: 36 candidates above the floor, January 2018 to December 2020 (51.1% to 98.8%), 12 of them on the every-third-month grid | 9 windows of 367 to 569 sales | the shortest window the month-dated sales allow; the house-price family's convention (zillow_prize's one-month windows); Cotality checks its model's accuracy monthly | our use case, not a source's; the slow end of practice, as Cotality's estimates move continuously; April and May 2020 hold only 316 and 284 sales |
+  | B | Three months | a quarterly refit: 12 windows above the floor, from January 2018; 974 to 1,619 sales in the newest nine | 12 candidates above the floor, 974 to 1,619 sales each | larger windows | a slower refit than a valuation service runs; no source |
+  | C | Two months | 18 windows above the floor; the newest nine, back to July 2019, hold 658 to 1,197 sales each | 18 candidates above the floor, 658 to 1,197 sales each | larger windows than one month | no source; the newest nine fall in 2019 and 2020 only |
 
 * **Recommendation:** A: a month is the shortest window the month-dated sales allow, and it matches the monthly accuracy
   checks of Australia's main valuation service and the family's one-month windows. **Decision:** A, B or C?

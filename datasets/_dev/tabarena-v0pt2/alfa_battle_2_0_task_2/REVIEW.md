@@ -31,11 +31,11 @@ two-month horizon.
   months 22-23, maybe right-censoring (kept with a note on 2026-10-26).
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | Two months (implemented) | windows of two issue months, no gap (your call of 2026-10-26): eligible test months 17 to 23 | three windows fill six of the seven eligible months | no source gives a horizon or a refit cadence |
-  | B | One month | 8 candidates above the floor after the filter, months 16 to 23, 49,000 to 62,000 products each | more candidates to choose from | three spread windows would test 3 of the 8 months, about half today's test products |
-  | C | Three months | two candidates above the floor after the filter, 21-23 and 18-20 | more products per window | only two windows; a third, 15-17, trains on 44.3%; the exception for an older window at 40% needs test entities that mostly recur, while 76% of the newest window's test products have no earlier product of the client |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | Two months (implemented) | windows of two issue months, no gap (your call of 2026-10-26): eligible test months 17 to 23 | 3 windows of 107,844 to 121,390 products, before the split's own filter (it removes training products only) | three windows fill six of the seven eligible months | no source gives a horizon or a refit cadence |
+  | B | One month | 8 candidates above the floor after the filter, months 16 to 23, 49,000 to 62,000 products each | 8 candidates of 49,299 to 62,256 products, before the split's own filter | more candidates to choose from | three spread windows would test 3 of the 8 months, about half today's test products |
+  | C | Three months | two candidates above the floor after the filter, 21-23 and 18-20 | 2 candidates of 170,689 and 178,973 products, before the split's own filter | more products per window | only two windows; a third, 15-17, trains on 44.3%; the exception for an older window at 40% needs test entities that mostly recur, while 76% of the newest window's test products have no earlier product of the client |
 
 * **Recommendation:** A: no source names a length, and two months fill six of the seven eligible months with three
   windows. **Decision:** A, B or C?

@@ -25,12 +25,12 @@ half the cars (issue 1). `dataset.py` is unchanged until you decide.
   ID 4,230) is open for testing; today's windows reach back to the 1,325th car (ID 2,628).
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | 320 cars (implemented) | windows of 320 cars in ID order, back to the 1,325th car (ID 2,628): six keep half the cars for training | today's length; more cars per window (2,880 test cars in all) | the arithmetic of the first curation's `TimeSeriesSplit`, not a horizon; three of the nine train sides under the floor (46.7%, 39.1%, 31.5%) |
-  | B | 233 cars | nine windows over the newest half, from the 2,108th car (ID 4,230) | the nine windows a task of this size gets, all above the floor; about one block of the dropped `X5` code | no source either; each window's score rests on 233 cars and is noisier |
-  | C | 700 cars | three windows over the newest half | the shape california_house_prices_2020 has; larger windows | three windows instead of the nine a task of this size gets |
-  | D | Whole `X5` blocks | windows of the blocks of consecutive IDs, 177 to 231 cars of `train.csv` each from ID 4,319 | a time unit from the data | a dropped code whose meaning is not published; its last two blocks hold 20 and 112 cars |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | 320 cars (implemented) | windows of 320 cars in ID order, back to the 1,325th car (ID 2,628): six keep half the cars for training | 9 windows of 320 cars each (6 above the floor) | today's length; more cars per window (2,880 test cars in all) | the arithmetic of the first curation's `TimeSeriesSplit`, not a horizon; three of the nine train sides under the floor (46.7%, 39.1%, 31.5%) |
+  | B | 233 cars | nine windows over the newest half, from the 2,108th car (ID 4,230) | 9 windows of 233 cars each | the nine windows a task of this size gets, all above the floor; about one block of the dropped `X5` code | no source either; each window's score rests on 233 cars and is noisier |
+  | C | 700 cars | three windows over the newest half | 3 windows of 700 cars each | the shape california_house_prices_2020 has; larger windows | three windows instead of the nine a task of this size gets |
+  | D | Whole `X5` blocks | windows of the blocks of consecutive IDs, 177 to 231 cars of `train.csv` each from ID 4,319 | 11 candidates above the floor, 20 to 231 cars each (the blocks from ID 4,319) | a time unit from the data | a dropped code whose meaning is not published; its last two blocks hold 20 and 112 cars |
 
 * **Recommendation:** B: with no source for a length, 233 cars fill the newest half the floor allows with the nine
   windows a task of this size gets, at about one block of the data's own `X5` code. **Decision:** A, B, C or D?

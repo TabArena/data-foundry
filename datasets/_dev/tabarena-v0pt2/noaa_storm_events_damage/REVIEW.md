@@ -128,12 +128,12 @@ say if you disagree: the 51 Seiche durations are blank, an extension of D13.
   practice drifts, and the mean damage per entry ranges from $97,000 (2025) to $1.94M (2017).
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | One year, 3-month gap (implemented) | calendar years, each trained on the events through September of the year before: 9 candidates above the floor, 2017 to 2025 | the score's year cells stay whole; every storm season in a window; the planner decides on the loss expected in a year; the gap is the measured publication lag | the yearly refit is ours (NCEI releases monthly) |
-  | B | Two years | four candidates keep half the entries for training: 2024-2025, 2022-2023, 2020-2021 and 2018-2019 (train shares 88.9%, 78.5%, 69.0% and 58.5%) | two hurricane seasons per window | a refit every two years where the source is released monthly and the planner works by the year |
-  | C | Half a year | half-year windows, a refit twice a year | a refit closer to the events | each window tests one or two storm seasons; splits the year cells the score counts once, so the score's unit would have to change |
-  | D | A quarter | quarterly windows, a refit every quarter | a refit closer to the events | each window tests one or two storm seasons; splits the year cells the score counts once, so the score's unit would have to change |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | One year, 3-month gap (implemented) | calendar years, each trained on the events through September of the year before: 9 candidates above the floor, 2017 to 2025 | 3 windows of 39,249 to 45,870 entries (issue 16's B; today's three: 44,056 to 45,870) | the score's year cells stay whole; every storm season in a window; the planner decides on the loss expected in a year; the gap is the measured publication lag | the yearly refit is ours (NCEI releases monthly) |
+  | B | Two years | four candidates keep half the entries for training: 2024-2025, 2022-2023, 2020-2021 and 2018-2019 (train shares 88.9%, 78.5%, 69.0% and 58.5%) | 4 candidates of 79,994 to 90,402 entries | two hurricane seasons per window | a refit every two years where the source is released monthly and the planner works by the year |
+  | C | Half a year | half-year windows, a refit twice a year | 19 candidates of 14,423 to 31,041 entries | a refit closer to the events | each window tests one or two storm seasons; splits the year cells the score counts once, so the score's unit would have to change |
+  | D | A quarter | quarterly windows, a refit every quarter | 38 candidates of 3,144 to 18,388 entries | a refit closer to the events | each window tests one or two storm seasons; splits the year cells the score counts once, so the score's unit would have to change |
 
 * **Recommendation:** A: a year keeps whole the year cells the score counts once and matches the planner's expected
   annual loss, and the gap is the measured publication lag. **Decision:** A, B, C or D?

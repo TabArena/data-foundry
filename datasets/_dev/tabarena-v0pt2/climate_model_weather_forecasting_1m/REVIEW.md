@@ -47,10 +47,10 @@ February moves to 13-19 February.
 
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | No gap (implemented) | 7-day windows without a gap; your windows of issue 1: 24-30 July, 1-7 May, 6-12 February | your pick as marked | a fifth of each window's forecasts have later readings of their station in training |
-  | B | A 3-day gap | 7-day windows with a 3-day gap: 24-30 July, 1-7 May, 13-19 February (96.9%, 69.2%, 51.6%) | training holds only what was measured when each forecast was issued; your months stay | February moves one week; about 3 days fewer of training per window |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | No gap (implemented) | 7-day windows without a gap; your windows of issue 1: 24-30 July, 1-7 May, 6-12 February | 3 windows of 264,711 to 385,508 forecasts | your pick as marked | a fifth of each window's forecasts have later readings of their station in training |
+  | B | A 3-day gap | 7-day windows with a 3-day gap: 24-30 July, 1-7 May, 13-19 February (96.9%, 69.2%, 51.6%) | 3 windows of 270,717 to 385,508 forecasts | training holds only what was measured when each forecast was issued; your months stay | February moves one week; about 3 days fewer of training per window |
 
 * **Recommendation:** B: the gap mirrors what the corrector knows at the issue time, and it keeps your choice of
   seasons. **Decision:** A or B?

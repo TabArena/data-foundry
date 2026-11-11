@@ -38,10 +38,10 @@ two, spread before, across and after the March 2020 break? Issue 1 (the windows 
 
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | Two months (implemented) | issue 1's windows at two months | no change of length | a length cut from another benchmark's test period, not from the use |
-  | B | Three months, spread | 6 July-5 October 2020, March-May 2020, November 2019-January 2020; candidates run from November 2019 (54.3% train share) to July 2020 (90.6%), 1,900 to 12,000 defaults each | the longest length above the floor; the months before, across and after the break | the oldest trains on 54.3%; issue 1's proposal is replaced |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | Two months (implemented) | issue 1's windows at two months | 3 windows (issue 1's B) of 69,037 to 241,856 applications | no change of length | a length cut from another benchmark's test period, not from the use |
+  | B | Three months, spread | 6 July-5 October 2020, March-May 2020, November 2019-January 2020; candidates run from November 2019 (54.3% train share) to July 2020 (90.6%), 1,900 to 12,000 defaults each | 3 windows of 97,762 to 328,606 applications | the longest length above the floor; the months before, across and after the break | the oldest trains on 54.3%; issue 1's proposal is replaced |
 
 * **Recommendation:** B: the longest length that keeps three windows above the floor is the closest to a scorecard
   used for months, and the spread covers the break. **Decision:** A or B?

@@ -145,3 +145,11 @@ def test_unseen_categories_read_the_whole_train_side_and_free_text_is_left_out()
         stats(df, listed, features=["c"])["unseen_categories"].tolist()
         == stats(df, windows, features=["c"])["unseen_categories"].tolist()
     )
+
+
+def test_the_floor_counts_rows_also_for_unique_windows() -> None:
+    """Windows of distinct time values keep half the rows for training, not half the values (SPLIT-14)."""
+    df = pd.DataFrame({"era": np.repeat(np.arange(1, 11), [1, 1, 1, 1, 1, 100, 100, 100, 100, 100])})
+    windows = candidate_windows(df, "era", TemporalSplits(window=1, unit="unique", n_windows=3))
+    assert [int(df["era"].iloc[w.test[0]]) for w in windows] == [10, 9]  # era 8 trains on 40.4% of the rows
+    assert all(len(w.train) >= 0.5 * len(df) for w in windows)

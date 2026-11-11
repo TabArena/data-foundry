@@ -27,11 +27,11 @@ newest six-week windows (issue 1)? Sign off the six-week horizon with its one-da
   stores. The competition's test period is not in the release.
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | 42 days, one-day gap (implemented) | six-week windows, the last day before each left out of training: 11 candidates above the floor, from 26 April 2014 | the managers' horizon of "up to six weeks" that Kaggle states | the one-day gap is ours ("a planning gap"), not the competition's |
-  | B | 48 days | the length of the competition's test: 10 candidates above the floor, back to 8 April 2014 | the period Kaggle scored | longer than the managers' stated horizon |
-  | C | 42 days, no gap | as in the competition: one more training day per window | the competition's own setup; a day's turnover is known when the store closes | too small a difference to change the definition for |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | 42 days, one-day gap (implemented) | six-week windows, the last day before each left out of training: 11 candidates above the floor, from 26 April 2014 | 3 windows of 31,203 to 40,282 store-days (issue 1's B; today's three: 37,044 to 40,282) | the managers' horizon of "up to six weeks" that Kaggle states | the one-day gap is ours ("a planning gap"), not the competition's |
+  | B | 48 days | the length of the competition's test: 10 candidates above the floor, back to 8 April 2014 | 10 candidates of 37,559 to 45,884 store-days | the period Kaggle scored | longer than the managers' stated horizon |
+  | C | 42 days, no gap | as in the competition: one more training day per window | the windows of A: 3 of 31,203 to 40,282 store-days | the competition's own setup; a day's turnover is known when the store closes | too small a difference to change the definition for |
 
 * **Recommendation:** A: six weeks is the managers' horizon as Kaggle states it, and the gap changes one training day
   per window. **Decision:** A, B or C?

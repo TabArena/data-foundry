@@ -55,6 +55,8 @@ SENTENCE_END = re.compile(r"\.(?=\s|$)")
 RULE_ID = re.compile(r"\b(?:SEL|USE|LEAK|SPLIT|PROV|TP|CLEAN|EV|MET)-\d+\b")
 SHAPE_PARTS = ("**Problem:**", "**Options:**", "**Recommendation:**")
 HORIZON_PARTS = ("**Verdict:**", "**Options:**", "**Recommendation:**")
+HORIZON_SIZE_COLUMN = re.compile(r"^\s*\|[^\n]*\|\s*Test windows\s*\|", re.MULTILINE)
+"""A horizon's options table names the size of the test windows each option tests (Lennart, 2026-11-11)."""
 """The bullets of a ``**Horizon:**`` block, which the page shows as the issue "H": the verdict in view, the length, the
 gap and the time frame in the closed Details box, then the options table and the recommendation."""
 PROBLEM_BULLETS = 3
@@ -490,12 +492,14 @@ def shape_warnings(entry: Entry) -> list[str]:
 
 def _horizon_warnings(entry: Entry) -> list[str]:
     """What the ``**Horizon:**`` block of ``entry`` misses of its issue shape (the page shows it as the issue H)."""
-    if not entry.horizon:
+    if not entry.horizon or CLOSING_RE.search(entry.horizon):  # a settled horizon keeps the shape it had
         return []
     body, _, _ = brp._cut_notes(entry.horizon)
     missing = [p.strip("*:") for p in HORIZON_PARTS if p not in body]
     if "**Options:**" in body and not brp._options(body)["implemented"]:
         missing.append("row marked (implemented): today's length")
+    if "**Options:**" in body and not HORIZON_SIZE_COLUMN.search(body):
+        missing.append("`Test windows` column (the size of each option's test windows)")
     return [f"{entry.name} horizon: no {', '.join(missing)} (the page shows it as issue H)"] if missing else []
 
 

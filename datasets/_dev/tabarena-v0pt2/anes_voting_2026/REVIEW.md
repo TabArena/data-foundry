@@ -66,11 +66,11 @@ was outside this review.
   respondents against 576 to 2,283 before.
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | One election (implemented) | one study per window, no gap: the five elections from 2008 to 2024 keep half the respondents for training (2004 trains on 49.2%) | a likely-voter screen built on the elections already studied is applied at the next one, the test Pew names; a model up to four years old, as a pollster's would be | no source sets a length (ANES sets no task; TableShift splits by region); five windows above the floor |
-  | B | Two elections | windows of two studies (2020 with 2024, 2012 with 2016): two above the floor | more respondents per window | two windows, too few |
-  | C | Four calendar years | one election cycle per window | a length in calendar years | the same windows as A from 2004 on, as the studies are four years apart |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | One election (implemented) | one study per window, no gap: the five elections from 2008 to 2024 keep half the respondents for training (2004 trains on 49.2%) | 9 windows of 1,066 to 7,442 respondents (issue 1's B: 5 of 2,102 to 7,442) | a likely-voter screen built on the elections already studied is applied at the next one, the test Pew names; a model up to four years old, as a pollster's would be | no source sets a length (ANES sets no task; TableShift splits by region); five windows above the floor |
+  | B | Two elections | windows of two studies (2020 with 2024, 2012 with 2016): two above the floor | 2 candidates above the floor, 9,136 and 12,396 respondents | more respondents per window | two windows, too few |
+  | C | Four calendar years | one election cycle per window | 5 candidates above the floor, one study each, 2,102 to 7,442 respondents | a length in calendar years | the same windows as A from 2004 on, as the studies are four years apart |
 
 * **Recommendation:** A: one election is the step at which a pollster applies a screen built on the elections before, as
   Pew describes; two elections leave two windows, and four calendar years give the same ones. **Decision:** A, B or C?

@@ -75,7 +75,13 @@ def candidate_windows(
         gap_unit=windows.gap_unit,
         min_train_fraction=min_train_fraction,
     )
-    return [Window(train=range(b.train_stop), test=range(b.test_start, b.test_stop)) for b in bounds]
+    # The floor counts rows (SPLIT-14), also where the windows count distinct time values (`unique`), whose own
+    # `min_train_fraction` counts those values: an early era or quarter with few rows would pass it.
+    return [
+        Window(train=range(b.train_stop), test=range(b.test_start, b.test_stop))
+        for b in bounds
+        if b.train_stop >= min_train_fraction * len(df)
+    ]
 
 
 def window_stats(

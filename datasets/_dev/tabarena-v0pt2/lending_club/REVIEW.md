@@ -26,12 +26,12 @@ horizon is kept. `dataset.py` is unchanged until you decide.
   appear, filled on 17% of its loans and missing on every loan of the earlier quarters of 2015.
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | Three months (implemented) | quarterly windows, no gap (your exception of 2026-10-21): 4 candidates above the floor, the quarters of 2015 | matches LendingClub's quarterly loan files | a convention, not a stated cadence |
-  | B | One month | 12 candidates, January to December 2015, 16,000 to 33,000 loans each | would match the "updated monthly" reading of `splits_comment` | no source either; fewer loans per window |
-  | C | Six months | 2 candidates: 2015 H2 (73.4% train share) and H1 (53.9%) | more loans per window | fewer than three windows |
-  | D | One year | 2015 alone | all of 2015 in one window | one candidate, fewer than three windows |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | Three months (implemented) | quarterly windows, no gap (your exception of 2026-10-21): 4 candidates above the floor, the quarters of 2015 | 3 windows (issue 1's B) of 54,324 to 88,667 loans | matches LendingClub's quarterly loan files | a convention, not a stated cadence |
+  | B | One month | 14 candidates, November 2014 to December 2015, 6,051 to 33,186 loans each | 14 candidates of 6,051 to 33,186 loans, November 2014 to December 2015 (2015 alone: 12 of 16,023 to 33,186) | would match the "updated monthly" reading of `splits_comment` | no source either; fewer loans per window |
+  | C | Six months | 2 candidates: 2015 H2 (73.4% train share) and H1 (53.9%) | 2 candidates of 118,546 and 162,234 loans | more loans per window | fewer than three windows |
+  | D | One year | 2015 alone | 1 candidate of 280,780 loans | all of 2015 in one window | one candidate, fewer than three windows |
 
 * **Recommendation:** A: the quarter matches the files LendingClub released by calendar quarter, and no source names
   another cadence. **Decision:** A, B, C or D?

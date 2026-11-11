@@ -29,11 +29,11 @@ one-quarter horizon.
   2014-2015 (0.5% to 0.9%).
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | One quarter (implemented) | windows of one period, no gap: 26 candidates above the floor, 2008 Q4 to 2015 Q1 | the book's own backtest window and the label's own horizon; the use case scores the book at every quarter's start | no source gives a refit cadence; the backtest quote is still unverified |
-  | B | Four quarters | a model refit once a year: 6 candidates above the floor, back to 2009 Q2-2010 Q1 | one model serves a year, as under an annual review | the book tests one quarter and the use case scores every quarter |
-  | C | Two quarters | 13 candidates above the floor | more loan-quarters per window | no source for it |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | One quarter (implemented) | windows of one period, no gap: 26 candidates above the floor, 2008 Q4 to 2015 Q1 | 3 windows (issue 16's B) of 8,004 to 15,921 loan-quarters | the book's own backtest window and the label's own horizon; the use case scores the book at every quarter's start | no source gives a refit cadence; the backtest quote is still unverified |
+  | B | Four quarters | a model refit once a year: 6 candidates above the floor, back to 2009 Q2-2010 Q1 | 6 candidates of 33,328 to 62,004 loan-quarters | one model serves a year, as under an annual review | the book tests one quarter and the use case scores every quarter |
+  | C | Two quarters | 13 candidates above the floor | 13 candidates of 16,176 to 37,895 loan-quarters | more loan-quarters per window | no source for it |
 
 * **Recommendation:** A: the book tests one quarter, the label looks one quarter ahead, and the use case scores the book
   every quarter. **Decision:** A, B or C?

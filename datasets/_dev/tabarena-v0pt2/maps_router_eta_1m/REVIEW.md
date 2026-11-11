@@ -22,12 +22,12 @@ six-day windows that keep it?
   like a Sunday and lies in every train side.
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | One week, one-day gap (implemented) | 7-day windows; which weeks is issue 1 | TabReD's own validation and test length; every weekday once | only two whole weeks without overlap keep half the routes for training (issue 1); no source names the refit cadence |
-  | B | One day, a 17-hour gap | daily windows: 18 candidates | issue 1's floor problem disappears; the right horizon if the router refits daily | each window tests one weekday, and weekends run lower |
-  | C | Six days | issue 1's option C: 23-28 November, 29 November-4 December and 5-10 December | every train side above half; no overlap | each window misses one weekday |
-  | D | Two weeks | 14-day windows: 1 candidate | more routes per window | fewer than three windows |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | One week, one-day gap (implemented) | 7-day windows; which weeks is issue 1 | 3 windows of 2.39M to 2.44M routes (500,000 tested each) | TabReD's own validation and test length; every weekday once | only two whole weeks without overlap keep half the routes for training (issue 1); no source names the refit cadence |
+  | B | One day, a 17-hour gap | daily windows: 18 candidates | 18 candidates of 292,375 to 386,308 routes | issue 1's floor problem disappears; the right horizon if the router refits daily | each window tests one weekday, and weekends run lower |
+  | C | Six days | issue 1's option C: 23-28 November, 29 November-4 December and 5-10 December | 3 windows of 2.05M to 2.12M routes (500,000 tested each) | every train side above half; no overlap | each window misses one weekday |
+  | D | Two weeks | 14-day windows: 1 candidate | 1 candidate of 4.83M routes (500,000 tested) | more routes per window | fewer than three windows |
 
 * **Recommendation:** A: the length of the source's own validation and test periods, holding every weekday once; the
   floor is issue 1's question, and a daily refit, which one-day windows would fit, is named by no source.

@@ -22,7 +22,7 @@ Python run):
   of it the source states and which is our assumption, weigh one to three other lengths (how many windows each keeps
   above the floor, which periods they cover), and say why the windows cover the period they do; the main session
   puts this argument into the REVIEW.md's `**Horizon:**` block (verdict, length, gap, time frame, an options
-  table with today's length as the implemented row, recommendation), which the curator signs off;
+  table with today's length as the implemented row and the size of each option's test windows, recommendation), which the curator signs off;
 * temporal: the time column's meaning, windows and their sizes, the train side, the gap against the label delay,
   training rows whose label is not known at the prediction point, the training history, a season-shaped test window;
   the choice of windows against the candidates (`dataset windows <name>`, SPLIT-15): the newest is among them, the

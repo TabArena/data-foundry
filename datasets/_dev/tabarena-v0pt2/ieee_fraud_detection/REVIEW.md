@@ -30,12 +30,12 @@ March to May, so every train side keeps half the payments (issue 1)?
   earlier.
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | One month, one-month gap (implemented) | calendar-month windows a month after the train side: only April and May keep half the payments for training (March trains on 38.9%) | the month of the winners' validation; the competition's gap | two windows above the floor, not three; the month comes from a validation scheme, not from how long Vesta uses a model |
-  | B | Three weeks, one-month gap | three-week windows over the ten weeks open from about 22 March: three above the floor, 30 March to 31 May 2018 (52.9% to 75.9%) | the competition's gap; three separate windows above the floor | no source gives three weeks; 179,939 test payments instead of 274,613 |
-  | C | Two weeks, one-month gap | five windows of about 40,000 payments | the competition's gap; five windows | more windows than the three a task of this size gets |
-  | D | One month, no gap | March to May 2018, training on 53.5% to 84.9% | keeps the months; every train side above half | each model trains on labels a month fresher than the competition allows |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | One month, one-month gap (implemented) | calendar-month windows a month after the train side: only April and May keep half the payments for training (March trains on 38.9%) | 3 windows of 83,655 to 101,632 payments (March under the floor) | the month of the winners' validation; the competition's gap | two windows above the floor, not three; the month comes from a validation scheme, not from how long Vesta uses a model |
+  | B | Three weeks, one-month gap | three-week windows over the ten weeks open from about 22 March: three above the floor, 30 March to 31 May 2018 (52.9% to 75.9%) | 3 windows of 58,731 to 61,405 payments | the competition's gap; three separate windows above the floor | no source gives three weeks; 179,939 test payments instead of 274,613 |
+  | C | Two weeks, one-month gap | five windows of about 40,000 payments | 5 candidates above the floor, 37,693 to 44,653 payments each | the competition's gap; five windows | more windows than the three a task of this size gets |
+  | D | One month, no gap | March to May 2018, training on 53.5% to 84.9% | 3 windows of 83,655 to 101,632 payments | keeps the months; every train side above half | each model trains on labels a month fresher than the competition allows |
 
 * **Recommendation:** B: it keeps the competition's gap and fits three windows above the floor into the ten weeks open,
   and the one-month length rested on the winners' validation, not on how long Vesta uses a model. **Decision:** A, B, C

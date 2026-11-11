@@ -48,11 +48,11 @@ nine newest (issue 12)?
   evident" (4.1-4.7% of the crashes before, 5.6-6.7% from 2023Q4), which you accepted as drift (issue 8).
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | Three months, one-month gap (implemented) | quarters, each trained on the crashes up to a month before it: 17 candidates above the floor, from July-September 2022 | between the analyst's monthly and yearly cycles; nine windows | a convention of the build; no source names it |
-  | B | One year, October to September | the cycle of the annual report: four candidates keep half the crashes for training, from October 2022 (88.1%, 77.0%, 65.8% and 54.7%), about 110,000 crashes each | the annual report's cycle; every season in a window | three windows instead of nine; a model up to 13 months old by a window's end |
-  | C | One month | the cycle of the fatality review: about 50 candidates of 8,000 to 10,000 crashes | the fatality list's monthly cycle | only about 6 to 11 fatal crashes per window |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | Three months, one-month gap (implemented) | quarters, each trained on the crashes up to a month before it: 17 candidates above the floor, from July-September 2022 | 9 windows of 24,682 to 30,068 crashes (issue 12's B; today's nine: 24,682 to 29,258), before the split's own filter (it drops training crashes only) | between the analyst's monthly and yearly cycles; nine windows | a convention of the build; no source names it |
+  | B | One year, October to September | the cycle of the annual report: four candidates keep half the crashes for training, from October 2022 (88.1%, 77.0%, 65.8% and 54.7%), about 110,000 crashes each | 4 candidates of 109,796 to 112,160 crashes, before the split's own filter | the annual report's cycle; every season in a window | three windows instead of nine; a model up to 13 months old by a window's end |
+  | C | One month | the cycle of the fatality review: 53 candidates of 7,752 to 10,719 crashes | 53 candidates of 7,752 to 10,719 crashes, before the split's own filter | the fatality list's monthly cycle | only about 6 to 11 fatal crashes per window |
 
 * **Recommendation:** A: a quarter lies between the analyst's monthly and yearly cycles, and keeps nine windows where a
   year gives three. **Decision:** A, B or C?

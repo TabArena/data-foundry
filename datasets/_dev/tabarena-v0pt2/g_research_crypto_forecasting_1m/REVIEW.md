@@ -63,11 +63,11 @@ numbered 8 so that no old mark lands on it. The R² and weighted Pearson figures
   a reason; the period the data cover is a separate question (issue 10).
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | 91 days, 15-minute gap (implemented) | the competition's three months of live scoring per window; six candidates above the floor on today's grid, back to 24 March 2020 | the period on which the competition scored every frozen model | no source gives a production refit cadence |
-  | B | 30 days | 20 candidates | more windows to choose from | no source; scores a model refit more often, an easier task than the frozen 91 days |
-  | C | 182 days | exactly three windows, 24 March 2020 to 20 September 2021 | the three windows cover every eligible day | no choice of windows; twice the competition's period |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | 91 days, 15-minute gap (implemented) | the competition's three months of live scoring per window; six candidates above the floor on today's grid, back to 24 March 2020 | 3 windows (issue 9's B) of 1.54M to 1.83M rows (500,000 rows tested, by whole minutes) | the period on which the competition scored every frozen model | no source gives a production refit cadence |
+  | B | 30 days | 20 candidates | 20 candidates of 495,144 to 604,766 rows (up to 500,000 rows tested, by whole minutes) | more windows to choose from | no source; scores a model refit more often, an easier task than the frozen 91 days |
+  | C | 182 days | exactly three windows, 24 March 2020 to 20 September 2021 | 3 windows of 3.22M to 3.67M rows (500,000 rows tested, by whole minutes) | the three windows cover every eligible day | no choice of windows; twice the competition's period |
 
 * **Recommendation:** A: the length on which the competition scored every frozen model, and no source gives another.
   **Decision:** A, B or C?

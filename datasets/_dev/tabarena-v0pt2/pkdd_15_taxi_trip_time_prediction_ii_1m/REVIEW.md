@@ -39,11 +39,11 @@ weeks as for nyc? Issue 1 waits on it: April, May and June 2014 (as now), or Feb
 
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | 30 days (implemented) | issue 1's pick as 30-day windows from 1 February, 1 April and 1 June | no change of unit | the February window runs to 2 March; a length no source gives |
-  | B | Calendar months | February, April and June 2014 (57.7%, 73.4%, 90.7%); 6 candidates, January to June | your pick exactly; the longer length the source's months-long use speaks for | a different length from nyc for the same use case |
-  | C | One week, as nyc | three weeks chosen again under issue 1; about 25 candidates | one length for the taxi tasks | no source either; a week where the source used one model for months |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | 30 days (implemented) | issue 1's pick as 30-day windows from 1 February, 1 April and 1 June | 3 windows of 130,112 to 146,714 trips | no change of unit | the February window runs to 2 March; a length no source gives |
+  | B | Calendar months | February, April and June 2014 (57.7%, 73.4%, 90.7%); 6 candidates, January to June | 3 windows of 122,831 to 146,714 trips | your pick exactly; the longer length the source's months-long use speaks for | a different length from nyc for the same use case |
+  | C | One week, as nyc | three weeks chosen again under issue 1; about 25 candidates | 25 candidates of 27,072 to 39,547 trips | one length for the taxi tasks | no source either; a week where the source used one model for months |
 
 * **Recommendation:** B: it is your pick of issue 1 as calendar months, and where the source shows any horizon it is
   months long; nyc has no such source, so a week stays its length. **Decision:** A, B or C?

@@ -40,11 +40,11 @@ one-year horizon.
   only the few campaigns longer than 60 days missing; that is a change of the time column, not of the window length.
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | One year (implemented) | calendar years of creation, no gap: 6 candidates above the floor, 2020 to 2025 | every season (success by month of creation 58.7% to 64.7%); the scrape cuts the newest window by about a fifth rather than by half | no source; dated by creation, so 1.9% to 3.2% of each train side was still running when the window starts |
-  | B | Six months | 13 candidates from 2019 H2 | nine windows across years and seasons | no source for a shorter cadence; the newest half holds 8,400 projects against about 12,000 in a full half |
-  | C | A quarter | 26 candidates from 2019 Q3 | nine windows across years and seasons | no source for a shorter cadence; 2025 Q4 holds less than half a usual quarter |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | One year (implemented) | calendar years of creation, no gap: 6 candidates above the floor, 2020 to 2025 | 6 windows of 9,581 to 21,400 projects (issue 1's C; today's three: 13,056 to 21,400) | every season (success by month of creation 58.7% to 64.7%); the scrape cuts the newest window by about a fifth rather than by half | no source; dated by creation, so 1.9% to 3.2% of each train side was still running when the window starts |
+  | B | Six months | 13 candidates from 2019 H2 | 13 candidates of 4,373 to 12,425 projects | nine windows across years and seasons | no source for a shorter cadence; the newest half holds 8,400 projects against about 12,000 in a full half |
+  | C | A quarter | 26 candidates from 2019 Q3 | 26 candidates of 2,023 to 6,244 projects | nine windows across years and seasons | no source for a shorter cadence; 2025 Q4 holds less than half a usual quarter |
 
 * **Recommendation:** A: a year holds every season and loses the least of its newest window to the scrape, and no source
   supports a shorter cadence. **Decision:** A, B or C?

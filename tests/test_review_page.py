@@ -839,10 +839,10 @@ HORIZON_BLOCK = """\
 * **Gap:** none needed.
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | 7 days (implemented) | today's windows | TabReD's length | no cadence stated |
-  | B | 1 day | 41 candidates | a daily refit | no source |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | 7 days (implemented) | today's windows | 3 of 1.19M-1.49M rows | TabReD's length | no cadence stated |
+  | B | 1 day | 41 candidates | 41 of about 200k rows | a daily refit | no source |
 
 * **Recommendation:** A: the source's own length. **Decision:** A or B?
 """
@@ -865,6 +865,7 @@ def test_the_horizon_is_an_issue_of_its_own(brp, tmp_path):
     assert "time column <code>t</code>" in details
     assert "no source states a refit cadence" in details
     assert "Details: declared, length, gap" in details
+    assert '<col class="c-test">' in html  # the size of each option's test windows
     record.write_text(record.read_text() + "\nCC (2026-11-10, Lennart): the declared horizon (7 days) is checked.\n")
     assert brp._horizon_item(HORIZON_BLOCK, temporal, record)["resolved"] is True
     assert brp._horizon_item(HORIZON_BLOCK, None, record) is None

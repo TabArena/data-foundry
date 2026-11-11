@@ -38,11 +38,11 @@ months rather than add September 2020 (issue 6)?
   months of the December-February dry season; each month holds a different mix of the three sites.
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | One month (implemented) | monthly windows, no gap: 6 candidates above the floor, September 2020 to February 2021, of which 5 are tested | your judgment of 2026-11-04; between the hourly feed and a season | no source gives a cadence |
-  | B | Two weeks | 14 candidates from 17 August 2020, 64 to 643 hours each (9-20 November holds 64, after the Nakawa outage) | reaches the end of the June-August dry season | a fortnightly refit nobody documents; halves the hours per window |
-  | C | Three months (a season) | only December-February (74.9% train share) and September-November (53.0%) keep half the hours | the season of the paper's "seasonal re-calibration" (future work) | too few for three windows |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | One month (implemented) | monthly windows, no gap: 6 candidates above the floor, September 2020 to February 2021, of which 5 are tested | 5 windows of 596 to 1,310 hours | your judgment of 2026-11-04; between the hourly feed and a season | no source gives a cadence |
+  | B | Two weeks | 14 candidates from 17 August 2020, 64 to 643 hours each (9-20 November holds 64, after the Nakawa outage) | 14 candidates of 64 to 643 hours | reaches the end of the June-August dry season | a fortnightly refit nobody documents; halves the hours per window |
+  | C | Three months (a season) | only December-February (74.9% train share) and September-November (53.0%) keep half the hours | 2 candidates of 2,368 and 2,718 hours | the season of the paper's "seasonal re-calibration" (future work) | too few for three windows |
 
 * **Recommendation:** A: the monthly refit is your judgment of 2026-11-04, between the hourly feed and a season, and no
   source names another cadence. **Decision:** A, B or C?

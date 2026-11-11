@@ -177,10 +177,10 @@ and the editor) for a re-check after a small change. Say which tier ran.
    block with each agent's full report. A temporal dataset always gets the `**Horizon:**` block, in the issue shape of
    the format: the split auditor's argument for the window length and the gap (how far ahead the actor predicts, the
    refit cadence, the label delay, from the source) and for the period the windows cover, with the alternatives as an
-   options table; the curator signs it off like the metric, as the issue "H" (Lennart, 2026-11-10). A review raises 0 to
-   N issues: zero is a valid outcome when the checks and the panel leave nothing for the curator to decide (the outcome
-   says so, and the curator only sets the verdict). Never raise an issue to have one; an issue is something whose answer
-   would change the dataset.
+   options table that gives the size of each option's test windows; the curator signs it off like the metric, as the
+   issue "H" (Lennart, 2026-11-10). A review raises 0 to N issues: zero is a valid outcome when the checks and the panel
+   leave nothing for the curator to decide (the outcome says so, and the curator only sets the verdict). Never raise an
+   issue to have one; an issue is something whose answer would change the dataset.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
 4. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
    `**Assessment (AI, <date>):** review panel (<tier>): <the mediator's recommendation>; disputed: <the points, by

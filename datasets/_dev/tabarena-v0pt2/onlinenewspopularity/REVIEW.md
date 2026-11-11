@@ -29,12 +29,12 @@ test sets over 17 months, and the share level falls through 2014. `dataset.py` i
   share of the articles (13% in April 2014, all from November 2014 on), which the definition already handles.
 * **Options:**
 
-  | | Option | What it does | Pro | Con |
-  |---|---|---|---|---|
-  | A | Two weeks, one-week gap (implemented) | two-week windows (Sunday to Saturday), each a week after its train side: 22 candidates above the floor, back to 23 February 2014 (51.8% to 96.8%) | the calendar form of the paper's test sets of 1,000 articles (about 2.2 weeks in late 2014); the gap is longer than the under four days the paper gives shares to settle | not the paper's L exactly (1,000 articles are 2.8 weeks in 2013); the paper states no refit cadence in days |
-  | B | 1,000 articles | `unit="rows"`, the paper's L exactly: about 19 windows above the floor | the paper's own test set size | windows of uneven calendar length |
-  | C | One week | about 450 articles per window | twice as many candidates | no source; half the paper's test set |
-  | D | Four weeks | 11 candidates above the floor | more articles per window | twice the paper's test set; half as many candidates |
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | Two weeks, one-week gap (implemented) | two-week windows (Sunday to Saturday), each a week after its train side: 22 candidates above the floor, back to 23 February 2014 (51.8% to 96.8%) | 9 windows of 769 to 1,001 articles (issue 11's B: 9 of 699 to 1,003) | the calendar form of the paper's test sets of 1,000 articles (about 2.2 weeks in late 2014); the gap is longer than the under four days the paper gives shares to settle | not the paper's L exactly (1,000 articles are 2.8 weeks in 2013); the paper states no refit cadence in days |
+  | B | 1,000 articles | `unit="rows"`, the paper's L exactly: about 19 windows above the floor | 19 candidates above the floor, 1,000 articles each | the paper's own test set size | windows of uneven calendar length |
+  | C | One week | about 450 articles per window | 45 candidates above the floor, 313 to 516 articles each | twice as many candidates | no source; half the paper's test set |
+  | D | Four weeks | 11 candidates above the floor | 11 candidates above the floor, 1,398 to 1,989 articles each | more articles per window | twice the paper's test set; half as many candidates |
 
 * **Recommendation:** A: two calendar weeks are the paper's test set of 1,000 articles in late 2014, in whole weeks, and
   the one-week gap covers the time the paper gives shares to settle. **Decision:** A, B, C or D?
