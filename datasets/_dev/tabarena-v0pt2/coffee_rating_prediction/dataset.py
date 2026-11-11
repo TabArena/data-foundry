@@ -23,7 +23,7 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
             "Review, would give a coffee, to decide which coffees to submit for review, stock or feature; the model "
             "learns that service's scoring, not a general measure of quality."
         ),
-        row="One coffee reviewed by Coffee Review (coffeereview.com), October 2018 to October 2023.",
+        row="One coffee reviewed by Coffee Review (coffeereview.com), October 2018 to September 2023.",
         predicted="The review's overall score on a 100-point scale (82 to 98 here, mean 93).",
         known=(
             "The roaster and its location, the coffee's name and origin, the roast level and roast colour readings, "
@@ -86,6 +86,7 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         - The price feature is extremely messy as a result of web scrapping. We resolve this feature as real tabular data (not from a web scrapper but from the database source), would have these information stored in a more structured way. We drop coffees that are measured in "capsules" units as they exist only 8 times and seem to be strong outliers. We normalizes the price to be per grams. Moreover, we convert all currencies to USD (with a fixed rate); we ignore the temporal incorrectness this may introduce as it is most likely minimal.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - We drop the 2 reviews of October 2023, the scrape's partial last month (24 to 65 reviews a month in the rest of 2023; cross-dataset item of 2026-11-11, Lennart). The windows walk back from September 2023.
     """
     accepted_check_warnings = {
         "meta_license_unknown": (
@@ -104,8 +105,9 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
     # Splits
     splits_comment = """
         We simulate a setting where we refit the model every 2 months and only test on the next 2 months, walking back
-        from the newest review until the training data would fall below 50% of the rows (13 windows). Monthly windows
-        (26) would follow the split-count convention, but some months hold only 2-10 reviews, which makes per-window
+        from the newest review until the training data would fall below 50% of the rows (12 windows,
+        August-September 2023 back to October-November 2021, 62 to 137 test reviews each). Monthly windows
+        (25) would follow the split-count convention, but some months hold only 2-10 reviews, which makes per-window
         RMSE noise; 2-month windows keep at least ~50 test rows each.
     """
     temporal = Temporal(
@@ -121,6 +123,8 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         df = raw
         # Ensure date time (parsed here: the sort at the end needs the date)
         df["review_date"] = pd.to_datetime(df["review_date"], format="%B %Y")
+        # The scrape's partial last month: October 2023 holds 2 reviews (cross-dataset item of 2026-11-11).
+        df = df.loc[df["review_date"] < "2023-10-01"].copy()
         # Parse argton
         df[["agtron_lower", "agtron_upper"]] = df["agtron"].str.split("/", expand=True)
         df["agtron_lower"] = (

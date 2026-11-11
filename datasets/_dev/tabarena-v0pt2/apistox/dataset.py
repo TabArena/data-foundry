@@ -138,6 +138,7 @@ class Apistox(AbstractCuratedDataset):
         splits=TemporalSplits(window=10, unit="unique", cutoffs=WINDOW_STARTS),
         horizon=10,
         horizon_unit="years",
+        time_unit="years",
     )
     splits_comment = """
         Expanding-window temporal splits on the first publication year: 4 test windows of ten years (2014-2023, 2004-2013, 1994-2003, 1984-1993), newest first; train is every compound dated before the window. The windows hold 54, 106, 118 and 173 compounds (12, 22, 19 and 33 toxic), and their train sides 95%, 85%, 73% and 56% of all compounds. A model trained on the compounds known up to a year predicts the toxicity of the compounds that appear in the next ten years. Ten years is the shortest window with 50 compounds at the newest end (2016-2023 holds 37): new compounds are few in recent years. An IID task of this size would get 10 x 3 splits, but the newest half of the data (from 1977 on) holds only 526 compounds, so four windows of about 50 or more remain.

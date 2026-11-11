@@ -1710,6 +1710,63 @@ def _check_splits_temporal(ctx: _Ctx) -> Iterator[CheckResult]:
         )
 
 
+FEATURE_GONE = 0.95
+"""A feature is gone from a side when at least this share of its rows miss it."""
+
+FEATURE_PRESENT = 0.5
+"""... and present on the other side when at most this share miss it."""
+
+FEATURE_SAMPLE_ROWS = 100_000
+"""The rows of each side read for the missing shares, drawn with a fixed seed."""
+
+
+@_check
+def _check_splits_feature_missing_in_test(ctx: _Ctx) -> Iterator[CheckResult]:
+    """Temporal splits: a feature recorded on one side of a window and missing on the other.
+
+    A column that stops (or starts) being recorded within the history teaches a model a feature its test rows lack
+    (delivery_eta_1m: 45 features 99.6% missing from 23 November 2023, in every test window; reviews of
+    2026-11-10 and 11). Each side reads up to :data:`FEATURE_SAMPLE_ROWS` rows.
+    """
+    if ctx.regime != "temporal_non_iid" or ctx.df is None or not ctx.flat_splits:
+        return
+    from data_foundry.curation_container import feature_columns  # noqa: PLC0415 - it imports the schema this uses
+
+    columns = [c for c in feature_columns(ctx.container) if ctx.has_column(c)]
+    if not columns:
+        return
+    rng = np.random.default_rng(0)
+
+    def missing(rows: np.ndarray) -> pd.Series:
+        if len(rows) > FEATURE_SAMPLE_ROWS:
+            rows = np.sort(rng.choice(rows, FEATURE_SAMPLE_ROWS, replace=False))
+        return ctx.df.iloc[rows][columns].isna().mean()
+
+    found: dict[str, list[str]] = {}
+    for repeat_i, fold_i, train, test in ctx.flat_splits:
+        if not train.size or not test.size:
+            continue
+        on_train, on_test = missing(train), missing(test)
+        gone = (on_test >= FEATURE_GONE) & (on_train <= FEATURE_PRESENT)
+        new = (on_train >= FEATURE_GONE) & (on_test <= FEATURE_PRESENT)
+        for column in on_test.index[gone | new]:
+            found.setdefault(column, []).append(
+                f"r{repeat_i}f{fold_i} {on_train[column]:.0%} missing in train, {on_test[column]:.0%} in test"
+            )
+    if found:
+        listed = "; ".join(f"`{c}` ({found[c][0]})" for c in list(found)[:5])
+        yield CheckResult(
+            "splits_feature_missing_in_test",
+            "warning",
+            f"{len(found)} feature(s) recorded on one side of a window and missing on the other: {listed}"
+            + (f"; and {len(found) - 5} more" if len(found) > 5 else "")
+            + ".",
+            hint="A column that stops or starts being recorded within the history: models learn it on one side only. "
+            "Name it in `curation_comments` and raise it for the curator (drop it, keep it, or start the data at the "
+            "change); accept this warning only with the curator's decision.",
+        )
+
+
 @_check
 def _check_splits_groups(ctx: _Ctx) -> Iterator[CheckResult]:
     """Grouped splits: no group may appear in both train and test of a fold."""

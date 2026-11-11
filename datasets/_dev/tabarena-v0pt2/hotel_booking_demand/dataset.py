@@ -51,7 +51,7 @@ class HotelBookingDemand(AbstractCuratedDataset):
             "repeated records and same-day bookings are removed."
         ),
         predicted=(
-            "Whether the booking is cancelled (29% of all bookings, 12.5% of the test bookings of the newest split)."
+            "Whether the booking is cancelled (29% of all bookings, 10.9% of the test bookings of the newest split)."
         ),
         known=(
             "The booking: hotel, booking and arrival dates, nights, guests, meal plan, country, market segment, "
@@ -59,9 +59,9 @@ class HotelBookingDemand(AbstractCuratedDataset):
             " the waiting list, and the guest's earlier bookings and cancellations."
         ),
         split=(
-            "Nine prediction dates, the first of each month from September 2016 to May 2017. The test data is the "
-            "bookings made by then that arrive within three months and are not yet cancelled; training is the "
-            "bookings that arrived before the date."
+            "Ten prediction dates, the first of each month from September 2016 to June 2017, the newest date whose "
+            "three months of arrivals the data holds. The test data is the bookings made by then that arrive within "
+            "three months and are not yet cancelled; training is the bookings that arrived before the date."
         ),
         changes=(
             "Training holds only bookings that arrived before the prediction date (the future bookings known then are"
@@ -112,8 +112,8 @@ class HotelBookingDemand(AbstractCuratedDataset):
         - Note: The data would allow for a second target to predict no shows.
         - We reconstruct the arrival date from the three columns "ArrivalDateYear", "ArrivalDateMonth", and "ArrivalDateDayOfMonth".
         - We create a "booking_date" column by subtracting the "LeadTime" from the "arrival_date". This is necessary to further define the prediction point in time and to filter the data to avoid data leakage.
-        - To define train/test splits, we define 9 points in time each starting on the 1st of a month. Using the available time stamps we separate bookings that lie in the future, and were not canceled yet as the test data.
-        - To account for the fact that, the available bookings suddenly stop at the latest month, the latest prediction point is set to three months before the end of the recorded period. This is necessary to avoid an unrealistic distribution shift in the test data, as the later prediction points don't include bookings  for later time points that would typically be available.
+        - To define train/test splits, we define 10 points in time each starting on the 1st of a month, 1 September 2016 to 1 June 2017 (Lennart, 2026-11-11; Review issue 1, reply a). Using the available time stamps we separate bookings that lie in the future, and were not canceled yet as the test data.
+        - To account for the fact that, the available bookings suddenly stop at the latest month, the latest prediction point is 1 June 2017, the newest date whose three months of arrivals (2 June to 31 August 2017) lie in the recorded period. This is necessary to avoid an unrealistic distribution shift in the test data, as the later prediction points don't include bookings  for later time points that would typically be available.
         - To make sure that the training data reflects the forecasting horizon, we remove all historical bookings that were canceled more than three months in advance. Note that we made this choice based on assumptions without actually testing the impact of this decision. It would be interesting to test the impact of this decision on prediction performance.
         - Training holds only bookings that arrived before the prediction point. Future bookings already cancelled at that point are left out: the future bookings known then are all cancelled ones, so they would teach "future arrival = cancelled" (see the splits comment).
         - After splitting, we remove "ReservationStatus" and "ReservationStatusDate" to avoid data leakage.
@@ -138,10 +138,12 @@ class HotelBookingDemand(AbstractCuratedDataset):
 
     # Splits
     splits_comment = r"""
-        To define train/test splits, we define 9 points in time each starting on the 1st of a month. Using the available time stamps we separate bookings that lie in the future, and were not canceled yet as the test data. \
-            To account for the fact that, the available bookings suddenly stop at the latest month, the latest prediction point is set to three months before the end of the recorded period. This is necessary to avoid an unrealistic distribution shift in the test data, as the later prediction points don't include bookings  for later time points that would typically be available. \
+        To define train/test splits, we define 10 points in time, the first of each month from 1 September 2016 to 1 June 2017 (Lennart, 2026-11-11; Review issue 1, reply a). Using the available time stamps we separate bookings that lie in the future, arrive within three months and were not canceled yet as the test data. \
+            The horizon, three months of arrivals at monthly dates, is ours (checked by Lennart on 2026-11-11): the source's system trains daily on all bookings on the books and predicts every future arrival, showing demand a year ahead (Antonio, de Almeida and Nunes 2019, Data Science Journal 18, 32), so no source sets three months; the length and the dates come from the use case's revenue manager. Three months hold 38% to 69% of the bookings open at a date (measured at 1 September 2016 to 1 January 2017), where one month holds 15% to 36%, and they let the newest complete date reach June 2017, where six months would stop at March. No gap is needed: a booking's outcome is known by its arrival date, and training holds only bookings that arrived before the date. \
+            To account for the fact that, the available bookings suddenly stop at the latest month (arrivals to 31 August 2017), the latest prediction point is 1 June 2017, the newest date whose three months of arrivals lie in the recorded period. This is necessary to avoid an unrealistic distribution shift in the test data, as the later prediction points don't include bookings  for later time points that would typically be available. \
+            Newest first, the ten dates test 6,511, 6,390, 6,015, 5,768, 4,578, 2,500, 2,474, 3,228, 4,314 and 4,596 bookings and train on 64,524, 60,693, 57,112, 53,850, 50,982, 48,617, 45,946, 42,942, 39,297 and 35,860 (79.3%, 74.5%, 70.1%, 66.1%, 62.6%, 59.7%, 56.4%, 52.7%, 48.3% and 44.0% of the 81,418 bookings). Two dates train on less than half the bookings: 1 October 2016 (48.3%) and 1 September 2016 (44.0%), signed off by Lennart on 2026-11-11 beside the eight on 52.7% to 79.3%; they add the autumn arrivals of 2016, and 1 June 2017 the summer peak of 2017. The test windows overlap in arrival months by design: each date tests the next three months with the bookings known then. \
             To make sure that the training data reflects the forecasting horizon, we remove all historical bookings that were canceled more than three months in advance. Note that we made this choice based on assumptions without actually testing the impact of this decision. It would be interesting to test the impact of this decision on prediction performance. \
-            Training data holds only bookings that arrive before the prediction point. Bookings with a future arrival that were already cancelled at the prediction point are left out: the future bookings known at that point are only the cancelled ones, so they taught "arrival in the test window = cancelled" (100% of 867 such rows on the newest split, against 12.5% cancelled in the test set; leak audit 2026-09-24 and an independent probe, 2026-08-20). \
+            Training data holds only bookings that arrive before the prediction point. Bookings with a future arrival that were already cancelled at the prediction point are left out: the future bookings known at that point are only the cancelled ones, so they taught "arrival in the test window = cancelled" (100% of 867 such rows on the split of 1 May 2017, against 12.5% cancelled in its test set; leak audit 2026-09-24 and an independent probe, 2026-08-20). \
             We drop BookingChanges, AssignedRoomType and RequiredCarParkingSpaces: per the data paper (Antonio et al. 2019, Table 1) they are recorded until check-in or cancellation, and no cancelled booking has a parking space. Note that the data paper takes every variable as of "the day prior to each booking's arrival", later than our prediction point (up to three months before arrival), so small post-prediction changes may remain in other columns.
     """
     temporal = Temporal(
@@ -154,6 +156,10 @@ class HotelBookingDemand(AbstractCuratedDataset):
         "the same attributes (e.g. several rooms of one group); exact source duplicates were already removed.",
         "splits_rows_unused": "By design: each prediction point uses bookings made before it; rows outside every "
         "window (e.g. bookings cancelled more than three months ahead) are in no split.",
+        "splits_train_under_half": (
+            "Signed off (Lennart, 2026-11-11, review issue 1, reply a): 1 October and 1 September 2016 train on 48.3% "
+            "and 44.0% of the bookings, beside eight dates on 52.7% to 79.3%; SPLIT-14's two tiers admit them."
+        ),
     }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -222,7 +228,7 @@ class HotelBookingDemand(AbstractCuratedDataset):
         test_sets_year_month = [
             # (2017, 8),
             # (2017, 7),
-            # (2017, 6),
+            (2017, 6),
             (2017, 5),
             (2017, 4),
             (2017, 3),

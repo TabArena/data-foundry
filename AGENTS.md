@@ -33,7 +33,8 @@ Data Foundry is the data-layer toolkit behind
 * a git-native **curation backlog** (`src/data_foundry/curation/`) that replaces
   the legacy curation Google Sheet. The source of truth is **one markdown record
   per candidate dataset** (YAML front-matter for the structured/dropdown fields +
-  a free-text body for `## Comments` / `## Reference`) under `curation/records/`.
+  a free-text body for `## Comments` / `## Review` / `## Reference`) under `curation/records/`; `## Review` is the
+  dataset's review, the questions for the curator, open and settled.
   Add or triage a dataset by creating/editing its `<unique_name>.md` file — by
   hand, with an agent, or via the dashboard. A local **Sheets-like dashboard**
   (`.venv/bin/python -m data_foundry.curation.cli serve` → http://127.0.0.1:8765) edits those records in
@@ -50,11 +51,12 @@ Data Foundry is the data-layer toolkit behind
   so editing a record and merging to `main` is what updates the public site.
 
 The actual curation work happens in `datasets/` ([`datasets/README.md`](datasets/README.md) maps it): every new
-dataset is a v2 folder (`dataset.py` + a generated `README.md`, + `REVIEW.md` while open), and the TabArena v0.2 working copy
-is `datasets/_dev/tabarena-v0pt2/` — see [`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md). The shipped
-BeyondArena datasets were built with Data Foundry v1 (notebooks under `datasets/beyond_iid/`). **Never add or
-re-curate a dataset with v1**; [`DATA_FOUNDRY_V1.md`](DATA_FOUNDRY_V1.md) is the one page about v1 (reading,
-checking and maintaining those notebooks and their format-1 containers).
+dataset is a v2 folder (`dataset.py` + a generated `README.md`; its review is in its curation record), and the
+TabArena v0.2 working copy is `datasets/_dev/tabarena-v0pt2/` — see
+[`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md). The shipped BeyondArena datasets were built with Data Foundry
+v1 (notebooks under `datasets/beyond_iid/`). **Never add or re-curate a dataset with v1**;
+[`DATA_FOUNDRY_V1.md`](DATA_FOUNDRY_V1.md) is the one page about v1 (reading, checking and maintaining those notebooks
+and their format-1 containers).
 
 ---
 
@@ -75,7 +77,7 @@ apply lives in two reference skills, read by every workflow at the step that nee
 The workflows form one pipeline of two stages, in each of which the AI works and the curator verifies: screening
 (`/screen-candidates`, a quick pass from the source with a priority, then `/review-screened-candidates` in the
 dashboard) and adding (`/add-dataset`, which builds the definition, runs a review panel of agents and leaves the open
-questions in each folder's `REVIEW.md`, then `/review-added-datasets` on the review page). Builds
+questions in each record's `## Review`, then `/review-added-datasets` on the review page). Builds
 ([`rebuild.md`](.claude/skills/knowledge-data-foundry/references/rebuild.md)) and commits happen only on the curator's
 ask. Read the skill before doing its task; it names the knowledge files to read at each step. The dashboard's
 Guidelines page renders the skills README and the two knowledge skills.
@@ -144,6 +146,12 @@ bump versions or publish without explicit human authorization.
 * **`from __future__ import annotations`** at the top of every `.py` file.
 * **Don't commit changes unless the user explicitly asks.** Same for
   pushes, PRs, and PyPI publishes.
+* **Pull requests follow
+  [`pull_requests.md`](.claude/skills/knowledge-data-foundry/references/pull_requests.md).** The body opens with a
+  summary a curator reads in a minute (what changes and why, what to decide, what to know before merging) and folds
+  the details into `<details>` sections. Each independent change is its own PR against `main`, updated with `main`
+  when it is about to be merged. A PR is stacked only when it needs another unmerged PR, and then as a GitHub stack
+  (`gh stack link`), merged bottom up with `gh stack merge`.
 * **Don't write README files, planning docs, or analysis files** unless
   asked. The repo intentionally has very few `.md` files.
 * **Don't add comments that describe what the code does** — only *why*,
@@ -195,7 +203,8 @@ bump versions or publish without explicit human authorization.
 | Add a dataset: its v2 folder, checks, probes and the review panel ("is X ready?" too) | [`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md) · [`src/data_foundry/v2/`](src/data_foundry/v2/) |
 | Review a batch of added datasets (the review page) | [`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md) |
 | Rebuild the TabArena v0.2 working copy and verify the build | [`rebuild.md`](.claude/skills/knowledge-data-foundry/references/rebuild.md) |
-| Load / browse / benchmark shipped datasets (format 2: score by `objective_metric` with `data_foundry.v2.metrics.scorer`, inputs from `feature_columns`, which drops the scoring columns; a task with a training weight names it, `sample_weight(container)`, and every model is fitted with it as the row weight, never as a feature; a weight column's test-row values are for the scorer only, never read when predicting; format 1: `objective_metric_name`) | [`CLAUDE.md`](CLAUDE.md) (*Using shipped datasets*) · [`examples/`](examples) · [`src/data_foundry/v2/metrics.py`](src/data_foundry/v2/metrics.py) |
+| Load / browse / benchmark shipped datasets (format 2: score by `objective_metric` with `data_foundry.v2.metrics.scorer`, inputs from `feature_columns`, which drops the scoring columns; a task with a training weight names it, `sample_weight(container)`, and every model is fitted with it as the row weight, never as a feature; a weight column's test-row values are for the scorer only, never read when predicting; a container with a row budget, a `_1m` version, keeps every training row and a model fits on `subsample_train(container, repeat, fold)`; format 1: `objective_metric_name`) | [`CLAUDE.md`](CLAUDE.md) (*Using shipped datasets*) · [`examples/`](examples) · [`src/data_foundry/v2/metrics.py`](src/data_foundry/v2/metrics.py) |
+| Pull requests: the body, one PR per independent change, stacked PRs with `gh stack` | [`pull_requests.md`](.claude/skills/knowledge-data-foundry/references/pull_requests.md) |
 | Dataset template | [`datasets/_template/`](datasets/_template/) |
 | Examples (use-case anchors) | [`examples/`](examples) · [`examples/README.md`](examples/README.md) |
 

@@ -16,7 +16,7 @@ import pandas as pd
 import pytest
 from data_foundry.bundle_checks import run_bundle_checks
 from data_foundry.curation_container import CuratedContainer, feature_columns, special_features
-from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV
+from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV, TrainSampling
 from data_foundry.v2 import (
     AbstractCuratedDataset,
     DatasetDefinitionError,
@@ -50,7 +50,7 @@ from data_foundry.v2.dataset import (
     _time_values_changed,
 )
 from data_foundry.v2.spectra import MS_RAW_ENCODING
-from data_foundry.v2.splits import temporal_window_splits
+from data_foundry.v2.splits import subsample_train, temporal_window_splits
 
 DEFINITION = '''
 from __future__ import annotations
@@ -765,32 +765,28 @@ def test_a_dataset_without_a_budget_keeps_the_full_cross_validation(tmp_path: Pa
     assert ds.to_container().experiment_metadata.row_budget is None
 
 
-def test_a_version_trains_every_fold_on_its_train_budget(tmp_path: Path, warehouse: Path) -> None:
+def test_a_version_tests_on_its_budget_and_trains_on_every_other_row(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
     plan = make_version(tmp_path / "datasets").make_splits()  # 600 rows, a budget of 200 / 50
 
-    assert len(plan.df) == 250  # train + test
+    assert len(plan.df) == 600  # the full frame: a benchmark sub-samples the train sides
     assert {len(folds) for folds in plan.splits.values()} == {3}
-    assert fold_sizes(plan.splits) == {(200, 50)}  # plain 3-fold CV of 250 rows would train on 166
+    assert fold_sizes(plan.splits) == {(550, 50)}  # each third tests on 50 rows; its other 150 rows train
     for folds in plan.splits.values():
         for train, test in folds.values():
             assert not set(train) & set(test)
     assert plan.comment == (
-        "Default splits. The frame is sub-sampled to 0.25k rows; every split trains on at most 0.2k and tests on at "
-        "most 0.05k rows: each fold tests on up to 0.05k rows of its third and trains on the other rows."
+        "Default splits. Each fold tests on at most 0.05k rows of its third and trains on every other row; a benchmark "
+        "sub-samples the train side to 0.2k rows (by default rows drawn at random, `subsample_train`)."
     )
 
 
-def test_a_version_at_two_to_one_is_three_fold_cross_validation(tmp_path: Path, warehouse: Path) -> None:
+def test_a_version_whose_train_sides_exceed_the_budget_keeps_its_folds(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
-    ds = make_version(tmp_path / "datasets", budget="RowBudget(train=200, test=100)")
+    ds = make_version(tmp_path / "datasets", budget="RowBudget(train=200, test=500)")
     plan = ds.make_splits()
-    assert len(plan.df) == 300
-    assert plan.splits == ds._cross_validation(plan.df)  # each third is the fold's test side, as at 1M / 500k
-    assert plan.comment == (
-        "Default splits. The frame is sub-sampled to 0.3k rows; every split trains on at most 0.2k and tests on at "
-        "most 0.1k rows."
-    )
+    assert len(plan.df) == 600
+    assert plan.splits == ds._cross_validation(plan.df)  # no test side is over 500; the train sides of 400 are N's
 
 
 def test_a_version_keeps_whole_groups_and_trains_on_the_rest_of_its_fold(tmp_path: Path, warehouse: Path) -> None:
@@ -807,22 +803,22 @@ def test_a_version_keeps_whole_groups_and_trains_on_the_rest_of_its_fold(tmp_pat
     write_definition(tmp_path / "datasets", "toy_ds_0p2k", body=body)
     plan = get_dataset(tmp_path / "datasets", "toy_ds_0p2k").make_splits()
 
-    assert len(plan.df) <= 250
-    assert (plan.df["site"].value_counts() == 4).all()  # whole groups
+    assert len(plan.df) == 600
     for folds in plan.splits.values():
         for train, test in folds.values():
             assert len(test) <= 50
-            assert 180 <= len(train) <= 200  # the untested rows of its third train in the fold
+            assert len(train) + len(test) == 600  # the untested rows of its third train in the fold
             assert not set(plan.df["site"].iloc[train]) & set(plan.df["site"].iloc[test])
+            assert (plan.df["site"].iloc[test].value_counts() == 4).all()  # whole groups
     assert "(whole groups)" in plan.comment
 
 
 def test_a_version_with_a_frame_within_budget_still_samples_its_test_sides(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
     plan = make_version(tmp_path / "datasets", "toy_ds_0p5k", budget="RowBudget(train=500, test=100)").make_splits()
-    assert len(plan.df) == 600  # within train + test: taken fully
-    assert fold_sizes(plan.splits) == {(500, 100)}
-    assert plan.comment.startswith("Default splits. The frame is taken fully; every split trains on at most 0.5k")
+    assert len(plan.df) == 600
+    assert fold_sizes(plan.splits) == {(500, 100)}  # the train sides keep to 500 by themselves
+    assert plan.comment.startswith("Default splits. Each fold tests on at most 0.1k rows of its third")
 
 
 def test_a_version_whose_budget_changes_nothing_is_refused(tmp_path: Path, warehouse: Path) -> None:
@@ -841,19 +837,30 @@ def test_a_version_records_its_budget_and_is_held_to_it(
     ds = make_version(tmp_path / "datasets")
     result = ds.check(verbose=False)
     container = result.container
-    assert container.experiment_metadata.row_budget == RowBudget(train=200, test=50)
-    assert read_report(ds.report_path)["splits"]["row_budget"] == {"train": 200, "test": 50}
-    assert "Row budget: at most 0.2k train / 0.05k test rows per split." in ds.report_path.read_text()
+    meta = container.experiment_metadata
+    assert meta.row_budget == RowBudget(train=200, test=50)
+    assert meta.train_sampling == TrainSampling(default="random", unit="rows", stratify_on="y")
+    front = read_report(ds.report_path)["splits"]
+    assert front["row_budget"] == {"train": 200, "test": 50}
+    assert front["train_sampling"] == {"default": "random", "unit": "rows", "stratify_on": "y"}
+    readme = ds.report_path.read_text()
+    assert "Row budget: at most 0.05k test rows per split; a benchmark trains on at most 0.2k." in readme
+    assert "`subsample_train` draws the 0.2k rows a benchmark fits on from at random, as rows." in readme
     slugs = result.bundle_report.slugs
-    assert not [slug for slug in slugs if slug.endswith("_over_budget")]
+    assert not [slug for slug in slugs if slug.endswith(("_over_budget", "_sampling_missing"))]
     assert "splits_rows_never_tested" not in slugs  # the sampled test sides are the budget's doing
+    for repeat, folds in meta.splits.items():
+        for fold, (train, _test) in folds.items():
+            kept = subsample_train(container, repeat, fold)
+            assert len(kept) == 200
+            assert set(kept) <= set(train)
 
-    tighter = dataclasses.replace(container.experiment_metadata, row_budget=RowBudget(train=150, test=40))
+    tighter = dataclasses.replace(meta, row_budget=RowBudget(train=150, test=40))
     findings = {
         r.slug: r.severity
         for r in run_bundle_checks(dataclasses.replace(container, experiment_metadata=tighter, checksum=None)).results
     }
-    assert findings["splits_train_over_budget"] == "error"
+    assert "splits_train_over_budget" not in findings  # the train sides are the benchmark's to sub-sample
     assert findings["splits_test_over_budget"] == "warning"
 
 
@@ -885,15 +892,16 @@ def test_a_temporal_version_samples_per_window_and_keeps_the_rows_it_uses(tmp_pa
 
     assert len(plan.splits) == 3
     sides = [side for folds in plan.splits.values() for pair in folds.values() for side in pair]
-    assert fold_sizes(plan.splits) == {(190, 60)}
+    assert fold_sizes(plan.splits) == {(500, 60), (400, 60), (300, 60)}  # every earlier row trains
     assert set().union(*map(set, sides)) == set(range(len(plan.df)))  # every kept row is in some split
-    assert len(plan.df) < 600
+    assert len(plan.df) == 560  # only the newest window's 40 unsampled rows are gone
     assert plan.df["t"].is_monotonic_increasing
     for folds in plan.splits.values():  # train is earlier than the window it predicts
         train, test = folds[0]
         assert plan.df["t"].iloc[train].max() < plan.df["t"].iloc[test].min()
-    assert "each train side is a random 0.19k of all earlier rows" in plan.comment
-    assert "the frame keeps only the rows a split uses" in plan.comment
+    assert "Each test window keeps at most 0.06k of its rows, drawn at random" in plan.comment
+    assert "a benchmark sub-samples it to 0.19k rows" in plan.comment
+    assert "drawn at random from the newest year before each window" in plan.comment
 
 
 def test_a_temporal_version_sampled_by_time_keeps_whole_days(tmp_path: Path, warehouse: Path) -> None:
@@ -906,9 +914,52 @@ def test_a_temporal_version_sampled_by_time_keeps_whole_days(tmp_path: Path, war
     assert (full_days == 20).all()  # every kept day keeps all its rows
     for folds in plan.splits.values():
         train, test = folds[0]
-        assert (len(train), len(test)) == (180, 60)  # at most the budget: the day crossing it is dropped
+        assert len(test) == 60  # 3 of a window's 5 days
+        assert len(train) % 20 == 0
+        assert len(train) >= 300
         assert plan.df["t"].iloc[train].max() < plan.df["t"].iloc[test].min()
     assert "drawn as whole values of `t`" in plan.comment
+    ds = get_dataset(tmp_path / "datasets", "toy_ds_0p19k")
+    container = ds.check(write_report=False, verbose=False).container
+    assert container.experiment_metadata.train_sampling == TrainSampling(default="newest_year", unit="time_values")
+    kept = subsample_train(container, 0, 0)
+    assert (container.dataset["t"].iloc[kept].value_counts() == 20).all()  # whole days
+    assert len(kept) == 180
+
+
+def ordinal_version_body(time_unit: str | None) -> str:
+    """The temporal version on an integer day number instead of a date, with ``time_unit`` declared or not."""
+    unit = f'time_unit="{time_unit}", ' if time_unit else ""
+    return (
+        temporal_version_body(windows='TemporalSplits(window=5, unit="unique", n_windows=3)')
+        .replace('pd.Timestamp("2024-01-01") + pd.to_timedelta(df["row_id"] // 20, unit="D")', 'df["row_id"] // 20')
+        .replace(', datetime=["t"]', "")
+        .replace('Temporal(on="t", ', f'Temporal(on="t", horizon=5, horizon_unit="days", {unit}')
+    )
+
+
+def test_a_temporal_version_on_a_numeric_time_declares_what_a_step_counts(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse  # an integer day number has no calendar of its own: the newest-year rule needs `time_unit`
+    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=ordinal_version_body(None))
+    with pytest.raises(DatasetDefinitionError, match="declare what one step of it counts"):
+        get_dataset(tmp_path / "datasets", "toy_ds_0p19k").make_splits()
+    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=ordinal_version_body("days"))
+    ds = get_dataset(tmp_path / "datasets", "toy_ds_0p19k")
+    container = ds.check(write_report=False, verbose=False).container
+    assert container.task_metadata.time_unit == "days"
+    assert container.experiment_metadata.train_sampling == TrainSampling(
+        default="newest_year", unit="rows", stratify_on="y"
+    )
+    assert "extended back in time until it holds that many rows" in container.experiment_metadata.splits_comment
+    assert len(subsample_train(container, 0, 0)) == 190
+
+
+def test_time_unit_needs_a_numeric_time_column(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = temporal_version_body().replace('Temporal(on="t", ', 'Temporal(on="t", time_unit="days", ')
+    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=body)
+    with pytest.raises(DatasetDefinitionError, match="is a date, whose calendar is its own"):
+        get_dataset(tmp_path / "datasets", "toy_ds_0p19k").make_splits()
 
 
 def test_a_temporal_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path) -> None:
@@ -1483,7 +1534,8 @@ def test_the_template_metric_is_a_placeholder_the_checks_catch() -> None:
 
 def test_a_smiles_special_feature_ships_as_a_typed_structure(tmp_path: Path, warehouse: Path) -> None:
     """``Smiles(column=...)`` in ``special_features`` casts the column to string, keeps it a feature, and records it as
-    a one-column special feature with the recommended encoding; its one value per row is no identifier warning."""
+    a one-column special feature with the recommended encoding; its one value per row is no identifier warning.
+    """
     pytest.importorskip("rdkit")
     del warehouse
     from data_foundry.v2.chemistry import DEFAULT_SMILES_ENCODING
