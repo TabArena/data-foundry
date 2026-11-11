@@ -142,6 +142,49 @@ how far a test chemical stands from training (issue 1)?
 
    **Andrej (2026-11-11, change):** Option C: Date the chemicals first.
 
+   **Answer (AI, 2026-11-11):** dated, 7,927 of 11,116 (71.3%). The year does not hold out chemistry, and the
+   untested set this issue leans on is closer to the data than the issue says.
+
+   * **The dating:** EPA's ToxValDB keeps the RTECS citation per ChemIDplus record (its own `YEAR` column is empty
+     for that source), and the year parses out of the citation string for 85% of the rat oral LD50 records. Joined on
+     DTXSID and then CASRN, 7,927 chemicals carry a year, 1932 to 2023, median about 1979, 52% of them 1976 or
+     earlier. Where both keys give a year they agree for 99.95% of 6,184 chemicals.
+   * **What the date means:** the publication year of the report the LD50 came from, not a registry year and not a
+     first publication of the substance.
+   * **Check:** of 6,030 chemicals with a point LD50 in the file and a ChemIDplus rat oral record, 93.8% have a
+     record whose LD50 equals the shipped value to within 2%, so the label is the ChemIDplus value; for the 4,870
+     where that record itself carries a year, the year assigned equals it for 100%.
+   * **The split, four expanding windows by report year** (random forest / LightGBM, ROC AUC, every training side at
+     least 52% of the dated rows; Slurm 1378153):
+
+     | Scheme | ROC AUC, RF / LightGBM | Close training analog | Untested set's analog share | Test scaffold in training |
+     |---|---|---|---|---|
+     | T, forward by year | 0.770 / 0.713 | 12.4% | 17.6% | 31.5% |
+     | S, scaffold-disjoint | 0.770 / 0.717 | 8.6% | 17.0% | 0 |
+     | R, random | 0.793 / 0.747 | 13.1% | 18.3% | 32.8% |
+     | Shipped scaffold folds, all rows | 0.844 / 0.850 | 16.3% | 23.3% | 0 |
+
+     - A forward split's test chemicals have about as many close analogs as a random draw, and 31.5% share a scaffold
+       with training; the scaffold-disjoint draw is the one that pushes them away, at the same AUC.
+     - A chemical first reported in 1991 is often a close relative of one reported in 1965, so the year separates when
+       somebody ran the test, not which chemistry a screener has not met.
+   * **A correction to this issue's own table:** the 11.0% close-analog share quoted for the project's 48,137
+     untested chemicals understates how close that population is. Measured against all the dataset's chemicals,
+     31.4% of the prediction set has a close analog and 22.4% an identical fingerprint, and 9,588 of them (19.9%)
+     share a QSAR-ready InChIKey with a dataset chemical, 7,295 a CASRN. The 11.0% holds only after the identical
+     ones are dropped. So a fifth of the "untested" set is not untested, and the inventory is a weaker reference for
+     the split than the issue assumed.
+   * **Options:** as above, with the measurement now in hand: a, scaffold split with `Timeless` and the dating and
+     the corrected inventory figures written down; b, temporal split by report year; c, scaffold split, the dating
+     written down, no prototype tag.
+   * **Recommendation:** a, but on the dating rather than on the inventory, since the inventory overlaps the data.
+     **Decision:** a, b or c?
+
+   **Notes for the AI:** on a, correct the 11.0% figure wherever it appears in the notes before leaning on it, and
+   state the overlap. The frame was reproduced from the public NICEATM files (11,119 rows against the shipped
+   11,116, 7,483 scaffolds against 7,481, the scaffold close-analog share 16.3% exactly as recorded), since the
+   Milano package is not in this clone. Evidence in `~/claude_jobs/qsar_dating2/`.
+
 ## Reference
 
 @article{ballabio2019integrated,

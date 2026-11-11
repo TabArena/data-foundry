@@ -179,6 +179,45 @@ Milano sets were asked to do, or name the scaffold split `Timeless` now (issue 1
 
    **Andrej (2026-11-11, change):** Option B: Date through the source tables, then decide.
 
+   **Answer (AI, 2026-11-11):** dated, 520 of 776 (67.0%), but the year does not hold out chemistry here: a forward
+   split leaves test chemicals more close training analogs than the scaffold split does.
+
+   * **The dating:** the authors' 2015 supporting table carries no year, no reference and no study id, and the EURAS
+     BCF collection's only download returns 404. NITE's bioconcentration workbook does: 1,568 carp BCF tests under
+     the Japanese CSCL with a `Year` column (1975-2010), which dates 347 chemicals on CAS, 4 more by structure;
+     ECOTOX's fish BCF records date 273 by publication year. Together 520, 1966 to 2025, median 1983.
+   * **Checks:** log10 of NITE's BCF against the file's logBCF correlates at 0.965 over 347 chemicals (median
+     difference 0.19 log, 79.8% within 0.3), so the NITE year dates the measurement the dataset itself carries;
+     ECOTOX's correlates at 0.744 and dates another study of the same chemical, a weaker proxy. Where both exist the
+     two years differ by a median of 4 years.
+   * **The split, three expanding windows by first test year** (random forest, the readable column at these training
+     sizes; LightGBM overfits 1,407 features on 278 rows; Slurm 1378118):
+
+     | Scheme | Log loss | Macro ROC AUC | Close training analog | Test scaffold in training |
+     |---|---|---|---|---|
+     | T, forward by year | 0.902 | 0.694 | 7.6% | 24.1% |
+     | S, scaffold-disjoint | 0.924 | 0.694 | 4.9% | 0 |
+     | R, random | 0.913 | 0.724 | 6.9% | 23.5% |
+     | Shipped scaffold folds, all 776 | 0.913 | 0.675 | 7.1% | 0 |
+
+     - The forward split's test chemicals keep more close analogs than the scaffold split's, and a quarter of them
+       share a scaffold with training; the NITE-only sensitivity run (347 dated) gives the same picture.
+   * **What it means:** the year here is the Japanese testing programme's schedule, which does not track chemical
+     novelty, so a split by it would hold out less than the scaffold split already does.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Scaffold split (implemented), `Timeless`, the dating written down | the tag, a `Time basis:` line and the table above | the split holds out more than a forward one, now measured rather than assumed | 256 chemicals stay undated |
+     | b | Temporal split by first test year | three windows, the scaffold grouping dropped | follows the order the tests were run in | holds out less chemistry than what ships; two thirds coverage; half the years date another study of the chemical |
+     | c | Scaffold split, no prototype tag, the dating written down | the table in the notes, no tag claimed | makes no claim beyond the measurement | leaves the definition without a stated time basis |
+
+   * **Recommendation:** a, and the same answer the three sibling sets reached on their own dating.
+     **Decision:** a, b or c?
+
+   **Notes for the AI:** on a, `data_tags = ("Timeless",)` and a `Time basis:` bullet naming the compilation, the
+   67.0% coverage, the two date sources and what the split cannot test. Evidence in `~/claude_jobs/qsar_dating2/`.
+
 ## Reference
 
 @article{grisoni2016investigating,
