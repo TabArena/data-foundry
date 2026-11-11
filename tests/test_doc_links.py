@@ -21,7 +21,9 @@ DOCS = [
         for name in ("AGENTS.md", "CLAUDE.md", "README.md", "CONTRIBUTING_DATASETS.md", "DATA_FOUNDRY_V1.md")
     ),
     *(ROOT / "datasets" / "_dev" / "tabarena-v0pt2" / name for name in ("README.md", "GETTING_STARTED.md")),
-    *sorted((ROOT / "datasets" / "_dev" / "tabarena-v0pt2").glob("*/REVIEW.md")),
+    ROOT / "datasets" / "_dev" / "tabarena-v0pt2" / "REVIEW.md",
+    # The records with a review: its links were written relative to a dataset folder before 2026-11-11.
+    *(p for p in sorted((ROOT / "curation" / "records").glob("*.md")) if "\n## Review\n" in p.read_text()),
 ]
 LINK = re.compile(r"(?<!\!)\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 FENCE = re.compile(r"^(```|~~~).*?^\1", re.MULTILINE | re.DOTALL)

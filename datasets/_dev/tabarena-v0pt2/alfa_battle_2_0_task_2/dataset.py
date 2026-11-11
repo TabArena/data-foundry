@@ -115,8 +115,9 @@ LINK_FIELDS = (  # field and bits: two transactions are the same when the day, t
     ("ecommerce_flag", 2),
 )
 
-# Test windows: the 3 newest pairs of issue months; train is every earlier month (see `_make_splits`).
-SPLIT_WINDOWS = TemporalSplits(window=2, unit="unique", n_windows=3)
+# Test windows: the pairs of issue months 22-23, 20-21 and 14-15 (CC 2026-11-11); train is every earlier month
+# (see `_make_splits`).
+SPLIT_WINDOWS = TemporalSplits(window=2, unit="unique", cutoffs=(22, 20, 14))
 
 
 def pivot_values(paths: list[Path]) -> dict[str, list[int]]:
@@ -498,8 +499,9 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
             " and out, recent activity)."
         ),
         split=(
-            "Each test window is two months of issues at the end of the period; training is every earlier issue, "
-            "without the products of clients who also have one in the test window."
+            "Each test window is two of the 24 issue months: the newest, months 22-23, then months 20-21 and months "
+            "14-15, the last in the other half of the second year; training is every earlier issue, without the "
+            "products of clients who also have one in the test window."
         ),
         changes=(
             "We reconstruct the issue month from the transactions, as the data has no dates, and summarise the "
@@ -552,7 +554,7 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
 
         - Prediction point: a credit product is issued. The bank knows the product type and the client's card transactions of the preceding year (Alfa-Bank on Habr, 2021). The target `default` is the source's flag "1 - факт ухода в дефолт" (1: the applicant defaulted), with no horizon stated.
         - Features: the source is an event sequence per product; we aggregate it like the competition's top solutions (record), whose boosting reached 0.774-0.780 private ROC AUC against 0.737 public for the organizers' 127-feature baseline. Their label encodings, embeddings and sequence-model scores are modelling steps and stay out.
-        - We restore rubles (`exp(amnt * 17.8209) - 1`, as the 1st, 9th and 15th place did; about 70% come out whole within a kopeck, the rest are real kopeck prices, and that share peaks sharply at this scale) and aggregate: amount, gap and recency statistics; count share, amount share and mean amount per value of ten coded columns and of the 30 most frequent `mcc` and `card_type` codes; distinct values, mode and last values; money in (`income_flag` 2) against out and twelve 30-day blocks; daily activity; a running balance proxy; the last 30 and 90 days. Four features that copy another on every row are dropped (`COPY_COLUMNS`), leaving 508 aggregates. LightGBM with default settings: ROC AUC 0.779 / 0.763 / 0.761 on the windows, newest first (before the 4 copies were dropped).
+        - We restore rubles (`exp(amnt * 17.8209) - 1`, as the 1st, 9th and 15th place did; about 70% come out whole within a kopeck, the rest are real kopeck prices, and that share peaks sharply at this scale) and aggregate: amount, gap and recency statistics; count share, amount share and mean amount per value of ten coded columns and of the 30 most frequent `mcc` and `card_type` codes; distinct values, mode and last values; money in (`income_flag` 2) against out and twelve 30-day blocks; daily activity; a running balance proxy; the last 30 and 90 days. Four features that copy another on every row are dropped (`COPY_COLUMNS`), leaving 508 aggregates. LightGBM with default settings: ROC AUC 0.779 / 0.763 / 0.761 on the windows of 2026-10-26 (months 22-23, 20-21 and 18-19), newest first (before the 4 copies were dropped).
         - The coded values and the 30 most frequent codes are chosen over all transactions, test windows included: a pipeline choice that approximates the task (a deployed model would choose from its own history), not a value computed from test rows; kept (Lennart, 2026-10-19).
         - Two codes of the source become missing values before aggregating: `amnt` 0.0, which "corresponds to missing values", and `hour_diff` -1, which marks the first transaction of the window. Counts include every transaction, and a statistic over no known amount stays missing.
         - Time: the data has no dates, but later applications have a later `app_id`. The week code of each product's latest transaction splits `app_id` into 24 runs, one per issue month (`rolling_months`); `calendar_months` moves 292 products at the month edges to the month whose calendar fits them, and `issue_calendar` finds one issue date per month (first decision; `app_id` 0-4 stay in month 0). We keep `issue_month` (0-23) as the time column and drop `app_id` and the latest-transaction fields, which only date the issue.
@@ -576,15 +578,20 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        A scoring model is refit on all products issued so far and used for the next two months. We use 3 test windows of two issue months each, newest first: months 22-23, 20-21 and 18-19, each training on all earlier months. From each training side we remove the products of clients that also have a product in the test window (curation_comments, "Repeat clients"): their default flags were most likely not known when the test products were issued. The competition trained on the issues of a period and tested on the issues of the following period (Alfa-Bank, habr.com/ru/companies/alfa/articles/551130); its test labels are not public, so we split the 24 labelled months, and 3 windows of 7 months would leave 58%, 27% and 6% of the data for training. The flag of any product issued in the 12 months before a window may still change after the window starts, so the other training products of those months hold labels a deployed model would not have had yet; a 12-month gap would leave 13-27% of the rows for training, a 6-month gap 35-53%. At equal training size, a 6-month gap lowers untuned LightGBM by 0.014-0.015 ROC AUC on the newest and the oldest window, an upper bound on that optimism (it mixes in the cost of older training data).
+        A scoring model is refit on all products issued so far and used for the next two months. No source gives a horizon or a refit cadence, so the two months are a convention (CC 2026-11-11): the competition trained on the issues of a period and tested on the issues of the following period (Alfa-Bank, habr.com/ru/companies/alfa/articles/551130) without naming either length. We use 3 test windows of two issue months each, newest first: months 22-23, the newest; months 20-21, the months of the highest default rate (3.36%); and months 14-15, in the other half of the second year (months 12 to 17), which the newest pairs leave out (CC 2026-11-11, in place of months 18-19). Each trains on all earlier months. From each training side we remove the products of clients that also have a product in the test window (curation_comments, "Repeat clients"): their default flags were most likely not known when the test products were issued. The windows hold 120,428, 107,844 and 90,937 products and train on 804,162, 702,678 and 396,171 after the filter removes 39,221, 32,861 and 21,497 (83.4%, 72.9% and 41.1% of the 963,811 rows; 87.5%, 76.3% and 43.3% before it). Months 14-15 train on less than half the rows (41.1%), beside 83.4% and 72.9%. The default rate is 3.02%, 3.36% and 2.70% in the windows (2.78%, 2.67% and 2.45% on the train sides). The competition's test labels are not public, so we split the 24 labelled months, and 3 windows of 7 months would leave 58%, 27% and 6% of the data for training. The flag of any product issued in the 12 months before a window may still change after the window starts, so the other training products of those months hold labels a deployed model would not have had yet; a 12-month gap would leave 3-27% of the rows for training, a 6-month gap 20-53% (before the filter). At equal training size, a 6-month gap lowers untuned LightGBM by 0.014-0.015 ROC AUC on the newest and the oldest window of 2026-10-26 (months 22-23 and 18-19), an upper bound on that optimism (it mixes in the cost of older training data).
 
-        Exception to SPLIT-10 (2026-10-21, Lennart): the data has no label dates and a default can be flagged up to a year after the issue, so a gap of the label delay leaves 13-27% (12 months) or 35-53% (6 months) of the rows for training, below the 50% floor. Serves SPLIT-14 (Must). SPLIT-9 is met by removing the measurable shortcut, the products of the test window's clients; the diffuse rest of unmatured labels falls under SPLIT-10 (principles.md, Tensions). No gap (gap 0; Lennart, 2026-10-26).
+        Exception to SPLIT-10 (2026-10-21, Lennart): the data has no label dates and a default can be flagged up to a year after the issue, so a gap of the label delay leaves 3-27% (12 months) or 20-53% (6 months) of the rows for training in the windows of 2026-11-11 (13-27% and 35-53% in those of 2026-10-21), below the floor. Serves SPLIT-14 (Must). SPLIT-9 is met by removing the measurable shortcut, the products of the test window's clients; the diffuse rest of unmatured labels falls under SPLIT-10 (principles.md, Tensions). No gap (gap 0; Lennart, 2026-10-26).
     """
-    temporal = Temporal(on="issue_month", horizon=2, horizon_unit="months")
+    temporal = Temporal(on="issue_month", horizon=2, horizon_unit="months", time_unit="months")
     accepted_check_warnings = {
-        "splits_rows_unused": "By design: these products of months 0-17 belong to clients with a product in each of "
-        "the three test windows, so the repeat-client filter removes them from every training side (curation_comments, "
-        "'Repeat clients').",
+        "splits_rows_unused": "By design: these 1,121 products belong to clients with a product in every test window "
+        "whose training side holds them (181 of months 0-13, on all three training sides; 940 of months 16-19, on the "
+        "training sides of months 22-23 and 20-21 only), so the repeat-client filter removes them from every training "
+        "side (curation_comments, 'Repeat clients').",
+        "splits_train_under_half": (
+            "Signed off (Lennart, 2026-11-11, review issue 5, b): months 14-15 train on 41.1% of the rows after the "
+            "repeat-client filter, beside months 22-23 and 20-21 on 83.4% and 72.9%; SPLIT-14's two tiers admit it."
+        ),
     }
 
     # The raw transactions (270M rows) are aggregated and linked once; `_load_raw` starts from the result.

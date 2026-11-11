@@ -210,8 +210,8 @@ class RainInAustralia(AbstractCuratedDataset):
             "day at the other locations whose 9 am comes no later."
         ),
         split=(
-            "26 test windows of 14 days, one after the other from February 2025 to January 2026, newest first; "
-            "each trains on every earlier day, as for a model refit every two weeks."
+            "26 test windows of 14 days, one every 16 weeks from May 2018 to January 2026, so that dry and wet years "
+            "are tested, newest first; each trains on every earlier day, as for a model refit every two weeks."
         ),
         changes=(
             "We replace the ten values recorded after 9 am by the previous day's, drop the rain amount behind the "
@@ -307,7 +307,7 @@ class RainInAustralia(AbstractCuratedDataset):
           dropped rows carry a label over 48 hours or more (42.6% rain days against 21.8%), another quantity than the
           24-hour call of the task (USE-5; CC 2026-10-26).
         - Rainfall and RainToday (Rainfall > 1 mm in every row) are the location's 9 am gauge reading on D, i.e. the
-          label of D-1, known at the prediction point. They add 0.0027 ROC AUC on the 9 shipped windows (LightGBM,
+          label of D-1, known at the prediction point. They add 0.0027 ROC AUC on the 9 windows shipped until 2026-10-26 (LightGBM,
           0.8495 with them, 0.8467 without; log loss 0.3516 against 0.3549), and the features without the location's
           rain series beat persistence and the location-by-month climatology in 9 of 9 windows, so the skill does not
           come from the lagged target. A forecast of the rain amount from the location's own rain series with a > 1 mm
@@ -348,6 +348,7 @@ class RainInAustralia(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 3 are calendar or compass cycles, in
           their usual order (the wrap is not shown); codes that mean unknown are missing (CLEAN-10).
+        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): 12 station readings are missing in a test fortnight and recorded on its train side, as a station's instrument goes offline: Newcastle's rainfall and 9 am humidity (recorded on half the days or more only up to 2020), Sale's 9 am pressure (up to 2017), Launceston's 9 am pressure (up to 2013), and gaps of weeks at Coffs Harbour, Badgerys Creek, Mount Ginini, Nhil and Wagga Wagga. Kept: a deployed model meets the same outages.
     """
 
     # Task
@@ -361,19 +362,70 @@ class RainInAustralia(AbstractCuratedDataset):
     )
 
     # Splits
-    temporal = Temporal(on="Date", splits=TemporalSplits(window=14, unit="days", n_windows=26))
+    temporal = Temporal(
+        on="Date",
+        splits=TemporalSplits(
+            window=14,
+            unit="days",
+            cutoffs=(
+                "2026-01-17",
+                "2025-09-27",
+                "2025-06-07",
+                "2025-02-15",
+                "2024-10-26",
+                "2024-07-06",
+                "2024-03-16",
+                "2023-11-25",
+                "2023-08-05",
+                "2023-04-15",
+                "2022-12-24",
+                "2022-09-03",
+                "2022-05-14",
+                "2022-01-22",
+                "2021-10-02",
+                "2021-06-12",
+                "2021-02-20",
+                "2020-10-31",
+                "2020-07-11",
+                "2020-03-21",
+                "2019-11-30",
+                "2019-08-10",
+                "2019-04-20",
+                "2018-12-29",
+                "2018-09-08",
+                "2018-05-19",
+            ),
+        ),
+    )
+    accepted_check_warnings = {
+        "splits_feature_missing_in_test": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): 12 station readings missing in a test fortnight while a "
+            "station's instrument is offline (curation_comments)."
+        ),
+    }
     splits_comment = """
         Weather models are refit often (one to two weeks, the horizon the curators set for
-        climate_model_weather_forecasting), so a model is refit and then used every morning for 14 days. 26 test windows
-        of 14 days, one after the other from 2025-02-01 to 2026-01-30, newest first, so that the windows cover every
-        season of the last year (6-7 per season); train is every earlier day (from 2007-11-01), at least 93.8% of the
-        rows. Each window holds 619-642 location-days with 63-222 rain days, 16,457 test rows in all. The window AUCs
-        vary as much as the earlier 9 windows' (standard deviation 0.04-0.05), so the count of windows sets how steady
-        the mean is: its standard error is 0.008 against 0.016 for 9 windows spaced six weeks apart (LightGBM; the
-        correlation of neighbouring windows, 0.24, makes it about 0.010) (CC 2026-10-26). No gap: the label of the last
-        training day is read at 9 am on the first test day, before the first prediction. The history has a break (no
-        rows from 2016-01-27 to 2017-02-28) and Sunshine and Evaporation are missing far more often after it; training
-        from 2017-03 gives ROC AUC 0.842 against 0.847 with the full history, so the old years do no harm.
+        climate_model_weather_forecasting), so a model is refit and then used every morning for 14 days. No source names
+        a refit cadence (rattle's weatherAUS is a sample dataset and defines no task), so the length is the one set for
+        weather (the horizon checked, CC 2026-11-11). 26 test windows of 14 days, one every 16 weeks (112 days) from
+        2018-05-19 to 2026-01-30, newest first (CC 2026-11-11): the fortnights that keep half the rows for training
+        start from 10 February 2018, and the windows are spread evenly over those eight years, so the score meets the
+        dry and the wet years as well as the last one. The share of rain days in a twelve-month block (February to
+        January) runs from 17.8% in 2019-20 (the Bureau's warmest and driest year on record, 2019) to 27.2% in 2022-23
+        (the La Niña years 2020-2023 hold the most), against 21.5% in the last year. A step of 16 weeks moves the
+        season by about 3.7 months each time, so the windows start in every calendar month two or three times. Train
+        is every earlier day (from 2007-11-01): 137,157 to 263,940 rows, 51.8% to 99.8% of the 264,562. Each window
+        holds 606-669 location-days with 55-202 rain days, 16,484 test rows in all. Why 26 windows and not the nine
+        folds a random split of this size gets: a 14-day window (the rule on short weather windows) holds only about
+        630 location-days, so 26 windows keep the test rows (16,484, as many as the 16,457 of the 26 back-to-back
+        fortnights of the last year shipped from 2026-10-26 to 2026-11-11). On those back-to-back fortnights the
+        window AUCs varied as much as the earlier 9 windows' (standard deviation 0.04-0.05), so the count of windows
+        sets how steady the mean is: its standard error was 0.008 against 0.016 for 9 windows spaced six weeks apart
+        (LightGBM; the correlation of neighbouring windows, 0.24, made it about 0.010) (CC 2026-10-26). No gap: the
+        label of the last training day is read at 9 am on the first test day, before the first prediction. The history
+        has a break (no rows from 2016-01-27 to 2017-02-28), before every window, and Sunshine and Evaporation are
+        missing far more often after it; training from 2017-03 gives ROC AUC 0.842 against 0.847 with the full history
+        (on the 9 windows shipped until 2026-10-26), so the old years do no harm.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -470,7 +522,10 @@ class RainInAustralia(AbstractCuratedDataset):
         )
 
         options = {
-            "14 days, contiguous, 26 windows (shipped)": self.temporal.splits,
+            "14 days, every 16 weeks, 26 windows (shipped)": self.temporal.splits,
+            "14 days, contiguous, 26 windows (2026-10-26 to 2026-11-11)": TemporalSplits(
+                window=14, unit="days", n_windows=26
+            ),
             "14 days, every 6 weeks, 9 windows": TemporalSplits(window=14, unit="days", n_windows=9, step=42),
             "14 days, every 3 weeks, 18 windows": TemporalSplits(window=14, unit="days", n_windows=18, step=21),
             "7 days, every 6 weeks": TemporalSplits(window=7, unit="days", n_windows=9, step=42),
@@ -518,11 +573,12 @@ class RainInAustralia(AbstractCuratedDataset):
                 accumulated,
             ),
             Decision(
-                "26 two-week test windows, one after the other over the last year",
+                "26 two-week test windows, one every 16 weeks over eight years",
                 "The source gives no refit cadence; for weather the curators set one to two weeks "
-                "(climate_model_weather_forecasting). 26 contiguous two-week windows cover every season of the last "
-                "year with three times the test rows of 9 windows spaced six weeks apart, which halves the standard "
-                "error of the mean score (CC 2026-10-26).",
+                "(climate_model_weather_forecasting). 26 two-week windows hold three times the test rows of 9 windows "
+                "spaced six weeks apart, which halves the standard error of the mean score (CC 2026-10-26); one every "
+                "16 weeks over the eight years that keep half the rows for training, they meet the dry and the wet "
+                "years and start in every calendar month two or three times (CC 2026-11-11).",
                 pd.DataFrame(rows).T,
             ),
             Decision(

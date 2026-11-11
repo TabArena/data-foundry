@@ -26,7 +26,7 @@ class AmexNonIid1m(AbstractCuratedDataset):
         ),
         row=(
             "One monthly statement of an American Express credit card customer; a customer has 1 to 13 statements, "
-            "and the prediction is made once per customer, at the latest one (124,466 customers)."
+            "and the prediction is made once per customer, at the latest one (458,913 customers)."
         ),
         predicted=(
             "Whether the customer defaults on a payment in the 18 months after the latest statement. The source kept "
@@ -89,7 +89,7 @@ class AmexNonIid1m(AbstractCuratedDataset):
           B_38). `_clean` sets them back to missing (CLEAN-10, 2026-10-30).
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
-        - The row budget: We sub-sample the frame to 1.5M rows by whole customers (stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol).
+        - The row budget (1M train, 500k test rows): We keep the whole frame (5,531,451 statements of 458,913 customers) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole customers drawn from its third and stratified on the target, and trains on every other row (about 5.03M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole customers at random, stratified on the target.
     """
 
     # Task
