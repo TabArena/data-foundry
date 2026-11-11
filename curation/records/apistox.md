@@ -8,7 +8,9 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
-- 'Samples: No Time Dimension'
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - New (BeyondArena)
 original_source: Other
@@ -59,3 +61,9 @@ ApisTox: a new benchmark dataset for the classification of small molecules toxic
 By Jakub Adamczyk, Jakub Poziemski, Paweł Siedlecki. 2024
 
 Published in Scientific Data 12:5 (2025), doi 10.1038/s41597-024-04232-w; preprint on arXiv (2024).
+
+CC (2026-11-11, Andrej): collection facts corrected to `Samples: Over Time`, `Time: Dated` and `Target: Varying Delay` (review issue 1, C), so that the record says what the definition's split already does.
+- The definition splits the compounds into four ten-year windows by `first_publication_year`, the year the compound first appears in the literature, as the authors' own time split; the record still carried `Samples: No Time Dimension`.
+- The collection facts describe the source whatever task is built on it, and a catalogue whose items enter in eras arose over time even where each item's own property is fixed.
+- `Target: Varying Delay`: the curation notes record that bee tests of old compounds were often published decades later, so a label is not always known at its window's cutoff.
+- The definition is unchanged: a temporal split carries no time-basis tag.

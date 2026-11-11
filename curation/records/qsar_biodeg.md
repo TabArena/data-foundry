@@ -8,7 +8,10 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
+- WIP (DF)
+claimed_by: Andrej
 suggestion: 'Yes'
+priority: 2
 tags:
 - Non-IID (Grouped)
 - 'Samples: No Time Dimension'
@@ -63,6 +66,8 @@ sources, Cheng et al. and the Canadian DSL database" (Chakravarti and Alla, arXi
 of the 670 canonical structures occur here, one of them with the opposite class. The other record notes that its
 most useful role may be as an external check on this dataset's scaffold split rather than as a dataset of its
 own.
+
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the folder's `REVIEW.md`. Ship: v0.2's structures and scaffold split settle the soft objections in Andrej's dispute, the leak/separation/duplicate objections failed when tested, and the larger Huang and Zhang set is to be weighed against it once added. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
 
 ## Reference
 

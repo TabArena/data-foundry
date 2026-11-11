@@ -3,6 +3,7 @@ unique_name: nci_aids_antiviral_screen
 name: NCI DTP AIDS Antiviral Screen data (aids_conc_may04, with the AIDO99SD structure file)
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -10,7 +11,7 @@ priority: 4
 tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
-- 'Time: Dated'
+- 'Time: Inferred'
 collections:
 - ChemPile
 original_source: GOV Website
@@ -143,3 +144,9 @@ CC (2026-11-02, Lennart): on the priority after the binary merge removed the mul
 CC (2026-11-02, Lennart): PR #15 is merged, so the dataset is in Data Foundry: `DF: Yes`, and the claim is released
 (board and record). The definition is `datasets/_dev/tabarena-v0pt2/nci_aids_antiviral_screen/`; nothing is built
 yet, and the build waits for the curator's ask together with the other molecule datasets.
+
+CC (2026-11-11, Andrej): the scaffold-grouped split is kept and `Time: Dated` corrected to `Time: Inferred` (review issues 1 A and 2 B).
+- The NSC number is the NCI's registration order, not the order compounds entered the screen: the numbers run from 48 to 706,805 and about a quarter of the compounds sit below 609,000, registered into the repository long before the screen began.
+- Measured on four windows from the highest numbers down, each trained on every lower number (Slurm 1377598): by registration order ROC AUC 0.749 (LightGBM) and 0.774 (random forest) with 8.4% of test compounds keeping a close training analog and a third of their scaffolds in training; scaffold-disjoint 0.717 and 0.739 with 4.3%; random 0.762 and 0.770 with 9.8%; the shipped scaffold folds 0.786 and 0.796.
+- So a forward split on this order leaves a test compound a third of its own series in training and follows an order the screen never ran in; the series grouping is what the screening use case asks for.
+- No public table maps NSC numbers to registration dates, and PubChem's DTP records give deposit dates rather than registration dates, so only the order survives, which is `Time: Inferred`.

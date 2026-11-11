@@ -17,7 +17,9 @@ against PSIPRED, as the notes cite from Sections 2.2-2.3; EV-7). No action propo
 
 **Main points:** Three changes the panel could not make itself: drop the relaxed natives (issue 4), let models see a
 protein's other candidates (issue 5) and fix the metric's left-out proteins in the library (issue 6); then the
-`Outdated` consistency check (7), a SEL-9 Tensions row (8) and whether `huesken_sirna_efficacy` follows issue 5 (9). Open: the split count, 20 x 3 in proteins instead of 3 x 3 (issue 10).
+`Outdated` consistency check (7), a SEL-9 Tensions row (8) and whether `huesken_sirna_efficacy` follows issue 5 (9).
+Open: the split count, 20 x 3 in proteins instead of 3 x 3 (issue 10). Added 2026-11-11: split by CASP round
+instead of by protein (11), and what happens to CASP10 under that split (12).
 
 **Issues for Lennart:**
 
@@ -291,6 +293,94 @@ protein's other candidates (issue 5) and fix the metric's left-out proteins in t
    **Notes for the AI:** on B, `dataset check` (the definition is unchanged; the protocol gives 20 x 3), a CC line in
    the record, CHANGELOG. On C, a `splits_comment` naming the measurement and the exception, and a SPLIT-33 Cases
    row. Evidence: `~/claude_jobs/protein_splits/` (run.py, res_*.csv, summary.txt).
+
+11. **Split by CASP round (each round predicted from the decoy sets and the earlier rounds) instead of by protein?**
+
+    * **Problem:**
+      - The use case ranks the candidates of a new target, and CASP itself is a blind test of the next round, with
+        the source's own files training on CASP5-9 and validating on CASP10.
+      - The shipped split holds out proteins at random across all rounds, so a test protein of one round trains next
+        to proteins of later rounds and of its own round.
+      - CASP10's descriptors follow another convention than CASP5-9, which only its own round's targets can teach, so
+        the protein key lets a model score on something a group facing a new round would not hold[^11a].
+    * **Background:** no canonical protein appears in two CASP rounds or in a decoy set, so the protein key already
+      keeps the targets apart and what a split by round adds is the order; CASP10's descriptors follow another
+      convention than CASP5-9 (its sequence length varies within all 67 of its targets, within none of CASP6-9's),
+      which only other CASP10 targets in training can teach.
+    * **Experiments:** the definition's 94,083 rows and 445 proteins rebuilt (counts asserted); each CASP round as one
+      test window. T is trained on all decoy rows and every earlier round. S is as many rows drawn from every other
+      round and decoy set, with no test protein (the shipped kind of split; mean of 3 draws). D is the decoy sets alone.
+      G is a grouped 3-fold over all rows, scored on each round; over all rows it reproduces the review's 0.322 and
+      0.483. Features: "raw" are the six shipped descriptors; "ctx" adds each descriptor's z-score and rank within its
+      protein, SL over the protein's largest SL and the protein's size, as `context="all_rows"` allows. Untuned
+      LightGBM and random forest, mean per-protein Pearson (the declared metric), Slurm job 1377541:
+
+      | Test round | Proteins / rows | T trains on (share) | Features | T: LightGBM / RF | S: LightGBM / RF | D: LightGBM / RF | G: LightGBM / RF |
+      |---|---|---|---|---|---|---|---|
+      | CASP7 | 51 / 4,515 | 67,172 (71%) | raw | 0.301 / 0.307 | 0.340 / 0.349 | 0.075 / 0.193 | 0.371 / 0.368 |
+      | | | | ctx | 0.383 / 0.399 | 0.451 / 0.425 | 0.116 / 0.132 | 0.456 / 0.444 |
+      | CASP8 | 74 / 6,826 | 71,687 (76%) | raw | 0.338 / 0.309 | 0.346 / 0.305 | 0.119 / 0.157 | 0.343 / 0.300 |
+      | | | | ctx | 0.436 / 0.400 | 0.452 / 0.430 | 0.142 / 0.146 | 0.450 / 0.431 |
+      | CASP9 | 77 / 8,237 | 78,513 (83%) | raw | 0.472 / 0.477 | 0.451 / 0.451 | 0.262 / 0.319 | 0.461 / 0.461 |
+      | | | | ctx | 0.558 / 0.533 | 0.569 / 0.550 | 0.288 / 0.286 | 0.594 / 0.563 |
+      | CASP10 | 67 / 7,333 | 86,750 (92%) | raw | 0.005 / 0.018 | same pool as T | 0.053 / -0.013 | 0.085 / 0.068 |
+      | | | | ctx | -0.002 / -0.114 | same pool as T | 0.123 / -0.097 | 0.617 / 0.594 |
+
+      - CASP7: T trails S by 0.03 to 0.07, with fewer CASP rows in training (7,400 against S's 22,400 on average; not
+        tested as the cause). CASP8 and CASP9: within 0.03 either way.
+      - Every training side holds 71% or more of the rows. The decoy sets alone score far lower (0.08 to 0.32), so the
+        earlier rounds carry most of what transfers.
+      - Setting CASP10's SL to its protein's largest SL does not rescue the window (-0.15 to -0.01).
+    * **Effect on the task:** for CASP5-9 the split by round and the protein split test nearly the same thing. They
+      part on CASP10, where the protein split rewards a model for learning a descriptor convention from other targets
+      of the same round, which a group ranking the next round's candidates does not have.
+    * **Options:**
+
+      | | Option | What it does | Pro | Con |
+      |---|---|---|---|---|
+      | A | Protein split (implemented) | as now | nothing to change; every row can be a test row | CASP10's score comes from same-round siblings; the order of the rounds is not tested |
+      | B | By CASP round | test windows CASP7, CASP8, CASP9 (and CASP10, issue 11), each trained on the decoy sets and the earlier rounds | the use case and CASP's own design; the source's own CASP5-9 / CASP10 split | the decoy sets (64% of rows) are never test rows; three or four windows of 51-77 proteins |
+
+    * **Recommendation:** B: the use case is the next round and the source splits that way. Through CASP9 the scores
+      barely move, so B costs little where the data is consistent and shows the break where it is not.
+      **Decision:** A or B?
+
+    **Notes for the AI:** on B, a `casp_round` column parsed from the row id (case-insensitive `casp5_` counts as
+    CASP5; `fisa_casp3_*` is a decoy set, not a round) with the decoy rows dated before CASP5; `temporal =
+    Temporal(on="casp_round", splits=TemporalSplits(window=None, unit="unique", ...))`, the decoy sets always in
+    training; keep `context="all_rows"` (the grouping becomes the context key only, as decided in issue 5); check the
+    windows against the floor that every training side holds 50% of the rows or more; task summary `split`, `splits_comment`
+    and a curation bullet with the table; scripts in `~/claude_jobs/catalogue_splits/protein/`; `dataset check`,
+    CHANGELOG, record CC with `Andrej` in `checked_by`.
+
+    [^11a]: **SPLIT-34** (Should, proposed with this issue): in a catalogue of items whose target is a fixed property,
+      the item, its family and when it entered the catalogue are three keys that test different things; when the
+      actor predicts for items found later and the source dates them, a family key still trains on later families and
+      on siblings of the same batch, the date does not. **SPLIT-32** (Should): a sample's target or its relation to the
+      features can move with the period through how the features are recorded (a new instrument, a new convention).
+
+12. **If the split goes by CASP round (issue 11 B): keep CASP10 as a test window, keep it in training only, or drop
+    it?**
+
+    * **Problem:**
+      - CASP10's inputs are not the ones the earlier rounds carry, so what CASP5-9 teaches does not reach it
+        (-0.11 to 0.02 per-protein Pearson, issue 11's table).
+      - The panel's mediator read it the same way, as another descriptor pipeline rather than a harder round.
+      - A window of that kind measures the change of pipeline rather than the models.
+    * **Background:** the mediator's figures were a per-protein Pearson of 0.006 and a top-1 GDT_TS loss of 0.317,
+      against 0.224 for picking a candidate at random.
+    * **Options:**
+
+      | | Option | What it does | Pro | Con |
+      |---|---|---|---|---|
+      | A | CASP10 as a window (implemented) | four windows; its 7,333 rows stay, as they are in the dataset now | the source's own validation round; shows what a pipeline change does | a window of noise for every model; ranks by chance there |
+      | B | CASP10 in no window | three windows (CASP7-9); CASP10 rows dropped (as the newest round, it could only be a test window) | the windows test one pipeline | 7,333 rows and the newest round leave; the notes say why |
+
+    * **Recommendation:** B, with the measurement in the notes: a window where every model scores 0 measures the
+      descriptor break, not the models. **Decision:** A or B (only if issue 11 is B)?
+
+    **Notes for the AI:** on B, drop the CASP10 rows in `_clean` with the count and the reason in a curation bullet;
+    check that the alias map still resolves every remaining protein.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's review of PR #33 on 2026-11-04.
 Claims: 43 listed, 19 audit rows: 12 hold, 2 refuted (the "each such row has a same-length sibling" note, now 132 of
