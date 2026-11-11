@@ -7,10 +7,9 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-suggestion: No (Retired)
+suggestion: 'Yes'
 decision_markers:
 - Class-dependent Recording
-- No Good Target / Scientific Discovery
 tags:
 - New IID
 - Many features
@@ -21,14 +20,16 @@ original_source: Other
 year: '2001'
 domain: medical & healthcare
 required_split:
-- Grouped (NON-IID)
-problem_type: Multiclass Classification
+- Random (IID)
+problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE83227 (origin: the study''s deposit of all 254 arrays, per-array MAS5 files; used since 2026-11-10)'
 - 'https://www.pnas.org/doi/10.1073/pnas.191502998#supplementary-materials (data set A of the paper''s supplement, dataseta_12600gene.xls: per-patient means of MAS4 values)'
 - https://www.openml.org/d/45093 (later copy of data set A)
+- 'https://ftp.ncbi.nlm.nih.gov/geo/series/GSE83nnn/GSE83227/suppl/GSE83227_caArray_meyer-00191.tar.gz (the study''s annotation sheet SampleData.xls, sheet DATASET B: the metastasis flags, the target since 2026-11-11)'
 notebook_path: datasets/beyond_iid/new_iid/lung_cancer/lung_cancer.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/lung_cancer/dataset.py
 source_row: 1033
 type_adapter_id: curation-record-v1
 ---
@@ -82,6 +83,14 @@ CC (2026-11-10, Andrej): retired (`No (Retired)`, `No Good Target / Scientific D
 - **Other targets checked** from the study's annotation sheet (GEO's caArray archive, `SampleData.xls`): metastasis from another organ vs primary, ROC AUC 0.861 but 16 cases, about 5 per test fold (too few to rank methods); death within 24/36/60 months after resection, expression 0.58/0.55/0.51 against 0.49-0.52 on shuffled labels, while stage and age reach 0.63/0.71/0.80 (not a gene-expression task); lymph-node involvement 0.60 (staged at surgery anyway).
 - **Not a rule change:** an expert annotation stays a valid target; the dataset fails the use case (no actor, moment or decision for these rows), as glioma_grading_clinical_and_mutation_features did. A dataset of ambiguous small biopsies labelled by the later resection would be a real task.
 - Folder removed and `v2_path` cleared; the GEO rebuild of issue 1 is the commit before this retirement. Issues 4 and 5 of the review are closed with this decision.
+
+CC (2026-11-11, Andrej): retirement reversed and the dataset re-targeted to metastasis against primary lung adenocarcinoma (BeyondArena v0.2 review page, issue 7, B): the task the source names, on the arrays rebuilt from GEO on 2026-11-10.
+- **The source's own task:** "A key issue in lung tumor diagnosis is the discrimination of a primary lung adenocarcinoma from a distant metastasis to the lung" (Bhattacharjee et al. 2001, Results); the histology stays retired, since the slide settles it on resected tumours.
+- **The label comes from outside the arrays:** the study's annotation sheet (`SampleData.xls`, sheet DATASET B, in GEO's caArray archive) flags 16 of 139 adenocarcinomas as possible metastases (8 colon, 4 breast, 4 other) from the clinical history and pathology report, a work-up separate from the profile.
+- **Not too small:** the 2026-11-10 bullet "too few to rank methods" was the AI's judgment, not a rule. On 127 rows with 5 or 6 metastases per test fold, the task probe raises no flag (random forest ROC AUC 0.887, ahead of the class shares on 30 of 30 splits; SVM 0.885, TabPFN 3.5 0.882, logistic regression 0.850, k-nearest neighbours 0.779), and the unfitted marker genes a pathologist stains for reach 0.819.
+- **Changes made:** target `Metastasis` (binary) from the sheet; rows the 127 adenocarcinomas with a clinical history (the 12 `A` patients have none); one array per tumour as before; metric ROC AUC (fallback; log loss rewards overconfidence on 5 positives per fold); random split, one tumour per patient; `problem_type` Binary, `required_split` Random (IID), `v2_path` restored, the caArray archive added to `source_links`.
+- **Open:** which flagged rows count as metastases (soft "c/w" and "?" calls; one flag whose pathology note reads only "ad 5.0 m BAC"; the paper's colon cluster held 7 previously diagnosed metastases against 8 colon flags): `REVIEW.md`, issue 8.
+
 
 ## Reference
 

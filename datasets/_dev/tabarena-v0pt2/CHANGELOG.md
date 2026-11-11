@@ -1,5 +1,18 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11, lung_cancer back, re-targeted to metastasis against primary (Andrej; no container built)
+
+- lung_cancer (BeyondArena v0.2 review page, issue 7, B): the retirement of 2026-11-10 is reversed and the folder
+  restored with a new target. `Metastasis` is the study's flag of a possible metastasis from another organ (sheet
+  DATASET B of `SampleData.xls` in GEO's caArray archive, now downloaded: 16 of the 127 adenocarcinomas with a
+  clinical history, 8 colon, 4 breast, 4 other), the task the source names as "a key issue in lung tumor diagnosis".
+  Binary, ROC AUC (fallback), random stratified split, one tumour per patient; the 12 `A` patients without clinical
+  annotation, the other histologies and the normal lung samples leave. The arrays are unchanged from the GEO rebuild
+  (one MAS5 array per tumour). The task probe raises no flag (random forest 0.887, logistic regression 0.850,
+  5 or 6 metastases per test fold). Record `Yes`, Binary, Random (IID), `v2_path` restored; Cases rows under USE-1
+  (rewritten) and TP-5 (new); tcga_lung_histology's assessment notes the change. Which flags count is open
+  (`REVIEW.md`, issue 8).
+
 ## 2026-11-10, lung_cancer retired (Andrej; no container built)
 
 - lung_cancer (BeyondArena v0.2 review page, issue 6, B): `No (Retired)` with `No Good Target / Scientific
