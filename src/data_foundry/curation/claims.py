@@ -1,6 +1,6 @@
 """Live dataset claims: who works on which dataset right now, shared through one git branch.
 
-A claim says that one curator is working on one dataset: its curation record and its v2 folder (with ``REVIEW.md``).
+A claim says that one curator is working on one dataset: its curation record (its review included) and its v2 folder.
 Claims do not travel with the work. They live on a branch of their own (``claims`` on ``origin`` by default): one
 small YAML file per claimed dataset under ``claims/``, and a generated ``README.md`` table that GitHub shows as the
 team's board. A claim is pushed straight to that branch, with no pull request, so the other curators and their agents

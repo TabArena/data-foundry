@@ -305,6 +305,10 @@ textarea.note.big { min-height: 4.2rem; }
 .md table.opttab col.c-key { width: 2.6rem; }
 .md table.opttab col.c-option { width: 19%; }
 .md table.opttab col.c-pro, .md table.opttab col.c-con { width: 22%; }
+/* A horizon's options table (issue H) adds the size of the test windows each option tests. */
+.md table.opttab col.c-test { width: 15%; }
+.md table.opttab:has(col.c-test) col.c-pro, .md table.opttab:has(col.c-test) col.c-con { width: 18%; }
+.md table.opttab td.c-test { color: var(--ink-2); font-variant-numeric: tabular-nums; }
 .md table.opttab td.c-key { font: 600 .95rem var(--font-display); color: var(--ink-2); text-align: center; }
 .md table.opttab th.c-pro { color: var(--ok); }
 .md table.opttab th.c-con { color: var(--stop); }
@@ -537,8 +541,10 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   // The mark on the declared metric (stored as `metric: {d, note}` on the record's review document).
   const METRIC_OPTS = [["ok", "As declared"], ["change", "Change"], ["discuss", "Discuss"]];
   const METRIC_LABEL = { ok: "As declared", change: "Change", discuss: "Discuss" };
-  // The metric takes a mark until the record carries the curator's CC line that it is checked (then it is resolved).
-  const hasMetricMark = (d) => !!d.metric && !!d.folder && !d.retired && d.cat !== "decided" && !d.metricChecked;
+  // The metric is on the page only when the round asks about it (`metricMark`: the collector's --metric-marks; Lennart,
+  // 2026-11-10, "hidden unless asked for"), and takes a mark until the record carries the curator's CC line that it
+  // is checked (then it is resolved).
+  const hasMetricMark = (d) => !!d.metricMark && !!d.metric && !!d.folder && !d.retired && d.cat !== "decided" && !d.metricChecked;
   const X_OPTS = [["ok", "Go ahead"], ["leave", "Leave as is"], ["discuss", "Discuss"]];
   const FIELD_OPTS = [["update", "Take definition's value"], ["keep", "Keep record's value"]];
   /* A record-field row's buttons name the value each one leaves in the record. */
@@ -967,6 +973,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     fallback: "the default for the problem type: the source defines no unique metric",
   };
   function metricHtml(d) {
+    if (!d.metricMark) return "";
     const m = d.metric;
     if (!m) return d.folder ? '<p class="missing-note">No metric: the definition declares none and its README names none.</p>' : "";
     const link = (v) => /^https?:\/\//.test(v) ? '<a href="' + esc(v) + '" target="_blank" rel="noopener">' + esc(v) + "</a>" : escCode(v);
@@ -1040,8 +1047,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     const p = d.panel;
     if (!p) {
       const why = d.folder
-        ? "the folder\u2019s <code>REVIEW.md</code> has no <code>**Review panel:**</code> block."
-        : "this record was not added, so it has no <code>REVIEW.md</code>.";
+        ? "the record\u2019s <code>## Review</code> has no <code>**Review panel:**</code> block."
+        : "this record was not added, so no panel reviewed a definition.";
       return '<p class="intro">No review panel: ' + why + "</p>";
     }
     let h = '<p class="panelrec"><span class="k">Panel</span>' + escCode(p.recommendation) + "</p>";
@@ -1050,7 +1057,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       h += '<div class="roles">' + p.sections.map((s) =>
         '<details class="block"' + (/^mediator\b/i.test(s.title) ? " open" : "") + "><summary>" + escCode(s.title) + '</summary><div class="md">' + s.html + "</div></details>").join("") + "</div>";
     }
-    h += '<p class="srcnote">From the <code>**Review panel:**</code> block of the folder\u2019s <code>REVIEW.md</code>: the agents of <code>/add-dataset</code> that audited and debated this definition, as of this page\u2019s snapshot (' + esc(DATA.snapshot) + "). Background for your verdict; nothing to mark here.</p>";
+    h += '<p class="srcnote">From the <code>**Review panel:**</code> block of the record\u2019s <code>## Review</code>: the agents of <code>/add-dataset</code> that audited and debated this definition, as of this page\u2019s snapshot (' + esc(DATA.snapshot) + "). Background for your verdict; nothing to mark here.</p>";
     return h;
   }
   function renderCase() {

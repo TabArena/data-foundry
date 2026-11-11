@@ -483,13 +483,18 @@ def test_outcome_keywords(register, head, outcome):
     assert register.outcome_of(head) == outcome
 
 
-def _register_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
+def _register_fixture(tmp_path: Path) -> tuple[Path, Path]:
     records = tmp_path / "records"
     _record(
         records,
         "keep_scaled",
         suggestion="Yes",
         comments="CC (2026-10-01, Lennart): Kept: the features are min-max scaled over all rows, no strong leak.",
+        review=(
+            "**Outcome:** added.\n\n**Issues for Lennart:**\n\n"
+            "1. **Keep the target in decibels?** The source reports dB (LEAK-3).\n   More evidence here.\n\n"
+            "2. Drop the duplicate rows. They are copies.\n\n**Record judgment:** valid."
+        ),
     )
     _record(
         records,
@@ -529,18 +534,11 @@ def _register_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
         suggestion="Yes",
         comments="**Exception to LEAK-4 (2026-10-23, Lennart):** kept anyway. Serves P2: fine.",
     )
-    root = tmp_path / "copy"
-    (root / "keep_scaled_1m").mkdir(parents=True)
-    (root / "keep_scaled_1m" / "REVIEW.md").write_text(
-        "# keep_scaled\n\n**Outcome:** added.\n\n**Issues for Lennart:**\n\n"
-        "1. **Keep the target in decibels?** The source reports dB (LEAK-3).\n   More evidence here.\n\n"
-        "2. Drop the duplicate rows. They are copies.\n\n**Record judgment:** valid.\n"
-    )
-    return records, root, _knowledge(tmp_path)
+    return records, _knowledge(tmp_path)
 
 
 def test_collect_reads_the_three_sources(register, tmp_path):
-    """Comments, REVIEW.md issues and Cases rows become decisions with their kinds, authors and rule IDs."""
+    """Comments, the issues of a record's review and Cases rows become decisions with their kinds, authors and IDs."""
     decisions = register.collect(*_register_fixture(tmp_path))
     kinds = {}
     for d in decisions:
@@ -601,9 +599,9 @@ def test_selection_keeps_flags_with_a_selected_decision(register, tmp_path):
 
 def test_register_main(register, tmp_path, capsys):
     """The command line prints the register by rule and the flags, and writes the JSON."""
-    records, root, knowledge = _register_fixture(tmp_path)
+    records, knowledge = _register_fixture(tmp_path)
     out = tmp_path / "register.json"
-    args = ["--records", str(records), "--root", str(root), "--knowledge", str(knowledge), "--json", str(out)]
+    args = ["--records", str(records), "--knowledge", str(knowledge), "--json", str(out)]
     assert register.main(args) == 0
     text = capsys.readouterr().out
     assert "## By rule ID" in text

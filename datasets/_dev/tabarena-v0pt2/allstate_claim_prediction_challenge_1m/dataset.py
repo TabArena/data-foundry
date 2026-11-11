@@ -77,9 +77,8 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
         ),
         row=(
             "One vehicle on an Allstate policy at the start of 2006, insured in 2005 too: the renewal book, 2.75 "
-            "million of the 4.4 million vehicle-years of 2006 in the competition's labelled file, of which whole "
-            "households holding 1.5 million are sampled. The cars that joined during 2006 are left out, and the rows "
-            "of 2005 give only the history."
+            "million of the 4.4 million vehicle-years of 2006 in the competition's labelled file. The cars that "
+            "joined during 2006 are left out, and the rows of 2005 give only the history."
         ),
         predicted=(
             "The vehicle's bodily-injury liability claim payments in 2006, adjusted by Allstate to remove known "
@@ -97,9 +96,9 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
         ),
         changes=(
             "We kept the 2006 cars insured in 2005 (the renewal book) with their 2005 record as counts, without the "
-            "cars that joined in 2006; dropped 2007, whose large claims look unsettled, and one exact copy; sampled "
-            "whole households to the row budget; dropped the row number, the vehicle's number in the household, the "
-            "year and Cat10 to Cat12, which behave like random draws; and coded missing values as missing."
+            "cars that joined in 2006; dropped 2007, whose large claims look unsettled, and one exact copy; dropped "
+            "the row number, the vehicle's number in the household, the year and Cat10 to Cat12, which behave like "
+            "random draws; and coded missing values as missing."
         ),
         fit="approximate",
         fit_reason=(
@@ -165,7 +164,7 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
         - Note: held for training rows only, not shipped (cross-dataset item of 2026-11-09, Andrej): `Vehicle`, the car's number within its household, whose values run over every car the household insured during the year, and the household's count of cars in the year, built from the rows, which counts the cars added after the rating, replacements after a crash among them (10.7% of the 2006 vehicle-years are cars a household of 2005 added during the year). Allstate holds both for the rows of a past year when it fits, but not for a car it rates at the renewal. They would need a training-only role, which the format does not have yet (MET-14, LEAK-41, MET-16), so they stay out for now.
         - CC (2026-11-09, Andrej): the folds test on all rows of the renewal book, the gaps kept as missing (review issue 8, A, as implemented); the missing-values bullet names the mismatch with the competition's complete test rows.
         - CC (2026-11-09, Andrej): the split stays by household over the 2006 book (review issue 9, A, as implemented); the splits comment gives the 2005-to-2006 score as above the household folds of that build and names the training side's year and the maturity of its amounts.
-        - The row budget: We sub-sample the 2006 renewal book (2.75M rows) to 1.5M by whole households and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol). The households are drawn at random, not stratified (a regression target), so the claim rate stays that of the book. The 2005 history is built on the full file before the filter and the sampling.
+        - The row budget (1M train, 500k test rows): We keep the whole 2006 renewal book (2.75M rows) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole households drawn from its third, and trains on every other row (about 2.25M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole households. Both draws take households at random, not stratified (a regression target), so the claim rate stays that of the book. The 2005 history is built on the full file before the filter.
     """
 
     # Task
@@ -187,7 +186,7 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
         """,
     )
     splits_comment = """
-        Default splits, grouped by household (Household_ID): 3 folds over 1.5M rows of whole households drawn at random from the 2.75M of the 2006 renewal book (claim rate 0.82%, as in the book), each training on about 1M and testing on about 500k rows with 4,006 to 4,210 claims. The task is temporal by its use case: the competition gave 2005-2007 for training and scored 2008 (public leaderboard) and 2009 (final ranking), whose claims were never published. With 2007 dropped (its large claims look unsettled) and 2005 used as the history of 2006, one labelled target year is left, so no window of a temporal split exists and the task ships under SPLIT-8 (ForcedGroupedFromTemporal): the folds hold out whole households, whose vehicles share the household's record, so random rows would put a household's other cars on both sides. Before the history was built, trained on 2005 and scored on 2006 all rows reached 0.064, above the folds by household of that build (0.022 to 0.054) and inside the nine folds of the renewal book (0.022 to 0.106), so the forced split shows no cost this noise can measure. The training rows are the test year's other households, their amounts read at the release (about 2011, the file's date), more developed than Allstate had at the 2006 renewal, when it would have trained on 2005 and earlier; both sides of every fold hold amounts of the same maturity. What the folds do not test: new business (the cars that joined during 2006 are left out), vehicle series not seen in training (0.02% of test rows on the earlier folds), and a rating at a known date within the year. A release with dates beyond 2007 should get a temporal split. Shipped forced on the curator's call (Andrej, 2026-11-02: "Forced group splits should be fine"; 2026-11-03: the 2006 renewal book; Lennart, 2026-11-08: only the cars on the policy at the start of 2006; Andrej, 2026-11-09: the split by household stays).
+        Default splits, grouped by household (Household_ID): 3 folds over the 2.75M rows of the 2006 renewal book (claim rate 0.82%), each testing on at most 500k rows, whole households drawn at random from its third, and training on every other row (about 2.25M), which a benchmark sub-samples to 1M rows by whole households (`subsample_train`). The task is temporal by its use case: the competition gave 2005-2007 for training and scored 2008 (public leaderboard) and 2009 (final ranking), whose claims were never published. With 2007 dropped (its large claims look unsettled) and 2005 used as the history of 2006, one labelled target year is left, so no window of a temporal split exists and the task ships under SPLIT-8 (ForcedGroupedFromTemporal): the folds hold out whole households, whose vehicles share the household's record, so random rows would put a household's other cars on both sides. Before the history was built, trained on 2005 and scored on 2006 all rows reached 0.064, above the folds by household of that build (0.022 to 0.054) and inside the nine folds of the renewal book (0.022 to 0.106), so the forced split shows no cost this noise can measure. The training rows are the test year's other households, their amounts read at the release (about 2011, the file's date), more developed than Allstate had at the 2006 renewal, when it would have trained on 2005 and earlier; both sides of every fold hold amounts of the same maturity. What the folds do not test: new business (the cars that joined during 2006 are left out), vehicle series not seen in training (0.02% of test rows on the earlier folds), and a rating at a known date within the year. A release with dates beyond 2007 should get a temporal split. Shipped forced on the curator's call (Andrej, 2026-11-02: "Forced group splits should be fine"; 2026-11-03: the 2006 renewal book; Lennart, 2026-11-08: only the cars on the policy at the start of 2006; Andrej, 2026-11-09: the split by household stays).
     """
 
     # Splits
@@ -289,7 +288,7 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
                 },
             }
         ).rename_axis("2005 record")
-        # The missing values of the renewal book, before the sampling.
+        # The missing values of the renewal book.
         kept = year[carried]
         claim = kept["Claim_Amount"] > 0
         # Missing values of the shipped text columns by model year, and the claim rate with and without one.

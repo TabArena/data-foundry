@@ -15,14 +15,19 @@ File layout (``<unique_name>.md``)::
 
     Recent dataset for phishing website detection ...
 
+    ## Review
+
+    **Outcome:** added. ...
+
     ## Reference
 
     @article{...}
 
 Structured fields live in the YAML front-matter (empty / null fields are omitted
 to keep diffs clean) — ``name`` is the single source of truth for the dataset name.
-The two free-text fields — ``comments`` and ``reference`` — live in the markdown body
-under fixed ``## Comments`` / ``## Reference`` headers, so they read and diff naturally.
+The free-text fields live in the markdown body under fixed headers, so they read and diff naturally:
+``## Comments`` (the curation discussion), ``## Review`` (the dataset's review, open and settled issues with every
+turn, written by /add-dataset and /review-added-datasets) and ``## Reference``. An empty section is omitted.
 Round-trips through :func:`markdown_to_record`.
 """
 
@@ -37,7 +42,7 @@ from data_foundry.curation._paths import records_dir
 from data_foundry.curation.claims import warn_if_claimed
 from data_foundry.curation.record import BODY_FIELDS, FIELDS, CurationRecord
 
-BODY_SECTION_TITLES: dict[str, str] = {"comments": "Comments", "reference": "Reference"}
+BODY_SECTION_TITLES: dict[str, str] = {"comments": "Comments", "review": "Review", "reference": "Reference"}
 
 _FRONT_MATTER_RE = re.compile(r"\A---\n(.*?)\n---\n?(.*)\Z", re.DOTALL)
 

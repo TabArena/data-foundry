@@ -23,8 +23,7 @@ class CookingTime1m(AbstractCuratedDataset):
         question="How long will a restaurant take to cook an order placed through a food delivery app?",
         use_case=(
             "When an order is placed, the delivery service estimates the restaurant's cooking time, for example to "
-            "time the courier and the delivery estimate shown to the customer; the model is refit every week "
-            "(TabReD)."
+            "time the courier and the delivery estimate shown to the customer."
         ),
         row=(
             "One order placed through a food delivery app between 15 November 2023 and 3 January 2024 (TabReD "
@@ -39,13 +38,15 @@ class CookingTime1m(AbstractCuratedDataset):
             "(TabReD), including the time of the order."
         ),
         split=(
-            "Each test window is one of the last three weeks (14 December 2023 to 3 January 2024), up to 500,000 "
-            "orders each; training is a random million of all earlier orders, as for a model refit every week."
+            "Each test window is a week, TabReD's own validation and test length: the newest (28 December 2023 to 3 "
+            "January 2024) and every other week before it (14-20 December and 4-10 December), up to 500,000 orders "
+            "each. Training is every order placed at least a day before the window, of which a benchmark fits on a "
+            "random million."
         ),
         fit="direct",
         fit_reason=(
-            "Order contents and past cooking times are known when an order is placed, and the windows follow a weekly"
-            " refit. The features are anonymised, so their timing cannot be checked."
+            "Order contents and past cooking times are known when an order is placed. The features are anonymised, so"
+            " their timing cannot be checked."
         ),
     )
 
@@ -82,7 +83,7 @@ class CookingTime1m(AbstractCuratedDataset):
         - Potential leak, kept on purpose: TabReD releases the 186 numeric features only after a quantile transform to a normal distribution (all within ±5.1993, the clip of scikit-learn's QuantileTransformer; 155 reach it); which rows it was fit on is not documented, and the raw features are not published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if the TabReD authors say the fit used all rows.
         - We drop orders with a cooking time under one minute (168 of 12.8M, 26 of them zero or negative), as TabReD's preprocessing does.
         - The target is the natural log of the minutes, as in TabReD (the column keeps its name). TabReD's reason: the times are right-skewed, and squared error on the log is close to absolute error on the minutes, the error that matters for the task.
-        - The row budget: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+        - The row budget: Each test window keeps at most 500k of its rows, drawn at random within the window (v2 split protocol), and each train side holds every earlier order outside the one-day gap; the container keeps every row a split uses. The container records the 1M train budget, and a benchmark sub-samples each train side to 1M rows before a fit (`subsample_train`; by default a random 1M of the newest year before the window). The orders start on 15 November 2023, so the newest year is all of the history and the default is a random 1M of all earlier orders, as in TabReD: a random sample keeps data from all periods of the history.
     """
 
     # Task
@@ -100,12 +101,18 @@ class CookingTime1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We use each of the last 3 weeks as a test window (newest first) and the orders placed at least one day before it as train data. The gap of one day is part of the task: a cooking time is known only when the order is cooked (up to 2 hours after it is placed), so at a weekly refit the last orders before it have no label yet; without the gap 172, 126 and 108 train orders per window (start + cooking time) would end after the window start, with it none. The gap removes 280k, 264k and 239k of the 11.1M, 9.1M and 7.2M earlier orders (2.5 to 3.3%). Each window keeps at most 500k of its rows (1.7M to 2.0M before sampling); each train side is a random 1M of the eligible earlier rows (one random order for all windows).
+        Each test window is one week, TabReD's own validation and test length: TabReD trains on 15 November to 20 December 2023, validates on 21-27 December and tests on 28 December to 3 January. TabReD states no refit cadence. A week holds every weekday once, and cooking times follow a weekly cycle: Friday and Saturday orders cook about 12% longer than Monday to Thursday orders (mean log minutes 2.57 to 2.64 against 2.46 to 2.51), more than the shift between the weekly windows. The test windows are the newest week and every other week before it (CC 2026-11-11, as for delivery_eta_1m; it supersedes the three newest weeks of 2026-11-10), newest first: 28 December to 3 January, TabReD's test week, over New Year; 14-20 December, in the run-up to the holidays; and 4-10 December, a week before the run-up. 21-27 December, TabReD's validation week, is not tested. Train is the orders placed at least one day before each window: 10,856,304, 6,935,762 and 4,797,156 orders (84.8%, 54.2% and 37.5% of the 12,799,474). 4-10 December trains on less than half the orders (37.5%), beside 84.8% and 54.2%. The orders run from 15 November 2023 to 3 January 2024, so only the weeks from 11 December keep half the orders for training (51.9% for a start on 11 December). 4-10 December is the last full week before 11-12 December, which hold no orders, and every day of it holds 208,774 to 326,051 orders; two weeks before 14 December, 30 November to 6 December, would train on 28.9%, under 30%. Cooking times rise toward New Year (mean log minutes 2.533, 2.548 and 2.599 in the oldest, middle and newest window, against 2.527 to 2.532 in the weeks from 16 November to 6 December), so the score covers a week before the run-up, the run-up and the holiday itself, but not a week after the holidays (the data end on 3 January). The gap of one day is part of the task: a cooking time is known only when the order is cooked (up to 2 hours after it is placed), so at a refit the last orders before it have no label yet; without the gap 172, 108 and 155 train orders per window (start + cooking time) would end after the window start, with it none. The gap removes 280k, 239k and 278k of the 11.1M, 7.2M and 5.1M earlier orders (2.5 to 5.5%). Each window keeps at most 500k of its rows (1,662,794, 1,921,331 and 1,861,029 before sampling); each train side holds every eligible earlier row, and a benchmark sub-samples it to 1M rows, by default a random 1M of the newest year before the window, here all of the history (`subsample_train`).
     """
     temporal = Temporal(
         on="timestamp",
-        splits=TemporalSplits(window=7, unit="days", n_windows=3, gap=1),
+        splits=TemporalSplits(window=7, unit="days", gap=1, cutoffs=("2023-12-28", "2023-12-14", "2023-12-04")),
     )
+    accepted_check_warnings = {
+        "splits_train_under_half": (
+            "Signed off (Lennart, 2026-11-11, review issue 2, B): 4-10 December trains on 37.5% of the orders, beside "
+            "28 December-3 January and 14-20 December on 84.8% and 54.2%; SPLIT-14's two tiers admit it."
+        ),
+    }
     row_budget = RowBudget(train=1_000_000, test=500_000)
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
