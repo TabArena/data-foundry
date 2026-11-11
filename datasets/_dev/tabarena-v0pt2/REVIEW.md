@@ -9,7 +9,7 @@
   **Lennart (2026-11-04, ok):** add row
   **Resolved (2026-11-04, Lennart):** go ahead. The few-groups Cases row for huesken_sirna_efficacy is in `splits.md` (heart_disease's row was already there); the MET-5 row naming huesken as the second exception was already in `metrics.md` (5085fc1a), so it is not added twice. No MET-5 amendment is due before a third exception.
 - **Correct the stale spectrum figures in `spectra.md` (from `open_soil_spectral_library`)?** Line 113 still says "1,701 positions"; 1,700 ship since the 600 cm-1 bin was dropped. Lines 114-123 still show the encoding table on the percent scale, and two of its conclusions reverse on the declared `rmsle` scale ("PLS gains a little from the baseline", "ridge reads the spectrum best as it is"). The mediator listed both as changes to make now (its changes 2 and 5); the apply step could not touch skill files.
-  Implemented: the definition and the REVIEW.md have the declared-scale figures; `spectra.md` does not.
+  Implemented: the definition and the Review have the declared-scale figures; `spectra.md` does not.
   Proposal: replace "1,701" with 1,700 and the table with the panel's declared-scale results.
   Decision needed: go ahead or leave as is.
   **Resolved (2026-11-04, Lennart):** go ahead. `spectra.md` gives 1,700 positions and the table on the declared scale (RMSE on log1p); the PLS and ridge conclusions are rewritten, the default encoding is unchanged.
@@ -52,7 +52,7 @@
   **Resolved (2026-11-04, Lennart):** go ahead; applied in the definition and the record, READMEs regenerated (CHANGELOG).
 - **`bemtpl97` and `fremtpl2`.** Correction lines in bemtpl97's record for "Exposure is an offset", "no panel ran", "20 other forced-IID definitions" (17) and "machine epsilon" (the params are 1e-6), and for the 2026-10-26 "unverified" line. fremtpl2's `curation_comments` say "machine epsilon" too (its params are 1e-6), and cite two figures nobody could verify (Wüthrich and Merz Eq. 5.28; the LightGBM figure of 292.6 expected claims): cut both (EV-7).
   **Resolved (2026-11-04, Lennart):** go ahead; applied in the definition and the record, READMEs regenerated (CHANGELOG).
-- **`lt_vehicle_loan_default_prediction`.** Correction lines in the record for the 2026-11-04 Assessment ("about 90%" of the gain is training size; "20-53% (SPLIT-14)"), its pointer to "REVIEW.md issue 1" (now issues 4 and 5) and "review panel (none) ... all are settled"; mark the 2026-10-23 "Exception to SPLIT-10" line as history; set the `Selection Bias` marker (USE-8).
+- **`lt_vehicle_loan_default_prediction`.** Correction lines in the record for the 2026-11-04 Assessment ("about 90%" of the gain is training size; "20-53% (SPLIT-14)"), its pointer to "Review issue 1" (now issues 4 and 5) and "review panel (none) ... all are settled"; mark the 2026-10-23 "Exception to SPLIT-10" line as history; set the `Selection Bias` marker (USE-8).
   **Resolved (2026-11-04, Lennart):** go ahead; applied in the definition and the record, READMEs regenerated (CHANGELOG).
 - **`open_soil_spectral_library`.** `curation_comments` say the 151 layers above 58% organic carbon "equal the source's measured total carbon"; the mediator checked only the three above 70%, so the sentence names those three. Add the record's AI note that the 2026-10-29 decisions on issues 2-3 never became a file in the folder.
   **Resolved (2026-11-04, Lennart):** go ahead; applied in the definition and the record, READMEs regenerated (CHANGELOG).
@@ -211,7 +211,7 @@
   **Resolved (2026-11-08, Lennart):** opened as per-dataset issues: dementia_prediction issue 1 (recommended: each
   person counts once, or C, first visits only), asp_potassco_classification issue 5 (recommended: per instance with a
   note) and video_transcoding_time_prediction issue 1 (recommended: per job with a note). Per-dataset choices go into
-  each dataset's REVIEW.md from now on (review_file_format.md, working_copy.md).
+  each dataset's Review from now on (review_file_format.md, working_copy.md).
 
 - **Correct african_credit_scoring_challenge's `row` text and notes on co-funded loans?** The `row` text and the notes (line 153) say a loan co-funded with a second lender gives two rows; in the shipped frame that never happens (52,826 rows and 52,826 loan ids), since the kept product has one lender (found by the scan above).
   Implemented: nothing.
@@ -306,7 +306,7 @@
 
   **Andrej (2026-11-09, go ahead):** I go with a.
 
-  **Resolved (2026-11-09, Andrej):** a: sex leaves an insurance pricing task where the law of the country the data come from bars it today, as if the ban had always applied, and stays where that law allows it. It replaces the family stance of 2026-11-08 in the Tensions row of principles.md. australian_vehicle_insurance_2004_2005 ships `gender` again (a new issue in its REVIEW.md, reopening its issue 7); bemtpl97, frempl_french_motor_personal_line, pricing_game_2017_french_mtpl and spanish_homeowners_motor_insurance_2010_2014 keep it dropped under EU law.
+  **Resolved (2026-11-09, Andrej):** a: sex leaves an insurance pricing task where the law of the country the data come from bars it today, as if the ban had always applied, and stays where that law allows it. It replaces the family stance of 2026-11-08 in the Tensions row of principles.md. australian_vehicle_insurance_2004_2005 ships `gender` again (a new issue in its Review, reopening its issue 7); bemtpl97, frempl_french_motor_personal_line, pricing_game_2017_french_mtpl and spanish_homeowners_motor_insurance_2010_2014 keep it dropped under EU law.
 
   [^xb2]: Sex Discrimination Act 1984 (Cth), s41(1)(c) to (e), https://www.legislation.gov.au/C2004A02868/2025-11-01/2025-11-01/text/original/epub/OEBPS/document_1/document_1.html. The EU ban: CJEU C-236/09 (Test-Achats), in force for new contracts from 21 December 2012.
 
@@ -410,3 +410,93 @@
   **Andrej (2026-11-09, go ahead):** Yes, we should definitely stick to what practitioners do wherever possible, but we also need more research on that.
 
   **Resolved (2026-11-09, Andrej):** B, as a TabArena call: `BENCHMARK_CHANGES_TODO.md` has the section "Losses for deviance-scored tasks" (each deviance's Poisson or Tweedie objective on LightGBM, XGBoost and CatBoost, the floor on every method's output, the five tasks) with an open-research list: which methods have such a loss, whether matched losses change the rankings, what practitioners fit per task.
+
+### From the two new temporal checks of 2026-11-11 (the PR on top of #78)
+
+- **Accept `splits_feature_missing_in_test` where a column starts or stops being recorded within the history?**
+  * **Problem:**
+    - The new check warns when a feature is 95% or more missing on one side of a temporal window and at most half
+      missing on the other: a column the source starts or stops recording, which a model then learns on one side only.
+    - It fires on definitions where nobody named the change yet (delivery_eta_1m's 45 features, the case it was built
+      for, are decided: issue 2, A, 2026-11-10).
+    - Each is the data as the deployed model met it at that window, so each column stays unless it leaves for what it
+      is[^fm1]; the question is whether you accept the warning on all of them with a note, or want any column dropped.
+  * **Statistics:** missing shares from the check (up to 100,000 rows a side) and by year or quarter on the full frame.
+
+    | Dataset | Columns | When they start or stop | Windows it affects |
+    |---|---|---|---|
+    | anes_voting_2026 | 95 questions | asked in some election years only (the notes count 33 asked in all nine test years) | every test election misses the questions of its year's questionnaire |
+    | college_scorecard | `DISTANCEONLY` | recorded from the 2011 cohort on | the 2016 window's train side (before the gap) has none |
+    | home_credit_default_stability_1m | 27 columns | `contractssum_5085716L` and `*_amount_4917619A` start in 2020 Q2 (all missing before, 17% to 59% after); `responsedate_1012D` stops in 2019 Q4 | all three windows |
+    | onlinenewspopularity | `kw_min_min` | present in 2013 (0% to 35% missing), missing in every 2014 article | every test window (all in 2014) |
+    | rain_in_australia | 12 station readings | sensors that go offline for a period, e.g. `Pressure9am_at_Sale` missing from 2017 Q4 | some of the 26 fortnights |
+    | sberbank_housing_market_forecasting | 3 yearly lags | `provision_retail_space_sqm_lag_1y` stops in 2014; the two `*_education_*_lag_1y` start in 2014 | all three windows |
+    | wisconsin_local_government_property_insurance_fund | `NoClaimCredit` | recorded from 2008 on | the 2008 window's train side (2006-2007) has none |
+
+  * **Effect on the task:** each warning is a fact of the source a deployed model meets too; dropping a column would
+    remove information the newer windows have (college, wisconsin, home_credit) or the older ones had.
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | Accept on all seven, with a note | each definition names the columns and when they start or stop in `curation_comments` and accepts the warning with your CC date | the data as published and as deployed; one rule for all | models are partly compared on columns one side lacks |
+    | B | Drop the columns | each definition drops the named columns | both sides of every window see the same columns | removes information the deployed model has; departs from CLEAN-22 |
+    | C | Per dataset | A for some, B for others, as your note names them | | |
+
+  * **Recommendation:** A: none of the columns leaves for what it is, and the deployed model met each change.
+  * **Decision:** A, B or C?
+
+  **Notes for the AI:** On A: per definition, one `curation_comments` bullet "Columns recorded on one side of a window
+  only (cross-dataset item of 2026-11-11): ..." with the columns and the dates from the table, `accepted_check_warnings`
+  `"splits_feature_missing_in_test"` with the count and the CC date, a CC line in the record, `dataset check`
+  (0 errors), and a CHANGELOG entry. On B, also `dataset check` and the windows' statistics again.
+
+  **Lennart (2026-11-11, ok):** As recommended (A).
+
+  **Resolved (2026-11-11, Lennart):** A, consistent with delivery_eta_1m's issue 2 (2026-11-10). The seven definitions
+  name the columns and when they start or stop in a `curation_comments` bullet and accept
+  `splits_feature_missing_in_test` with the CC date (rain_in_australia gets its first `accepted_check_warnings`);
+  each record has the CC line and an Assessment with the shares. `dataset check`: 0 errors, the warning accepted on
+  all seven.
+
+  [^fm1]: **CLEAN-22** (Must): "Columns leave for what they are (a leak, an identifier, a copy, the measurement that
+    defines the label), never for how many there are."
+
+- **What to do with a newest period that holds far fewer rows than the periods before it?**
+  * **Problem:**
+    - The new check `time_newest_period_short` warns when the newest 30 days of a date column hold under 60% of the
+      median rows a day of the 30-day spans before: often a download or scrape cut before the outcomes were complete
+      (kickstarter's newest launches, settled on 2026-11-11).
+    - It fires on four definitions; two of them already name the cause in their notes.
+  * **Statistics:** rows a month at the end of each time column, and the target's share or mean.
+
+    | Dataset | The newest month(s) | The months before | Target | Reading |
+    |---|---|---|---|---|
+    | coffee_rating_prediction | October 2023: 2 reviews | 24 to 65 a month in 2023 | 94.5 against 92.4 to 93.3 | the scrape's partial last month (dates are months) |
+    | consumer_complaints_1m | December 2025: 54,655 | 73,058 to 77,970 in Sep-Nov 2025 | monetary relief 2.2% against 1.5% to 1.8% | complaints still in progress at the download leave the frame; the notes give the in-progress shares, and LEAK-24 names this dataset |
+    | rosbank1 | November and December 2017: 123 and 63 clients | 416 to 524 a month from May to October | churn 39.8% and 36.5% against 34.8% to 45% | the notes already say the newest periods are a thin tail of the client intake |
+    | sberbank_housing_market_forecasting | 2015: 394 to 724 sales a month | 1,044 to 1,583 from September to December 2014 | log price 11.80 to 11.87, flat | the market after the December 2014 rush (the rouble crisis), not a cut: the data ends where the competition's training file ends, 30 June 2015 |
+
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | Per dataset, as recommended | coffee drops its 2 reviews of October 2023; the other three accept the warning with the reason in the table | cuts only the partial month; the other causes are named | four calls on one check |
+    | B | Accept on all four | each accepts the warning with its reason | no data change | coffee keeps a month of 2 reviews |
+
+  * **Recommendation:** A.
+  * **Decision:** A or B?
+
+  **Notes for the AI:** On A: coffee_rating_prediction drops the rows with `review_date` of October 2023 in `_clean`
+  with a `curation_comments` bullet, then `dataset check` and its windows' counts; consumer_complaints_1m,
+  rosbank1 and sberbank_housing_market_forecasting accept `"time_newest_period_short"` with the numbers and the CC date.
+  Each gets a CC line in its record and a CHANGELOG entry.
+
+  **Lennart (2026-11-11, ok):** As recommended (A).
+
+  **Resolved (2026-11-11, Lennart):** A, consistent with kickstarter's cut of the scrape's last 60 days (2026-11-11).
+  coffee_rating_prediction drops the 2 reviews of October 2023 in `_clean`, with a note; its 2-month windows now walk
+  back from August-September 2023 (12 windows to October-November 2021, 62 to 137 test reviews each, in place of 13),
+  and the splits comment and the row description say so. consumer_complaints_1m, rosbank1 and
+  sberbank_housing_market_forecasting accept `time_newest_period_short` with the numbers of the table. Each record
+  has the CC line and an Assessment. `dataset check`: 0 errors on all four.

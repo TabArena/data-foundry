@@ -170,10 +170,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
             "history, scores the client's default risk to decide on the loan; its scorecard is refit regularly and "
             "should stay stable over time."
         ),
-        row=(
-            "One loan application decided between January 2019 and early October 2020 (the frame keeps 1,224,927 of "
-            "them)."
-        ),
+        row=("One loan application decided between January 2019 and early October 2020 (1,526,659 of them)."),
         predicted=("Whether the client defaulted (3.1% did); the time span in which a default counts is not stated."),
         known=(
             "The application, the client's personal data, earlier applications to Home Credit, credit-bureau and "
@@ -181,12 +178,15 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
             "date; some categories (district, employer, education, contract status and the like) are masked codes."
         ),
         split=(
-            "Three two-month test windows from May to early October 2020; each trains on a random million of all "
-            "earlier applications, as for a model refit every two months."
+            "Three four-month test windows, newest first: July to early October 2020, March to June 2020 and November "
+            "2019 to February 2020, after, across and before the drop in applications and defaults of late March "
+            "2020, as for a scorecard that serves four months between refits; training is all earlier applications, "
+            "which a benchmark sub-samples to at most a million from the newest 10 to 13 months."
         ),
         changes=(
-            "We split TabReD's test period into three two-month windows and keep columns TabReD dropped (the decision"
-            " month and week, categories with many values)."
+            "We test three four-month windows from November 2019 to early October 2020 in place of TabReD's single "
+            "test period (May to early October 2020), and keep columns TabReD dropped (the decision month and week, "
+            "categories with many values)."
         ),
         fit="approximate",
         fit_reason=(
@@ -226,9 +226,10 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         We start with the data from Kaggle and follow the preprocessing from TabRed (https://github.com/yandex-research/tabred/tree/main/preprocessing#homecredit-default-stability-homecredit-20), which in turn follows two Kaggle solutions (https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability/discussion/507946, https://www.kaggle.com/code/yuuniekiri/fork-of-home-credit-catboost-inference).
 
         - We follow TabRed and use temporal splits for the task. The Kaggle experts used various strategies and most commonly StratifiedGroupKFold to align offline CV with the temporal-split data on the leaderboard. That is, the split used for training can be StratifiedGroupKFold, but not for testing.
-        - Metric: ROC AUC stands in for the competition's Gini Stability, whose slope term is noise on our 5-10 week test windows (Lennart, 2026-10-21).
+        - Metric: ROC AUC stands in for the competition's Gini Stability, whose slope term is noise on our test windows (Lennart, 2026-10-21, then on windows of 5-10 weeks; it stays noise on the 14-19 weeks of the four-month windows of 2026-11-11, as the metric's reason gives).
+        - Test windows (Lennart, 2026-11-11): four months ("Reply (c): Four months", the horizon sign-off), the longest length whose three windows all train on at least half the applications, as a scorecard serves for months between refits; the windows of issue 1 at that length ("Agree."): July to 5 October 2020, March to June 2020 and November 2019 to February 2020, which tile the months from the oldest start that keeps half the applications for training to the release end (splits comment).
         - Note, the original competition was heavily influenced by metric hacking, which is not relevant for our offline benchmark tasks. Thus, results are not directly comparable ot transferable.
-        - We change the preprocessing from Kaggle and TabRed in specific steps: (A) we depart from the TabRed and Kaggle solutions in that we do not drop high-cardinality string columns, (B) we do not drop month and week, as it was only dropped due to the metric leak in the competition, (C) we only drop constant columns if they are constant w.r.t. NaN and non-NaN values, (D) we do not perform ordinal encoding and drop minor categories, (E) we sub-sample only to the row budget of this _1m version (each train side is a random 1M of all earlier rows, see the splits comment), (F) we keep the date column without transformations for the pipelines to handle, and (G) the code from TabRed is outdated and does not function the same anymore when it comes to down-casting string and categorical data of the data from Kaggle, we fix this by treating categorical data as categorical following the original Kaggle scripts, moreover, we had to remove getting the std() of a date column, which is not supported anymore.
+        - We change the preprocessing from Kaggle and TabRed in specific steps: (A) we depart from the TabRed and Kaggle solutions in that we do not drop high-cardinality string columns, (B) we do not drop month and week, as it was only dropped due to the metric leak in the competition, (C) we only drop constant columns if they are constant w.r.t. NaN and non-NaN values, (D) we do not perform ordinal encoding and drop minor categories, (E) we keep every row: the 1M train budget of this _1m version is applied by a benchmark, which sub-samples each train side before a fit (see the splits comment), (F) we keep the date column without transformations for the pipelines to handle, and (G) the code from TabRed is outdated and does not function the same anymore when it comes to down-casting string and categorical data of the data from Kaggle, we fix this by treating categorical data as categorical following the original Kaggle scripts, moreover, we had to remove getting the std() of a date column, which is not supported anymore.
         - We drop case_id as it is already collapsed and thus does not contain extra information.
         - We cast all object and string columns to be categorical. Note that they are anonymized and string preprocessing likely does not add a lot of value as a result.
         - We drop name-related columns as they do not hold relevant information. These were otherwise dropped as high-cardinality string columns in TabRed or on Kaggle.
@@ -236,7 +237,8 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
-        - The row budget: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+        - The row budget: each test window keeps at most 500k of its rows (all of them here), and each train side holds every earlier row, so the frame keeps all 1,526,659 applications. The 1M train budget is recorded, not applied: a benchmark sub-samples each train side to 1M rows before a fit with `subsample_train`. Its default is the newest year before the window, extended back in time until it holds 1M rows, and a random 1M of those (splits comment), in place of TabReD's random sub-sampling of all earlier rows: the study of issue #70 found the newest year best for dated data.
+        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): 12 columns stop being recorded in September and October 2019 (`responsedate_1012D`, `birthdate_574D`, `pmtscount_423L`, `pmtssum_45A`, the four `*_pmtamount_36A`, `n_unique_employername_160M` and the three `*_processingdate_168D`), so the November 2019 window tests without them; 15 start between April and June 2020 (`contractssum_5085716L`, the four `*_contractsum_5085717L`, the four `*_amount_4917619A`, the three `*_deductiondate_4917603D`, `n_unique_name_4917606M`, `first_housetype_905L` and `responsedate_4917613D`), so the March and July 2020 windows train almost without them. Kept: the data as the bank recorded it, which a model refit then met too.
     """
 
     # Task
@@ -245,30 +247,57 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
     metric = Metric.stand_in(
         "roc_auc",
         original="Home Credit 2023 - Gini Stability: mean weekly Gini + 88 * min(0, slope) - 0.5 * std(residuals)",
-        reason="Our test windows hold 5, 9 and 10 weeks (week 78 split between two windows, week 69 partial); the weekly Gini has SE about 0.04, so the 88 x slope term has SE about 1.2 / 0.5 / 0.43, larger than the Gini differences between methods: per window the score is noise (MET-2). ROC AUC per window is the per-week building block.",
+        reason="Our four-month test windows hold 14, 19 and 18 weeks of WEEK_NUM (weeks 78 and 60 split between two windows); the weekly Gini has SE about 0.02 to 0.04 (Hanley-McNeil at an AUC of 0.8), so the 88 x slope term has SE about 0.23 / 0.17 / 0.08, about 20 times the SE of the mean weekly Gini and larger than the Gini differences between methods: per window the score is mostly noise (MET-2). The windows of 2026-10-21 held 5 to 10 weeks, where it was larger still (1.2 / 0.5 / 0.43). ROC AUC per window is the per-week building block.",
         reference="https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability/overview/evaluation",
         definition="Per test week (WEEK_NUM) gini_w = 2*AUC_w - 1; fit gini_w = a*week + b by least squares; score = mean(gini_w) + 88*min(0, a) - 0.5*std(residuals).",
     )
 
     # Splits
     splits_comment = """
-        We follow TabRed's test period (2020-05-01 to 2020-10-05) and split it into 3 test windows of 2 months (May-June, July-August, September to 2020-10-05), simulating a model refit every 2 months; each window trains on all previous data. Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
+        Three test windows of four months, newest first: 1 July to 5 October 2020 (the release's end), 1 March to 30 June 2020 and 1 November 2019 to 29 February 2020; each trains on all earlier applications, with no gap.
+        The length is how long one fitted scorecard keeps scoring (the curator's pick, 2026-11-11): a scorecard is fit
+        on applications whose default is known and then scores every new application until the next refit, and Home
+        Credit's competition fit one model and scored it on each week after its training data ("When a model runs in
+        production, it can only see past performance and predictions"). No source gives Home Credit's refit cadence,
+        so the window is the longest whose three windows all train on at least half the applications: four months
+        (five would leave the oldest on 35.1%). The two months used until 2026-11-11 came from cutting TabReD's
+        4.5-month test period into three, not from a refit cadence.
+        The windows tile the months from 1 November 2019, the oldest start that keeps half the applications for
+        training, to the release end, so at four months they leave no choice; they test the months after, across and
+        before the drop of late March 2020, when applications fell from 60,748 in March (4.6% defaults) to 8,289 in
+        April (2.2%) and the default rate stayed at 1.8-2.8% a week afterwards. A scorecard that should stay stable
+        over time has to hold through that change, which no refit sees coming (the curator's pick of 2026-11-11,
+        review issue 1). Applications tested (defaults), then the train side and its share of the 1,526,659: July to
+        5 October 2020 150,240 (3,175, 2.1%), 1,376,419 (90.2%); March to June 2020 143,724 (4,714, 3.3%), 1,232,695
+        (80.7%); November 2019 to February 2020 403,789 (15,541, 3.8%), 828,906 (54.3%). No window trains on less than
+        half.
+        No gap: the weekly default rate stays at 1.8% to 2.8% to the end of the release, so the labels look final, as
+        for lt_vehicle_loan_default_prediction.
+        Each window keeps all its rows (under the 500k test budget), and each train side holds every earlier row (0.83M
+        to 1.38M); a benchmark sub-samples it to 1M before a fit (`subsample_train`): by default the newest year before
+        the window, extended back in time until it holds 1M rows, and a random 1M of those. The year before July 2020
+        holds 937,675 rows, so that window trains on the newest 1M (from 11 June 2019); the year before March 2020
+        holds 1,094,102, of which a random 1M; the November 2019 window trains on all 828,906 (January to October
+        2019).
     """
-    # 3 windows of 2 months replace TabRed's single 4.5-month test period (v2 split protocol, 2026-10), so the horizon
-    # drops from 5 to 2 months and results are not comparable with TabRed's. Before sampling the windows hold 74,687 /
-    # 79,743 / 70,497 rows (about 1.8k / 1.7k / 1.5k defaults); every train side is capped at 1M. 5-month windows
-    # (cutoffs 2019-07-01, 2019-12-01, 2020-05-01) would keep the horizon, but the oldest would train on 439k rows
-    # (Jan-Jun 2019) and test 506k pre-COVID rows, and the middle one would span the April 2020 drop in volume and
-    # default rate.
+    # Three 4-month windows tile 1 November 2019 to the release end (the curator's pick of 2026-11-11: the horizon
+    # sign-off and issue 1). They replace TabReD's single 4.5-month test period (May to 5 October 2020), so results
+    # are not comparable with TabReD's. The windows hold 150,240 / 143,724 / 403,789 applications (3,175 / 4,714 /
+    # 15,541 defaults), under the 500k test budget; every train side keeps all earlier rows, and a benchmark
+    # sub-samples it to 1M.
     temporal = Temporal(
         on="date_decision",
-        splits=TemporalSplits(window=2, unit="months", cutoffs=("2020-05-01", "2020-07-01", "2020-09-01")),
+        splits=TemporalSplits(window=4, unit="months", cutoffs=("2020-07-01", "2020-03-01", "2019-11-01")),
     )
     accepted_check_warnings = {
         "dataset_missing_value_sentinel": "-1 is a real value: the avgdbd* columns are 'average days past or before "
         "due of payment' (Kaggle feature_definitions.csv), negative means paid early; -1 is the mode of a smooth "
         "distribution (-1 4.8%, -2 4.7%, -3 4.2%, 0 3.8%, down to -1220), missing values are NaN, and the default "
         "rate rises from 2.1% (< -1) over 3.3% (-1) and 4.5% (0) to 8.6% (late).",
+        "splits_feature_missing_in_test": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): 12 columns stop in September-October 2019 and 15 start in "
+            "April-June 2020, as the bank recorded them (curation_comments)."
+        ),
     }
     row_budget = RowBudget(train=1_000_000, test=500_000)
 

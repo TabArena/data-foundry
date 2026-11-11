@@ -10,10 +10,11 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
   in [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md).
 - Each dataset folder has a `README.md` that `.venv/bin/python -m data_foundry.curation.cli dataset check` generates
   from its `dataset.py`: links to the curation record and the source, how to rebuild, and the evidence.
-- Open questions for the curator are in a folder's `REVIEW.md` while they are open (the review page of
-  `/review-added-datasets` is built from them); settled decisions are in the curation records
-  (`curation/records/<name>.md`), the definitions and the `CHANGELOG.md` entries. How curation works here: the
-  knowledge skills [`knowledge-curation`](../../../.claude/skills/knowledge-curation/SKILL.md) and
+- A dataset's review, the questions for the curator and how each was settled, is the `## Review` section of its
+  curation record (`curation/records/<name>.md`), never a file in its folder; the review page of
+  `/review-added-datasets` is built from these sections. [`REVIEW.md`](REVIEW.md) here holds only the items that span
+  datasets. The decisions are in the records, the definitions and the `CHANGELOG.md` entries. How curation works
+  here: the knowledge skills [`knowledge-curation`](../../../.claude/skills/knowledge-curation/SKILL.md) and
   [`knowledge-data-foundry`](../../../.claude/skills/knowledge-data-foundry/SKILL.md).
 
 ## Rebuild

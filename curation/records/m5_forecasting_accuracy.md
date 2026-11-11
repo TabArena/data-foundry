@@ -50,7 +50,7 @@ series' own naive forecast, won by recursive and lag-based models.
   series' error by the in-sample error of its one-step naive forecast (Guide, "Point forecasts").
 - Use case: Walmart replenishment from item-store forecasts ("setting up appropriate inventory or service levels",
   Kaggle Description), the setting SEL-10 excludes.
-- Siblings and duplicates: `walmart_sales_in_stormy_weather` (other Walmart stores, items and years; `Yes`, Andrej 2026-10-30, its scope open in its REVIEW.md issue 1),
+- Siblings and duplicates: `walmart_sales_in_stormy_weather` (other Walmart stores, items and years; `Yes`, Andrej 2026-10-30, its scope open in its Review issue 1),
   `rossmann_store_sales` (Yes), `grocery_store_product_forecasting_challenge` (its SEL-10 reject was refuted on
   2026-10-22 because its top solutions were unread; here they are read), `online_retail`; the M5 Uncertainty
   competition (same data, quantiles) has no record.
