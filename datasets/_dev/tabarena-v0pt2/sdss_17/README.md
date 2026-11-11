@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sdss_17
 container_format: 2
-checksum: v2:26f97be6681072d004290ff8d2f46af22b5b90c3f4395c5a81d1972b632ddcbf
+checksum: v2:1707eaa4729c494800b58faa7b765248e1e16b9f99d06a346941ef66894b58cc
 build:
   uuid: 01a111fc-9499-7f77-abbe-45c6b8ec8291
   checksum: v2:23581aaf9a00d579de3f759616f9da199f4b250322ed730303150c7cfbc18d0d
@@ -20,9 +20,10 @@ build:
 build_stale: true
 data:
   n_rows: 99999
-  n_features: 8
+  n_features: 9
   dtypes:
     category: 2
+    datetime64[ns]: 1
     float64: 7
   n_test_dataset_rows: null
 task:
@@ -31,33 +32,36 @@ task:
   metric: log_loss
   metric_origin: fallback
   scoring_columns: null
-  split_regime: iid
+  split_regime: temporal_non_iid
   stratify_on: ObjectType
-  time_on: null
+  time_on: date
   group_on: null
   group_labels: null
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 3
-  n_folds: 3
+  n_repeats: 9
+  n_folds: 1
   random_state: 4267
-  time_horizon: null
-  time_horizon_unit: null
+  time_horizon: 1
+  time_horizon_unit: years
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 66666
-    max: 66666
+    min: 51256
+    max: 99858
   n_test:
-    min: 33333
-    max: 33333
+    min: 141
+    max: 11044
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    meta_time_horizon_mismatch: DR17's spectra end on 2020-03-24, so the newest calendar-year
+      window holds the spectra of 16 February to 24 March 2020 only and its span reads
+      as 38 days; the windows are calendar years (as cardiotocography).
 decisions: []
 ---
 
@@ -65,9 +69,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `ObjectType`, scored with `log_loss` on IID splits. 99,999 rows and 8 features. Source: Other (2021).
+Multiclass classification of `ObjectType`, scored with `log_loss` on temporal splits by `date`. 99,999 rows and 9 features. Source: Other (2021).
 
-Built as `01a111fc-9499-7f77-abbe-45c6b8ec8291` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:26f97be6681072d004290ff8d2f46af22b5b90c3f4395c5a81d1972b632ddcbf`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9499-7f77-abbe-45c6b8ec8291` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1707eaa4729c494800b58faa7b765248e1e16b9f99d06a346941ef66894b58cc`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -79,23 +83,25 @@ Built as `01a111fc-9499-7f77-abbe-45c6b8ec8291` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** The class the survey's spectroscopic pipeline assigned: galaxy (59.44%), star (21.59%) or quasar (18.96%).
 
-**Known at prediction time.** The sky position, the brightness in five colour bands (u, g, r, i, z) from the survey's images, and the camera column that took them.
+**Known at prediction time.** The sky position, the brightness in five colour bands (u, g, r, i, z) from the survey's images and the camera column that took them; a model also sees the date of the spectrum, the column the split orders the rows by.
 
-**What the test data stands for.** Random objects, so the test data stands for other objects chosen for spectra in the same way.
+**What the test data stands for.** Later spectra: each year from 2012 to 2020 is predicted by a model trained on every spectrum taken before it, as the survey's classifier would be refit at each data release and used on the objects observed next.
 
-**Our changes to the source.** We drop the redshift, fitted together with the class from the spectrum, and the plate and fibre, which record how the object was chosen for spectroscopy; the task is to classify from the images alone.
+**Our changes to the source.** We drop the redshift, fitted together with the class from the spectrum, and the plate and fibre, which record how the object was chosen for spectroscopy; the task is to classify from the images alone. We split by the year of the spectrum instead of at random.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The features exist before a spectrum, but every row is an object the survey's targeting programmes already picked by its colours for a spectrum, so the mix of classes and colours is not that of the objects one would classify without one.
+> **Use case fit: approximate (a stand-in with a known gap).** The features exist before a spectrum, but every row is an object the survey's targeting programmes already picked by its colours for a spectrum, so the mix of classes and colours is not that of the objects one would classify without one. Each programme picked its own kind of object, so the class mix of later years differs (quasars 15% of the spectra in 2010-2013, 31-46% from 2014).
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/sdss_17.md`](../../../../curation/records/sdss_17.md)
 - The original source: <https://www.sdss4.org/dr17/>
+- A copy (the Kaggle cut we download): <https://www.kaggle.com/datasets/fedesoriano/stellar-classification-dataset-sdss17>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
@@ -125,14 +131,16 @@ Only curators run `build`, when the dataset ships.
 | year | 2021 |
 | domain | physics & astronomy |
 | license | Public Domain |
-| data_tags | IID |
+| data_tags | Non-IID, Temporal |
 | reference | accetta2022seventeenth |
-| rows x columns | 99,999 x 9 |
+| copy: the Kaggle cut we download | Kaggle: https://www.kaggle.com/datasets/fedesoriano/stellar-classification-dataset-sdss17; license: Data files © Original Authors |
+| rows x columns | 99,999 x 10 |
 | task.target | ObjectType |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
-| task.split_regime | iid |
+| task.split_regime | temporal_non_iid |
 | task.stratify_on | ObjectType |
+| task.time_on | date |
 
 **Metric**
 
@@ -144,11 +152,11 @@ Only curators run `build`, when the dataset ships.
 | reason | SDSS DR17 (Abdurro'uf et al. 2022) is a data release with no prediction task or metric; the Kaggle 'Stellar Classification Dataset - SDSS17' is a dataset page, not a competition, with no evaluation metric. Our task (photometric classification, redshift/plate/fiber dropped) also differs from the SDSS pipeline's spectroscopic classification. |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 0 string, 1 datetime</summary>
 
 - categorical (2): `cam_col`, `ObjectType`
 - string (0): none
-- datetime (0): none
+- datetime (1): `date`
 
 </details>
 
@@ -172,15 +180,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 99,999 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+The first 5 of 99,999 rows of the final frame (the oldest rows: the frame is sorted by `date`). Cells are cut at 40 characters.
 
-| ObjectType | alpha | delta | u | g | r | i | z | cam_col |
-|---|---|---|---|---|---|---|---|---|
-| GALAXY | 43.0757 | -7.53488 | 20.1534 | 18.087 | 16.8219 | 16.3045 | 15.9552 | 4 |
-| GALAXY | 144.513 | 37.2579 | 26.0175 | 21.6857 | 20.3983 | 19.5617 | 18.8472 | 4 |
-| GALAXY | 154.497 | 24.6082 | 22.2532 | 19.6843 | 18.0458 | 17.4524 | 17.1149 | 5 |
-| STAR | 111.11 | 0.0704797 | 20.0446 | 17.9617 | 17.1131 | 16.8043 | 16.6175 | 3 |
-| STAR | 35.0845 | -3.95166 | 22.0295 | 19.0076 | 17.4528 | 15.9452 | 15.1156 | 4 |
+| ObjectType | alpha | delta | u | g | r | i | z | cam_col | date |
+|---|---|---|---|---|---|---|---|---|---|
+| GALAXY | 147.367 | 0.968375 | 20.5774 | 18.6007 | 17.7956 | 17.3458 | 17.0548 | 6 | 2000-03-05 00:00:00 |
+| STAR | 148.526 | -0.971684 | 18.4973 | 17.3707 | 16.979 | 16.8462 | 16.8012 | 1 | 2000-03-05 00:00:00 |
+| GALAXY | 147.905 | 0.412109 | 19.6471 | 18.2841 | 17.6248 | 17.2255 | 16.915 | 4 | 2000-03-05 00:00:00 |
+| GALAXY | 149.032 | 0.288143 | 19.69 | 18.4589 | 17.75 | 17.334 | 17.0785 | 4 | 2000-03-05 00:00:00 |
+| GALAXY | 149.185 | 0.242107 | 19.9649 | 18.1851 | 17.2796 | 16.8763 | 16.5733 | 4 | 2000-03-05 00:00:00 |
 
 ## Curation notes
 
@@ -188,31 +196,75 @@ The first 5 of 99,999 rows of the final frame (random rows: the frame is shuffle
 - We drop duplicate objects by sky position ("alpha", "delta"). The Kaggle CSV stores "obj_ID" as a rounded float, so deduplicating on it removed 21,947 distinct objects; by position there is a single object observed on two plates.
 - We dropped several (ID-like) meta-features that seem to be not part of the predictive task.
 - We drop "redshift". The SDSS pipeline fits the class and the redshift in the same step, and stars are only fitted within +-1200 km/s (Bolton et al. 2012, Sec. 3.1), so |redshift| <= 0.0041 identifies stars almost perfectly. The task is therefore photometric: classify an object from its position and u, g, r, i, z magnitudes.
-- We drop "plate" and "fiber_ID". A plate is one spectroscopic pointing (one or two nights, so it duplicates the dropped MJD) designed for one targeting program, so it encodes how the object was pre-selected from photometry rather than what it is: 11% of rows sit on plates that are at least 99% one class, and plate and fiber alone give OvR ROC AUC 0.80. A new object has no plate before it is targeted, and the fiber number is only a slot on the plate. Adding both to the photometry also makes LightGBM worse (log loss 0.334 -> 0.404).
+- We drop "plate" and "fiber_ID". A plate is one spectroscopic pointing (one or two nights, so it duplicates the observation date) designed for one targeting program, so it encodes how the object was pre-selected from photometry rather than what it is: 11% of rows sit on plates that are at least 99% one class, and plate and fiber alone give OvR ROC AUC 0.80. A new object has no plate before it is targeted, and the fiber number is only a slot on the plate. Adding both to the photometry also makes LightGBM worse (log loss 0.334 -> 0.404).
 - We set the sentinel -9999 (one row in u, g and z) to missing.
+- Split by the year of the spectrum instead of at random (2026-11-11, Andrej). Every row is a spectrum taken
+  on a dated night (the raw file's "MJD", now the time column "date") through a plate drilled for one
+  targeting programme, and the programmes changed what they observed: quasars are 3-11% of each year's
+  spectra in 2000-2009, 14-16% in 2010-2013 and 31-46% from 2014 on. A classifier in use is trained on the
+  spectra taken so far and labels objects the survey has not yet observed, so it has neither the test
+  object's plate-mates nor the later programmes, which the random split gave it. Log loss on the 99,999
+  objects, lower is better (untuned LightGBM with 500 trees, logistic regression, TabPFN 3.5 on 10,000
+  training rows and up to 5,000 test rows, the sky position alone through the 50 nearest objects):
+
+  | Split | Class shares | Position alone | Logistic regression | LightGBM, magnitudes only | LightGBM, as shipped | TabPFN 3.5 |
+  |---|---|---|---|---|---|---|
+  | random objects, 3 x 3 folds | 0.955 | 0.791 | 0.656 | 0.353 | 0.331 | 0.294 |
+  | by plate, 3 x 3 folds | 0.956 | 0.901 | 0.657 | 0.354 | 0.338 | 0.292 |
+  | by sky cell of 10 degrees, 3 x 3 folds | 0.957 | 0.992 | 0.663 | 0.357 | 0.354 | 0.301 |
+  | by year, 9 windows 2012-2020 (shipped) | 1.121 | 1.169 | 0.755 | 0.491 | 0.506 | 0.439 |
+
+  The LightGBM columns of the last row leave the date out; logistic regression and TabPFN had it, as the
+  shipped models do (untuned LightGBM with the date scores 0.540 against 0.506 without).
+
+  On the same rows, the 48,743 spectra of 2012-2020, LightGBM scores 0.391 out of fold under the random split
+  and 0.506 by year; on 2014 alone, the first eBOSS year, 0.441 against 0.530. Trained on a random draw of the
+  other years (later ones included, as many rows), its loss on 2014 falls from 0.530 to 0.470 and on 2016 from
+  0.501 to 0.444: part of what the random split buys is the later programmes. The sky position shows the same
+  from the other side: added to the five magnitudes it lowers LightGBM's loss under the random split (0.353 to
+  0.331) and raises it by year (0.491 to 0.506), because it teaches the sky footprints of past programmes. A
+  split by plate or by sky cell removes the test object's plate-mates but still trains on later programmes,
+  and the cell size sets the score (0.345 at 5 degrees, 0.373 at 20).
+- We keep "MJD" out of the features and bring it back only as the time column "date": a pointing id or an
+  observation date encodes the pre-selection, not what the object is.
 
 ## Splits
 
-Default splits.
+Nine one-year windows, 2012 to 2020, newest first; each trains on every spectrum taken before it, as a
+classifier refit at each yearly data release (DR8, January 2011, to DR16, December 2019) would. No gap: the
+pipeline's class comes with the spectrum, and a public user waits for the next release, which the one-year
+windows already stand in for.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 66,666 rows, test 33,333 rows.
+The windows train on 51.3% (2012) to 99.9% (2020) of the 99,999 objects and hold 11,044, 9,843, 5,849, 3,364,
+4,873, 5,989, 6,705, 935 and 141 spectra. Nine windows is what a task of this size gets as folds (3 repeats x
+3 folds), and the two smallest windows stay above the 50 test rows below which windows are widened, so the
+years are not merged.
 
-| repeat | fold | n_train | n_test |
-|---|---|---|---|
-| 0 | 0 | 66666 | 33333 |
-| 0 | 1 | 66666 | 33333 |
-| 0 | 2 | 66666 | 33333 |
-| 1 | 0 | 66666 | 33333 |
-| 1 | 1 | 66666 | 33333 |
-| 1 | 2 | 66666 | 33333 |
-| 2 | 0 | 66666 | 33333 |
-| 2 | 1 | 66666 | 33333 |
-| 2 | 2 | 66666 | 33333 |
+The year also holds out the test object's plate, which the random split did not: 0 to 5 plates per window
+were also observed before it, at most 90 test rows (0.9% of the 2013 window).
+
+9 repeat(s) x 1 fold(s) with seed 4267; train 51,256 to 99,858 rows, test 141 to 11,044 rows. Prediction horizon: 1 years.
+
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 99858 | 141 | 2000-03-05 00:00:00 | 2019-03-01 00:00:00 | 2020-02-16 00:00:00 | 2020-03-24 00:00:00 |
+| 1 | 0 | 98923 | 935 | 2000-03-05 00:00:00 | 2018-12-20 00:00:00 | 2019-01-01 00:00:00 | 2019-03-01 00:00:00 |
+| 2 | 0 | 92218 | 6705 | 2000-03-05 00:00:00 | 2017-12-26 00:00:00 | 2018-01-05 00:00:00 | 2018-12-20 00:00:00 |
+| 3 | 0 | 86229 | 5989 | 2000-03-05 00:00:00 | 2016-12-29 00:00:00 | 2017-01-05 00:00:00 | 2017-12-26 00:00:00 |
+| 4 | 0 | 81356 | 4873 | 2000-03-05 00:00:00 | 2015-12-22 00:00:00 | 2016-01-02 00:00:00 | 2016-12-29 00:00:00 |
+| 5 | 0 | 77992 | 3364 | 2000-03-05 00:00:00 | 2014-12-25 00:00:00 | 2015-01-08 00:00:00 | 2015-12-22 00:00:00 |
+| 6 | 0 | 72143 | 5849 | 2000-03-05 00:00:00 | 2013-12-31 00:00:00 | 2014-01-01 00:00:00 | 2014-12-25 00:00:00 |
+| 7 | 0 | 62300 | 9843 | 2000-03-05 00:00:00 | 2012-12-23 00:00:00 | 2013-01-03 00:00:00 | 2013-12-31 00:00:00 |
+| 8 | 0 | 51256 | 11044 | 2000-03-05 00:00:00 | 2011-12-31 00:00:00 | 2012-01-01 00:00:00 | 2012-12-23 00:00:00 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
+
+Accepted on purpose:
+
+- `meta_time_horizon_mismatch`: DR17's spectra end on 2020-03-24, so the newest calendar-year window holds the spectra of 16 February to 24 March 2020 only and its span reads as 38 days; the windows are calendar years (as cardiotocography).
 
 ## Data checks
 
@@ -222,13 +274,14 @@ Default splits.
 |---|---|---|---|---|---|
 | cam_col | category | 0 | 0 | 6 | 4, 3, 5, 2, 1, 6 |
 | ObjectType | category | 0 | 0 | 3 | GALAXY, STAR, QSO |
-| alpha | float64 | 0 | 0 | 99999 | 157.0985, 43.0757, 144.5135, 154.4966, 111.1102, 35.0845, 140.2722, 36.9024, 17… |
-| delta | float64 | 0 | 0 | 99999 | 63.1304, -7.5349, 37.2579, 24.6082, 0.0705, -3.9517, 50.5194, 0.4787, 50.9034, … |
-| u | float64 | 1 | 0 | 93747 | 24.6347, 24.6347, 24.6347, 24.6346, 24.6347, 24.6346, 23.6016, 20.5925, 22.4245… |
-| g | float64 | 1 | 0 | 92650 | 25.1144, 25.1144, 25.1144, 20.9825, 22.1929, 22.5637, 22.6548, 21.9479, 22.3717… |
-| r | float64 | 0 | 0 | 91901 | 24.802, 24.802, 24.802, 20.7224, 20.7466, 20.7653, 21.4462, 20.7558, 19.6175, 2… |
-| i | float64 | 0 | 0 | 92019 | 24.3618, 24.3618, 18.6331, 20.1935, 19.7921, 20.6777, 17.3595, 19.76, 20.4693, … |
-| z | float64 | 1 | 0 | 92006 | 22.8269, 22.8269, 22.8269, 22.8269, 19.5495, 17.8716, 19.5089, 19.9115, 19.0602… |
+| date | datetime64\[ns\] | 0 | 0 | 2180 | 2013-11-29 00:00:00, 2018-02-13 00:00:00, 2014-01-01 00:00:00, 2013-04-08 00:00… |
+| alpha | float64 | 0 | 0 | 99999 | 147.3668, 148.5264, 147.9054, 149.0324, 149.1849, 147.9312, 147.0827, 148.7535,… |
+| delta | float64 | 0 | 0 | 99999 | 0.9684, -0.9717, 0.4121, 0.2881, 0.2421, 0.9521, -1.2156, -0.5962, 0.9841, -0.8… |
+| u | float64 | 1 | 0 | 93747 | 24.6347, 24.6347, 24.6347, 24.6346, 24.6347, 24.6346, 24.6346, 24.6347, 20.5925… |
+| g | float64 | 1 | 0 | 92650 | 25.1144, 25.1144, 25.1144, 20.4269, 22.4174, 21.401, 21.2275, 21.1364, 21.7641,… |
+| r | float64 | 0 | 0 | 91901 | 24.802, 24.802, 24.802, 20.7224, 20.7466, 20.7653, 20.8977, 20.6485, 20.467, 20… |
+| i | float64 | 0 | 0 | 92019 | 24.3618, 24.3618, 18.6331, 20.7264, 19.7957, 20.6777, 19.7456, 19.7751, 20.2933… |
+| z | float64 | 1 | 0 | 92006 | 22.8269, 22.8269, 22.8269, 22.8269, 20.843, 19.5495, 19.2691, 19.8066, 19.8728,… |
 
 ### Target distribution
 
@@ -252,6 +305,9 @@ Default splits.
 
 ### Categorical features
 
+<details>
+<summary>Show the table (13 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | ObjectType | 1 | GALAXY | 59444 | 59.44 |
@@ -262,6 +318,13 @@ Default splits.
 | cam_col | 3 | 5 | 18537 | 18.54 |
 | cam_col | 4 | 2 | 17116 | 17.12 |
 | cam_col | 5 | 1 | 13227 | 13.23 |
+| date | 1 | 2013-11-29 00:00:00 | 249 | 0.25 |
+| date | 2 | 2018-02-13 00:00:00 | 228 | 0.23 |
+| date | 3 | 2014-01-01 00:00:00 | 217 | 0.22 |
+| date | 4 | 2013-04-08 00:00:00 | 216 | 0.22 |
+| date | 5 | 2013-04-03 00:00:00 | 201 | 0.2 |
+
+</details>
 
 ## Build
 
@@ -274,4 +337,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:26f97be6681072d004290ff8d2f46af22b5b90c3f4395c5a81d1972b632ddcbf` |
+| stale | yes: the definition now gives checksum `v2:1707eaa4729c494800b58faa7b765248e1e16b9f99d06a346941ef66894b58cc` |

@@ -1,5 +1,26 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11 (evening), sdss_17: Andrej's marks (nothing rebuilt)
+
+- Issue 2, D: split by the year of the spectrum instead of at random. The raw `MJD` becomes the time column `date`
+  in `_clean` (it stays out of the features as an id, and `plate` and `fiber_ID` stay dropped);
+  `Temporal(on="date", splits=TemporalSplits(window=1, unit="years", n_windows=9, min_train_fraction=0.5))` gives
+  nine calendar-year windows, 2012 to 2020, each trained on every earlier spectrum: 51,256 to 99,858 training and
+  141 to 11,044 test spectra (51.3% to 99.9% of the 99,999 objects). No gap. Reason: every row is a spectrum taken
+  on a dated night through a plate drilled for one targeting programme, and the programmes changed what they
+  observed (quasars 3-11% of each year's spectra in 2000-2009, 31-46% from 2014 on), while a classifier in use has
+  neither the test object's plate-mates nor the later programmes. Untuned LightGBM log loss 0.331 random, 0.338 by
+  plate, 0.354 by sky cell, 0.506 by year (0.391 against 0.506 on the same 48,743 spectra of 2012-2020); under the
+  year split TabPFN 3.5 0.439, logistic regression 0.755. The 2019 and 2020 windows hold 935 and 141 spectra, above
+  the 50 test rows below which windows are widened; 0 to 5 plates per window were also observed before it, at most
+  90 test rows. `task_summary` (`known`, `split`, `changes`, `fit_reason`), `splits_comment` and the curation
+  comments restated; `meta_time_horizon_mismatch` accepted (DR17 ends on 2020-03-24, so the newest calendar-year
+  window spans 38 days). 9 features, checksum `v2:1707eaa4...`; `dataset check` 0 errors, 0 warnings (1 accepted),
+  README regenerated.
+- Issue 4, B: a temporal split carries no time-basis tag, so `data_tags` stays empty. Issue 5, C: record tags
+  `Samples: Over Time`, `Time: Dated` and `Target: Varying Delay` in place of `Samples: No Time Dimension`,
+  `required_split` Temporal (NON-IID), tag `Non-IID (Temporal)`. Issues 1 and 3 stay open.
+
 ## 2026-11-11, the split count in scored units narrowed (nothing rebuilt)
 
 - SPLIT-33 and `recommended_dimensions` count the metric's groups only when the split holds each one out whole (the
