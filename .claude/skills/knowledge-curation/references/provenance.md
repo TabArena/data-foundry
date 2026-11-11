@@ -99,7 +99,7 @@ sources; they go into the comments. Cases: nyc_taxi_trip_duration, melbourne_hou
 all rows, labels taken from the wrong rating), check whether the origin has the clean data before keeping the damage
 or retiring the dataset, and repair or rebuild from the origin when it has them. Scaling over all rows is a weak leak:
 LEAK-30 in [leak_checks.md](leak_checks.md). Cases: SUPPORT2, ashrae, coad_colon_adenocarcinoma,
-corporate_credit_rating.
+corporate_credit_rating, lung_cancer.
 
 **PROV-14 (Must).** A repair stays under its record: the same units and the same features, with the damaged values
 restored from the origin (PROV-13), even when the table then differs from the release. Only a rebuild from other
@@ -248,6 +248,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | PROV-13, PROV-15 | SUPPORT2 | the copy's phase II physiology held rows of the wrong patient; restored from the study data (ICPSR 2957) | applied |
 | PROV-14 | SUPPORT2 (2_month_survival_rate_prediction), cirrhosis_patient_survival_prediction, framingham_heart_study_fhs | repairs: the same units and features, damaged values restored from the origin, kept under their records (framingham: 4,240 participants matched row for row on 15 features, 249 labels turned from Yes to No, 16 rows dropped); PROV-14 amended (2026-10-21, Lennart) | applied |
 | PROV-11, PROV-14 | corporate_credit_rating | a rebuild from other sources (the agencies' rating histories, SEC EDGAR): a new record, corporate_issuer_credit_rating (2026-10-16, Lennart) | applied |
+| PROV-14 | lung_cancer | rebuilt from the study's GEO deposit (one MAS5 array per specimen instead of Dataset A's MAS4 means) and given a new target and rows: a new record, lung_adenocarcinoma_metastasis, with lung_cancer retired, as coad_colon_adenocarcinoma and aeolus (2026-11-11, Andrej) | applied |
 | PROV-13 | ashrae | the readings put in kWh from the data owners' raw files | applied |
 | PROV-13 | coad_colon_adenocarcinoma | retired for a rebuild from the GDC's per-sample files | applied |
 | PROV-13 | corporate_credit_rating | retired for a rebuild from the agencies' own rating histories | applied |

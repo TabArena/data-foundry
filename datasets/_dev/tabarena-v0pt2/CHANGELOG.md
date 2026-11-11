@@ -240,6 +240,61 @@ horizon (...) is checked". The README files follow at the next `dataset check`; 
   alfa_battle_2_0_task_2, `"quarters"` for mortgage. Their frames and splits are unchanged; their containers carry
   the field at the next check.
 
+## 2026-11-11 (evening), lung_adenocarcinoma_metastasis reviewed (Andrej; no container built)
+
+- A full review panel (claim, column and split audits, a pathologist's view, a blind reviewer, a task gamer, a
+  precedent check, advocate and critic, mediator): ship after changes, all applied. The 67 `AFFX` control probes
+  dropped: they measure the preparation and separate the classes (ROC AUC 0.695 together; the earlier note of 0.42
+  came from a run that paired labels with the wrong arrays). Dropped as rows: AD355 and AD360 (no clinical data, like
+  the `A` patients) and AD218 and AD224, which the sheet codes inconsistently (the same second-review note, "ad w met?"
+  and "ad m met?", once a metastasis and once a primary; AD218 lies in the paper's colon expression cluster). 123 rows,
+  15 metastases (8 colon, 4 breast, 3 other), 5 per test fold.
+- Record markers `Class-dependent Recording` (the metastasis arrays call fewer genes present, ROC AUC 0.722; it runs
+  through every gene and stays, carrying a small part of the score) and `Selection Bias` (all resected
+  adenocarcinomas, while the question arises only after an earlier cancer elsewhere, which is not recorded); priority
+  1. The use-case reason restated: the flag is written in the tumour's pathology note but rests on an earlier cancer
+  outside the specimen (USE-1 text and Cases row). LEAK-15 gains the case, the TP-5 row the new numbers.
+- `dataset check` 0 errors, 0 warnings, README regenerated; task probe no flag (random forest 0.876, logistic
+  regression 0.836, LightGBM 0.811; out of fold on the 125 rows, colon metastases separated at 0.984, breast at 0.76).
+
+## 2026-11-11, lung_adenocarcinoma_metastasis added from lung_cancer's arrays (Andrej; no container built)
+
+- lung_adenocarcinoma_metastasis (new; BeyondArena v0.2 review page, lung_cancer issues 7, B, 4, B and 8, A): the
+  arrays of lung_cancer's GEO rebuild (one MAS5 array per tumour) with the target `Metastasis`, the study's flag of a
+  possible metastasis from another organ (sheet DATASET B of `SampleData.xls` in GEO's caArray archive, now
+  downloaded: 16 of the 127 adenocarcinomas with a clinical history, 8 colon, 4 breast, 4 other), the task the
+  source names as "a key issue in lung tumor diagnosis". Binary, ROC AUC (fallback), random stratified split, one
+  tumour per patient. The task probe raises no flag (random forest 0.887, logistic regression 0.850, 5 or 6
+  metastases per test fold). A new record, since rows, target and values changed (PROV-14, as coad and aeolus);
+  lung_cancer stays retired for the histology, with a CC line pointing here. Cases rows under USE-1 (rewritten),
+  TP-5 and PROV-14 (new); tcga_lung_histology's assessment notes the new dataset.
+
+## 2026-11-10, lung_cancer retired (Andrej; no container built)
+
+- lung_cancer (BeyondArena v0.2 review page, issue 6, B): `No (Retired)` with `No Good Target / Scientific
+  Discovery`, on its use case: the histology of resected tumours, which the slide settles, needs no prediction;
+  molecular typing matters on ambiguous small biopsies and tumours of unknown origin, which the data lacks. The
+  source never predicts the histology: Bhattacharjee et al. (2001) cluster the specimens into a taxonomy of
+  adenocarcinoma subclasses, and their one diagnostic claim is primary against extrapulmonary metastasis. The
+  study's other targets were tested and fail: 16 possible metastases (ROC AUC 0.861, about 5 per test fold);
+  survival after resection, where the arrays score near shuffled labels and stage and age carry the signal;
+  lymph-node involvement (0.60). Record CC line, `v2_path` cleared, folder removed; a Cases row under USE-1 beside
+  glioma_grading_clinical_and_mutation_features (no rule amended). `tcga_lung_histology` got an assessment line
+  raising the same question.
+
+## 2026-11-10, lung_cancer rebuilt from the study's arrays in GEO (Andrej; no container built)
+
+- lung_cancer (BeyondArena v0.2 review page, issue 1, D): the source is GEO GSE83227, the study's deposit of its
+  254 arrays, instead of the PNAS Dataset A, which averaged all arrays of each adenocarcinoma patient (47 rows, that
+  class only) and kept each array's overall intensity in its MAS4 values, so its spike-in control probes separated
+  the classes (ROC AUC 0.85). The definition downloads the series matrix and each array's MAS5 file and keeps one
+  array per specimen (a patient's tumour or its normal lung; the first piece and first hybridisation): 197
+  specimens, 196 patients, all 12,625 probe sets, split grouped by `patient` (patient 268 has an adenocarcinoma and
+  a normal lung). Spike-ins then reach 0.57, the scan date 0.58; logistic regression log loss 0.123 (0.141 on
+  Dataset A). `dataset check` passes (one info, `groups_not_clustered`). Record: CC and Assessment lines,
+  `required_split` Grouped, `source_links`, `checked_by`. LEAK-15 and LEAK-39 list it as repaired (was kept with a
+  note), PROV-13 as a case. Evidence in `~/claude_jobs/lung_raw/`.
+
 ## 2026-11-10, retirement records after the review page's marks
 
 - early_stage_diabetes_risk_prediction: reassessed on the review page and kept retired on several reasons together

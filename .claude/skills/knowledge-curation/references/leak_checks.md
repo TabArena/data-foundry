@@ -159,7 +159,11 @@ practice, and that cannot be undone (no batch id to drop, no format to harmonise
 dataset: a feature subset does not help when it also separates same-label groups. An artefact confined to features a
 practical model would not rely on is fixed (LEAK-13, LEAK-14, LEAK-39) or kept with a note. Test: probes 7, 8 and 17,
 and the score without the affected features. Cases: prostate_cancer_detection (retired), gallstone_disease (kept),
-lung_cancer (kept: the score is the same without the spike-in control probes).
+lung_adenocarcinoma_metastasis (kept: its metastasis arrays call fewer genes present, which runs through every gene
+but leaves logistic regression at 0.855 to 0.857 once each array's noise floor is subtracted; the control probes,
+which separate the classes, dropped), lung_cancer (repaired: rebuilt from the origin's per-array files, where the
+spike-in control probes no longer separate the classes; later retired on its use case; the arrays ship on as
+lung_adenocarcinoma_metastasis).
 
 **LEAK-39 (Must).** Rows of one class recorded through a separate route, found by a recording fingerprint (number
 formats, a derived column that follows another definition, a shifted measurement) rather than a source column, are
@@ -167,7 +171,9 @@ dropped when models recognise them and the route cannot be aligned with the othe
 went through it to calibrate it. Find them as rows of one class that share the formats the other class rarely has. Then
 score them against the other class out of fold, and score the other class's rows of the same route: when those are
 predicted as the first class, models learn the route, not the target. Test: probes 7, 9 and 17. Cases: gallstone_disease
-(dropped), lung_cancer (kept: models barely tell the replicate-averaged rows from the others).
+(dropped), lung_cancer (repaired: one array per specimen from the origin instead of the replicate means; models had
+barely told the averaged rows from the others; later retired on its use case; the arrays ship on as
+lung_adenocarcinoma_metastasis).
 
 **LEAK-40 (Should).** Gaps the source filled from neighbouring rows (interpolation, carried values) in a file sorted by
 class are tested, not assumed to leak: set the filled cells to missing and re-impute them inside each training fold
@@ -513,7 +519,7 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-39 | Part of one class recorded through a second route, found by a format fingerprint | drop the route's rows | gallstone_disease: 77 rows (72 with gallstones, 5 without); before the drop TabPFN 3.5 separates them from those without gallstones at 0.993, the other cases at 0.842, and scores the route's 5 without gallstones 0.77 (0.22 for the others) |
 | LEAK-40 | Gaps filled by interpolation down a class-sorted file | keep the fills when a label-free re-imputation inside each fold scores the same or higher | gallstone_disease: 134 fills kept (re-imputed, TabPFN 3.5 0.864; with the fills 0.838) |
 | LEAK-13 | A unit that changed over time while the classes changed over the same time | change the target so that the classes no longer follow the period; the unit then stays as recorded, a shift the time split tests (exception to CLEAN-21) | horse_colic_survival: `total_protein` in g/L for 95 horses (1 died, 27 euthanized) and in g/dL for 209 (64 died, 16 euthanized), the switch following the hospital number; the unit alone told died from euthanized at ROC AUC 0.79. Died and euthanized merged into did not survive, which the unit does not follow (Fisher p = 0.16); split in windows of case number |
-| LEAK-39, LEAK-15 | Part of one class averaged from replicate arrays, and control probes that separate the classes, neither carrying the score | keep both, with a note | lung_cancer: 47 of 139 adenocarcinomas are means of 2 to 4 arrays (none of the 58 other rows), told from single arrays at ROC AUC 0.59-0.62; the spike-in control probes alone separate the classes at 0.85; logistic regression log loss 0.141 as shipped, 0.140 with every value rounded to the shared grid, 0.146 without the averaged rows, 0.139 without the 67 control probes |
+| LEAK-39, LEAK-15 | Part of one class averaged from replicate arrays, and control probes that separate the classes, neither carrying the score | rebuild from the origin's per-array files when it has them; else keep both, with a note | lung_cancer: 47 of 139 adenocarcinomas are means of 2 to 4 arrays (none of the 58 other rows), told from single arrays at ROC AUC 0.59-0.62; the spike-in control probes alone separate the classes at 0.85; logistic regression log loss 0.141 as shipped, 0.140 with every value rounded to the shared grid, 0.146 without the averaged rows, 0.139 without the 67 control probes. The study's deposit (GEO GSE83227) has every array: one MAS5 array per specimen gives the same 197 specimens, spike-ins 0.57, scan date 0.58, log loss 0.123; rebuilt from it (2026-11-10, Andrej) |
 | PROV-3 ([provenance.md](provenance.md)) | Generated or manipulated data | retire (`AHDS`, `Data Quality Issue`) | ecommerce_shipping, customer_satisfaction_in_airline, homeq_default_prediction |
 | LEAK-22 | The cohort holds rows that cannot have the outcome | follow the paper's cohort | diabetes_130_us: encounters ending in death (1,084) or hospice (461) removed (Strack et al. 2014, Sec. 2.3) |
 | LEAK-23 | Only rows with the event, follow-up ending on one date (right truncation) | an outcome within a fixed horizon, over the rows followed that long | cirrhosis_patient_survival_prediction (time to death over deaths only until 2026-10-14; now death or transplant within 5 years) |
