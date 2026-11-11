@@ -1,5 +1,24 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11 (evening), qsar_oral_toxicity: the scaffold split named `Timeless` after dating (nothing rebuilt)
+
+- The chemicals were dated first, as the curator asked: 7,927 of 11,116 (71.3%) carry the publication year of the
+  report their LD50 came from, from the RTECS citations EPA's ToxValDB keeps per ChemIDplus record (1932-2023,
+  median about 1979). The label is the ChemIDplus value (93.8% agree within 2%).
+- A split by that year holds out less chemistry than the scaffold split: forward, 12.4% of test chemicals keep a
+  close training analog, against 13.1% for a random draw of the same size and 8.6% scaffold-disjoint, and 31.5% of
+  them share a scaffold with training; ROC AUC is 0.770 either way. The report year records when a test was run,
+  not which chemistry a screener has not met.
+- So `data_tags = ("Timeless",)` with a `Time basis:` bullet giving the coverage, the comparison and what the split
+  cannot test: a chemical class that enters the inventory later.
+- Correction carried into `fit_reason`, the fit bullet and the USE-8 cases row of the curation rules: the project's
+  48,137 untested chemicals were cited at 11.0% close analogs as the screening population, but 9,588 of them
+  (19.9%) share a QSAR-ready InChIKey with a chemical here, 22.4% match one exactly on the fingerprint and 31.4%
+  have a close analog, so a fifth of that set is not untested and the 11.0% holds only once those are set aside.
+- `dataset check` could not be run: the Milano package `vt_data.mat` is a copy the curator provided and is not in
+  this clone's warehouse. The definition's class-level validation passes (the prototype tag with its `Time basis:`
+  line, regime `Non-IID` / `Grouped` / `Timeless`), and the change touches no column, row or split.
+
 ## 2026-11-11 (evening), the twelve reviews of this round move into their records (nothing rebuilt)
 
 - The reviews written today as folder `REVIEW.md` files follow the convention of 2026-11-11: each one is now the

@@ -91,10 +91,12 @@ class QsarOralToxicity(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "The screening is simulated: the test rows are tested chemicals, held out by series but still closer to "
-            "the training chemicals than the untested ones a screener faces (16.3% against 11.0% have a close analog,"
-            " Tanimoto 0.7 or more; 24.7% under a random split). The score follows that distance (random forest ROC "
-            "AUC 0.715 for distant chemicals, 0.945 for close ones, under the random split)."
+            "The screening is simulated: the test rows are tested chemicals, held out by series (16.3% have a close "
+            "analog at Tanimoto 0.7 or more, against 24.7% under a random split). The project's untested "
+            "prediction set is a weaker reference than it looks: a fifth of it is not untested, since 9,588 of its "
+            "48,137 chemicals share a QSAR-ready InChIKey with one here, and 31.4% of it has a close analog among "
+            "them. The score follows the distance to training (random forest ROC AUC 0.715 for distant chemicals, "
+            "0.945 for close ones, under the random split)."
         ),
     )
 
@@ -173,8 +175,9 @@ class QsarOralToxicity(AbstractCuratedDataset):
         - Duplicates dropped, by structure (since 2026-11-01; by bit vector before): the salt forms, hydrates and stereoisomers of one compound share the QSAR-ready parent structure, the same 2D structure once the stereo marks are set aside (`canonical_smiles(..., stereo=False)`; 605 repeated structures over 1,345 rows). We drop the 720 exact copies and then every row of the 20 structures that occur with both classes (52 rows), as for wine_quality and jm1; ten compounds still keep two rows that are one InChIKey (tautomers the SMILES writes differently, all "No"), of which we drop the later row, so a test chemical never has its parent structure in train. 11,116 chemicals remain (933 very toxic, 8.4%; decision tables), 11 more than with the bit vectors, whose collisions had joined different chemicals. The source kept the copies: 233 evaluation rows repeat a calibration structure.
         - Note: the class depends on the counter-ion in some cases (sodium and potassium cyanide are very toxic, silver cyanide is not), which the parent structure does not show.
         - Split (Lennart, CC 2026-10-26, SPLIT-31 as amended; reopened from IID): grouped on the Bemis-Murcko scaffold of the QSAR-ready SMILES (`scaffold_groups`), 3 folds with 3 repeats. Chemicals without a ring (2,579, 23%) and those whose skeleton is the bare benzene ring (1,973, 18%: more than a tenth of the set and no series) are groups of their own. Since the extension of 2026-10-21 every row has its own QSAR-ready structure (InChIKey reproduced for 99.8%), so the scaffold is exact; the earlier reason for IID, structures linked by row order, no longer holds. All three source sets are random draws ("without supervised sampling of the chemicals based on structures", Mansouri et al. 2021), and the package's fixed training and test sets are not kept.
+        - Time basis: Timeless: whether a chemical is very toxic when swallowed is a property of the chemical, and the use case fills in an inventory that already exists rather than predicting for chemicals made later. The chemicals can be dated (7,927 of 11,116, 71.3%, from the RTECS citation years EPA's ToxValDB keeps per ChemIDplus record, 1932 to 2023, median about 1979), and a split by that year was measured against the scaffold folds: it holds out less chemistry, not more. Trained on the earlier years, the test chemicals keep a close training analog as often as a random draw of the same size (12.4% against 13.1%, and 8.6% when the training side is drawn scaffold-disjoint), and 31.5% of them share a scaffold with training, against none under the shipped split; ROC AUC is 0.770 forward and 0.770 scaffold-disjoint (random forest). The report year separates when somebody ran the test, not which chemistry a screener has not met. What the split cannot test is a chemical class that enters the inventory later (Andrej, 2026-11-11; evidence in the record's review).
         - Note: the score depends on how close a test chemical is to the training chemicals, the applicability domain of any QSAR model (random forest ROC AUC 0.715 below a Tanimoto similarity of 0.5 to the nearest training chemical, 9.6% of test rows, and 0.945 above 0.7). Chemotypes carry part of that: held out by their Murcko scaffold (2,577 acyclic chemicals each its own group, benzenes grouped) a random forest fell from 0.900 to 0.852 over 2 x 3 folds, with the model ranking unchanged (2026-10-21).
-        - Fit: approximate (Lennart, 2026-10-21: "a more simulated use case than a direct real case"). The test chemicals are members of the tested reference set; the untested chemicals of the project's 48,137-chemical prediction set have fewer close analogs: 11.0% at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits; median nearest similarity 0.486), against 16.3% for the test chemicals under the scaffold groups (median 0.519) and 24.7% under a random split (0.573).
+        - Fit: approximate (Lennart, 2026-10-21: "a more simulated use case than a direct real case"). The test chemicals are members of the tested reference set, held out by series: 16.3% have a close analog in training (Tanimoto 0.7 or more, Morgan radius 2, 2,048 bits; median nearest similarity 0.519), against 24.7% under a random split (0.573). The project's 48,137-chemical prediction set was read as the screening population at 11.0% (median 0.486), but it overlaps this data: 9,588 of its chemicals (19.9%) share a QSAR-ready InChIKey with one here and 7,295 a CASRN, 22.4% of it matches one of them on the fingerprint exactly, and 31.4% has a close analog among them (median 0.571). The 11.0% holds only once the identical chemicals are set aside, so the gap to a real screening population is less well pinned down than that one number suggests (2026-11-11).
         - Scope: the input is the molecular structure, as in qsar_tid_11. Before 2026-11-01, on repeat 0 of the shipped splits, a random forest on the authors' bits (ROC AUC 0.901) and LightGBM (0.885) match a similarity-weighted nearest-neighbour model of the paper's N3 kind (Tanimoto, weight sim^10: 0.893).
         - Licence: the package's readme states it is freeware to be used with a reference to the paper; the UCI copy of the two calibration sets is CC BY 4.0.
     """
@@ -182,6 +185,7 @@ class QsarOralToxicity(AbstractCuratedDataset):
     # Task
     target = "very_toxic"
     problem_type = "binary_classification"
+    data_tags = ("Timeless",)
     special_features = (Smiles(column="SMILES"),)
     metric = Metric.fallback(
         reason=(

@@ -3,6 +3,7 @@ unique_name: qsar_oral_toxicity
 name: QSAR oral toxicity
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -77,6 +78,12 @@ CC (2026-11-02, Lennart): on the de-duplication change of 2026-11-01, carried to
 document as a change that was not an instruction: "the changes look good". The copies are found on the 2D structure
 instead of the published ECFP bit vector, which moves the shipped row count from 11,105 to 11,116: the old key
 merged chemicals whose bit vectors collided rather than chemicals that are the same.
+
+CC (2026-11-11, Andrej): the scaffold split is named `Timeless`, after dating the chemicals (review issue 1, a).
+- Dated 7,927 of 11,116 (71.3%) from the RTECS citation years EPA's ToxValDB keeps per ChemIDplus record; the label is the ChemIDplus value (93.8% agree within 2%), and where that record carries a year it is the year assigned, for 100% of 4,870 chemicals.
+- A split by that year holds out less chemistry than the scaffold split: its test chemicals keep a close training analog as often as a random draw (12.4% against 13.1%, 8.6% scaffold-disjoint) and 31.5% share a scaffold with training; ROC AUC 0.770 forward and scaffold-disjoint alike (random forest).
+- So the report year records when somebody ran the test, not which chemistry a screener has not met, and the series split remains the one the use case asks for.
+- Correction: the project's 48,137 untested chemicals were cited at 11.0% close analogs as the screening reference. 9,588 of them (19.9%) share a QSAR-ready InChIKey with a chemical here and 7,295 a CASRN, 22.4% match one exactly on the fingerprint and 31.4% have a close analog, so a fifth of that set is not untested; the 11.0% holds only once the identical chemicals are set aside. Corrected in the definition and in the USE-8 cases row.
 
 ## Review
 
@@ -184,6 +191,17 @@ how far a test chemical stands from training (issue 1)?
    state the overlap. The frame was reproduced from the public NICEATM files (11,119 rows against the shipped
    11,116, 7,483 scaffolds against 7,481, the scaffold close-analog share 16.3% exactly as recorded), since the
    Milano package is not in this clone. Evidence in `~/claude_jobs/qsar_dating2/`.
+
+   **Andrej (2026-11-11, change):** Do qsar oral toxicity.
+
+   **Resolved (2026-11-11, Andrej):** a. The scaffold split stays and is named `Timeless`, on the dating rather than
+   on the inventory. Applied in `dataset.py`: `data_tags = ("Timeless",)` and a `Time basis:` bullet giving the
+   71.3% coverage, what the report year means and the measured comparison (forward 12.4% close analogs against 13.1%
+   for a random draw and 8.6% scaffold-disjoint, 31.5% of test chemicals sharing a scaffold with training, ROC AUC
+   0.770 either way), ending with what the split cannot test. The `11.0%` reading of the untested prediction set was
+   corrected in `fit_reason`, in the fit bullet and in the USE-8 cases row of the curation rules: 9,588 of its 48,137
+   chemicals (19.9%) share a QSAR-ready InChIKey with one here, 22.4% match a fingerprint exactly and 31.4% have a
+   close analog, so a fifth of it is not untested and the 11.0% holds only once those are set aside.
 
 ## Reference
 
