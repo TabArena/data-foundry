@@ -1,5 +1,19 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11 (evening), the twelve reviews of this round move into their records (nothing rebuilt)
+
+- The reviews written today as folder `REVIEW.md` files follow the convention of 2026-11-11: each one is now the
+  `## Review` section of its record, between `## Comments` and `## Reference`, and the file is gone. The twelve:
+  apistox, nci_aids_antiviral_screen, qsar_oral_toxicity, qsar_bioconcentration, qsar_biodeg, qsar_fish_toxicity,
+  qsar_aquatic_toxicity, drug_induced_autoimmunity_prediction, sdss_17, superconductivity,
+  protein_model_quality_rf_pcp and qsar_tid_11.
+- superconductivity and protein_model_quality_rf_pcp already had a review in their record from the earlier round, so
+  the two sides were merged by hand: superconductivity keeps Lennart's per-composition scoring issue of 2026-11-08
+  under the number this round gave it (3, with the round named in its title) next to today's issues 1 and 2; protein
+  keeps issue 10 from the earlier round and adds 11 and 12.
+- The pointers that named a review file are rewritten in the records and in `qsar_tid_11/dataset.py`
+  ("Review issue 2" for "REVIEW.md issue 2"). No definition, row, split or score changes.
+
 ## 2026-11-11 (evening), superconductivity: a temporal split by first report year (nothing rebuilt)
 
 - Issue 2, a (Andrej): the grouped split on the composition becomes three expanding windows by the year a
@@ -80,7 +94,7 @@
   validated against ECOTOX's own LC50 values (r = 0.92 and 0.90, median difference 0.02 and 0.06 log units).
 - Measured against the shipped scaffold folds, a forward split by first test year is not the stricter one: it leaves
   12 to 25% of test chemicals a scaffold the model has seen, which the scaffold split removes. The answers and the
-  tables are in each folder's REVIEW.md; the time basis is still open.
+  tables are in each record's Review; the time basis is still open.
 - `dataset check` passes for both (27 checks, 0 errors); the generated READMEs were rewritten.
 
 ## 2026-11-11 (evening), drug_induced_autoimmunity_prediction: Andrej's marks (nothing rebuilt)

@@ -153,7 +153,7 @@ class QsarTid11(AbstractCuratedDataset):
         - OpenML (uploaded 2015-10-06, creators the Meta-QSAR team) is the first publication; the Mendeley Data release
           (doi:10.17632/spwgrcnjdg.1) came in 2020 and computes the fingerprints with RDKit instead of Pipeline Pilot.
         - We drop the "MOLECULE_CHEMBL_ID" column after it has served the join to the structures and the years.
-        - Split by the year a compound first appears in the literature (Andrej, 2026-11-11; REVIEW.md issue 2, option
+        - Split by the year a compound first appears in the literature (Andrej, 2026-11-11; Review issue 2, option
           C), in place of the scaffold-grouped split of 2026-11-01. `first_year` is the earliest year among the
           documents of the compound's human thrombin (CHEMBL204) activity records in ChEMBL 17, the release the
           Meta-QSAR data was drawn from; it is a feature as well as the time column, as in the other temporal tasks
@@ -210,7 +210,7 @@ class QsarTid11(AbstractCuratedDataset):
           The potency itself is a fixed property of the compound; what moves with the year is which compounds exist,
           and with them the level of the targets (mean pXC50 6.43 up to 2003, 6.42 in 2004-05, 6.00 in 2006-07, 6.37
           in 2008-09, 5.44 in 2010-11, 5.77 in 2012-13; Spearman year against target -0.24).
-        - Assay limits (Andrej, 2026-11-11; REVIEW.md issue 1, option B): 654 targets (11.5%) sit at round limits
+        - Assay limits (Andrej, 2026-11-11; Review issue 1, option B): 654 targets (11.5%) sit at round limits
           (pXC50 4.30: 348, 5.00: 204, 4.00: 81, 4.70: 21); in a sample of 36 such compounds, ChEMBL holds 31 only as
           bounds (">" the top concentration tested), 3 as exact values and 2 not at all, so these are upper bounds of
           the potency stored as exact values, as in the Meta-QSAR file (LEAK-26: documented). They are the inactive
@@ -220,7 +220,7 @@ class QsarTid11(AbstractCuratedDataset):
           concentration its laboratory tested rather than "inactive"; whether a compound is active, the chemist's
           decision, is unaffected. The source (Olier et al., Sec. 2.2) takes "the median of those activities falling
           in the modal log unit" and does not say how bounds were treated.
-        - Collection facts (Andrej, 2026-11-11; REVIEW.md issue 3, option B): the compounds arrive over time and
+        - Collection facts (Andrej, 2026-11-11; Review issue 3, option B): the compounds arrive over time and
           ChEMBL dates them, so the record carries `Samples: Over Time` and `Time: Dated` in place of `Samples: No
           Time Dimension`. No `Target: Revised Later`: only 5.1% of the compounds have a thrombin record from a year
           later than their first, so a median label seldom moves after the compound's first publication.
