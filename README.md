@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-11 10:51 UTC: 158 claim(s) (Andrej 124, Lennart 12, Myunghwan 22).
+As of 2026-11-11 13:02 UTC: 159 claim(s) (Andrej 125, Lennart 12, Myunghwan 22).
 
 ## Andrej
 
@@ -81,6 +81,7 @@ As of 2026-11-11 10:51 UTC: 158 claim(s) (Andrej 124, Lennart 12, Myunghwan 22).
 | `ljubljana_breast_cancer` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `ljubljana_primary_tumor` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `loan_default_prediction_imperial_college` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `lung_adenocarcinoma_metastasis` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej); PR #75 |
 | `lung_cancer` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `lung_cancer_epithelial_genexp` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `mercari_price_suggestion` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
