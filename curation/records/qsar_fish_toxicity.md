@@ -8,7 +8,10 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
+- WIP (DF)
+claimed_by: Andrej
 suggestion: 'Yes'
+priority: 2
 tags:
 - Non-IID (Grouped)
 - 'Samples: No Time Dimension'
@@ -58,6 +61,13 @@ CC (2026-11-02, Lennart): on how the Milano workbook was downloaded ("freeware w
 through a public link rather than the authors' notification form): "that is okay for now, we can note it but it is
 not blocking us here". Noted here; regularise before this ships outside the group.
 
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the folder's `REVIEW.md`. Ship: a regulator's real toxicity task that now ships the structure with held-out series and separates methods; the overlap with qsar_aquatic_toxicity and the larger ADORE/Lunghini sets is a keep-and-settle question, not a validity problem. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
+
 ## Reference
 
 Cassotti, Matteo, et al. "A similarity-based QSAR model for predicting acute toxicity towards the fathead minnow (Pimephales promelas)." SAR and QSAR in Environmental Research 26.3 (2015): 217-243.
+
+CC (2026-11-11, Andrej): kept next to `qsar_aquatic_toxicity` with the overlap written into both definitions (the decision is recorded as issue 1 of `qsar_aquatic_toxicity`).
+- Counted by structure, from the two authors' workbooks rather than the earlier MLOGP estimate: 237 chemicals are in both, 26.1% of this set and 43.4% of the Daphnia set, 225 of them under the same CAS-RN.
+- Their LC50s correlate at r = 0.81 (Spearman 0.82), the Daphnia values 0.37 log units more toxic on average.
+- The species, the exposure time and the endpoint differ, so the two are different tasks of one study design, not duplicates; a method that suits the design gains on both.

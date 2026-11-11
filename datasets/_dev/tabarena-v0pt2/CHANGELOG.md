@@ -1,5 +1,22 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11 (evening), qsar_fish_toxicity and qsar_aquatic_toxicity: the overlap counted, the chemicals dated (nothing rebuilt)
+
+- qsar_aquatic_toxicity issue 1, B (Andrej): the two sets are kept side by side and the overlap is written into both
+  definitions. Counted on the canonical SMILES of the authors' two workbooks with the stereo set aside, 237 chemicals
+  are in both (43.4% of the Daphnia set, 26.1% of the fish set; 225 under the same CAS-RN) and their LC50s correlate
+  at r = 0.81, the Daphnia values 0.37 log units more toxic. This replaces the earlier estimate of 145 to 165 shared
+  chemicals from matching MLOGP values, which was all the UCI files allowed.
+- Both workbooks were obtained from the authors' own pages (the Google Apps Script behind the notification form
+  exposes the Drive file id), and their sha256 match the definitions' `download_description`.
+- The chemicals were dated through the EPA's ECOTOX bulk release on the curator's instruction: 850 of 908 fish
+  chemicals (93.6%) and 394 of 546 Daphnia chemicals (72.2% strict, 88.1% on the species-only join). The join is
+  validated against ECOTOX's own LC50 values (r = 0.92 and 0.90, median difference 0.02 and 0.06 log units).
+- Measured against the shipped scaffold folds, a forward split by first test year is not the stricter one: it leaves
+  12 to 25% of test chemicals a scaffold the model has seen, which the scaffold split removes. The answers and the
+  tables are in each folder's REVIEW.md; the time basis is still open.
+- `dataset check` passes for both (27 checks, 0 errors); the generated READMEs were rewritten.
+
 ## 2026-11-11 (evening), drug_induced_autoimmunity_prediction: Andrej's marks (nothing rebuilt)
 
 - Issue 2, B: the fit is `approximate`, `fit_reason` naming the undocumented negatives (a negative most likely means

@@ -7,7 +7,10 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-suggestion: Yes (Disagreement)
+- WIP (DF)
+claimed_by: Andrej
+suggestion: 'Yes'
+priority: 2
 tags:
 - Tiny Data
 - Non-IID (Grouped)
@@ -53,6 +56,7 @@ CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not 
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Cassotti et al. (2014) report Q2 with RMSE, no single task metric; r2 and rmse rank models the same within a fold.
 
+**Assessment (AI, 2026-10-27):** The open questions for the curator are in the folder's `REVIEW.md` (review of the Tiny Data datasets, written from the earlier findings, no review panel); the AI recommends shipping it. Priority 2: gap -, use case +, source +, shape -, risk - (a near-copy of qsar_fish_toxicity; a kept selection leak).
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `adore_aquatic_toxicity` (TBD -> Yes, priority 3), `aquatic_toxicity_lunghini_consensus` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 CC (2026-11-01, Lennart): go ahead for the structure-recoverable datasets: ship the SMILES only, as for qsar_tid_11. The authors' descriptors are one modelling choice; the benchmark encodes the structure.
@@ -62,6 +66,10 @@ CC (2026-11-01, Lennart): go ahead for the structure-recoverable datasets: ship 
 CC (2026-11-02, Lennart): on how the Milano workbook the structures come from was downloaded ("freeware with proper
 reference", fetched through a public link rather than the authors' notification form): "that is okay for now, we can
 note it but it is not blocking us here". Noted here; regularise before this ships outside the group.
+
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the folder's `REVIEW.md`. Keep with a note on its overlap with qsar_fish_toxicity: a different task (species, exposure time) of the same Milano design, now shipping the recovered structures with a scaffold split, so the old selection leak is gone; Andrej's redundancy dispute (issue 1) is the open call. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
+
+CC (2026-11-11, Andrej): keep both, note the overlap (BeyondArena v0.2 review page, issue 1, B; disagreement settled, `Yes`): a sibling of qsar_fish_toxicity from the same group, databases and pipeline, but another species (Daphnia magna, not the fathead minnow) and exposure time (48 h, not 96 h), so a different task (PROV-7). The overlap is in `curation_comments`: about 145 to 165 shared chemicals, estimated from matching MLOGP values, LC50s correlated at r = 0.75 on 89 one-to-one matches. The count by structure waits for the two authors' workbooks, which are not on this machine.
 
 ## Reference
 
@@ -75,3 +83,8 @@ note it but it is not blocking us here". Noted here; regularise before this ship
   year={2014},
   publisher={SAGE Publications Sage UK: London, England}
 }
+
+CC (2026-11-11, Andrej): kept next to `qsar_fish_toxicity` with the overlap written into both definitions (review issue 1, B).
+- Counted by structure, from the two authors' workbooks rather than the earlier MLOGP estimate of 145 to 165: 237 chemicals are in both, 43.4% of this set and 26.1% of the fish set, 225 of them under the same CAS-RN.
+- Their LC50s correlate at r = 0.81 (Spearman 0.82), the Daphnia values 0.37 log units more toxic on average.
+- The species, the exposure time and the endpoint differ (Daphnia magna 48 h against the fathead minnow 96 h), so the two are different tasks of one study design, not duplicates; the notes of both now say so, since a method that suits the design gains on both.
