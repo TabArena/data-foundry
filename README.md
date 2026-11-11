@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-11 15:47 UTC: 160 claim(s) (Andrej 126, Lennart 12, Myunghwan 22).
+As of 2026-11-11 17:45 UTC: 164 claim(s) (Andrej 130, Lennart 12, Myunghwan 22).
 
 ## Andrej
 
@@ -15,6 +15,7 @@ As of 2026-11-11 15:47 UTC: 160 claim(s) (Andrej 126, Lennart 12, Myunghwan 22).
 | `allstate_claims_severity` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `amazon_employee_access` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `anes_voting_2026` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
+| `apistox` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
 | `aps_failure` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `asp_potassco_classification` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
 | `audiology_diagnosis` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
@@ -92,6 +93,7 @@ As of 2026-11-11 15:47 UTC: 160 claim(s) (Andrej 126, Lennart 12, Myunghwan 22).
 | `micro_mass` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `musk` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `naticusdroid_android_permissions_dataset` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
+| `nci_aids_antiviral_screen` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
 | `noaa_afsc_bottom_trawl_survey_cpue` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `noaa_storm_events_damage` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `obesity_estimation` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
@@ -104,8 +106,10 @@ As of 2026-11-11 15:47 UTC: 160 claim(s) (Andrej 126, Lennart 12, Myunghwan 22).
 | `pricing_game_2017_french_mtpl` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `pva_revenue_prediction_kddcup98` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `qsar_aquatic_toxicity` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
+| `qsar_bioconcentration` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
 | `qsar_biodeg` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `qsar_fish_toxicity` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
+| `qsar_oral_toxicity` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
 | `qsar_tid_11` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `regensburg_pediatric_appendicitis` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `rossmann_store_sales` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
