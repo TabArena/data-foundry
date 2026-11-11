@@ -176,6 +176,7 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         - We keep the newest articles. The paper discarded articles less than three weeks old, but the shares of the 481 articles from 2014-12-18 on show no deficit (decision table).
         - No duplicate rows; the URLs are unique.
         - Text: the release holds statistics of the text only; a TF-IDF encoding of the URL slug does not help (R^2 0.152 with it).
+        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): `kw_min_min` is -1 (set to missing above) for every article of 2014 and recorded for most of 2013, so every test window lacks it while the train sides hold it. Kept: the data as published.
     """
 
     # Task
@@ -214,6 +215,10 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         "splits_rows_unused": (
             "By design: the 489 articles of 2014-12-07 to 2014-12-13 fall in the one-week gap before the newest window "
             "and in no test window, since the windows are one every five weeks (CC 2026-11-11)."
+        ),
+        "splits_feature_missing_in_test": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): `kw_min_min` is -1 (missing) for every 2014 article, so "
+            "every test window lacks it (curation_comments)."
         ),
     }
 

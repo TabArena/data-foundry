@@ -93,6 +93,10 @@ CC (2026-11-11, Lennart): the declared horizon (2 weeks, a one-week gap, windows
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` declares the nine cutoffs (2 weeks, gap 1 week); test 769, 1,003, 988, 902, 877, 855, 763, 785 and 699 articles (7,641), train 38,385, 36,031, 33,583, 31,354, 29,269, 27,020, 24,996, 23,035 and 21,234 (96.8% to 53.6% of 39,643); mean log shares 7.37 to 7.45 in the windows of June to December and 7.53 to 7.60 in those of March to May. The articles with the shifted authors' date are 3,880 of the 7,641 test articles (51%; 6,627 of 8,289, 80%, on the newest nine). The 489 articles of 7-13 December 2014 fall in the newest window's gap and in no test window; `accepted_check_warnings` accepts `splits_rows_unused` with that reason. `task_summary.split` and `splits_comment` are rewritten; the figures of `fit_reason` and `curation_comments` measured on the newest nine windows (R² 0.158, 0.135 and 0.143; ROC AUC 0.727 against 0.730; the masking test; the 0.9% and 0.4% of test rows; expanding against sliding) are dated as measured on the windows used until 2026-11-11, not measured again; `fit_reason` drops its rule reference to stay under 70 words. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
+CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note naming the columns (cross-dataset item "Accept splits_feature_missing_in_test where a column starts or stops being recorded within the history?", A: the data as the deployed model met it).
+
+**Assessment (AI, 2026-11-11):** `kw_min_min` is missing for 0% to 2% of the articles in 2013 Q1-Q3, 35% in Q4 and 100% in 2014.
+
 ## Reference
 
 A Proactive Intelligent Decision Support System for Predicting the Popularity of Online News

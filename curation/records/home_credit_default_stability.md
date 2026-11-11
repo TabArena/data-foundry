@@ -65,6 +65,10 @@ CC (2026-11-11, Lennart): the declared horizon (4 months, no gap, windows starti
 
 **Assessment (AI, 2026-11-11):** applied the horizon (c) and issue 1: `temporal` declares `TemporalSplits(window=4, unit="months", cutoffs=("2020-07-01", "2020-03-01", "2019-11-01"))`. Test 150,240, 143,724 and 403,789 applications (3,175, 4,714 and 15,541 defaults; 2.1%, 3.3%, 3.8%), all kept under the 500k test budget; train 1,376,419, 1,232,695 and 828,906 (90.2%, 80.7%, 54.3% of 1,526,659), so no window trains on less than half. The default 1M sample takes the newest 1M rows before July 2020 (from 11 June 2019; the year before holds 937,675), a random 1M of the 1,094,102 of the year before March 2020, and all 828,906 before November 2019. The windows hold 14, 19 and 18 weeks of WEEK_NUM; the Gini Stability's 88 x slope term has SE about 0.23, 0.17 and 0.08 there (Hanley-McNeil at an AUC of 0.8), about 20 times the SE of the mean weekly Gini, so the ROC AUC stand-in's reason holds and now gives these figures in place of "5-10 week". `dataset check`: 0 errors, 0 warnings.
 
+CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note naming the columns (cross-dataset item "Accept splits_feature_missing_in_test where a column starts or stops being recorded within the history?", A: the data as the deployed model met it).
+
+**Assessment (AI, 2026-11-11):** 12 columns recorded for 65% to 99% of the decisions until August 2019 stop by November 2019; 15 start in April to June 2020 (53% to 99% recorded from July 2020).
+
 ## Reference
 
 Daniel Herman, Tomas Jelinek, Walter Reade, Maggie Demkin, and Addison Howard. Home Credit - Credit Risk Model Stability. https://kaggle.com/competitions/home-credit-credit-risk-model-stability, 2024. Kaggle.

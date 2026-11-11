@@ -238,6 +238,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
         - The row budget: each test window keeps at most 500k of its rows (all of them here), and each train side holds every earlier row, so the frame keeps all 1,526,659 applications. The 1M train budget is recorded, not applied: a benchmark sub-samples each train side to 1M rows before a fit with `subsample_train`. Its default is the newest year before the window, extended back in time until it holds 1M rows, and a random 1M of those (splits comment), in place of TabReD's random sub-sampling of all earlier rows: the study of issue #70 found the newest year best for dated data.
+        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): 12 columns stop being recorded in September and October 2019 (`responsedate_1012D`, `birthdate_574D`, `pmtscount_423L`, `pmtssum_45A`, the four `*_pmtamount_36A`, `n_unique_employername_160M` and the three `*_processingdate_168D`), so the November 2019 window tests without them; 15 start between April and June 2020 (`contractssum_5085716L`, the four `*_contractsum_5085717L`, the four `*_amount_4917619A`, the three `*_deductiondate_4917603D`, `n_unique_name_4917606M`, `first_housetype_905L` and `responsedate_4917613D`), so the March and July 2020 windows train almost without them. Kept: the data as the bank recorded it, which a model refit then met too.
     """
 
     # Task
@@ -293,6 +294,10 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         "due of payment' (Kaggle feature_definitions.csv), negative means paid early; -1 is the mode of a smooth "
         "distribution (-1 4.8%, -2 4.7%, -3 4.2%, 0 3.8%, down to -1220), missing values are NaN, and the default "
         "rate rises from 2.1% (< -1) over 3.3% (-1) and 4.5% (0) to 8.6% (late).",
+        "splits_feature_missing_in_test": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): 12 columns stop in September-October 2019 and 15 start in "
+            "April-June 2020, as the bank recorded them (curation_comments)."
+        ),
     }
     row_budget = RowBudget(train=1_000_000, test=500_000)
 

@@ -258,6 +258,7 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
           shortest test period of the sources, in place of five half-years from January 2013 whose three oldest
           trained on 44.3%, 28.6% and 17.8% of the sales; issue 1 closes with it ("Agree."). The oldest window,
           October 2013 to April 2014, trains on 35.4%, signed off with the mark (splits comment).
+        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): the macro file gives `provision_retail_space_sqm` for 2011 and 2012 only and the two education shares (`modern_education_share`, `old_education_build_share`) from 2013 on, so their one-year lags are recorded in 2012-2013 and from 2014: the newest windows test without the first, and the oldest trains without the other two. Kept: the data as published.
     """
 
     # Task
@@ -301,6 +302,15 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
             "Signed off (Lennart, 2026-11-11, review issue H, a): October 2013 to April 2014 trains on 35.4% of the "
             "sales, beside December 2014 to June 2015 and May to November 2014 on 83.6% and 59.1%; SPLIT-14's two "
             "tiers admit it."
+        ),
+        "splits_feature_missing_in_test": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): three one-year lags of macro columns the source gives for "
+            "some years only (curation_comments)."
+        ),
+        "time_newest_period_short": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): 2015 holds 394 to 724 sales a month against 1,044 to "
+            "1,583 from September to December 2014, the market after the December 2014 rush; the data ends where the "
+            "competition's training file ends, 30 June 2015, not at a download cut."
         ),
     }
 

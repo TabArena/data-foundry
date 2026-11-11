@@ -72,6 +72,10 @@ CC (2026-11-11, Lennart): the declared horizon (one study, no gap, windows start
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` unchanged (`window=1, unit="unique", n_windows=9`); test 4,954, 7,442, 3,648, 5,488, 2,102, 1,066, 1,344, 1,554 and 1,534 respondents (2024 to 1996, 29,132 in all), train 43,633, 36,191, 32,543, 27,055, 24,953, 23,887, 22,543, 20,989 and 19,455 (89.8%, 74.5%, 67.0%, 55.7%, 51.4%, 49.2%, 46.4%, 43.2%, 40.0% of 48,587). `task_summary.split` and `splits_comment` now name the nine windows, the four under half with their shares, the length's reason (one election, the test Pew's likely-voter study names; no source sets a length) and why no gap is needed. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
+CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note naming the columns (cross-dataset item "Accept splits_feature_missing_in_test where a column starts or stops being recorded within the history?", A: the data as the deployed model met it).
+
+**Assessment (AI, 2026-11-11):** 95 questions flagged, each missing in at least one test election and recorded on its train side (e.g. VCF0401-VCF0411 last asked in 2004).
+
 ## Reference
 
 @dataset{anes_timeseries_cdf_2026,

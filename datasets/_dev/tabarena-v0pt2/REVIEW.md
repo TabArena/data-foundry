@@ -451,6 +451,14 @@
   `"splits_feature_missing_in_test"` with the count and the CC date, a CC line in the record, `dataset check`
   (0 errors), and a CHANGELOG entry. On B, also `dataset check` and the windows' statistics again.
 
+  **Lennart (2026-11-11, ok):** As recommended (A).
+
+  **Resolved (2026-11-11, Lennart):** A, consistent with delivery_eta_1m's issue 2 (2026-11-10). The seven definitions
+  name the columns and when they start or stop in a `curation_comments` bullet and accept
+  `splits_feature_missing_in_test` with the CC date (rain_in_australia gets its first `accepted_check_warnings`);
+  each record has the CC line and an Assessment with the shares. `dataset check`: 0 errors, the warning accepted on
+  all seven.
+
   [^fm1]: **CLEAN-22** (Must): "Columns leave for what they are (a leak, an identifier, a copy, the measurement that
     defines the label), never for how many there are."
 
@@ -483,3 +491,12 @@
   with a `curation_comments` bullet, then `dataset check` and its windows' counts; consumer_complaints_1m,
   rosbank1 and sberbank_housing_market_forecasting accept `"time_newest_period_short"` with the numbers and the CC date.
   Each gets a CC line in its record and a CHANGELOG entry.
+
+  **Lennart (2026-11-11, ok):** As recommended (A).
+
+  **Resolved (2026-11-11, Lennart):** A, consistent with kickstarter's cut of the scrape's last 60 days (2026-11-11).
+  coffee_rating_prediction drops the 2 reviews of October 2023 in `_clean`, with a note; its 2-month windows now walk
+  back from August-September 2023 (12 windows to October-November 2021, 62 to 137 test reviews each, in place of 13),
+  and the splits comment and the row description say so. consumer_complaints_1m, rosbank1 and
+  sberbank_housing_market_forecasting accept `time_newest_period_short` with the numbers of the table. Each record
+  has the CC line and an Assessment. `dataset check`: 0 errors on all four.

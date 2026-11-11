@@ -73,6 +73,12 @@ CC (2026-11-11, Lennart): the declared horizon (7 months, no gap, windows starti
 
 **Assessment (AI, 2026-11-11):** applied the horizon (a) and issue 1: `temporal` declares `TemporalSplits(window=7, unit="months", cutoffs=("2014-12-01", "2014-05-01", "2013-10-01"))`, confirmed with `window_bounds` on the definition's frame. Test 4,647, 6,936 and 6,704 sales (mean log price per square metre 11.84, 11.82, 11.80); train 23,674, 16,738 and 10,034 (83.6%, 59.1%, 35.4% of 28,321). The windows are adjacent: moving the oldest back lowers its train side (33.3% from September 2013, 31.1% from August). `accepted_check_warnings` takes `splits_train_under_half` with the sign-off; `dataset check`: 0 errors, 0 warnings, no `splits_floor_core` (the five half-years had three windows under half).
 
+CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note naming the columns (cross-dataset item "Accept splits_feature_missing_in_test where a column starts or stops being recorded within the history?", A: the data as the deployed model met it).
+
+CC (2026-11-11, Lennart): accepted `time_newest_period_short` with its reason (cross-dataset item "What to do with a newest period that holds far fewer rows than the periods before it?", A).
+
+**Assessment (AI, 2026-11-11):** the lag of `provision_retail_space_sqm` is recorded from 2012 Q1 to 2013 Q4, the two education lags from 2014 Q1; 2015 holds 394 to 724 sales a month, 1,044 to 1,583 from September to December 2014, with a flat log price (11.80 to 11.87).
+
 ## Reference
 
 Alex Matveev, Anastasia_Sidorova_50806198, and DataCanary. Sberbank Russian Housing Market. https://kaggle.com/competitions/sberbank-russian-housing-market, 2017. Kaggle.

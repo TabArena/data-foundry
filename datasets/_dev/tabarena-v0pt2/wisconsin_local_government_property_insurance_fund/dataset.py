@@ -172,6 +172,7 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
         - CC (2026-11-09, Andrej): the fund's premium stays a scoring column only, the Gini's base and no input (REVIEW.md issue 4 (a), "Scoring column only"): it is the outside agency's price the project's engine replaces, and as an input it is no leak and gains nothing.
         - CC (2026-11-09, Andrej): `prev_year_claims`, the member's claim count of the year before, is added (REVIEW.md issue 5 (b), "The previous year's claim count"); the year before's amount stays out.
         - CC (2026-11-10, Andrej): the losses stay uncapped in scoring, with each window's one-row swing in the notes, and the first tuned benchmark run decides whether the table tells methods apart (REVIEW.md issue 6 (A), "Uncapped, with notes and a gate").
+        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): `NoClaimCredit` is missing in 2006 and 2007 by construction (their two years before are not in the file, above), so the 2008 window trains on years without it. Kept.
     """
 
     # Task
@@ -219,6 +220,10 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
             "70.2% zeros: member-years without a building and contents claim (`Freq` 0), real no-claim years and not a "
             "cap or a placeholder; the batch's other zero-inflated targets are accepted on the same ground (Andrej, "
             "2026-11-03)."
+        ),
+        "splits_feature_missing_in_test": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): `NoClaimCredit` is missing in 2006 and 2007 by "
+            "construction, so the 2008 window trains on years without it (curation_comments)."
         ),
     }
     temporal = Temporal(

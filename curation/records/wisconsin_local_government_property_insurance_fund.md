@@ -146,6 +146,10 @@ CC (2026-11-10, Andrej): the losses stay uncapped in scoring; the notes state ea
 
 CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
 
+CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note naming the columns (cross-dataset item "Accept splits_feature_missing_in_test where a column starts or stops being recorded within the history?", A: the data as the deployed model met it).
+
+**Assessment (AI, 2026-11-11):** `NoClaimCredit` is missing in all 2,292 rows of 2006-2007 and in 3% to 4% of 2008-2010.
+
 ## Reference
 
 Frees, E.W., Lee, G., Yang, L. (2016). Multivariate Frequency-Severity Regression Models in Insurance. Risks 4(1):4.
