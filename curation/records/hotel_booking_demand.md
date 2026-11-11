@@ -7,6 +7,7 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 3
 tags:
 - Non-IID (Temporal)
 collections:
@@ -55,6 +56,14 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 calendar or compass cycles ordered; 1 columns with a state outside the scale ordered, the state placed by the rule; Meal's Undefined is SC (the paper), the meal plan ordered; the arrival month ordered.
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
+**Assessment (AI, 2026-11-10):** priority for the review of the test windows and horizons, which this record never had. Priority 3: gap 0, use case 0, source + (the data article of Antonio et al. 2019), shape +, risk 0 (the open issue is the choice of prediction dates).
+
+CC (2026-11-11, Lennart): REVIEW.md issue 1, reply (a) to the answer of 2026-11-11 ("Reply (a): All ten dates"; he had asked "Why can we not extend it or roll back from the newest data to include 1 Jun in option (A) as well?"): the test uses the ten prediction dates 1 September 2016 to 1 June 2017, today's nine and 1 June 2017, the newest date whose three months of arrivals the data holds; SPLIT-14 as amended on 2026-11-11 admits the two oldest, signed off here: 1 October and 1 September 2016 train on 48.3% and 44.0% of the bookings (two windows under half, eight at or above it).
+
+CC (2026-11-11, Lennart): the declared horizon (three months of arrivals, no gap, windows starting on the first of each month from 2017-06-01 back to 2016-09-01) is checked, as the source's system scores every open booking and sets no length, and three months hold 38% to 69% of the open bookings while letting the newest complete date reach June 2017 (REVIEW.md horizon, ok).
+
+**Assessment (AI, 2026-11-11):** applied issue 1 (reply a): `_make_splits` lists the ten dates (1 June 2017 added; its rules unchanged). Counted with the split's own rules on the 81,418 bookings: test 6,511, 6,390, 6,015, 5,768, 4,578, 2,500, 2,474, 3,228, 4,314 and 4,596 (1 June 2017 back to 1 September 2016), train 64,524, 60,693, 57,112, 53,850, 50,982, 48,617, 45,946, 42,942, 39,297 and 35,860 (79.3%, 74.5%, 70.1%, 66.1%, 62.6%, 59.7%, 56.4%, 52.7%, 48.3% and 44.0%); 10.9% of the newest date's test bookings are cancelled (12.5% at 1 May 2017). `task_summary`, the notes and `splits_comment` name the ten dates, the latest prediction point (1 June 2017, arrivals to 31 August 2017), the two dates under half and the horizon's reason. `dataset check`: 0 errors, 0 warnings, with `splits_train_under_half` accepted on the CC line above.
 
 ## Reference
 

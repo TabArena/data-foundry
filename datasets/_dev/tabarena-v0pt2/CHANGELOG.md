@@ -1,5 +1,154 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11, the curator's window decisions, round 3 (no container built)
+
+The curator's replies to the round-2 answers and consistency checks are applied; each takes the option the AI turn
+recommended. Every window under half the rows is signed off in the record and accepted in the definition with that
+date (SPLIT-14 as amended on 2026-11-11). The README files follow at the next `dataset check`.
+
+- airqo_low_cost_air_quality_monitor_calibration_challenge: August 2020 joins the test windows as a sixth month, the end
+  of the June-August dry season, training on 47.7% of the hours, signed off (issue 6, reply (c)); September 2020 stays
+  out because Nakawa has no earlier hour.
+- alfa_battle_2_0_task_2: months 14-15 replace 18-19 as the oldest test window, so the other half of the second year is
+  tested; it trains on 41.1% of the rows after the repeat-client filter, signed off (issue 5, reply (b)).
+- lending_club: test windows 2015 Q4, 2015 Q2 and 2014 Q4, spread over two years; 2014 Q4 trains on 45.9% of the loans,
+  signed off (issue 1, reply (b)); the gap-0 exception stays.
+- onlinenewspopularity: nine two-week windows, one every five weeks from 9 March to 27 December 2014, replace the newest
+  nine (issue 11, B); every train side keeps 53.6% or more; the newest window's gap week (489 articles) is in no split,
+  an accepted warning; figures measured on the old windows dated as such.
+- cooking_time_1m: the newest week and every other week before it (28 December-3 January, 14-20 December, 4-10
+  December), superseding the three newest weeks of 2026-11-10; 4-10 December trains on 37.5% of the orders, signed off
+  (issue 2, B).
+- chicago_traffic_crashes: one-month test windows with the one-month gap (the city's monthly fatal-crash review;
+  horizon, b), nine months spread from January 2023 to September 2026, each in another calendar month (issue 12, B), in
+  place of the nine newest quarters; the notification filter applies at each month start; every window trains on
+  57.5-98.1% of the crashes; the newest window's gap month is in no split, an accepted warning.
+- home_credit_default_stability_1m: four-month test windows (horizon, c), July to 5 October 2020, March to June 2020 and
+  November 2019 to February 2020, after, across and before the drop of late March 2020, in place of three two-month
+  windows from May 2020; the metric stand-in's reason gives the 14-19 weeks per window.
+- sberbank_housing_market_forecasting: seven-month test windows, the shortest test period of the sources (horizon, a),
+  December 2014 to June 2015, May to November 2014 and October 2013 to April 2014, in place of five half-years; the
+  oldest trains on 35.4%, signed off.
+- kickstarter: windows dated by launch (`launched_at`) with a 60-day gap, the 1,673 projects launched in the scrape's
+  last 60 days (from 2025-11-13 11:00) dropped (185,444 rows); the nine launch years 2025 back to 2017 are the test
+  windows, the three oldest on 47.0%, 40.2% and 32.4%, signed off (issues 1 and 2).
+- hotel_booking_demand: the test predicts at ten dates, 1 September 2016 to 1 June 2017 (1 June added); the two oldest
+  train on 48.3% and 44.0% of the bookings, signed off (issue 1, reply a).
+- g_research_crypto_forecasting_1m: test windows from 2021-10-25, 2020-12-22 and 2020-02-28 (the newest, the 2021 bull
+  run, the 2020 crash); the crash window trains on 48.25%, signed off (issue 9, reply a); issue 8's check against each
+  coin's naive forecast (TP-10 leg 1) is to be measured again on these windows.
+
+## 2026-11-11, the floor in two tiers and the curator's window decisions, round 2 (no container built)
+
+SPLIT-14 is amended (Lennart, 2026-11-11): the newest window and at least one other train on at least 50% of the rows;
+further windows may train down to 30% (lower only with a reason the curator accepts), and at most as many windows
+train under 50% as at or above; the splits comment names every window under 50%, and no model score is required. In
+every floor case of the two rounds at least two windows already kept half the rows; a flat 40% would still have cut
+windows the curator kept. `dataset windows` lists candidates down to 30%. The curator's round-2 marks are applied where
+the precedent check found them consistent; the README files follow at the next `dataset check`.
+
+- Windows changed: climate_model_weather_forecasting_1m (24-30 July, 1-7 May and 13-19 February 2023 with a 3-day gap,
+  as a forecast is issued up to three days ahead; horizon B, issue 1 B), pkdd_15_taxi_trip_time_prediction_ii_1m (the
+  calendar months February, April and June 2014; horizon B, issue 1 B), mortgage (2015 Q1, 2012 Q2 and 2009 Q3, the
+  calm, recovery and crisis regimes; issue 16 B), noaa_storm_events_damage (2025, 2021 and 2017; issue 16 B; the
+  newest window's gap rows are in no split, an accepted warning), rain_in_australia (26 fortnights one every 16 weeks,
+  May 2018 to January 2026; issue 7 B), rossmann_store_sales (20 June-31 July 2015, the Christmas weeks of 2014 and
+  late spring 2014; issue 1 B; the gap day in no split, an accepted warning).
+- Windows kept, now within the amended floor or argued anew: anes_voting_2026 (nine elections, the four oldest on 49.2%
+  to 40.0%), ieee_fraud_detection (March-May 2018, March on 38.9%), maps_router_eta_1m (the three newest weeks, the
+  oldest on 44.8%; the consistency check of 2026-11-10 closed; its full check was stopped after 52 minutes, the counts
+  are the definition's own), mercedes_benz_greener_manufacturing (nine windows of 320 cars, three on 46.7% to 31.5%),
+  melbourne_housing_market and perth_house_prices (stale texts fixed). Each has its horizon signed off.
+- g_research_crypto_forecasting_1m: the release's `supplemental_train.csv` (21 September 2021 to 24 January 2022,
+  2,518,278 rows) is downloaded and read with train.csv, the history features running across the seam (issue 10, B);
+  the frame grows to 26,001,823 rows, the model figures are dated to the windows that ended on 20 September 2021, the
+  91-day horizon is signed off, and issue 9 is proposed again on the longer history. The newest window holds 99
+  EOS.IO bars of 26-27 October 2021 with a Low near 1.09 at a price near 4.8, kept and noted.
+- Raised: consistency checks on airqo issue 6 (September scores a site without history), kickstarter issue 1 (six or
+  nine years), lending_club issue 1 (a 2014 quarter) and alfa_battle issue 5 (the other half of the year); answers on
+  the horizons of chicago_traffic_crashes (one month), home_credit_default_stability_1m (the scorecard argument; four
+  months), sberbank_housing_market_forecasting (seven months, the sources' shortest) and on hotel_booking_demand
+  (all ten dates) and onlinenewspopularity (nine or seventeen windows); cooking_time_1m issue 2 (every other week, now
+  that the floor opens 4-10 December). nyc_taxi_trip_duration_1m's horizon reason "calendar months would leave only
+  May and June above the floor" is reworded: months would now give three windows, but no source speaks for a month.
+- `/add-dataset` and the column auditor now list every file of a release and ask for a reason for each file left out
+  (g_research's supplemental file was never downloaded).
+- Every window under half the rows needs the curator's sign-off (Lennart, 2026-11-11): `dataset check` warns
+  `splits_train_under_half` (and `splits_train_under_floor` under 30%; a broken core is the error `splits_floor_core`),
+  counted on the curated frame's rows; the review raises it as an issue, and the definition accepts the warning only
+  with the curator's CC date. The six definitions already signed off accept it: wisconsin_local_government_property_
+  insurance_fund (2026-11-08), ashrae_great_energy_predictor_iii_1m (2026-11-10), anes_voting_2026,
+  ieee_fraud_detection, maps_router_eta_1m and mercedes_benz_greener_manufacturing (2026-11-11).
+
+## 2026-11-10, horizon audit and the curator's window decisions, round 1 (no container built)
+
+The curator's marks on the test-windows board (Lennart, 2026-11-10) are applied where the window length holds; a
+model-free audit argued each length from its source ("if the current time horizon makes sense and is justifiable keep
+it and resolve them, otherwise raise them"). Every temporal dataset on the board now has a `**Horizon:**` block in its
+REVIEW.md, which the curator signs off like the metric; each record of a settled horizon has the CC line "the declared
+horizon (...) is checked". The README files follow at the next `dataset check`; the containers at the next build.
+
+- aeolus_rebuilt_1m: test windows chosen by season (issue 1, B): 18-31 December, 3-16 July and 13-26 March 2024
+  instead of the newest six weeks; 14 days and the one-day gap stay, with a new reason (no source states a refit
+  cadence; two weeks keep a window under the 500k test cap and spread a single storm or outage). The 17,947 flights of
+  2024-12-17, the newest window's gap day, are in no split and leave the frame (13,690,703 rows); `TEST_WINDOWS`, the
+  fit reason's cancellation share and the notes on the earlier windows follow.
+- nyc_taxi_trip_duration_1m: test weeks 24-30 June, 27 May-2 June (Memorial Day) and 8-14 April 2016 instead of the
+  last three weeks of June (issue 1, B); 7 days and the one-day gap stay, with a new reason. The 8,028 trips of 23 June
+  leave the frame (1,434,623 rows); the April train side (766,644) is under the 1M budget; stale counts fixed and the
+  June LightGBM scores labelled.
+- delivery_eta_1m: test weeks 1-7 January, 18-24 December and 4-10 December 2023 (every other week; issue 1, B)
+  instead of the last three weeks; the 45 features `num_76` to `num_121` that stop on 23 November 2023 stay, with a
+  `Kept on purpose` note (issue 2, A: the prediction point, and the block is still present in every test window).
+- cooking_time_1m: the three weeks from 14 December 2023 to 3 January 2024 stay, now declared as cutoffs; the splits
+  comment says they are the only weeks above the 50% floor and lie before and over New Year (issue 1, B).
+- consumer_complaints_1m: test quarters October-December 2025, January-March 2025 and July-September 2024 (issue 1, B);
+  the quarter is stated as an assumed refit cadence, the "180 days" corrected to the CFPB's 15 and 60 days, and the
+  notes state the one to two months of open closures each train side holds.
+- ashrae_great_energy_predictor_iii_1m: windows unchanged (issue 1 resolved as A); the use case (a savings baseline fit
+  once and used for a year or more) is the reason for 4 months, SPLIT-14's amendment of 2026-11-08 the reason for the
+  oldest window (49.47%, was 49.12%), with LightGBM's RMSLE on the two valid windows next to all three; an ashrae row
+  under SPLIT-14 in splits.md's Cases.
+- numerai_v5_2_1m: windows unchanged (issue 12 resolved as A); Numerai's one-year ranking is the reason for 52-era
+  windows, and v5.0's feature date the reason for walking back from the newest.
+- "Refit every week (TabReD)" is removed from delivery_eta_1m and cooking_time_1m: TabReD states no refit cadence; a
+  week is its validation and test length.
+- Raised, not applied: the horizon sign-offs of pkdd_15 (calendar months, 30 days or a week), climate_model (a 3-day
+  gap, since a forecast is issued up to three days ahead) and home_credit (three-month windows), and g_research issue 10
+  (the release's supplemental file, 21 September 2021 to 24 January 2022); their window issues wait on these.
+- The review page shows each `**Horizon:**` block as the record's first issue, "H", in the issue shape (verdict, a
+  closed Details box with the declared windows, an options table with today's length as the implemented row,
+  recommendation); the blocks are rewritten in that shape, and the separate horizon issues of pkdd_15, climate_model
+  and home_credit are folded into their blocks.
+  maps_router_eta_1m issue 1 has a consistency check: the marked A keeps a train side of 44.8%, under the floor, and
+  the floor's 40% allowance needs recurring entities.
+- Window proposals with a Horizon block for the 17 other temporal datasets whose windows do not reach back to the 50%
+  floor or fall below it: mortgage, lending_club, kickstarter (and its issue 2: date by launch, since the scrape cuts
+  the newest year), alfa_battle_2_0_task_2, rain_in_australia, noaa_storm_events_damage,
+  airqo_low_cost_air_quality_monitor_calibration_challenge, chicago_traffic_crashes, rossmann_store_sales,
+  onlinenewspopularity, perth_house_prices, melbourne_housing_market, anes_voting_2026, ieee_fraud_detection,
+  mercedes_benz_greener_manufacturing, sberbank_housing_market_forecasting, hotel_booking_demand. The other 25
+  temporal definitions already use every window above the floor.
+
+## 2026-11-10, test windows chosen per dataset (SPLIT-15); proposals for the temporal `_1m` versions (no definition changed)
+
+- SPLIT-15 is rewritten: the newest window is always a test window, and the others are the curator's choice per
+  dataset, argued from the use case with statistics of the data, never a model's score. `dataset windows <name>`
+  lists the candidate windows with their months, rows, train share, target and feature drift; the README's splits
+  section describes the chosen windows ("The test windows", at the next check). Explicit `cutoffs` must include the
+  newest window; the 11 definitions that declare cutoffs do.
+- A proposal on the test windows is an open issue in the REVIEW.md of 11 temporal `_1m` versions, for the curator to
+  decide: other windows for aeolus_rebuilt_1m, climate_model_weather_forecasting_1m, delivery_eta_1m,
+  nyc_taxi_trip_duration_1m, pkdd_15_taxi_trip_time_prediction_ii_1m, maps_router_eta_1m, consumer_complaints_1m and
+  home_credit_default_stability_1m; today's windows for numerai_v5_2_1m and ashrae_great_energy_predictor_iii_1m;
+  cooking_time_1m has no alternative above the floor (its splits comment should say what it cannot test).
+  g_research_crypto_forecasting_1m's proposal is in the PR description, as its folder is held by another session.
+- Found on the way: maps_router_eta_1m's oldest window trains on 44.8% of all routes, below SPLIT-14's floor, now
+  that the container keeps every route (its proposal fixes it); ashrae_great_energy_predictor_iii_1m's January-April
+  window trains on 49.47% (the splits comment says 49.12%), under the floor's 40% allowance for recurring meters;
+  delivery_eta_1m's features change on 23-24 November 2023 (`num_96` goes from 1.8% to 99.7% missing, 31 of 217
+  numeric features move by more than half a standard deviation), which no curation note mentions yet.
+
 ## 2026-11-10, the `_1m` versions keep every training row (issue #70; no container built)
 
 - A `row_budget` now caps only the test sides in the container: each split tests on at most 500k rows, drawn as

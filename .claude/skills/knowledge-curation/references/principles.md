@@ -134,6 +134,10 @@ specific: [pipeline.md](../../knowledge-data-foundry/references/pipeline.md).
 * **An amendment** changes the rule. Its text is replaced in place under the same ID, with the date, the curator and
   the case that prompted it; the old wording goes, so the newer decision wins without two versions side by side. When
   the same reason has produced three exceptions, the next pass proposes an amendment.
+* **After an amendment**, run `decision_register.py --rule <ID>` and read every decision whose stated reason rests on
+  the old wording: reopen it as an issue when the amendment changes the choice, or reword its reason when the choice
+  stands on other grounds. When SPLIT-14's floor became two tiers (2026-11-11), cooking_time_1m's windows ("the only
+  weeks above the floor") were reopened and nyc_taxi_trip_duration_1m's horizon reason was reworded.
 
 ## Consistent judgement, the curator's included
 

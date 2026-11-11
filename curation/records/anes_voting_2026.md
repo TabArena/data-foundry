@@ -66,6 +66,12 @@ CC (2026-11-01, Lennart): counts with a cut end stay ordered categories of the s
 
 CC (2026-11-08, Lennart): the declared metric (`roc_auc`) is checked, as declared; the record ships, with no open issue on the PR #47 review board.
 
+CC (2026-11-11, Lennart): REVIEW issue 1 (which election years to test), as implemented (A): the nine studies 1996 to 2024 stay the test windows, in place of the AI's proposal of the five elections 2008 to 2024; SPLIT-14 as amended on 2026-11-11 admits the four oldest, which train on 49.2%, 46.4%, 43.2% and 40.0% of the respondents (four windows under half, not more than the five at or above it), and nine is the count a random split of this size gets.
+
+CC (2026-11-11, Lennart): the declared horizon (one study, no gap, windows starting 2024, 2020, 2016, 2012, 2008, 2004, 2002, 2000 and 1996) is checked, as a pollster builds a likely-voter screen from the elections already studied and applies it at the next one, so each window is one election and its model up to four years old.
+
+**Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` unchanged (`window=1, unit="unique", n_windows=9`); test 4,954, 7,442, 3,648, 5,488, 2,102, 1,066, 1,344, 1,554 and 1,534 respondents (2024 to 1996, 29,132 in all), train 43,633, 36,191, 32,543, 27,055, 24,953, 23,887, 22,543, 20,989 and 19,455 (89.8%, 74.5%, 67.0%, 55.7%, 51.4%, 49.2%, 46.4%, 43.2%, 40.0% of 48,587). `task_summary.split` and `splits_comment` now name the nine windows, the four under half with their shares, the length's reason (one election, the test Pew's likely-voter study names; no source sets a length) and why no gap is needed. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
 ## Reference
 
 @dataset{anes_timeseries_cdf_2026,

@@ -1,16 +1,22 @@
 # g_research_crypto_forecasting
 
 **Outcome:** added as `g_research_crypto_forecasting_1m`. G-Research's Kaggle competition data, one row per coin and
-minute (14 cryptocurrencies, January 2018 to September 2021): the target is the coin's return from one to 16 minutes
+minute (14 cryptocurrencies, January 2018 to January 2022): the target is the coin's return from one to 16 minutes
 ahead with the part that follows the market taken out, scored by the competition's Pearson correlation with each row
-weighted by its coin's `Weight`, on three 91-day test windows at the end, with a 15-minute gap and about 1M training
-rows drawn as whole minutes. A focused re-review of 2026-11-06 under the new rules on exposure and weights (LEAK-41,
+weighted by its coin's `Weight`, on three 91-day test windows, with a 15-minute gap and about 1M training rows drawn
+as whole minutes. A focused re-review of 2026-11-06 under the new rules on exposure and weights (LEAK-41,
 MET-14 to MET-16), by the claim auditor and the mediator, finds no leak and no need for a training weight, and
 recommends shipping after text changes; they are applied in `dataset.py`, and the README is regenerated (not built yet).
 Its one question, a confirmation, was settled on 2026-11-08: the model still clearly beats each coin's naive forecast,
-though the oldest window's lead includes 0 (issue 8, A, keep).
+though the oldest window's lead includes 0 (issue 8, A, keep). On 2026-11-11 you added the release's supplemental file,
+21 September 2021 to 24 January 2022 (issue 10, B, applied: 26,001,823 rows), and confirmed the 91 days and the
+15-minute gap (H, A); you then chose the test windows on the longer history: the newest from 25 October 2021, the 2021
+bull run from 22 December 2020 and the 2020 crash from 28 February 2020, the last training on 48.25% of the rows
+(issue 9, reply a, applied).
 
-Validity: SEL-10 and TP-10 hold, leg 1 by the reading Lennart confirmed on 2026-11-08 (issue 8). On the shipped splits a 12-seed
+Validity: SEL-10 and TP-10 hold, leg 1 by the reading Lennart confirmed on 2026-11-08 (issue 8), measured on the
+windows that ended on 20 September 2021 and to be measured again on the windows chosen on 2026-11-11 (issue 9). On the
+splits shipped before the newer months were added (windows to 20 September 2021) a 12-seed
 ensemble of early-stopped LightGBM leads the coin's mean by +0.038, +0.042 and +0.023 (newest window first); the 95%
 interval excludes 0 in the two newer windows, and pooled over the three the lead is +0.034 (SE about 0.008, z about
 4.3). Leg 2 is unchanged: no feature is a lag of `Target`, and the top solutions were LightGBM. SPLIT-9 and SPLIT-10
@@ -33,14 +39,51 @@ Weighed: the model leads the coin's mean in every window and by about 4.3 standa
 correlation is positive on 75-77 of 91 days (+), against the oldest window's interval including 0 and its R² below 0
 (-). Issue 8 settled on 2026-11-08: the test still holds.
 
-**Main points:** Open: none. Settled: the model still clearly beats each coin's naive forecast, ahead in every window
-and with the interval read pooled (issue 8, A, 2026-11-08). The training weight needs no decision.
+**Main points:** Settled on 2026-11-11: the test windows on the longer history are the newest from 25 October 2021,
+the 2021 bull run from 22 December 2020 and the 2020 crash from 28 February 2020, the last on 48.25% of the rows
+(issue 9, a); the supplemental file is added (issue 10, B) and the 91 days with a 15-minute gap hold (H, A). Settled
+earlier: the model still clearly beats each coin's naive forecast, ahead in every window and with the interval read
+pooled (issue 8, A, 2026-11-08), measured on the earlier windows and to be measured again on these. The training
+weight needs no decision.
 
 **Record judgment:** valid. G-Research's own competition data and use case, a first-hand source; the record's fields
 agree with the definition. The earlier review file (issues 1 to 7) was settled on 2026-10-22 and removed, before the
 rule of 2026-11-02 that keeps review files; its decisions are the record's CC line of that date, and the new issue is
 numbered 8 so that no old mark lands on it. The R² and weighted Pearson figures in the record's lines of 2026-10-07 to
 2026-10-22 were measured on earlier splits; the Assessment line of 2026-11-06 gives the shipped-split figures.
+
+**Horizon:**
+
+* **Verdict:** keep the 91-day windows (high confidence for the 15-minute target, medium-high for 91 days): each
+  window is the 91 days on which the competition scored every frozen model (2 February to 3 May 2022); the 15-minute
+  horizon is the target's own.
+* **Length:** two horizons: the target's (the return from one to 16 minutes ahead, fixed by the host) and the
+  window's (how long a fitted model trades before its refit). G-Research ran each team's models "for three months
+  against real live market data"
+  (https://www.gresearch.com/news/wrapping-up-the-g-research-crypto-forecasting-competition/), and "the model is fixed
+  after the training phase" (a participant's slides). No source gives a production refit cadence; a firm that refits
+  more often faces an easier task than the frozen 91 days.
+* **Gap:** 15 minutes: a row's target is known 16 minutes after it.
+* **Time frame:** 1 January 2018 to 23 January 2022: train.csv (to 20 September 2021) and, since 2026-11-11, the
+  release's `supplemental_train.csv`, 2,518,278 rows from 21 September 2021 to 24 January 2022 that continue it
+  (issue 10, B); the last minute with a target is 23:44 on 23 January 2022.
+* **Options:**
+
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | 91 days, 15-minute gap (implemented) | the competition's three months of live scoring per window; six candidates above the floor on today's grid, back to 24 March 2020 | 3 windows (issue 9's B) of 1.54M to 1.83M rows (500,000 rows tested, by whole minutes) | the period on which the competition scored every frozen model | no source gives a production refit cadence |
+  | B | 30 days | 20 candidates | 20 candidates of 495,144 to 604,766 rows (up to 500,000 rows tested, by whole minutes) | more windows to choose from | no source; scores a model refit more often, an easier task than the frozen 91 days |
+  | C | 182 days | exactly three windows, 24 March 2020 to 20 September 2021 | 3 windows of 3.22M to 3.67M rows (500,000 rows tested, by whole minutes) | the three windows cover every eligible day | no choice of windows; twice the competition's period |
+
+* **Recommendation:** A: the length on which the competition scored every frozen model, and no source gives another.
+  **Decision:** A, B or C?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, as implemented: windows of 91 days, the period on which the competition scored
+every frozen model, and a 15-minute gap, the target's own horizon. `splits_comment` gives this reason and the record's
+CC line says the horizon is checked. With the supplemental file (issue 10) the newest window runs from 25 October 2021
+to 23 January 2022; which other windows to test is issue 9. `dataset check`: 0 errors, 0 warnings.
 
 **Issues for Lennart:**
 
@@ -122,6 +165,255 @@ numbered 8 so that no old mark lands on it. The R² and weighted Pearson figures
    the coin's mean in every window by its point estimate and the interval read pooled, as for ashrae and
    rain_in_australia. The dataset stays as defined; the Scope bullet of the notes and the record's CC say so, and the
    rule's Cases row records the reading. `dataset check`: 0 errors, 0 warnings.
+
+9. **Which 91-day windows: the three newest, or the newest, the 2021 bull run and the crash of March 2020?**
+
+   * **Problem:**
+     - The newest window (22 June to 20 September 2021) always stays, and since 2026-11-10 the other two are chosen
+       from the use case and statistics of the data, preferring other years over the windows just before the
+       newest[^gr-split15].
+     - Today's two older windows (22 December 2020 to 21 June 2021) both fall in the busy market of 2021 and look
+       alike in the target's spread, the trading activity and the drift of the features, and no window tests 2020,
+       when trading was four to eight times quieter.
+     - A trading firm's model runs through quiet and busy markets and through crashes, and windows from 15 January
+       2020 on keep at least half the rows for training, so one window can test 2020 with its crash of 12 March.
+   * **Background:**
+     - The target is the coin's return relative to the market, so the market's direction drops out of it; what sets
+       the windows apart is the target's spread, the trading activity (`Count`, the trades of a coin in a minute: 69
+       at the median over all rows) and the price levels, which drift whenever prices leave their earlier range.
+     - The length of 91 days (the competition's three months of live scoring) and the 15-minute gap stay as they
+       are[^gr-split12]. On the 91-day grid of today's windows, six windows keep half the rows for training, back to
+       24 March 2020; with a step of 30 days the candidates reach back to 29 January 2020.
+     - The other 2020 candidates are quieter still and hold no crash: 24 March-22 June 2020 (target from -0.0027 to
+       0.0028, 49 trades a minute) and 23 June-21 September 2020 (66 trades, Bitcoin +7%). B takes the window with
+       the crash, Bitcoin's largest fall in one day in the data: -39% on 12 March 2020, against -17% (16 January
+       2018) and -14% (19 May 2021) for the next largest.
+     - PSI, the population stability index, compares a feature's distribution in the window with its train side;
+       above 0.25 is usually read as a large shift. The target's spread is the 10th to 90th percentile; on the train
+       sides it is about -0.0042 to 0.0042.
+   * **Statistics:** Bitcoin's daily closes, the trades and the train shares from all rows; the target and the drift
+     from the candidate tables (100,000-row samples of each side).
+
+     | Window | In | Bitcoin over the window | Worst day | Trades a minute (median) | Target, p10 to p90 | Median PSI (largest) | Train share |
+     |---|---|---|---|---|---|---|---|
+     | 22 Jun-20 Sep 2021 | A, B | +35% | -11% (7 Sep) | 201 | -0.0031 to 0.0031 | 0.035 (1.14, prices) | 92.2% |
+     | 23 Mar-21 Jun 2021 | A | -42% | -14% (19 May) | 483 | -0.0051 to 0.0051 | 0.219 (1.60, `Count`) | 84.4% |
+     | 22 Dec 2020-22 Mar 2021 | A, B | +138% | -13% (21 Jan) | 243 | -0.0055 to 0.0054 | 0.232 (1.01, `Count`) | 76.6% |
+     | 28 Feb-28 May 2020 | B | +9% | -39% (12 Mar) | 59 | -0.0032 to 0.0034 | 0.047 (0.20, prices) | 53.4% |
+
+   * **Effect on the task:** Under A, two of the three scores come from the busiest six months of the data (243 and
+     483 trades a minute at the median) and none from a quiet market. B keeps the newest window and the 2021 bull
+     run and adds the quiet market of 2020 with its crash, so the score covers both kinds of market.
+   * **Consistency:**
+     - Today's windows are the default, the last three windows of 91 days; the History bullet already notes that the
+       windows from 22 December 2020 to 21 June 2021 fall in the high-volatility market of 2021.
+     - Issue 8 read the model's lead over each coin's mean on today's windows; under B those figures are measured
+       again on the new windows before the change ships, as a check of the task, not as a reason for the windows.
+     - aeolus_rebuilt_1m has the same question open under the rewritten rule; no dataset has decided under it yet.
+   * **Sources:** the definition `datasets/_dev/tabarena-v0pt2/g_research_crypto_forecasting_1m/dataset.py`
+     (`temporal`, `splits_comment`, the Scope and History bullets of `curation_comments`); the record
+     `curation/records/g_research_crypto_forecasting.md`; the candidate table `.venv/bin/python -m
+     data_foundry.curation.cli dataset windows g_research_crypto_forecasting_1m --root datasets/_dev/tabarena-v0pt2`,
+     and with `--step 30`.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Three newest windows (implemented) | tests 22 Jun-20 Sep 2021, 23 Mar-21 Jun 2021 and 22 Dec 2020-22 Mar 2021 | the months closest to deployment; holds the crash of 19 May 2021; issue 8's figures stand | two windows from the same busy market, alike in spread, activity and drift; no window in 2020 |
+     | B | Newest, the 2021 bull run, the 2020 crash | tests 22 Jun-20 Sep 2021, 22 Dec 2020-22 Mar 2021 and 28 Feb-28 May 2020 | another year; a quiet market and the largest crash in the data; windows spread over the eligible history | the oldest trains on 53.4% of the rows; the crash of May 2021 leaves the test; issue 8's figures are measured again |
+
+   * **Recommendation:** B: a model that trades every minute has to hold in quiet and in busy markets, and A tests
+     the busy market of 2021 twice and the quiet one never; B swaps the near copy for the quiet market of 2020 with
+     the largest crash in the data. **Decision:** A or B?
+
+   **Notes for the AI:** on B, `temporal = Temporal(on="timestamp", splits=TemporalSplits(window=91, unit="days",
+   gap=15, gap_unit="minutes", sample_by="time", cutoffs=("2021-06-22", "2020-12-22", "2020-02-28")))`. Built with
+   `TemporalSplits.splits` on the definition's frame: test 1,832,105, 1,834,016 and 1,544,359 rows before the 500k
+   sampling by whole minutes, train 21,654,153, 17,985,995 and 12,545,715 (92.2%, 76.6%, 53.4%), each train side
+   ending at 23:44 the day before its window. Then rewrite `task_summary.split` ("Each test window is 91 days at the
+   end of the period"), `splits_comment` ("each of the last 3 windows of 91 days"), the History bullet (the sentence
+   on the 2021 regime) and the per-window figures of `fit_reason`, the Scope bullet and the probe note, which were
+   measured on today's windows; re-measure TP-10 leg 1 on the new windows (the 12-seed ensemble against the coin's
+   mean, day-block intervals) and add a turn to issue 8 if its reading changes; then a CC line, a dated CHANGELOG
+   entry and `dataset check` (SPLIT-15). On A, write the reason into `splits_comment`.
+
+   [^gr-split15]: **SPLIT-15** (Must for the newest window, Should for the others; amended 2026-11-10, Lennart and
+     Andrej): "The newest window is always a test window ... The other windows are the curator's choice, per dataset,
+     argued from the use case ... The evidence is statistics of the data, never a model's score ... Prefer windows in
+     other years, then other seasons, then other months, weeks or days, over the windows just before the newest."
+   [^gr-split12]: **SPLIT-12** (Should): the horizon is a human judgment from the source: how far ahead the actor
+     predicts, the competition's own test window, the refit cadence.
+
+   **Lennart (2026-11-10, discuss):** are we sure the forecast horizion here makes sense as well?
+
+   **Answer (AI, 2026-11-10):**
+   - The 91 days hold: they are the period on which the competition scored every frozen model (2 February to 3 May
+     2022), and the 15-minute horizon is the target's own; the Horizon block above gives the sources.
+   - The audit found a gap in the period instead: the release's supplemental file (21 September 2021 to 24 January
+     2022) is left out without a reason, and adding it moves the newest window and the floor. Issue 10 asks about it
+     first; this issue waits on it and is proposed again if you add the file.
+
+   **Lennart (2026-11-11, change):** Agree.
+   Option B: Newest, the 2021 bull run, the 2020 crash.
+
+   **Answer (AI, 2026-11-11):** With the newer months in, test your B (the newest window, the 2021 bull run and the
+   crash of March 2020), or add a window in 2019, or keep every train side above half?
+
+   * **Problem:**
+     - With the supplemental file the newest window is 25 October 2021 to 23 January 2022, the falling market after
+       Bitcoin's peak of 10 November 2021, and your B adds the 2021 bull run (22 December 2020 to 22 March 2021) and
+       the quiet market of 2020 with its crash (28 February to 28 May 2020).
+     - The crash window now trains on 48.2% of the rows, which the floor amended today admits as the one window under
+       half next to two above it[^g9-split14].
+     - The candidates now reach back to June 2019 (31.0%), so a window in another year is possible, and a quiet 2020
+       window from 27 April 2020 instead of the crash would keep every train side above half.
+   * **Background:**
+     - The target is the coin's return relative to the market, so the market's direction drops out of it; the windows
+       differ in the target's spread, the trading activity (`Count`, the trades of a coin in a minute) and how far the
+       features drift from the train side (PSI, the population stability index; above 0.25 is usually read as a
+       large shift).
+     - Until you decide, the definition tests the three newest windows (25 October, 26 July and 26 April 2021, on
+       93.0%, 85.9% and 78.9% of the rows); the windows starting from June 2021 on look like the newest (target p10 to
+       p90 about -0.0030 to 0.0030, median PSI 0.02 to 0.07), so this walk back tests a near copy of it (26 July)
+       and the busy market with the crash of 19 May 2021 (26 April: target -0.0043 to 0.0043, median PSI
+       0.161)[^g9-split15].
+     - The length (91 days) and the gap (15 minutes) are settled (H); each window keeps at most 500,000 test rows,
+       drawn as whole minutes. Issue 8's figures come from the windows that ended on 20 September 2021 and are
+       measured again on the windows you choose, as a check of the task, not as a reason for the windows.
+   * **Statistics:** Bitcoin's daily closes, the trades and the train shares from all 26,001,823 rows; the target and
+     the drift from 100,000-row samples of each side (`dataset windows`).
+
+     | Window | In | Bitcoin over the window | Worst day | Trades a minute (median) | Target, p10 to p90 | Median PSI (largest) | Train share |
+     |---|---|---|---|---|---|---|---|
+     | 25 Oct 2021-23 Jan 2022 | a, b, c | -40% | -10% (21 Jan 2022) | 180 | -0.0030 to 0.0029 | 0.035 (1.40, prices) | 93.0% |
+     | 22 Dec 2020-22 Mar 2021 | a, b, c | +138% | -13% (21 Jan 2021) | 243 | -0.0054 to 0.0054 | 0.235 (0.98, `Count`) | 69.2% |
+     | 27 Apr-26 Jul 2020 | c | +29% | -8% (10 May 2020) | 50 | -0.0026 to 0.0028 | 0.122 (0.17, price trends) | 52.1% |
+     | 28 Feb-28 May 2020 | a, b | +9% | -39% (12 Mar 2020) | 59 | -0.0032 to 0.0034 | 0.045 (0.17, prices) | 48.2% |
+     | 8 Jun-6 Sep 2019 | b | +29% | -13% (27 Jun 2019) | 59 | -0.0036 to 0.0036 | 0.055 (0.16, prices) | 31.0% |
+
+   * **Consistency:** windows spread over seasons or years instead of the newest ones follow the rule as rewritten on
+     2026-11-10 (aeolus_rebuilt_1m, nyc_taxi_trip_duration_1m, consumer_complaints_1m); one window under half next to
+     two above it is what wisconsin_local_government_property_insurance_fund (40.6%) and
+     ashrae_great_energy_predictor_iii_1m (49.47%) ship.
+   * **Options:**
+
+     | | Option | What it does | Test windows | Pro | Con |
+     |---|---|---|---|---|---|
+     | a | Your B: newest, the 2021 bull run, the 2020 crash | tests 25 Oct 2021-23 Jan 2022, 22 Dec 2020-22 Mar 2021 and 28 Feb-28 May 2020 | 3 windows of 1.54M to 1.83M rows (500,000 rows tested each, by whole minutes) | three markets: falling, booming, and quiet with the largest crash in the data; as many windows as a random split of this size gets folds | the crash window trains on 48.2% |
+     | b | B and 2019 | a's three windows and 8 Jun-6 Sep 2019 (the peak of June 2019 and its fall) | 4 windows of 1.54M to 1.83M rows (500,000 rows tested each, by whole minutes) | another year; the oldest market the floor admits | a fourth fit; two train sides under half (48.2%, 31.0%); 2019 looks like 2020 in trades and target spread |
+     | c | Every train side above half | tests the newest, the 2021 bull run and 27 Apr-26 Jul 2020 | 3 windows of 1.56M to 1.83M rows (500,000 rows tested each, by whole minutes) | every window trains on half the rows or more | the crash of March 2020 is only trained on; the quietest window, with the narrowest target |
+
+   * **Recommendation:** a: it tests three different markets, the falling one of the newest window, the 2021 bull run
+     with the widest target spread of the table and the quiet market of 2020 with the largest crash in the data, and
+     the amended floor admits its one window under half; b's 2019 window costs a fourth fit and a train side of 31%
+     for a market much like that of 2020. **Decision:** a, b or c?
+
+   **Notes for the AI:** on a, `temporal = Temporal(on="timestamp", splits=TemporalSplits(window=91, unit="days",
+   gap=15, gap_unit="minutes", sample_by="time", cutoffs=("2021-10-25", "2020-12-22", "2020-02-28")))`: test 1,830,834,
+   1,834,016 and 1,544,359 rows before the 500k sampling by whole minutes, train 24,170,779, 17,985,995 and 12,545,715
+   (93.0%, 69.2%, 48.2% of 26,001,823). On b, `cutoffs=("2021-10-25", "2020-12-22", "2020-02-28", "2019-06-08")`:
+   a's windows and test 1,567,015, train 8,055,354 (31.0%). On c, `cutoffs=("2021-10-25", "2020-12-22",
+   "2020-04-27")`: the third window tests 1,556,820 and trains on 13,547,573 (52.1%). Each train side ends at 23:44 the
+   day before its window (`window_bounds` on the definition's frame, 2026-11-11). Then rewrite `task_summary.split`
+   ("Each test window is 91 days at the end of the period"), `splits_comment` (the windows, why each, every window
+   under 50% with its share, and the sentence on the three newest), the History bullet's sentence on the windows and
+   the Scope bullet's "measured again" sentence; re-measure TP-10 leg 1 on the new windows (the 12-seed ensemble
+   against the coin's mean, day-block intervals) and add a turn to issue 8 if its reading changes; then a CC line, a
+   dated CHANGELOG entry and `dataset check`.
+
+   [^g9-split14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): "The newest window and at least one other train on
+     at least 50% of the data; further windows may train on less, down to 30% of the data, and at most as many
+     windows train on less than 50% as on 50% or more. ... The splits comment names every window under 50% and its
+     train share; no model score is required for it."
+   [^g9-split15]: **SPLIT-15** (Must for the newest window, Should for the others; amended 2026-11-10, Lennart and
+     Andrej): "Prefer windows in other years, then other seasons, then other months, weeks or days, over the windows
+     just before the newest."
+
+   **Lennart (2026-11-11, change):** Reply (a): Your B: newest, the 2021 bull run, the 2020 crash
+
+   **Resolved (2026-11-11, Lennart):** a: `temporal` declares `cutoffs=("2021-10-25", "2020-12-22", "2020-02-28")`
+   with the rest unchanged (91 days, a 15-minute gap, `sample_by="time"`). On the definition's frame of 26,001,823
+   rows the windows test 1,830,834, 1,834,016 and 1,544,359 rows before the 500,000-row sampling by whole minutes and
+   train on 24,170,779, 17,985,995 and 12,545,715 (93.0%, 69.2% and 48.25%), each train side ending at 23:44 the day
+   before its window, as the answer gave. The crash window's 48.25% is signed off with this mark: the record's CC line
+   names it and the definition accepts `splits_train_under_half` with it. `task_summary.split`, `splits_comment` (the
+   three markets and why each, the counts, the window under half) and the History bullet name the windows; the newest
+   window holds the 99 EOS.IO bars of 26-27 October 2021 that the Anomaly bullet notes, kept. Issue 8's reading (the
+   12-seed ensemble ahead of each coin's mean, TP-10 leg 1) was measured on the windows that ended on 20 September 2021
+   and has not been run on these: it is to be measured again on them, as `fit_reason` and the Scope bullet now say.
+   `dataset check`: 0 errors, 0 warnings.
+
+10. **Add the release's supplemental file, 21 September 2021 to 24 January 2022?**
+
+   * **Problem:**
+     - The release holds `supplemental_train.csv`, 2,518,278 rows from 21 September 2021 to 24 January 2022 that
+       continue train.csv without a seam, and the definition leaves it out without giving a reason.
+     - With it, the newest window becomes 25 October 2021 to 23 January 2022, the weeks just before the competition
+       scored its frozen models (2 February to 3 May 2022), and the data grow by 10.7%.
+     - It moves the floor, so issue 9's choice of windows depends on this one.
+   * **Background:**
+     - The file is dated 26 January 2022 and holds the same 14 coins and columns; Bitcoin closes at 43,002.5 on the
+       last minute of train.csv and at 42,947.1 on the first of the file, and peaks at 68,974 on 10 November 2021.
+     - The newest window is always tested, as the deployment period[^gr10-split15]; leaving out the release's newest
+       months moves that period back by four months.
+     - With the file, windows of 91 days that keep half the rows for training reach back to 27 April 2020, seven in
+       all; issue 9's option B window from 28 February 2020 (the crash of 12 March) would then train on 48.3%, below the
+       floor[^gr10-split14], and a window from 24 March 2020 on 49.9%. The crash would stay in every train side.
+     - The test period of the competition (February to May 2022) is not in the release, so the file holds no test
+       data of the competition.
+   * **Effect on the task:** A tests models up to September 2021. B tests them up to January 2022, closer to the period
+     the source scored, and issue 9 is proposed again on the longer history, without the March 2020 crash as a test
+     window.
+   * **Unknown:** why the definition left the file out: its notes name only the two files it reads.
+   * **Sources:** the competition's data page (https://www.kaggle.com/competitions/g-research-crypto-forecasting/data);
+     the evaluation phase (https://www.gresearch.com/news/wrapping-up-the-g-research-crypto-forecasting-competition/).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | train.csv only (implemented) | data from 2018 to 20 September 2021; issue 9 as proposed | issue 9's choice stands; the March 2020 crash can be a test window | the release's newest four months unused; the newest window ends four months before the source's own scoring |
+     | B | Add the supplemental file | data to 24 January 2022 (+2,518,278 rows); issue 9 proposed again | the deployment period the source scored next; every row the release has | the crash of March 2020 can only be trained on; issue 9 waits on a new proposal |
+
+   * **Recommendation:** B: the newest window stands for deployment, and the release's newest months are the closest
+     to the period the competition scored; the notes give no reason to leave them out. **Decision:** A or B?
+
+   **Notes for the AI:** on B, `_load_raw` reads `supplemental_train.csv` next to `train.csv` and concatenates them
+   (drop exact duplicates of `timestamp` and `Asset_ID`; check that the two do not overlap), the file goes into the
+   warehouse folder of the source (a copy was downloaded to the session's scratch folder on 2026-11-10), the
+   `download_description` names it, the notes name the third file and give the new span, then `dataset windows
+   g_research_crypto_forecasting_1m` again and a new proposal in issue 9; a dated CHANGELOG entry and a CC line.
+
+   [^gr10-split15]: **SPLIT-15** (Must for the newest window): "The newest window is always a test window".
+   [^gr10-split14]: **SPLIT-14** (Must): at least 3 windows, and no window's train side holds less than 50% of the
+     data.
+
+   **Lennart (2026-11-11, change):** Option B: Add the supplemental file.
+   Please do and raise this again, how did we miss this data in the first pass?
+
+   **Answer (AI, 2026-11-11):**
+   - How it was missed: the definition downloads two named files (`kaggle competitions download ... -f train.csv` and
+     `-f asset_details.csv`), so the supplemental file never reached the warehouse; the notes name only the two files
+     read, without a word on the third, and no step of `/add-dataset` or the review panel compares the files of a release with the files a
+     definition reads. The panels checked the definition against the data it loads, which had no gap to find.
+   - The fix going forward: the builder lists every file of the release (for Kaggle, `kaggle competitions files`) and
+     the notes say for each file left out why; the column auditor checks that list. This goes into `/add-dataset` and
+     the auditor's brief with this round.
+   - The file is being added now (B); issue 9's windows are then proposed again on the longer history, since the
+     newest window moves to October 2021-January 2022.
+
+   **Resolved (2026-11-11, Lennart):** B: `supplemental_train.csv` is in the warehouse folder next to train.csv and
+   matches the issue: 2,518,278 rows from 21 September 2021 00:01 to 24 January 2022 00:00, the same 14 coins and 10
+   columns, no (timestamp, coin) pair in both, its first minute the one after train.csv's last. `_load_raw` reads it
+   and `_clean` appends it to train.csv before the history features are built, so they run across the seam; the
+   frame grows from 23,486,468 to 26,001,823 rows and ends at 23:44 on 23 January 2022. The notes listed only the
+   two files read, which is how it was missed. They
+   now name the file and why it is read (the release's newest months, the closest to the competition's own
+   scoring), the release's files left out and why, and the new counts (753,261 rows without a target, 224 of them
+   train.csv's last 16 minutes, and 99 EOS.IO bars of 26-27 October 2021 with a Low near 1.09 against a price near
+   4.8, kept); the model figures of 2026-11-06 are dated to the windows that ended on 20 September 2021. The windows
+   stay the newest three of 91 days until issue 9 is decided: from 25 October, 26 July and 26 April 2021, training on
+   93.0%, 85.9% and 78.9% of the rows. The record has the CC and Assessment lines. `dataset check`: 0 errors, 0
+   warnings.
 
 **Review panel:** ship after changes, text only (mediator). Tier focused, a re-review of 2026-11-06 under LEAK-41 and
 MET-14 to MET-16: the claim auditor, then the mediator. Claims: 21; 15 hold (one with a wording caveat, fixed), 4

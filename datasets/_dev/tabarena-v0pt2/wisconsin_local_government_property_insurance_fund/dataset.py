@@ -200,6 +200,10 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
         ),
     )
     accepted_check_warnings = {
+        "splits_train_under_half": (
+            "Signed off (Lennart, 2026-11-08, review issue 3): the 2008 window trains on 40.6% of the rows, "
+            "beside 2009 and 2010 on 60.6% and 80.3%; SPLIT-14's two tiers admit it."
+        ),
         "task_time_on_few_unique": (
             "Five policy years, 2006-2010, the whole time axis of the file: the yearly windows train on two to four "
             "earlier years, and the file has no finer time."

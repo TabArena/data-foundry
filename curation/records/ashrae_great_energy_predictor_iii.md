@@ -6,6 +6,7 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
+priority: 4
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -53,6 +54,14 @@ CC (2026-10-15, Lennart): Temporal, not grouped: retrofit savings are measured o
 CC (2026-10-31, Lennart): marks on the review board of PR #37: cloud cover 9 (sky obscured, the amount cannot be estimated) set to missing (CLEAN-10).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `cbecs_2018_building_energy_use` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-10):** priority for the review of the test windows (PR #78), which this record never had. Priority 4: gap 0, use case + (ASHRAE names the savings estimate after a retrofit), source + (ASHRAE's competition with its overview paper), shape +, risk 0 (the open issue is the choice of windows).
+
+CC (2026-11-10, Lennart): test windows (`ashrae_great_energy_predictor_iii_1m`, issue 1), marked discuss: "Is four month even the right time horizion here? I feel we oculd go to 2 or 3 months easily". The horizon audit keeps 4 months, so by his instruction ("if the current time horizon makes sense and is justifiable keep it and resolve them") the issue resolves as A: January-April, May-August and September-December 2017 stay, the oldest window (49.47% of the rows) admitted by SPLIT-14's amendment of 2026-11-08.
+
+CC (2026-11-10, Lennart): the declared horizon (4 months, no gap, windows starting 2017-09-01, 2017-05-01 and 2017-01-01) is checked, as a savings baseline is fit once on the year before a retrofit and predicts the year or two after it without a refit, so the window is the longest that gives three windows inside 2017.
+
+**Assessment (AI, 2026-11-10):** applied: `temporal` unchanged; `splits_comment` and `task_summary.split` now give the use case as the reason for the length and SPLIT-14's amendment of 2026-11-08 as the reason for the oldest window (two windows above the floor, every test meter's building in training, folds by entity would test unseen buildings) in place of "the competition's setting", and 49.47% (19,325,311 of 39,062,170 rows) in place of 49.12%. Horizon audit (model-free): the competition trained on 2016 "to predict the second and third years" and ranked on 2018 (Miller et al. 2020, arXiv 2007.06933, Sec. 2.2); CalTRACK fits the baseline "to baseline data in the 365 days immediately prior" and computes savings with "the coefficients ... from the final model" (Sec. 3.1.3, 3.6.1.1); LBNL's NMEC guidance v2.0 (p. 10) uses one year of baseline and performance periods; 3-month windows give 9 candidates above the floor, 2-month 10, 12-month one. The amendment's score: LightGBM (one seed, default parameters, 1,000 trees, early stopping on the last 10% in time order of the default 1M sample of the newest year, the date in skrub's recommended encoding) scores RMSLE 1.212, 1.342 and 1.213, newest first: 1.277 on the two valid windows, 1.256 on all three; without the absolute date features (year, total seconds) 1.240, 1.176 and 1.247 (1.208 and 1.221). Either way the oldest window scores like the newest and moves the mean by about 0.02; May-August decides the direction.
 
 ## Reference
 

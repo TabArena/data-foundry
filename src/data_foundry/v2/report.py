@@ -38,6 +38,7 @@ from data_foundry.v2.dataset import (
     raw_name,
     split_summary,
 )
+from data_foundry.v2.windows import Window, window_stats
 
 if TYPE_CHECKING:
     from data_foundry.v2.dataset import AbstractCuratedDataset, CurationResult, ParentCheckResult
@@ -678,7 +679,57 @@ def _splits_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
             )
     table = split_summary(container.dataset, meta.splits, time_on=container.task_metadata.time_on)
     out = ["## Splits", "", meta.splits_comment.strip(), "", shape, ""]
-    return out + _maybe_collapsed(f"Show all {len(table)} splits", _table(table), len(table))
+    return out + _maybe_collapsed(f"Show all {len(table)} splits", _table(table), len(table)) + _window_section(result)
+
+
+WINDOW_REPORT_ROWS = 20_000
+"""Rows sampled per side for the README's window statistics."""
+
+WINDOW_REPORT_COLUMNS = (
+    "window",
+    "period",
+    "weekdays",
+    "n_test",
+    "train_share",
+    "target_test",
+    "target_train",
+    "psi_max",
+    "top_drift",
+    "unseen_categories",
+)
+
+
+def _window_section(result: CurationResult) -> list[str]:
+    """A temporal task's test windows described by data statistics: the evidence for the windows chosen (SPLIT-15)."""
+    container = result.container
+    task = container.task_metadata
+    if task.time_on is None:
+        return []
+    windows = [
+        Window(train=train, test=test, chosen=True)
+        for folds in container.experiment_metadata.splits.values()
+        for train, test in folds.values()
+    ]
+    stats = window_stats(
+        container.dataset,
+        windows,
+        time_on=task.time_on,
+        target=task.target_column_name,
+        problem_type=task.problem_type,
+        features=[c for c in feature_columns(container) if c != task.time_on],
+        time_unit=getattr(task, "time_unit", None),
+        n_rows=WINDOW_REPORT_ROWS,
+    )
+    shown = stats[[c for c in WINDOW_REPORT_COLUMNS if c in stats.columns]]
+    shown = shown.loc[:, [c for c in shown.columns if c != "weekdays" or shown[c].astype(bool).any()]]
+    intro = (
+        "Each test window against its train side, by statistics of the data, never of a model: the target, and the "
+        "population stability index (PSI) of each feature, its largest value and the features that drift most "
+        "(below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side "
+        f"never shows. Up to {WINDOW_REPORT_ROWS:,} rows per side. The candidates the windows were chosen from: "
+        f"`{CLI_COMMAND} dataset windows {container.dataset_metadata.unique_name}`."
+    )
+    return ["", "### The test windows", "", intro, "", _table(shown), ""]
 
 
 def _group_section(result: CurationResult) -> list[str]:

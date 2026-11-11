@@ -55,6 +55,12 @@ CC (2026-10-26, Lennart): verdict ship.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `fannie_mae_single_family_loan_performance` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-11, Lennart): REVIEW.md issue 16, B ("Option B: Three years, three seasons."): the test windows are periods 60, 49 and 38 (2015 Q1, 2012 Q2 and 2009 Q3), the calm years, the recovery and the crisis in three different quarters of the year, in place of the three newest quarters.
+
+CC (2026-11-11, Lennart): the declared horizon (one quarter, no gap, windows starting at periods 60, 49 and 38) is checked, as a quarter is the book's own backtest window and the label's own horizon, and the use case scores the book at every quarter's start (REVIEW.md horizon, ok).
+
+**Assessment (AI, 2026-11-11):** applied issue 16 (B): `temporal` declares `cutoffs=(60, 49, 38)`; test 8,004, 9,431 and 15,921 loan-quarters, train 613,649, 513,686 and 376,900 (98.7%, 82.6% and 60.6%); default / payoff 0.5% / 1.8%, 2.1% / 1.9% and 4.4% / 2.4% in the windows; 99.4%, 99.7% and 99.98% of the test rows' loans have earlier quarters in train; 37 rows of joining loans and 8 of the 501 dropped last rows fall in the new windows. The decision tables follow the cutoffs, and the LightGBM figures of the notes are marked as measured on periods 58 to 60. `dataset check`: 0 errors, 0 warnings.
+
 ## Reference
 
 @book{baesens2016credit,

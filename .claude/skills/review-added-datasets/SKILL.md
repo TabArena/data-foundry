@@ -17,13 +17,13 @@ reasonable: [principles.md](../knowledge-curation/references/principles.md). The
 report the page is built from: [`references/review_file_format.md`](references/review_file_format.md). Where the files
 live and when they go: [working_copy.md](../knowledge-data-foundry/references/working_copy.md).
 
-The page shows, per record, a tab row: Use case (the definition's `task_summary`: question, fields, use-case fit; then
-the declared metric with its origin, original, reference and reason, and the curator's mark on it; the tab every record
-opens on), Decisions (only what the curator decides: the numbered issues and the record fields that disagree with the
-definition), Panel (the review panel's reports, the mediator's open), Details (the outcome and the record judgment),
-`dataset.py`, the generated `README.md` and the curation record; below the tabs, the panel's recommendation and the
-verdict box. Other views: the issues that span datasets, and a summary of all verdicts. The page embeds a snapshot of
-every file at build time.
+The page shows, per record, a tab row: Use case (the definition's `task_summary`: question, fields, use-case fit; then,
+when the round asks about it, the declared metric with its origin, original, reference and reason, and the curator's
+mark on it; the tab every record opens on), Decisions (only what the curator decides: the numbered issues and the record
+fields that disagree with the definition), Panel (the review panel's reports, the mediator's open), Details (the outcome
+and the record judgment), `dataset.py`, the generated `README.md` and the curation record; below the tabs, the panel's
+recommendation and the verdict box. Other views: the issues that span datasets, and a summary of all verdicts. The page
+embeds a snapshot of every file at build time.
 
 Every issue has the same shape ([`references/review_file_format.md`](references/review_file_format.md), "Issues"):
 bullets for the problem, its effect, the experiments, the consistency with other datasets and the panel's sides, a
@@ -42,10 +42,27 @@ does not leave quick decisions behind long ones. Records without a priority come
 ```bash
 R=local-data-warehouse/_runs/<date>_review
 .venv/bin/python .claude/skills/review-added-datasets/scripts/collect_reviews.py --out $R/review_report.md \
-    [--names a,b] [--title <report title>] [--date <YYYY-MM-DD>]
+    [--names a,b] [--metric-marks a,b|all] [--horizon-marks a,b|all] [--title <report title>] [--date <YYYY-MM-DD>]
 .venv/bin/python .claude/skills/review-added-datasets/scripts/build_review_page.py $R/review_report.md \
     --out $R/review_page [--title "New Datasets Review"] [--subtitle <text>] [--tldr <yaml>] [--extra-crosscut <yaml>]
 ```
+
+**Only what is a choice of this round goes on the page.** The declared metric is on the page, with a mark, only for the
+records `--metric-marks` names: the datasets `/add-dataset` added or rebuilt in this round (their metric is new), a
+record whose issue proposes another metric, or when the curator asks for it. A record on the page for another question
+(a window, a column, a data change) shows no metric, and its metric never keeps it on the page (Lennart, 2026-11-10:
+"the metric was not a new issue or choice here, hence it should be resolved or hidden unless asked for"). The same
+holds for anything else: the page asks only what the round opened, and a settled point stays settled.
+
+**The horizon is signed off like the metric.** Every temporal dataset `/add-dataset` added or rebuilt in this round
+gets the curator's sign-off on its horizon and test windows: pass its name in `--horizon-marks` (also when the curator
+asks about a horizon). The Decisions tab then shows the REVIEW.md's `**Horizon:**` block as the record's first issue,
+"H", in the shape of every issue: the verdict, a closed Details box (the declared windows from `dataset.py`, the length,
+the gap, the time frame), the options table with today's length as the row marked `(implemented)`, and the
+recommendation, with the same marks (as implemented / change to an option / discuss). The record's CC line "the
+declared horizon (...) is checked" resolves it (Lennart, 2026-11-10: "for new datasets, the curator should also sign
+off on this (akin to how we sign off on the metric)"; "make it more similiar to the normal isues with a table and
+details collaped by default").
 
 Before building, check that every record on the page has a `priority`: the builder prints the count per priority,
 and `priority_factors.py` (in `knowledge-data-foundry/scripts/`, no names: every folder with a `REVIEW.md`) lists them
@@ -54,12 +71,13 @@ with the measured factors. Give a record without one its priority as `/add-datas
 
 `collect_reviews.py` reads every `datasets/_dev/tabarena-v0pt2/<folder>/REVIEW.md`, the open-issue blocks of the records
 and the working copy's own `REVIEW.md`, and writes one report; `--names` limits it to some records (the batch of one
-run). It leaves out a record with nothing left to decide (every issue resolved, no field row, the declared metric
-checked, nothing deferred or to verify from triage): such a record ships by default, and its decisions stay readable in
-its `REVIEW.md` (Lennart, 2026-11-08); `--keep-settled` keeps it, for a page that looks back or to check one settled
-file's report. When every record is settled, the report and the page hold only the items across datasets. It stops with
-the file and the line when a file breaks the format, and checks the report with the builder's parser; fix the file, not
-the scripts. The report is generated: never edit or commit it.
+run). It leaves out a record with nothing left to decide (every issue resolved, no field row, nothing deferred or to
+verify from triage, and, when `--metric-marks` or `--horizon-marks` names it, the declared metric or horizon checked):
+such a record ships by default, and its decisions stay readable in its `REVIEW.md` (Lennart, 2026-11-08);
+`--keep-settled` keeps it, for a page that looks back or to check one settled file's report. When every record is
+settled, the report and the page hold only the items across datasets. It stops with the file and the line when a file
+breaks the format, and checks the report with the builder's parser; fix the file, not the scripts. The report is
+generated: never edit or commit it.
 
 `build_review_page.py` writes `data.json` and `review_page.html` into `--out`. Both scripts need `markdown-it-py`
 (the `curation` extra: `uv pip install --python .venv/bin/python -e ".[curation]"`). Records whose definition has no
@@ -70,11 +88,12 @@ it is never committed.
 ## Step 2: Hand the page to the curator
 
 Either way the curator sets a verdict per record (ship / ship after changes / don't ship / discuss; for a record that
-was not added: add it / leave out; for a record that triage already decided: the update is correct / discuss), a
-mark per numbered issue (as implemented = the options row marked `(implemented)`; change = another row, named by its
-letter in the note, or a change the note describes; discuss) with optional notes, a mark on the declared metric (as
-declared / change / discuss, with a note), a mark per record-field disagreement (take the definition's value / keep the
-record's value), and a mark per cross-dataset item (go ahead / leave as is / discuss).
+was not added: add it / leave out; for a record that triage already decided: the update is correct / discuss), a mark
+per numbered issue (as implemented = the options row marked `(implemented)`; change = another row, named by its letter
+in the note, or a change the note describes; discuss) with optional notes, a mark on the declared metric and on the
+horizon where the round asks about them (as declared / change / discuss, with a note), a mark per record-field
+disagreement (take the definition's value / keep the record's value), and a mark per cross-dataset item (go ahead /
+leave as is / discuss).
 
 On each issue the buttons name what a mark locks in: "As implemented (A)" with the implemented row's letter, then
 "Change to:" with a button per other row of the options table and "other" (one "Change to B" button when there is
@@ -108,6 +127,7 @@ each document in the same shape. The fields:
 | | `items.<n>.re` | the id of the AI turn the mark or note replies to (set by the page; see below) |
 | | `fields.<key>` | `update` or `keep` for a record-field disagreement |
 | | `metric.d`, `metric.note` | `ok` (as declared), `change`, `discuss` for the declared metric, and a note |
+| | `horizon.d`, `horizon.note` | the same for the horizon and test windows of a temporal task |
 | `crosscut/<id>` | `d`, `note` | `ok`, `leave`, `discuss`, and a note |
 
 An issue whose last turn is the AI's (an answer or a consistency check) waits on the curator: the page counts it as
@@ -152,9 +172,18 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   `REVIEW.md` titled after the metric, so the conversation stays on the page.
 * **Parked:** a record with a `**Deferred (<date>):**` issue waits for it: the page shows "parked", does not count its
   metric and does not ship it by default.
-* **No open issue:** a record of the review whose issues, field rows and metric are all settled ships by default
-  (Lennart, 2026-11-05); apply it as **ship**, with the metric's CC line in the form the page reads ("the declared
-  metric (...) is checked, ..."); the next build leaves it off the page (Step 1). Until then the page shows
+* **The horizon (issue H):** `ok` keeps the windows; `change` applies the option the note names to `temporal` in
+  `dataset.py` (the windows follow SPLIT-14 and SPLIT-15 again, so a window issue of the record may need a new
+  proposal) and re-runs `dataset check`. Either way the record gets the CC line "the declared horizon (<length>,
+  <windows>, <gap>) is checked, ..." and the definition's `splits_comment` the reason from the Horizon block, and the
+  block a `**Resolved (<date>, <curator>):**` turn; `discuss`: an `**Answer (AI, <date>):**` turn in the block.
+* **A window under half the rows:** once the curator signs it off, the record gets the CC line and the definition
+  accepts `splits_train_under_half` (and `splits_train_under_floor` under 30%) in `accepted_check_warnings`, with the
+  windows, their shares and the CC date; never before the curator's mark (SPLIT-14, amended 2026-11-11).
+* **No open issue:** a record of the review whose issues, field rows and metric (when marked) are all settled ships by
+  default (Lennart, 2026-11-05); apply it as **ship**, with the metric's CC line in the form the page reads ("the
+  declared metric (...) is checked, ...") when the round marked the metric; the next build leaves it off the page
+  (Step 1). Until then the page shows
   "ship (no issues)".
 * **ship:** the definition stays; apply the item marks; the dataset joins the accepted set and is built later. The
   claim stays until the work goes to `main`: the PR that takes it there sets `DF: Yes`, and `claims release <name>`
@@ -162,7 +191,11 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   `claimed_by` in that PR.
 * **changes:** apply the changes, run `dataset check` and the probes they touch
   ([verification.md](../knowledge-curation/references/verification.md)), and put the record back to the curator with
-  what changed: the issues that stay open stay in the `REVIEW.md`.
+  what changed: the issues that stay open stay in the `REVIEW.md`. A change of the windows, the length or the rows
+  also searches the whole definition for what it makes stale: the old dates, counts and shares in `task_summary`,
+  `curation_comments`, `splits_comment` and the metric's reason, and every model figure measured on the old windows,
+  which is dated ("measured on the windows before 2026-11-11") or measured again. The reviews of 2026-11-10 and 11
+  found stale counts in four definitions after their windows had moved.
 * **dont:** retire it as [records.md](../knowledge-data-foundry/references/records.md) says (duplicates and
   retirements): the record gets `No` (or `No (Retired)` for a shipped dataset) with the reason as a marker and a CC
   line, its claim is released (`claims release <name>`), and the folder, its `REVIEW.md` with it, leaves the working

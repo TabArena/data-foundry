@@ -51,6 +51,7 @@ import ast
 import contextlib
 import dataclasses
 import datetime as dt
+import functools
 import hashlib
 import inspect
 import io
@@ -111,7 +112,8 @@ from data_foundry.v2.preprocessing import (
     order_positions,
     order_rows,
 )
-from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal
+from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal, TemporalSplits
+from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
 if TYPE_CHECKING:
     from data_foundry.schema import SpecialFeature
@@ -128,6 +130,12 @@ CLI_COMMAND = ".venv/bin/python -m data_foundry.curation.cli"
 that happens to be first on PATH."""
 
 DEFAULT_SPLITS_COMMENT = "Default splits."
+
+FLOOR_CORE = 0.5
+"""SPLIT-14's core: the newest window and at least one other train on this share of the rows or more."""
+
+FLOOR_LOWER = 0.3
+"""SPLIT-14's lower bound for further windows (amended 2026-11-11); lower only with a reason the curator accepts."""
 """The splits comment of every dataset on the recommended IID or grouped splits."""
 
 
@@ -1192,6 +1200,98 @@ class AbstractCuratedDataset(ABC):
             )
             raise DatasetDefinitionError(msg)
 
+    def window_stats(
+        self,
+        *,
+        window: int | None = None,
+        unit: str | None = None,
+        gap: int | None = None,
+        gap_unit: str | None = None,
+        step: int | None = None,
+        min_train_fraction: float = 0.3,
+        n_rows: int = 100_000,
+    ) -> pd.DataFrame:
+        """The candidate test windows of this temporal task and their statistics, for choosing its windows (SPLIT-15).
+
+        The candidates have the length, gap and step of the declared windows (``temporal.splits``) unless given here,
+        walking back from the newest data while every train side keeps ``min_train_fraction`` of the rows. The
+        definition's own windows are marked ``chosen``; one that no candidate matches (a cutoff on another date) is
+        listed as a row of its own. Statistics of the data only, never of a model
+        (:func:`~data_foundry.v2.windows.window_stats`): the dates and months, the sizes and train share, the target,
+        and the drift of the features from the train side. ``dataset windows <name>`` prints the table.
+        """
+        if self.temporal is None:
+            msg = f"{type(self).__name__}: window statistics are for a temporal task (`temporal = Temporal(...)`)."
+            raise DatasetDefinitionError(msg)
+        declared, on = self.temporal.splits, self.temporal.on
+        if declared is None and (window is None or unit is None):
+            msg = (
+                f"{type(self).__name__}: the splits are custom (`_make_splits`); give the candidates' window and unit."
+            )
+            raise DatasetDefinitionError(msg)
+        candidates = TemporalSplits(
+            window=window if window is not None else declared.window,
+            unit=unit if unit is not None else declared.unit,
+            gap=gap if gap is not None else (declared.gap if declared is not None else 0),
+            gap_unit=gap_unit if gap_unit is not None else (declared.gap_unit if declared is not None else None),
+            step=step if step is not None else (declared.step if declared is not None else None),
+            min_train_fraction=min_train_fraction,
+        )
+        df = self.df
+        task = self.task_metadata
+        # The features a model reads (as `feature_columns` of a container): no target, group, scoring column, training
+        # weight or unit of a unit weight (noaa_storm_events_damage's `cell` would read as all-new categories).
+        drop = {task.target_column_name, on, *as_column_list(task.group_on), *(c.column for c in task.scoring_columns)}
+        drop.update(as_column_list(task.sample_weight))
+        if task.unit_weight is not None:
+            drop.add(task.unit_weight.unit)
+        stats = functools.partial(
+            window_stats,
+            time_on=on,
+            target=task.target_column_name,
+            problem_type=task.problem_type,
+            features=[c for c in df.columns if c not in drop],
+            time_unit=self.temporal.time_unit,
+            n_rows=n_rows,
+            random_state=self.SPLIT_RANDOM_STATE,
+        )
+        if declared is None:  # custom splits: their own positions, on the frame they return
+            plan = self.make_splits(df)
+            own = [(train, test) for folds in plan.splits.values() for train, test in folds.values()]
+        else:  # the declared windows as position ranges: no index lists, however long the history
+            plan = SplitPlan(splits={}, df=df)
+            own = [
+                (range(b.train_stop), range(b.test_start, b.test_stop))
+                for b in protocol.window_bounds(
+                    df,
+                    time_on=on,
+                    window=declared.window,
+                    unit=declared.unit,
+                    n_windows=declared.n_windows,
+                    step=declared.step,
+                    gap=declared.gap,
+                    gap_unit=declared.gap_unit,
+                    cutoffs=list(declared.cutoffs) if declared.cutoffs is not None else None,
+                    min_train_fraction=declared.min_train_fraction,
+                )
+            ]
+        own_tests = {(test[0], test[-1]) for _train, test in own}
+        windows = [
+            dataclasses.replace(w, chosen=(w.test[0], w.test[-1]) in own_tests)
+            for w in candidate_windows(df, on, candidates, min_train_fraction=min_train_fraction)
+        ]
+        matched = {(w.test[0], w.test[-1]) for w in windows if w.chosen}
+        extra = [
+            Window(train=train, test=test, chosen=True) for train, test in own if (test[0], test[-1]) not in matched
+        ]
+        table = stats(df, windows)
+        if extra:  # a custom split's frame may leave out columns (hotel_booking_demand drops the outcome columns)
+            features = [c for c in df.columns if c not in drop and c in plan.df.columns]
+            table = pd.concat([table, stats(plan.df, extra, features=features)], ignore_index=True)
+        table = table.sort_values("test_start", ascending=False, kind="stable").reset_index(drop=True)
+        table["window"] = range(len(table))
+        return table
+
     def preview_splits(self, df: pd.DataFrame | None = None) -> pd.DataFrame:
         """One row per outer split with its train/test sizes, and time ranges for a temporal task."""
         plan = self.make_splits(df)
@@ -1202,6 +1302,7 @@ class AbstractCuratedDataset(ABC):
         """Rebuild the frame from the raw data, split it and attach the metadata. Nothing is saved."""
         df, test = self.process()
         plan = self.make_splits(df)
+        self._frame_rows = len(df)  # the floor counts every row, also those a row budget leaves out of the container
         horizon, unit = _horizon(type(self))
         gap, gap_unit = _gap(type(self))
         splits_metadata = PredictiveMLSplitsMetadata(
@@ -1370,6 +1471,7 @@ class AbstractCuratedDataset(ABC):
             ("task", lambda: task_checks.task_findings(container)),
             ("extra", lambda: self._extra_checks(container)),
             ("raw files", lambda: self._raw_file_findings(container.dataset_metadata.raw_files)),
+            ("floor", lambda: self._floor_findings(container)),
         ):
             try:
                 own += run()
@@ -1394,6 +1496,67 @@ class AbstractCuratedDataset(ABC):
             print("\n".join(["Metric:", *container.task_metadata.objective_metric.describe_lines()]))
             print(report.summary())
         return report
+
+    def _floor_findings(self, container: CuratedContainer) -> list[CheckResult]:
+        """SPLIT-14 (amended 2026-11-11): the newest window and at least one other train on at least half the rows,
+        further windows down to 30%, never more windows under half than at or above it.
+
+        A window under half is a warning the curator signs off (the review raises it as an issue, and the definition
+        accepts the warning once the record carries the curator's CC line); under 30% a warning that needs a reason
+        the curator accepts; a broken core an error. The shares count every row of the curated frame: a `_1m`
+        version's container keeps every training row but samples its test windows.
+        """
+        if self.temporal is None:
+            return []
+        n_rows = getattr(self, "_frame_rows", None) or len(container.dataset)
+        windows = [
+            (repeat, len(train) / n_rows)
+            for repeat, folds in container.experiment_metadata.splits.items()
+            for train, _test in folds.values()
+        ]
+        if len(windows) < 2:
+            return []
+        shares = {repeat: share for repeat, share in windows}
+        newest = min(shares)  # repeat 0 is the newest window
+        core = [r for r, s in shares.items() if s >= FLOOR_CORE]
+        under = {r: s for r, s in shares.items() if s < FLOOR_CORE}
+        low = {r: s for r, s in under.items() if s < FLOOR_LOWER}
+        listed = ", ".join(f"window {r} on {s:.1%}" for r, s in sorted(under.items()))
+        findings = []
+        if newest not in core or len(core) < 2 or len(under) > len(core):
+            findings.append(
+                CheckResult(
+                    "splits_floor_core",
+                    "error",
+                    f"The core of SPLIT-14 does not hold: {len(core)} window(s) train on half the rows or more"
+                    f"{'' if newest in core else ', not the newest'}, {len(under)} on less ({listed}).",
+                    hint="The newest window and at least one other train on at least 50% of the rows, and at most as "
+                    "many windows train on less (knowledge-curation splits.md, SPLIT-14).",
+                )
+            )
+        if under:
+            findings.append(
+                CheckResult(
+                    "splits_train_under_half",
+                    "warning",
+                    f"{len(under)} window(s) train on less than half the rows: {listed}.",
+                    hint="SPLIT-14 admits them, but the curator signs off each: raise it in the REVIEW.md, and once "
+                    "the record carries the curator's CC line, accept this warning with that date.",
+                )
+            )
+        if low:
+            findings.append(
+                CheckResult(
+                    "splits_train_under_floor",
+                    "warning",
+                    "Window(s) under SPLIT-14's lower bound of 30%: "
+                    + ", ".join(f"window {r} on {s:.1%}" for r, s in sorted(low.items()))
+                    + ".",
+                    hint="Allowed only with a reason the curator accepts for this dataset, in the splits comment and "
+                    "the record's CC line; then accept this warning with it.",
+                )
+            )
+        return findings
 
     def _summary_checks(self) -> list[CheckResult]:
         """Findings about :attr:`task_summary`: missing, no use case, or too long to read at a glance."""

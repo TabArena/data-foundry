@@ -7,6 +7,7 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 3
 tags:
 - Non-IID (Temporal)
 collections:
@@ -63,6 +64,14 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `dubai_dld_sales_transactions` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 1 coded columns carry their words; 1 scores are numbers (state).
+
+**Assessment (AI, 2026-11-10):** priority for the review of the test windows and horizons, which this record never had. Priority 3: gap 0, use case 0, source + (Sberbank's competition), shape +, risk 0 (the open issue is the window length and the floor).
+
+CC (2026-11-11, Lennart): REVIEW.md issue 1 ("Agree.", to the answer that the windows follow the length of the horizon sign-off): the three seven-month windows of the horizon replace the five half-years from January 2013, whose three oldest trained on 44.3%, 28.6% and 17.8% of the sales.
+
+CC (2026-11-11, Lennart): the declared horizon (7 months, no gap, windows starting 2014-12-01, 2014-05-01 and 2013-10-01) is checked, as seven months is the shortest test period of the sources (TabReD's; the competition tests eleven months), where the half-year was our own assumption; the window under half the sales, October 2013 to April 2014 on 35.4%, beside 83.6% and 59.1%, is signed off with it (REVIEW.md horizon, a: "Reply (a): Seven months"; SPLIT-14 as amended 2026-11-11).
+
+**Assessment (AI, 2026-11-11):** applied the horizon (a) and issue 1: `temporal` declares `TemporalSplits(window=7, unit="months", cutoffs=("2014-12-01", "2014-05-01", "2013-10-01"))`, confirmed with `window_bounds` on the definition's frame. Test 4,647, 6,936 and 6,704 sales (mean log price per square metre 11.84, 11.82, 11.80); train 23,674, 16,738 and 10,034 (83.6%, 59.1%, 35.4% of 28,321). The windows are adjacent: moving the oldest back lowers its train side (33.3% from September 2013, 31.1% from August). `accepted_check_warnings` takes `splits_train_under_half` with the sign-off; `dataset check`: 0 errors, 0 warnings, no `splits_floor_core` (the five half-years had three windows under half).
 
 ## Reference
 

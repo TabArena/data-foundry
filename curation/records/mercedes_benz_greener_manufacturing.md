@@ -7,6 +7,7 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 3
 decision_markers:
 - Anonymized
 tags:
@@ -49,6 +50,14 @@ CC (2026-10-21, Lennart): "no it also bind to what experts did by default, so ag
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source r2 — the competition's R^2 (Kaggle evaluation page).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `bosch_production_line_performance` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-10):** priority for the review of the test windows and horizons, which this record never had. Priority 3: gap 0, use case 0, source + (Mercedes-Benz's competition), shape +, risk 0 (the open issue is the window size and the floor).
+
+CC (2026-11-11, Lennart): REVIEW issue 1 (which windows of cars to test), as implemented (A): the nine windows of 320 cars in ID order, from ID 2,628 on, stay, in place of the AI's nine windows of 233 cars over the newest half; SPLIT-14 as amended on 2026-11-11 admits the three oldest, which train on 46.7%, 39.1% and 31.5% of the cars (three windows under half, six at or above it).
+
+CC (2026-11-11, Lennart): the declared horizon (320 cars, no gap, windows starting at the newest nine runs of 320 cars, IDs 7,801, 7,140, 6,487, 5,875, 5,223, 4,581, 3,920, 3,308 and 2,628) is checked, as the amended floor admits nine windows of 320, which test 2,880 cars against 2,097 at 233, and no source gives either length.
+
+**Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` unchanged (`window=320, unit="rows", n_windows=9`); test 320 cars each, train 3,884, 3,564, 3,244, 2,924, 2,604, 2,284, 1,964, 1,644 and 1,324 (92.4%, 84.8%, 77.2%, 69.6%, 61.9%, 54.3%, 46.7%, 39.1%, 31.5% of 4,204). `task_summary.split` no longer says the first 1,000 cars are always in training (the oldest window trains on 1,324); `splits_comment` replaces the `TimeSeriesSplit` description with the windows by car ID, the train sides, the three under half with their shares, the length's origin (the first curation's `TimeSeriesSplit` arithmetic) and the reason it is kept, and the absent gap; the outlier bullet no longer names the first 1,000 cars. `dataset check`: 0 errors, 2 warnings that predate this change (11 constant and 45 duplicated option columns; README not regenerated).
 
 ## Reference
 

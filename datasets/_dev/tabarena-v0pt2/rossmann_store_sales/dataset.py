@@ -23,8 +23,9 @@ class RossmannStoreSales(AbstractCuratedDataset):
             "scheme."
         ),
         split=(
-            "Three windows of six weeks from late March to July 2015, each trained on all earlier days with a one-day"
-            " gap."
+            "Three windows of six weeks, newest first: 20 June to 31 July 2015, the Christmas weeks (22 November 2014 "
+            "to 2 January 2015) and late spring 2014 (26 April to 6 June), each trained on all earlier days with a "
+            "one-day gap."
         ),
         changes=(
             "We drop closed days, which all have zero sales, and the day's number of customers, known only afterwards."
@@ -98,12 +99,17 @@ class RossmannStoreSales(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        The description says 'Rossmann store managers are tasked with predicting their daily sales for up to six weeks in advance'.
-        Therefore, we define the same horizon for our test splits and add one day between train/test as a planning gap.
+        The description says 'Rossmann store managers are tasked with predicting their daily sales for up to six weeks in advance', to plan staff schedules, and the competition's own test period (1 August to 17 September 2015, 48 days) is about as long, so each test window is six weeks (42 days; the horizon checked, CC 2026-11-11). We add one day between train and test as a planning gap: a day's turnover is known when the store closes, so no label arrives late, and the gap only drops the last day before each window from training. The three windows, newest first (CC 2026-11-11), evenly spaced over the 11 windows that keep half the store-days for training (the 1st, 6th and 11th): 2015-06-20 to 07-31, the newest; 2014-11-22 to 2015-01-02, the Christmas weeks, when sales are highest (8,478 per open store-day against 6,837 on the train side, 24% more) and staffing matters most; and 2014-04-26 to 06-06, late spring of the other year. So the test spans two years and three seasons. Test 40,282, 31,203 and 38,107 store-days; train 802,996, 617,355 and 443,771 (95.1%, 73.1% and 52.6% of the 844,392 open store-days); the 1,114 store-days of 19 June 2015, the newest window's gap day, lie in no split. 180 stores have no rows from 1 July to 31 December 2014, so the Christmas window tests 935 stores until 31 December and all 1,115 only on 2 January 2015; the other two windows test every store.
     """
+    accepted_check_warnings = {
+        "splits_rows_unused": (
+            "By design: the 1,114 store-days of 19 June 2015, the one-day gap before the newest window, are in no "
+            "split (Lennart, 2026-11-11, review issue 1)."
+        ),
+    }
     temporal = Temporal(
         on="Date",
-        splits=TemporalSplits(window=42, unit="days", n_windows=3, gap=1),
+        splits=TemporalSplits(window=42, unit="days", gap=1, cutoffs=("2015-06-20", "2014-11-22", "2014-04-26")),
     )
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:

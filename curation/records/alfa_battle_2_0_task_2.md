@@ -69,6 +69,12 @@ CC (2026-10-26, Lennart): verdict ship.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `alfa_bank_credit_history_default` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-11, Lennart): REVIEW issue 5 (which issue months), ok with "Reply (b): Months 22-23, 20-21 and 14-15" to the consistency check: months 14-15 replace 18-19, so the windows also test the other half of the second year and keep the default peak of months 20-21. Months 14-15 train on 41.1% of the rows after the repeat-client filter (43.3% before it), the one window under half beside 83.4% and 72.9%, signed off (SPLIT-14 as amended on 2026-11-11). The repeat-client filter and the gap-0 exception stay; `_make_splits` changes only its window list.
+
+CC (2026-11-11, Lennart): the declared horizon (2 issue months, no gap, windows starting at months 22, 20 and 14) is checked, as no source gives a horizon or a refit cadence (the competition names its periods only as N and K days), so the two months are a convention.
+
+**Assessment (AI, 2026-11-11):** applied in dataset.py: `SPLIT_WINDOWS = TemporalSplits(window=2, unit="unique", cutoffs=(22, 20, 14))`, `_make_splits` unchanged; test 120,428, 107,844 and 90,937 products, train after the repeat-client filter 804,162, 702,678 and 396,171 (83.4%, 72.9%, 41.1% of 963,811; the filter removes 39,221, 32,861 and 21,497); default rate 3.02%, 3.36% and 2.70% in the windows, 2.78%, 2.67% and 2.45% on the train sides. For these windows a 12-month gap would leave 3-27% of the rows for training and a 6-month gap 20-53% (before the filter), so the exception's reason holds. `splits_rows_unused` recounted: 1,121 products in no split (181 of months 0-13, on all three training sides, and 940 of months 16-19, on the training sides of the two newest windows only, all of clients with a product in those windows). `task_summary.split`, `splits_comment` (the windows and why, the counts, the shares, the length as a convention, the gap figures) and the comment above `SPLIT_WINDOWS` are rewritten; the LightGBM ROC AUC of `curation_comments` and the 6-month-gap cost are dated to the windows of 2026-10-26; `accepted_check_warnings` accepts `splits_train_under_half` with the sign-off. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
 ## Reference
 
 Booster

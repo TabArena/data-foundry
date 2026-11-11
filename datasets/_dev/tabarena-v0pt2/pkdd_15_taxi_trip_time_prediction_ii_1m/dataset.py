@@ -96,9 +96,9 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
             "(dispatch call, taxi stand or street), the stand, and the taxi."
         ),
         split=(
-            "April, May and June 2014 are the test periods (30 days from the first of each month); training is every "
-            "trip that starts at least one day earlier, of which a benchmark fits on a random million, as for a model "
-            "refit monthly."
+            "June, April and February 2014 are the test periods (calendar months); training is every trip that starts "
+            "at least one day earlier, of which a benchmark fits on a random million, as for a model trained on the "
+            "trips so far and used for the next month."
         ),
         changes=(
             "The challenge asked for the remaining time of a trip under way; we predict the whole trip at pickup with"
@@ -153,7 +153,7 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
         We start with train.csv of the ECML/PKDD 2015 Discovery Challenge (UCI id 339): 1,710,670 Porto taxi trips from 2013-07-01 to 2014-06-30, each with its GPS trajectory (`POLYLINE`, one point every 15 s).
 
         - Prediction point: the start of the trip, when the meter is switched on. The task is the travel time from origin and destination, an ETA task like `nyc_taxi_trip_duration` (the challenge's Task II starts from a partial trajectory).
-        - Anomaly: the challenge page says that drivers "do not indicate the final destination of the ride" to the dispatch system. Our destination is the last GPS point, a stand-in for a destination named at pickup (`fit="approximate"`, as `nyc_taxi_trip_duration`), the curator's framing (record, CC 2026-09-21; confirmed CC 2026-10-26: an ETA once the passenger names the destination, as in an app booking). Without it, LightGBM's R^2 is 0.12 to 0.15 (800 trees, learning rate 0.08, 255 leaves, local hour, weekday and day of year, one fit per split).
+        - Anomaly: the challenge page says that drivers "do not indicate the final destination of the ride" to the dispatch system. Our destination is the last GPS point, a stand-in for a destination named at pickup (`fit="approximate"`, as `nyc_taxi_trip_duration`), the curator's framing (record, CC 2026-09-21; confirmed CC 2026-10-26: an ETA once the passenger names the destination, as in an app booking). Without it, LightGBM's R^2 is 0.12 to 0.15 (800 trees, learning rate 0.08, 255 leaves, local hour, weekday and day of year, one fit per split, on the April, May and June windows shipped until 2026-11-11, as are the other R^2 figures of these notes).
         - Target: `log1p_travel_time`, log1p of the travel time in seconds, (GPS points - 1) x 15, the challenge's definition; the metric is the challenge's RMSLE on the travel time in seconds, computed after the inverse (`target_transform="log1p"`).
         - `_prepare_raw_files` parses each polyline into its number of points and its first and last point; the route is known only after the trip and is not a feature.
         - `start_time`: TIMESTAMP is Unix time in UTC; the pickup profile by UTC hour shifts by one hour at both daylight-saving switches (decision table), so we convert it to Porto local time without a time zone.
@@ -181,10 +181,12 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
     # Splits
     temporal = Temporal(
         on="start_time",
-        splits=TemporalSplits(window=30, unit="days", cutoffs=("2014-04-01", "2014-05-01", "2014-06-01"), gap=1),
+        splits=TemporalSplits(
+            window=1, unit="months", cutoffs=("2014-06-01", "2014-04-01", "2014-02-01"), gap=1, gap_unit="days"
+        ),
     )
     splits_comment = """
-        A model refit every month predicts the travel times of the next month's trips: 3 test windows of 30 days that start on 1 June, 1 May and 1 April 2014 (newest first; the May window leaves out 31 May), and train is the trips that start at least one day before the window. The gap of one day is part of the task: a trip lasts up to 3 hours, so at a refit the last trips before it have no travel time yet; without the gap 48, 36 and 8 train trips per window (June, May, April) would end after the window start, with it none. Each window keeps all of its trips (131,648 to 151,406, under the 500k budget); each train side holds every eligible earlier trip, and a benchmark sub-samples it to a random 1M before a fit (`subsample_train`; the newest year before a window is all of the file before it). The monthly length follows the source: the challenge tested on 320 trips 1.5 to 6 months after its training year. The file covers one year, so the April to June test season has no earlier copy in train.
+        A model trained on the trips so far predicts the travel times of the next calendar month's trips: 3 test windows, the calendar months June, April and February 2014 (newest first), and train is the trips that start at least one day before the window. The length (the horizon checked, CC 2026-11-11): no source gives a refit cadence. The challenge scored five snapshots of trips under way (320 trips, 14 August to 21 December 2014; Lam et al. 2015, arXiv:1509.05257) with one model trained on its year (1 July 2013 to 30 June 2014), used 1.5 to 6 months later without a refit, so the only horizon the source shows is months long; calendar months are the longest windows that still leave a choice of seasons (60 days would give exactly three windows that tile the half-year). nyc_taxi_trip_duration_1m predicts the same kind of travel time on one-week windows, a length that rests on its weekdays and an ETA service's refit; its source shows no horizon either. The windows (CC 2026-11-10 and 2026-11-11, the curator's pick): June, the newest, with São João (23-24 June); April, with Easter (18-20 April); and February, in the winter, when Porto's trips are the slowest of the year (median straight-line speed 15.6 to 16.0 km/h from October to February, 16.7 to 17.6 from May to August). The file covers one year (July 2013 to June 2014), so no other year can be tested, and months from January 2014 keep half the trips for training; the three are spread evenly over the six months open. The gap of one day is part of the task: a trip lasts up to 3 hours, so at a refit the last trips before it have no travel time yet; without the gap 47, 7 and 21 train trips (June, April, February) would end after the window start, with it none. Each window keeps all of its trips (146,714, 130,112 and 122,831, under the 500k budget); each train side holds every eligible earlier trip (1,484,039, 1,200,383 and 943,912: 90.7%, 73.4% and 57.7% of the 1,636,276 trips), and a benchmark sub-samples it to a random 1M before a fit (`subsample_train`; the newest year before a window is all of the file before it). The 5,523 trips of 31 May 2014, the newest window's gap day, lie in no split, so the frame leaves them out. The February window's train side holds the winter months before it, while April and June have no earlier copy of their month in train.
     """
     row_budget = RowBudget(train=1_000_000, test=500_000)
 
@@ -251,7 +253,7 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
         trips = raw.loc[left, ["TAXI_ID", "TIMESTAMP"]]
         month = _local_start_time(trips["TIMESTAMP"]).dt.to_period("M")
         recurring = []
-        for window in sorted(month.unique())[-3:]:
+        for window in sorted(pd.Period(cutoff, "M") for cutoff in self.temporal.splits.cutoffs):
             earlier = set(trips.loc[month < window, "TAXI_ID"])
             taxis = trips.loc[month == window, "TAXI_ID"]
             recurring.append(

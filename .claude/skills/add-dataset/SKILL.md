@@ -79,6 +79,13 @@ data that it fits (MET-2: its unit exists, every input it needs ships and the te
 what the source's meant) and that the target is on the scale the source scored (MET-3). Note where you looked, for the
 reason of a fallback.
 
+List every file of the release (for a Kaggle competition `kaggle competitions files -c <name>`, for a dataset
+`kaggle datasets files <owner/name>`; the data page of any other source) and decide for each whether the definition
+reads it. Download the ones it reads, and say in `curation_comments` for every file left out why (no labels, another
+task, a copy of a file read). A file left out without a reason is a gap a review cannot see, since the panel checks the
+definition against the data it loads (g_research_crypto_forecasting_1m: `supplemental_train.csv`, four newer months of
+the same series, never downloaded; Lennart, 2026-11-11: "how did we miss this data in the first pass?").
+
 ## Step 2: Scaffold
 
 Read the closest reference definition in full (definitions.md, "Reference definitions"), then:
@@ -100,7 +107,16 @@ domain and source from the record.
    of `_feature_types` (CLEAN-26); [spectra.md](../knowledge-curation/references/spectra.md) has what ships, the
    encodings, grouping the spectra of one sample (SPLIT-23) and the pitfalls.
 4. The regime: nothing for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)` with a `splits_comment`
-   saying why this window (and any gap, sub-sampling or trimming).
+   saying why this window (and any gap, sub-sampling or trimming). For a temporal task, run `dataset windows <name>`
+   and choose the windows from the use case and those statistics, never a model's score (SPLIT-15: the newest always,
+   the others argued; definitions.md, "Choosing the test windows"); the choice goes into REVIEW.md as the curator's
+   decision, with the alternatives you weighed. Before the windows, three checks the reviews of 2026-11-10 and 11
+   found missed: the time column is the moment the prediction is made, not an earlier one (kickstarter dated projects
+   by creation, so its train sides held campaigns still running at a window's start; USE-3); a row whose input is
+   issued ahead of its time column (a forecast, a quote) needs a gap of that lead time (climate_model's forecasts are
+   issued up to three days ahead; SPLIT-10); and the newest period is not cut by the download (kickstarter's scrape
+   held only ended campaigns, so its newest quarter had half the rows of the year before; LEAK-24): compare its rows
+   a day and its target rate with earlier periods.
 5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
    `Metric.stand_in(name, original=..., reason=..., reference=...)` or `Metric.fallback(reason=<where we looked, and
    which source metric was rejected and why>)` (definitions.md, "Field mapping", `metric`; MET-11). A standard name
@@ -112,7 +128,10 @@ domain and source from the record.
    look for the faster versions in its Kaggle discussions and notebooks and check them), tested in
    `tests/test_v2_metrics_custom.py` to equal the official code on random inputs, on one hand-computed case, and timed
    on 1M rows. Never `Metric.local` in the working copy.
-6. `accepted_check_warnings` stays empty: the curator fills it once the warnings are known, one reason per slug.
+6. `accepted_check_warnings` stays empty: the curator fills it once the warnings are known, one reason per slug. A
+   temporal task with a window under half the rows (`splits_train_under_half`, `splits_train_under_floor`) always gets
+   an issue in the REVIEW.md for the curator's sign-off: the windows and their shares, the reason for each, and an
+   option without them (SPLIT-14, amended 2026-11-11).
 7. `_decisions` and `_extra_checks` only when there is something to show or test.
 
 Then point the record at the definition:
@@ -167,13 +186,17 @@ and the editor) for a re-check after a small change. Say which tier ran.
    `dataset check` and the probes it touches.
 2. Write `REVIEW.md` ([review file format](../review-added-datasets/references/review_file_format.md)): the outcome as a
    judgment record ([principles.md](../knowledge-curation/references/principles.md)), the main points, the record fields
-   that disagree with the definition, the issues in rank order (validity first, Must first), each in the issue shape
-   of [writing.md](../knowledge-curation/references/writing.md): bullets for the problem, the effect, the experiments
-   and the consistency with other datasets, a table of the options with pros and cons, the recommendation and the
-   decision, the rules in footnotes and what Claude needs to apply it in `**Notes for the AI:**`; and the
-   `**Review panel:**` block with each agent's full report. A review raises 0 to N issues: zero is a valid outcome
-   when the checks and the panel leave nothing for the curator to decide (the outcome says so, and the curator only
-   sets the verdict). Never raise an issue to have one; an issue is something whose answer would change the dataset.
+   that disagree with the definition, the issues in rank order (validity first, Must first), each in the issue shape of
+   [writing.md](../knowledge-curation/references/writing.md): bullets for the problem, the effect, the experiments and
+   the consistency with other datasets, a table of the options with pros and cons, the recommendation and the decision,
+   the rules in footnotes and what Claude needs to apply it in `**Notes for the AI:**`; and the `**Review panel:**`
+   block with each agent's full report. A temporal dataset always gets the `**Horizon:**` block, in the issue shape of
+   the format: the split auditor's argument for the window length and the gap (how far ahead the actor predicts, the
+   refit cadence, the label delay, from the source) and for the period the windows cover, with the alternatives as an
+   options table that gives the size of each option's test windows; the curator signs it off like the metric, as the
+   issue "H" (Lennart, 2026-11-10). A review raises 0 to N issues: zero is a valid outcome when the checks and the panel
+   leave nothing for the curator to decide (the outcome says so, and the curator only sets the verdict). Never raise an
+   issue to have one; an issue is something whose answer would change the dataset.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
 4. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
    `**Assessment (AI, <date>):** review panel (<tier>): <the mediator's recommendation>; disputed: <the points, by
@@ -189,4 +212,5 @@ and the editor) for a re-check after a small change. Say which tier ran.
 
 Report: the folder and its outcome in one line; the panel's recommendation and the disputed points; the issues for the
 curator by rank; every `TODO(verify)` left, grouped by method; what could not be checked; next steps with paths filled
-in (`/review-added-datasets`, with `--names` for a batch).
+in (`/review-added-datasets`, with `--names` for a batch, `--metric-marks` with the same names, since their
+metrics are new, and `--horizon-marks` with the temporal ones).

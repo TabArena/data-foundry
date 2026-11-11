@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from data_foundry.v2.splits import Temporal, TemporalSplits
 
 pytest.importorskip("markdown_it", reason="the review page needs markdown-it-py (the `curation` extra)")
 
@@ -82,8 +83,11 @@ def test_collector_takes_a_review_file_with_no_issue_when_a_panel_ran(crv, brp, 
     by_name = {e.name: e for e in crv.collect(root, records).entries}
     assert (by_name["airfoil_self_noise"].numbers, by_name["airfoil_self_noise"].fields) == ([], [])
     out = tmp_path / "report.md"
-    assert _collect_fixture(crv, root, records, out) == 0
+    # A new dataset's round marks its metric, so the record stays for its verdict; without that it is settled.
+    assert _collect_fixture(crv, root, records, out, "--metric-marks", "airfoil_self_noise") == 0
     assert brp.parse_report(out)["records"]["airfoil_self_noise"]["items"] == []
+    assert _collect_fixture(crv, root, records, out) == 0
+    assert "airfoil_self_noise" not in brp.parse_report(out)["records"]
 
     no_panel = no_issue[: no_issue.index("**Review panel:**")]
     root, records, _ = _broken_copy(tmp_path / "b", file, text, no_panel)
@@ -126,9 +130,10 @@ def test_collector_names_filter(crv, tmp_path):
 
 
 def test_collector_leaves_out_a_settled_record(crv, brp, tmp_path):
-    """A record with every issue resolved, no field row and its declared metric checked leaves the page by default
-    (it ships by default; Lennart, 2026-11-08); --keep-settled keeps it, and an unchecked metric or an issue whose last
-    closing turn is Deferred keeps it too.
+    """A record with every issue resolved and no field row leaves the page by default (it ships by default; Lennart,
+    2026-11-08); --keep-settled keeps it, and so does an issue whose last closing turn is Deferred. Its metric keeps it
+    only when the round marks it (--metric-marks) and the record has no CC line that it is checked (Lennart,
+    2026-11-10).
     """
     file = "working_copy/airfoil_self_noise/REVIEW.md"
     text = (REVIEW_FILES / file).read_text()
@@ -140,14 +145,20 @@ def test_collector_leaves_out_a_settled_record(crv, brp, tmp_path):
     out = tmp_path / "report.md"
 
     assert _collect_fixture(crv, root, records, out) == 0
-    assert "### airfoil_self_noise" in out.read_text()  # the metric is not checked yet
+    assert "### airfoil_self_noise" not in out.read_text()  # the round does not ask about the metric
+    for marks in ("airfoil_self_noise", "all"):
+        assert _collect_fixture(crv, root, records, out, "--metric-marks", marks) == 0
+        report = out.read_text()
+        assert "### airfoil_self_noise" in report  # the round marks the metric, which is not checked yet
+        assert "**Metric marks:** " + ("all." if marks == "all" else "`airfoil_self_noise`.") in report
+    assert _collect_fixture(crv, root, records, out, "--metric-marks", "no_such_record") == 1
 
     record = records / "airfoil_self_noise.md"
     record.write_text(
         record.read_text().rstrip("\n")
         + "\n\nCC (2026-11-08, Lennart): the declared metric (`rmse`) is checked, as declared.\n"
     )
-    assert _collect_fixture(crv, root, records, out) == 0
+    assert _collect_fixture(crv, root, records, out, "--metric-marks", "airfoil_self_noise") == 0
     report = out.read_text()
     assert "### airfoil_self_noise" not in report
     assert "**Settled, left out (they ship by default):** `airfoil_self_noise`." in report
@@ -447,8 +458,18 @@ def test_template_has_the_panel_tab_and_keeps_the_store():
     assert '<li class="grp" aria-hidden="true">' in page
     assert '["reviews", "crosscut"].forEach((coll) => {' in page
     assert "const S = { reviews: {}, crosscut: {} };" in page
-    # The Use case tab shows the declared metric under the task summary.
+    # The Use case tab shows the declared metric under the task summary, only when the round marks it.
     assert 'panel("usecase", useCaseHtml(d) + metricHtml(d))' in page
+    assert 'if (!d.metricMark) return "";' in page
+    assert "const hasMetricMark = (d) => !!d.metricMark && " in page
+
+
+def test_metric_marks_come_from_the_report_header(brp):
+    """The header's metric-marks line names the records whose metric the page shows and marks; none without it."""
+    lines = ["Open review issues ...", "", "**Metric marks:** `a`, `b_c`.", "", "## Summary per record"]
+    assert brp._metric_marks(lines) == {"a", "b_c"}
+    assert brp._metric_marks(["**Metric marks:** all."]) is None
+    assert brp._metric_marks(["Open review issues ...", "## Summary", "**Metric marks:** `a`."]) == set()
 
 
 def test_metric_from_the_definition_and_the_readme(brp):
@@ -759,3 +780,92 @@ def test_collector_warns_about_a_problem_out_of_shape(crv):
     assert warnings("\n" + "".join(f"     - Point {i}.\n" for i in range(4))) == [
         "x issue 1: no short problem (4 bullets, at most 3)"
     ]
+
+
+def test_the_horizon_block_and_its_sign_off(crv, brp, tmp_path):
+    """A REVIEW.md's Horizon block is carried to the page; with --horizon-marks the record waits for the CC line that
+    the declared horizon is checked (Lennart, 2026-11-10: new temporal datasets get the sign-off, like the metric).
+    """
+    file = "working_copy/airfoil_self_noise/REVIEW.md"
+    text = (REVIEW_FILES / file).read_text()
+    horizon = "**Horizon:** a week, the refit cadence the source names.\n\n- **Gap:** one day, the label delay.\n\n"
+    with_horizon = text.replace("**Issues for the curator:**", horizon + "**Issues for the curator:**")
+    fields = text[text.index("**Record fields that disagree") : text.index("**Record judgment:**")]
+    issues = with_horizon[with_horizon.index("**Issues for the curator:**") : with_horizon.index("**Review panel:**")]
+    only_horizon = with_horizon.replace(fields, "").replace(issues, "")
+    root, records, _ = _broken_copy(tmp_path, file, text, only_horizon)
+    entry = {e.name: e for e in crv.collect(root, records).entries}["airfoil_self_noise"]
+    assert entry.horizon.startswith("a week, the refit cadence")
+    out = tmp_path / "report.md"
+    assert _collect_fixture(crv, root, records, out) == 0
+    assert "### airfoil_self_noise" not in out.read_text()  # nothing marked: settled
+    assert _collect_fixture(crv, root, records, out, "--horizon-marks", "airfoil_self_noise") == 0
+    report = out.read_text()
+    assert "**Horizon marks:** `airfoil_self_noise`." in report
+    assert "**Horizon:** a week, the refit cadence" in report
+    parsed = brp.parse_report(out)
+    assert parsed["horizon_marks"] == {"airfoil_self_noise"}
+    assert "a week" in parsed["records"]["airfoil_self_noise"]["blocks"]["horizon"]
+    record = records / "airfoil_self_noise.md"
+    record.write_text(
+        record.read_text().rstrip("\n")
+        + "\n\nCC (2026-11-10, Lennart): the declared horizon (7-day windows) is checked.\n"
+    )
+    assert brp._horizon_checked(record)["by"] == "Lennart"
+    assert _collect_fixture(crv, root, records, out, "--horizon-marks", "airfoil_self_noise") == 0
+    assert "### airfoil_self_noise" not in out.read_text()
+
+
+def test_temporal_from_the_definition(brp):
+    """The declared windows the horizon box shows come from the definition's Temporal."""
+
+    class Definition:
+        temporal = Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=3, gap=1))
+        splits_comment = """
+            A model refit every week.
+        """
+
+    got = brp._temporal_from_class(Definition)
+    assert (got["on"], got["window"], got["unit"], got["n_windows"], got["gap"]) == ("t", 7, "days", 3, 1)
+    assert got["comment"] == "A model refit every week."
+    assert "cutoffs" not in got
+    Definition.temporal = None
+    assert brp._temporal_from_class(Definition) is None
+
+
+HORIZON_BLOCK = """\
+* **Verdict:** keep the 7-day windows (medium confidence): TabReD's own test length.
+* **Length:** no source states a refit cadence.
+* **Gap:** none needed.
+* **Options:**
+
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | 7 days (implemented) | today's windows | 3 of 1.19M-1.49M rows | TabReD's length | no cadence stated |
+  | B | 1 day | 41 candidates | 41 of about 200k rows | a daily refit | no source |
+
+* **Recommendation:** A: the source's own length. **Decision:** A or B?
+"""
+
+
+def test_the_horizon_is_an_issue_of_its_own(brp, tmp_path):
+    """The Horizon block becomes issue H: the verdict in view, the declared windows, length and gap in the closed
+    Details box, the options and the recommendation below it; resolved by the CC line that the horizon is checked.
+    """
+    temporal = {"on": "t", "window": 7, "unit": "days", "n_windows": 3, "comment": "One week."}
+    record = tmp_path / "rec.md"
+    record.write_text("---\nunique_name: rec\n---\n\n## Comments\n\nCC (2026-11-09, Lennart): other.\n")
+    item = brp._horizon_item(HORIZON_BLOCK, temporal, record)
+    assert (item["n"], item["resolved"]) == ("H", False)
+    assert [o["key"] for o in item["options"]] == ["A", "B"]
+    assert (item["implemented"], item["recommended"]) == ("A", "A")
+    html = item["html"]
+    assert html.index("keep the 7-day windows") < html.index('<details class="idetails">') < html.index("opttab")
+    details = html[html.index('<details class="idetails">') : html.index("</details>")]
+    assert "time column <code>t</code>" in details
+    assert "no source states a refit cadence" in details
+    assert "Details: declared, length, gap" in details
+    assert '<col class="c-test">' in html  # the size of each option's test windows
+    record.write_text(record.read_text() + "\nCC (2026-11-10, Lennart): the declared horizon (7 days) is checked.\n")
+    assert brp._horizon_item(HORIZON_BLOCK, temporal, record)["resolved"] is True
+    assert brp._horizon_item(HORIZON_BLOCK, None, record) is None

@@ -7,6 +7,7 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 3
 tags:
 - Non-IID (Temporal)
 collections:
@@ -55,6 +56,14 @@ CC (2026-10-21, Lennart): the metric is roc_auc as a stand-in for the competitio
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): max_persontype_1072L a category.
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
+**Assessment (AI, 2026-11-10):** priority for the review of the test windows (PR #78), which this record never had. Priority 3: gap 0, use case 0 (the fit is approximate), source + (Home Credit's competition), shape +, risk 0 (the open issue is the choice of windows).
+
+CC (2026-11-11, Lennart): REVIEW.md issue 1 ("Agree.", to the answer that the windows follow the length of the horizon sign-off): the test windows are July to 5 October 2020, March to June 2020 and November 2019 to February 2020, after, across and before the drop of late March 2020, in place of the three two-month windows from May 2020.
+
+CC (2026-11-11, Lennart): the declared horizon (4 months, no gap, windows starting 2020-07-01, 2020-03-01 and 2019-11-01) is checked, as a scorecard serves for months between refits and no source gives Home Credit's cadence, so the window is the longest whose three windows all keep half the applications for training (REVIEW.md horizon, c: "Reply (c): Four months").
+
+**Assessment (AI, 2026-11-11):** applied the horizon (c) and issue 1: `temporal` declares `TemporalSplits(window=4, unit="months", cutoffs=("2020-07-01", "2020-03-01", "2019-11-01"))`. Test 150,240, 143,724 and 403,789 applications (3,175, 4,714 and 15,541 defaults; 2.1%, 3.3%, 3.8%), all kept under the 500k test budget; train 1,376,419, 1,232,695 and 828,906 (90.2%, 80.7%, 54.3% of 1,526,659), so no window trains on less than half. The default 1M sample takes the newest 1M rows before July 2020 (from 11 June 2019; the year before holds 937,675), a random 1M of the 1,094,102 of the year before March 2020, and all 828,906 before November 2019. The windows hold 14, 19 and 18 weeks of WEEK_NUM; the Gini Stability's 88 x slope term has SE about 0.23, 0.17 and 0.08 there (Hanley-McNeil at an AUC of 0.8), about 20 times the SE of the mean weekly Gini, so the ROC AUC stand-in's reason holds and now gives these figures in place of "5-10 week". `dataset check`: 0 errors, 0 warnings.
 
 ## Reference
 

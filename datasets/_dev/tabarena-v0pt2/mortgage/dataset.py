@@ -97,8 +97,9 @@ class Mortgage(AbstractCuratedDataset):
             "its dates and origination terms are known."
         ),
         split=(
-            "Each test window is one quarter (2014 Q3, 2014 Q4, 2015 Q1), trained on every earlier quarter; a test "
-            "loan's earlier quarters are in training, as for a lender scoring the loans it holds."
+            "Each test window is one quarter, in the three periods the book went through: 2015 Q1 in the calm years "
+            "(the newest), 2012 Q2 in the recovery and 2009 Q3 in the crisis, each trained on every earlier quarter; "
+            "a test loan's earlier quarters are in training, as for a lender scoring the loans it holds."
         ),
         changes=(
             "We use each loan's state at its previous observation (and its balance at the one before) and the economic "
@@ -177,27 +178,27 @@ class Mortgage(AbstractCuratedDataset):
     curation_comments = """
         We start with mortgage.csv from the data page of the book Credit Risk Analytics (Baesens, Roesch and Scheule 2016): one row per loan and period for 50,000 US mortgage borrowers.
 
-        - Prediction point: the start of each quarter. A lender scores every loan it still holds for whether, during the quarter, the loan defaults, is paid off or stays active. A loan that joins the book during a quarter is scored from the day it joins, over the shorter rest of that quarter (Lennart, 2026-10-22; USE-3): 8,132 rows with `time == orig_time` (24 in the test windows), and in the same way the first panel row of every loan that enters the pool during a quarter. On these rows only the dates and the origination terms are known; the lagged loan state is missing. US lenders book an expected-loss allowance (CECL) from the day a loan joins the book.
+        - Prediction point: the start of each quarter. A lender scores every loan it still holds for whether, during the quarter, the loan defaults, is paid off or stays active. A loan that joins the book during a quarter is scored from the day it joins, over the shorter rest of that quarter (Lennart, 2026-10-22; USE-3): 8,132 rows with `time == orig_time` (37 in the test windows), and in the same way the first panel row of every loan that enters the pool during a quarter. On these rows only the dates and the origination terms are known; the lagged loan state is missing. US lenders book an expected-loss allowance (CECL) from the day a loan joins the book.
         - Target: `status`, the source's `status_time`, as `default`, `payoff` and `active` (the competing-risks form of the book's R Companion, chapter 11; unverified, we found no copy of the R Companion); we drop its indicator columns `default_time` and `payoff_time`. The source does not state its default definition.
         - Note: a binary default-only companion (`default_time` scored by ROC AUC, as in the book's chapter 6 models and chapter 13 backtest) might be reasonable in the future; for now the curator keeps the three classes alone (Lennart, 2026-10-22).
-        - Label not recorded, rows dropped (LEAK-25, CLEAN-15): 501 loans leave the data before period 60 without an event, and the codebook says observations are censored when borrowers refinance; it does not say which exits those are, so the last row's label is unknown. We drop these 501 last rows (98 in the test windows; 36 have a zero balance, against 2 of 533,608 other active rows). 58 of them end a loan key whose id continues under another key (all in train).
+        - Label not recorded, rows dropped (LEAK-25, CLEAN-15): 501 loans leave the data before period 60 without an event, and the codebook says observations are censored when borrowers refinance; it does not say which exits those are, so the last row's label is unknown. We drop these 501 last rows (8 in the test windows; 36 have a zero balance, against 2 of 533,608 other active rows). 58 of them end a loan key whose id continues under another key (all in train).
         - The loan's balance, interest rate and LTV come from its previous observation (`*_lag_1`), and its balance also from the observation before (`balance_time_lag_2`): on an event row the row's own state partly records the event (decision table), and the earlier state is what the lender knows (garments_worker_productivity precedent). The data has no delinquency field, so the payment history comes only through the two balances (a balance that stops amortising).
-        - Added column `balance_ratio_lag_1_to_2`, `balance_time_lag_1 / balance_time_lag_2` (missing when the balance two observations back is missing or zero): a balance that stops falling stands in for a missed payment, the days-past-due field a lender has and the data lacks (CLEAN-19; Lennart, 2026-10-22). The information is in the two raw balances, but untuned LightGBM does not find it there: in the mediator's runs (periods 60 / 59 / 58) the raw `balance_time_lag_2` alone moved the 3-class log loss from 0.1200 / 0.1321 / 0.1359 to 0.1201 / 0.1315 / 0.1357, the ratio to 0.1179 / 0.1271 / 0.1287, and the default ROC AUC from 0.57-0.66 to 0.76 / 0.85 / 0.82. On the shipped columns: log loss 0.1180 / 0.1274 / 0.1293 and default ROC AUC 0.75 / 0.84 / 0.81, against 0.1201 / 0.1327 / 0.1364 and 0.57 / 0.68 / 0.59 without the ratio.
-        - Added columns from outside the source (Lennart, 2026-10-22: "this sounds like a good way to make the data better"): `market_rate_30y_lag_1`, the mean of Freddie Mac's weekly 30-year fixed mortgage rate (FRED series MORTGAGE30US, Primary Mortgage Market Survey) over the calendar quarter before the predicted one, and `rate_minus_market_rate_lag_1`, the loan's rate at its previous observation minus it: the refinance incentive that drives payoffs. Each weekly value is published on the Thursday it is dated, so the previous quarter's mean is known when the quarter starts (lag 1). Periods map to calendar quarters with period 1 = 2000 Q2, the one alignment under which the source's house price index and unemployment rate match the public series. Licence: FRED marks the series "Copyrighted: Citation Required" ("Copyright, 2016, Freddie Mac. Reprinted with permission"; data "as is", no warranties); the citation is in the bibtex. On the shipped columns, dropping the two market columns changes the log loss by -0.0003 / +0.0007 / -0.0005 (no clear gain for untuned LightGBM).
+        - Added column `balance_ratio_lag_1_to_2`, `balance_time_lag_1 / balance_time_lag_2` (missing when the balance two observations back is missing or zero): a balance that stops falling stands in for a missed payment, the days-past-due field a lender has and the data lacks (CLEAN-19; Lennart, 2026-10-22). The information is in the two raw balances, but untuned LightGBM does not find it there: in the mediator's runs (periods 60 / 59 / 58, the test windows until 2026-11-11, as for every LightGBM figure of these notes) the raw `balance_time_lag_2` alone moved the 3-class log loss from 0.1200 / 0.1321 / 0.1359 to 0.1201 / 0.1315 / 0.1357, the ratio to 0.1179 / 0.1271 / 0.1287, and the default ROC AUC from 0.57-0.66 to 0.76 / 0.85 / 0.82. On the shipped columns: log loss 0.1180 / 0.1274 / 0.1293 and default ROC AUC 0.75 / 0.84 / 0.81, against 0.1201 / 0.1327 / 0.1364 and 0.57 / 0.68 / 0.59 without the ratio.
+        - Added columns from outside the source (Lennart, 2026-10-22: "this sounds like a good way to make the data better"): `market_rate_30y_lag_1`, the mean of Freddie Mac's weekly 30-year fixed mortgage rate (FRED series MORTGAGE30US, Primary Mortgage Market Survey) over the calendar quarter before the predicted one, and `rate_minus_market_rate_lag_1`, the loan's rate at its previous observation minus it: the refinance incentive that drives payoffs. Each weekly value is published on the Thursday it is dated, so the previous quarter's mean is known when the quarter starts (lag 1). Periods map to calendar quarters with period 1 = 2000 Q2, the one alignment under which the source's house price index and unemployment rate match the public series. Licence: FRED marks the series "Copyrighted: Citation Required" ("Copyright, 2016, Freddie Mac. Reprinted with permission"; data "as is", no warranties); the citation is in the bibtex. On the shipped columns, dropping the two market columns changes the log loss by -0.0003 / +0.0007 / -0.0005 (periods 60 / 59 / 58; no clear gain for untuned LightGBM).
         - The macro columns hold the predicted quarter's own values (as the book's PD models use them), published during or after it. We use the newest values published when the quarter starts: unemployment one quarter back, GDP growth and the house price index two quarters back (decision table).
-        - Note: the GDP figures may carry later revisions; their vintage is unknown (period 60: 2.84 in the file, 4.0 in FRED's current release). Dropping `gdp_time_lag_2` changes LightGBM's log loss by -0.0007 to -0.0001 over the three windows, so no revision signal reaches the score.
+        - Note: the GDP figures may carry later revisions; their vintage is unknown (period 60: 2.84 in the file, 4.0 in FRED's current release). Dropping `gdp_time_lag_2` changes LightGBM's log loss by -0.0007 to -0.0001 over periods 58 to 60, the three test windows until 2026-11-11, so no revision signal reaches the score.
         - `LTV_time_lag_1` follows the source's formula with the previous balance and the index two quarters back. `hpi_orig_time` is published two quarters after origination; until then it is missing and the LTV keeps the house value at origination.
         - Period 51 is doubled for 312 loans: we drop the exact copies. Where two copies differ only in the status (7 loans), we keep the payoff copy: all 7 loans end at period 51, so the second copy is damage to the file, not an ambiguous label (an exception to LEAK-20, Lennart, 2026-10-22) (a departure from LEAK-20, which drops both copies; open for the curator).
         - An origination interest rate, original balance or current interest rate of 0 becomes missing (89,990, 270 and 25 rows); the source's `LTV_time` is missing on exactly the 270 zero original-balance rows. A current rate of 37.5% becomes missing: 44 loans hold it in period 22, on their first row, and 6.1-6.5% from the next row on, so it is a placeholder.
         - We drop `id`, the borrower id in file order. 59 ids carry two keys (origination period and original balance): 44 of them are one mortgage with a revised origination field, the other 15 hold two mortgages. A loan is an id with its origination period and original balance; this key only finds a loan's previous observations.
-        - Ids 35310 and 3020 equal ids 35309 and 3018 in every column over 15 and 8 quarters: we drop them (23 rows, all in train). Kept: 12 rows from 6 pairs of ids that match in one quarter only, separate loans on the same terms (2 pairs differ in the status).
+        - Ids 35310 and 3020 equal ids 35309 and 3018 in every column over 15 and 8 quarters: we drop them (23 rows, periods 24 to 41; one would fall in the test window of period 38). Kept: 12 rows from 6 pairs of ids that match in one quarter only, separate loans on the same terms (2 pairs differ in the status).
         - The three real-estate flags (at most one set per row) become one category `real_estate_type`, `other` where none is set.
         - Note: `time`, `orig_time`, `first_time` and `mat_time` stay period numbers; the periods are quarters from 2000 Q2 to 2015 Q1.
-        - Kept as recorded: origination fields that change within a loan (`Interest_Rate_orig_time` in 3,540 loans, where the new value equals the row's own-quarter rate on 2,703 rows; `mat_time` in 814 loans). Freezing them, with the credit score and LTV at origination, at the previous observation changes LightGBM's log loss by -0.0001 to -0.0002, so they stay.
+        - Kept as recorded: origination fields that change within a loan (`Interest_Rate_orig_time` in 3,540 loans, where the new value equals the row's own-quarter rate on 2,703 rows; `mat_time` in 814 loans). Freezing them, with the credit score and LTV at origination, at the previous observation changes LightGBM's log loss by -0.0001 to -0.0002 (periods 58 to 60), so they stay.
         - Impossible balances become missing (CLEAN-11; Lennart, 2026-10-22): 38 rows whose source `LTV_time` is above 300% (up to 803.5%) carry a balance far above the loan's original balance (570,000 on an original 60,495). We mask the balance before it is lagged, so the 37 `LTV_time_lag_1` values above 300% and the lag-2 balances and ratios built from those balances are missing; the highest LTV left is 261.4%.
         - Note: unlike the book's retired HMEQ data (homeq_default_prediction), the loans show no generation artefacts (label-free nearest-neighbour distance: ROC AUC 0.52 for default, HMEQ 0.92).
-        - Split: temporal, one quarter per window, like the book's out-of-time backtest (splits comment). Train and test are a closed book that ages, with a pool of 1,728 seasoned loans added at period 52, so a test window stands for a run-off book, not a lender's book with new loans.
-        - Note: the task probes flag `drift_baseline` and `one_feature` (the single feature is `time`): 74-83% of LightGBM's gain over the all-history class shares is the quarter's overall event rate. The task stays: estimating the quarter's level is part of a PD model's job, and log loss is a proper score that rewards getting it right. With the balance ratio the level is 61-75% of the gain. LightGBM trained on the full train side also beats the previous quarter's class shares in each window (log loss 0.1180, 0.1274, 0.1293 against 0.1251, 0.1385, 0.1394 in periods 60, 59, 58).
+        - Split: temporal, one quarter per window, like the book's out-of-time backtest: periods 60, 49 and 38, the calm years, the recovery and the crisis (CC 2026-11-11; splits comment). Train and test are a closed book that ages, with a pool of 1,728 seasoned loans added at period 52, so a test window stands for a run-off book, not a lender's book with new loans.
+        - Note (measured on periods 60, 59 and 58, the test windows until 2026-11-11): the task probes flag `drift_baseline` and `one_feature` (the single feature is `time`): 74-83% of LightGBM's gain over the all-history class shares is the quarter's overall event rate. The task stays: estimating the quarter's level is part of a PD model's job, and log loss is a proper score that rewards getting it right. With the balance ratio the level is 61-75% of the gain. LightGBM trained on the full train side also beats the previous quarter's class shares in each window (log loss 0.1180, 0.1274, 0.1293 against 0.1251, 0.1385, 0.1394 in periods 60, 59, 58).
     """
 
     # Task
@@ -214,15 +215,25 @@ class Mortgage(AbstractCuratedDataset):
     splits_comment = """
         The book's own out-of-time backtest fits on the periods before 60 and tests on period 60 (R Companion code,
         chapter 13, "Backtesting PD at level 1": `mortgage[mortgage$time < 60, ]` against
-        `mortgage[mortgage$time > 59, ]`; unverified, we found no copy of the R Companion). We simulate a model that is refit every quarter and scores the loans active
-        in the next one: 3 test windows of one period each, periods 60, 59 and 58 (2015 Q1, 2014 Q4 and 2014 Q3; newest
-        first), each trained on all earlier periods. A test quarter's loans have their earlier quarters in train
-        (99.4-99.9% of the test rows), as for a lender scoring the loans it holds. The status of a quarter is known
-        when the next one starts, so every training label is known at the cutoff and there is no gap.
+        `mortgage[mortgage$time > 59, ]`; unverified, we found no copy of the R Companion). We simulate a model that is
+        refit every quarter and scores the loans active in the next one: 3 test windows of one period each, each trained
+        on all earlier periods. One quarter is the book's backtest window and the label's own horizon (the loan's status
+        at the end of the quarter), and the use case scores the book at every quarter's start; no source gives a refit
+        cadence (the horizon checked, CC 2026-11-11). The windows, newest first (CC 2026-11-11): period 60 (2015 Q1),
+        the book's backtest quarter, in the calm years (0.5% of the loans default and 1.8% are paid off in the
+        quarter); period 49 (2012 Q2), in the recovery (2.1% and 1.9%); and period 38 (2009 Q3), in the crisis (4.4% and
+        2.4%; its train side defaults at 2.5% a quarter). The 26 quarters from 2008 Q4 (period 35) on keep half the rows
+        for training; the three windows are spread over them 11 quarters apart, so they fall in three regimes, three
+        years and three different quarters of the year, instead of the three newest, calm quarters. Test 8,004, 9,431
+        and 15,921 loan-quarters, train 613,649, 513,686 and 376,900 (98.7%, 82.6% and 60.6% of the rows): the book is
+        a closed panel that ages, so an older window holds more and younger loans and its train side covers fewer
+        years. A test quarter's loans have their earlier quarters in train (99.4%, 99.7% and 99.98% of the test rows),
+        as for a lender scoring the loans it holds. The status of a quarter is known when the next one starts, so
+        every training label is known at the cutoff and there is no gap.
     """
     temporal = Temporal(
         on="time",
-        splits=TemporalSplits(window=1, unit="unique", n_windows=3),
+        splits=TemporalSplits(window=1, unit="unique", cutoffs=(60, 49, 38)),
         horizon=1,  # one period, a quarter
         horizon_unit="steps",
         time_unit="quarters",
@@ -313,8 +324,9 @@ class Mortgage(AbstractCuratedDataset):
         frame = deduplicated(raw["loans"]).sort_values([*LOAN_KEY, "time"], kind="stable")
         ratio = frame["balance_time"] / frame.groupby(LOAN_KEY, sort=False)["balance_time"].shift(1)
         rows = frame.assign(ratio=ratio)[ratio.notna()]
+        test_periods = sorted(self.temporal.splits.cutoffs, reverse=True)
         rows = rows.assign(
-            period=np.where(rows["time"] >= 58, "periods 58-60", "periods 2-57"),
+            period=np.where(rows["time"].isin(test_periods), "test periods (60, 49, 38)", "other periods"),
             status=rows["status_time"].map(STATUS),
         )
         table = rows.groupby(["period", "status"]).agg(
@@ -323,11 +335,11 @@ class Mortgage(AbstractCuratedDataset):
             balance_down_over_5pct=("ratio", lambda s: f"{(s < 0.95).mean():.1%}"),
             balance_unchanged=("ratio", lambda s: f"{(s == 1).mean():.1%}"),
         )
-        windows = df[df["time"] >= 58].groupby("time")[self.target].value_counts().unstack()
+        windows = df[df["time"].isin(test_periods)].groupby("time")[self.target].value_counts().unstack()
         windows.index.name = "test period"
         own = raw["loans"].groupby("time")[list(MACRO_LAGS)].first()
         used = df.groupby("time")[[f"{c}_lag_{k}" for c, k in MACRO_LAGS.items()]].first()
-        macro = pd.concat([own.add_suffix(" (own quarter)"), used], axis=1).loc[[60, 59, 58]].round(3)
+        macro = pd.concat([own.add_suffix(" (own quarter)"), used], axis=1).loc[test_periods].round(3)
         macro.index.name = "test period"
         return [
             Decision(
@@ -339,8 +351,9 @@ class Mortgage(AbstractCuratedDataset):
             ),
             Decision(
                 "Temporal split: three quarters, each trained on all earlier quarters",
-                "The book's backtest trains on the periods before 60 and tests on period 60; a lender scores the loans "
-                "it holds, so a test quarter's loans have their earlier quarters in train.",
+                "The book's backtest trains on the periods before 60 and tests on period 60, in the calm years; periods "
+                "49 and 38 add a quarter of the recovery and one of the crisis. A lender scores the loans it holds, so "
+                "a test quarter's loans have their earlier quarters in train.",
                 windows,
             ),
             Decision(

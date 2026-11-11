@@ -124,7 +124,7 @@ INBOUND_STATES = ("none", "not departed", "in the air", "arrived")
 """Where the aircraft's previous scheduled flight stands at the prediction point; `none` when that flight did not end
 at this flight's origin (or the aircraft has no earlier flight in the files)."""
 
-TEST_WINDOWS = (("2024-12-18", "2024-12-31"), ("2024-12-04", "2024-12-17"), ("2024-11-20", "2024-12-03"))
+TEST_WINDOWS = (("2024-12-18", "2024-12-31"), ("2024-07-03", "2024-07-16"), ("2024-03-13", "2024-03-26"))
 """The three test windows the splits make (newest first), for the evidence tables."""
 
 
@@ -311,8 +311,9 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
             "where the aircraft's previous flight is (not yet left, in the air or landed, with its delays so far)."
         ),
         split=(
-            "Each test window is two weeks at the end of 2024, as for a model refit every two weeks; training is "
-            "every earlier flight from 2023 on, of which a benchmark fits on a random million of the newest year."
+            "Each test window is two weeks of 2024: the holiday peak (18-31 December), the summer peak (3-16 July) "
+            "and a spring fortnight (13-26 March); training is every flight from 2023 on dated at least two days "
+            "before the window, of which a benchmark fits on a random million of the newest year."
         ),
         changes=(
             "Rebuilt from the DOT's flight records and Meteostat's station weather instead of the Aeolus release: the "
@@ -321,7 +322,7 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "Cancelled and diverted flights (1.6%; 0.4 to 1.4% of a test window) are not rows: the test data holds "
+            "Cancelled and diverted flights (1.6%; 1.2 to 2.0% of a test window) are not rows: the test data holds "
             "only flights that operated, which is not known an hour before departure. The aircraft is the one that "
             "flew; a swap decided after the prediction point is kept (notes)."
         ),
@@ -438,18 +439,18 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
         - Weather: each airport's nearest station with hourly observations through 2023-2024 (first decision; 353 of 359 within 2.5 km, at most 10.6 km), read at the prediction point's hour at both airports: 8 Meteostat parameters, the condition code as a category. ISD-Lite, the source of most readings, takes each value from the ten minutes up to the full hour (ISD-Lite Technical Document, 2006: "observation minute greater than or equal to ten minutes before the top of the hour up to and including the top of the hour"), so no reading is from after the prediction point. A wind direction of 0 is calm, 360 north. Peak gust and snow depth are empty and not kept. The 2025 files give the readings of the 2024-12-31 flights whose hour falls in 2025 in UTC.
         - Note: Meteostat fills missing observations with model forecasts for the hour: 0.2% of the origin temperatures, 5.9% of the precipitation, 41% of the cloud cover and 97% of the condition codes (third decision). A forecast for an hour is issued before it, so it is known at the prediction point; the issue times are not in the files. Kept as Meteostat publishes them, as Aeolus did (CC 2026-10-26). Remark for users: part of the weather inputs, most of the condition code and cloud cover, are the output of a weather model, not observations, so a score on these columns depends on that model; a study of the weather's value should read them apart from the observed temperature and precipitation.
         - Impossible weather becomes missing (`MIN_TEMPERATURE_C`, `MAX_WIND_KMH`, a humidity of 0%): 4 readings of -60.6 C at Sarasota, 45 mean winds of 121-232 km/h, most in clear or fair weather, and 11 humidities of 0% at Lihue and Jackson Hole. Precipitation up to 96.5 mm in an hour (Gulf and Florida storms) stays.
-        - Aircraft's previous flight: the tail number's flight scheduled to leave just before this one (`INBOUND_*`). Its scheduled times are known; its actual departure and arrival delays only when they happened by the prediction point, else missing, and `INBOUND_STATUS` says how far it had got (`none` when it did not end at this origin). The five columns add 0.15 to 0.17 ROC AUC per window (0.647-0.654 without them, 0.800-0.827 with them; untuned LightGBM, 1M training rows).
-        - Potential leak, kept on purpose: BTS records the aircraft that flew. When an aircraft was swapped, the row carries the swap: for 0.9% of the flights the recorded previous flight was scheduled to land after this departure (79-98% late), for 2.1% it ended elsewhere (42% late). Whether a swap was decided before the prediction point is not recorded. On the shipped splits these rows are 2.6-3.4% of a window; setting their five columns to `none` and missing costs 0.0002 to 0.0013 ROC AUC, and scoring without them gives 0.007 to 0.011 less. Revisit if a source of planned tail assignments turns up.
+        - Aircraft's previous flight: the tail number's flight scheduled to leave just before this one (`INBOUND_*`). Its scheduled times are known; its actual departure and arrival delays only when they happened by the prediction point, else missing, and `INBOUND_STATUS` says how far it had got (`none` when it did not end at this origin). The five columns add 0.15 to 0.17 ROC AUC per window (0.647-0.654 without them, 0.800-0.827 with them; untuned LightGBM, 1M training rows; measured on the windows before 2026-11-10, the newest six weeks of 2024).
+        - Potential leak, kept on purpose: BTS records the aircraft that flew. When an aircraft was swapped, the row carries the swap: for 0.9% of the flights the recorded previous flight was scheduled to land after this departure (79-98% late), for 2.1% it ended elsewhere (42% late). Whether a swap was decided before the prediction point is not recorded. On the windows before 2026-11-10 (the newest six weeks of 2024) these rows are 2.6-3.4% of a window; setting their five columns to `none` and missing costs 0.0002 to 0.0013 ROC AUC, and scoring without them gives 0.007 to 0.011 less. Revisit if a source of planned tail assignments turns up.
         - Proxy missing values: scheduled block times below 15 minutes (5 rows) become missing. 52 others that are more than twice or less than half their route's median stay as BTS records them.
         - Coordinates: the BTS master coordinate of the airport sequence id the flight uses (Guam and Pago Pago with their true signs).
         - `OP_CARRIER_FL_NUM` is categorical (the paper's Table 9), as in aeolus_1m; one operated flight has none.
-        - Note: compared with the Aeolus release, the rebuild adds March 2024 (585,413 operated flights) and the 192,954 flights of 43 airports the release left out (mostly Allegiant and SkyWest), and reads the weather in the hour before departure, not 3.5 to 11 hours earlier. With aeolus_1m's inputs (the schedule and three weather values per airport), the weather adds 0.043-0.051 ROC AUC per window here against 0.032-0.039 in aeolus_1m (the destination's alone 0.010-0.014 against 0.014-0.015; untuned LightGBM on each dataset's own splits).
-        - Task probes (200k newest training rows, three windows): no flags; ROC AUC LightGBM 0.819, random forest 0.808, linear 0.760, the best single feature (`INBOUND_ARR_DELAY`) 0.729. Leak probes (50k rows): no exact copies across the split; `INBOUND_ARR_DELAY` alone 0.734 against 0.790 for all features, the core of the task (a late aircraft makes a late flight); its missing indicator 0.683, which marks a previous flight that had not landed by the prediction point, known then. Every test airport is in training (known entities, SPLIT-13).
+        - Note: compared with the Aeolus release, the rebuild adds March 2024 (585,413 operated flights) and the 192,954 flights of 43 airports the release left out (mostly Allegiant and SkyWest), and reads the weather in the hour before departure, not 3.5 to 11 hours earlier. With aeolus_1m's inputs (the schedule and three weather values per airport), the weather adds 0.043-0.051 ROC AUC per window here against 0.032-0.039 in aeolus_1m (the destination's alone 0.010-0.014 against 0.014-0.015; untuned LightGBM on the two datasets' windows before 2026-11-10, the newest six weeks of 2024).
+        - Task probes (200k newest training rows, the three windows before 2026-11-10): no flags; ROC AUC LightGBM 0.819, random forest 0.808, linear 0.760, the best single feature (`INBOUND_ARR_DELAY`) 0.729. Leak probes (50k rows): no exact copies across the split; `INBOUND_ARR_DELAY` alone 0.734 against 0.790 for all features, the core of the task (a late aircraft makes a late flight); its missing indicator 0.683, which marks a previous flight that had not landed by the prediction point, known then. Every test airport is in training (known entities, SPLIT-13).
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
           by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
           is simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
-        - The row budget: The BTS files hold 13,708,650 operated flights from 2023 on with an arrival delay (13,926,960 scheduled). Each test window keeps at most 500k of its rows (v2 split protocol; all of them here), and each train side holds every earlier flight, so the container holds all 13,708,650. The container records the 1M train budget, and a benchmark sub-samples each train side to 1M flights before a fit (`subsample_train`; by default a random 1M of the newest year before the window).
+        - The row budget: The BTS files hold 13,708,650 operated flights from 2023 on with an arrival delay (13,926,960 scheduled). Each test window keeps at most 500k of its rows (v2 split protocol; all of them here), and each train side holds every earlier flight, so the container holds every flight a split uses: 13,690,703, all but the 17,947 of 2024-12-17, the gap before the newest window. The container records the 1M train budget, and a benchmark sub-samples each train side to 1M flights before a fit (`subsample_train`; by default a random 1M of the newest year before the window).
     """
 
     # Task
@@ -465,9 +466,12 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        As in aeolus_1m: a delay model is refit every two weeks and predicts the flights of the two weeks ahead. The last six weeks of 2024 are three two-week test windows (2024-12-18 to 12-31, 12-04 to 12-17 and 11-20 to 12-03, newest first; 25.9%, 16.7% and 17.5% of the operated flights late), so that one window falls in the holiday peak. Train is every flight from 2023 on dated at least two days before the window (a one-day gap): a flight's arrival delay is known only once it has landed, and the previous evening's flights land after midnight. Each window keeps all of its flights (264,245, 259,738 and 273,891); each train side holds every earlier flight, and a benchmark samples 1M of them, by default at random from the newest year before the window (`subsample_train`). The authors split 1-15 June 2024 chronologically 6:2:2 (Sec. 4.1), one test stretch of about three days and no season, so we depart from it. All three windows lie in late November and December: the score measures early-winter delays.
+        Each test window is two weeks. No source states a refit cadence: the authors split 1-15 June 2024 chronologically 6:2:2 (Sec. 4.1), so they test about three days after nine, one stretch and no season, and we depart from it. Two weeks keep a window under the 500k-row test cap and spread a single storm or outage over fourteen days, while the cutoffs choose the seasons (one week would let one event carry a window: on 19 July 2024, the CrowdStrike outage, 58.3% of the flights were late; a calendar month holds more than 500k flights). The three windows are fortnights of 2024 chosen by season (CC 2026-11-10), newest first: 2024-12-18 to 12-31, the newest, in the holiday peak (25.9% of the operated flights late); 2024-07-03 to 07-16, the summer peak (26.9% late, and the largest shift of the weather inputs against the train side, PSI 2.43 on the temperatures); and 2024-03-13 to 03-26, a spring fortnight near the average (21.3% late against 20.7% of all flights). By month the late share is highest in June and July (25 to 30%) and lowest in October and November (13 to 16%). Every fortnight from 17 January 2024 on keeps half the flights for training and none of 2023 does, so each train side holds the same season of 2023 once. We leave out 17-30 July, which holds the CrowdStrike outage: one airline's five-day outage would make a third of the score. Train is every flight from 2023 on dated at least two days before the window (a one-day gap): a flight's arrival delay is known only once it has landed, and the previous evening's flights land after midnight. Each window keeps all of its flights (264,245, 278,071 and 267,477); each train side holds every earlier flight (13,426,458, 10,166,861 and 7,987,461: 97.9%, 74.2% and 58.3% of the 13,708,650 operated flights), and a benchmark samples 1M of them, by default at random from the newest year before the window (`subsample_train`). The 17,947 flights of 2024-12-17, the gap before the newest window, lie in no split, so the frame leaves them out.
     """
-    temporal = Temporal(on="FL_DATE", splits=TemporalSplits(window=14, unit="days", n_windows=3, gap=1))
+    temporal = Temporal(
+        on="FL_DATE",
+        splits=TemporalSplits(window=14, unit="days", gap=1, cutoffs=("2024-12-18", "2024-07-03", "2024-03-13")),
+    )
     row_budget = RowBudget(train=1_000_000, test=500_000)
 
     # The 25 monthly BTS files (zipped CSVs) and about 1,800 station-year weather files are converted once into two
@@ -787,7 +791,7 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
             Decision(
                 "Cancelled and diverted flights are not rows",
                 "BTS leaves the arrival delay empty for cancelled and diverted flights, the release has none, and "
-                "their timing is not recorded. They cluster on storm days: the newest window has the most.",
+                "their timing is not recorded. They cluster on storm days: the July window has the most.",
                 cohort,
             ),
             Decision(

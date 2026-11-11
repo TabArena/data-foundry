@@ -133,8 +133,9 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         ),
         split=(
             "Three four-month windows tile 2017, newest first, each trained on all earlier readings, of which a "
-            "benchmark fits on a random million of the newest year; the oldest window is the competition's setting, "
-            "train on 2016 and predict early 2017."
+            "benchmark fits on a random million of the newest year. A savings baseline is fit once and used for a "
+            "year or more without a refit, so the window is the longest that gives three windows inside 2017; the "
+            "oldest trains on 2016 alone, just under half the readings."
         ),
         changes=(
             "We add the competition's 2017 readings, which its organisers released later with every meter in kWh, "
@@ -246,8 +247,17 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         on="timestamp",
         splits=TemporalSplits(window=4, unit="months", cutoffs=("2017-01-01", "2017-05-01", "2017-09-01")),
     )
+    accepted_check_warnings = {
+        "splits_train_under_half": (
+            "Signed off (Lennart, 2026-11-10, review issue 1, A): January-April 2017 trains on 49.47% of the "
+            "readings, beside 66.0% and 83.0%; SPLIT-14's two tiers admit it."
+        ),
+    }
     splits_comment = """
-        Three test windows of 4 months tile 2017, the competition's first test year: September-December, May-August and January-April 2017, newest first; train is all earlier hours. The oldest window is the competition's own setting: train on the year 2016 and predict the first months of 2017. 2016 holds 50.07% of the hours (8,784 of 17,544) but 49.12% of the rows, as it has more gaps and drops (site 0's recording gap); we keep the window because it is the competition's setting. A window is the horizon: the competition asked for the two years after its training year, and 4 months is the longest window that gives three windows inside 2017. Each test window keeps at most 500k of its rows, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows, by default a random 1M of the newest year before the window (`subsample_train`).
+        Three test windows of 4 months tile 2017, the competition's first test year: September-December, May-August and January-April 2017, newest first; train is all earlier hours. The newest window always stays, and at 4 months January-April and May-August are the only two windows that overlap neither it nor each other, so the three windows test each season once (kept by the curator on 2026-11-10).
+        A window is the horizon: a savings baseline is fit once on the year before a retrofit and predicts the year or two after it without a refit (the competition trained on 2016 to predict 2017 and 2018, GEPIII overview, Miller et al. 2020, Sec. 2.2; CalTRACK, Sec. 3.1.3 and 3.6.1.1; LBNL's NMEC guidance v2.0, p. 10), so the window is the longest that gives three windows inside 2017: four months. Windows of 3 or 2 months would fit (9 and 10 candidates above the floor) but score a model refit more often, an easier task than the use case.
+        The oldest window trains on 2016 alone: 50.07% of the hours (8,784 of 17,544) but 49.47% of the rows (19,325,311 of 39,062,170), as 2016 has more gaps and drops (site 0's recording gap). We keep it under the floor's amendment of 2026-11-08: the two newer windows train on 66.0% and 83.0% of the rows, and an older window may train on 40% or more when most test entities recur; here every test meter's building is in training, and folds by entity would test unseen buildings. LightGBM (one seed, default parameters with 1,000 trees and early stopping on the last 10% of each train sample in time order, fit on the default 1M sample of the newest year before each window, the date in the recommended encoding) scores RMSLE 1.212, 1.342 and 1.213, newest first: 1.277 on the two valid windows and 1.256 on all three. The oldest window scores like the newest and moves the mean by about 0.02; the direction comes from May-August, which the absolute date features (year, total seconds) make harder: without them the scores are 1.240, 1.176 and 1.247 (1.208 on the two valid windows, 1.221 on all three).
+        Each test window keeps at most 500k of its rows, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows, by default a random 1M of the newest year before the window (`subsample_train`).
     """
     row_budget = RowBudget(train=1_000_000, test=500_000)
 
