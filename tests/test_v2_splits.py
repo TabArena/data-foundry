@@ -128,7 +128,10 @@ def test_a_metric_that_scores_per_group_counts_its_groups_not_the_rows() -> None
     df = runs_frame(1_212, 11)  # 13,332 rows; the metric scores 1,212 instances
     assert recommended_dimensions(df, group_on="cls", group_labels="per_sample") == (3, 3)
     assert recommended_dimensions(df, group_on="cls", group_labels="per_sample", score_group_on="instance") == (10, 3)
-    assert recommended_dimensions(df, score_group_on="instance") == (10, 3)  # IID rows, scored per instance
+    assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", score_group_on="instance") == (
+        10,
+        3,
+    )
     one_row_per_instance = df.drop_duplicates("instance").reset_index(drop=True)
     assert recommended_dimensions(one_row_per_instance) == (10, 3)  # the same task in the other layout
 
@@ -136,9 +139,21 @@ def test_a_metric_that_scores_per_group_counts_its_groups_not_the_rows() -> None
 def test_a_scored_group_frame_gets_one_repeat_when_it_is_large(monkeypatch: pytest.MonkeyPatch) -> None:
     """The row budget still caps the repeats of a frame scored per group."""
     df = runs_frame(30, 10)  # 300 rows, 30 instances
-    assert recommended_dimensions(df, score_group_on="instance") == (20, 3)
+    assert recommended_dimensions(df, group_on="instance", score_group_on="instance") == (20, 3)
     monkeypatch.setattr(protocol, "SINGLE_REPEAT_ROWS", 300)
-    assert recommended_dimensions(df, score_group_on="instance") == (1, 3)
+    assert recommended_dimensions(df, group_on="instance", score_group_on="instance") == (1, 3)
+
+
+def test_a_metric_group_the_split_cuts_across_folds_counts_rows() -> None:
+    """A metric group spread over several split groups (a survey year over stations), or over an IID split, is scored
+    on part of its rows in every fold: the rows count, not the groups."""
+    df = runs_frame(1_212, 11)  # 13,332 rows
+    df["year"] = df["instance"] % 15  # 15 years, each across many instances and all 10 classes
+    assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", score_group_on="year") == (3, 3)
+    assert recommended_dimensions(df, score_group_on="instance") == (3, 3)  # IID: every instance cut across folds
+    assert protocol.scored_groups_held_out_whole(df, "cls", "instance")
+    assert not protocol.scored_groups_held_out_whole(df, "cls", "year")
+    assert not protocol.scored_groups_held_out_whole(df, None, "instance")
 
 
 def test_metric_group_column_is_the_metrics_group_input() -> None:

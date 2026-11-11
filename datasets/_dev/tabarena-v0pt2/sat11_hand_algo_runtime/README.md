@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sat11_hand_algo_runtime
 container_format: 2
-checksum: v2:c60066c6cb71642509e89347ff127f25e1f7b2c3e345f878ffc5a72873e8ce99
+checksum: v2:e461c47d71893d0b3e67cdedae35b1c7a9fe38a447e1d867826fccf471896781
 build:
   uuid: 01a111fc-eda8-7830-9b0d-905bf0c5bc1d
   checksum: v2:082824cbfada42e34f46d496f770c9504874d054fc07938f04be92176b4fd0c0
@@ -38,8 +38,8 @@ task:
   group_labels: per_sample
   group_time_on: null
   grouping:
-    prediction_unit: group
-    aggregation: select_min
+    prediction_unit: row
+    aggregation: null
     context: all_rows
     n_groups: 184
     test_groups_per_fold:
@@ -75,9 +75,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `runtime`, scored with `par_k` on grouped splits by `instance_id`, one prediction per group (select_min). 1,840 rows and 169 features. Source: ASlib (2011).
+Regression of `runtime`, scored with `par_k` on grouped splits by `instance_id`. 1,840 rows and 169 features. Source: ASlib (2011).
 
-Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c60066c6cb71642509e89347ff127f25e1f7b2c3e345f878ffc5a72873e8ce99`, so the build is stale. See [Build](#build).
+Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e461c47d71893d0b3e67cdedae35b1c7a9fe38a447e1d867826fccf471896781`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -307,7 +307,7 @@ One group is a SAT instance; its rows are the runs of the 10 candidate algorithm
 | group column | `instance_id` |
 | labels | per_sample |
 | order inside a group | none |
-| prediction unit | group (select_min) |
+| prediction unit | row |
 | known about a group when predicting | all_rows |
 
 | statistic | value |
@@ -503,4 +503,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c60066c6cb71642509e89347ff127f25e1f7b2c3e345f878ffc5a72873e8ce99` |
+| stale | yes: the definition now gives checksum `v2:e461c47d71893d0b3e67cdedae35b1c7a9fe38a447e1d867826fccf471896781` |

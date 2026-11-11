@@ -1,10 +1,34 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11, the split count in scored units narrowed (nothing rebuilt)
+
+- SPLIT-33 and `recommended_dimensions` count the metric's groups only when the split holds each one out whole (the
+  split's group, or a group inside one: sat11's instances, asp's instances inside problem classes); a metric group the
+  split cuts across folds leaves the count to the rows. asp_potassco_classification (10 x 3) and
+  sat11_hand_algo_runtime (20 x 3) are unchanged; wadden_sea_sibes_macoma_abundance, scored per survey year over a
+  split by station, stays at 3 x 3 instead of moving to 20 x 3. huesken_sirna_efficacy (30 genes, 10 x 3 to 20 x 3)
+  and protein_model_quality_rf_pcp (445 proteins, 3 x 3 to 20 x 3) still move at their next `dataset check`.
+- `protein_model_quality_rf_pcp` and `huesken_sirna_efficacy` (new issue 10 each, no definition change): ship 20 x 3
+  under the rule, or keep the splits as built? On protein, LightGBM, a random forest and ridge on the 20 x 3 splits
+  (per-protein correlation): two of three disjoint blocks of three repeats rank LightGBM and the forest the other way
+  round; ten repeats separate them in one block of ten, not the other; twenty separate all three pairs. Huesken not
+  measured. 20 x 3 recommended for both.
+
+## 2026-11-11, sat11_hand_algo_runtime: PAR10 alone picks the solver (nothing rebuilt)
+
+- `sat11_hand_algo_runtime` (issue 4, B): PAR10 alone picks the solver: the grouping declares `prediction_unit="row"`
+  and no aggregation instead of `select_min`, so a tie counts as the mean of the tied solvers' costs, as in
+  asp_potassco_classification. Trained models score the same (no tie on the 60 splits); a constant prediction 18,539 s
+  instead of 19,140 s. `dataset check` 0 errors, README regenerated, record CC line; definitions.md no longer names
+  sat11 as declaring `select_min`. Nothing rebuilt.
+
 ## 2026-11-10, `sepsis_survival_minimal_clinical_records` retired as `Trivial` (Andrej; no container built)
 
 - A clinician's rule, age plus five years for men, not fitted, reaches ROC AUC 0.7059 on the 9 shipped splits against
   0.7068 for TabPFN 3.5 and 0.7065 for the best train-only smoother; the best achievable ranking is estimated at about
-  0.709. Under the amended TP-4 that is a match, and the curator retired the dataset.
+  0.709. Under the amended TP-4 that is a match, which makes the dataset a candidate to drop; the retirement is a
+  curator call on top of that: the task is almost solved (TabPFN within about 0.002 of the best achievable) and very
+  simple (+0.0024 ROC AUC over age alone, too small to matter in practice).
 - The record is `No (Retired)` with `Trivial` and a CC line, `v2_path` is cleared and the folder is removed; the TP-4
   case row and case list and the evidence.md example are updated.
 

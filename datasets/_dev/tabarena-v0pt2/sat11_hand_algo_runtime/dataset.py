@@ -127,8 +127,7 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
     grouping = Grouping(
         on="instance_id",
         labels="per_sample",
-        prediction_unit="group",
-        aggregation="select_min",
+        prediction_unit="row",
         context="all_rows",
         definition="""
             One group is a SAT instance; its rows are the runs of the 10 candidate algorithms on it, described by instance and algorithm features, with the log runtime as the target. The use case is algorithm selection: predict every algorithm's runtime on a new instance and run the one predicted fastest (ASlib, Bischl et al. 2016; one model for all algorithms as in Pulatov et al. 2022), scored by the selected algorithm's true runtime (PAR10, or the share of the gap between the single best and the virtual best solver that is closed). The split holds out instances as ASlib's folds do; the instances also come in families, which the split does not separate.
