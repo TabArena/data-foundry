@@ -60,9 +60,9 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
             "customer active in it for the risk of churning, for example to target retention offers."
         ),
         row=(
-            "One Expresso customer in Senegal who was active in the observation window: a random 1.5 million of the "
-            "2,154,048 customers of the competition file, whose dates are not published. Almost all are long-tenure "
-            "customers (94.9% over 24 months, none under 3 months)."
+            "One Expresso customer in Senegal who was active in the observation window, one of the 2,154,048 "
+            "customers of the competition file, whose dates are not published. Almost all are long-tenure customers "
+            "(94.9% over 24 months, none under 3 months)."
         ),
         predicted=(
             "Whether the customer churns, that is makes no transaction for 90 days after the window (18.75% do)."
@@ -74,11 +74,12 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         ),
         split=(
             "Random customers of the same snapshot, as in the competition, whose test set is a random 15% of the "
-            "extract; each fold trains on 1 million and tests on 500,000 customers."
+            "extract; each fold tests on 500,000 customers and trains on the other 1.65 million, which a benchmark "
+            "sub-samples to 1 million."
         ),
         changes=(
             "We drop the region, whose missing values follow the outcome and were most likely filled in after the "
-            "window, and sub-sample 1.5 million customers."
+            "window."
         ),
         fit="approximate",
         fit_reason=(
@@ -144,7 +145,7 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         - Note: Zindi's rules forbid redistributing the data, uploads to Kaggle or GitHub included; the Kaggle copies we name are such uploads.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-        - The row budget: We sub-sample the frame (2,154,048 customers) to 1.5M customers, stratified on the target, and use 3-fold cross-validation, so every fold trains on 1M and tests on 500k customers (v2 split protocol).
+        - The row budget (1M train, 500k test rows): We keep the whole frame (2,154,048 customers) and use 3-fold cross-validation over it (v2 split protocol). Each fold tests on 500k customers of its third, drawn stratified on the target, and trains on the other 1,654,048. The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M customers with `subsample_train`, whose default draws random rows stratified on the target.
     """
 
     # Task
@@ -160,7 +161,8 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         definition="ROC AUC of the churn probability against CHURN",
     )
 
-    # Splits: IID (one snapshot, no time index); the `_1m` version sub-samples the frame to the 1.5M-row budget.
+    # Splits: IID (one snapshot, no time index). The `_1m` version samples each fold's test third to 500k rows; the
+    # 1M train budget is recorded for a benchmark, which sub-samples each train side (`subsample_train`).
     row_budget = RowBudget(train=1_000_000, test=500_000)
     accepted_check_warnings = {
         "dataset_duplicate_rows": "Every row is a different customer (unique user_id). The copies are customers "

@@ -99,8 +99,16 @@ splits in a row table, `rows.parquet`: one row per row of `dataset.parquet`, one
 ([`examples/read_metric_without_data_foundry.py`](examples/read_metric_without_data_foundry.py) reads it without Data
 Foundry); `container.experiment_metadata.splits` returns the same `{repeat: {fold: (train, test)}}` for either
 layout, every side in row order. `run_bundle_checks` judges each
-format by its own split protocol (v1: the repeat ladder, 1M train and 250k test rows; v2: 3 folds, and the
-`experiment_metadata.row_budget` a sub-sampled version records: no size limit without one).
+format by its own split protocol (v1: the repeat ladder, 1M train and 250k test rows; v2: 3 folds, and the test cap
+of the `experiment_metadata.row_budget` a `_1m` version records: no size limit without one).
+
+**Row budget.** A format-2 container with a `row_budget` (a `<name>_1m` version) tests on at most `row_budget.test`
+rows per split, and its train sides keep every row they may use (all earlier rows of a temporal window). A benchmark
+fits on at most `row_budget.train` of them: `subsample_train(container, repeat, fold)` (`data_foundry.v2`) draws them
+by the default sampler the container records in `experiment_metadata.train_sampling` (for a temporal side the newest
+year, extended back in time until it holds that many rows, sampled at random; whole groups of a grouped one,
+stratified rows otherwise), and returns the train side whole for a container without a budget. A numeric time column
+carries its calendar in `task_metadata.time_unit` (numerai's `era` counts weeks). A benchmark that samples by its own rule keeps the unit `train_sampling` names.
 
 **Checksums.** `container.verify()` recomputes a container's checksum and compares it with the stored one (with
 `get_dataset(..., verify=True)` a collection does it on load). A container built since 2026-10-06 has a version-2

@@ -17,9 +17,11 @@ and **grouped** (generalise to unseen entities such as patients or customers).
 > **Large datasets are a priority.** Real tasks with roughly 1M–10M usable training rows are rare in public
 > benchmarks, and most of them are non-IID. Candidates of that size carry the tag **`Review Prio 1 (Atlas)`** in
 > the curation log (the tag comes from the earlier Atlas plan for a large-data collection, now folded into
-> TabArena v0.2); pick from them first (section 7). Data Foundry itself sets no row budget; TabArena v0.2
-> sub-samples to 1M train / 500k test rows: a dataset whose splits have a side over that ships as a `<name>_1m`
-> version with `row_budget = RowBudget(train=1_000_000, test=500_000)`, and the container records that budget.
+> TabArena v0.2); pick from them first (section 7). Data Foundry itself sets no row budget; TabArena v0.2 tests on
+> at most 500k rows per split and trains on at most 1M: a dataset whose splits have a side over that ships as a
+> `<name>_1m` version with `row_budget = RowBudget(train=1_000_000, test=500_000)`. Its container caps each test
+> side at 500k rows and keeps every training row; the benchmark draws the 1M it fits on (a random sample of the
+> newest year of a temporal side, by default).
 
 The selection criteria (unique source, a real predictive task, no irreversible leakage, ethically unambiguous, not
 trivial) are the same for every dataset; the [**📖 Guidelines**](https://tabarena.github.io/data-foundry/guidelines.html)
@@ -37,7 +39,7 @@ dashboard also shows as "Start here".
                       accept (Yes), keep for later or reject
 3. AI adds the Yes    /add-dataset on a dashboard filter: per source one agent writes the definition and runs the
                       checks and probes, then a review panel of agents attacks it; nothing is built; open issues,
-                      ranked, in REVIEW.md
+                      ranked, in the record's review (its ## Review section)
 4. You review it      /review-added-datasets: a page with each dataset's use case, its open issues, the panel's
                       reports and files; you set a verdict per dataset and a mark per issue, Claude checks them for
                       consistency with earlier decisions and applies them
@@ -83,16 +85,18 @@ More: [`datasets/README.md`](../../README.md) (the tree), [`CONTRIBUTING_DATASET
 | [`README.md`](README.md) | How to rebuild the datasets. What each one is, and whether it is built, is in its own folder's `README.md`. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Every change to the folder, newest first. Add an entry with each PR. |
 | [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md) | What the TabArena harness has to change for these datasets. |
+| [`REVIEW.md`](REVIEW.md) | The review items that span datasets (a rule, a framework change). A dataset's own review is in its curation record. |
 
-Each dataset folder holds `dataset.py` (the definition, the only file edited by hand), `README.md` (generated: the
-dataset page with sample rows, checks, splits and the build record) and, while the dataset is reviewed, `REVIEW.md`
-(the open questions for the curator).
+Each dataset folder holds `dataset.py` (the definition, the only file edited by hand) and `README.md` (generated: the
+dataset page with sample rows, checks, splits and the build record). The dataset's review (the questions for the
+curator and how each was settled) is not in the folder: it is the `## Review` section of its curation record
+(section 4).
 
 ## 4. The curation log
 
 Every candidate has one markdown record under [`curation/records/`](../../../curation/records) (YAML front-matter
-for the structured fields, free text in `## Comments`). The records are the memory of the curation effort: read a
-record's comments before you work on its dataset.
+for the structured fields, free text in `## Comments`, the dataset's review in `## Review`). The records are the
+memory of the curation effort: read a record's comments and review before you work on its dataset.
 
 The log is published read-only at [**tabarena.github.io/data-foundry**](https://tabarena.github.io/data-foundry/).
 The large-data candidates:
@@ -148,18 +152,20 @@ approximate). The steps are in [`CONTRIBUTING_DATASETS.md`](../../../CONTRIBUTIN
    Per source one agent downloads the data, writes the definition, runs `dataset check` and the leak, task and group
    probes and the verification checklist; then a review panel of agents attacks the result (a claim auditor, column
    and split auditors, a domain practitioner, a blind reviewer that sees none of our notes, a precedent checker, an
-   advocate and a critic, a mediator). Nothing is built. The open issues for you go, ranked and numbered, into each
-   dataset folder's `REVIEW.md`, with the panel's reports below them.
-2. Run `/review-added-datasets`. It builds the review page from the `REVIEW.md` files, a local HTML file or a Claude artifact you can
-   share. Each dataset opens on its use case (the `task_summary`), then tabs for your decisions (the issues and the
-   record fields that disagree with the definition), the review panel's reports, the run's details, `dataset.py`, the
-   generated README and the curation record. Set a verdict per dataset (ship, ship after changes, don't ship, discuss) and a mark per issue
-   (as implemented, change, discuss), with a note where you want something done or answered.
+   advocate and a critic, a mediator). Nothing is built. The open issues for you go, ranked and numbered, into the
+   `## Review` section of each dataset's record, with the panel's reports below them.
+2. Run `/review-added-datasets`. It builds the review page from the records' reviews, a local HTML file or a Claude
+   artifact you can share. Each dataset opens on its use case (the `task_summary`), then tabs for your decisions
+   (the issues and the record fields that disagree with the definition), the review panel's reports, the run's
+   details, `dataset.py`, the generated README and the curation record. Set a verdict per dataset (ship, ship after
+   changes, don't ship, discuss) and a mark per issue (as implemented, change, discuss), with a note where you want
+   something done or answered.
 3. Tell Claude to apply your marks. It first checks each mark against the rules and similar earlier decisions and
    asks you to reflect where one looks inconsistent (never changing your mark). Then it changes the definitions, records your decisions in the curation records
    (dated `CC (<date>, <name>):` lines), retires what you rejected, writes the CHANGELOG entry, answers your
-   questions on the page, removes the settled issues from `REVIEW.md` and republishes the page with only what is
-   still open. Repeat until every dataset has a verdict.
+   questions on the page, closes each settled issue in the record's review with a `Resolved` line (the issue stays
+   there, so the record keeps how it was decided) and republishes the page with only what is still open. Repeat
+   until every dataset has a verdict.
 4. The shipped datasets are built when you ask ("rebuild X and Y"; new UUIDs and the CHANGELOG),
    and the containers they replace are deleted once the new build is verified. Then commit and open the PR; it sets
    `DF: Yes` on the shipped records and releases their claims.
@@ -172,7 +178,7 @@ the split, and judge whether the result is a sound benchmark task. Then run `/ad
 folder for the verification and the review panel, and open the PR; a curator builds the container after review.
 
 **Learn from the definitions in this folder.** The Data Foundry knowledge names a reference definition for each
-regime (IID, grouped, temporal, late labels, a sub-sampled `_1m` version, heavy raw data) in
+regime (IID, grouped, temporal, late labels, a `_1m` version with a row budget, heavy raw data) in
 [`definitions.md`](../../../.claude/skills/knowledge-data-foundry/references/definitions.md), "Reference
 definitions"; read the closest one in full before you write your own.
 
