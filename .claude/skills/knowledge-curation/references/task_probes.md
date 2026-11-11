@@ -71,7 +71,8 @@ rules out a leak but not the test. Then judge it in two steps, as TP-2; only the
 
 Marker: `Trivial`. Cases: fitness_club (a feature beats, retired); audiology_diagnosis (a textbook rule beats,
 retired); ljubljana_breast_cancer (a published prognostic index matches, the curator's call: retired);
-sepsis_survival, california (no, kept).
+sepsis_survival_minimal_clinical_records (the methods beat age plus five years for men by about 0.001 AUC on every
+split, step 2, the curator's call: retired); california (no, kept).
 
 **TP-5 (Must).** `Too Small` means a handful of units of a class, per test fold and in total, counted in the unit the
 task is scored on (parkinsons: 8 healthy people, 2-3 per fold; retired). A small dataset as such is a tiny-data task
@@ -400,7 +401,7 @@ task-probe flags the decision answers. The decisions on metrics (2026-10-21) are
 | TP-2 | forest_fires | no_signal | kept (2026-10-06); re-split by day; retired (2026-11-05); rechecked (2026-11-11) | step 2: on day-grouped splits tuned LightGBM beats the training median beyond shuffled labels (MAE 12.69 against 12.71 ha, p = 0.02), 0.02 ha per fire against a typical error of 12.7 ha, which changes no dispatch of crews; a per-day ranking of fires would fit the decision, but 160 of 227 days have one or two fires (Lennart and Andrej) | applied |
 | TP-2 | clock_protein_toxicity | no_signal | kept (2026-10-06); retired (2026-11-05); rechecked (2026-11-11) | step 1: tuned and early-stopped LightGBM, tuned logistic regression, RealMLP and TabDPT-1.3 all within shuffled labels on the 60 v2 splits (best AUC 0.536, p = 0.16; shuffled runs 0.45 to 0.55) | applied |
 | TP-1 | asp_potassco_classification | no_signal | kept (2026-10-06) | TabICLv2 beats the class shares on 30 of 30 folds; label noisy (62% of runner-ups within 1 s) | applied |
-| TP-4 | sepsis_survival_minimal_clinical_records | one_feature | kept (2026-10-06) | age alone AUC 0.704, below the best (0.707) on every fold; 975 distinct cases by design | applied |
+| TP-4 | sepsis_survival_minimal_clinical_records | one_feature | kept (2026-10-06); retired, `Trivial` (2026-11-10, Andrej) | age alone AUC 0.704, below the best (0.707) on every fold; 975 distinct cases by design. Reassessed under the amended test: age + 5 years for men, not fitted, 0.7059 against 0.7068 for TabPFN 3.5 (the splits run from 0.699 to 0.710), the best train-only smoother 0.7065, the best achievable about 0.709; a match, so a candidate; the curator retired it as almost solved (TabPFN within about 0.002 of the best achievable) and so simple that the gain over age alone (+0.0024) does not matter in practice | applied |
 | TP-4 | california_house_prices_2020 | one_feature | kept (2026-10-06) | the listed price is the natural core; sold = listed R² 0.89-0.91, methods 0.93-0.945 | applied |
 | TP-4 | aps_failure | one_feature | kept (2026-10-06) | the per-split single feature (AUC 0.970) stays below all 20 configurations; AUC near its ceiling | applied |
 | TP-5 | musk | no_spread, unstable | kept (2026-10-06) | 13 musk and 21 non-musk molecules per fold: a tiny-data task | applied |

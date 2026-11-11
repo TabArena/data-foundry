@@ -240,6 +240,16 @@ horizon (...) is checked". The README files follow at the next `dataset check`; 
   alfa_battle_2_0_task_2, `"quarters"` for mortgage. Their frames and splits are unchanged; their containers carry
   the field at the next check.
 
+## 2026-11-10, `sepsis_survival_minimal_clinical_records` retired as `Trivial` (Andrej; no container built)
+
+- A clinician's rule, age plus five years for men, not fitted, reaches ROC AUC 0.7059 on the 9 shipped splits against
+  0.7068 for TabPFN 3.5 and 0.7065 for the best train-only smoother; the best achievable ranking is estimated at about
+  0.709. Under the amended TP-4 that is a match, which makes the dataset a candidate to drop; the retirement is a
+  curator call on top of that: the task is almost solved (TabPFN within about 0.002 of the best achievable) and very
+  simple (+0.0024 ROC AUC over age alone, too small to matter in practice).
+- The record is `No (Retired)` with `Trivial` and a CC line, `v2_path` is cleared and the folder is removed; the TP-4
+  case row and case list and the evidence.md example are updated.
+
 ## 2026-11-10, `ljubljana_breast_cancer` retired as `Trivial` (Andrej's mark on the BeyondArena v0.2 review page)
 
 - TP-4 now separates a feature or unfitted rule that beats the methods (proof of `Trivial`) from one that matches them
