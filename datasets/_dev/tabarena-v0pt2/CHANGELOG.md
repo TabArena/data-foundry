@@ -1,5 +1,27 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11 (night), lung_adenocarcinoma_metastasis: the curator's marks on a second review panel (no container built)
+
+- A second full review panel (at Lennart's ask on PR #75; its reports are in the record's `## Review`): ship after
+  changes. Lennart's marks: issue 1, B (USE-1 amended on this case: a label written in the specimen's note that rests on
+  an earlier cancer outside it is a prediction target; the use case names the expression tissue-of-origin test as the
+  pathologist's second opinion), issue 2, A (kept at 15 metastases, 5 per test fold), issue 3, B (nine fixes), and the
+  declared metric (ROC AUC, fallback) checked.
+- Data changes: age, sex and pack-years from GEO are features (USE-6; random forest 0.879 to 0.884 with them, two
+  pack-years missing, one per class); the target is `No` / `Yes`, with `Yes` the metastasis (CLEAN-25). 123 rows,
+  12,561 features.
+- Notes corrected: the negatives are the sheet's adenocarcinomas "w/ no history or path indicating non adeno", so a new
+  primary after an earlier cancer, the hard case, is absent (`fit_reason`, Selection); 4 of the 15 metastases were
+  staged as lung primaries; the recording difference comes from dimmer arrays scaled up by MAS5, holds within batches
+  and does not carry the score (a rank within each array removes it at no cost; LEAK-15 text and Cases row); nine
+  marker genes, not ten (no NAPSA probe set); the first title in GEO's order is not the first hybridisation for 10
+  tumours; scan dates, the controls' ROC AUC by model, and split counts for the grouped-fold numbers.
+- Rules: USE-1 amended (date, curator, case; its Cases row says glioma, eucalyptus and tcga_lung_histology stay
+  cross-checks); LEAK-15 and TP-5 rows updated; the new record cited under PROV-7 (one source, two tasks) instead of
+  PROV-14. lung_cancer's record gets a CC line correcting its "not a rule change".
+- `dataset check` 0 errors, 0 warnings; task probe no flag (random forest 0.878, selected linear 0.865, logistic
+  regression 0.849, LightGBM 0.819); leak probe: no copies across the split, the missing pack-years indicator 0.50.
+
 ## 2026-11-11, each dataset's review moves into its curation record (no container built)
 
 Lennart, 2026-11-11: "We want the curation record to be the single source of information, not spread across multiple
