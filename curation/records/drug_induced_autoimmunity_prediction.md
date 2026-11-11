@@ -7,11 +7,16 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
+- WIP (DF)
+claimed_by: Andrej
 suggestion: 'Yes'
+priority: 2
 tags:
 - Tiny Data
 - Non-IID (Grouped)
-- 'Samples: No Time Dimension'
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Revised Later'
 collections:
 - New (BeyondArena)
 original_source: UCI
@@ -87,6 +92,7 @@ CC (2026-10-21, Lennart): make this dataset grouped here as well ("we want to ha
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Huang, Liu & Huang 2024 (InterDIA) report AUC, accuracy, sensitivity, specificity, F1 and MCC side by side, no unique metric (MET-5).
 
+**Assessment (AI, 2026-10-27):** The open questions for the curator are in the folder's `REVIEW.md` (review of the Tiny Data datasets, written from the earlier findings, no review panel); the AI recommends shipping it after changes. Priority 4: gap +, use case +, source +, shape -, risk +.
 CC (2026-10-26, Andrej): The SMILES is important for performance, so it stays in the data.
 - `dataset.py`: `SMILES` is no longer dropped; it ships as a string feature next to the source's 176 descriptors (177 features, 587 rows unchanged). This settles the MACCS question above by shipping the structure itself instead of one chosen fingerprint, so a model can read it as it likes.
 - Stereoisomer de-duplication is unchanged: it compares the descriptors only, not the SMILES, so the same 9 pairs are found (their SMILES differ only in the stereo marks) and the row count stays 587 with 140 positive.
@@ -100,6 +106,37 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encoded and never as text (path C of the discussion doc "SMILES Handling in Data Foundry and TabArena v0.2" (https://claude.ai/artifact/6r49WpR9Uard5ogo7qK4rB)): the benchmark encodes it; the recommended encoding in Data Foundry is RDKit's 2D descriptors with the MACCS keys.
 
 **Assessment (AI, 2026-11-01):** the definition now ships `SMILES` (RDKit's canonical form) in `smiles_columns`, as Andrej decided to keep it on 2026-10-26, but typed as a structure, and the source's 176 RDKit descriptors leave: the recommended encoding reproduces them (LightGBM / random forest ROC AUC over the 60 scaffold splits: source descriptors 0.771 / 0.776, our full RDKit set 0.772 / 0.777) and adds the MACCS keys (0.796 / 0.799, better on 51 and 59 of 60 splits); the SMILES read as text gives 0.763 / 0.766. The stereoisomer pairs are now found on the stereo-free canonical SMILES: the same 9 pairs, 587 drugs, 140 positive. The split groups come from `scaffold_groups` (the same 443 groups, other folds).
+
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the folder's `REVIEW.md`. Ship: a real structure-based screen, split by scaffold with the SMILES as a typed structure (issue 1 resolved 2026-11-01); only the fit label should move to approximate for the undocumented negatives (issue 2). Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
+
+CC (2026-11-11, Andrej): Four decisions from the v0.2 review page (folder `REVIEW.md`, issues 2-5): the fit becomes approximate, the scaffold split stays with the label's reporting window written down, all 587 drugs stay, and the record's collection facts are corrected.
+- Fit `approximate` (issue 2, B): the source does not say how the negative drugs were chosen, most likely "no autoimmune reaction reported" as in the nearest documented set (Wu et al. 2021), an unverified label definition. `fit_reason` and a curation bullet name the gap; no row, split or score changes.
+- Time basis (issue 3, B): no prototype fits, so the definition states the facts in a `Time basis:` line and claims no tag. The label is what had been reported by the compilation (InterDIA, 2025), so it accrues with a drug's time on the market: ChEMBL dates 496 of the 587 drugs by first approval, 1940-2020 (the API's `molecule_structures__canonical_smiles__flexmatch` and `first_approval`; 575 of the 597 source rows matched). The scaffold split stays: a forward split by approval year would test the delay of the label rather than the drugs. Untuned logistic regression, random forest and histogram gradient boosting on the source's RDKit descriptors over the 496 dated drugs, ROC AUC (Slurm job 1366251, 2026-11-06; the scaffold rows of the same run: 0.676 / 0.721 / 0.717):
+
+  | Test from | Training drugs | Test drugs | Forward: LR / RF / boosting | Random folds of the same training size |
+  |---|---|---|---|---|
+  | 1990 | 219 | 277 | 0.606 / 0.642 / 0.607 | 0.716 / 0.740 / 0.721 |
+  | 1995 | 267 | 229 | 0.582 / 0.698 / 0.714 | 0.716 / 0.777 / 0.754 |
+  | 2000 | 351 | 145 | 0.617 / 0.692 / 0.765 | 0.740 / 0.794 / 0.803 |
+  | 2005 | 399 | 97 | 0.692 / 0.828 / 0.810 | 0.752 / 0.812 / 0.825 |
+
+- All 587 drugs kept (issue 4, B), the fact written into the curation notes and `fit_reason` instead of a row drop: the drugs approved from 2010 on are almost all negative (binomial p 0.0002 against the earlier drugs) and the structure shows the era (molecular weight alone separates that block at ROC AUC 0.693), but they are the drugs the use case screens for, and dropping them would take a tenth of a small dataset out on an inferred year. Positive share by approval era, on the shipped 587 drugs:
+
+  | First approval | Drugs | Positive share |
+  |---|---|---|
+  | before 1960 | 41 | 0.415 |
+  | 1960-1979 | 88 | 0.227 |
+  | 1980-1999 | 222 | 0.270 |
+  | 2000-2004 | 48 | 0.208 |
+  | 2005-2009 | 45 | 0.178 |
+  | 2010-2020 | 52 | 0.058 |
+  | no ChEMBL year | 91 | 0.242 |
+
+- Collection facts (issue 5, C): `Samples: No Time Dimension` becomes `Samples: Over Time`, with `Time: Dated` (the approval year comes from a parent source, ChEMBL, which dates 84% of the drugs) and `Target: Revised Later` (the label is assigned and then accrues as reports come in; venlafaxine is positive while its active metabolite desvenlafaxine is negative).
+- Applied in `dataset.py`: `fit="approximate"` with the gap in `fit_reason`, three curation bullets (the fit, the time basis, the era gradient of the label), the reason for keeping the scaffold split in `splits_comment`; the metric's `reason` now dates InterDIA 2025, as its BibTeX does. `dataset check` 0 errors, 0 warnings, README regenerated. Not rebuilt (the build has been stale since 2026-10-14).
+  - Huang L, Liu P, Huang X. InterDIA: Interpretable prediction of drug-induced autoimmunity through ensemble machine learning approaches. Toxicology. 2025;511:154064.
+  - Wu Y, Zhu J, Fu P, Tong W, Hong H, Chen M. Machine Learning for Predicting Risk of Drug-Induced Autoimmune Diseases by Structural Alerts and Daily Dose. Int J Environ Res Public Health. 2021;18(13):7139. doi:10.3390/ijerph18137139
+  - ChEMBL web services (https://www.ebi.ac.uk/chembl/api/data/molecule), queried 2026-11-06; the lookup is `scripts/approval_years.py` of the review run (`~/claude_jobs/time_review/drug_induced_autoimmunity_prediction/`).
 
 ## Reference
 

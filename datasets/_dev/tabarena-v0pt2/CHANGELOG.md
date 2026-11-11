@@ -1,5 +1,22 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11 (evening), drug_induced_autoimmunity_prediction: Andrej's marks (nothing rebuilt)
+
+- Issue 2, B: the fit is `approximate`, `fit_reason` naming the undocumented negatives (a negative most likely means
+  no autoimmune reaction was reported, as in Wu et al. 2021) and the label's reporting window; a curation bullet gives
+  the gap in full. No row, split or score changes.
+- Issue 3, B: the scaffold split stays, with a `Time basis:` line and no prototype tag: the label accrues with a drug's
+  time on the market (ChEMBL dates 496 of the 587 drugs, 1940-2020), so a forward split would test the reporting delay
+  rather than the chemistry (forward cuts lose 0.03-0.13 ROC AUC up to 2000 against random folds of the same training
+  size, Slurm job 1366251). `splits_comment` says why the forward split was not taken.
+- Issue 4, B: all 587 drugs kept, the era gradient written down instead (positive share 0.058 for the 52 drugs
+  approved from 2010 on against 0.259 earlier, binomial p 0.0002; molecular weight alone separates that block at ROC
+  AUC 0.693).
+- The metric's `reason` now dates InterDIA 2025, as its BibTeX and the record do.
+- `dataset check` 0 errors, 0 warnings, README regenerated; the build stays stale (unchanged since 2026-10-14).
+- Record (issue 5, C): `Samples: No Time Dimension` replaced by `Samples: Over Time`, plus `Time: Dated` and
+  `Target: Revised Later`; CC line of 2026-11-11 for the four decisions.
+
 ## 2026-11-11 (evening), sdss_17: Andrej's marks (nothing rebuilt)
 
 - Issue 2, D: split by the year of the spectrum instead of at random. The raw `MJD` becomes the time column `date`
