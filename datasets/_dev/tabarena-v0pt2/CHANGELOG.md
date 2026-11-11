@@ -1,5 +1,25 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11, each dataset's review moves into its curation record (no container built)
+
+Lennart, 2026-11-11: "We want the curation record to be the single source of information, not spread across multiple
+files." A dataset's review (the outcome, the main points, the Horizon block, the numbered issues with every turn, the
+review panel) is now the `## Review` section of its record, `curation/records/<unique_name>.md`, between `## Comments`
+and `## Reference`; from now on `/add-dataset` writes it there and `/review-added-datasets` applies the curator's turns
+there. A review is still never deleted (Andrej, 2026-11-02).
+
+- The 63 `REVIEW.md` files of the dataset folders moved unchanged into their records (without the title line) and are
+  deleted; their relative links point from the records now. Collected before and after, the reviews give the same 63
+  records, 234 issues and 31 review panels.
+- The 294 lines of record comments and definitions that pointed to a folder's `REVIEW.md` ("REVIEW.md issue 3") point
+  to the record's review ("Review issue 3"); lines that tell of a review file being removed, and pointers to the
+  working copy's cross-dataset `REVIEW.md`, stay as written.
+- The working copy's cross-dataset `REVIEW.md` stays: it belongs to no record.
+- The collector refuses a `REVIEW.md` in a dataset folder and an open-issues block in a record's comments; a test fails
+  a PR that adds a folder `REVIEW.md`; `move_reviews_to_records.py` (review-added-datasets) moves one, for a branch
+  rebased onto this change. The README of a folder no longer lists a `REVIEW.md`; the READMEs follow at the next
+  `dataset check`.
+
 ## 2026-11-11, the curator's marks on the two new temporal checks (no container built)
 
 Both cross-dataset items are applied as recommended (Lennart, 2026-11-11, A on each); the README files follow at the

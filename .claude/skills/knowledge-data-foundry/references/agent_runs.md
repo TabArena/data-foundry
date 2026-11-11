@@ -15,9 +15,9 @@ When the curator names several records or a dashboard filter (for example "every
    second agent verifies the result against
    [verification.md](../../knowledge-curation/references/verification.md), and the first applies each finding or
    rejects it with evidence.
-4. Nothing is built. The open questions go into each folder's `REVIEW.md` and into the records of datasets not added
-   ([working_copy.md](working_copy.md)); the run's process log and evidence go into
-   `local-data-warehouse/_runs/<date>_<run>/`.
+4. Nothing is built. The open questions go into each record's `## Review`, also for a dataset that was not added; the
+   main session writes it from the unit agents' drafts ([records.md](records.md), "The review section"). The run's
+   process log and evidence go into `local-data-warehouse/_runs/<date>_<run>/`.
 5. The curator reviews the result on the page `/review-added-datasets` builds.
 
 ## Machine limits
@@ -45,6 +45,8 @@ Lessons of the review rounds of 2026-11-10 and 11, where up to six agents applie
   one of them.
 * An agent's summary is not the change: read the diff (a mark word copied wrong, a claim its own numbers
   contradict).
+* Never `git stash`, `git checkout` or `git switch` while agents edit the working tree: the tree changes under them
+  and an edit is lost (2026-11-11, a stash during two doc agents' run lost one edit, which the agent re-applied).
 * A long run that is no longer needed is stopped (`SendMessage` to the agent, or `TaskStop`), not left to finish:
   maps_router_eta_1m's full window statistics ran 52 minutes for counts already known.
 
@@ -52,4 +54,5 @@ Lessons of the review rounds of 2026-11-10 and 11, where up to six agents applie
 
 Name in the brief: the records and the folder names, the knowledge files to read for each step (the workflow skill's
 "Knowledge used" table), the thread caps, the run folder for scratch output, that nothing is built, committed or
-pushed, and that records are edited only through the store API ([records.md](records.md)).
+pushed, and that records are edited only through the store API, a record's `## Review` also by an exact-string edit
+of the current file ([records.md](records.md)).

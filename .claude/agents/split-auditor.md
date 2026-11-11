@@ -25,7 +25,7 @@ Python run):
   case (how far ahead the actor predicts, how often a deployed model is refit, the label delay; SPLIT-12), say which
   of it the source states and which is our assumption, weigh one to three other lengths (how many windows each keeps
   above the floor, which periods they cover), and say why the windows cover the period they do; the main session
-  puts this argument into the REVIEW.md's `**Horizon:**` block (verdict, length, gap, time frame, an options
+  puts this argument into the `**Horizon:**` block of the record's review (verdict, length, gap, time frame, an options
   table with today's length as the implemented row and the size of each option's test windows, recommendation),
   which the curator signs off;
 * temporal, three checks earlier panels missed (reviews of 2026-11-10 and 11):

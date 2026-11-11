@@ -15,7 +15,9 @@ copy, [working_copy.md](working_copy.md)):
 |---|---|---|
 | `dataset.py` | the curator or the agent | The only definition: one `AbstractCuratedDataset` subclass. Flat class attributes declare the metadata, the task, the standard preprocessing and the splits; a few hooks hold the code. |
 | `README.md` (+ `figures/*.png`) | `dataset check` / `dataset build` | The dataset card and evidence: YAML front matter (build record, data and split shape, bundle-check slugs, decision titles), then the files of the folder, links, how to rebuild, the dataset and task, the curation notes, the splits, the decisions with their tables and figures, the check results and the build record. Never edited by hand. |
-| `REVIEW.md` | the agent, while issues are open | The open issues for the curator ([working_copy.md](working_copy.md)); deleted once they are settled. |
+
+The dataset's review (the issues for the curator, open and settled, and the review panel) is not in the folder: it is
+the `## Review` section of its curation record ([records.md](records.md), "The review section").
 
 Discovery is `data_foundry.v2.discover_datasets(root)` (the tasks; `discover_definitions` adds the parents of a family,
 "Families" below), and `tests/test_v2_datasets.py` tests every discovered folder (each import in its own test), so there

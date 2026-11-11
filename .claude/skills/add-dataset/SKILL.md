@@ -1,6 +1,6 @@
 ---
 name: add-dataset
-description: "Add a dataset to the TabArena v0.2 working copy and attack it before the curator sees it: builds the v2 folder (one dataset.py class and a generated README.md) from the curation record and the source, loops on dataset check and the leak, task and group probes until clean, runs the verification checklist, then a review panel of agents (claim auditor, column and split auditors, domain practitioner, a blind reviewer without our notes, a task gamer that tries to beat the task as a participant would, precedent checker, an advocate and a critic, a mediator, an editor), and leaves the open questions, ranked, in the folder's REVIEW.md. Use for an accepted record (`Yes`), for a batch on a dashboard filter, or to re-check an existing folder (\"is X ready / leaky / correct?\"). The curator reviews the result with /review-added-datasets. v2 only; never builds a container."
+description: "Add a dataset to the TabArena v0.2 working copy and attack it before the curator sees it: builds the v2 folder (one dataset.py class and a generated README.md) from the curation record and the source, loops on dataset check and the leak, task and group probes until clean, runs the verification checklist, then a review panel of agents (claim auditor, column and split auditors, domain practitioner, a blind reviewer without our notes, a task gamer that tries to beat the task as a participant would, precedent checker, an advocate and a critic, a mediator, an editor), and leaves the open questions, ranked, in the record's `## Review` section (no REVIEW.md in the folder). Use for an accepted record (`Yes`), for a batch on a dashboard filter, or to re-check an existing folder (\"is X ready / leaky / correct?\"). The curator reviews the result with /review-added-datasets. v2 only; never builds a container."
 argument-hint: "<unique_name | dashboard filter> [--panel full|focused]"
 user-invocable: true
 ---
@@ -18,7 +18,7 @@ Two modes:
 
 * **A record without a folder:** every step below.
 * **An existing folder** ("is X ready?", or after a change): a re-check. Skip steps 0-3 (the claim stays), run steps
-  4-8, and update the existing `REVIEW.md` (new issues take the next free number).
+  4-8, and add to the record's existing `## Review` (new issues take the next free number; settled ones stay).
 
 ## Knowledge used
 
@@ -32,7 +32,7 @@ Two modes:
 | 5 | [leak_checks.md](../knowledge-curation/references/leak_checks.md), [task_probes.md](../knowledge-curation/references/task_probes.md), [evidence.md](../knowledge-curation/references/evidence.md) (reading a probe), [checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md) |
 | 6 | [verification.md](../knowledge-curation/references/verification.md) |
 | 7 | [review_panel.md](references/review_panel.md) |
-| 8 | [writing.md](../knowledge-curation/references/writing.md), [working_copy.md](../knowledge-data-foundry/references/working_copy.md) (`REVIEW.md`, CHANGELOG) |
+| 8 | [writing.md](../knowledge-curation/references/writing.md), [review format](../review-added-datasets/references/review_file_format.md) (the record's `## Review`), [records.md](../knowledge-data-foundry/references/records.md), [working_copy.md](../knowledge-data-foundry/references/working_copy.md) (CHANGELOG) |
 
 ## The one rule
 
@@ -60,7 +60,7 @@ skips is left out and reported.
 
 A batch (several names or a dashboard filter) runs one `dataset-builder` agent per source unit for steps 0-6
 ([agent_runs.md](../knowledge-data-foundry/references/agent_runs.md)); the main session then runs the panel (step 7)
-for each dataset, because subagents do not start subagents.
+for each dataset, because subagents do not start subagents, and writes each record's review (step 8).
 
 ## Step 1: The source, the use case and the fields
 
@@ -109,14 +109,14 @@ domain and source from the record.
 4. The regime: nothing for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)` with a `splits_comment`
    saying why this window (and any gap, sub-sampling or trimming). For a temporal task, run `dataset windows <name>`
    and choose the windows from the use case and those statistics, never a model's score (SPLIT-15: the newest always,
-   the others argued; definitions.md, "Choosing the test windows"); the choice goes into REVIEW.md as the curator's
-   decision, with the alternatives you weighed. Before the windows, three checks the reviews of 2026-11-10 and 11
-   found missed: the time column is the moment the prediction is made, not an earlier one (kickstarter dated projects
-   by creation, so its train sides held campaigns still running at a window's start; USE-3); a row whose input is
-   issued ahead of its time column (a forecast, a quote) needs a gap of that lead time (climate_model's forecasts are
-   issued up to three days ahead; SPLIT-10); and the newest period is not cut by the download (kickstarter's scrape
-   held only ended campaigns, so its newest quarter had half the rows of the year before; LEAK-24): compare its rows
-   a day and its target rate with earlier periods.
+   the others argued; definitions.md, "Choosing the test windows"); the choice goes into the record's review as the
+   curator's decision, with the alternatives you weighed. Before the windows, three checks the reviews of 2026-11-10
+   and 11 found missed: the time column is the moment the prediction is made, not an earlier one (kickstarter dated
+   projects by creation, so its train sides held campaigns still running at a window's start; USE-3); a row whose
+   input is issued ahead of its time column (a forecast, a quote) needs a gap of that lead time (climate_model's
+   forecasts are issued up to three days ahead; SPLIT-10); and the newest period is not cut by the download
+   (kickstarter's scrape held only ended campaigns, so its newest quarter had half the rows of the year before;
+   LEAK-24): compare its rows a day and its target rate with earlier periods.
 5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
    `Metric.stand_in(name, original=..., reason=..., reference=...)` or `Metric.fallback(reason=<where we looked, and
    which source metric was rejected and why>)` (definitions.md, "Field mapping", `metric`; MET-11). A standard name
@@ -130,7 +130,7 @@ domain and source from the record.
    on 1M rows. Never `Metric.local` in the working copy.
 6. `accepted_check_warnings` stays empty: the curator fills it once the warnings are known, one reason per slug. A
    temporal task with a window under half the rows (`splits_train_under_half`, `splits_train_under_floor`) always gets
-   an issue in the REVIEW.md for the curator's sign-off: the windows and their shares, the reason for each, and an
+   an issue in the record's review for the curator's sign-off: the windows and their shares, the reason for each, and an
    option without them (SPLIT-14, amended 2026-11-11). So does a feature that stops or starts being recorded within
    the history (`splits_feature_missing_in_test`) and a newest period cut short (`time_newest_period_short`).
 7. `_decisions` and `_extra_checks` only when there is something to show or test.
@@ -185,7 +185,11 @@ and the editor) for a re-check after a small change. Say which tier ran.
 
 1. Apply what the panel settled that needs no decision (a refuted claim with an obvious fix, a missing note), re-run
    `dataset check` and the probes it touches.
-2. Write `REVIEW.md` ([review file format](../review-added-datasets/references/review_file_format.md)): the outcome as a
+2. Write the review into the record's `## Review` (`curation/records/<unique_name>.md`, between `## Comments` and
+   `## Reference`; [review format](../review-added-datasets/references/review_file_format.md)), with an exact-string
+   edit of the current record file or through `record.review` after a fresh `load_record`, never by saving a record
+   loaded earlier. No `REVIEW.md` is made in the folder: the record is the one source of the dataset's curation
+   (Lennart, 2026-11-11). A re-check adds to the review that is there. The review holds the outcome as a
    judgment record ([principles.md](../knowledge-curation/references/principles.md)), the main points, the record fields
    that disagree with the definition, the issues in rank order (validity first, Must first), each in the issue shape of
    [writing.md](../knowledge-curation/references/writing.md): bullets for the problem, the effect, the experiments and
@@ -201,10 +205,11 @@ and the editor) for a re-check after a small change. Say which tier ran.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
 4. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
    `**Assessment (AI, <date>):** review panel (<tier>): <the mediator's recommendation>; disputed: <the points, by
-   rule ID>; for the curator: issues <n>-<m>.` The panel's reports leave with the `REVIEW.md` once its issues are
-   settled, so this line is what keeps the panel in the curation history (Lennart, 2026-11-04: "we want all our
-   history of curation be documented and readable going forward (in a good format and in short, but not lost!)").
-   Never build: a build is the curator's call ([rebuild.md](../knowledge-data-foundry/references/rebuild.md)).
+   rule ID>; for the curator: issues <n>-<m>.` The panel's reports stay in the record's review, also once its issues
+   are settled; this line is their short form among the comments, where the decision register reads it (Lennart,
+   2026-11-04: "we want all our history of curation be documented and readable going forward (in a good format and in
+   short, but not lost!)"). Never build: a build is the curator's call
+   ([rebuild.md](../knowledge-data-foundry/references/rebuild.md)).
 5. Set the record's `priority` again from what was measured, so the review page puts the most important datasets
    first ([selection.md](../knowledge-curation/references/selection.md), "Priority"): `priority_factors.py <name>`
    (in `knowledge-data-foundry/scripts/`) gives the gap and the shape; judge the use case, the source and the risk

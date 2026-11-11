@@ -29,8 +29,9 @@ The part above the first `<details>` section fits on one screen (about 200 words
    (Andrej, 2026-11-10).
 2. What the reviewer has to decide or check. List each open question with its options and the recommendation, or
    name the one thing to look at (a changed split, a dropped column, the wording of a new rule). For an open question
-   about a dataset, link its `REVIEW.md` instead of copying it. A PR that only applies decisions already taken says
-   so: "Nothing to decide: applies Andrej's marks on the review page."
+   about a dataset, link its record's review (`curation/records/<name>.md`, the `## Review` section) and name the
+   issue number, instead of copying it. A PR that only applies decisions already taken says so: "Nothing to decide:
+   applies Andrej's marks on the review page."
 3. What to know before merging, only when there is something: the PR it depends on and why, the merge order, a
    re-check or rebuild that has to follow, every container checksum changing. Say whether any container was built.
 
@@ -43,11 +44,11 @@ Everything else goes below, in folded sections, each with a summary line that na
 * the decisions taken in review (who, when, what), and examples or code.
 
 Leave out what the diff or another file already holds: lists of every file, the commit history, command output and
-logs, copies of a `REVIEW.md` or of a record's comments. Leave out private data and the names of company code
-repositories (house rules).
+logs, copies of a record's review or comments. Leave out private data and the names of company code repositories
+(house rules).
 
-A small PR (one record, a typo, a one-line fix) is one paragraph with no sections. Fixed headings on every PR teach
-the reviewer to skip them. A larger PR follows this shape:
+A small PR (one record, a typo, a one-line fix) is one paragraph with no sections, followed by the checklist. Fixed
+headings on every PR teach the reviewer to skip them. A larger PR follows this shape:
 
 ````markdown
 <What changes and why, in one to three sentences.>
@@ -79,13 +80,17 @@ Before merging: <depends on #N because ...; the re-check that has to follow>. No
 
 </details>
 
+Checklist:
+
+- [x] <each item of the checklist below, ticked once it holds>
+
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ````
 
-The body ends with the attribution line the session gives. The repository's template,
-[`.github/pull_request_template.md`](../../../../.github/pull_request_template.md), has the same shape; GitHub fills
-it in for a PR opened on the web. An agent writes the body to a file in that shape and does not leave the template's
-placeholders in it.
+The body ends with the checklist ([below](#checklist)) and the attribution line the session gives. The repository's
+template, [`.github/pull_request_template.md`](../../../../.github/pull_request_template.md), has the same shape;
+GitHub fills it in for a PR opened on the web. An agent writes the body to a file in that shape and does not leave the
+template's placeholders in it.
 
 ### Markdown and `gh` mechanics
 
@@ -104,6 +109,21 @@ placeholders in it.
 When later commits change what the PR does, rewrite the top part so that it describes the PR as it is now
 (`gh pr edit <n> --body-file <file>`). The history of review rounds does not go on top. A decision taken in review goes
 into the summary as a decision (who and when), and its details go into a folded "Decided in review" section.
+
+## Checklist
+
+After the Checks fold, the body has a checklist, a GitHub task list (`- [ ]`) with the items of the template. Tick an
+item once it holds. An item that does not apply to the PR (a code fix touches no record) is ticked with `n/a` after
+it, so an unticked item always means work left. A small PR keeps the checklist too. The items, and why each is there:
+
+| Item | Why |
+|---|---|
+| Reviews are in the records' `## Review`, none in a dataset folder (`move_reviews_to_records.py --check` is clean). | The record is the one source of a dataset's curation (Lennart, 2026-11-11; [records.md](records.md), "The review section"). A branch that started before the reviews moved can still carry a folder file after it is rebased; the script, in `.claude/skills/review-added-datasets/scripts/`, moves it into its record, and `collect_reviews.py` and a test refuse it until then. |
+| Each settled issue has its `**Resolved (<date>, <who>):**` turn and its CC line in the record. | A review is never deleted (Andrej, 2026-11-02). Without the Resolved turn the issue stays open on the review page; the `CC` line puts the decision into the record's comments, which the decision register and the consistency checks read. |
+| A change to the working copy has its dated `CHANGELOG.md` entry. | Every change to the copy is logged ([working_copy.md](working_copy.md)): the log is where a curator finds when and why a definition or a container changed. |
+| A decision that departs from a rule is written as an exception or an amendment. | A departure without the fact that sets it apart reads as drift at the next consistency check; an exception names that fact, and an amendment changes the rule for every dataset ([principles.md](../../knowledge-curation/references/principles.md), "Exceptions and amendments"). |
+| `pytest -q`, `uvx ruff@0.15.15` on the changed Python and `data-foundry-curation validate` pass. | CI runs the tests (the records' conventions and the docs' links among them) and lints the definitions with ruff 0.15.15; a newer ruff reformats files the PR does not touch. `validate` loads every record and checks its dropdown values against the vocabularies. |
+| Datasets another curator holds are listed in the body. | When the board is set aside for a run, the holder hears of the change before it merges ([claims.md](claims.md), "In the workflows"). |
 
 ## One change, one PR against `main`
 

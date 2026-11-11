@@ -9,7 +9,7 @@
   **Lennart (2026-11-04, ok):** add row
   **Resolved (2026-11-04, Lennart):** go ahead. The few-groups Cases row for huesken_sirna_efficacy is in `splits.md` (heart_disease's row was already there); the MET-5 row naming huesken as the second exception was already in `metrics.md` (5085fc1a), so it is not added twice. No MET-5 amendment is due before a third exception.
 - **Correct the stale spectrum figures in `spectra.md` (from `open_soil_spectral_library`)?** Line 113 still says "1,701 positions"; 1,700 ship since the 600 cm-1 bin was dropped. Lines 114-123 still show the encoding table on the percent scale, and two of its conclusions reverse on the declared `rmsle` scale ("PLS gains a little from the baseline", "ridge reads the spectrum best as it is"). The mediator listed both as changes to make now (its changes 2 and 5); the apply step could not touch skill files.
-  Implemented: the definition and the REVIEW.md have the declared-scale figures; `spectra.md` does not.
+  Implemented: the definition and the Review have the declared-scale figures; `spectra.md` does not.
   Proposal: replace "1,701" with 1,700 and the table with the panel's declared-scale results.
   Decision needed: go ahead or leave as is.
   **Resolved (2026-11-04, Lennart):** go ahead. `spectra.md` gives 1,700 positions and the table on the declared scale (RMSE on log1p); the PLS and ridge conclusions are rewritten, the default encoding is unchanged.
@@ -52,7 +52,7 @@
   **Resolved (2026-11-04, Lennart):** go ahead; applied in the definition and the record, READMEs regenerated (CHANGELOG).
 - **`bemtpl97` and `fremtpl2`.** Correction lines in bemtpl97's record for "Exposure is an offset", "no panel ran", "20 other forced-IID definitions" (17) and "machine epsilon" (the params are 1e-6), and for the 2026-10-26 "unverified" line. fremtpl2's `curation_comments` say "machine epsilon" too (its params are 1e-6), and cite two figures nobody could verify (Wüthrich and Merz Eq. 5.28; the LightGBM figure of 292.6 expected claims): cut both (EV-7).
   **Resolved (2026-11-04, Lennart):** go ahead; applied in the definition and the record, READMEs regenerated (CHANGELOG).
-- **`lt_vehicle_loan_default_prediction`.** Correction lines in the record for the 2026-11-04 Assessment ("about 90%" of the gain is training size; "20-53% (SPLIT-14)"), its pointer to "REVIEW.md issue 1" (now issues 4 and 5) and "review panel (none) ... all are settled"; mark the 2026-10-23 "Exception to SPLIT-10" line as history; set the `Selection Bias` marker (USE-8).
+- **`lt_vehicle_loan_default_prediction`.** Correction lines in the record for the 2026-11-04 Assessment ("about 90%" of the gain is training size; "20-53% (SPLIT-14)"), its pointer to "Review issue 1" (now issues 4 and 5) and "review panel (none) ... all are settled"; mark the 2026-10-23 "Exception to SPLIT-10" line as history; set the `Selection Bias` marker (USE-8).
   **Resolved (2026-11-04, Lennart):** go ahead; applied in the definition and the record, READMEs regenerated (CHANGELOG).
 - **`open_soil_spectral_library`.** `curation_comments` say the 151 layers above 58% organic carbon "equal the source's measured total carbon"; the mediator checked only the three above 70%, so the sentence names those three. Add the record's AI note that the 2026-10-29 decisions on issues 2-3 never became a file in the folder.
   **Resolved (2026-11-04, Lennart):** go ahead; applied in the definition and the record, READMEs regenerated (CHANGELOG).
@@ -211,7 +211,7 @@
   **Resolved (2026-11-08, Lennart):** opened as per-dataset issues: dementia_prediction issue 1 (recommended: each
   person counts once, or C, first visits only), asp_potassco_classification issue 5 (recommended: per instance with a
   note) and video_transcoding_time_prediction issue 1 (recommended: per job with a note). Per-dataset choices go into
-  each dataset's REVIEW.md from now on (review_file_format.md, working_copy.md).
+  each dataset's Review from now on (review_file_format.md, working_copy.md).
 
 - **Correct african_credit_scoring_challenge's `row` text and notes on co-funded loans?** The `row` text and the notes (line 153) say a loan co-funded with a second lender gives two rows; in the shipped frame that never happens (52,826 rows and 52,826 loan ids), since the kept product has one lender (found by the scan above).
   Implemented: nothing.
@@ -306,7 +306,7 @@
 
   **Andrej (2026-11-09, go ahead):** I go with a.
 
-  **Resolved (2026-11-09, Andrej):** a: sex leaves an insurance pricing task where the law of the country the data come from bars it today, as if the ban had always applied, and stays where that law allows it. It replaces the family stance of 2026-11-08 in the Tensions row of principles.md. australian_vehicle_insurance_2004_2005 ships `gender` again (a new issue in its REVIEW.md, reopening its issue 7); bemtpl97, frempl_french_motor_personal_line, pricing_game_2017_french_mtpl and spanish_homeowners_motor_insurance_2010_2014 keep it dropped under EU law.
+  **Resolved (2026-11-09, Andrej):** a: sex leaves an insurance pricing task where the law of the country the data come from bars it today, as if the ban had always applied, and stays where that law allows it. It replaces the family stance of 2026-11-08 in the Tensions row of principles.md. australian_vehicle_insurance_2004_2005 ships `gender` again (a new issue in its Review, reopening its issue 7); bemtpl97, frempl_french_motor_personal_line, pricing_game_2017_french_mtpl and spanish_homeowners_motor_insurance_2010_2014 keep it dropped under EU law.
 
   [^xb2]: Sex Discrimination Act 1984 (Cth), s41(1)(c) to (e), https://www.legislation.gov.au/C2004A02868/2025-11-01/2025-11-01/text/original/epub/OEBPS/document_1/document_1.html. The EU ban: CJEU C-236/09 (Test-Achats), in force for new contracts from 21 December 2012.
 

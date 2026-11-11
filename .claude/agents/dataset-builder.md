@@ -20,7 +20,8 @@ record's screening block and verify its claims; a measurement on the data supers
   `MKL_NUM_THREADS=2`, `OPENBLAS_NUM_THREADS=2`, `POLARS_MAX_THREADS=2`). Large intermediates go under the run folder.
 
 Never run `dataset build`, never commit or push, never delete raw files, never name company code repositories, never
-send personal data to an outside service. Do not write `REVIEW.md`: the main session writes it after the review panel.
+send personal data to an outside service. Do not write the record's `## Review`, and never make a `REVIEW.md` in the
+folder: the main session writes the review into the record after the review panel.
 
 Return, per dataset: the folder, the outcome in one line, the probe results that decided anything, every check of the
 checklist (pass / concern / cannot verify, with evidence and rule), the draft issues for the curator in rank order,

@@ -2,9 +2,9 @@
 
 Several curators, each running several agents, work on the same records and folders, and git shows their work only
 when it reaches `main`. A claim says "I am working on this dataset now", and every curator and agent sees it within
-seconds. A claim covers one dataset: its record `curation/records/<name>.md` and its folder
-`datasets/_dev/tabarena-v0pt2/<name>/` with `REVIEW.md`. Shared files (CHANGELOG, the vocabulary) are never
-claimed; their conflicts are resolved when merging.
+seconds. A claim covers one dataset: its record `curation/records/<name>.md` (its review included) and its folder
+`datasets/_dev/tabarena-v0pt2/<name>/`. Shared files (CHANGELOG, the vocabulary, the working copy's cross-dataset
+`REVIEW.md`) are never claimed; their conflicts are resolved when merging.
 
 ## How it works
 
