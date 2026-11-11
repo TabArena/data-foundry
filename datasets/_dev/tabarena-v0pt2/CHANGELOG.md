@@ -1,5 +1,13 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11, sat11_hand_algo_runtime: PAR10 alone picks the solver (nothing rebuilt)
+
+- `sat11_hand_algo_runtime` (issue 4, B): PAR10 alone picks the solver: the grouping declares `prediction_unit="row"`
+  and no aggregation instead of `select_min`, so a tie counts as the mean of the tied solvers' costs, as in
+  asp_potassco_classification. Trained models score the same (no tie on the 60 splits); a constant prediction 18,539 s
+  instead of 19,140 s. `dataset check` 0 errors, README regenerated, record CC line; definitions.md no longer names
+  sat11 as declaring `select_min`. Nothing rebuilt.
+
 ## 2026-11-10, `sepsis_survival_minimal_clinical_records` retired as `Trivial` (Andrej; no container built)
 
 - A clinician's rule, age plus five years for men, not fitted, reaches ROC AUC 0.7059 on the 9 shipped splits against

@@ -516,7 +516,6 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
   * something larger (asp_potassco_classification: problem classes): the grouping is on the class, and the
     anonymised instance ships as `ScoringColumn(column="instance_id", role="group", used_by="par_k")`, never a
     feature.
-  sat11_hand_algo_runtime still declares `select_min`; dropping it is open in its `REVIEW.md`.
 * `context`: `all_rows` when all rows of a new group are known when predicting, `past_rows` when only its earlier rows
   are (needs `time_on`), `none` when each row stands alone.
 * `definition` is required: what one group is, why groups are held out (the use case), and the source with a quote.

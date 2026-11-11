@@ -63,6 +63,8 @@ CC (2026-11-06, Andrej): the split count follows the scored units (new rule SPLI
 
 CC (2026-11-06, Andrej): ship (review page issue 1): 20 x 3 splits under the split rule in scored units (issue 2); a timed-out run stays at the recorded 5,000 s in the log target (issue 3), since it is the value ASlib records and how to treat a censored run is part of what a model has to work out; counting it at the 50,000 s PAR10 charge made every model pick 17-19% better but would replace the recorded value. Metric (PAR10) and split checked and kept.
 
+CC (2026-11-11, Andrej): PAR10 alone picks the solver (review page issue 4, B): the grouping declares `prediction_unit="row"` and no aggregation instead of `select_min`, so a tie at an instance's lowest prediction counts as the mean of the tied solvers' costs, as PAR10 defines it, not as the solver first in the file; the same form as asp_potassco_classification. Trained models never tie on the 60 splits and score the same (LightGBM 8,970 s, random forest 8,323 s, linear 11,350 s); a constant prediction moves from 19,140 s to 18,539 s. `dataset check` 0 errors.
+
 ## Reference
 
 @inproceedings{xu-sat12a,
