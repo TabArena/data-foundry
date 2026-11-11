@@ -211,8 +211,9 @@ A split by entry date keys on each item's first date, so an item's later re-meas
 changes can be measured on the same test items: the score, and the share of test items with a close training analog
 (for molecules, Tanimoto 0.7 or more on Morgan radius 2), under the family key and under the date.
 
-Why: no key is the harder one by kind. On the catalogues measured so far, some family keys left most of a random
-split's closeness in place, some came close to the date, and on one the date tested little the family key did not:
+Why: the key follows the application, never the size of the gap (SPLIT-1, SPLIT-4, SPLIT-30). The measurements say
+what each key leaves on the training side, which is how to see whether a split holds out what the use case says the
+actor does not have; a lower score is not the aim and never chooses the key. On the catalogues measured so far:
 
 | Dataset | Item or family key | By entry date |
 |---|---|---|
@@ -223,8 +224,13 @@ split's closeness in place, some came close to the date, and on one the date tes
 | nci_aids_antiviral_screen | scaffold-disjoint on the same test compounds: ROC AUC 0.717-0.739, 4.3% close analogs | registration order (NSC), not the order of entry into the screen: 0.749-0.774, 8.4% close analogs, near random (0.762-0.770, 9.8%) |
 | protein_model_quality_rf_pcp | protein target, CASP7-9: per-protein Pearson 0.34-0.57 | CASP round, CASP7-9: 0.30-0.56; CASP10, whose descriptors follow another convention: about 0 against 0.62 for the protein key |
 
-The family key decides most: an element set holds out nearly what the date holds out, a scaffold or a plate does not;
-and where the rounds are distinct targets, the date adds little until the way the features are recorded changes.
+What they said, each about its own dataset: a scaffold or a plate leaves a test item most of the neighbours a random
+split would, so where the source dates its items the date holds out something the family key does not (a test
+compound's siblings from its own paper, a programme's later targets). An element set and a report year hold out much
+the same neighbours of a test composition, so there the choice rests on which the actor meets, a chemical system not
+yet tried or whatever discovery brings next, and not on the scores. A registration number that is not the order of
+entry stands for no arrival at all, whatever it scores. And a round key can expose a change in how the features were
+recorded that the item key hides, which is a fact about the data, not a harder test.
 
 Cases: qsar_tid_11, sdss_17, apistox, superconductivity, protein_model_quality_rf_pcp, nci_aids_antiviral_screen,
 drug_induced_autoimmunity_prediction (`Target: Open Window`), qsar_oral_toxicity (an untested inventory as the
