@@ -3,8 +3,7 @@
 Usage::
 
     python .claude/skills/knowledge-data-foundry/scripts/decision_register.py [--since YYYY-MM-DD] [--names a,b]
-        [--rule ID] [--json PATH] [--records curation/records] [--root datasets/_dev/tabarena-v0pt2]
-        [--knowledge .claude/skills/knowledge-curation]
+        [--rule ID] [--json PATH] [--records curation/records] [--knowledge .claude/skills/knowledge-curation]
 
 Sources, one decision each:
 
@@ -13,7 +12,7 @@ Sources, one decision each:
   ``**Consistency check (AI, date):**`` (``consistency``) and ``**Counter-argument (AI)...:**`` (``counter``); each
   carries the record's ``suggestion`` (as ``verdict``) and ``decision_markers``. A paragraph ends at a blank line or
   the next such label;
-* every ``<root>/*/REVIEW.md``: the titles of the numbered open issues (``open_issue``, author AI, undated);
+* every record's ``## Review``: the titles of its numbered issues (``open_issue``, author AI, undated);
 * the Cases tables of the knowledge files (``<knowledge>/**/*.md``): markdown tables whose header starts with
   ``| Rule |`` (``case``; their ``Kind`` column is kept as ``case_kind``). Missing files or tables are fine.
 
@@ -54,7 +53,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from data_foundry.curation._paths import records_dir, resolve_curation_root, skills_dir
+from data_foundry.curation._paths import records_dir, skills_dir
 from data_foundry.curation.store import load_all
 
 if TYPE_CHECKING:
@@ -159,7 +158,6 @@ AI_KINDS = ("assessment", "consistency", "counter", "open_issue")
 _SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z`*(\[\"'])|:\s+(?=- )")
 _CASE_AUTHOR = re.compile(r"\(\d{4}-\d{2}-\d{2},\s*([A-Z][a-z]+)\)|\(([A-Z][a-z]+),\s*\d{4}-\d{2}-\d{2}\)")
 _ISSUE = re.compile(r"^(\d+)\.\s+(.*)$")
-_TITLE = re.compile(r"^#\s+(\S+)\s*$")
 _MECHANISMS = {name: re.compile(pattern, re.IGNORECASE) for name, pattern in MECHANISMS.items()}
 _OUTCOMES = {k: [re.compile(p, re.IGNORECASE | re.MULTILINE) for p in v] for k, v in OUTCOME_RULES.items()}
 
@@ -452,7 +450,7 @@ def record_decisions(records: list[CurationRecord]) -> list[Decision]:
 
 
 def _issues(lines: list[str]) -> list[list[str]]:
-    """The numbered issues of a REVIEW.md: each its first line and its indented or blank continuation lines."""
+    """The numbered issues of a review: each its first line and its indented or blank continuation lines."""
     issues: list[list[str]] = []
     current: list[str] | None = None
     for line in lines:
@@ -466,13 +464,15 @@ def _issues(lines: list[str]) -> list[list[str]]:
     return issues
 
 
-def review_decisions(root: Path, records: dict[str, CurationRecord]) -> list[Decision]:
-    """The numbered open issues of every ``<root>/*/REVIEW.md``, by their titles."""
+def review_decisions(records: dict[str, CurationRecord], records_dir: Path) -> list[Decision]:
+    """The numbered issues of every record's ``## Review`` (a dataset's review, open and settled), by their titles."""
     out = []
-    for path in sorted(root.glob("*/REVIEW.md")) if root.exists() else []:
-        lines = path.read_text(encoding="utf-8").splitlines()
-        name = next((m.group(1) for line in lines if (m := _TITLE.match(line))), path.parent.name)
-        record = records.get(name)
+    for name in sorted(records):
+        record = records[name]
+        if not record.review:
+            continue
+        lines = record.review.splitlines()
+        path = records_dir / f"{name}.md"
         for issue in _issues(lines):
             bold = re.match(r"\*\*(.+?)\*\*", issue[0])
             title = bold.group(1) if bold else (_sentences(issue[0]) or [issue[0]])[0]
@@ -551,11 +551,12 @@ def case_decisions(knowledge_dir: Path) -> list[Decision]:
     return out
 
 
-def collect(records_path: Path, root: Path, knowledge_dir: Path) -> list[Decision]:
+def collect(records_path: Path, knowledge_dir: Path) -> list[Decision]:
     """Every decision of the three sources."""
     records = load_all(records_path)
     by_name = {r.unique_name: r for r in records}
-    return record_decisions(records) + review_decisions(root, by_name) + case_decisions(knowledge_dir)
+    reviews = review_decisions(by_name, records_path)
+    return record_decisions(records) + reviews + case_decisions(knowledge_dir)
 
 
 # --------------------------------------------------------------------------- grouping and flags
@@ -768,13 +769,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--rule", help="Only this rule ID (or a mechanism or marker for decisions without an ID).")
     parser.add_argument("--json", type=Path, help="Also write decisions, groups and flags as JSON here.")
     parser.add_argument("--records", type=Path, default=None, help="Records folder (default: curation/records).")
-    parser.add_argument("--root", type=Path, default=None, help="Default: datasets/_dev/tabarena-v0pt2.")
     parser.add_argument("--knowledge", type=Path, default=None, help="Default: .claude/skills/knowledge-curation.")
     args = parser.parse_args(argv)
 
-    root = args.root or resolve_curation_root().parent / "datasets" / "_dev" / "tabarena-v0pt2"
     knowledge = args.knowledge or skills_dir() / "knowledge-curation"
-    decisions = collect(args.records or records_dir(), root, knowledge)
+    decisions = collect(args.records or records_dir(), knowledge)
     defined = rule_ids_defined(knowledge)
     names = {n.strip() for n in args.names.split(",")} if args.names else None
     selected = selector(args.since, names, args.rule)

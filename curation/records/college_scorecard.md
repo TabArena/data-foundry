@@ -40,3 +40,7 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — The Scorecard release defines no prediction task; TableShift binarizes the rate at 0.5 and scores accuracy, a different target from ours.
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 3 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `PREDDEG`, `HIGHDEG`, `ADMCON7` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `PREDDEG`, `ADMCON7` (CLEAN-10).
+
+CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note naming the columns (cross-dataset item "Accept splits_feature_missing_in_test where a column starts or stops being recorded within the history?", A: the data as the deployed model met it).
+
+**Assessment (AI, 2026-11-11):** `DISTANCEONLY` is missing in every cohort before 2011; the 2015 and 2016 windows train on 2001-2009 and 2001-2010.
