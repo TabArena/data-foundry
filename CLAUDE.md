@@ -89,7 +89,12 @@ both container formats.
   probabilities go in the sorted order of the classes (scikit-learn's `classes_`, also for an ordered target), or as
   a DataFrame whose columns are the class names, which the scorer matches by name. A task with a training weight
   names it (`sample_weight(container)` from `data_foundry.curation_container`, `None` otherwise): fit every model
-  with it as the row weight, never as a feature. Format 1
+  with it as the row weight, never as a feature. A container with a row budget (`experiment_metadata.row_budget`, a
+  `_1m` version) keeps every row a train side may use: fit on `subsample_train(container, repeat, fold)`
+  (`data_foundry.v2`), at most `row_budget.train` rows drawn by the default sampler the container records
+  (`train_sampling`: for a temporal side the newest year, extended back until it holds that many rows, sampled at
+  random; whole groups of a grouped one). A numeric time column's calendar is `task_metadata.time_unit` (numerai's
+  eras count weeks). Format 1
   (BeyondArena): score with `task_metadata.objective_metric_name` (`rmse`, `roc_auc`, `log_loss`). Features can be
   categorical, string or datetime, so pick a model that takes mixed dtypes. A special feature
   (`special_features(container)`: a SMILES column, a spectrum's group of columns) is encoded by its kind:

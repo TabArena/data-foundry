@@ -1,5 +1,36 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-10, the `_1m` versions keep every training row (issue #70; no container built)
+
+- A `row_budget` now caps only the test sides in the container: each split tests on at most 500k rows, drawn as
+  before (stratified, whole groups, whole time values). The train sides keep every row they may use: all earlier rows
+  of a temporal window minus the gap, every row of an IID or grouped fold outside its test side. A benchmark fits on
+  at most 1M of them, drawn by `subsample_train` (`data_foundry.v2`); the container records the default sampler in
+  `experiment_metadata.train_sampling`: for a temporal train side the newest year, extended back in time until it
+  holds 1M rows, and a random 1M of those (whole minutes for g_research_crypto_forecasting_1m); whole groups of a
+  grouped side; stratified rows otherwise.
+- IID and grouped versions no longer sub-sample the frame to 1.5M rows before the split: the 3-fold cross-validation
+  runs on the full frame, and the test rows over the cap train in their fold.
+- The 18 `_1m` definitions describe the new sampling in `task_summary.split`, the row-budget bullet of
+  `curation_comments`, their `splits_comment` and `History` bullets. Their windows, cleaning and code are unchanged.
+  Their frames, splits and READMEs change at the next check: the frames grow to the full data.
+- Counts of the earlier 1.5M-row sample, recounted on the full frame: amex_non_iid_1m has 458,913 customers (was
+  124,466); huntprohibited_1m keeps all 29 ads priced 999,999,999 (was 14) and 10,331 priced 1, 18.7% blocked (was
+  3,962, 19.0%); fraud_detection_in_electricity_and_gas_consumption_1m has 61 rows that repeat another row of the same
+  client (was 57); allstate_claim_prediction_challenge_1m no longer gives the claims per test fold.
+- Scores in the notes that were measured on the earlier train sides (a random 1M rows) stay, dated as measured then.
+  home_credit_default_stability_1m: the newest year before its July and September windows holds 940k and 825k rows,
+  so the rule extends it back to 12 to 14 months. g_research_crypto_forecasting_1m keeps the default rule although its
+  History bullet measured only all history against the newest 1M rows: the sampler follows a rule that is good on
+  average, not a call per dataset (Lennart, 2026-11-10).
+- `Temporal(time_unit=...)`, stored as `task_metadata.time_unit`, says what one step of a numeric time column counts.
+  numerai_v5_2_1m declares `"weeks"`, so its newest year is 52 eras, extended back to the newest 151 to 159 eras (1M
+  rows) per window, in place of a random 1M of all eras. Seven definitions without a budget declare it too, as their
+  horizon already said: `"years"` for apistox, anes_voting_2026, college_scorecard,
+  spanish_homeowners_motor_insurance_2010_2014 and wisconsin_local_government_property_insurance_fund, `"months"` for
+  alfa_battle_2_0_task_2, `"quarters"` for mortgage. Their frames and splits are unchanged; their containers carry
+  the field at the next check.
+
 ## 2026-11-10, sources as a list, slim v2 dataset metadata, no `version_of` (no container built)
 
 - Every definition declares `sources = (Source(role="publication", platform=..., url=..., license=..., year=...,

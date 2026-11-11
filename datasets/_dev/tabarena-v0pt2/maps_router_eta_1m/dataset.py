@@ -34,8 +34,8 @@ class MapsRouterEta1m(AbstractCuratedDataset):
             "traffic and road details such as speed limits, plus the time of the request."
         ),
         split=(
-            "Each test window is one week (20 November to 10 December 2023); training is a random million earlier "
-            "routes from 1 November, as for a model refit every week."
+            "Each test window is one week (20 November to 10 December 2023); training is all earlier routes from 1 "
+            "November, of which a benchmark fits on a random million, as for a model refit every week."
         ),
         fit="direct",
         fit_reason=(
@@ -75,7 +75,7 @@ class MapsRouterEta1m(AbstractCuratedDataset):
         We perform no additional preprocessing steps.
 
         - Potential leak, kept on purpose: TabReD releases the 984 numeric features only after a quantile transform to a normal distribution (all within ±5.1993, the clip of scikit-learn's QuantileTransformer; 624 reach it); which rows it was fit on is not documented, and the raw features are not published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if the TabReD authors say the fit used all rows.
-        - The row budget: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+        - The row budget: each test window keeps at most 500k of its rows, drawn at random within the window, and each train side holds every earlier row (minus the one-day gap); the frame keeps every row a split uses. The 1M train budget is recorded, not applied: a benchmark sub-samples each train side to 1M rows before a fit with `subsample_train`, by default a random 1M of the newest year before the window. The data span 1 November to 10 December 2023, so that is a random 1M of all earlier routes, as in TabReD: random sub-sampling instead of a time-based one keeps data from the whole period and the distribution shift across it.
     """
 
     # Task
@@ -90,7 +90,7 @@ class MapsRouterEta1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We use each of the last 3 weeks as a test window (newest first) and the routes requested at least one day before it as train data. The gap of one day is part of the task: a travel time is known only when the drive ends (up to 16.6 hours after the request, from the target and track_length in metres), so at a weekly refit the last routes before it have no label yet; without the gap 656, 654 and 578 train routes per window (request time + seconds per km x km) would end after the window start, with it none. The gap removes 292k, 313k and 299k of the 11.2M, 8.8M and 6.4M earlier routes (2.6 to 4.7%). Each window keeps at most 500k of its rows (2.4M before sampling); each train side is a random 1M of the eligible earlier rows (one random order for all windows). TabReD documents only the target (log seconds per km), not the unit of track_length; we read it as metres because no value is below 1,000.0 (TabReD's 1 km floor, we assume) and the implied drive is then 0.03 to 16.6 hours (median 12 minutes), against a median of 194 hours if read as km. The data have few implausible rows: 31 of 13.6M (12 above 150 km/h, 5 below 2 km/h, 14 longer than 12 hours), none among the late routes, so the gap is set by ordinary short drives requested in the last hours before a window start.
+        We use each of the last 3 weeks as a test window (newest first) and the routes requested at least one day before it as train data. The gap of one day is part of the task: a travel time is known only when the drive ends (up to 16.6 hours after the request, from the target and track_length in metres), so at a weekly refit the last routes before it have no label yet; without the gap 656, 654 and 578 train routes per window (request time + seconds per km x km) would end after the window start, with it none. The gap removes 292k, 313k and 299k of the 11.2M, 8.8M and 6.4M earlier routes (2.6 to 4.7%). Each window keeps at most 500k of its rows (2.4M before sampling); each train side holds every eligible earlier row, and a benchmark sub-samples it to a random 1M before a fit (`subsample_train`; the newest year before a window is all of the data before it). TabReD documents only the target (log seconds per km), not the unit of track_length; we read it as metres because no value is below 1,000.0 (TabReD's 1 km floor, we assume) and the implied drive is then 0.03 to 16.6 hours (median 12 minutes), against a median of 194 hours if read as km. The data have few implausible rows: 31 of 13.6M (12 above 150 km/h, 5 below 2 km/h, 14 longer than 12 hours), none among the late routes, so the gap is set by ordinary short drives requested in the last hours before a window start.
     """
     temporal = Temporal(
         on="timestamp",

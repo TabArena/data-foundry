@@ -17,9 +17,17 @@ from data_foundry.examples import (
     get_toy_container_path,
     load_toy_container,
 )
-from data_foundry.schema import DatasetMetadata, PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2, ScoringColumn
+from data_foundry.schema import (
+    DatasetMetadata,
+    PredictiveMLSplitsMetadata,
+    PredictiveMLTaskMetadataV2,
+    RowBudget,
+    ScoringColumn,
+    TrainSampling,
+)
 from data_foundry.v2.dataset import metric_spec
 from data_foundry.v2.metrics import Metric, scorer
+from data_foundry.v2.splits import subsample_train
 from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.metrics import mean_poisson_deviance
 
@@ -96,9 +104,9 @@ def _format_2_metadata(unique_name: str) -> DatasetMetadata:
     )
 
 
-def _format_2_toy(tmp_path: Path, extra: dict | None = None) -> Path:
+def _format_2_toy(tmp_path: Path, extra: dict | None = None, budget: RowBudget | None = None) -> Path:
     """A regression container scored per era (``mean_group_pearsonr`` on the scoring column ``era``); ``extra``
-    adds feature columns (name to values).
+    adds feature columns (name to values), ``budget`` a row budget with the random default sampler.
     """
     rng = np.random.default_rng(0)
     n = 120
@@ -131,7 +139,12 @@ def _format_2_toy(tmp_path: Path, extra: dict | None = None) -> Path:
         dataset=df,
         dataset_metadata=_format_2_metadata("toy_eras"),
         task_metadata=task,
-        experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="toy", splits=splits),
+        experiment_metadata=PredictiveMLSplitsMetadata(
+            splits_comment="toy",
+            splits=splits,
+            row_budget=budget,
+            train_sampling=TrainSampling(default="random", unit="rows") if budget else None,
+        ),
         uuid="u",
     )
     return container.save(save_dir=tmp_path)
@@ -172,6 +185,23 @@ def test_benchmark_container_example_scores_a_format_2_container_by_its_spec(tmp
     assert len(scores) == 1
     assert 0.0 < scores[0] <= 1.0  # x1 drives y, so the per-era correlation is positive
     assert "mean_group_pearsonr=" in capsys.readouterr().out
+
+
+def test_benchmark_container_example_fits_on_the_train_budget(tmp_path, capsys):
+    """A container with a row budget keeps the whole train side; the example fits on the default sample of it."""
+    pytest.importorskip("sklearn")
+    container = CuratedContainer.load(_format_2_toy(tmp_path, budget=RowBudget(train=40, test=60)))
+    train, test = container.experiment_metadata.splits[0][0]
+    sample = subsample_train(container, 0, 0)
+    assert len(train) == 60
+    assert len(sample) == 40
+    assert set(sample) <= set(train)
+    df = container.dataset
+    model = HistGradientBoostingRegressor(categorical_features="from_dtype", random_state=42)
+    model.fit(df[["x1", "x2"]].iloc[sample], df["y"].iloc[sample])
+    expected = scorer(container)(df["y"].iloc[test].to_numpy(), model.predict(df[["x1", "x2"]].iloc[test]), test)
+    assert _example("benchmark_container").benchmark(container) == [pytest.approx(expected)]
+    assert "Train budget: at most 40 rows per fit, sampled by `random` in units of rows" in capsys.readouterr().out
 
 
 def test_benchmark_container_example_encodes_every_feature_type(tmp_path, capsys):

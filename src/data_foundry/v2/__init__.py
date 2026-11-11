@@ -17,6 +17,7 @@ from data_foundry.schema import (
     Source,
     SpecialFeature,
     SpectrumDetails,
+    TrainSampling,
     UnitWeight,
 )
 from data_foundry.utils.dtypes import object_columns
@@ -70,7 +71,14 @@ from data_foundry.v2.registry import (
 from data_foundry.v2.report import read_report
 from data_foundry.v2.special import SpecialColumn, SpecialColumnGroup, encode_special_feature, encodings_for
 from data_foundry.v2.spectra import Spectrum, encode_spectrum, spectrum_encoding
-from data_foundry.v2.splits import SplitPlan, Splits, Temporal, TemporalSplits
+from data_foundry.v2.splits import (
+    SplitPlan,
+    Splits,
+    Temporal,
+    TemporalSplits,
+    sample_train_positions,
+    subsample_train,
+)
 from data_foundry.v2.workbench import workbench
 
 __all__ = [
@@ -101,6 +109,7 @@ __all__ = [
     "TaskSummary",
     "Temporal",
     "TemporalSplits",
+    "TrainSampling",
     "UnitWeight",
     "anonymize_ids",
     "canonical_smiles",
@@ -129,10 +138,12 @@ __all__ = [
     "read_files",
     "read_report",
     "recommended_encodings",
+    "sample_train_positions",
     "scaffold_groups",
     "score",
     "scorer",
     "set_missing",
     "spectrum_encoding",
+    "subsample_train",
     "workbench",
 ]

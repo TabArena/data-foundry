@@ -43,8 +43,10 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
             "consumer's written complaint."
         ),
         split=(
-            "Each test window is one quarter of 2025 (April-June, July-September, October-December); training is a "
-            "random million earlier complaints from April 2017 on, as for a model refit every three months."
+            "Each test window is one quarter of 2025 (April-June, July-September, October-December), as for a model "
+            "refit every three months; training is every earlier complaint from April 2017 on, of which a benchmark "
+            "fits on a million: by default the newest year, extended back in time until it holds a million, and a "
+            "random million of those."
         ),
         changes=(
             "We drop the company's public response, which leaks the outcome, keep complaints with a published text "
@@ -127,7 +129,7 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
         - We drop duplicates (2% of the data) as the data should not contain naturally occurring duplicates and this likely results from some overlap in data collection or data entry or faulty re-submissions. We investigated some of the duplicates and they appear to be identical complaints. There exist duplicates with different target labels, we also drop these as we have no way to determine what the correct label is (all copies are dropped).
         - We drop constant columns, the complaint ID, and when the complaint was send to the company (as it does not related to the target task)
         - The class shares shift over time (from the v1 exploration, counted 2026-10-22 on the cleaned data): "Closed with explanation" is 85% of 2017, 54% of 2024 and 63% of 2025, "Closed with non-monetary relief" 10%, 44% and 35%, and "Closed with monetary relief" 4.5%, 1.7% and 1.3%. In the three test quarters of 2025 (Q2-Q4) explanation is 57%, 65% and 67%, monetary relief 1.2-1.8%.
-        - The row budget: We use the last three quarters of 2025 as test windows. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+        - The row budget: We use the last three quarters of 2025 as test windows. Each keeps at most 500k of its rows (v2 split protocol; all of them here, 203k to 307k), and each train side holds every earlier complaint, so the container holds every complaint. The container records the 1M train budget, and a benchmark sub-samples each train side to 1M rows before a fit (`subsample_train`; by default the newest year before the quarter, extended back in time until it holds 1M rows, and a random 1M of those). Over eight years of history, a sample of all of it would dilute the recent complaints, and the class shares have shifted over time (above).
     """
 
     # Task
@@ -150,7 +152,7 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
         - This introduces the unrealistic downside of data shift across a month that would not exist in a real-world model.
 
         We create 3 test splits, one per quarter (2025-04-01 to 2025-06-30, 2025-07-01 to 2025-09-30, 2025-10-01 to 2025-12-31). This represents a refit horizon of 3 months.
-        We use all data before each quarter as training data. Each quarter keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
+        We use all data before each quarter as training data. Each quarter keeps at most 500k of its rows (all of them here); each train side holds every earlier row, and a benchmark sub-samples it to 1M rows, by default the newest year before the quarter, extended back in time until it holds 1M rows, and a random 1M of those (`subsample_train`).
     """
     # 3 quarterly windows replace the single Q4 2025 window (v2 split protocol, 2026-10) and keep the 3-month refit
     # horizon. The labels of all three quarters are settled (the archive was exported on 2026-09-14, more than 180

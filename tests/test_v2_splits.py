@@ -13,7 +13,7 @@ from data_foundry import (
     bundle_checks,
     curation_recommendations as v1,
 )
-from data_foundry.schema import PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2, RowBudget
+from data_foundry.schema import PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2, RowBudget, TrainSampling
 from data_foundry.v2 import splits as protocol
 from data_foundry.v2.splits import (
     fit_splits_to_budget,
@@ -22,7 +22,9 @@ from data_foundry.v2.splits import (
     protocol_checks,
     recommended_dimensions,
     sample_temporal_splits,
+    sample_train_positions,
     subsample_frame,
+    subsample_train,
 )
 
 from tests.test_bundle_checks import make_container, make_iid_frame, make_spec
@@ -148,12 +150,12 @@ def test_subsample_frame_within_budget_returns_the_frame() -> None:
 
 # --- fitting the cross-validation to a row budget ---------------------------------------------------------------
 def test_fit_splits_to_budget_tests_on_a_sample_of_each_third_and_trains_on_the_rest() -> None:
-    df = labelled_frame(n=250)  # train + test rows of the budget below
+    df = labelled_frame(n=250)
     splits = iid_splits(df, n_repeats=1, stratify_on="y")
-    fitted, sampled = fit_splits_to_budget(df, splits, RowBudget(train=200, test=50), stratify_on="y")
+    fitted, sampled = fit_splits_to_budget(df, splits, RowBudget(train=100, test=50), stratify_on="y")
     assert sampled
     for fold, (train, test) in fitted[0].items():
-        assert (len(train), len(test)) == (200, 50)  # plain 3-fold CV would train on 166 rows
+        assert (len(train), len(test)) == (200, 50)  # the train side is not capped: a benchmark sub-samples it
         assert set(test) <= set(splits[0][fold][1])  # a sample of the fold's third
         assert set(train) | set(test) == set(range(250))  # the rows it leaves out train in this fold
         assert not set(train) & set(test)
@@ -170,7 +172,7 @@ def test_fit_splits_to_budget_keeps_whole_groups() -> None:
     assert sampled
     sizes = df["g"].value_counts()
     for train, test in fitted[0].values():
-        assert len(train) <= budget.train
+        assert len(train) + len(test) == len(df)  # every row the test sample leaves out trains in the fold
         assert len(test) <= budget.test
         train_groups, test_groups = set(df["g"].iloc[train]), set(df["g"].iloc[test])
         assert not train_groups & test_groups
@@ -178,16 +180,13 @@ def test_fit_splits_to_budget_keeps_whole_groups() -> None:
             assert len(side) == sizes[list(groups)].sum()  # whole groups only
 
 
-def test_fit_splits_to_budget_trims_a_long_train_side_and_leaves_the_test_side() -> None:
+def test_fit_splits_to_budget_leaves_a_long_train_side_whole() -> None:
     df = grouped_frame(n_groups=300, per_group=False)
     splits = grouped_splits(df, n_repeats=1, group_on="g", group_labels="per_sample")
     longest = max(len(train) for train, _ in splits[0].values())
     fitted, sampled = fit_splits_to_budget(df, splits, RowBudget(train=longest - 20, test=10_000), group_on="g")
-    assert sampled
-    for fold, (train, test) in fitted[0].items():
-        assert len(train) <= longest - 20
-        assert test == splits[0][fold][1]  # within its budget, the test side is untouched
-        assert set(train) <= set(splits[0][fold][0])
+    assert not sampled  # no test side is over its budget; a long train side is for the benchmark to sub-sample
+    assert fitted == splits
 
 
 def test_fit_splits_to_budget_within_budget_changes_nothing() -> None:
@@ -219,14 +218,15 @@ def daily_frame(n_days: int = 60, per_day: int = 50, seed: int = 0) -> pd.DataFr
     )
 
 
-def test_temporal_sampling_caps_each_side_and_keeps_the_used_rows() -> None:
+def test_temporal_sampling_caps_the_test_windows_and_keeps_all_history() -> None:
     df = daily_frame()
     windows = protocol.temporal_window_splits(df, time_on="t", window=5, unit="days", n_windows=3)
     out, splits, trimmed = sample_temporal_splits(df, windows, stratify_on="y", budget=RowBudget(train=1_000, test=200))
     assert trimmed
-    for folds in splits.values():
+    for i, folds in splits.items():
         train, test = folds[0]
-        assert (len(train), len(test)) == (1_000, 200)  # each window holds 250 rows, each train side 2,250 or more
+        assert len(test) == 200  # each window holds 250 rows
+        assert set(out["pos"].iloc[train]) == set(df["pos"].iloc[windows[i][0][0]])  # every earlier row trains
         assert out["t"].iloc[train].max() < out["t"].iloc[test].min()
     used = {i for folds in splits.values() for pair in folds.values() for side in pair for i in side}
     assert used == set(range(len(out)))  # no row is shipped that no split uses
@@ -236,15 +236,14 @@ def test_temporal_sampling_caps_each_side_and_keeps_the_used_rows() -> None:
     assert abs((out["y"].iloc[splits[0][0][1]] == "b").mean() - share) <= 1 / 200  # the class share is kept
 
 
-def test_temporal_sampling_draws_overlapping_train_sides() -> None:
+def test_temporal_sampling_keeps_every_row_an_older_window_leaves_out() -> None:
     df = daily_frame()
     windows = protocol.temporal_window_splits(df, time_on="t", window=5, unit="days", n_windows=3)
-    out, splits, _ = sample_temporal_splits(df, windows, budget=RowBudget(train=1_000, test=200))
-    newest, oldest = set(out["pos"].iloc[splits[0][0][0]]), set(out["pos"].iloc[splits[2][0][0]])
-    oldest_window_start = df["pos"].iloc[windows[2][0][1]].min()
-    # one random order for all windows: the newest train side's rows from before the oldest window are among the
-    # rows the oldest train side drew
-    assert {p for p in newest if p < oldest_window_start} <= oldest
+    out, _splits, _ = sample_temporal_splits(df, windows, budget=RowBudget(train=1_000, test=200))
+    newest_test = set(df["pos"].iloc[windows[0][0][1]])
+    # only the newest window's unsampled rows are dropped: an older window's train on in the newer windows
+    assert set(df["pos"]) - set(out["pos"]) <= newest_test
+    assert len(df) - len(out) == 50
 
 
 def test_temporal_sampling_by_whole_time_values() -> None:
@@ -255,17 +254,15 @@ def test_temporal_sampling_by_whole_time_values() -> None:
     )
     assert trimmed
     assert (out["t"].value_counts() == 50).all()  # a kept day keeps every row
-    for folds in splits.values():
+    for i, folds in splits.items():
         train, test = folds[0]
-        assert (len(train), len(test)) == (1_000, 100)  # the day that would cross the cap is dropped
+        assert len(test) == 100  # the day that would cross the cap is dropped
+        assert len(train) == len(windows[i][0][0])  # the train side keeps every earlier row
         assert out["t"].iloc[train].max() < out["t"].iloc[test].min()
     assert out["pos"].is_monotonic_increasing
     again, same, _ = sample_temporal_splits(df, windows, whole_values_of="t", budget=RowBudget(train=1_020, test=120))
     assert again.equals(out)  # deterministic
     assert same == splits
-    newest, oldest = set(out["t"].iloc[splits[0][0][0]]), set(out["t"].iloc[splits[2][0][0]])
-    oldest_start = df["t"].iloc[windows[2][0][1]].min()
-    assert {t for t in newest if t < oldest_start} <= oldest  # one order of the days for all windows
 
 
 def test_temporal_sampling_by_time_refuses_stratification_and_oversized_values() -> None:
@@ -313,6 +310,84 @@ def test_temporal_sampling_within_budget_changes_nothing() -> None:
     assert splits == windows
 
 
+# --- the default sampler of a train side ---------------------------------------------------------------------------
+def yearly_frame(n_days: int = 900, per_day: int = 4, seed: int = 0) -> pd.DataFrame:
+    rng = np.random.default_rng(seed)
+    n = n_days * per_day
+    return pd.DataFrame(
+        {
+            "t": pd.date_range("2022-01-01", periods=n_days, freq="D").repeat(per_day),
+            "y": pd.Categorical(rng.choice(["a", "b"], size=n, p=[0.8, 0.2])),
+            "g": np.arange(n) // 6,
+        },
+    )
+
+
+def test_the_default_draws_a_temporal_train_side_from_its_newest_year() -> None:
+    df = yearly_frame()
+    positions = np.arange(len(df) - 100)
+    kept = sample_train_positions(df, positions, 1_000, time_on="t", stratify_on="y")
+    assert len(kept) == 1_000
+    newest = df["t"].iloc[positions].max()
+    assert df["t"].iloc[kept].min() >= newest - pd.DateOffset(years=1)  # the newest year only
+    assert df["t"].iloc[kept].nunique() > 200  # spread over the year, not its newest days
+    share = (df["y"].iloc[positions] == "b").mean()
+    assert abs((df["y"].iloc[kept] == "b").mean() - share) < 0.03
+    assert np.array_equal(kept, sample_train_positions(df, positions, 1_000, time_on="t", stratify_on="y"))
+
+
+def test_the_default_takes_the_newest_rows_when_the_year_is_short() -> None:
+    df = yearly_frame()
+    positions = np.arange(len(df))
+    kept = sample_train_positions(df, positions, 2_000, time_on="t")  # the newest year holds 1,464 rows
+    assert np.array_equal(kept, positions[-2_000:])
+    by_day = sample_train_positions(df, positions, 2_002, time_on="t", whole_values_of="t")
+    assert (df["t"].iloc[by_day].value_counts() == 4).all()  # whole days only
+    assert len(by_day) == 2_000
+
+
+def test_the_default_on_a_numeric_time_takes_its_year_from_the_time_unit() -> None:
+    df = yearly_frame().assign(era=lambda d: (d["t"] - d["t"].iloc[0]).dt.days // 7)  # a weekly era, as numerai's
+    positions = np.arange(len(df))
+    kept = sample_train_positions(df, positions, 500, time_on="era", time_unit="weeks")
+    assert len(kept) == 500
+    assert df["era"].iloc[kept].min() > df["era"].max() - 52  # the newest 52 eras
+    by_date = sample_train_positions(df, positions, 500, time_on="t")
+    assert df["t"].iloc[by_date].min() >= df["t"].max() - pd.DateOffset(years=1)  # the same year by the calendar
+    extended = sample_train_positions(df, positions, 2_000, time_on="era", time_unit="weeks")
+    assert np.array_equal(extended, positions[-2_000:])  # the year holds fewer: extended back in time
+    with pytest.raises(ValueError, match="needs what one step of it counts"):
+        sample_train_positions(df, positions, 500, time_on="era")
+
+
+def test_the_default_without_time() -> None:
+    df = yearly_frame()
+    grouped = sample_train_positions(df, np.arange(len(df)), 500, group_on="g")
+    assert len(grouped) <= 500
+    assert (df["g"].iloc[grouped].value_counts() == 6).all()  # whole groups
+    within = np.arange(100)
+    assert np.array_equal(sample_train_positions(df, within, 500, time_on="t"), within)  # a side within the budget
+
+
+def test_subsample_train_follows_the_container() -> None:
+    df = yearly_frame()
+    splits = {0: {0: (list(range(3_000)), list(range(3_000, 3_600)))}}
+    meta = PredictiveMLSplitsMetadata(
+        splits_comment="s",
+        splits=splits,
+        row_budget=RowBudget(train=1_000, test=600),
+        train_sampling=TrainSampling(default="newest_year", unit="rows", stratify_on="y"),
+    )
+    task = PredictiveMLTaskMetadataV2(
+        target_column_name="y", problem_type="binary_classification", objective_metric=make_spec(), time_on="t"
+    )
+    container = make_container(df, task_metadata=task, experiment_metadata=meta)
+    kept = subsample_train(container, 0, 0)
+    assert len(kept) == 1_000
+    assert kept == sample_train_positions(df, splits[0][0][0], 1_000, time_on="t", stratify_on="y").tolist()
+    assert subsample_train(container, 0, 0, n_rows=5_000) == splits[0][0][0]  # within a larger budget: whole
+
+
 # --- protocol checks ----------------------------------------------------------------------------------------------
 V2_TASK = PredictiveMLTaskMetadataV2(
     target_column_name="target",
@@ -358,22 +433,28 @@ def test_protocol_checks_flag_a_single_split() -> None:
 
 
 @pytest.mark.parametrize(
-    ("budget", "expected"),
+    ("budget", "sampling", "expected"),
     [
-        (None, set()),  # no budget, no size limit
-        (RowBudget(train=40, test=20), set()),  # each fold trains on 40 and tests on 20 rows
-        (RowBudget(train=30, test=20), {"splits_train_over_budget"}),
-        (RowBudget(train=40, test=10), {"splits_test_over_budget"}),
+        (None, None, set()),  # no budget, no size limit
+        (RowBudget(train=40, test=20), "rows", set()),  # each fold tests on 20 rows
+        (RowBudget(train=30, test=20), "rows", set()),  # a train side over the budget is for the benchmark
+        (RowBudget(train=40, test=10), "rows", {"splits_test_over_budget"}),
+        (RowBudget(train=40, test=20), None, {"splits_train_sampling_missing"}),
     ],
 )
-def test_protocol_checks_hold_the_container_to_its_row_budget(budget: RowBudget | None, expected: set[str]) -> None:
+def test_protocol_checks_hold_the_container_to_its_row_budget(
+    budget: RowBudget | None, sampling: str | None, expected: set[str]
+) -> None:
     df = make_iid_frame(60)
     splits = iid_splits(df, n_repeats=20, stratify_on="target")
-    meta = PredictiveMLSplitsMetadata(splits_comment="x", splits=splits, row_budget=budget)
+    train_sampling = None if sampling is None else TrainSampling(default="random", unit=sampling)
+    meta = PredictiveMLSplitsMetadata(
+        splits_comment="x", splits=splits, row_budget=budget, train_sampling=train_sampling
+    )
     findings = {r.slug: r.severity for r in protocol_checks(make_v2_container(df, experiment_metadata=meta))}
-    assert {slug for slug in findings if slug.endswith("_over_budget")} == expected
-    assert findings.get("splits_train_over_budget", "error") == "error"
+    assert {slug for slug in findings if slug.endswith(("_over_budget", "_sampling_missing"))} == expected
     assert findings.get("splits_test_over_budget", "warning") == "warning"
+    assert findings.get("splits_train_sampling_missing", "error") == "error"
 
 
 @pytest.mark.parametrize(("n_windows", "flagged"), [(1, True), (3, False)])

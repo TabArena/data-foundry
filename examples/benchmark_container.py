@@ -5,6 +5,11 @@ says everything a benchmark needs:
 
 * the splits, ``experiment_metadata.splits`` as ``{repeat: {fold: (train_idx, test_idx)}}``: never re-split or
   shuffle, they encode the regime (IID, temporal, grouped);
+* the train budget, ``experiment_metadata.row_budget`` (a ``_1m`` version): its train sides keep every row they may
+  use, all history of a temporal one, and ``subsample_train(container, repeat, fold)`` draws the rows a model fits
+  on, at most ``row_budget.train`` of them, by the default sampler the container records
+  (``experiment_metadata.train_sampling``: for a temporal side the newest year, extended back until it holds that
+  many rows, sampled at random; whole groups of a grouped one); without a budget it returns the train side whole;
 * the features, ``feature_columns(container)``: no target, no group column, no scoring column (a metric input such
   as an era, never a feature);
 * the training weight, ``sample_weight(container)`` (or ``None``): a scoring column every model is fitted with as each
@@ -45,6 +50,7 @@ import pandas as pd
 from data_foundry.curation_container import CuratedContainer, feature_columns, sample_weight, special_features
 from data_foundry.v2.encodings import encode_text_tfidf
 from data_foundry.v2.metrics import scorer
+from data_foundry.v2.splits import subsample_train
 from sklearn.ensemble import HistGradientBoostingClassifier, HistGradientBoostingRegressor
 
 MAX_CATEGORIES = 255
@@ -77,10 +83,16 @@ def benchmark(container: CuratedContainer) -> list[float]:
     print(f"{'higher' if spec.greater_is_better else 'lower'} is better); scoring columns: {scoring}")
     print(f"{len(features)} model inputs, {len(text)} text columns encoded per split", end="")
     print(f"; every model fitted with `{weight}` as the row weight\n" if weight else "\n")
+    budget = container.experiment_metadata.row_budget
+    if budget is not None:
+        sampling = container.experiment_metadata.train_sampling
+        print(f"Train budget: at most {budget.train:,} rows per fit, ", end="")
+        print(f"sampled by `{sampling.default}` in units of {sampling.unit}\n")
 
     scores: list[float] = []
     for repeat_id, folds in container.experiment_metadata.splits.items():
         for fold_id, (train_idx, test_idx) in folds.items():
+            train_idx = subsample_train(container, repeat_id, fold_id)  # noqa: PLW2901 - the train side within the budget
             x_train, x_test = df.iloc[train_idx][features], df.iloc[test_idx][features]
             x_train, x_test = _encode_text(x_train, x_test, text)
             y_train, y_test = df[target].iloc[train_idx], df[target].iloc[test_idx]

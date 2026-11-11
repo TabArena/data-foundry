@@ -14,6 +14,7 @@ build record, so an unchanged dataset gives an unchanged file.
 
 from __future__ import annotations
 
+import dataclasses
 import datetime as dt
 import os
 import re
@@ -25,7 +26,7 @@ import yaml
 
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation_container import feature_columns
-from data_foundry.schema import resolve_warehouse_dir
+from data_foundry.schema import resolve_warehouse_dir, rows_text
 from data_foundry.v2 import group_checks
 from data_foundry.v2.dataset import (
     CLI_COMMAND,
@@ -173,6 +174,7 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             "split_regime": task.split_regime,
             "stratify_on": task.stratify_on,
             "time_on": task.time_on,
+            **({"time_unit": task.time_unit} if getattr(task, "time_unit", None) else {}),
             "group_on": task.group_on,
             "group_labels": task.group_labels,
             "group_time_on": task.group_time_on,
@@ -198,6 +200,11 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             **(
                 {"row_budget": {"train": splits_meta.row_budget.train, "test": splits_meta.row_budget.test}}
                 if splits_meta.row_budget is not None
+                else {}
+            ),
+            **(
+                {"train_sampling": dataclasses.asdict(splits_meta.train_sampling)}
+                if getattr(splits_meta, "train_sampling", None) is not None
                 else {}
             ),
         },
@@ -241,12 +248,17 @@ def render_report(
 # --- sections -----------------------------------------------------------------------------------------------
 
 
+_ONE_STEP = {"minutes": "a minute", "hours": "an hour", "days": "a day", "weeks": "a week", "months": "a month"}
+_ONE_STEP |= {"quarters": "a quarter", "years": "a year"}
+
+
 def _header(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     meta = result.container.dataset_metadata
     task = fm["task"]
     data = fm["data"]
     regime = {
-        "temporal_non_iid": f"temporal splits by `{task['time_on']}`",
+        "temporal_non_iid": f"temporal splits by `{task['time_on']}`"
+        + (f" (one step is {_ONE_STEP[task['time_unit']]})" if task.get("time_unit") else ""),
         "grouped_non_iid": f"grouped splits by {_names(task['group_on'])}",
     }.get(task["split_regime"], "IID splits")
     grouping = task.get("grouping") or {}
@@ -651,6 +663,19 @@ def _splits_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
         shape += f" Gap between train and test: {sp['time_gap']} {sp['time_gap_unit']}."
     if meta.row_budget is not None:
         shape += f" Row budget: {meta.row_budget.describe()}."
+        sampling = getattr(meta, "train_sampling", None)
+        if sampling is not None:
+            how = (
+                "the newest year before each window, extended back in time until it holds that many rows, at random"
+                if sampling.default == "newest_year"
+                else "at random"
+            )
+            unit = {"rows": "rows", "groups": "whole groups", "time_values": "whole time values"}[sampling.unit]
+            budget = rows_text(meta.row_budget.train)
+            shape += (
+                f" The train sides keep every row available to them; `subsample_train` draws the {budget} rows a "
+                f"benchmark fits on from {how}, as {unit}."
+            )
     table = split_summary(container.dataset, meta.splits, time_on=container.task_metadata.time_on)
     out = ["## Splits", "", meta.splits_comment.strip(), "", shape, ""]
     return out + _maybe_collapsed(f"Show all {len(table)} splits", _table(table), len(table))

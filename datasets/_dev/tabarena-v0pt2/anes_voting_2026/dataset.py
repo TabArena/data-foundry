@@ -12294,6 +12294,7 @@ class AnesVoting2026(AbstractCuratedDataset):
         splits=TemporalSplits(window=1, unit="unique", n_windows=9),
         horizon=1,
         horizon_unit="years",
+        time_unit="years",
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

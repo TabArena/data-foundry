@@ -88,6 +88,7 @@ from data_foundry.schema import (
     RowBudget,
     ScoringColumn,
     Source,
+    TrainSampling,
     UnitWeight,
     as_column_list,
     resolve_warehouse_dir,
@@ -511,18 +512,19 @@ class AbstractCuratedDataset(ABC):
     splits_comment: ClassVar[str | None] = None
     """What the splits simulate. None: the default comment for recommended or declarative splits."""
     row_budget: ClassVar[RowBudget | None] = None
-    """The most rows a split trains and tests on, for a version sub-sampled to it. None (the default): no budget, the
-    splits use the full frame and no side is capped.
+    """The benchmark's row budget, for data larger than it. None (the default): no budget, the splits use the full
+    frame and no side is capped.
 
-    ``RowBudget(train=..., test=...)`` makes a sub-sampled version, named ``<name>_<suffix>`` after its train
-    budget (:attr:`~data_foundry.schema.RowBudget.suffix`), and the container records the budget
-    (``experiment_metadata.row_budget``). IID / grouped: a frame above ``train + test`` rows is sub-sampled to it
-    (whole groups, stratified), then each fold tests on up to ``test`` rows of its third and trains on every other
-    row, at most ``train``. Temporal: sample per window (each test window up to ``test`` rows, each train side a
-    random ``train`` of all earlier rows; whole time values with ``TemporalSplits(sample_by="time")``) and keep only
-    the rows a split uses (:mod:`data_foundry.v2.splits`). TabArena v0.2 sub-samples its larger datasets to
-    ``RowBudget(train=1_000_000, test=500_000)``; a budget that changes nothing is refused (take the dataset
-    fully)."""
+    ``RowBudget(train=..., test=...)`` makes a version named ``<name>_<suffix>`` after its train budget
+    (:attr:`~data_foundry.schema.RowBudget.suffix`), and the container records the budget
+    (``experiment_metadata.row_budget``) with how to sub-sample to it (``experiment_metadata.train_sampling``,
+    :meth:`train_sampling`). Only the test sides are sampled in the container: each temporal test window, or each
+    IID / grouped fold's test third, keeps at most ``test`` rows (whole groups, stratified; whole time values with
+    ``TemporalSplits(sample_by="time")``). The train sides keep every row available to them, all history before a
+    window, and a benchmark sub-samples them to ``train`` rows before a fit
+    (:func:`~data_foundry.v2.splits.subsample_train`: the newest year at random for temporal data). TabArena v0.2 uses
+    ``RowBudget(train=1_000_000, test=500_000)``; a budget that changes nothing (no test side over ``test`` and no
+    train side over ``train``) is refused (take the dataset fully)."""
 
     # --- checks and raw files ----------------------------------------------------------------------
     accepted_check_warnings: ClassVar[dict[str, str]] = {}
@@ -1015,11 +1017,11 @@ class AbstractCuratedDataset(ABC):
         """The default of :meth:`_make_splits`: the v2 split protocol (:mod:`data_foundry.v2.splits`).
 
         The splits are the declarative temporal windows, or the recommended IID / grouped 3-fold cross-validation, on
-        the full frame. A version with a :attr:`row_budget` fits them to it: IID or grouped data first sub-samples a
-        frame above ``train + test`` rows to that size (whole groups, stratified), then each fold tests on up to
-        ``test`` rows of its third and trains on every other row, at most ``train``
-        (:func:`~data_foundry.v2.splits.fit_splits_to_budget`); a temporal version samples per window instead
-        (:func:`~data_foundry.v2.splits.sample_temporal_splits`) and keeps only the rows a split uses.
+        the full frame. A version with a :attr:`row_budget` samples only its test sides to ``row_budget.test``: a
+        temporal version each test window (:func:`~data_foundry.v2.splits.sample_temporal_splits`, the frame keeps the
+        rows a split uses), an IID or grouped one each fold's test third, whose left-out rows train in that fold
+        (:func:`~data_foundry.v2.splits.fit_splits_to_budget`). The train sides keep every row available to them; a
+        benchmark sub-samples them to ``row_budget.train`` (:func:`~data_foundry.v2.splits.subsample_train`).
         """
         task = self.task_metadata
         temporal = task.time_on is not None
@@ -1031,7 +1033,7 @@ class AbstractCuratedDataset(ABC):
             return SplitPlan(splits=self._cross_validation(df), comment=DEFAULT_SPLITS_COMMENT)
 
         train_budget, test_budget = rows_text(budget.train), rows_text(budget.test)
-        take_fully = f"Take the dataset fully: drop `row_budget` and the `_{budget.suffix}` version."
+        sampled_by = self._train_sampling_text(df)
         if temporal:
             splits, comment = self._window_splits(df)
             by_time = self.temporal.splits.sample_by == "time"
@@ -1043,63 +1045,71 @@ class AbstractCuratedDataset(ABC):
                 whole_values_of=task.time_on if by_time else None,
                 random_state=self.SPLIT_RANDOM_STATE,
             )
-            if not trimmed:
-                msg = (
-                    f"{type(self).__name__}: no split side exceeds the row budget ({train_budget} train, {test_budget} "
-                    f"test rows). {take_fully}"
-                )
-                raise DatasetDefinitionError(msg)
-            if by_time:
-                comment += (
-                    f" Each test window keeps at most {test_budget} of its rows and each train side at most "
-                    f"{train_budget} of all earlier rows, drawn as whole values of `{task.time_on}` (every row of a "
-                    "drawn value kept; one random order of the values for all windows); the frame keeps only the rows "
-                    "a split uses."
-                )
-            else:
-                comment += (
-                    f" Each test window keeps at most {test_budget} of its rows and each train side is a random "
-                    f"{train_budget} of all earlier rows (one random order for all windows); the frame keeps only the "
-                    "rows a split uses."
-                )
-            return SplitPlan(splits=splits, df=_drop_unused_categories(df), comment=comment)
-
-        frame_rows = budget.train + budget.test
-        frame_sampled = len(df) > frame_rows
-        if frame_sampled:
-            df = protocol.subsample_frame(
+            drawn = f", drawn as whole values of `{task.time_on}`" if by_time else ", drawn at random"
+            comment += (
+                f" Each test window keeps at most {test_budget} of its rows{drawn}; each train side holds every "
+                f"earlier row, and a benchmark sub-samples it to {train_budget} rows ({sampled_by})."
+            )
+            df = _drop_unused_categories(df)
+        else:
+            splits, trimmed = protocol.fit_splits_to_budget(
                 df,
-                n_rows=frame_rows,
+                self._cross_validation(df),
+                budget,
                 group_on=task.group_on,
                 stratify_on=task.stratify_on,
                 random_state=self.SPLIT_RANDOM_STATE,
             )
-        splits, sides_sampled = protocol.fit_splits_to_budget(
-            df,
-            self._cross_validation(df),
-            budget,
-            group_on=task.group_on,
-            stratify_on=task.stratify_on,
-            random_state=self.SPLIT_RANDOM_STATE,
-        )
-        if not (frame_sampled or sides_sampled):
+            whole = " (whole groups)" if task.group_on is not None else ""
+            comment = (
+                f"{DEFAULT_SPLITS_COMMENT} Each fold tests on at most {test_budget} rows of its third{whole} and "
+                f"trains on every other row; a benchmark sub-samples the train side to {train_budget} rows "
+                f"({sampled_by})."
+            )
+        longest_train = max(len(train) for folds in splits.values() for train, _test in folds.values())
+        if not trimmed and longest_train <= budget.train:
             msg = (
                 f"{type(self).__name__}: the frame has {len(df):,} rows and no split side exceeds the row budget "
-                f"({train_budget} train, {test_budget} test rows). {take_fully}"
+                f"({train_budget} train, {test_budget} test rows). Take the dataset fully: drop `row_budget` and the "
+                f"`_{budget.suffix}` version."
             )
             raise DatasetDefinitionError(msg)
-        comment = DEFAULT_SPLITS_COMMENT
-        if frame_sampled:
-            whole = " (whole groups)" if task.group_on is not None else ""
-            comment += f" The frame is sub-sampled to {rows_text(frame_rows)} rows{whole};"
-        else:
-            comment += " The frame is taken fully;"
-        comment += f" every split trains on at most {train_budget} and tests on at most {test_budget} rows"
-        if sides_sampled:
-            comment += f": each fold tests on up to {test_budget} rows of its third and trains on the other rows"
-        comment += "."
-        df = _drop_unused_categories(df) if frame_sampled else df
         return SplitPlan(splits=splits, df=df, comment=comment)
+
+    def train_sampling(self, df: pd.DataFrame | None = None) -> TrainSampling | None:
+        """How a benchmark sub-samples this dataset's train sides to ``row_budget.train`` (None without a budget).
+
+        A temporal task: the newest year, extended back in time until it holds ``row_budget.train`` rows, and a random
+        sample of those (the year of a numeric time column from ``Temporal(time_unit=...)``). IID and grouped tasks: at
+        random. Whole groups for a grouped task, whole time values with ``TemporalSplits(sample_by="time")``;
+        stratified like the splits.
+        """
+        if self.row_budget is None:
+            return None
+        task = self.task_metadata
+        by_time = self._samples_by_time()
+        if task.time_on is not None:
+            self._check_time_unit((self.df if df is None else df)[task.time_on])
+        unit = "time_values" if by_time else ("groups" if task.group_on is not None else "rows")
+        return TrainSampling(
+            default="newest_year" if task.time_on is not None else "random",
+            unit=unit,
+            stratify_on=None if by_time else task.stratify_on,
+        )
+
+    def _samples_by_time(self) -> bool:
+        """Whether the splits sample whole values of the time column (``TemporalSplits(sample_by="time")``)."""
+        windows = self.temporal.splits if self.temporal is not None else None
+        return windows is not None and windows.sample_by == "time"
+
+    def _train_sampling_text(self, df: pd.DataFrame) -> str:
+        """How the default sampler (:meth:`train_sampling`) draws a train side of ``df``, for the splits comment."""
+        sampling = self.train_sampling(df)
+        unit = {"rows": "rows", "groups": "whole groups", "time_values": "whole values of the time column"}
+        where = ""
+        if sampling.default == "newest_year":
+            where = " from the newest year before each window, extended back in time until it holds that many rows"
+        return f"by default {unit[sampling.unit]} drawn at random{where}, `subsample_train`"
 
     def _window_splits(self, df: pd.DataFrame) -> tuple[Splits, str]:
         """The declarative temporal windows on ``df`` and their generated comment."""
@@ -1143,6 +1153,8 @@ class AbstractCuratedDataset(ABC):
         Every split side comes in row order: a side is a set of rows, and the container's row table stores it so.
         """
         df = self.df if df is None else df
+        if self.temporal is not None:
+            self._check_time_unit(df[self.temporal.on])
         plan = self._make_splits(df)
         if not isinstance(plan, SplitPlan):
             plan = SplitPlan(splits=plan)
@@ -1158,6 +1170,27 @@ class AbstractCuratedDataset(ABC):
             msg = f"{type(self).__name__}: custom splits need a `splits_comment` (or `SplitPlan(comment=...)`)."
             raise DatasetDefinitionError(msg)
         return plan
+
+    def _check_time_unit(self, times: pd.Series) -> None:
+        """Check the time column's calendar against ``Temporal(time_unit=...)``.
+
+        A date has its own calendar; a numeric time column says what a step counts when the train sampler needs it.
+        """
+        unit, name = self.temporal.time_unit, type(self).__name__
+        dated = pd.api.types.is_datetime64_any_dtype(times)
+        if unit is not None and dated:
+            msg = f"{name}: `{times.name}` is a date, whose calendar is its own: drop `Temporal(time_unit=...)`."
+            raise DatasetDefinitionError(msg)
+        if unit is not None and not pd.api.types.is_numeric_dtype(times):
+            msg = f"{name}: `time_unit` counts steps of a numeric time column; `{times.name}` is {times.dtype}."
+            raise DatasetDefinitionError(msg)
+        if unit is None and not dated and self.row_budget is not None:
+            msg = (
+                f"{name}: a benchmark samples the train sides of a version with a `row_budget` from their newest year, "
+                f"and `{times.name}` is no date: declare what one step of it counts, `Temporal(..., time_unit=...)` "
+                "(numerai's weekly eras: `time_unit='weeks'`)."
+            )
+            raise DatasetDefinitionError(msg)
 
     def preview_splits(self, df: pd.DataFrame | None = None) -> pd.DataFrame:
         """One row per outer split with its train/test sizes, and time ranges for a temporal task."""
@@ -1180,6 +1213,7 @@ class AbstractCuratedDataset(ABC):
             time_gap=gap,
             time_gap_unit=gap_unit,
             row_budget=self.row_budget,
+            train_sampling=self.train_sampling(plan.df),
         )
         manifest = self.raw_manifest(getattr(self, "_rows_per_file", None))
         metadata = dataclasses.replace(self.dataset_metadata, raw_files=manifest) if manifest else self.dataset_metadata
@@ -1936,6 +1970,7 @@ def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadataV
         objective_metric=metric_spec(_declared_metric(cls), cls.problem_type),
         stratify_on=stratify_on,
         time_on=cls.temporal.on if cls.temporal is not None else None,
+        time_unit=cls.temporal.time_unit if cls.temporal is not None else None,
         grouping=grouping,
         scoring_columns=[dataclasses.replace(c, description=clean_text(c.description)) for c in cls.scoring_columns],
         sample_weight=cls.sample_weight,
