@@ -205,6 +205,10 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   use, close a settled item in the working copy's `REVIEW.md` with a `**Resolved (<date>):**` label instead of
   deleting it: the page stores its marks by position.
 
+A round with decisions on many datasets is applied by a few agents in parallel, three to five datasets each, with
+the brief in [apply_brief.md](references/apply_brief.md); the main session keeps the files they would share and reads
+each diff after.
+
 Every change to the working copy gets its dated `CHANGELOG.md` entry
 ([working_copy.md](../knowledge-data-foundry/references/working_copy.md)). Run `pytest -q`, `ruff` on changed Python
 and `validate` before offering the commit; commits and pushes need the curator's ask. When the session ends, offer the

@@ -1333,3 +1333,16 @@ def test_duplicate_rows_compare_the_model_inputs_not_the_scoring_columns():
         for r in run_bundle_checks(_rate_container(pd.concat([df, copy], ignore_index=True)), verbose=False).results
     }
     assert "dataset_conflicting_duplicate_rows" in found
+
+
+def test_a_feature_missing_in_a_test_window_warns():
+    """A column that stops being recorded within the history warns; one that keeps being recorded does not."""
+    clean = make_temporal_container()
+    assert "splits_feature_missing_in_test" not in slugs_of(clean)
+    df = clean.dataset.copy()
+    df["feat_stops"] = np.where(np.arange(40) < 25, 1.0, np.nan)  # recorded until day 25, then gone
+    found = run_bundle_checks(make_temporal_container(dataset=df), verbose=False)
+    result = next(r for r in found.results if r.slug == "splits_feature_missing_in_test")
+    assert result.severity == "warning"
+    assert "`feat_stops`" in result.message
+    assert "r0f0 17% missing in train, 100% in test" in result.message  # days 25-29 sit in the train side

@@ -32,6 +32,22 @@ When the curator names several records or a dashboard filter (for example "every
 * Agents leave stray work (a `find /` ran 3.5 hours): check `ps` for long-running children before finishing.
 * Builds need memory more than cores: [rebuild.md](rebuild.md) lists the peaks.
 
+## Files agents share
+
+Lessons of the review rounds of 2026-11-10 and 11, where up to six agents applied decisions in parallel:
+
+* Evidence and scratch output go under the run folder, `local-data-warehouse/_runs/<date>_<run>/`, never the
+  session scratchpad: a restart wiped the scratchpad and the window tables in it.
+* Each agent writes under its own name (`apply_<agent>.md`, `<dataset>_windows.csv`); a shared file name (`out.md`,
+  `check.md`) is overwritten by the next agent.
+* A file several agents would edit (`CHANGELOG.md`, the working copy's cross-dataset `REVIEW.md`, a knowledge file,
+  the review page) is edited by the main session only: the agents return drafts. Two edits of one file at once lose
+  one of them.
+* An agent's summary is not the change: read the diff (a mark word copied wrong, a claim its own numbers
+  contradict).
+* A long run that is no longer needed is stopped (`SendMessage` to the agent, or `TaskStop`), not left to finish:
+  maps_router_eta_1m's full window statistics ran 52 minutes for counts already known.
+
 ## Brief for a unit agent
 
 Name in the brief: the records and the folder names, the knowledge files to read for each step (the workflow skill's
