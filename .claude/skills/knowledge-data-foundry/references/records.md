@@ -1,16 +1,19 @@
 # Curation records
 
 The curation log is one markdown record per candidate dataset, `curation/records/<unique_name>.md`: YAML front matter
-for the structured fields, then `## Comments` and `## Reference`. The records are the source of truth for every
-verdict; the dashboard ([dashboard.md](dashboard.md)) edits the same files in place, so every change is a reviewable
-diff. The schema is `CurationRecord` in `src/data_foundry/curation/record.py`; `curation/_template.md` is a copy-me
-skeleton (files starting with `_` are skipped by the loader). What a verdict means is in the general
+for the structured fields, then up to three sections, `## Comments` (the curation discussion), `## Review` (the
+dataset's review, open and settled, [below](#the-review-section)) and `## Reference` (the citation). The records are
+the source of truth for every verdict, and a record is the one place a dataset's curation is written down; the
+dashboard ([dashboard.md](dashboard.md)) edits the same files in place, so every change is a reviewable diff. The
+schema is `CurationRecord` in `src/data_foundry/curation/record.py`; `curation/_template.md` is a copy-me skeleton
+(files starting with `_` are skipped by the loader). What a verdict means is in the general
 [selection.md](../../knowledge-curation/references/selection.md).
 
 ## Editing a record
 
 Always through the store API, as one short step, right after reloading the record from disk: the curator edits the
-same files in the dashboard while you work, so a copy read earlier is stale.
+same files in the dashboard while you work, so a copy read earlier is stale. The one exception is the record's
+`## Review`, which may also be edited in place ([below](#the-review-section)).
 
 ```python
 from data_foundry.curation.record import load_vocabularies
@@ -37,7 +40,8 @@ every uncommitted curation change and offer the commit.
 * `**Assessment (AI, YYYY-MM-DD):**` is the AI's evidence and recommendation ("recommend ...; the curator has the
   call"). The verdict and markers stay as they are. The review panel's summary is one such line in a fixed form,
   `**Assessment (AI, YYYY-MM-DD):** review panel (<tier>): <recommendation>; disputed: ...; for the curator: issues
-  ...`, written by `/add-dataset` (Step 8). It keeps the panel in the record after the `REVIEW.md` is deleted.
+  ...`, written by `/add-dataset` (Step 8). It sums up in the comments the panel whose reports are in the record's
+  `## Review`.
 * `**Counter-argument (AI):**` is a disagreement with a documented decision, argued from the data
   ([principles.md](../../knowledge-curation/references/principles.md), "Arguing a call"). The fields stay as they are.
 * `**Screening (AI, YYYY-MM-DD):**` is the dossier `/screen-candidates` writes: the verdict and priority in its first
@@ -52,12 +56,46 @@ every uncommitted curation change and offer the commit.
   without a fact that sets it apart, contradicts a similar precedent, drifts from the curator's earlier calls, or is
   the third exception of its kind ([principles.md](../../knowledge-curation/references/principles.md), "Consistent
   judgement"). The curator's answer follows as a `CC` line; the check stays as the record of the question.
-* `**Open issues (AI, YYYY-MM-DD):**` followed by numbered issues: the open questions of a record that has no dataset
-  folder, until the curator settles them (a folder keeps them in its `REVIEW.md`, [working_copy.md](working_copy.md)).
 * A field edit alone gets no comment: git records who changed what.
+
+The open questions for the curator are not comment lines: they go into the record's `## Review`, also for a record
+without a dataset folder. The `**Open issues (AI, YYYY-MM-DD):**` block such a record kept in its comments is retired
+(2026-11-11).
 
 Never delete existing comments. Never name company code repositories in a record (house rules in the
 [skill index](../SKILL.md)).
+
+## The review section
+
+A dataset's review is the `## Review` section of its record, between `## Comments` and `## Reference` (Lennart,
+2026-11-11: "We want the curation record to be the single source of information, not spread across multiple files.").
+It holds what a dataset folder's `REVIEW.md` held until then, without the `# <unique_name>` title line: the
+`**Outcome:**`, the `**Main points:**`, the record fields that disagree with the definition, the
+`**Record judgment:**`, the `**Horizon:**` block, the numbered issues with every turn
+(`**<curator> (<date>, <mark>):**`, `**Answer (AI, <date>):**`, `**Consistency check (AI, <date>):**`,
+`**Resolved (<date>, <who>):**`), their footnotes and `**Notes for the AI:**`, and the `**Review panel:**` block. The
+format is the review skill's [review_file_format.md](../../review-added-datasets/references/review_file_format.md).
+
+* `/add-dataset` writes it in its Step 8, and a re-check adds to it. The main session writes it, from the drafts of
+  the agents that built the dataset and the reports of the panel.
+* A record without a dataset folder (not added) keeps its open issues in the same section, in the same format, with
+  an outcome that starts `not added`.
+* `/review-added-datasets` builds its page from the records' reviews (`collect_reviews.py`). Applying a decision
+  writes the curator's turn and the `**Resolved (<date>, <who>):**` turn into the review and the `CC` line into the
+  comments, all in the one record.
+* A review is never deleted (Andrej, 2026-11-02): a settled issue keeps its Resolved turn, and a retired dataset's
+  record keeps its review, so the record says how the dataset was decided.
+* No dataset folder holds a `REVIEW.md`, and none is created. `collect_reviews.py` stops at one and a test fails the
+  PR that adds one; `.claude/skills/review-added-datasets/scripts/move_reviews_to_records.py` moves it into its record
+  (for a branch rebased onto the change; `--check` lists what it would move). The working copy's cross-dataset
+  `REVIEW.md` is the one review file outside the records ([working_copy.md](working_copy.md)).
+* The dashboard and the public site show the review with the record; the flat export (CSV, the sheet) leaves it out.
+
+Edit the review on the current file, in one of two ways: an exact-string edit of the record file (the Edit tool), or
+the store API right after the reload (`rec = load_record(path)`, change `rec.review`, `save_record(rec)`). Never save
+a record loaded earlier. This is the one exception to "always through the store API": a review is long markdown that
+an exact edit changes safely while the dashboard edits the front matter. A line starting with `## ` would end the
+section, so a review has no such heading.
 
 ## AI screening of untriaged records (`AI (UNVERIFIED)`)
 
@@ -133,9 +171,9 @@ from the board.
   its name when links to it must stay valid. Every `*_duplicate` record carries the marker and no `Yes`
   (`test_duplicate_records_follow_convention`).
 * A retired dataset is `No (Retired)` with its markers, its folder is removed from the working copy and its `v2_path`
-  cleared in the same change, with a CHANGELOG entry ([working_copy.md](working_copy.md)). A dataset to be rebuilt
-  from other sources gets a new record that names the sources and the plan (tcga_coad_molecular_subtype,
-  corporate_issuer_credit_rating).
+  cleared in the same change, with a CHANGELOG entry ([working_copy.md](working_copy.md)); the record keeps its
+  review. A dataset to be rebuilt from other sources gets a new record that names the sources and the plan
+  (tcga_coad_molecular_subtype, corporate_issuer_credit_rating).
 
 ## The review queue
 

@@ -1569,8 +1569,8 @@ class AbstractCuratedDataset(ABC):
                     "splits_train_under_half",
                     "warning",
                     f"{len(under)} window(s) train on less than half the rows: {listed}.",
-                    hint="SPLIT-14 admits them, but the curator signs off each: raise it in the REVIEW.md, and once "
-                    "the record carries the curator's CC line, accept this warning with that date.",
+                    hint="SPLIT-14 admits them, but the curator signs off each: raise it in the record's `## Review`, "
+                    "and once the record carries the curator's CC line, accept this warning with that date.",
                 )
             )
         if low:

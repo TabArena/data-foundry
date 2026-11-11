@@ -47,7 +47,7 @@ CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (fla
 
 **Assessment (AI, 2026-10-20):** review panel (full): ship after changes; open for the curator are the fit with NPD's GROUP and FORMATION (a released-well use case or an approximate fit) and the metric (TP-6). Applied: values below -900, impossible negatives, DCAL above 100 and DRHO in 36/7-3 and 31/4-10 masked; a splits comment (departure from 98 / 10 / 10, test wells have drilled neighbours); the GROUP and FORMATION note reworded (boundaries 4x enriched on lithology changes, shared post-well sources); off-scale wells and metric facts noted; stale numbers corrected; fit_reason names the mud-log gap; domain environmental science & climate in the definition. Corrections to earlier lines: 12 of 13 finalists used only tree ensembles (one also a neural network); the GROUP and FORMATION timing is a known risk. Priority 4: gap + (multiclass), use case + (the competition's own task, interpreting a well's lithology), source + (organisers' repository, Zenodo record, retrospective), shape +, risk - (GROUP and FORMATION may postdate the prediction point, issue 2).
 
-**Assessment (AI, 2026-10-20):** correction to the earlier 2026-10-20 lines: the "no known risk" of the first one does not hold. Whether NPD's GROUP and FORMATION exist when a newly drilled well is first interpreted is open (REVIEW.md issue 2), and the 2026-10-07 line's "all 13 finalists used tree ensembles" should read 12 of 13 used only tree ensembles (one team also a neural network).
+**Assessment (AI, 2026-10-20):** correction to the earlier 2026-10-20 lines: the "no known risk" of the first one does not hold. Whether NPD's GROUP and FORMATION exist when a newly drilled well is first interpreted is open (Review issue 2), and the 2026-10-07 line's "all 13 finalists used tree ensembles" should read 12 of 13 used only tree ensembles (one team also a neural network).
 
 CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
 
@@ -55,9 +55,9 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source cost_matrix (the competition's 11 x 11 penalty matrix without Basement, labels in the starter notebook's order) — the FORCE 2020 starter notebook's penalty matrix score on hard labels, renamed from force_2020_penalty_matrix; the scored metric changes from log_loss to cost_matrix (MET-4, MET-7, MET-12).
 
-CC (2026-10-21, Lennart): use case restated as "a newly drilled or a released well" (option (a) of REVIEW.md issue 2): NPD publishes its GROUP and FORMATION picks for released wells, the wells the labels were built for; both stay as features and the fit stays direct (USE-9).
+CC (2026-10-21, Lennart): use case restated as "a newly drilled or a released well" (option (a) of Review issue 2): NPD publishes its GROUP and FORMATION picks for released wells, the wells the labels were built for; both stay as features and the fit stays direct (USE-9).
 
-CC (2026-10-21, Lennart): curves on a second scale: follow the recommendation. ROP in 25/6-2, ROPA in 34/4-10 R, SGR in 34/12-1 and 35/11-15 S and MUDWEIGHT above 100 (16/10-2 and 281 rows of 15/9-14) are masked; MUDWEIGHT's two main scales stay, as both occur on every training side. His question whether the scales can be normalised is open (REVIEW.md issue 8).
+CC (2026-10-21, Lennart): curves on a second scale: follow the recommendation. ROP in 25/6-2, ROPA in 34/4-10 R, SGR in 34/12-1 and 35/11-15 S and MUDWEIGHT above 100 (16/10-2 and 281 rows of 15/9-14) are masked; MUDWEIGHT's two main scales stay, as both occur on every training side. His question whether the scales can be normalised is open (Review issue 8).
 
 CC (2026-10-21, Lennart): duplicate formation codes merged as proposed: Grid Mb., Skade Mb. and Ty Mb. become Grid Fm., Skade Fm. and Ty Fm. (CLEAN-14).
 

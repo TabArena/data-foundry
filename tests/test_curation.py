@@ -69,6 +69,7 @@ def sample_record() -> CurationRecord:
         domain="chemistry & material science",
         source_links=["https://archive.ics.uci.edu/dataset/75", "10.24432/C51608"],
         comments="Line one.\n\nLine two with a colon: and symbols #@!.",
+        review="**Outcome:** added.\n\n**Main points:** one issue.\n\n**Issues for Lennart:**\n\n1. **Keep it?** Yes.",
         reference="@article{x, title={Y}}",
         source_row=5,
     )
@@ -79,6 +80,20 @@ def test_markdown_roundtrip(sample_record: CurationRecord) -> None:
     parsed = markdown_to_record(record_to_markdown(sample_record))
     assert parsed == sample_record
     assert parsed.priority == 4
+
+
+def test_the_review_is_a_section_of_its_own(sample_record: CurationRecord) -> None:
+    """A dataset's review is the record's ``## Review``, between the comments and the reference (Lennart, 2026-11-11:
+    the record is the one source of a dataset's curation); the flat view leaves it out (a sheet cell holds 50,000
+    characters).
+    """
+    from data_foundry.curation.exporter import to_dataframe  # noqa: PLC0415
+
+    text = record_to_markdown(sample_record)
+    assert text.index("## Comments") < text.index("## Review") < text.index("## Reference")
+    assert markdown_to_record(text).review.startswith("**Outcome:** added.")
+    assert "Review" not in to_dataframe([sample_record]).columns
+    assert "## Review" not in record_to_markdown(_record("plain", comments="x"))
 
 
 def test_dict_roundtrip(sample_record: CurationRecord) -> None:

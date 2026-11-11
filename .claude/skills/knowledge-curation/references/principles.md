@@ -57,7 +57,7 @@ A rule may grade its strength by severity, such as a leak that is a Must when st
 5. **The remedy ladder.** Take the mildest remedy that resolves the problem: repair from the origin; fix the
    definition (drop, lag, filter, re-split, re-target); keep it with a documented note (an exception); exclude the
    dataset. Exclusion is for a Must that cannot be fixed.
-6. **Write the judgment record.** Every assessment, `REVIEW.md` outcome and mediator report has the same shape, so the
+6. **Write the judgment record.** Every assessment, review outcome and mediator report has the same shape, so the
    curator sees what decided:
 
    ```text
@@ -120,7 +120,7 @@ named wins.
 | Maintenance of the rules | an amendment > an exception > a precedent > a pattern. |
 | A review panel | the mediator settles a dispute by rank; a weighing call goes to the curator. |
 
-Which file is the truth for what (the definition, the record, the review file, the generated README) is repository
+Which file is the truth for what (the definition, the record and its review, the generated README) is repository
 specific: [pipeline.md](../../knowledge-data-foundry/references/pipeline.md).
 
 ## Exceptions and amendments

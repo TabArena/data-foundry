@@ -6,11 +6,14 @@ Usage, from the repository root::
         --root datasets/_dev/tabarena-v0pt2 --out <report.md> [--names a,b] [--title <text>] [--date <YYYY-MM-DD>]
         [--records curation/records]
 
-Reads every ``<root>/<folder>/REVIEW.md`` (the open issues of one dataset), the optional ``<root>/REVIEW.md`` (items
-across datasets) and the ``**Open issues (AI, <date>):**`` block of the records without a folder, and writes one
-report that ``build_review_page.py`` turns into the review page. The format of these files and of the report is
-``references/review_file_format.md``; a file that breaks it stops the collector with the file and the line. The
-report is checked with the builder's own parser before the collector reports success.
+Reads the ``## Review`` section of every curation record (a dataset's review, open and settled: Lennart, 2026-11-11,
+the record is the one source of a dataset's curation) and the optional ``<root>/REVIEW.md`` (items across datasets),
+and writes one report that ``build_review_page.py`` turns into the review page. The format of a review, of the
+cross-dataset file and of the report is ``references/review_file_format.md``; a review that breaks it stops the
+collector with the record and the line. A ``REVIEW.md`` in a dataset folder stops it too
+(``move_reviews_to_records.py`` moves it into the record), and so does an open-issues block left in a record's
+comments (moved by hand into its ``## Review``). The report is checked with the builder's
+own parser before the collector reports success.
 
 Needs markdown-it-py (the ``curation`` extra), as the builder does.
 """
@@ -33,12 +36,14 @@ if str(HERE) not in sys.path:
 import build_review_page as brp  # noqa: E402 - the builder sits next to this script, not in a package
 
 REVIEW_FILE = "REVIEW.md"
+"""The working copy's cross-dataset review file; a dataset's review is its record's ``## Review`` section."""
+REVIEW_SECTION_RE = re.compile(r"^## Review\s*$", re.MULTILINE)
 FORMAT = HERE.parent / "references" / "review_file_format.md"
 
 TITLE_RE = re.compile(r"^# ([a-z0-9_]+)\s*$")
 LABEL_RE = re.compile(r"^\*\*([^*]+?):\*\*\s*(.*)$")
 BLOCKS = ("outcome", "points", "fields", "judgment", "horizon", "issues", "panel")
-"""The blocks of a REVIEW.md, in the order they appear."""
+"""The blocks of a review, in the order they appear."""
 LABELS = {
     "Outcome": "outcome",
     "Main points": "points",
@@ -72,13 +77,14 @@ class ReviewFileError(ValueError):
 
     def __init__(self, path: Path, index: int | None, message: str) -> None:
         """Name the file and the line (``index`` counts from 0; None for the whole file) in the message."""
+        self.path, self.index, self.detail = path, index, message
         where = f"{path}, line {index + 1}" if index is not None else str(path)
         super().__init__(f"{where}: {message}")
 
 
 @dataclass
 class Entry:
-    """One record on the page: from its folder's REVIEW.md or from the open-issues block of its record."""
+    """One record on the page: from the ``## Review`` section of its curation record."""
 
     name: str
     folder: str | None
@@ -116,13 +122,13 @@ class Collected:
 
     @property
     def n_folders(self) -> int:
-        """The records that come from a REVIEW.md."""
+        """The records with a dataset folder (added); the others were not added."""
         return sum(1 for e in self.entries if e.folder)
 
 
 @dataclass
 class _Block:
-    """A labelled block of a REVIEW.md: its label, the index of its label line, that line's rest, the lines below."""
+    """A labelled block of a review: its label, the index of its label line, that line's rest, the lines below."""
 
     label: str
     start: int
@@ -201,7 +207,7 @@ def _read_blocks(path: Path, lines: list[str]) -> dict[str, _Block]:
         key = LABELS.get(label) or ("issues" if m and ISSUES_LABEL.match(label) else None)
         if key is None:
             if line.startswith("#"):
-                raise ReviewFileError(path, i, "a heading after the title; a REVIEW.md holds only its labelled blocks")
+                raise ReviewFileError(path, i, "a heading inside the review; a review holds only its labelled blocks")
             if current is None and line.strip():
                 raise ReviewFileError(path, i, "text before `**Outcome:**`")
             if current is not None:
@@ -262,7 +268,8 @@ def _check_panel(path: Path, lines: list[str], block: _Block | None) -> tuple[st
 
 
 def parse_review_file(path: Path, folder: str, text: str | None = None) -> Entry:
-    """One dataset's REVIEW.md (``text``: its content, when it comes from a commit and not from ``path``).
+    """One dataset's review: ``text`` is the record's ``## Review`` with a ``# <unique_name>`` title line in front
+    (``path``, the record, names it in errors; without ``text`` the file is read as it is).
 
     Raises:
         ReviewFileError: The file does not follow ``references/review_file_format.md``.
@@ -309,47 +316,6 @@ def parse_review_file(path: Path, folder: str, text: str | None = None) -> Entry
     )
 
 
-def parse_record_block(path: Path, name: str) -> Entry | None:
-    """The ``**Open issues (AI, <date>):**`` block of a record's comments, or None when it has none.
-
-    Raises:
-        ReviewFileError: The block does not follow ``references/review_file_format.md``.
-    """
-    lines = path.read_text().splitlines()
-    starts = [i for i, ln in enumerate(lines) if OPEN_BLOCK_RE.match(ln)]
-    if not starts:
-        return None
-    if len(starts) > 1:
-        raise ReviewFileError(path, starts[1], "a second open-issues block; a record has one")
-    at = starts[0]
-    if not any(OPEN_BLOCK_RE.match(ln) for ln in (load_record(path).comments or "").splitlines()):
-        raise ReviewFileError(path, at, "the open-issues block is not in the record's `## Comments`")
-    i = at + 1
-    while i < len(lines) and lines[i].strip():
-        i += 1
-    lead, first = [OPEN_BLOCK_RE.match(lines[at]).group(2), *lines[at + 1 : i]], i
-    while i < len(lines):
-        if lines[i].strip() and not lines[i].startswith((" ", "\t")) and not ISSUE_START.match(lines[i]):
-            break
-        i += 1
-    issues, numbers = _check_issues(path, first, lines[first:i])
-    if not numbers:
-        raise ReviewFileError(path, at, "no numbered issue after the lead; remove the block when nothing is open")
-    outcome = " ".join(" ".join(lead).split())
-    cell = _first_sentence(outcome)
-    _check_outcome(path, at, cell, name, None)
-    return Entry(
-        name=name,
-        folder=None,
-        source=path,
-        outcome=outcome,
-        points=outcome[len(cell) :].lstrip(". ") or cell,
-        cell=cell,
-        issues=issues,
-        numbers=numbers,
-    )
-
-
 def parse_across(path: Path) -> tuple[str, int]:
     """The working copy's REVIEW.md: its ``###`` sections as text and the number of items.
 
@@ -380,68 +346,50 @@ def parse_across(path: Path) -> tuple[str, int]:
     return "\n".join(lines[first:]).strip(), n_items
 
 
-def _folder_entries(root: Path, records: Path) -> dict[str, Entry]:
-    """The REVIEW.md of each folder of the working copy, checked against its record."""
-    entries: dict[str, Entry] = {}
-    for path in sorted(root.glob(f"*/{REVIEW_FILE}")):
-        folder = path.parent.name
-        if folder.startswith(("_", ".")):
-            continue
-        entry = parse_review_file(path, folder)
-        record = records / f"{entry.name}.md"
-        if not record.is_file():
-            raise ReviewFileError(path, 0, f"no curation record {record}")
-        v2_path = load_record(record).v2_path
-        if v2_path and Path(v2_path).parent.name != folder:
-            raise ReviewFileError(path, 0, f"the record's v2_path is {v2_path}, not in the folder {folder}/")
-        if entry.name in entries:
-            raise ReviewFileError(path, 0, f"`{entry.name}` has a second REVIEW.md ({entries[entry.name].source})")
-        entries[entry.name] = entry
-    return entries
-
-
-def _record_entries(root: Path, records: Path, folders: dict[str, Entry]) -> dict[str, Entry]:
-    """The open-issues blocks of the records without a folder."""
-    entries: dict[str, Entry] = {}
-    for record in sorted(records.glob("*.md")):
-        if record.name.startswith("_") or "**Open issues (AI," not in record.read_text():
-            continue
-        entry = parse_record_block(record, record.stem)
-        if entry is None:
-            continue
-        if entry.name in folders:
-            raise ReviewFileError(record, None, f"its open issues belong in {folders[entry.name].source} only")
-        v2_path = load_record(record).v2_path
-        if v2_path and (root / Path(v2_path).parent.name).is_dir():
-            raise ReviewFileError(record, None, f"its folder exists; move the open issues to its {REVIEW_FILE}")
-        entries[entry.name] = entry
-    return entries
-
-
-def _retired_entries(root: Path, records: Path, names: list[str]) -> dict[str, Entry]:
-    """The REVIEW.md of each named record whose folder left the working copy, from the last commit that still had it,
-    so a retired dataset stays on the page with its decisions.
+def _record_folder(record_path: Path, name: str, review: str) -> str | None:
+    """The record's dataset folder: from ``v2_path``; for a retired dataset (no ``v2_path``), the folder its outcome
+    names (``added as `<folder>` ``, else the unique name); None for a record that was not added.
     """
-    entries: dict[str, Entry] = {}
-    if not names:
-        return entries
-    repo = Path(brp._git(root, "rev-parse", "--show-toplevel").stdout.strip())
-    for name in names:
-        record = records / f"{name}.md"
-        if not record.is_file():
-            continue
-        v2_path = load_record(record).v2_path
-        # A retired record has no `v2_path`: its folder was the record's name or its sub-sampled version's.
-        for folder in [Path(v2_path).parent.name] if v2_path else [name, f"{name}_1m"]:
-            if (root / folder / REVIEW_FILE).is_file():
-                break
-            rel = str((root.resolve() / folder / REVIEW_FILE).relative_to(repo))
-            found = brp._last_commit_with(repo, rel)
-            text = brp._show(repo, found[0], rel) if found else None
-            if text is not None:
-                entries[name] = parse_review_file(root / folder / REVIEW_FILE, folder, text)
-                break
-    return entries
+    v2_path = load_record(record_path).v2_path
+    if v2_path:
+        return Path(v2_path).parent.name
+    lead = review.lstrip().removeprefix("**Outcome:**").lstrip()
+    named = re.match(r"added as `([^`]+)`", lead)
+    if named:
+        return named.group(1)
+    return name if lead.startswith("added") else None
+
+
+def parse_record_review(path: Path) -> Entry | None:
+    """The ``## Review`` section of the record at ``path``, or None when it has none.
+
+    Raises:
+        ReviewFileError: The review breaks ``references/review_file_format.md`` (the line counts in the record file),
+            or the record's comments still hold an open-issues block.
+    """
+    text = path.read_text()
+    record = load_record(path)
+    lines = text.splitlines()
+    block = next((ln for ln in (record.comments or "").splitlines() if OPEN_BLOCK_RE.match(ln)), None)
+    if block is not None:
+        at = lines.index(block) if block in lines else None
+        raise ReviewFileError(path, at, "an open-issues block in the comments: move it into the record's `## Review`")
+    heading = REVIEW_SECTION_RE.search(text)
+    if heading is None or not record.review:
+        return None
+    header = text[: heading.start()].count("\n")
+    name = path.stem
+    try:
+        return parse_review_file(path, _record_folder(path, name, record.review), f"# {name}\n{record.review}")
+    except ReviewFileError as error:
+        # Line 0 of the parsed text is the title (the record's `## Review` line); line k is the record's header + 1 + k.
+        index = None if error.index is None else header + (error.index + 1 if error.index else 0)
+        raise ReviewFileError(path, index, error.detail) from None
+
+
+def folder_review_files(root: Path) -> list[Path]:
+    """A ``REVIEW.md`` in a dataset folder of the working copy: none may exist, the review is in the record."""
+    return [p for p in sorted(root.glob(f"*/{REVIEW_FILE}")) if not p.parent.name.startswith(("_", "."))]
 
 
 def _problem_shape(text: str) -> list[str]:
@@ -507,18 +455,33 @@ def collect(root: Path, records: Path, names: list[str] | None = None) -> Collec
     """Read the review files of the working copy ``root`` and the records in ``records``.
 
     Raises:
-        ReviewFileError: A file breaks the format, or a REVIEW.md and its record disagree.
+        ReviewFileError: A review breaks the format, or a dataset folder holds a review file.
     """
     for folder, option in ((root, "--root"), (records, "--records")):
         if not folder.is_dir():
             raise ReviewFileError(folder, None, f"no such folder; run from the repository root or pass {option}")
-    entries = _folder_entries(root, records)
-    entries.update(_record_entries(root, records, entries))
+    stray = folder_review_files(root)
+    if stray:
+        raise ReviewFileError(
+            stray[0],
+            None,
+            "a review file in a dataset folder: the review lives in the record's `## Review` (run "
+            "move_reviews_to_records.py)",
+        )
+    entries: dict[str, Entry] = {}
+    for path in sorted(records.glob("*.md")):
+        if path.name.startswith("_"):
+            continue
+        text = path.read_text()
+        if "\n## Review\n" not in text and "**Open issues (AI," not in text:
+            continue
+        entry = parse_record_review(path)
+        if entry is not None:
+            entries[entry.name] = entry
     if names is not None:
-        entries.update(_retired_entries(root, records, sorted(set(names) - set(entries))))
         unknown = sorted(set(names) - set(entries))
         if unknown:
-            raise ReviewFileError(root, None, f"no review file or open-issues block for {unknown}")
+            raise ReviewFileError(records, None, f"no review in the records of {unknown}")
         entries = {n: e for n, e in entries.items() if n in names}
     across, n_across = parse_across(root / REVIEW_FILE) if (root / REVIEW_FILE).is_file() else ("", 0)
     return Collected(entries=[entries[n] for n in sorted(entries)], across=across, across_items=n_across)
@@ -537,8 +500,9 @@ def is_settled(
     """Whether nothing on ``entry`` waits for the curator: every issue resolved (none left deferred), no record-field
     row, no triage verdict to verify, and, for a dataset with a folder whose metric the round marks (``metric_marks``,
     ``None`` for every record), the record's CC line that the declared metric is checked; likewise for the horizon
-    (``horizon_marks``). Such a record ships by default and leaves the page (Lennart, 2026-11-08); its REVIEW.md stays
-    in git. A metric or a horizon the round does not ask about never keeps a record on the page (Lennart, 2026-11-10).
+    (``horizon_marks``). Such a record ships by default and leaves the page (Lennart, 2026-11-08); its review stays
+    in the record. A metric or a horizon the round does not ask about never keeps a record on the page (Lennart,
+    2026-11-10).
     """
     if entry.fields:
         return False
@@ -548,7 +512,9 @@ def is_settled(
         if not item["resolved"] or parked:
             return False
     record = records / f"{entry.name}.md"
-    if not record.is_file() or brp._decided(record):
+    # A record that triage decided (No) waits for the curator's check, unless it was added: a dataset retired after
+    # its review keeps the review in its record, settled.
+    if not record.is_file() or (entry.folder is None and brp._decided(record)):
         return False
     if not entry.folder:
         return True
@@ -588,8 +554,8 @@ def render_report(collected: Collected, *, title: str, date: str) -> str:
     entries = collected.entries
     n_records = len(entries) - collected.n_folders
     sources = [
-        f"the REVIEW.md of {_plural(collected.n_folders, 'dataset')}",
-        f"the open issues of {_plural(n_records, 'record')} without a folder",
+        f"the records' reviews of {_plural(collected.n_folders, 'added dataset')}",
+        f"of {_plural(n_records, 'record')} without a folder",
     ]
     if collected.across:
         sources.append("the working copy's REVIEW.md")
@@ -733,8 +699,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     entries = collected.entries
     print(
-        f"records {len(entries)} ({collected.n_folders} with a REVIEW.md, {len(entries) - collected.n_folders} "
-        f"without a folder), issues {sum(len(e.numbers) for e in entries)}, "
+        f"records {len(entries)} ({collected.n_folders} with a folder, {len(entries) - collected.n_folders} "
+        f"without), issues {sum(len(e.numbers) for e in entries)}, "
         f"field rows {sum(len(e.fields) for e in entries)}, cross-dataset items {collected.across_items}, "
         f"review panels {sum(1 for e in entries if e.panel)}"
     )

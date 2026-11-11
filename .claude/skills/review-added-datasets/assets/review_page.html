@@ -1047,8 +1047,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     const p = d.panel;
     if (!p) {
       const why = d.folder
-        ? "the folder\u2019s <code>REVIEW.md</code> has no <code>**Review panel:**</code> block."
-        : "this record was not added, so it has no <code>REVIEW.md</code>.";
+        ? "the record\u2019s <code>## Review</code> has no <code>**Review panel:**</code> block."
+        : "this record was not added, so no panel reviewed a definition.";
       return '<p class="intro">No review panel: ' + why + "</p>";
     }
     let h = '<p class="panelrec"><span class="k">Panel</span>' + escCode(p.recommendation) + "</p>";
@@ -1057,7 +1057,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       h += '<div class="roles">' + p.sections.map((s) =>
         '<details class="block"' + (/^mediator\b/i.test(s.title) ? " open" : "") + "><summary>" + escCode(s.title) + '</summary><div class="md">' + s.html + "</div></details>").join("") + "</div>";
     }
-    h += '<p class="srcnote">From the <code>**Review panel:**</code> block of the folder\u2019s <code>REVIEW.md</code>: the agents of <code>/add-dataset</code> that audited and debated this definition, as of this page\u2019s snapshot (' + esc(DATA.snapshot) + "). Background for your verdict; nothing to mark here.</p>";
+    h += '<p class="srcnote">From the <code>**Review panel:**</code> block of the record\u2019s <code>## Review</code>: the agents of <code>/add-dataset</code> that audited and debated this definition, as of this page\u2019s snapshot (' + esc(DATA.snapshot) + "). Background for your verdict; nothing to mark here.</p>";
     return h;
   }
   function renderCase() {

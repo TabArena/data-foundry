@@ -1001,8 +1001,9 @@ def _readme(folder_dir: Path, wc_path: str, github: str) -> dict | None:
 
 
 def _record(path: Path) -> dict:
-    """The record's frontmatter as rows and its body as HTML."""
+    """The record's frontmatter as rows and its body as HTML, without the review (the Decisions tab shows it)."""
     meta, body = _frontmatter(path.read_text())
+    body = _without_review(body)
     rows = []
     for k, v in meta.items():
         value = ", ".join(str(x) for x in v) if isinstance(v, list) else v
@@ -1033,6 +1034,16 @@ def _metric_marks(lines: list[str], label: str = METRIC_MARKS_LABEL) -> set[str]
     return set()
 
 
+REVIEW_SECTION = re.compile(r"^## Review[ \t]*\n.*?(?=^## |\Z)", re.MULTILINE | re.DOTALL)
+"""A record's ``## Review`` section: the review the page shows on the Decisions and Panel tabs, not in the record tab,
+and never read for the curator's CC lines (a review may quote one)."""
+
+
+def _without_review(body: str) -> str:
+    """A record's markdown body without its ``## Review`` section."""
+    return REVIEW_SECTION.sub("", body)
+
+
 HORIZON_CHECKED = re.compile(
     r"^CC \((?P<date>\d{4}-\d{2}-\d{2}), (?P<who>[^)]+)\): the declared horizon\b.*?\bis checked\b.*$", re.MULTILINE
 )
@@ -1047,7 +1058,7 @@ def _metric_checked(path: Path) -> dict | None:
     """The record's latest CC line saying the declared metric is checked (the curator's metric mark, applied): the page
     then shows that line instead of the mark and does not count the metric as open.
     """
-    found = list(METRIC_CHECKED.finditer(_frontmatter(path.read_text())[1])) if path.is_file() else []
+    found = list(METRIC_CHECKED.finditer(_without_review(_frontmatter(path.read_text())[1]))) if path.is_file() else []
     if not found:
         return None
     m = found[-1]
@@ -1056,7 +1067,7 @@ def _metric_checked(path: Path) -> dict | None:
 
 def _horizon_checked(path: Path) -> dict | None:
     """The record's latest CC line saying the declared horizon is checked (the curator's horizon mark, applied)."""
-    found = list(HORIZON_CHECKED.finditer(_frontmatter(path.read_text())[1])) if path.is_file() else []
+    found = list(HORIZON_CHECKED.finditer(_without_review(_frontmatter(path.read_text())[1]))) if path.is_file() else []
     if not found:
         return None
     m = found[-1]
@@ -1151,6 +1162,7 @@ def review_order(d: dict[str, Any]) -> tuple[bool, int, int, str]:
 def _decided(path: Path) -> dict | None:
     """The triage verdict of a record that already says No (verified, not reviewed for shipping), else None."""
     meta, body = _frontmatter(path.read_text())
+    body = _without_review(body)
     if not str(meta.get("suggestion") or "").startswith("No"):
         return None
     notes = [p.strip() for p in re.split(r"\n\s*\n", body) if p.strip().startswith("CC (")]

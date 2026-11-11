@@ -33,7 +33,8 @@ Data Foundry is the data-layer toolkit behind
 * a git-native **curation backlog** (`src/data_foundry/curation/`) that replaces
   the legacy curation Google Sheet. The source of truth is **one markdown record
   per candidate dataset** (YAML front-matter for the structured/dropdown fields +
-  a free-text body for `## Comments` / `## Reference`) under `curation/records/`.
+  a free-text body for `## Comments` / `## Review` / `## Reference`) under `curation/records/`; `## Review` is the
+  dataset's review, the questions for the curator, open and settled.
   Add or triage a dataset by creating/editing its `<unique_name>.md` file — by
   hand, with an agent, or via the dashboard. A local **Sheets-like dashboard**
   (`.venv/bin/python -m data_foundry.curation.cli serve` → http://127.0.0.1:8765) edits those records in
@@ -50,11 +51,12 @@ Data Foundry is the data-layer toolkit behind
   so editing a record and merging to `main` is what updates the public site.
 
 The actual curation work happens in `datasets/` ([`datasets/README.md`](datasets/README.md) maps it): every new
-dataset is a v2 folder (`dataset.py` + a generated `README.md`, + `REVIEW.md` while open), and the TabArena v0.2 working copy
-is `datasets/_dev/tabarena-v0pt2/` — see [`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md). The shipped
-BeyondArena datasets were built with Data Foundry v1 (notebooks under `datasets/beyond_iid/`). **Never add or
-re-curate a dataset with v1**; [`DATA_FOUNDRY_V1.md`](DATA_FOUNDRY_V1.md) is the one page about v1 (reading,
-checking and maintaining those notebooks and their format-1 containers).
+dataset is a v2 folder (`dataset.py` + a generated `README.md`; its review is in its curation record), and the
+TabArena v0.2 working copy is `datasets/_dev/tabarena-v0pt2/` — see
+[`CONTRIBUTING_DATASETS.md`](CONTRIBUTING_DATASETS.md). The shipped BeyondArena datasets were built with Data Foundry
+v1 (notebooks under `datasets/beyond_iid/`). **Never add or re-curate a dataset with v1**;
+[`DATA_FOUNDRY_V1.md`](DATA_FOUNDRY_V1.md) is the one page about v1 (reading, checking and maintaining those notebooks
+and their format-1 containers).
 
 ---
 
@@ -75,7 +77,7 @@ apply lives in two reference skills, read by every workflow at the step that nee
 The workflows form one pipeline of two stages, in each of which the AI works and the curator verifies: screening
 (`/screen-candidates`, a quick pass from the source with a priority, then `/review-screened-candidates` in the
 dashboard) and adding (`/add-dataset`, which builds the definition, runs a review panel of agents and leaves the open
-questions in each folder's `REVIEW.md`, then `/review-added-datasets` on the review page). Builds
+questions in each record's `## Review`, then `/review-added-datasets` on the review page). Builds
 ([`rebuild.md`](.claude/skills/knowledge-data-foundry/references/rebuild.md)) and commits happen only on the curator's
 ask. Read the skill before doing its task; it names the knowledge files to read at each step. The dashboard's
 Guidelines page renders the skills README and the two knowledge skills.

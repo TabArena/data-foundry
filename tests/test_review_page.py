@@ -1,7 +1,7 @@
-"""The review page of the review-added-datasets skill: the collector of the review files, the report parser, the page.
+"""The review page of the review-added-datasets skill: the collector of the reviews, the report parser, the page.
 
 The scripts live in the skill, not in the package, so they are imported from their files. A missing script fails
-the module: the review files of the working copy are checked here.
+the module: the reviews in the records (``## Review``) and the working copy's cross-dataset file are checked here.
 """
 
 from __future__ import annotations
@@ -15,6 +15,8 @@ from pathlib import Path
 
 import pytest
 import yaml
+from data_foundry.curation.record import CurationRecord
+from data_foundry.curation.store import load_record, save_record
 from data_foundry.v2.splits import Temporal, TemporalSplits
 
 pytest.importorskip("markdown_it", reason="the review page needs markdown-it-py (the `curation` extra)")
@@ -28,15 +30,24 @@ ROOT = REPO / "datasets" / "_dev" / "tabarena-v0pt2"
 RECORDS = REPO / "curation" / "records"
 FIXTURE = Path(__file__).parent / "fixtures" / "review_page_report.md"
 REVIEW_FILES = Path(__file__).parent / "fixtures" / "review_files"
-"""The example of references/review_file_format.md: collected, it gives FIXTURE."""
+"""The example of references/review_file_format.md (two records with a review, the cross-dataset file): collected, it
+gives FIXTURE."""
 CHURN_SECTION = (
     "### churn_telco_south_asia_duplicate\n"
     + FIXTURE.read_text().split("### churn_telco_south_asia_duplicate\n", 1)[-1]
 )
 """The fixture report's last record section, to the end of the report."""
-AIRFOIL_REVIEW = REVIEW_FILES / "working_copy" / "airfoil_self_noise" / "REVIEW.md"
-PANEL_BLOCK = "**Review panel:**" + AIRFOIL_REVIEW.read_text().split("**Review panel:**", 1)[1].rstrip("\n")
-"""The review panel block of the example REVIEW.md, as written."""
+AIRFOIL = "records/airfoil_self_noise.md"
+"""The example record of an added dataset, with its review."""
+PANEL_BLOCK = "**Review panel:**" + load_record(REVIEW_FILES / AIRFOIL).review.split("**Review panel:**", 1)[1]
+"""The review panel block of the example review, as written."""
+
+
+def _add_comment(record: Path, line: str) -> None:
+    """Append a line to a record's ``## Comments`` through the store API (the review follows the comments)."""
+    rec = load_record(record)
+    rec.comments = f"{rec.comments}\n\n{line}" if rec.comments else line
+    save_record(rec, record.parent)
 
 
 def _import(name: str, path: Path):
@@ -71,10 +82,10 @@ def _collect_fixture(crv, root: Path, records: Path, out: Path, *extra: str) -> 
 
 
 def test_collector_takes_a_review_file_with_no_issue_when_a_panel_ran(crv, brp, tmp_path):
-    """A review can find nothing for the curator: a REVIEW.md with a panel and no issue collects and builds (0 issues),
+    """A review can find nothing for the curator: a review with a panel and no issue collects and builds (0 issues),
     one without a panel, an issue or a field row stops the collector.
     """
-    file = "working_copy/airfoil_self_noise/REVIEW.md"
+    file = AIRFOIL
     text = (REVIEW_FILES / file).read_text()
     fields = text[text.index("**Record fields that disagree") : text.index("**Record judgment:**")]
     issues = text[text.index("**Issues for the curator:**") : text.index("**Review panel:**")]
@@ -121,7 +132,7 @@ def test_collector_writes_the_fixture_report(crv, tmp_path):
 
 
 def test_collector_names_filter(crv, tmp_path):
-    """--names keeps only the named records and stops on a name without review file."""
+    """--names keeps only the named records and stops on a name without a review."""
     out = tmp_path / "report.md"
     root, records = REVIEW_FILES / "working_copy", REVIEW_FILES / "records"
     assert _collect_fixture(crv, root, records, out, "--names", "airfoil_self_noise") == 0
@@ -135,7 +146,7 @@ def test_collector_leaves_out_a_settled_record(crv, brp, tmp_path):
     only when the round marks it (--metric-marks) and the record has no CC line that it is checked (Lennart,
     2026-11-10).
     """
-    file = "working_copy/airfoil_self_noise/REVIEW.md"
+    file = AIRFOIL
     text = (REVIEW_FILES / file).read_text()
     fields = text[text.index("**Record fields that disagree") : text.index("**Record judgment:**")]
     panel = text.index("**Review panel:**")
@@ -154,10 +165,7 @@ def test_collector_leaves_out_a_settled_record(crv, brp, tmp_path):
     assert _collect_fixture(crv, root, records, out, "--metric-marks", "no_such_record") == 1
 
     record = records / "airfoil_self_noise.md"
-    record.write_text(
-        record.read_text().rstrip("\n")
-        + "\n\nCC (2026-11-08, Lennart): the declared metric (`rmse`) is checked, as declared.\n"
-    )
+    _add_comment(record, "CC (2026-11-08, Lennart): the declared metric (`rmse`) is checked, as declared.")
     assert _collect_fixture(crv, root, records, out, "--metric-marks", "airfoil_self_noise") == 0
     report = out.read_text()
     assert "### airfoil_self_noise" not in report
@@ -177,37 +185,44 @@ def test_collector_leaves_out_a_settled_record(crv, brp, tmp_path):
     assert (parsed["rows"], len(parsed["crosscut"])) == ([], 1)
 
     # Deferred last: the record is parked, not settled.
-    review = root / "airfoil_self_noise" / "REVIEW.md"
-    review.write_text(review.read_text().replace(closing, "   **Deferred (2026-11-08):** parked.\n\n"))
+    record.write_text(record.read_text().replace(closing, "   **Deferred (2026-11-08):** parked.\n\n"))
     assert _collect_fixture(crv, root, records, out) == 0
     assert "### airfoil_self_noise" in out.read_text()
 
 
-@pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
-def test_collector_keeps_a_retired_folder_from_its_last_commit(crv, tmp_path):
-    """A named record whose folder left the working copy is read from the last commit that had its REVIEW.md."""
-    import subprocess  # noqa: PLC0415
-
+def test_a_retired_record_keeps_its_review(crv, tmp_path):
+    """A dataset retired from the working copy (its folder gone, ``v2_path`` cleared) keeps its review in its record:
+    the collector reads it without a folder, from the outcome's ``added``.
+    """
     shutil.copytree(REVIEW_FILES, tmp_path / "files")
-    git = ["git", "-C", str(tmp_path / "files"), "-c", "user.name=t", "-c", "user.email=t@t"]
-    subprocess.run([*git, "init", "-q"], check=True)  # noqa: S603 - git on a temporary copy
-    subprocess.run([*git, "add", "-A"], check=True)  # noqa: S603 - git on a temporary copy
-    subprocess.run([*git, "commit", "-q", "-m", "review files"], check=True)  # noqa: S603 - git on a temporary copy
     root, records = tmp_path / "files" / "working_copy", tmp_path / "files" / "records"
-    shutil.rmtree(root / "airfoil_self_noise" / "__pycache__", ignore_errors=True)
-    subprocess.run([*git, "rm", "-r", "-q", "working_copy/airfoil_self_noise"], check=True)  # noqa: S603 - git on a temporary copy
-    (root / "airfoil_self_noise" / "__pycache__").mkdir(parents=True)  # a leftover cache dir is no folder
+    rec = load_record(records / "airfoil_self_noise.md")
+    rec.v2_path = None
+    save_record(rec, records)
     collected = crv.collect(root, records, ["airfoil_self_noise"])
     assert [(e.name, e.folder, e.numbers) for e in collected.entries] == [
         ("airfoil_self_noise", "airfoil_self_noise", [1])
     ]
-    assert (
-        crv.collect(root, records).entries[0].name == "churn_telco_south_asia_duplicate"
-    )  # without --names: live only
+
+
+def test_collector_refuses_a_review_file_in_a_folder_and_an_open_issues_block(crv, tmp_path):
+    """The review lives in the record: a REVIEW.md in a dataset folder, or an open-issues block left in a record's
+    comments, stops the collector and names the move script.
+    """
+    shutil.copytree(REVIEW_FILES, tmp_path / "files")
+    root, records = tmp_path / "files" / "working_copy", tmp_path / "files" / "records"
+    (root / "airfoil_self_noise").mkdir(exist_ok=True)
+    (root / "airfoil_self_noise" / "REVIEW.md").write_text("# airfoil_self_noise\n\n**Outcome:** added.\n")
+    with pytest.raises(crv.ReviewFileError, match=re.escape("move_reviews_to_records.py")):
+        crv.collect(root, records)
+    (root / "airfoil_self_noise" / "REVIEW.md").unlink()
+    _add_comment(records / "airfoil_self_noise.md", "**Open issues (AI, 2026-11-11):** not added.\n\n1. **Q?** x.")
+    with pytest.raises(crv.ReviewFileError, match="open-issues block in the comments"):
+        crv.collect(root, records)
 
 
 def _broken_copy(tmp_path: Path, file: str, old: str, new: str) -> tuple[Path, Path, Path]:
-    """A copy of the example review files with one change, and the changed file."""
+    """A copy of the example review files (records and cross-dataset file) with one change, and the changed file."""
     shutil.copytree(REVIEW_FILES, tmp_path / "files")
     path = tmp_path / "files" / file
     text = path.read_text()
@@ -220,72 +235,72 @@ def _broken_copy(tmp_path: Path, file: str, old: str, new: str) -> tuple[Path, P
     ("file", "old", "new", "line", "message"),
     [
         (
-            "working_copy/airfoil_self_noise/REVIEW.md",
+            AIRFOIL,
             "     scale a practitioner models it on.\n",
             "     scale a practitioner models it on.\n**Split:** x\n",
-            35,
+            48,
             "label",
         ),
         (
-            "working_copy/airfoil_self_noise/REVIEW.md",
+            AIRFOIL,
             "     scale a practitioner models it on.\n",
             "     scale a practitioner models it on.\n1. **Again.**\n",
-            35,
+            48,
             "twice",
         ),
-        ("working_copy/airfoil_self_noise/REVIEW.md", "**Outcome:** added.", "**Outcome:** added as `x`.", 3, "names"),
-        ("working_copy/airfoil_self_noise/REVIEW.md", "year`: record", "year`: rec", 9, "field row"),
-        ("working_copy/airfoil_self_noise/REVIEW.md", "**Main points:**", "**Points:**", None, "Main points"),
+        (AIRFOIL, "**Outcome:** added.", "**Outcome:** added as `x`.", 16, "names"),
+        (AIRFOIL, "year`: record", "year`: rec", 22, "field row"),
+        (AIRFOIL, "**Main points:**", "**Points:**", None, "Main points"),
         (
-            "working_copy/airfoil_self_noise/REVIEW.md",
-            "# airfoil_self_noise\n",
-            "# airfoil_self_noise\nIntro.\n",
-            2,
+            AIRFOIL,
+            "## Review\n\n",
+            "## Review\n\nIntro.\n",
+            16,
             "text before",
         ),
-        ("records/churn_telco_south_asia_duplicate.md", "not added; duplicate", "duplicate", 12, "`not added`"),
+        ("records/churn_telco_south_asia_duplicate.md", "not added; duplicate", "duplicate", 16, "`not added`"),
         ("working_copy/REVIEW.md", "# Across datasets\n", "# Across datasets\nIntro.\n", 2, "only `### <section>`"),
         # The review panel: one per file, the last block, every <details> closed.
         (
-            "working_copy/airfoil_self_noise/REVIEW.md",
+            AIRFOIL,
             "issue 1.\n\n</details>\n",
             "issue 1.\n\n</details>\n\n**Review panel:** ship.\n",
-            54,
+            67,
             "a second `**Review panel:**` block",
         ),
         (
-            "working_copy/airfoil_self_noise/REVIEW.md",
+            AIRFOIL,
             "issue 1.\n\n</details>\n",
             "issue 1.\n\n</details>\n\n**Issues for the curator:**\n",
-            54,
+            67,
             "after `**Review panel:**`",
         ),
         (
-            "working_copy/airfoil_self_noise/REVIEW.md",
+            AIRFOIL,
             "| holds | |\n\n</details>\n",
             "| holds | |\n\n",
-            39,
+            52,
             "is not closed",
         ),
-        ("working_copy/airfoil_self_noise/REVIEW.md", "issue 1.\n\n</details>\n", "issue 1.\n", 48, "not closed"),
+        (AIRFOIL, "issue 1.\n\n</details>\n", "issue 1.\n", 61, "not closed"),
         (
-            "working_copy/airfoil_self_noise/REVIEW.md",
+            AIRFOIL,
             "</details>\n\n<details><summary>Mediator",
             "</details>\n\nStray.\n\n<details><summary>Mediator",
-            48,
+            61,
             "text outside a section",
         ),
         (
-            "working_copy/airfoil_self_noise/REVIEW.md",
+            AIRFOIL,
             "**Review panel:** ship (mediator).",
             "**Review panel:**\n\nship (mediator).",
-            36,
+            49,
             "no summary",
         ),
     ],
 )
 def test_collector_errors_name_the_file_and_line(crv, tmp_path, file, old, new, line, message):
-    """A review file that breaks the format stops the collector with the file and the line."""
+    """A review that breaks the format stops the collector with the record (or the cross-dataset file) and the line."""
     root, records, path = _broken_copy(tmp_path, file, old, new)
     with pytest.raises(crv.ReviewFileError, match=re.escape(message)) as error:
         crv.collect(root, records)
@@ -295,17 +310,22 @@ def test_collector_errors_name_the_file_and_line(crv, tmp_path, file, old, new, 
 def test_collector_keeps_fenced_code_in_the_panel(crv, tmp_path):
     """Inside a fence, a panel's lines are text: a `#` comment or a `</details>` neither breaks nor closes it."""
     fenced = "```python\n# the check\nprint('</details>')\n```\n\nShip."
-    root, records, _ = _broken_copy(tmp_path, "working_copy/airfoil_self_noise/REVIEW.md", "Ship. The advocate", fenced)
+    root, records, _ = _broken_copy(tmp_path, AIRFOIL, "Ship. The advocate", fenced)
     entry = next(e for e in crv.collect(root, records).entries if e.name == "airfoil_self_noise")
     assert entry.panel_sections == ["Claim audit", "Mediator"]
     assert "# the check" in entry.panel
 
 
 def test_working_copy_review_files_collect_and_parse(crv, brp, tmp_path):
-    """The committed REVIEW.md files and open-issue blocks follow the format, and every issue reaches the page."""
+    """The committed reviews (the records' ``## Review``) follow the format, no dataset folder holds a review file, and
+    every issue reaches the page.
+    """
+    assert crv.folder_review_files(ROOT) == []
     collected = crv.collect(ROOT, RECORDS)
-    on_disk = sorted(p for p in ROOT.glob("*/REVIEW.md") if not p.parent.name.startswith(("_", ".")))
-    assert collected.n_folders == len(on_disk)
+    with_review = [
+        p.stem for p in sorted(RECORDS.glob("*.md")) if not p.name.startswith("_") and "\n## Review\n" in p.read_text()
+    ]
+    assert [e.name for e in collected.entries] == with_review
     if not collected.entries:
         return
     out = tmp_path / "report.md"
@@ -783,10 +803,10 @@ def test_collector_warns_about_a_problem_out_of_shape(crv):
 
 
 def test_the_horizon_block_and_its_sign_off(crv, brp, tmp_path):
-    """A REVIEW.md's Horizon block is carried to the page; with --horizon-marks the record waits for the CC line that
+    """A review's Horizon block is carried to the page; with --horizon-marks the record waits for the CC line that
     the declared horizon is checked (Lennart, 2026-11-10: new temporal datasets get the sign-off, like the metric).
     """
-    file = "working_copy/airfoil_self_noise/REVIEW.md"
+    file = AIRFOIL
     text = (REVIEW_FILES / file).read_text()
     horizon = "**Horizon:** a week, the refit cadence the source names.\n\n- **Gap:** one day, the label delay.\n\n"
     with_horizon = text.replace("**Issues for the curator:**", horizon + "**Issues for the curator:**")
@@ -807,10 +827,7 @@ def test_the_horizon_block_and_its_sign_off(crv, brp, tmp_path):
     assert parsed["horizon_marks"] == {"airfoil_self_noise"}
     assert "a week" in parsed["records"]["airfoil_self_noise"]["blocks"]["horizon"]
     record = records / "airfoil_self_noise.md"
-    record.write_text(
-        record.read_text().rstrip("\n")
-        + "\n\nCC (2026-11-10, Lennart): the declared horizon (7-day windows) is checked.\n"
-    )
+    _add_comment(record, "CC (2026-11-10, Lennart): the declared horizon (7-day windows) is checked.")
     assert brp._horizon_checked(record)["by"] == "Lennart"
     assert _collect_fixture(crv, root, records, out, "--horizon-marks", "airfoil_self_noise") == 0
     assert "### airfoil_self_noise" not in out.read_text()
@@ -869,3 +886,49 @@ def test_the_horizon_is_an_issue_of_its_own(brp, tmp_path):
     record.write_text(record.read_text() + "\nCC (2026-11-10, Lennart): the declared horizon (7 days) is checked.\n")
     assert brp._horizon_item(HORIZON_BLOCK, temporal, record)["resolved"] is True
     assert brp._horizon_item(HORIZON_BLOCK, None, record) is None
+
+
+@pytest.fixture(scope="module")
+def mover():
+    """The script that moves a folder's review into its record, imported as a module."""
+    return _import("move_reviews_to_records", SCRIPTS / "move_reviews_to_records.py")
+
+
+def test_the_move_puts_a_folder_review_into_its_record(mover, tmp_path):
+    """A folder's REVIEW.md moves into its record's ``## Review``: the title goes, relative links follow the move, the
+    file is deleted; pointers to it in the comments and the definition are rewritten, history and the cross-dataset
+    file stay; a second review for the same record is refused; ``--check`` lists what would move.
+    """
+    root, records = tmp_path / "copy", tmp_path / "records"
+    folder = root / "toy_1m"
+    folder.mkdir(parents=True)
+    (folder / "dataset.py").write_text('NOTES = "kept as decided (REVIEW.md issue 3)"\n')
+    (folder / "REVIEW.md").write_text(
+        "# toy\n\n**Outcome:** added as `toy_1m`. See [the definition](dataset.py).\n\n"
+        "**Main points:** none.\n\n**Issues for Lennart:**\n\n1. **Keep it?** Yes.\n"
+    )
+    (root / "REVIEW.md").write_text("# Across datasets\n")
+    comments = (
+        "CC (2026-11-01, Lennart): REVIEW.md issue 2, B.\n\n"
+        "**Assessment (AI, 2026-10-22):** REVIEW.md removed (nothing left open); "
+        "the rule went to the working copy's REVIEW.md."
+    )
+    save_record(
+        CurationRecord(unique_name="toy", name="toy", v2_path="copy/toy_1m/dataset.py", comments=comments), records
+    )
+    args = ["--root", str(root), "--records", str(records)]
+    assert mover.main([*args, "--check"]) == 1
+    assert mover.main(args) == 0
+    assert mover.main([*args, "--check"]) == 0
+    assert not (folder / "REVIEW.md").exists()
+    assert (root / "REVIEW.md").exists()
+    record = load_record(records / "toy.md")
+    assert record.review.startswith("**Outcome:** added as `toy_1m`.")
+    assert "[the definition](../copy/toy_1m/dataset.py)" in record.review
+    assert "CC (2026-11-01, Lennart): Review issue 2, B." in record.comments
+    assert "REVIEW.md removed (nothing left open)" in record.comments
+    assert "the working copy's REVIEW.md" in record.comments
+    assert (folder / "dataset.py").read_text() == 'NOTES = "kept as decided (Review issue 3)"\n'
+    (folder / "REVIEW.md").write_text("# toy\n\n**Outcome:** added as `toy_1m`.\n")
+    with pytest.raises(ValueError, match="already has a review"):
+        mover.main(args)
