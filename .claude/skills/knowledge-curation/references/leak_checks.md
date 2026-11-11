@@ -160,7 +160,7 @@ dataset: a feature subset does not help when it also separates same-label groups
 practical model would not rely on is fixed (LEAK-13, LEAK-14, LEAK-39) or kept with a note. Test: probes 7, 8 and 17,
 and the score without the affected features. Cases: prostate_cancer_detection (retired), gallstone_disease (kept),
 lung_cancer (repaired: rebuilt from the origin's per-array files, where the spike-in control probes no longer
-separate the classes; re-targeted to metastasis against primary on 2026-11-11).
+separate the classes; later retired on its use case; the arrays ship on as lung_adenocarcinoma_metastasis).
 
 **LEAK-39 (Must).** Rows of one class recorded through a separate route, found by a recording fingerprint (number
 formats, a derived column that follows another definition, a shifted measurement) rather than a source column, are
@@ -169,7 +169,8 @@ went through it to calibrate it. Find them as rows of one class that share the f
 score them against the other class out of fold, and score the other class's rows of the same route: when those are
 predicted as the first class, models learn the route, not the target. Test: probes 7, 9 and 17. Cases: gallstone_disease
 (dropped), lung_cancer (repaired: one array per specimen from the origin instead of the replicate means; models had
-barely told the averaged rows from the others; re-targeted to metastasis against primary on 2026-11-11).
+barely told the averaged rows from the others; later retired on its use case; the arrays ship on as
+lung_adenocarcinoma_metastasis).
 
 **LEAK-40 (Should).** Gaps the source filled from neighbouring rows (interpolation, carried values) in a file sorted by
 class are tested, not assumed to leak: set the filled cells to missing and re-impute them inside each training fold

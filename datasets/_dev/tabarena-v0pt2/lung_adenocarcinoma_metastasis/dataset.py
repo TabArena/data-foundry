@@ -1,4 +1,4 @@
-"""Curated dataset definition for `lung_cancer` (data-foundry v2). Evidence: README.md."""
+"""Curated dataset definition for `lung_adenocarcinoma_metastasis` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ def _metastasis_flags(archive: Path) -> pd.Series:
     return pd.Series(ad[list(METASTASIS_FLAGS)].notna().any(axis=1).to_numpy(), index=patient.to_numpy())
 
 
-class LungCancer(AbstractCuratedDataset):
+class LungAdenocarcinomaMetastasis(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=(
             "Is an adenocarcinoma resected from the lung a primary lung cancer, or a metastasis from another organ?"
@@ -75,7 +75,7 @@ class LungCancer(AbstractCuratedDataset):
     )
 
     # Dataset
-    unique_name = "lung_cancer"
+    unique_name = "lung_adenocarcinoma_metastasis"
     domain = "medical & healthcare"
     sources = (
         Source(
@@ -104,7 +104,7 @@ class LungCancer(AbstractCuratedDataset):
         adenocarcinomas with a clinical history are used) and the caArray archive, whose `SampleData.xls` holds the
         study's annotation sheet (read from the archive, not extracted).
 
-        W=local-data-warehouse/lung_cancer && mkdir -p $W/gse83227_txt
+        W=local-data-warehouse/lung_adenocarcinoma_metastasis && mkdir -p $W/gse83227_txt
         wget -P $W https://ftp.ncbi.nlm.nih.gov/geo/series/GSE83nnn/GSE83227/matrix/GSE83227_series_matrix.txt.gz
         zcat $W/GSE83227_series_matrix.txt.gz | grep '^!Sample_supplementary_file' | tr '\\t' '\\n' \\
           | tr -d '"' | grep '\\.txt\\.gz$' | wget -q -P $W/gse83227_txt -i -
@@ -112,14 +112,14 @@ class LungCancer(AbstractCuratedDataset):
     """
     curation_comments = """
         - Prediction point: an adenocarcinoma has been resected from the lung and profiled; the clinical history (an earlier cancer elsewhere) is what the pathologist weighs, and the profile is the second opinion. The source names the task: "A key issue in lung tumor diagnosis is the discrimination of a primary lung adenocarcinoma from a distant metastasis to the lung" (Bhattacharjee et al. 2001, Results), and "metastases of nonlung origin can be difficult to distinguish from lung adenocarcinomas" (Introduction).
-        - CC (2026-11-11, Andrej): re-targeted from the histology (retired 2026-11-10: the slide settles it on resected tumours) to metastasis against primary (BeyondArena v0.2 review page, issue 7, B). The target is the study's own: sheet DATASET B of `SampleData.xls` (in GEO's caArray archive) marks 16 of its 139 adenocarcinomas as "possible mets" in three columns (`Colon Met` 8, `Breast` 4, `other met` 4) and counts the other 123 as "Adenocarcinoma w/ no history or path indicating non adeno". The paper's Methods: "Other adenocarcinomas (n = 12) were suspected to be extrapulmonary metastases based on clinical history".
-        - Rows: the 127 adenocarcinomas of Dataset A's numbered patients. The 12 whose title starts with `A` (`A1T1`, `A31`; `AD1` to `AD31` in the sheet) carry no clinical annotation in Dataset A (no history, stage or survival), so "no metastasis flag" is not a finding for them: dropped. Which flagged rows count (the soft "c/w" and "?" calls, a flag with no pathology note) is open (`REVIEW.md`, issue 8).
+        - CC (2026-11-11, Andrej): a new dataset from the arrays of `lung_cancer`, whose histology target was retired on 2026-11-10 (the slide settles it on resected tumours): the target is metastasis against primary (BeyondArena v0.2 review page, lung_cancer issue 7, B), under its own record since the rows, target and values all changed (issue 4, B, as coad_colon_adenocarcinoma and aeolus were rebuilt). The target is the study's own: sheet DATASET B of `SampleData.xls` (in GEO's caArray archive) marks 16 of its 139 adenocarcinomas as "possible mets" in three columns (`Colon Met` 8, `Breast` 4, `other met` 4) and counts the other 123 as "Adenocarcinoma w/ no history or path indicating non adeno". The paper's Methods: "Other adenocarcinomas (n = 12) were suspected to be extrapulmonary metastases based on clinical history".
+        - Rows: the 127 adenocarcinomas of Dataset A's numbered patients. The 12 whose title starts with `A` (`A1T1`, `A31`; `AD1` to `AD31` in the sheet) carry no clinical annotation in Dataset A (no history, stage or survival), so "no metastasis flag" is not a finding for them: dropped. All 16 flags of the sheet count, the soft "c/w" and "?" calls and the one flag without a pathology note included: the label is the study's, stated as "possible" (lung_cancer review, issue 8, A, 2026-11-11, Andrej).
         - Size (2026-11-11, `~/claude_jobs/lung_raw/probe_met/`, 10 repeats of 3 stratified folds): 5 or 6 metastases per test fold. The task probe raises no flag (random forest ROC AUC 0.887, ahead of the class shares on 30 of 30 splits; best against worst family 0.127, paired SE 0.035; best single probe 0.663); SVM 0.885, TabPFN 3.5 0.882, logistic regression 0.850, k-nearest neighbours 0.779. Ten marker genes a pathologist stains for (CDX2, KRT20, CDH17, GATA3, TFF1, ESR1 against NKX2-1, NAPSA, SFTPC, SFTPB), unfitted, reach 0.819. Logistic regression and LightGBM score worse than the class shares on log loss (0.487 and 0.592 against 0.379), so the metric is ROC AUC.
         - Source: GEO GSE83227, the study's deposit of all 254 arrays (Affymetrix HG-U95Av2), each with its raw scan, its MAS5 output and the specimen's histology. The paper's Dataset A (PNAS supplement, `dataseta_12600gene.xls`; OpenML 45093 is a copy) is a summary of the same arrays: it averages all arrays of one adenocarcinoma patient (up to four: pieces `T1`, `T2` of one tumour, repeat hybridisations `T1-1`, `T1-2`) and uses the older MAS4 "average difference" values, where each array's overall intensity stays in.
         - CC (2026-11-10, Andrej): rebuilt from GEO (issue 1, D). One array per tumour, the first piece and first hybridisation (the first title in sorted order: `157T1` before `157T2`, `347T1-1` before `347T1-2`; Dataset A averaged them), because a lab profiles a new specimen once; the value is the array's MAS5 `Signal`, scaled on that array alone, so no test array depends on the training arrays (RMA from the raw scans would normalise all arrays together). All 12,625 probe sets ship, the 67 `AFFX` control probes included.
         - Class-dependent recording (record marker `Class-dependent Recording`), found in Dataset A and gone in the rebuild (2026-11-10, histology target): Dataset A's per-patient means occurred in the adenocarcinomas only, and its 41 non-human spike-in controls alone separated the classes (one-vs-rest ROC AUC 0.85); on one MAS5 array per specimen they reached 0.57 and the scan date 0.58. On the metastasis target (2026-11-11, same splits as the size check, logistic regression) the 67 control probes reach ROC AUC 0.42, the non-human spike-ins 0.40 and the array QC values (scale factor, background, noise) 0.52: no recording signal.
         - Not features: GEO's age, sex, stage and pack-years, and the sheet's survival, stage and relapse site. The clinical history that sets the label is not in the data, and the study's annotation columns were filled with the same review.
-        - The paper's clustering found a cluster of 12 putative colon metastases, of which "only seven samples had been previously diagnosed as metastases of colonic origin", against 8 colon flags on the sheet; whether a flag came from the expression clusters rather than the history is open with the label question (issue 8).
+        - The paper's clustering found a cluster of 12 putative colon metastases, of which "only seven samples had been previously diagnosed as metastases of colonic origin", against 8 colon flags on the sheet; whether a flag came from the expression clusters rather than the history is not recorded; kept with the sheet's flags (issue 8, A).
         - Time basis: Timeless: whether a resected tumour started in the lung or elsewhere does not change; the profiles were measured on banked specimens for one study (Bhattacharjee et al. 2001), so when a tumour was resected plays no role. The order of array processing acts on the features only, and the scan date carried no class signal on the histology target. Not tested: tumours from another hospital, or arrays processed in another laboratory.
     """
     accepted_check_warnings = {

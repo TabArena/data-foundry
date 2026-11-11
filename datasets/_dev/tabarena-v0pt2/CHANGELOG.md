@@ -1,17 +1,16 @@
 # Changelog: TabArena v0.2 working copy
 
-## 2026-11-11, lung_cancer back, re-targeted to metastasis against primary (Andrej; no container built)
+## 2026-11-11, lung_adenocarcinoma_metastasis added from lung_cancer's arrays (Andrej; no container built)
 
-- lung_cancer (BeyondArena v0.2 review page, issue 7, B): the retirement of 2026-11-10 is reversed and the folder
-  restored with a new target. `Metastasis` is the study's flag of a possible metastasis from another organ (sheet
-  DATASET B of `SampleData.xls` in GEO's caArray archive, now downloaded: 16 of the 127 adenocarcinomas with a
-  clinical history, 8 colon, 4 breast, 4 other), the task the source names as "a key issue in lung tumor diagnosis".
-  Binary, ROC AUC (fallback), random stratified split, one tumour per patient; the 12 `A` patients without clinical
-  annotation, the other histologies and the normal lung samples leave. The arrays are unchanged from the GEO rebuild
-  (one MAS5 array per tumour). The task probe raises no flag (random forest 0.887, logistic regression 0.850,
-  5 or 6 metastases per test fold). Record `Yes`, Binary, Random (IID), `v2_path` restored; Cases rows under USE-1
-  (rewritten) and TP-5 (new); tcga_lung_histology's assessment notes the change. Which flags count is open
-  (`REVIEW.md`, issue 8).
+- lung_adenocarcinoma_metastasis (new; BeyondArena v0.2 review page, lung_cancer issues 7, B, 4, B and 8, A): the
+  arrays of lung_cancer's GEO rebuild (one MAS5 array per tumour) with the target `Metastasis`, the study's flag of a
+  possible metastasis from another organ (sheet DATASET B of `SampleData.xls` in GEO's caArray archive, now
+  downloaded: 16 of the 127 adenocarcinomas with a clinical history, 8 colon, 4 breast, 4 other), the task the
+  source names as "a key issue in lung tumor diagnosis". Binary, ROC AUC (fallback), random stratified split, one
+  tumour per patient. The task probe raises no flag (random forest 0.887, logistic regression 0.850, 5 or 6
+  metastases per test fold). A new record, since rows, target and values changed (PROV-14, as coad and aeolus);
+  lung_cancer stays retired for the histology, with a CC line pointing here. Cases rows under USE-1 (rewritten),
+  TP-5 and PROV-14 (new); tcga_lung_histology's assessment notes the new dataset.
 
 ## 2026-11-10, lung_cancer retired (Andrej; no container built)
 
