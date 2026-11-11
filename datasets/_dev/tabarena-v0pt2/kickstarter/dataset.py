@@ -18,28 +18,30 @@ class Kickstarter(AbstractCuratedDataset):
             "which projects to feature."
         ),
         row=(
-            "One Kickstarter project that ended funded or failed, created from 2009 to 2025, from Web Robots' monthly"
-            " scrapes (pinned January 2026; 187,117 projects)."
+            "One Kickstarter project that ended funded or failed, launched from April 2009 to 13 November 2025, from "
+            "Web Robots' monthly scrapes (pinned January 2026; 185,444 projects)."
         ),
-        predicted="Whether it reached its funding goal by its deadline (62.61% did).",
+        predicted="Whether it reached its funding goal by its deadline (62.50% did).",
         known=(
             "The goal in US dollars, the creation, launch and deadline dates, the category and subcategory, the "
             "location, the project's name and short description, the creator's name, and whether it had a pre-launch "
             "page."
         ),
         split=(
-            "Each test window is one year of projects by creation date (2023, 2024, 2025); training is every project "
-            "created before, as for a model refit every year."
+            "Each test window is one year of projects by launch date, the nine years from 2017 to 2025; training is "
+            "every project launched more than 60 days (the longest campaign) before the year starts, as for a model "
+            "refit every year on the campaigns that had ended."
         ),
         changes=(
             "We drop everything recorded after launch (pledges, backers, staff pick, the creator's project profile, "
-            "which only funded projects have), convert goals to US dollars at each project's own rate, and remove "
-            "projects repeated across scrapes (20%)."
+            "which only funded projects have), convert goals to US dollars at each project's own rate, remove "
+            "projects repeated across scrapes (20%), and drop the projects launched in the last 60 days before the "
+            "scrape, whose outcomes it holds only for the campaigns that had already ended."
         ),
         fit="direct",
         fit_reason=(
-            "Everything the model sees is known at launch, and later years are tested. Projects created shortly "
-            "before a test year can end in it, so a few training labels would not yet be known at the refit; how "
+            "Everything the model sees is known at launch, and later years are tested; with the 60-day gap at most one"
+            " training project per window, a campaign longer than 60 days, had not ended when the window starts. How "
             "fully the scrapes cover all projects is not stated."
         ),
     )
@@ -78,6 +80,7 @@ class Kickstarter(AbstractCuratedDataset):
         Similar to the Kaggle task, we aim to predict whether a Kickstarter project will be funded successfully. We simulate predicting at launch: only information known when the campaign starts is used.
 
         - The data we used only had 2 samples for 2026, so we stick to data until 2025.
+        - The scrape's cut (Lennart, 2026-11-11; Review issue 2, B): the scrape of 12 January 2026 holds only projects that had ended (its newest deadline is 12 January 2026 11:00), so the newest launches are missing those still running then, and the missing ones succeed more often (cut the same way a year earlier, 20% of the projects created in 2024 would be missing, 73.9% successful against 66.9% for the rest). A campaign runs at most 60 days by Kickstarter's rule (https://help.kickstarter.com/hc/en-us/articles/115005128434-What-is-the-maximum-project-duration; a few thousand in the data run longer, up to 121 days), so we drop the projects launched from 13 November 2025 11:00 on, 60 days before that deadline: 1,673 projects, 74.2% successful. 185,444 projects remain, 62.50% successful.
         - The original data comes in .csv files per scrape data. We first combine all files into one file.
         - We remove all columns that are known only after the outcome and thus could leak information.
         - The fx_rate seems to show the conversion rate at the time of crawling the data and not at the time of the project. Thus, if it is used as on Kaggle, the numbers are wrong. We use the "usd_exchange_rate" to transform the goal into USD currency.
@@ -97,6 +100,10 @@ class Kickstarter(AbstractCuratedDataset):
             "Web Robots publishes its Kickstarter scrapes without a licence; its terms and conditions cover its "
             "scraping service, not the datasets (checked 2026-11-10)."
         ),
+        "splits_train_under_half": (
+            "Signed off (Lennart, 2026-11-11, review issue 1, C with reply b): 2019, 2018 and 2017 train on 47.0%, "
+            "40.2% and 32.4% of the projects, beside six windows on 53.2% to 85.9%; SPLIT-14's two tiers admit them."
+        ),
     }
 
     # Task
@@ -111,16 +118,25 @@ class Kickstarter(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We try to create splits that simulate a model deployed to solve the task.
+        We simulate a model refit every year and used at each campaign's launch. The windows are dated by launch (`launched_at`), the prediction point, not by creation (Lennart, 2026-11-11; Review issue 2, B): a project is created a median of 52 days before its deadline (154 days at the 90th percentile), so dated by creation 1.9% to 3.2% of each train side was still running when its window started.
 
-        The official data is updated monthly but has not enough data per month to create large enough test splits. We opt for simulating a model that is refit every year to obtain a robust test set.
+        The length, one calendar year, is a convention, not a sourced horizon (checked by Lennart on 2026-11-11): Web Robots publishes monthly scrapes without a task and the Kaggle copy is a dataset, not a competition, so no source gives a horizon or a refit cadence. A year holds every season (success by month of creation ranges from 58.7% in July to 64.7% in March), and the scrape cuts the newest year less than a shorter window. A month would not be too small: 1,500 to 2,200 projects were created in every month of 2024 and of January to September 2025.
 
-         We could simulate a model that is refitted every month, but this would need many splits. Moreover, data from just one month is not enough to create a robust test set. We instead simulate a model that is refit every year. This introduces the unrealistic downside of data shift across a month that would not exist in a real-world model. We create 3 test splits by 2023, 2024, and 2025 as test year. For each test split, we use all data before the test month as training data.
+        The gap is 60 days, Kickstarter's longest campaign: a refit at a window's start knows the outcome of a campaign only once it has ended, so each train side holds the projects launched more than 60 days before its window. At most one training project per window, a campaign longer than 60 days (up to 121 in the data), had not ended when its window starts. The scrape of 12 January 2026 holds only ended projects, so we drop the launches of its last 60 days (from 13 November 2025 11:00, 1,673 projects) and the newest window, 1 January to 13 November 2025, is complete but for such long campaigns.
+
+        The nine test windows are the launch years 2025 back to 2017 (Lennart, 2026-11-11; Review issue 1, C with reply b): every year the floor on the train share admits (SPLIT-14), and nine is the number of splits a random split of 185,444 projects gets (three repeats of three folds). They cover the pandemic year 2020, the spread of pre-launch pages (from about 41% of the projects created in 2020 to 61% in 2025) and success rates from 55.0% (2017) to 71.1% (2025). Newest first, they test 23,096, 20,466, 12,096, 10,790, 9,523, 9,432, 11,187, 12,312 and 14,286 projects and train on 159,342, 140,261, 128,277, 117,767, 108,032, 98,615, 87,250, 74,581 and 60,168 (85.9%, 75.6%, 69.2%, 63.5%, 58.3%, 53.2%, 47.0%, 40.2% and 32.4% of the projects). Three windows train on less than half the projects: 2019 (47.0%), 2018 (40.2%) and 2017 (32.4%), signed off by Lennart on 2026-11-11 beside the six at 53.2% to 85.9%.
     """
-    # `on`: could also be deadline to get more realistic data with projects for which we know the lab at "real" train time. But with our time splits, created_at is fine as well.
+    # `on`: the launch, when the use case predicts; a 60-day gap (the longest campaign) keeps the training outcomes
+    # known at the refit, and `_clean` drops the launches of the scrape's last 60 days (Review issue 2).
     temporal = Temporal(
-        on="created_at",
-        splits=TemporalSplits(window=1, unit="years", cutoffs=(2023, 2024, 2025)),
+        on="launched_at",
+        splits=TemporalSplits(
+            window=1,
+            unit="years",
+            cutoffs=(2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017),
+            gap=60,
+            gap_unit="days",
+        ),
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -221,6 +237,9 @@ class Kickstarter(AbstractCuratedDataset):
         df = df.drop_duplicates()
         # Drop the 2 samples from 2026
         df = df[df["created_at"].dt.year < 2026]
+        # The scrape holds only ended projects (newest deadline 2026-01-12 11:00): drop the launches of its last 60
+        # days, the longest campaign, whose outcomes it holds only for the campaigns already ended (1,673 projects)
+        df = df[df["launched_at"] < pd.Timestamp("2025-11-13 11:00")]
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

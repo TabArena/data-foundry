@@ -18,7 +18,7 @@ from data_foundry.v2 import (
 )
 
 # The policy variables the data page lists as categorical, each with "Z" for a missing value; they ship unordered
-# (REVIEW.md issue 4, A, Lennart, 2026-11-08).
+# (Review issue 4, A, Lennart, 2026-11-08).
 CATEGORICAL = [f"var{i}" for i in range(1, 10)]
 TARGET = "log1p_transformed_loss_ratio"
 
