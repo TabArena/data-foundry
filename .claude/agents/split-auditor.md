@@ -27,6 +27,14 @@ Python run):
   above the floor, which periods they cover), and say why the windows cover the period they do; the main session
   puts this argument into the REVIEW.md's `**Horizon:**` block (verdict, length, gap, time frame, an options
   table with today's length as the implemented row and the size of each option's test windows, recommendation), which the curator signs off;
+* temporal, three checks earlier panels missed (reviews of 2026-11-10 and 11):
+  - the time column is the moment the prediction is made (USE-3): a creation date earlier than a launch, an order
+    placed before it is priced, lets a train side hold outcomes still open at the window's start (kickstarter);
+  - an input issued ahead of the time column (a forecast and its issue time, a quote and its validity) needs a gap
+    of that lead time, since the train side otherwise holds measurements taken after the forecast was issued
+    (climate_model_weather_forecasting_1m: forecasts up to 74 hours ahead, a 3-day gap; SPLIT-10's planning gap);
+  - the newest period is complete: compare its rows a day and its target rate with the same span earlier; a drop
+    near the release date is a download or scrape cut (kickstarter's newest quarter held half the rows, LEAK-24);
 * temporal: the time column's meaning, windows and their sizes, the train side, the gap against the label delay,
   training rows whose label is not known at the prediction point, the training history, a season-shaped test window;
   the choice of windows against the candidates (`dataset windows <name>`, SPLIT-15): the newest is among them, the

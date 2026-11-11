@@ -25,7 +25,10 @@ For every column of the cleaned frame (load it through
    it flags: a count or a measured quantity typed categorical, or a code typed numeric, is a cleaning problem. An
    ordinal scale is an ordered category (`ordinal` in `_feature_types`): check its order against the codebook (the
    order of the codes is often reversed), and that its codes for unknown answers are missing.
-4. A verdict: fine, leak (rule, strength, remedy), cleaning problem (rule, remedy), or question for the curator.
+4. For a temporal task, its missing share and its level by period (a month, a week): a column that stops or starts
+   being recorded within the history (delivery_eta_1m: 45 features 99.6% missing from 23 November 2023, in every
+   test window) is a finding even when the data is as published.
+5. A verdict: fine, leak (rule, strength, remedy), cleaning problem (rule, remedy), or question for the curator.
 
 When the task has a training weight (`sample_weight`, such as a realized time on risk), read the weight column's
 values too, and judge each feature that predicts it (probe 22, `leak_probes.py <name> --weight-proxy`) by its timing

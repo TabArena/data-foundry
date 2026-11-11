@@ -191,7 +191,11 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   `claimed_by` in that PR.
 * **changes:** apply the changes, run `dataset check` and the probes they touch
   ([verification.md](../knowledge-curation/references/verification.md)), and put the record back to the curator with
-  what changed: the issues that stay open stay in the `REVIEW.md`.
+  what changed: the issues that stay open stay in the `REVIEW.md`. A change of the windows, the length or the rows
+  also searches the whole definition for what it makes stale: the old dates, counts and shares in `task_summary`,
+  `curation_comments`, `splits_comment` and the metric's reason, and every model figure measured on the old windows,
+  which is dated ("measured on the windows before 2026-11-11") or measured again. The reviews of 2026-11-10 and 11
+  found stale counts in four definitions after their windows had moved.
 * **dont:** retire it as [records.md](../knowledge-data-foundry/references/records.md) says (duplicates and
   retirements): the record gets `No` (or `No (Retired)` for a shipped dataset) with the reason as a marker and a CC
   line, its claim is released (`claims release <name>`), and the folder, its `REVIEW.md` with it, leaves the working

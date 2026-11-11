@@ -110,7 +110,13 @@ domain and source from the record.
    saying why this window (and any gap, sub-sampling or trimming). For a temporal task, run `dataset windows <name>`
    and choose the windows from the use case and those statistics, never a model's score (SPLIT-15: the newest always,
    the others argued; definitions.md, "Choosing the test windows"); the choice goes into REVIEW.md as the curator's
-   decision, with the alternatives you weighed.
+   decision, with the alternatives you weighed. Before the windows, three checks the reviews of 2026-11-10 and 11
+   found missed: the time column is the moment the prediction is made, not an earlier one (kickstarter dated projects
+   by creation, so its train sides held campaigns still running at a window's start; USE-3); a row whose input is
+   issued ahead of its time column (a forecast, a quote) needs a gap of that lead time (climate_model's forecasts are
+   issued up to three days ahead; SPLIT-10); and the newest period is not cut by the download (kickstarter's scrape
+   held only ended campaigns, so its newest quarter had half the rows of the year before; LEAK-24): compare its rows
+   a day and its target rate with earlier periods.
 5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
    `Metric.stand_in(name, original=..., reason=..., reference=...)` or `Metric.fallback(reason=<where we looked, and
    which source metric was rejected and why>)` (definitions.md, "Field mapping", `metric`; MET-11). A standard name
