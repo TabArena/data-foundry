@@ -1,6 +1,6 @@
 ---
 name: knowledge-data-foundry
-description: "Reference knowledge, no workflow: how this repository (Data Foundry) implements dataset curation. The pipeline and its stages, the curation records and their conventions (CC and Assessment lines, AI (UNVERIFIED), WIP claims, pointers), the dashboard, the v2 dataset.py API and patterns, the bundle checks, how to run the probes, the TabArena v0.2 working copy (CHANGELOG, REVIEW.md, builds and how to rebuild, the local warehouse), source access recipes, batch runs with agents, and the house rules every workflow follows. Load it when editing a record or a definition, running checks or probes, or when a workflow skill points to one of its files."
+description: "Reference knowledge, no workflow: how this repository (Data Foundry) implements dataset curation. The pipeline and its stages, the curation records and their conventions (CC and Assessment lines, AI (UNVERIFIED), WIP claims, pointers), the dashboard, the v2 dataset.py API and patterns, the bundle checks, how to run the probes, the TabArena v0.2 working copy (CHANGELOG, REVIEW.md, builds and how to rebuild, the local warehouse), source access recipes, batch runs with agents, pull requests (the body a curator reads first, one PR per independent change, stacks only for a dependency, made with gh stack), and the house rules every workflow follows. Load it when editing a record or a definition, running checks or probes, when writing, stacking or merging a pull request, or when a workflow skill points to one of its files."
 user-invocable: false
 ---
 
@@ -26,6 +26,7 @@ implements. The overview for people is the [skills README](../README.md).
 | Rebuilding the working copy and verifying the build (only when the curator asks) | [rebuild.md](references/rebuild.md) | the curator asks for a rebuild |
 | Reaching sources: the Kaggle command line, PubChem, Zindi, SEC EDGAR, paywalls | [sources_access.md](references/sources_access.md) | a page does not load |
 | Batch runs with several agents and the machine's limits | [agent_runs.md](references/agent_runs.md) | planning a run of more than a few datasets |
+| Pull requests: the title, a body with the summary on top and the details folded, one PR per independent change against `main`, stacks only for a dependency (made with `gh stack`), updating and merging | [pull_requests.md](references/pull_requests.md) | before opening, updating, stacking or merging a PR |
 | Exploring a dataset in a notebook: an optional starting point (`ds = workbench()`), not part of a dataset folder | [explore_notebook_reference.ipynb](references/explore_notebook_reference.ipynb) | you want a notebook to look at a dataset; copy it next to `dataset.py`, do not commit the copy |
 
 The scripts are in [scripts/](scripts/):
@@ -44,6 +45,10 @@ The scripts are in [scripts/](scripts/):
 Every workflow follows these; each comes from a curator's decision.
 
 * No commit or push without the curator's explicit ask. A commit ends with the attribution line the session gives.
+* A pull request targets `main` unless it needs another unmerged PR; then it joins that PR in a GitHub stack
+  (`gh stack link`), never a bare chain of base branches. Its body opens with a short summary for the curator (what
+  changes and why, what to decide, what to know before merging) and folds the details
+  ([pull_requests.md](references/pull_requests.md)).
 * No `dataset build` without an explicit ask; `dataset check` verifies without saving.
 * Never delete raw files, a UUID pinned in `src/data_foundry/collections/_registry.py`, or a retired dataset's
   containers without asking. Superseded working-copy containers may go after a verified rebuild

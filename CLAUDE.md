@@ -43,6 +43,15 @@ gotchas that look like blockers but aren't — lives in
 * **Conventions:** `from __future__ import annotations` is mandatory; lines
   ≤120 chars; Google-style docstrings; no commits/pushes without explicit
   human ask.
+* **Pull requests** ([`pull_requests.md`](.claude/skills/knowledge-data-foundry/references/pull_requests.md), read it
+  before opening, updating, stacking or merging one):
+  * the body opens with what a curator needs on one screen (what changes and why, what to decide or check, what to
+    know before merging); the changes, evidence and checks go below in folded `<details>` sections;
+  * one PR per independent change, from and against `main`; it is brought up to date with `main` when it is about to
+    be merged;
+  * stack a PR only when it needs another unmerged PR, and then as a GitHub stack (`gh pr create --base <parent>`,
+    then `gh stack link <bottom> <top>`), merged bottom up with `gh stack merge`; never merge a PR into its parent
+    branch.
 * **TabArena v0.2 working copy:** `datasets/_dev/tabarena-v0pt2/` holds one
   v2 folder per dataset of TabArena v0.2 (migrated from the BeyondArena notebooks
   and rebuilt on 2026-10-02; its `README.md` says how to rebuild them, its
