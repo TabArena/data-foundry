@@ -8,6 +8,11 @@
   sat11_hand_algo_runtime (20 x 3) are unchanged; wadden_sea_sibes_macoma_abundance, scored per survey year over a
   split by station, stays at 3 x 3 instead of moving to 20 x 3. huesken_sirna_efficacy (30 genes, 10 x 3 to 20 x 3)
   and protein_model_quality_rf_pcp (445 proteins, 3 x 3 to 20 x 3) still move at their next `dataset check`.
+- `protein_model_quality_rf_pcp` and `huesken_sirna_efficacy` (new issue 10 each, no definition change): ship 20 x 3
+  under the rule, or keep the splits as built? On protein, LightGBM, a random forest and ridge on the 20 x 3 splits
+  (per-protein correlation): two of three disjoint blocks of three repeats rank LightGBM and the forest the other way
+  round; ten repeats separate them in one block of ten, not the other; twenty separate all three pairs. Huesken not
+  measured. 20 x 3 recommended for both.
 
 ## 2026-11-11, sat11_hand_algo_runtime: PAR10 alone picks the solver (nothing rebuilt)
 
