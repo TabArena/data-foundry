@@ -66,7 +66,9 @@ The first sentence of the outcome is the record's outcome on the page and sets i
 
 Leave out what the generated README or the run's log holds: data, definition and checksum, checks, probes and
 verification rounds. The run's process log stays in its local run folder `local-data-warehouse/_runs/<run>/`, and
-no local path goes into a review. A statement that the current `dataset.py` contradicts is removed.
+no local path goes into a review (nor into any committed file: the house rules of
+[knowledge-data-foundry](../../knowledge-data-foundry/SKILL.md)). A statement that the current `dataset.py`
+contradicts is removed.
 
 ### Issues
 

@@ -1,5 +1,17 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11, no local paths in committed text (no container built)
+
+Lennart, 2026-11-11: a pointer to a folder that only one machine has (a run folder of the local warehouse, a job folder
+in someone's home) is no evidence for anyone else. Committed text now names no local path; the evidence goes into the
+text and a script worth keeping into the repository (knowledge-data-foundry, house rules; `tests/test_no_local_paths.py`).
+
+- The pointers are removed, the facts around them stay: 12 records (the comments of 10, the reviews of 3), this
+  CHANGELOG (7 entries), the cross-dataset `REVIEW.md` (one item), `BENCHMARK_CHANGES_TODO.md`, `metrics.md` and two test
+  docstrings; a script's hard-coded warehouse path now resolves from the repository.
+- `drug_induced_autoimmunity_prediction`: two notes of `curation_comments` lose their pointer (text only, the data are
+  unchanged; the text is part of the checksum, so its README has a new one). Its build was stale before.
+
 ## 2026-11-11, each dataset's review moves into its curation record (no container built)
 
 Lennart, 2026-11-11: "We want the curation record to be the single source of information, not spread across multiple
@@ -870,9 +882,9 @@ noaa_storm's definitions now differ from any build.
 ## 2026-11-06, PR #47: re-review under the exposure rules (no container built)
 
 Seventeen of the twenty datasets the exposure rework touched went through the review panel again under LEAK-41 and
-MET-14 to MET-16 (full panel where the definition changed, focused elsewhere; run folder
-`_runs/2026-11-06_exposure_review/`, not committed); the three Kaggle datasets wait for their data. Each of the
-seventeen REVIEW.md files has a new `**Review panel:**` block (the old one kept in the run folder and in git) and its
+MET-14 to MET-16 (full panel where the definition changed, focused elsewhere); the three Kaggle datasets wait for their
+data. Each of the seventeen REVIEW.md files has a new `**Review panel:**` block (the old one kept in the run folder and
+in git) and its
 new questions as open issues; each record has the panel's Assessment line. The changes below need no decision.
 
 - `fremtpl2`: text only (the LEAK-41 report on the declared metric, the duplicate counts, the 19-row rating profile in
@@ -1681,8 +1693,7 @@ a declared spectrum is in scope unless a spectrum model is clearly better (SEL-1
   | Logistic regression | 0.663 | 0.646 (26/60) | 0.708 |
 
   The default stays the published workflow; PR #21's log suits TabPFN and the linear models better, which is one
-  decision for all raw mass spectra (open with the curator). TabPFN ran on one GPU (SkyPilot managed job 29360);
-  scripts and per-split results in `local-data-warehouse/_runs/2026-11-02_spectra/`.
+  decision for all raw mass spectra (open with the curator). TabPFN ran on one GPU (SkyPilot managed job 29360).
 - **Benchmark:** `BENCHMARK_CHANGES_TODO.md`, "Spectra (feature groups)".
 - Not rebuilt; both builds were already stale.
 
@@ -1922,9 +1933,9 @@ loads: every shared column is identical on every row, so the link needs no key.
   words; a score or rating with no words per level, or words only at its two ends, is a number; bands keep their band
   text. CLEAN-12 and CLEAN-14 amended; `decode(df, CODE_LABELS)` in the v2 API (a code without a label raises), after
   `set_missing`.
-- Six agents read the codebooks for every coded column of 44 definitions
-  (`local-data-warehouse/_runs/2026-10-30_ordinal/decode/`). In 29 definitions 377 coded columns now carry their
-  words (BI-RADS density "almost entirely fatty" to "extremely dense", ames' ratings "very poor" to "very excellent",
+- Six agents read the codebooks for every coded column of 44 definitions. In 29 definitions 377 coded columns now
+  carry their words (BI-RADS density "almost entirely fatty" to "extremely dense", ames' ratings "very poor" to "very
+  excellent",
   the ANES codes, coil_2000's percentage and guilder bands,
   early_learning_predictors' answers), and 54 scores and ratings are numbers again (california_house_prices_2020's
   school ratings, miami_housing's `structure_quality`, eryhemato_squamous_disease's ten findings, student_portuguese's
@@ -2061,9 +2072,9 @@ loads: every shared column is identical on every row, so the link needs no key.
   missing. The container already kept the order; the README lists ordinal columns with their levels. An ordinal
   column may also be named among the categorical ones.
 - 220 ordinal scales in 39 definitions are ordered categories now, in the order of each source's codebook (often not
-  the order of the codes): seven agents read the codebooks for 1,980 candidate columns of 95 datasets
-  (`local-data-warehouse/_runs/2026-10-30_ordinal/`). anes_voting_2026's 20 likes-dislikes indices and counts are
-  numbers. Codes outside a scale that mean unknown (don't know, refused, not asked, undocumented codes) are missing.
+  the order of the codes): seven agents read the codebooks for 1,980 candidate columns of 95 datasets.
+  anes_voting_2026's 20 likes-dislikes indices and counts are numbers. Codes outside a scale that mean unknown (don't
+  know, refused, not asked, undocumented codes) are missing.
   Left unordered, for the curator's review board: 39 columns with a level outside the scale that is a state of its own
   (no basement, not prescribed, no checking account), partial orders, cycles and orders of low confidence. Left as
   they are: 167 ordinal scales shipped as numbers (point 3) and 22 codes shipped as numbers (point 4).
@@ -2128,7 +2139,7 @@ loads: every shared column is identical on every row, so the link needs no key.
   fragments N-073 and C-026, which count the atoms of that type (0 to 3 and 0 to 12); the definition had typed them
   categorical while their meaning was unknown. The curation note on "numeric-ordinal" features is replaced. CC line in
   the record, CLEAN-14 Cases row. `dataset check`: 0 errors, 0 warnings. Not built.
-- The sweep, once, over the 163 definitions (outputs in `local-data-warehouse/_runs/2026-10-30_dtype_sweep/`): 489
+- The sweep, once, over the 163 definitions: 489
   flagged columns in 48 datasets, 358 of them only `numeric_levels` (codes, ids). Beyond the two datasets above,
   the findings went to the curator and nothing else changed here: `early_learning_predictors` (45 counts and amounts
   typed categorical, with Stata missing codes `.a` and `.b` among the numbers), counts with open ends typed
@@ -2352,7 +2363,7 @@ record, audit or PR that motivated it.
 - `drug_induced_autoimmunity_prediction`: `SMILES` is kept as a string feature instead of being dropped (177
   features instead of 176; 587 rows and the scaffold groups unchanged). The source's descriptors lose structure a
   model can use: next to them, MACCS keys computed from the SMILES lift the scaffold-grouped ROC AUC of TabPFN 3.5
-  from 0.803 to 0.826 and of a random forest from 0.770 to 0.795 (`~/claude_jobs/dia_review/`), so we ship the
+  from 0.803 to 0.826 and of a random forest from 0.770 to 0.795, so we ship the
   string rather than one chosen fingerprint. This overrides, for this dataset only, the 2026-10-14 rule of dropping
   the SMILES in every SMILES dataset.
 - `drug_induced_autoimmunity_prediction`: `dataset_identifier_column` accepted (one SMILES per row): the structure
@@ -2718,8 +2729,7 @@ consistency checks in the folder's `REVIEW.md` and are not applied yet. Nothing 
   AUC 0.888, 0.906 and 0.739 against 0.913, 0.914 and 0.708). BeyondArena datasets; the shipped notebooks and
   collection pins are unchanged, and their containers and raw files stay in the warehouse.
 - Records: `heart_statlog` is `No` + `Duplicate` (all 270 rows are Cleveland rows with the same label). Andrej's
-  review in [`curation/records/heart_disease.md`](../../../curation/records/heart_disease.md); evidence in
-  `~/claude_jobs/heart_pool/`.
+  review in [`curation/records/heart_disease.md`](../../../curation/records/heart_disease.md).
 - `heart_disease` declares the metric the three sites declared on `main` (roc_auc fallback, accepted by Lennart
   2026-10-21 for the heart_disease datasets).
 

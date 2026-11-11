@@ -55,6 +55,11 @@ Every workflow follows these; each comes from a curator's decision.
   ([working_copy.md](references/working_copy.md)). Removing a dataset folder is the curator's call.
 * The data in `local-data-warehouse/` never leaves the machine and is never committed. A private review page built for
   the curator may be published.
+* Committed text names no local path: no run folder (`local-data-warehouse/_runs/<date>_<run>/`) and no home folder
+  (`~/<folder>/`, `/home/<user>/`). Only one machine has it, so the pointer leads nowhere for every other reader. The
+  evidence goes into the text (the numbers, the method, the source), and a script worth keeping goes into the
+  repository. This holds for records, definitions, the CHANGELOG, reviews, the knowledge files, commit messages and PR
+  bodies; `tests/test_no_local_paths.py` fails on such a path in a committed file (Lennart, 2026-11-11).
 * Never name company code repositories in records, notes, reports, commit messages or the knowledge files; cite only
   public sources. Before a commit, `git grep` the change for such names.
 * Never send the curator's email address or other personal data to an outside service, for example in a request
