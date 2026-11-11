@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-10 21:41 UTC: 153 claim(s) (Andrej 119, Lennart 12, Myunghwan 22).
+As of 2026-11-11 10:12 UTC: 154 claim(s) (Andrej 120, Lennart 12, Myunghwan 22).
 
 ## Andrej
 
@@ -14,6 +14,7 @@ As of 2026-11-10 21:41 UTC: 153 claim(s) (Andrej 119, Lennart 12, Myunghwan 22).
 | `allstate_claim_prediction_challenge` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `allstate_claims_severity` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `amazon_employee_access` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
+| `anes_voting_2026` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
 | `aps_failure` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `audiology_diagnosis` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `australian_vehicle_insurance_2004_2005` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
@@ -157,7 +158,7 @@ As of 2026-11-10 21:41 UTC: 153 claim(s) (Andrej 119, Lennart 12, Myunghwan 22).
 | `chicago_traffic_crashes` | triage | 2026-10-29 | 2026-11-05 (expired) | Selected by Myunghwan as the next large-scale candidate (about 1.1 million crashes). Reservation for screening review; no scientific inclusion or build decision. |
 | `chromophore_optical_properties_db` | triage | 2026-11-05 | 2026-11-17 | Curator accepted first absorption-peak regression with 1A/2A, fallback RMSE and gas warning. Build, reload and single-traced-CSV checksum reproduction complete; 17,510 rows, 3,335 groups, nine folds. Source/build commits 8a50be6cc and 144b0ae82. Integration into existing draft PR #59: https://github.com/TabArena/data-foundry/pull/59 . Retain Myunghwan ownership until merged. |
 | `duolingo_spaced_repetition_recall` | triage | 2026-10-31 | 2026-11-13 | Updated installed workflow at9048f36a completed add/review/build with prior curator decisions retained. Local commits 90e77a7c and 3be188a7; container 01a1ae4b-07ce-7d55-b885-f6b11cb52d72. Same accepted checksum/data/splits; reload and traced-input reproduction pass, zero errors/warnings. Native review records explicit retention with original marks preserved. Train-only, own-row prediction protocol stays required; downstream method checks remain unverified. Not pushed or submitted; retain Myunghwan ownership pending integration, existing stage preserved. |
-| `economic_well_being_prediction_challenge` | triage | 2026-10-28 | 2026-11-11 | Curator ship accepted. Local build, reload and traced-input reproduction verified (2026-11-03); temporal x unseen-country, 21,454 rows, 16 evaluations. Local branch prepared separately; intentionally not added to existing PR. Retain ownership pending separately authorized publication/integration. |
+| `economic_well_being_prediction_challenge` | triage | 2026-10-28 | 2026-11-11 (expired) | Curator ship accepted. Local build, reload and traced-input reproduction verified (2026-11-03); temporal x unseen-country, 21,454 rows, 16 evaluations. Local branch prepared separately; intentionally not added to existing PR. Retain ownership pending separately authorized publication/integration. |
 | `fugaku_hpc_job_failure` | add | 2026-11-03 | 2026-11-13 | Curator decisions reused; maintained installation 9048f36a repeat add/review/build cycle complete. Built/reloaded/minimal-input reproduction and existing backup of 43 input files freshly reverified; unchanged task with 2,500,499 rows and 388 predictors. Local commits c84f9b39 and 6b4bea76 on fugaku-skill-refresh-20261106; not pushed. Retain ownership pending upstream integration. First tuned benchmark family, baseline, probability and maturity/latency recheck remains required; known diagnostic limits retained. |
 | `geoai_ground_level_no2_estimation_challenge` | triage | 2026-10-28 | 2026-11-06 (expired) | Curator accepted as implemented with documented label-QC, regional and observed-day coverage limits. Built and verified: 82,051 rows, 11 predictors, station-held-out 3x3 folds; reload and traced-input reproduction passed with zero warnings. Local commits 7b2837b and 8cba4df on geoai-no2-curation; not pushed or submitted. Retain Myunghwan ownership pending upstream integration; existing stage preserved by gateway. |
 | `loan_default_prediction_challenge` | triage | 2026-10-28 | 2026-11-16 | Myunghwan: reviewed, explicitly accepted and built; integrating verified SuperLender package into draft PR #59. AUROC; borrower-disjoint random folds. Retain ownership until main; no benchmark control plane. |
