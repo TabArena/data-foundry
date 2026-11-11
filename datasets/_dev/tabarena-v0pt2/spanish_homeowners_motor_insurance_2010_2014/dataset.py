@@ -224,6 +224,7 @@ class SpanishHomeownersMotorInsurance20102014(AbstractCuratedDataset):
         splits=TemporalSplits(window=1, unit="unique", n_windows=3),
         horizon=1,
         horizon_unit="years",
+        time_unit="years",
     )
     splits_comment = """
         An insurer refits its renewal price on the years it has seen and applies it to the next year's renewals: 3

@@ -180,8 +180,9 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
             "economic statistics of one period before it."
         ),
         split=(
-            "Five test windows of six months, from January 2013 to June 2015, newest first; each trains on every "
-            "earlier sale, as for a model refit every half year."
+            "Three test windows of seven months, newest first: December 2014 to June 2015, May to November 2014 and "
+            "October 2013 to April 2014; each trains on every earlier sale, as for a model that serves seven months "
+            "between refits, the shortest test period of the sources."
         ),
         changes=(
             "Following the TabReD benchmark, the target is the price per square metre, and we drop sales at prices up"
@@ -190,8 +191,8 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         ),
         fit="direct",
         fit_reason=(
-            "The flat's and district's figures are known at the sale, and the half-year windows match a model refit "
-            "twice a year. The economic statistics are lagged by one period because their release dates are not "
+            "The flat's and district's figures are known at the sale, and the seven-month windows match TabReD's test "
+            "period, the shortest of the sources (the competition tests eleven months). The economic statistics are lagged by one period because their release dates are not "
             "given; a monthly figure may still come out a few days after a sale early in the month."
         ),
     )
@@ -253,6 +254,11 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 unordered codes carry their words:
           `material`; 1 scores with no words per level are numbers (`SCORES`): `state`.
+        - Test windows (Lennart, 2026-11-11): seven months ("Reply (a): Seven months", the horizon sign-off), the
+          shortest test period of the sources, in place of five half-years from January 2013 whose three oldest
+          trained on 44.3%, 28.6% and 17.8% of the sales; issue 1 closes with it ("Agree."). The oldest window,
+          October 2013 to April 2014, trains on 35.4%, signed off with the mark (splits comment).
+        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): the macro file gives `provision_retail_space_sqm` for 2011 and 2012 only and the two education shares (`modern_education_share`, `old_education_build_share`) from 2013 on, so their one-year lags are recorded in 2012-2013 and from 2014: the newest windows test without the first, and the oldest trains without the other two. Kept: the data as published.
     """
 
     # Task
@@ -271,12 +277,42 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We always use 6 month of the data as test data and all prior data as training data. This simulate a model that is refit every half year. We create 5 splits going back 6 months each, starting from the newest date.
+        Three test windows of seven months, newest first: December 2014 to June 2015 (the release's end), May to November 2014 and October 2013 to April 2014; each trains on every earlier sale, with no gap.
+        The length is the shortest test period of the sources (the curator's pick, 2026-11-11): TabReD tests seven
+        months (1 December 2014 to 30 June 2015, our newest window) and the competition the eleven months after its
+        training data (July 2015 to May 2016), so one fitted model serves seven months. No source gives Sberbank's
+        refit cadence; the half-year used until 2026-11-11 was our own assumption.
+        The windows are adjacent, walking back from the newest: any other place for the two older windows lowers their
+        train sides, and the oldest already trains on less than half. Test sales (mean log price per square metre),
+        then the train side and its share of the 28,321 sales: December 2014 to June 2015 4,647 (11.84), 23,674
+        (83.6%); May to November 2014 6,936 (11.82), 16,738 (59.1%); October 2013 to April 2014 6,704 (11.80), 10,034
+        (35.4%). October 2013 to April 2014 trains on 35.4%, under half; the curator signed it off on 2026-11-11, and
+        SPLIT-14 admits one window down to 30% beside two on half or more. The windows hold 2015 with 394 to 724 sales
+        a month and the rush of December 2014 (1,583 sales, the month the ruble fell), the busy 2014 at 1,000 to 1,200
+        a month, and the climb from 830 sales a month in late 2013 to 1,214 in April 2014.
+        No gap: a sale's price is known when it is signed, and the economic statistics are already read one period
+        back for their release delay.
     """
     temporal = Temporal(
         on="timestamp",
-        splits=TemporalSplits(window=6, unit="months", n_windows=5),
+        splits=TemporalSplits(window=7, unit="months", cutoffs=("2014-12-01", "2014-05-01", "2013-10-01")),
     )
+    accepted_check_warnings = {
+        "splits_train_under_half": (
+            "Signed off (Lennart, 2026-11-11, review issue H, a): October 2013 to April 2014 trains on 35.4% of the "
+            "sales, beside December 2014 to June 2015 and May to November 2014 on 83.6% and 59.1%; SPLIT-14's two "
+            "tiers admit it."
+        ),
+        "splits_feature_missing_in_test": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): three one-year lags of macro columns the source gives for "
+            "some years only (curation_comments)."
+        ),
+        "time_newest_period_short": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): 2015 holds 394 to 724 sales a month against 1,044 to "
+            "1,583 from September to December 2014, the market after the December 2014 rush; the data ends where the "
+            "competition's training file ends, 30 June 2015, not at a download cut."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # From: https://github.com/yandex-research/tabred/blob/main/preprocessing/sberbank-housing.py

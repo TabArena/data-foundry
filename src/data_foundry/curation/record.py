@@ -121,6 +121,13 @@ FIELDS: tuple[FieldSpec, ...] = (
         help="Repo-relative path of the dataset's v2 definition (`dataset.py`) in the TabArena v0.2 working copy.",
     ),
     FieldSpec("comments", "Free Comments", "body", help="Free-text curation discussion."),
+    FieldSpec(
+        "review",
+        "Review",
+        "body",
+        help="The dataset's review, open and settled: the outcome, the horizon, the numbered issues with every turn, "
+        "the review panel (written by /add-dataset and /review-added-datasets; never deleted).",
+    ),
     FieldSpec("reference", "Reference", "body", help="Academic reference / citation (often BibTeX)."),
 )
 
@@ -217,6 +224,7 @@ class CurationRecord:
     """
 
     comments: MultilineStr | None = None
+    review: MultilineStr | None = None
     reference: MultilineStr | None = None
 
     source_row: int | None = None

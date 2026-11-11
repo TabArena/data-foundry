@@ -57,7 +57,7 @@ A rule may grade its strength by severity, such as a leak that is a Must when st
 5. **The remedy ladder.** Take the mildest remedy that resolves the problem: repair from the origin; fix the
    definition (drop, lag, filter, re-split, re-target); keep it with a documented note (an exception); exclude the
    dataset. Exclusion is for a Must that cannot be fixed.
-6. **Write the judgment record.** Every assessment, `REVIEW.md` outcome and mediator report has the same shape, so the
+6. **Write the judgment record.** Every assessment, review outcome and mediator report has the same shape, so the
    curator sees what decided:
 
    ```text
@@ -120,7 +120,7 @@ named wins.
 | Maintenance of the rules | an amendment > an exception > a precedent > a pattern. |
 | A review panel | the mediator settles a dispute by rank; a weighing call goes to the curator. |
 
-Which file is the truth for what (the definition, the record, the review file, the generated README) is repository
+Which file is the truth for what (the definition, the record and its review, the generated README) is repository
 specific: [pipeline.md](../../knowledge-data-foundry/references/pipeline.md).
 
 ## Exceptions and amendments
@@ -134,6 +134,10 @@ specific: [pipeline.md](../../knowledge-data-foundry/references/pipeline.md).
 * **An amendment** changes the rule. Its text is replaced in place under the same ID, with the date, the curator and
   the case that prompted it; the old wording goes, so the newer decision wins without two versions side by side. When
   the same reason has produced three exceptions, the next pass proposes an amendment.
+* **After an amendment**, run `decision_register.py --rule <ID>` and read every decision whose stated reason rests on
+  the old wording: reopen it as an issue when the amendment changes the choice, or reword its reason when the choice
+  stands on other grounds. When SPLIT-14's floor became two tiers (2026-11-11), cooking_time_1m's windows ("the only
+  weeks above the floor") were reopened and nyc_taxi_trip_duration_1m's horizon reason was reworded.
 
 ## Consistent judgement, the curator's included
 
