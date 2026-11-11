@@ -1,11 +1,43 @@
 # cooking_time
 
-**Outcome:** added as `cooking_time_1m`. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI
-recommends keeping the three windows, the only weeks that keep half the orders for training, and stating in the splits
-comment why and what they cannot test (issue 1). `dataset.py` is unchanged until you decide.
+**Outcome:** added as `cooking_time_1m`. On 2026-11-10 you kept the three windows and asked for the reason and the
+limit in the splits comment (issue 1, B); the 7-day length stays for its reason, TabReD's own validation and test
+length. Nothing is left open.
 
-**Main points:** Keep the three weeks from 14 December 2023 to 3 January 2024, and say in the splits comment that the
-score covers only the weeks before and over New Year (issue 1)?
+**Main points:** Settled on 2026-11-10: the three weeks from 14 December 2023 to 3 January 2024 stay, and the splits
+comment says they are the only weeks above the floor and cover only the weeks before and over New Year (issue 1, B);
+the declared horizon is checked.
+
+**Horizon:**
+
+* **Verdict:** keep the 7-day windows (high confidence): a week is TabReD's own validation and test length (our two
+  newest windows are exactly its validation and test weeks), a week holds every weekday once, and cooking times follow
+  a weekly cycle.
+* **Length:** TabReD (Rubachev et al., ICLR 2025, https://arxiv.org/abs/2406.19380; preprocessing at
+  https://github.com/yandex-research/tabred/tree/main/preprocessing): train 15 November to 20 December, validation
+  21-27 December, test 28 December 2023 to 3 January 2024. The definition's "refit every week (TabReD)" was our
+  wording; no source names a refit cadence. Friday and Saturday orders cook about 12% longer than Monday to Thursday
+  (2.57-2.64 against 2.46-2.51 log minutes), more than the shift between the weekly windows, so a one-day window would
+  score the weekday more than the model.
+* **Gap:** one day, the rule of the ETA family (2026-10-21); the longest cooking time is 2 hours, so a 3-hour gap
+  would also leave no training label unknown and keep about 240,000 to 280,000 more orders per train side.
+* **Time frame:** 15 November 2023 to 3 January 2024; 11-12 December hold no orders at all, and 31 December and
+  1 January about half the usual orders.
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | A | One week, one-day gap (implemented) | 7-day windows: 14-20 December, 21-27 December and 28 December-3 January | TabReD's own validation and test length (its two weeks are our two newest windows); every weekday once | no source names a refit cadence |
+  | B | One day, a 3-hour gap | daily windows: 22 candidates | more windows to choose from | dominated by the weekday: Friday and Saturday orders cook about 12% longer, more than the shift between the weekly windows |
+  | C | Two weeks | 14-day windows: 1 candidate | more orders per window | fewer than three windows |
+
+* **Recommendation:** A: the length of the source's own validation and test periods, and a week holds every weekday
+  once. **Decision:** A, B or C?
+
+**Resolved (2026-11-10, Lennart):** A, kept by the horizon audit, as instructed ("if the current time horizon makes
+sense and is justifiable keep it and resolve them"); the record's CC line says the declared horizon is checked, and
+the splits comment gives the reason (TabReD's own validation and test length; a week holds every weekday once, and
+cooking times follow a weekly cycle).
 
 **Issues for Lennart:**
 
@@ -25,8 +57,8 @@ score covers only the weeks before and over New Year (issue 1)?
      about 7% longer than in November. The windows cannot test an ordinary week of November or early December, nor a
      week after the holidays (the data end on 3 January). The candidate table shows 10.5 to 10.8% of test rows with a
      category the train side never shows; that comes from its 100,000-row sample of the train side against the 123,880
-     levels of `cat_5`, and on all rows the largest share is 0.5% (`cat_0`). The length (one week, TabReD's refit) and
-     the one-day gap for late labels stay as they are[^split12].
+     levels of `cat_5`, and on all rows the largest share is 0.5% (`cat_0`). The length (one week, TabReD's validation
+     and test length) and the one-day gap for late labels stay as they are[^split12].
    * **Statistics:** the target from all orders; the drift from the candidate table (100,000-row samples of each side);
      1.66M to 2.04M orders per window, of which 500,000 are tested.
 
@@ -68,3 +100,15 @@ score covers only the weeks before and over New Year (issue 1)?
      the windows, the reasons and the numbers they rest on."
    [^split14]: **SPLIT-14** (Must): at least 3 windows, and no window's train side holds less than 50% of the data.
    [^split12]: **SPLIT-12** (Should): the horizon is a human judgment from the source, such as the refit cadence.
+
+   **Lennart (2026-11-10, change):** Option B: Keep, state why and the limit.
+
+   **Resolved (2026-11-10, Lennart):** B. The windows stay; `temporal` now declares them as the cutoffs 2023-12-28,
+   2023-12-21 and 2023-12-14 (7 days, one-day gap), which build the same splits. `splits_comment` says they are the
+   only weekly windows above the 50% floor (the earliest start that keeps it is 11 December, and 11-12 December hold no
+   orders), that all three lie in the weeks before and over New Year, and the length's reason (TabReD's own validation
+   and test length; a week holds every weekday once, and cooking times follow a weekly cycle); "refit every week
+   (TabReD)" is gone from the use case, the split and the fit reason, and the Background above no longer calls the week
+   TabReD's refit. Test 1,662,794, 2,040,512 and 1,921,331 orders before the 500k cap, train 10,856,304, 8,832,570 and
+   6,935,762 (84.8%, 69.0%, 54.2%). The record has the decision and the horizon CC lines. `dataset check`: 0 errors,
+   0 warnings (README not regenerated).

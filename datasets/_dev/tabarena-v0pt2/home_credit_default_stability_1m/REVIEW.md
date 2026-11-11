@@ -5,8 +5,55 @@
 July-August 2020 with March-April 2020 and November-December 2019 (issue 1). `dataset.py` is unchanged until you
 decide.
 
-**Main points:** Test on 1 September-5 October 2020, March-April 2020 and November-December 2019 instead of May to
-early October 2020 (issue 1)?
+**Main points:** First the horizon sign-off (H), from the horizon audit of 2026-11-10: three-month windows instead of
+two, spread before, across and after the March 2020 break? Issue 1 (the windows at two months) waits on it.
+
+**Horizon:**
+
+* **Verdict:** change the 2-month windows to 3 months (medium-low confidence): no source states a refit cadence; a
+  scorecard serves for months and the competition scores one fit over the following weeks, so the length is the
+  longest that keeps three windows above the floor.
+* **Length:** the notes say "3 windows of 2 months replace TabRed's single 4.5-month test period", so 2 months came
+  from cutting TabReD's test period into three, not from how often a lender refits a scorecard, and no source states
+  that cadence. The competition fits once and scores every week after its training data; its hosts changed the test
+  "to better represent customer scoring in production. When a model runs in production, it can only see past
+  performance and predictions." The length of its hidden test period could not be found. A scorecard serves for
+  months, so the longer the window the closer to that use, as long as three windows stay above the floor: four months
+  already puts the oldest window under it (49.0%)[^h-split14], and one month leaves April 2020 with 179 defaults.
+  Your question on issue 1 ("does this time window make sense?") comes down to this length.
+* **Gap:** none: the weekly default rate stays at 1.8% to 2.8% to the end of the release, so the labels look final,
+  as for lt_vehicle_loan_default_prediction.
+* **Time frame:** 1 January 2019 to 5 October 2020; half the applications lie before 11 October 2019; a break in
+  late March 2020 (March 60,748 applications at 4.6% defaults, April 8,289 at 2.2%). Three-month windows spread over
+  the release score a scorecard over a quarter, before, across and after the break; today's windows are three
+  two-month stretches after it, all in the release's last five months.
+* **Statistics:** three-month windows, from the definition's frame:
+
+  | Window | In | Applications tested | Defaults | Train share |
+  |---|---|---|---|---|
+  | 6 July-5 October 2020 | B | 143,332 | 2.11% | 90.6% |
+  | 1 March-31 May 2020 | B | 97,762 | 3.67% | 80.7% |
+  | 1 November 2019-31 January 2020 | B | 328,606 | 3.66% | 54.3% |
+  | today's three 2-month windows, May to 5 October 2020 | A | 74,687, 79,743, 70,497 | 2.4%, 2.1%, 2.2% | 85.3%, 90.2%, 95.4% |
+
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | A | Two months (implemented) | issue 1's windows at two months | no change of length | a length cut from another benchmark's test period, not from the use |
+  | B | Three months, spread | 6 July-5 October 2020, March-May 2020, November 2019-January 2020; candidates run from November 2019 (54.3% train share) to July 2020 (90.6%), 1,900 to 12,000 defaults each | the longest length above the floor; the months before, across and after the break | the oldest trains on 54.3%; issue 1's proposal is replaced |
+
+* **Recommendation:** B: the longest length that keeps three windows above the floor is the closest to a scorecard
+  used for months, and the spread covers the break. **Decision:** A or B?
+
+**Notes for the AI:** on B, `temporal = Temporal(on="date_decision", splits=TemporalSplits(window=3, unit="months",
+cutoffs=("2020-07-06", "2020-03-01", "2019-11-01")))`: test 143,332, 97,762 and 328,606 applications (all under the
+500k budget), train 1,383,327, 1,232,695 and 828,906 (90.6%, 80.7%, 54.3%). Then resolve issue 1 with these windows,
+rewrite `task_summary.split`, `splits_comment` (the windows and the reason from the Horizon block) and the metric
+stand-in's "5-10 week" wording, a CC line in the record with the CC line that the declared horizon is checked, a
+dated CHANGELOG entry, `dataset check`.
+
+[^h-split14]: **SPLIT-14** (Must): at least 3 windows, and no window's train side holds less than 50% of the data.
 
 **Issues for Lennart:**
 
@@ -93,3 +140,11 @@ early October 2020 (issue 1)?
    [^hc-split12]: **SPLIT-12** (Should): the horizon is a human judgment from the source, such as the refit cadence.
    [^hc-split20]: **SPLIT-20** (Should): decide the history from the use case; "check the history for breaks
      (COVID-19, a change of rules or of the data collection)".
+
+   **Lennart (2026-11-10, discuss):** does this time window make sense?
+
+   **Answer (AI, 2026-11-10):**
+   - Not as declared: the 2 months came from cutting TabReD's 4.5-month test period into three windows, not from a refit
+     cadence, and no source states one (the Horizon block above).
+   - The horizon sign-off (H) proposes 3 months, the longest length that keeps three windows above the floor; this
+     issue waits on it and its windows are proposed again at the length you choose.

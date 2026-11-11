@@ -16,11 +16,46 @@ the dataset, the label noise and the drift against it. Left for you: issues 7-11
 
 The panel changed only text and metadata in `dataset.py` (year, pinned export, gap measurement, drift dating, metric
 reason, stale notes); data, split, features, target and metric are unchanged. The data has to be rebuilt from the
-2026-11-04 export before that export URL stops working on 2026-12-22, and a rebuild needs your ask.
+2026-11-04 export before that export URL stops working on 2026-12-22, and a rebuild needs your ask. Under the rule on
+choosing test windows, rewritten on 2026-11-10, the AI recommends keeping the three-month windows with the one-month
+gap (Horizon) and spreading the nine test quarters over July 2022 to September 2026 instead of the nine newest, the
+custom `_make_splits` kept (issue 12, open; `dataset.py` is unchanged until you decide).
 
 **Main points:** Reword the use case to a road-safety analyst (issue 7)? Accept the 2023Q4 step as drift (issue 8)?
 Floor the crash time in `_clean` so the row order no longer carries the minute (issue 9)? Keep or drop `dooring_i`
-(issue 10)? Keep the one-month gap (issue 11)? After these, a rebuild before 2026-12-22.
+(issue 10)? Keep the one-month gap (issue 11)? After these, a rebuild before 2026-12-22. Open since 2026-11-10: sign
+off the quarterly windows with the one-month gap (Horizon), and test nine quarters spread over 2022-2026 instead of the
+nine newest (issue 12)?
+
+**Horizon:**
+
+* **Verdict:** keep the three-month windows with a one-month gap (low to medium confidence): the quarter is a convention
+  of the build, and the analyst's documented cycles are a month for fatal crashes and a year for the report.
+* **Length:** three months, a model refit at the start of each quarter that scores the next quarter's crashes. The
+  City's crash table states no use or cadence, and the quarter was set at the build as "an evaluation/refit cadence,
+  not a medical outcome window" (splits comment). The analyst's documented cycles: CDOT's fatality list is "compiled
+  ... after monthly reviews of fatal traffic crash information" and "updated monthly"
+  ([Vision Zero Chicago Traffic Fatalities](https://catalog.data.gov/dataset/traffic-crashes-vision-zero-chicago-traffic-fatalities)),
+  and its annual Chicago Traffic Crashes report "looks at data from the past several years" and lists its improvement
+  projects ([Streetsblog Chicago, 2025-11-25](https://chi.streetsblog.org/2025/11/25/key-findings-from-cdots-annual-chicago-traffic-crashes-report)).
+  A quarter lies between the two; no source names it.
+* **Gap:** one month (your call of 2026-11-05, issue 11): a report can be amended after a later death, a traffic death
+  counts within 30 days, and 99.4% of the crashes of June-August 2026 were last updated within 30 days (5 of 32 fatal
+  ones later, 33-102 days). Training also keeps only the crashes notified to the police before the quarter starts.
+* **Time frame:** crashes from 1 September 2017 (citywide coverage) to 30 September 2026 (October 2026 cut as
+  incomplete). Quarters with the gap that keep half the crashes for training: 17, from July-September 2022 to
+  July-September 2026. Today's nine cover July 2024 to September 2026, all after the 2023Q4 step in "reported, not
+  evident" (4.1-4.7% of the crashes before, 5.6-6.7% from 2023Q4), which you accepted as drift (issue 8).
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | A | Three months, one-month gap (implemented) | quarters, each trained on the crashes up to a month before it: 17 candidates above the floor, from July-September 2022 | between the analyst's monthly and yearly cycles; nine windows | a convention of the build; no source names it |
+  | B | One year, October to September | the cycle of the annual report: four candidates keep half the crashes for training, from October 2022 (88.1%, 77.0%, 65.8% and 54.7%), about 110,000 crashes each | the annual report's cycle; every season in a window | three windows instead of nine; a model up to 13 months old by a window's end |
+  | C | One month | the cycle of the fatality review: about 50 candidates of 8,000 to 10,000 crashes | the fatality list's monthly cycle | only about 6 to 11 fatal crashes per window |
+
+* **Recommendation:** A: a quarter lies between the analyst's monthly and yearly cycles, and keeps nine windows where a
+  year gives three. **Decision:** A, B or C?
 
 **Issues for Lennart:**
 
@@ -250,6 +285,100 @@ Floor the crash time in `_clean` so the row order no longer carries the minute (
    [^floor]: **SPLIT-14** (Must): no window's train side holds less than 50% of the data.
 
    **Resolved (2026-11-05, Lennart):** as implemented. The record's `year` is 2026 (PROV-9, a growing source).
+
+12. **Which quarters should the nine test windows be?**
+
+   * **Problem:**
+     - The nine test windows are the nine quarters from July 2024 to September 2026, one after the other, while
+       quarters that keep half the crashes for training reach back to July-September 2022, 17 in all[^ct-split14].
+     - Since 2026-11-10 the newest window always stays and the others are chosen from the use case and statistics of
+       the data, preferring other years over the windows just before the newest, and walking back needs its own
+       reason[^ct-split15].
+     - The candidates straddle the 2023Q4 step in "reported, not evident" (4.1-4.7% of the crashes before, 5.6-6.7%
+       from 2023Q4), which you accepted as drift (issue 8), while every window today lies after it.
+   * **Background:**
+     - Today's nine quarters already span three calendar years and every season at least twice; the season shows in
+       the label (no indication of injury 81.9-84.2% in July-September, 84.5-86.5% in January-March).
+     - The features hardly drift: the largest PSI is 0.02 to 0.07 in every candidate (trafficway type, first crash
+       type), and at most 0.2% of a window's crashes carry a category its train side lacks. PSI, the population
+       stability index, compares a feature's distribution in the window with its train side; above 0.25 is usually read
+       as a large shift. So the candidates differ in the season, the year and the side of the step.
+     - B spreads nine quarters over the 17, about every other one, shifted by a quarter halfway so that every season
+       appears at least twice (every other quarter alone would test only summers and winters); it holds the step
+       quarter 2023Q4 and three quarters before it. C takes every third quarter, six windows that rotate through the
+       seasons.
+     - The candidate table counts the training crashes before `_make_splits` drops those notified after the quarter's
+       start, so the train shares below are slightly high.
+   * **Statistics:** from the candidate table (every crash; the train side's "reported, not evident" share from a
+     100,000-row sample); fatal crashes are 0.1% in every quarter (0.2% in 2023Q1).
+
+     | Quarter | In | Test crashes | No injury | Reported, not evident: test / train side | Incapacitating | Train share | Largest PSI |
+     |---|---|---|---|---|---|---|---|
+     | 2026Q3 | A, B, C | 28,987 | 81.9% | 6.7% / 4.9% | 1.5% | 96.1% | 0.025 |
+     | 2026Q2 | A | 28,742 | 82.8% | 6.6% / 4.8% | 1.4% | 93.3% | 0.020 |
+     | 2026Q1 | A, B | 25,920 | 84.9% | 6.3% / 4.7% | 1.0% | 90.8% | 0.029 |
+     | 2025Q4 | A, C | 26,147 | 84.1% | 6.2% / 4.7% | 1.4% | 88.1% | 0.031 |
+     | 2025Q3 | A, B | 29,011 | 82.0% | 6.5% / 4.7% | 1.6% | 85.1% | 0.033 |
+     | 2025Q2 | A | 29,055 | 83.8% | 6.1% / 4.6% | 1.4% | 82.3% | 0.027 |
+     | 2025Q1 | A, B, C | 24,682 | 84.5% | 6.2% / 4.6% | 1.1% | 79.8% | 0.038 |
+     | 2024Q4 | A | 27,564 | 83.8% | 6.2% / 4.5% | 1.3% | 77.0% | 0.046 |
+     | 2024Q3 | A | 29,258 | 82.3% | 6.2% / 4.4% | 1.7% | 74.0% | 0.048 |
+     | 2024Q2 | B, C | 30,068 | 83.2% | 6.1% / 4.4% | 1.5% | 71.1% | 0.052 |
+     | 2024Q1 | none | 24,915 | 84.9% | 5.7% / 4.4% | 1.3% | 68.6% | 0.060 |
+     | 2023Q4 | B | 27,919 | 84.1% | 5.6% / 4.2% | 1.5% | 65.8% | 0.067 |
+     | 2023Q3 | C | 28,833 | 83.9% | 4.7% / 4.2% | 1.9% | 62.9% | 0.065 |
+     | 2023Q2 | B | 28,680 | 85.0% | 4.3% / 4.3% | 1.9% | 60.1% | 0.064 |
+     | 2023Q1 | none | 25,042 | 86.5% | 4.1% / 4.4% | 1.6% | 57.5% | 0.072 |
+     | 2022Q4 | B, C | 27,561 | 85.2% | 4.3% / 4.3% | 1.8% | 54.7% | 0.056 |
+     | 2022Q3 | B | 28,015 | 84.2% | 4.3% / 4.3% | 2.1% | 51.9% | 0.046 |
+
+   * **Effect on the task:** A ranks models only after the step, on refits whose training lies mostly before it, and
+     only on 2024-2026. B adds 2022 and 2023: the step quarter itself, where a refit trained on the earlier coding
+     meets the new one, and three quarters of the earlier coding, which a model deployed now no longer meets but which
+     issue 8 read as the same task. C spreads six windows evenly with a third fewer test crashes (166,278 against
+     249,366) and skips the step quarter.
+   * **Consistency:** the nine quarters came with the build of 2026-10-29; no curator call has set which quarters.
+     Issue 8 (2026-11-05) accepted the step as drift, not as another label, so windows on both sides of it test the
+     same task.
+   * **Sources:** the definition `datasets/_dev/tabarena-v0pt2/chicago_traffic_crashes/dataset.py` (`_make_splits`,
+     `splits_comment`, its drift paragraph); the record `curation/records/chicago_traffic_crashes.md`; the candidate
+     table `.venv/bin/python -m data_foundry.curation.cli dataset windows chicago_traffic_crashes --root
+     datasets/_dev/tabarena-v0pt2 --window 3 --unit months --gap 1 --gap-unit months` (17 quarters; the splits are
+     custom, so the length and gap are given).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Nine newest quarters (implemented) | tests 2024Q3 to 2026Q3 | only the coding after the step, which a deployed model meets; each refit trains on 74.0% or more | walks back without a stated reason; nothing from 2022-2023 or the step quarter |
+     | B | Nine spread over four years | tests 2026Q3, 2026Q1, 2025Q3, 2025Q1, 2024Q2, 2023Q4, 2023Q2, 2022Q4 and 2022Q3 | the same count over the whole eligible history; every season at least twice; a refit across the step | three windows on the coding before the step; the oldest refit trains on 51.9% |
+     | C | Every third quarter | tests 2026Q3, 2025Q4, 2025Q1, 2024Q2, 2023Q3 and 2022Q4 | an even spread that rotates through the seasons; the oldest refit on 54.7% | six windows, a third fewer test crashes; skips the step quarter |
+
+   * **Recommendation:** B: it keeps nine windows and their test crashes and spreads them over the four years open,
+     every season twice or more, with the step quarter in; A's one reason, testing only the newest coding, would need
+     the step read as a change of label, which issue 8 did not do. **Decision:** A, B or C?
+
+   **Notes for the AI:** the split stays custom. On B, in `_make_splits` replace `TemporalSplits(window=3,
+   unit="months", n_windows=9, min_train_fraction=0.5, gap=1)` with `TemporalSplits(window=3, unit="months", gap=1,
+   cutoffs=("2026-07-01", "2026-01-01", "2025-07-01", "2025-01-01", "2024-04-01", "2023-10-01", "2023-04-01",
+   "2022-10-01", "2022-07-01"))` (`cutoffs` excludes `n_windows`; drop `min_train_fraction`, which would silently cut
+   the older cutoffs). Each window still starts on a quarter's first day, so the notification filter
+   (`to_period("Q").start_time`) is unchanged, and so is `temporal` (`horizon=3, gap=1`). From the candidate table:
+   test 28,987, 25,920, 29,011, 24,682, 30,068, 27,919, 28,680, 27,561 and 28,015 crashes (250,843); train before the
+   notification filter 959,335, 905,864, 849,226, 796,799, 709,773, 656,271, 599,463, 546,159 and 518,149 (96.1% to
+   51.9%). On C, `cutoffs=("2026-07-01", "2025-10-01", "2025-01-01", "2024-04-01", "2023-07-01", "2022-10-01")`: test
+   28,987, 26,147, 24,682, 30,068, 28,833 and 27,561 (166,278), train 959,335, 879,292, 796,799, 709,773, 627,446 and
+   546,159 (96.1% to 54.7%). Then rewrite `task_summary.split` ("Nine later three-month crash cohorts"),
+   `splits_comment` ("Nine consecutive three-month windows"; the drift paragraph's "Every test window lies after the
+   2023Q4 step"), a CC line in the record, a dated CHANGELOG entry, `dataset check` and the eligibility table of
+   `_decisions` (its rows follow the windows).
+
+   [^ct-split14]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less
+     than 50% of the data.
+   [^ct-split15]: **SPLIT-15** (Must for the newest window, Should for the others; amended 2026-11-10, Lennart and
+     Andrej): "The newest window is always a test window ... which periods a deployed model must handle (other years,
+     seasons, holidays, events, a change of rules or of the data collection) ... Prefer windows in other years, then
+     other seasons, then other months, weeks or days, over the windows just before the newest. Walking back from the
+     newest is one choice among others and needs its reason too."
 
 **Review panel:** ship after changes (mediator). The tier was full, as a second pass after Lennart's review of PR #33
 on 2026-11-04: seven evidence agents, the advocate and the critic with one rebuttal each, and the mediator. Claims: 27

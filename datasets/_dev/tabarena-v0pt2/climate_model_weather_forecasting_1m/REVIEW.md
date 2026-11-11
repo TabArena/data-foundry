@@ -4,7 +4,67 @@
 2026-11-10, the AI proposes to keep the newest week (24-30 July 2023) and to replace the two other July weeks with a
 week in May and one in February 2023 (issue 1). `dataset.py` is unchanged until you decide.
 
-**Main points:** Test on 24-30 July, 1-7 May and 6-12 February 2023 instead of the last three weeks of July (issue 1)?
+**Main points:** First the horizon sign-off (H), from the horizon audit of 2026-11-10: add a 3-day gap, since
+forecasts are issued up to three days ahead? Issue 1, your windows (July, May, February), waits on it; with the gap
+February moves to 13-19 February.
+
+**Horizon:**
+
+* **Verdict:** keep the 7-day windows (high confidence) and add a 3-day gap (medium confidence): no source gives
+  Yandex's refit cadence and post-processing models are re-estimated daily on the last 30-60 days, so one week is a
+  conservative refit that still spans several weather situations, while a forecast is issued up to three days before
+  its measurement.
+* **Length:** the week goes back to your record note ("one or two weeks at most?"), which became the rule on short
+  windows for weather; TabReD itself tests one month ("1 month in the test set (01.07.2023 -- 30.07.2023)",
+  https://github.com/yandex-research/tabred/tree/main/preprocessing) and states no refit cadence. The Shifts paper
+  says the data "is used by Yandex for real-time weather forecasts" (https://arxiv.org/abs/2107.07455); the
+  post-processing literature trains on "the most recent 30–60 d only" and re-estimates "every day"
+  (https://npg.copernicus.org/articles/27/23/2020/). One day (about 175 candidates) would test one weather situation
+  per window and be shorter than the 3-day lead; 14 days (12 candidates) is the upper bound of the rule on weather
+  windows.
+* **Gap:** none today, but a forecast is issued up to 74 hours before its measurement (`apply_time_rl`, median 31.5
+  hours): 19% to 24% of each window's rows were issued before the window starts, and their train side holds readings
+  of their own station taken up to 3.1 days after the forecast was issued. A station's daily error carries over for
+  days (the daily forecast error of a station, minus its mean, correlates 0.34, 0.23 and 0.18 at lags of one, two and
+  three days, against 0.14 at seven days and 0.08 at thirty), so these readings tell a model what the forecast at the
+  issue time could not know. A forecast made ahead of time is a planning gap: the model that corrects it can only
+  have been trained on what was measured when it was issued[^h-split10]. Of the forecasts, 99.2% are issued at most
+  72 hours ahead, so a 3-day gap covers them. Without the gap, a model is scored on forecasts whose station it has
+  seen measured up to three days later, which a post-processing model at the issue time could not; the effect is
+  largest for the longest lead times. How much the score moves is unknown: measuring it would need a model, which
+  this choice does not rest on.
+* **Time frame:** TabReD's year, 1 July 2022 to 30 July 2023; windows that keep half the rows for training run from
+  February to July 2023, so no other year can be tested. With the gap your February week of issue 1, 6-12 February,
+  would train on 49.95% of the rows, under the floor[^h-split14]; the week after, 13-19 February, keeps your choice
+  of a late-winter week.
+* **Statistics:** your windows of issue 1 with a 3-day gap, from the definition's frame:
+
+  | Window | Rows tested | Train side | Train share | Mean temperature, test and train |
+  |---|---|---|---|---|
+  | 24-30 July 2023 | 377,992 | 16,429,730 | 96.9% | 27.26, 26.86 |
+  | 1-7 May 2023 | 385,508 | 11,733,079 | 69.2% | 28.10, 26.54 |
+  | 13-19 February 2023 | 270,717 | 8,739,284 | 51.6% | 26.18, 26.33 |
+
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | A | No gap (implemented) | 7-day windows without a gap; your windows of issue 1: 24-30 July, 1-7 May, 6-12 February | your pick as marked | a fifth of each window's forecasts have later readings of their station in training |
+  | B | A 3-day gap | 7-day windows with a 3-day gap: 24-30 July, 1-7 May, 13-19 February (96.9%, 69.2%, 51.6%) | training holds only what was measured when each forecast was issued; your months stay | February moves one week; about 3 days fewer of training per window |
+
+* **Recommendation:** B: the gap mirrors what the corrector knows at the issue time, and it keeps your choice of
+  seasons. **Decision:** A or B?
+
+**Notes for the AI:** on B, `temporal = Temporal(on="fact_time", splits=TemporalSplits(window=7, unit="days",
+cutoffs=("2023-07-24", "2023-05-01", "2023-02-13"), gap=3, gap_unit="days"))`: test 377,992, 385,508 and 270,717
+rows, train 16,429,730, 11,733,079 and 8,739,284. Then resolve issue 1 with these windows, rewrite
+`task_summary.split` and `splits_comment` (the windows, the gap and the reason from the Horizon block), a CC line in
+the record with the CC line that the declared horizon is checked, a dated CHANGELOG entry, `dataset check`. On A,
+issue 1's B as marked (cutoffs 2023-07-24, 2023-05-01, 2023-02-06, no gap) and the reason for no gap in the notes.
+
+[^h-split10]: **SPLIT-10** (Should): when a label is known only some time after its row, train on the rows whose
+  outcome is known by the window's start; "a forecast made a day ahead is a gap too".
+[^h-split14]: **SPLIT-14** (Must): at least 3 windows, and no window's train side holds less than 50% of the data.
 
 **Issues for Lennart:**
 
@@ -68,3 +128,12 @@ week in May and one in February 2023 (issue 1). `dataset.py` is unchanged until 
    [^split14]: **SPLIT-14** (Must): at least 3 windows, and no window's train side holds less than 50% of the data.
    [^split18]: **SPLIT-18** (Should): short-lived quantities need short windows: weather test windows of one to two
      weeks at most (case: this dataset).
+
+   **Lennart (2026-11-10, change):** Option B: July, May, February.
+
+   **Answer (AI, 2026-11-10):**
+   - The week holds (the Horizon block above), but the audit found that a fifth of each window's forecasts were issued
+     before the window starts while their train side holds later readings of the same station; the horizon sign-off (H)
+     asks for a 3-day gap.
+   - With that gap your February week (6-12 February) would train on just under half the rows; 13-19 February keeps your
+     pick above the floor. This issue waits on the horizon sign-off (H).

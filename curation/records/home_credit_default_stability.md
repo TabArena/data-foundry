@@ -7,6 +7,7 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 3
 tags:
 - Non-IID (Temporal)
 collections:
@@ -55,6 +56,8 @@ CC (2026-10-21, Lennart): the metric is roc_auc as a stand-in for the competitio
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): max_persontype_1072L a category.
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
+**Assessment (AI, 2026-11-10):** priority for the review of the test windows (PR #78), which this record never had. Priority 3: gap 0, use case 0 (the fit is approximate), source + (Home Credit's competition), shape +, risk 0 (the open issue is the choice of windows).
 
 ## Reference
 

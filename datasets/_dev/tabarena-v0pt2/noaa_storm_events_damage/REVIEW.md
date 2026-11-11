@@ -9,7 +9,9 @@ NCEI's Storm Events Database, 2007-2025: 843,144 entries of the property damage 
 one county or zone, 68% of them $0, for a state hazard-mitigation planner who estimates the damage of storm events
 before it is assessed (Diaz and Joseph 2019); tested on the calendar years 2023-2025 with a 3-month gap, scored by the
 mean Tweedie deviance at power 1.5 on the dollars, each county or zone, hazard and year counting once (by context; the
-source has none; RMSLE until 2026-11-08).
+source has none; RMSLE until 2026-11-08). Under the rule on choosing test windows, rewritten on 2026-11-10, the AI
+recommends keeping one-year windows with the 3-month gap (Horizon) and testing 2025, 2021 and 2017 instead of the three
+newest years (issue 16, open; `dataset.py` is unchanged until you decide).
 
 Validity:
 * SEL-3 holds on the `Yes` of 2026-10-30. USE-1 and USE-5 hold with the planner as the actor (issue 5); USE-8: fit
@@ -91,7 +93,8 @@ the use case became the planner's (issue 5); on 2026-11-06 D13 (issue 6); on 202
 deviance with a $1 floor (issue 8, B); then issue 10 kept that metric with the tuned results in the notes, and issue 11
 moved the Flash Flood duration to the spans kept with a note (no data change; `dataset check`: 0 errors, 0 warnings).
 
-**Main points:** No issue open. Resolved on 2026-11-10 (Andrej): issue 15, the damage stays uncapped, the
+**Main points:** Open since 2026-11-10: sign off the one-year windows with the 3-month gap (Horizon), and test 2025,
+2021 and 2017 instead of 2023-2025 (issue 16)? Resolved on 2026-11-10 (Andrej): issue 15, the damage stays uncapped, the
 planner's sum with the catastrophes in; uncapped the score orders the methods at Kendall's W 0.62 across the test
 years and separates tuned LightGBM from a mean per event type only in 2025, stated in the notes as the noise of the
 task (the task's representation comes before how well methods separate). Issues 2 to 14 are resolved; on
@@ -103,6 +106,37 @@ issue 10 kept that metric with its signal stated (tuned LightGBM beats the mean 
 say if you disagree: the 51 Seiche durations are blank, an extension of D13.
 
 **Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
+
+**Horizon:**
+
+* **Verdict:** keep the one-year windows with a 3-month gap (high confidence): the score counts each county or zone,
+  hazard and calendar year once, and the gap is the measured publication lag.
+* **Length:** one calendar year, a model refit on 1 January that estimates the damage of that year's reported events.
+  The source defines no task, and NCEI releases monthly, so the yearly refit is ours; it follows the planner, who
+  decides per jurisdiction and hazard on the loss expected in a year
+  ([44 CFR 201.6](https://www.ecfr.gov/current/title-44/chapter-I/subchapter-D/part-201/section-201.6); FEMA's
+  [National Risk Index](https://hazards.fema.gov/nri/) gives an expected annual loss per county and hazard). The score
+  counts each county or zone, hazard and year once, and a cell's entry count is known only once its year is over, so
+  a window shorter than a calendar year would cut the cells. A year also holds every storm season.
+* **Gap:** 3 months against the publication lag: a Storm Data month is certified "no later than 60 days after the end
+  of the month" (NWSI 10-1605, Sec. 3), NCEI's files are "updated monthly with up to a 120 day delay possible"
+  (C00510), and in archived releases a month first appears complete 75-80 days after its end, so a refit on 1 January
+  holds the events through September. Damage estimates revised after that are not dated in the source.
+* **Time frame:** entries from 2007, the first full year of the current entry format, to December 2025. One-year
+  windows that keep half the entries for training run from 2017 to 2025 (nine); today's are 2023 to 2025. Across the
+  years the share of events without a damage figure rises (7.3% in 2007, 22-24% in 2022-2025), the offices' $0
+  practice drifts, and the mean damage per entry ranges from $97,000 (2025) to $1.94M (2017).
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | A | One year, 3-month gap (implemented) | calendar years, each trained on the events through September of the year before: 9 candidates above the floor, 2017 to 2025 | the score's year cells stay whole; every storm season in a window; the planner decides on the loss expected in a year; the gap is the measured publication lag | the yearly refit is ours (NCEI releases monthly) |
+  | B | Two years | four candidates keep half the entries for training: 2024-2025, 2022-2023, 2020-2021 and 2018-2019 (train shares 88.9%, 78.5%, 69.0% and 58.5%) | two hurricane seasons per window | a refit every two years where the source is released monthly and the planner works by the year |
+  | C | Half a year | half-year windows, a refit twice a year | a refit closer to the events | each window tests one or two storm seasons; splits the year cells the score counts once, so the score's unit would have to change |
+  | D | A quarter | quarterly windows, a refit every quarter | a refit closer to the events | each window tests one or two storm seasons; splits the year cells the score counts once, so the score's unit would have to change |
+
+* **Recommendation:** A: a year keeps whole the year cells the score counts once and matches the planner's expected
+  annual loss, and the gap is the measured publication lag. **Decision:** A, B, C or D?
 
 **Issues for Andrej and Lennart:**
 
@@ -1161,6 +1195,87 @@ say if you disagree: the 51 Seiche durations are blank, an extension of D13.
    [^15c]: **MET-1** (Must, in main): "The declared metric scores the real task: the decision of the use case
      (USE-1), at the unit the actor acts on". **TP-2** (Should, in main): "A small but real signal is no reason to
      retire".
+
+16. **Which years should the three test windows be?**
+
+   * **Problem:**
+     - The three test windows are the calendar years 2023, 2024 and 2025, while one-year windows that keep half the
+       entries for training reach back to 2017, nine years in all[^ns-split14].
+     - Since 2026-11-10 the newest window always stays and the others are chosen from the use case and statistics of
+       the data, and walking back from the newest needs its own reason[^ns-split15].
+     - The damage per entry moves widely between years as the costliest storms land in some years and not in others
+       (mean $97,000 in 2025, $1.94M in 2017), and the three newest years are three of the four lowest.
+   * **Background:**
+     - Every candidate is a calendar year with the 3-month gap, so every one holds all storm seasons and whole year
+       cells; the median entry is $0 and the 90th percentile $10,000 in every year ($20,000 in 2017), so the years
+       differ in their largest entries.
+     - B spreads the windows evenly over the nine eligible years (the 1st, 5th and 9th candidate); C takes every third
+       year from the newest.
+     - The offices' $0 practice drifts: an office's 2024 share of $0 predicts its 2025 share at r 0.958 and its
+       2007-2016 share at r 0.575, and the share of events without a damage figure rises from 7.3% (2007) to 22-24%
+       (2022-2025). An older test year meets an older practice, which its own training years mostly share.
+     - PSI, the population stability index, compares a feature's distribution in the window with its train side;
+       above 0.25 is usually read as a large shift. The largest PSI is 0.12 to 0.24 (office, state, event type) in
+       every candidate, so the features do not set one year apart. The candidate table's unseen-category share reads
+       100% in every year because the tool counts the scoring cell (county or zone, hazard and year), which carries the
+       year; it is no feature.
+   * **Statistics:** from the candidate table; the test means from every entry of the year, the train side's from a
+     100,000-row sample, which a few large entries move (2025's side reads $573,000 and 2024's $357,000, though the
+     two sides differ by one year of entries).
+
+     | Year | In | Test entries | Mean damage per entry, test | Train side (sample) | Train share | Largest PSI |
+     |---|---|---|---|---|---|---|
+     | 2025 | A, B, C | 45,870 | $97,300 | $572,900 | 94.1% | 0.24 |
+     | 2024 | A | 44,255 | $355,600 | $356,600 | 88.9% | 0.19 |
+     | 2023 | A | 44,056 | $377,300 | $433,900 | 83.3% | 0.15 |
+     | 2022 | C | 40,592 | $509,100 | $497,700 | 78.5% | 0.19 |
+     | 2021 | B | 39,249 | $479,200 | $388,400 | 73.8% | 0.22 |
+     | 2020 | none | 40,745 | $657,400 | $356,800 | 69.0% | 0.15 |
+     | 2019 | C | 47,165 | $132,100 | $345,200 | 63.4% | 0.13 |
+     | 2018 | none | 43,237 | $869,800 | $369,200 | 58.5% | 0.13 |
+     | 2017 | B | 41,367 | $1,941,000 | $188,200 | 53.6% | 0.12 |
+
+   * **Effect on the task:** A ranks models on three adjacent, low-damage years, so how a model handles a year of
+     catastrophic storms is not tested. B adds 2021 and 2017, the costliest year in the data, which the planner's
+     annual loss includes; its oldest refit trains on 53.6% of the entries (2007 to September 2016). C adds 2022 and
+     2019, a middle and a quiet year, with every refit on 63.4% or more.
+   * **Consistency:** issue 15 (2026-11-10, Andrej) kept the catastrophes uncapped because the planner's expected
+     annual loss includes them; B tests a year they dominate. The signal measured for issues 10, 12 and 15 (tuned
+     models, Kendall's W 0.62 across the windows) was taken on 2023-2025.
+   * **Sources:** the definition `datasets/_dev/tabarena-v0pt2/noaa_storm_events_damage/dataset.py` (`temporal`,
+     `splits_comment`, the History bullet and the anomaly bullet on the $0 practice); the record
+     `curation/records/noaa_storm_events_damage.md`; the candidate table `.venv/bin/python -m
+     data_foundry.curation.cli dataset windows noaa_storm_events_damage --root datasets/_dev/tabarena-v0pt2` (9
+     years).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Three newest years (implemented) | tests 2025, 2024 and 2023 | the office practice closest to deployment; each refit trains on 83.3% or more | three adjacent years, three of the four lowest in damage; no year of catastrophic storms |
+     | B | Spread evenly over nine years | tests 2025, 2021 and 2017 | the even spread over the eligible years; adds 2017, the costliest year, which the planner's annual loss includes | the oldest refit trains on 53.6%; a few catastrophic entries may decide the 2017 score; the measured signal in the notes is re-run |
+     | C | Every third year | tests 2025, 2022 and 2019 | spread over seven years; every refit on 63.4% or more | no year of catastrophic storms; does not reach the oldest eligible years |
+
+   * **Recommendation:** B: walking back has no reason of its own here, every candidate is a whole year with every
+     season, and an even spread over the nine years puts a costly year next to the newest, as the planner's
+     uncapped annual loss asks. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, `temporal = Temporal(on="begin_time", splits=TemporalSplits(window=1, unit="years",
+   cutoffs=(2025, 2021, 2017), gap=3, gap_unit="months"))`: test 45,870, 39,249 and 41,367 entries, train 793,017,
+   622,584 and 451,520 (94.1%, 73.8%, 53.6%). On C, `cutoffs=(2025, 2022, 2019)`: test 45,870, 40,592 and 47,165,
+   train 793,017, 661,889 and 534,532 (94.1%, 78.5%, 63.4%). Counts from the candidate table. Then rewrite
+   `task_summary.split` ("a later calendar year (2023, 2024 or 2025)"), `splits_comment` (the years, the reason, the
+   numbers above), the test-year cell counts in the score-unit bullet and the per-window results of the signal
+   bullet (re-measure or date them as taken on 2023-2025); a CC line in the record, a dated CHANGELOG entry and
+   `dataset check`. The windows tool should leave out the `unit_weight` unit (`cell`) as it leaves out the scoring
+   columns; a framework note, not part of this decision.
+
+   [^ns-split14]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less
+     than 50% of the data.
+   [^ns-split15]: **SPLIT-15** (Must for the newest window, Should for the others; amended 2026-11-10, Lennart and
+     Andrej): "The newest window is always a test window ... Prefer windows in other years, then other seasons, then
+     other months, weeks or days, over the windows just before the newest. Walking back from the newest is one choice
+     among others and needs its reason too, such as a history too short for others, or a use case that only cares
+     about the weeks after a refit."
 
 **Review panel:** ship after changes (mediator). Tier full, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
 MET-16, after decision D13 (issue 6): 12 reports. The mediator's issues 1 and 2 are issues 7 and 8 here (its option (a)

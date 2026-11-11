@@ -7,6 +7,7 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 3
 decision_markers:
 - Anonymized
 tags:
@@ -48,6 +49,8 @@ CC (2026-10-21, Lennart): check SPLIT-9 on the weekly test windows and add a gap
 **Assessment (AI, 2026-10-21):** Unit and errors of track_length (follow-up to the SPLIT-9 gap). TabReD's paper (App. B.2) defines only the target, log seconds per km; neither the paper nor its preprocessing README/code states the unit of track_length. It is metres: min 1,000.0, median 5,168, max 1,103,597, no value a multiple of 10; read as metres the drive takes 0.03 to 16.6 h (median 0.19 h), read as km the median is 194 h. Implied speed (3600 / exp(target)) is 0.97 to 160 km/h, median 27, 99.9% 90. Implausible rows: 31 of 13.64M (0.0002%): 12 above 150 km/h, 5 below 2 km/h, 14 longer than 12 h (944 longer than 6 h, median 477 km at 67 km/h, plausible long drives); 26, 19, 12 in the train sides and 5, 7, 7 in the test windows (newest first). None of the 656, 654, 578 late routes is implausible (late drives median 0.35 h, 13 km, requested median 9 min before the window start, at most 11.4 h), so the one-day gap stands; no CLEAN-11 fix proposed. Script and output: local-data-warehouse/_runs/2026-10-21_crosscut/x32-4/units.py, units.txt.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSE (TabReD's regression metric) (Rubachev et al., TabReD, ICLR 2025 (https://arxiv.org/abs/2406.19380)).
+
+**Assessment (AI, 2026-11-10):** priority for the review of the test windows (PR #78), which this record never had. Priority 3: gap 0, use case 0 (TabReD names the task, not who acts on it), source + (the TabReD paper), shape +, risk 0 (the oldest window below the floor is repairable, issue 1).
 
 ## Reference
 

@@ -1,11 +1,38 @@
 # aeolus_rebuilt
 
-**Outcome:** added as `aeolus_rebuilt_1m`. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI
-proposes to keep the newest fortnight (18-31 December 2024) and to replace the two other early-winter fortnights with
-one in July and one in March 2024 (issue 1). `dataset.py` is unchanged until you decide.
+**Outcome:** added as `aeolus_rebuilt_1m`. Under the rule on choosing test windows, rewritten on 2026-11-10, you chose
+B (issue 1): the test fortnights are 18-31 December, 3-16 July and 13-26 March 2024 instead of the newest six weeks,
+and the 14-day length and the one-day gap stay with a new reason. Nothing is left open.
 
-**Main points:** Test on 18-31 December, 3-16 July and 13-26 March 2024 instead of the six weeks from 20 November to 31
-December (issue 1)?
+**Main points:** Settled on 2026-11-10: the test windows are the holiday peak, the summer peak and a spring fortnight
+of 2024 (issue 1, B), and the declared horizon is checked.
+
+**Horizon:**
+
+* **Verdict:** keep the 14-day windows with a new reason (medium confidence): no source states a refit cadence (the
+  paper tests about three days after nine); two weeks keep a window under the 500,000-row test cap and spread a single
+  storm or outage over fourteen days, while the cutoffs choose the seasons.
+* **Length:** the definition's reason, "as in aeolus_1m: a delay model is refit every two weeks", was copied; the
+  fortnight began with your call of 2026-10-12 (two-week windows so that only one window falls in the holiday peak).
+  Xu et al. 2025 (https://arxiv.org/abs/2510.26616), Sec. 4.1, split 1-15 June 2024 "temporally-stratified 6:2:2" and
+  name no lead time or refit cadence.
+* **Gap:** one day: a delay is known when the flight lands, and the dates have day resolution.
+* **Time frame:** 2023-2024, the Aeolus span; the BTS now publishes monthly files through mid-2026, so adding 2025
+  would give windows in another year (a separate rebuild question).
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | A | Two weeks, one-day gap (implemented) | 14-day windows: 25 candidates above the floor (17 January to 31 December 2024), 264k to 278k flights each | each window under the 500,000-row test cap; a single storm or outage spread over fourteen days | no source states a refit cadence |
+  | B | One week | 7-day windows: about 50 candidates | closer to the paper's test of about three days | a single event carries a window (19 July 2024, the CrowdStrike outage: 58% of flights late); no source either |
+  | C | A calendar month | 11 candidates | a single event weighs less in its window | every window over the 500,000-row test cap; no source either |
+
+* **Recommendation:** A: no source names a cadence, and two weeks is the length that keeps a window under the test
+  cap without letting one event carry it. **Decision:** A, B or C?
+
+**Resolved (2026-11-10, Lennart):** A, kept by the horizon audit, as instructed ("if the current time horizon makes
+sense and is justifiable keep it and resolve them"); the record's CC line says the declared horizon is checked, and
+`task_summary.split` and `splits_comment` give the new reason.
 
 **Issues for Lennart:**
 
@@ -79,3 +106,15 @@ December (issue 1)?
    [^split12]: **SPLIT-12** (Should): the horizon is a human judgment from the source, such as the refit cadence.
    [^split20]: **SPLIT-20** (Should): "Check whether the newest windows fall in an atypical season and widen them so
      most do not. Cases: aeolus."
+
+   **Lennart (2026-11-10, change):** Option B: Holidays, July, March.
+
+   **Resolved (2026-11-10, Lennart):** B. `temporal` declares the cutoffs 2024-12-18, 2024-07-03 and 2024-03-13 (14
+   days, one-day gap); `task_summary.split` and `splits_comment` name the windows, why each, the numbers and the
+   length's new reason (no source states a refit cadence; two weeks keep a window under the 500k test cap and spread a
+   single storm or outage over fourteen days, while the cutoffs choose the seasons). The evidence table of cancelled
+   flights (`TEST_WINDOWS`), the fit reason's per-window share (now 1.2 to 2.0%) and the row-budget note follow the
+   new windows, and the per-window scores and probes in the notes are labelled as measured on the earlier windows. Test
+   264,245, 278,071 and 267,477 flights, train 13,426,458, 10,166,861 and 7,987,461 (97.9%, 74.2%, 58.3%); the 17,947
+   flights of 17 December 2024, the newest window's gap day, are in no split, so the frame holds 13,690,703. The record
+   has the decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings (README not regenerated).

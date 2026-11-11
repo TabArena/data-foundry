@@ -1233,7 +1233,12 @@ class AbstractCuratedDataset(ABC):
         )
         df = self.df
         task = self.task_metadata
+        # The features a model reads (as `feature_columns` of a container): no target, group, scoring column, training
+        # weight or unit of a unit weight (noaa_storm_events_damage's `cell` would read as all-new categories).
         drop = {task.target_column_name, on, *as_column_list(task.group_on), *(c.column for c in task.scoring_columns)}
+        drop.update(as_column_list(task.sample_weight))
+        if task.unit_weight is not None:
+            drop.add(task.unit_weight.unit)
         stats = functools.partial(
             window_stats,
             time_on=on,
@@ -1274,8 +1279,9 @@ class AbstractCuratedDataset(ABC):
             Window(train=train, test=test, chosen=True) for train, test in own if (test[0], test[-1]) not in matched
         ]
         table = stats(df, windows)
-        if extra:
-            table = pd.concat([table, stats(plan.df, extra)], ignore_index=True)
+        if extra:  # a custom split's frame may leave out columns (hotel_booking_demand drops the outcome columns)
+            features = [c for c in df.columns if c not in drop and c in plan.df.columns]
+            table = pd.concat([table, stats(plan.df, extra, features=features)], ignore_index=True)
         table = table.sort_values("test_start", ascending=False, kind="stable").reset_index(drop=True)
         table["window"] = range(len(table))
         return table

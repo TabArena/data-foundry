@@ -9,6 +9,7 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 3
 tags:
 - Free Text (Sentences)
 - Non-IID (Temporal)
@@ -60,3 +61,5 @@ CC (2026-10-21, Lennart): the metric is the roc_auc fallback, not the paper's ba
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): counts with a cut end are numbers: emp_length.
 
 CC (2026-11-01, Lennart): counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14): the lossless form, chosen from the context rather than by model runs; the same day's numbers with censoring flags are reverted.
+
+**Assessment (AI, 2026-11-10):** priority for the review of the test windows and horizons, which this record never had. Priority 3: gap 0, use case 0, source + (Lending Club's published loan data), shape +, risk 0 (the open issue is the choice of quarters).

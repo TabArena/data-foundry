@@ -37,13 +37,14 @@ FORMAT = HERE.parent / "references" / "review_file_format.md"
 
 TITLE_RE = re.compile(r"^# ([a-z0-9_]+)\s*$")
 LABEL_RE = re.compile(r"^\*\*([^*]+?):\*\*\s*(.*)$")
-BLOCKS = ("outcome", "points", "fields", "judgment", "issues", "panel")
+BLOCKS = ("outcome", "points", "fields", "judgment", "horizon", "issues", "panel")
 """The blocks of a REVIEW.md, in the order they appear."""
 LABELS = {
     "Outcome": "outcome",
     "Main points": "points",
     "Record fields that disagree with the definition": "fields",
     "Record judgment": "judgment",
+    "Horizon": "horizon",
     "Review panel": "panel",
 }
 ISSUES_LABEL = re.compile(r"^Issues(?: for [^*:]+)?$")
@@ -53,6 +54,9 @@ ISSUE_START = re.compile(r"^\d+\. ")
 SENTENCE_END = re.compile(r"\.(?=\s|$)")
 RULE_ID = re.compile(r"\b(?:SEL|USE|LEAK|SPLIT|PROV|TP|CLEAN|EV|MET)-\d+\b")
 SHAPE_PARTS = ("**Problem:**", "**Options:**", "**Recommendation:**")
+HORIZON_PARTS = ("**Verdict:**", "**Options:**", "**Recommendation:**")
+"""The bullets of a ``**Horizon:**`` block, which the page shows as the issue "H": the verdict in view, the length, the
+gap and the time frame in the closed Details box, then the options table and the recommendation."""
 PROBLEM_BULLETS = 3
 """The bullets a problem may have, each one sentence: it is the issue's short description (Andrej, 2026-11-03)."""
 SENTENCE_END = re.compile(r"(?<!\be\.g)(?<!\bi\.e)(?<!\bvs)(?<!\bSec)[.?!]\s+(?=[A-Za-z`(\"])")
@@ -81,6 +85,8 @@ class Entry:
     points: str
     cell: str
     judgment: str = ""
+    horizon: str = ""
+    """The ``**Horizon:**`` block's text: the argument for a temporal task's test windows the curator signs off."""
     issues_label: str = "Issues"
     issues: str = ""
     numbers: list[int] = field(default_factory=list)
@@ -100,6 +106,11 @@ class Collected:
     across_items: int = 0
     settled: list[str] = field(default_factory=list)
     """Records left out because nothing on them waits for the curator (:func:`is_settled`)."""
+    metric_marks: set[str] | None = None
+    """The records whose declared metric the curator marks in this round (``None``: every record, ``--metric-marks
+    all``); by default none, so the page shows no metric (Lennart, 2026-11-10)."""
+    horizon_marks: set[str] | None = None
+    """The same for a temporal task's horizon and test windows (``--horizon-marks``; Lennart, 2026-11-10)."""
 
     @property
     def n_folders(self) -> int:
@@ -269,7 +280,7 @@ def parse_review_file(path: Path, folder: str, text: str | None = None) -> Entry
     issues, numbers = ("", [])
     if "issues" in blocks:
         issues, numbers = _check_issues(path, blocks["issues"].start + 1, blocks["issues"].lines)
-    if not numbers and not fields and "panel" not in blocks:
+    if not numbers and not fields and "panel" not in blocks and "horizon" not in blocks:
         # A panel that found nothing for the curator leaves a file with no issue; without a panel it is a stray file.
         raise ReviewFileError(
             path, None, "no issue, no record field and no review panel; a settled issue stays, labelled Resolved"
@@ -286,6 +297,7 @@ def parse_review_file(path: Path, folder: str, text: str | None = None) -> Entry
         points=" ".join(blocks["points"].text.split()),
         cell=cell,
         judgment=blocks["judgment"].text if "judgment" in blocks else "",
+        horizon=blocks["horizon"].text if "horizon" in blocks else "",
         issues_label=blocks["issues"].label if "issues" in blocks else "Issues",
         issues=issues,
         numbers=numbers,
@@ -473,7 +485,18 @@ def shape_warnings(entry: Entry) -> list[str]:
             out.append(f"{entry.name} issue {it['n']}: no {', '.join(missing)}")
         if ids:
             out.append(f"{entry.name} issue {it['n']}: rule IDs in the text ({', '.join(ids)}); move them to footnotes")
-    return out
+    return out + _horizon_warnings(entry)
+
+
+def _horizon_warnings(entry: Entry) -> list[str]:
+    """What the ``**Horizon:**`` block of ``entry`` misses of its issue shape (the page shows it as the issue H)."""
+    if not entry.horizon:
+        return []
+    body, _, _ = brp._cut_notes(entry.horizon)
+    missing = [p.strip("*:") for p in HORIZON_PARTS if p not in body]
+    if "**Options:**" in body and not brp._options(body)["implemented"]:
+        missing.append("row marked (implemented): today's length")
+    return [f"{entry.name} horizon: no {', '.join(missing)} (the page shows it as issue H)"] if missing else []
 
 
 def collect(root: Path, records: Path, names: list[str] | None = None) -> Collected:
@@ -501,10 +524,17 @@ CLOSING_RE = re.compile(r"\*\*(Resolved|Deferred) \(")
 """A closing turn; the last one says whether an item is parked (Deferred) or settled (Resolved)."""
 
 
-def is_settled(entry: Entry, records: Path) -> bool:
+def is_settled(
+    entry: Entry,
+    records: Path,
+    metric_marks: set[str] | frozenset[str] | None = frozenset(),
+    horizon_marks: set[str] | frozenset[str] | None = frozenset(),
+) -> bool:
     """Whether nothing on ``entry`` waits for the curator: every issue resolved (none left deferred), no record-field
-    row, no triage verdict to verify, and, for a dataset with a folder, the record's CC line that the declared metric is
-    checked. Such a record ships by default and leaves the page (Lennart, 2026-11-08); its REVIEW.md stays in git.
+    row, no triage verdict to verify, and, for a dataset with a folder whose metric the round marks (``metric_marks``,
+    ``None`` for every record), the record's CC line that the declared metric is checked; likewise for the horizon
+    (``horizon_marks``). Such a record ships by default and leaves the page (Lennart, 2026-11-08); its REVIEW.md stays
+    in git. A metric or a horizon the round does not ask about never keeps a record on the page (Lennart, 2026-11-10).
     """
     if entry.fields:
         return False
@@ -516,15 +546,29 @@ def is_settled(entry: Entry, records: Path) -> bool:
     record = records / f"{entry.name}.md"
     if not record.is_file() or brp._decided(record):
         return False
-    return not entry.folder or brp._metric_checked(record) is not None
+    if not entry.folder:
+        return True
+    for marks, checked in ((metric_marks, brp._metric_checked), (horizon_marks, brp._horizon_checked)):
+        if (marks is None or entry.name in marks) and checked(record) is None:
+            return False
+    return True
 
 
 def _settled_lines(collected: Collected) -> list[str]:
-    """The report's line naming the records left out as settled, or nothing."""
-    if not collected.settled:
-        return []
-    names = ", ".join(f"`{n}`" for n in collected.settled)
-    return [f"**Settled, left out (they ship by default):** {names}.", ""]
+    """The report's lines naming the records whose metric the round marks and those left out as settled, or nothing."""
+    out = []
+    for label, marks in (
+        (brp.METRIC_MARKS_LABEL, collected.metric_marks),
+        (brp.HORIZON_MARKS_LABEL, collected.horizon_marks),
+    ):
+        if marks is None:
+            out += [f"{label} all.", ""]
+        elif marks:
+            out += [f"{label} {', '.join(f'`{n}`' for n in sorted(marks))}.", ""]
+    if collected.settled:
+        names = ", ".join(f"`{n}`" for n in collected.settled)
+        out += [f"**Settled, left out (they ship by default):** {names}.", ""]
+    return out
 
 
 def _cell(text: str) -> str:
@@ -584,6 +628,8 @@ def _per_dataset_lines(entries: list[Entry]) -> list[str]:
         out += ["", f"### {e.name}", "", f"**Outcome:** {e.outcome}"]
         if e.judgment:
             out += ["", f"**Record judgment:** {e.judgment}"]
+        if e.horizon:
+            out += ["", f"**Horizon:** {e.horizon}"]
         if e.numbers:
             out += ["", f"**{e.issues_label}:**", "", e.issues]
         if e.panel:
@@ -618,6 +664,12 @@ def check_report(path: Path, collected: Collected) -> None:
         )
 
 
+def _marks(value: str | None) -> set[str] | None:
+    """The names of a ``--metric-marks`` or ``--horizon-marks`` flag (``None`` for ``all``)."""
+    marks = {n.strip() for n in (value or "").split(",") if n.strip()}
+    return None if marks == {"all"} else marks
+
+
 def main(argv: list[str] | None = None) -> int:
     """Collect the review files, write the report and check it with the builder's parser."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -627,6 +679,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--names", help="Comma-separated unique names: collect only these records.")
     parser.add_argument("--title", default="Open review issues", help="The report's title (the page shows it).")
     parser.add_argument("--date", default=dt.date.today().isoformat(), help="The date in the title (YYYY-MM-DD).")
+    parser.add_argument(
+        "--metric-marks",
+        help=(
+            "Comma-separated unique names, or `all`: the records whose declared metric is a choice of this round (new "
+            "datasets, a proposed metric change). The page shows the metric and a mark on it only for these."
+        ),
+    )
+    parser.add_argument(
+        "--horizon-marks",
+        help=(
+            "Comma-separated unique names, or `all`: the temporal records whose horizon and test windows the curator "
+            "signs off in this round (new datasets, or when asked). The page shows them with a mark only for these."
+        ),
+    )
     parser.add_argument(
         "--keep-settled",
         action="store_true",
@@ -638,10 +704,17 @@ def main(argv: list[str] | None = None) -> int:
     except ValueError:
         parser.error(f"--date {args.date!r} is not YYYY-MM-DD")
     names = [n.strip() for n in args.names.split(",") if n.strip()] if args.names else None
+    metric_marks, horizon_marks = _marks(args.metric_marks), _marks(args.horizon_marks)
     try:
         collected = collect(args.root, args.records, names)
+        for flag, marks in (("--metric-marks", metric_marks), ("--horizon-marks", horizon_marks)):
+            unknown = sorted((marks or set()) - {e.name for e in collected.entries})
+            if unknown:
+                print(f"error: {flag} names records without open review: {', '.join(unknown)}", file=sys.stderr)
+                return 1
+        collected.metric_marks, collected.horizon_marks = metric_marks, horizon_marks
         if not args.keep_settled:
-            settled = [e.name for e in collected.entries if is_settled(e, args.records)]
+            settled = [e.name for e in collected.entries if is_settled(e, args.records, metric_marks, horizon_marks)]
             collected.entries = [e for e in collected.entries if e.name not in settled]
             collected.settled = settled
         if not collected.entries and not collected.across_items:

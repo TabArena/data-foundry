@@ -23,8 +23,7 @@ class CookingTime1m(AbstractCuratedDataset):
         question="How long will a restaurant take to cook an order placed through a food delivery app?",
         use_case=(
             "When an order is placed, the delivery service estimates the restaurant's cooking time, for example to "
-            "time the courier and the delivery estimate shown to the customer; the model is refit every week "
-            "(TabReD)."
+            "time the courier and the delivery estimate shown to the customer."
         ),
         row=(
             "One order placed through a food delivery app between 15 November 2023 and 3 January 2024 (TabReD "
@@ -39,14 +38,15 @@ class CookingTime1m(AbstractCuratedDataset):
             "(TabReD), including the time of the order."
         ),
         split=(
-            "Each test window is one of the last three weeks (14 December 2023 to 3 January 2024), up to 500,000 "
-            "orders each; training is every earlier order, of which a benchmark fits on a random million, as for a "
-            "model refit every week."
+            "Each test window is one of the last three weeks (14 December 2023 to 3 January 2024), the only weeks "
+            "that keep half the orders for training, up to 500,000 orders each; a week is TabReD's own validation and "
+            "test length. Training is every order placed at least a day before the window, of which a benchmark fits "
+            "on a random million."
         ),
         fit="direct",
         fit_reason=(
-            "Order contents and past cooking times are known when an order is placed, and the windows follow a weekly"
-            " refit. The features are anonymised, so their timing cannot be checked."
+            "Order contents and past cooking times are known when an order is placed. The features are anonymised, so"
+            " their timing cannot be checked."
         ),
     )
 
@@ -101,11 +101,11 @@ class CookingTime1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We use each of the last 3 weeks as a test window (newest first) and the orders placed at least one day before it as train data. The gap of one day is part of the task: a cooking time is known only when the order is cooked (up to 2 hours after it is placed), so at a weekly refit the last orders before it have no label yet; without the gap 172, 126 and 108 train orders per window (start + cooking time) would end after the window start, with it none. The gap removes 280k, 264k and 239k of the 11.1M, 9.1M and 7.2M earlier orders (2.5 to 3.3%). Each window keeps at most 500k of its rows (1.7M to 2.0M before sampling); each train side holds every eligible earlier row, and a benchmark sub-samples it to 1M rows, by default a random 1M of the newest year before the window, here all of the history (`subsample_train`).
+        Each test window is one week, TabReD's own validation and test length: TabReD trains on 15 November to 20 December 2023, validates on 21-27 December and tests on 28 December to 3 January, so our two newest windows are its validation and test weeks. TabReD states no refit cadence. A week holds every weekday once, and cooking times follow a weekly cycle: Friday and Saturday orders cook about 12% longer than Monday to Thursday orders (mean log minutes 2.57 to 2.64 against 2.46 to 2.51), more than the shift between the weekly windows. We use each of the last 3 weeks as a test window (newest first: 28 December to 3 January, 21-27 December and 14-20 December; CC 2026-11-10) and the orders placed at least one day before it as train data: 10,856,304, 8,832,570 and 6,935,762 orders (84.8%, 69.0% and 54.2%). They are the only weekly windows above the 50% floor: the orders run from 15 November 2023 to 3 January 2024, the earliest start that keeps half the orders for training is 11 December (51.9%), and 11-12 December hold no orders, so seven-day windows that do not overlap can move by three days at most. All three lie in the weeks before and over New Year, when cooking times are longest (mean log minutes 2.548, 2.554 and 2.599 in the oldest, middle and newest window, against 2.527 to 2.532 in the weeks from 16 November to 6 December): the score does not cover an ordinary week of November or early December, nor a week after the holidays (the data end on 3 January). The gap of one day is part of the task: a cooking time is known only when the order is cooked (up to 2 hours after it is placed), so at a refit the last orders before it have no label yet; without the gap 172, 126 and 108 train orders per window (start + cooking time) would end after the window start, with it none. The gap removes 280k, 264k and 239k of the 11.1M, 9.1M and 7.2M earlier orders (2.5 to 3.3%). Each window keeps at most 500k of its rows (1,662,794, 2,040,512 and 1,921,331 before sampling); each train side holds every eligible earlier row, and a benchmark sub-samples it to 1M rows, by default a random 1M of the newest year before the window, here all of the history (`subsample_train`).
     """
     temporal = Temporal(
         on="timestamp",
-        splits=TemporalSplits(window=7, unit="days", n_windows=3, gap=1),
+        splits=TemporalSplits(window=7, unit="days", gap=1, cutoffs=("2023-12-28", "2023-12-21", "2023-12-14")),
     )
     row_budget = RowBudget(train=1_000_000, test=500_000)
 

@@ -4,7 +4,61 @@
 was rewritten on 2026-11-10, so the three test months (April, May and June 2014) are put to the curator again. The AI
 proposes keeping June and April and testing February instead of May, so that one window falls in winter.
 
-**Main points:** Which months to test on: April, May and June 2014 (as now), or February, April and June?
+**Main points:** First the horizon sign-off (H), from the horizon audit of 2026-11-10: calendar months, 30 days or
+weeks as for nyc? Issue 1 waits on it: April, May and June 2014 (as now), or February, April and June (your pick)?
+
+**Horizon:**
+
+* **Verdict:** change the 30-day windows to calendar months (medium confidence): no source gives a refit cadence, the
+  definition's reason for a month misreads the challenge, and the only horizon the source shows is months long and
+  without a refit.
+* **Length:** the splits comment says "The monthly length follows the source: the challenge tested on 320 trips 1.5
+  to 6 months after its training year". The challenge asked for five snapshots (14 August to 21 December 2014;
+  BlueTaxi, https://arxiv.org/abs/1509.05257) of one model trained on the year (1 July 2013 to 30 June 2014;
+  https://arxiv.org/abs/1508.00021), used 1.5 to 6 months later without a refit: that defines no month, and it speaks
+  for the longer of the lengths below. The windows were calendar months at first and became 30 days when the one-day
+  gap was added; the 30-day unit ends the May window on 30 May and makes a February window run to 2 March. Calendar
+  months with a one-day gap now work. nyc_taxi_trip_duration_1m predicts the same thing, a taxi trip's duration when
+  it starts, on one-week windows, so the two taxi tasks assume different refit cadences; no source of either dataset
+  states one, and nyc's week rests on the weekdays and on how often an ETA service usually refits[^h-split12]. A
+  month-long window scores a model that serves a month, a week one that serves a week, as on nyc.
+* **Gap:** one day: a trip lasts at most 3 hours (without the gap 48, 36 and 8 training trips would end after the
+  window starts).
+* **Time frame:** the challenge's year; months from January 2014 keep half the trips for training; 60 days would give
+  exactly three windows that tile the half-year, with no choice left. Drift between months is small (largest PSI 0.023
+  to 0.025), so the length changes how long one model serves more than what the windows hold, and the scores differ
+  more in how many trips each window holds than in their level. Your pick of issue 1 (February, April and June) holds
+  under a month and is chosen again under a week.
+* **Statistics:** calendar months with a one-day gap, from the definition's frame:
+
+  | Window | Trips tested | Train side | Train share | Mean log seconds, test and train |
+  |---|---|---|---|---|
+  | June 2014 | 146,714 | 1,484,039 | 90.7% | 6.402, 6.404 |
+  | April 2014 | 130,112 | 1,200,383 | 73.4% | 6.390, 6.399 |
+  | February 2014 | 122,831 | 943,912 | 57.7% | 6.419, 6.395 |
+
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | A | 30 days (implemented) | issue 1's pick as 30-day windows from 1 February, 1 April and 1 June | no change of unit | the February window runs to 2 March; a length no source gives |
+  | B | Calendar months | February, April and June 2014 (57.7%, 73.4%, 90.7%); 6 candidates, January to June | your pick exactly; the longer length the source's months-long use speaks for | a different length from nyc for the same use case |
+  | C | One week, as nyc | three weeks chosen again under issue 1; about 25 candidates | one length for the taxi tasks | no source either; a week where the source used one model for months |
+
+* **Recommendation:** B: it is your pick of issue 1 as calendar months, and where the source shows any horizon it is
+  months long; nyc has no such source, so a week stays its length. **Decision:** A, B or C?
+
+**Notes for the AI:** on B, `temporal = Temporal(on="start_time", splits=TemporalSplits(window=1, unit="months",
+cutoffs=("2014-06-01", "2014-04-01", "2014-02-01"), gap=1, gap_unit="days"))`: test 146,714, 130,112 and 122,831
+trips, train 1,484,039, 1,200,383 and 943,912 (90.7%, 73.4%, 57.7%). Then resolve issue 1 with B, rewrite
+`task_summary.split` and `splits_comment` (the windows, the reason from the Horizon block: one model trained on the
+year and used for months; calendar months as the longest cadence that leaves a choice of seasons), a CC line in the
+record with the CC line that the declared horizon is checked, a dated CHANGELOG entry, `dataset check`. On C, propose
+three weeks in issue 1 again (`dataset windows ... --window 7 --unit days --gap 1 --gap-unit days`).
+
+[^h-split12]: **SPLIT-12** (Should): "The horizon is a human judgment from the source: how far ahead the actor
+  predicts ..., the competition's own test window, the refit cadence. Choose the test windows to match it and write
+  the reasoning down."
 
 **Issues for Lennart:**
 
@@ -51,3 +105,12 @@ proposes keeping June and April and testing February instead of May, so that one
    [^pk-length]: **SPLIT-12** (Should): the window length and the gap come from the use case, here a model refit every
      month; **SPLIT-10** (Should): the one-day gap covers trips still under way at a refit.
    [^pk-floor]: **SPLIT-14** (Must): at least 3 windows, and no train side below 50% of the rows.
+
+   **Lennart (2026-11-10, change):** Option B: February, April and June.
+
+   **Answer (AI, 2026-11-10):**
+   - The horizon audit found that the 30-day length has no source behind it (the Horizon block above), so the horizon
+     sign-off (H) asks about the length first.
+   - Your months stand under its options A (30 days, the February window running to 2 March) and B (calendar months);
+     under C (one week, as nyc_taxi_trip_duration_1m) the windows are proposed again. This issue waits on the horizon
+     sign-off (H).

@@ -537,8 +537,10 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   // The mark on the declared metric (stored as `metric: {d, note}` on the record's review document).
   const METRIC_OPTS = [["ok", "As declared"], ["change", "Change"], ["discuss", "Discuss"]];
   const METRIC_LABEL = { ok: "As declared", change: "Change", discuss: "Discuss" };
-  // The metric takes a mark until the record carries the curator's CC line that it is checked (then it is resolved).
-  const hasMetricMark = (d) => !!d.metric && !!d.folder && !d.retired && d.cat !== "decided" && !d.metricChecked;
+  // The metric is on the page only when the round asks about it (`metricMark`: the collector's --metric-marks; Lennart,
+  // 2026-11-10, "hidden unless asked for"), and takes a mark until the record carries the curator's CC line that it
+  // is checked (then it is resolved).
+  const hasMetricMark = (d) => !!d.metricMark && !!d.metric && !!d.folder && !d.retired && d.cat !== "decided" && !d.metricChecked;
   const X_OPTS = [["ok", "Go ahead"], ["leave", "Leave as is"], ["discuss", "Discuss"]];
   const FIELD_OPTS = [["update", "Take definition's value"], ["keep", "Keep record's value"]];
   /* A record-field row's buttons name the value each one leaves in the record. */
@@ -967,6 +969,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     fallback: "the default for the problem type: the source defines no unique metric",
   };
   function metricHtml(d) {
+    if (!d.metricMark) return "";
     const m = d.metric;
     if (!m) return d.folder ? '<p class="missing-note">No metric: the definition declares none and its README names none.</p>' : "";
     const link = (v) => /^https?:\/\//.test(v) ? '<a href="' + esc(v) + '" target="_blank" rel="noopener">' + esc(v) + "</a>" : escCode(v);

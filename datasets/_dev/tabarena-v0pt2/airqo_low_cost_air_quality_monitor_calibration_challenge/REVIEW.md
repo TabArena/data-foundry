@@ -10,12 +10,42 @@ training-period clause is departed from for one test row (issue 2); the target k
 (issue 3). Value: TP-2 holds (LightGBM 18.26 RMSE against 41.22 for the training mean and 25.32 for the raw sensor);
 MET-1..4 hold (the source's RMSE). Quality: dead-channel hours missed by the sensor-2 rule (issue 4); the stale notes
 in the definition are fixed (EV-7). Weighed: three sites (-), a real named use (+), the source paper (+), the shape
-(+). For the curator: issue 1 first.
+(+). For the curator: issue 1 first. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI
+recommends keeping the one-month windows without a gap (Horizon) and the five test months, leaving out September 2020,
+the one other month above the floor, as Nakawa's first month (issue 6, open; `dataset.py` is unchanged until you
+decide).
 
 **Main points:** Widen the test windows beyond the dry season (issue 1; decide it first, since it moves the spikes of
 2 and the outage of 3 into test windows), and decide three cleaning changes the panel recommends but did not make:
 keep the Makerere test-window spike as a label (2), drop the Nakawa reference outage (3), one dead-channel rule for
-both sensors (4).
+both sensors (4). Open since 2026-11-10: sign off the monthly windows without a gap (Horizon), and keep the five test
+months rather than add September 2020 (issue 6)?
+
+**Horizon:**
+
+* **Verdict:** keep the one-month windows without a gap (medium confidence): the monthly refit is your judgment of
+  2026-11-04, and no source gives a cadence.
+* **Length:** one month, a model refit at the start of each month that corrects that month's hourly readings at the
+  collocated devices. The source paper says it is "important to retrain these models periodically" and names
+  "seasonal re-calibration" as future work, with no interval (Adong et al. 2022, Applied AI Letters,
+  [doi:10.1002/ail2.76](https://doi.org/10.1002/ail2.76)); the Zindi competition scored a random split, and AirQo's
+  refit practice is not documented. The month is a convention between the hourly feed and a season.
+* **Gap:** none: the reference value is for the same hour, no reporting delay is documented, and no training label is
+  from after its window's start.
+* **Time frame:** 10,828 labelled hours from 25 July 2019 (USEmbassy), 15 July 2020 (Makerere) and 19 September 2020
+  (Nakawa) to 28 February 2021. Monthly windows that keep half the hours for training: September 2020 to February
+  2021 (six). The five tested months hold two months of the September-November rains (October, November) and the three
+  months of the December-February dry season; each month holds a different mix of the three sites.
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | A | One month (implemented) | monthly windows, no gap: 6 candidates above the floor, September 2020 to February 2021, of which 5 are tested | your judgment of 2026-11-04; between the hourly feed and a season | no source gives a cadence |
+  | B | Two weeks | 14 candidates from 17 August 2020, 64 to 643 hours each (9-20 November holds 64, after the Nakawa outage) | reaches the end of the June-August dry season | a fortnightly refit nobody documents; halves the hours per window |
+  | C | Three months (a season) | only December-February (74.9% train share) and September-November (53.0%) keep half the hours | the season of the paper's "seasonal re-calibration" (future work) | too few for three windows |
+
+* **Recommendation:** A: the monthly refit is your judgment of 2026-11-04, between the hourly feed and a season, and no
+  source names another cadence. **Decision:** A, B or C?
 
 **Issues for Lennart:**
 
@@ -246,6 +276,71 @@ both sensors (4).
      **Decision:** A or B?
 
    **Resolved (2026-11-05, Lennart):** A, as implemented: the hour is dropped with the other 11.
+
+6. **Keep the five test months, or add September 2020 as a sixth?**
+
+   * **Problem:**
+     - The five test windows, October 2020 to February 2021 (your call of 2026-11-05, issue 1), already reach every
+       month back to the half-share floor but one: September 2020, whose train side holds 53.0% of the hours[^aq-split14].
+     - Since 2026-11-10 the newest window always stays and the others are argued from the use case and statistics of
+       the data, preferring other seasons over the months just before the newest[^aq-split15].
+     - September 2020 is the month Nakawa starts (19 September), so 13.6% of its 462 test hours come from a site its
+       train side never shows, in a task about known sites[^aq-use10].
+   * **Background:**
+     - The five months already cover both seasons the data holds: two months of the September-November rains and the
+       three of the December-February dry season; September would be a third rainy month, next to October.
+     - Issue 1 offered six windows from September (its option C) and you chose five for the same Nakawa reason; the
+       statistics below say the same.
+     - PSI, the population stability index, compares a feature's distribution in the window with its train side;
+       above 0.25 is usually read as a large shift. Here the largest PSI sits on the site descriptors (site, latitude,
+       altitude), which are constant per site, so it reads which sites a month holds, not a change in the sensors.
+   * **Statistics:** from the candidate table (every hour of each side).
+
+     | Month | In | Test hours | Mean reference PM2.5, test | Train side | Train share | Largest PSI | Test hours at a site new to training |
+     |---|---|---|---|---|---|---|---|
+     | Feb 2021 | A, B | 834 | 74.2 | 51.6 | 92.3% | 1.24 | 0% |
+     | Jan 2021 | A, B | 1,048 | 49.5 | 51.8 | 82.6% | 2.16 | 0% |
+     | Dec 2020 | A, B | 836 | 44.8 | 52.5 | 74.9% | 6.84 | 0% |
+     | Nov 2020 | A, B | 596 | 40.5 | 53.5 | 69.4% | 0.95 | 0% |
+     | Oct 2020 | A, B | 1,310 | 42.3 | 55.8 | 57.3% | 2.03 | 0% |
+     | Sep 2020 | B | 462 | 41.0 | 57.0 | 53.0% | 2.33 | 13.6% |
+
+   * **Effect on the task:** B adds a month in which part of the test is a site the model has never seen, a transfer
+     the known-site task leaves out, and a third rainy month to the mean score; A keeps every test hour at a site with
+     training history.
+   * **Consistency:** follows your call on issue 1 (2026-11-05), which left September out for Nakawa's missing
+     history.
+   * **Sources:** the definition
+     `datasets/_dev/tabarena-v0pt2/airqo_low_cost_air_quality_monitor_calibration_challenge/dataset.py` (`temporal`,
+     `splits_comment`); the record `curation/records/airqo_low_cost_air_quality_monitor_calibration_challenge.md`; the
+     candidate table `.venv/bin/python -m data_foundry.curation.cli dataset windows
+     airqo_low_cost_air_quality_monitor_calibration_challenge --root datasets/_dev/tabarena-v0pt2` (6 months).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Five months (implemented) | tests October 2020 to February 2021 | both seasons; every test hour at a site with training history | September 2020 stays untested; the oldest refit trains on 57.3% |
+     | B | Six months | adds September 2020 (462 hours) | every month above the floor tested | 13.6% of September's hours at a site with no training hours; a third rainy month next to October |
+
+   * **Recommendation:** A: the five months already cover both seasons, and the only month left would test a new
+     site in a known-site task. **Decision:** A or B?
+
+   **Notes for the AI:** on A, add one sentence to `splits_comment`: September 2020, the only other month whose train
+   side keeps half the hours (53.0%), is left out because 13.6% of its 462 hours are at Nakawa, which has no earlier
+   hour (its 63 hours of 19-23 September); a CC line and a CHANGELOG entry. On B, `temporal = Temporal(on="created_at",
+   splits=TemporalSplits(window=1, unit="months", cutoffs=("2021-02-01", "2021-01-01", "2020-12-01", "2020-11-01",
+   "2020-10-01", "2020-09-01")))` (a plain cutoff is read in the column's UTC+3 zone): test 834, 1,048, 836, 596,
+   1,310 and 462 hours, train 9,994, 8,946, 8,110, 7,514, 6,204 and 5,742 (92.3% to 53.0%), from the candidate table;
+   then rewrite `task_summary.split` and `splits_comment` (six months; Nakawa's September hours as a new-site test), a
+   CC line, a CHANGELOG entry and `dataset check`.
+
+   [^aq-split14]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less
+     than 50% of the data.
+   [^aq-split15]: **SPLIT-15** (Must for the newest window, Should for the others; amended 2026-11-10, Lennart and
+     Andrej): "The newest window is always a test window ... Prefer windows in other years, then other seasons, then
+     other months, weeks or days, over the windows just before the newest."
+   [^aq-use10]: **USE-10** (Must): decide from the use case whether the entity the model predicts for is new or known;
+     here a known site.
 
 **Review panel:** ship after changes (mediator). Tier full, a second pass after Lennart's PR #33 review (2026-11-04), 12 reports. Claims: 24, 12 hold, 9 refuted (stale or overstated text, fixed in `dataset.py`; the record's `required_split` is in the field row and its 15-hour figures in issue 4), 1 concern (issue 2), 2 untested. Blind review: include with changes; its main concerns are that the eight site descriptors repeat the site label (kept: legitimate for known sites, LEAK-34) and that the windows mix later time with newer sites. Task gamer: its best exploit, the previous hour's reference, lowers mean RMSE from 18.21 to 16.28, a leak under the stated prediction point; nothing else beat the noise. Agreed: no leak, the temporal regime, the site descriptors kept, RMSE, the text fixes, the spike rule on training rows only, one dead-channel rule for both sensors. Disputed: SPLIT-20, widen the windows or keep them with an exception (issue 1); the clause and rank of the Nakawa outage (issue 3).
 

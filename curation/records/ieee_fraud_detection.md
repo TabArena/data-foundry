@@ -8,6 +8,7 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 3
 decision_markers:
 - Data Quality Issue
 - Anonymized
@@ -55,6 +56,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 1 coded columns carry their words.
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
+**Assessment (AI, 2026-11-10):** priority for the review of the test windows and horizons, which this record never had. Priority 3: gap 0, use case 0, source + (Vesta's competition), shape +, risk 0 (the open issue is the window length and the floor).
 
 ## Reference
 

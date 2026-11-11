@@ -8,6 +8,31 @@ AI proposes three whole weeks that overlap by one or two days, which keep every 
 **Main points:** Keep the three newest weeks (the oldest below the floor), or test three overlapping weeks or three
 six-day windows that keep it?
 
+**Horizon:**
+
+* **Verdict:** keep the 7-day windows (medium confidence): a week is TabReD's own validation and test length, a week
+  holds every weekday once, and travel times are lower on weekends.
+* **Length:** TabReD (Rubachev et al., ICLR 2025, https://arxiv.org/abs/2406.19380; preprocessing at
+  https://github.com/yandex-research/tabred/tree/main/preprocessing): train 1-20 November, validation 20-27 November,
+  test 27 November to 4 December 2023 (its own split trains on 47% of the rows and leaves 4-10 December unused). "As
+  for a model refit every week" is our wording; no source names the router's refit cadence. If it is daily, one-day
+  windows become the right horizon.
+* **Gap:** one day; the longest route takes 16.6 hours, so 17 hours would also do.
+* **Time frame:** 1 November to 10 December 2023, no missing day; Monday 6 November, a Russian public holiday, runs
+  like a Sunday and lies in every train side.
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | A | One week, one-day gap (implemented) | 7-day windows; which weeks is issue 1 | TabReD's own validation and test length; every weekday once | only two whole weeks without overlap keep half the routes for training (issue 1); no source names the refit cadence |
+  | B | One day, a 17-hour gap | daily windows: 18 candidates | issue 1's floor problem disappears; the right horizon if the router refits daily | each window tests one weekday, and weekends run lower |
+  | C | Six days | issue 1's option C: 23-28 November, 29 November-4 December and 5-10 December | every train side above half; no overlap | each window misses one weekday |
+  | D | Two weeks | 14-day windows: 1 candidate | more routes per window | fewer than three windows |
+
+* **Recommendation:** A: the length of the source's own validation and test periods, holding every weekday once; the
+  floor is issue 1's question, and a daily refit, which one-day windows would fit, is named by no source.
+  **Decision:** A, B, C or D?
+
 **Issues for Lennart:**
 
 1. **Which three test windows, when the 40 days allow only two whole weeks above the floor?**
@@ -60,3 +85,45 @@ six-day windows that keep it?
      Andrej): the newest window is always a test window; the others are chosen per dataset from the use case, with
      statistics of the data as evidence and never a model's score; walking back from the newest needs its reason, such
      as a history too short for others.
+
+   **Lennart (2026-11-10, ok):** As implemented (A).
+
+   **Consistency check (AI, 2026-11-10):** Keep the three newest weeks, whose oldest train side holds 44.8% of the
+   routes, when the floor is a Must and its 40% allowance needs test entities that recur, which anonymous routes do not?
+
+   * **Problem:**
+     - A tests 20-26 November on 44.8% of the 13,639,272 routes; the floor is a Must[^mc-14], and the amendment of
+       2026-11-08 admits one older window at 40% or more only when most test entities recur and folds by entity would
+       test unseen ones (wisconsin: 97.6% to 98.8% of each test year's members known), while the routes here are
+       anonymous.
+     - No higher rule calls for A: the newest week is in B and C too, and the weekly length (a Should) stays in
+       B[^mc-15][^mc-12].
+     - Every earlier floor breach was fixed or amended (california_house_prices_2020, pricing_game_2016_french_fleet,
+       wisconsin), and today cooking_time_1m, from the same TabReD family at the same length, kept its windows because
+       they are "the only weekly windows above the floor".
+   * **Background:**
+     - A fact that could set maps apart: a 40-day release in which three whole weeks without overlap cannot all keep
+       half the routes; A's two older weeks are TabReD's own validation and test weeks, and TabReD's own split trains on
+       47.0%[^mc-19].
+     - Counted on the rows the container ships (the newest week capped at 500,000), the oldest side holds 52.2%; the
+       floor is counted on all rows, as for wisconsin (40.6%) and ashrae (49.5%).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Amend the floor | admit one older window at 40% or more also when a release is too short for three whole weeks above the floor, whatever the entities | whole weeks without overlap; TabReD's own weeks | widens a Must two days after it was narrowed to recurring entities; applies to every short release |
+     | b | B, three overlapping weeks | 23-29 November, 29 November-5 December, 4-10 December (51.8%, 67.0%, 79.9%) | keeps the floor and whole weeks; decides maps like cooking_time_1m | 3 of 21 test days tested twice |
+     | c | C, three six-day windows | train sides 51.8%, 67.0%, 82.1% | keeps the floor, no overlap | each window misses one weekday |
+     | d | Count the floor on the shipped rows | A passes at 52.2% | the floor would depend on the test budget, not the data, for every `_1m` version |
+
+   * **Recommendation:** b: it keeps the Must and the weekly length, and decides maps like cooking_time_1m today;
+     choose a only if whole weeks without overlap should outrank the floor for every short release. **Decision:** a, b,
+     c or d?
+
+   [^mc-14]: **SPLIT-14** (Must; amended 2026-11-08, Lennart, on wisconsin_local_government_property_insurance_fund):
+     at least 3 windows, no train side below 50% of the data; one older window at 40% or more only "when most test
+     entities recur ... and folds by entity would test unseen ones".
+   [^mc-15]: **SPLIT-15** (Must for the newest window, Should for the others; amended 2026-11-10): "Every choice stays
+     above SPLIT-14's floor."
+   [^mc-12]: **SPLIT-12** (Should): the horizon comes from the source or the refit cadence.
+   [^mc-19]: **SPLIT-19** (Should): follow the source's split; it ranks below SPLIT-14, a Must.

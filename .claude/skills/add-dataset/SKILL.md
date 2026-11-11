@@ -170,13 +170,17 @@ and the editor) for a re-check after a small change. Say which tier ran.
    `dataset check` and the probes it touches.
 2. Write `REVIEW.md` ([review file format](../review-added-datasets/references/review_file_format.md)): the outcome as a
    judgment record ([principles.md](../knowledge-curation/references/principles.md)), the main points, the record fields
-   that disagree with the definition, the issues in rank order (validity first, Must first), each in the issue shape
-   of [writing.md](../knowledge-curation/references/writing.md): bullets for the problem, the effect, the experiments
-   and the consistency with other datasets, a table of the options with pros and cons, the recommendation and the
-   decision, the rules in footnotes and what Claude needs to apply it in `**Notes for the AI:**`; and the
-   `**Review panel:**` block with each agent's full report. A review raises 0 to N issues: zero is a valid outcome
-   when the checks and the panel leave nothing for the curator to decide (the outcome says so, and the curator only
-   sets the verdict). Never raise an issue to have one; an issue is something whose answer would change the dataset.
+   that disagree with the definition, the issues in rank order (validity first, Must first), each in the issue shape of
+   [writing.md](../knowledge-curation/references/writing.md): bullets for the problem, the effect, the experiments and
+   the consistency with other datasets, a table of the options with pros and cons, the recommendation and the decision,
+   the rules in footnotes and what Claude needs to apply it in `**Notes for the AI:**`; and the `**Review panel:**`
+   block with each agent's full report. A temporal dataset always gets the `**Horizon:**` block, in the issue shape of
+   the format: the split auditor's argument for the window length and the gap (how far ahead the actor predicts, the
+   refit cadence, the label delay, from the source) and for the period the windows cover, with the alternatives as an
+   options table; the curator signs it off like the metric, as the issue "H" (Lennart, 2026-11-10). A review raises 0 to
+   N issues: zero is a valid outcome when the checks and the panel leave nothing for the curator to decide (the outcome
+   says so, and the curator only sets the verdict). Never raise an issue to have one; an issue is something whose answer
+   would change the dataset.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
 4. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
    `**Assessment (AI, <date>):** review panel (<tier>): <the mediator's recommendation>; disputed: <the points, by
@@ -192,4 +196,5 @@ and the editor) for a re-check after a small change. Say which tier ran.
 
 Report: the folder and its outcome in one line; the panel's recommendation and the disputed points; the issues for the
 curator by rank; every `TODO(verify)` left, grouped by method; what could not be checked; next steps with paths filled
-in (`/review-added-datasets`, with `--names` for a batch).
+in (`/review-added-datasets`, with `--names` for a batch, `--metric-marks` with the same names, since their
+metrics are new, and `--horizon-marks` with the temporal ones).

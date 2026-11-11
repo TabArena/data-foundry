@@ -8,6 +8,7 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 3
 tags:
 - Non-IID (Temporal)
 - Free Text (Sentences)
@@ -52,6 +53,14 @@ CC (2026-10-01, Lennart): Leak audit: the build from the 2026-01-23 download had
 CC (2026-10-06, Lennart): Kept after the task-probe sweep of the 2026-10-06 build. The probe flagged `unstable` (consumer_complaints_1m), only because the standard error of the best skill over the 3 temporal windows is 0.060 (limit 0.05): the best probe model (random forest) beats the class shares in all 3 windows, ROC AUC 0.90 +- 0.02, log loss 0.45 against 0.73. On BeyondArena's one fold all 21 configurations beat the dummy (log loss 0.41-0.56 against 0.71). The variation is the drift between the windows, not a missing signal.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — The CFPB database is a public register with no prediction task; the task is our adaptation following a benchmark paper, not an original task with a defined metric.
+
+**Assessment (AI, 2026-11-10):** priority for the review of the test windows (PR #78), which this record never had. Priority 3: gap 0, use case 0 (written by the curation, 'for example'), source + (the CFPB's database page), shape +, risk 0 (the open issue is the choice of windows).
+
+CC (2026-11-10, Lennart): test windows (`consumer_complaints_1m`, issue 1): "Option B: Two years, three seasons." The test quarters are October-December 2025, January-March 2025 and July-September 2024 instead of the last three quarters of 2025.
+
+CC (2026-11-10, Lennart): the declared horizon (3 months, no gap, windows starting 2025-10-01, 2025-01-01 and 2024-07-01) is checked, as a quarterly refit is our assumption (the CFPB publishes no model or cadence), longer than the 15-60 days a closure takes, with 200k-350k complaints per quarter.
+
+**Assessment (AI, 2026-11-10):** applied: `temporal` cutoffs 2025-10-01, 2025-01-01 and 2024-07-01 (3 months, no gap); test 203,139, 350,790 and 213,655 complaints, train 3,236,122, 2,277,019 and 1,838,062 (94.1%, 66.2% and 53.4% of 3,439,261), as the issue's notes counted; `dataset check` 0 errors. `task_summary`, `splits_comment` and the class-share and row-budget notes name the new quarters. The horizon audit (model-free, 2026-11-10) found no source for a refit cadence, so the quarter is stated as our assumption, and found the notes' "180 days" wrong: they are the deadline of the optional public response, while a company responds within 15 calendar days and has up to 60 for its final response (https://www.consumerfinance.gov/compliance/consumer-complaint-program/company-process/); the old reason ("data from just a few days is likely not enough") failed, as a month holds 54,655 to 165,305 complaints. No gap: at the download of 2026-01-23, 70% of December, 14% of November and 7% of October 2025 were in progress, so each train side holds one to two months of closures a refit would not yet know, accepted because the archive's closures are final (now stated in the splits comment); a one-month gap would keep the windows (51.5%, 63.9%, 91.8%). One month gives 19 candidate windows, six months exactly three.
 
 ## Reference
 

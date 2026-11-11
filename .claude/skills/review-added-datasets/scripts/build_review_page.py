@@ -82,6 +82,7 @@ VERIF_HEADING = re.compile(r"^#### Verification")
 LABELS = [
     ("outcome", re.compile(r"Outcome")),
     ("judgment", re.compile(r"Record judgment")),
+    ("horizon", re.compile(r"Horizon")),
     ("data", re.compile(r"Data")),
     ("definition", re.compile(r"Definition")),
     ("checks", re.compile(r"Checks")),
@@ -99,6 +100,7 @@ LABELS = [
 SECTION_TITLES = {
     "outcome": "Outcome",
     "judgment": "Record judgment",
+    "horizon": "Horizon",
     "data": "Data",
     "definition": "Definition",
     "checks": "Checks",
@@ -629,6 +631,8 @@ def parse_report(path: Path) -> dict[str, Any]:
         "title": lines[0][2:].strip(),
         "date": date.group(1) if date else None,
         "header_md": "\n".join(lines[1 : parts[0][0]]),
+        "metric_marks": _metric_marks(lines[1 : parts[0][0]]),
+        "horizon_marks": _metric_marks(lines[1 : parts[0][0]], HORIZON_MARKS_LABEL),
         "rows": rows,
         "fields": fields,
         "crosscut": crosscut,
@@ -709,7 +713,7 @@ def _cut_notes(text: str) -> tuple[str, str, list[tuple[str, str]]]:
 
 
 BULLET_LEAD = re.compile(r"^[*-] \*\*([^*:]+):?\*\*")
-SHOWN_LEADS = {"Problem": 0, "Options": 2, "Recommendation": 2}
+SHOWN_LEADS = {"Problem": 0, "Verdict": 0, "Options": 2, "Recommendation": 2}
 """The bullets of an issue in view: the problem above the Details box, the options and the recommendation below it.
 Every other bullet (effect, experiments, consistency, panel, ...) goes into the closed Details box."""
 
@@ -727,7 +731,7 @@ def _fold(body: str) -> str:
             parts.append((2, "", [line]))  # text after a detail bullet stays in view
         else:
             parts[-1][2].append(line)
-    if not any(lead == "Problem" for _, lead, _ in parts):
+    if not any(lead in ("Problem", "Verdict") for _, lead, _ in parts):
         return MD.render(body.strip()) if body.strip() else ""
     groups = ["\n".join(ln for g, _, lines in parts if g == k for ln in lines).strip() for k in range(3)]
     leads = [lead.lower() for g, lead, _ in parts if g == 1 and lead]
@@ -1006,6 +1010,34 @@ def _record(path: Path) -> dict:
     return {"fields": rows, "html": render(body)}
 
 
+METRIC_MARKS_LABEL = "**Metric marks:**"
+"""The report's header line naming the records whose declared metric the round marks (`` `a`, `b` `` or ``all``);
+without it the page shows no metric (Lennart, 2026-11-10: "the metric was not a new issue or choice here, hence it
+should be resolved or hidden unless asked for")."""
+
+
+HORIZON_MARKS_LABEL = "**Horizon marks:**"
+"""The same for the horizon and test windows of a temporal task, which the curator signs off for every new temporal
+dataset (Lennart, 2026-11-10: "for new datasets, the curator should also sign off on this (akin to how we sign off on
+the metric)")."""
+
+
+def _metric_marks(lines: list[str], label: str = METRIC_MARKS_LABEL) -> set[str] | None:
+    """The records of the header's marks line ``label`` (``None``: all), or none without that line."""
+    for line in lines:
+        if line.startswith("## "):
+            break
+        if line.startswith(label):
+            rest = line[len(label) :].strip().rstrip(".")
+            return None if rest == "all" else set(re.findall(r"`([^`]+)`", rest))
+    return set()
+
+
+HORIZON_CHECKED = re.compile(
+    r"^CC \((?P<date>\d{4}-\d{2}-\d{2}), (?P<who>[^)]+)\): the declared horizon\b.*?\bis checked\b.*$", re.MULTILINE
+)
+
+
 METRIC_CHECKED = re.compile(
     r"^CC \((?P<date>\d{4}-\d{2}-\d{2}), (?P<who>[^)]+)\): the declared metric\b.*?\bis checked\b.*$", re.MULTILINE
 )
@@ -1020,6 +1052,86 @@ def _metric_checked(path: Path) -> dict | None:
         return None
     m = found[-1]
     return {"date": m["date"], "by": m["who"], "html": MD.renderInline(m.group(0))}
+
+
+def _horizon_checked(path: Path) -> dict | None:
+    """The record's latest CC line saying the declared horizon is checked (the curator's horizon mark, applied)."""
+    found = list(HORIZON_CHECKED.finditer(_frontmatter(path.read_text())[1])) if path.is_file() else []
+    if not found:
+        return None
+    m = found[-1]
+    return {"date": m["date"], "by": m["who"], "html": MD.renderInline(m.group(0))}
+
+
+HORIZON_TITLE = "Sign off the horizon: the window length, the gap and the period the windows cover?"
+"""The title of a temporal record's horizon sign-off, the issue "H" the page shows first among its issues."""
+
+
+def _horizon_item(text: str, temporal: dict | None, record_path: Path) -> dict | None:
+    """A temporal record's ``**Horizon:**`` block as an issue of its own, "H", shaped and marked like the numbered
+    issues: the verdict, a closed Details box (the declared windows, the length, the gap, the time frame), the options
+    table and the recommendation. Resolved once the record carries the CC line that the declared horizon is checked.
+    None without a block or for a task that is not temporal.
+    """
+    if not text.strip() or temporal is None:
+        return None
+    declared = _declared_line(temporal)
+    lines = text.splitlines()
+    at = next((i + 1 for i, ln in enumerate(lines) if BULLET_LEAD.match(ln) and "Verdict" in ln), None)
+    if at is not None:  # after the verdict bullet and its continuation lines
+        while at < len(lines) and lines[at].startswith((" ", "\t")) and lines[at].strip():
+            at += 1
+        lines[at:at] = [f"* **Declared:** {declared}"]
+    checked = _horizon_checked(record_path)
+    return {
+        "n": "H",
+        "titleHtml": MD.renderInline(HORIZON_TITLE),
+        **_thread("\n".join(lines)),
+        "resolved": checked is not None,
+    }
+
+
+def _declared_line(temporal: dict) -> str:
+    """The definition's declared windows in one line, for the horizon's Details box."""
+    parts = [f"time column `{temporal['on']}`"]
+    if temporal.get("window") is not None:
+        parts.append(f"windows of {temporal['window']} {temporal.get('unit', '')}".strip())
+    if temporal.get("cutoffs"):
+        parts.append("starting " + ", ".join(f"`{c}`" for c in temporal["cutoffs"]))
+    elif temporal.get("n_windows"):
+        parts.append(
+            f"the newest {temporal['n_windows']} back to back"
+            + (f", step {temporal['step']}" if temporal.get("step") else "")
+        )
+    gap = temporal.get("gap")
+    parts.append(f"a gap of {gap} {temporal.get('gap_unit') or temporal.get('unit', '')}".strip() if gap else "no gap")
+    if temporal.get("horizon") is not None:
+        parts.append(f"declared horizon {temporal['horizon']} {temporal.get('horizon_unit') or ''}".strip())
+    out = "; ".join(parts) + " (`dataset.py`)."
+    if temporal.get("comment"):
+        out += f" Its splits comment: {temporal['comment']}"
+    return out
+
+
+def _temporal_from_class(cls: Any) -> dict | None:
+    """A temporal definition's declared test windows (what the curator signs off as its horizon) and its splits
+    comment; None for a task that is not temporal.
+    """
+    temporal = getattr(cls, "temporal", None)
+    if temporal is None:
+        return None
+    out: dict[str, Any] = {"on": temporal.on}
+    splits = getattr(temporal, "splits", None)
+    for key in ("window", "unit", "step", "gap", "gap_unit", "n_windows", "cutoffs", "sample_by"):
+        value = getattr(splits, key, None)
+        if value is not None and value != () and not (key == "gap" and value == 0):
+            out[key] = list(value) if isinstance(value, tuple) else value
+    for key in ("horizon", "horizon_unit", "time_unit"):
+        value = getattr(temporal, key, None)
+        if value is not None:
+            out[key] = value
+    out["comment"] = " ".join(str(getattr(cls, "splits_comment", "") or "").split())
+    return out
 
 
 def _priority(path: Path) -> int | None:
@@ -1230,6 +1342,7 @@ def _live_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
         "code": code,
         "summary": _summary_from_class(cls),
         "metric": _metric_from_class(cls) or _metric_from_front(front.get("task") or {}),
+        "temporal": _temporal_from_class(cls),
         "meta": _meta(regime, getattr(cls, "problem_type", None), front, retired=False),
         "readme": _readme(where.root / folder, f"{where.wc}/{folder}", where.github),
     }
@@ -1285,24 +1398,28 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
     if not record_path.is_file():
         raise BuildError(f"{name}: no curation record {RECORDS_DIR}/{name}.md")
     retired = bool(folder) and not (where.root / folder).is_dir()
-    files: dict[str, Any] = {"code": None, "summary": None, "metric": None, "meta": None, "readme": None}
+    files: dict[str, Any] = dict.fromkeys(("code", "summary", "metric", "temporal", "meta", "readme"))
     if folder:
         files.update(_retired_definition(where, name, folder) if retired else _live_definition(where, name, folder))
     if files["summary"] is None and name in tldr:
         files["summary"] = _summary_from_tldr(str(tldr[name]))
     decided = _decided(record_path)
     fields = report["fields"].get(name, [])
+    marks, hmarks = report.get("metric_marks", set()), report.get("horizon_marks", set())
+    horizon = _horizon_item(rec["blocks"].get("horizon", ""), files["temporal"], record_path)
+    items = [horizon] if horizon and (hmarks is None or name in hmarks) else []
     return {
         "name": name,
         "folder": folder,
         "priority": _priority(record_path),
-        "openMarks": sum(1 for it in rec["items"] if not it["resolved"]) + len(fields),
+        "openMarks": sum(1 for it in [*items, *rec["items"]] if not it["resolved"]) + len(fields),
         "late": row["late"],
         "cat": "decided" if decided else cat,
         "outcomeHtml": MD.renderInline(row["outcome"]),
         "pointsHtml": MD.renderInline(row["points"]),
         "issuesIntroHtml": render(rec["issues_intro"]),
-        "items": [
+        "items": items
+        + [
             {
                 "n": it["n"],
                 "titleHtml": MD.renderInline(it["title_md"]),
@@ -1313,7 +1430,9 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
         ],
         "fields": fields,
         "blocks": [
-            {"key": k, "title": SECTION_TITLES[k], "html": render(v)} for k, v in rec["blocks"].items() if v.strip()
+            {"key": k, "title": SECTION_TITLES[k], "html": render(v)}
+            for k, v in rec["blocks"].items()
+            if v.strip() and k != "horizon"
         ],
         "shared": [{"title": s["title"], "html": render(s["md"])} for s in report["shared"].get(name, [])],
         "panel": _panel(rec.get("panel")),
@@ -1324,6 +1443,7 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
         "summary": files["summary"],
         "metric": files["metric"],
         "metricChecked": _metric_checked(record_path),
+        "metricMark": marks is None or name in marks,
         "meta": files["meta"],
         "readme": files["readme"],
         "retiredCommit": files.get("retiredCommit"),

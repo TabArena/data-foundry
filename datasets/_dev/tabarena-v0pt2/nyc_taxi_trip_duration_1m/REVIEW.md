@@ -1,11 +1,39 @@
 # nyc_taxi_trip_duration
 
-**Outcome:** added as `nyc_taxi_trip_duration_1m`. Verdict ship on 2026-10-22; the rule on test windows was rewritten
-on 2026-11-10, so the three test weeks (the last three of June 2016) are put to the curator again. The AI proposes
-keeping the newest week and testing the Memorial Day week and a week in April instead of the two June weeks before it.
+**Outcome:** added as `nyc_taxi_trip_duration_1m`. Verdict ship on 2026-10-22; under the rule on test windows
+rewritten on 2026-11-10 you chose B (issue 1): the test windows are the newest June week, the Memorial Day week and a
+week in April, and the 7-day length stays with a new reason. Nothing is left open.
 
-**Main points:** Which weeks to test on: the last three weeks of June (as now), or the newest June week, the Memorial
-Day week and a week in April?
+**Main points:** Settled on 2026-11-10: the test weeks are 24-30 June, 27 May-2 June and 8-14 April 2016 (issue 1,
+B), and the declared horizon is checked.
+
+**Horizon:**
+
+* **Verdict:** keep the 7-day windows with a new reason (medium-high confidence): the competition gives no horizon
+  (its test set is a random 30% of the same days); an ETA service refits often, a week is the shortest window that
+  holds each weekday once, and calendar months would leave only May and June above the floor.
+* **Length:** the splits comment said only "as for the other ETA tasks of the collection", a reason of consistency;
+  no source on how often a trip-duration model is refit was found (the Kaggle competition; Uber's DeepETA post:
+  "Periodic auto retraining workflows are set up to retrain and validate the model").
+* **Gap:** one day: the meter has each duration at drop-off, at most 3 hours after pickup (without the gap 77, 112
+  and 100 training trips would end after the start of the windows of issue 1, newest first).
+* **Time frame:** January-June 2016, the Kaggle sample; weeks from 8 April keep half the trips for training, so
+  January-March (the January blizzard, the holidays) are training only. Adding 2015 from NYC Open Data would be a
+  separate rebuild.
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | A | One week, one-day gap (implemented) | 7-day windows: 24-30 June, 27 May-2 June and 8-14 April 2016 | the shortest window that holds each weekday once; an ETA service refits often | the competition gives no horizon; no source on a refit cadence |
+  | B | A calendar month | only May and June above the floor | more trips per window | two windows, fewer than three |
+  | C | 14 days | 6 candidates from 8 April | each weekday twice | three of them cover half the eligible span; no reason from the use case |
+
+* **Recommendation:** A: the shortest window that holds each weekday once; a calendar month leaves two windows, and
+  14 days has no reason from the use case. **Decision:** A, B or C?
+
+**Resolved (2026-11-10, Lennart):** A, kept by the horizon audit, as instructed ("if the current time horizon makes
+sense and is justifiable keep it and resolve them"); the record's CC line says the declared horizon is checked, and
+`splits_comment`, `task_summary.split` and the notes' `Split:` bullet give the new reason.
 
 **Issues for Lennart:**
 
@@ -55,3 +83,17 @@ Day week and a week in April?
    [^nyc-length]: **SPLIT-12** (Should): the window length and the gap come from the use case, here a model refit every
      week; **SPLIT-10** (Should): the one-day gap covers trips still under way at a refit.
    [^nyc-floor]: **SPLIT-14** (Must): at least 3 windows, and no train side below 50% of the rows.
+
+   **Lennart (2026-11-10, change):** Option B: Newest week, Memorial Day week, a week in April.
+
+   **Resolved (2026-11-10, Lennart):** B. `temporal` declares the cutoffs 2016-06-24, 2016-05-27 and 2016-04-08 (7
+   days, one-day gap); `splits_comment`, `task_summary.split` and the notes' `Split:` bullet name the windows, why each,
+   the numbers and the length's new reason (the competition gives no horizon; a week is the shortest window that holds
+   each weekday once, and calendar months would leave only May and June above the floor). Test 52,607, 49,284 and
+   59,653 trips, train 1,382,016, 1,169,775 and 766,644 (95.8%, 81.1%, 53.1%). Recounted on the frame: without the gap
+   77, 112 and 100 training trips would end after the window starts, with it none, so the one-day gap holds. The stale
+   52,779 to 54,532 trips per window are gone, and the LightGBM scores are labelled as measured on the June weeks. The
+   8,028 trips of 23 June, the newest window's gap day, are in no split, so the frame holds 1,434,623 of the 1,442,651
+   cleaned trips (the task summary's 1,447,167 predated the 100 m cut); the April train side (766,644) is under the 1M
+   budget and is fitted whole. The record has the decision and the horizon CC lines. `dataset check`: 0 errors, 0
+   warnings (README not regenerated).

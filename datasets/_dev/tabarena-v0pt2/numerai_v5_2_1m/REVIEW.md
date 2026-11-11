@@ -1,11 +1,39 @@
 # numerai_v5_2
 
-**Outcome:** added as `numerai_v5_2_1m`. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI
-recommends keeping the three one-year windows, eras 1184-1235, 1132-1183 and 1080-1131 (issue 12): the eras further
-back are the years whose targets Numerai could use to build the features we ship. `dataset.py` is unchanged until
-you decide.
+**Outcome:** added as `numerai_v5_2_1m`. Resolved on 2026-11-10: the test windows stay the three newest years, eras
+1184-1235, 1132-1183 and 1080-1131 (issue 12), one year of 52 weekly eras each, as Numerai ranks a model by its
+one-year average score; `splits_comment` now gives that reason and why the windows walk back from the newest.
 
-**Main points:** Keep the three newest years of eras as the test windows, or spread them over 2016-2026 (issue 12)?
+**Main points:** Open: none. Resolved on 2026-11-10: the three newest years stay the test windows, one year each
+(issue 12).
+
+**Horizon:**
+
+* **Verdict:** keep the 52-era windows (high confidence): Numerai ranks a model by its one-year average score and
+  advises retraining at major data releases, so a model fit before the window predicts 52 weekly eras.
+* **Length:** "Your model's reputation is just its 1 year average score" and "This directly determines the rank of
+  models on the model leaderboard" (https://docs.numer.ai/numerai-tournament/scoring); "it's usually best to re-train
+  your models when major versions are released" (https://docs.numer.ai/numerai-tournament/data). Participants refit
+  anywhere from weekly to once per release (https://forum.numer.ai/t/how-often-do-you-re-train-your-model/8164). The
+  splits comment's earlier reason (the example notebooks validate from era 575 on) was weak and is replaced by these.
+* **Gap:** 4 eras: a target resolves about a month later, so at era T the newest known target is era T-5.
+* **Time frame:** eras 1 to 1235 (about 2003 to August 2026); which years to test is issue 12.
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | A | 52 eras, a 4-era gap (implemented) | one year per window: eras 1184-1235, 1132-1183 and 1080-1131 | the year Numerai ranks a model on; every season in each window | a participant who refits within the year is scored as if frozen |
+  | B | 13 eras | 41 candidates | models participants who retrain more often | a 20-day target spans 4 eras, so a window holds only about three separate target periods; not what Numerai ranks on |
+  | C | 26 eras | 20 candidates | models participants who retrain more often | no source; not what Numerai ranks on |
+  | D | 104 eras | 5 candidates | two years of markets per window | twice the host's year |
+
+* **Recommendation:** A: one year is how Numerai ranks a model, and a model fit before the window predicts all 52
+  eras. **Decision:** A, B, C or D?
+
+**Resolved (2026-11-10, Lennart):** A, kept by the horizon audit, as instructed ("if the current time horizon makes
+sense and is justifiable keep it and resolve them"); issue 12's answer gives why a full year, the record's CC line
+says the declared horizon is checked, and `splits_comment` gives Numerai's ranking by the one-year score and its
+advice to retrain at major releases as the reason.
 
 **Issues for Lennart:**
 
@@ -97,3 +125,26 @@ you decide.
      note when small, remove it when we can; a selection the source published (a feature set the host released) is
      decided case by case. Cases: numerai_v5_2_1m (the 372 Faith features, chosen with the targets of test eras
      1080-1191, dropped; 2026-10-26).
+
+   **Lennart (2026-11-10, discuss):** does this mean our horizon was a full year? that is way too much no?
+
+   **Answer (AI, 2026-11-10):**
+   - Yes: each window is a year of 52 weekly eras, and a model fit before the window predicts all 52 without a refit.
+   - The year holds because it is how Numerai judges a model: it ranks a model by its one-year average score ("Your
+     model's reputation is just its 1 year average score", https://docs.numer.ai/numerai-tournament/scoring) and
+     advises retraining at major data releases ("it's usually best to re-train your models when major versions are
+     released", https://docs.numer.ai/numerai-tournament/data). Participants refit anywhere from weekly to once per
+     release (https://forum.numer.ai/t/how-often-do-you-re-train-your-model/8164).
+   - 13 or 26 eras would model participants who retrain more often, down to weekly, and score them over a quarter or a
+     half year, which is not what Numerai ranks on.
+
+   **Resolved (2026-11-10, Lennart):** A, as implemented, by the instruction "if the current time horizon makes sense
+   and is justifiable keep it and resolve them": the three newest years stay, eras 1184-1235, 1132-1183 and 1080-1131
+   (test 361,712, 333,081 and 327,025 rows; train 94.4%, 89.5%, 84.8%), 52 eras each with the 4-era gap. `temporal` is
+   unchanged. `splits_comment` gives Numerai's ranking by the one-year score and its advice to retrain at major
+   releases as the reason for the length, in place of the example notebooks' validation period, and the reason for
+   walking back: the three newest years lie as close to v5.0's feature date (July 2024, about era 1125) as three
+   one-year windows allow, though not after it (45 of the 52 eras of the oldest window come before it);
+   `task_summary.split` names the ranking. The record has the decision and the horizon sign-off as CC lines. `dataset
+   check`: 0 errors; its 2 warnings come from checks of the data that are not about the windows (a feature name read
+   as an exposure, the target's middle bin at 50% of the rows) and are not settled here.

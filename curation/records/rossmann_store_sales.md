@@ -7,6 +7,7 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 3
 tags:
 - Non-IID (Temporal)
 collections:
@@ -41,6 +42,8 @@ CC (2026-10-21, Lennart): the declared metric stays as it is (`rmspe`, as Kaggle
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 calendar or compass cycles ordered.
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: DayOfWeek (an unordered category before) and CompetitionOpenSinceMonth are numbers (the curator's cycle rule); Assortment stays unordered as a partial order, noted.
+
+**Assessment (AI, 2026-11-10):** priority for the review of the test windows and horizons, which this record never had. Priority 3: gap 0, use case 0, source + (Rossmann's competition), shape +, risk 0 (the open issue is the choice of windows).
 
 ## Reference
 

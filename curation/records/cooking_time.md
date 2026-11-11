@@ -7,6 +7,7 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 3
 decision_markers:
 - Anonymized
 tags:
@@ -48,6 +49,14 @@ CC (2026-10-21, Lennart): check SPLIT-9 on the weekly test windows and add a gap
 **Assessment (AI, 2026-10-21):** SPLIT-9 late labels in cooking_time_1m (order time + cooking time, from the raw file after the under-one-minute filter): without a gap 172, 126 and 108 train orders per weekly window (newest first; starts 2023-12-28, 12-21, 12-14) end after the window start; with a gap of one day (TemporalSplits(..., gap=1)) none. The gap removes 280k, 264k and 239k of the 11.1M, 9.1M and 7.2M earlier orders (2.5 to 3.3%); each train side is still a random 1M. Gap set in dataset.py, counts in splits_comment; script local-data-warehouse/_runs/2026-10-21_crosscut/x21-0/late_labels.py.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSE (TabReD regression tasks), Rubachev et al., TabReD, ICLR 2025 (https://arxiv.org/abs/2406.19380), Sec. 4 / App.: RMSE for regression, ROC AUC for classification.
+
+**Assessment (AI, 2026-11-10):** priority for the review of the test windows (PR #78), which this record never had. Priority 3: gap 0, use case 0 (TabReD names the task, not who acts on it), source + (the TabReD paper), shape +, risk 0 (the open issue is the choice of windows).
+
+CC (2026-11-10, Lennart): REVIEW issue 1, "Option B: Keep, state why and the limit.": the three weeks from 14 December 2023 to 3 January 2024 stay as the test windows; the splits comment says they are the only weekly windows above the 50% floor and that all three lie in the weeks before and over New Year.
+
+CC (2026-11-10, Lennart): the declared horizon (7 days, a one-day gap, windows starting 2023-12-28, 2023-12-21 and 2023-12-14) is checked, kept: one week is TabReD's own validation and test length (the two newest windows are its validation and test weeks); a week holds every weekday once, and cooking times follow a weekly cycle.
+
+**Assessment (AI, 2026-11-10):** applied in dataset.py: the windows declared as cutoffs, which build the same splits as `n_windows=3` (test 1,662,794, 2,040,512 and 1,921,331 orders before the 500k cap, train 10,856,304, 8,832,570 and 6,935,762: 84.8%, 69.0%, 54.2%); `splits_comment` and `task_summary.split` give the reason, the floor (the earliest start that keeps half the orders for training is 11 December, 51.9% with the gap; no orders on 11-12 December) and the limit (mean log minutes 2.548, 2.554 and 2.599 in the windows against 2.527 to 2.532 in the weeks from 16 November to 6 December); "refit every week (TabReD)" is gone from the use case, the split and the fit reason, and from the issue's Background in REVIEW.md. Horizon audit (split-auditor, model-free): TabReD (arXiv 2406.19380) trains on 15 November to 20 December, validates on 21-27 December and tests on 28 December to 3 January and names no refit cadence; Friday and Saturday orders cook 2.57 to 2.64 mean log minutes against 2.46 to 2.51 on Monday to Thursday; two weeks give 1 candidate above the floor; the one-day gap is 12 times the longest cooking time (2 hours) and stays by the family rule of 2026-10-21. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
 ## Reference
 

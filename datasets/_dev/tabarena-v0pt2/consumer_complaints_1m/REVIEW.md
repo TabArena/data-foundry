@@ -1,12 +1,44 @@
 # consumer_complaints
 
-**Outcome:** added as `consumer_complaints_1m`. In the working copy since the migration; the test windows are the last
-three quarters of 2025 (explicit cutoffs). The rule on test windows was rewritten on 2026-11-10; the AI proposes
-keeping the newest quarter and testing January-March 2025 and July-September 2024 instead of the two quarters just
-before it.
+**Outcome:** added as `consumer_complaints_1m`. In the working copy since the migration. Resolved on 2026-11-10: the
+test windows are October-December 2025, January-March 2025 and July-September 2024 instead of the last three quarters
+of 2025 (issue 1, option B); the quarter stays the window length, now argued as an assumed refit cadence, with no gap.
 
-**Main points:** Which quarters to test on: April-June, July-September and October-December 2025 (as now), or
-July-September 2024, January-March 2025 and October-December 2025?
+**Main points:** Open: none. Resolved on 2026-11-10: the test quarters are July-September 2024, January-March 2025 and
+October-December 2025 (issue 1).
+
+**Horizon:**
+
+* **Verdict:** keep the 3-month windows with a new reason (medium confidence): the CFPB publishes no model or cadence;
+  a quarterly refit is our assumption, longer than the 15-60 days a closure takes, with 200,000 to 350,000 complaints
+  per quarter.
+* **Length:** the notes said "data from just a few days is likely not enough ... Thus, we instead simulate a model
+  that is refit every three months"; that reason does not hold, since one month holds 54,655 to 165,305 complaints.
+  The three quarters date from the switch to three windows (2026-10). No source states a refit cadence.
+* **Gap:** none. A company "provides a response within 15 calendar days ... up to 60 calendar days to provide a final
+  response" (https://www.consumerfinance.gov/compliance/consumer-complaint-program/company-process/); the notes' "180
+  days" is the deadline of the optional public response and is corrected. At the download, 70% of December, 14% of
+  November and 7% of October 2025 were still in progress, so each train side holds one to two months of closures a
+  refit would not yet know; the archive's closures are final, and a one-month gap would keep your windows (51.5%,
+  63.9%, 91.8%).
+* **Time frame:** 24 April 2017 to 31 December 2025, both ends argued in the notes; volume tripled, so half the rows
+  lie before 7 May 2024, and the closure mix jumps inside quarters ("closed with explanation" 58.1% in July, 69.6% in
+  August 2025).
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | A | A quarter, no gap (implemented) | 3-month windows: October-December 2025, January-March 2025 and July-September 2024 (203,139 to 350,790 complaints) | longer than the 15 to 60 days a closure takes | a quarterly refit is our assumption; each train side holds one to two months of closures a refit would not yet know |
+  | B | One month | 19 candidates | a month already holds 54,655 to 165,305 complaints | no source either; not longer than the up to 60 days a closure takes |
+  | C | Six months | exactly three windows | longer than any closure | no choice of windows left; no source either |
+
+* **Recommendation:** A: no source gives a cadence, and a quarter is longer than any closure while holding 200,000 to
+  350,000 complaints. **Decision:** A, B or C?
+
+**Resolved (2026-11-10, Lennart):** A, kept by the horizon audit, as instructed ("if the current time horizon makes
+sense and is justifiable keep it and resolve them"); the record's CC line says the declared horizon is checked, and
+the definition states the quarter as our assumed refit cadence, corrects the "180 days" and says why no gap is
+needed.
 
 **Issues for Lennart:**
 
@@ -53,3 +85,15 @@ July-September 2024, January-March 2025 and October-December 2025?
    [^cc-length]: **SPLIT-12** (Should): the window length and the gap come from the use case, here a model refit every
      three months.
    [^cc-floor]: **SPLIT-14** (Must): at least 3 windows, and no train side below 50% of the rows.
+
+   **Lennart (2026-11-10, change):** Option B: Two years, three seasons.
+
+   **Resolved (2026-11-10, Lennart):** B. `temporal` tests October-December 2025, January-March 2025 and
+   July-September 2024 (cutoffs 2025-10-01, 2025-01-01 and 2024-07-01, newest first; 3 months, no gap): test 203,139,
+   350,790 and 213,655 complaints, train 3,236,122, 2,277,019 and 1,838,062 (94.1%, 66.2%, 53.4%), as counted above.
+   `task_summary.split`, `splits_comment`, the comment above `temporal` and the class-share and row-budget notes name
+   the new quarters; the quarter is stated as our assumed refit cadence (the CFPB publishes none), longer than the 15
+   to 60 days a closure takes, in place of the old reason; the "180 days" are corrected (the optional public response;
+   a company responds within 15 days and gives its final response within up to 60), and the notes say that each train
+   side holds one to two months of closures a refit would not yet know, accepted as the archive's closures are final.
+   The record has the decision and the horizon sign-off as CC lines. `dataset check`: 0 errors, 0 warnings.

@@ -36,6 +36,7 @@ of a line, in this order:
 | `**Main points:**` | yes | One line: what the curator decides. |
 | `**Record fields that disagree with the definition:**` | no | One item per field, see below. |
 | `**Record judgment:**` | no | The AI's judgment of the record, in a few lines. |
+| `**Horizon:**` | for a new temporal dataset | The argument for its horizon and time frame, which the curator signs off as the issue "H": in the issue shape, with the label alone on its line, then `* **Verdict:**` (one sentence: keep or change, and the confidence), `* **Length:**`, `* **Gap:**`, `* **Time frame:**` (the sources, what is ours), `* **Options:**` with the table, today's length as the row marked `(implemented)`, and `* **Recommendation:**` ending in `**Decision:**`; footnotes, notes for the AI and turns as in an issue. The collector warns when a part is missing. |
 | `**Issues for <curator>:**` | no | The numbered issues, 0 to N: a review that leaves nothing to decide has none. |
 | `**Review panel:**` | no | The review panel of `/add-dataset`: its summary, then one section per role, see below. |
 
@@ -236,7 +237,10 @@ checks that every issue it read arrives there.
 ```
 
 * The first date in the title is the date of the page ("run of <date>"). The header, up to the first `##`, is shown
-  in the Summary view under "About this run".
+  in the Summary view under "About this run". Its line `**Metric marks:** `a`, `b`.` (or `all.`), written by
+  `collect_reviews.py --metric-marks`, names the records whose declared metric the page shows and marks; without it
+  the page shows no metric. `**Horizon marks:**`, from `--horizon-marks`, does the same for the horizon and test
+  windows of a temporal task.
 * The `##` sections are recognised by how their heading starts (`## Summary`, `## Record fields`,
   `## Across datasets`); every other `##` section holds `### <unique_name>` sections.
 * The outcome cell sets the category: starting with `not added`, Not added (no folder); containing `recommended`,
@@ -267,10 +271,12 @@ and within one priority the fewest open decisions (open issues and record-field 
 problem type, rows and build state, its name and its links, then (for a record decided in triage) the triage box.
 Its tabs, in this order:
 
-1. Use case: the definition's `task_summary` (or a `--tldr` entry), then its metric: name, origin, original,
+1. Use case: the definition's `task_summary` (or a `--tldr` entry), then, for a record the header's metric marks name,
+   its metric: name, origin, original,
    reference, definition, reason, params, inputs and scoring columns, from `metric` in `dataset.py` (for a retired
    definition: name and origin from the README frontmatter).
-2. Decisions: the numbered issues and the record-field table, with their marks.
+2. Decisions: for a record the horizon marks name, its `**Horizon:**` block as issue "H" first (the declared windows
+   from `temporal` added to its Details box), then the numbered issues and the record-field table, with their marks.
 3. Panel: the review panel's recommendation and summary, then one collapsible section per role, closed except the
    Mediator's ("No review panel" for a record without one).
 4. Details: the outcome and the record judgment.
