@@ -54,8 +54,9 @@ no local path goes into a review file. A statement that the current `dataset.py`
 ### Issues
 
 Each issue starts with `N. ` at the start of a line; its other lines are indented by three spaces (or blank). The
-title is the bold question at the start (`1. **Keep the target in decibels?**`), alone on its line. Then come, in
-this order:
+title is the bold question at the start (`1. **Keep the target in decibels?**`), alone on its line. An issue asks
+one decision: a second one is an issue of its own, and a change proposed for a dataset is an issue in that dataset's
+own `REVIEW.md`, never only a line in another dataset's issue or answer. Then come, in this order:
 
 1. The bullets of [writing.md](../../knowledge-curation/references/writing.md) ("Questions and issues for the
    curator"), each opened by its bold lead: `**Problem:**` (at most three sub-bullets of one sentence each), the
@@ -94,7 +95,9 @@ where needed), an options table `| | Option | What it does | Pro | Con |` with l
 `**Recommendation:**` and `**Decision:**`, the rule IDs in footnotes. The page renders it like an issue and shows the
 table's rows as answer buttons under the turn (a turn without a table gets Agree / Disagree; lettered bullets
 `- (a) ...` still work); a click writes `Reply (a): ...` (or `Agree.`) as the first line of the issue's note and
-highlights the row. An answer that only reports findings keeps prose, with its rule IDs in footnotes too. A table
+highlights the row. An answer that only reports findings keeps bullets, with its rule IDs in footnotes too. In an
+issue and in every turn, measured results stand in tables, not in sentences
+([writing.md](../../knowledge-curation/references/writing.md), "Results go in tables"; Andrej, 2026-11-10). A table
 inside an issue or a turn needs a blank line before and after it; without one, the lines
 around it render as table rows.
 

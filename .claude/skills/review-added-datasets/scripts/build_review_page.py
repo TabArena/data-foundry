@@ -8,7 +8,8 @@ Usage, from the repository root::
 
 Writes ``<out>/data.json`` and ``<out>/review_page.html`` (``assets/review_page.html`` with the data embedded).
 Per record the page embeds the report's section, the definition's ``dataset.py``, ``task_summary``, declared
-``metric`` (with its scoring columns; the Use case tab shows it) and generated ``README.md`` (for a retired
+``metric`` (with its scoring columns) and split (from the README's front matter and Splits section; the Use case
+tab shows both) and generated ``README.md`` (for a retired
 definition: from the last commit that still had it) and the curation record, as they are at build time. The report
 format is ``references/review_file_format.md``; a report that does not follow it stops the build with the section
 and the line.
@@ -37,6 +38,7 @@ import posixpath
 import re
 import subprocess
 import sys
+import textwrap
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
@@ -56,7 +58,7 @@ except ImportError:  # pragma: no cover - depends on the environment
         "    uv pip install --python .venv/bin/python markdown-it-py",
     )
 
-from data_foundry.v2.dataset import TaskSummary, definition_files
+from data_foundry.v2.dataset import DEFAULT_SPLITS_COMMENT, TaskSummary, definition_files
 from data_foundry.v2.metrics import Metric
 from data_foundry.v2.registry import load_definition
 from data_foundry.v2.report import read_report
@@ -1126,6 +1128,108 @@ def _metric_from_front(task: dict) -> dict | None:
     return {**out, "source": "readme"}
 
 
+SPLITS_SECTION = re.compile(r"^## Splits\n(.*?)(?=^## |\Z)", re.S | re.M)
+SPLIT_SHAPE = re.compile(r"^\d+ repeat\(s\) x \d+ fold\(s\)")
+SPLIT_KEYS = (
+    "n_repeats",
+    "n_folds",
+    "random_state",
+    "time_horizon",
+    "time_horizon_unit",
+    "time_gap",
+    "time_gap_unit",
+    "n_train",
+    "n_test",
+)
+"""The fields of the README's ``splits`` front matter the Use case tab shows."""
+
+
+def _literal_from_source(code: str, name: str) -> Any:
+    """The value of the class attribute ``name`` in a committed dataset.py, read without importing it."""
+    for node in ast.walk(ast.parse(code)):
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == name for t in node.targets):
+            try:
+                return ast.literal_eval(node.value)
+            except ValueError:
+                return None
+    return None
+
+
+SPLIT_WORD = re.compile(r"\bsplit", re.I)
+
+
+def _split_notes(comments: str | None) -> list[str]:
+    """The bullets of a definition's ``curation_comments`` that speak of the split, as inline HTML."""
+    bullets: list[str] = []
+    for line in textwrap.dedent(comments or "").splitlines():
+        if line.startswith("- "):
+            bullets.append(line[2:].strip())
+        elif line.strip() and bullets:
+            bullets[-1] += " " + line.strip()
+    return [MD.renderInline(b) for b in bullets if SPLIT_WORD.search(b)]
+
+
+TIME_BASIS = ("Timeless", "Snapshot", "DelayedTarget", "StationaryRelation")
+"""The definition's use-case prototypes (SPLIT-32), as in ``data_foundry.schema.TIME_BASIS_TAGS``."""
+FORCED = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
+"""The definition's forced tags (SPLIT-8), as in ``data_foundry.schema.FORCED_TIME_TAGS``."""
+TIME_LINE = re.compile(r"Time basis:\s*(.+?)(?:\n\s*[-*]\s|\n\s*\n|$)", re.S)
+
+
+def _time_basis(tags: list[str], comments: str | None) -> dict:
+    """The definition's time basis (a prototype or a forced tag) and its `Time basis:` line."""
+    m = TIME_LINE.search(comments or "")
+    return {
+        "basis": next((t for t in tags if t in TIME_BASIS or t in FORCED), None),
+        "lineHtml": MD.renderInline(" ".join(m.group(1).split())) if m else "",
+    }
+
+
+def _time_facts(split: dict, record_path: Path) -> None:
+    """Add the record's collection facts (SPLIT-32) to ``split["time"]``, next to the definition's time basis."""
+    meta, _ = _frontmatter(record_path.read_text()) if record_path.is_file() else ({}, "")
+    tags = [str(t) for t in meta.get("tags") or []]
+    time = split.setdefault("time", _time_basis([], None))
+    time["facts"] = [t for t in tags if t.split(":")[0] in ("Samples", "Time", "Target", "Entities", "Features")]
+
+
+def _split(readme: str | None, tags: list[str], comments: str | None) -> dict | None:
+    """The declared split, as the generated README states it.
+
+    From the front matter: the regime, the stratification, time and group columns, the grouping, the repeats and
+    folds, the horizon and gap and the train and test sizes. From the Splits section: the definition's note on the
+    split (empty for the default splits) and the table of splits (with the time windows of a temporal task). The
+    ``Forced...`` data tags say that the regime was forced; the definition's notes on the split say why.
+    """
+    front, body = _frontmatter(readme)
+    task, sp = front.get("task") or {}, front.get("splits") or {}
+    if not task.get("split_regime"):
+        return None
+    note, table = "", ""
+    m = SPLITS_SECTION.search(body)
+    if m:
+        paras = [x.strip() for x in re.split(r"\n\s*\n", m.group(1)) if x.strip()]
+        at = next((i for i, x in enumerate(paras) if SPLIT_SHAPE.match(x)), len(paras))
+        note = "\n\n".join(paras[:at])
+        table = "\n".join(line for line in m.group(1).splitlines() if line.startswith("|"))
+    grouping = task.get("grouping") or {}
+    return {
+        "regime": REGIME.get(task["split_regime"], task["split_regime"]),
+        "forced": [x for x in tags if x.startswith("Forced")],
+        "stratify_on": task.get("stratify_on"),
+        "time_on": task.get("time_on"),
+        "group_on": task.get("group_on"),
+        "group_time_on": task.get("group_time_on"),
+        "prediction_unit": grouping.get("prediction_unit"),
+        "aggregation": grouping.get("aggregation"),
+        **{k: sp.get(k) for k in SPLIT_KEYS},
+        "noteHtml": render(note) if note and note != DEFAULT_SPLITS_COMMENT else "",
+        "tableHtml": MD.render(table) if table else "",
+        "notes": _split_notes(comments),
+        "time": _time_basis(tags, comments),
+    }
+
+
 def _sentence(text: str) -> str:
     return text[:1].upper() + text[1:]
 
@@ -1226,10 +1330,12 @@ def _live_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
         code += (
             f"\n\n# --- the parent it derives from: ../{parent.parent.name}/{parent.name} ---\n\n{parent.read_text()}"
         )
+    readme = where.root / folder / "README.md"
     return {
         "code": code,
         "summary": _summary_from_class(cls),
         "metric": _metric_from_class(cls) or _metric_from_front(front.get("task") or {}),
+        "split": _split(readme.read_text() if readme.is_file() else None, list(cls.data_tags), cls.curation_comments),
         "meta": _meta(regime, getattr(cls, "problem_type", None), front, retired=False),
         "readme": _readme(where.root / folder, f"{where.wc}/{folder}", where.github),
     }
@@ -1247,7 +1353,8 @@ def _retired_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
     commit, removed_on = found
     code = _show(where.repo, commit, path)
     readme_at = _last_commit_with(where.repo, f"{where.wc}/{folder}/README.md")
-    front, _ = _frontmatter(_show(where.repo, readme_at[0], f"{where.wc}/{folder}/README.md") if readme_at else None)
+    readme = _show(where.repo, readme_at[0], f"{where.wc}/{folder}/README.md") if readme_at else None
+    front, _ = _frontmatter(readme)
     task = front.get("task") or {}
     meta = None
     if code or front:
@@ -1257,6 +1364,11 @@ def _retired_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
         "code": code,
         "summary": _summary_from_source(code) if code else None,
         "metric": _metric_from_front(task),
+        "split": _split(
+            readme,
+            list(_literal_from_source(code, "data_tags") or ()) if code else [],
+            _literal_from_source(code, "curation_comments") if code else None,
+        ),
         "meta": meta,
         "retiredCommit": _git(where.repo, "rev-parse", "--short", commit).stdout.strip(),
         "retiredDate": removed_on,
@@ -1285,9 +1397,11 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
     if not record_path.is_file():
         raise BuildError(f"{name}: no curation record {RECORDS_DIR}/{name}.md")
     retired = bool(folder) and not (where.root / folder).is_dir()
-    files: dict[str, Any] = {"code": None, "summary": None, "metric": None, "meta": None, "readme": None}
+    files: dict[str, Any] = {"code": None, "summary": None, "metric": None, "split": None, "meta": None, "readme": None}
     if folder:
         files.update(_retired_definition(where, name, folder) if retired else _live_definition(where, name, folder))
+    if files["split"] is not None:
+        _time_facts(files["split"], record_path)
     if files["summary"] is None and name in tldr:
         files["summary"] = _summary_from_tldr(str(tldr[name]))
     decided = _decided(record_path)
@@ -1324,6 +1438,7 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
         "summary": files["summary"],
         "metric": files["metric"],
         "metricChecked": _metric_checked(record_path),
+        "split": files["split"],
         "meta": files["meta"],
         "readme": files["readme"],
         "retiredCommit": files.get("retiredCommit"),
