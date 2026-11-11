@@ -9,6 +9,7 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 3
 tags:
 - Free Text (Sentences)
 - Non-IID (Temporal)
@@ -64,3 +65,160 @@ CC (2026-10-21, Lennart): the metric is the roc_auc fallback, not the paper's ba
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): counts with a cut end are numbers: emp_length.
 
 CC (2026-11-01, Lennart): counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14): the lossless form, chosen from the context rather than by model runs; the same day's numbers with censoring flags are reverted.
+
+**Assessment (AI, 2026-11-10):** priority for the review of the test windows and horizons, which this record never had. Priority 3: gap 0, use case 0, source + (Lending Club's published loan data), shape +, risk 0 (the open issue is the choice of quarters).
+
+CC (2026-11-11, Lennart): REVIEW issue 1 (which quarters), "Reply (b): 2015 Q4, 2015 Q2 and 2014 Q4" to the consistency check: the test windows are October-December 2015, April-June 2015 and October-December 2014, spread over two years now that the amended floor opens 2014. October-December 2014 trains on 45.9% of the loans, the one window under half beside 85.5% and 62.8%, signed off (SPLIT-14 as amended on 2026-11-11). The gap-0 exception to SPLIT-10 of 2026-10-21 stays as recorded.
+
+CC (2026-11-11, Lennart): the declared horizon (3 months, no gap, windows starting 2015-10-01, 2015-04-01 and 2014-10-01) is checked, as the quarter matches the files LendingClub released by calendar quarter and no source names another cadence (the paper shuffles the loans into 5 folds).
+
+**Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` declares the cutoffs 2015-10-01, 2015-04-01 and 2014-10-01 (3 months, no gap); test 88,667, 64,222 and 49,197 loans, train 520,877, 383,088 and 279,567 (85.5%, 62.8%, 45.9% of 609,544); default rate 14.8%, 15.4% and 14.6% in the windows, 13.8%, 13.3% and 12.8% on the train sides. For these windows a 36-month gap would leave 3.9-8.8% of the rows for training, a 12-month gap 22.5-45.9% and a 6-month gap 62.8%, 45.9% and 33.0%, so the exception's reason holds. `task_summary.split`, `splits_comment` (the windows and why, the shares, the quarterly files as the length's reason, "updated monthly" removed) and the issue-year bullet of `curation_comments` are rewritten; `accepted_check_warnings` accepts `splits_train_under_half` with the sign-off. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
+## Review
+
+**Outcome:** added. On 2026-11-11 you chose the test windows 2015 Q4, 2015 Q2 and 2014 Q4 (issue 1, reply (b)),
+with 2014 Q4 training on 45.9% of the loans and signed off, and kept the quarterly horizon without a gap (Horizon, A).
+
+**Main points:** Settled on 2026-11-11: the windows 2015 Q4, 2015 Q2 and 2014 Q4 (issue 1) and the one-quarter horizon
+with the gap-0 exception as recorded. Nothing is left open.
+
+**Horizon:**
+
+* **Verdict:** keep the three-month windows (medium confidence): LendingClub released its loan files by calendar
+  quarter, the paper we start from uses random folds and states no horizon, and no refit cadence was found.
+* **Length:** declared as 3 months, "a model that is refit every quarter" (`splits_comment`). Sanz-Guerrero and Arroyo
+  (2025, https://arxiv.org/abs/2401.16458) shuffle the loans and use 5-fold cross-validation ("The dataset is shuffled
+  to eliminate biases derived from its original ordering"), so the source gives no horizon. LendingClub's files held
+  "complete loan data for all loans issued through the previous completed calendar quarter" (its file description, as
+  copied in https://rdrr.io/cran/creditmodel/man/lendingclub.html), while `splits_comment` says the data was updated
+  monthly; LendingClub's own refit cadence: none found (the paper, the archived file descriptions, a web search). The
+  quarter is a convention that matches the quarterly files, not a stated cadence.
+* **Gap:** none, by your recorded exception of 2026-10-21: a loan's outcome comes up to 36 months after issue and the
+  data has no outcome dates, and a 12-month gap would leave 33-46% of the rows for training.
+* **Time frame:** 36-month loans issued from April 2008 to December 2015 (609,544), the only loans whose outcomes are
+  complete in the 2018 Q4 snapshot. 46% of the loans were issued in 2015, so only its four quarters keep half the rows
+  for training (2015 Q1: 53.9%). In 2015 Q4, 14 new credit-bureau fields (`all_util`, `inq_fi`, `open_acc_6m`, ...)
+  appear, filled on 17% of its loans and missing on every loan of the earlier quarters of 2015.
+* **Options:**
+
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | Three months (implemented) | quarterly windows, no gap (your exception of 2026-10-21): 4 candidates above the floor, the quarters of 2015 | 3 windows (issue 1's B) of 54,324 to 88,667 loans | matches LendingClub's quarterly loan files | a convention, not a stated cadence |
+  | B | One month | 14 candidates, November 2014 to December 2015, 6,051 to 33,186 loans each | 14 candidates of 6,051 to 33,186 loans, November 2014 to December 2015 (2015 alone: 12 of 16,023 to 33,186) | would match the "updated monthly" reading of `splits_comment` | no source either; fewer loans per window |
+  | C | Six months | 2 candidates: 2015 H2 (73.4% train share) and H1 (53.9%) | 2 candidates of 118,546 and 162,234 loans | more loans per window | fewer than three windows |
+  | D | One year | 2015 alone | 1 candidate of 280,780 loans | all of 2015 in one window | one candidate, fewer than three windows |
+
+* **Recommendation:** A: the quarter matches the files LendingClub released by calendar quarter, and no source names
+  another cadence. **Decision:** A, B, C or D?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, three-month windows without a gap, kept: the quarter matches the files
+LendingClub released by calendar quarter, and no source names another cadence (the paper shuffles the loans into 5
+folds). The gap-0 exception to SPLIT-10 of 2026-10-21 stays as recorded. `splits_comment` gives that reason and no
+longer says the data was updated monthly, which the file description contradicts; the windows are issue 1's (b). The
+record has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
+**Issues for Lennart:**
+
+1. **Which quarters of 2015 should the test windows be?**
+
+   * **Problem:**
+     - The three test windows are 2015 Q2, Q3 and Q4, walking back from the newest, and 2015 Q1 is the only other
+       quarter that keeps half the loans for training (53.9%).
+     - Since 2026-11-10 the newest window always stays and the others are chosen from the use case and statistics of
+       the data, preferring other seasons and months over the windows just before the newest[^lc-split15].
+     - Other years are not open, since 46% of the loans were issued in 2015[^lc-split14].
+   * **Background:** Each quarter is a season of 2015, so today's windows cover three seasons and B covers three as
+     well, with winter in place of summer. The default rate barely moves across the four quarters (14.6% to 15.4%),
+     and the train sides sit at 13.2% to 13.8%. The three older quarters show little drift (median PSI 0.02 to
+     0.04); the newest is set apart by the 14 bureau fields that start in it (median PSI 0.45). PSI, the population
+     stability index, compares a feature's distribution in the window with its train side; above 0.25 is usually read
+     as a large shift; a few bureau-history columns (`num_bc_tl` and others) drift by 0.8 to 1.1 in each of the three
+     older quarters.
+   * **Statistics:** from the candidate table (100,000-row samples of each side for the drift).
+
+     | Window | In | Loans | Default rate, test | Default rate, train side | Train share | Median PSI | Largest PSI |
+     |---|---|---|---|---|---|---|---|
+     | Oct-Dec 2015 | A, B | 88,667 | 14.8% | 13.8% | 85.5% | 0.445 | 1.28 (`all_util`) |
+     | Jul-Sep 2015 | A | 73,567 | 14.6% | 13.5% | 73.4% | 0.023 | 0.78 (`num_bc_tl`) |
+     | Apr-Jun 2015 | A, B | 64,222 | 15.4% | 13.3% | 62.8% | 0.027 | 0.92 (`num_bc_tl`) |
+     | Jan-Mar 2015 | B | 54,324 | 14.9% | 13.2% | 53.9% | 0.037 | 1.10 (`num_bc_tl`) |
+
+   * **Effect on the task:** A tests the loans of April to December 2015, each with a model refit on everything up to
+     the quarter before. B tests October to December, April to June and January to March, so one model is refit on
+     2008-2014 alone, before the 2015 volume arrived, and the windows are spread over the whole open year instead of
+     its last nine months.
+   * **Consistency:** Your CC of 2026-10-01 recorded the windows as "the quarters 2015 Q2-Q4" when the 2016 loans were
+     dropped; B departs from that wording, which predates the rewritten rule. The exception for gap 0 holds for both
+     options; under B its numbers change (a 12-month gap would leave 28-46% of the rows for training)[^lc-split10].
+   * **Sources:** the definition `datasets/_dev/tabarena-v0pt2/lending_club/dataset.py` (`splits_comment`,
+     `temporal`); the record `curation/records/lending_club.md` (CC 2026-10-01, the exception of 2026-10-21); the
+     candidate table `.venv/bin/python -m data_foundry.curation.cli dataset windows lending_club --root
+     datasets/_dev/tabarena-v0pt2` (4 quarters); the bureau fields counted on the definition's frame.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 2015 Q4, Q3 and Q2 (implemented) | tests Oct-Dec, Jul-Sep and Apr-Jun 2015 | the most training data (oldest 62.8%); the windows of your CC of 2026-10-01 | walks back from the newest; no window in the first months of the year |
+     | B | 2015 Q4, Q2 and Q1 | tests Oct-Dec, Apr-Jun and Jan-Mar 2015 | spread over the whole open year; no window right before the newest; adds winter | the oldest trains on 53.9%, with no 2015 loan |
+
+   * **Recommendation:** B, with low stakes: the statistics barely tell the quarters apart, so the choice follows the
+     rule's default of spreading the windows over the eligible history rather than taking the quarter just before the
+     newest. **Decision:** A or B?
+
+   **Notes for the AI:** on B, `temporal = Temporal(on="issue_d", splits=TemporalSplits(window=3, unit="months",
+   cutoffs=("2015-10-01", "2015-04-01", "2015-01-01")))`: test 88,667, 64,222 and 54,324 loans, train 520,877,
+   383,088 and 328,764 (85.5%, 62.8%, 53.9%). Then rewrite `task_summary.split` ("Each of the last three quarters of
+   2015"), `splits_comment` (the windows, the reasons and the numbers above; the exception's gap figures: a 36-month
+   gap and a 12-month gap recomputed for the new windows, 12 months now 28-46%), add a CC line to the record and a
+   dated CHANGELOG entry, and run `dataset check` (SPLIT-15). On A, write the reason for walking back into
+   `splits_comment` and the record.
+
+   [^lc-split15]: **SPLIT-15** (Must for the newest window, Should for the others; amended 2026-11-10, Lennart and
+     Andrej): "The newest window is always a test window ... Prefer windows in other years, then other seasons, then
+     other months, weeks or days, over the windows just before the newest. Walking back from the newest is one choice
+     among others and needs its reason too, such as a history too short for others, or a use case that only cares
+     about the weeks after a refit."
+   [^lc-split14]: **SPLIT-14** (Must): at least 3 windows, and no window's train side holds less than 50% of the data.
+   [^lc-split10]: **SPLIT-10** (Should): when a label is known only some time after its row, train on the rows whose
+     outcome is known by the window's start; the exception of 2026-10-21 (Lennart) sets gap 0 because the label's
+     delay would break the 50% floor.
+
+   **Lennart (2026-11-11, change):** Option B: 2015 Q4, Q2 and Q1.
+
+   **Consistency check (AI, 2026-11-11):** Keep all three test windows in 2015, now that the amended floor opens 2014?
+
+   * **Problem:**
+     - Option B spreads the windows over 2015 because other years were not open: before today only its four quarters kept
+       half the loans for training[^lc1-15].
+     - Under today's amended floor 2014 Q4, Q3 and Q2 train on 45.9%, 39.2% and 33.0%, so one of them can be the window
+       under half[^lc1-14].
+     - Every other mark of this round with another year open took one (mortgage, noaa_storm_events_damage,
+       rossmann_store_sales, rain_in_australia, g_research_crypto_forecasting_1m).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | 2015 Q4, Q2 and Q1, as marked | B: 85.5%, 62.8%, 53.9% | every train side keeps half; the default rate barely moves between quarters (14.6% to 15.4%) | one year only, where another is now open |
+     | b | 2015 Q4, 2015 Q2 and 2014 Q4 | swaps 2015 Q1 for 2014 Q4 (49,197 loans, 45.9%) | another year at the smallest cost in training data | two fourth quarters, no first quarter |
+     | c | 2015 Q4, 2015 Q1 and 2014 Q2 | evenly over the seven open quarters (85.5%, 53.9%, 33.0%) | two years and three seasons | the oldest trains on a third of the loans |
+
+   * **Recommendation:** b, with low stakes: it adds another year at the smallest cost in training data.
+     **Decision:** a, b or c?
+
+   [^lc1-15]: **SPLIT-15** (Should for the other windows): "Prefer windows in other years, then other seasons ...".
+   [^lc1-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart). The gap-0 exception to **SPLIT-10** (2026-10-21) still
+     holds under any option.
+
+   **Lennart (2026-11-11, change):** Reply (b): 2015 Q4, 2015 Q2 and 2014 Q4
+
+   **Resolved (2026-11-11, Lennart):** b: the test windows are October-December 2015, April-June 2015 and
+   October-December 2014, so they spread over two years. `temporal` declares the cutoffs 2015-10-01, 2015-04-01 and
+   2014-10-01 (3 months, no gap): test 88,667, 64,222 and 49,197 loans, train 520,877, 383,088 and 279,567 (85.5%,
+   62.8%, 45.9%). 2014 Q4 is the one window under half, signed off: `accepted_check_warnings` accepts
+   `splits_train_under_half`. The gap-0 exception stays as recorded; for these windows a 36-month gap would leave
+   3.9-8.8% for training, a 12-month gap 22.5-45.9%, and `splits_comment` gives these figures. `task_summary.split`,
+   `splits_comment` (the windows and why, the counts, the shares) and the issue-year bullet of `curation_comments` are
+   rewritten. The record has the decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings (README not
+   regenerated).

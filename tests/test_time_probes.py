@@ -14,6 +14,7 @@ from data_foundry.collections import CollectionEntry, DatasetCollection, LocalWa
 from data_foundry.examples import get_toy_container_path
 
 pytest.importorskip("scipy")
+pytest.importorskip("lightgbm")  # curation_probes imports curation_probes.leak, which imports it
 
 REPO = Path(__file__).resolve().parents[1]
 LIBRARY = REPO / ".claude" / "skills" / "knowledge-curation" / "scripts"

@@ -91,8 +91,8 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
         ),
         changes=(
             "We cut the history at 2013-01-01, as later invoices carry traces of the inspections that set the labels,"
-            " keep the clients billed before that date and still billed from 2015 on, so that every client was "
-            "followed long enough for a finding, and sample 1.5M invoices by whole clients."
+            " and keep the clients billed before that date and still billed from 2015 on, so that every client was "
+            "followed long enough for a finding."
         ),
         fit="approximate",
         fit_reason=(
@@ -177,7 +177,7 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
         - We drop `counter_number`, the meter's serial number: it carries no meaning as a number or a code (the fraud
           rate is 7.3-9.5% across its deciles, in no order; Spearman -0.04 with the account creation year).
           Serials repeat across clients, but clients that share a serial do not share labels (ROC AUC 0.50-0.51 for
-          the other clients' label), so the serial does not link clients across the split either. Without it, 57
+          the other clients' label), so the serial does not link clients across the split either. Without it, 61
           rows of the shipped frame repeat another row of the same client (two meters with the same invoice); we
           keep them.
         - Shifted rows: 15 invoices of 2 clients carry `reading_remarque` codes outside the documented 6-9 (203, 5)
@@ -204,7 +204,7 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
           reading (Zindi: "If the counter shows something wrong, the agent gives a bad score"); the codes 6-9 are not
           described and their use changes over time (7 only up to 1995, 8 and 9 from 1996, 9 replacing 6 from 2012), so
           which end is bad is unknown.
-        - The row budget: We sub-sample the frame (1,862,650 invoices of 81,531 clients, all before 2013) to 1.5M rows by whole clients (stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol).
+        - The row budget (1M train, 500k test rows): We keep the whole frame (1,862,650 invoices of 81,531 clients, all before 2013) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole clients drawn from its third and stratified on the target, and trains on every other row (about 1.36M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole clients at random, stratified on the target.
     """
 
     # Task
@@ -244,8 +244,9 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Default grouped 3-fold cross-validation by client, on the frame sub-sampled to 1.5M rows by whole clients;
-        every split trains on at most 1M and tests on at most 500k rows. The grouped cross-section stands in for a
+        Default grouped 3-fold cross-validation by client over the full frame (1,862,650 invoices): each fold tests on
+        at most 500k rows, whole clients drawn from its third, and trains on every other row (about 1.36M), which a
+        benchmark sub-samples to 1M rows by whole clients (`subsample_train`). The grouped cross-section stands in for a
         deployment over time, in which STEG would train on the findings of earlier campaigns and score its clients
         forward: the labels are undated findings of 2013-2019, one per client, so no test window or gap can be set,
         and train and test clients share the same years, as in the challenge.

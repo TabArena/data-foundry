@@ -23,8 +23,32 @@ Python run):
   the facts point to (`/add-dataset` Step 1 lists them): recurring entities across the split, labels in flight at a
   cut, batches in the raw order;
 * the regime the use case implies (new entity or known entity; a stream over time), against the one declared;
+* temporal, the floor: every window that trains on less than half the rows needs the curator's sign-off (SPLIT-14,
+  amended 2026-11-11; `dataset check` warns `splits_train_under_half`): list each with its share and the reason it
+  is tested, and say whether the core holds (the newest window and one other at half or more, never more windows
+  under half than at or above); the main session raises it as an issue;
+* temporal, the horizon and the time frame first: argue the window length and the gap from the source and the use
+  case (how far ahead the actor predicts, how often a deployed model is refit, the label delay; SPLIT-12), say which
+  of it the source states and which is our assumption, weigh one to three other lengths (how many windows each keeps
+  above the floor, which periods they cover), and say why the windows cover the period they do; the main session
+  puts this argument into the `**Horizon:**` block of the record's review (verdict, length, gap, time frame, an options
+  table with today's length as the implemented row and the size of each option's test windows, recommendation),
+  which the curator signs off;
+* temporal, three checks earlier panels missed (reviews of 2026-11-10 and 11):
+  - the time column is the moment the prediction is made (USE-3): a creation date earlier than a launch, an order
+    placed before it is priced, lets a train side hold outcomes still open at the window's start (kickstarter);
+  - an input issued ahead of the time column (a forecast and its issue time, a quote and its validity) needs a gap
+    of that lead time, since the train side otherwise holds measurements taken after the forecast was issued
+    (climate_model_weather_forecasting_1m: forecasts up to 74 hours ahead, a 3-day gap; SPLIT-10's planning gap);
+  - the newest period is complete: compare its rows a day and its target rate with the same span earlier; a drop
+    near the release date is a download or scrape cut (kickstarter's newest quarter held half the rows, LEAK-24;
+    `dataset check` warns `time_newest_period_short` under 60% of the earlier rows a day, but a cut that keeps
+    the rows and drops the open outcomes shows only in the target rate);
 * temporal: the time column's meaning, windows and their sizes, the train side, the gap against the label delay,
   training rows whose label is not known at the prediction point, the training history, a season-shaped test window;
+  the choice of windows against the candidates (`dataset windows <name>`, SPLIT-15): the newest is among them, the
+  reasons in the splits comment hold against the statistics, near copies of the newest are not chosen without a reason,
+  and no model score decided it;
   a time on risk (a training weight) is cut at the release date and at each window's cutoff, not only by the outcome,
   so check which rows a training side admits by it (pricing_game_2016_french_fleet: from 2013 on, only the periods
   that ended early; SPLIT-9, LEAK-41);
