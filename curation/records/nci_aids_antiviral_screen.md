@@ -215,6 +215,14 @@ correct the record's `Time: Dated`, since the NSC number is an order without a c
      source dates them, a family key still trains on later families and on siblings of the same batch. The key
      follows the application, never the size of the gap.
 
+   **Resolved (2026-11-11, Andrej):** A. The scaffold-grouped split stays. The measurement is written into the
+   definition's `splits_comment` as a table next to the note on neighbouring NSC numbers: by registration order
+   ROC AUC 0.749 (LightGBM) and 0.774 (random forest) with 8.4% of test compounds keeping a close training analog
+   and a third of their scaffolds in training; scaffold-disjoint 0.717 and 0.739 with 4.3%; random 0.762 and 0.770
+   with 9.8%; the shipped folds 0.786 and 0.796 with 15.4%. The bullet also records why the order is not an
+   arrival: the numbers run from 48 to 706,805 and about a quarter of the compounds were registered before the
+   screen began, and no public table maps them to dates.
+
 2. **Correct the record's `Time: Dated` to `Time: Inferred`?**
 
    * **Problem:**
@@ -242,3 +250,8 @@ correct the record's `Time: Dated`, since the NSC number is an order without a c
      when only an order that tracks time survives, with no calendar (an id, a case number, a file position).
 
    **Andrej (2026-11-11, change):** Option B: Time: Inferred, with the limit named.
+
+   **Resolved (2026-11-11, Andrej):** B. The record's `Time: Dated` becomes `Time: Inferred`, since the release
+   keeps only an order and no calendar, and the CC line names the limit: the NSC number is the registration order
+   of the NCI repository, not the order compounds entered the screen. `Samples: Over Time` stays, and `Andrej` is
+   added to `checked_by`.

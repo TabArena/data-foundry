@@ -1,5 +1,19 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11 (evening), nci_aids_antiviral_screen: the registration-order split measured and not taken
+
+- The scaffold-grouped split stays (the curator's decision on the first review issue). `splits_comment` now carries
+  the measurement as a table beside the existing note on neighbouring NSC numbers: four windows from the highest
+  numbers down, each trained on every lower number, give ROC AUC 0.749 (LightGBM) and 0.774 (random forest) with
+  8.4% of test compounds keeping a close training analog and a third of their scaffolds in training, against 0.717
+  and 0.739 with 4.3% scaffold-disjoint, 0.762 and 0.770 with 9.8% at random, and 0.786 and 0.796 with 15.4% for
+  the shipped folds.
+- Why the order is not an arrival: the NSC numbers run from 48 to 706,805 and about a quarter of the compounds sit
+  below 609,000, registered into the NCI repository long before the screen began; no public table maps them to
+  dates, and the newest window has nothing registered after it to compare against.
+- The record's `Time: Dated` was corrected to `Time: Inferred` (the second issue), since only an order survives and
+  no calendar; `Samples: Over Time` stays. Both issues now carry their resolution, so the review reads as settled.
+
 ## 2026-11-11 (evening), qsar_oral_toxicity: the scaffold split named `Timeless` after dating (nothing rebuilt)
 
 - The chemicals were dated first, as the curator asked: 7,927 of 11,116 (71.3%) carry the publication year of the
