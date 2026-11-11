@@ -1,12 +1,11 @@
 # onlinenewspopularity
 
-**Outcome:** added. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI proposes to keep the
-two-week windows and the one-week gap, but to spread the nine windows over March to December 2014, one every five
-weeks, instead of testing the newest nine (24 August to 27 December 2014) (issue 11): the paper evaluated on rolling
-test sets over 17 months, and the share level falls through 2014. `dataset.py` is unchanged until you decide.
+**Outcome:** added. On 2026-11-11 you chose nine two-week windows, one every five weeks from 9 March to 27 December
+2014, with the one-week gap (issue 11, B, nine windows by reply (a)), every train side above half, and kept the
+two-week horizon (Horizon, A).
 
-**Main points:** Test on nine two-week windows spread over March to December 2014 instead of the newest nine
-(issue 11)? Sign off the two-week horizon with its one-week gap.
+**Main points:** Settled on 2026-11-11: nine windows spread over March to December 2014 (issue 11) and the two-week
+horizon with its one-week gap. Nothing is left open.
 
 **Horizon:**
 
@@ -38,6 +37,13 @@ test sets over 17 months, and the share level falls through 2014. `dataset.py` i
 
 * **Recommendation:** A: two calendar weeks are the paper's test set of 1,000 articles in late 2014, in whole weeks, and
   the one-week gap covers the time the paper gives shares to settle. **Decision:** A, B, C or D?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, two-week windows with the one-week gap, kept: two calendar weeks are the
+calendar form of the paper's rolling test sets of 1,000 articles (about 2.2 weeks in late 2014), and the gap is longer
+than the under four days the paper gives shares to settle. `splits_comment` gives these reasons; the windows are issue
+11's B. The record has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -143,3 +149,17 @@ test sets over 17 months, and the share level falls through 2014. `dataset.py` i
      **Decision:** a or b?
 
    [^a-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): the newest window and at least one other train on at least 50% of the data; further windows down to 30%, and at most as many windows under 50% as at or above it.
+
+   **Lennart (2026-11-11, change):** Reply (a): Nine, every five weeks (your B)
+
+   **Resolved (2026-11-11, Lennart):** B with nine windows: `temporal` declares the cutoffs 2014-12-14, 2014-11-09,
+   2014-10-05, 2014-08-31, 2014-07-27, 2014-06-22, 2014-05-18, 2014-04-13 and 2014-03-09 (two weeks, one-week gap):
+   test 769, 1,003, 988, 902, 877, 855, 763, 785 and 699 articles (7,641), train 38,385 down to 21,234 (96.8% to
+   53.6%), so every train side keeps half and no window needs a sign-off. The 489 articles of 7-13 December 2014 fall
+   in the newest window's gap and in no test window: `accepted_check_warnings` accepts `splits_rows_unused` with that
+   reason. `task_summary.split` and `splits_comment` (the windows, why, the counts and shares) are rewritten. The
+   figures of `fit_reason` and `curation_comments` measured on the newest nine windows (R² 0.158, 0.135 and 0.143; ROC
+   AUC 0.727 against 0.730; the masking test; the 0.9% and 0.4% of test rows; expanding against sliding) are dated as
+   measured on the windows used until 2026-11-11; the share of test articles with the shifted authors' date is now 51%
+   (3,880 of 7,641). The record has the decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings
+   (README not regenerated).

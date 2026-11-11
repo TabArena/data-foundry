@@ -1,31 +1,12 @@
 # chicago_traffic_crashes
 
-**Outcome:** added. The AI and the second review panel (after Lennart's PR #33 review, 2026-11-04) recommend
-shipping after changes: two Must rules are triggered and not yet fixed (USE-1, issue 7; LEAK-13, issue 9).
-Validity: USE-1 (Must) is triggered: the use case names an emergency-response analyst, but 50.9% of the rows are
-desk reports that nobody was dispatched to (issue 7). USE-5 is an open question about the 2023Q4 step in the
-"reported, not evident" class (issue 8). LEAK-13 (Must) is triggered again, because the rows keep their minute order
-inside each floored hour (+0.00098 log loss, positive on all 9 splits; issue 9). LEAK-10 holds for every input, but
-`dooring_i` is a borderline call (issue 10). SPLIT-1..4, 9, 11, 14, 20 and 21 hold, and SPLIT-10 holds with the gap
-now measured (its size is issue 11). PROV-9 (Must) was triggered and is now fixed. Value: TP-9 holds (18-34 fatal
-crashes per test window, all five classes in every fold, skill about 0.17, the share of the class prior's log loss
-the model removes), and MET-1, MET-8 and MET-11 hold for the fallback log loss. Quality: the stale notes (speed,
-start date, metric reason, the 2026-10-29 figures) are corrected. Weighed: the size and the real signal count for
-the dataset, the label noise and the drift against it. Left for you: issues 7-11, then the ask for a rebuild before
-2026-12-22.
+**Outcome:** added. The second review panel (2026-11-04) recommended shipping after changes, and issues 7-11 were
+settled on 2026-11-05. On 2026-11-11 you chose one-month windows with the one-month gap (H, b) and nine of them spread
+over four years (issue 12, B), September 2026 back to January 2023, each in another calendar month; both are applied.
+Left: the rebuild from the 2026-11-04 export before its URL stops working on 2026-12-22, which needs your ask.
 
-The panel changed only text and metadata in `dataset.py` (year, pinned export, gap measurement, drift dating, metric
-reason, stale notes); data, split, features, target and metric are unchanged. The data has to be rebuilt from the
-2026-11-04 export before that export URL stops working on 2026-12-22, and a rebuild needs your ask. Under the rule on
-choosing test windows, rewritten on 2026-11-10, the AI recommends keeping the three-month windows with the one-month
-gap (Horizon) and spreading the nine test quarters over July 2022 to September 2026 instead of the nine newest, the
-custom `_make_splits` kept (issue 12, open; `dataset.py` is unchanged until you decide).
-
-**Main points:** Reword the use case to a road-safety analyst (issue 7)? Accept the 2023Q4 step as drift (issue 8)?
-Floor the crash time in `_clean` so the row order no longer carries the minute (issue 9)? Keep or drop `dooring_i`
-(issue 10)? Keep the one-month gap (issue 11)? After these, a rebuild before 2026-12-22. Open since 2026-11-10: sign
-off the quarterly windows with the one-month gap (Horizon), and test nine quarters spread over 2022-2026 instead of the
-nine newest (issue 12)?
+**Main points:** Settled on 2026-11-11: nine one-month test windows from January 2023 to September 2026, on both sides
+of the 2023Q4 step, each trained on the crashes up to a month before it, as the city reviews its fatal crashes monthly.
 
 **Horizon:**
 
@@ -80,6 +61,18 @@ monthly, this could be more reasonable here?
 
 * **Recommendation:** b: the monthly review is the analyst's documented cycle, and nine months still test about 80,000
   crashes. **Decision:** a or b?
+
+**Lennart (2026-11-11, change):** Reply (b): One month
+
+**Resolved (2026-11-11, Lennart):** b, one-month windows with the one-month gap, the cycle of the city's monthly
+review of fatal crashes, in place of the quarter, a convention of the build. `temporal` declares a one-month horizon,
+and the custom `_make_splits` builds `TemporalSplits(window=1, unit="months", gap=1, cutoffs=TEST_MONTHS)` with issue
+12's nine months, keeping the notification filter at each month start. `task_summary.split`, `splits_comment` (the
+length's reason from this block, the windows and their counts, the gap, the drift paragraph), the metric reason (its
+figures now dated to July-September 2026), the late-label note and the accepted `splits_rows_unused` (9,539 crashes in
+no split, 9,529 of them in August 2026, the newest window's gap month) are rewritten. Every window trains on 57.5% to
+98.1% of the crashes. The record has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not
+regenerated).
 
 **Issues for Lennart:**
 
@@ -403,6 +396,20 @@ monthly, this could be more reasonable here?
      seasons, holidays, events, a change of rules or of the data collection) ... Prefer windows in other years, then
      other seasons, then other months, weeks or days, over the windows just before the newest. Walking back from the
      newest is one choice among others and needs its reason too."
+
+   **Lennart (2026-11-11, change):** Option B: Nine spread over four years.
+
+   **Resolved (2026-11-11, Lennart):** B, at the one-month length of the horizon (b): nine months spread over the 53
+   monthly windows that keep half the crashes for training (May 2022 to September 2026), five and six months apart in
+   turn, so each falls in another calendar month and every season appears at least twice: September 2026, April 2026,
+   October 2025, May 2025, November 2024, June 2024, December 2023, July 2023 and January 2023 (`TEST_MONTHS`;
+   `n_windows` and `min_train_fraction` are gone). Test 9,641, 8,961, 9,031, 10,079, 8,924, 10,120, 9,095, 9,499 and
+   8,091 crashes (83,441; 6, 10, 7, 6, 9, 10, 12, 8 and 15 fatal, 83 in all); train after the notification filter
+   978,937, 931,711, 879,272, 830,229, 777,987, 727,880, 675,888, 627,408 and 574,344 (98.1%, 93.3%, 88.1%, 83.2%,
+   77.9%, 72.9%, 67.7%, 62.9% and 57.5% of 998,117): no window under half. January and July 2023 lie before the 2023Q4
+   step ("reported, not evident" 4.0% and 4.8%), December 2023 in its quarter (5.2%) and the six newer windows after it
+   (6.0-6.8%), as the drift paragraph now says. The eligibility table of `_decisions` follows the months. The record
+   has the CC line. `dataset check`: 0 errors, 0 warnings.
 
 **Review panel:** ship after changes (mediator). The tier was full, as a second pass after Lennart's review of PR #33
 on 2026-11-04: seven evidence agents, the advocate and the critic with one rebuttal each, and the mediator. Claims: 27

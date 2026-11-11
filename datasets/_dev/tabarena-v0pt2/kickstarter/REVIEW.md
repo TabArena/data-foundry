@@ -1,15 +1,12 @@
 # kickstarter
 
-**Outcome:** added. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI recommends testing all
-six years that keep half the projects for training (2020 to 2025) instead of the newest three, since a table of this
-size gets nine train-test splits when split at random (issue 1). The one-year horizon is kept, but the Horizon block
-notes that the windows are dated by creation, not by the launch the use case predicts at, and that the newest year
-misses about a fifth of its projects, those still running when the data was scraped. `dataset.py` is unchanged until
-you decide.
+**Outcome:** added. On 2026-11-11 you dated the projects by launch with a 60-day gap and dropped the launches of the
+scrape's last 60 days (issue 2, B), chose the nine launch years 2017 to 2025 as test windows, the three oldest training
+on 47.0%, 40.2% and 32.4% of the projects (issue 1, C with reply b), and kept the one-year horizon (H, A).
 
-**Main points:** Test all six years from 2020 to 2025 instead of 2023 to 2025 (issue 1)? Date the projects by launch
-and leave out the launches of the scrape's last 60 days, so the newest year is complete (issue 2)? Sign off the
-one-year horizon.
+**Main points:** Settled on 2026-11-11: nine one-year windows by launch date, 2025 back to 2017, with a 60-day gap, on
+185,444 projects (issues 1 and 2); the one-year length holds, a convention no source contradicts (H). Nothing is left
+to decide.
 
 **Horizon:**
 
@@ -48,6 +45,16 @@ one-year horizon.
 
 * **Recommendation:** A: a year holds every season and loses the least of its newest window to the scrape, and no source
   supports a shorter cadence. **Decision:** A, B or C?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A: one-year windows, kept. With issue 2 (B) they are dated by launch instead of
+creation, with a 60-day gap (Kickstarter's longest campaign), and the launches of the scrape's last 60 days are
+dropped, so the newest window (1 January to 13 November 2025) is complete but for campaigns longer than 60 days; at
+most one training project per window had not ended when its window starts. `splits_comment` gives this block's reason
+for the length (no source gives a horizon or a refit cadence; a year holds every season and loses the least of its
+newest window to the scrape) and drops "not enough data per month", which this block found false (1,500 to 2,200
+projects a month). The record has the horizon CC line. `dataset check`: 0 errors, 0 warnings.
 
 **Issues for Lennart:**
 
@@ -144,6 +151,18 @@ one-year horizon.
      get folds" (185,444 rows: 3 x 3).
    [^ks1-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): the two tiers, 50% and 30%.
 
+   **Lennart (2026-11-11, change):** Reply (b): Nine years, 2017 to 2025
+
+   **Resolved (2026-11-11, Lennart):** C with reply b: the test windows are the nine launch years 2025 back to 2017
+   (`cutoffs=(2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017)`, dated by launch with issue 2's 60-day gap). On
+   the definition's frame of 185,444 projects they test 23,096 (1 January to 13 November 2025), 20,466, 12,096,
+   10,790, 9,523, 9,432, 11,187, 12,312 and 14,286 projects and train on 159,342 down to 60,168 (85.9%, 75.6%, 69.2%,
+   63.5%, 58.3%, 53.2%, 47.0%, 40.2% and 32.4%), as the consistency check gave. The three under half, 2019 (47.0%),
+   2018 (40.2%) and 2017 (32.4%), are signed off with this mark: the record's CC line names them and the definition
+   accepts `splits_train_under_half` with them. `task_summary.split` and `splits_comment` name the nine years, the
+   counts, the three under half with their shares, and why nine (every year the floor admits, the count a random
+   split of this size gets). `dataset check`: 0 errors, 0 warnings.
+
 2. **Date the projects by launch and leave out the launches of the scrape's last 60 days?**
 
    * **Problem:**
@@ -187,4 +206,16 @@ one-year horizon.
    [^ks2-leak24]: **LEAK-24** (Must): "A target right-censored in the newest periods (a duration or a final status cut
      by the download date) is cut where follow-up is complete, or re-sourced from an archive with settled labels".
    [^ks2-use3]: **USE-3** (Must): "Name the prediction point: when the model is used and what is known then."
+
+   **Lennart (2026-11-11, change):** Option B: Launch date, cut at 60 days before the scrape.
+
+   **Resolved (2026-11-11, Lennart):** B: `temporal` dates the windows by `launched_at` with a 60-day gap
+   (`gap=60, gap_unit="days"`), and `_clean` drops the projects launched from 2025-11-13 11:00 on, 60 days before the
+   scrape's newest deadline (12 January 2026 11:00): 1,673 projects, 74.2% successful, all from the newest window.
+   185,444 projects remain, 62.50% successful. With the gap at most one training project per window (3 over the nine
+   train sides, campaigns longer than 60 days) had not ended when its window starts, against 1.9% to 3.2% of each
+   train side dated by creation. The curation notes give the scrape's cut, `task_summary` (row, predicted, split,
+   changes, fit reason) and `splits_comment` the dating by launch and the gap; the record has the CC line.
+   `dataset windows kickstarter` recomputed: success in the test years 55.0% (2017) to 71.1% (2025), on the train
+   sides 58.3% to 61.3%. `dataset check`: 0 errors, 0 warnings.
 

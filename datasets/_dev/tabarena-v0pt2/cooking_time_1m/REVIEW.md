@@ -1,12 +1,12 @@
 # cooking_time
 
-**Outcome:** added as `cooking_time_1m`. On 2026-11-10 you kept the three windows and asked for the reason and the
-limit in the splits comment (issue 1, B); the 7-day length stays for its reason, TabReD's own validation and test
-length. Nothing is left open.
+**Outcome:** added as `cooking_time_1m`. On 2026-11-11 you chose the newest week and every other week before it,
+28 December-3 January, 14-20 December and 4-10 December (issue 2, B), with 4-10 December training on 37.5% of the
+orders and signed off; this supersedes the three newest weeks of 2026-11-10 (issue 1). The 7-day length with its
+one-day gap stays for its reason, TabReD's own validation and test length.
 
-**Main points:** Settled on 2026-11-10: the three weeks from 14 December 2023 to 3 January 2024 stay, and the splits
-comment says they are the only weeks above the floor and cover only the weeks before and over New Year (issue 1, B);
-the declared horizon is checked. Open: test every other week, now that the amended floor opens early December (issue 2)?
+**Main points:** Settled on 2026-11-11: test every other week from the newest, 4-10 December included (issue 2, in
+place of issue 1's windows); the declared horizon is checked. Nothing is left open.
 
 **Horizon:**
 
@@ -143,3 +143,14 @@ cooking times follow a weekly cycle).
    [^ck2-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): the newest window and at least one other train on at
      least 50% of the data; further windows down to 30%, and at most as many under 50% as at or above.
 
+   **Lennart (2026-11-11, change):** Option B: Every other week.
+
+   **Resolved (2026-11-11, Lennart):** B: the test windows are the newest week and every other week before it,
+   28 December-3 January, 14-20 December and 4-10 December. This supersedes issue 1's decision of 2026-11-10 (the
+   three newest weeks), which stays resolved; the 7-day length and the one-day gap stay. `temporal` declares the
+   cutoffs 2023-12-28, 2023-12-14 and 2023-12-04 (7 days, gap 1 day): test 1,662,794, 1,921,331 and 1,861,029 orders
+   before the 500k cap, train 10,856,304, 6,935,762 and 4,797,156 (84.8%, 54.2%, 37.5%). 4-10 December is the one
+   window under half, signed off: `accepted_check_warnings` accepts `splits_train_under_half`. Every day of it holds
+   orders, and its mean log minutes (2.533) sit below the run-up's 2.548 and New Year's 2.599. `task_summary.split`
+   and `splits_comment` (the windows and why, the counts, the shares, the gap figures for the new windows) are
+   rewritten. The record has the decision CC line. `dataset check`: 0 errors, 0 warnings (README not regenerated).

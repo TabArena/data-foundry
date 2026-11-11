@@ -10,16 +10,12 @@ training-period clause is departed from for one test row (issue 2); the target k
 (issue 3). Value: TP-2 holds (LightGBM 18.26 RMSE against 41.22 for the training mean and 25.32 for the raw sensor);
 MET-1..4 hold (the source's RMSE). Quality: dead-channel hours missed by the sensor-2 rule (issue 4); the stale notes
 in the definition are fixed (EV-7). Weighed: three sites (-), a real named use (+), the source paper (+), the shape
-(+). For the curator: issue 1 first. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI
-recommends keeping the one-month windows without a gap (Horizon) and the five test months, leaving out September 2020,
-the one other month above the floor, as Nakawa's first month (issue 6, open; `dataset.py` is unchanged until you
-decide).
+(+). On 2026-11-11 you added August 2020 as a sixth test month (issue 6, reply (c)), the one window under
+half (47.7%), signed off, and kept the monthly windows without a gap (Horizon, A).
 
-**Main points:** Widen the test windows beyond the dry season (issue 1; decide it first, since it moves the spikes of
-2 and the outage of 3 into test windows), and decide three cleaning changes the panel recommends but did not make:
-keep the Makerere test-window spike as a label (2), drop the Nakawa reference outage (3), one dead-channel rule for
-both sensors (4). Open since 2026-11-10: sign off the monthly windows without a gap (Horizon), and keep the five test
-months rather than add September 2020 (issue 6)?
+**Main points:** Settled on 2026-11-11: six test months, August 2020 and October 2020 to February 2021, with September
+left out for Nakawa's missing history (issue 6), and the one-month horizon without a gap; issues 1 to 5 were settled on
+2026-11-05. Nothing is left open.
 
 **Horizon:**
 
@@ -46,6 +42,14 @@ months rather than add September 2020 (issue 6)?
 
 * **Recommendation:** A: the monthly refit is your judgment of 2026-11-04, between the hourly feed and a season, and no
   source names another cadence. **Decision:** A, B or C?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, one-month windows without a gap, kept: the monthly refit is your judgment of
+2026-11-04, between the hourly feed and a season, and no source gives a cadence (the paper names "seasonal
+re-calibration" only as future work); the reference is for the same hour, so no gap. `splits_comment` gives these
+reasons; the windows are issue 6's (c). The record has the horizon CC line. `dataset check`: 0 errors, 0 warnings
+(README not regenerated).
 
 **Issues for Lennart:**
 
@@ -373,6 +377,19 @@ months rather than add September 2020 (issue 6)?
      an entity without history.
    [^aq6-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): the newest window and one other train on at least 50%;
      further windows down to 30%, no more of them under 50% than at or above it.
+
+   **Lennart (2026-11-11, change):** Reply (c): Six months with August 2020
+
+   **Resolved (2026-11-11, Lennart):** c: the test windows are October 2020 to February 2021 and August 2020, the end
+   of the June-August dry season; September stays out, as Nakawa has no earlier hour. `temporal` declares the cutoffs
+   2021-02-01, 2021-01-01, 2020-12-01, 2020-11-01, 2020-10-01 and 2020-08-01 (one month, no gap): test 834, 1,048, 836,
+   596, 1,310 and 576 hours, train 9,994, 8,946, 8,110, 7,514, 6,204 and 5,166 (92.3% to 57.3%, and 47.7% for August).
+   August is the one window under half, signed off: `accepted_check_warnings` accepts `splits_train_under_half`. All
+   576 August hours are at Makerere, which has 306 earlier hours (15-31 July 2020); its mean reference is 41.4.
+   `task_summary.split` and `splits_comment` (the six months and why, the counts, the shares, September's reason) are
+   rewritten; the `curation_comments` figures measured on the five windows are dated to 2026-11-05, and a CC bullet
+   records the choice. The record has the decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings
+   (README not regenerated).
 
 **Review panel:** ship after changes (mediator). Tier full, a second pass after Lennart's PR #33 review (2026-11-04), 12 reports. Claims: 24, 12 hold, 9 refuted (stale or overstated text, fixed in `dataset.py`; the record's `required_split` is in the field row and its 15-hour figures in issue 4), 1 concern (issue 2), 2 untested. Blind review: include with changes; its main concerns are that the eight site descriptors repeat the site label (kept: legitimate for known sites, LEAK-34) and that the windows mix later time with newer sites. Task gamer: its best exploit, the previous hour's reference, lowers mean RMSE from 18.21 to 16.28, a leak under the stated prediction point; nothing else beat the noise. Agreed: no leak, the temporal regime, the site descriptors kept, RMSE, the text fixes, the spike rule on training rows only, one dead-channel rule for both sensors. Disputed: SPLIT-20, widen the windows or keep them with an exception (issue 1); the clause and rank of the Nakawa outage (issue 3).
 

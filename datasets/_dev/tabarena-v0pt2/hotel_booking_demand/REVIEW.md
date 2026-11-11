@@ -1,12 +1,11 @@
 # hotel_booking_demand
 
-**Outcome:** added. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI proposes the eight
-prediction dates from 1 November 2016 to 1 June 2017 in place of the nine from 1 September 2016 to 1 May 2017: the two
-oldest train on less than half the bookings, and 1 June 2017 is the newest date whose three months of arrivals lie in
-the data (issue 1). The three-month horizon stays. `dataset.py` is unchanged until you decide.
+**Outcome:** added. On 2026-11-11 you chose all ten prediction dates, 1 September 2016 to 1 June 2017, the two
+oldest training on 48.3% and 44.0% of the bookings (issue 1, reply a), and kept the three-month horizon (H, A).
 
-**Main points:** Predict on the eight first-of-month dates from November 2016 to June 2017 instead of the nine from
-September 2016 to May 2017 (issue 1)?
+**Main points:** Settled on 2026-11-11: the test predicts at the first of each month from September 2016 to June 2017,
+the newest date whose three months of arrivals the data holds (issue 1); three months of arrivals at monthly dates
+hold, the length ours since the source scores every open booking (H). Nothing is left to decide.
 
 **Horizon:**
 
@@ -35,6 +34,14 @@ September 2016 to May 2017 (issue 1)?
 
 * **Recommendation:** A: three months hold 38% to 69% of the open bookings and reach June 2017, where one month holds
   15% to 36% and six months stop at March 2017 with five dates. **Decision:** A, B, C or D?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A: three months of arrivals at first-of-month dates, no gap, kept; with issue 1
+the newest date is 1 June 2017, whose arrivals (2 June to 31 August 2017) the data holds complete. `splits_comment`
+gives this block's reason (the source's system scores every open booking and sets no length; three months hold 38% to
+69% of the open bookings and reach June 2017, where one month holds 15% to 36% and six months stop at March) and why
+no gap is needed. The record has the horizon CC line. `dataset check`: 0 errors, 0 warnings.
 
 **Issues for Lennart:**
 
@@ -144,3 +151,16 @@ September 2016 to May 2017 (issue 1)?
      oldest. **Decision:** a or b?
 
    [^a-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): the newest window and at least one other train on at least 50% of the data; further windows down to 30%, and at most as many windows under 50% as at or above it.
+
+   **Lennart (2026-11-11, discuss):** Reply (a): All ten dates
+
+   **Resolved (2026-11-11, Lennart):** a: the test predicts at ten dates, the first of each month from 1 September 2016
+   to 1 June 2017. `_make_splits` changes only its list of dates (`(2017, 6)` added); its rules are unchanged. Counted
+   with those rules on the 81,418 bookings, newest first: test 6,511, 6,390, 6,015, 5,768, 4,578, 2,500, 2,474, 3,228,
+   4,314 and 4,596, train 64,524 down to 35,860 (79.3%, 74.5%, 70.1%, 66.1%, 62.6%, 59.7%, 56.4%, 52.7%, 48.3% and
+   44.0%), as the issue gave. The two under half, 1 October 2016 (48.3%) and 1 September 2016 (44.0%), are signed off
+   with this mark: the record's CC line names them and the definition accepts `splits_train_under_half` with them.
+   `task_summary` (ten dates; 10.9% of the newest date's test bookings cancelled, against 12.5% at 1 May),
+   `splits_comment` and the curation notes name the ten dates, the latest prediction point (1 June 2017) and the two
+   dates under half; the leak measurement of 867 rows is dated to the split of 1 May 2017. `dataset check`: 0 errors,
+   0 warnings.

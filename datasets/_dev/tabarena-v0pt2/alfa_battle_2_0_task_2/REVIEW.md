@@ -1,13 +1,11 @@
 # alfa_battle_2_0_task_2
 
-**Outcome:** added. You shipped it on 2026-10-26. Under the rule on choosing test windows, rewritten on 2026-11-10,
-the AI recommends keeping the three windows, issue months 22-23, 20-21 and 18-19 (issue 5): once the repeat-client
-filter removes the test window's clients from training, the next older pair (16-17) trains on 49.9% of the rows, so
-three two-month windows can only leave out one of the seven eligible months. The two-month horizon is kept, as a
-convention: no source gives one. `dataset.py` is unchanged until you decide.
+**Outcome:** added. You shipped it on 2026-10-26. On 2026-11-11 you chose the test windows months 22-23, 20-21 and
+14-15 (issue 5, reply (b)), with months 14-15 training on 41.1% of the rows after the repeat-client filter and signed
+off, and kept the two-month horizon without a gap as a convention (Horizon, A).
 
-**Main points:** Keep months 22-23, 20-21 and 18-19, or test 22-23, 19-20 and 17-18 (issue 5)? Sign off the
-two-month horizon.
+**Main points:** Settled on 2026-11-11: the windows months 22-23, 20-21 and 14-15 (issue 5) and the two-month horizon
+with the gap-0 exception as recorded. Nothing is left open.
 
 **Horizon:**
 
@@ -39,6 +37,14 @@ two-month horizon.
 
 * **Recommendation:** A: no source names a length, and two months fill six of the seven eligible months with three
   windows. **Decision:** A, B or C?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, windows of two issue months without a gap, kept as a convention: no source gives
+a horizon or a refit cadence (the competition names its train and test periods only as N and K days). The gap-0
+exception to SPLIT-10 and the repeat-client filter of 2026-10-26 stay. `splits_comment` now says the length is a
+convention, not a stated cadence; the windows are issue 5's (b). The record has the horizon CC line. `dataset check`:
+0 errors, 0 warnings (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -139,3 +145,16 @@ two-month horizon.
    [^ab5-15]: **SPLIT-15** (Should for the other windows): "Walking back from the newest ... needs its reason too, such as
      a history too short for others".
    [^ab5-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart). The gap-0 exception to **SPLIT-10** still holds.
+
+   **Lennart (2026-11-11, ok):** Reply (b): Months 22-23, 20-21 and 14-15
+
+   **Resolved (2026-11-11, Lennart):** b: months 14-15 replace 18-19, so the windows also test the other half of the
+   second year and keep months 20-21. `SPLIT_WINDOWS` is `TemporalSplits(window=2, unit="unique", cutoffs=(22, 20,
+   14))`; `_make_splits` is unchanged. Test 120,428, 107,844 and 90,937 products, train after the repeat-client filter
+   804,162, 702,678 and 396,171 (83.4%, 72.9%, 41.1%; removed 39,221, 32,861 and 21,497). Months 14-15 are the one
+   window under half, signed off: `accepted_check_warnings` accepts `splits_train_under_half`, and `splits_rows_unused`
+   is recounted (1,121 products of clients in the test windows: 181 of months 0-13, 940 of months 16-19). For these
+   windows a 12-month gap would leave 3-27% for training and a 6-month gap 20-53%, so the gap-0 exception's reason
+   holds. `task_summary.split`, `splits_comment` and the comment above `SPLIT_WINDOWS` are rewritten; the LightGBM
+   figures measured on the windows of 2026-10-26 are dated as such. The record has the decision and the horizon CC
+   lines. `dataset check`: 0 errors, 0 warnings (README not regenerated).

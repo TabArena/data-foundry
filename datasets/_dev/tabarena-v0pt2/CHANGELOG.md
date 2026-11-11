@@ -1,5 +1,43 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11, the curator's window decisions, round 3 (no container built)
+
+The curator's replies to the round-2 answers and consistency checks are applied; each takes the option the AI turn
+recommended. Every window under half the rows is signed off in the record and accepted in the definition with that
+date (SPLIT-14 as amended on 2026-11-11). The README files follow at the next `dataset check`.
+
+- airqo_low_cost_air_quality_monitor_calibration_challenge: August 2020 joins the test windows as a sixth month, the end
+  of the June-August dry season, training on 47.7% of the hours, signed off (issue 6, reply (c)); September 2020 stays
+  out because Nakawa has no earlier hour.
+- alfa_battle_2_0_task_2: months 14-15 replace 18-19 as the oldest test window, so the other half of the second year is
+  tested; it trains on 41.1% of the rows after the repeat-client filter, signed off (issue 5, reply (b)).
+- lending_club: test windows 2015 Q4, 2015 Q2 and 2014 Q4, spread over two years; 2014 Q4 trains on 45.9% of the loans,
+  signed off (issue 1, reply (b)); the gap-0 exception stays.
+- onlinenewspopularity: nine two-week windows, one every five weeks from 9 March to 27 December 2014, replace the newest
+  nine (issue 11, B); every train side keeps 53.6% or more; the newest window's gap week (489 articles) is in no split,
+  an accepted warning; figures measured on the old windows dated as such.
+- cooking_time_1m: the newest week and every other week before it (28 December-3 January, 14-20 December, 4-10
+  December), superseding the three newest weeks of 2026-11-10; 4-10 December trains on 37.5% of the orders, signed off
+  (issue 2, B).
+- chicago_traffic_crashes: one-month test windows with the one-month gap (the city's monthly fatal-crash review;
+  horizon, b), nine months spread from January 2023 to September 2026, each in another calendar month (issue 12, B), in
+  place of the nine newest quarters; the notification filter applies at each month start; every window trains on
+  57.5-98.1% of the crashes; the newest window's gap month is in no split, an accepted warning.
+- home_credit_default_stability_1m: four-month test windows (horizon, c), July to 5 October 2020, March to June 2020 and
+  November 2019 to February 2020, after, across and before the drop of late March 2020, in place of three two-month
+  windows from May 2020; the metric stand-in's reason gives the 14-19 weeks per window.
+- sberbank_housing_market_forecasting: seven-month test windows, the shortest test period of the sources (horizon, a),
+  December 2014 to June 2015, May to November 2014 and October 2013 to April 2014, in place of five half-years; the
+  oldest trains on 35.4%, signed off.
+- kickstarter: windows dated by launch (`launched_at`) with a 60-day gap, the 1,673 projects launched in the scrape's
+  last 60 days (from 2025-11-13 11:00) dropped (185,444 rows); the nine launch years 2025 back to 2017 are the test
+  windows, the three oldest on 47.0%, 40.2% and 32.4%, signed off (issues 1 and 2).
+- hotel_booking_demand: the test predicts at ten dates, 1 September 2016 to 1 June 2017 (1 June added); the two oldest
+  train on 48.3% and 44.0% of the bookings, signed off (issue 1, reply a).
+- g_research_crypto_forecasting_1m: test windows from 2021-10-25, 2020-12-22 and 2020-02-28 (the newest, the 2021 bull
+  run, the 2020 crash); the crash window trains on 48.25%, signed off (issue 9, reply a); issue 8's check against each
+  coin's naive forecast (TP-10 leg 1) is to be measured again on these windows.
+
 ## 2026-11-11, the floor in two tiers and the curator's window decisions, round 2 (no container built)
 
 SPLIT-14 is amended (Lennart, 2026-11-11): the newest window and at least one other train on at least 50% of the rows;

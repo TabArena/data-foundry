@@ -107,8 +107,8 @@ class Onlinenewspopularity(AbstractCuratedDataset):
             "to or shares keywords with and their shares at the crawl of 8 January 2015, and the publication date."
         ),
         split=(
-            "Each test window is two weeks of articles (24 August to 27 December 2014); training is every article "
-            "published at least a week before, as for a model refit every two weeks."
+            "Each test window is two weeks of articles, nine windows one every five weeks from 9 March to 27 December "
+            "2014; training is every article published at least a week before, as for a model refit every two weeks."
         ),
         changes=(
             "We take the publication date from the URL and drop the weekday flags and the age column, which follow a "
@@ -117,9 +117,10 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         fit="direct",
         fit_reason=(
             "Articles are scored before publication on later windows, as in the source's system. Two potential leaks "
-            "are kept and noted, which do not make the fit approximate (USE-8 as amended 2026-10-21): the keyword "
-            "and link statistics use other articles' shares at the crawl, and for 80% of the test rows the keyword "
-            "statistics include same-day articles published later (R² 0.158 with both, 0.135 and 0.143 without each)."
+            "are kept and noted, which do not make the fit approximate: the keyword and link statistics use other "
+            "articles' shares at the crawl, and for half the test rows the keyword statistics include same-day "
+            "articles published later (R² 0.158 with both, 0.135 and 0.143 without each, on the windows used until "
+            "2026-11-11)."
         ),
     )
 
@@ -159,10 +160,10 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         belong to Mashable, so the release holds statistics of each article and its URL, not its text.
     """
     curation_comments = """
-        We start with OnlineNewsPopularity.csv from the UCI repository (dataset 332): Mashable articles published from 2013-01-07 to 2014-12-27, with 58 features extracted from each article's HTML and its shares at the crawl of 2015-01-08 (Fernandes et al. 2015). The R^2 values below are LightGBM on our 9 windows, averaged over 3 seeds.
+        We start with OnlineNewsPopularity.csv from the UCI repository (dataset 332): Mashable articles published from 2013-01-07 to 2014-12-27, with 58 features extracted from each article's HTML and its shares at the crawl of 2015-01-08 (Fernandes et al. 2015). The R^2 values below are LightGBM on the 9 windows used until 2026-11-11 (the newest nine, 2014-08-24 to 2014-12-27), averaged over 3 seeds; they were not measured again on the windows of 2026-11-11.
 
         - Prediction point: before publication. The source's system "analyzes articles prior to their publication" (abstract) and suggests changes to the article and its publication day; the earlier Mashable articles are known, with their shares at the crawl of 2015-01-08 (see the potential leaks below).
-        - Target: `log_shares`, the natural log of the shares at the crawl. The source's binary task (popular: more than 1,400 shares, a threshold "which resulted in a balanced 'popular'/'unpopular' class distribution in the first training set", Fernandes et al. 2015, Sec. 3.1) is a cut of this count. The paper's decision acts on a score, not a label: its optimiser raises each article's probability of the popular class by suggesting changes before publication (Sec. 2.2, 2.4). The two framings rank articles alike on our windows: the regression's predictions score ROC AUC 0.727 on the > 1,400 label, a classifier 0.730 (paired difference 0.003, SE 0.003; LightGBM, 3 seeds, the 9 windows), so we keep the count.
+        - Target: `log_shares`, the natural log of the shares at the crawl. The source's binary task (popular: more than 1,400 shares, a threshold "which resulted in a balanced 'popular'/'unpopular' class distribution in the first training set", Fernandes et al. 2015, Sec. 3.1) is a cut of this count. The paper's decision acts on a score, not a label: its optimiser raises each article's probability of the popular class by suggesting changes before publication (Sec. 2.2, 2.4). The two framings rank articles alike on our windows: the regression's predictions score ROC AUC 0.727 on the > 1,400 label, a classifier 0.730 (paired difference 0.003, SE 0.003; LightGBM, 3 seeds, the 9 windows used until 2026-11-11), so we keep the count.
         - Time: the publication date comes from the URL, which Mashable's archived pages confirm; the URL is dropped.
         - We drop `timedelta` and the seven weekday flags with `is_weekend`. They follow the authors' date, 1 to 5 days after the URL date for 24% of the articles, which is not known before publication and goes with the outcome (decision table).
         - The six `data_channel_is_*` flags become one categorical `data_channel`, `other` when no flag is set.
@@ -170,8 +171,8 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         - Proxy missing values, set to missing: statistics of words, links or earlier articles that do not exist (no body words, no positive or negative words, a self-reference maximum of 0, the first day's keywords) and negative keyword statistics (-1 and averages that include it). The share count 1.59, the only one that is not a whole number (`kw_max_min` 111 rows, `self_reference_min_shares` 10, `self_reference_max_shares` 3; 120 rows), is set to missing with the averages that include it.
         - We drop `n_non_stop_words`, which only repeats `n_tokens_content` > 0 (1 with body words, 0 without), and `rate_negative_words`, which is 1 - `rate_positive_words` in every row where both are defined.
         - We drop the five LDA topic columns: the paper applied LDA "to all Mashable texts" (Sec. 2.1), test windows included, and without the texts it cannot be refitted per window (decision table).
-        - Potential leak, kept on purpose (LEAK-10 and LEAK-6 as amended 2026-10-26: the late cells cannot be located row by row, and the traceable part shows no gain; CC): the keyword and self-reference statistics hold other articles' share counts at the crawl of 2015-01-08, not at publication. They include the counts of articles from the gap week and from earlier in the same test window (at least 0.9% and 0.4% of the test rows), whose shares an editor would have seen younger. Masking the 2,907 cells traced to an article less than 8 days older than the row changes R^2 by -0.0004, less than the spread over seeds (0.002). Without the keyword columns R^2 falls from 0.158 to 0.135, without the self-reference columns to 0.143. Revisit if a source with counts at publication appears.
-        - Potential leak, kept on purpose: the keyword statistics summarize the articles with an earlier authors' date, so for the shifted rows (80% of the test rows, 6,627 of 8,289; the three newest windows entirely) they include articles of the same day published hours later. These bring no measurable gain: the keyword columns lower the squared error by 0.0187 for shifted and 0.0264 for unshifted test articles (difference -0.008, standard error 0.008). The self-reference statistics come from the page's links at the crawl, so a link added after publication can point to a newer article; such links are rare (4 of 895 traceable articles link to an article 1 to 2 days newer, about what chance gives). The page counts (`num_hrefs`, `num_imgs` and the rest) are read at the crawl too.
+        - Potential leak, kept on purpose (LEAK-10 and LEAK-6 as amended 2026-10-26: the late cells cannot be located row by row, and the traceable part shows no gain; CC): the keyword and self-reference statistics hold other articles' share counts at the crawl of 2015-01-08, not at publication. They include the counts of articles from the gap week and from earlier in the same test window (at least 0.9% and 0.4% of the test rows of the windows used until 2026-11-11), whose shares an editor would have seen younger. On those windows, masking the 2,907 cells traced to an article less than 8 days older than the row changes R^2 by -0.0004, less than the spread over seeds (0.002). Without the keyword columns R^2 falls from 0.158 to 0.135, without the self-reference columns to 0.143. Revisit if a source with counts at publication appears.
+        - Potential leak, kept on purpose: the keyword statistics summarize the articles with an earlier authors' date, so for the shifted rows (51% of the test rows, 3,880 of 7,641, the newest window entirely; 80%, 6,627 of 8,289, on the windows used until 2026-11-11) they include articles of the same day published hours later. These bring no measurable gain on the windows used until 2026-11-11: the keyword columns lower the squared error by 0.0187 for shifted and 0.0264 for unshifted test articles (difference -0.008, standard error 0.008). The self-reference statistics come from the page's links at the crawl, so a link added after publication can point to a newer article; such links are rare (4 of 895 traceable articles link to an article 1 to 2 days newer, about what chance gives). The page counts (`num_hrefs`, `num_imgs` and the rest) are read at the crawl too.
         - We keep the newest articles. The paper discarded articles less than three weeks old, but the shares of the 481 articles from 2014-12-18 on show no deficit (decision table).
         - No duplicate rows; the URLs are unique.
         - Text: the release holds statistics of the text only; a TF-IDF encoding of the URL slug does not help (R^2 0.152 with it).
@@ -186,14 +187,35 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         target_transform="log",
     )
 
-    # Splits: nine two-week windows, the size of the paper's rolling test sets, with a one-week gap.
+    # Splits: nine two-week windows, the size of the paper's rolling test sets, one every five weeks, one-week gap.
     temporal = Temporal(
         on="publication_date",
-        splits=TemporalSplits(window=2, unit="weeks", n_windows=9, gap=1),
+        splits=TemporalSplits(
+            window=2,
+            unit="weeks",
+            gap=1,
+            cutoffs=(
+                "2014-12-14",
+                "2014-11-09",
+                "2014-10-05",
+                "2014-08-31",
+                "2014-07-27",
+                "2014-06-22",
+                "2014-05-18",
+                "2014-04-13",
+                "2014-03-09",
+            ),
+        ),
     )
     splits_comment = """
-        Expanding-window temporal splits: 9 test windows of two calendar weeks (Sunday to Saturday), from 2014-08-24 to 2014-12-27, newest first, with 769 to 1,001 articles each; train is every article published at least one week before the window starts (30,967 to 38,385 articles, 78% of the data or more). A model is refit every two weeks and predicts the articles of the next two weeks before they are published, as in the paper's rolling windows of L = 1,000 predictions (Sec. 3.1, p. 7; 1,000 articles are two to three weeks of Mashable's output). The one-week gap keeps the training labels to shares that had settled at the cutoff (the paper: the shares of some articles younger than 4 days had not, Sec. 2.1, p. 3). The labels are the counts at the 2015-01-08 crawl for train and test alike, so the gap stands in for the settling time only. The paper trains on a sliding window of W = 10,000 articles; we expand the train side, which keeps a full season before the first window and scores no lower (R^2 0.158 expanding, 0.146 sliding). Nine windows are the 3 x 3 splits an IID task of this size would get.
+        Expanding-window temporal splits: 9 test windows of two calendar weeks (Sunday to Saturday), one every five weeks from 2014-03-09 to 2014-12-27 (CC 2026-11-11), newest first: 14-27 December, 9-22 November, 5-18 October, 31 August-13 September, 27 July-9 August, 22 June-5 July, 18-31 May, 13-26 April and 9-22 March 2014, with 769, 1,003, 988, 902, 877, 855, 763, 785 and 699 articles (7,641). Train is every article published at least one week before the window starts (the last 8 days before it): 38,385, 36,031, 33,583, 31,354, 29,269, 27,020, 24,996, 23,035 and 21,234 articles (96.8%, 90.9%, 84.7%, 79.1%, 73.8%, 68.2%, 63.1%, 58.1% and 53.6% of the 39,643), so every train side keeps more than half the articles. The windows are spread over 2014 instead of the newest nine (2014-08-24 to 2014-12-27, the windows until 2026-11-11): nothing in the editor's use case ties the model to the autumn, the paper evaluates on rolling test sets from about July 2013 to December 2014, and the share level falls through 2014 (mean log shares 7.53 to 7.60 in the windows of March to May, 7.37 to 7.45 in those of June to December), so the windows cover spring, summer, autumn and early winter. Nine windows are the 3 x 3 splits an IID task of this size would get; the floor would admit more two-week windows, down to 30% of the articles, and nine were kept (CC 2026-11-11). A model is refit every two weeks and predicts the articles of the next two weeks before they are published, as in the paper's rolling windows of L = 1,000 predictions (Sec. 3.1, p. 7; 1,000 articles are two to three weeks of Mashable's output). The one-week gap keeps the training labels to shares that had settled at the cutoff (the paper: the shares of some articles younger than 4 days had not, Sec. 2.1, p. 3). The labels are the counts at the 2015-01-08 crawl for train and test alike, so the gap stands in for the settling time only. The paper trains on a sliding window of W = 10,000 articles; we expand the train side, which keeps a full season before the first window and scored no lower on the windows used until 2026-11-11 (R^2 0.158 expanding, 0.146 sliding).
     """
+    accepted_check_warnings = {
+        "splits_rows_unused": (
+            "By design: the 489 articles of 2014-12-07 to 2014-12-13 fall in the one-week gap before the newest window "
+            "and in no test window, since the windows are one every five weeks (CC 2026-11-11)."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # The header and the values carry a space after every comma.

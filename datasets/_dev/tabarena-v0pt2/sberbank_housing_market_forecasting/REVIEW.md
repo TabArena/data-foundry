@@ -1,11 +1,11 @@
 # sberbank_housing_market_forecasting
 
-**Outcome:** added. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI proposes three windows
-of five months from April 2014 to June 2015 in place of five half-years from January 2013, three of which train on
-less than half the sales (issue 1). `dataset.py` is unchanged until you decide.
+**Outcome:** added. On 2026-11-11 you chose seven-month windows (H, a), which also settles the windows (issue 1):
+December 2014 to June 2015, May to November 2014 and October 2013 to April 2014, the oldest on 35.4% of the sales with
+your sign-off; both are applied and nothing is left open.
 
-**Main points:** Test three five-month windows (April 2014 to June 2015) instead of five half-years reaching back to
-January 2013, so every train side keeps half the sales (issue 1)?
+**Main points:** Settled on 2026-11-11: three seven-month test windows, the shortest test period of the sources, in
+place of five half-years from January 2013.
 
 **Horizon:**
 
@@ -63,6 +63,18 @@ admits one window at 35%?
   **Decision:** a, b or c?
 
 [^a-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): the newest window and at least one other train on at least 50% of the data; further windows down to 30%, and at most as many windows under 50% as at or above it.
+
+**Lennart (2026-11-11, discuss):** Reply (a): Seven months
+
+**Resolved (2026-11-11, Lennart):** a, seven-month windows with no gap, the shortest test period of the sources
+(TabReD's seven months; the competition tests eleven), in place of the half-year, our own assumption. `temporal`
+declares `TemporalSplits(window=7, unit="months", cutoffs=("2014-12-01", "2014-05-01", "2013-10-01"))`, confirmed with
+`window_bounds` on the definition's frame: test 4,647, 6,936 and 6,704 sales, train 23,674, 16,738 and 10,034 (83.6%,
+59.1%, 35.4%). Your mark signs off the window under half, October 2013 to April 2014 on 35.4%:
+`accepted_check_warnings` takes `splits_train_under_half` with it, and the splits comment names it and its share.
+`task_summary.split`, the half-year sentence of `fit_reason`, `splits_comment` (the length's reason from this block,
+the windows and the counts) and a curation note are rewritten. The record has the horizon CC line. `dataset check`: 0
+errors, 0 warnings; the `splits_floor_core` error of the five half-years is gone (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -165,3 +177,11 @@ admits one window at 35%?
      windows under half than above. The 29% and 17.8% windows stay out under it.
    - The windows now follow the length you choose in the horizon (H): at 7 months, 6 months or 5 months exactly three
      windows remain, so this issue closes with H's choice.
+
+   **Lennart (2026-11-11, discuss):** Agree.
+
+   **Resolved (2026-11-11, Lennart):** closed with the horizon's choice (a): three adjacent seven-month windows,
+   December 2014 to June 2015, May to November 2014 and October 2013 to April 2014, in place of the five half-years
+   from January 2013; the oldest trains on 35.4%, signed off with the horizon's mark, beside 83.6% and 59.1%. Moving the
+   older windows back would only lower their train sides (from September 2013 the oldest would train on 33.3%). The same
+   edits as the horizon's; the record has the CC line. `dataset check`: 0 errors, 0 warnings.

@@ -10,12 +10,13 @@ recommends shipping after text changes; they are applied in `dataset.py`, and th
 Its one question, a confirmation, was settled on 2026-11-08: the model still clearly beats each coin's naive forecast,
 though the oldest window's lead includes 0 (issue 8, A, keep). On 2026-11-11 you added the release's supplemental file,
 21 September 2021 to 24 January 2022 (issue 10, B, applied: 26,001,823 rows), and confirmed the 91 days and the
-15-minute gap (H, A); the windows are proposed again on the longer history (issue 9, recommended a: your B, the newest
-window, the 2021 bull run and the crash of March 2020), and `dataset.py` tests the three newest windows until you
-decide.
+15-minute gap (H, A); you then chose the test windows on the longer history: the newest from 25 October 2021, the 2021
+bull run from 22 December 2020 and the 2020 crash from 28 February 2020, the last training on 48.25% of the rows
+(issue 9, reply a, applied).
 
-Validity: SEL-10 and TP-10 hold, leg 1 by the reading Lennart confirmed on 2026-11-08 (issue 8). On the splits shipped
-before the newer months were added (windows to 20 September 2021) a 12-seed
+Validity: SEL-10 and TP-10 hold, leg 1 by the reading Lennart confirmed on 2026-11-08 (issue 8), measured on the
+windows that ended on 20 September 2021 and to be measured again on the windows chosen on 2026-11-11 (issue 9). On the
+splits shipped before the newer months were added (windows to 20 September 2021) a 12-seed
 ensemble of early-stopped LightGBM leads the coin's mean by +0.038, +0.042 and +0.023 (newest window first); the 95%
 interval excludes 0 in the two newer windows, and pooled over the three the lead is +0.034 (SE about 0.008, z about
 4.3). Leg 2 is unchanged: no feature is a lag of `Target`, and the top solutions were LightGBM. SPLIT-9 and SPLIT-10
@@ -38,11 +39,12 @@ Weighed: the model leads the coin's mean in every window and by about 4.3 standa
 correlation is positive on 75-77 of 91 days (+), against the oldest window's interval including 0 and its R² below 0
 (-). Issue 8 settled on 2026-11-08: the test still holds.
 
-**Main points:** Open: which windows on the longer history (issue 9; recommended a, your B: the newest window from
-25 October 2021, the 2021 bull run from 22 December 2020 and the 2020 crash from 28 February 2020, the last on 48.2%
-of the rows)? Settled on 2026-11-11: the supplemental file is added (issue 10, B) and the 91 days with a 15-minute
-gap hold (H, A). Settled earlier: the model still clearly beats each coin's naive forecast, ahead in every window and
-with the interval read pooled (issue 8, A, 2026-11-08). The training weight needs no decision.
+**Main points:** Settled on 2026-11-11: the test windows on the longer history are the newest from 25 October 2021,
+the 2021 bull run from 22 December 2020 and the 2020 crash from 28 February 2020, the last on 48.25% of the rows
+(issue 9, a); the supplemental file is added (issue 10, B) and the 91 days with a 15-minute gap hold (H, A). Settled
+earlier: the model still clearly beats each coin's naive forecast, ahead in every window and with the interval read
+pooled (issue 8, A, 2026-11-08), measured on the earlier windows and to be measured again on these. The training
+weight needs no decision.
 
 **Record judgment:** valid. G-Research's own competition data and use case, a first-hand source; the record's fields
 agree with the definition. The earlier review file (issues 1 to 7) was settled on 2026-10-22 and removed, before the
@@ -326,6 +328,20 @@ to 23 January 2022; which other windows to test is issue 9. `dataset check`: 0 e
    [^g9-split15]: **SPLIT-15** (Must for the newest window, Should for the others; amended 2026-11-10, Lennart and
      Andrej): "Prefer windows in other years, then other seasons, then other months, weeks or days, over the windows
      just before the newest."
+
+   **Lennart (2026-11-11, change):** Reply (a): Your B: newest, the 2021 bull run, the 2020 crash
+
+   **Resolved (2026-11-11, Lennart):** a: `temporal` declares `cutoffs=("2021-10-25", "2020-12-22", "2020-02-28")`
+   with the rest unchanged (91 days, a 15-minute gap, `sample_by="time"`). On the definition's frame of 26,001,823
+   rows the windows test 1,830,834, 1,834,016 and 1,544,359 rows before the 500,000-row sampling by whole minutes and
+   train on 24,170,779, 17,985,995 and 12,545,715 (93.0%, 69.2% and 48.25%), each train side ending at 23:44 the day
+   before its window, as the answer gave. The crash window's 48.25% is signed off with this mark: the record's CC line
+   names it and the definition accepts `splits_train_under_half` with it. `task_summary.split`, `splits_comment` (the
+   three markets and why each, the counts, the window under half) and the History bullet name the windows; the newest
+   window holds the 99 EOS.IO bars of 26-27 October 2021 that the Anomaly bullet notes, kept. Issue 8's reading (the
+   12-seed ensemble ahead of each coin's mean, TP-10 leg 1) was measured on the windows that ended on 20 September 2021
+   and has not been run on these: it is to be measured again on them, as `fit_reason` and the Scope bullet now say.
+   `dataset check`: 0 errors, 0 warnings.
 
 10. **Add the release's supplemental file, 21 September 2021 to 24 January 2022?**
 

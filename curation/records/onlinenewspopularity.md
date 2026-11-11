@@ -87,6 +87,12 @@ CC (2026-10-26, Lennart): verdict ship.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `news_popularity_multiple_social_media` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-11, Lennart): REVIEW issue 11 (which two-week windows), B ("Option B: One window every five weeks."), with nine windows ("Reply (a): Nine, every five weeks (your B)" to the AI's answer on more windows): nine two-week windows, one every five weeks from 9 March to 27 December 2014, with the one-week gap, in place of the newest nine (24 August to 27 December 2014), so the test covers spring, summer, autumn and early winter of 2014. Every train side keeps more than half the articles (53.6% to 96.8%).
+
+CC (2026-11-11, Lennart): the declared horizon (2 weeks, a one-week gap, windows starting 2014-12-14, 2014-11-09, 2014-10-05, 2014-08-31, 2014-07-27, 2014-06-22, 2014-05-18, 2014-04-13 and 2014-03-09) is checked, as two calendar weeks are the calendar form of the paper's rolling test sets of 1,000 articles and the gap is longer than the under four days the paper gives shares to settle.
+
+**Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` declares the nine cutoffs (2 weeks, gap 1 week); test 769, 1,003, 988, 902, 877, 855, 763, 785 and 699 articles (7,641), train 38,385, 36,031, 33,583, 31,354, 29,269, 27,020, 24,996, 23,035 and 21,234 (96.8% to 53.6% of 39,643); mean log shares 7.37 to 7.45 in the windows of June to December and 7.53 to 7.60 in those of March to May. The articles with the shifted authors' date are 3,880 of the 7,641 test articles (51%; 6,627 of 8,289, 80%, on the newest nine). The 489 articles of 7-13 December 2014 fall in the newest window's gap and in no test window; `accepted_check_warnings` accepts `splits_rows_unused` with that reason. `task_summary.split` and `splits_comment` are rewritten; the figures of `fit_reason` and `curation_comments` measured on the newest nine windows (R² 0.158, 0.135 and 0.143; ROC AUC 0.727 against 0.730; the masking test; the 0.9% and 0.4% of test rows; expanding against sliding) are dated as measured on the windows used until 2026-11-11, not measured again; `fit_reason` drops its rule reference to stay under 70 words. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
 ## Reference
 
 A Proactive Intelligent Decision Support System for Predicting the Popularity of Online News

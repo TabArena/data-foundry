@@ -1,12 +1,11 @@
 # home_credit_default_stability
 
-**Outcome:** added as `home_credit_default_stability_1m`. Under the rule on choosing test windows, rewritten on
-2026-11-10, the AI proposes to keep the newest window (1 September to 5 October 2020) and to replace May-June and
-July-August 2020 with March-April 2020 and November-December 2019 (issue 1). `dataset.py` is unchanged until you
-decide.
+**Outcome:** added as `home_credit_default_stability_1m`. On 2026-11-11 you chose four-month windows (H, c), which
+also settles the windows (issue 1): July to 5 October 2020, March to June 2020 and November 2019 to February 2020,
+each trained on at least half the applications; both are applied and nothing is left open.
 
-**Main points:** First the horizon sign-off (H), from the horizon audit of 2026-11-10: three-month windows instead of
-two, spread before, across and after the March 2020 break? Issue 1 (the windows at two months) waits on it.
+**Main points:** Settled on 2026-11-11: three four-month test windows after, across and before the drop of late March
+2020, as a scorecard serves for months between refits.
 
 **Horizon:**
 
@@ -79,6 +78,18 @@ dated CHANGELOG entry, `dataset check`.
 
 * **Recommendation:** c: a scorecard serves for months, and four months is the longest length whose three windows all
   keep half the applications. **Decision:** a, b, c or d?
+
+**Lennart (2026-11-11, discuss):** Reply (c): Four months
+
+**Resolved (2026-11-11, Lennart):** c, four-month windows with no gap: a scorecard serves for months between refits,
+no source gives Home Credit's cadence, and four months is the longest length whose three windows all keep half the
+applications for training. `temporal` declares `TemporalSplits(window=4, unit="months", cutoffs=("2020-07-01",
+"2020-03-01", "2019-11-01"))`: test 150,240, 143,724 and 403,789 applications (3,175, 4,714 and 15,541 defaults), all
+under the 500k test budget; train 1,376,419, 1,232,695 and 828,906 (90.2%, 80.7%, 54.3%), so no window is under half.
+`task_summary.split` and `changes`, `splits_comment` (the length's reason from this block, the windows, the counts, the
+default 1M sample), the note above `temporal`, the metric stand-in's reason (14, 19 and 18 weeks, where the slope term's
+SE is 0.23, 0.17 and 0.08, in place of "5-10 week") and its curation note are rewritten. The record has the horizon CC
+line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -178,3 +189,11 @@ dated CHANGELOG entry, `dataset check`.
    - The windows follow the length you choose in the horizon sign-off (H), which explains the scorecard argument and
      adds four and five months under the amended floor; at three, four or five months exactly three windows remain,
      so this issue closes with H's choice.
+
+   **Lennart (2026-11-11, discuss):** Agree.
+
+   **Resolved (2026-11-11, Lennart):** closed with the horizon's choice (c): the test windows are July to 5 October
+   2020, March to June 2020 and November 2019 to February 2020, after, across and before the drop of late March 2020,
+   which at four months tile the months from the oldest start that keeps half the applications to the release end.
+   The same edits as the horizon's (`temporal`, `task_summary.split`, `splits_comment`, the note above `temporal`);
+   the record has the CC line. `dataset check`: 0 errors, 0 warnings.

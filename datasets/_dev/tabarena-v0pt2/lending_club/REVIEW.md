@@ -1,11 +1,10 @@
 # lending_club
 
-**Outcome:** added. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI proposes to keep the
-newest quarter (October to December 2015) and April to June, and to replace July to September with January to March
-2015, so the three windows spread over the one year that keeps half the loans for training (issue 1). The quarterly
-horizon is kept. `dataset.py` is unchanged until you decide.
+**Outcome:** added. On 2026-11-11 you chose the test windows 2015 Q4, 2015 Q2 and 2014 Q4 (issue 1, reply (b)),
+with 2014 Q4 training on 45.9% of the loans and signed off, and kept the quarterly horizon without a gap (Horizon, A).
 
-**Main points:** Test on 2015 Q4, Q2 and Q1 instead of Q4, Q3 and Q2 (issue 1)? Sign off the one-quarter horizon.
+**Main points:** Settled on 2026-11-11: the windows 2015 Q4, 2015 Q2 and 2014 Q4 (issue 1) and the one-quarter horizon
+with the gap-0 exception as recorded. Nothing is left open.
 
 **Horizon:**
 
@@ -35,6 +34,14 @@ horizon is kept. `dataset.py` is unchanged until you decide.
 
 * **Recommendation:** A: the quarter matches the files LendingClub released by calendar quarter, and no source names
   another cadence. **Decision:** A, B, C or D?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, three-month windows without a gap, kept: the quarter matches the files
+LendingClub released by calendar quarter, and no source names another cadence (the paper shuffles the loans into 5
+folds). The gap-0 exception to SPLIT-10 of 2026-10-21 stays as recorded. `splits_comment` gives that reason and no
+longer says the data was updated monthly, which the file description contradicts; the windows are issue 1's (b). The
+record has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -127,3 +134,15 @@ horizon is kept. `dataset.py` is unchanged until you decide.
    [^lc1-15]: **SPLIT-15** (Should for the other windows): "Prefer windows in other years, then other seasons ...".
    [^lc1-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart). The gap-0 exception to **SPLIT-10** (2026-10-21) still
      holds under any option.
+
+   **Lennart (2026-11-11, change):** Reply (b): 2015 Q4, 2015 Q2 and 2014 Q4
+
+   **Resolved (2026-11-11, Lennart):** b: the test windows are October-December 2015, April-June 2015 and
+   October-December 2014, so they spread over two years. `temporal` declares the cutoffs 2015-10-01, 2015-04-01 and
+   2014-10-01 (3 months, no gap): test 88,667, 64,222 and 49,197 loans, train 520,877, 383,088 and 279,567 (85.5%,
+   62.8%, 45.9%). 2014 Q4 is the one window under half, signed off: `accepted_check_warnings` accepts
+   `splits_train_under_half`. The gap-0 exception stays as recorded; for these windows a 36-month gap would leave
+   3.9-8.8% for training, a 12-month gap 22.5-45.9%, and `splits_comment` gives these figures. `task_summary.split`,
+   `splits_comment` (the windows and why, the counts, the shares) and the issue-year bullet of `curation_comments` are
+   rewritten. The record has the decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings (README not
+   regenerated).
