@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from data_foundry.v2 import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
     Source,
+    SplitPlan,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -36,6 +38,30 @@ ORDINAL_LEVELS = {
 }
 
 
+# Test windows: October-December 2015, April-June 2015 and October-December 2014 (review issue 1, Lennart,
+# 2026-11-11); `_make_splits` builds them and then drops the repeat borrowers of each window from its training side.
+SPLIT_WINDOWS = TemporalSplits(window=3, unit="months", cutoffs=("2015-10-01", "2015-04-01", "2014-10-01"))
+
+# Fields LendingClub first reported in December 2015: empty before, 49.2% filled in December 2015, so no training
+# side holds a value of them (curation notes).
+FIRST_REPORTED_DEC_2015 = [
+    "all_util",
+    "il_util",
+    "inq_fi",
+    "inq_last_12m",
+    "max_bal_bc",
+    "mths_since_rcnt_il",
+    "open_acc_6m",
+    "open_il_12m",
+    "open_il_24m",
+    "open_act_il",
+    "open_rv_12m",
+    "open_rv_24m",
+    "total_bal_il",
+    "total_cu_tl",
+]
+
+
 class LendingClub(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a three-year LendingClub loan be repaid?",
@@ -51,8 +77,9 @@ class LendingClub(AbstractCuratedDataset):
             "history (accounts, balances, delinquencies, inquiries)."
         ),
         split=(
-            "Three quarters are test windows, each trained on all loans issued before it: the newest, October to "
-            "December 2015, then April to June 2015 and October to December 2014."
+            "Three quarters are test windows, each trained on all loans issued before it except those of borrowers "
+            "who take a loan in the window: the newest, October to December 2015, then April to June 2015 and "
+            "October to December 2014."
         ),
         changes=(
             "We keep only the 36-month loans issued up to 2015, whose outcomes are all known; we add credit-bureau "
@@ -133,6 +160,12 @@ class LendingClub(AbstractCuratedDataset):
         - In accepted_2007_to_2018Q4.csv.gz, at least 99.8% of the 36-month loans up to 2015Q4 are finished, but only 57-93% per quarter in 2016, and only 63-97% per quarter of the 60-month loans from 2014 on. The missing loans are mostly good ones, so later or longer loans would skew the labels towards early defaults and early payoffs (default rate among finished loans: 15-16% in 2013, 20% in 2015, 24-26% in 2016).
         - `term` is used only for this selection and is not a feature (it is part of the company's own assessment, see the merged features). Until 2026-10 the `lending_club_1m` version tested on 2016 and the v1 `lending_club` notebook on 2016-2018.
         - We leave out the joint-applicant fields of the original data (sec_app_*, revol_bal_joint): they are filled only from 2017 on, so they are empty for the loans we keep.
+        - We leave out 14 credit-report fields LendingClub first reported in December 2015 (2026-11-11, Andrej):
+          `all_util`, `il_util`, `inq_fi`, `inq_last_12m`, `max_bal_bc`, `mths_since_rcnt_il`, `open_acc_6m`,
+          `open_il_12m`, `open_il_24m`, `open_act_il`, `open_rv_12m`, `open_rv_24m`, `total_bal_il`, `total_cu_tl`. They
+          are empty for every loan issued before December 2015 and filled for 49.2% of December's 36-month loans, so no
+          training side holds a value, and in the newest test window they only mark the month (default 15.6% whether
+          filled or empty; counted on LendingClub's file joined to the loans of Sanz-Guerrero et al.).
         - Loans per issue year in the cleaned data (from the v1 exploration, counted 2026-10-22): 836 (2008), 4,716 (2009), 8,466 (2010), 12,747 (2011), 41,953 (2012), 99,018 (2013), 161,028 (2014), 280,780 (2015); 46% of the rows are from 2015, the year of the two newer test windows (the oldest is 2014 Q4).
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
@@ -147,6 +180,10 @@ class LendingClub(AbstractCuratedDataset):
             "Signed off (Lennart, 2026-11-11, review issue 1, b): October to December 2014 trains on 45.9% of the "
             "loans, beside October to December 2015 and April to June 2015 on 85.5% and 62.8%; SPLIT-14's two tiers "
             "admit it."
+        ),
+        "splits_rows_unused": (
+            "By design: a training loan whose borrower key matches a test loan of every window is left out of all "
+            "three training sides."
         ),
     }
 
@@ -187,14 +224,24 @@ class LendingClub(AbstractCuratedDataset):
         issue, and the data has no outcome dates; a 36-month gap leaves 3.9-8.8% of the rows for training in the three
         windows and a 12-month gap 22.5-45.9%, under the floor (even a 6-month gap leaves only the newest window at
         half: 62.8%, 45.9% and 33.0%; for the windows of 2026-10-21 the figures were 5-9%, 33-46% and 46% for the
-        oldest). Serves SPLIT-14 (Must). No shortcut of the kind alfa_battle_2_0_task_2 removes (training labels that
-        tell a test row's outcome) has been measured here; the unmatured labels fall under SPLIT-10 (principles.md,
-        Tensions).
+        oldest). Serves SPLIT-14 (Must). The unmatured labels fall under SPLIT-10 (principles.md, Tensions).
+
+        Repeat borrowers (2026-11-11, Andrej): each training side leaves out the loans of borrowers who take a loan in
+        the test quarter, as alfa_battle_2_0_task_2 does. The release has no borrower id, so the borrower is the exact
+        match of the month of the earliest credit line, the 3-digit ZIP code, the state and the lower-cased employer
+        title (`borrower_key`, built in `_clean`, not a feature). A test loan whose borrower's earlier loan defaulted
+        defaults at 77% and 59% in the two windows measured (April-June 2015: 317 loans; October-December 2015: 391),
+        against 9% after a repaid earlier loan and 15% without one; a lender does not grant a new loan on a
+        charged-off one, so that earlier default was most likely recorded after the test loan was issued, a label a
+        refit at the quarter's start could not know. The filter removes 3,642 and 5,213 training loans (0.8% to 1.0%)
+        in those two windows, where 3,481 and 4,942 test loans have a match. LightGBM (400 trees) with the matched
+        training loans dropped against as many dropped at random: ROC AUC 0.685 against 0.685 (April-June 2015) and
+        0.686 against 0.688 (October-December 2015); on the matched test loans 0.680 against 0.702 and 0.676 against
+        0.706. The counts were measured on the windows April-June, July-September and October-December 2015, the
+        definition of the time (the third set is not a window here); October-December 2014 is not measured, as this
+        branch has none of the raw files.
     """
-    temporal = Temporal(
-        on="issue_d",
-        splits=TemporalSplits(window=3, unit="months", cutoffs=("2015-10-01", "2015-04-01", "2014-10-01")),
-    )
+    temporal = Temporal(on="issue_d", horizon=3, horizon_unit="months")  # the windows: `SPLIT_WINDOWS`
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         original_df = pd.read_csv(raw_dir / "accepted_2007_to_2018Q4.csv.gz")
@@ -226,7 +273,6 @@ class LendingClub(AbstractCuratedDataset):
                 "disbursement_method",
                 "acc_now_delinq",
                 "acc_open_past_24mths",
-                "all_util",
                 # annual_inc	annual_inc_joint -> were already merged by prior work
                 # fico_range_high fico_range_low -> transformed before into avg fico
                 "application_type",
@@ -238,11 +284,7 @@ class LendingClub(AbstractCuratedDataset):
                 "delinq_2yrs",
                 "delinq_amnt",
                 "earliest_cr_line",
-                "il_util",
-                "inq_fi",
-                "inq_last_12m",
                 "inq_last_6mths",
-                "max_bal_bc",
                 "mo_sin_old_il_acct",
                 "mo_sin_old_rev_tl_op",
                 "mo_sin_rcnt_rev_tl_op",
@@ -251,7 +293,6 @@ class LendingClub(AbstractCuratedDataset):
                 "mths_since_last_delinq",
                 "mths_since_last_major_derog",
                 "mths_since_last_record",
-                "mths_since_rcnt_il",
                 "mths_since_recent_bc",
                 "mths_since_recent_bc_dlq",
                 "mths_since_recent_inq",
@@ -271,12 +312,6 @@ class LendingClub(AbstractCuratedDataset):
                 "num_tl_90g_dpd_24m",
                 "num_tl_op_past_12m",
                 "open_acc",
-                "open_acc_6m",
-                "open_il_12m",
-                "open_il_24m",
-                "open_act_il",
-                "open_rv_12m",
-                "open_rv_24m",
                 "pct_tl_nvr_dlq",
                 "percent_bc_gt_75",
                 "pub_rec",
@@ -289,11 +324,11 @@ class LendingClub(AbstractCuratedDataset):
                 "tot_hi_cred_lim",
                 "total_acc",
                 "total_bal_ex_mort",
-                "total_bal_il",
                 "total_bc_limit",
-                "total_cu_tl",
                 "total_il_high_credit_limit",
                 "total_rev_hi_lim",
+                # Not merged: the 14 fields of FIRST_REPORTED_DEC_2015 (first reported in December 2015: empty
+                #   before, 49.2% filled in December 2015).
                 # dti dti_joint -> already merged by prior work via max
                 # Not merged: the joint-applicant fields (revol_bal_joint, sec_app_*) are filled only from 2017 on,
                 #   so they are empty for the 36-month loans issued up to 2015 that we keep.
@@ -308,6 +343,12 @@ class LendingClub(AbstractCuratedDataset):
         # finished by the 2018Q4 snapshot, so later or longer loans are missing while they were being repaid.
         issued = pd.to_datetime(df["issue_d"], format="%b-%Y")
         df = df[(df["term"].str.strip() == "36 months") & (issued < "2016-01-01")]
+        # The borrower, for `_make_splits`: there is no borrower id, so the exact match of four stable fields (the
+        # month of the earliest credit line, 3-digit ZIP code, state, employer title); not a feature.
+        title = df["emp_title"].astype("string").str.strip().str.lower()
+        key = df["earliest_cr_line"].astype("string") + "|" + df["zip_code"].astype("string") + "|"
+        key = key + df["addr_state"].astype("string") + "|" + title
+        df["borrower_key"] = key.where(title.notna() & (title != "") & df["earliest_cr_line"].notna())
         df = drop_columns(
             df,
             [
@@ -326,6 +367,19 @@ class LendingClub(AbstractCuratedDataset):
             },
         )
         return df
+
+    def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
+        # The declared windows, then each training side without the loans of borrowers who take a loan in the
+        # window: their earlier default was recorded after the test loan was issued (splits comment).
+        windows = SPLIT_WINDOWS.splits(df, self.temporal.on)
+        key = df["borrower_key"]
+        splits = {}
+        for repeat, folds in windows.items():
+            train, test = (np.asarray(side) for side in folds[0])
+            test_keys = key.iloc[test].dropna().unique()
+            same_borrower = key.iloc[train].isin(test_keys).to_numpy()
+            splits[repeat] = {0: (train[~same_borrower].tolist(), test.tolist())}
+        return SplitPlan(splits=splits, df=drop_columns(df, ["borrower_key"]))
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(

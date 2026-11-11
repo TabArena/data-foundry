@@ -16,8 +16,8 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
             "whether to extend credit or invest."
         ),
         row=(
-            "One company in the Taiwan Economic Journal's data for 1999-2009 (6,819 rows); whether a company can "
-            "appear in more than one year is not stated."
+            "One company-year, as the file's structure suggests (the source does not say), of the Taiwan Economic "
+            "Journal's data for 1999-2009 (6,819 rows)."
         ),
         predicted=(
             "Whether the company went bankrupt under the Taiwan Stock Exchange's rules (3.2%); the time between the "
@@ -32,7 +32,8 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
         fit_reason=(
             "The ratios are what a lender sees, but the source states neither the year of each row nor the gap "
             "between the statements and the bankruptcy, so the random split stands in for scoring companies before "
-            "they fail."
+            "they fail. The rows repeat by company over the years and the bankrupt label recurs one block (likely a "
+            "year) apart, so a company's other years sit on both sides of the random split."
         ),
     )
 
@@ -74,8 +75,36 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
         - Anomaly: the paper introducing the dataset has more features, but these do not seem to be in the dataset.
         - Potential leak, kept on purpose: 67 of the 91 non-binary numeric columns have a minimum of exactly 0 and a maximum of exactly 1 over the 6,819 companies, a min-max scaling over all rows that UCI does not document; the Taiwan Economic Journal's raw data are commercial. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if unscaled data appear.
         - Anomaly: the data is temporal but all features are time-invariant. This might still have a latent, non-verifiable temporal component, which we ignore for our predictive IID task.
-        - ForcedIIDFromTemporal: the companies span 1999-2009 (Taiwan Economic Journal, per UCI), but no row carries its
-          year, so the split stays random.
+        - Source gap (2026-11-11, Andrej; PROV-2, USE-8): Liang et al. (2016, Sec. 3.1) describe 239 bankrupt and 239
+          matched companies of similar size and industry, each with at least three years of complete public data
+          before the crisis and with 95 financial ratios and 95 corporate governance indicators. The UCI release
+          differs (6,819 rows, 220 bankrupt, 3.2%; the ratios only), and how it was drawn is not documented. Neither
+          UCI nor the paper states how long before the bankruptcy the ratios were taken, so the prediction point is
+          unknown: if the ratios came from the year of the failure, the task recognises failing companies rather than
+          forecasting them. Recording check on the v0.2 frame (untuned LightGBM, 9 splits): debt ratio plus net worth
+          over assets equals 1 in every row of both classes; unscaled values above 1 in a 0-1 column occur in 82% of
+          the surviving and 91% of the bankrupt rows (mostly turnover ratios) and alone reach ROC AUC 0.64; coarser
+          precision reaches 0.51. So both classes follow one recording convention (unlike
+          polish_companies_bankruptcy, where such markers reach 0.955-0.964).
+        - Company-years (2026-11-11, Andrej; SPLIT-8): the raw file is not shuffled and repeats its rows at a regular
+          period of 26 to about 200 rows: one period after a row, its closest match lies below the 1st percentile of
+          random-pair distances for 34% of rows against 13-17% at other offsets. The bankrupt label recurs at that
+          period: 69% of the 220 bankrupt rows have another bankrupt row within three rows one period later, against
+          21-25% at other offsets (about 20% by chance). So the rows look like company-years ordered by industry and
+          year, but no company id or year exists to rebuild them. Under random folds a test row whose rebuilt chain
+          has a bankrupt row in training is bankrupt in 10.5% of cases against 1.0% otherwise. ROC AUC, 5 folds x 3
+          repeats on the UCI file: random split LightGBM 0.941, kNN (k = 25) 0.884; grouped by rebuilt chains 0.939
+          and 0.881; grouped by 10 contiguous file segments 0.934 (sd 0.031) and 0.877. The chains miss most bankrupt
+          runs, so the grouped scores bound the leak loosely. Kept with the random split and this note.
+        - Time basis: ForcedIIDFromTemporal: listed Taiwanese companies of 1999-2009, used to screen later statements;
+          no row carries its year or company. The raw file repeats its rows at a regular period (26 to about 200
+          rows; one period after a row its closest match lies below the 1st percentile of random-pair distances for
+          34% of rows, 13-17% at other offsets), so the rows look like company-years ordered by industry and year,
+          but no block can be dated (Time: Lost). Leak test across the split: a company's other years sit on the
+          other side, and 69% of bankrupt rows have a bankrupt row one period later (21-25% at other offsets);
+          grouping on rebuilt chains or on file segments moves ROC AUC from 0.941 to 0.939 and 0.934 (LightGBM).
+          Years and company ids would allow a split by time. Not tested: later years and companies not seen in
+          training.
     """
 
     # Task

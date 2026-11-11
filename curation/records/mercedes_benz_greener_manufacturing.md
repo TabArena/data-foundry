@@ -3,6 +3,7 @@ unique_name: mercedes_benz_greener_manufacturing
 name: Mercedes_Benz_Greener_Manufacturing
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -62,13 +63,19 @@ CC (2026-11-11, Lennart): the declared horizon (320 cars, no gap, windows starti
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` unchanged (`window=320, unit="rows", n_windows=9`); test 320 cars each, train 3,884, 3,564, 3,244, 2,924, 2,604, 2,284, 1,964, 1,644 and 1,324 (92.4%, 84.8%, 77.2%, 69.6%, 61.9%, 54.3%, 46.7%, 39.1%, 31.5% of 4,204). `task_summary.split` no longer says the first 1,000 cars are always in training (the oldest window trains on 1,324); `splits_comment` replaces the `TimeSeriesSplit` description with the windows by car ID, the train sides, the three under half with their shares, the length's origin (the first curation's `TimeSeriesSplit` arithmetic) and the reason it is kept, and the absent gap; the outlier bullet no longer names the first 1,000 cars. `dataset check`: 0 errors, 2 warnings that predate this change (11 constant and 45 duplicated option columns; README not regenerated).
 
+CC (2026-11-11, Andrej): BeyondArena v0.2 review page, mercedes_benz_greener_manufacturing:
+- Issue 2, B: `X3`, `X6` and `X8` are restored; only `X4`, `X5` and `X11` stay dropped. A check of 2026-11-06 found no time pattern in the three (Cramér's V against the ID decile 0.176, 0.055 and 0.086, close to the kept `X0` to `X2` and far from `X5` at 0.928; no level confined to a part of the ID range) and no measurable gain or loss (R² +0.0015, standard error 0.0039). Columns leave for what they are, not for being unexplained.
+- Issue 1 (the test windows) is open again: the mark of the review page chose nine windows of 233 cars in the newest half, which the resolution of the same day replaced by the nine windows of 320. The mark was given against the floor as it read before its amendment of 2026-11-11, which now names this dataset's 31.5% window as one to keep, so the definition is unchanged and the Review asks which stands.
+
 ## Review
 
 **Outcome:** added. On 2026-11-11 you kept the nine windows of 320 cars from ID 2,628 on (issue 1 and the horizon,
 A), which the amended floor admits with the three oldest training on 46.7%, 39.1% and 31.5% of the cars.
 
 **Main points:** Settled on 2026-11-11: the nine windows of 320 cars stay (issue 1, A), and the declared length of
-320 cars without a gap is checked: no source gives a length, and 320 tests 2,880 cars where 233 would test 2,097.
+320 cars without a gap is checked: no source gives a length, and 320 tests 2,880 cars where 233 would test 2,097. A second
+mark of 2026-11-11, from a parallel review of the same question, chose nine windows of 233 cars instead; issue 1 asks
+which stands. Issue 2, new on 2026-11-11, restores `X3`, `X6` and `X8` and is resolved.
 
 **Horizon:**
 
@@ -107,7 +114,7 @@ horizon, and why it is kept, and that no gap is needed (a car's time is known wh
 unchanged. The record has the horizon CC line. `dataset check`: 0 errors; its 2 warnings (11 constant and 45
 duplicated option columns) are about the data, not the windows, and are not settled here (README not regenerated).
 
-**Issues for Lennart:**
+**Issues for the curator:**
 
 1. **Which windows of cars should the test use?**
 
@@ -207,6 +214,102 @@ duplicated option columns) are about the data, not the windows, and are not sett
    outlier bullet of `curation_comments` no longer speaks of the first 1,000 cars. The record has the decision and the
    horizon CC lines. `dataset check`: 0 errors; its 2 warnings (constant and duplicated option columns) are about the
    data and not settled here (README not regenerated).
+
+   **Andrej (2026-11-11, change):** Option C: 9 windows of 233 cars in the newest half.
+
+   **Answer (AI, 2026-11-11):** the mark chooses what the resolution above replaced the same day, so it is not
+   applied here; the question is reopened as issue 3, with the floor's amendment of 2026-11-11 as the new
+   fact. The definition is unchanged.
+
+2. **Restore `X3`, `X6` and `X8`?**
+
+   * **Problem:**
+     - Of the eight coded categories the definition keeps `X0`, `X1` and `X2`, drops `X5` as a time marker and `X4` as
+       near constant, and drops `X3`, `X6` and `X8` "to be safe", as nothing is known about them and `X8` "seems" drawn
+       from all rows.
+     - A check of 2026-11-06 finds no time pattern in the three and no gain or loss from them.
+     - Keep them dropped, or restore them?
+   * **Background:** columns leave for what they are (a leak, an identifier, a copy, the measurement that defines the
+     label), and a fix rests on a test, not an argument; what has no such reason stays, with a note[^mb2a].
+   * **Experiments:** the check on the competition's file:
+     - Strength of the link between each code and the ID decile (Cramér's V, 0 none, 1 complete; shuffled IDs in
+       brackets): `X5` 0.928 (0.080), and each of its 24 levels with five or more cars lies within 20% of the ID range;
+       `X3` 0.176 (0.047), `X6` 0.055 (0.050), `X8` 0.086 (0.076), close to the kept `X0` to `X2` (0.108 to 0.138
+       against 0.078 to 0.106); no level of `X3`, `X6` or `X8` is confined to a part of the ID range, and each `X8`
+       level spans the IDs from the first to the last hundred.
+     - R² on the 9 shipped windows (untuned LightGBM, 3 seeds): adding `X3`, `X6` and `X8` changes it by +0.0015
+       (standard error 0.0039, better in 6 of 9); adding `X5` by -0.012 (standard error 0.006, better in 2 of 9), the
+       drop the definition makes for a reason.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep them dropped (implemented) | five coded categories dropped | no change | three columns of the car's configuration leave without a reason found |
+     | B | Restore `X3`, `X6` and `X8` | three categorical columns back; `X4` and `X5` stay dropped | the source's columns where no reason to drop them is found; the test is written into the notes | three anonymised codes nobody can explain |
+
+   * **Recommendation:** B: the check finds neither a time marker nor a leak in them. **Decision:** keep dropped (A)
+     or restore (B)?
+
+   **Notes for the AI:** on B, remove `X3`, `X6`, `X8` from the drop list in `_clean` (they are categorical through
+   `_feature_types`), replace the notes' bullet on them with the check's numbers, re-run `dataset check`.
+
+   [^mb2a]: **CLEAN-22** (Must): columns leave for what they are (a leak, an identifier, a copy, the measurement that
+     defines the label), never for how many there are. The curator's standing preference (Andrej): fix what lets a
+     model tell the outcome for reasons other than the task, tested, not argued; keep and document the rest.
+
+   **Andrej (2026-11-11, change):** Option B: Restore X3, X6 and X8.
+
+   **Resolved (2026-11-11, Andrej):** B: `X3`, `X6` and `X8` removed from the drop list in `_clean` (categorical
+   through `_feature_types`); only `X4`, `X5` and `X11` stay dropped. The notes' bullet on them now gives the check's
+   numbers, and the task summary says six coded categories and no longer names "other coded categories of unknown
+   meaning". `dataset check`: 0 errors; its 2 warnings (11 constant and 45 duplicated option columns) are about the
+   data and are not settled here. This issue was raised in a parallel review of the same dataset and is carried over
+   here with its number, since this review had none.
+
+3. **Keep the nine windows of 320 cars, or move to nine of 233 in the newest half?**
+
+   * **Problem:**
+     - The floor rule was amended on 2026-11-11 and now names this dataset's 31.5% window as one the curator kept, so
+       the reason the 233-car windows were recommended for ("none training on less than half") no longer holds[^mb3a].
+     - The two marks are of the same date on two reviews of the same dataset: the one in this record (A, as
+       implemented) and one in a parallel review whose issue 1 was resolved C, nine windows of 233 cars in the newest
+       half.
+     - The definition still has the nine windows of 320 cars, with the `splits_train_under_half` warning accepted on
+       the resolution of issue 1.
+   * **Background:** the parallel review's issue 1 quoted the floor in its pre-amendment wording ("at least 3
+     windows, none training on less than half of the data"); the amended rule allows further windows down to 30%, with
+     at most as many under 50% as at or above it, and asks for the curator's sign-off, which the record's CC line
+     carries.
+   * **Experiments:** the earlier check in that review (untuned LightGBM, 3 seeds, R²): 0.570 over the nine shipped
+     windows of 320, 0.567 over the six newest, 0.580 over nine windows of 233 in the newest half; the scores do not
+     decide between them.
+   * **Statistics:**
+
+     | Windows | Test cars | Train sides | Under 50% |
+     |---|---|---|---|
+     | 9 of 320 (implemented) | 2,880 | 1,324 to 3,884 cars (31.5% to 92.4%) | 3 (46.7%, 39.1%, 31.5%) |
+     | 9 of 233, newest half | 2,097 | 2,107 to 3,971 cars (50.1% to 94.5%) | 0 |
+     | 6 of 320 | 1,920 | 2,284 to 3,884 cars (54.3% to 92.4%) | 0 |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the nine windows of 320 (implemented) | nothing changes; the accepted warning and the CC line stay | the amended floor admits them, and names this dataset; 2,880 test cars | three windows train on 31.5% to 46.7% of the cars |
+     | B | Nine windows of 233 in the newest half | `TemporalSplits(window=None, unit="rows", n_windows=9, min_train_fraction=0.5)` with `horizon=233, horizon_unit="steps"`; the accepted warning and the sign-off leave | every train side keeps at least 50.1%; about one block of the dropped `X5` code per window | 2,097 test cars; each window's R² rests on 233 cars; undoes a resolution of the same day |
+
+   * **Recommendation:** A: the mark for the 233-car windows was given against the floor as it read before
+     2026-11-11, and the amendment that followed names this dataset's own window as one to keep. **Decision:** A or B?
+
+   **Notes for the AI:** on B, `temporal = Temporal(on="time_index", splits=TemporalSplits(window=None, unit="rows",
+   n_windows=9, min_train_fraction=0.5), horizon=233, horizon_unit="steps")`, the `accepted_check_warnings` entry for
+   `splits_train_under_half` removed, `task_summary.split` and `splits_comment` rewritten to the nine windows of 233
+   cars (train sides 2,107 to 3,971), a CC line in the record and `dataset check`. On A, nothing changes.
+
+   [^mb3a]: **SPLIT-14** (Must; amended 2026-11-08 and 2026-11-11): the newest window and at least one other train on
+     at least 50% of the data, further windows may train down to 30%, at most as many under 50% as at or above it,
+     each with the curator's sign-off in a CC line. Its reason names "mercedes_benz_greener_manufacturing (31.5%)" as
+     a window a flat 40% floor would lose.
 
 ## Reference
 

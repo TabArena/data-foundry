@@ -46,8 +46,8 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
             "care team estimates whether the patient has diabetes, to inform treatment (WiDS Datathon 2021)."
         ),
         row=(
-            "One admission to an intensive care unit of 204 hospitals in MIT's GOSSIS data (127,358 admissions; "
-            "period not stated)."
+            "One admission to an intensive care unit of 204 hospitals in MIT's GOSSIS data (130,157 admissions; "
+            "one year, not dated)."
         ),
         predicted="Whether the patient has been diagnosed with diabetes mellitus; 21.6% have.",
         known=(
@@ -98,9 +98,17 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
         - We drop encounter_id as it is an identifier with no temporal information, and from the competition there seems to be no temporal or index-based leakage.
         - We follow the top solutions and use normal random splits, instead of stratifying by hospital_id or ICU ID. Moreover, with the data for which we have labels, we have an even larger overlap for hospital_id and ICU ID even more than the train-test split on Kaggle. Lastly, we do not need to decode the hospital_ID based on the ICU ID.
         - A hospital can have multiple ICUs, so there is a strong co-correlation between hospital_id and ICU ID, but it is not identical.
-        - We drop rows with age=0, as these seems to be 30 faulty entries (patients have a large height at age 0).
-        - Kaggle experts found that several features were likely clipped to a min/max value based on investigating the histograms of the data. We noticed this too. Following the experts, we add a flag for these features indicating if the value was clipped or not.
-        - Several Kaggle experts also re-computed the BMI. We also noticed that for 2770 rows, the BMI did not match the real BMI based on the weight and height. We drop all of these cases, as it is unclear to us what the cause of this error is. Given the small fraction, there is either a data entry error, or some values got corrected manually.
+        - Age 0 is set missing (30 rows; these patients have adult heights), and the row stays (2026-11-11, the
+          curator's mark, CLEAN-11; earlier the rows were dropped).
+        - Clipped vital signs: six of the seven columns `d1_sysbp_min`, `d1_sysbp_max`, `d1_heartrate_min`,
+          `d1_heartrate_max`, `d1_diasbp_min`, `d1_diasbp_max` and `heart_rate_apache` hold 599 to 874 rows at each of
+          their bounds (systolic minimum 41 and 160, for example), so GOSSIS clipped them at fixed bounds; the values
+          ship as published. The `_clipped` flags of the first version (true at the whole table's minimum or maximum)
+          were dropped on 2026-11-11 (the curator's mark, CLEAN-7, CLEAN-19): a feature from all rows that repeats
+          what the value shows.
+        - BMI that disagrees with weight over height squared by more than 0.01 is set missing (2,549 rows, 21.3%
+          diabetic against 21.6% overall), and the row stays (2026-11-11, the curator's mark, CLEAN-11; earlier 2,770
+          rows were dropped at an exact two-decimal match, which counted rounding as a mismatch).
         - We found and dropped three duplicated columns that provided no new information.
         - We keep medical codes as string, as these could be more meaningfully decoded.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
@@ -140,27 +148,10 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
                 "h1_inr_min",
             ]
         )
-        df = df[df["age"] != 0]  # Drop rows with age=0 (faulty entries)
-        # Drop cases with faulty BMI calculations
-        df["bmi_new"] = df["weight"] / ((df["height"] / 100) ** 2)
-        bmi_wrong_mask = (df["bmi"].round(2) != df["bmi_new"].round(2)) & ~df["bmi"].isna()
-        df = df[~bmi_wrong_mask]
-        df = df.drop(columns=["bmi_new"])
-        # add min/max flags for features that were clipped
-        clipped_features = [
-            "d1_sysbp_min",
-            "d1_sysbp_max",
-            "d1_heartrate_min",
-            "d1_heartrate_max",
-            "d1_diasbp_min",
-            "d1_diasbp_max",
-            "heart_rate_apache",
-        ]
-        for f in clipped_features:
-            min_val = df[f].min()
-            max_val = df[f].max()
-            clip_f = f + "_clipped"
-            df[clip_f] = (df[f] == min_val) | (df[f] == max_val)
+        # Impossible values become missing; the rows stay (CLEAN-11; the curator's mark of 2026-11-11)
+        df["age"] = df["age"].mask(df["age"] == 0)  # 30 rows with age 0 (and adult heights)
+        bmi_from_height_weight = df["weight"] / ((df["height"] / 100) ** 2)
+        df["bmi"] = df["bmi"].mask((df["bmi"] - bmi_from_height_weight).abs() > 0.01)  # 2,549 rows
         # the codebook's words for its codes (CLEAN-12)
         df = decode(df, CODE_LABELS)
         # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
@@ -193,7 +184,6 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
                 "leukemia",
                 "lymphoma",
                 "solid_tumor_with_metastasis",
-                *[c for c in df.columns if c.endswith("_clipped")],
             ],
             string=[
                 # Codes for medical terms

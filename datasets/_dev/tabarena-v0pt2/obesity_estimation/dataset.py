@@ -33,11 +33,13 @@ CODE_LABELS = {
 
 class ObesityEstimation(AbstractCuratedDataset):
     task_summary = TaskSummary(
-        question="What is a person's body mass index, judged from eating habits and lifestyle alone?",
+        question=(
+            "What is a person's body mass index, judged from age, sex, family history and eating and activity habits?"
+        ),
         use_case=(
             "For example, a health app or survey estimates a person's body mass index from eating and activity "
             "habits, to flag a risk of overweight without asking for weight and height (the source aims at tools that"
-            " identify obesity levels from such habits)."
+            " identify obesity levels; its own tool also asks for weight and height)."
         ),
         row=(
             "One respondent to a web questionnaire in Mexico, Peru or Colombia (488 people: the source's 498 real "
@@ -62,13 +64,15 @@ class ObesityEstimation(AbstractCuratedDataset):
         fit_reason=(
             "A body mass index is measured with a scale and a tape in a minute, so estimating it from habits only "
             "fits a setting that cannot ask for weight and height. The respondents are web volunteers, and the habits"
-            " are reported at the same time as the weight."
+            " are reported at the same time as the weight. Age, sex and family history carry about 90% of the gain over"
+            " the mean; the eating and activity habits add the rest."
         ),
     )
 
     # Dataset
     unique_name = "obesity_estimation"
     domain = "medical & healthcare"
+    data_tags = ("Snapshot",)
     sources = (
         Source(
             role="publication",
@@ -103,6 +107,12 @@ class ObesityEstimation(AbstractCuratedDataset):
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 5 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order.
+        - The target is self-reported (2026-11-11, the curator's mark): 40.8% of the reported weights are multiples of
+          5 kg, and 37 of the 488 respondents are under 18, for whom a body mass index is read against age-specific
+          percentiles. Both are kept as published.
+        - Time basis: Snapshot: one web survey open for 30 days (dates not stated; published 2019) in Mexico, Peru and
+          Colombia; sex, age, family history, habits, weight and height reported in the same form, so the body mass
+          index is of the same moment. Not tested: respondents of a later time or another population.
     """
 
     # Task

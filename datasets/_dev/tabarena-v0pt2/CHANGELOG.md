@@ -1,5 +1,52 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11 (evening), the curator's review decisions applied across 69 datasets (nothing rebuilt)
+
+The decisions the curator had marked on the review page were carried out. For most datasets they had already been
+applied in another working copy whose changes were never committed, so the work here was to bring that settled state
+onto the current framework (`sources = (Source(...),)`) and to write each decision into the record's `## Review`
+section, which is where a review now lives. 68 records, 57 definitions and their generated READMEs changed.
+
+What was applied, by kind:
+
+- **Splits.** `diabetes_130_us` to nine windows over every stay, `miami_housing` to five monthly windows with repeat
+  sales kept, `labour_inspection_compliance` to a temporal split on the export's row order, `santander_transaction_value`
+  to customers rebuilt from the lag columns, `kick` to 35-day windows with a 14-day gap, `lending_club` to windows whose
+  training sides drop the test window's repeat borrowers, `rossmann_store_sales` with 32 day counters and the
+  competitor distance read as of each day.
+- **Time basis.** The prototype tags of the time-basis rule were set where a decision named one and the rule is now in
+  this branch: `Snapshot` (5g_energy_consumption, covertype, houses, immoscout_german_house_prices, obesity_estimation,
+  santander_customer_satisfaction, diamonds, wine_world_cost), `ForcedIIDFromTemporal` (allstate_claims_severity,
+  amazon_employee_access, aps_failure, credit_g, give_me_some_credit, mercari_price_suggestion, mic,
+  online_shoppers_purchasing_intention_dataset, indian_liver_patient_dataset, ljubljana_primary_tumor, website_phishing,
+  eryhemato_squamous_disease), `ForcedGroupedFromTemporal` (emscad, santander_transaction_value), `DelayedTarget`
+  (porto_seguro), `StationaryRelation` (bad_customer_detection), `Timeless` (in_vehicle_coupon_recommendation,
+  otto_group_product_classification_challenge).
+- **Columns and rows.** `absences` dropped from student_portuguese_performance, `training_hours` from hr_analytics,
+  `direction_opp` from in_vehicle_coupon_recommendation, the four current prices from kick, `X3`, `X6` and `X8`
+  restored to mercedes_benz_greener_manufacturing, ages over 120 set to missing in thyroid_discordant, impossible
+  values blanked in wids_diabetes_mellitus and indian_liver_patient_dataset, the two spirits dropped from
+  wine_world_cost, kdd_cup_09_appetency switched to the cup's large training set.
+- **Targets and metrics.** `pva_revenue_prediction_kddcup98` becomes a regression on the donation in dollars, scored by
+  the cup's own net revenue at a mailing cost of 0.68; that metric is added to the framework with its tests.
+- **Retirements and fits.** `wids_diabetes_mellitus` retired as a duplicate, `obesity_estimation` retired on its target;
+  the use-case fit set to `approximate` on kickstarter and wine_world_cost.
+- **Collection facts** corrected on the records that disagreed with their definitions.
+
+Three decisions were not applied, because two curators answered the same question differently on the same day. Each is
+written up with both designs and their measurements, and waits for one answer: the test windows of
+`ieee_fraud_detection` (three calendar months against three weeks with a one-month gap), of
+`mercedes_benz_greener_manufacturing` (nine windows of 320 cars against nine of 233 in the newest half) and of
+`sberbank_housing_market_forecasting` (three seven-month windows without a gap against five quarterly ones with 14
+days). The split-floor rule was amended on the same day, which is what set the first two apart.
+
+Where a mark named no option, or named one whose issue had been deferred, the question was put again as a new issue
+rather than guessed at: `mic`, `porto_seguro` and `sepsis_survival_minimal_clinical_records`. On the last of these the
+question was measured first: over the nine shipped splits no simpler rule reaches the methods (TabPFN 3.5 0.7068,
+age plus five years for men 0.7059, age alone 0.7044, the best cut-off 0.6467), which is what the retirement rests on.
+
+Two checks could not run, for want of their raw files in any warehouse: `lending_club` and `sf_permit_time`.
+
 ## 2026-11-11 (evening), nci_aids_antiviral_screen: the registration-order split measured and not taken
 
 - The scaffold-grouped split stays (the curator's decision on the first review issue). `splits_comment` now carries

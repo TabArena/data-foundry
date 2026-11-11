@@ -22,7 +22,7 @@ class AmazonEmployeeAccess(AbstractCuratedDataset):
         predicted="Whether the request was approved (94% were).",
         known=(
             "The requested resource, the employee's manager, and the employee's role (two levels of role grouping, "
-            "department, title, role family and role code), all as anonymous codes."
+            "department, title and role family), all as anonymous codes."
         ),
         split=(
             "Random requests, so the test data stands for new requests within the same organisation; the same "
@@ -31,8 +31,8 @@ class AmazonEmployeeAccess(AbstractCuratedDataset):
         fit="direct",
         fit_reason=(
             "The role and the resource are known when a request arrives, and approval is the decision to automate. "
-            "The requests carry no dates, so the split cannot follow time; the competition's test held other "
-            "employees."
+            "The requests carry no dates, so the split cannot follow time; Kaggle's test requests come from the "
+            "same requesters: 88.6% from a requester profile of its training file."
         ),
     )
 
@@ -57,6 +57,7 @@ class AmazonEmployeeAccess(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         mkdir -p local-data-warehouse/amazon_employee_access/ && kaggle competitions download -c amazon-employee-access-challenge -f train.csv -p local-data-warehouse/amazon_employee_access/ && unzip local-data-warehouse/amazon_employee_access/train.csv.zip -d local-data-warehouse/amazon_employee_access/ && rm local-data-warehouse/amazon_employee_access/train.csv.zip
     """
@@ -65,6 +66,12 @@ class AmazonEmployeeAccess(AbstractCuratedDataset):
         - We renamed the target "ACTION" to "ResourceApproved" and mapped binary values to "Yes"/"No".
         - Anomaly: the data might contain sub-groups related to managers and resources.
         - Anomaly: likely, similar to the test data, each sample represents a unique employee.
+        - We drop `ROLE_CODE`: it maps one to one onto `ROLE_TITLE` (343 values each, every title one code and every
+          code one title), an exact copy of another column under other labels (Andrej, 2026-11-10).
+        - Time basis: ForcedIIDFromTemporal: access requests made one by one over 2010 and 2011 (the competition's
+          text); the release keeps no request date and Kaggle's training file is shuffled (denial rate flat over its
+          tenths, chi-squared p = 0.45), so random requests stand in for the requests to come. UCI 216's dated access
+          history uses other ids and cannot date them; a dated release would allow a split by request date.
     """
 
     # Task
@@ -88,6 +95,8 @@ class AmazonEmployeeAccess(AbstractCuratedDataset):
         target_feature = "ResourceApproved"
         df = df.rename(columns={"ACTION": target_feature})
         df[target_feature] = df[target_feature].map({1: "Yes", 0: "No"})
+        # ROLE_CODE is a one-to-one relabelling of ROLE_TITLE (343 values each)
+        df = df.drop(columns=["ROLE_CODE"])
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
@@ -101,6 +110,5 @@ class AmazonEmployeeAccess(AbstractCuratedDataset):
                 "ROLE_TITLE",
                 "ROLE_FAMILY_DESC",
                 "ROLE_FAMILY",
-                "ROLE_CODE",
             ],
         )

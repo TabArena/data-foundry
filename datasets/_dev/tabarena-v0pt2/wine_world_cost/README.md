@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: wine_world_cost
 container_format: 2
-checksum: v2:ac2a742aafb8f4e41650d38f412414d527e6544d7e01cf1adf9ee12c86d0a420
+checksum: v2:98db2b5158cf4e6e7dd10a34160a47908745171f8ea88ffe5cf1d64d7a2b68d6
 build:
   uuid: 01a111fc-bf3e-75e4-bd32-d489275dd877
   checksum: v2:8c168087d0023ac94900336e032900e565a964201c4ad6c2a0b794fbc26f2a6a
@@ -19,10 +19,10 @@ build:
     polars: 1.41.1
 build_stale: true
 data:
-  n_rows: 1279
+  n_rows: 1277
   n_features: 14
   dtypes:
-    category: 3
+    category: 4
     float64: 4
     string: 8
   n_test_dataset_rows: null
@@ -32,13 +32,20 @@ task:
   metric: rmsle
   metric_origin: context
   scoring_columns: null
-  split_regime: iid
+  split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: Producer
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 613
+    test_groups_per_fold:
+      min: 204
+      max: 205
 splits:
   n_repeats: 10
   n_folds: 3
@@ -48,11 +55,11 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 852
-    max: 853
+    min: 763
+    max: 926
   n_test:
-    min: 426
-    max: 427
+    min: 351
+    max: 514
 bundle_checks:
   ok: true
   errors: []
@@ -66,25 +73,27 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `Price`, scored with `rmsle` on IID splits. 1,279 rows and 14 features. Source: Kaggle (2023).
+Regression of `Price`, scored with `rmsle` on grouped splits by `Producer`. 1,277 rows and 14 features. Source: Kaggle (2023).
 
-Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ac2a742aafb8f4e41650d38f412414d527e6544d7e01cf1adf9ee12c86d0a420`, so the build is stale. See [Build](#build).
+Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:98db2b5158cf4e6e7dd10a34160a47908745171f8ea88ffe5cf1d64d7a2b68d6`, so the build is stale. See [Build](#build).
 
 ## In brief
 
-**Question.** What does a bottle of wine cost, given its description?
+**Question.** What would a bottle of wine sell for in a UK wine shop, given its description?
 
-**Use case.** For example, a wine merchant sets the shelf price of a newly listed wine from its attributes and tasting notes, or checks a supplier's price against similar wines.
+**Use case.** For example, a producer or importer offering a wine to a UK merchant estimates the shelf price it would sell at, or a buyer judges whether a wine is good value against similar wines, from its catalogue entry and description.
 
-**One row.** One wine sold by the bottle in a UK online wine shop, priced in pounds and scraped in 2023 (1,279 wines; most likely Majestic Wine, which 78 descriptions name).
+**One row.** One wine sold by the bottle in a UK online wine shop, priced in pounds and scraped in 2023 (1,277 wines; most likely Majestic Wine, which 78 descriptions name).
 
 **Predicted.** The price of one bottle in pounds, on a log scale.
 
 **Known at prediction time.** The wine's name and the shop's description, grapes, country, region and appellation, colour, style, tasting characteristics, closure, bottle size, alcohol content and vintage year.
 
-**What the test data stands for.** Random wines of the same shop and time.
+**What the test data stands for.** Wines of producers not seen in training, from the same shop and time: every wine of one producer is on one side, so the test wines stand for wines from a producer the shop does not list yet.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The attributes and the description exist when a wine is listed, and no description states the wine's own price (its price wording adds 0.003 R²). The task covers one shop's range at one time.
+**Our changes to the source.** We added the producer, read from the title and checked by hand, as a group column and split by it; with random wines, 64% of the test wines had a wine of their producer in training.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The title and description are the shop's sales copy, written for wines it had already priced: they never state the price, but their wording follows the price tier. One unnamed shop (most likely Majestic Wine) at one time. The shop sets its prices from its costs, which the data do not hold; the model stands for someone who does not know the price.
 
 ## Files in this folder
 
@@ -93,7 +102,7 @@ Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/wine_world_cost.md`](../../../../curation/records/wine_world_cost.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/wine_world_cost.md`](../../../../curation/records/wine_world_cost.md)
 - The original source: <https://www.kaggle.com/datasets/elvinrustam/wine-dataset>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -125,13 +134,15 @@ Only curators run `build`, when the dataset ships.
 | year | 2023 |
 | domain | business & marketing |
 | license | CC0: Public Domain |
-| data_tags | IID |
+| data_tags | Non-IID, Grouped, Snapshot |
 | reference | Rustamov2023WineDataset |
-| rows x columns | 1,279 x 15 |
+| rows x columns | 1,277 x 16 |
 | task.target | Price |
 | task.problem_type | regression |
 | task.metric | rmsle |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
+| task.group_on | Producer |
+| task.group_labels | per_sample |
 
 **Metric**
 
@@ -139,14 +150,14 @@ Only curators run `build`, when the dataset ships.
 |---|---|
 | name | `rmsle` (standard; takes value; lower is better) |
 | origin | context: obvious from the task: the source defines no metric |
-| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| definition | sqrt(mean((log1p(y) - log1p(max(p, 0)))^2)); y >= 0, a prediction below 0 counts as 0 |
 | reason | A scraped Kaggle dataset with no competition, paper or stated metric. For a bottle's price the error that matters is relative to the price (a pound off a cheap bottle is a large miss, on a rare one a small one), so RMSLE on the price. |
 | target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
-<summary>Feature types: 3 categorical, 8 string, 0 datetime</summary>
+<summary>Feature types: 4 categorical, 8 string, 0 datetime</summary>
 
-- categorical (3): `Closure`, `Type`, `Style`
+- categorical (4): `Producer`, `Closure`, `Type`, `Style`
 - string (8): `Title`, `Description`, `Grape`, `Secondary Grape Varieties`, `Country`, `Characteristics`, `Region`, `Appellation`
 - datetime (0): none
 
@@ -169,15 +180,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,279 rows of the final frame (random rows: the frame is shuffled); 12 of 15 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 1,277 rows of the final frame (random rows: the frame is shuffled); 12 of 16 columns, the target first. Cells are cut at 40 characters.
 
 | Price | Title | Description | Capacity | Grape | Secondary Grape Varieties | Closure | Country | Characteristics | Type | Region | Style |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 3.84993 | Moët & Chandon 'Brut Impérial' Champagne | Moët is the ultimate celebratory fizz. … | 750 | Chardonnay | Pinot Noir, Pinot Meunier | Natural Cork | France | Citrus Fruit, Biscuit, Bread | White |  | Crisp & Fruity |
-| 3.55506 | Shaw + Smith ‘M3’ Chardonnay 2021/22, A… | The Shaw + Smith winery was purpose bui… | 750 | Chardonnay |  | Screwcap | Australia | Vanilla, Butter, Green Apple, Lemon, Pe… | White | South Australia | Rich & Toasty |
-| 2.70738 | Domaine des Tourelles Cuvée Pierre Brun… | When it comes to Lebanese wines it's no… | 750 | Cabernet Sauvignon | Carignan, Cinsault, Syrah | Natural Cork | Lebanon | Spice, Black Cherry, Black Fruit, Earth | Red | Lebanon | Savoury & Full Bodied |
-| 3.13506 | Famille Hugel ‘Classic’ Riesling 2021/2… | Hugel are one of the wine dynasties of … | 750 | Riesling |  | Natural Cork | France | Lime, Peach, Red Apple, Wet Stones | White | Alsace | Fresh & Elegant |
-| 2.07819 | Mon Plaisir du Sud Rosé 2019 | One of the most awarded producers in Fr… | 750 | Grenache | Syrah, Cinsault | Screwcap | France | Strawberry, Peach, Raspberry | Rosé | Other France | Delicate & Dry |
+| 2.48407 | Bodegas Ontañón 'Canderuela' Rioja Cria… | When you’re after a classic bottle, you… | 750 | Tempranillo | Garnacha | Natural Cork | Spain | Black Cherry, Black Plum, Coconut, Swee… | Red | Rioja And Navarra | Smooth & Mellow |
+| 3.91182 | Rémi Seguin Morey-Saint-Denis 2018/19 | What Morey-Saint-Denis lacks in size, i… | 750 | Pinot Noir |  | Natural Cork | France | Strawberry, Dried Herbs, Raspberry, Sav… | Red | Burgundy | Light & Elegant |
+| 4.3819 | Philippe le Hardi 'Petit Clos' 2019/20,… | This is made on a magnificent 9th centu… | 750 | Pinot Noir |  | Natural Cork | France | Strawberry, Dried Herbs, Raspberry, Sav… | Red |  | Light & Elegant |
+| 2.70738 | Andrew Quady 'Essensia' Orange Muscat 2… | Full bodied, sweet and complex, this is… | 375 | Muscat |  | Natural Cork | USA | Stone Fruit, Apricot, Blossom, Honey, O… | White | California | nan |
+| 2.48407 | Abbotts & Delaunay ‘Les Fleurs Sauvages… | Laurent Delaunay is a talented winemake… | 750 | Grenache |  | Screwcap | France | Citrus Fruit, Raspberry, Strawberry | Rosé | Languedoc-Roussillon | Delicate & Dry |
 
 ## Curation notes
 
@@ -189,55 +200,115 @@ We start with the Kaggle version. We resolve several issues from the web scrappe
 - We parse the ABV to a numeric value
 - We parse the vintage to a numeric date value, ensuring that each wine maps to the oldest year in its special syntax.
 - We log scale the target, as the price distribution is very skewed.
-- No description states the wine's own price. Removing every sentence with price or value words changes R^2 by 0.003, so we keep the description (evidence in the record, 2026-10-14).
+- One description stated its wine's own earlier price: "Majestic Loves Rose 2019" (shelf price £6.99) opened
+  with "Our mission was to find the best tasting wines at £5.99.", the range's earlier price. We remove that
+  sentence from that one description (Andrej, 2026-11-10); the 13 other descriptions that name a price in
+  pounds name other wines' prices, positioning copy that stays. Removing every sentence with price or value
+  words changes R^2 by 0.003, so we keep the description (evidence in the record, 2026-10-14).
+- We drop the two spirits, rows with an ABV of 30% or more (Andrej, 2026-11-10): a 12-year-old single malt
+  whisky (40%) and a tequila; the task prices a bottle of wine. The alcohol-free and fortified wines stay.
+- The shop's sales copy (title and description) is written for wines already priced and its wording follows
+  the price tier (value wording at a median £13-15, critic and cru wording at £31-48), but it never states
+  the price and adds about 0.09 R² over the tabular columns; it stays as part of the task, with an
+  approximate fit (Andrej, 2026-11-10; as coffee_rating_prediction's review text).
+- The use case names someone who does not know the price (Andrej, 2026-11-11): a producer or importer
+  estimating the UK shelf price of a wine it offers, or a buyer judging value. The shop itself prices from its
+  costs (supplier price, duty, VAT, margin), which the data do not hold; the shop's copy stands in for the
+  producer's own tasting note.
+- Grouped by producer since 2026-11-11 (random before; Andrej, 2026-11-11): the closest real use the data can test
+  is pricing a wine from a producer the shop does not list yet. The data hold no listing date, so no
+  split forward in time can be built; under the random split 64% of the test wines had a wine of the same
+  producer in training. RMSLE, 3 folds (3 repeats for TabPFN, 10 for the others), random against grouped by
+  this producer key: TabPFN-3.5 0.345 / 0.375, LightGBM 0.383 / 0.410, ridge on TF-IDF 0.365 / 0.403; every
+  model loses 0.03 to 0.04 and TabPFN stays ahead.
+- The producer key (`Producer`, the group column, no feature): the data have no producer column. A rule reads it
+  from the title (the words before the first quoted name; else before the grape, place, a style word or the
+  vintage), and two tables fix what the rule gets wrong: titles that start with an appellation, a second wine or
+  a brand (47 rows), and spelling variants, name forms, ranges and brands of one producer (339 rows). All 1,277
+  titles were checked by hand (2026-11-11). One producer is the house, estate, winery or cooperative that makes
+  and sells the wine under its name; its brands, ranges and second wines join it when the title or the shop's
+  copy names it as their maker (Tio Pepe with Gonzalez Byass, The Ned and The King's series with Marisco
+  Vineyards, Armand de Brignac with Cattier, Amiral de Beychevelle with Château Beychevelle). Estates with their
+  own name stay apart from the group that owns them (Château Lynch-Moussas and Château Batailley, Domaine de
+  Villemajou and Gérard Bertrand), and corporate owners are not merged (Dom Pérignon and Moët & Chandon,
+  Alamos and Catena). The shop's own-label ranges are one group each, although some of their copy names the
+  maker (Definition Fleurie by Pardon et Fils): the shop prices the range, and the maker is not named for all.
+  613 producers, 1 to 35 wines (Definition), 250 with more than one wine.
+- Time basis: Snapshot: one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023; the
+  shelf prices, sales copy and catalogue attributes of that moment; the vintage is a wine attribute, not a
+  time. Not tested: prices after 2023.
 
 ## Splits
 
-Default splits.
+Grouped splits on the producer: all wines of one producer stay on one side, so a model prices wines from producers it has not seen, from the same shop and time. Wines of the same region, grape or style are on both sides.
 
-10 repeat(s) x 3 fold(s) with seed 4267; train 852 to 853 rows, test 426 to 427 rows.
+10 repeat(s) x 3 fold(s) with seed 4267; train 763 to 926 rows, test 351 to 514 rows.
 
 <details>
 <summary>Show all 30 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 852 | 427 |
-| 0 | 1 | 853 | 426 |
-| 0 | 2 | 853 | 426 |
-| 1 | 0 | 852 | 427 |
-| 1 | 1 | 853 | 426 |
-| 1 | 2 | 853 | 426 |
-| 2 | 0 | 852 | 427 |
-| 2 | 1 | 853 | 426 |
-| 2 | 2 | 853 | 426 |
-| 3 | 0 | 852 | 427 |
-| 3 | 1 | 853 | 426 |
-| 3 | 2 | 853 | 426 |
-| 4 | 0 | 852 | 427 |
-| 4 | 1 | 853 | 426 |
-| 4 | 2 | 853 | 426 |
-| 5 | 0 | 852 | 427 |
-| 5 | 1 | 853 | 426 |
-| 5 | 2 | 853 | 426 |
-| 6 | 0 | 852 | 427 |
-| 6 | 1 | 853 | 426 |
-| 6 | 2 | 853 | 426 |
-| 7 | 0 | 852 | 427 |
-| 7 | 1 | 853 | 426 |
-| 7 | 2 | 853 | 426 |
-| 8 | 0 | 852 | 427 |
-| 8 | 1 | 853 | 426 |
-| 8 | 2 | 853 | 426 |
-| 9 | 0 | 852 | 427 |
-| 9 | 1 | 853 | 426 |
-| 9 | 2 | 853 | 426 |
+| 0 | 0 | 793 | 484 |
+| 0 | 1 | 872 | 405 |
+| 0 | 2 | 889 | 388 |
+| 1 | 0 | 763 | 514 |
+| 1 | 1 | 926 | 351 |
+| 1 | 2 | 865 | 412 |
+| 2 | 0 | 837 | 440 |
+| 2 | 1 | 847 | 430 |
+| 2 | 2 | 870 | 407 |
+| 3 | 0 | 838 | 439 |
+| 3 | 1 | 826 | 451 |
+| 3 | 2 | 890 | 387 |
+| 4 | 0 | 820 | 457 |
+| 4 | 1 | 868 | 409 |
+| 4 | 2 | 866 | 411 |
+| 5 | 0 | 860 | 417 |
+| 5 | 1 | 855 | 422 |
+| 5 | 2 | 839 | 438 |
+| 6 | 0 | 891 | 386 |
+| 6 | 1 | 864 | 413 |
+| 6 | 2 | 799 | 478 |
+| 7 | 0 | 841 | 436 |
+| 7 | 1 | 888 | 389 |
+| 7 | 2 | 825 | 452 |
+| 8 | 0 | 831 | 446 |
+| 8 | 1 | 828 | 449 |
+| 8 | 2 | 895 | 382 |
+| 9 | 0 | 858 | 419 |
+| 9 | 1 | 883 | 394 |
+| 9 | 2 | 813 | 464 |
 
 </details>
 
+## Group structure
+
+One group is a producer: the house, estate, winery or cooperative that makes and sells the wine under its name, with its brands, ranges and second wines (613 producers, 1 to 35 wines; 250 with more than one). The data have no producer column; the key is read from the title and checked by hand (curation comments). The use case is a producer, importer or buyer estimating the shelf price of a wine not on the list, often from a producer the shop does not sell yet; such a wine has no sibling in the price list to read the price level from, so the test producers are new to the model. The shop's own-label ranges (Definition, Chosen by Majestic, Selected by Majestic, Parcel Series, Winemaker Series) are one group each. Each row is one prediction, made from the wine's catalogue entry and the shop's copy.
+
+| field | value |
+|---|---|
+| group column | `Producer` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 613 |
+| rows per group (min / median / max) | 1 / 1.0 / 35 |
+| largest group | 2.7% of the rows |
+| test groups per fold | 204 to 205 |
+| groups of two or more rows with a single label | 16.0% |
+| nearest neighbour in the same group | 2.4% of the rows (chance: 0.3%) |
+| label variance explained by the group | 0.79 (shuffled groups: 0.48) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (29 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -245,25 +316,26 @@ Default splits.
 ### Feature summary
 
 <details>
-<summary>Show the table (15 rows)</summary>
+<summary>Show the table (16 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Style | category | 71 | 5.55 | 16 | Savoury & Full Bodied, Rich & Toasty, Bold & Spicy, Light & Elegant, Crisp & Ze… |
-| Type | category | 4 | 0.31 | 6 | White, Red, Rosé, Tawny, Orange, Brown |
+| Style | category | 69 | 5.4 | 16 | Savoury & Full Bodied, Rich & Toasty, Bold & Spicy, Light & Elegant, Crisp & Ze… |
+| Type | category | 4 | 0.31 | 5 | White, Red, Rosé, Tawny, Orange |
 | Closure | category | 0 | 0 | 4 | Natural Cork, Screwcap, Synthetic Cork, Vinolok |
-| VintageYear | float64 | 170 | 13.29 | 21 | 2022.0, 2021.0, 2020.0, 2019.0, 2018.0, 2017.0, 2016.0, 2015.0, 2014.0, 2023.0 |
-| ABV% | float64 | 3 | 0.23 | 32 | 13.5, 13.0, 14.0, 14.5, 12.5, 12.0, 15.0, 11.0, 11.5, 20.0 |
-| Price | float64 | 0 | 0 | 119 | 2.4841, 2.7074, 2.3016, 2.6383, 2.8326, 2.772, 2.5642, 2.9952, 2.8898, 3.4009 |
+| Producer | category | 0 | 0 | 613 | definition, pasqua, marisco vineyards, chosen by majestic, penfolds, saint clai… |
+| VintageYear | float64 | 168 | 13.16 | 21 | 2022.0, 2021.0, 2020.0, 2019.0, 2018.0, 2017.0, 2016.0, 2015.0, 2014.0, 2023.0 |
+| ABV% | float64 | 3 | 0.23 | 31 | 13.5, 13.0, 14.0, 14.5, 12.5, 12.0, 15.0, 11.0, 11.5, 20.0 |
+| Price | float64 | 0 | 0 | 117 | 2.4841, 2.7074, 2.3016, 2.6383, 2.8326, 2.772, 2.5642, 2.9952, 2.8898, 3.4009 |
 | Capacity | float64 | 0 | 0 | 6 | 750.0, 1500.0, 375.0, 500.0, 700.0, 3000.0 |
-| Secondary Grape Varieties | string | 793 | 62 | 197 | Pinot Noir, Pinot Meunier, Pinot Noir, Merlot, Syrah, Chardonnay, Cabernet Sauv… |
-| Appellation | string | 635 | 49.65 | 179 | Rioja, Barossa Valley, Chablis, Côtes De Provence, Côtes Du Rhône, Sancerre, Uc… |
-| Region | string | 159 | 12.43 | 94 | Burgundy, Bordeaux, Marlborough, Loire, South Australia, Rhône, Languedoc-Rouss… |
-| Characteristics | string | 30 | 2.35 | 886 | Strawberry, Peach, Raspberry, Green Apple, Citrus Fruit, Grass, Sweet Spice, Bl… |
-| Grape | string | 8 | 0.63 | 113 | Chardonnay, Pinot Noir, Sauvignon Blanc, Cabernet Sauvignon, Grenache, Temprani… |
-| Description | string | 3 | 0.23 | 1273 | Nicolás Catena was the first South American winemaker to ever be named ‘Decante… |
-| Title | string | 0 | 0 | 1278 | Aqualta Prosecco DOC, Jackson Estate 'Stich' Sauvignon Blanc 2022, Marlborough,… |
-| Country | string | 0 | 0 | 25 | France, Italy, Spain, Australia, New Zealand, South Africa, USA, Chile, Portuga… |
+| Secondary Grape Varieties | string | 791 | 61.94 | 197 | Pinot Noir, Pinot Meunier, Pinot Noir, Merlot, Syrah, Chardonnay, Cabernet Sauv… |
+| Appellation | string | 633 | 49.57 | 179 | Rioja, Barossa Valley, Chablis, Côtes De Provence, Côtes Du Rhône, Sancerre, Uc… |
+| Region | string | 157 | 12.29 | 94 | Burgundy, Bordeaux, Marlborough, Loire, South Australia, Rhône, California, Lan… |
+| Characteristics | string | 28 | 2.19 | 886 | Strawberry, Peach, Raspberry, Green Apple, Citrus Fruit, Grass, Sweet Spice, Bl… |
+| Grape | string | 6 | 0.47 | 113 | Chardonnay, Pinot Noir, Sauvignon Blanc, Cabernet Sauvignon, Grenache, Temprani… |
+| Description | string | 3 | 0.23 | 1271 | Nicolás Catena was the first South American winemaker to ever be named ‘Decante… |
+| Title | string | 0 | 0 | 1276 | Aqualta Prosecco DOC, Villa Maria 'Taylors Pass' Sauvignon Blanc 2020/21, Awate… |
+| Country | string | 0 | 0 | 23 | France, Italy, Spain, Australia, New Zealand, South Africa, USA, Chile, Portuga… |
 
 </details>
 
@@ -271,76 +343,81 @@ Default splits.
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 1.138 | 0.518 | 0.483 | 0.046 | log | 6352.7 | 5922.4 | lognormal |
+| 0 | 0 | 0 | 1.143 | 0.521 | 0.482 | 0.046 | log | 6343.1 | 5920.3 | lognormal |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| Price | 1279 | 3.02729 | 0.694994 | 1.60744 | 6.06379 |
-| Capacity | 1279 | 759.461 | 140.785 | 375 | 3000 |
-| ABV% | 1276 | 13.4297 | 1.81415 | 0.5 | 40 |
+| Price | 1277 | 3.02586 | 0.694378 | 1.60744 | 6.06379 |
+| Capacity | 1277 | 759.554 | 140.876 | 375 | 3000 |
+| ABV% | 1274 | 13.388 | 1.47831 | 0.5 | 20.5 |
 | VintageYear | 1109 | 2019.85 | 2.80649 | 1999 | 2023 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (54 rows)</summary>
+<summary>Show the table (59 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Appellation | 1 | &lt;NA> | 635 | 49.65 |
+| Appellation | 1 | &lt;NA> | 633 | 49.57 |
 | Appellation | 2 | Rioja | 45 | 3.52 |
 | Appellation | 3 | Barossa Valley | 23 | 1.8 |
 | Appellation | 4 | Chablis | 15 | 1.17 |
-| Appellation | 5 | Côtes De Provence | 14 | 1.09 |
-| Characteristics | 1 | &lt;NA> | 30 | 2.35 |
+| Appellation | 5 | Côtes De Provence | 14 | 1.1 |
+| Characteristics | 1 | &lt;NA> | 28 | 2.19 |
 | Characteristics | 2 | Strawberry, Peach, Raspberry | 17 | 1.33 |
 | Characteristics | 3 | Green Apple, Citrus Fruit, Grass | 16 | 1.25 |
-| Characteristics | 4 | Vanilla, Black Fruit, Red Fruit | 15 | 1.17 |
-| Characteristics | 5 | Sweet Spice, Black Cherry, Blackberry, Red Fruit | 15 | 1.17 |
-| Closure | 1 | Natural Cork | 834 | 65.21 |
-| Closure | 2 | Screwcap | 414 | 32.37 |
+| Characteristics | 4 | Sweet Spice, Black Cherry, Blackberry, Red Fruit | 15 | 1.17 |
+| Characteristics | 5 | Vanilla, Black Fruit, Red Fruit | 15 | 1.17 |
+| Closure | 1 | Natural Cork | 832 | 65.15 |
+| Closure | 2 | Screwcap | 414 | 32.42 |
 | Closure | 3 | Synthetic Cork | 24 | 1.88 |
 | Closure | 4 | Vinolok | 7 | 0.55 |
-| Country | 1 | France | 500 | 39.09 |
-| Country | 2 | Italy | 146 | 11.42 |
-| Country | 3 | Spain | 113 | 8.84 |
-| Country | 4 | Australia | 96 | 7.51 |
-| Country | 5 | New Zealand | 91 | 7.11 |
+| Country | 1 | France | 500 | 39.15 |
+| Country | 2 | Italy | 146 | 11.43 |
+| Country | 3 | Spain | 113 | 8.85 |
+| Country | 4 | Australia | 96 | 7.52 |
+| Country | 5 | New Zealand | 91 | 7.13 |
 | Description | 1 | &lt;NA> | 3 | 0.23 |
 | Description | 2 | Nicolás Catena was the first South American winemaker to ever be... | 3 | 0.23 |
 | Description | 3 | Grand Cru Chardonnay has been used to make this Champagne. Citru... | 2 | 0.16 |
-| Description | 4 | This is named after Jackson Estate’s founder, John ‘Stich’ Stich... | 1 | 0.08 |
-| Description | 5 | Over its 235-year history, Piper-Heidsieck’s Champagne has been ... | 1 | 0.08 |
-| Grape | 1 | Chardonnay | 237 | 18.53 |
-| Grape | 2 | Pinot Noir | 116 | 9.07 |
-| Grape | 3 | Sauvignon Blanc | 101 | 7.9 |
-| Grape | 4 | Cabernet Sauvignon | 87 | 6.8 |
-| Grape | 5 | Grenache | 81 | 6.33 |
-| Region | 1 | &lt;NA> | 159 | 12.43 |
-| Region | 2 | Burgundy | 101 | 7.9 |
-| Region | 3 | Bordeaux | 67 | 5.24 |
-| Region | 4 | Marlborough | 65 | 5.08 |
-| Region | 5 | Loire | 59 | 4.61 |
-| Secondary Grape Varieties | 1 | &lt;NA> | 793 | 62 |
-| Secondary Grape Varieties | 2 | Pinot Noir, Pinot Meunier | 36 | 2.81 |
+| Description | 4 | Long recognised for producing premium wines, Meerlust Estate has... | 1 | 0.08 |
+| Description | 5 | If you're after the finest Marlborough Sauvignon Blanc, this is ... | 1 | 0.08 |
+| Grape | 1 | Chardonnay | 237 | 18.56 |
+| Grape | 2 | Pinot Noir | 116 | 9.08 |
+| Grape | 3 | Sauvignon Blanc | 101 | 7.91 |
+| Grape | 4 | Cabernet Sauvignon | 87 | 6.81 |
+| Grape | 5 | Grenache | 81 | 6.34 |
+| Producer | 1 | definition | 35 | 2.74 |
+| Producer | 2 | pasqua | 14 | 1.1 |
+| Producer | 3 | marisco vineyards | 11 | 0.86 |
+| Producer | 4 | chosen by majestic | 10 | 0.78 |
+| Producer | 5 | penfolds | 10 | 0.78 |
+| Region | 1 | &lt;NA> | 157 | 12.29 |
+| Region | 2 | Burgundy | 101 | 7.91 |
+| Region | 3 | Bordeaux | 67 | 5.25 |
+| Region | 4 | Marlborough | 65 | 5.09 |
+| Region | 5 | Loire | 59 | 4.62 |
+| Secondary Grape Varieties | 1 | &lt;NA> | 791 | 61.94 |
+| Secondary Grape Varieties | 2 | Pinot Noir, Pinot Meunier | 36 | 2.82 |
 | Secondary Grape Varieties | 3 | Pinot Noir | 35 | 2.74 |
-| Secondary Grape Varieties | 4 | Merlot | 25 | 1.95 |
+| Secondary Grape Varieties | 4 | Merlot | 25 | 1.96 |
 | Secondary Grape Varieties | 5 | Syrah | 23 | 1.8 |
-| Style | 1 | Savoury & Full Bodied | 154 | 12.04 |
-| Style | 2 | Rich & Toasty | 141 | 11.02 |
-| Style | 3 | Bold & Spicy | 113 | 8.84 |
-| Style | 4 | Light & Elegant | 104 | 8.13 |
-| Style | 5 | Crisp & Zesty | 97 | 7.58 |
+| Style | 1 | Savoury & Full Bodied | 154 | 12.06 |
+| Style | 2 | Rich & Toasty | 141 | 11.04 |
+| Style | 3 | Bold & Spicy | 113 | 8.85 |
+| Style | 4 | Light & Elegant | 104 | 8.14 |
+| Style | 5 | Crisp & Zesty | 97 | 7.6 |
 | Title | 1 | Aqualta Prosecco DOC | 2 | 0.16 |
-| Title | 2 | Jackson Estate 'Stich' Sauvignon Blanc 2022, Marlborough | 1 | 0.08 |
-| Title | 3 | Piper-Heidsieck 2012 Champagne | 1 | 0.08 |
-| Title | 4 | Catena Malbec 2019/20 Half Bottle, Mendoza | 1 | 0.08 |
-| Title | 5 | Cave Vinicole de Hunawihr ‘8’ Pinot Noir 2019, Alsace | 1 | 0.08 |
-| Type | 1 | White | 582 | 45.5 |
-| Type | 2 | Red | 564 | 44.1 |
-| Type | 3 | Rosé | 122 | 9.54 |
+| Title | 2 | Villa Maria 'Taylors Pass' Sauvignon Blanc 2020/21, Awatere Valley | 1 | 0.08 |
+| Title | 3 | Villarei Albariño 2021/22, Rías Baixas | 1 | 0.08 |
+| Title | 4 | Rupert & Rothschild 'Baroness Nadine' Chardonnay 2021/22, South ... | 1 | 0.08 |
+| Title | 5 | Alain Chavy 'Clavoillons’ Puligny-Montrachet Premier Cru 2018/20 | 1 | 0.08 |
+| Type | 1 | White | 581 | 45.5 |
+| Type | 2 | Red | 564 | 44.17 |
+| Type | 3 | Rosé | 122 | 9.55 |
 | Type | 4 | Tawny | 4 | 0.31 |
 | Type | 5 | &lt;NA> | 4 | 0.31 |
 
@@ -357,4 +434,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ac2a742aafb8f4e41650d38f412414d527e6544d7e01cf1adf9ee12c86d0a420` |
+| stale | yes: the definition now gives checksum `v2:98db2b5158cf4e6e7dd10a34160a47908745171f8ea88ffe5cf1d64d7a2b68d6` |

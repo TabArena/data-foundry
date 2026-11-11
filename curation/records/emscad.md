@@ -5,6 +5,7 @@ checked_by:
 - Lennart
 - Alex
 - Mustafa
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -57,6 +58,142 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 **Assessment (AI, 2026-11-01):** the benchmark MulTaBench (https://arxiv.org/abs/2605.10616) carries this record's data as "Fake Job Postings": Text-tabular; EMSCAD (Vidros et al. 2017) via OpenML 46655. Paper notes no significant TAR gain here. Tagged MulTaBench on 2026-11-01.
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
+CC (2026-11-11, Andrej): BeyondArena v0.2 review page, emscad: ship as defined (issue 1, `ok`, option A). Time basis forced from temporal, grouped (issue 2, option B): `ForcedGroupedFromTemporal` in `data_tags` next to `Spatial`, its `Time basis:` bullet in place of the note on the missing dates. The CC of 2026-10-14 refused the IID forced tag for a grouped split; the grouped tag now names the lost time. Grouping by poster unchanged, `dataset check` passed (0 errors, 0 warnings).
+- The review moved from the folder's file into this record's `## Review` section.
+
+## Review
+
+**Outcome:** added. The AI recommends shipping it as defined. Reviewed on 2026-11-04 without a panel, from the
+evidence already gathered (the record, the leak audit of 2026-09-24 and 2026-09-30, the definition's notes); no
+model run exists for it. The data are EMSCAD (Vidros et al. 2017, Future Internet 9(1):6,
+<https://doi.org/10.3390/fi9010006>): 16,116 job ads posted through Workable's recruiting software in 2012-2014, with
+title, company profile, description, requirements, benefits, salary range and the ad's categorical fields; the
+target is whether the ad is fraudulent (4.6%), as Workable labelled the posting client after reviewing its activity,
+contact details and candidate complaints. Validity: a real task with a decision behind it (the platform holds back an
+ad before it is published); the leak the release had is fixed: exact duplicates and reposts (identical except the id
+and location, as the paper describes them) are dropped, and the split holds out whole posters (same company profile
+or a poster-specific masked contact), since the label is set per client and a random split let models recognise
+known clients (LightGBM ROC AUC about 0.99 on random rows, 0.938 on posters). Value: a strong but not saturated
+signal on unseen posters; mostly a text task, which the benchmark embeds. Quality: about 335 lightly edited reposts
+remain across groups, and dropping them at similarity thresholds 0.95 to 0.7 did not change the grouped score.
+Weighed: documented source and labels +, a real platform decision +, no dates, so the test posters come from the same
+2012-2014 period (approximate fit) -.
+
+**Main points:** All settled (2026-11-10): ship as defined (issue 1, A), the grouped split tagged forced from
+temporal (issue 2, B).
+
+**Record judgment:** valid, ship. The curator's decisions of 2026-09-30 (reposts dropped, grouped by poster) and
+2026-10-14 (no `ForcedIIDFromTemporal` tag, since the grouped split already marks the task as non-IID) are in the
+definition. The use case follows the paper: a content classifier for ads of posters the platform has not seen, as a
+known client is caught by its account. Two notes, no decision needed: the licence `CC0: Public Domain` is the Kaggle
+uploader's statement (the paper states none and the EMSCAD site is down); and `salary_range_max` keeps a maximum
+salary only when it is 50,000 or more, a parsed helper column next to the raw `salary_range` string. Nothing in the
+record disagrees with the definition (source Other, 2017, business & marketing, grouped, binary).
+
+**Issues for Andrej:**
+
+1. **Ship as defined?**
+
+   * **Problem:**
+     - Nothing open was found: the repost leak is fixed as the source paper describes reposts, the split holds out whole posters because the labels are set per client, and the remaining near-copies across posters were tested and change nothing.
+     - The ads carry no dates, so the test posters come from the same 2012-2014 period, a gap the fit states.
+     - Ship as defined, or retire?
+   * **Background:** Workable labelled ads "based on client's suspicious activity on the system, false contact or
+     company information, candidate complaints and periodic meticulous analysis of the clientele", and "fraudsters can
+     quickly and repeatedly try to post the same job ad in identical or different locations" (Vidros et al. 2017,
+     Sec. 5, as quoted in the record). Reposts identical except an id or a location are dropped, as the paper did[^1a];
+     a random split of the ads rewarded recognising known clients[^1b].
+   * **Experiments:** the leak audit (2026-09-30), LightGBM: ROC AUC about 0.99 on random rows, 0.938 on posters
+     (0.903 to 0.953 over 6 folds); dropping the about 335 ads with a near-identical text in another group (cosine
+     0.95 down to 0.7) left 0.918 to 0.934. 2 of 4,441 posters (34 ads) carry both labels.
+   * **Sources:** Vidros S, Kolias C, Kambourakis G, Akoglu L. Automatic detection of online recruitment frauds:
+     characteristics, methods, and a public dataset. Future Internet. 2017;9(1):6.
+     <https://doi.org/10.3390/fi9010006>
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ship as defined (implemented) | 16,116 ads, 4,441 posters, grouped 3 x 3, ROC AUC | documented labels and a real platform decision; the client leak removed | no dates; mostly a text task |
+     | B | Retire | record `No (Retired)`, folder removed | none found | no defect found; loses a documented fraud task |
+
+   * **Recommendation:** A: the source documents the data and labels, and the leak it had is fixed and tested.
+     **Decision:** A or B?
+
+   [^1a]: **LEAK-21** (Should): reposts identical except an id or a location are dropped, as the source paper did;
+     emscad is its case.
+   [^1b]: **SPLIT-29** (Must): an IID split is wrong when many rows share an entity that new data would not have and
+     the entity carries the label.
+
+   **Resolved (2026-11-10, Andrej):** A, ship as defined; a CC line in the record.
+
+   **Andrej (2026-11-11, ok):**
+
+   **Resolved (2026-11-11, Andrej):** A again, and carried out on this branch: the definition is unchanged and the
+   record gains the CC line.
+
+2. **Time basis: name the grouped split forced from temporal (`ForcedGroupedFromTemporal`)?**
+
+   * **Problem:**
+     - Ads were posted from 2012 to 2014 and the release keeps no time: no date column, `job_id` does not follow
+       posting time (a low id describes a job of 2014), and only some free texts name a year.
+     - The record's collection facts fit what was found (`Samples: Over Time`, `Time: Lost`, `Target: Revised Later`,
+       as a client's verdict is set on all its ads after review), and the definition names no time basis, following
+       Lennart's call of 2026-10-14 against the IID forced tag because the split is grouped.
+     - The use case screens new ads and scams change over time, so the grouped test posters also stand in for later
+       ones: name that with the grouped form of the forced tag, which a grouped definition can carry?
+   * **Background:** the questions that tell the time bases apart[^2a]:
+     - Can time affect the target? Yes: the definition itself notes that scams change over time.
+     - Does the use case predict for a time after its data? Yes: the platform screens an ad before it is published.
+     - One shared prediction moment? No: each ad at its own posting; the label is the client's verdict, revised after
+       the ad by review and complaints.
+     - Does arrival over time move the target? Argued from the source, as nothing dated can measure it: fraudsters
+       and the platform's review adapt to each other; with the time lost that is the forced case[^2b].
+     - The grouping by poster has its own reason, the label set per client, and stays whatever the tag; the 2026-10-14
+       call answered the IID tag, which a grouped definition refuses, and builds on here: the grouped tag names the
+       lost time without calling the split IID.
+   * **Experiments:** the leak test across a forced split[^2b], from the audits of 2026-09-24 and 2026-09-30: a
+     client's label on both sides was the leak (ROC AUC about 0.99 on random rows), removed by the grouping (0.938);
+     the about 335 near-identical ads across groups leave the grouped score unchanged when dropped (0.918 to 0.934).
+     Whether ads of one period share their outcome across posters (a wave of one fraud ring under several accounts)
+     cannot be tested without dates.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | No time basis (implemented) | `data_tags = ("Spatial",)`; the curation note says why the dates are missing | the 2026-10-14 call as made | `dataset check` notes a split that is not temporal and does not say why |
+     | B | Forced from temporal, grouped | the tag `ForcedGroupedFromTemporal` and a `Time basis:` line in place of the note on the missing dates | says in the metadata what the note says in prose; no fold changes | the grouping is not there because of time, so the tag reads as if it stood in for windows |
+     | C | Stationary relation | the tag `StationaryRelation` and a line arguing that what marks a scam does not change | none found | the definition says scams change; no dated data to measure it on |
+
+   * **Recommendation:** B: the task looks forward and its time is lost, which the grouped forced tag names; it fits
+     loosely, as the grouping answers the client, not the time. **Decision:** no time basis (A), forced grouped (B)
+     or stationary relation (C)?
+
+   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("Spatial", "ForcedGroupedFromTemporal")` and, in
+   place of the curation bullet "The ads were posted from 2012 to 2014, but the release has no dates, ...", the
+   bullet "- Time basis: ForcedGroupedFromTemporal: ads posted from 2012 to 2014 with no date in the release
+   (`job_id` does not follow posting time); the split groups by poster because the label is set per client, so the
+   test posters come from the same period as the training ones. Scams change over time; a dated release would allow
+   a split by posting date."; no other change (the `grouping` stays). The record's CC of 2026-10-14 gets a line that
+   the grouped tag now names the lost time.
+
+   [^2a]: **SPLIT-32** (Should): how and when samples, features and the target arrive is information for the split;
+     the record keeps the source's collection facts, and a definition can name the use-case prototype it follows
+     (`Timeless`, `Snapshot`, `DelayedTarget`, `StationaryRelation`) with a `Time basis:` line stating the fact behind
+     it; a forward task whose time is lost or too short is forced.
+   [^2b]: **SPLIT-8** (Must): a task temporal by its use case whose release cannot give the windows ships in the
+     closest regime that keeps the rows, tagged as forced from temporal (`ForcedGroupedFromTemporal` when it ships
+     grouped), after a leak test across the split; it says what a dated release would change.
+
+   **Resolved (2026-11-10, Andrej):** B: `data_tags = ("Spatial", "ForcedGroupedFromTemporal")` and the drafted `Time
+   basis: ForcedGroupedFromTemporal:` bullet in place of the note on the missing dates; the grouping by poster stays.
+   The record's CC line says the grouped tag now names the lost time.
+
+   **Andrej (2026-11-11, change):** Option B: Forced from temporal, grouped.
+
+   **Resolved (2026-11-11, Andrej):** B again, and carried out on this branch: `data_tags = ("Spatial",
+   "ForcedGroupedFromTemporal")`, the `Time basis: ForcedGroupedFromTemporal:` bullet replaces the note on the
+   missing dates, the grouping by poster is unchanged, and `dataset check` passes (0 errors, 0 warnings, 29 checks).
 
 ## Reference
 

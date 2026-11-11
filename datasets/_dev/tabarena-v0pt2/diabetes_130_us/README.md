@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: diabetes_130_us
 container_format: 2
-checksum: v2:868bc433ae3b7c7ea75982395169b4245eed30665218e6f05d47eab1998f61cd
+checksum: v2:ceb3a71ceb61c329edbd97d66b48053ded372f73b44002b37716b10daff5443d
 build:
   uuid: 01a111fc-82d1-7838-bf50-fa314882cfef
   checksum: v2:eb9b004418443ea085fa8272aedde899f8b4e3492dd152825acedb8110288e02
@@ -19,11 +19,11 @@ build:
     polars: 1.41.1
 build_stale: true
 data:
-  n_rows: 69973
-  n_features: 44
+  n_rows: 99343
+  n_features: 45
   dtypes:
     category: 37
-    int64: 8
+    int64: 9
   n_test_dataset_rows: null
 task:
   target: EarlyReadmission
@@ -31,27 +31,27 @@ task:
   metric: roc_auc
   metric_origin: fallback
   scoring_columns: null
-  split_regime: iid
+  split_regime: temporal_non_iid
   stratify_on: EarlyReadmission
-  time_on: null
+  time_on: time_index
   group_on: null
   group_labels: null
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 3
-  n_folds: 3
+  n_repeats: 9
+  n_folds: 1
   random_state: 4267
-  time_horizon: null
-  time_horizon_unit: null
+  time_horizon: 5519
+  time_horizon_unit: steps
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 46648
-    max: 46649
+    min: 49672
+    max: 93824
   n_test:
-    min: 23324
-    max: 23325
+    min: 5519
+    max: 5519
 bundle_checks:
   ok: true
   errors: []
@@ -65,9 +65,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `EarlyReadmission`, scored with `roc_auc` on IID splits. 69,973 rows and 44 features. Source: UCI (2014).
+Binary classification of `EarlyReadmission`, scored with `roc_auc` on temporal splits by `time_index`. 99,343 rows and 45 features. Source: UCI (2014).
 
-Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:868bc433ae3b7c7ea75982395169b4245eed30665218e6f05d47eab1998f61cd`, so the build is stale. See [Build](#build).
+Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ceb3a71ceb61c329edbd97d66b48053ded372f73b44002b37716b10daff5443d`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -75,17 +75,17 @@ Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06, but `dataset.py` 
 
 **Use case.** For example, at discharge a hospital decides which diabetic patients get extra follow-up, such as a call or an early visit, to prevent an early readmission.
 
-**One row.** The first hospital stay of one diabetic patient at one of 130 US hospitals, 1999-2008 (69,973 patients).
+**One row.** One hospital stay of a diabetic patient at one of 130 US hospitals, 1999-2008: every stay in the file (99,343 stays of 69,990 patients), in the order of the hospitals' encounter numbers.
 
 **Predicted.** Whether the patient is readmitted within 30 days of discharge (9% are); a later readmission counts as no.
 
 **Known at prediction time.** Age, sex, race, payer, admission type and source, discharge destination, admitting specialty, three diagnoses, length of stay, counts of lab tests, procedures and medications in the stay and of visits in the year before, glucose and HbA1c results, and the diabetes drugs and their changes.
 
-**What the test data stands for.** Random patients, one stay each, so the test data stands for new patients of the same hospitals and years.
+**What the test data stands for.** Nine windows of later stays in encounter order, each trained on every earlier stay, so the test data stands for the next discharges, as when a hospital scores them; a returning patient's earlier stays can be in training.
 
-**Our changes to the source.** We keep each patient's first stay and drop stays that ended in death or discharge to a hospice, as the paper does.
+**Our changes to the source.** We keep every stay, where the paper keeps each patient's first, and drop stays that ended in death or discharge to a hospice, as the paper does; the encounter number becomes a time index.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is recorded by discharge and the outcome follows within 30 days, as when the model is used. The stays carry no dates, so the test data mixes care from all of 1999-2008.
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is recorded by discharge and the outcome follows within 30 days, as when the model is used. The stays carry no dates, but the encounter number runs as a calendar over 1999-2008 across all hospitals, so the windows test on later care; a window counts stays, not days.
 
 ## Files in this folder
 
@@ -94,7 +94,7 @@ Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/diabetes_130_us.md`](../../../../curation/records/diabetes_130_us.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/diabetes_130_us.md`](../../../../curation/records/diabetes_130_us.md)
 - The original source: <https://doi.org/10.24432/C5230J>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -125,14 +125,15 @@ Only curators run `build`, when the dataset ships.
 | year | 2014 |
 | domain | medical & healthcare |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | Non-IID, Temporal |
 | reference | strack2014impact |
-| rows x columns | 69,973 x 45 |
+| rows x columns | 99,343 x 46 |
 | task.target | EarlyReadmission |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
-| task.split_regime | iid |
+| task.split_regime | temporal_non_iid |
 | task.stratify_on | EarlyReadmission |
+| task.time_on | time_index |
 
 **Metric**
 
@@ -147,7 +148,7 @@ Only curators run `build`, when the dataset ships.
 <summary>Feature types: 20 categorical, 17 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (20): `race`, `gender`, `admission_type_id`, `discharge_disposition_id`, `admission_source_id`, `payer_code`, `medical_specialty`, `diag_1`, `diag_2`, `diag_3`, `acetohexamide`, `tolbutamide`, `troglitazone`, `tolazamide`, `glipizide-metformin`, `metformin-rosiglitazone`, `metformin-pioglitazone`, `change`, `diabetesMed`, `EarlyReadmission`
-- ordinal (17): `age ([0-10) < [10-20) < [20-30) < [30-40) < [40-50) < [50-60) < [60-70) < [70-80) < [80-90) < [90-100))`, `weight ([0-25) < [25-50) < [50-75) < [75-100) < [100-125) < [125-150) < [150-175) < [175-200) < >200)`, `max_glu_serum (Norm < >200 < >300)`, `A1Cresult (Norm < >7 < >8)`, `metformin (Down < Steady < Up)`, `repaglinide (Down < Steady < Up)`, `nateglinide (Down < Steady < Up)`, `chlorpropamide (Down < Steady < Up)`, `glimepiride (Down < Steady < Up)`, `glipizide (Down < Steady < Up)`, `glyburide (Down < Steady < Up)`, `pioglitazone (Down < Steady < Up)`, `rosiglitazone (Down < Steady < Up)`, `acarbose (Steady < Up)`, `miglitol (Down < Steady < Up)`, `insulin (Down < Steady < Up)`, `glyburide-metformin (Down < Steady < Up)`
+- ordinal (17): `age ([0-10) < [10-20) < [20-30) < [30-40) < [40-50) < [50-60) < [60-70) < [70-80) < [80-90) < [90-100))`, `weight ([0-25) < [25-50) < [50-75) < [75-100) < [100-125) < [125-150) < [150-175) < [175-200) < >200)`, `max_glu_serum (Norm < >200 < >300)`, `A1Cresult (Norm < >7 < >8)`, `metformin (Down < Steady < Up)`, `repaglinide (Down < Steady < Up)`, `nateglinide (Down < Steady < Up)`, `chlorpropamide (Down < Steady < Up)`, `glimepiride (Down < Steady < Up)`, `glipizide (Down < Steady < Up)`, `glyburide (Down < Steady < Up)`, `pioglitazone (Down < Steady < Up)`, `rosiglitazone (Down < Steady < Up)`, `acarbose (Down < Steady < Up)`, `miglitol (Down < Steady < Up)`, `insulin (Down < Steady < Up)`, `glyburide-metformin (Down < Steady < Up)`
 - string (0): none
 - datetime (0): none
 
@@ -173,27 +174,29 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 69,973 rows of the final frame (random rows: the frame is shuffled); 12 of 45 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 99,343 rows of the final frame (the oldest rows: the frame is sorted by `time_index`); 12 of 46 columns, the target first. Cells are cut at 40 characters.
 
 | EarlyReadmission | race | gender | age | weight | admission_type_id | discharge_disposition_id | admission_source_id | time_in_hospital | payer_code | medical_specialty | num_lab_procedures |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | Caucasian | Female | \[70-80) | nan | Emergency | nan | Emergency Room | 4 | nan | nan | 56 |
-| No | Caucasian | Male | \[50-60) | nan | Emergency | Discharged to home | Emergency Room | 2 | nan | InternalMedicine | 37 |
-| No | Caucasian | Male | \[80-90) | nan | Emergency | Discharged to home | Emergency Room | 7 | CM | Cardiology | 64 |
-| No | Caucasian | Male | \[80-90) | nan | Emergency | Discharged to home | Emergency Room | 2 | nan | nan | 19 |
-| No | Caucasian | Male | \[60-70) | nan | Elective | nan | Transfer from a hospital | 10 | nan | nan | 54 |
+| No | Caucasian | Female | \[80-90) | nan | Urgent | Discharged to home | Transfer from a hospital | 13 | nan | nan | 68 |
+| No | Caucasian | Female | \[90-100) | nan | Elective | Discharged/transferred to SNF | Transfer from a hospital | 12 | nan | InternalMedicine | 33 |
+| No | Caucasian | Male | \[40-50) | nan | Emergency | Discharged to home | Emergency Room | 1 | nan | nan | 51 |
+| No | AfricanAmerican | Female | \[40-50) | nan | Emergency | Discharged to home | Emergency Room | 9 | nan | nan | 47 |
+| No | Caucasian | Male | \[50-60) | nan | Urgent | Discharged to home | Clinic Referral | 3 | nan | nan | 31 |
 
 ## Curation notes
 
-- We keep one encounter per patient, the first one by encounter_id, following the paper ("we considered only the first encounter for each patient as the primary admission", Strack et al. 2014, Sec. 2.3); we sort by encounter_id to make this explicit (each patient's encounters already appear in that order in the raw file, so the kept encounter is the same as before).
+- Every stay (2026-11-11, Andrej, review issue 1 d): we keep all encounters of a patient, 99,343 stays of 69,990 patients after the filter below. The paper kept "only the first encounter for each patient as the primary admission" (Strack et al. 2014, Sec. 2.3) for the independence its logistic regression assumes; a hospital scores every discharge and knows a returning patient's earlier stays (USE-10, LEAK-34). In windows of encounter order the first stays are a group that narrows over the years (30-day rate 9.9% in the oldest half, 9.3%, 8.3% and 6.4% in three windows from the newest half), while over every stay it holds at 10.8% to 11.3%. TabArena v0.1 and BeyondArena kept the first stay (`drop_duplicates(subset="patient_nbr")`) with random folds; v0.2 did the same until 2026-11-11 (69,973 rows).
 - We remove encounters that ended in death or discharge to a hospice, as the paper does ("we removed all encounters that resulted in either discharge to a hospice or patient death, to avoid biasing our analysis", Sec. 2.3): a patient who died cannot be readmitted (the 1,084 "Expired" encounters were all "No"), so these rows are not part of the readmission task.
 - We set "?" (race, weight, payer code, specialty, diagnoses) and the "NULL" code of the three ID columns to missing values; pandas also reads the "None" (test not taken) of max_glu_serum and A1Cresult as missing.
 - We reversed the original ordinal encoding for three ID-based features (admission_type_id, discharge_disposition_id, admission_source_id).
 - We created the target from the "readmitted" column following the original task description: "<30" becomes "Yes", everything else "No".
-- We dropped "encounter_id" and "patient_nbr", which are both unique identifiers for each row.
+- We drop "patient_nbr", the patient id. "encounter_id" becomes `time_index` (encounter_id // 6, below) and is dropped otherwise. A patient's earlier stays as features of their own (their count in the file, the last stay's label) would be allowed under the temporal split (USE-10) and are a step to measure separately; the stay already carries the visits of the year before.
 - The other codes for an unknown value ("Not Available" and "Not Mapped" in the ID columns, "Unknown/Invalid" in gender) stay as categories, as IDS_mapping.csv lists them as codes of their own next to "NULL".
-- We drop examide, citoglipton and glimepiride-pioglitazone, which are constant ("No") after the filters above.
-- Anomaly: There is a distribution shift based on the original order. The reason for this might be that the encounters are ordered in some way such that later parts of the data contain different sub-groups than earlier parts. This is also indicated by the fact that the "payer_code" feature is responsible for the shift. This distribution shift vanishes after randomly shuffling the data (as done by default for this and all other datasets used in TabArena).
+- We drop examide and citoglipton, which are constant ("No") after the filters above, and glimepiride-pioglitazone, "Steady" in a single stay and "No" in all others.
+- Time order (2026-11-06 analysis, review issue 1): `encounter_id` is the Health Facts warehouse's running number of encounters (6 times a running number, 6n + 2 for the newest 11% of stays after a change of the id scheme; it ends at 73,977,870, close to the paper's 74,036,643 encounters), and it runs as a calendar across all hospitals: the distance in that number to the same patient's next stay tells a `<30` label from a `>30` one (ROC AUC 0.89), and summed over the file the 30-day scale gives 9.3 years from the first stay to the last, for the source's 1999-2008. Had the hospitals been loaded one after another, 30 days at one hospital would span far fewer numbers. We keep `time_index` = encounter_id // 6 (monotone in encounter_id across the scheme change) as the time column (SPLIT-22). The shift along the order that the earlier notes saw (payer code missing in the oldest fifth, up to 16 diagnoses only in the newest fifth) is time: a change of the warehouse's recording, which the windows now test. The drugs date the order without the label or a returning patient (2026-11-11 check, tenths of the stays in encounter order): troglitazone, withdrawn in March 2000, is in 3 stays, all in the first 0.1%; glipizide-metformin (approved 2002) first appears at 40%, metformin-rosiglitazone (2002) at 85%, metformin-pioglitazone (2005) at 97%; rosiglitazone falls from about 770 stays a tenth to 319 and 222 in the newest two (the 2007 safety warning); and among first stays alone payer code is missing in all of the oldest two tenths and 9% to 19% of the newest four.
+- Hospitals: the 130 hospitals are not recoverable; no copy (UCI, OpenML 4541 and 43874, the R package `readmission`) has a hospital id, both ids interleave the hospitals, and recording habits mark only 14.6% of the stays (SPLIT-24, SPLIT-25). A hospital scores its own next discharges, so the hospital would be a feature, not a reason for another split.
+- Target (2026-11-11, Andrej, review issue 2 A): the source's three-way `readmitted` (`<30`, `>30`, `NO`) stays binary, 30 days against the rest. Only `<30` has one horizon for every stay and is complete to the end of the file (10.5% to 12% in each estimated year); `>30` counts a readmission at any later time, so the oldest stays were followed about nine years longer than the newest. On the first stays the three classes rank `<30` as the binary model does (P(`<30`) ROC AUC 0.644 against 0.643, LightGBM), the order of the levels adds nothing, and any readmission (ROC AUC 0.668) loses its skill in the newest window (log-loss skill 0.006 against 0.059 at random).
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 17 columns are
   ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 13 hold a state outside the
   scale, placed by the curator's rule (missing when the column has no other missing value, else the lowest
@@ -202,25 +205,53 @@ The first 5 of 69,973 rows of the final frame (random rows: the frame is shuffle
 
 ## Splits
 
-Default splits.
+Nine test windows of 5,519 stays in encounter order (`time_index`), walking back from the newest; each trains on
+every earlier stay (50.0% to 94.4% of the rows), so no window trains on less than half of the data (SPLIT-14),
+and nine windows match the 3 x 3 folds a random split of this size gets (SPLIT-15). Each window holds 573 to 645
+readmissions within 30 days (10.4% to 11.7%). The encounter number runs as a calendar over 1999-2008 (curation
+notes), so the windows are later care, but they count stays, not days. No gap: the outcome horizon is a fixed 30
+days, and a 30-day gap before each window changed nothing measurable (untuned LightGBM over every stay, three
+windows of the newest half: 0.652 with, 0.654 without; SPLIT-10). A patient's earlier stays can train a window
+that tests their later ones (22% to 37% of the test stays, the most in the newest window), as when a hospital
+scores a returning patient (USE-10, SPLIT-13). The split stays temporal, not grouped: the cut is in time, and
+the test mixes returning and new patients as a hospital's next discharges do; holding returning patients out
+would test new patients only, which is not the use case. The windows cost little against random folds over every stay (LightGBM
+0.654 against 0.662; on the first stays 0.625 against 0.643). (2026-11-11, Andrej, review issue 1 d.)
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 46,648 to 46,649 rows, test 23,324 to 23,325 rows.
+9 repeat(s) x 1 fold(s) with seed 4267; train 49,672 to 93,824 rows, test 5,519 rows. Prediction horizon: 5519 steps.
 
-| repeat | fold | n_train | n_test |
-|---|---|---|---|
-| 0 | 0 | 46648 | 23325 |
-| 0 | 1 | 46649 | 23324 |
-| 0 | 2 | 46649 | 23324 |
-| 1 | 0 | 46648 | 23325 |
-| 1 | 1 | 46649 | 23324 |
-| 1 | 2 | 46649 | 23324 |
-| 2 | 0 | 46648 | 23325 |
-| 2 | 1 | 46649 | 23324 |
-| 2 | 2 | 46649 | 23324 |
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 93824 | 5519 | 2087 | 61800621 | 61801590 | 73977870 |
+| 1 | 0 | 88305 | 5519 | 2087 | 49239434 | 49239874 | 61800621 |
+| 2 | 0 | 82786 | 5519 | 2087 | 44607098 | 44607381 | 49239434 |
+| 3 | 0 | 77267 | 5519 | 2087 | 40391900 | 40394065 | 44607098 |
+| 4 | 0 | 71748 | 5519 | 2087 | 36160404 | 36160503 | 40391900 |
+| 5 | 0 | 66229 | 5519 | 2087 | 31759243 | 31760927 | 36160404 |
+| 6 | 0 | 60710 | 5519 | 2087 | 28871985 | 28872029 | 31759243 |
+| 7 | 0 | 55191 | 5519 | 2087 | 27022319 | 27023156 | 28871985 |
+| 8 | 0 | 49672 | 5519 | 2087 | 25372012 | 25372516 | 27022319 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows diabetes_130_us`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 61801590 - 73977870 | 5519 | 0.944 | Yes 11.3% (about 626) | Yes 11.6% (about 10,874) | 0.409 | payer_code (0.41), medical_specialty (0.39), admission_type_id (0.27) | 0.002 |
+| 1 | 49239874 - 61800621 | 5519 | 0.889 | Yes 10.4% (about 573) | Yes 11.3% (about 9,974) | 0.465 | payer_code (0.46), medical_specialty (0.39), diag_2 (0.32) | 0.002 |
+| 2 | 44607381 - 49239434 | 5519 | 0.833 | Yes 10.6% (about 583) | Yes 11.8% (about 9,731) | 0.614 | payer_code (0.61), medical_specialty (0.49), discharge_disposition_id (0.33) | 0.0029 |
+| 3 | 40394065 - 44607098 | 5519 | 0.778 | Yes 11.4% (about 629) | Yes 11.5% (about 8,878) | 1.142 | payer_code (1.14), medical_specialty (0.66), discharge_disposition_id (0.31) | 0.0027 |
+| 4 | 36160503 - 40391900 | 5519 | 0.722 | Yes 11.1% (about 615) | Yes 11.6% (about 8,294) | 1.224 | payer_code (1.22), medical_specialty (0.60), admission_source_id (0.36) | 0.0024 |
+| 5 | 31760927 - 36160404 | 5519 | 0.667 | Yes 11.0% (about 605) | Yes 11.7% (about 7,739) | 1.35 | payer_code (1.35), medical_specialty (0.62), discharge_disposition_id (0.44) | 0.0042 |
+| 6 | 28872029 - 31759243 | 5519 | 0.611 | Yes 11.0% (about 609) | Yes 11.6% (about 7,061) | 1.044 | payer_code (1.04), discharge_disposition_id (0.42), admission_source_id (0.37) | 0.0033 |
+| 7 | 27023156 - 28871985 | 5519 | 0.556 | Yes 11.7% (about 645) | Yes 11.7% (about 6,471) | 0.593 | discharge_disposition_id (0.59), admission_source_id (0.49), payer_code (0.47) | 0.0038 |
+| 8 | 25372516 - 27022319 | 5519 | 0.5 | Yes 11.1% (about 615) | Yes 11.5% (about 5,722) | 0.568 | payer_code (0.57), discharge_disposition_id (0.56), admission_source_id (0.54) | 0.0062 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (29 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -228,41 +259,41 @@ Default splits.
 ### Feature summary
 
 <details>
-<summary>Show the table (45 rows)</summary>
+<summary>Show the table (46 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| miglitol | category | 69953 | 99.97 | 3 | Steady, Down, Up |
-| chlorpropamide | category | 69902 | 99.9 | 3 | Steady, Up, Down |
-| acarbose | category | 69773 | 99.71 | 2 | Steady, Up |
-| nateglinide | category | 69482 | 99.3 | 3 | Steady, Up, Down |
-| glyburide-metformin | category | 69477 | 99.29 | 3 | Steady, Up, Down |
-| repaglinide | category | 69056 | 98.69 | 3 | Steady, Up, Down |
-| weight | category | 67185 | 96.02 | 9 | \[75-100), \[50-75), \[100-125), \[125-150), \[25-50), \[0-25), \[150-175), \[175-200),… |
-| max_glu_serum | category | 66625 | 95.22 | 3 | Norm, >200, >300 |
-| glimepiride | category | 66276 | 94.72 | 3 | Steady, Up, Down |
-| rosiglitazone | category | 65312 | 93.34 | 3 | Steady, Up, Down |
-| pioglitazone | category | 64710 | 92.48 | 3 | Steady, Up, Down |
-| glyburide | category | 62198 | 88.89 | 3 | Steady, Up, Down |
-| glipizide | category | 60966 | 87.13 | 3 | Steady, Up, Down |
-| A1Cresult | category | 57128 | 81.64 | 3 | >8, Norm, >7 |
-| metformin | category | 55070 | 78.7 | 3 | Steady, Up, Down |
-| insulin | category | 34258 | 48.96 | 3 | Steady, Down, Up |
-| medical_specialty | category | 33639 | 48.07 | 70 | InternalMedicine, Family/GeneralPractice, Emergency/Trauma, Cardiology, Surgery… |
-| payer_code | category | 30415 | 43.47 | 17 | MC, HM, BC, SP, MD, CP, UN, CM, OG, PO |
-| admission_source_id | category | 4820 | 6.89 | 16 | Emergency Room, Physician Referral, Transfer from a hospital, Transfer from ano… |
-| admission_type_id | category | 4516 | 6.45 | 7 | Emergency, Elective, Urgent, Not Available, Not Mapped, Trauma Center, Newborn |
-| discharge_disposition_id | category | 2474 | 3.54 | 20 | Discharged to home, Discharged/transferred to SNF, Discharged/transferred to ho… |
-| race | category | 1918 | 2.74 | 5 | Caucasian, AfricanAmerican, Hispanic, Other, Asian |
-| diag_3 | category | 1224 | 1.75 | 756 | 250, 401, 276, 428, 414, 427, 272, 496, 403, 599 |
-| diag_2 | category | 293 | 0.42 | 723 | 250, 276, 428, 427, 401, 599, 496, 411, 414, 403 |
-| diag_1 | category | 10 | 0.01 | 694 | 414, 428, 786, 410, 486, 427, 715, 434, 682, 780 |
+| miglitol | category | 99305 | 99.96 | 3 | Steady, Down, Up |
+| chlorpropamide | category | 99258 | 99.91 | 3 | Steady, Up, Down |
+| acarbose | category | 99038 | 99.69 | 3 | Steady, Up, Down |
+| nateglinide | category | 98654 | 99.31 | 3 | Steady, Up, Down |
+| glyburide-metformin | category | 98645 | 99.3 | 3 | Steady, Up, Down |
+| repaglinide | category | 97825 | 98.47 | 3 | Steady, Up, Down |
+| weight | category | 96218 | 96.85 | 9 | \[75-100), \[50-75), \[100-125), \[125-150), \[25-50), \[0-25), \[150-175), \[175-200),… |
+| glimepiride | category | 94221 | 94.84 | 3 | Steady, Up, Down |
+| max_glu_serum | category | 94191 | 94.81 | 3 | Norm, >200, >300 |
+| rosiglitazone | category | 93039 | 93.65 | 3 | Steady, Up, Down |
+| pioglitazone | category | 92088 | 92.7 | 3 | Steady, Up, Down |
+| glyburide | category | 88820 | 89.41 | 3 | Steady, Up, Down |
+| glipizide | category | 86812 | 87.39 | 3 | Steady, Up, Down |
+| A1Cresult | category | 82509 | 83.05 | 3 | >8, Norm, >7 |
+| metformin | category | 79499 | 80.02 | 3 | Steady, Up, Down |
+| medical_specialty | category | 48616 | 48.94 | 72 | InternalMedicine, Emergency/Trauma, Family/GeneralPractice, Cardiology, Surgery… |
+| insulin | category | 46379 | 46.69 | 3 | Steady, Down, Up |
+| payer_code | category | 39398 | 39.66 | 17 | MC, HM, SP, BC, MD, CP, UN, CM, OG, PO |
+| admission_source_id | category | 6570 | 6.61 | 16 | Emergency Room, Physician Referral, Transfer from a hospital, Transfer from ano… |
+| admission_type_id | category | 5207 | 5.24 | 7 | Emergency, Elective, Urgent, Not Available, Not Mapped, Trauma Center, Newborn |
+| discharge_disposition_id | category | 3691 | 3.72 | 20 | Discharged to home, Discharged/transferred to SNF, Discharged/transferred to ho… |
+| race | category | 2234 | 2.25 | 5 | Caucasian, AfricanAmerican, Hispanic, Other, Asian |
+| diag_3 | category | 1419 | 1.43 | 786 | 250, 401, 276, 428, 427, 414, 496, 403, 272, 585 |
+| diag_2 | category | 356 | 0.36 | 747 | 276, 428, 250, 427, 401, 496, 599, 403, 414, 411 |
+| diag_1 | category | 20 | 0.02 | 715 | 428, 414, 786, 410, 486, 427, 491, 715, 682, 780 |
 | gender | category | 0 | 0 | 3 | Female, Male, Unknown/Invalid |
 | age | category | 0 | 0 | 10 | \[70-80), \[60-70), \[50-60), \[80-90), \[40-50), \[30-40), \[90-100), \[20-30), \[10-20… |
 | acetohexamide | category | 0 | 0 | 2 | No, Steady |
 | tolbutamide | category | 0 | 0 | 2 | No, Steady |
 | troglitazone | category | 0 | 0 | 2 | No, Steady |
-| tolazamide | category | 0 | 0 | 2 | No, Steady |
+| tolazamide | category | 0 | 0 | 3 | No, Steady, Up |
 | glipizide-metformin | category | 0 | 0 | 2 | No, Steady |
 | metformin-rosiglitazone | category | 0 | 0 | 2 | No, Steady |
 | metformin-pioglitazone | category | 0 | 0 | 2 | No, Steady |
@@ -270,13 +301,14 @@ Default splits.
 | diabetesMed | category | 0 | 0 | 2 | Yes, No |
 | EarlyReadmission | category | 0 | 0 | 2 | No, Yes |
 | time_in_hospital | int64 | 0 | 0 | 14 | 3, 2, 1, 4, 5, 6, 7, 8, 9, 10 |
-| num_lab_procedures | int64 | 0 | 0 | 116 | 1, 43, 44, 45, 38, 46, 47, 40, 39, 37 |
+| num_lab_procedures | int64 | 0 | 0 | 118 | 1, 43, 44, 45, 38, 40, 46, 41, 42, 39 |
 | num_procedures | int64 | 0 | 0 | 7 | 0, 1, 2, 3, 6, 4, 5 |
-| num_medications | int64 | 0 | 0 | 75 | 13, 12, 11, 15, 10, 14, 16, 9, 17, 8 |
-| number_outpatient | int64 | 0 | 0 | 33 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
-| number_emergency | int64 | 0 | 0 | 18 | 0, 1, 2, 3, 4, 5, 6, 8, 7, 10 |
-| number_inpatient | int64 | 0 | 0 | 13 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
-| number_diagnoses | int64 | 0 | 0 | 16 | 9, 5, 6, 7, 8, 4, 3, 2, 1, 16 |
+| num_medications | int64 | 0 | 0 | 75 | 13, 12, 11, 15, 14, 16, 10, 9, 17, 18 |
+| number_outpatient | int64 | 0 | 0 | 39 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
+| number_emergency | int64 | 0 | 0 | 33 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 10 |
+| number_inpatient | int64 | 0 | 0 | 21 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
+| number_diagnoses | int64 | 0 | 0 | 16 | 9, 5, 8, 7, 6, 4, 3, 2, 1, 16 |
+| time_index | int64 | 0 | 0 | 99343 | 2087, 2623, 2780, 4706, 5959, 6150, 6821, 7095, 9307, 10376 |
 
 </details>
 
@@ -284,91 +316,92 @@ Default splits.
 
 | EarlyReadmission | count | pct |
 |---|---|---|
-| No | 63696 | 91.03 |
-| Yes | 6277 | 8.97 |
+| No | 88029 | 88.61 |
+| Yes | 11314 | 11.39 |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| time_in_hospital | 69973 | 4.27322 | 2.93392 | 1 | 14 |
-| num_lab_procedures | 69973 | 42.876 | 19.8945 | 1 | 132 |
-| num_procedures | 69973 | 1.42554 | 1.75713 | 0 | 6 |
-| num_medications | 69973 | 15.6653 | 8.28725 | 1 | 81 |
-| number_outpatient | 69973 | 0.279536 | 1.06404 | 0 | 42 |
-| number_emergency | 69973 | 0.103912 | 0.51187 | 0 | 42 |
-| number_inpatient | 69973 | 0.176254 | 0.601657 | 0 | 12 |
-| number_diagnoses | 69973 | 7.22374 | 2.00135 | 1 | 16 |
+| time_in_hospital | 99343 | 4.37933 | 2.96841 | 1 | 14 |
+| num_lab_procedures | 99343 | 42.9069 | 19.61 | 1 | 132 |
+| num_procedures | 99343 | 1.33424 | 1.70279 | 0 | 6 |
+| num_medications | 99343 | 15.9791 | 8.09491 | 1 | 81 |
+| number_outpatient | 99343 | 0.369246 | 1.26514 | 0 | 42 |
+| number_emergency | 99343 | 0.198444 | 0.937734 | 0 | 76 |
+| number_inpatient | 99343 | 0.630935 | 1.26043 | 0 | 21 |
+| number_diagnoses | 99343 | 7.40171 | 1.94101 | 1 | 16 |
+| time_index | 99343 | 2.74948e+07 | 1.71089e+07 | 2087 | 7.39779e+07 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (137 rows)</summary>
+<summary>Show the table (139 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| A1Cresult | 1 | &lt;NA> | 57128 | 81.64 |
-| A1Cresult | 2 | >8 | 6239 | 8.92 |
-| A1Cresult | 3 | Norm | 3741 | 5.35 |
-| A1Cresult | 4 | >7 | 2865 | 4.09 |
-| EarlyReadmission | 1 | No | 63696 | 91.03 |
-| EarlyReadmission | 2 | Yes | 6277 | 8.97 |
-| acarbose | 1 | &lt;NA> | 69773 | 99.71 |
-| acarbose | 2 | Steady | 190 | 0.27 |
+| A1Cresult | 1 | &lt;NA> | 82509 | 83.05 |
+| A1Cresult | 2 | >8 | 8137 | 8.19 |
+| A1Cresult | 3 | Norm | 4922 | 4.95 |
+| A1Cresult | 4 | >7 | 3775 | 3.8 |
+| EarlyReadmission | 1 | No | 88029 | 88.61 |
+| EarlyReadmission | 2 | Yes | 11314 | 11.39 |
+| acarbose | 1 | &lt;NA> | 99038 | 99.69 |
+| acarbose | 2 | Steady | 292 | 0.29 |
 | acarbose | 3 | Up | 10 | 0.01 |
-| acetohexamide | 1 | No | 69972 | 100 |
+| acarbose | 4 | Down | 3 | 0 |
+| acetohexamide | 1 | No | 99342 | 100 |
 | acetohexamide | 2 | Steady | 1 | 0 |
-| admission_source_id | 1 | Emergency Room | 37260 | 53.25 |
-| admission_source_id | 2 | Physician Referral | 21746 | 31.08 |
-| admission_source_id | 3 | &lt;NA> | 4820 | 6.89 |
-| admission_source_id | 4 | Transfer from a hospital | 2530 | 3.62 |
-| admission_source_id | 5 | Transfer from another health care facility | 1785 | 2.55 |
-| admission_type_id | 1 | Emergency | 35466 | 50.69 |
-| admission_type_id | 2 | Elective | 13785 | 19.7 |
-| admission_type_id | 3 | Urgent | 12802 | 18.3 |
-| admission_type_id | 4 | &lt;NA> | 4516 | 6.45 |
-| admission_type_id | 5 | Not Available | 3086 | 4.41 |
-| age | 1 | \[70-80) | 17750 | 25.37 |
-| age | 2 | \[60-70) | 15684 | 22.41 |
-| age | 3 | \[50-60) | 12349 | 17.65 |
-| age | 4 | \[80-90) | 11102 | 15.87 |
-| age | 5 | \[40-50) | 6828 | 9.76 |
-| change | 1 | No | 38482 | 55 |
-| change | 2 | Ch | 31491 | 45 |
-| chlorpropamide | 1 | &lt;NA> | 69902 | 99.9 |
-| chlorpropamide | 2 | Steady | 66 | 0.09 |
-| chlorpropamide | 3 | Up | 4 | 0.01 |
+| admission_source_id | 1 | Emergency Room | 55850 | 56.22 |
+| admission_source_id | 2 | Physician Referral | 29168 | 29.36 |
+| admission_source_id | 3 | &lt;NA> | 6570 | 6.61 |
+| admission_source_id | 4 | Transfer from a hospital | 3118 | 3.14 |
+| admission_source_id | 5 | Transfer from another health care facility | 2239 | 2.25 |
+| admission_type_id | 1 | Emergency | 52371 | 52.72 |
+| admission_type_id | 2 | Elective | 18668 | 18.79 |
+| admission_type_id | 3 | Urgent | 18132 | 18.25 |
+| admission_type_id | 4 | &lt;NA> | 5207 | 5.24 |
+| admission_type_id | 5 | Not Available | 4617 | 4.65 |
+| age | 1 | \[70-80) | 25331 | 25.5 |
+| age | 2 | \[60-70) | 22059 | 22.2 |
+| age | 3 | \[50-60) | 17060 | 17.17 |
+| age | 4 | \[80-90) | 16434 | 16.54 |
+| age | 5 | \[40-50) | 9607 | 9.67 |
+| change | 1 | No | 53221 | 53.57 |
+| change | 2 | Ch | 46122 | 46.43 |
+| chlorpropamide | 1 | &lt;NA> | 99258 | 99.91 |
+| chlorpropamide | 2 | Steady | 78 | 0.08 |
+| chlorpropamide | 3 | Up | 6 | 0.01 |
 | chlorpropamide | 4 | Down | 1 | 0 |
-| diabetesMed | 1 | Yes | 53293 | 76.16 |
-| diabetesMed | 2 | No | 16680 | 23.84 |
-| diag_1 | 1 | 414 | 5209 | 7.44 |
-| diag_1 | 2 | 428 | 3876 | 5.54 |
-| diag_1 | 3 | 786 | 3040 | 4.34 |
-| diag_1 | 4 | 410 | 2774 | 3.96 |
-| diag_1 | 5 | 486 | 2362 | 3.38 |
-| diag_2 | 1 | 250 | 4996 | 7.14 |
-| diag_2 | 2 | 276 | 4494 | 6.42 |
-| diag_2 | 3 | 428 | 4218 | 6.03 |
-| diag_2 | 4 | 427 | 3445 | 4.92 |
-| diag_2 | 5 | 401 | 3077 | 4.4 |
-| diag_3 | 1 | 250 | 8980 | 12.83 |
-| diag_3 | 2 | 401 | 6549 | 9.36 |
-| diag_3 | 3 | 276 | 3302 | 4.72 |
-| diag_3 | 4 | 428 | 2753 | 3.93 |
-| diag_3 | 5 | 414 | 2646 | 3.78 |
-| discharge_disposition_id | 1 | Discharged to home | 44317 | 63.33 |
-| discharge_disposition_id | 2 | Discharged/transferred to SNF | 8784 | 12.55 |
-| discharge_disposition_id | 3 | Discharged/transferred to home with home health service | 8289 | 11.85 |
-| discharge_disposition_id | 4 | &lt;NA> | 2474 | 3.54 |
-| discharge_disposition_id | 5 | Discharged/transferred to another short term hospital | 1539 | 2.2 |
-| gender | 1 | Female | 37229 | 53.2 |
-| gender | 2 | Male | 32741 | 46.79 |
+| diabetesMed | 1 | Yes | 76719 | 77.23 |
+| diabetesMed | 2 | No | 22624 | 22.77 |
+| diag_1 | 1 | 428 | 6663 | 6.71 |
+| diag_1 | 2 | 414 | 6550 | 6.59 |
+| diag_1 | 3 | 786 | 4015 | 4.04 |
+| diag_1 | 4 | 410 | 3448 | 3.47 |
+| diag_1 | 5 | 486 | 3383 | 3.41 |
+| diag_2 | 1 | 276 | 6589 | 6.63 |
+| diag_2 | 2 | 428 | 6459 | 6.5 |
+| diag_2 | 3 | 250 | 6051 | 6.09 |
+| diag_2 | 4 | 427 | 4892 | 4.92 |
+| diag_2 | 5 | 401 | 3722 | 3.75 |
+| diag_3 | 1 | 250 | 11466 | 11.54 |
+| diag_3 | 2 | 401 | 8241 | 8.3 |
+| diag_3 | 3 | 276 | 4953 | 4.99 |
+| diag_3 | 4 | 428 | 4412 | 4.44 |
+| diag_3 | 5 | 427 | 3785 | 3.81 |
+| discharge_disposition_id | 1 | Discharged to home | 60234 | 60.63 |
+| discharge_disposition_id | 2 | Discharged/transferred to SNF | 13954 | 14.05 |
+| discharge_disposition_id | 3 | Discharged/transferred to home with home health service | 12902 | 12.99 |
+| discharge_disposition_id | 4 | &lt;NA> | 3691 | 3.72 |
+| discharge_disposition_id | 5 | Discharged/transferred to another short term hospital | 2128 | 2.14 |
+| gender | 1 | Female | 53454 | 53.81 |
+| gender | 2 | Male | 45886 | 46.19 |
 | gender | 3 | Unknown/Invalid | 3 | 0 |
-| glimepiride | 1 | &lt;NA> | 66276 | 94.72 |
-| glimepiride | 2 | Steady | 3331 | 4.76 |
-| glimepiride | 3 | Up | 230 | 0.33 |
+| glimepiride | 1 | &lt;NA> | 94221 | 94.84 |
+| glimepiride | 2 | Steady | 4609 | 4.64 |
 
-(77 more rows not shown)
+(79 more rows not shown)
 
 </details>
 
@@ -383,4 +416,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:868bc433ae3b7c7ea75982395169b4245eed30665218e6f05d47eab1998f61cd` |
+| stale | yes: the definition now gives checksum `v2:ceb3a71ceb61c329edbd97d66b48053ded372f73b44002b37716b10daff5443d` |

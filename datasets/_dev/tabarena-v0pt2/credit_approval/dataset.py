@@ -21,7 +21,7 @@ class CreditApproval(AbstractCuratedDataset):
         ),
         predicted=("Its class, + or - (44% are +), usually read as approved or rejected; the source gives no meaning."),
         known=(
-            "Fifteen attributes of the applicant and the application, six numeric and nine categorical, whose names "
+            "Fourteen attributes of the applicant and the application, six numeric and eight categorical, whose names "
             "and values were replaced by symbols to keep the data confidential."
         ),
         split=(
@@ -58,7 +58,7 @@ class CreditApproval(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Anonymized",)
+    data_tags = ("ForcedIIDFromTemporal", "Anonymized")
     download_description = """
         We get the credit screening data from UCI.
 
@@ -69,6 +69,8 @@ class CreditApproval(AbstractCuratedDataset):
 
         - Provenance: `crx.data` of UCI Credit Approval (id 27, Quinlan 1987; the source is confidential, so lender and country are unknown). The same 690 applications are UCI's Statlog (Australian Credit Approval) (id 143) with recoded values and filled-in missing values; the Japanese Credit Screening data (id 28, 125 rows) in the same zip is a different dataset we do not use.
         - We encode A14 as numeric, following the description of it being a continuous feature.
+        - We drop `A4`, a relabelled copy of `A5`: u is always g (519 rows), y always p (163), l always gg (2), and the same 6 rows are missing in both. Statlog's recoding of these applications (Australian Credit) also lacks this column.
+        - Time basis: ForcedIIDFromTemporal: credit card applications decided by a bank over a period Quinlan does not state; `crx.data` has no date or id and is ordered in blocks of one class (assembly, not time), so random applications stand in for the applications to come. A dated release would allow a split by application date.
     """
 
     # Task
@@ -107,13 +109,14 @@ class CreditApproval(AbstractCuratedDataset):
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
         df["A14"] = pd.to_numeric(df["A14"], errors="coerce")
+        # A4 (u, y, l) maps one to one onto A5 (g, p, gg), missing in the same rows: an exact copy.
+        df = df.drop(columns=["A4"])
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
             categorical=[
                 "A1",
-                "A4",
                 "A5",
                 "A6",
                 "A7",

@@ -35,12 +35,12 @@ class ApsFailure(AbstractCuratedDataset):
         ),
         split=(
             "Random trucks, so the test data stands for new trucks like those in training. The challenge held out its"
-            " last 16,000 rows, which may be later in time; the file has no dates to check."
+            " last 16,000 rows, which the data do not show to be later in time; the files have no dates."
         ),
         changes="We merge the challenge's training and test files and split at random.",
         fit="approximate",
         fit_reason=(
-            "The challenge's test rows may be later readings; with no dates to check, a random split stands in for a "
+            "Failures are undated, so a random split stands in for a "
             "split by time (the dataset is tagged as a forced random split of temporal data). When the data were read"
             " relative to the failure is not stated, so whether the model warns before a breakdown or diagnoses after"
             " it is unclear."
@@ -88,6 +88,11 @@ class ApsFailure(AbstractCuratedDataset):
         - Anomaly: we cannot determine the data types of the features.
         - Anomaly: some features are bins of histograms (see original data description).
         - Metric: the challenge's cost matrix, scored from probabilities by the least expected cost rather than on hard labels (AI choice, 2026-10-21).
+        - Time basis: ForcedIIDFromTemporal: failed trucks read out over a period Scania does not state; the release has
+          no date, and the challenge's two files are not shown to be two periods (near copies across them have the
+          larger counters in the test file in 2,237 pairs, the smaller in 2,220), while which component fails can move
+          with season and fleet, so random trucks stand in for the trucks to come. A dated release (as
+          `scania_component_x`) would allow a split by date.
     """
 
     # Task

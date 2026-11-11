@@ -115,6 +115,11 @@ class CreditG(AbstractCuratedDataset):
             "dependants, guarantors, telephone and whether a foreign worker."
         ),
         split="Random applicants of the same bank and period.",
+        changes=(
+            "We read the corrected release (UCI 573, Grömping 2019) in place of Statlog's file: its code table "
+            "relabels 8 of the 20 features that the Statlog table mislabels, and it corrects 57 coded values and an "
+            "amount or an age in 10 loans."
+        ),
         fit="approximate",
         fit_reason=(
             "The features are what a bank knows at the application, but the source gives no dates and no definition "
@@ -159,7 +164,6 @@ class CreditG(AbstractCuratedDataset):
         mkdir -p local-data-warehouse/credit_g/ && wget -P local-data-warehouse/credit_g/ "https://archive.ics.uci.edu/static/public/573/south+german+credit+update.zip" && unzip -o "local-data-warehouse/credit_g/south+german+credit+update.zip" -d local-data-warehouse/credit_g/
     """
     curation_comments = """
-        - We reversed the original ordinal encoding.
         - Source (2026-10-31, the curator's marks): UCI 573 South German Credit, the corrected version of Statlog's
           german.data (Groemping 2019, "South German Credit Data: Correcting a Widely Used Data Set"; the UCI page:
           Statlog "suffers from severe errors in the coding information"). The same 1,000 applicants and the same
@@ -173,11 +177,15 @@ class CreditG(AbstractCuratedDataset):
           2" or "3 or more".
         - Metric: the Statlog cost matrix on probabilities, each applicant predicted as the class of least expected cost (the AI's choice; the curator was unsure and noted TabArena's threshold tuning, 2026-10-21).
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
-          categories in the order of the source's codebook (`ORDINAL_LEVELS`)9 columns are ordered categories
-          (`ORDINAL_LEVELS`): the balances, employment, instalment rate, residence, property, number of credits, job and
-          people liable. "no checking account", "unknown / no savings account" and "unknown / no property" are states
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`): the balances, employment, instalment
+          rate, residence, property, number of credits, job and people liable. "no checking account", "unknown / no savings account" and "unknown / no property" are states
           outside their scales: missing, by the curator's rule, as the data has no other missing value.
+        - Time basis: ForcedIIDFromTemporal: consumer credits granted from 1973 to 1975, each judged good or bad over
+          its own term (4 to 72 months, no stated horizon); neither UCI 573's file (sorted by class) nor Statlog's (no
+          order) keeps a grant date, so random loans stand in for later applicants. A dated release would allow a
+          split by grant year.
     """
+    data_tags = ("ForcedIIDFromTemporal",)
 
     # Task
     target = "good_or_bad_customer"

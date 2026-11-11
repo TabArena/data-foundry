@@ -5,7 +5,13 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary, set_missing
+
+LATE_COUNTERS = [
+    "NumberOfTime30-59DaysPastDueNotWorse",
+    "NumberOfTime60-89DaysPastDueNotWorse",
+    "NumberOfTimes90DaysLate",
+]
 
 
 class GiveMeSomeCredit(AbstractCuratedDataset):
@@ -30,13 +36,14 @@ class GiveMeSomeCredit(AbstractCuratedDataset):
         fit_reason=(
             "The features are a credit file at the scoring date and the outcome follows within two years, as when a "
             "lender scores an applicant. The test borrowers come from the same undated period, so the task does not "
-            "measure change over time."
+            "measure change over time; the random split is tagged as forced from temporal."
         ),
     )
 
     # Dataset
     unique_name = "give_me_some_credit"
     domain = "finance"
+    data_tags = ("ForcedIIDFromTemporal",)
     sources = (
         Source(
             role="publication",
@@ -62,6 +69,20 @@ class GiveMeSomeCredit(AbstractCuratedDataset):
     """
     curation_comments = """
         - We renamed the target feature and its value to be more descriptive.
+        - The three late-payment counters hold the undocumented codes 96 and 98 (every real count is at most 17) for
+          the same 269 borrowers, all three at once; we set them to missing, so these are the only rows missing there.
+          The coded borrowers are real and distinct (215 distinct rows, 55% in distress against 6.7%), the code is
+          present in the competition's test file too, and it does not give the outcome away (alone it ranks at AUC
+          0.51).
+        - One age of 0 is set to missing (impossible value, row kept).
+        - Source quirks kept: the debt ratio holds the debt amount instead of a ratio where the monthly income is
+          missing (29,731 rows); the used share of credit limits exceeds 1 in 3,321 rows (up to 50,708), and the value
+          0.9999999 recurs in 10,256 rows.
+        - Time basis: ForcedIIDFromTemporal: borrowers of an unnamed lender scored at dates the competition does not
+          state (before about September 2009, as the two-year windows closed before the release of September 2011), each
+          followed for two years; the release keeps no date and the row id is no time order (a model tells low from high
+          ids at ROC AUC 0.502), so random borrowers stand in for the borrowers to come. A dated release would allow a
+          split by scoring date.
     """
 
     # Task
@@ -83,4 +104,6 @@ class GiveMeSomeCredit(AbstractCuratedDataset):
         target_feature = "FinancialDistressNextTwoYears"
         df = df.rename(columns={"SeriousDlqin2yrs": target_feature})
         df[target_feature] = df[target_feature].map({1: "Yes", 0: "No"})
+        # undocumented codes on the count axis, and an impossible age (CLEAN-14, CLEAN-11)
+        df = set_missing(df, {**{c: [96, 98] for c in LATE_COUNTERS}, "age": [0]})
         return df

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cardiotocography
 container_format: 2
-checksum: v2:9217c249835d9bf5d4fcd84b4be5c04da9746756371a7c141da23d6ee114dabe
+checksum: v2:bdc6baaecca9e8ad466ad043f9b102e71bd09c0708b93b8a40b7820caa1404fe
 build:
   uuid: 01a111fc-7d1e-7b12-8cc7-298d2fc12820
   checksum: v2:732dddb0e814a5736c664898ca5254d54ea242cee222a20e2e5a126a2636a504
@@ -19,11 +19,12 @@ build:
     polars: 1.41.1
 build_stale: true
 data:
-  n_rows: 2126
+  n_rows: 2070
   n_features: 22
   dtypes:
-    category: 3
-    float64: 21
+    category: 2
+    datetime64[ns]: 1
+    float64: 20
   n_test_dataset_rows: null
 task:
   target: NSP
@@ -31,43 +32,43 @@ task:
   metric: log_loss
   metric_origin: fallback
   scoring_columns: null
-  split_regime: grouped_non_iid
+  split_regime: temporal_non_iid
   stratify_on: NSP
-  time_on: null
-  group_on: patient_id
-  group_labels: per_sample
+  time_on: exam_date
+  group_on: null
+  group_labels: null
   group_time_on: null
-  grouping:
-    prediction_unit: row
-    aggregation: null
-    context: none
-    n_groups: 176
-    test_groups_per_fold:
-      min: 56
-      max: 62
+  grouping: null
 splits:
-  n_repeats: 10
-  n_folds: 3
+  n_repeats: 3
+  n_folds: 1
   random_state: 4267
-  time_horizon: null
-  time_horizon_unit: null
+  time_horizon: 9
+  time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 1229
-    max: 1521
+    min: 1234
+    max: 1846
   n_test:
-    min: 605
-    max: 897
+    min: 224
+    max: 307
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - dataset_constant_column
+  warnings: []
   infos:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
-  accepted: {}
+  accepted:
+    meta_time_horizon_mismatch: The exams fall on 47 dates and the data ends on 1998-06-06,
+      so the newest nine-month window (from 1998-04-01) holds exams of 6 April to
+      6 June 1998 only; the windows are nine calendar months.
+    splits_test_class_missing: 'The July 1997 to March 1998 window holds no suspect
+      segment (normal 255, pathologic 50): the experts'' suspect share falls from
+      14% of the segments in 1996 to 1% in 1997, the shift the date split is chosen
+      to test (2026-11-11, Andrej). Every train side holds all three classes, and
+      log loss is defined on the classes a fold holds.'
 decisions: []
 ---
 
@@ -75,9 +76,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `NSP`, scored with `log_loss` on grouped splits by `patient_id`. 2,126 rows and 22 features. Source: UCI (2010).
+Multiclass classification of `NSP`, scored with `log_loss` on temporal splits by `exam_date`. 2,070 rows and 22 features. Source: UCI (2010).
 
-Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9217c249835d9bf5d4fcd84b4be5c04da9746756371a7c141da23d6ee114dabe`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bdc6baaecca9e8ad466ad043f9b102e71bd09c0708b93b8a40b7820caa1404fe`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -85,17 +86,17 @@ Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` 
 
 **Use case.** For example, during fetal monitoring, software flags the recording segments that expert obstetricians would call suspect or pathologic, so that a clinician looks at them.
 
-**One row.** One segment of a fetal cardiotocography exam (fetal heart rate and uterine contractions): 2,126 segments of 352 exam files, overlapping within an exam. The place and period are not stated in the definition.
+**One row.** One segment of a fetal cardiotocography exam (fetal heart rate and uterine contractions): 2,070 segments of 335 exam files from January 1995 to June 1998, overlapping within an exam. The place is not stated in the definition.
 
 **Predicted.** The fetal state three expert obstetricians agreed on: normal (78%), suspect (14%) or pathologic (8%).
 
 **Known at prediction time.** Measures computed automatically from the segment: baseline heart rate, accelerations, fetal movements, contractions, four kinds of decelerations, short- and long-term variability, and the shape of the heart-rate histogram.
 
-**What the test data stands for.** Whole patients are held out, so the test data stands for new women's exams. The patient is inferred from the file names (176 patients for 352 files), so a woman filed under two names could be on both sides.
+**What the test data stands for.** Later exams are held out: three nine-month windows from October 1996 to June 1998, each trained on all earlier exams, as monitoring software trained on past exams meets new ones. An exam's segments share its date, so they stay on one side.
 
-**Our changes to the source.** We add the inferred patient key and split by it, since the segments of one exam overlap. We drop the exam dates, the segment positions, the 10-class pattern label and the other expert labels.
+**Our changes to the source.** We keep the exam date and split by it, and drop the 56 segments whose date is an unset clock (1980). We drop the file names, the segment positions, the constant column DR, the 10-class pattern label and the other expert labels.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The measures come from the segment itself and the label is the experts' reading of it, as a monitoring aid would see them. The label is a judgement, not the baby's outcome, and the patient key is a heuristic.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The measures come from the segment itself and the label is the experts' reading of it, as a monitoring aid would see them. The label is a judgement, not the baby's outcome, and its class mix changes between 1996 and 1997 (suspect 14% to 1%, pathologic 4% to 13%) for a reason the source does not give, so the newest windows test a shift.
 
 ## Files in this folder
 
@@ -104,7 +105,7 @@ Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/cardiotocography.md`](../../../../curation/records/cardiotocography.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/cardiotocography.md`](../../../../curation/records/cardiotocography.md)
 - The original source: <https://doi.org/10.24432/C51S4N>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -133,16 +134,15 @@ Only curators run `build`, when the dataset ships.
 | year | 2010 |
 | domain | medical & healthcare |
 | license | CC BY 4.0 |
-| data_tags | Non-IID, Grouped |
+| data_tags | Non-IID, Temporal |
 | reference | campos2010cardiotocography |
-| rows x columns | 2,126 x 24 |
+| rows x columns | 2,070 x 23 |
 | task.target | NSP |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
-| task.split_regime | grouped_non_iid |
+| task.split_regime | temporal_non_iid |
 | task.stratify_on | NSP |
-| task.group_on | patient_id |
-| task.group_labels | per_sample |
+| task.time_on | exam_date |
 
 **Metric**
 
@@ -154,12 +154,12 @@ Only curators run `build`, when the dataset ships.
 | reason | UCI page defines no task metric; the SisPorto 2.0 paper describes the analysis program and expert agreement, not a prediction benchmark. |
 
 <details>
-<summary>Feature types: 1 categorical, 2 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 0 categorical, 2 ordinal, 0 string, 1 datetime</summary>
 
-- categorical (1): `patient_id`
+- categorical (0): none
 - ordinal (2): `Tendency (left asymmetric < symmetric < right asymmetric)`, `NSP (normal < suspect < pathologic)`
 - string (0): none
-- datetime (0): none
+- datetime (1): `exam_date`
 
 </details>
 
@@ -180,23 +180,26 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 2,126 rows of the final frame (random rows: the frame is shuffled); 12 of 24 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 2,070 rows of the final frame (the oldest rows: the frame is sorted by `exam_date`); 12 of 23 columns, the target first. Cells are cut at 40 characters.
 
 | NSP | LB | AC | FM | UC | ASTV | MSTV | ALTV | MLTV | DL | DS | DP |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| normal | 128 | 5 | 11 | 5 | 26 | 2 | 0 | 8.2 | 5 | 0 | 1 |
-| normal | 126 | 5 | 0 | 4 | 27 | 1.3 | 0 | 5.6 | 0 | 0 | 0 |
-| normal | 122 | 0 | 0 | 5 | 24 | 1.5 | 0 | 10.6 | 3 | 0 | 0 |
-| normal | 120 | 5 | 0 | 11 | 50 | 1.6 | 7 | 8.1 | 2 | 0 | 0 |
-| normal | 147 | 9 | 11 | 3 | 71 | 0.7 | 0 | 9.5 | 0 | 0 | 0 |
+| normal | 130 | 4 | 273 | 3 | 19 | 2.3 | 0 | 8.7 | 3 | 0 | 1 |
+| normal | 130 | 6 | 557 | 6 | 29 | 1.7 | 0 | 7.8 | 5 | 0 | 1 |
+| normal | 144 | 5 | 5 | 1 | 36 | 1.4 | 0 | 11.5 | 0 | 0 | 0 |
+| normal | 133 | 0 | 5 | 2 | 29 | 1.3 | 0 | 15.6 | 0 | 0 | 0 |
+| normal | 120 | 9 | 42 | 0 | 33 | 2.7 | 0 | 10.4 | 0 | 0 | 0 |
 
 ## Curation notes
 
 We use the data from UCI and the 3 class problem of predicting NSP as it is more medical relevant.
 
-- We transform the file names into patient IDs to indicate the sub-group of samples recorded from the same patient.
-- Each row is a segment (sample `b` to `e`) of one exam file, and 1,706 of the 1,774 consecutive segment pairs within a file overlap, so the rows of a file must stay together. The patient ID above the file is our guess, no source documents it: we strip the trailing number of a named file (`Aast_1` ... `Aast_14` -> `Aast`), each numbered file (`S0001027.dat`) stays alone. This gives 176 IDs for 352 files; 61 IDs merge 2 to 14 files and 10 span exam dates 50 to 1,139 days apart, so a stem is likely initials and may hold two women or two pregnancies. Merging too much only makes the split stricter; a woman under two IDs (similar stems such as `Mcslr`/`Mcslrc`, or a numbered file) would put her separate exams on both sides, but never overlapping segments.
-- The raw data has dates and the start and end index of the recording. We drop these as they are not relevant for the predictive task and would not be available for test samples.
+- Each row is a segment (sample `b` to `e`) of one exam file, and 1,706 of the 1,774 consecutive segment pairs within a file overlap, so the rows of a file must stay together. Each file has one exam date, so a split by date keeps them together.
+- Split by exam date (2026-11-11, Andrej; SPLIT-32, SPLIT-14): the "Raw Data" sheet dates every exam, January 1995 to June 1998, and the labels shift between 1996 and 1997 (suspect 14% to 1% of the segments, pathologic 4% to 13%). Monitoring software meets later exams, so we keep `Date` as `exam_date` and test three nine-month windows (details in the splits comment). Trained on earlier exams, untuned LightGBM's log loss on the two newest windows is 1.825 and 1.608, against 0.498 and 0.444 when trained on as many segments of all years (Slurm job 1365902). Whether the shift lies in the experts' reading, in which exams were sent, or in the program's measures is not documented.
+- 56 segments of 17 files (name stems `Mrsa`, `Moar`, `Mag`, `Caft`, `Cs`) carry the date 1980-01-04, an unset clock; we drop them, since they have no usable date.
+- The earlier split by a patient key inferred from the file names (176 keys for 352 files) is replaced by the date split, and the key leaves the frame. An earlier exam of a test segment's patient stem is in training for 20% of the oldest window's segments and 0% to 1% of the other two; files merged under one stem agree on the label no more than chance (55% against 57%), so this leaks nothing.
+- We drop the start and end index of the segment within the recording, which describe the file, not the fetal state.
+- `DR` (repetitive decelerations) is 0 in every row, so we drop it (constant column).
 - We drop all other columns that represent the label.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
@@ -209,113 +212,71 @@ We use the data from UCI and the 3 class problem of predicting NSP as it is more
 
 ## Splits
 
-Default splits.
+Monitoring software trained on past exams meets later ones: three test windows of nine months by exam date, newest first, April to June 1998 (224 segments of 14 files; normal 182, suspect 5, pathologic 37), July 1997 to March 1998 (305 segments of 26 files; normal 255, suspect 0, pathologic 50) and October 1996 to June 1997 (307 segments of 27 files; normal 252, suspect 46, pathologic 9). Each trains on all earlier dated exams, 89%, 74% and 60% of the 2,070 segments, without a gap: the label is the experts' reading of the stored trace, available when the exam is classified. The exams fall on 47 dates; the windows hold 9, 9 and 4 of them, and the newest ends early, because the data ends on 1998-06-06. The labels shift between 1996 and 1997 (suspect 14% to 1%, pathologic 4% to 13%), so the newest windows hold few or no suspect segments and largely test the shift: untuned LightGBM's log loss is 1.825 and 1.608 on the two newest windows, against 0.498 and 0.444 trained on as many segments of all years (Slurm job 1365902). An exam's segments overlap and share its date, so they stay on one side.
 
-10 repeat(s) x 3 fold(s) with seed 4267; train 1,229 to 1,521 rows, test 605 to 897 rows.
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,234 to 1,846 rows, test 224 to 307 rows. Prediction horizon: 9 months.
 
-<details>
-<summary>Show all 30 splits</summary>
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 1846 | 224 | 1995-01-08 00:00:00 | 1998-03-23 00:00:00 | 1998-04-06 00:00:00 | 1998-06-06 00:00:00 |
+| 1 | 0 | 1541 | 305 | 1995-01-08 00:00:00 | 1997-03-20 00:00:00 | 1997-09-10 00:00:00 | 1998-03-23 00:00:00 |
+| 2 | 0 | 1234 | 307 | 1995-01-08 00:00:00 | 1996-09-26 00:00:00 | 1996-10-03 00:00:00 | 1997-03-20 00:00:00 |
 
-| repeat | fold | n_train | n_test |
-|---|---|---|---|
-| 0 | 0 | 1427 | 699 |
-| 0 | 1 | 1504 | 622 |
-| 0 | 2 | 1321 | 805 |
-| 1 | 0 | 1432 | 694 |
-| 1 | 1 | 1370 | 756 |
-| 1 | 2 | 1450 | 676 |
-| 2 | 0 | 1427 | 699 |
-| 2 | 1 | 1472 | 654 |
-| 2 | 2 | 1353 | 773 |
-| 3 | 0 | 1426 | 700 |
-| 3 | 1 | 1497 | 629 |
-| 3 | 2 | 1329 | 797 |
-| 4 | 0 | 1521 | 605 |
-| 4 | 1 | 1229 | 897 |
-| 4 | 2 | 1502 | 624 |
-| 5 | 0 | 1464 | 662 |
-| 5 | 1 | 1476 | 650 |
-| 5 | 2 | 1312 | 814 |
-| 6 | 0 | 1392 | 734 |
-| 6 | 1 | 1439 | 687 |
-| 6 | 2 | 1421 | 705 |
-| 7 | 0 | 1497 | 629 |
-| 7 | 1 | 1438 | 688 |
-| 7 | 2 | 1317 | 809 |
-| 8 | 0 | 1406 | 720 |
-| 8 | 1 | 1412 | 714 |
-| 8 | 2 | 1434 | 692 |
-| 9 | 0 | 1424 | 702 |
-| 9 | 1 | 1476 | 650 |
-| 9 | 2 | 1352 | 774 |
 
-</details>
+### The test windows
 
-## Group structure
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows cardiotocography`.
 
-One group is a patient, as far as the file names identify one; its rows are segments of her CTG exams, each classified by three expert obstetricians (UCI). Each segment is one prediction, made from that segment alone. The segments of one exam overlap, so an exam's rows must stay together; the patient key above the exam is a heuristic on the file names (curation notes).
-
-| field | value |
-|---|---|
-| group column | `patient_id` |
-| labels | per_sample |
-| order inside a group | none |
-| prediction unit | row |
-| known about a group when predicting | none |
-
-| statistic | value |
-|---|---|
-| groups | 176 |
-| rows per group (min / median / max) | 1 / 11.0 / 54 |
-| largest group | 2.5% of the rows |
-| test groups per fold | 56 to 62 |
-| groups of two or more rows with a single label | 62.1% |
-| nearest neighbour in the same group | 68.0% of the rows (chance: 0.8%) |
-| label variance explained by the group | 0.50 (shuffled groups: 0.08) |
-
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | Apr 1998 - Jun 1998 | 224 | 0.892 | normal 81.2%, pathologic 16.5%, suspect 2.2% | normal 77.5%, pathologic 7.3%, suspect 15.2% | 3.712 | ASTV (3.71), LB (2.36), MLTV (1.26) | 0 |
+| 1 | Sep 1997 - Mar 1998 | 305 | 0.744 | normal 83.6%, pathologic 16.4%, suspect 0.0% | normal 76.3%, pathologic 5.5%, suspect 18.2% | 5.04 | ASTV (5.04), ALTV (2.31), LB (1.52) | 0 |
+| 2 | Oct 1996 - Mar 1997 | 307 | 0.596 | normal 82.1%, pathologic 2.9%, suspect 15.0% | normal 74.9%, pathologic 6.2%, suspect 19.0% | 0.889 | LB (0.89), UC (0.70), Mode (0.47) | 0 |
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (29 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_constant_column`: 1 constant column(s) (1 distinct non-null value): ['DR']. (hint: Drop them unless the constant is meaningful for the task.)
 - **info** `dataset_duplicate_rows`: 14 exact duplicate row(s) (0.7% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 2 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+
+Accepted on purpose:
+
+- `meta_time_horizon_mismatch`: The exams fall on 47 dates and the data ends on 1998-06-06, so the newest nine-month window (from 1998-04-01) holds exams of 6 April to 6 June 1998 only; the windows are nine calendar months.
+- `splits_test_class_missing`: The July 1997 to March 1998 window holds no suspect segment (normal 255, pathologic 50): the experts' suspect share falls from 14% of the segments in 1996 to 1% in 1997, the shift the date split is chosen to test (2026-11-11, Andrej). Every train side holds all three classes, and log loss is defined on the classes a fold holds.
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (24 rows)</summary>
+<summary>Show the table (23 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Tendency | category | 0 | 0 | 3 | symmetric, right asymmetric, left asymmetric |
 | NSP | category | 0 | 0 | 3 | normal, suspect, pathologic |
-| patient_id | category | 0 | 0 | 176 | 6be4bb9797f6, 8ca98716a316, a8e224f4ea68, cbb8f049c20b, 7b2d930bb3f0, fd828194e… |
-| LB | float64 | 0 | 0 | 48 | 133.0, 130.0, 122.0, 138.0, 125.0, 128.0, 120.0, 142.0, 144.0, 132.0 |
-| AC | float64 | 0 | 0 | 22 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| FM | float64 | 0 | 0 | 96 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 5.0, 7.0, 8.0, 10.0 |
-| UC | float64 | 0 | 0 | 19 | 0.0, 3.0, 4.0, 1.0, 2.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| ASTV | float64 | 0 | 0 | 75 | 60.0, 58.0, 65.0, 64.0, 63.0, 61.0, 51.0, 62.0, 22.0, 25.0 |
-| MSTV | float64 | 0 | 0 | 57 | 0.8, 0.5, 1.3, 0.4, 0.7, 0.9, 0.6, 1.2, 1.5, 1.0 |
-| ALTV | float64 | 0 | 0 | 87 | 0.0, 1.0, 2.0, 5.0, 4.0, 3.0, 8.0, 6.0, 12.0, 10.0 |
-| MLTV | float64 | 0 | 0 | 249 | 0.0, 7.1, 6.7, 6.5, 5.2, 9.5, 6.8, 7.2, 8.5, 5.6 |
+| exam_date | datetime64\[ns\] | 0 | 0 | 47 | 1995-02-22 00:00:00, 1996-05-02 00:00:00, 1996-07-18 00:00:00, 1996-10-03 00:00… |
+| LB | float64 | 0 | 0 | 47 | 133.0, 122.0, 130.0, 138.0, 125.0, 128.0, 120.0, 142.0, 144.0, 132.0 |
+| AC | float64 | 0 | 0 | 22 | 0.0, 1.0, 3.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
+| FM | float64 | 0 | 0 | 95 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 7.0, 5.0, 8.0, 10.0 |
+| UC | float64 | 0 | 0 | 19 | 0.0, 3.0, 4.0, 5.0, 1.0, 2.0, 6.0, 7.0, 8.0, 9.0 |
+| ASTV | float64 | 0 | 0 | 75 | 60.0, 65.0, 63.0, 58.0, 64.0, 61.0, 51.0, 62.0, 22.0, 25.0 |
+| MSTV | float64 | 0 | 0 | 57 | 0.8, 1.3, 0.7, 0.4, 0.5, 0.9, 0.6, 1.2, 1.5, 1.0 |
+| ALTV | float64 | 0 | 0 | 86 | 0.0, 1.0, 2.0, 5.0, 4.0, 3.0, 8.0, 6.0, 12.0, 7.0 |
+| MLTV | float64 | 0 | 0 | 247 | 0.0, 6.7, 7.1, 5.2, 6.5, 9.5, 8.5, 5.6, 7.2, 6.8 |
 | DL | float64 | 0 | 0 | 15 | 0.0, 1.0, 2.0, 4.0, 3.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | DS | float64 | 0 | 0 | 2 | 0.0, 1.0 |
 | DP | float64 | 0 | 0 | 5 | 0.0, 1.0, 2.0, 3.0, 4.0 |
-| DR | float64 | 0 | 0 | 1 | 0.0 |
-| Width | float64 | 0 | 0 | 154 | 39.0, 102.0, 27.0, 31.0, 98.0, 90.0, 83.0, 22.0, 96.0, 42.0 |
-| Min | float64 | 0 | 0 | 109 | 50.0, 52.0, 71.0, 120.0, 60.0, 68.0, 67.0, 103.0, 51.0, 62.0 |
+| Width | float64 | 0 | 0 | 154 | 39.0, 102.0, 27.0, 31.0, 90.0, 98.0, 83.0, 96.0, 22.0, 42.0 |
+| Min | float64 | 0 | 0 | 107 | 50.0, 52.0, 71.0, 120.0, 60.0, 68.0, 67.0, 103.0, 51.0, 62.0 |
 | Max | float64 | 0 | 0 | 86 | 157.0, 171.0, 158.0, 156.0, 159.0, 152.0, 154.0, 178.0, 165.0, 153.0 |
-| Nmax | float64 | 0 | 0 | 18 | 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 0.0, 8.0, 9.0 |
-| Nzeros | float64 | 0 | 0 | 9 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 8.0 |
-| Mode | float64 | 0 | 0 | 88 | 133.0, 150.0, 136.0, 142.0, 148.0, 144.0, 129.0, 143.0, 125.0, 126.0 |
-| Mean | float64 | 0 | 0 | 103 | 143.0, 144.0, 135.0, 141.0, 140.0, 132.0, 145.0, 133.0, 136.0, 147.0 |
-| Median | float64 | 0 | 0 | 95 | 146.0, 142.0, 137.0, 145.0, 147.0, 151.0, 141.0, 134.0, 149.0, 143.0 |
-| Variance | float64 | 0 | 0 | 133 | 1.0, 0.0, 2.0, 3.0, 4.0, 5.0, 8.0, 6.0, 7.0, 9.0 |
+| Nmax | float64 | 0 | 0 | 18 | 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 0.0, 9.0 |
+| Nzeros | float64 | 0 | 0 | 8 | 0.0, 1.0, 2.0, 3.0, 4.0, 8.0, 7.0, 5.0 |
+| Mode | float64 | 0 | 0 | 88 | 133.0, 136.0, 142.0, 150.0, 148.0, 144.0, 143.0, 129.0, 125.0, 126.0 |
+| Mean | float64 | 0 | 0 | 100 | 143.0, 135.0, 144.0, 141.0, 140.0, 132.0, 145.0, 133.0, 136.0, 147.0 |
+| Median | float64 | 0 | 0 | 94 | 146.0, 142.0, 145.0, 137.0, 147.0, 141.0, 151.0, 134.0, 149.0, 140.0 |
+| Variance | float64 | 0 | 0 | 132 | 1.0, 0.0, 3.0, 2.0, 4.0, 5.0, 8.0, 6.0, 7.0, 9.0 |
 
 </details>
 
@@ -323,38 +284,37 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | NSP | count | pct |
 |---|---|---|
-| normal | 1655 | 77.85 |
-| suspect | 295 | 13.88 |
-| pathologic | 176 | 8.28 |
+| normal | 1613 | 77.92 |
+| suspect | 285 | 13.77 |
+| pathologic | 172 | 8.31 |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (21 rows)</summary>
+<summary>Show the table (20 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| LB | 2126 | 133.304 | 9.84084 | 106 | 160 |
-| AC | 2126 | 2.72248 | 3.56085 | 0 | 26 |
-| FM | 2126 | 7.2413 | 37.1253 | 0 | 564 |
-| UC | 2126 | 3.65992 | 2.84709 | 0 | 23 |
-| ASTV | 2126 | 46.9901 | 17.1928 | 12 | 87 |
-| MSTV | 2126 | 1.33278 | 0.883241 | 0.2 | 7 |
-| ALTV | 2126 | 9.84666 | 18.3969 | 0 | 91 |
-| MLTV | 2126 | 8.18763 | 5.62825 | 0 | 50.7 |
-| DL | 2126 | 1.57008 | 2.49923 | 0 | 16 |
-| DS | 2126 | 0.00329257 | 0.0572998 | 0 | 1 |
-| DP | 2126 | 0.126058 | 0.464361 | 0 | 4 |
-| DR | 2126 | 0 | 0 | 0 | 0 |
-| Width | 2126 | 70.4459 | 38.9557 | 3 | 180 |
-| Min | 2126 | 93.5795 | 29.5602 | 50 | 159 |
-| Max | 2126 | 164.025 | 17.9442 | 122 | 238 |
-| Nmax | 2126 | 4.0682 | 2.94939 | 0 | 18 |
-| Nzeros | 2126 | 0.323612 | 0.706059 | 0 | 10 |
-| Mode | 2126 | 137.452 | 16.3813 | 60 | 187 |
-| Mean | 2126 | 134.611 | 15.5936 | 73 | 182 |
-| Median | 2126 | 138.09 | 14.4666 | 77 | 186 |
-| Variance | 2126 | 18.8081 | 28.9776 | 0 | 269 |
+| LB | 2070 | 133.089 | 9.63085 | 106 | 160 |
+| AC | 2070 | 2.70628 | 3.53149 | 0 | 26 |
+| FM | 2070 | 7.23623 | 37.4499 | 0 | 564 |
+| UC | 2070 | 3.68647 | 2.85068 | 0 | 23 |
+| ASTV | 2070 | 47.0536 | 17.178 | 12 | 87 |
+| MSTV | 2070 | 1.33309 | 0.879722 | 0.2 | 7 |
+| ALTV | 2070 | 9.77681 | 18.2447 | 0 | 91 |
+| MLTV | 2070 | 8.14464 | 5.60447 | 0 | 50.7 |
+| DL | 2070 | 1.6029 | 2.51852 | 0 | 16 |
+| DS | 2070 | 0.00338164 | 0.0580675 | 0 | 1 |
+| DP | 2070 | 0.129469 | 0.470134 | 0 | 4 |
+| Width | 2070 | 70.1362 | 38.7592 | 3 | 180 |
+| Min | 2070 | 93.5807 | 29.3211 | 50 | 158 |
+| Max | 2070 | 163.717 | 17.9218 | 122 | 238 |
+| Nmax | 2070 | 4.04444 | 2.92585 | 0 | 18 |
+| Nzeros | 2070 | 0.320773 | 0.671525 | 0 | 8 |
+| Mode | 2070 | 137.129 | 16.3252 | 60 | 187 |
+| Mean | 2070 | 134.242 | 15.4775 | 73 | 182 |
+| Median | 2070 | 137.765 | 14.3493 | 77 | 186 |
+| Variance | 2070 | 18.9126 | 29.1525 | 0 | 269 |
 
 </details>
 
@@ -365,17 +325,17 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| NSP | 1 | normal | 1655 | 77.85 |
-| NSP | 2 | suspect | 295 | 13.88 |
-| NSP | 3 | pathologic | 176 | 8.28 |
-| Tendency | 1 | symmetric | 1115 | 52.45 |
-| Tendency | 2 | right asymmetric | 846 | 39.79 |
-| Tendency | 3 | left asymmetric | 165 | 7.76 |
-| patient_id | 1 | 6be4bb9797f6 | 54 | 2.54 |
-| patient_id | 2 | 8ca98716a316 | 53 | 2.49 |
-| patient_id | 3 | a8e224f4ea68 | 40 | 1.88 |
-| patient_id | 4 | cbb8f049c20b | 37 | 1.74 |
-| patient_id | 5 | 7b2d930bb3f0 | 36 | 1.69 |
+| NSP | 1 | normal | 1613 | 77.92 |
+| NSP | 2 | suspect | 285 | 13.77 |
+| NSP | 3 | pathologic | 172 | 8.31 |
+| Tendency | 1 | symmetric | 1094 | 52.85 |
+| Tendency | 2 | right asymmetric | 815 | 39.37 |
+| Tendency | 3 | left asymmetric | 161 | 7.78 |
+| exam_date | 1 | 1995-02-22 00:00:00 | 240 | 11.59 |
+| exam_date | 2 | 1996-05-02 00:00:00 | 160 | 7.73 |
+| exam_date | 3 | 1996-07-18 00:00:00 | 101 | 4.88 |
+| exam_date | 4 | 1996-10-03 00:00:00 | 92 | 4.44 |
+| exam_date | 5 | 1996-05-03 00:00:00 | 88 | 4.25 |
 
 </details>
 
@@ -390,4 +350,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9217c249835d9bf5d4fcd84b4be5c04da9746756371a7c141da23d6ee114dabe` |
+| stale | yes: the definition now gives checksum `v2:bdc6baaecca9e8ad466ad043f9b102e71bd09c0708b93b8a40b7820caa1404fe` |

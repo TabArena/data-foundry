@@ -161,8 +161,17 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         - We removed text data from the "time" feature to make it numeric.
         - We drop constant columns.
         - We fixed a typo in the feature names.
+        - `direction_opp` dropped (2026-11-11, Andrej, review issue 1; CLEAN-5): it is 1 minus `direction_same` in all
+          12,684 rows, a copy of the same flag. The nested distance flags `toCoupon_GEQ15min` and `toCoupon_GEQ25min`
+          stay separate (CLEAN-13).
         - Anomaly: the data has many binned numeric features that are treated as categorical features with text describing the bins.
         - Anomaly: the numeric features in the dataset are low-cardinality (<25)
+        - Time basis: Timeless: each row is one scenario of a fixed questionnaire, answered in the same sitting as the
+          profile (Wang et al. 2017, Sec. 6.2), so nothing in a row arrives later and no answer is in the future of
+          another. The file has no timestamp; its order is the questionnaire versions (Coffee House coupons fall from
+          38-43% of the first three deciles to 13.5% of the last), and the acceptance drift that remains after the
+          scenario cells are removed is 3-4 percentage points over the file (Spearman -0.034, 2026-11-06). Not tested: a
+          later cohort of drivers, and whether a stated yes becomes a redemption.
         - We simulate a cold-start model (as used before a recommender has any history for a user): predict whether a person accepts a coupon from their profile, stated habits and the scenario, for people not seen in training. The data is a survey (Wang et al. 2017, Sec. 6.2): each MTurk respondent first gave demographics and preferences, then answered hypothetical driving scenarios (22 per person in the file, 19 fixed questionnaire versions), all in one sitting and without timestamps, so there is no real interaction history for a warm-start setting. A random split puts about two-thirds of each person's other answers in train, which lets a model learn that person's tendency to say yes (ROC AUC 0.83 random vs 0.76 grouped; leak audit 2026-09-24).
         - The respondent id is not shipped with the data. The raw file lists each respondent's answers as a consecutive block with identical first-part answers, so a block of the same profile is one respondent: 587 blocks, 517 of them with 22 rows, against 652 accepted surveys in the paper, so a few blocks likely merge two adjacent respondents with identical profiles, which only makes the grouping stricter. The paper reports out-of-sample AUC from 5-fold testing (Table 3) without saying whether folds were split by respondent; a random split would be a warm start.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 8 columns are ordered
@@ -195,6 +204,8 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         """,
     )
 
+    data_tags = ("Timeless",)
+
     # Splits
     splits_comment = """
         Grouped splits on the survey respondent: all answers of one person stay on one side, so the task is a cold-start
@@ -221,8 +232,8 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
             .apply(lambda x: int(x.replace("AM", "")) if "AM" in x else int(x.replace("PM", "")) + 12)
             .astype(int)
         )
-        # Drop constant columns
-        df = df.drop(columns=["toCoupon_GEQ5min"])
+        # Drop the constant column, and `direction_opp`, which is 1 - `direction_same` in every row (CLEAN-5)
+        df = df.drop(columns=["toCoupon_GEQ5min", "direction_opp"])
         df = df.rename(columns={"passanger": "passenger"})
         # the codebook's words for its codes (CLEAN-12)
         df = decode(df, CODE_LABELS)
@@ -254,6 +265,5 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
                 "toCoupon_GEQ15min",
                 "toCoupon_GEQ25min",
                 "direction_same",
-                "direction_opp",
             ],
         )

@@ -63,7 +63,7 @@ class HrAnalytics(AbstractCuratedDataset):
         known=(
             "City (coded) and its development index, gender, education level and field, university enrolment, years "
             "of experience and whether it is relevant, current employer's size and type, years between the previous "
-            "and the current job, and training hours completed."
+            "and the current job."
         ),
         split="Random enrollees, so the test data stands for other enrollees of the same trainings.",
         changes=(
@@ -72,8 +72,7 @@ class HrAnalytics(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "The label has no stated source or timing (a stated intention or an actual search), and training hours "
-            "completed are only known some time after sign-up. The use case is plausible, but the data does not show "
+            "The label has no stated source or timing (a stated intention or an actual search). The use case is plausible, but the data does not show "
             "when each fact was recorded."
         ),
     )
@@ -109,7 +108,7 @@ class HrAnalytics(AbstractCuratedDataset):
             name="the Kaggle copy of 2020",
         ),
     )
-    data_tags = ("Spatial",)
+    data_tags = ("Spatial", "ForcedIIDFromTemporal")
     download_description = """
         We download the train file of Analytics Vidhya's Student DataFest 2018: The Data Supremacy (DataHack, 6 to 22
         July 2018) from the link on the contest page; the page of JanataHack: HR Analytics (May 2020) links the same
@@ -134,15 +133,20 @@ class HrAnalytics(AbstractCuratedDataset):
           a new job" from "the current credentials/demographics/experience"; how and when the label was recorded is
           not stated.
         - We drop `enrollee_id`, unique per row; JanataHack's rules forbid it as a feature.
-        - `training_hours` is the training completed, so it is known only some time after sign-up. Kept, as in the
-          contest.
+        - `training_hours` is dropped (2026-11-09, Andrej, review issue 3): it is the training completed, known only
+          some time after sign-up; alone it scores ROC AUC 0.495, and LightGBM scores 0.644 without it against 0.642
+          with it.
         - Features as published: city and the answers stay categories, including `experience`, `company_size` and
           `last_new_job` (values such as "<1", ">20", "10/49", "never"). The target is renamed `LookingForJobChange`
           and maps 0/1 to No/Yes.
         - Missing values stay missing (company type 27%, company size 26%, gender 22%, major 15%).
-        - Duplicates: without the ID, 45 rows repeat an earlier row and 17 feature vectors carry both labels. They
-          belong to different enrollees and stay.
-        - IID split: one row per enrollee and no dates.
+        - Duplicates: without the ID and `training_hours`, 1,988 rows (10.8%) repeat an earlier row and 319 share their
+          features with a row of the other label. They belong to different enrollees with the same coarse answers and
+          stay.
+        - Time basis: ForcedIIDFromTemporal: enrollees signed up over a period the hackathon does not state, and the
+          release has no date; `enrollee_id` numbers the train and test files together and is not shown to follow
+          sign-up time (training hours flat along it), and windows in its order score as random folds do (ROC AUC 0.645
+          against 0.646, untuned LightGBM). A dated release would allow a split by sign-up date.
         - Note: the task probes flag `no_spread` (ROC AUC LightGBM 0.625, linear 0.622, random forest 0.619; LightGBM
           +0.012 over random forest, paired SE 0.006). We keep the task: a real signal with a low ceiling (Lennart,
           2026-10-14).
@@ -174,8 +178,9 @@ class HrAnalytics(AbstractCuratedDataset):
         return pd.read_csv(raw_dir / RAW_FILE)
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
-        # the enrollee ID is unique per row; JanataHack's rules forbid it as a feature
-        df = drop_columns(raw, ["enrollee_id"])
+        # the enrollee ID is unique per row; JanataHack's rules forbid it as a feature;
+        # training_hours is the training completed after sign-up (review issue 3)
+        df = drop_columns(raw, ["enrollee_id", "training_hours"])
         # data dictionary: "0 - Not looking for job change, 1 - Looking for a job change"
         df = df.rename(columns={"target": self.target})
         df[self.target] = df[self.target].map({1: "Yes", 0: "No"})

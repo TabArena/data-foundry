@@ -48,7 +48,8 @@ a ValueError in :func:`score`; a fold whose truth leaves the metric undefined (o
 gives NaN, and a group that cannot tell models apart is left out by a stated rule.
 
 The custom metrics (``kind="custom"``): ``cost_matrix``, ``precision_at_k``, ``average_precision_at_k``, ``rmspe``,
-``gini_top_capture``, ``normalized_gini``, ``normalized_weighted_gini``, ``ordered_lorenz_gini``,
+``net_revenue_at_cost``, ``gini_top_capture``, ``normalized_gini``, ``normalized_weighted_gini``,
+``ordered_lorenz_gini``,
 ``rescaled_mean_tweedie_deviance``, ``weighted_pearsonr``, ``mean_group_pearsonr``, ``mean_group_normalized_rmse``,
 ``hierarchical_balanced_accuracy``, ``gini_stability``, ``par_k``, ``mean_group_top_k_overlap`` and
 ``normalized_early_detection_utility``. Each :class:`MetricDef` holds its formula, its reference, its prediction kind,
@@ -882,6 +883,29 @@ def _rmspe(y_true, y_pred, **_):
     return float(np.sqrt(np.mean(((y[keep] - p[keep]) / y[keep]) ** 2)))
 
 
+# net_revenue_at_cost: act on every row whose predicted value exceeds the cost of acting
+
+
+def _check_net_revenue_at_cost(params: Mapping[str, Any]) -> None:
+    _require(params, "cost")
+    cost = params["cost"]
+    if isinstance(cost, bool) or not isinstance(cost, (int, float)) or not math.isfinite(cost) or cost < 0:
+        raise ValueError(f"net_revenue_at_cost cost is a finite number >= 0, got {cost!r}.")
+
+
+def _net_revenue_at_cost(y_true, y_pred, *, params, **_):
+    """Mean over the rows of (y - cost) where the predicted value is over the cost, 0 elsewhere.
+
+    The rows acted on are those with ``p > cost`` (strictly: a prediction equal to the cost is not acted on), so the
+    score does not depend on the row order. Divided by all scored rows, not by the rows acted on: the net revenue per
+    row of the fold, comparable across folds of different sizes (MET-7).
+    """
+    cost = float(params["cost"])
+    y = np.asarray(y_true, dtype=float)
+    act = np.asarray(y_pred, dtype=float) > cost
+    return float(np.where(act, y - cost, 0.0).sum() / len(y))
+
+
 # gini_top_capture: the AmEx default-prediction metric
 
 
@@ -1445,6 +1469,20 @@ _CUSTOM_METRICS = (
         _rmspe,
         "sqrt(mean(((y - p) / y)^2)) over the rows with y != 0",
         "https://www.kaggle.com/competitions/rossmann-store-sales/overview/evaluation",
+    ),
+    _custom(
+        "net_revenue_at_cost",
+        _REG,
+        "value",
+        _HIGHER,
+        _net_revenue_at_cost,
+        "mean over rows of (y - cost) * [p > cost]: act on (mail) every row whose predicted value exceeds the cost of "
+        "acting; the source's total net revenue divided by the number of scored rows",
+        "KDD Cup 1998 evaluation rules, https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98doc.txt: "
+        "'Sum (the actual donation amount - $0.68) over all records for which the expected revenue (or predicted value "
+        "of the donation) is over $0.68'",
+        params={"cost": "the cost of acting on one row (the KDD Cup 1998: $0.68 per mailed piece)"},
+        check_params=_check_net_revenue_at_cost,
     ),
     _custom(
         "gini_top_capture",

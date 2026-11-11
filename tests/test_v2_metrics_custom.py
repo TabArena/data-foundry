@@ -1035,6 +1035,64 @@ def test_normalized_early_detection_utility_by_hand() -> None:
     assert value == pytest.approx((7.5 - 5 * 0.05 + 10) / 17.5)
 
 
+# --- net_revenue_at_cost -------------------------------------------------------------------------------------------
+
+
+def kdd98_net_revenue(donation, predicted, cost=0.68) -> float:
+    """The KDD Cup 1998 evaluation rule, transcribed from cup98doc.txt ("Evaluation rules": "Sum (the actual donation
+    amount - $0.68) over all records for which the expected revenue (or predicted value of the donation) is over
+    $0.68"), https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98doc.txt. The cup published no code.
+    """
+    total = 0.0
+    for d, p in zip(donation, predicted, strict=True):
+        if p > cost:
+            total += d - cost
+    return total
+
+
+@pytest.mark.parametrize("seed", [0, 1, 2])
+def test_net_revenue_at_cost_equals_the_cup_rule_per_row(seed: int) -> None:
+    rng = np.random.default_rng(seed)
+    n = 2000 + 500 * seed
+    gave = rng.random(n) < 0.05
+    y = np.where(gave, rng.gamma(2.0, 8.0, n), 0.0)  # zero-inflated gift amounts, as in the cup's data
+    p = np.round(rng.gamma(0.5, 1.5, n), 2)  # rounded: many predictions tie, some at exactly the cost
+    p[: n // 10] = 0.68
+    spec = _spec("net_revenue_at_cost", "regression", params={"cost": 0.68})
+    assert score(spec, y, p) == pytest.approx(kdd98_net_revenue(y, p) / n, rel=1e-12, abs=1e-15)
+    shuffled = rng.permutation(n)
+    assert score(spec, y[shuffled], p[shuffled]) == pytest.approx(score(spec, y, p), rel=1e-12)
+
+
+def test_net_revenue_at_cost_by_hand() -> None:
+    spec = _spec("net_revenue_at_cost", "regression", params={"cost": 0.68})
+    # mailed: rows 1 (p 5 > 0.68, gift 10), 2 (p 1, gift 0) and 4 (p 0.69, gift 20); row 3 (p 0.68) is not over the
+    # cost and row 0 (p 0) is not mailed: (10 - 0.68) + (0 - 0.68) + (20 - 0.68) = 27.96, over 5 rows = 5.592
+    assert score(spec, [0, 10, 0, 50, 20], [0, 5, 1, 0.68, 0.69]) == pytest.approx(5.592, rel=1e-12)
+    # mailing nobody scores 0, mailing everybody the mean gift minus the cost
+    assert score(spec, [0, 10, 0, 50, 20], [0, 0, 0, 0, 0]) == 0.0
+    assert score(spec, [0, 10, 0, 50, 20], [9, 9, 9, 9, 9]) == pytest.approx(16 - 0.68, rel=1e-12)
+
+
+def test_net_revenue_at_cost_refuses_bad_params() -> None:
+    for params in ({}, {"cost": -1}, {"cost": float("nan")}, {"cost": "0.68"}, {"cost": True}):
+        with pytest.raises(ValueError, match="cost"):
+            Metric.source("net_revenue_at_cost", reference="https://example.org", params=params)
+
+
+def test_net_revenue_at_cost_is_fast_on_one_million_rows() -> None:
+    import time  # noqa: PLC0415
+
+    rng = np.random.default_rng(0)
+    n = 1_000_000
+    y = np.where(rng.random(n) < 0.05, rng.gamma(2.0, 8.0, n), 0.0)
+    p = rng.gamma(0.5, 1.5, n)
+    spec = _spec("net_revenue_at_cost", "regression", params={"cost": 0.68})
+    start = time.perf_counter()
+    score(spec, y, p)
+    assert time.perf_counter() - start < 2.0
+
+
 # --- the registry and the checks -----------------------------------------------------------------------------------
 
 
@@ -1050,6 +1108,7 @@ def test_every_custom_metric_documents_itself() -> None:
                 "mean_group_normalized_rmse",
                 "mean_group_pearsonr",
                 "mean_group_top_k_overlap",
+                "net_revenue_at_cost",
                 "normalized_early_detection_utility",
                 "normalized_gini",
                 "normalized_weighted_gini",
@@ -1076,6 +1135,7 @@ _CHECK_PARAMS = {
     "average_precision_at_k": {"k_fraction": 0.1},
     "par_k": {"cutoff": 5000},
     "mean_group_top_k_overlap": {"k": 2},
+    "net_revenue_at_cost": {"cost": 0.68},
     "rescaled_mean_tweedie_deviance": {"power": 1.5, "min_prediction": 1e-3},
 }
 

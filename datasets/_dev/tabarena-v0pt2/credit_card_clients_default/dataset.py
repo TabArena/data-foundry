@@ -88,7 +88,24 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `MARRIAGE`, `SEX`.
+        - Exception to CLEAN-14 (2026-11-04, Andrej): the six repayment status columns `PAY_0` and `PAY_2` to `PAY_6`
+          keep the codes -2 and 0 as numbers, though the UCI codebook defines only -1 (paid duly) and 1 to 9 (months
+          of delay). The fact that sets them apart: they are each column's most common values (-2, -1 and 0 hold
+          9-16%, 19-20% and 49-57% of the rows; -2 and 0 together 58-72%), so the rule (an undocumented code is
+          missing) would blank most of each column and merge two states into one missing value. Their common reading
+          is -2 card not used that month, -1 paid in full, 0 minimum paid with the balance revolving, an order of rising
+          use of credit below the months of delay (default rate by September's code: -2 13%, -1 17%, 0 13%, 1 month
+          late 34%, 2 months 69%). The code 1 (one month late) occurs in 12.3% of the rows for September but in at
+          most 0.1% for the five earlier months, where 2 is 9-13%: the earlier months record a short delay
+          differently, alike in both classes.
+        - Time basis: DelayedTarget: one extract of 30,000 card holders of one Taiwanese bank, scored after the
+          September 2005 statement with the same six months of history for every client (April to September 2005); the
+          target is default on the next month's payment, one month closed for every client. Every client was scored at
+          the same statement and its outcome is the same month's payment, so no test row is later than a training row
+          and the random split is IID. The client ID is not a time order (the first two quarters of IDs cannot be told
+          apart, ROC AUC 0.504). The credit limit and the demographics carry no date. Not tested: a later month.
     """
+    data_tags = ("DelayedTarget",)
 
     # Task
     target = "DefaultOnPaymentNextMonth"

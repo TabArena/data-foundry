@@ -31,7 +31,7 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
             "stated aim)."
         ),
         row=(
-            "One item listing on Mercari, a shopping app for second-hand goods (1,482,486 listings); the place and "
+            "One item listing on Mercari, a shopping app for second-hand goods (1,481,612 listings); the place and "
             "period are not stated."
         ),
         predicted="The price the item sold for, in US dollars, on a log scale.",
@@ -40,8 +40,10 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
             "free-text description."
         ),
         split=(
-            "Random listings, as in the competition, so the test data stands for other listings of the same period."
+            "Random listings, as in the competition: a split forced from temporal, since the listings came in over a "
+            "period but carry no dates, so the test data stands for other listings of the same period, not later ones."
         ),
+        changes="We drop the 874 listings priced $0, a price no sale has.",
         fit="direct",
         fit_reason=(
             "Everything the model sees is what a seller enters when listing, and the label is the price a suggestion "
@@ -52,6 +54,7 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
     # Dataset
     unique_name = "mercari_price_suggestion"
     domain = "business & marketing"
+    data_tags = ("ForcedIIDFromTemporal",)
     sources = (
         Source(
             role="publication",
@@ -90,6 +93,18 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 1 unordered codes carry their words: `shipping`.
+        - Price $0 (2026-11-09, Andrej): we drop the 874 listings priced $0 (0.06%), in `_clean` before the log, which
+          leaves 1,481,612 listings. The competition calls the price "the price that the item was sold for", no sale is
+          free, and no other listing is below $3. A public script of the competition drops them the same way
+          (`train[train['price'] > 0]`, https://gist.github.com/pjankiewicz/8b0e9ea3238252c169574c524da67cde). Kept,
+          each would sit about 8.4 squared log units from a typical prediction and carry about 2.6% of a good model's
+          squared error, for a price no listing explains.
+        - Time basis: ForcedIIDFromTemporal: listings made over a period the host does not state, each price known at
+          the sale; the app prices listings made later. Product mentions date the extract to 2017 before September
+          (Galaxy S8 729 listings, fidget spinners 2,637, the iPhone 8 10 against 9,281 for the iPhone 7), but no
+          listing has a date and train_id is a shuffle (every dated product flat across its tenths) (Time: Lost). Leak
+          test across the split: 280 listings (0.02%) repeat another's fields and text, 0.01% of test rows have such a
+          twin in training. Listing dates would allow a split by time.
     """
 
     # Task
@@ -110,6 +125,8 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
+        # a price of $0 is no sale price: the 874 listings priced $0 go (curation notes, 2026-11-09)
+        df = df[df["price"] > 0].copy()
         df["price"] = np.log1p(df["price"])
         df = df.drop(columns=["train_id"])
         df["item_description"] = df["item_description"].replace("No description yet", np.nan)

@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    decode,
+)
 
 
 class LabourInspectionCompliance(AbstractCuratedDataset):
@@ -28,14 +37,19 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
         ),
         known=(
             "The organisation's industry, county, age and number of employees, whether it is in the VAT and employer "
-            "registers, its accounting type and currency, the checklist's text, and several hundred figures, many "
-            "from its accounts, that the source does not describe one by one."
+            "registers, its accounting type and currency, the checklist's text, the organisation's accounts (one "
+            "set, year not stated), several hundred figures that the source does not describe one by one, and the "
+            "inspection's place in the export's order."
         ),
-        split="Random inspections, so training and test inspections come from the same period.",
+        split=(
+            "Three windows of the export's row order, which follows time coarsely; each tests later inspections on "
+            "earlier ones."
+        ),
         fit="approximate",
         fit_reason=(
-            "Inspections are targeted ahead of time, but the data has no dates, so the split cannot keep later "
-            "inspections for testing; the meaning of most numbers is not stated."
+            "Inspections are targeted ahead of time and the split keeps later inspections for testing, but the data "
+            "has no dates and its row order resolves time only to about 14 months; the accounts are of an unknown "
+            "year; the meaning of most numbers is not stated."
         ),
     )
 
@@ -59,7 +73,7 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Spatial", "ForcedIIDFromTemporal")
+    data_tags = ("Spatial",)
     download_description = """
         Get the data from dataverse.
 
@@ -74,11 +88,34 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
         - We remove two rows with missing values for IsRegisteredVATregister, as these seem to be data artifact given the data state.
         - The data has spatial information (County).
         - There are lot of undescribed numeric values. Thus, we do some general purpose preprocessing and drop all columns with less than 5 not nan values
-        - The data has no dates, although the task is temporal and the inspections span January 2012 to June 2019 (per the Dataverse description). Without the inspection dates, we must treat the task as IID.
+        - Time order: the data has no dates (the inspections span January 2012 to June 2019, per the Dataverse
+          description), but the raw file is in a coarse time order: among rows of one organisation (identical
+          register and account fields), the later row has the higher business age in 92% of pairs more than 40,000
+          rows apart; 67 of the 228 checklists used 30 times or more stop before the last four tenths of the file and
+          50 first appear after its first three tenths. We keep the raw row number as `file_row` and split by it
+          (2026-11-11, Andrej, review issue 2 b).
+        - Account figures: one set per organisation, attached to all its inspections (8,888 organisations inspected
+          at two or more business ages carry identical figures, 33,168 rows; first and last inspection a median 35
+          months apart); the paper says the register keeps no history and gives no fiscal year; the payroll matches
+          the employee count of the first inspection as well as of the last (Spearman 0.67 and 0.65). Kept: they add
+          0.004 precision at half (untuned LightGBM, random folds), no more where they must come from another year
+          (0.003) than for organisations seen once (0.004) (2026-11-11, Andrej, review issue 3 B).
+        - Repeats kept: 497 rows (0.8%) equal another row in every column, the outcome included, and 179 rows (0.3%)
+          equal another row in every feature with the other outcome. The release has no date or case number to tell a
+          re-inspection from a double entry; a copy lies a median 61 rows from its original, so under the windows of
+          file order only 3 to 11 test rows per window find their copy in training (0.03% to 0.10%). Each copy counts
+          twice in training and, inside a test window, twice in the score; the copies found a breach in 57.7%
+          (287 of 497) against 74.3% of all rows, so the double count tilts the class balance slightly (dropped, the
+          breach share would move from 74.28% to 74.41%) (2026-11-11, Andrej, review issue 1 A).
         - Metric: precision at the median score (k = 50% of the test fold), which the paper calls the most important statistic; the same section calls accuracy or AUC also important, and the median cut is the paper's choice, not a stated inspection capacity (curator call, Lennart 2026-10-21).
         - The target (2026-11-01, CLEAN-25): `NonCompliance` ships its classes as words (1 is the event). Binary: "Yes"
           is the event, the class that sorts second, so it is the metrics' positive class.
     """
+
+    accepted_check_warnings = {
+        "dataset_sequential_id_column": "`file_row` is the export's row order, the dataset's declared time column "
+        "(review issue 2 b); it is the only time the release keeps and cannot be dropped.",
+    }
 
     # Task
     target = "NonCompliance"
@@ -94,8 +131,26 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
         params={"k_fraction": 0.5},
     )
 
+    # Splits
+    splits_comment = """
+        Three test windows of 10,605 inspections (a sixth of the rows) in the raw file's order, walking back from the
+        newest; each trains on all earlier rows (50%, 67% and 83%), so no window trains on less than half of the data
+        (SPLIT-14). The order is the export's and coarse: it resolves time only to about 10,000 rows (some 14 months
+        of the 7.5 years), so the windows are a sixth of the rows each, wider than that resolution, and a test window
+        is later on average, not row by row. The windows follow the file's own order: the checklists of one visit lie
+        a median 1,211 rows apart, so a window's start cuts some visits (0.3% to 1.0% of test rows have another row of
+        their visit in training, against 4.0% on random folds). An inspection's result is known when it ends, so there
+        is no gap (2026-11-11, Andrej, review issue 2 b).
+    """
+    temporal = Temporal(
+        on="file_row",
+        splits=TemporalSplits(window=10605, unit="rows", n_windows=3, min_train_fraction=0.5),
+    )
+
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "data.csv", sep=";")
+        # the export's row order, a coarse time order (see the curation notes); kept before any row is dropped
+        df["file_row"] = range(len(df))
         return df
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:

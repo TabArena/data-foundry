@@ -18,7 +18,7 @@ class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
         row=("One Mercedes-Benz car that passed the test bench, ordered by its ID (4,204 cars; dates not stated)."),
         predicted="The time the car took to pass testing, in seconds (72 to 170, mean about 101).",
         known=(
-            "The car's options, anonymized, as three coded categories and several hundred yes/no options (the "
+            "The car's options, anonymized, as six coded categories and several hundred yes/no options (the "
             "source's examples are four-wheel drive or a head-up display)."
         ),
         split=(
@@ -27,8 +27,8 @@ class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
             "cars."
         ),
         changes=(
-            "We order the cars by ID and test on later ones; we drop the coded category that marks time groups, other"
-            " coded categories of unknown meaning, 4 unusual rows and one outlier testing time."
+            "We order the cars by ID and test on later ones; we drop the coded category that marks time groups, a "
+            "near-constant coded category with its 4 unusual rows, and one outlier testing time."
         ),
         fit="approximate",
         fit_reason=(
@@ -74,9 +74,8 @@ class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
           Why it may leave (CLEAN-11, amended 2026-10-21): it is a single extreme target in the training period only. The car took 265.3 s against a next highest of 169.9 s (mean 100.7 s, sd 12.7 s), and it is car 883 of 4,209 in ID order, among the oldest cars that every test window trains on (the oldest window trains on the first 1,324 cars of the cleaned data). The competition host does not name the row; it leaves as the field's expert default for a single extreme testing time (CLEAN-11 allows the source's words or the experts' default, case by case; Lennart, 2026-10-21).
         - We drop X5 as it leaks time group information in temporal splits (besides having a full categorical-value distribution shift with a temporal split).
         - We tread the ID as a time_index.
-        - Some of the other constructed features (X0-X8) may leak across time as well. We remove all of them for which we do not have an explanation from experts on Kaggle.
         - There are exactly 4 rows that have value that is not equal to "d" in column "X4". This indicates some kind of sub-group or data different. Given the lack of semantics and anonymity, we cannot parse the meaning of "X4". Thus, to avoid this being an indicator of data leakage, we remove these rows and subsequently drop "X4" as well.
-        - Of the coded categories (X0-X8) we keep X0, X1 and X2, which likely use only their own row, and drop X8, whose values seem drawn from the distribution of all rows, and X3 and X6, about which nothing is known. The 0/1 options from X10 on stay, except X11, which is constant (11 other constant options, such as X93, stay).
+        - Of the coded categories (X0-X8) we keep X0, X1, X2, X3, X6 and X8 and drop only X5 (time marker) and X4 (near constant). X3, X6 and X8 were once dropped "to be safe"; a check on the competition's file (2026-11-06) found no time pattern in them: their link to the ID decile (Cramér's V, shuffled IDs in brackets) is X3 0.176 (0.047), X6 0.055 (0.050), X8 0.086 (0.076), close to the kept X0 to X2 (0.108 to 0.138 against 0.078 to 0.106), against X5 0.928 (0.080); no level of the three is confined to a part of the ID range, and each X8 level spans the IDs from the first to the last hundred. Adding them changed the R² of untuned LightGBM by +0.0015 (standard error 0.0039) over the 9 windows then shipped, so they stay as columns of the car's configuration (columns leave for what they are, not for being unexplained; Andrej, 2026-11-11). The 0/1 options from X10 on stay, except X11, which is constant (11 other constant options, such as X93, stay).
     """
 
     # Task
@@ -113,14 +112,13 @@ class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
         # Remove on huge y outlier that seems like a clear shift case
         df = df[df["y"] < 180]
         # Handle constructed features: ['X0', 'X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'X8']
-        #   - X0,X1,X2 likely only uses information per row
+        #   - X0,X1,X2 likely only use information per row
         #   - X4 has 4 rows that are not "d", we drop these rows to avoid leakage and later drop X4
         #   - X5, time group feature that leaks group time info in temporal splits
-        #   - X8 seems to leak group information across rows by having value assigned based on sampling from the distribution of all data, so we drop it as well
-        #   - We have no further information about X3 and X6, so we drop them as well to be safe, given the trend of other constructed features leaking info across rows.
+        #   - X3, X6, X8 stay: a check found no time pattern in them (see curation_comments)
         #   - We drop X11 as it is a constant feature after preprocessing.
         df = df[df["X4"] == "d"]
-        df = df.drop(columns=["X5", "X8", "X4", "X3", "X6", "X11"])
+        df = df.drop(columns=["X5", "X4", "X11"])
         df = df.rename(columns={"ID": "time_index"})
         return df
 

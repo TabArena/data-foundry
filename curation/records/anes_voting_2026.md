@@ -79,6 +79,13 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 
 **Assessment (AI, 2026-11-11):** 95 questions flagged, each missing in at least one test election and recorded on its train side (e.g. VCF0401-VCF0411 last asked in 2004).
 
+CC (2026-11-11, Andrej): review marks of today, applied where they fit this branch.
+
+- Issue 4 (change, "Agree.", Option B): `splits_comment` now states how the data arrive: respondents answer in the weeks before one election day and report their vote in the post-election interview within about two months, the next study comes two to four years later, so every training label is in before a window starts and no gap is needed (SPLIT-10, SPLIT-32). No `data_tags` change: a temporal split takes no time basis.
+- New fact, checked today on the February 2026 file (`VCF0006a`, 48,587 kept respondents): the cross-year id links 2,917 respondents, all in the panels of 1956-1960, 1972-1976, 1992-1996 and 2000-2002. With the nine test windows this branch ships, two of them hold re-interviewed respondents whose earlier row is on the training side: 1996 (545 of 1,534, 35.5%) and 2002 (991 of 1,344, 73.7%); the other seven hold none. Turnout travels with the respondent (voted in 1992 -> voted in 1996 in 87.8% of cases against 35.3% of the others; 2000 -> 2002: 84.7% against 19.9%). The id is not a feature. Written into `splits_comment` and opened as review issue 5 (LEAK-41, LEAK-42).
+- Issues 1 and 3 of the other working copy's review (both `change`, no note) are not applied: they put the test windows back to the five studies 2008-2024 and the column filter to `iloc[-5:]`, which contradicts the nine windows settled here on 2026-11-11 under the amended floor. The answer in issue 1 states both sides and asks which stands; the definition is unchanged on this point.
+- `dataset check`: see below. Not rebuilt.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it: the focused re-review of 2026-11-06 under the new rules on exposure
@@ -116,9 +123,11 @@ post-election nonresponse adjustment is not checked against the ANES codebook, w
 auditor; quoting the codebook's weight entry when the note is next edited would settle it (EV-2: a primary document
 over inference).
 
-**Main points:** Only the verdict: the re-review left no issue, so the dataset ships unless you decide otherwise; the
-codebook follow-up in the outcome needs no decision. Settled on 2026-11-11: the nine studies 1996 to 2024 stay the
-test windows (issue 1, A), and the declared horizon of one election without a gap is checked.
+**Main points:** Settled on 2026-11-11: the nine studies 1996 to 2024 stay the test windows (issue 1, A), the
+declared horizon of one election without a gap is checked, and how the answers and the vote arrive is now in the split
+comment (issue 4, B). Open: the 1996 and 2002 windows hold respondents re-interviewed from an earlier study, whose
+earlier row is in training (issue 5); and your marks of 2026-11-11 on the other working copy's review of this dataset
+ask for five test windows, which contradicts issue 1 (answered there, not applied).
 
 **Record judgment:** valid. The record fields agree with the definition (the record's `Website` counts as `Other`).
 Before this review the record had no line on the survey weights; its Assessment line of 2026-11-06 adds one. The
@@ -256,6 +265,112 @@ the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regenerat
    and 1,534) and train sides (43,633 down to 19,455), the four under half with their shares, the length's reason and
    the absent gap. The record has the decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings (README
    not regenerated).
+
+   **Answer (AI, 2026-11-11):** Andrej's marks of today on the other working copy's review of this dataset (its
+   issues 1 and 3, both `change`, neither with a note) decide the windows the other way, and the two cannot both
+   stand.
+
+   * **The two reviews:** this record carries the review in which the nine studies 1996 to 2024 are the test windows,
+     settled above with Lennart on 2026-11-11 under the amended floor. The other working copy carries an older review
+     of the same dataset in which the five newest studies (2008 to 2024) are the windows (its issue 1, settled
+     2026-11-04) and the column filter counts those five, `iloc[-5:]`, leaving 135 features (its issue 3, settled
+     2026-11-06). Andrej's marks of today are on that review.
+   * **What this branch implements:** `TemporalSplits(window=1, unit="unique", n_windows=9)` and `iloc[-9:]` in
+     `_clean`, with `accepted_check_warnings` signed off for the four train sides under half and for the questions a
+     test election's questionnaire left out.
+   * **Not applied, and why:** going back to five windows would undo the decision taken above on the same day under
+     the rule as amended on 2026-11-11, and would drop 5,498 test respondents and the data's only midterm study; the
+     marks carry no note that argues for it, and a definition cannot hold both window sets.
+   * **For the curator:** say which stands, the nine windows of this review or the five of the other working copy; the
+     column filter follows the answer (`iloc[-9:]` with nine, `iloc[-5:]` with five). What the other review settles
+     besides the windows is applied here: its issue 4 is issue 4 below, and what that check turns up on nine windows
+     is issue 5.
+
+4. **Time basis: keep the study windows with no gap, and write in `splits_comment` how the answers and the vote
+   arrive?**
+
+   * **Problem:**
+     - A study's respondents answer in the weeks before one election day, and they report whether they voted in the
+       post-election interview, within about two months; the next study comes two to four years later.
+     - The record's facts fit (`Samples: Over Time`, `Time: Dated` by the study year, `Target: Later`), and the split
+       is temporal by study, so no use-case prototype applies: a pollster scores the next election, whose turnout
+       climate no earlier study shares[^4a].
+     - Keep the windows as decided and add these facts to the split comment?
+   * **Background:**
+     - No gap is needed: a study's labels are all in before the next study starts, as the time column's step (two to
+       four years) is far longer than the label's delay[^4b].
+     - The cumulative file writes every study in today's harmonised codes; that is a recoding of what was asked then,
+       not a later answer.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | As now (implemented) | the study windows, no gap; the split comment names the windows only | no edit | why there is no gap, and what the cross-year id links, stays in the review only |
+     | B | Arrival in the split comment | as A, and the comment states the label's delay, the step between studies and the checked panel links | the reasons are where the split is | none found |
+     | C | A random split as `DelayedTarget` | one prediction moment per study, rows mixed across studies | more test rows | the moment is shared within a study, not across; an election's turnout would sit on both sides |
+
+   * **Recommendation:** B. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, no `data_tags` change (a temporal split takes no time basis); the facts go into
+   `splits_comment`; README regenerated by `dataset check`.
+
+   [^4a]: **SPLIT-32** (Should): how the data was collected, when each sample, feature and target come into existence,
+     is information for the split; the record carries the source's collection facts, and a split that is not temporal
+     names a prototype or a forced tag; a temporal split needs neither.
+   [^4b]: **SPLIT-10** (Should; amended 2026-11-04 and 2026-11-05): a gap of about the label's delay; no gap is needed
+     where the collection covers what the gap guards against, such as a time column whose smallest step is longer than
+     the delay.
+
+   **Andrej (2026-11-11, change):** Agree. (Option B: Arrival in the split comment)
+
+   **Resolved (2026-11-11, Andrej):** B: `splits_comment` now states the label's delay (the vote reported in the
+   post-election interview within about two months), the step to the next study (two to four years, so every training
+   label is in before a window starts and no gap is needed) and what the cross-year id links. The panel sentence is
+   written from a fresh check on the February 2026 file, since this branch tests nine windows and not the five the
+   other working copy's review assumed: the id links 2,917 respondents, all in the panels of 1956-1960, 1972-1976,
+   1992-1996 and 2000-2002, and two test windows hold re-interviewed respondents whose earlier row is on the training
+   side, 1996 (545 of 1,534) and 2002 (991 of 1,344). No `data_tags` change and no `Time basis:` line, as a temporal
+   split takes none. What to do about those two windows is issue 5. Text only; rows, folds and the metric unchanged.
+
+5. **The panel respondents of the 1996 and 2002 windows sit on both sides of their cut: leave them, or drop them?**
+
+   * **Problem:**
+     - Two of the nine test windows hold respondents interviewed again from an earlier study: 1996 holds 545 of
+       1,534 (35.5%) with a 1992 row in training, and 2002 holds 991 of 1,344 (73.7%) with a 2000 row; the other
+       seven windows hold none.
+     - Turnout travels with the respondent: of the 545, those who said they voted in 1992 say so again in 1996 in
+       87.8% of cases against 35.3% of the others (2000 to 2002: 84.7% against 19.9%), so a training row carries much
+       of its own test row's label[^5a].
+     - The cross-year id is dropped from the features, so a method can use the link only by recognising the
+       respondent from the answers, which is not measured.
+   * **Background:** the four panels in the file are 1956-1960, 1972-1976, 1992-1996 and 2000-2002; the five-window
+     review of the other working copy reported "no test respondent has a row in training", which held for test
+     windows from 2008 on and not for 1996 and 2002. Checked on the February 2026 file on 2026-11-11 (`VCF0006a`,
+     48,587 kept respondents).
+   * **Effect on the task:** none on seven windows. On 1996 and 2002 a score may be optimistic by whatever a method
+     recovers from the repeated respondents; how much is untested.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Leave them, written down (implemented) | the rows stay; `splits_comment` names the two windows and their shares | every study stays whole, as the election a pollster scores | two windows may score optimistically |
+     | B | Drop the re-interviewed rows from the two test windows | 545 and 991 respondents leave the 1996 and 2002 test sides (their training rows stay) | no respondent on both sides of a cut | two windows lose 36% and 74% of their test rows, 1996 to 989 and 2002 to 353 |
+     | C | Drop the earlier row instead | the 1992 and 2000 rows of those respondents leave the training side | the test windows stay whole | training loses rows a pollster would have; 2000 is itself a test window |
+     | D | Measure first | fit the task once as it is and once without the re-interviewed test rows, and decide on the gap | the decision rests on a number | a model run before a decision that may be none |
+
+   * **Recommendation:** A with D's measurement if the gap matters to you: the respondent is a real repeat and the
+     label travels with it, but ANES panels are part of how the series is collected, the id is not a feature, and
+     dropping 74% of the 2002 window would leave 353 test respondents. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** on B, drop in the split builder, not in `_clean` (the rows are training data for the later
+   windows); on C, drop the 1992 and 2000 rows of the linked ids in `_clean` and recount the train shares, which
+   moves SPLIT-14's floor; on D, LightGBM on the nine windows, ROC AUC with and without the linked test rows. The
+   check of 2026-11-11 is `VCF0006a` over the 48,587 kept respondents.
+
+   [^5a]: **LEAK-41** (Must; draft PR #62): repeats of a unit the data does not record get one verdict: natural,
+     entity fix, temporal fix or not recoverable. **LEAK-42** (Should; draft PR #62): three tests set the verdict: a
+     link above a chance rate, a label that travels with the link beyond what the shared features predict, and an
+     order. Here the link is recorded (the cross-year id) and the label travels.
 
 **Review panel:** ship after changes (mediator). Tier focused, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
 MET-16: the claim auditor, then the mediator. Claims: 9; 6 hold, 1 refuted (the survey-weight note left out the

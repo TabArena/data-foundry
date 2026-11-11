@@ -38,11 +38,11 @@ class Kickstarter(AbstractCuratedDataset):
             "projects repeated across scrapes (20%), and drop the projects launched in the last 60 days before the "
             "scrape, whose outcomes it holds only for the campaigns that had already ended."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
-            "Everything the model sees is known at launch, and later years are tested; with the 60-day gap at most one"
-            " training project per window, a campaign longer than 60 days, had not ended when the window starts. How "
-            "fully the scrapes cover all projects is not stated."
+            "Everything the model sees is known at launch, and later years are tested, but the scrapes do not cover "
+            "every project: 62.5% of those here are funded, 87% to 97% of the 2009-2013 launches, against the 44% "
+            "Kickstarter reported in 2012, so failed projects are under-covered, the more so in the older years."
         ),
     )
 
@@ -91,6 +91,16 @@ class Kickstarter(AbstractCuratedDataset):
         - We drop the creator's project profile (and its profile blurb): it is only created for funded projects (0 of 69,970 failed projects have a profile blurb), so it leaks the outcome, like spotlight.
         - We drop staff_pick: Kickstarter can award it during the campaign, so it is not known at launch (92.4% of staff picks succeed, against 57% of the other projects).
         - We decode the location display name from the location JSON string, which can include state and city name.
+        - Coverage (2026-11-11, Andrej, Review issue 6; record marker `Selection Bias`): failed projects are
+          under-covered in the older years. Kickstarter reported 60,786 launched projects by June 2012, 44% funded
+          (Engadget, 21 June 2012); here the 2009-2013 launches are 87% to 97% funded, and the share breaks at 2014,
+          when Web Robots' scrapes start (older projects are likely those still listed then). Whether failures are
+          also missing from 2014 on, the test years included, is unknown. Funded share by launch year, counted on the
+          185,444 rows of this definition: 2009 96.5% (113), 2010 90.4% (795), 2011 89.6% (2,474), 2012 89.5% (4,731),
+          2013 87.3% (5,423), then 2014 54.5% (15,155), 2015 47.1% (19,186), rising to 71.1% (23,096) in 2025. The
+          2009-2013 rows stay (8% to 11% of each
+          training side): dropping them makes logistic regression worse and moves LightGBM by about 0.001 AUC
+          (Review issue 4).
         - The data contains spatial information (city, state, country). We do not decode this but leave it to the pipelines.
         - We found 150 rows without location information. We drop these rows as it is unclear which issue caused this and how the rows' data might be affected by this.
         - We drop duplicates (20%) which seems to have occurred from multiple scrapes of the same project.

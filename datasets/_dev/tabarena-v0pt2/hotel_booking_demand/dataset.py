@@ -20,7 +20,6 @@ from data_foundry.v2 import (
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
-    "DepositType": ["No Deposit     ", "Refundable     ", "Non Refund     "],
     "Meal": ["SC       ", "BB       ", "HB       ", "FB       "],
     "ArrivalDateMonth": [
         "January",
@@ -55,7 +54,7 @@ class HotelBookingDemand(AbstractCuratedDataset):
         ),
         known=(
             "The booking: hotel, booking and arrival dates, nights, guests, meal plan, country, market segment, "
-            "channel, agent or company, room type, deposit type, customer type, daily rate, special requests, days on"
+            "channel, agent or company, room type, customer type, daily rate, special requests, days on"
             " the waiting list, and the guest's earlier bookings and cancellations."
         ),
         split=(
@@ -66,7 +65,8 @@ class HotelBookingDemand(AbstractCuratedDataset):
         changes=(
             "Training holds only bookings that arrived before the prediction date (the future bookings known then are"
             " all cancelled) and none cancelled over three months ahead; we drop fields recorded up to check-in "
-            "(booking changes, assigned room, parking)."
+            "(booking changes, assigned room, parking) and the deposit type, computed from payments up to arrival or "
+            "cancellation."
         ),
         fit="approximate",
         fit_reason=(
@@ -114,13 +114,19 @@ class HotelBookingDemand(AbstractCuratedDataset):
         - We create a "booking_date" column by subtracting the "LeadTime" from the "arrival_date". This is necessary to further define the prediction point in time and to filter the data to avoid data leakage.
         - To define train/test splits, we define 10 points in time each starting on the 1st of a month, 1 September 2016 to 1 June 2017 (Lennart, 2026-11-11; Review issue 1, reply a). Using the available time stamps we separate bookings that lie in the future, and were not canceled yet as the test data.
         - To account for the fact that, the available bookings suddenly stop at the latest month, the latest prediction point is 1 June 2017, the newest date whose three months of arrivals (2 June to 31 August 2017) lie in the recorded period. This is necessary to avoid an unrealistic distribution shift in the test data, as the later prediction points don't include bookings  for later time points that would typically be available.
-        - To make sure that the training data reflects the forecasting horizon, we remove all historical bookings that were canceled more than three months in advance. Note that we made this choice based on assumptions without actually testing the impact of this decision. It would be interesting to test the impact of this decision on prediction performance.
+        - To make sure that the training data reflects the forecasting horizon, we remove all historical bookings that were canceled more than three months in advance. Tested 2026-11-06: training only on the arrived bookings that were open on one of the three monthly prediction dates before their arrival, the condition of the test rows, ranks the same (LightGBM, nine dates, ROC AUC 0.810) and lowers the mean prediction from 0.216 to 0.176 against 0.149 cancelled in test (log loss 0.364 to 0.349), but leaves 30% to 50% of the bookings for training; the 90-day rule stays.
+        - We drop `DepositType` (2026-11-11, Andrej, review issue 4): the data paper computes it from "the payments
+          identified for the booking in the transaction (TR) table before the booking's arrival or cancellation date"
+          (Antonio et al. 2019, Table 1), up to three months after the prediction date, and the release has no payment
+          dates. "Non Refund" bookings were cancelled at 97.3% in the city hotel (843) and 84.6% in the resort (188),
+          against 30.2% and 25.0% without a deposit; LightGBM over the nine dates of 2026-11-06, three seeds: ROC AUC
+          0.811 without it, 0.810 with it (log loss 0.366 and 0.364).
         - Training holds only bookings that arrived before the prediction point. Future bookings already cancelled at that point are left out: the future bookings known then are all cancelled ones, so they would teach "future arrival = cancelled" (see the splits comment).
         - After splitting, we remove "ReservationStatus" and "ReservationStatusDate" to avoid data leakage.
         - Anomaly: The first recorded month for the city hotels shows an unusually high amount of cancellations.
         - Cancellations rise over the period (from the v1 exploration, counted 2026-10-22 on the cleaned data, by arrival year): city 23.5% (2015, from July), 30.3% (2016), 35.1% (2017, to August); resort 20.7%, 23.7%, 30.3%, with a summer peak (resort 31-38% in July-August 2016 and 2017). The city anomaly above is July 2015 with 61% cancelled. LeadTime has a long tail: median 57 days, p90 209, max 737.
         - ReservationStatus equals the target (Canceled or No-Show for every cancelled booking, Check-Out for every other one), and ReservationStatusDate tells it too: every booking whose last status change is after the arrival date was not cancelled (57,364), every one changed before arrival was (22,250; median 41 days before arrival, 28% more than 90 days before). Both are dropped after splitting (from the v1 exploration, counted 2026-10-22).
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass cycles, in
           their usual order (the wrap is not shown); 1 hold a state outside the scale, placed by the curator's rule
           (missing when the column has no other missing value, else the lowest level; a state that is simply not on the
@@ -142,9 +148,9 @@ class HotelBookingDemand(AbstractCuratedDataset):
             The horizon, three months of arrivals at monthly dates, is ours (checked by Lennart on 2026-11-11): the source's system trains daily on all bookings on the books and predicts every future arrival, showing demand a year ahead (Antonio, de Almeida and Nunes 2019, Data Science Journal 18, 32), so no source sets three months; the length and the dates come from the use case's revenue manager. Three months hold 38% to 69% of the bookings open at a date (measured at 1 September 2016 to 1 January 2017), where one month holds 15% to 36%, and they let the newest complete date reach June 2017, where six months would stop at March. No gap is needed: a booking's outcome is known by its arrival date, and training holds only bookings that arrived before the date. \
             To account for the fact that, the available bookings suddenly stop at the latest month (arrivals to 31 August 2017), the latest prediction point is 1 June 2017, the newest date whose three months of arrivals lie in the recorded period. This is necessary to avoid an unrealistic distribution shift in the test data, as the later prediction points don't include bookings  for later time points that would typically be available. \
             Newest first, the ten dates test 6,511, 6,390, 6,015, 5,768, 4,578, 2,500, 2,474, 3,228, 4,314 and 4,596 bookings and train on 64,524, 60,693, 57,112, 53,850, 50,982, 48,617, 45,946, 42,942, 39,297 and 35,860 (79.3%, 74.5%, 70.1%, 66.1%, 62.6%, 59.7%, 56.4%, 52.7%, 48.3% and 44.0% of the 81,418 bookings). Two dates train on less than half the bookings: 1 October 2016 (48.3%) and 1 September 2016 (44.0%), signed off by Lennart on 2026-11-11 beside the eight on 52.7% to 79.3%; they add the autumn arrivals of 2016, and 1 June 2017 the summer peak of 2017. The test windows overlap in arrival months by design: each date tests the next three months with the bookings known then. \
-            To make sure that the training data reflects the forecasting horizon, we remove all historical bookings that were canceled more than three months in advance. Note that we made this choice based on assumptions without actually testing the impact of this decision. It would be interesting to test the impact of this decision on prediction performance. \
+            To make sure that the training data reflects the forecasting horizon, we remove all historical bookings that were canceled more than three months in advance. Tested 2026-11-06: training only on the arrived bookings that were open on one of the three monthly prediction dates before their arrival, the condition of the test rows, ranks the same (LightGBM, nine dates, ROC AUC 0.810) and lowers the mean prediction from 0.216 to 0.176 against 0.149 cancelled in test (log loss 0.364 to 0.349), but leaves 30% to 50% of the bookings for training; the 90-day rule stays. \
             Training data holds only bookings that arrive before the prediction point. Bookings with a future arrival that were already cancelled at the prediction point are left out: the future bookings known at that point are only the cancelled ones, so they taught "arrival in the test window = cancelled" (100% of 867 such rows on the split of 1 May 2017, against 12.5% cancelled in its test set; leak audit 2026-09-24 and an independent probe, 2026-08-20). \
-            We drop BookingChanges, AssignedRoomType and RequiredCarParkingSpaces: per the data paper (Antonio et al. 2019, Table 1) they are recorded until check-in or cancellation, and no cancelled booking has a parking space. Note that the data paper takes every variable as of "the day prior to each booking's arrival", later than our prediction point (up to three months before arrival), so small post-prediction changes may remain in other columns.
+            We drop BookingChanges, AssignedRoomType and RequiredCarParkingSpaces (and DepositType, see the curation notes): per the data paper (Antonio et al. 2019, Table 1) they are recorded until check-in or cancellation, and no cancelled booking has a parking space. Note that the data paper takes every variable as of "the day prior to each booking's arrival", later than our prediction point (up to three months before arrival), so small post-prediction changes may remain in other columns.
     """
     temporal = Temporal(
         on="arrival_date",
@@ -189,6 +195,9 @@ class HotelBookingDemand(AbstractCuratedDataset):
         # Recorded after the prediction point (Antonio et al. 2019, Table 1): changes "until the moment of check-in or
         # cancellation", the room assigned by hotel operations, and parking spaces (never > 0 for a cancelled booking)
         df = df.drop(columns=["BookingChanges", "AssignedRoomType", "RequiredCarParkingSpaces"])
+        # Computed from the payments before arrival or cancellation (Antonio et al. 2019, Table 1), so up to three
+        # months after the prediction date; "Non Refund" is nearly always cancelled (curation notes)
+        df = df.drop(columns=["DepositType"])
         for col in ["Agent", "Company"]:  # "NULL" (space-padded) means no agent / no company
             df[col] = df[col].astype(str).str.strip().replace("NULL", np.nan)
         # the paper: "Undefined/SC - no meal package": one level
@@ -207,7 +216,6 @@ class HotelBookingDemand(AbstractCuratedDataset):
                 "MarketSegment",
                 "DistributionChannel",
                 "ReservedRoomType",
-                "DepositType",
                 "Agent",
                 "Company",
                 "CustomerType",

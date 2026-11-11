@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
 
@@ -73,6 +74,7 @@ class ThyroidDiscordant(AbstractCuratedDataset):
         - We drop/ignore the referral_source columns as it indicates the original of the data and thus might leak information or makes the model learn sub-group related behavior that is not the target/task of interest.
         - We correct the label column by removing the patient IDs.
         - We drop 60 duplicated rows and remove constant columns.
+        - One patient has age 455, an impossible value; we set it to missing and keep the row (the only age above 120).
     """
 
     # Task
@@ -133,6 +135,8 @@ class ThyroidDiscordant(AbstractCuratedDataset):
         )
         # drop duplicated rows
         df = df.drop_duplicates().reset_index(drop=True)
+        # one patient has age 455, impossible: set to missing, keep the row
+        df.loc[df["age"] > 120, "age"] = np.nan
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

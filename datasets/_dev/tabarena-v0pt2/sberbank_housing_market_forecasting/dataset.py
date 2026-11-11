@@ -193,7 +193,8 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         fit_reason=(
             "The flat's and district's figures are known at the sale, and the seven-month windows match TabReD's test "
             "period, the shortest of the sources (the competition tests eleven months). The economic statistics are lagged by one period because their release dates are not "
-            "given; a monthly figure may still come out a few days after a sale early in the month."
+            "given; a monthly figure may still come out a few days after a sale early in the month. The neighbourhood "
+            "figures are one read of unknown date, kept."
         ),
     )
 
@@ -258,6 +259,12 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
           shortest test period of the sources, in place of five half-years from January 2013 whose three oldest
           trained on 44.3%, 28.6% and 17.8% of the sales; issue 1 closes with it ("Agree."). The oldest window,
           October 2013 to April 2014, trains on 35.4%, signed off with the mark (splits comment).
+        - Potential leak, kept on purpose (2026-11-11, Andrej; review issue 4, B): the district statistics and the
+          neighbourhood features (distances, counts of facilities nearby) are one read of a date the source does not
+          give: none of 145 districts and none of 2,991 buildings sold in more than one year changes in them over
+          2011-2015, while the city opened new metro stations (2014-2015) and other facilities. Older sales may carry
+          facilities that came after them. They stay: the read cannot be dated row by row and the data owner released
+          it for its competition. Revisit if dated district statistics are found.
         - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): the macro file gives `provision_retail_space_sqm` for 2011 and 2012 only and the two education shares (`modern_education_share`, `old_education_build_share`) from 2013 on, so their one-year lags are recorded in 2012-2013 and from 2014: the newest windows test without the first, and the oldest trains without the other two. Kept: the data as published.
     """
 

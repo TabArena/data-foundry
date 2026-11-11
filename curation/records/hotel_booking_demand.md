@@ -69,14 +69,35 @@ CC (2026-11-11, Lennart): the declared horizon (three months of arrivals, no gap
 
 **Assessment (AI, 2026-11-11):** applied issue 1 (reply a): `_make_splits` lists the ten dates (1 June 2017 added; its rules unchanged). Counted with the split's own rules on the 81,418 bookings: test 6,511, 6,390, 6,015, 5,768, 4,578, 2,500, 2,474, 3,228, 4,314 and 4,596 (1 June 2017 back to 1 September 2016), train 64,524, 60,693, 57,112, 53,850, 50,982, 48,617, 45,946, 42,942, 39,297 and 35,860 (79.3%, 74.5%, 70.1%, 66.1%, 62.6%, 59.7%, 56.4%, 52.7%, 48.3% and 44.0%); 10.9% of the newest date's test bookings are cancelled (12.5% at 1 May 2017). `task_summary`, the notes and `splits_comment` name the ten dates, the latest prediction point (1 June 2017, arrivals to 31 August 2017), the two dates under half and the horizon's reason. `dataset check`: 0 errors, 0 warnings, with `splits_train_under_half` accepted on the CC line above.
 
+CC (2026-11-11, Andrej): the marks of Andrej's review page applied (its issues 2, 3 and 4, merged into the record's review on this date).
+- Issue 4 ("Option B: Drop DepositType"): `DepositType` is dropped in `_clean`, the data paper computes it from the payments up to arrival or cancellation, so up to three months after the prediction date; "Non Refund" bookings were cancelled at 97.3% (city) and 84.6% (resort) against 30.2% and 25.0% without a deposit, and dropping it costs nothing (LightGBM ROC AUC 0.811 without it, 0.810 with it). 27 features.
+- Issue 3 (`ok`): the 90-day training rule stays; the sentence saying the choice was never tested is replaced in the curation notes and the splits comment by the measurement of 2026-11-06 (same ranking, ROC AUC 0.810; mean prediction 0.216 against 0.176, log loss 0.364 against 0.349; the alternative leaves 30% to 50% of the bookings for training).
+- Issue 2 ("Option B: Seven dates"): **not applied.** It contradicts issue 1, settled the same day with all ten dates (1 September 2016 to 1 June 2017) under the floor amended on 2026-11-11; issue 2 was written on 2026-11-06, when the definition had nine dates and the floor admitted no train side under half, so it could not hold 1 June 2017, the newest date whose three months of arrivals the data holds. The choice between ten, seven and eight dates is issue 6, open.
+- `dataset check`: 0 errors, 0 warnings, 1 info (296 rows, 0.4%, share all features with another row and carry a different target, 18 more than with `DepositType`). Ten windows unchanged.
+
 ## Review
 
-**Outcome:** added. On 2026-11-11 you chose all ten prediction dates, 1 September 2016 to 1 June 2017, the two
-oldest training on 48.3% and 44.0% of the bookings (issue 1, reply a), and kept the three-month horizon (H, A).
+**Outcome:** added. Antonio, de Almeida and Nunes' (2019) bookings of a resort hotel in the Algarve and a city
+hotel in Lisbon, arrivals July 2015 to August 2017 (81,418 after removing repeated records and same-day bookings);
+the target is whether the booking is cancelled (29% overall). A revenue manager sets overbooking for the next three
+months, and the public version's leaks are handled: the outcome columns only cut the windows and are dropped, the
+fields recorded up to check-in are dropped, training holds only bookings that arrived before the prediction date,
+and `DepositType`, computed from payments up to arrival or cancellation, left on 2026-11-11 (issue 4). On 2026-11-11
+Lennart chose all ten prediction dates, 1 September 2016 to 1 June 2017, the two oldest training on 48.3% and 44.0%
+of the bookings (issue 1, reply a), and kept the three-month horizon (H, A); Andrej's mark of the same day asks for
+seven dates (issue 2), which the ten contradict, so the dates are open again as issue 6.
 
-**Main points:** Settled on 2026-11-11: the test predicts at the first of each month from September 2016 to June 2017,
-the newest date whose three months of arrivals the data holds (issue 1); three months of arrivals at monthly dates
-hold, the length ours since the source scores every open booking (H). Nothing is left to decide.
+**Main points:** Open: the prediction dates, where issue 1 (ten dates) and issue 2 (seven) disagree and issue 6 puts
+the choice; and whether to ship as defined (issue 5). Settled on 2026-11-11: three months of arrivals at monthly
+dates, the length ours since the source scores every open booking (H); the 90-day training rule kept with the
+measured numbers in the note (issue 3); `DepositType` dropped (issue 4).
+
+**Record judgment:** valid, ship. Lennart's fix of 2026-09-30 (training only on arrived bookings; the three
+check-in fields dropped) is in the definition, and the training filter is the case of the rule that training labels
+must be known at the prediction point. A separate review of metrics proposes log loss for this dataset (the hotels
+sum the probabilities for overbooking); it is not part of this review. Nothing in the record disagrees with the
+definition. The review of Andrej's page (its issues 2, 3 and 4, and its issue 1 as issue 5 here) was merged into
+this one on 2026-11-11; only that issue was renumbered, and it carries no mark.
 
 **Horizon:**
 
@@ -114,7 +135,7 @@ gives this block's reason (the source's system scores every open booking and set
 69% of the open bookings and reach June 2017, where one month holds 15% to 36% and six months stop at March) and why
 no gap is needed. The record has the horizon CC line. `dataset check`: 0 errors, 0 warnings.
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 1. **Which prediction dates should the test use?**
 
@@ -235,6 +256,194 @@ no gap is needed. The record has the horizon CC line. `dataset check`: 0 errors,
    `splits_comment` and the curation notes name the ten dates, the latest prediction point (1 June 2017) and the two
    dates under half; the leak measurement of 867 rows is dated to the split of 1 May 2017. `dataset check`: 0 errors,
    0 warnings.
+
+2. **Drop the two oldest prediction dates, whose training sides hold under half of the bookings?**
+
+   * **Problem:**
+     - Each prediction date trains on the bookings that had arrived by then, and for the two oldest, 1 September and 1 October 2016, these are 35,860 and 39,297 of the 81,418 bookings (44.0% and 48.3%).
+     - Every training side of a temporal task needs half of the data or more, and the other seven dates train on 52.7% (November 2016) to 74.5% (May 2017)[^2a].
+     - Keep seven dates, November 2016 to May 2017, or all nine?
+   * **Background:**
+     - How the data arrives: bookings come in over time with their arrival date and lead time, every value is a snapshot of the day before arrival (issue 1), and the label is final at arrival, since a booking is cancelled, if at all, before it (median 41 days before, 28% more than 90 days before). The record's collection facts say this (`Samples: Over Time`, `Time: Dated`, `Target: Varying Delay`), and a temporal split carries no time-basis tag[^2b].
+     - No gap is needed: training holds only bookings that arrived before the prediction date, so every training label was known then, and the already-cancelled future bookings, the shortcut fixed on 2026-09-30, stay out[^2c].
+     - Counted on all bookings that had arrived before the date, the two oldest dates have 46.3% and 50.9%; the rule that leaves out bookings cancelled more than 90 days ahead (issue 3) takes both below half.
+   * **Experiments:** counted with the definition's split code on the publisher's two files: test bookings per date, newest first, 6,390, 6,015, 5,768, 4,578, 2,500, 2,474, 3,228, 4,314 and 4,596 (39,863 in all).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Nine dates (implemented) | the first of each month from September 2016 to May 2017 | 39,863 test bookings | two training sides below half of the data (44.0%, 48.3%) |
+     | B | Seven dates | the first of each month from November 2016 to May 2017 | every training side at 52.7% or more | 8,910 fewer test bookings (30,953); seven windows instead of nine |
+
+   * **Recommendation:** B: the floor is a hard rule, and seven windows still give seven separate refits with 2,474 or more test bookings each. **Decision:** A or B?
+
+   **Notes for the AI:** on B, remove `(2016, 10)` and `(2016, 9)` from `test_sets_year_month` in `_make_splits`; "9 points in time" becomes "7 points in time" in `curation_comments` and `splits_comment`; the task summary's `split`: "Seven prediction dates, the first of each month from November 2016 to May 2017. ..."; `dataset check`, rebuild, report the train shares; record `CC (<date>, Andrej):` line. No time-basis tag under either option (temporal split); once PR #50 is in, `data_tags` stays empty.
+
+   [^2a]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less than 50% of the data. **SPLIT-15** (Should): as many windows as an IID task of that size gets folds; the Must comes first.
+   [^2b]: **SPLIT-32** (Should): how the data was collected (the record's facts on samples, time and target) is information for the split; a definition names a use-case prototype only for a split that is not temporal.
+   [^2c]: **SPLIT-9** (Must): a training row whose label was not yet known at the prediction point must not be in train; hotel_booking_demand is its case (filtering on the arrival date removed the shortcut). **SPLIT-10** (Should): no gap is needed where the collection covers what the gap guards against.
+
+   **Resolved (2026-11-11, Andrej):** B: `(2016, 10)` and `(2016, 9)` removed from `_make_splits`; "7 points in time" in the curation notes and the splits comment, the task summary's `split` names November 2016 to May 2017. `dataset check`: 0 errors, 0 warnings; 7 windows, training 42,942 (52.7%) to 60,693 (74.5%) of the 81,418 bookings, test 2,474 to 6,390 (30,953 in all). Not rebuilt.
+
+   **Andrej (2026-11-11, change):** Option B: Seven dates.
+
+   **Answer (AI, 2026-11-11):** not applied here: this mark and issue 1's reply of the same day choose different
+   dates, so the question goes to issue 6 and the definition keeps issue 1's ten dates until it is settled.
+
+   * This issue was written on 2026-11-06 against a definition with nine dates and the floor as it then read, so its
+     options could not hold 1 June 2017, the newest date whose three months of arrivals the data holds.
+   * Issue 1 (Lennart, 2026-11-11) chose all ten dates, 1 September 2016 to 1 June 2017, under the floor amended that
+     day, which admits two train sides under half beside eight above it.
+   * Option B's seven dates (November 2016 to May 2017) leave out 1 June 2017, which the newest-window rule keeps in
+     every case.
+   * The three choices are laid out in issue 6; nothing in the definition changed for this issue.
+
+3. **Train only on bookings that were still open at an earlier prediction date, as the test bookings are?**
+
+   * **Problem:**
+     - A test booking is one still open on its prediction date, while a training booking is any arrived booking not cancelled more than 90 days ahead, so training is 22.3% cancelled against 14.9% in test (means over the nine dates).
+     - Models trained this way rank the test bookings as well as any other training set tried (ROC AUC 0.810), but predict 21.6% cancelled on average, and the use case sums these probabilities to set overbooking.
+     - Replace the 90-day rule by the condition the test bookings meet, or keep it?
+   * **Background:** the definition's own note says the 90-day rule was chosen "based on assumptions without actually testing the impact of this decision". The condition of the test rows, applied to history: a training booking arrived before the prediction date and was open (made, not yet cancelled) on one of the three first-of-months before its arrival. It keeps the history the same and only leaves out bookings that would never have been open on a prediction date[^3a].
+   * **Experiments:** LightGBM (400 trees, three seeds), the definition's features, the nine dates, the same test rows (14.9% cancelled); means over the dates:
+
+     | Training rows | Rows at the newest date | Cancelled in training | ROC AUC | Log loss | Mean prediction |
+     |---|---|---|---|---|---|
+     | A, the 90-day rule (implemented) | 60,693 | 22.3% | 0.810 | 0.364 | 0.216 |
+     | B, open at an earlier prediction date, each booking once | 40,664 | 17.4% | 0.810 | 0.349 | 0.176 |
+     | C, as B, once for each earlier date it was open | 82,130 (40,386 bookings) | 13.9% | 0.810 | 0.343 | 0.162 |
+
+     - Under B the training sides hold 29.7% (September 2016) to 49.9% (May 2017) of all bookings.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | The 90-day rule (implemented) | train on arrived bookings, without those cancelled more than 90 days ahead | the most training rows; ranks as well as B and C | training 22.3% cancelled against 14.9% in test; mean prediction 0.216 |
+     | B | Open at an earlier prediction date | train on arrived bookings that were open on one of the three first-of-months before their arrival | the condition the test rows meet; mean prediction 0.176, log loss 0.349 | training sides of 30% to 50% of all bookings, below half of the data |
+     | C | Once for each earlier date | as B, with a booking repeated for each date it was open | weighs bookings as the overlapping test windows do (log loss 0.343) | duplicated rows in the frame; the same floor problem as B |
+
+   * **Recommendation:** A, with the measured numbers in the note: the ranking does not change, and B and C take every training side below half of the bookings; B is the choice if the floor is read on the history before each date, which B leaves whole. **Decision:** A, B or C?
+
+   **Notes for the AI:** on A, replace the sentence "Note that we made this choice based on assumptions without actually testing the impact of this decision. It would be interesting to test the impact of this decision on prediction performance." in `curation_comments` and `splits_comment` with: "Tested 2026-11-06: training only on the arrived bookings that were open on one of the three monthly prediction dates before their arrival, the condition of the test rows, ranks the same (LightGBM, nine dates, ROC AUC 0.810) and lowers the mean prediction from 0.216 to 0.176 against 0.149 cancelled in test (log loss 0.364 to 0.349), but leaves 30% to 50% of the bookings for training; the 90-day rule stays." On B, replace step d) of `_make_splits` by that condition (for a training booking, the first-of-months q with `booking_date <= q < arrival_date < q + 3 months`, kept when `ReservationStatusDate > q` for one of them), rewrite the task summary's `changes` and the two notes, `dataset check`, rebuild; record `CC` line. C needs duplicated rows in the frame and is not written out.
+
+   [^3a]: **SPLIT-1** (Must): the split mirrors the real application. **SPLIT-14** (Must): no window's train side holds less than 50% of the data. **SPLIT-20** (Should): what the train side holds is the history a model refit at each window would train on.
+
+   **Resolved (2026-11-11, Andrej):** A (`ok` on the recommendation): the 90-day rule stays; the untested-assumption sentence in the curation notes and the splits comment is replaced by the measured numbers (same ranking, ROC AUC 0.810; mean prediction 0.216 against 0.176 under B; 30% to 50% of the bookings for training under B).
+
+   **Andrej (2026-11-11, ok):** As implemented.
+
+   **Resolved (2026-11-11, Andrej):** A, now applied on this branch: the sentence "Note that we made this choice
+   based on assumptions ..." in `curation_comments` and `splits_comment` is replaced by the measured numbers (same
+   ranking, LightGBM ROC AUC 0.810; mean prediction 0.216 against 0.176 under B, log loss 0.364 against 0.349; B
+   leaves 30% to 50% of the bookings for training). The 90-day rule itself is unchanged.
+
+4. **Drop `DepositType`, which the data paper computes from payments up to arrival or cancellation?**
+
+   * **Problem:**
+     - The data paper computes `DepositType` from "the payments identified for the booking in the transaction (TR) table before the booking's arrival or cancellation date", so a payment made after the prediction date, up to three months later, counts.
+     - "Non Refund" bookings, paid in full, are cancelled at 97.3% in the city hotel (843 bookings) and 84.6% in the resort (188), against 30.2% and 25.0% without a deposit; among the open bookings of the test windows, 6 to 26 per date, they are cancelled at 83% to 100%.
+     - Drop the column, or keep it with a note?
+   * **Background:** the paper does not say why fully paid bookings are cancelled far more often, and the release has no payment dates, so whether a deposit came before the prediction date cannot be traced row by row. A value computed over a window that ends at the outcome goes unless the data shows it does not move with the outcome, and a value read later stays with a note only when the traced part shows no gain[^4a]. Issue 1 tested the fields guests change before arrival, not this one. "No Deposit" is 98.6% of the bookings.
+   * **Experiments:** LightGBM as in issue 3, nine dates, three seeds: ROC AUC 0.811 without `DepositType` and 0.810 with it (log loss 0.366 and 0.364).
+   * **Consistency:** follows kick's `WheelType`, `PRIMEUNIT` and `AUCGUART`, whose recording followed the outcome and which were dropped (2026-10-22, Lennart).
+   * **Sources:** Antonio N, de Almeida A, Nunes L. Hotel booking demand datasets. Data in Brief. 2019;22:41-49, Table 1.
+     <https://doi.org/10.1016/j.dib.2018.11.126>
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep (implemented) | the source's field | no change; no gain from it measured | computed up to arrival or cancellation; its "Non Refund" level is nearly always cancelled, unexplained |
+     | B | Drop `DepositType` | one feature less | only what exists at the prediction date; no cost (0.811 without) | loses the deposit a hotel knows at booking for most rows |
+
+   * **Recommendation:** B: the source dates the field after the prediction date, its rare level behaves like the outcome, and it adds nothing measured. **Decision:** A or B?
+
+   **Notes for the AI:** on B, drop `DepositType` in `_clean` next to `BookingChanges`, `AssignedRoomType` and `RequiredCarParkingSpaces`, remove it from `ORDINAL_LEVELS`, add a curation note with the numbers above, remove "deposit type" from the task summary's `known`, `dataset check`, rebuild; record `CC` line. On A, a curation note with the same numbers and "kept: no gain measured".
+
+   [^4a]: **LEAK-10** (Must): a feature holds only what existed at the prediction point; out is a feature computed from the window that defines the target, unless the data shows the window's values do not move with the outcome; a value read at a later pull goes when it may carry a gain and stays with a note only when the part that can be traced shows none.
+
+   **Resolved (2026-11-11, Andrej):** B: `DepositType` dropped in `_clean` and removed from `ORDINAL_LEVELS` and the categorical list, with a curation note giving the numbers above; "deposit type" left the task summary's `known` and entered its `changes`. `dataset check`: 0 errors, 0 warnings; 27 features. Not rebuilt.
+
+   **Andrej (2026-11-11, change):** Option B: Drop DepositType.
+
+   **Resolved (2026-11-11, Andrej):** B, now applied on this branch: `_clean` drops `DepositType` beside the three
+   check-in fields, and it leaves `ORDINAL_LEVELS` and the categorical list; the task summary's `known` no longer
+   names the deposit type and its `changes` does; a curation bullet gives the paper's definition of the column and
+   the numbers. 27 features. `dataset check`: 0 errors, 0 warnings, 1 info (296 rows, 0.4%, now share all features
+   with another row and carry a different target, 18 more than with the column).
+
+
+5. **Ship as defined?**
+
+   * **Problem:**
+     - Nothing open was found: the columns that give the outcome away in the public version only build the windows and are dropped, the fields recorded up to check-in are dropped, and the snapshot taken the day before arrival does not carry the score.
+     - The country of the guest carries much of the score (ROC AUC 0.813 with it, 0.701 without), and the data paper warns that hotels often learn the nationality only at check-in.
+     - Ship as defined, or retire?
+   * **Background:** the data paper defines "the data point time for each observation" as "the day prior to each
+     booking's arrival" and takes values "from the bookings change log, with a timestamp relative to the day prior to
+     arrival date" (Antonio et al. 2019, Specifications table and Sec. 1). It adds: "It is also common for hotels not
+     to know the correct nationality of the customer until the moment of check-in ... the distribution of some
+     variables differ between non canceled and canceled bookings" (Sec. 2). The prediction date is up to three months
+     earlier, so a value the guest changed in between could tell the classes apart[^5a].
+   * **Experiments:** v0.2 frame and windows built with the definition's own split code from the publisher's files
+     (81,418 rows, test sizes as in the README; Slurm job 1344943), LightGBM, mean over the 9 windows:
+     - Bookings never amended (77% of the test bookings; the paper's `BookingChanges` counts changes of persons,
+       dates, nights, room type or meal): ROC AUC 0.813, the same as on all test bookings (0.813). The score does not
+       come from amended bookings, though non-cancelled bookings were amended more often (23% against 14%).
+     - Without `Country` 0.701; without the fields guests change (country, adults, children, babies, nights, room
+       type, meal, special requests, daily rate) 0.664.
+     - No sign of a nationality filled in at check-in: the 333 resort bookings without a country are cancelled at 7%
+       (other foreign guests 17%, Portuguese 39%); and among cancelled bookings (lead time 60 to 180 days) the
+       Portuguese share rises the closer to arrival they cancel (city 22% to 40%, resort 56% to 74%), the opposite of
+       a placeholder that guests correct before they arrive.
+   * **Sources:** Antonio N, de Almeida A, Nunes L. Hotel booking demand datasets. Data in Brief. 2019;22:41-49.
+     <https://doi.org/10.1016/j.dib.2018.11.126>
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ship as defined (implemented) | 81,418 bookings, 9 monthly prediction dates, ROC AUC | a real revenue decision; the leaks fixed and the snapshot timing tested; two hotels with documented fields | values are a day-before-arrival snapshot, a stated gap |
+     | B | Retire | record `No (Retired)`, folder removed | no snapshot taken after the prediction date | no measured defect; loses a documented temporal task |
+
+   * **Recommendation:** A: the outcome columns and the check-in fields are gone, and the tests show no score from
+     amended bookings and no check-in fill of the country. **Decision:** A or B?
+
+   [^5a]: **LEAK-10** (Must): a feature holds only what existed at the prediction point; a value read at a later pull
+     goes when its late cells may carry a gain, and stays with a note when the part that can be traced shows none.
+
+6. **Ten prediction dates (issue 1) or seven (issue 2)?**
+
+   * **Problem:**
+     - Issue 1 was settled on 2026-11-11 with all ten dates, 1 September 2016 to 1 June 2017, and issue 2 with the
+       seven dates of November 2016 to May 2017; both marks carry the same date and the definition can hold only one.
+     - Issue 2 was written on 2026-11-06, when the floor admitted no train side under half and the newest date in the
+       definition was 1 May 2017, so neither 1 June 2017 nor the amended floor could enter its options.
+     - Which set of dates ships?
+   * **Background:** the floor as amended on 2026-11-11 asks the newest window and one other to train on at least
+     half of the data and admits further windows down to 30%, at most as many under half as at or above it; the ten
+     dates have eight above (52.7% to 79.3%) and two under (48.3% and 44.0%). The newest window is a test window in
+     every case, and 1 June 2017 is the newest date whose three months of arrivals (to 31 August 2017) the data
+     holds[^6a].
+   * **Experiments:** the split's own rules on the 81,418 bookings, newest first: test 6,511, 6,390, 6,015, 5,768,
+     4,578, 2,500, 2,474, 3,228, 4,314 and 4,596; train 64,524 down to 35,860 (79.3%, 74.5%, 70.1%, 66.1%, 62.6%,
+     59.7%, 56.4%, 52.7%, 48.3% and 44.0%).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ten dates (implemented) | 1 September 2016 to 1 June 2017, as issue 1 settled | the newest complete date and both autumn 2016 dates; the amended floor admits the two under half | two train sides under half (48.3%, 44.0%) |
+     | B | Seven dates | 1 November 2016 to 1 May 2017, as issue 2's mark | every train side at 52.7% or more | the newest complete date (1 June 2017) is left out, which the newest-window rule keeps |
+     | C | Eight dates | 1 November 2016 to 1 June 2017 | every train side above half and the newest complete date | no autumn 2016 arrivals; eight windows |
+
+   * **Recommendation:** A, the later decision and the one the amended floor was written for; C if the two dates
+     under half should go after all, since it still keeps the newest complete date. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B or C, remove `(2016, 10)` and `(2016, 9)` from `test_sets_year_month` in `_make_splits`
+   (on B also `(2017, 6)`), drop the `splits_train_under_half` entry of `accepted_check_warnings`, and rewrite the
+   date counts and shares in `task_summary.split`, `splits_comment` and `curation_comments`; `dataset check`.
+
+   [^6a]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): the newest window and at least one other train on at least
+     50% of the data; further windows down to 30%, and at most as many windows under 50% as at or above it.
+     **SPLIT-15** (Must for the newest window): the newest window is always a test window, the deployment period.
 
 ## Reference
 

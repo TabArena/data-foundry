@@ -41,8 +41,8 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
         fit_reason=(
             "The tissue type and the metastasis sites are known before the primary is found, and the label is the "
             "site found. But the rows are patients whose primary was found, with the spread typical of it (neck "
-            "nodes in all 20 head and neck patients), not patients with metastases of unknown origin. A model in use "
-            "would also meet the rare sites we left out."
+            "nodes in all 20 head and neck patients), not patients with metastases of unknown origin; the tissue "
+            "type is often missing. A model in use would also meet the rare sites left out."
         ),
     )
 
@@ -67,6 +67,7 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We get the data from UCI.
 
@@ -75,12 +76,21 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
     curation_comments = """
         We start with the data from UCI.
 
+        - Note: the patients are cancer patients whose primary was found, not a series with metastases of unknown origin. The metastasis sites include lymph nodes next to the primary (neck nodes in all 20 head and neck patients, armpit nodes in 21 of 24 breast patients), and the tissue type is missing for 45% of the lung patients (38 of 84) against 11% of the others.
+        - Missing tissue type (Andrej, 2026-11-11, review issue 2): kept as missing, read as a type outside the three codes. 44 of the 61 blanks are "poorly" differentiated (34 of them lung), so the tissue was examined and the type fit none of epidermoid, adeno or anaplastic, a "type not determined" result a work-up for an unknown primary also gives. The 15 rows with neither type nor grade are 27% lung, the base rate, so the part that may be unrecorded marks no site. The blank is worth about 5% of TabPFN 3.5's skill (log loss 1.314, 1.357 with the blank replaced by a random draw, class shares 2.203).
         - We encode missing values as np.nan instead of "?".
         - We reverse the ordinal encoding of all features, adding the text back to the categories.
         - We drop classes with less than 10 samples to have sufficient data per class for a robust benchmark task. In reality, this would call for collecting more data on these classes, or treating it as an individual few-shot prediction task.
-        - The data contains many duplicates (10%), which seems to be naturally occurring given the limited amount of features. Moreover, the duplicates sometimes have different targets. We keep the duplicates. While this might bias evaluation a bit, it represents the real-world task with ambiguous features better.
+        - Entity leakage, natural (2026-11-06; Andrej, 2026-11-09, review issue 4): 49 of 302 patients repeat another's
+          17 findings (30 with the same site); a null keeping the findings' links gives as many (57, 95% 45-70), 16 of
+          the 25 groups hold several sites and copies share the site as often as their findings predict (58% against
+          56%), and the file has no order but the site, so they are distinct patients with the same coarse findings.
+          Under random 3-fold splits 20% of test patients have an exact copy in training.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Time basis: ForcedIIDFromTemporal: cancer patients of the Institute of Oncology, Ljubljana, seen before 1986
+          over an unstated period; the UCI file is sorted by site and keeps no date, so whether the site shares or the
+          diagnostic work-up drifted cannot be measured. Years of diagnosis would allow a split by period.
     """
 
     # Task
