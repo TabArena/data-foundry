@@ -135,8 +135,9 @@ market). The prototypes, by the questions that tell them apart:
    meets items drawn like the catalogue's: `Timeless`. The split is random or grouped by item family (musk,
    sat11_hand_algo_runtime, splice). Which identifier a parent source could date the items by (a structure in ChEMBL,
    an observation date) tells whether the catalogue drifts; "none published" is an answer too. A catalogue that drifts
-   goes on to question 4: qsar_tid_11's ChEMBL years show close training analogs from the test compound's own year for
-   85-90% of its scaffold folds, and predicting each year from earlier ones raises RMSE from 0.68-0.90 to 1.11-1.31.
+   goes on to question 4: qsar_tid_11's ChEMBL years show close training analogs first published in the test
+   compound's own year for 71-93% of its scaffold folds, and predicting each period from the earlier ones raises RMSE
+   from 0.80-1.04 to 0.89-1.50, which is why it ships split by first publication year.
 2. **Is the release one moment with the target of that moment, or does the use case only fill in a time the data
    covers?** Either is a `Snapshot` (one census, one scrape, the gaps of a logged week, a site not yet mapped in a past
    survey; houses, fiat_500, 5g_energy_consumption), and the line names the moment or the period. When the use case
@@ -217,7 +218,7 @@ actor does not have; a lower score is not the aim and never chooses the key. On 
 
 | Dataset | Item or family key | By entry date |
 |---|---|---|
-| qsar_tid_11 | scaffold: RMSE 0.68-0.90, 62-75% close analogs, 85-90% of those from the test compound's own year | first publication year: RMSE 1.11-1.31, 12-26% close analogs |
+| qsar_tid_11 | scaffold: RMSE 0.80-1.04, 58% close analogs, 71-93% of those first published in the test compound's own year | first publication year: RMSE 0.89-1.50, 6-30% close analogs |
 | sdss_17 | plate: log loss 0.338, sky cell of 10 degrees 0.354 (random 0.331) | year of the spectrum: 0.506 |
 | apistox | scaffold: 14-19% close analogs (random 17-30%) | decade of first publication: 10-24% |
 | superconductivity | composition: RMSE 8.4-14.2 K; element set: 11.7-18.0 K; the iron-based family held out: 20.1 K on its 2009-2019 compositions | first report year: 12.7-18.2 K (12.8 K on the iron-based) |
@@ -482,7 +483,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-31 | drug_induced_autoimmunity_prediction | grouped on the Bemis-Murcko scaffold, ring-less drugs alone, the bare benzene ring one group (7% of the drugs): new candidates come from series not yet tested, as in the TDC ADMET benchmarks (2026-10-19, Lennart) | applied |
 | SPLIT-31 | qsar_bioconcentration | the amendment: scaffold groups in place of IID, ring-less chemicals and the bare benzene ring (34%) alone; close training analogs of the test chemicals fall from 12.6% to 6.4% (2026-10-26, Lennart) | applied |
 | SPLIT-31 | qsar_oral_toxicity | reopened under the amendment: every row has its own QSAR-ready structure since 2026-10-21, so the scaffold is exact; ring-less chemicals (23%) and the bare benzene ring (18%) alone; close training analogs fall from 24.7% to 16.3%, against 11.0% for the untested chemicals, so the fit stays approximate (2026-10-26, Lennart) | applied |
-| SPLIT-31 | qsar_tid_11 | scaffold groups in place of IID: the file carries ChEMBL compound ids, and ChEMBL 17 (the release the data was drawn from) gives every one its structure; 21 ring-less compounds alone, the bare benzene ring 2%; close training analogs fall from 79.7% to 59.2%, untuned LightGBM RMSE 0.794 to 0.920; the features stay the source's fingerprint (2026-11-01, Lennart) | applied |
+| SPLIT-31 | qsar_tid_11 | scaffold groups in place of IID: the file carries ChEMBL compound ids, and ChEMBL 17 (the release the data was drawn from) gives every one its structure; 21 ring-less compounds alone, the bare benzene ring 2%; close training analogs fall from 79.7% to 59.2%, untuned LightGBM RMSE 0.794 to 0.920; the features stay the source's fingerprint (2026-11-01, Lennart); superseded on 2026-11-11 by a split by first publication year, since the scaffold folds kept the test compound's siblings of its own year (SPLIT-34) | applied |
 | SPLIT-24, SPLIT-26, SPLIT-4 | boreal_postfire_lichen_biomass | one group per Saskatchewan plot kept (the names carry no burn key), with the measured effect in the notes, over a burn key joined from an outside source (Canada's NFDB and NBAC fire polygons, point in polygon on the plot's fire year): tried on 2026-11-09 and taken back on 2026-11-10 (Andrej: "Back to A, with the note"). 94 of 190 SK plots lay inside a mapped burn of their year (none of the 66 dated before 1945); burn-mates in training flattered the SK RMSE by about 5 kg/ha against a fold-draw SE of about 40, and no model changed rank; the join cost 2 GB of maps, a shapefile reader and a build tied to NFDB's current version only | applied |
 | SPLIT-34 | apistox | split by the decade of first publication (four expanding windows), not by scaffold: the use case predicts compounds that appear later, and the windows leave 10-24% of the test compounds a close training analog, against 14-19% for scaffold groups and 17-30% at random | applied |
 | SPLIT-33 | asp_potassco_classification, sat11_hand_algo_runtime | one row per instance and configuration, scored by PAR10 per instance: the repeats follow the instances (1,212: 10 x 3; 184: 20 x 3), not the runs (13,332: 3 x 3; 1,840: 10 x 3) | applied |

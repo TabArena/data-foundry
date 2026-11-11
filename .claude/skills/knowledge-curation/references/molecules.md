@@ -124,7 +124,8 @@ The task is going from the structure to a prediction (Lennart, 2026-11-01). So:
   0.822 on drug_induced.
 * **A date can stand in for the scaffold, or not (SPLIT-34).** apistox's decade windows give 10-24% close analogs,
   against 14-19% for scaffold groups and 17-30% at random, so it stays temporal. qsar_tid_11's first ChEMBL years
-  leave 12-26% close analogs where its scaffold folds leave 62-75%. nci_aids_antiviral_screen's registration order
+  leave 6-30% close analogs where its scaffold folds leave 58%, and 71-93% of the scaffold split's analogs were first
+  published in the test compound's own year. nci_aids_antiviral_screen's registration order
   leaves 8.4%, more than its scaffold groups (4.3%), and is not the order of entry into the screen.
 
 ## Use case, targets and metrics
