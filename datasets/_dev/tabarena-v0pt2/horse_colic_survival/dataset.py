@@ -4,8 +4,19 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode, set_missing
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    decode,
+    set_missing,
+)
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -61,31 +72,35 @@ CODE_LABELS = {
 
 class HorseColicSurvival(AbstractCuratedDataset):
     task_summary = TaskSummary(
-        question="Will a horse with colic live, die or be put down?",
+        question="Will a horse with colic survive to leave the hospital?",
         use_case=(
             "For example, a veterinarian examining a horse with colic on arrival estimates whether it will survive, "
-            "to advise the owner on surgery, treatment or euthanasia."
+            "to advise the owner on surgery, treatment or euthanasia, with a model built on the hospital's earlier "
+            "admissions; the horse may be on its first or a return visit."
         ),
         row=(
-            "One horse with colic at its first visit to a veterinary hospital (344 horses; place and period not "
-            "stated)."
+            "One admission of a horse with colic to the teaching hospital of the Ontario Veterinary College, Guelph "
+            "(344 admissions of 334 horses, in the order of their case numbers; the period is not stated, likely the "
+            "1980s)."
         ),
-        predicted=("What eventually happened to the horse; it lived (62.5%), died (23%) or was euthanized (14.5%)."),
+        predicted="Whether the horse did not survive, that is died or was euthanized: 129 of 344 (37.5%).",
         known=(
             "Age group, rectal temperature, pulse and breathing rate, the state of the legs, gums and gut (pain, gut "
             "sounds, distension, rectal exam, abdomen), stomach-tube reflux and its acidity, and blood and "
             "belly-fluid values (packed cell volume, total protein)."
         ),
-        split="Random horses, so the test data stands for new cases of the same hospital.",
+        split=(
+            "Three windows of 57 horses in case-number order, each trained on all earlier horses, so a model meets "
+            "later admissions, including the hospital's change in how it recorded some lab values."
+        ),
         changes=(
-            "We drop whether the horse had surgery and the lesion found, which come after the examination, and keep "
-            "each horse's first visit only."
+            "We merge died and euthanized into did not survive, drop whether the horse had surgery and the lesion "
+            "found, which come after the examination, and keep one row per hospital number."
         ),
         fit="approximate",
         fit_reason=(
-            "One of the three outcomes, euthanasia, is a decision by owner and vet that the prediction would inform, "
-            "and the source states neither when the examination values were taken nor how long the horses were "
-            "followed."
+            "Not surviving includes euthanasia, a decision by owner and vet that the prediction would inform, and "
+            "the source states neither when the examination values were taken nor the calendar period of the cases."
         ),
     )
 
@@ -120,8 +135,24 @@ class HorseColicSurvival(AbstractCuratedDataset):
 
         - We encode missing values as NaN.
         - We drop features that leak the target.
-        - We keep only the first instance (hospital number) per horse, as they can be treated multiple times and otherwise leaks information about the target.
-        - We use the target "outcome" to model a task where we aim to predict if the horse survives or not. We drop cases that have not outcome recorded.
+        - We keep the first row per hospital number. The 22 repeated hospital numbers are one visit with several lesion
+          codes (one pair with conflicting outcomes), not repeat visits; the first row is kept (corrected 2026-11-10).
+        - Target (2026-11-10, Andrej, review issue 1 B): `did_not_survive`, "Yes" when the horse died or was
+          euthanized (129 of 344), "No" when it lived, the usual survival-to-discharge outcome of colic prognosis
+          (Bishop et al. 2022, Vet Surg 51:891, https://doi.org/10.1111/vsu.13839). Died against euthanized follows the
+          admission period (earlier case numbers 58 died / 14 euthanized among non-survivors, later ones 4 / 34) with
+          similar clinical findings, so the three classes are not kept. We drop cases with no outcome recorded.
+        - Collection (2026-11-10, from the creators' papers): the horses came to the teaching hospital of the Ontario
+          Veterinary College, Guelph, one hospital; the rows come from its patient information system, which stores
+          the presenting complaint, treatment, diagnosis and outcome, with much of the clinical pathology "electronically
+          generated by the lab equipment" (Cecile & McLeish, arXiv:1304.2344; McLeish et al., arXiv:1304.1519). No
+          admission date is given; the hospital number is "the case number assigned to the horse" (UCI codebook) and
+          orders the admissions. The first 229 case numbers (up to 530,560; 60% lived) match in size and survival the
+          231 teaching-hospital horses of Pascoe et al. 1990 (Can J Vet Res, PMC1255672, 61% survivors); the later 115
+          (67% lived) mostly follow a second recording route (below). This reading rests on the counts, not on a
+          statement of the source. Missing values can follow the outcome: "sometimes records ended because euthanasia
+          was chosen as a solution for cost reasons" (arXiv:1304.2344). UCI's 300/68 files are not a time split (both
+          span the whole range of case numbers).
         - We keep the duplicates occurring in the data.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 8 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 8 of them decoded from the source's codes
@@ -134,13 +165,46 @@ class HorseColicSurvival(AbstractCuratedDataset):
           each level is carries the words, a score without them is a number): 8 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 5 unordered codes carry their words: `mucous_membranes`, `pain`,
           `abdomen`, `abdominocentesis_appearance`, `age`.
+        - Recording change, kept (Exception to CLEAN-21, 2026-11-10, Andrej, review issue 2 A): `total_protein` is
+          recorded in g/L (values above 15) for 95 horses, 92 of them with case numbers above 530,560, and in g/dL for
+          209; in the g/L rows every measured `abdominocentesis_total_protein` (44 values) and `nasogastric_reflux_ph`
+          (11) is exactly 1 or 2, codes the source does not explain, while elsewhere these columns hold measurements.
+          All three stay as recorded: the recording changes once, along the time order, and is unrelated to the label
+          (Fisher p = 0.16), so the middle window tests what the hospital met, a model trained on the old recording (3
+          g/L rows of 230) scoring later horses recorded the new way (45 g/L of 57). Serves P4 (a split that mirrors
+          the application) and P5 (the data as recorded). Untuned, three windows newest first: as recorded LightGBM
+          log loss 0.549 / 0.783 / 0.917, logistic regression 0.548 / 2.324 / 0.768; harmonised 0.611 / 0.841 / 0.911
+          and 0.587 / 0.720 / 0.809. Under the source's three classes the unit told died from euthanized (ROC AUC 0.79
+          alone), which the `Class-dependent Recording` marker records.
+        - Time order (2026-11-10, Andrej, review issue 3 B): `case_number` is the hospital number's first six digits (the
+          42 seven-digit numbers are a six-digit case number with one digit appended, a 9 for 25 of 28 foals); the
+          frame is sorted by case number, then by the full number, so a case's suffixed later visits come after its
+          first visit. It is the time column and ships as a feature.
+        - Return visits kept (2026-11-10, Andrej, review issue 4 A): nine cases appear two or three times under one
+          six-digit case number with a suffix (10 later rows; the codebook: "may not be unique if the horse is treated >
+          1 time"), all first visits survived. A return visit is an admission to score; the time order keeps each
+          later visit after its first, so no window trains on a later visit and tests the first.
     """
 
     # Task
-    target = "outcome"
-    problem_type = "multiclass_classification"
+    target = "did_not_survive"
+    problem_type = "binary_classification"
     metric = Metric.fallback(
-        reason="The UCI donation (McLeish & Cecile, 1989) defines no metric; its stated class attribute is the surgical lesion (attr 24), not the outcome we predict, and no paper defines an evaluation for the outcome task.",
+        reason="The UCI donation (McLeish & Cecile, 1989) defines no metric; its stated class attribute is the surgical lesion (attr 24), not the outcome we predict, and the survival models of the field (Pascoe et al. 1990, Bishop et al. 2022) report sensitivity and specificity at a chosen cut, not a ranking metric.",
+    )
+
+    # Splits
+    splits_comment = """
+        Three test windows of 57 horses in case-number order, walking back from the newest; each trains on all earlier
+        horses (50%, 67% and 83% of the rows), so no window trains on less than half of the data (SPLIT-14). The case
+        number orders the admissions but gives no dates, so the windows are counts of horses, not calendar periods.
+        The outcome is known by discharge, far sooner than a window, so there is no gap. The oldest window tests
+        horses recorded the old way, the middle one is the first to meet the second recording route (trained on
+        almost none of it), the newest is tested after a refit that has seen it (2026-11-10, Andrej, review issue 3 B).
+    """
+    temporal = Temporal(
+        on="case_number",
+        splits=TemporalSplits(window=57, unit="rows", n_windows=3, min_train_fraction=0.5),
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -185,9 +249,15 @@ class HorseColicSurvival(AbstractCuratedDataset):
         df = df.drop_duplicates(subset=["hospital_number"], keep="first")
         # Only keep non nan outcome rows
         df = df[~df["outcome"].isna()]
+        # the case number orders the admissions: a seven-digit number is a six-digit case number with a digit appended;
+        # sort by it, then by the full number, so suffixed later visits follow the first visit (review issue 3)
+        df["case_number"] = np.where(
+            df["hospital_number"] >= 1_000_000, df["hospital_number"] // 10, df["hospital_number"]
+        ).astype(int)
+        df = df.sort_values(["case_number", "hospital_number"], kind="stable").reset_index(drop=True)
         df = df.drop(
             columns=[
-                "hospital_number",  # constant now
+                "hospital_number",  # the case number carries its order
                 "surgery",  # leaks target
                 "cp_data",  # no significance according to original data description
                 # Other target outcomes and thus leaking of outcome
@@ -197,7 +267,8 @@ class HorseColicSurvival(AbstractCuratedDataset):
                 "lesion_type_3",
             ]
         )
-        df["outcome"] = df["outcome"].map({1: "Lived", 2: "Died", 3: "Euthanized"})
+        # did not survive: died (2) or euthanized (3), the event "Yes" (review issue 1 B; CLEAN-25)
+        df["did_not_survive"] = df.pop("outcome").map({1: "No", 2: "Yes", 3: "Yes"})
         # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
         # CLEAN-14): don't know, refused, not asked, other
         df = set_missing(
