@@ -21,6 +21,7 @@ both through :meth:`~data_foundry.v2.dataset.AbstractCuratedDataset.window_stats
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
 import numpy as np
@@ -33,6 +34,9 @@ PSI_BINS = 10
 
 PSI_EPSILON = 1e-4
 """The share an empty bin counts as, so the index stays finite."""
+
+DRIFT_THREADS = 16
+"""Threads for the drift of a wide frame's columns; the result does not depend on it."""
 
 TOP_DRIFT = 3
 """How many of the most drifting features a row names."""
@@ -131,7 +135,9 @@ def window_stats(
             "target_test": _target(df[target].iloc[test_sample], problem_type, n_total=len(test)),
             "target_train": _target(df[target].iloc[train_sample], problem_type, n_total=len(train)),
         }
-        row.update(_drift(df, used, train_sample, test_sample))
+        # One gather of the sampled rows for every feature: a wide frame (maps_router_eta_1m has about 1,000
+        # columns) costs one block take per side, not one take per column.
+        row.update(_drift(df.iloc[train_sample][used], df.iloc[test_sample][used], used))
         row["unseen_categories"] = _unseen(levels, train, test_sample)
         rows.append(row)
     return pd.DataFrame(rows)
@@ -191,9 +197,13 @@ def _target(values: pd.Series, problem_type: str, *, n_total: int) -> str:
     return ", ".join(f"{c} {shares.get(c, 0.0):.1%}" for c in classes)
 
 
-def _drift(df: pd.DataFrame, features: list[str], train: np.ndarray, test: np.ndarray) -> dict[str, object]:
-    """The population stability index of every feature, and the features that drift most."""
-    psi = {column: _psi(df[column].iloc[train], df[column].iloc[test]) for column in features}
+def _drift(train: pd.DataFrame, test: pd.DataFrame, features: list[str]) -> dict[str, object]:
+    """The population stability index of every feature between the sampled sides, and the features that drift most."""
+    if len(features) > 1:  # numpy's sorting and quantiles release the GIL: a wide frame's columns run in parallel
+        with ThreadPoolExecutor(max_workers=min(DRIFT_THREADS, len(features))) as pool:
+            psi = dict(zip(features, pool.map(lambda c: _psi(train[c], test[c]), features), strict=True))
+    else:
+        psi = {column: _psi(train[column], test[column]) for column in features}
     if not psi:
         return {"psi_max": np.nan, "psi_median": np.nan, "top_drift": ""}
     ranked = sorted(psi.items(), key=lambda item: -item[1])

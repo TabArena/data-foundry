@@ -108,6 +108,14 @@ class DeliveryEta1m(AbstractCuratedDataset):
         splits=TemporalSplits(window=7, unit="days", cutoffs=("2024-01-01", "2023-12-18", "2023-12-04")),
     )
     row_budget = RowBudget(train=1_000_000, test=500_000)
+    accepted_check_warnings = {
+        "splits_feature_missing_in_test": (
+            "Decided (Lennart, 2026-11-10, review issue 2, A): the 45 features `num_76` to `num_121` stop being "
+            "recorded on 23 November 2023 at 11:00 and stay, as the service's own model met them (curation_comments, "
+            "'Kept on purpose'). The check names 41 of them: 99% or more missing in the 18-24 December window, 42% "
+            "on its train side."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_parquet(raw_dir / "delivery_eta.parquet")

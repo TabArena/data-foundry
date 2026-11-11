@@ -62,6 +62,10 @@ CC (2026-11-10, Lennart): the declared horizon (3 months, no gap, windows starti
 
 **Assessment (AI, 2026-11-10):** applied: `temporal` cutoffs 2025-10-01, 2025-01-01 and 2024-07-01 (3 months, no gap); test 203,139, 350,790 and 213,655 complaints, train 3,236,122, 2,277,019 and 1,838,062 (94.1%, 66.2% and 53.4% of 3,439,261), as the issue's notes counted; `dataset check` 0 errors. `task_summary`, `splits_comment` and the class-share and row-budget notes name the new quarters. The horizon audit (model-free, 2026-11-10) found no source for a refit cadence, so the quarter is stated as our assumption, and found the notes' "180 days" wrong: they are the deadline of the optional public response, while a company responds within 15 calendar days and has up to 60 for its final response (https://www.consumerfinance.gov/compliance/consumer-complaint-program/company-process/); the old reason ("data from just a few days is likely not enough") failed, as a month holds 54,655 to 165,305 complaints. No gap: at the download of 2026-01-23, 70% of December, 14% of November and 7% of October 2025 were in progress, so each train side holds one to two months of closures a refit would not yet know, accepted because the archive's closures are final (now stated in the splits comment); a one-month gap would keep the windows (51.5%, 63.9%, 91.8%). One month gives 19 candidate windows, six months exactly three.
 
+CC (2026-11-11, Lennart): accepted `time_newest_period_short` with its reason (cross-dataset item "What to do with a newest period that holds far fewer rows than the periods before it?", A).
+
+**Assessment (AI, 2026-11-11):** December 2025 holds 54,655 complaints against 73,058 to 77,970 from September to November; the share closed with monetary relief rises from 1.5% to 2.2% over those four months.
+
 ## Reference
 
 Kaggle / Gov

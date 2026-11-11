@@ -164,6 +164,11 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
     accepted_check_warnings = {
         "dataset_pure_feature_value": "Block, Inc. (Cash App) closes 99.8% of its complaints with an explanation "
         "throughout 2019-2025: a company response policy, and the company is known when the complaint is filed.",
+        "time_newest_period_short": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): December 2025 holds 54,655 complaints against 73,058 to "
+            "77,970 a month from September to November, as complaints still in progress when the archive was taken are "
+            "left out (curation_comments, the closures in progress)."
+        ),
     }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

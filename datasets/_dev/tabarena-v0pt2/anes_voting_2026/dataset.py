@@ -12274,6 +12274,7 @@ class AnesVoting2026(AbstractCuratedDataset):
           don't know (splitting it needs each count's filter, a few hundred rows each).
         - The target (2026-11-01, CLEAN-25): `VCF0702` ships its classes as words (2 means voted (ANES codebook)).
           Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
+        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): 95 questions are asked in some election years only, so a test election misses the questions its questionnaire left out while its train side holds them (VCF0401 to VCF0411 last asked in 2004, VCF0358 to VCF0373 in 2016, VCF0113 in 2020). Kept: a model fit before that election met the same questionnaire, as the column choices above.
     """
 
     # Task
@@ -12305,6 +12306,11 @@ class AnesVoting2026(AbstractCuratedDataset):
             "Signed off (Lennart, 2026-11-11, review issue 1, A): the four oldest elections train on 49.2%, "
             "46.4%, 43.2% and 40.0% of the respondents, beside five on 51.4% to 89.8%; SPLIT-14's two tiers admit "
             "them."
+        ),
+        "splits_feature_missing_in_test": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): 95 questions asked in some election years only, missing "
+            "in the test elections whose questionnaire left them out; a model fit before the election met the same "
+            "questionnaire (curation_comments)."
         ),
     }
 

@@ -348,6 +348,7 @@ class RainInAustralia(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 3 are calendar or compass cycles, in
           their usual order (the wrap is not shown); codes that mean unknown are missing (CLEAN-10).
+        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): 12 station readings are missing in a test fortnight and recorded on its train side, as a station's instrument goes offline: Newcastle's rainfall and 9 am humidity (recorded on half the days or more only up to 2020), Sale's 9 am pressure (up to 2017), Launceston's 9 am pressure (up to 2013), and gaps of weeks at Coffs Harbour, Badgerys Creek, Mount Ginini, Nhil and Wagga Wagga. Kept: a deployed model meets the same outages.
     """
 
     # Task
@@ -396,6 +397,12 @@ class RainInAustralia(AbstractCuratedDataset):
             ),
         ),
     )
+    accepted_check_warnings = {
+        "splits_feature_missing_in_test": (
+            "Decided (Lennart, 2026-11-11, cross-dataset item): 12 station readings missing in a test fortnight while a "
+            "station's instrument is offline (curation_comments)."
+        ),
+    }
     splits_comment = """
         Weather models are refit often (one to two weeks, the horizon the curators set for
         climate_model_weather_forecasting), so a model is refit and then used every morning for 14 days. No source names

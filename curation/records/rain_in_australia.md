@@ -75,6 +75,10 @@ CC (2026-11-11, Lennart): the declared horizon (14 days, no gap, 26 windows star
 
 **Assessment (AI, 2026-11-11):** applied issue 7 (B): `temporal` declares the 26 cutoffs from 2026-01-17 back to 2018-05-19; test 606 to 669 location-days per window, 16,484 in all, with 55 to 202 rain days; train 137,157 to 263,940 rows (51.8% to 99.8%); every calendar month starts two or three windows. The splits comment says why 26 windows rather than the nine folds of a random split of this size: a 14-day window holds about 630 location-days, so 26 keep the test rows. `dataset check`: 0 errors, 0 warnings.
 
+CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note naming the columns (cross-dataset item "Accept splits_feature_missing_in_test where a column starts or stops being recorded within the history?", A: the data as the deployed model met it).
+
+**Assessment (AI, 2026-11-11):** 12 station readings are missing in at least one test fortnight and recorded for 50% to 93% of its train side.
+
 ## Reference
 
 Kaggle

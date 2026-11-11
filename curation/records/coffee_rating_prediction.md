@@ -53,6 +53,10 @@ CC (2026-10-21, Lennart): drop the `2ndTierData` tag ("we have this now with use
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `roast` (the README lists their levels).
 
+CC (2026-11-11, Lennart): drop the 2 reviews of October 2023, the scrape's partial last month (cross-dataset item "What to do with a newest period that holds far fewer rows than the periods before it?", A).
+
+**Assessment (AI, 2026-11-11):** October 2023 held 2 reviews against 24 to 65 a month in the rest of 2023; the 2-month windows now walk back from September 2023 instead of October.
+
 ## Reference
 
 Kaggle

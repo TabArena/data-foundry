@@ -68,6 +68,10 @@ CC (2026-10-26, Lennart): verdict ship.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `sber_mbd_product_propensity` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-11, Lennart): accepted `time_newest_period_short` with its reason (cross-dataset item "What to do with a newest period that holds far fewer rows than the periods before it?", A).
+
+**Assessment (AI, 2026-11-11):** the periods ending in November and December 2017 hold 123 and 63 clients against 416 to 524 a month from May to October.
+
 ## Reference
 
 Booster

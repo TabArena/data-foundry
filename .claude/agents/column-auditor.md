@@ -27,7 +27,10 @@ For every column of the cleaned frame (load it through
    order of the codes is often reversed), and that its codes for unknown answers are missing.
 4. For a temporal task, its missing share and its level by period (a month, a week): a column that stops or starts
    being recorded within the history (delivery_eta_1m: 45 features 99.6% missing from 23 November 2023, in every
-   test window) is a finding even when the data is as published.
+   test window) is a finding even when the data is as published. `dataset check` warns
+   `splits_feature_missing_in_test` for the columns it finds that way (95% missing on one side of a window, at
+   most half on the other); answer each, and look for the partial ones it misses (a share that steps from 5% to
+   60%).
 5. A verdict: fine, leak (rule, strength, remedy), cleaning problem (rule, remedy), or question for the curator.
 
 When the task has a training weight (`sample_weight`, such as a realized time on risk), read the weight column's

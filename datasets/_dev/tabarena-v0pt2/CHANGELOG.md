@@ -1,5 +1,45 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11, the curator's marks on the two new temporal checks (no container built)
+
+Both cross-dataset items are applied as recommended (Lennart, 2026-11-11, A on each); the README files follow at the
+next `dataset check`.
+
+- Columns recorded on one side of a window only: anes_voting_2026 (95 questions asked in some election years),
+  college_scorecard (`DISTANCEONLY` from the 2011 cohort), home_credit_default_stability_1m (12 columns that stop in
+  September-October 2019, 15 that start in April-June 2020), onlinenewspopularity (`kw_min_min`, -1 in every 2014
+  article), rain_in_australia (12 station readings while an instrument is offline),
+  sberbank_housing_market_forecasting (three one-year lags of macro columns) and
+  wisconsin_local_government_property_insurance_fund (`NoClaimCredit`, missing by construction in 2006-2007) each
+  name the columns in a `curation_comments` bullet and accept `splits_feature_missing_in_test`.
+- coffee_rating_prediction drops the 2 reviews of October 2023, the scrape's partial last month; its 2-month windows
+  walk back from August-September 2023 (12 windows to October-November 2021, in place of 13).
+- consumer_complaints_1m (December 2025, complaints in progress left out), rosbank1 (the thin tail of the client
+  intake in November-December 2017) and sberbank_housing_market_forecasting (the market after the December 2014 rush)
+  accept `time_newest_period_short` with the numbers.
+
+## 2026-11-11, two new temporal checks from the review rounds (no container built)
+
+Two findings of the window reviews that no check caught are now checks of `dataset check`, run on all 54 temporal
+definitions; what they found is raised on the review board as two cross-dataset items (`REVIEW.md`, "From the two new
+temporal checks of 2026-11-11").
+
+- `splits_feature_missing_in_test` (warning): a feature 95% or more missing on one side of a temporal window and at
+  most half missing on the other, a column that starts or stops being recorded within the history (delivery_eta_1m's
+  45 features from 23 November 2023). It fires on eight definitions. delivery_eta_1m accepts it with the curator's
+  decision of 2026-11-10 (issue 2, A); the other seven (anes_voting_2026, college_scorecard,
+  home_credit_default_stability_1m, onlinenewspopularity, rain_in_australia, sberbank_housing_market_forecasting,
+  wisconsin_local_government_property_insurance_fund) wait for the cross-dataset item.
+- `time_newest_period_short` (warning): the newest 30 days of a date column hold under 60% of the median rows a day of
+  the 30-day spans before, often a download or scrape cut (kickstarter). It fires on coffee_rating_prediction,
+  consumer_complaints_1m, rosbank1 and sberbank_housing_market_forecasting, all four in the second item.
+- `dataset windows` measures the feature drift of a window on 16 threads (six windows of a synthetic frame of 1M rows
+  and 410 features: 13.1 s to 4.0 s).
+- Skills: `review-added-datasets` has a brief for agents that apply a round's decisions in parallel
+  (`references/apply_brief.md`); `agent_runs.md` lists the lessons on files agents share; `claims.md` says what a PR
+  does when the curator sets the claims board aside; the column and split auditors and `/add-dataset` name the new
+  checks.
+
 ## 2026-11-11, the curator's window decisions, round 3 (no container built)
 
 The curator's replies to the round-2 answers and consistency checks are applied; each takes the option the AI turn

@@ -131,6 +131,32 @@ that happens to be first on PATH."""
 
 DEFAULT_SPLITS_COMMENT = "Default splits."
 
+NEWEST_PERIOD_DAYS = 30
+"""The span whose rows a day the newest-period check compares with the spans before it."""
+
+NEWEST_PERIOD_RATIO = 0.6
+"""Below this share of the earlier spans' median, the newest period is flagged as short."""
+
+
+def newest_period_rate(times: pd.Series, *, days: int = NEWEST_PERIOD_DAYS) -> tuple[float, float, float] | None:
+    """Rows a day in the newest ``days`` days of a date column, the median over up to twelve spans of ``days`` days
+    before them, and their ratio; ``None`` for a column that is no date or spans fewer than four such spans.
+    """
+    if not pd.api.types.is_datetime64_any_dtype(times):
+        return None
+    days_of = times.dropna().dt.floor("D")
+    if days_of.empty:
+        return None
+    first, last = days_of.min(), days_of.max()
+    per_day = days_of.value_counts().reindex(pd.date_range(first, last, freq="D"), fill_value=0).to_numpy()
+    if len(per_day) < 4 * days:
+        return None
+    newest = float(per_day[-days:].mean())
+    spans = [per_day[-(k + 1) * days : -k * days].mean() for k in range(1, min(12, len(per_day) // days - 1) + 1)]
+    median = float(np.median(spans))
+    return (newest, median, newest / median) if median > 0 else None
+
+
 FLOOR_CORE = 0.5
 """SPLIT-14's core: the newest window and at least one other train on this share of the rows or more."""
 
@@ -1303,6 +1329,8 @@ class AbstractCuratedDataset(ABC):
         df, test = self.process()
         plan = self.make_splits(df)
         self._frame_rows = len(df)  # the floor counts every row, also those a row budget leaves out of the container
+        on = self.temporal.on if self.temporal is not None else None
+        self._newest_rate = newest_period_rate(df[on]) if on is not None and on in df.columns else None
         horizon, unit = _horizon(type(self))
         gap, gap_unit = _gap(type(self))
         splits_metadata = PredictiveMLSplitsMetadata(
@@ -1472,6 +1500,7 @@ class AbstractCuratedDataset(ABC):
             ("extra", lambda: self._extra_checks(container)),
             ("raw files", lambda: self._raw_file_findings(container.dataset_metadata.raw_files)),
             ("floor", lambda: self._floor_findings(container)),
+            ("newest period", self._newest_period_findings),
         ):
             try:
                 own += run()
@@ -1557,6 +1586,27 @@ class AbstractCuratedDataset(ABC):
                 )
             )
         return findings
+
+    def _newest_period_findings(self) -> list[CheckResult]:
+        """A newest period with far fewer rows a day than the spans before it: often a download or a scrape cut
+        before the outcomes were complete (kickstarter, reviews of 2026-11-10 and 11; LEAK-24).
+        """
+        rate = getattr(self, "_newest_rate", None)
+        if rate is None or rate[2] >= NEWEST_PERIOD_RATIO:
+            return []
+        last, median, ratio = rate
+        return [
+            CheckResult(
+                "time_newest_period_short",
+                "warning",
+                f"The newest {NEWEST_PERIOD_DAYS} days hold {last:,.0f} rows a day against a median of {median:,.0f} "
+                f"over the {NEWEST_PERIOD_DAYS}-day spans before ({ratio:.0%}).",
+                hint="Check whether the release cut the newest period before its outcomes were complete (a scrape "
+                "that keeps only ended cases, a download before late reports): compare its target rate with earlier "
+                "periods, and cut the data where follow-up is complete; or accept it with the reason (a seasonal "
+                "low, a real decline).",
+            )
+        ]
 
     def _summary_checks(self) -> list[CheckResult]:
         """Findings about :attr:`task_summary`: missing, no use case, or too long to read at a glance."""

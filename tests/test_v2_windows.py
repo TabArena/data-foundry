@@ -11,7 +11,7 @@ import pandas as pd
 import pytest
 from data_foundry.v2 import get_dataset
 from data_foundry.v2.cli import add_dataset_parser
-from data_foundry.v2.dataset import AbstractCuratedDataset
+from data_foundry.v2.dataset import NEWEST_PERIOD_RATIO, AbstractCuratedDataset, newest_period_rate
 from data_foundry.v2.splits import TemporalSplits, temporal_window_splits, window_bounds
 from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
@@ -182,3 +182,17 @@ def test_the_floor_findings_ask_for_the_curators_sign_off() -> None:
     assert findings([90, 70, 45, 40, 35])["splits_floor_core"] == "error"  # more windows under half than above
     assert findings([50, 45, 40], frame_rows=100)["splits_floor_core"] == "error"
     assert findings([55, 52, 45], frame_rows=100) == {"splits_train_under_half": "warning"}
+
+
+def test_a_newest_period_cut_short_is_found() -> None:
+    """The newest 30 days with far fewer rows a day than the spans before flag a download or scrape cut."""
+    days = pd.date_range("2023-01-01", "2023-12-31", freq="D")
+    steady = pd.Series(np.repeat(days, 50))
+    newest, median, ratio = newest_period_rate(steady)
+    assert (newest, median, ratio) == (50.0, 50.0, 1.0)
+    cut = pd.Series(np.concatenate([np.repeat(days[:-30], 50), np.repeat(days[-30:], 10)]))
+    ratio_cut = newest_period_rate(cut)[2]
+    assert ratio_cut == pytest.approx(0.2)
+    assert ratio_cut < NEWEST_PERIOD_RATIO
+    assert newest_period_rate(pd.Series(np.arange(10))) is None  # no date
+    assert newest_period_rate(pd.Series(np.repeat(days[:90], 5))) is None  # fewer than four spans
