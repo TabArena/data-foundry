@@ -17,7 +17,8 @@ When the curator names several records or a dashboard filter (for example "every
    rejects it with evidence.
 4. Nothing is built. The open questions go into each record's `## Review`, also for a dataset that was not added; the
    main session writes it from the unit agents' drafts ([records.md](records.md), "The review section"). The run's
-   process log and evidence go into `local-data-warehouse/_runs/<date>_<run>/`.
+   process log and evidence go into `local-data-warehouse/_runs/<date>_<run>/`, and stay there: the record, the
+   definition and the CHANGELOG carry the numbers that matter, never the run folder's path.
 5. The curator reviews the result on the page `/review-added-datasets` builds.
 
 ## Machine limits

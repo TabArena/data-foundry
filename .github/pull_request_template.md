@@ -45,4 +45,5 @@ Checklist:
 - [ ] A change to the working copy has its dated `CHANGELOG.md` entry.
 - [ ] A decision that departs from a rule is written as an exception or an amendment.
 - [ ] `pytest -q`, `uvx ruff@0.15.15` on the changed Python and `data-foundry-curation validate` pass.
+- [ ] No local path (a run folder, a home folder) in the committed text or the body.
 - [ ] Datasets another curator holds are listed in the body.

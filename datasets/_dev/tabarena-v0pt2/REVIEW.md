@@ -166,8 +166,7 @@
   superconductivity, the same best model on 9 of 9 splits; on pancreatic at 0.66 per split (lowest -0.07, on 24 test
   mice per fold) and 0.86 for the mean, the same best model on 77% of the splits (boreal: 0.81 per split, 0.86 for the
   mean).
-  Implemented: nothing; the table and the scripts are in
-  `local-data-warehouse/_runs/2026-11-06_exposure_review/one_vote_scan/`.
+  Implemented: nothing.
   Proposal: superconductivity: the source's `rmse` weighted by a `composition_weight` scoring column, 1 over the
   composition's entries, the departure from Hamidieh's per-row score stated in the metric's reason; for the metric
   only and no `sample_weight`, as boreal's `plot_weight` (the inputs are constant within a composition, so the fit's
