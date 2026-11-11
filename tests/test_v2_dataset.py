@@ -1527,6 +1527,27 @@ def test_scoring_columns_are_kept_out_of_the_features(tmp_path: Path, warehouse:
         get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
 
 
+def test_a_metric_group_cut_across_iid_folds_leaves_the_repeats_to_the_rows(
+    tmp_path: Path, warehouse: Path, era_metric: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An IID split cuts the metric's 6 eras across folds: the default splits and the protocol check count the rows."""
+    del warehouse
+    monkeypatch.setattr(protocol, "REPEATS_BY_TRAIN_SIZE", ((5, 20), (2_500, 10), (250_000, 3)))  # 4 of 6 eras: 20
+    body = (
+        _with_metric(SCORING.format(metric=era_metric))
+        .replace("import AbstractCuratedDataset,", "import ScoringColumn, AbstractCuratedDataset,")
+        .replace(
+            '        return drop_columns(df, ["row_id"])',
+            '        df["era"] = df["row_id"] % 6\n        return drop_columns(df, ["row_id"])',
+        )
+    )
+    write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert result.ok, result.bundle_report.summary()
+    assert len(result.container.experiment_metadata.splits) == 10  # 400 train rows; 4 of 6 eras would give 20
+    assert "splits_dimensions_off_protocol" not in [r.slug for r in result.bundle_report.results]
+
+
 def test_the_template_metric_is_a_placeholder_the_checks_catch() -> None:
     template = (Path(__file__).resolve().parents[1] / "datasets" / "_template" / "dataset.py").read_text()
     assert 'metric = Metric.fallback(reason="TODO(verify):' in template

@@ -13,8 +13,15 @@ from data_foundry import (
     bundle_checks,
     curation_recommendations as v1,
 )
-from data_foundry.schema import PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2, RowBudget, TrainSampling
+from data_foundry.schema import (
+    Grouping,
+    PredictiveMLSplitsMetadata,
+    PredictiveMLTaskMetadataV2,
+    RowBudget,
+    TrainSampling,
+)
 from data_foundry.v2 import splits as protocol
+from data_foundry.v2.metrics import Metric
 from data_foundry.v2.splits import (
     fit_splits_to_budget,
     grouped_splits,
@@ -115,6 +122,56 @@ def test_per_group_frames_count_groups_until_they_are_large(monkeypatch: pytest.
     assert recommended_dimensions(df, group_on="g", group_labels="per_group") == (20, 3)
     monkeypatch.setattr(protocol, "SINGLE_REPEAT_ROWS", 100)
     assert recommended_dimensions(df, group_on="g", group_labels="per_group") == (1, 3)
+
+
+def runs_frame(n_instances: int, n_runs: int) -> pd.DataFrame:
+    """One row per instance and run (a solver's runtime), the instances in 10 classes, as in algorithm selection."""
+    instances = np.repeat(np.arange(n_instances), n_runs)
+    runtimes = np.arange(len(instances), dtype=float)
+    return pd.DataFrame({"instance": instances, "cls": instances % 10, "target": runtimes})
+
+
+def test_a_metric_that_scores_per_group_counts_its_groups_not_the_rows() -> None:
+    """A long-format table gets the splits of the same task with one row per scored unit."""
+    df = runs_frame(1_212, 11)  # 13,332 rows; the metric scores 1,212 instances
+    assert recommended_dimensions(df, group_on="cls", group_labels="per_sample") == (3, 3)
+    assert recommended_dimensions(df, group_on="cls", group_labels="per_sample", score_group_on="instance") == (10, 3)
+    assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", score_group_on="instance") == (
+        10,
+        3,
+    )
+    one_row_per_instance = df.drop_duplicates("instance").reset_index(drop=True)
+    assert recommended_dimensions(one_row_per_instance) == (10, 3)  # the same task in the other layout
+
+
+def test_a_scored_group_frame_gets_one_repeat_when_it_is_large(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The row budget still caps the repeats of a frame scored per group."""
+    df = runs_frame(30, 10)  # 300 rows, 30 instances
+    assert recommended_dimensions(df, group_on="instance", score_group_on="instance") == (20, 3)
+    monkeypatch.setattr(protocol, "SINGLE_REPEAT_ROWS", 300)
+    assert recommended_dimensions(df, group_on="instance", score_group_on="instance") == (1, 3)
+
+
+def test_a_metric_group_the_split_cuts_across_folds_counts_rows() -> None:
+    """A metric group spread over several split groups (a survey year over stations), or over an IID split, is scored
+    on part of its rows in every fold: the rows count, not the groups."""
+    df = runs_frame(1_212, 11)  # 13,332 rows
+    df["year"] = df["instance"] % 15  # 15 years, each across many instances and all 10 classes
+    assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", score_group_on="year") == (3, 3)
+    assert recommended_dimensions(df, score_group_on="instance") == (3, 3)  # IID: every instance cut across folds
+    assert protocol.scored_groups_held_out_whole(df, "cls", "instance")
+    assert not protocol.scored_groups_held_out_whole(df, "cls", "year")
+    assert not protocol.scored_groups_held_out_whole(df, None, "instance")
+
+
+def test_metric_group_column_is_the_metrics_group_input() -> None:
+    """The metric's ``group`` input names the scored unit; a metric without one scores rows."""
+    par10 = Metric.source("par_k", params={"cutoff": 600}, inputs={"group": "instance"})
+    task = PredictiveMLTaskMetadataV2(
+        target_column_name="target", problem_type="regression", objective_metric=make_spec("regression", par10)
+    )
+    assert protocol.metric_group_column(task) == "instance"
+    assert protocol.metric_group_column(V2_TASK) is None  # a metric that scores rows
 
 
 def test_the_seed_is_the_v1_seed() -> None:
@@ -430,6 +487,24 @@ def test_protocol_checks_flag_a_single_split() -> None:
     single = {0: {0: (list(range(40)), list(range(40, 60)))}}
     container = make_v2_container(df, experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="x", splits=single))
     assert "splits_dimensions_off_protocol" in slugs(container)
+
+
+@pytest.mark.parametrize(("n_repeats", "flagged"), [(20, False), (10, True)])
+def test_protocol_checks_count_the_groups_a_metric_scores(*, n_repeats: int, flagged: bool) -> None:
+    """The check wants the repeats of the scored instances, as the default splits give them."""
+    df = runs_frame(120, 11)  # 1,320 rows: 10 repeats by rows, 20 by the 120 scored instances
+    par10 = Metric.source("par_k", params={"cutoff": 600}, inputs={"group": "instance"})
+    task = PredictiveMLTaskMetadataV2(
+        target_column_name="target",
+        problem_type="regression",
+        objective_metric=make_spec("regression", par10),
+        grouping=Grouping(on="cls", labels="per_sample"),
+    )
+    splits = grouped_splits(df, n_repeats=n_repeats, group_on="cls", group_labels="per_sample")
+    container = make_container(
+        df, task_metadata=task, experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="x", splits=splits)
+    )
+    assert ("splits_dimensions_off_protocol" in slugs(container)) is flagged
 
 
 @pytest.mark.parametrize(

@@ -71,8 +71,9 @@ no local path goes into a review. A statement that the current `dataset.py` cont
 ### Issues
 
 Each issue starts with `N. ` at the start of a line; its other lines are indented by three spaces (or blank). The
-title is the bold question at the start (`1. **Keep the target in decibels?**`), alone on its line. Then come, in
-this order:
+title is the bold question at the start (`1. **Keep the target in decibels?**`), alone on its line. An issue asks
+one decision: a second one is an issue of its own, and a change proposed for a dataset is an issue in that dataset's
+own review, never only a line in another dataset's issue or answer. Then come, in this order:
 
 1. The bullets of [writing.md](../../knowledge-curation/references/writing.md) ("Questions and issues for the
    curator"), each opened by its bold lead: `**Problem:**` (at most three sub-bullets of one sentence each), the

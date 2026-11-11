@@ -240,6 +240,161 @@ horizon (...) is checked". The README files follow at the next `dataset check`; 
   alfa_battle_2_0_task_2, `"quarters"` for mortgage. Their frames and splits are unchanged; their containers carry
   the field at the next check.
 
+
+## 2026-11-11 (evening), lung_adenocarcinoma_metastasis reviewed (Andrej; no container built)
+
+- A full review panel (claim, column and split audits, a pathologist's view, a blind reviewer, a task gamer, a
+  precedent check, advocate and critic, mediator): ship after changes, all applied. The 67 `AFFX` control probes
+  dropped: they measure the preparation and separate the classes (ROC AUC 0.695 together; the earlier note of 0.42
+  came from a run that paired labels with the wrong arrays). Dropped as rows: AD355 and AD360 (no clinical data, like
+  the `A` patients) and AD218 and AD224, which the sheet codes inconsistently (the same second-review note, "ad w met?"
+  and "ad m met?", once a metastasis and once a primary; AD218 lies in the paper's colon expression cluster). 123 rows,
+  15 metastases (8 colon, 4 breast, 3 other), 5 per test fold.
+- Record markers `Class-dependent Recording` (the metastasis arrays call fewer genes present, ROC AUC 0.722; it runs
+  through every gene and stays, carrying a small part of the score) and `Selection Bias` (all resected
+  adenocarcinomas, while the question arises only after an earlier cancer elsewhere, which is not recorded); priority
+  1. The use-case reason restated: the flag is written in the tumour's pathology note but rests on an earlier cancer
+  outside the specimen (USE-1 text and Cases row). LEAK-15 gains the case, the TP-5 row the new numbers.
+- `dataset check` 0 errors, 0 warnings, README regenerated; task probe no flag (random forest 0.876, logistic
+  regression 0.836, LightGBM 0.811; out of fold on the 125 rows, colon metastases separated at 0.984, breast at 0.76).
+
+## 2026-11-11, lung_adenocarcinoma_metastasis added from lung_cancer's arrays (Andrej; no container built)
+
+- lung_adenocarcinoma_metastasis (new; BeyondArena v0.2 review page, lung_cancer issues 7, B, 4, B and 8, A): the
+  arrays of lung_cancer's GEO rebuild (one MAS5 array per tumour) with the target `Metastasis`, the study's flag of a
+  possible metastasis from another organ (sheet DATASET B of `SampleData.xls` in GEO's caArray archive, now
+  downloaded: 16 of the 127 adenocarcinomas with a clinical history, 8 colon, 4 breast, 4 other), the task the
+  source names as "a key issue in lung tumor diagnosis". Binary, ROC AUC (fallback), random stratified split, one
+  tumour per patient. The task probe raises no flag (random forest 0.887, logistic regression 0.850, 5 or 6
+  metastases per test fold). A new record, since rows, target and values changed (PROV-14, as coad and aeolus);
+  lung_cancer stays retired for the histology, with a CC line pointing here. Cases rows under USE-1 (rewritten),
+  TP-5 and PROV-14 (new); tcga_lung_histology's assessment notes the new dataset.
+
+## 2026-11-11, the split count in scored units narrowed (nothing rebuilt)
+
+- SPLIT-33 and `recommended_dimensions` count the metric's groups only when the split holds each one out whole (the
+  split's group, or a group inside one: sat11's instances, asp's instances inside problem classes); a metric group the
+  split cuts across folds leaves the count to the rows. asp_potassco_classification (10 x 3) and
+  sat11_hand_algo_runtime (20 x 3) are unchanged; wadden_sea_sibes_macoma_abundance, scored per survey year over a
+  split by station, stays at 3 x 3 instead of moving to 20 x 3. huesken_sirna_efficacy (30 genes, 10 x 3 to 20 x 3)
+  and protein_model_quality_rf_pcp (445 proteins, 3 x 3 to 20 x 3) still move at their next `dataset check`.
+- `protein_model_quality_rf_pcp` and `huesken_sirna_efficacy` (new issue 10 each, no definition change): ship 20 x 3
+  under the rule, or keep the splits as built? On protein, LightGBM, a random forest and ridge on the 20 x 3 splits
+  (per-protein correlation): two of three disjoint blocks of three repeats rank LightGBM and the forest the other way
+  round; ten repeats separate them in one block of ten, not the other; twenty separate all three pairs. Huesken not
+  measured. 20 x 3 recommended for both.
+
+## 2026-11-11, sat11_hand_algo_runtime: PAR10 alone picks the solver (nothing rebuilt)
+
+- `sat11_hand_algo_runtime` (issue 4, B): PAR10 alone picks the solver: the grouping declares `prediction_unit="row"`
+  and no aggregation instead of `select_min`, so a tie counts as the mean of the tied solvers' costs, as in
+  asp_potassco_classification. Trained models score the same (no tie on the 60 splits); a constant prediction 18,539 s
+  instead of 19,140 s. `dataset check` 0 errors, README regenerated, record CC line; definitions.md no longer names
+  sat11 as declaring `select_min`. Nothing rebuilt.
+
+## 2026-11-10, `sepsis_survival_minimal_clinical_records` retired as `Trivial` (Andrej; no container built)
+
+- A clinician's rule, age plus five years for men, not fitted, reaches ROC AUC 0.7059 on the 9 shipped splits against
+  0.7068 for TabPFN 3.5 and 0.7065 for the best train-only smoother; the best achievable ranking is estimated at about
+  0.709. Under the amended TP-4 that is a match, which makes the dataset a candidate to drop; the retirement is a
+  curator call on top of that: the task is almost solved (TabPFN within about 0.002 of the best achievable) and very
+  simple (+0.0024 ROC AUC over age alone, too small to matter in practice).
+- The record is `No (Retired)` with `Trivial` and a CC line, `v2_path` is cleared and the folder is removed; the TP-4
+  case row and case list and the evidence.md example are updated.
+
+## 2026-11-10, lung_cancer retired (Andrej; no container built)
+
+- lung_cancer (BeyondArena v0.2 review page, issue 6, B): `No (Retired)` with `No Good Target / Scientific
+  Discovery`, on its use case: the histology of resected tumours, which the slide settles, needs no prediction;
+  molecular typing matters on ambiguous small biopsies and tumours of unknown origin, which the data lacks. The
+  source never predicts the histology: Bhattacharjee et al. (2001) cluster the specimens into a taxonomy of
+  adenocarcinoma subclasses, and their one diagnostic claim is primary against extrapulmonary metastasis. The
+  study's other targets were tested and fail: 16 possible metastases (ROC AUC 0.861, about 5 per test fold);
+  survival after resection, where the arrays score near shuffled labels and stage and age carry the signal;
+  lymph-node involvement (0.60). Record CC line, `v2_path` cleared, folder removed; a Cases row under USE-1 beside
+  glioma_grading_clinical_and_mutation_features (no rule amended). `tcga_lung_histology` got an assessment line
+  raising the same question.
+
+## 2026-11-10, lung_cancer rebuilt from the study's arrays in GEO (Andrej; no container built)
+
+- lung_cancer (BeyondArena v0.2 review page, issue 1, D): the source is GEO GSE83227, the study's deposit of its
+  254 arrays, instead of the PNAS Dataset A, which averaged all arrays of each adenocarcinoma patient (47 rows, that
+  class only) and kept each array's overall intensity in its MAS4 values, so its spike-in control probes separated
+  the classes (ROC AUC 0.85). The definition downloads the series matrix and each array's MAS5 file and keeps one
+  array per specimen (a patient's tumour or its normal lung; the first piece and first hybridisation): 197
+  specimens, 196 patients, all 12,625 probe sets, split grouped by `patient` (patient 268 has an adenocarcinoma and
+  a normal lung). Spike-ins then reach 0.57, the scan date 0.58; logistic regression log loss 0.123 (0.141 on
+  Dataset A). `dataset check` passes (one info, `groups_not_clustered`). Record: CC and Assessment lines,
+  `required_split` Grouped, `source_links`, `checked_by`. LEAK-15 and LEAK-39 list it as repaired (was kept with a
+  note), PROV-13 as a case. Evidence in `~/claude_jobs/lung_raw/`.
+
+## 2026-11-10, retirement records after the review page's marks
+
+- early_stage_diabetes_risk_prediction: reassessed on the review page and kept retired on several reasons together
+  (a selection that makes the fit none; an untrained symptom rule at ROC AUC 0.905 and near-perfect models are
+  unrealistic); the record adds `Not Representative` next to `Selection Bias`.
+- blood_tests_drink_prediction: the refuted `Trivial` removed from the record (issue 2, B).
+
+## 2026-11-10, PR #58: biomechanical_orthopaedic_prediction and blood_tests_drink_prediction retired
+
+Both were retired on 2026-11-05 (Andrej's marks on the BeyondArena v0.2 review page). Each record is `No (Retired)` with
+`No Good Target / Scientific Discovery` and a CC line, its folder is removed and `v2_path` cleared; `DF: Yes`, the
+collection tags and the pinned BeyondArena containers stay.
+- `biomechanical_orthopaedic_prediction`: `degree_spondylolisthesis` is the criterion of half the labels (one threshold,
+  accuracy 0.974). Reassessed on 2026-11-10 under SEL-5: the five other measures still predict (hernia against normal
+  ROC AUC 0.889), but neither task they leave has a decision behind it, since disc hernia is diagnosed from MRI and
+  symptoms the table lacks. `year` 2006, `problem_type` Multiclass Classification.
+- `blood_tests_drink_prediction`: no decision rests on estimating drinks from blood values the doctor already has.
+- Guidelines: USE-2, a label that stands in for what the features already measure fits no decision (blood_tests); its
+  Cases rows hold both datasets, and SEL-5 names biomechanical as the case whose rest was reassessed and is out under
+  USE-2.
+
+## 2026-11-10, PR #58: south_africa_coronary_heart_disease retired (Andrej, review page; no container built)
+
+- Andrej's marks of 2026-11-10 on the BeyondArena v0.2 review page: retired (`No (Retired)`,
+  `No Good Target / Scientific Discovery`), the folder removed and `v2_path` cleared; `DF: Yes`, the collection tags
+  and the pinned BeyondArena container stay. Reason, in the record's CC line: the positives are men who had already had
+  a heart attack and were measured afterwards, some after treatment and a healthier diet, so the label is one the man
+  already knows, and the file has no follow-up to re-target (as stroke_prediction and cdc_diabetes_health_indicators).
+- Decided for the case it returns, not applied to a definition: the ESL data page as the source with no licence stated
+  (the Kaggle copy's `CC BY-SA 4.0` is that uploader's), a random split with a line and no time-basis tag, and no
+  `Trivial` (the published Framingham points reach ROC AUC 0.748 against 0.773 for TabPFN 3.5).
+
+## 2026-11-10, `ljubljana_breast_cancer` retired as `Trivial` (Andrej's mark on the BeyondArena v0.2 review page)
+
+- TP-4 now separates a feature or unfitted rule that beats the methods (proof of `Trivial`) from one that matches them
+  (a candidate to drop, the curator's call).
+- `ljubljana_breast_cancer`: an untrained 3-item score (grade 3, more than 2 involved nodes, capsular breach) reaches
+  ROC AUC 0.710 against 0.717 for TabPFN 3.5 and 0.710 for a random forest on 60 folds. The record is `No (Retired)`
+  with `Trivial` and `Outdated` and a CC line, `v2_path` is cleared and the folder is removed; a TP-4 case row.
+
+## 2026-11-10, labels a rule assigns from shipped columns: one rule; audiology_diagnosis is `Trivial` (nothing built)
+
+- SEL-19 of 2026-11-05 is folded into SEL-5: a label a published formula or the field's definition assigns from columns
+  we ship is handled one way. Drop the rule's inputs and test the rest: a real task ships without them, no signal is
+  `No Signal`, too few features left is `No Good Target / Scientific Discovery`, and inputs at hand at the decision
+  with a rule that matches the methods are `Trivial`, the rest reassessed from scratch when it still carries signal.
+- TP-4: the proof of `Trivial` can be a rule not fitted on the data (a published formula, the field's definition, a
+  textbook or clinical score): if the methods learn nothing better than it, the data cannot be used for prediction.
+- `audiology_diagnosis`: marker `Trivial` in place of `No Good Target / Scientific Discovery`. The textbook rule on
+  the audiogram assigns 194 of 195 cases (accuracy 0.995) against 0.968 for the best model; the case history alone
+  keeps a small signal (log loss 0.713 against 0.762) but no decision.
+
+## 2026-11-10, PR #55: horse_colic_survival decided (Andrej; no container built)
+
+- Target `did_not_survive` ("Yes" for died or euthanized, 129 of 344), `binary_classification` with the fallback ROC
+  AUC: died against euthanized followed the admission period, survival does not.
+- Split: three windows of 57 horses in case-number order (`Temporal(on="case_number", TemporalSplits(window=57,
+  unit="rows", n_windows=3, min_train_fraction=0.5))`), `case_number` the hospital number's first six digits, the
+  frame sorted by it and then the full number.
+- The two recordings of `total_protein` and the 1/2 codes of the later recording kept as a shift between earlier
+  and later admissions, an exception to CLEAN-21 (curation note, record line, a Cases row in cleaning_features.md);
+  the 10 return visits kept, `use_case` and `row` name admissions; `Class-dependent Recording` stays.
+- Curation notes on the collection (one teaching hospital, no dates, the first 229 case numbers matching Pascoe et al.
+  1990's 231 horses) and the corrected repeated-hospital-number note. Record: `Binary Classification`,
+  `Temporal (NON-IID)`, `Non-IID (Temporal)`, `## Reference`, CC, Assessment and exception lines, `checked_by`.
+  `dataset check` passes; README regenerated.
+
 ## 2026-11-10, sources as a list, slim v2 dataset metadata, no `version_of` (no container built)
 
 - Every definition declares `sources = (Source(role="publication", platform=..., url=..., license=..., year=...,
@@ -866,6 +1021,72 @@ noaa_storm's definitions now differ from any build.
   recommended). Issue 11: one of the Flash Flood onsets in NWSI Sec. 14 is damage to a building, and under the deviance
   the Flash Flood duration carries much of the skill (+31% to +102% of the deviance on its rows when blanked; B, keep
   with a note, recommended).
+
+## 2026-11-06, asp_potassco_classification and sat11_hand_algo_runtime: Andrej's marks, third round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 2, B confirmed): the split count follows the units the metric scores, for every
+  dataset: new rule SPLIT-33 in splits.md (with its Cases row) and the same wording in definitions.md; this dataset
+  10 x 3. `sat11_hand_algo_runtime`: `dataset check` now gives 20 x 3 (184 instances), README regenerated, record CC
+  line; its container keeps 10 x 3 until the next build. Andrej's question on the 600 s timeouts and the log scale is
+  being answered as new issues.
+- `sat11_hand_algo_runtime` (issues 1-3: ship, 20 x 3, A) and `asp_potassco_classification` (issue 3, A): timed-out
+  runs stay at the recorded limit in the log target (5,000 s and 600 s), since it is the value ASlib records and how to
+  treat a censored run is left to the models; the reason, with the measured effect of the PAR10 charge, is in both
+  definitions' curation notes and records. `dataset check` 0 errors on both (the known constant-column warning each).
+- `sat11_hand_algo_runtime` (new issue 4, no definition change): the grouping's `select_min` chooses the solver
+  before PAR10 does and breaks a tie by the order of the rows, where PAR10 counts tied picks as their mean. The
+  trained models never tie (0 of 3,680 test instances over the 60 splits); a constant prediction scores 19,140 s
+  against 18,539 s. Dropping the aggregation recommended. definitions.md now describes both layouts of algorithm
+  selection (instances held out; a larger group held out, the instance the metric's `group` scoring column). Open.
+- `sat11_hand_algo_runtime` (Andrej: a decision item for every suggested change): new issue 2 (20 x 3 splits under
+  SPLIT-33, recommended) and issue 3 (a timed-out run counted as the recorded 5,000 s or the 50,000 s PAR10 charge;
+  the charge recommended, every model 17-19% better); `asp_potassco_classification` issue 3 narrowed to that dataset
+  (recorded 600 s recommended). No definition change.
+- `asp_potassco_classification` issue 4 resolved: the log scale kept (also in sat11_hand_algo_runtime). Issue 3 answered
+  on Andrej's principle (the target as the source records it, unless a change clearly benefits all models equally; the
+  scoring from the domain): ASlib records every timeout at the limit (600 s, 5,000 s), so the shipped target is not
+  adapted; the PAR10 charge clears the bar only in sat11 (all four models 17-19% better). Open.
+  `sat11_hand_algo_runtime` issue 1: Andrej's question answered (affected: 20 x 3 splits, the log scale; the timeout
+  target follows asp issue 3). Open.
+- `asp_potassco_classification` (new issues 3 and 4, Andrej's question, no definition change): the target of a
+  timed-out run (the 600 s limit, the 6,000 s PAR10 charge, a censored model, a timeout classifier, or no timeouts in
+  training) and its scale (log seconds against raw seconds, log1p, the PAR10 cost, the rank or the runtime relative to
+  the instance's fastest), measured by the PAR10 of the pick on the shipped splits and on sat11_hand_algo_runtime's 60.
+  Recommended: a timeout at 10 x the limit in both datasets (no measurable change here, 17-19% better picks on sat11),
+  the log kept. Open.
+
+## 2026-11-05, asp_potassco_classification: Andrej's marks on the v0.2 review page, second round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 2, B): the split protocol counts the units a metric scores. When the metric has
+  a group input, `recommended_dimensions` counts its groups instead of the rows, so 1,212 instances give 10 x 3 splits
+  instead of 3 x 3; `dataset check` 0 errors. The task summary now says 32 of the 96 problem classes per test fold (was
+  27 to 36). The same count moves `sat11_hand_algo_runtime` from 10 x 3 to 20 x 3 at its next build (184 instances);
+  open for confirmation in issue 2, with the rule amendment proposed there.
+
+## 2026-11-04, asp_potassco_classification: Andrej's marks on the v0.2 review page, first round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 1, B): reframed as runtime regression, as sat11_hand_algo_runtime: one row per
+  instance and clasp configuration (13,332 rows), the log runtime as target with timeouts at 600 s, `algorithm`
+  categorical, the anonymised `instance_id` a scoring column; scored by PAR10 (`par_k`, cutoff 600, k 10, the source's
+  metric) instead of log loss on the fastest label; ASlib's feature costs left out. `dataset check` 0 errors, task
+  probes no flag. The split protocol now gives 3 x 3 splits instead of 10 x 3: new issue 2. The rename waits until the
+  review page is done.
+
+## 2026-11-04, asp_potassco_classification issue 1 answered (no definition changed)
+
+- Andrej asked whether option B (runtime regression, as sat11) or C (the fastest label, scored by the chosen
+  configuration's runtime) serves the use case better. The answer in its `REVIEW.md` recommends B: only B lets a model
+  learn the timeouts that make up 96% of the user's loss, and it works with the framework as it is (a prototype split
+  by problem class with PAR10 per instance), while C needs a change of the metric spec. Each model trained both ways
+  on the 30 shipped splits (Slurm) favours neither: LightGBM and the forests pick better as in B, k-nearest
+  neighbours, the linear model and TabPFN as in C, and no method reliably beats always running the configuration most
+  often fastest in training. The issue stays open.
+
+## 2026-11-04, asp_potassco_classification and sat11_hand_algo_runtime: open questions in REVIEW.md for Andrej's review
+
+- A `REVIEW.md` in both folders, two of the 108 written for the BeyondArena v0.2 review page, without a panel, from
+  the evidence gathered so far: the records, earlier experiments and model runs on the shipped data. Both records carry
+  a `priority` and an `**Assessment (AI, 2026-11-04):**` line with its factors.
 
 ## 2026-11-06, PR #47: re-review under the exposure rules (no container built)
 
