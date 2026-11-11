@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: superconductivity
 container_format: 2
-checksum: v2:fa40ee5ea0793a6d942734f5fa829ac3f0947e1077cedd68a4dd6878df0bab4c
+checksum: v2:768e291301162226d1b013c354a9bbeffcc7b171258c52a348e7cb8d0da4a715
 build:
   uuid: 01a11308-e9d1-7f71-b3e3-e172887ea0d9
   checksum: v2:ae9420faedcbad176d7019d1dc2e30a11901aa5298622d6d3077bffb316d7a04
@@ -19,12 +19,12 @@ build:
     polars: 1.41.1
 build_stale: true
 data:
-  n_rows: 21263
-  n_features: 81
+  n_rows: 21163
+  n_features: 82
   dtypes:
     category: 1
     float64: 80
-    int64: 3
+    int64: 4
   n_test_dataset_rows: null
 task:
   target: critical_temp
@@ -36,34 +36,27 @@ task:
   unit_weight:
     column: composition_weight
     unit: composition
-  split_regime: grouped_non_iid
+  split_regime: temporal_non_iid
   stratify_on: null
-  time_on: null
-  group_on: composition
-  group_labels: per_sample
+  time_on: first_year
+  group_on: null
+  group_labels: null
   group_time_on: null
-  grouping:
-    prediction_unit: row
-    aggregation: null
-    context: none
-    n_groups: 15164
-    test_groups_per_fold:
-      min: 5054
-      max: 5055
+  grouping: null
 splits:
   n_repeats: 3
-  n_folds: 3
+  n_folds: 1
   random_state: 4267
-  time_horizon: null
-  time_horizon_unit: null
+  time_horizon: 7
+  time_horizon_unit: years
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 14016
-    max: 14333
+    min: 13180
+    max: 18654
   n_test:
-    min: 6930
-    max: 7247
+    min: 2166
+    max: 3308
 bundle_checks:
   ok: true
   errors: []
@@ -71,18 +64,20 @@ bundle_checks:
   - dataset_conflicting_duplicate_rows
   infos:
   - dataset_duplicate_rows
+  - meta_time_horizon_unit
   accepted: {}
 decisions:
-- Grouped by composition
+- Split by the year the composition was first reported
+- Every SuperCon entry kept, each composition counted once in the score
 ---
 
 # superconductivity
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `critical_temp`, scored with `rmse` on grouped splits by `composition`. 21,263 rows and 81 features. Source: UCI (2018).
+Regression of `critical_temp`, scored with `rmse` on temporal splits by `first_year`. 21,163 rows and 82 features. Source: UCI (2018).
 
-Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fa40ee5ea0793a6d942734f5fa829ac3f0947e1077cedd68a4dd6878df0bab4c`, so the build is stale. See [Build](#build).
+Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:768e291301162226d1b013c354a9bbeffcc7b171258c52a348e7cb8d0da4a715`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -94,13 +89,13 @@ Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** The critical temperature, in kelvin.
 
-**Known at prediction time.** 81 numbers computed from the chemical formula alone (statistics of the elements' atomic properties, weighted by their shares).
+**Known at prediction time.** 81 numbers computed from the chemical formula alone (statistics of the elements' atomic properties, weighted by their shares), and the year the composition was first reported, which orders the split.
 
-**What the test data stands for.** Whole compositions are held out, so the test data stands for compositions never measured; other proportions of the same elements can be in training.
+**What the test data stands for.** The test data is every composition first reported in a later era (1996-2001, 2002-2008, 2009-2019); training is every entry of an earlier year, so a model meets families that were not yet known.
 
-**Our changes to the source.** We group the entries by composition; with random rows, 35% of the test rows had an identical row in training. Each composition counts once in the score, where the source counts each entry.
+**Our changes to the source.** We join each composition's first report year from the NIMS SuperCon datasheet and split by it; the 100 entries (0.5%) it does not date leave. With random rows, 35% of the test rows had an identical row in training. Each composition counts once in the score, where the source counts each entry.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The features come from the formula, which is all a scientist has before synthesis, and the held-out compositions match screening new ones. But every row is a known superconductor (all critical temperatures above 0 K), while most candidates do not superconduct, so a model trained here gives every candidate a critical temperature.
+> **Use case fit: approximate (a stand-in with a known gap).** The features come from the formula, which is all a scientist has before synthesis, and a window of later-reported compositions is what a screen meets. But every row is a known superconductor (all critical temperatures above 0 K), while most candidates do not superconduct, so a model trained here gives every candidate a critical temperature.
 
 ## Files in this folder
 
@@ -122,6 +117,12 @@ Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` 
 We download the data from the UCI repository and uzip it to a predefined folder.
 
 mkdir -p local-data-warehouse/superconductivity/ && wget -P local-data-warehouse/superconductivity/ https://archive.ics.uci.edu/static/public/464/superconductivty+data.zip && unzip local-data-warehouse/superconductivity/superconductivty+data.zip -d local-data-warehouse/superconductivity/ && rm local-data-warehouse/superconductivity/superconductivty+data.zip
+
+The year of each composition's first report comes from the parent database's own export, the MDR SuperCon
+Datasheet Ver.240322 (National Institute for Materials Science, doi:10.48505/nims.4487), which is published
+under CC BY 4.0 and asks to be cited when it is used:
+
+wget -O local-data-warehouse/superconductivity/20240322_MDR_OAndM.txt https://mdr.nims.go.jp/filesets/2347b413-9c15-43b7-90e6-41fe9243b1a5/download
 ```
 
 Then, from the repository root:
@@ -141,16 +142,15 @@ Only curators run `build`, when the dataset ships.
 | year | 2018 |
 | domain | physics & astronomy |
 | license | CC BY 4.0 |
-| data_tags | Non-IID, Grouped |
+| data_tags | Non-IID, Temporal |
 | reference | hamidieh2018data |
-| rows x columns | 21,263 x 84 |
+| rows x columns | 21,163 x 85 |
 | task.target | critical_temp |
 | task.problem_type | regression |
 | task.metric | rmse |
 | task.unit_weight | {'column': 'composition_weight', 'unit': 'composition'} |
-| task.split_regime | grouped_non_iid |
-| task.group_on | composition |
-| task.group_labels | per_sample |
+| task.split_regime | temporal_non_iid |
+| task.time_on | first_year |
 
 **Metric**
 
@@ -204,68 +204,76 @@ The score counts each `composition` once: `composition_weight` is 1 over the uni
 
 ## Sample rows
 
-The first 5 of 21,263 rows of the final frame (random rows: the frame is shuffled); 12 of 84 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 21,163 rows of the final frame (the oldest rows: the frame is sorted by `first_year`); 12 of 85 columns, the target first. Cells are cut at 40 characters.
 
 | critical_temp | number_of_elements | mean_atomic_mass | wtd_mean_atomic_mass | gmean_atomic_mass | wtd_gmean_atomic_mass | entropy_atomic_mass | wtd_entropy_atomic_mass | range_atomic_mass | wtd_range_atomic_mass | std_atomic_mass | wtd_std_atomic_mass |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 36 | 3 | 14.7094 | 15.1891 | 13.329 | 13.9918 | 0.997503 | 0.82636 | 15.2928 | 7.50085 | 6.82474 | 6.46097 |
-| 34.3 | 4 | 76.5177 | 87.7364 | 59.3101 | 65.6 | 1.19727 | 0.779737 | 122.906 | 62.3738 | 44.2895 | 51.5767 |
-| 3.9 | 3 | 104.202 | 88.2593 | 100.651 | 85.518 | 1.06461 | 1.01304 | 66.2755 | 26.9955 | 27.1473 | 24.0074 |
-| 96 | 6 | 103.904 | 87.9638 | 73.2599 | 68.2945 | 1.51146 | 1.45118 | 192.981 | 36.0165 | 76.818 | 63.8423 |
-| 13.2 | 5 | 73.0008 | 56.7973 | 59.2345 | 35.7667 | 1.44604 | 0.994966 | 122.906 | 36.5634 | 40.2333 | 52.5322 |
+| 4.2 | 2 | 159.65 | 159.65 | 154.311 | 154.311 | 0.659897 | 0.659897 | 81.88 | 40.94 | 40.94 | 40.94 |
+| 3.8 | 2 | 163.845 | 163.845 | 157.506 | 157.506 | 0.654709 | 0.654709 | 90.2704 | 45.1352 | 45.1352 | 45.1352 |
+| 4.2 | 2 | 163.845 | 163.845 | 157.506 | 157.506 | 0.654709 | 0.654709 | 90.2704 | 45.1352 | 45.1352 | 45.1352 |
+| 2.3 | 2 | 158.397 | 188.748 | 151.575 | 184.632 | 0.650391 | 0.327811 | 91.9723 | 150.528 | 45.9862 | 34.5478 |
+| 3.72 | 2 | 163.845 | 163.845 | 157.506 | 157.506 | 0.654709 | 0.654709 | 90.2704 | 45.1352 | 45.1352 | 45.1352 |
 
 ## Curation notes
 
-- The 81 features are computed from the element shares of the chemical formula alone. `unique_m.csv` (row-aligned with `train.csv`, same critical temperatures) has each row's element counts and formula; from it we add the group column `composition` (see `composition_labels`): 15,164 compositions, 2,422 of them with 2 to 110 SuperCon entries (6,099 repeated rows). Their temperatures differ by a median standard deviation of 1.3 K, by more than 30 K for 132 compositions (other samples, phases or pressures, which the release does not record).
-- Grouped by composition since 2026-10-06 (IID before): a model like this is used for compositions without a measured temperature, and a random split gave 35% of the test rows an identical row in train. Every entry is kept (SPLIT-26), and each composition counts once in the score (Lennart, 2026-11-08, review issue 1): the RMSE weights an entry by 1 over its composition's number of entries (`composition_weight`), a scoring column for the metric only, no feature and no training weight. All 81 inputs are fixed by the composition (equal within 2,416 of the 2,422 compositions with several entries; in the other 6, formulas written at another scale such as `Au30Pd3.3Te66.6` and `Au0.3Pd0.033Te0.666`, they differ by floating-point noise, at most 3e-15 relative), so a model predicts one value per composition, and the materials scientist decides per composition which to synthesize (MET-1, MET-17). Unweighted, YBa2Cu3O7 (110 entries) counted 110 times a composition measured once, and the 2,422 compositions with several entries held 40% of the rows; weighted, the 12,742 compositions with one entry carry 84% of the weight. On the 9 shipped splits the weighted RMSE ranks 8 untuned predictors (random forest, extra trees, two LightGBM, two ridge, kNN, the training mean) like the per-entry RMSE at Kendall tau 0.98 per split on average (lowest 0.93) and 0.93 for the ranking by the mean over the splits, the same best model on 9 of 9. Not grouped by element set: a new composition is usually another proportion of known elements (a doping level), not a new family. Stanev et al. (2018) average the entries of a material instead (standard deviation below 5 K) and drop the rest; we keep the release's rows.
+- The 81 features are computed from the element shares of the chemical formula alone. `unique_m.csv` (row-aligned with `train.csv`, same critical temperatures) has each row's element counts and formula; from it we build the composition key (see `composition_labels`): 15,164 compositions, 2,422 of them with 2 to 110 SuperCon entries (6,099 repeated rows). Their temperatures differ by a median standard deviation of 1.3 K, by more than 30 K for 132 compositions (other samples, phases or pressures, which the release does not record). Since 2026-11-11 the key no longer groups the split (the year does), but it stays in the frame as the unit the score counts: metadata the model never sees (`unit_weight`), not a feature.
+- Every entry is kept (SPLIT-26), and each composition counts once in the score (Lennart, 2026-11-08, review issue 3, issue 1 of that round): the RMSE weights an entry by 1 over its composition's number of entries (`composition_weight`), a scoring column for the metric only, no feature and no training weight. All 81 inputs are fixed by the composition (equal within 2,416 of the 2,422 compositions with several entries; in the other 6, formulas written at another scale such as `Au30Pd3.3Te66.6` and `Au0.3Pd0.033Te0.666`, they differ by floating-point noise, at most 3e-15 relative), so a model predicts one value per composition, and the materials scientist decides per composition which to synthesize (MET-1, MET-17). Unweighted, YBa2Cu3O7 (110 entries) counted 110 times a composition measured once, and the 2,422 compositions with several entries held 40% of the rows; weighted, the 12,742 compositions with one entry carry 84% of the weight. On the 9 splits of the composition-grouped protocol the weighted RMSE ranked 8 untuned predictors (random forest, extra trees, two LightGBM, two ridge, kNN, the training mean) like the per-entry RMSE at Kendall tau 0.98 per split on average (lowest 0.93) and 0.93 for the ranking by the mean over the splits, the same best model on 9 of 9. Not deduplicated: Stanev et al. (2018) average the entries of a material instead (standard deviation below 5 K) and drop the rest; we keep the release's rows, and the weight gives each composition the one vote their averaging gives it.
+- Time basis: samples over time, dated from the parent source. Each row is one report of a superconductor, read out of the literature of 1913 to 2019; the catalogue grew in waves of families (the cuprates from 1986, MgB2 in 2001, the iron-based superconductors from 2008), so the population and the typical critical temperature move with the year. The UCI release drops the reference, but the parent database's own export dates the entries (next bullet), so the split follows the year and `Timeless`, `StationaryRelation` and a split forced from temporal are all ruled out.
+- Dated through the MDR SuperCon Datasheet Ver.240322 (NIMS, doi:10.48505/nims.4487, CC BY 4.0, cite it when the year is used; 33,458 entries, 33,302 with the publication year of their reference, 1913 to 2023), the parent of Hamidieh's extract. A datasheet entry belongs to a composition when it holds the same elements and its element shares lie within 0.003 (L1) of the composition's; a formula's variable part keeps its number (`O7-z` is 7 oxygens) and is matched a second time as a single oxygen, because UCI writes some cuprates as `...Cu3O` (`first_report_year`). The earliest year of a composition's matched entries is its `first_year`.
+- The dating is checked three ways: it dates 21,163 of the 21,263 rows (99.5%) and 15,065 of the 15,164 compositions; 99.9% of the dated rows have a matched entry whose critical temperature is within 0.01 K of their own, so the match finds the row's own entry, against 0.9% when the compositions are shuffled; and taking only entries whose temperature is above 0 K, or only the entries without the oxygen variant, changes the year of 2.7% and 0.9% of the rows. The 100 undated rows (63 cuprates, median critical temperature 22.1 K) leave the data, which also drops 99 compositions.
+- Split by the first report year (2026-11-11, Andrej, review issue 2, option a), in place of the grouped split on the composition: three expanding windows, the eras 1996-2001, 2002-2008 and 2009-2019, each trained on every entry first reported before the window. All entries of a composition carry the composition's first year, so a composition is never split; the identical feature rows a random split put on both sides stay on one side, and the composition stays whole for the score's weight too. The split costs much more than the composition split it replaces, which is the point: the window's families are new.
+
+  Untuned LightGBM, the RMSE on a random half of each window's compositions, 3 seeds, each composition counted once (random forest within 0.6 K; Slurm job 1377613), against training on as many rows from all other years with no test composition (the earlier split) or no test element set:
+
+  | Test window | Train rows | Test rows | Trained on earlier years | No test composition, all years | No test element set, all years | Test compositions whose element set is in training |
+  |---|---|---|---|---|---|---|
+  | 1996-2001 | 13,180 (62%) | 3,308 | 18.2 K | 14.2 K | 18.0 K | 51% by year, 86% by composition |
+  | 2002-2008 | 16,488 (78%) | 2,166 | 14.9 K | 10.0 K | 14.6 K | 42% / 84% |
+  | 2009-2019 | 18,654 (88%) | 2,509 | 12.6 K | 8.6 K | 11.6 K | 23% / 79% |
+
+  What the older split bought was other dopings of the test composition's own element set (79-86% of the test compositions had one; the split by year leaves 23-51%). Holding out the iron-based family of every year is harder still (20.1 K on the iron-based compositions after 2008, against 12.8 K by year). Grouping by the element set instead of the year was weighed and declined (review issue 2, option e): it is about as hard (18.0, 14.6 and 11.6 K above), but it never tests another doping of a known system, the case a screen meets most often.
+- `first_year` is the time column and therefore one of the model's inputs. It is no help inside a test window: every value there lies after the newest training year, so it tells a model only that the row is new. The 81 features are unchanged, computed from the formula alone.
 
 ## Splits
 
-Grouped splits on the composition: every SuperCon entry of a composition stays on one side, so a model predicts for compositions it has not seen. Compositions of the same elements in other proportions (another doping level of a known family) can be on both sides.
+Expanding windows by `first_year`, the year the composition was first reported in the literature (the parent database's datasheet; the UCI release has no year). The three test windows are the eras of the catalogue: 2009-2019 (split 0), 2002-2008 and 1996-2001, each trained on every entry first reported before its window (18,654, 16,488 and 13,180 of the 21,163 rows, 88%, 78% and 62%). The windows are 6, 7 and 11 calendar years long, and the horizon is declared as the middle one; the newest window holds the reports of 2009 to 2016 and one of 2019. Every entry of a composition carries that composition's first year, so a composition stays on one side of the split, and so do the identical feature rows its repeated entries make; the composition is also the unit the score counts once, which the windows therefore keep whole. A test window stands for the materials reported in the years after the model was trained: compositions of families the training data may lack (the iron-based superconductors after 2008), not only other doping levels of known ones.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 14,016 to 14,333 rows, test 6,930 to 7,247 rows.
+3 repeat(s) x 1 fold(s) with seed 4267; train 13,180 to 18,654 rows, test 2,166 to 3,308 rows. Prediction horizon: 7 years.
 
-| repeat | fold | n_train | n_test |
-|---|---|---|---|
-| 0 | 0 | 14244 | 7019 |
-| 0 | 1 | 14016 | 7247 |
-| 0 | 2 | 14266 | 6997 |
-| 1 | 0 | 14288 | 6975 |
-| 1 | 1 | 14086 | 7177 |
-| 1 | 2 | 14152 | 7111 |
-| 2 | 0 | 14333 | 6930 |
-| 2 | 1 | 14167 | 7096 |
-| 2 | 2 | 14026 | 7237 |
-
-## Group structure
-
-One group is a composition: the share of each element in the chemical formula, from which the 81 features are computed. Its rows are the SuperCon entries for that composition (1 to 110), whose critical temperatures can differ (other samples, phases or pressures that the release does not record). The source predicts the critical temperature from the formula alone (Hamidieh 2018), and a model like that is used for compositions without a measured temperature, so the test compositions are new to the model. Each row is one prediction, made from the composition's features; each composition counts once in the score (`composition_weight`).
-
-| field | value |
-|---|---|
-| group column | `composition` |
-| labels | per_sample |
-| order inside a group | none |
-| prediction unit | row |
-| known about a group when predicting | none |
-
-| statistic | value |
-|---|---|
-| groups | 15,164 |
-| rows per group (min / median / max) | 1 / 1.0 / 110 |
-| largest group | 0.5% of the rows |
-| test groups per fold | 5,054 to 5,055 |
-| groups of two or more rows with a single label | 1.9% |
-| nearest neighbour in the same group | 39.2% of the rows (chance: 0.0%) |
-| label variance explained by the group | 0.98 (shuffled groups: 0.71) |
-
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 18654 | 2509 | 1913 | 2008 | 2009 | 2019 |
+| 1 | 0 | 16488 | 2166 | 1913 | 2001 | 2002 | 2008 |
+| 2 | 0 | 13180 | 3308 | 1913 | 1995 | 1996 | 2001 |
 
 ## Decisions
 
-### 1. Grouped by composition
+### 1. Split by the year the composition was first reported
 
-The features come from the composition alone, so the entries of one composition are identical rows; a model is used for compositions without a measured temperature, so a test composition must be new to it. A random split gave 35% of the test rows an identical row in train.
+The catalogue grew in waves of families, so a screen meets materials of families the training data lacks. The MDR SuperCon datasheet dates 99.5% of the rows; the undated ones leave. The windows are the eras 1996-2001, 2002-2008 and 2009-2019, each trained on every earlier entry.
+
+| index | value |
+|---|---|
+| rows | 21263 |
+| rows dated by the datasheet | 21163 |
+| undated rows dropped | 100 |
+| compositions | 15164 |
+| compositions dated | 15065 |
+| first year, earliest | 1913 |
+| first year, latest | 2019 |
+| window 1996-2001: train rows | 13180 |
+| window 1996-2001: test rows | 3308 |
+| window 1996-2001: test compositions | 2740 |
+| window 2002-2008: train rows | 16488 |
+| window 2002-2008: test rows | 2166 |
+| window 2002-2008: test compositions | 1605 |
+| window 2009-2019: train rows | 18654 |
+| window 2009-2019: test rows | 2509 |
+| window 2009-2019: test compositions | 2082 |
+
+### 2. Every SuperCon entry kept, each composition counted once in the score
+
+The entries of one composition are identical feature rows with their own measured temperature. They all carry the composition's first year, so they stay on one side of the split; none is dropped or averaged, and the RMSE weights each by 1 over its composition's entries.
 
 | index | value |
 |---|---|
@@ -276,85 +284,87 @@ The features come from the composition alone, so the entries of one composition 
 | median std of their critical temperature (K) | 1.3 |
 | of those, max - min above 10 K | 562 |
 | of those, max - min above 30 K | 132 |
+| smallest weight of an entry in the score | 0.00909 |
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_conflicting_duplicate_rows`: 6,027 row(s) (28.3%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **warning** `dataset_conflicting_duplicate_rows`: 6,026 row(s) (28.5%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 - **info** `dataset_duplicate_rows`: 66 exact duplicate row(s) (0.3% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='first_year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (84 rows)</summary>
+<summary>Show the table (85 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| composition | category | 0 | 0 | 15164 | Y1Ba2Cu3O7, Bi2Sr2Ca1Cu2O8, La1.85Sr0.15Cu1O4, B2Mg1, Tl2Ba2Cu1O6, Bi2Sr2Ca1Cu2… |
-| mean_atomic_mass | float64 | 0 | 0 | 3365 | 76.4446, 76.5177, 83.2448, 74.2317, 89.3372, 88.9367, 72.3247, 88.9445, 79.1712… |
-| wtd_mean_atomic_mass | float64 | 0 | 0 | 15164 | 51.2457, 59.2244, 56.8088, 15.309, 76.633, 81.4567, 97.0463, 49.7159, 59.3441, … |
-| gmean_atomic_mass | float64 | 0 | 0 | 3365 | 59.3567, 59.3101, 59.5061, 60.5152, 70.5606, 70.359, 58.6371, 66.3616, 59.9949,… |
-| wtd_gmean_atomic_mass | float64 | 0 | 0 | 15165 | 34.9353, 36.1262, 35.7734, 14.1626, 42.6054, 68.2296, 73.6759, 34.5124, 36.4969… |
-| entropy_atomic_mass | float64 | 0 | 0 | 3314 | 1.1995, 1.1973, 1.3115, 0.0, 1.4537, 1.4445, 1.4458, 1.4446, 1.1818, 1.39 |
-| wtd_entropy_atomic_mass | float64 | 0 | 0 | 15113 | 0.0, 1.2919, 1.3721, 0.9819, 0.6914, 1.1586, 1.1082, 1.1986, 1.2908, 1.0106 |
-| range_atomic_mass | float64 | 0 | 0 | 1042 | 121.3276, 192.981, 122.9061, 128.2426, 124.9082, 188.3839, 184.5906, 141.2506, … |
-| wtd_range_atomic_mass | float64 | 0 | 0 | 12641 | 0.0, 36.9507, 12.5122, 50.2452, 14.2883, 17.5627, 25.1922, 40.1961, 22.7487, 18… |
-| std_atomic_mass | float64 | 0 | 0 | 3313 | 43.8234, 44.2895, 67.2338, 0.0, 39.4459, 46.9177, 46.4823, 40.0535, 51.9688, 50… |
-| wtd_std_atomic_mass | float64 | 0 | 0 | 15031 | 0.0, 44.1921, 64.1963, 52.5332, 6.3611, 75.2195, 40.6123, 68.2777, 42.227, 55.8… |
-| mean_fie | float64 | 0 | 0 | 2997 | 794.0, 787.05, 779.88, 816.36, 740.52, 787.02, 743.42, 775.425, 738.22, 891.65 |
-| wtd_mean_fie | float64 | 0 | 0 | 14940 | 1003.6231, 1005.8667, 1011.5407, 779.2333, 982.4, 738.3571, 737.0375, 1007.0133… |
-| gmean_fie | float64 | 0 | 0 | 3286 | 741.6293, 734.2196, 740.3993, 771.891, 692.5413, 745.091, 696.3138, 718.1529, 6… |
-| wtd_gmean_fie | float64 | 0 | 0 | 15089 | 937.5592, 945.3714, 940.2943, 778.6586, 905.2205, 702.4242, 709.1597, 944.2692,… |
-| entropy_fie | float64 | 0 | 0 | 3238 | 1.315, 1.313, 1.5532, 0.0, 1.5525, 1.537, 1.5517, 1.5385, 1.306, 1.5366 |
-| wtd_entropy_fie | float64 | 0 | 0 | 15058 | 0.0, 0.8905, 1.0192, 0.7869, 0.6233, 0.8772, 1.2824, 1.5671, 0.8835, 0.7832 |
-| range_fie | float64 | 0 | 0 | 854 | 810.6, 764.1, 772.0, 773.0, 781.6, 786.5, 0.0, 894.6, 443.7, 1138.9 |
-| wtd_range_fie | float64 | 0 | 0 | 12266 | 0.0, 738.7693, 659.7154, 661.0267, 738.5786, 698.9523, 253.4475, 648.5091, 112.… |
-| std_fie | float64 | 0 | 0 | 3185 | 311.7435, 314.506, 276.0631, 0.0, 282.3953, 298.643, 279.1811, 296.6152, 323.81… |
-| wtd_std_fie | float64 | 0 | 0 | 14922 | 0.0, 342.396, 333.2384, 353.8198, 29.6513, 367.1544, 255.4652, 230.9812, 335.31… |
-| mean_atomic_radius | float64 | 0 | 0 | 942 | 164.5, 149.8, 160.0, 151.75, 167.0, 181.0, 150.5, 162.8, 162.0, 160.25 |
-| wtd_mean_atomic_radius | float64 | 0 | 0 | 12423 | 114.5385, 106.1333, 157.0, 104.3714, 106.3333, 156.0, 113.7273, 171.5714, 112.1… |
-| gmean_atomic_radius | float64 | 0 | 0 | 3148 | 139.0005, 131.3022, 133.4253, 139.5953, 155.9382, 148.7374, 142.2453, 136.126, … |
-| wtd_gmean_atomic_radius | float64 | 0 | 0 | 14969 | 89.6852, 86.4573, 84.1108, 103.1499, 88.963, 153.256, 144.683, 88.8243, 85.0316… |
-| entropy_atomic_radius | float64 | 0 | 0 | 3111 | 1.2567, 1.2753, 1.5195, 0.0, 1.5012, 1.4999, 1.507, 1.5045, 1.2592, 1.5088 |
-| wtd_entropy_atomic_radius | float64 | 0 | 0 | 14948 | 0.0, 1.3397, 1.5732, 1.1601, 0.689, 1.3004, 1.1668, 1.456, 1.3268, 1.1333 |
-| wtd_range_atomic_radius | float64 | 0 | 0 | 11407 | 0.0, 65.4286, 38.5, 48.75, 22.6154, 16.2667, 55.2857, 55.7143, 35.1231, 46.8429 |
-| std_atomic_radius | float64 | 0 | 0 | 2529 | 77.5258, 65.5796, 58.6085, 0.0, 69.9228, 76.7932, 1.0, 70.4062, 69.4245, 75.2375 |
-| wtd_std_atomic_radius | float64 | 0 | 0 | 14312 | 0.0, 79.2354, 66.3193, 67.1115, 27.3415, 79.3532, 67.9114, 51.9832, 76.1077, 70… |
-| mean_Density | float64 | 0 | 0 | 3274 | 4235.8573, 4434.3573, 4584.2858, 4816.6858, 4716.6858, 4617.8858, 4963.4858, 45… |
-| wtd_mean_Density | float64 | 0 | 0 | 15010 | 2952.4618, 2953.4288, 2961.4737, 2219.3333, 3608.0522, 5481.9184, 5536.4286, 73… |
-| gmean_Density | float64 | 0 | 0 | 3332 | 669.5566, 674.4848, 874.1648, 1074.9035, 1059.4085, 1043.1538, 1096.1473, 724.9… |
-| wtd_gmean_Density | float64 | 0 | 0 | 15085 | 66.3422, 64.6229, 53.427, 2190.988, 67.4747, 1780.0774, 1814.7681, 71.2372, 731… |
-| entropy_Density | float64 | 0 | 0 | 3283 | 1.0154, 0.996, 1.1618, 0.0, 1.3222, 1.3239, 1.3245, 1.318, 1.0331, 1.2248 |
-| wtd_entropy_Density | float64 | 0 | 0 | 15087 | 0.0, 0.8128, 1.0995, 0.7696, 0.5741, 0.9521, 0.811, 1.0977, 0.7186, 0.8286 |
-| range_Density | float64 | 0 | 0 | 890 | 8958.571, 9778.571, 11338.571, 13532.571, 11848.571, 7872.571, 0.0, 12368.571, … |
-| wtd_range_Density | float64 | 0 | 0 | 9279 | 2066.9228, 3839.7959, 1303.2379, 0.0, 1623.4834, 2388.5712, 2444.8214, 1279.183… |
-| std_Density | float64 | 0 | 0 | 3265 | 3194.9389, 3402.8562, 4004.2732, 0.0, 3084.7293, 3015.1107, 2958.0215, 3206.849… |
-| wtd_std_Density | float64 | 0 | 0 | 14939 | 0.0, 3639.1292, 3977.0608, 3581.8489, 340.3541, 4695.9205, 3275.9683, 3919.1831… |
-| mean_ElectronAffinity | float64 | 0 | 0 | 2377 | 77.2375, 82.3375, 79.6075, 73.1, 72.09, 62.09, 76.17, 91.35, 69.5, 71.69 |
-| wtd_mean_ElectronAffinity | float64 | 0 | 0 | 13526 | 110.7385, 113.2714, 81.7167, 109.1692, 83.5143, 105.4753, 19.3, 111.7792, 1.5, … |
-| gmean_ElectronAffinity | float64 | 0 | 0 | 2678 | 53.528, 60.7215, 48.4773, 33.1488, 53.1161, 26.1868, 58.7537, 82.0469, 35.6745,… |
-| wtd_gmean_ElectronAffinity | float64 | 0 | 0 | 13752 | 103.9473, 89.9629, 65.911, 86.5394, 89.9629, 60.6524, 68.5473, 10.6055, 98.412,… |
-| entropy_ElectronAffinity | float64 | 0 | 0 | 2635 | 1.1052, 1.164, 1.0967, 1.2009, 1.3574, 1.1304, 0.0, 1.4028, 1.2852, 1.4264 |
-| wtd_entropy_ElectronAffinity | float64 | 0 | 0 | 14078 | 0.0, 0.8023, 0.7628, 0.8277, 0.8227, 1.2062, 1.0123, 0.7777, 0.1202, 0.6454 |
-| range_ElectronAffinity | float64 | 0 | 0 | 644 | 127.05, 138.63, 135.97, 141.0, 127.2, 0.0, 91.0, 312.3, 64.05, 179.3 |
-| wtd_range_ElectronAffinity | float64 | 0 | 0 | 10937 | 0.0, 74.3538, 75.742, 81.2886, 80.325, 46.9714, 76.4331, 73.94, 29.4913, 29.25 |
-| std_ElectronAffinity | float64 | 0 | 0 | 2562 | 54.8308, 51.1257, 54.3731, 57.6457, 50.111, 0.0, 57.6447, 47.3627, 40.6432, 53.… |
-| wtd_std_ElectronAffinity | float64 | 0 | 0 | 13581 | 0.0, 47.2166, 39.8077, 48.4608, 49.4457, 50.3438, 52.6708, 12.5865, 42.5579, 39… |
-| mean_FusionHeat | float64 | 0 | 0 | 2660 | 8.1805, 6.9055, 8.1524, 8.0144, 7.9244, 9.3044, 7.8044, 7.2324, 5.903, 6.8124 |
-| wtd_mean_FusionHeat | float64 | 0 | 0 | 14194 | 5.2503, 4.9544, 3.8347, 9.5603, 5.4384, 9.0953, 36.2333, 3.5302, 3.8469, 3.9926 |
-| gmean_FusionHeat | float64 | 0 | 0 | 3166 | 4.0356, 3.4795, 4.6464, 4.5497, 4.4926, 5.1606, 4.4116, 4.1639, 2.7017, 3.8396 |
-| wtd_gmean_FusionHeat | float64 | 0 | 0 | 14767 | 1.3369, 1.3219, 1.0392, 6.2297, 1.381, 6.2976, 27.9139, 1.0533, 1.041, 1.064 |
-| entropy_FusionHeat | float64 | 0 | 0 | 3108 | 1.1121, 1.0886, 1.3929, 0.0, 1.3847, 1.3808, 1.3902, 1.3746, 1.3781, 0.9637 |
-| wtd_entropy_FusionHeat | float64 | 0 | 0 | 14885 | 0.0, 1.0429, 1.3958, 0.964, 0.2789, 1.1788, 0.9751, 1.3311, 0.995, 0.9621 |
-| range_FusionHeat | float64 | 0 | 0 | 595 | 12.878, 27.478, 13.578, 15.978, 16.978, 10.678, 0.0, 19.7, 34.27, 25.478 |
-| wtd_range_FusionHeat | float64 | 0 | 0 | 9671 | 2.9035, 1.7446, 5.5826, 1.6283, 0.0, 3.2473, 3.3749, 1.8958, 6.8695, 2.0468 |
-| std_FusionHeat | float64 | 0 | 0 | 2920 | 4.9482, 4.5991, 4.361, 0.0, 4.4382, 4.4553, 4.9639, 4.4892, 4.1652, 5.0379 |
-| wtd_std_FusionHeat | float64 | 0 | 0 | 14470 | 0.0, 5.6486, 5.2534, 4.6583, 4.3597, 5.7801, 3.8735, 19.469, 4.2437, 4.6669 |
+| composition | category | 0 | 0 | 15065 | Y1Ba2Cu3O7, Bi2Sr2Ca1Cu2O8, La1.85Sr0.15Cu1O4, B2Mg1, Tl2Ba2Cu1O6, Y1Ba2Cu3O, B… |
+| mean_atomic_mass | float64 | 0 | 0 | 3344 | 76.4446, 76.5177, 83.2448, 74.2317, 89.3372, 88.9367, 72.3247, 88.9445, 79.1712… |
+| wtd_mean_atomic_mass | float64 | 0 | 0 | 15065 | 51.2457, 59.2244, 56.8088, 15.309, 76.633, 81.4567, 97.0463, 49.7159, 59.3441, … |
+| gmean_atomic_mass | float64 | 0 | 0 | 3344 | 59.3567, 59.3101, 59.5061, 60.5152, 70.5606, 70.359, 58.6371, 66.3616, 59.9949,… |
+| wtd_gmean_atomic_mass | float64 | 0 | 0 | 15066 | 34.9353, 36.1262, 35.7734, 14.1626, 42.6054, 73.6759, 68.2296, 34.5124, 36.4969… |
+| entropy_atomic_mass | float64 | 0 | 0 | 3293 | 1.1995, 1.1973, 1.3115, 0.0, 1.4537, 1.4445, 1.4458, 1.4446, 1.1818, 1.39 |
+| wtd_entropy_atomic_mass | float64 | 0 | 0 | 15014 | 0.0, 1.2919, 1.3721, 0.9819, 0.6914, 1.1586, 1.1986, 1.1082, 1.2908, 1.0106 |
+| range_atomic_mass | float64 | 0 | 0 | 1034 | 121.3276, 192.981, 122.9061, 128.2426, 124.9082, 188.3839, 184.5906, 141.2506, … |
+| wtd_range_atomic_mass | float64 | 0 | 0 | 12581 | 0.0, 36.9507, 12.5122, 50.2452, 14.2883, 17.5627, 25.1922, 40.1961, 22.7487, 18… |
+| std_atomic_mass | float64 | 0 | 0 | 3292 | 43.8234, 44.2895, 67.2338, 0.0, 39.4459, 46.9177, 46.4823, 40.0535, 51.9688, 50… |
+| wtd_std_atomic_mass | float64 | 0 | 0 | 14933 | 0.0, 44.1921, 64.1963, 52.5332, 6.3611, 75.2195, 68.2777, 40.6123, 42.227, 55.8… |
+| mean_fie | float64 | 0 | 0 | 2981 | 794.0, 787.05, 779.88, 816.36, 740.52, 787.02, 743.42, 775.425, 738.22, 891.65 |
+| wtd_mean_fie | float64 | 0 | 0 | 14843 | 1003.6231, 1005.8667, 1011.5407, 779.2333, 982.4, 737.0375, 738.3571, 1007.0133… |
+| gmean_fie | float64 | 0 | 0 | 3267 | 741.6293, 734.2196, 740.3993, 771.891, 692.5413, 745.091, 696.3138, 718.1529, 6… |
+| wtd_gmean_fie | float64 | 0 | 0 | 14991 | 937.5592, 945.3714, 940.2943, 778.6586, 905.2205, 702.4242, 709.1597, 944.2692,… |
+| entropy_fie | float64 | 0 | 0 | 3219 | 1.315, 1.313, 1.5532, 0.0, 1.5525, 1.537, 1.5517, 1.5385, 1.306, 1.5366 |
+| wtd_entropy_fie | float64 | 0 | 0 | 14959 | 0.0, 0.8905, 1.0192, 0.7869, 0.6233, 0.8772, 1.5671, 1.2824, 0.8835, 0.7832 |
+| range_fie | float64 | 0 | 0 | 846 | 810.6, 764.1, 772.0, 773.0, 781.6, 786.5, 0.0, 894.6, 443.7, 1138.9 |
+| wtd_range_fie | float64 | 0 | 0 | 12184 | 0.0, 738.7693, 659.7154, 661.0267, 738.5786, 698.9523, 648.5091, 253.4475, 112.… |
+| std_fie | float64 | 0 | 0 | 3167 | 311.7435, 314.506, 276.0631, 0.0, 282.3953, 298.643, 279.1811, 296.6152, 323.81… |
+| wtd_std_fie | float64 | 0 | 0 | 14826 | 0.0, 342.396, 333.2384, 353.8198, 29.6513, 367.1544, 255.4652, 230.9812, 335.31… |
+| mean_atomic_radius | float64 | 0 | 0 | 939 | 164.5, 149.8, 160.0, 151.75, 167.0, 181.0, 150.5, 162.8, 162.0, 160.25 |
+| wtd_mean_atomic_radius | float64 | 0 | 0 | 12355 | 114.5385, 106.1333, 157.0, 104.3714, 106.3333, 156.0, 113.7273, 171.5714, 112.1… |
+| gmean_atomic_radius | float64 | 0 | 0 | 3129 | 139.0005, 131.3022, 133.4253, 139.5953, 155.9382, 148.7374, 142.2453, 136.126, … |
+| wtd_gmean_atomic_radius | float64 | 0 | 0 | 14870 | 89.6852, 86.4573, 84.1108, 103.1499, 88.963, 153.256, 144.683, 88.8243, 85.0316… |
+| entropy_atomic_radius | float64 | 0 | 0 | 3093 | 1.2567, 1.2753, 1.5195, 0.0, 1.5012, 1.4999, 1.5045, 1.507, 1.2592, 1.5088 |
+| wtd_entropy_atomic_radius | float64 | 0 | 0 | 14851 | 0.0, 1.3397, 1.5732, 1.1601, 0.689, 1.3004, 1.456, 1.1668, 1.3268, 1.1333 |
+| wtd_range_atomic_radius | float64 | 0 | 0 | 11359 | 0.0, 65.4286, 38.5, 48.75, 22.6154, 16.2667, 55.2857, 55.7143, 35.1231, 46.8429 |
+| std_atomic_radius | float64 | 0 | 0 | 2518 | 77.5258, 65.5796, 58.6085, 0.0, 69.9228, 76.7932, 1.0, 69.4245, 70.4062, 75.2375 |
+| wtd_std_atomic_radius | float64 | 0 | 0 | 14228 | 0.0, 79.2354, 66.3193, 67.1115, 27.3415, 79.3532, 67.9114, 51.9832, 76.1077, 70… |
+| mean_Density | float64 | 0 | 0 | 3254 | 4235.8573, 4434.3573, 4584.2858, 4816.6858, 4716.6858, 4617.8858, 4963.4858, 45… |
+| wtd_mean_Density | float64 | 0 | 0 | 14911 | 2952.4618, 2953.4288, 2961.4737, 2219.3333, 3608.0522, 5481.9184, 5536.4286, 73… |
+| gmean_Density | float64 | 0 | 0 | 3311 | 669.5566, 674.4848, 874.1648, 1074.9035, 1059.4085, 1043.1538, 1096.1473, 724.9… |
+| wtd_gmean_Density | float64 | 0 | 0 | 14986 | 66.3422, 64.6229, 53.427, 2190.988, 67.4747, 1814.7681, 1780.0774, 71.2372, 731… |
+| entropy_Density | float64 | 0 | 0 | 3262 | 1.0154, 0.996, 1.1618, 0.0, 1.3222, 1.3239, 1.3245, 1.318, 1.0331, 1.2248 |
+| wtd_entropy_Density | float64 | 0 | 0 | 14988 | 0.0, 0.8128, 1.0995, 0.7696, 0.5741, 0.9521, 0.811, 1.0977, 0.7186, 0.8286 |
+| range_Density | float64 | 0 | 0 | 879 | 8958.571, 9778.571, 11338.571, 13532.571, 11848.571, 7872.571, 0.0, 12368.571, … |
+| wtd_range_Density | float64 | 0 | 0 | 9224 | 2066.9228, 3839.7959, 1303.2379, 0.0, 1623.4834, 2388.5712, 1279.1834, 2444.821… |
+| std_Density | float64 | 0 | 0 | 3244 | 3194.9389, 3402.8562, 4004.2732, 0.0, 3084.7293, 3015.1107, 2958.0215, 3206.849… |
+| wtd_std_Density | float64 | 0 | 0 | 14841 | 0.0, 3639.1292, 3977.0608, 3581.8489, 340.3541, 4695.9205, 3275.9683, 3919.1831… |
+| mean_ElectronAffinity | float64 | 0 | 0 | 2363 | 77.2375, 82.3375, 79.6075, 73.1, 72.09, 62.09, 76.17, 91.35, 69.5, 71.69 |
+| wtd_mean_ElectronAffinity | float64 | 0 | 0 | 13431 | 110.7385, 113.2714, 81.7167, 109.1692, 105.4753, 83.5143, 19.3, 111.7792, 1.5, … |
+| gmean_ElectronAffinity | float64 | 0 | 0 | 2660 | 53.528, 60.7215, 48.4773, 33.1488, 53.1161, 26.1868, 58.7537, 82.0469, 35.6745,… |
+| wtd_gmean_ElectronAffinity | float64 | 0 | 0 | 13656 | 103.9473, 89.9629, 65.911, 86.5394, 89.9629, 60.6524, 68.5473, 10.6055, 98.412,… |
+| entropy_ElectronAffinity | float64 | 0 | 0 | 2617 | 1.1052, 1.164, 1.0967, 1.2009, 1.3574, 1.1304, 0.0, 1.4028, 1.2852, 1.4264 |
+| wtd_entropy_ElectronAffinity | float64 | 0 | 0 | 13982 | 0.0, 0.8023, 0.7628, 0.8277, 0.8227, 1.2062, 1.0123, 0.7777, 0.1202, 0.6454 |
+| range_ElectronAffinity | float64 | 0 | 0 | 643 | 127.05, 138.63, 135.97, 141.0, 127.2, 0.0, 91.0, 312.3, 64.05, 179.3 |
+| wtd_range_ElectronAffinity | float64 | 0 | 0 | 10864 | 0.0, 74.3538, 75.742, 81.2886, 80.325, 46.9714, 76.4331, 73.94, 29.4913, 29.25 |
+| std_ElectronAffinity | float64 | 0 | 0 | 2547 | 54.8308, 51.1257, 54.3731, 57.6457, 50.111, 0.0, 57.6447, 47.3627, 53.2352, 40.… |
+| wtd_std_ElectronAffinity | float64 | 0 | 0 | 13489 | 0.0, 47.2166, 39.8077, 48.4608, 49.4457, 50.3438, 52.6708, 12.5865, 42.5579, 39… |
+| mean_FusionHeat | float64 | 0 | 0 | 2643 | 8.1805, 6.9055, 8.1524, 8.0144, 7.9244, 9.3044, 7.8044, 7.2324, 5.903, 6.8124 |
+| wtd_mean_FusionHeat | float64 | 0 | 0 | 14106 | 5.2503, 4.9544, 3.8347, 9.5603, 5.4384, 9.0953, 36.2333, 3.5302, 3.8469, 3.9926 |
+| gmean_FusionHeat | float64 | 0 | 0 | 3146 | 4.0356, 3.4795, 4.6464, 4.5497, 4.4926, 5.1606, 4.4116, 4.1639, 2.7017, 3.8396 |
+| wtd_gmean_FusionHeat | float64 | 0 | 0 | 14670 | 1.3369, 1.3219, 1.0392, 6.2297, 1.381, 6.2976, 27.9139, 1.0533, 1.041, 1.064 |
+| entropy_FusionHeat | float64 | 0 | 0 | 3089 | 1.1121, 1.0886, 1.3929, 0.0, 1.3847, 1.3808, 1.3902, 1.3746, 1.3781, 0.9637 |
+| wtd_entropy_FusionHeat | float64 | 0 | 0 | 14790 | 0.0, 1.0429, 1.3958, 0.964, 0.2789, 1.1788, 0.9751, 1.3311, 0.995, 0.9621 |
+| range_FusionHeat | float64 | 0 | 0 | 591 | 12.878, 27.478, 13.578, 15.978, 16.978, 10.678, 0.0, 19.7, 34.27, 25.478 |
+| wtd_range_FusionHeat | float64 | 0 | 0 | 9625 | 2.9035, 1.7446, 5.5826, 1.6283, 0.0, 3.2473, 3.3749, 1.8958, 6.8695, 2.0468 |
+| std_FusionHeat | float64 | 0 | 0 | 2903 | 4.9482, 4.5991, 4.361, 0.0, 4.4382, 4.4553, 4.9639, 4.4892, 4.1652, 5.0379 |
+| wtd_std_FusionHeat | float64 | 0 | 0 | 14377 | 0.0, 5.6486, 5.2534, 4.6583, 4.3597, 5.7801, 3.8735, 19.469, 4.2437, 4.6669 |
 
-(24 more rows not shown)
+(25 more rows not shown)
 
 </details>
 
@@ -362,77 +372,77 @@ The features come from the composition alone, so the entries of one composition 
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 0.86 | -1.004 | 1173.36 | 2.487 | log | 193014 | 197015 | exponential |
+| 0 | 0 | 0 | 0.861 | -1.006 | 1171.91 | 2.488 | log | 192078 | 196080 | exponential |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (83 rows)</summary>
+<summary>Show the table (84 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| number_of_elements | 21263 | 4.11522 | 1.43929 | 1 | 9 |
-| mean_atomic_mass | 21263 | 87.5576 | 29.6765 | 6.941 | 208.98 |
-| wtd_mean_atomic_mass | 21263 | 72.9883 | 33.4904 | 6.42345 | 208.98 |
-| gmean_atomic_mass | 21263 | 71.2906 | 31.0303 | 5.32057 | 208.98 |
-| wtd_gmean_atomic_mass | 21263 | 58.5399 | 36.6511 | 1.96085 | 208.98 |
-| entropy_atomic_mass | 21263 | 1.16561 | 0.36493 | 0 | 1.9838 |
-| wtd_entropy_atomic_mass | 21263 | 1.06388 | 0.401423 | 0 | 1.9582 |
-| range_atomic_mass | 21263 | 115.601 | 54.6269 | 0 | 207.972 |
-| wtd_range_atomic_mass | 21263 | 33.2252 | 26.9678 | 0 | 205.59 |
-| std_atomic_mass | 21263 | 44.3919 | 20.0354 | 0 | 101.02 |
-| wtd_std_atomic_mass | 21263 | 41.448 | 19.9835 | 0 | 101.02 |
-| mean_fie | 21263 | 769.615 | 87.4887 | 375.5 | 1313.1 |
-| wtd_mean_fie | 21263 | 870.442 | 143.278 | 375.5 | 1348.03 |
-| gmean_fie | 21263 | 737.475 | 78.3273 | 375.5 | 1313.1 |
-| wtd_gmean_fie | 21263 | 832.77 | 119.773 | 375.5 | 1327.59 |
-| entropy_fie | 21263 | 1.29917 | 0.381935 | 0 | 2.15778 |
-| wtd_entropy_fie | 21263 | 0.926726 | 0.334018 | 0 | 2.03856 |
-| range_fie | 21263 | 572.223 | 309.614 | 0 | 1304.5 |
-| wtd_range_fie | 21263 | 483.517 | 224.043 | 0 | 1251.86 |
-| std_fie | 21263 | 215.631 | 109.967 | 0 | 499.672 |
-| wtd_std_fie | 21263 | 224.05 | 127.927 | 0 | 479.162 |
-| mean_atomic_radius | 21263 | 157.983 | 20.1473 | 48 | 298 |
-| wtd_mean_atomic_radius | 21263 | 134.72 | 28.8016 | 48 | 298 |
-| gmean_atomic_radius | 21263 | 144.449 | 22.091 | 48 | 298 |
-| wtd_gmean_atomic_radius | 21263 | 120.989 | 35.8378 | 48 | 298 |
-| entropy_atomic_radius | 21263 | 1.26776 | 0.375411 | 0 | 2.14196 |
-| wtd_entropy_atomic_radius | 21263 | 1.13114 | 0.407159 | 0 | 1.90375 |
-| range_atomic_radius | 21263 | 139.325 | 67.2722 | 0 | 256 |
-| wtd_range_atomic_radius | 21263 | 51.3699 | 35.0194 | 0 | 240.164 |
-| std_atomic_radius | 21263 | 51.6013 | 22.8984 | 0 | 115.5 |
-| wtd_std_atomic_radius | 21263 | 52.3405 | 25.2945 | 0 | 97.1407 |
-| mean_Density | 21263 | 6111.47 | 2846.79 | 1.429 | 22590 |
-| wtd_mean_Density | 21263 | 5267.19 | 3221.31 | 1.429 | 22590 |
-| gmean_Density | 21263 | 3460.69 | 3703.26 | 1.429 | 22590 |
-| wtd_gmean_Density | 21263 | 3117.24 | 3975.12 | 0.686245 | 22590 |
-| entropy_Density | 21263 | 1.07242 | 0.342356 | 0 | 1.9543 |
-| wtd_entropy_Density | 21263 | 0.856037 | 0.319761 | 0 | 1.70342 |
-| range_Density | 21263 | 8665.44 | 4097.13 | 0 | 22588.6 |
-| wtd_range_Density | 21263 | 2902.74 | 2398.47 | 0 | 22434.2 |
-| std_Density | 21263 | 3416.91 | 1673.62 | 0 | 10724.4 |
-| wtd_std_Density | 21263 | 3319.17 | 1611.8 | 0 | 10410.9 |
-| mean_ElectronAffinity | 21263 | 76.8798 | 27.7019 | 1.5 | 326.1 |
-| wtd_mean_ElectronAffinity | 21263 | 92.7175 | 32.2764 | 1.5 | 326.1 |
-| gmean_ElectronAffinity | 21263 | 54.3595 | 29.0074 | 1.5 | 326.1 |
-| wtd_gmean_ElectronAffinity | 21263 | 72.4162 | 31.6484 | 1.5 | 326.1 |
-| entropy_ElectronAffinity | 21263 | 1.07025 | 0.343391 | 0 | 1.76773 |
-| wtd_entropy_ElectronAffinity | 21263 | 0.770757 | 0.285986 | 0 | 1.6754 |
-| range_ElectronAffinity | 21263 | 120.731 | 58.7003 | 0 | 349 |
-| wtd_range_ElectronAffinity | 21263 | 59.3326 | 28.6204 | 0 | 218.697 |
-| std_ElectronAffinity | 21263 | 48.9122 | 21.7405 | 0 | 162.895 |
-| wtd_std_ElectronAffinity | 21263 | 44.4094 | 20.4293 | 0 | 169.076 |
-| mean_FusionHeat | 21263 | 14.2961 | 11.3002 | 0.222 | 105 |
-| wtd_mean_FusionHeat | 21263 | 13.848 | 14.2793 | 0.222 | 105 |
-| gmean_FusionHeat | 21263 | 10.137 | 10.0659 | 0.222 | 105 |
-| wtd_gmean_FusionHeat | 21263 | 10.1412 | 13.134 | 0.222 | 105 |
-| entropy_FusionHeat | 21263 | 1.09334 | 0.375932 | 0 | 2.03441 |
-| wtd_entropy_FusionHeat | 21263 | 0.914065 | 0.370125 | 0 | 1.74716 |
-| range_FusionHeat | 21263 | 21.139 | 20.3706 | 0 | 104.778 |
-| wtd_range_FusionHeat | 21263 | 8.21853 | 11.4141 | 0 | 102.675 |
-| std_FusionHeat | 21263 | 8.32333 | 8.67165 | 0 | 51.635 |
+| number_of_elements | 21163 | 4.11383 | 1.43775 | 1 | 9 |
+| mean_atomic_mass | 21163 | 87.5231 | 29.6599 | 6.941 | 208.98 |
+| wtd_mean_atomic_mass | 21163 | 72.878 | 33.4144 | 6.42345 | 208.98 |
+| gmean_atomic_mass | 21163 | 71.2904 | 31.0237 | 5.32057 | 208.98 |
+| wtd_gmean_atomic_mass | 21163 | 58.453 | 36.6163 | 1.96085 | 208.98 |
+| entropy_atomic_mass | 21163 | 1.1657 | 0.36427 | 0 | 1.9838 |
+| wtd_entropy_atomic_mass | 21163 | 1.06418 | 0.400995 | 0 | 1.9582 |
+| range_atomic_mass | 21163 | 115.455 | 54.5625 | 0 | 207.972 |
+| wtd_range_atomic_mass | 21163 | 33.1191 | 26.8401 | 0 | 205.59 |
+| std_atomic_mass | 21163 | 44.3319 | 20.0072 | 0 | 101.02 |
+| wtd_std_atomic_mass | 21163 | 41.3973 | 19.9541 | 0 | 101.02 |
+| mean_fie | 21163 | 769.554 | 87.5333 | 375.5 | 1313.1 |
+| wtd_mean_fie | 21163 | 870.789 | 143.28 | 375.5 | 1348.03 |
+| gmean_fie | 21163 | 737.443 | 78.3767 | 375.5 | 1313.1 |
+| wtd_gmean_fie | 21163 | 833.079 | 119.71 | 375.5 | 1327.59 |
+| entropy_fie | 21163 | 1.29898 | 0.381586 | 0 | 2.15778 |
+| wtd_entropy_fie | 21163 | 0.925749 | 0.332783 | 0 | 2.03856 |
+| range_fie | 21163 | 571.808 | 309.751 | 0 | 1304.5 |
+| wtd_range_fie | 21163 | 484.165 | 223.965 | 0 | 1251.86 |
+| std_fie | 21163 | 215.479 | 110.027 | 0 | 499.672 |
+| wtd_std_fie | 21163 | 224.094 | 128.074 | 0 | 479.162 |
+| mean_atomic_radius | 21163 | 157.996 | 20.152 | 48 | 298 |
+| wtd_mean_atomic_radius | 21163 | 134.634 | 28.7702 | 48 | 298 |
+| gmean_atomic_radius | 21163 | 144.464 | 22.0856 | 48 | 298 |
+| wtd_gmean_atomic_radius | 21163 | 120.89 | 35.8243 | 48 | 298 |
+| entropy_atomic_radius | 21163 | 1.26756 | 0.37504 | 0 | 2.14196 |
+| wtd_entropy_atomic_radius | 21163 | 1.13112 | 0.40686 | 0 | 1.90375 |
+| range_atomic_radius | 21163 | 139.301 | 67.3077 | 0 | 256 |
+| wtd_range_atomic_radius | 21163 | 51.3182 | 34.9665 | 0 | 240.164 |
+| std_atomic_radius | 21163 | 51.595 | 22.9103 | 0 | 115.5 |
+| wtd_std_atomic_radius | 21163 | 52.3685 | 25.3147 | 0 | 97.1407 |
+| mean_Density | 21163 | 6111.42 | 2847.44 | 1.429 | 22590 |
+| wtd_mean_Density | 21163 | 5261.66 | 3219.01 | 1.429 | 22590 |
+| gmean_Density | 21163 | 3464.72 | 3705.27 | 1.429 | 22590 |
+| wtd_gmean_Density | 21163 | 3115.84 | 3974.89 | 0.686245 | 22590 |
+| entropy_Density | 21163 | 1.0725 | 0.341699 | 0 | 1.9543 |
+| wtd_entropy_Density | 21163 | 0.856015 | 0.319062 | 0 | 1.70342 |
+| range_Density | 21163 | 8660.13 | 4097.38 | 0 | 22588.6 |
+| wtd_range_Density | 21163 | 2897.69 | 2390.17 | 0 | 22434.2 |
+| std_Density | 21163 | 3414.31 | 1672.87 | 0 | 10724.4 |
+| wtd_std_Density | 21163 | 3317.88 | 1612.12 | 0 | 10410.9 |
+| mean_ElectronAffinity | 21163 | 76.9178 | 27.7208 | 1.5 | 326.1 |
+| wtd_mean_ElectronAffinity | 21163 | 92.8204 | 32.2525 | 1.5 | 326.1 |
+| gmean_ElectronAffinity | 21163 | 54.4061 | 29.0275 | 1.5 | 326.1 |
+| wtd_gmean_ElectronAffinity | 21163 | 72.5355 | 31.6198 | 1.5 | 326.1 |
+| entropy_ElectronAffinity | 21163 | 1.07021 | 0.342572 | 0 | 1.76773 |
+| wtd_entropy_ElectronAffinity | 21163 | 0.770012 | 0.285203 | 0 | 1.6754 |
+| range_ElectronAffinity | 21163 | 120.737 | 58.7195 | 0 | 349 |
+| wtd_range_ElectronAffinity | 21163 | 59.442 | 28.6072 | 0 | 218.697 |
+| std_ElectronAffinity | 21163 | 48.9241 | 21.7589 | 0 | 162.895 |
+| wtd_std_ElectronAffinity | 21163 | 44.4129 | 20.4409 | 0 | 169.076 |
+| mean_FusionHeat | 21163 | 14.3083 | 11.3064 | 0.222 | 105 |
+| wtd_mean_FusionHeat | 21163 | 13.8527 | 14.2877 | 0.222 | 105 |
+| gmean_FusionHeat | 21163 | 10.153 | 10.0752 | 0.222 | 105 |
+| wtd_gmean_FusionHeat | 21163 | 10.1519 | 13.1561 | 0.222 | 105 |
+| entropy_FusionHeat | 21163 | 1.09325 | 0.375286 | 0 | 2.03441 |
+| wtd_entropy_FusionHeat | 21163 | 0.913886 | 0.369587 | 0 | 1.74716 |
+| range_FusionHeat | 21163 | 21.1398 | 20.3622 | 0 | 104.778 |
+| wtd_range_FusionHeat | 21163 | 8.21833 | 11.4064 | 0 | 102.675 |
+| std_FusionHeat | 21163 | 8.32289 | 8.66327 | 0 | 51.635 |
 
-(23 more rows not shown)
+(24 more rows not shown)
 
 </details>
 
@@ -457,4 +467,4 @@ The features come from the composition alone, so the entries of one composition 
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:fa40ee5ea0793a6d942734f5fa829ac3f0947e1077cedd68a4dd6878df0bab4c` |
+| stale | yes: the definition now gives checksum `v2:768e291301162226d1b013c354a9bbeffcc7b171258c52a348e7cb8d0da4a715` |

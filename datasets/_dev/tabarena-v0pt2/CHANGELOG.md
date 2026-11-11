@@ -1,5 +1,42 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11 (evening), superconductivity: a temporal split by first report year (nothing rebuilt)
+
+- Issue 2, a (Andrej): the grouped split on the composition becomes three expanding windows by the year a
+  composition was first reported. The UCI release carries no year, so the definition joins one from the parent
+  database's own export, the MDR SuperCon Datasheet Ver.240322 (NIMS, doi:10.48505/nims.4487, CC BY 4.0, which asks
+  to be cited; `download_description` names it and the download command).
+- The join (`first_report_year` in `dataset.py`, about 4 seconds in `_load_raw`): a datasheet entry belongs to a
+  composition when it holds the same elements and its element shares lie within 0.003 (L1) of the composition's,
+  with a variable oxygen read as its number (`O7-z` as 7) and a second time as a single oxygen, since UCI writes some
+  cuprates as `...Cu3O`. `first_year` is the earliest year of a composition's matched entries. It dates 21,163 of the
+  21,263 rows (99.5%) and 15,065 of the 15,164 compositions, against 92% for an earlier match on the formula string.
+  Checks: 99.9% of the dated rows have a matched entry within 0.01 K of their own critical temperature (0.9% with the
+  compositions shuffled); restricting the match to entries above 0 K, or dropping the oxygen variant, moves the year
+  of 2.7% and 0.9% of the rows.
+- The 100 undated rows leave (0.5%; 63 cuprates, median critical temperature 22.1 K, 99 compositions): a row without
+  a year belongs to no window. Nothing else is dropped and nothing is deduplicated; the entries of a composition all
+  carry its first year, so a composition is never split, and no test row shares its 81 features with a training row.
+- Windows (`_make_splits`, the eras the review proposed, newest first): 2009-2019 trained on 18,654 rows (88%) and
+  tested on 2,509; 2002-2008 on 16,488 (78%) and 2,166; 1996-2001 on 13,180 (62%) and 3,308. They are 6, 7 and 11
+  calendar years long, so `Temporal(on="first_year", horizon=7, horizon_unit="years")` declares the middle one and
+  `splits_comment` says so. Reason: untuned LightGBM scores RMSE 18.2 / 14.9 / 12.6 K trained on the earlier years
+  against 14.2 / 10.0 / 8.6 K trained on as many rows from all eras with no test composition (a random half of each
+  window's compositions, 3 seeds, Slurm job 1377613); the old split's ease came from other dopings of the test
+  composition's element set (79-86% of test compositions had one, against 23-51% by year).
+- The `composition` key no longer groups the split, but it stays in the frame: it is the unit the score counts
+  once (`unit_weight`, issue 1 of 2026-11-08), so `composition_weight` is built from it after the undated rows
+  leave, and neither column is a model input. `first_year` is the 82nd input; inside a window every value lies
+  after the newest training year, so it carries no information about the test era, and the 81 features stay
+  formula-only. The weighting carries over to the new regime untouched: every entry of a composition carries that
+  composition's first year, so no window splits a composition's one vote.
+- `task_summary` (`known`, `split`, `changes`, `fit_reason`), `splits_comment`, the curation comments and the two
+  `Decision` blocks restated, the metric and its scoring column unchanged. 21,163 rows, 82 features, checksum
+  `v2:768e2913...`; `dataset check` 0 errors, 1 warning (`dataset_conflicting_duplicate_rows`, 6,026 rows, as before
+  the change), 2 info, README regenerated; the build stays stale (unchanged since 2026-10-06).
+- Record: `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension`, `required_split` Temporal
+  (NON-IID), tag `Non-IID (Temporal)`, and a CC line of 2026-11-11 for the decision.
+
 ## 2026-11-11 (evening), qsar_tid_11: split by first publication year (Andrej's marks, nothing rebuilt)
 
 - Issue 2, C: the scaffold-grouped split is replaced by a temporal one on `first_year`, the earliest year among the
