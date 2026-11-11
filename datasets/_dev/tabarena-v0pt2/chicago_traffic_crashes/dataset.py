@@ -26,6 +26,20 @@ INJURY_SEVERITY = (
     "FATAL",
 )
 
+# The nine test months, newest first: five and six months apart in turn, so each falls in another calendar month
+# (the curator's pick of 2026-11-11, review issue 12 and the horizon sign-off).
+TEST_MONTHS = (
+    "2026-09-01",
+    "2026-04-01",
+    "2025-10-01",
+    "2025-05-01",
+    "2024-11-01",
+    "2024-06-01",
+    "2023-12-01",
+    "2023-07-01",
+    "2023-01-01",
+)
+
 
 class ChicagoTrafficCrashes(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -46,8 +60,9 @@ class ChicagoTrafficCrashes(AbstractCuratedDataset):
             "private-property flags."
         ),
         split=(
-            "Nine later three-month crash cohorts are tested against expanding earlier history that ends one month "
-            "before each window and was notified before each quarterly refit; labels are from the final snapshot."
+            "Nine one-month crash cohorts spread from January 2023 to September 2026, each in another calendar month, "
+            "are tested against all earlier crashes up to one month before the window that were notified before the "
+            "monthly refit, the cycle of the city's fatal-crash review; labels are from the final snapshot."
         ),
         fit="approximate",
         fit_reason=(
@@ -94,19 +109,40 @@ class ChicagoTrafficCrashes(AbstractCuratedDataset):
     target = "most_severe_injury"
     problem_type = "multiclass_classification"
     metric = Metric.fallback(
-        reason="The original City portal, field dictionary and linked SR1050 manual define a crash-report release, not a scored prediction competition or a single defining model-selection metric. Use multiclass log loss for the accepted five-class probability task. On the newest window about 35% of the loss is in the 'reported, not evident' class and about 10% in incapacitating plus fatal; skill over the class prior is 18.0% on all rows against 11.8% on on-scene reports alone (one quick LightGBM on most of the shipped inputs, 2026-11-05)."
+        reason="The original City portal, field dictionary and linked SR1050 manual define a crash-report release, not a scored prediction competition or a single defining model-selection metric. Use multiclass log loss for the accepted five-class probability task. On July-September 2026 about 35% of the loss is in the 'reported, not evident' class and about 10% in incapacitating plus fatal; skill over the class prior is 18.0% on all rows against 11.8% on on-scene reports alone (one quick LightGBM on most of the shipped inputs, 2026-11-05)."
     )
     accepted_check_warnings = {
         "splits_rows_unused": (
-            "One crash is notified before its recorded event, so no training side takes it, and it falls before the "
-            "oldest test window; it stays in the frame unused rather than being dropped by its timestamps."
+            "9,539 crashes are in no split: the 9,529 of August 2026, the newest window's gap month, which falls in no "
+            "test month; 9 of January to July 2026 notified to the police only after 1 September 2026, the newest "
+            "refit, and in no test month; and one crash (11 March 2018) notified before its recorded event, so no "
+            "training side takes it, and before the oldest test window. They stay in the frame unused rather than "
+            "being dropped by their timestamps."
         ),
     }
-    temporal = Temporal(on="crash_date", horizon=3, horizon_unit="months", gap=1, gap_unit="months")
+    temporal = Temporal(on="crash_date", horizon=1, horizon_unit="months", gap=1, gap_unit="months")
     splits_comment = """
-        Nine consecutive three-month windows, newest first, on event time CRASH_DATE, with expanding earlier history. Training starts on 2017-09-01; no side is sampled.
-        October 2026 is excluded because the source snapshot ends within that month; the newest test is July-September 2026.
-        Train ends one month before each window (a one-month gap, as zillow_prize): a model refit at a quarter start
+        Nine one-month test windows, newest first, on event time CRASH_DATE, each with expanding earlier history: September 2026, April 2026, October 2025, May 2025, November 2024, June 2024, December 2023, July 2023 and January 2023. Training starts on 2017-09-01; no side is sampled.
+        October 2026 is excluded because the source snapshot ends within that month; the newest test month is September 2026.
+        The length is the refit cadence, one month (the curator's pick, 2026-11-11): the one documented cycle of the
+        analyst's work is monthly, as CDOT compiles its list of traffic fatalities "after monthly reviews of fatal
+        traffic crash information" and updates it monthly (Vision Zero Chicago Traffic Fatalities, catalog.data.gov);
+        the yearly crash report is its other cycle. The quarter used until 2026-11-11 was a convention of the build that
+        no source names. A month holds 6 to 15 fatal crashes against 20 to 30 in a quarter, so a window's score leans
+        less on them, which the log loss over all five classes allows. The one-month horizon is a refit cadence, not a
+        medical outcome window.
+        The windows (the curator's pick of 2026-11-11: nine spread over four years, at one month): the newest month
+        always stays; the other eight are spread over the 53 monthly windows that keep half the crashes for training
+        (May 2022 to September 2026), stepping back five and six months in turn, so each window falls in another
+        calendar month and every season appears at least twice (September, October and November; April and May; June
+        and July; December and January), and they lie on both sides of the 2023Q4 step in "reported, not evident"
+        (below). Test crashes (fatal ones), then training crashes after the notification filter and their share of the
+        998,117: September 2026 9,641 (6), 978,937 (98.1%); April 2026 8,961 (10), 931,711 (93.3%); October 2025 9,031
+        (7), 879,272 (88.1%); May 2025 10,079 (6), 830,229 (83.2%); November 2024 8,924 (9), 777,987 (77.9%); June 2024
+        10,120 (10), 727,880 (72.9%); December 2023 9,095 (12), 675,888 (67.7%); July 2023 9,499 (8), 627,408 (62.9%);
+        January 2023 8,091 (15), 574,344 (57.5%). In all 83,441 test crashes, 83 of them fatal; no window trains on
+        less than half the crashes.
+        Train ends one month before each window (a one-month gap, as zillow_prize): a model refit at a month start
         would not yet see the final class of the last month's crashes, since the SR1050 manual lets a report be amended
         when a person dies later (printed pages 2-3 and 9) and a traffic death is counted within 30 days of the crash.
         The source has no label versions or amendment dates. The portal's row field :updated_at bounds the delay: for
@@ -115,21 +151,22 @@ class ChicagoTrafficCrashes(AbstractCuratedDataset):
         across the update. Limits: :updated_at changes with any field, not only the label; the bulk reload of
         2026-05-21 hides earlier history; 1,904 older crashes were rewritten in one batch on 2026-11-03.
         lt_vehicle_loan_default_prediction has no gap because there a 30-day gap would leave training sides under
-        SPLIT-14's 50% floor and its measured effect was small; here the floor holds and the gap costs 1.0-1.4% of a
-        training side.
-        Training also requires DATE_POLICE_NOTIFIED strictly before the actual calendar-quarter start and not before the
-        recorded event. This intermediate timestamp is removed before the model frame is returned. The event time is
-        floored to whole hours in `_clean`, before the rows are sorted by it, and cohorts are drawn on the floored hour
-        (window and gap bounds fall on midnight, so no cohort changes); only the check "not notified before the
-        recorded event" reads the source minute, through a flag removed with the timestamp (2026-11-05, LEAK-13).
-        The windows are calendar quarters only because the data is cut at 2026-10-01; a cut at another month would
-        put the notification cutoff before the window start (stricter, still safe).
-        The three-month horizon is an evaluation/refit cadence, not a medical outcome window.
+        SPLIT-14's 50% floor and its measured effect was small; here the floor holds and the gap costs 0.9-1.6% of a
+        training side. The 9,529 crashes of August 2026, the newest window's gap month, fall in no split, as do 9
+        crashes of January to July 2026 notified only after 1 September 2026 and the one notified before its event.
+        Training also requires DATE_POLICE_NOTIFIED strictly before the month start of the window (the refit) and not
+        before the recorded event; 9 to 37 crashes of a training side's history are not yet notified then and are left
+        out. This intermediate timestamp is removed before the model frame is returned. The event time is floored to
+        whole hours in `_clean`, before the rows are sorted by it, and cohorts are drawn on the floored hour (window and
+        gap bounds fall on midnight, so no cohort changes); only the check "not notified before the recorded event"
+        reads the source minute, through a flag removed with the timestamp (2026-11-05, LEAK-13).
         Locations can recur across time; this is not unseen-location evaluation.
         Drift (SPLIT-20, USE-5 open): the share of "REPORTED, NOT EVIDENT" steps from 4.09-4.71% (2022Q1-2023Q3) to
         5.56% in 2023Q4, then 6.07-6.54% (2024Q2-2026Q1) and 6.64-6.74% (2026Q2-Q3, a further rise in desk reports),
-        while incapacitating plus fatal falls from about 2.0% to 1.4%; the desk-report share stays at 50-53%. Every test
-        window lies after the 2023Q4 step. Its cause (a change in recording practice?) is not known.
+        while incapacitating plus fatal falls from about 2.0% to 1.4%; the desk-report share stays at 50-53%. January
+        and July 2023 lie before the step (4.0% and 4.8% of their crashes), December 2023 in its quarter (5.2%) and the
+        six newer windows after it (6.0-6.8%); the step was accepted as drift on 2026-11-05, the same task on both
+        sides. Its cause (a change in recording practice?) is not known.
     """
     curation_comments = """
         We start with the original City's 2026-11-04 bulk CSV export, not a Kaggle re-upload. Figures marked
@@ -137,9 +174,10 @@ class ChicagoTrafficCrashes(AbstractCuratedDataset):
 
         - Prediction point: a reported crash's finalized crash and road facts, before its injury classification, from which a city road-safety analyst estimates the chance of each injury level to rank sites by expected people killed or seriously injured (2026-11-05; superseded: an approximate scene-based injury assessment for emergency response). On 2026-10-29 Myunghwan accepted closer-to-fact finalized information rather than reconstructing timely initial-call availability (superseded 2026-11-05 for the actor: finalized records are what the analyst works from, so they are no longer the gap). Later administrative/reporting activity, injury consequences and outcome encodings remain excluded; Myunghwan accepted this exact approximate task for shipping on 2026-10-29; build and repository integration are separate steps.
         - CC (2026-11-05, Lennart): the use case is a city road-safety analyst who ranks sites by expected people killed or seriously injured (issue 7, A; USE-1, USE-9: the blind reviewer named the same actor without our notes). It supersedes the emergency-response framing Myunghwan accepted on 2026-10-29: 50.9% of the rows are desk reports nobody was dispatched to (5.3% injured against 25.5% on scene). Every row stays. The fit stays approximate: police reports catch about half of serious injuries in trauma-registry linkage, the 'reported, not evident' share steps up in 2023Q4, and the road facts recorded more completely for injury crashes are dropped.
-        - Late labels (SPLIT-10; 2026-11-04, Lennart): a one-month gap between train and test, as zillow_prize. A report can be amended after a later death, and a traffic death counts within 30 days of the crash, so a refit at a quarter start would see the newest month's crashes in a lower class than the final snapshot gives. The source has no label versions or amendment times; the portal's :updated_at field (any field, not only the label) puts 99.4% of last updates within 30 days of the crash (median 16.1 days, crashes of June-August 2026), with 5 of 32 fatal crashes updated later, at 33-102 days. Labels stay those of the final snapshot. A month is 1.0-1.4% of a training side, and the strict notification eligibility remains.
+        - Late labels (SPLIT-10; 2026-11-04, Lennart): a one-month gap between train and test, as zillow_prize. A report can be amended after a later death, and a traffic death counts within 30 days of the crash, so a refit at a month start would see the newest month's crashes in a lower class than the final snapshot gives. The source has no label versions or amendment times; the portal's :updated_at field (any field, not only the label) puts 99.4% of last updates within 30 days of the crash (median 16.1 days, crashes of June-August 2026), with 5 of 32 fatal crashes updated later, at 33-102 days. Labels stay those of the final snapshot. A month is 0.9-1.6% of a training side (1.0-1.4% at the quarterly windows of 2026-11-05), and the strict notification eligibility remains.
         - CC (2026-11-05, Lennart): the one-month gap stays (issue 11, as implemented; SPLIT-10 as amended 2026-11-04: the gap is about the label's delay). It covers 99.4% of last updates; two months would cover 4 of the 5 late fatal updates and cost about 1% of each training side.
         - CC (2026-11-05, Lennart): the step in 'reported, not evident' in 2023Q4 is accepted as drift, with the shares in `splits_comment` (issue 8, as implemented; USE-5 fails only when the label is shown to be another quantity, SPLIT-20).
+        - CC (2026-11-11, Lennart): one-month test windows ("Reply (b): One month", the horizon sign-off: the cycle of the city's monthly fatal-crash review), nine of them spread over four years ("Option B: Nine spread over four years.", issue 12): September 2026, April 2026, October 2025, May 2025, November 2024, June 2024, December 2023, July 2023 and January 2023, each in another calendar month, with the one-month gap and the notification filter at each month start; every window trains on 57.5% to 98.1% of the crashes. Measurements above on "the three newest windows" or "all 9 splits" were taken on the quarterly windows used until then.
         - CRASH_DATE is the event timestamp: its original precision defines source-copy checks, and it is floored to whole hours for every row in `_clean`, before the framework sorts the rows by it (cohorts: original precision until 2026-11-05, now the floored hour, the same windows). Exact-hour recording differed by injury even within report type (on-scene: 8.21% injured versus 13.07% uninjured; desk: 18.86% versus 25.09%). The paired three-quarter diagnostic (2026-10-29, 21-input recipe) removed minute information for 889,076 rows without moving any quarter; mean log loss changed from 0.550174 to 0.550105. This harmonizes minute precision, not event-time accuracy. DATE_POLICE_NOTIFIED is notification time, used only as intermediate training-eligibility metadata and excluded from predictors together with delays. CRASH_DATE_EST_I is a later reporting flag, not a timestamp. The source carries no timezone offset; no UTC conversion is assumed.
         - CC (2026-11-05, Lennart): `crash_date` is floored in `_clean`, not in `_make_splits` (issue 9, B; LEAK-13, as hepatitis_c_prediction and gallstone_disease). The framework sorts the rows by the time column between the two steps, so the floor in `_make_splits` left each hour in minute order, and a row's rank in its hour lowered log loss by 0.00098 (0.00008 to 0.00202, on all 9 splits). Each hour now keeps the content order, the windows are the same, and the one crash notified before its recorded time stays unused through a flag computed from the source minute.
         - Injury counts, CRASH_TYPE and DAMAGE are outcome information; REPORT_TYPE, photo/statement flags, and primary/secondary contributory causes are reporting or investigation information and are excluded. INTERSECTION_RELATED_I is a causal judgment, not an at-intersection indicator. HIT_AND_RUN_I is withheld as post-collision flight/aid behavior rather than an initial physical condition; no injury-caused mechanism is claimed proved for that flag.
@@ -211,10 +249,11 @@ class ChicagoTrafficCrashes(AbstractCuratedDataset):
         )
 
     def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
-        """Event-time cohorts (the floored hour) with a one-month gap, after notification eligibility; no sampling."""
-        windows = TemporalSplits(window=3, unit="months", n_windows=9, min_train_fraction=0.5, gap=1).splits(
-            df, "crash_date"
-        )
+        """Monthly event-time cohorts (the floored hour) with a one-month gap, after notification eligibility.
+
+        No side is sampled. The nine test months (`TEST_MONTHS`) are the curator's pick of 2026-11-11.
+        """
+        windows = TemporalSplits(window=1, unit="months", gap=1, cutoffs=TEST_MONTHS).splits(df, "crash_date")
         event = df["crash_date"]
         notified = df["date_police_notified"]
         eligible_order = ~df["notified_before_event"]
@@ -222,12 +261,12 @@ class ChicagoTrafficCrashes(AbstractCuratedDataset):
         evidence = []
         for split, folds in windows.items():
             train, test = folds[0]
-            start = event.iloc[test].min().to_period("Q").start_time
+            start = event.iloc[test].min().to_period("M").start_time
             train = np.asarray(train)
             known = (notified.lt(start) & eligible_order).iloc[train].to_numpy()
             evidence.append(
                 {
-                    "quarter start": start,
+                    "month start": start,
                     "gap month rows": int((event.ge(start - pd.DateOffset(months=1)) & event.lt(start)).sum()),
                     "prior rows": len(train),
                     "not yet notified": int(notified.iloc[train].ge(start).sum()),

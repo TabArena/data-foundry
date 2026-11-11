@@ -26,13 +26,13 @@ as the v1 ones, so a dataset below 1.25M rows keeps its splits.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import pandas as pd
 
 from data_foundry.bundle_checks import CheckResult
-from data_foundry.schema import RowBudget, as_column_list
+from data_foundry.schema import RowBudget, TimeUnit, TrainSampling, as_column_list
 from data_foundry.v2._optional import import_build_dependency
 
 if TYPE_CHECKING:
@@ -72,6 +72,17 @@ GapUnit = Literal["minutes", "hours", "days", "weeks", "months", "years"]
 """The unit of a calendar window's gap when it differs from the window's (``TemporalSplits(gap_unit=...)``)."""
 
 _GAP_UNITS = ("minutes", "hours", *_CALENDAR_UNITS)
+
+STEPS_PER_YEAR: dict[str, int] = {
+    "minutes": 525_600,
+    "hours": 8_760,
+    "days": 365,
+    "weeks": 52,
+    "months": 12,
+    "quarters": 4,
+    "years": 1,
+}
+"""How many steps of a numeric time column (:attr:`Temporal.time_unit`) make a year."""
 
 SampleBy = Literal["rows", "time"]
 """What a temporal version's per-window sampling to its ``row_budget`` draws (``TemporalSplits(sample_by=...)``).
@@ -276,7 +287,7 @@ class TemporalSplits:
         TemporalSplits(window=42, unit="days", n_windows=3, gap=1)            # 6-week windows, 1-day gap
         TemporalSplits(window=1, unit="years", cutoffs=(2023, 2024, 2025))     # one calendar year each
         TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)
-        TemporalSplits(window=7, unit="days", n_windows=3)                    # a `_1m` version: 3 weeks
+        TemporalSplits(window=7, unit="days", n_windows=3)                    # 3 weekly windows
         TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes", sample_by="time")
 
     A window of fixed length is the prediction horizon (:attr:`horizon`): ``window`` ``unit`` for a calendar unit,
@@ -286,10 +297,11 @@ class TemporalSplits:
     or hours (``gap=15, gap_unit="minutes"``, for a label known 16 minutes after its row). ``gap_unit`` needs a
     calendar ``unit`` and a gap.
 
-    ``sample_by`` matters only in a version with a ``row_budget``, whose sides over the budget are sampled per window
-    (:func:`sample_temporal_splits`): ``"rows"`` (default) draws rows, ``"time"`` whole values of the time column, so
-    every row of a drawn time value is kept or dropped together. Use ``"time"`` when the rows at one time form a
-    cross-section the target or the features are relative to (the 14 coins of a minute). It does not stratify.
+    ``sample_by`` matters only in a version with a ``row_budget``: its test windows over the budget are sampled
+    (:func:`sample_temporal_splits`), and a benchmark sub-samples its train sides (:func:`subsample_train`).
+    ``"rows"`` (default) draws rows, ``"time"`` whole values of the time column, so every row of a drawn time value is
+    kept or dropped together. Use ``"time"`` when the rows at one time form a cross-section the target or the features
+    are relative to (the 14 coins of a minute). It does not stratify.
     """
 
     window: int | None = 1
@@ -417,6 +429,8 @@ class Temporal:
         Temporal(on="arrival_date", horizon=3, horizon_unit="months")                           # `_make_splits`
         Temporal(on="cohort", splits=TemporalSplits(unit="unique", n_windows=9, gap=5), horizon=1,
                  horizon_unit="years", gap=5, gap_unit="years")                               # gap: 5 cohorts
+        Temporal(on="era", splits=TemporalSplits(window=52, unit="unique", n_windows=3, gap=4), horizon=52,
+                 horizon_unit="weeks", gap=4, gap_unit="weeks", time_unit="weeks")             # an era is a week
 
     Attributes:
         on: The time column; the frame is sorted by it and future rows never train a split.
@@ -430,9 +444,14 @@ class Temporal:
             ``_make_splits``. A gap in a calendar unit or in rows is stated by the windows
             (:attr:`TemporalSplits.gap_length`), and declaring it again is an error.
         gap_unit: The unit of ``gap``, as for ``horizon_unit``; set together with ``gap``.
+        time_unit: What one step of a time column that is a number counts (``minutes`` to ``years``): numerai's
+            ``era`` counts weeks. It gives the column a calendar, which the newest-year rule of the train sampler
+            needs (:func:`subsample_train`), so a version with a ``row_budget`` on a numeric time column declares
+            it. A date column has its own calendar and declares none; a time that is only an order (a row number)
+            has none.
 
-    The container stores the column as the task's ``time_on``, the horizon as the splits' ``time_horizon`` /
-    ``time_horizon_unit`` and the gap as their ``time_gap`` / ``time_gap_unit``.
+    The container stores the column as the task's ``time_on`` (with ``time_unit``), the horizon as the splits'
+    ``time_horizon`` / ``time_horizon_unit`` and the gap as their ``time_gap`` / ``time_gap_unit``.
     """
 
     on: str
@@ -441,8 +460,12 @@ class Temporal:
     horizon_unit: HorizonUnit | None = None
     gap: int | None = None
     gap_unit: HorizonUnit | None = None
+    time_unit: TimeUnit | None = None
 
     def __post_init__(self) -> None:
+        if self.time_unit is not None and self.time_unit not in STEPS_PER_YEAR:
+            msg = f"Temporal.time_unit={self.time_unit!r} is not one of {tuple(STEPS_PER_YEAR)}."
+            raise ValueError(msg)
         if not isinstance(self.on, str) or not self.on.strip():
             msg = "Temporal.on must name the time column."
             raise ValueError(msg)
@@ -511,7 +534,24 @@ class Temporal:
         return None, None
 
 
-def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and stop rule
+@dataclass(frozen=True)
+class WindowBounds:
+    """One temporal window as row positions of a frame sorted by time (:func:`window_bounds`).
+
+    The train side is the positions ``[0, train_stop)``, the test window ``[test_start, test_stop)``. ``start``,
+    ``end`` and ``train_end`` are the window's bounds on its axis (a time for a calendar unit, a position among the
+    distinct values for ``"unique"``, a row for ``"rows"``; ``end`` None runs to the end of the data).
+    """
+
+    start: Any
+    end: Any
+    train_end: Any
+    train_stop: int
+    test_start: int
+    test_stop: int
+
+
+def temporal_window_splits(
     df: pd.DataFrame,
     *,
     time_on: str,
@@ -533,7 +573,8 @@ def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and sto
     the layout the bundle checks expect.
 
     Windows stop when ``n_windows`` are built, when a window or its train side would be empty, or when the train
-    side falls below ``min_train_fraction`` of all rows.
+    side falls below ``min_train_fraction`` of all rows. Explicit ``cutoffs`` must include the newest window: the
+    newest cutoff's window holds the newest row (SPLIT-15).
 
     Args:
         df: The frame, sorted ascending by ``time_on`` with a RangeIndex (splits are positions).
@@ -549,12 +590,47 @@ def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and sto
         gap_unit: The unit of ``gap`` for a calendar ``unit`` when it differs from ``unit`` (``"minutes"``,
             ``"hours"`` or a calendar unit); None counts the gap in ``unit``.
         cutoffs: Explicit test-window starts (for example ``[2023, 2024, 2025]``) instead of walking back from the
-            newest data. They are ordered newest first; ``n_windows`` and ``step`` are ignored.
+            newest data: the curator's choice of windows (SPLIT-15). They are ordered newest first; ``n_windows``
+            and ``step`` are ignored.
         min_train_fraction: Stop before a window whose train side has less than this share of the data: of the
             distinct time values for ``"unique"``, of the rows otherwise.
 
     Returns:
         The outer splits ``{window_i: {0: (train_positions, test_positions)}}``, newest window first.
+    """
+    bounds = window_bounds(
+        df,
+        time_on=time_on,
+        window=window,
+        unit=unit,
+        n_windows=n_windows,
+        step=step,
+        gap=gap,
+        gap_unit=gap_unit,
+        cutoffs=cutoffs,
+        min_train_fraction=min_train_fraction,
+    )
+    return {i: {0: (list(range(b.train_stop)), list(range(b.test_start, b.test_stop)))} for i, b in enumerate(bounds)}
+
+
+def window_bounds(  # noqa: C901, PLR0912 - one branch per unit and stop rule
+    df: pd.DataFrame,
+    *,
+    time_on: str,
+    window: int | None = 1,
+    unit: TemporalUnit = "days",
+    n_windows: int | None = None,
+    step: int | None = None,
+    gap: int = 0,
+    gap_unit: GapUnit | None = None,
+    cutoffs: list | tuple | None = None,
+    min_train_fraction: float | None = None,
+) -> list[WindowBounds]:
+    """The windows of :func:`temporal_window_splits` as position ranges (:class:`WindowBounds`), newest first.
+
+    The frame is sorted by ``time_on``, so every train side and every test window is a range of positions; a frame
+    of tens of millions of rows and hundreds of candidate windows (:func:`~data_foundry.v2.windows.candidate_windows`)
+    needs no index lists. The arguments are those of :func:`temporal_window_splits`.
     """
     times = df[time_on]
     if not times.is_monotonic_increasing:
@@ -568,7 +644,6 @@ def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and sto
         raise ValueError(f"gap_unit={gap_unit!r} needs a calendar unit and one of {_GAP_UNITS}.")
     gap_unit = gap_unit or unit
     n_rows = len(df)
-    positions = np.arange(n_rows)
 
     # Express every window as a half-open interval [start, end) on an ordered "axis": timestamps for
     # calendar units, positions in the sorted unique values for "unique", row positions for "rows".
@@ -577,7 +652,7 @@ def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and sto
         axis = values.get_indexer(times)
         axis_max = len(values)
     elif unit == "rows":
-        axis = positions
+        axis = np.arange(n_rows)
         axis_max = n_rows
     else:
         axis = times
@@ -604,6 +679,7 @@ def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and sto
                 end = None if window is None else start + window
                 train_end = start - gap
             intervals.append((start, end, train_end))
+        _require_newest_window(intervals[0][1], times, None if unit in _CALENDAR_UNITS else axis_max, unit)
     else:
         i = 0
         while n_windows is None or i < n_windows:
@@ -624,25 +700,41 @@ def temporal_window_splits(  # noqa: C901, PLR0912 - one branch per unit and sto
             if n_windows is None and i > 10_000:
                 break
 
-    splits: Splits = {}
+    def before(value: Any) -> int:  # how many rows lie before ``value`` on the axis
+        if unit in _CALENDAR_UNITS:
+            return int(times.searchsorted(value, side="left"))
+        return int(np.searchsorted(axis, value, side="left"))
+
+    bounds: list[WindowBounds] = []
     for start, end, train_end in intervals:
-        test_mask = (axis >= start) & ((axis < end) if end is not None else True)
-        train_mask = axis < train_end
-        test_idx = positions[np.asarray(test_mask)].tolist()
-        train_idx = positions[np.asarray(train_mask)].tolist()
-        if not test_idx or not train_idx:
+        test_start, test_stop = before(start), (n_rows if end is None else before(end))
+        train_stop = before(train_end)
+        if test_stop <= test_start or not train_stop:
             if cutoffs is not None:
                 raise ValueError(f"The window starting at {start} has an empty train or test side.")
             break
         if min_train_fraction is not None:
             # Share of the axis: distinct time values for "unique", rows otherwise.
-            share = train_end / axis_max if unit == "unique" else len(train_idx) / n_rows
+            share = train_end / axis_max if unit == "unique" else train_stop / n_rows
             if share < min_train_fraction - 1e-9:
                 break
-        splits[len(splits)] = {0: (train_idx, test_idx)}
-    if not splits:
+        bounds.append(WindowBounds(start, end, train_end, train_stop, test_start, test_stop))
+    if not bounds:
         raise ValueError("No temporal window could be built; check window, unit and the data's time range.")
-    return splits
+    return bounds
+
+
+def _require_newest_window(end: Any, times: pd.Series, axis_max: int | None, unit: str) -> None:
+    """Explicit cutoffs include the newest window: the newest cutoff's window holds the newest row (SPLIT-15)."""
+    if end is None:
+        return
+    reaches = times.iloc[-1] < end if unit in _CALENDAR_UNITS else end >= axis_max
+    if not reaches:
+        msg = (
+            f"The newest cutoff's window ends at {end}, before the newest data ({times.iloc[-1]}): the newest window "
+            "is always a test window (SPLIT-15). Add a cutoff whose window holds the newest rows."
+        )
+        raise ValueError(msg)
 
 
 def _calendar_offset(unit: str, n: int) -> pd.DateOffset:
@@ -711,16 +803,15 @@ def fit_splits_to_budget(
     random_state: int = SPLIT_RANDOM_STATE,
 ) -> tuple[Splits, bool]:
     """Fit cross-validation splits to a row budget: each fold tests on at most ``budget.test`` rows of its test side
-    and trains on the rest of its rows, at most ``budget.train``.
+    and trains on every other row of the frame.
 
     A test side over ``budget.test`` is sampled like :func:`subsample_frame` does (rows stratified on
-    ``stratify_on``, or whole groups), and the rows it leaves out train in that fold. A train side over
-    ``budget.train`` is then sampled the same way. On a frame of ``train + test`` rows every fold of an IID split
-    trains on exactly ``budget.train`` rows (a grouped one up to whole groups); at 1M / 500k that is plain 3-fold
-    cross-validation on 1.5M rows. Sides within the budget are left as they are.
+    ``stratify_on``, or whole groups), and the rows it leaves out train in that fold. The train sides are not capped:
+    ``budget.train`` is for a benchmark, which sub-samples each train side before a fit (:func:`subsample_train`).
+    Test sides within the budget are left as they are.
 
     Returns:
-        The splits, and whether any side was sampled.
+        The splits, and whether any test side was sampled.
     """
     keyed, key = _sampling_columns(df, group_on, stratify_on)
 
@@ -739,9 +830,6 @@ def fit_splits_to_budget(
                 kept = sample(np.asarray(cv_test), budget.test)
                 left_out = np.setdiff1d(cv_test, kept, assume_unique=True)  # untested rows of the fold train in it
                 train, test = np.sort(np.concatenate([np.asarray(cv_train), left_out])).tolist(), kept.tolist()
-                sampled = True
-            if len(train) > budget.train:
-                train = sample(np.asarray(train), budget.train).tolist()
                 sampled = True
             fitted[repeat][fold] = (train, test)
     return fitted, sampled
@@ -767,24 +855,25 @@ def sample_temporal_splits(
     whole_values_of: str | None = None,
     random_state: int = SPLIT_RANDOM_STATE,
 ) -> tuple[pd.DataFrame, Splits, bool]:
-    """Sample temporal splits to a row budget per window, then reduce the frame to the rows the splits use.
+    """Sample the test windows of temporal splits to a row budget, then reduce the frame to the rows the splits use.
 
-    Every side over its cap (``budget.train``, ``budget.test``) keeps the rows that come first in one random order
-    of the frame, so a test window stays dense and a train side is a random draw from all earlier rows, and the
-    train sides of the windows overlap as much as their caps allow. With ``stratify_on`` each class keeps its share of
-    the cap. Rows no split uses are dropped and the positions follow; the row order is kept, so a frame sorted by
-    time stays sorted.
+    A test side over ``budget.test`` keeps the rows that come first in one random order of the frame, so the window
+    stays covered from its start to its end. The train sides are not capped: each keeps every earlier row (minus the
+    gap), and ``budget.train`` is for a benchmark, which sub-samples a train side before a fit
+    (:func:`subsample_train`). With ``stratify_on`` each class keeps its share of the cap. Rows no split uses are
+    dropped (the newest window's rows its sample leaves out) and the positions follow; the row order is kept, so a
+    frame sorted by time stays sorted.
 
-    With ``whole_values_of`` (the time column, ``TemporalSplits(sample_by="time")``) a side over its cap keeps whole
-    values of that column instead of rows: the values come in one random order (the same seed), and a side takes
-    them in that order, every row of a value, while the total stays within the cap. The value that would cross the
-    cap and all later ones are dropped, so a side keeps at most the cap and at most one value's rows fewer. It does
-    not stratify, so ``stratify_on`` must be None.
+    With ``whole_values_of`` (the time column, ``TemporalSplits(sample_by="time")``) a test side over its cap keeps
+    whole values of that column instead of rows: the values come in one random order (the same seed), and a side
+    takes them in that order, every row of a value, while the total stays within the cap. The value that would cross
+    the cap and all later ones are dropped, so a side keeps at most the cap and at most one value's rows fewer. It
+    does not stratify, so ``stratify_on`` must be None.
 
     Returns:
-        The reduced frame, its splits, and whether any side was over its cap.
+        The reduced frame, its splits, and whether any test side was over its cap.
     """
-    caps = (budget.train, budget.test)
+    caps = (None, budget.test)
     if whole_values_of is not None:
         if stratify_on is not None:
             msg = "Sampling whole time values does not stratify: pass `stratify_on=None` with `whole_values_of`."
@@ -802,7 +891,7 @@ def sample_temporal_splits(
             new_sides = []
             for side, cap in zip(sides, caps, strict=True):
                 positions = np.asarray(side)
-                if len(positions) > cap:
+                if cap is not None and len(positions) > cap:
                     if whole_values_of is not None:
                         positions = _first_values_in_order(positions, cap, codes, value_rank)
                     else:
@@ -916,6 +1005,124 @@ def _sample_positions(
     return np.sort(positions[kept[codes]])
 
 
+# --- the default sampler of a train side ------------------------------------------------------------------------
+
+NEWEST_HISTORY = pd.DateOffset(years=1)
+"""The history the default sampler of a temporal train side draws from: its newest year."""
+
+
+def sample_train_positions(
+    df: pd.DataFrame,
+    positions: list[int] | np.ndarray,
+    n_rows: int,
+    *,
+    time_on: str | None = None,
+    time_unit: str | None = None,
+    group_on: str | list[str] | None = None,
+    stratify_on: str | None = None,
+    whole_values_of: str | None = None,
+    random_state: int = SPLIT_RANDOM_STATE,
+) -> np.ndarray:
+    """The default sub-sample of a train side: at most ``n_rows`` of ``positions`` (rows of ``df``), sorted.
+
+    Deterministic, and blind to any model or score:
+
+    * a temporal train side (``time_on``): the newest year, extended back in time until it holds ``n_rows`` rows, and
+      a random ``n_rows`` of those (stratified on ``stratify_on``, or whole values of ``whole_values_of``). The year
+      is the calendar year before the side's newest row on a date column, and :data:`STEPS_PER_YEAR` steps of
+      ``time_unit`` on a numeric one (52 weekly eras);
+    * a grouped one (``group_on``): whole groups in a random order, stratified by each group's most frequent class;
+    * an IID one: random rows, stratified on ``stratify_on``.
+
+    A side within ``n_rows`` is returned whole. The issue's study (#70) found the newest year best for temporal data:
+    the newest rows alone lose seasons and weekdays on dense data, and all history dilutes recent data on long ones.
+    """
+    positions = np.asarray(positions)
+    if len(positions) <= n_rows:
+        return np.sort(positions)
+    rng = np.random.default_rng(random_state)
+    if time_on is not None:
+        times = df[time_on].to_numpy()[positions]
+        if pd.api.types.is_datetime64_any_dtype(df[time_on]):
+            recent = positions[times >= times.max() - NEWEST_HISTORY]
+        elif time_unit is not None:
+            recent = positions[times > times.max() - STEPS_PER_YEAR[time_unit]]
+        else:
+            msg = f"`{time_on}` is no date: the newest year needs what one step of it counts (`time_unit`)."
+            raise ValueError(msg)
+        if len(recent) < n_rows:  # the year holds fewer: extended back in time to the newest n_rows rows
+            return _newest(positions, n_rows, times, None if whole_values_of is None else df[whole_values_of])
+        positions = recent
+    if time_on is not None or group_on is None:
+        if whole_values_of is not None:
+            codes, uniques = pd.factorize(df[whole_values_of].to_numpy())
+            return _first_values_in_order(positions, n_rows, codes, rng.permutation(len(uniques)))
+        labels = pd.factorize(df[stratify_on].to_numpy())[0] if stratify_on is not None else None
+        return _first_in_order(positions, n_rows, rng.permutation(len(df)), labels)
+    keyed, key = _sampling_columns(df, group_on, stratify_on)
+    return _sample_positions(keyed, positions, n_rows, group_on=key, stratify_on=stratify_on, random_state=random_state)
+
+
+def _newest(positions: np.ndarray, cap: int, times: np.ndarray, values: pd.Series | None) -> np.ndarray:
+    """The newest ``cap`` of ``positions`` by ``times``, sorted; with ``values``, whole values while they fit."""
+    order = np.argsort(times, kind="stable")[::-1]  # newest first
+    if values is None:
+        return np.sort(positions[order[:cap]])
+    side = values.to_numpy()[positions]
+    codes, uniques = pd.factorize(side[order])  # codes in order of first appearance: newest value first
+    counts = np.bincount(codes, minlength=len(uniques))
+    n_kept = int(np.searchsorted(np.cumsum(counts), cap, side="right"))
+    if n_kept == 0:
+        msg = f"A single time value holds more than {cap:,} rows; whole time values cannot fit the cap."
+        raise ValueError(msg)
+    return np.sort(positions[order][codes < n_kept])
+
+
+def subsample_train(
+    container: CuratedContainer,
+    repeat: int,
+    fold: int,
+    n_rows: int | None = None,
+    *,
+    random_state: int = SPLIT_RANDOM_STATE,
+) -> list[int]:
+    """The train positions a benchmark fits split ``(repeat, fold)`` on: its train side sub-sampled to the budget.
+
+    The default sampler (:func:`sample_train_positions`) with the container's constraints
+    (``experiment_metadata.train_sampling``): the newest year of a temporal side extended back to ``n_rows`` rows
+    (the year of a numeric time column from ``task_metadata.time_unit``), whole groups, whole time values, the
+    stratum. ``n_rows`` defaults to the container's train budget (``row_budget.train``); a container without one, or a
+    side within it, gives the train side whole::
+
+        for repeat, folds in container.experiment_metadata.splits.items():
+            for fold, (train, test) in folds.items():
+                train = subsample_train(container, repeat, fold)
+                model.fit(X.iloc[train], y.iloc[train])
+    """
+    meta = container.experiment_metadata
+    train, _test = meta.splits[repeat][fold]
+    budget = getattr(meta, "row_budget", None)
+    n_rows = n_rows if n_rows is not None else (budget.train if budget is not None else None)
+    if n_rows is None or len(train) <= n_rows:
+        return list(train)
+    task = container.task_metadata
+    sampling = getattr(meta, "train_sampling", None)
+    time_on = getattr(task, "time_on", None)
+    unit = sampling.unit if sampling is not None else ("groups" if task.group_on is not None else "rows")
+    kept = sample_train_positions(
+        container.dataset,
+        train,
+        n_rows,
+        time_on=time_on if sampling is None or sampling.default == "newest_year" else None,
+        time_unit=getattr(task, "time_unit", None),
+        group_on=task.group_on if unit == "groups" else None,
+        stratify_on=sampling.stratify_on if sampling is not None else task.stratify_on,
+        whole_values_of=time_on if unit == "time_values" else None,
+        random_state=random_state,
+    )
+    return kept.tolist()
+
+
 # --- checks -----------------------------------------------------------------------------------------------------
 
 
@@ -923,15 +1130,18 @@ def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
     """The split-protocol checks of a format-2 container; :func:`~data_foundry.bundle_checks.run_bundle_checks` runs
     them in place of the v1 protocol checks.
 
-    * ``splits_train_over_budget`` (error) and ``splits_test_over_budget`` (warning): a split trains or tests on more
-      rows than the container's ``experiment_metadata.row_budget``. A container without a budget has no size limit.
+    * ``splits_test_over_budget`` (warning): a split tests on more rows than the container's
+      ``experiment_metadata.row_budget.test``. A container without a budget has no size limit; the train sides are
+      sub-sampled by a benchmark, not in the container.
+    * ``splits_train_sampling_missing`` (error): a container with a row budget records no ``train_sampling``.
     * ``splits_dimensions_off_protocol`` (warning): IID or grouped splits other than :func:`recommended_dimensions`.
     * ``splits_too_few`` (warning): a temporal task with fewer than :data:`MIN_TEMPORAL_SPLITS` test windows.
     """
     task = container.task_metadata
     splits = container.experiment_metadata.splits
     flat = [(r, f, train, test) for r, folds in splits.items() for f, (train, test) in folds.items()]
-    findings = _budget_findings(flat, container.experiment_metadata.row_budget)
+    meta = container.experiment_metadata
+    findings = _budget_findings(flat, meta.row_budget, getattr(meta, "train_sampling", None))
 
     if task.time_on is not None:
         if len(flat) < MIN_TEMPORAL_SPLITS:
@@ -969,28 +1179,36 @@ def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
     return findings
 
 
-def _budget_findings(flat: list[tuple[int, int, list[int], list[int]]], budget: RowBudget | None) -> list[CheckResult]:
-    """The split sides over the container's row budget: train (error) and test (warning)."""
+def _budget_findings(
+    flat: list[tuple[int, int, list[int], list[int]]], budget: RowBudget | None, sampling: TrainSampling | None
+) -> list[CheckResult]:
+    """The test sides over the container's test budget (warning), and a budget without its train sampling (error)."""
     if budget is None:
         return []
     findings: list[CheckResult] = []
-    for slug, severity, kind, side, cap in (
-        ("splits_train_over_budget", "error", "train", 2, budget.train),
-        ("splits_test_over_budget", "warning", "test", 3, budget.test),
-    ):
-        over = [(split[0], split[1], len(split[side])) for split in flat if len(split[side]) > cap]
-        if over:
-            largest = max(n for *_, n in over)
-            findings.append(
-                CheckResult(
-                    slug,
-                    severity,
-                    f"{len(over)} split(s) {kind} on more than {cap:,} rows, the container's row budget (largest: "
-                    f"{largest:,}); first: {[(r, f) for r, f, _ in over[:5]]}.",
-                    hint="A definition with `row_budget` samples its splits to it in `default_splits`; splits built "
-                    "another way must keep to the budget they record.",
-                ),
-            )
+    over = [(r, f, len(test)) for r, f, _train, test in flat if len(test) > budget.test]
+    if over:
+        largest = max(n for *_, n in over)
+        findings.append(
+            CheckResult(
+                "splits_test_over_budget",
+                "warning",
+                f"{len(over)} split(s) test on more than {budget.test:,} rows, the container's test budget (largest: "
+                f"{largest:,}); first: {[(r, f) for r, f, _ in over[:5]]}.",
+                hint="A definition with `row_budget` samples its test sides to it in `default_splits`; splits built "
+                "another way must keep to the budget they record.",
+            ),
+        )
+    if sampling is None:
+        findings.append(
+            CheckResult(
+                "splits_train_sampling_missing",
+                "error",
+                "The container records a row budget but no `train_sampling`: a benchmark cannot tell how to "
+                "sub-sample the train sides to the train budget.",
+                hint="Build it from a v2 definition, which records both.",
+            ),
+        )
     return findings
 
 

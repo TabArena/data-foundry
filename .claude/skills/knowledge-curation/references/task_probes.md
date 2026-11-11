@@ -375,6 +375,7 @@ task-probe flags the decision answers. The decisions on metrics (2026-10-21) are
 | TP-4 | california_house_prices_2020 | one_feature | kept (2026-10-06) | the listed price is the natural core; sold = listed R² 0.89-0.91, methods 0.93-0.945 | applied |
 | TP-4 | aps_failure | one_feature | kept (2026-10-06) | the per-split single feature (AUC 0.970) stays below all 20 configurations; AUC near its ceiling | applied |
 | TP-5 | musk | no_spread, unstable | kept (2026-10-06) | 13 musk and 21 non-musk molecules per fold: a tiny-data task | applied |
+| TP-5 | lung_adenocarcinoma_metastasis | none | kept (2026-11-11, Andrej) | 15 metastases in 123 rows, 5 per test fold: no flag, random forest ROC AUC 0.876 ahead of the class shares on 30 of 30 splits, logistic regression 0.836, LightGBM 0.811; a reading of "too few to rank methods" without the probes (2026-11-10) did not hold | applied |
 | TP-1 | pancreatic_cancer_mouse_detection | unstable | kept (2026-10-06) | foundation models above AUC 0.5 on all their folds; the `t` file suffix is an open question in the record | applied |
 | TP-1 | heart_disease | unstable | kept (2026-10-27) | one atypical hospital: Long Beach is the hardest under every split, in-site too, while the linear model beats the class shares at all three; re-check with tuned results after the build; no amendment for grouped tasks for now (Lennart) | applied |
 | TP-2 | amex_non_iid_1m | no_spread | kept (2026-10-06) | strong methods converge at AUC 0.95 on 1.5M rows | applied |

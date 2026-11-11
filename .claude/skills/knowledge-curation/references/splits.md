@@ -277,7 +277,9 @@ window, with the most training data and the most representative; the others walk
 
 **SPLIT-12 (Should).** The horizon is a human judgment from the source: how far ahead the actor predicts ("managers
 predict sales up to six weeks in advance"), the competition's own test window, the refit cadence. Choose the test
-windows to match it and write the reasoning down.
+windows to match it and write the reasoning down. The curator signs off on the horizon and the test windows of every
+new temporal dataset, as on its metric (Lennart, 2026-11-10: "I am not even sure there is a good reason for some of
+the forecast horizons here").
 
 **SPLIT-13 (Should).** Look for grouped structure inside a temporal task: repeated observations of one entity over
 time (transactions of one customer). An entity that recurs across the cutoff is part of the task when the model
@@ -285,25 +287,47 @@ predicts for known entities, and a question when the use case is a new entity (U
 
 ### How many windows
 
-**SPLIT-14 (Must; amended 2026-11-08, Lennart, on wisconsin_local_government_property_insurance_fund).** A temporal task
-has at least 3 windows, and no window's train side holds less than 50% of the data. Why: a smaller train side is too
-unlike the real application. A task that cannot meet it ships under SPLIT-8 (Lennart, 2026-10-21). Each window has its
-own train side: windows that share one train side test one model on several test periods, which is one evaluation, not
-several. As time moves on, a refit sees the data that arrived since, so each window trains on what is known before it
-starts (Andrej, 2026-11-02; reframed 2026-11-05, Lennart). A release with two windows above the floor may add one older
-window that trains on at least 40% of the rows, when most test entities recur (the actor re-rates entities it knows) and
-folds by entity would test unseen ones; the notes give the score on the valid windows next to all windows and what the
-short window changes (Lennart, 2026-11-08: "the task is too good to remove because of the 50% floor").
+**SPLIT-14 (Must; amended 2026-11-08 and 2026-11-11, Lennart).** A temporal task has at least 3 windows. The newest
+window and at least one other train on at least 50% of the data; further windows may train on less, down to 30% of the
+data, and at most as many windows train on less than 50% as on 50% or more. A window under 30% needs a reason the
+curator accepts for that dataset. Every window under 50% needs the curator's sign-off: the review raises it as an issue,
+`dataset check` warns (`splits_train_under_half`, and `splits_train_under_floor` under 30%; a broken core is the error
+`splits_floor_core`), and the definition accepts the warning only once the record carries the curator's CC line, never
+on the AI's word (Lennart, 2026-11-11). The splits comment names every window under 50% and its train share; no model
+score is required for it. Why: a much smaller train side is too unlike the real application, but in every floor case of
+the reviews of 2026-11-10 and 2026-11-11 at least two windows already trained on 50% or more, and the windows below them
+added years, seasons, events or test rows the newest windows lack (Lennart, 2026-11-11: "we very much noticed that the
+floor can be below 50% to get better/more test windows quite frequently ... In some cases we can also go lower"). A flat
+lower floor would not do: at 40% mercedes_benz_greener_manufacturing (31.5%) and ieee_fraud_detection (38.9%) would
+still lose windows the curator kept. A task that cannot meet it ships under SPLIT-8 (Lennart, 2026-10-21). Each window
+has its own train side: windows that share one train side test one model on several test periods, which is one
+evaluation, not several. As time moves on, a refit sees the data that arrived since, so each window trains on what is
+known before it starts (Andrej, 2026-11-02; reframed 2026-11-05, Lennart). The amendment of 2026-11-08 (one older window
+at 40% when most test entities recur; Lennart: "the task is too good to remove because of the 50% floor") is replaced by
+the two tiers since 2026-11-11: its condition of recurring entities and its duty to report a model's score lapse.
 
-**SPLIT-15 (Should).** Roll the windows back from the newest data: as many windows as an IID or grouped task of that
-size would get folds. Then check that the windows are still meaningful (SPLIT-16 to SPLIT-18).
+**SPLIT-15 (Must for the newest window, Should for the others; amended 2026-11-10, Lennart and Andrej).** The newest
+window is always a test window: it is the deployment period. The other windows are the curator's choice, per dataset,
+argued from the use case: which periods a deployed model must handle (other years, seasons, holidays, events, a
+change of rules or of the data collection). The evidence is statistics of the data, never a model's score: the
+candidate windows of the declared length and gap with their months and weekdays, their rows and train share, the
+target's distribution, and how far the features drift from the train side (`dataset windows <name>`,
+[definitions.md](../../knowledge-data-foundry/references/definitions.md), "Choosing the test windows"). Prefer windows
+in other years, then other seasons, then other months, weeks or days, over the windows just before the newest
+(Andrej, 2026-11-10). Walking back from the newest is one choice among others and needs its reason too, such as a
+history too short for others, or a use case that only cares about the weeks after a refit. Every choice stays above
+SPLIT-14's floor; the length and the gap come from SPLIT-12; as many windows as an IID or grouped task of that size
+would get folds, then check that they are still meaningful (SPLIT-16 to SPLIT-18). The splits comment names the
+windows, the reasons and the numbers they rest on. Why: on aeolus, climate_model and delivery_eta the newest three
+windows ranked a model pair the other way round than the whole eligible history did, and three windows spread over it
+cut that error 5 to 15 times, while three windows drawn at random did worse than three spread evenly (closed PR #69).
 
 **SPLIT-16 (Must).** Do not fall back to an IID split for a non-stationary sequence whose windows hold too few
 positives. Counting the positives per window and the `Too Small` verdict are TP-9 ([task_probes.md](task_probes.md)).
 Marker: `Too Small`. Cases: seismic_bumps.
 
 **SPLIT-17 (Should).** Widen windows that get too small: below about 50 test rows per window, use wider windows and
-fewer splits. Why: finer windows add no test rows (the 50% floor of SPLIT-14 fixes the test pool); they cut it into
+fewer splits. Why: finer windows add no test rows (SPLIT-14's floor fixes the test pool); they cut it into
 smaller, noisier pieces. Cases: coffee_rating_prediction.
 
 **SPLIT-18 (Should).** Short-lived quantities need short windows: weather test windows of one to two weeks at most.
@@ -447,6 +471,11 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-12, SPLIT-19 | medical_facility_operational_data | the source's horizon followed: Crowley et al. (2020) train on six months and test on "a further consecutive two weeks", so nine 14-day windows replace nine equal-count windows of 42-53 days, each from the first whole day at or after the start of one of the old ones: the same number of folds, 12,408 test visits instead of 40,995, training sides still expanding (50.1% to 94.6%). The longer windows had cost nothing measurable (14.40 against 14.42 MAE on the same weeks), and the exception to SPLIT-19 proposed for them was dropped; the day key is built in `_clean`, as the time column is the arrival rank (2026-11-05, Lennart, issue 8) | applied |
 | SPLIT-14 | california_house_prices_2020 | `min_train_fraction=0.25` let the oldest window train on 25% of the rows; its windows now train on 50%, 67% and 83% (2026-10-21) | applied |
 | SPLIT-14 (amended 2026-11-08, Lennart) | wisconsin_local_government_property_insurance_fund | three yearly windows, test 2008, 2009 and 2010 on 40.6%, 60.6% and 80.3% of the rows: two windows above the floor, 97.6% to 98.8% of each test year's members in earlier years, and member folds leaked the year's claim level (pooled ROC AUC +0.010 to +0.012; within a year +0.031 to +0.036 Gini for a GLM); the 2008 window changes the order of the two simplest predictors (coverage alone 0.368 against a GLM's 0.312 on the valid windows, 0.251 against 0.291 with 2008), stated in the notes | applied |
+| SPLIT-14 (amended 2026-11-08, Lennart) | ashrae_great_energy_predictor_iii_1m | three four-month windows tile 2017 (2026-11-10, Lennart, issue 1, A), test September-December, May-August and January-April 2017 on 83.0%, 66.0% and 49.47% of the rows: two windows above the floor, every test meter's building in training, and folds by entity would test unseen buildings; LightGBM's RMSLE is 1.277 on the valid windows and 1.256 on all three (1.208 and 1.221 without the absolute date features), so the oldest window, which scores like the newest, moves the mean by about 0.02, stated in the notes | applied |
+| SPLIT-14 (amended 2026-11-11, Lennart) | anes_voting_2026 | nine one-election windows 1996-2024 (2026-11-11, Lennart, issue 1, A): five train on 51.4% to 89.8%, the four oldest on 49.2%, 46.4%, 43.2% and 40.0%; nine is the count a random split of this size gets | applied |
+| SPLIT-14 (amended 2026-11-11, Lennart) | ieee_fraud_detection | three one-month windows after the competition's one-month gap (2026-11-11, Lennart, issue 1, A): May and April on 70.7% and 53.5%, March on 38.9%; a February window would train on December only (23.3%) | applied |
+| SPLIT-14 (amended 2026-11-11, Lennart) | maps_router_eta_1m | the three newest weeks of a 40-day release (2026-11-11, Lennart, issue 1, A, after the consistency check of 2026-11-10): 79.9% and 62.3%, the oldest on 44.8% of all routes; anonymous routes, so the condition of recurring entities of 2026-11-08 would not have held | applied |
+| SPLIT-14 (amended 2026-11-11, Lennart) | mercedes_benz_greener_manufacturing | nine windows of 320 cars in ID order (2026-11-11, Lennart, issue 1, A): six train on 54.3% to 92.4%, three on 46.7%, 39.1% and 31.5%; 2,880 test cars against 2,097 at 233 cars | applied |
 | SPLIT-14 (amended 2026-11-02, Andrej), SPLIT-8 | pricing_game_2016_french_fleet | forced grouped by contract (`fleet_group`: the contract, the three that share a registration joined on 2026-11-08, issue 9; 3 x 3 folds over 2011-2013, `ForcedGroupedFromTemporal`) in place of the windows (2026-11-08, Lennart, issue 6 (b): "Forced by contract"), superseding Andrej's expanding four-month windows (2026-11-02) and D11's three windows of 2013 on one training side (2026-11-06): rows are cut at 31 December and the claims carry no dates, so the windows are whole years and 2013 on 2011-2012 is the one valid window (2012 on 2011 trains on 30.4%); windows inside 2013 either share one training side, one evaluation, or admit the 2013 periods by their realized end (LEAK-41); the leak test across the contract folds passes (the test year's own training periods gain -0.33 and -0.43 on the declared metric, -0.009 and -0.001 Gini, against wisconsin's +0.113), and on the 2013 periods the forced split scores no better than the valid window (+0.16, SD 0.45; a new fleet's cold start 1.13); the exception to SPLIT-10 lapsed with the windows | applied |
 | SPLIT-16 (TP-9) | seismic_bumps | 49 positives in the newest half, 0-5 per window: `Too Small`, no fallback to an IID split | applied |
 | SPLIT-17 | coffee_rating_prediction | 26 monthly windows of 2-72 reviews doubled the confidence interval of a model comparison; 13 two-month windows hold 54-115 | applied |

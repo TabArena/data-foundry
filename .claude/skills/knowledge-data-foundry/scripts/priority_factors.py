@@ -9,7 +9,7 @@ A record's ``priority`` (1-5) weighs five factors (knowledge-curation ``selectio
 a definition, two of them can be measured, and this script measures them the same way for every record:
 
 * gap: the definition's domain, problem type or split regime is thin among the accepted datasets of the working copy,
-  counted over their definitions (a folder whose record holds ``DF: Yes`` and that has no ``REVIEW.md``), so an empty
+  counted over their definitions (a folder whose record holds ``DF: Yes``), so an empty
   record field hides no dataset. Thin as in ``benchmark_coverage.py``: a count of at most max(2, half the median
   count); the domain ``other`` is never thin.
 * shape: about 1,000 units or more (groups, for a task predicted per group) and 5 features or more, with a feature
@@ -17,8 +17,8 @@ a definition, two of them can be measured, and this script measures them the sam
 
 The other three factors, a clear use case, a strong source and a known risk, are judgments from the source and the
 open issues; whoever sets the priority writes them in the record. Without names, the script lists the records whose
-folder has a ``REVIEW.md``: the records the review page shows. The output is a markdown table on stdout (record,
-current priority, gap, shape and the facts behind them); ``--json PATH`` also writes the numbers.
+review (``## Review``) has something open: the records the review page shows. The output is a markdown table on
+stdout (record, current priority, gap, shape and the facts behind them); ``--json PATH`` also writes the numbers.
 """
 
 from __future__ import annotations
@@ -96,8 +96,19 @@ def score(f: dict, thin: dict[str, list[str]]) -> dict:
     }
 
 
+def open_reviews(root: Path, records: Path) -> set[str]:
+    """The records whose review has something open for the curator (``collect_reviews.is_settled``)."""
+    scripts = Path(__file__).resolve().parents[2] / "review-added-datasets" / "scripts"
+    if str(scripts) not in sys.path:
+        sys.path.insert(0, str(scripts))
+    import collect_reviews  # noqa: PLC0415 - the review skill's script, imported only for the default selection
+
+    collected = collect_reviews.collect(root, records)
+    return {e.name for e in collected.entries if not collect_reviews.is_settled(e, records)}
+
+
 def measure(root: Path, records: Path, names: list[str] | None) -> dict:
-    """The thin values and, per named record (or per record with a REVIEW.md), its two factors."""
+    """The thin values and, per named record (or per record with an open review), its two factors."""
     by_folder = {}
     for record in load_all(records):
         if record.v2_path:
@@ -106,13 +117,14 @@ def measure(root: Path, records: Path, names: list[str] | None) -> dict:
     accepted = []
     for folder in folders:
         record = by_folder.get(folder.name)
-        if record and DF_YES in record.data_foundry_status and not (folder / "REVIEW.md").exists():
+        if record and DF_YES in record.data_foundry_status:
             f = facts(folder)
             if f:
                 accepted.append(f)
     thin = thin_values(accepted)
     if names is None:
-        chosen = [f for f in folders if (f / "REVIEW.md").exists() and f.name in by_folder]
+        open_review = open_reviews(root, records)
+        chosen = [f for f in folders if f.name in by_folder and by_folder[f.name].unique_name in open_review]
     else:
         wanted = {by_folder[f.name].unique_name: f for f in folders if f.name in by_folder}
         unknown = sorted(set(names) - set(wanted))
@@ -147,7 +159,7 @@ def markdown(result: dict) -> str:
 def main(argv: list[str] | None = None) -> int:
     """Print the factors; write them as JSON too when asked."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("names", nargs="*", help="Unique names; default: the records whose folder has a REVIEW.md.")
+    parser.add_argument("names", nargs="*", help="Unique names; default: the records whose review has something open.")
     parser.add_argument("--root", type=Path, default=Path("datasets/_dev/tabarena-v0pt2"))
     parser.add_argument("--records", type=Path, default=Path("curation/records"))
     parser.add_argument("--json", type=Path, help="Also write the result as JSON to this path.")
