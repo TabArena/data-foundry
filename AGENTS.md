@@ -144,6 +144,12 @@ bump versions or publish without explicit human authorization.
 * **`from __future__ import annotations`** at the top of every `.py` file.
 * **Don't commit changes unless the user explicitly asks.** Same for
   pushes, PRs, and PyPI publishes.
+* **Pull requests follow
+  [`pull_requests.md`](.claude/skills/knowledge-data-foundry/references/pull_requests.md).** The body opens with a
+  summary a curator reads in a minute (what changes and why, what to decide, what to know before merging) and folds
+  the details into `<details>` sections. Each independent change is its own PR against `main`, updated with `main`
+  when it is about to be merged. A PR is stacked only when it needs another unmerged PR, and then as a GitHub stack
+  (`gh stack link`), merged bottom up with `gh stack merge`.
 * **Don't write README files, planning docs, or analysis files** unless
   asked. The repo intentionally has very few `.md` files.
 * **Don't add comments that describe what the code does** — only *why*,
@@ -196,6 +202,7 @@ bump versions or publish without explicit human authorization.
 | Review a batch of added datasets (the review page) | [`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md) |
 | Rebuild the TabArena v0.2 working copy and verify the build | [`rebuild.md`](.claude/skills/knowledge-data-foundry/references/rebuild.md) |
 | Load / browse / benchmark shipped datasets (format 2: score by `objective_metric` with `data_foundry.v2.metrics.scorer`, inputs from `feature_columns`, which drops the scoring columns; a task with a training weight names it, `sample_weight(container)`, and every model is fitted with it as the row weight, never as a feature; a weight column's test-row values are for the scorer only, never read when predicting; format 1: `objective_metric_name`) | [`CLAUDE.md`](CLAUDE.md) (*Using shipped datasets*) · [`examples/`](examples) · [`src/data_foundry/v2/metrics.py`](src/data_foundry/v2/metrics.py) |
+| Pull requests: the body, one PR per independent change, stacked PRs with `gh stack` | [`pull_requests.md`](.claude/skills/knowledge-data-foundry/references/pull_requests.md) |
 | Dataset template | [`datasets/_template/`](datasets/_template/) |
 | Examples (use-case anchors) | [`examples/`](examples) · [`examples/README.md`](examples/README.md) |
 
