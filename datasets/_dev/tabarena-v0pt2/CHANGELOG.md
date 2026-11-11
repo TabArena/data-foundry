@@ -1,5 +1,34 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11 (evening), qsar_tid_11: split by first publication year (Andrej's marks, nothing rebuilt)
+
+- Issue 2, C: the scaffold-grouped split is replaced by a temporal one on `first_year`, the earliest year among the
+  documents of a compound's human thrombin (CHEMBL204) activity records in ChEMBL 17. The years are a one-off extract
+  from the release's sqlite dump (EBI FTP), shipped as `chembl_17_first_year.csv` next to `dataset.py`; the build no
+  longer needs the 2 GB dump. All 5,704 compounds have a CHEMBL204 record there, 5,186 in a dated document; the other
+  518 appear only in the undated PubChem BioAssay deposit CHEMBL1201862 and take 2011, the year ChEMBL 9 loaded it.
+  `Temporal(on="first_year", splits=TemporalSplits(window=None, unit="unique", n_windows=5, min_train_fraction=0.5),
+  horizon=2, horizon_unit="years")` builds five windows of two years: 2012-13 (159 compounds), 2010-11 (744), 2008-09
+  (290), 2006-07 (598) and 2004-05 (633), trained on 5,545, 4,801, 4,511, 3,913 and 3,280 earlier compounds (97% to
+  57% of the rows). `grouping` and the `scaffold` column are gone, the scaffold numbers stay as background. The reason
+  measured on these windows and all 5,704 compounds (Slurm jobs 1378119 and 1378141): under the scaffold split 58% of
+  test compounds keep a close training analog and 71-93% of those were first published in the same year, and untuned
+  LightGBM's RMSE is 0.80-1.04 by scaffold against 0.89-1.50 by year. At an equal training size drawn from all years
+  the forward split costs about 0.2 RMSE on the oldest window and within 0.08 on the rest, where few compounds are
+  published after the window: the scaffold split's advantage is the same-year siblings, not the later papers.
+  `first_year` is a feature as well as the time column, as in apistox. `dataset check` 0 errors, 0 warnings, 1 info
+  (`meta_time_horizon_unit`: the integer years cannot be cross-checked against a calendar horizon), README
+  regenerated. Probes re-run on the new windows: task probes no flag (LightGBM R^2 0.350, skill +0.419, ahead of the
+  dummy on all five), leak probes no exact feature copy across the split and no single feature near the all-feature
+  R^2 (probe 13 reads the known mild potency drift at the end, z -3.7), `hidden_groups` 0 hits of 61 candidates,
+  `group_probes` no longer applies.
+- Issue 1, B: the 654 targets at round assay limits (11.5%; pXC50 4.30: 348, 5.00: 204, 4.00: 81, 4.70: 21) stay as
+  exact values with a note naming the limits, their counts and the bound reading (LEAK-26: documented). 306 of them
+  (47%) belong to the PubChem deposit, where 59% of the 518 compounds sit at a limit against 6.7% of the rest.
+- Issue 3, B: the record's collection facts are `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time
+  Dimension`, no `Target: Revised Later` (5.1% of the compounds have a later-year record); `required_split` Temporal
+  (NON-IID), tag Non-IID (Temporal) in place of Non-IID (Grouped).
+
 ## 2026-11-11 (evening), qsar_fish_toxicity and qsar_aquatic_toxicity: the overlap counted, the chemicals dated (nothing rebuilt)
 
 - qsar_aquatic_toxicity issue 1, B (Andrej): the two sets are kept side by side and the overlap is written into both

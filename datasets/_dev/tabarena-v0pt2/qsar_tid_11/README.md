@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_tid_11
 container_format: 2
-checksum: v2:d3100ce05bbf6bb3524ca512395502dbddf93948e09802f296d38856cabe9e70
+checksum: v2:ab97713f59b42b9596026ea530bc3c92ce0947a8b6781ca0c895a6a5540875b5
 build:
   uuid: 01a111fc-77d3-7128-8497-210288cab270
   checksum: v2:6aced922d7a0d199fe8637391bf863bc500c5c50733d7ca006d3a0643874bde3
@@ -20,10 +20,11 @@ build:
 build_stale: true
 data:
   n_rows: 5704
-  n_features: 1
+  n_features: 2
   dtypes:
     float64: 1
-    string: 2
+    int64: 1
+    string: 1
   n_test_dataset_rows: null
 task:
   target: MEDIAN_PXC50
@@ -31,41 +32,35 @@ task:
   metric: rmse
   metric_origin: source
   scoring_columns: null
-  split_regime: grouped_non_iid
+  split_regime: temporal_non_iid
   stratify_on: null
-  time_on: null
-  group_on: scaffold
-  group_labels: per_sample
+  time_on: first_year
+  group_on: null
+  group_labels: null
   group_time_on: null
-  grouping:
-    prediction_unit: row
-    aggregation: null
-    context: none
-    n_groups: 2529
-    test_groups_per_fold:
-      min: 843
-      max: 843
+  grouping: null
   special_features:
     SMILES: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 splits:
-  n_repeats: 3
-  n_folds: 3
+  n_repeats: 5
+  n_folds: 1
   random_state: 4267
-  time_horizon: null
-  time_horizon_unit: null
+  time_horizon: 2
+  time_horizon_unit: years
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 3654
-    max: 3909
+    min: 3280
+    max: 5545
   n_test:
-    min: 1795
-    max: 2050
+    min: 159
+    max: 744
 bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
+  infos:
+  - meta_time_horizon_unit
   accepted: {}
 decisions: []
 ---
@@ -74,9 +69,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `MEDIAN_PXC50`, scored with `rmse` on grouped splits by `scaffold`. 5,704 rows and 1 features. Source: OpenML (2015).
+Regression of `MEDIAN_PXC50`, scored with `rmse` on temporal splits by `first_year`. 5,704 rows and 2 features. Source: OpenML (2015).
 
-Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d3100ce05bbf6bb3524ca512395502dbddf93948e09802f296d38856cabe9e70`, so the build is stale. See [Build](#build).
+Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ab97713f59b42b9596026ea530bc3c92ce0947a8b6781ca0c895a6a5540875b5`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -88,20 +83,22 @@ Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** The compound's median measured potency, as the negative log of the concentration that gives half the effect; higher means more potent.
 
-**Known at prediction time.** The compound's chemical structure, as a SMILES string.
+**Known at prediction time.** The compound's chemical structure, as a SMILES string, and the year it first appears in the thrombin literature.
 
-**What the test data stands for.** Whole chemical series (compounds sharing a ring skeleton) are held out, so the test data stands for compounds of series not measured yet.
+**What the test data stands for.** The compounds are held out by the year they first appear in the literature: five windows of two years from 2004 to 2013, each predicted from the compounds published before it, so the test data stands for the candidates that come next.
 
-**Our changes to the source.** We drop one row with a negative activity value, judged a data error, and 37 rows that are salt forms of a compound already in the data, replace the authors' fingerprint with the compound's structure from ChEMBL 17, and split by chemical series instead of at random.
+**Our changes to the source.** We drop one row with a negative activity value, judged a data error, and 37 rows that are salt forms of a compound already in the data, replace the authors' fingerprint with the compound's structure from ChEMBL 17, add the year the compound first appears in ChEMBL 17's thrombin records, and split by that year instead of at random.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The structure is all a chemist has before synthesis, and held-out series stand for new ones. The activities are medians over measurements of many sources.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The structure is all a chemist has before synthesis, and the compounds of a later window stand for the candidates that come next. The activities are medians over measurements of many sources, and a tenth of them are assay limits stored as exact values.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
+| [`chembl_17_first_year.csv`](chembl_17_first_year.csv) | Read by `dataset.py`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/qsar_tid_11.md`](../../../../curation/records/qsar_tid_11.md)
 - The original source: <https://www.openml.org/d/3050>
@@ -116,9 +113,11 @@ We download the dataset from OpenML to a predefined folder.
 
 mkdir -p local-data-warehouse/qsar_tid_11/ && wget -P local-data-warehouse/qsar_tid_11/ https://www.openml.org/data/download/1674848/11.arff
 
-The compounds' structures, for the SMILES column and the scaffold groups of the split, come from ChEMBL 17's structure table (133,574,872 bytes, sha256 484009d05a2b1a4af714b18f76f329b69fcce806044ebcca7695efa30d58b44e); the definition cuts out this file's compounds once (chembl_17_structures_tid11.csv).
+The compounds' structures, for the SMILES column, come from ChEMBL 17's structure table (133,574,872 bytes, sha256 484009d05a2b1a4af714b18f76f329b69fcce806044ebcca7695efa30d58b44e); the definition cuts out this file's compounds once (chembl_17_structures_tid11.csv).
 
 wget -P local-data-warehouse/qsar_tid_11/ https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_17/chembl_17_chemreps.txt.gz
+
+chembl_17_first_year.csv next to this file holds each compound's first publication year, extracted once from the same release's database dump (chembl_17_sqlite.tar.gz, 2,068,152,046 bytes, sha256 58432fccfd44c90443002b48b0ec9d6194b1dc11a85982d91684b2f50959d2c0; 9.4 GB unpacked) with the query in the split bullet of the curation notes. The build does not read the dump.
 ```
 
 On first use, `_prepare_raw_files` writes `chembl_17_structures_tid11.csv` into the same folder.
@@ -140,15 +139,14 @@ Only curators run `build`, when the dataset ships.
 | year | 2015 |
 | domain | chemistry & material science |
 | license | Public Domain |
-| data_tags | Non-IID, Grouped |
+| data_tags | Non-IID, Temporal |
 | reference | olier2018meta |
 | rows x columns | 5,704 x 3 |
 | task.target | MEDIAN_PXC50 |
 | task.problem_type | regression |
 | task.metric | rmse |
-| task.split_regime | grouped_non_iid |
-| task.group_on | scaffold |
-| task.group_labels | per_sample |
+| task.split_regime | temporal_non_iid |
+| task.time_on | first_year |
 
 **Metric**
 
@@ -189,38 +187,109 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 5,704 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sorted by `first_year`). Cells are cut at 40 characters.
 
-| MEDIAN_PXC50 | SMILES | scaffold |
+| MEDIAN_PXC50 | SMILES | first_year |
 |---|---|---|
-| 5.573 | N=C(N)c1ccc(Oc2ccc(Oc3ccc(C(=N)N)cc3)cc… | c1ccc(Oc2ccc(Oc3ccccc3)cc2)cc1 |
-| 8.921 | Cc1ccnc(CNC(=O)Cn2c(C)cnc(NCC(F)(F)c3cc… | O=C(Cn1ccnc(NCCc2ccccc2)c1=O)NCc1ccccn1 |
-| 8.208 | Cl.Cn1c(CNC(=O)\[C@@H\]2C=CCN2C(=O)\[C@@H\]… | O=C(NCc1ccc\[nH\]1)C1C=CCN1C(=O)CCC1CCCCC1 |
-| 8.886 | O=C1COc2ccc(Cl)cc2CNC(=O)\[C@@H\]2CCCN2C(… | O=C1COc2ccccc2CNC(=O)C2CCCN2C(=O)C(C2CC… |
-| 4 | N=C(N)NCCCC(C=O)NC(=O)CNC(=O)\[C@H\](CCCN… | c1ccc2ccccc2c1 |
+| 8.495 | CC\[C@H\](C)\[C@H\](NC(=O)\[C@@H\]1CCCN1C(=O)… | 1992 |
+| 4.87 | NC(N)=NCCCC(NC(=O)\[C@@H\]1CCCN1C(=O)C(N)… | 1992 |
+| 4.319 | COC(=O)C(O)\[C@H\](CCCCN=C(N)N)NC(=O)\[C@@… | 1992 |
+| 9.854 | CC\[C@H\](C)\[C@H\](NC(=O)\[C@H\](CCC(=O)O)NC… | 1992 |
+| 5.77 | NC(N)=NCCCC(NC(=O)\[C@@H\]1CCCN1C(=O)\[C@@… | 1992 |
 
 ## Curation notes
 
 - The target is ChEMBL target 11, human prothrombin (thrombin, CHEMBL204), named by OpenML's original data URL.
 - OpenML (uploaded 2015-10-06, creators the Meta-QSAR team) is the first publication; the Mendeley Data release
   (doi:10.17632/spwgrcnjdg.1) came in 2020 and computes the fingerprints with RDKit instead of Pipeline Pilot.
-- We drop the "MOLECULE_CHEMBL_ID" column after it has served the join to the structures.
+- We drop the "MOLECULE_CHEMBL_ID" column after it has served the join to the structures and the years.
+- Split by the year a compound first appears in the literature (Andrej, 2026-11-11; REVIEW.md issue 2, option
+  C), in place of the scaffold-grouped split of 2026-11-01. `first_year` is the earliest year among the
+  documents of the compound's human thrombin (CHEMBL204) activity records in ChEMBL 17, the release the
+  Meta-QSAR data was drawn from; it is a feature as well as the time column, as in the other temporal tasks
+  (apistox). All 5,704 compounds have a CHEMBL204 record there, 5,186 of them in a dated document (years 1992
+  to 2013). The other 518 appear only in the one undated document, the PubChem BioAssay deposit CHEMBL1201862,
+  and take 2011, the year ChEMBL 9 loaded it and the first year a modeller could have had it. The extract
+  (`chembl_17_first_year.csv`, sha256 642e629da88a8a5b3bbd4e39fd059e2c8967b4e3cd3acf546a7fd7540c8475d0) was
+  cut once from the release dump with
+  `SELECT md.chembl_id, MIN(d.year) FROM activities a JOIN assays s ON a.assay_id = s.assay_id JOIN
+  target_dictionary t ON s.tid = t.tid JOIN docs d ON a.doc_id = d.doc_id JOIN molecule_dictionary md ON
+  a.molregno = md.molregno WHERE t.chembl_id = 'CHEMBL204' GROUP BY md.chembl_id`.
+  Why the split changed: under the scaffold split 58% of the test compounds keep a close training analog
+  (Tanimoto >= 0.7, Morgan radius 2), and 71% to 93% of those analogs were first published in the same year as
+  the test compound, so the folds hold ring skeletons out but not the series of a paper, which a chemist
+  screening a new candidate does not have either. Measured on the shipped windows and all 5,704 compounds,
+  with the recommended SMILES encoding, untuned LightGBM and random forest, RMSE (Slurm jobs 1378119 and
+  1378141, 2026-11-11); the scaffold columns are the 3 x 3 scaffold-grouped out-of-fold scores on the same
+  compounds:
+
+  | Test window | Compounds | Earlier compounds (train) | Scaffold split: LightGBM | Random forest | Close analog | By year: LightGBM | Random forest | Close analog |
+  |---|---|---|---|---|---|---|---|---|
+  | 2004-05 | 633 | 3,280 | 0.844 | 0.891 | 67% | 1.502 | 1.405 | 18% |
+  | 2006-07 | 598 | 3,913 | 0.800 | 0.814 | 72% | 1.049 | 1.020 | 14% |
+  | 2008-09 | 290 | 4,511 | 1.038 | 1.074 | 58% | 1.184 | 1.194 | 30% |
+  | 2010-11 | 744 | 4,801 | 0.804 | 0.880 | 24% | 1.248 | 1.368 | 6% |
+  | 2012-13 | 159 | 5,545 | 0.812 | 0.873 | 71% | 0.894 | 1.005 | 20% |
+  | all compounds | 5,704 | - | 0.868 | 0.920 | 58% | - | - | - |
+
+  Where the difference comes from, at the same number of training compounds where the pool allows (LightGBM
+  RMSE, the drawn sets averaged over 3 seeds):
+
+  | Test window | Earlier years only (shipped) | Any year, no test scaffold | Any year, at random | Compounds published later |
+  |---|---|---|---|---|
+  | 2004-05 | 1.502 | 1.281 | 1.305 | 1,791 |
+  | 2006-07 | 1.049 | 1.083 | 1.038 | 1,193 |
+  | 2008-09 | 1.184 | 1.249 | 1.174 | 903 |
+  | 2010-11 | 1.248 | 1.233 | 1.218 | 159 |
+  | 2012-13 | 0.894 | 0.860 | 0.894 | 0 |
+
+  Only the oldest window has many later compounds to learn from, and there they are worth about 0.2 RMSE;
+  from 2006-07 on the three training sets score within 0.08 of each other, and in the newest two they are
+  nearly the same compounds. So on this layout the scaffold split's advantage is the same-year siblings it
+  keeps rather than the later papers. An earlier run on four hand-chosen windows (2004, 2005-06, 2007-08,
+  2009-13), dated from today's web service with the deposit left out, pointed the same way: LightGBM 0.68 to
+  0.90 by scaffold against 1.11 to 1.31 by year (Slurm jobs 1366166 and 1366180, 2026-11-06).
+  Checked on the shipped windows (2026-11-11): the task probes raise no flag (LightGBM R^2 0.350, skill
+  +0.419 over the dummy and ahead of it on all five windows, random forest 0.313, selected linear 0.138,
+  plain linear -0.409; spread LightGBM - linear +0.659, paired standard error 0.177). The leak probes find no
+  test row with an exact feature copy in training (0.0% over the five windows) and no single feature near the
+  all-feature R^2 of 0.449 (best 0.055); probe 13 reads a mild shift at the end (the mean of the newest three
+  years pooled, z -3.7), which is the drift the temporal split is there for. `hidden_groups` finds no
+  entity-like column under these windows (61 candidates, 0 hits; 2.6% of test rows have a near copy at
+  Tanimoto 0.85, against 16.8% of all rows sitting in such a cluster).
+  The potency itself is a fixed property of the compound; what moves with the year is which compounds exist,
+  and with them the level of the targets (mean pXC50 6.43 up to 2003, 6.42 in 2004-05, 6.00 in 2006-07, 6.37
+  in 2008-09, 5.44 in 2010-11, 5.77 in 2012-13; Spearman year against target -0.24).
+- Assay limits (Andrej, 2026-11-11; REVIEW.md issue 1, option B): 654 targets (11.5%) sit at round limits
+  (pXC50 4.30: 348, 5.00: 204, 4.00: 81, 4.70: 21); in a sample of 36 such compounds, ChEMBL holds 31 only as
+  bounds (">" the top concentration tested), 3 as exact values and 2 not at all, so these are upper bounds of
+  the potency stored as exact values, as in the Meta-QSAR file (LEAK-26: documented). They are the inactive
+  end of the screen and stay. 306 of the 654 (47%) are compounds whose only thrombin record is the PubChem
+  BioAssay deposit CHEMBL1201862: 59% of its 518 compounds sit at a limit, against 6.7% of the rest, and its
+  mean potency is 5.01 against 6.36. For an inactive compound RMSE therefore rewards predicting the top
+  concentration its laboratory tested rather than "inactive"; whether a compound is active, the chemist's
+  decision, is unaffected. The source (Olier et al., Sec. 2.2) takes "the median of those activities falling
+  in the modal log unit" and does not say how bounds were treated.
+- Collection facts (Andrej, 2026-11-11; REVIEW.md issue 3, option B): the compounds arrive over time and
+  ChEMBL dates them, so the record carries `Samples: Over Time` and `Time: Dated` in place of `Samples: No
+  Time Dimension`. No `Target: Revised Later`: only 5.1% of the compounds have a thrombin record from a year
+  later than their first, so a median label seldom moves after the compound's first publication.
 - The file lists the compounds roughly in ChEMBL ID order, and the mean activity drifts along it (6.8 in the
-  first tenth, 5.6 in the ninth); the standard shuffle removes this order.
-- Scaffold-grouped splits (Lennart, 2026-11-01; SPLIT-31 as amended), in place of random ones. The rows carry
-  ChEMBL compound ids, and ChEMBL 17, the release the data was drawn from, holds the structure of every one
-  (its InChIKey equals today's ChEMBL for all 5,505 ids still served). The groups are the Bemis-Murcko
-  scaffolds of those structures (`scaffold_groups`): 2,529 groups for 5,704 compounds, 21 compounds without a
-  ring alone, the largest group the bare benzene ring with 117 compounds (2%), 89 groups of 10 or more holding
+  first tenth, 5.6 in the ninth), mostly the PubChem deposit at positions 70% to 90%; the file position
+  follows the first year only loosely (Spearman 0.48). The frame ships sorted by `first_year` (the time
+  column), so the file order is gone.
+- Chemical series, as background: the scaffold-grouped split shipped from 2026-11-01 to 2026-11-11 and the
+  `scaffold` column left with it, but the numbers describe the data. The Bemis-Murcko scaffolds of the
+  ChEMBL 17 structures (`scaffold_groups`) are 2,529 groups for 5,704 compounds, 21 compounds without a ring
+  alone, the largest group the bare benzene ring with 117 compounds (2%), 89 groups of 10 or more holding
   1,751 compounds. Counter-ions carry no ring here: stripping the 549 salts to their largest fragment changes
   no scaffold. A random split gave 79.7% of the test compounds a close training analog (Tanimoto >= 0.7,
   Morgan radius 2, 2,048 bits; median nearest 0.81), the scaffold groups 59.2% (median 0.73), and untuned
-  LightGBM's RMSE rises from 0.794 to 0.920 (3 x 3 folds, 2026-11-01 run). On the definition's splits the
-  group probe gives LightGBM R^2 0.747 under IID and 0.657 grouped, and the task probes raise no flag
-  (LightGBM R^2 0.66, random forest 0.62, linear 0.48: the families still separate). Of the 356 fingerprint vectors
-  that repeat (802 rows; the repeated-fingerprint bullet below), 303 lie within one scaffold and now stay on
-  one side; 53 vectors (128 rows) span two or more scaffolds, analogs whose ring systems differ in a way the
-  fingerprint does not see.
+  LightGBM's RMSE rises from 0.794 to 0.920 (3 x 3 folds, 2026-11-01 run); on those scaffold splits the task
+  probes raised no flag (LightGBM R^2 0.66, random forest 0.62, linear 0.48: the families still separate). Of
+  the 356 fingerprint vectors that repeat (802 rows; the repeated-fingerprint bullet below), 303 lie within
+  one scaffold; 53 vectors (128 rows) span two or more scaffolds, analogs whose ring systems differ in a way
+  the fingerprint does not see.
 - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): ChEMBL 17's SMILES in RDKit's
   canonical form (`canonical_smiles`; the 549 salts as ChEMBL records them), declared in `special_features`, so a
   benchmark encodes it as a structure and never as text; the recommended encoding is
@@ -233,9 +302,11 @@ The first 5 of 5,704 rows of the final frame (random rows: the frame is shuffled
 - Stereoisomers stay (as the repeated-fingerprint decision below): 474 rows in 217 groups share one structure
   once the stereo marks are set aside, each with its own measured potency (range within a group: median 0.45,
   up to 4.48 pXC50). The SMILES keeps the stereo marks; the recommended 2D encoding does not tell them apart.
-  Each group shares a scaffold, so it stays on one side of the split. No two rows share a SMILES.
+  Under the split by year a group falls where each member's first publication year puts it: 78 of the 217
+  groups hold more than one year, and 32 reach across a window boundary, so for those a training row and a
+  test row differ only in their stereochemistry. No two rows share a SMILES.
 - Only one row has a negative value (-6.24) and is thus extremely out-of-distribution, which is likely results from the target being log scaled in the original domain. We remove this row as it is unclear if this is a scaling or labeling error, but we judge it is in all cases a data artifact.
-- Why the row may leave (CLEAN-11, CLEAN-15): a pXC50 of -6.24 is a half-effect concentration of 10^6.24 mol/L, about 1.7 million mol/L, which no substance reaches (pure water is 55 mol/L). The value is impossible, so the target is missing and the row drops. It does not meet CLEAN-11's clause for an extreme target in the training period only: the split is random, and the source does not name the row.
+- Why the row may leave (CLEAN-11, CLEAN-15): a pXC50 of -6.24 is a half-effect concentration of 10^6.24 mol/L, about 1.7 million mol/L, which no substance reaches (pure water is 55 mol/L). The value is impossible, so the target is missing and the row drops. The reason is the impossible value, not CLEAN-11's clause for an extreme target in the training period only, although the compound (CHEMBL92020, first published 2002) would now fall in every window's training side; the source does not name the row.
 - We do not log scale the target (it could make sense for this distribution), as the original label is already log transformed.
 - Repeated fingerprints (LEAK-16 asks for a recorded decision; Lennart, 2026-10-21): 870 of 5,741 rows sit in
   387 repeated FCFP vectors (116 with the same target too), and every row has its own ChEMBL compound id. We
@@ -254,49 +325,23 @@ The first 5 of 5,704 rows of the final frame (random rows: the frame is shuffled
 
 ## Splits
 
-Grouped splits on the Bemis-Murcko scaffold: all compounds of one series stay on one side, so a model predicts compounds of a series it has not seen; compounds without a ring are held out one by one. Compounds with similar but not identical scaffolds can be on both sides.
+Expanding-window temporal splits on the year a compound first appears in ChEMBL 17's human thrombin records: 5 test windows of two years (2012-13, 2010-11, 2008-09, 2006-07, 2004-05), newest first; train is every compound first published before the window. The windows hold 159, 744, 290, 598 and 633 compounds, and their train sides 5,545, 4,801, 4,511, 3,913 and 3,280 compounds (97%, 84%, 79%, 69% and 57% of all 5,704). A model trained on the compounds known up to a year predicts the potency of the compounds that appear in the next two. Two years is the window the protocol derives from five windows over the newest half of the 22 publication years, and the smallest window (2012-13) still holds 159 compounds. The 518 compounds of the undated PubChem BioAssay deposit take 2011, the year ChEMBL 9 loaded it, which puts them in the 2010-11 window. The scaffold-grouped split this replaces trained on same-year siblings of the test compounds (curation notes).
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 3,654 to 3,909 rows, test 1,795 to 2,050 rows.
+5 repeat(s) x 1 fold(s) with seed 4267; train 3,280 to 5,545 rows, test 159 to 744 rows. Prediction horizon: 2 years.
 
-| repeat | fold | n_train | n_test |
-|---|---|---|---|
-| 0 | 0 | 3784 | 1920 |
-| 0 | 1 | 3724 | 1980 |
-| 0 | 2 | 3900 | 1804 |
-| 1 | 0 | 3769 | 1935 |
-| 1 | 1 | 3909 | 1795 |
-| 1 | 2 | 3730 | 1974 |
-| 2 | 0 | 3852 | 1852 |
-| 2 | 1 | 3654 | 2050 |
-| 2 | 2 | 3902 | 1802 |
-
-## Group structure
-
-One group is a chemical series: the compounds that share one Bemis-Murcko scaffold (ring systems and the chains linking them; Bemis and Murcko 1996), computed with RDKit from the compound's ChEMBL 17 structure. A compound without a ring is a group of its own, and so would be each compound of a scaffold holding more than a tenth of the compounds (SPLIT-31; none here: the bare benzene ring holds 2%). A medicinal chemist screens candidates that often come from a series not yet measured on the target, so whole series are held out. Each row is one prediction, made from the compound's structure alone.
-
-| field | value |
-|---|---|
-| group column | `scaffold` |
-| labels | per_sample |
-| order inside a group | none |
-| prediction unit | row |
-| known about a group when predicting | none |
-
-| statistic | value |
-|---|---|
-| groups | 2,529 |
-| rows per group (min / median / max) | 1 / 1.0 / 117 |
-| largest group | 2.1% of the rows |
-| test groups per fold | 843 |
-| groups of two or more rows with a single label | 12.2% |
-| label variance explained by the group | 0.84 (shuffled groups: 0.46) |
-
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 5545 | 159 | 1992 | 2011 | 2012 | 2013 |
+| 1 | 0 | 4801 | 744 | 1992 | 2009 | 2010 | 2011 |
+| 2 | 0 | 4511 | 290 | 1992 | 2007 | 2008 | 2009 |
+| 3 | 0 | 3913 | 598 | 1992 | 2005 | 2006 | 2007 |
+| 4 | 0 | 3280 | 633 | 1992 | 2003 | 2004 | 2005 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
+- **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='first_year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
 
 ## Data checks
 
@@ -305,8 +350,8 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | MEDIAN_PXC50 | float64 | 0 | 0 | 1379 | 4.301, 5.0, 5.301, 5.398, 4.0, 4.959, 4.678, 5.602, 4.523, 6.0 |
-| SMILES | string | 0 | 0 | 5704 | Cc1cc(C(=O)CSc2nnnn2C)c(C)n1-c1cccc(F)c1, N=C(N)c1ccc(Oc2ccc(Oc3ccc(C(=N)N)cc3)… |
-| scaffold | string | 0 | 0 | 2529 | c1ccccc1, c1ccc(Oc2cccc(Oc3ccccc3)n2)cc1, O=C(Nc1ccc(-c2ccccc2)cc1)c1ccnn1-c1cc… |
+| first_year | int64 | 0 | 0 | 22 | 2003, 2011, 1999, 1998, 2000, 2002, 2004, 2007, 2006, 2005 |
+| SMILES | string | 0 | 0 | 5704 | CC\[C@H\](C)\[C@H\](NC(=O)\[C@@H\]1CCCN1C(=O)\[C@H\](CCC(=O)O)NC(=O)\[C@H\](Cc1ccccc1)NC(… |
 
 ### Target distribution
 
@@ -318,22 +363,18 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
+| first_year | 5704 | 2003.33 | 4.73545 | 1992 | 2013 |
 | MEDIAN_PXC50 | 5704 | 6.23526 | 1.53636 | 3.495 | 11 |
 
 ### Categorical features
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| SMILES | 1 | Cc1cc(C(=O)CSc2nnnn2C)c(C)n1-c1cccc(F)c1 | 1 | 0.02 |
-| SMILES | 2 | N=C(N)c1ccc(Oc2ccc(Oc3ccc(C(=N)N)cc3)cc2)cc1 | 1 | 0.02 |
-| SMILES | 3 | Cc1ccnc(CNC(=O)Cn2c(C)cnc(NCC(F)(F)c3ccccc3)c2=O)c1F | 1 | 0.02 |
-| SMILES | 4 | Cl.Cn1c(CNC(=O)\[C@@H\]2C=CCN2C(=O)\[C@@H\](CC2CCCCC2)NCC(=O)O)ccc1C... | 1 | 0.02 |
-| SMILES | 5 | O=C1COc2ccc(Cl)cc2CNC(=O)\[C@@H\]2CCCN2C(=O)\[C@@H\](C2CCCCC2)NC(=O)... | 1 | 0.02 |
-| scaffold | 1 | c1ccccc1 | 117 | 2.05 |
-| scaffold | 2 | c1ccc(Oc2cccc(Oc3ccccc3)n2)cc1 | 88 | 1.54 |
-| scaffold | 3 | O=C(Nc1ccc(-c2ccccc2)cc1)c1ccnn1-c1ccccc1 | 61 | 1.07 |
-| scaffold | 4 | O=C(Nc1ccccc1C(=O)Nc1ccccc1)c1cc2ccccc2s1 | 47 | 0.82 |
-| scaffold | 5 | O=C(Cn1c(-c2ccccc2)cncc1=O)NCc1ccccc1 | 34 | 0.6 |
+| SMILES | 1 | CC\[C@H\](C)\[C@H\](NC(=O)\[C@@H\]1CCCN1C(=O)\[C@H\](CCC(=O)O)NC(=O)\[C@H... | 1 | 0.02 |
+| SMILES | 2 | NC(N)=NCCCC(NC(=O)\[C@@H\]1CCCN1C(=O)C(N)Cc1cccc2ccccc12)C(=O)CCC(... | 1 | 0.02 |
+| SMILES | 3 | COC(=O)C(O)\[C@H\](CCCCN=C(N)N)NC(=O)\[C@@H\]1CCCN1C(=O)\[C@H\](N)Cc1c... | 1 | 0.02 |
+| SMILES | 4 | CC\[C@H\](C)\[C@H\](NC(=O)\[C@H\](CCC(=O)O)NC(=O)\[C@H\](CCC(=O)O)NC(=O)... | 1 | 0.02 |
+| SMILES | 5 | NC(N)=NCCCC(NC(=O)\[C@@H\]1CCCN1C(=O)\[C@@H\](N)C(c1ccccc1)c1ccccc1)... | 1 | 0.02 |
 
 ## Build
 
@@ -346,4 +387,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d3100ce05bbf6bb3524ca512395502dbddf93948e09802f296d38856cabe9e70` |
+| stale | yes: the definition now gives checksum `v2:ab97713f59b42b9596026ea530bc3c92ce0947a8b6781ca0c895a6a5540875b5` |

@@ -8,14 +8,18 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
+- WIP (DF)
+claimed_by: Andrej
 suggestion: 'Yes'
+priority: 2
 tags:
-- Non-IID (Grouped)
-- 'Samples: No Time Dimension'
+- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
 year: '2015'
 domain: chemistry & material science
 required_split:
-- Grouped (NON-IID)
+- Temporal (NON-IID)
 problem_type: Regression
 source_links:
 - https://www.openml.org/search?type=data&id=3050
@@ -67,3 +71,37 @@ CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encod
 CC (2026-11-01, Lennart): ship the SMILES only: "the real task here is going from smiles to a prediction, the bits are just one possible modelling choice by the authors".
 
 **Assessment (AI, 2026-11-01):** the authors' 1,024 FCFP6 bits leave; `SMILES` is the one feature. RDKit cannot recompute those exact bits (with its closest settings no source bit is matched exactly by any RDKit bit). LightGBM R^2 on the 9 scaffold splits: authors' bits 0.645; the recommended encoding (RDKit 2D + MACCS) 0.601; RDKit's FCFP6-like bits 0.628; the recommended encoding with RDKit's FCFP6-like bits 0.640, with RDKit's ECFP4 counts 0.658 (better than the authors' bits on 8 of 9 splits). The 474 stereoisomer rows (217 groups, potency range median 0.45 pXC50) stay, as decided on 2026-10-21; no two rows share a SMILES. Evidence: `local-data-warehouse/_runs/2026-11-01_scaffold_checks/qsar_tid_11/encodings_compare.txt`.
+
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the folder's `REVIEW.md`. Ship with a note: real thrombin potencies with structures and held-out series that separate methods widely, but 11.5% of the targets are assay limits that ChEMBL records only as bounds (31 of 36 sampled), stored as exact values. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
+
+CC (2026-11-11, Andrej): the three open issues of the folder's `REVIEW.md` are settled; the definition and this
+record carry the decisions. Not built.
+
+- Issue 2, option C, split by first publication year: the scaffold-grouped split is replaced by a temporal one on
+  `first_year`, the earliest year among the documents of a compound's human thrombin (CHEMBL204) activity records in
+  ChEMBL 17 (a one-off extract from the release's sqlite dump on the EBI FTP, shipped as `chembl_17_first_year.csv`
+  next to `dataset.py`). All 5,704 compounds have a CHEMBL204 record there, 5,186 in a dated document (1992-2013);
+  the other 518 appear only in the undated PubChem BioAssay deposit CHEMBL1201862 and take 2011, the year ChEMBL 9
+  loaded it. Five windows of two years: 2012-13 (159 compounds), 2010-11 (744), 2008-09 (290), 2006-07 (598) and
+  2004-05 (633), each trained on every earlier compound (5,545, 4,801, 4,511, 3,913 and 3,280 rows, 97% to 57%).
+  `first_year` is a feature as well as the time column, as in apistox. Measured on these windows and all 5,704
+  compounds (2026-11-11): the scaffold folds leave 58% of the test compounds a close training analog, 71-93% of them
+  first published in the same year, and untuned LightGBM's RMSE is 0.80-1.04 by scaffold against 0.89-1.50 by year.
+  At an equal training size drawn from all years the forward split loses about 0.2 RMSE only on the oldest window,
+  where many compounds are published later, so the scaffold split's advantage is the same-year siblings rather than
+  the later papers. The probes on the new windows raise no flag (LightGBM R^2 0.350, skill +0.419 over the dummy on
+  all five; no exact feature copy across the split; `hidden_groups` 0 hits of 61 candidates). `required_split` is now
+  Temporal (NON-IID) and the tag Non-IID (Temporal); `grouping` and the `scaffold` column are gone, the scaffold
+  numbers stay as background.
+- Issue 1, option B, keep and document the censored potencies: the 654 targets at round assay limits (11.5%; pXC50
+  4.30: 348, 5.00: 204, 4.00: 81, 4.70: 21) stay as exact values, with a `curation_comments` bullet naming the
+  limits, their counts and the bound reading (LEAK-26: documented). They are the inactive end of the screen; 306 of
+  them (47%) belong to the PubChem deposit, where 59% of the 518 compounds sit at a limit against 6.7% of the rest.
+- Issue 3, option B, collection facts: `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time
+  Dimension`. No `Target: Revised Later`: only 5.1% of the compounds have a thrombin record from a year later than
+  their first, so a median label seldom moves after the compound's first publication.
+- References: Olier et al. 2018, Meta-QSAR, Machine Learning 107:285-311, doi:10.1007/s10994-017-5685-x (Sec. 2.2 on
+  the median of the modal log unit, arXiv:1709.03854); ChEMBL 17 release dump,
+  https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_17/; Sheridan RP, Time-split cross-validation
+  as a method for estimating the goodness of prospective prediction, J Chem Inf Model 2013;53(4):783-790,
+  doi:10.1021/ci400084k. Evidence: `~/claude_jobs/time_review/qsar_tid_11/`.
