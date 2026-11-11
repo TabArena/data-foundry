@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-11 10:47 UTC: 156 claim(s) (Andrej 122, Lennart 12, Myunghwan 22).
+As of 2026-11-11 10:51 UTC: 158 claim(s) (Andrej 124, Lennart 12, Myunghwan 22).
 
 ## Andrej
 
@@ -16,6 +16,7 @@ As of 2026-11-11 10:47 UTC: 156 claim(s) (Andrej 122, Lennart 12, Myunghwan 22).
 | `amazon_employee_access` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `anes_voting_2026` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
 | `aps_failure` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
+| `asp_potassco_classification` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
 | `audiology_diagnosis` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `australian_vehicle_insurance_2004_2005` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `bad_customer_detection` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
@@ -38,6 +39,7 @@ As of 2026-11-11 10:47 UTC: 156 claim(s) (Andrej 122, Lennart 12, Myunghwan 22).
 | `credit_approval` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `credit_card_clients_default` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `credit_g` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
+| `dementia_prediction` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
 | `diabetes_130_us` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `diamonds` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `drug_induced_autoimmunity_prediction` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
