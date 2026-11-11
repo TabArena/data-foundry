@@ -57,6 +57,30 @@ nine newest (issue 12)?
 * **Recommendation:** A: a quarter lies between the analyst's monthly and yearly cycles, and keeps nine windows where a
   year gives three. **Decision:** A, B or C?
 
+**Lennart (2026-11-11, discuss):** Three months seems a lot, what would make sense from a use case pov? If we refit
+monthly, this could be more reasonable here?
+
+**Answer (AI, 2026-11-11):** One-month windows, the cycle of the city's fatal-crash review?
+
+* **Problem:**
+  - The quarter was set when the dataset was built; no source names it.
+  - The one documented cycle of the analyst's work is monthly: CDOT's list of traffic fatalities is compiled "after
+    monthly reviews of fatal traffic crash information" and "updated monthly"; the yearly report is the other cycle.
+  - A month with the one-month gap gives 53 windows that keep half the crashes for training (7,752 to 10,719 crashes
+    each), so nine months can be spread over 2022 to 2026 as issue 12 spreads nine quarters.
+* **Background:** the score is the multiclass log loss over five severity classes; fatal crashes are about 0.1% of a
+  window, 6 to 11 in a month against 20 to 30 in a quarter, so a month's score leans less on them than a quarter's,
+  which the log loss over all five classes allows. The gap stays a month: a report is final within 30 days.
+* **Options:**
+
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | a | Three months (implemented) | issue 12's nine quarters | 9 windows of 24,682 to 30,068 crashes | three times the crashes per window | a length no source gives |
+  | b | One month | nine months spread over 2022 to 2026, proposed again in issue 12 | 9 windows of 7,752 to 10,719 crashes | the city's monthly review cycle; a refit as often as the list is updated | a third of the test crashes; 6 to 11 fatal crashes per window |
+
+* **Recommendation:** b: the monthly review is the analyst's documented cycle, and nine months still test about 80,000
+  crashes. **Decision:** a or b?
+
 **Issues for Lennart:**
 
 7. **Reword the use case to a road-safety analyst?**

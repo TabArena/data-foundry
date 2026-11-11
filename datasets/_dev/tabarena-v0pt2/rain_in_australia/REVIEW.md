@@ -1,14 +1,12 @@
 # rain_in_australia
 
-**Outcome:** added. Shipped on your verdict of 2026-10-26 with 26 back-to-back 14-day test windows over the last year
-(1 February 2025 to 30 January 2026). Under the rule on choosing test windows, rewritten on 2026-11-10, the AI
-recommends keeping the 14-day length without a gap (Horizon) and spreading the 26 windows over the eight years that
-keep half the rows for training, one every 16 weeks from May 2018, so the test meets the dry and the wet years as well
-as the last one (issue 7). `dataset.py` is unchanged until you decide. The review file of October (issues 2 to 6,
-settled on 2026-10-26) was removed then and stays in git; this file numbers on from it.
+**Outcome:** added. Shipped on your verdict of 2026-10-26; on 2026-11-11 you kept the 14-day windows without a gap
+(Horizon, ok) and spread the 26 windows one every 16 weeks from May 2018 to January 2026 (issue 7, B); both are applied
+and nothing is left open. The review file of October (issues 2 to 6, settled on 2026-10-26) was removed then and stays
+in git; this file numbers on from it.
 
-**Main points:** Sign off the 14-day windows without a gap (Horizon)? Keep the 26 fortnights of the last year, or
-spread them over 2018-2026 (issue 7)?
+**Main points:** Settled on 2026-11-11: 26 fortnights spread over the eight years open, so the score meets the dry and
+the wet years, with the test rows of the 26 fortnights of the last year kept.
 
 **Horizon:**
 
@@ -37,6 +35,13 @@ spread them over 2018-2026 (issue 7)?
 
 * **Recommendation:** A: two weeks is the length you set for weather, and no source names a cadence that would set
   another. **Decision:** A, B or C?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, the 14-day windows without a gap stay. `splits_comment` gives the reason from
+this block: no source names a refit cadence (rattle's file is a sample dataset and defines no task), so the length is
+the one or two weeks set for weather; the no-gap sentence stays. The record has the horizon CC line. `dataset check`:
+0 errors, 0 warnings (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -118,3 +123,15 @@ spread them over 2018-2026 (issue 7)?
      Andrej): "The newest window is always a test window ... The other windows are the curator's choice, per dataset,
      argued from the use case ... The evidence is statistics of the data, never a model's score ... Prefer windows in
      other years, then other seasons, then other months, weeks or days, over the windows just before the newest."
+
+   **Lennart (2026-11-11, change):** Option B: One every 16 weeks over eight years.
+
+   **Resolved (2026-11-11, Lennart):** B. `temporal` declares the 26 cutoffs of the notes above, from 2026-01-17 back to
+   2018-05-19: test 606 to 669 location-days per window (16,484 in all, 55 to 202 rain days each), train 137,157 to
+   263,940 rows (51.8% to 99.8%). `task_summary.split` and `splits_comment` name the spread and its reason (the yearly
+   rain shares from 17.8% in 2019-20 to 27.2% in 2022-23, every calendar month two or three times) and say why 26
+   windows rather than the nine folds a random split of this size gets: a 14-day window, the rule on short weather
+   windows, holds about 630 location-days, so 26 windows keep the test rows. The window decision in `_decisions` shows
+   the shipped spread and, as its own row, the 26 back-to-back fortnights of 2026-10-26; the standard errors of the
+   CC of 2026-10-26 and the AUC figures of the notes are dated to the windows they were measured on. The record has the
+   decision CC line. `dataset check`: 0 errors, 0 warnings.

@@ -59,6 +59,12 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 **Assessment (AI, 2026-11-10):** priority for the review of the test windows and horizons, which this record never had. Priority 3: gap 0, use case 0, source + (Vesta's competition), shape +, risk 0 (the open issue is the window length and the floor).
 
+CC (2026-11-11, Lennart): REVIEW issue 1 (which test windows), as implemented (A): the test windows stay March, April and May 2018, one month each after the competition's one-month gap, in place of the AI's three-week windows; SPLIT-14 as amended on 2026-11-11 admits March, which trains on 38.9% of the payments (one window under half, two above). The windows walk back from the newest: with the gap a February window would train on December only (about 23%).
+
+CC (2026-11-11, Lennart): the declared horizon (one month, a one-month gap, windows starting 2018-05-01, 2018-04-01 and 2018-03-01) is checked, as the month comes from the first-place team's month groups and the gap from the competition (labelled payments end on 31 May 2018, its test starts on 1 July 2018).
+
+**Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` unchanged (`window=1, unit="months", n_windows=3, gap=1`); test 89,326, 83,655 and 101,632 payments (May, April, March 2018), train 417,559, 315,927 and 229,906 (70.7%, 53.5%, 38.9% of 590,540); a February window would train on the 137,321 payments of December (23.3%). `task_summary.split`, `splits_comment` and the two `curation_comments` bullets that called the month a forecasting horizon and the gap a planning window now say the month is the winners' validation group, not a refit cadence (Vesta states none; the competition scores one model on six months), and give the gap's source and the Visa chargeback limit of 120 days. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
 ## Reference
 
 Addison Howard, Bernadette Bouchon-Meunier, IEEE CIS, inversion, John Lei, Lynn@Vesta, Marcus2010, and Prof. Hussein Abbass. IEEE-CIS Fraud Detection. https://kaggle.com/competitions/ieee-fraud-detection, 2019. Kaggle.

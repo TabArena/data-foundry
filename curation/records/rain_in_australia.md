@@ -69,6 +69,12 @@ CC (2026-10-26, Lennart): verdict ship.
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 3 calendar or compass cycles ordered; cloud cover 9 (sky obscured, 3 rows) set to missing (CLEAN-10).
 
+CC (2026-11-11, Lennart): REVIEW.md issue 7, B ("Option B: One every 16 weeks over eight years."): the 26 fortnights are spread one every 16 weeks from 19 May 2018 to 30 January 2026 in place of the last year, so the 2019 drought and the wet La Niña years are tested; the count of windows and its reason, the test rows (CC 2026-10-26), stay.
+
+CC (2026-11-11, Lennart): the declared horizon (14 days, no gap, 26 windows starting every 16 weeks from 2018-05-19 to 2026-01-17) is checked, as no source gives a refit cadence and two weeks is the length the curator set for weather (REVIEW.md horizon, ok).
+
+**Assessment (AI, 2026-11-11):** applied issue 7 (B): `temporal` declares the 26 cutoffs from 2026-01-17 back to 2018-05-19; test 606 to 669 location-days per window, 16,484 in all, with 55 to 202 rain days; train 137,157 to 263,940 rows (51.8% to 99.8%); every calendar month starts two or three windows. The splits comment says why 26 windows rather than the nine folds of a random split of this size: a 14-day window holds about 630 location-days, so 26 keep the test rows. `dataset check`: 0 errors, 0 warnings.
+
 ## Reference
 
 Kaggle

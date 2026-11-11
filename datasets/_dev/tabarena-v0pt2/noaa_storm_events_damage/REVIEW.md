@@ -7,11 +7,11 @@ applied (12: each county or zone, hazard and year counts once; 13: `SOURCE` stay
 the $10M cap, waits for a decision. NOAA
 NCEI's Storm Events Database, 2007-2025: 843,144 entries of the property damage an NWS office entered for one event in
 one county or zone, 68% of them $0, for a state hazard-mitigation planner who estimates the damage of storm events
-before it is assessed (Diaz and Joseph 2019); tested on the calendar years 2023-2025 with a 3-month gap, scored by the
-mean Tweedie deviance at power 1.5 on the dollars, each county or zone, hazard and year counting once (by context; the
-source has none; RMSLE until 2026-11-08). Under the rule on choosing test windows, rewritten on 2026-11-10, the AI
-recommends keeping one-year windows with the 3-month gap (Horizon) and testing 2025, 2021 and 2017 instead of the three
-newest years (issue 16, open; `dataset.py` is unchanged until you decide).
+before it is assessed (Diaz and Joseph 2019); tested on the calendar years 2025, 2021 and 2017 with a 3-month gap,
+scored by the mean Tweedie deviance at power 1.5 on the dollars, each county or zone, hazard and year counting once (by
+context; the source has none; RMSLE until 2026-11-08). On 2026-11-11 Lennart kept the one-year windows with the 3-month
+gap (Horizon, ok) and chose the test years 2025, 2021 and 2017, spread evenly over the nine years open, in place of
+2023-2025 (issue 16, B); both are applied and nothing is left open.
 
 Validity:
 * SEL-3 holds on the `Yes` of 2026-10-30. USE-1 and USE-5 hold with the planner as the actor (issue 5); USE-8: fit
@@ -34,7 +34,8 @@ Validity:
   test rows (15 fits, median about +0.04), the measured Thunderstorm Wind spans gaining in every fit; under the
   declared deviance (issue 8) their worth has no consistent sign (median -5% of the deviance on their rows).
 * SPLIT-9, SPLIT-10 and SPLIT-13 hold: a 3-month gap against a public lag of 75-80 days, no storm crosses a window, no
-  training event ends after its cutoff, 98.6-99.6% of the test rows in a county or zone seen in training.
+  training event ends after its cutoff, 99.3-99.6% of the test rows in a county or zone seen in training (2025, 2021
+  and 2017; 98.6-99.6% on 2023-2025).
 * MET-14, MET-15, MET-16 and LEAK-41 are not triggered: the target is one event's damage, not an amount accrued over a
   time at risk, so there is no exposure weight and no offset (county population does not scale with the damage); the
   cell weight of issue 12 gives each cell one vote and is no exposure.
@@ -93,9 +94,10 @@ the use case became the planner's (issue 5); on 2026-11-06 D13 (issue 6); on 202
 deviance with a $1 floor (issue 8, B); then issue 10 kept that metric with the tuned results in the notes, and issue 11
 moved the Flash Flood duration to the spans kept with a note (no data change; `dataset check`: 0 errors, 0 warnings).
 
-**Main points:** Open since 2026-11-10: sign off the one-year windows with the 3-month gap (Horizon), and test 2025,
-2021 and 2017 instead of 2023-2025 (issue 16)? Resolved on 2026-11-10 (Andrej): issue 15, the damage stays uncapped, the
-planner's sum with the catastrophes in; uncapped the score orders the methods at Kendall's W 0.62 across the test
+**Main points:** Settled on 2026-11-11 (Lennart): the test years are 2025, 2021 and 2017, which adds 2017, the costliest
+year of the data, to the newest (issue 16, B), and the one-year windows with the 3-month gap are checked (Horizon); the
+signal results of the notes are dated as measured on 2023-2025. Resolved on 2026-11-10 (Andrej): issue 15, the
+damage stays uncapped, the planner's sum with the catastrophes in; uncapped the score orders the methods at Kendall's W 0.62 across the test
 years and separates tuned LightGBM from a mean per event type only in 2025, stated in the notes as the noise of the
 task (the task's representation comes before how well methods separate). Issues 2 to 14 are resolved; on
 2026-11-09 issue 12 made each county or zone, hazard and year count once (each entry weighs 1 over its cell's
@@ -137,6 +139,13 @@ say if you disagree: the 51 Seiche durations are blank, an extension of D13.
 
 * **Recommendation:** A: a year keeps whole the year cells the score counts once and matches the planner's expected
   annual loss, and the gap is the measured publication lag. **Decision:** A, B, C or D?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, the one-year windows with the 3-month gap stay. `splits_comment` gives the
+reason from this block: a year follows the planner's expected annual loss, keeps whole the year cells the score counts
+once and holds every storm season; the gap is the measured publication lag, and the yearly cadence is ours. The record
+has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
 **Issues for Andrej and Lennart:**
 
@@ -1276,6 +1285,19 @@ say if you disagree: the 51 Seiche durations are blank, an extension of D13.
      other months, weeks or days, over the windows just before the newest. Walking back from the newest is one choice
      among others and needs its reason too, such as a history too short for others, or a use case that only cares
      about the weeks after a refit."
+
+   **Lennart (2026-11-11, change):** Option B: Spread evenly over nine years.
+
+   **Resolved (2026-11-11, Lennart):** B. `temporal` declares `cutoffs=(2025, 2021, 2017)` with the 3-month gap: test
+   45,870, 39,249 and 41,367 entries, train 793,017, 622,584 and 451,520 (94.1%, 73.8%, 53.6%); the 4,257 entries of
+   October to December 2024, the newest window's gap, lie in no split (an accepted `splits_rows_unused` warning with
+   that reason). `task_summary.split` and `splits_comment` name the years and why (the even spread over the nine
+   eligible years; 2017, the costliest year, $1.94M per entry, which the planner's uncapped annual loss includes). The
+   score-unit bullet and the metric reason count the new test years' cells (12,636, 12,599 and 12,931 cells of 3.1 to
+   3.6 entries, 85% to 88% of the test entries sharing a cell), `known` and the prediction-point bullet give 4.2-5.1%
+   of the test rows for the types entered only with damage (83-96% of them with damage), and the signal bullet, the
+   span-worth figures and the cell-weight results are dated as measured on 2023-2025, not re-run (the tuned models and
+   bootstraps take a cluster run). The record has the decision CC line. `dataset check`: 0 errors, 0 warnings.
 
 **Review panel:** ship after changes (mediator). Tier full, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
 MET-16, after decision D13 (issue 6): 12 reports. The mediator's issues 1 and 2 are issues 7 and 8 here (its option (a)

@@ -12176,8 +12176,10 @@ class AnesVoting2026(AbstractCuratedDataset):
             "issues and the economy, and the stated intention to vote."
         ),
         split=(
-            "Each of the last nine studies (1996 to 2024) is the test data once, with every earlier study for "
-            "training, as for a model built before the next election."
+            "Each of the last nine studies (1996 to 2024: eight presidential elections and the 2002 midterm) is the "
+            "test data once, with every earlier study for training, as a pollster applies a likely-voter screen "
+            "built on the elections already studied at the next one; the four oldest train on 40% to 49% of the "
+            "respondents."
         ),
         changes=(
             "We keep only respondents with both interviews and drop the questions the codebook ties to the "
@@ -12288,7 +12290,9 @@ class AnesVoting2026(AbstractCuratedDataset):
     )
 
     # Splits
-    splits_comment = "We use each of the last 9 years once as test data, using all prior data as train data."
+    splits_comment = """
+        Each test window is one study, that is one election: a pollster builds a likely-voter screen from the elections already studied and applies it at the next one, the test Pew's likely-voter study names for such a model ("Applying these models to other elections will reveal how well they can be generalized"). ANES sets no prediction task and TableShift splits its voting task by region, so no source sets the length. The studies are four years apart from 2004 on (two years between 2000, 2002 and 2004), so a window's model is up to four years old, as a pollster's would be. The test windows are the nine newest studies (CC 2026-11-11), newest first: 2024, 2020, 2016, 2012, 2008, 2004, 2002 (the data's only midterm study with both interviews), 2000 and 1996; nine is also the count a random split of this many respondents gets (3 x 3 folds). They hold 4,954, 7,442, 3,648, 5,488, 2,102, 1,066, 1,344, 1,554 and 1,534 respondents (29,132). Train is every earlier study: 43,633, 36,191, 32,543, 27,055, 24,953, 23,887, 22,543, 20,989 and 19,455 respondents (89.8%, 74.5%, 67.0%, 55.7%, 51.4%, 49.2%, 46.4%, 43.2% and 40.0%). Four windows train on less than half the respondents: 2004 (49.2%), 2002 (46.4%), 2000 (43.2%) and 1996 (40.0%), as the studies from 2012 on hold 3,648 to 7,442 respondents against 1,066 to 2,102 before; the five newest train on half or more, so no more windows are under half than above it, and the four add the only midterm and three more presidential elections (5,498 test respondents). No gap is needed: a study's labels come from its post-election interview, held after the election and years before the next study's pre-election interview.
+    """
     temporal = Temporal(
         on="VCF0004",
         splits=TemporalSplits(window=1, unit="unique", n_windows=9),

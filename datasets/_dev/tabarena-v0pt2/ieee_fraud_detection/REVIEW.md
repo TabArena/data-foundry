@@ -1,11 +1,12 @@
 # ieee_fraud_detection
 
-**Outcome:** added. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI proposes three windows of
-three weeks (30 March to 31 May 2018) with the competition's one-month gap, in place of the months March, April and
-May 2018, whose March window trains on 38.9% of the payments (issue 1). `dataset.py` is unchanged until you decide.
+**Outcome:** added. On 2026-11-11 you kept the three test months, March, April and May 2018, with the competition's
+one-month gap (issue 1 and the horizon, A), which the amended floor admits with March training on 38.9% of the
+payments.
 
-**Main points:** Test three windows of three weeks from 30 March to 31 May 2018, keeping the one-month gap, instead of
-March to May, so every train side keeps half the payments (issue 1)?
+**Main points:** Settled on 2026-11-11: the test windows stay March to May 2018, one month each after the one-month
+gap (issue 1, A), and the declared horizon is checked, the month from the winners' month groups and the gap from the
+competition.
 
 **Horizon:**
 
@@ -40,6 +41,17 @@ March to May, so every train side keeps half the payments (issue 1)?
 * **Recommendation:** B: it keeps the competition's gap and fits three windows above the floor into the ten weeks open,
   and the one-month length rested on the winners' validation, not on how long Vesta uses a model. **Decision:** A, B, C
   or D?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, one calendar month with the competition's one-month gap, kept, in place of the
+AI's three-week windows: the month comes from the first-place team's month groups ("ordered months as non-overlapping
+groups"), the gap from the competition (labelled payments end on 31 May 2018, its test starts on 1 July). The amended
+floor of 2026-11-11 admits the March window (issue 1), so three windows of a month fit. The notes no longer call the
+month a forecasting horizon: `curation_comments`, `task_summary.split` and `splits_comment` say it is the winners'
+validation group, not a refit cadence (Vesta states none, and the competition scores one model on six months), and
+give the gap's reason. `temporal` is unchanged. The record has the horizon CC line. `dataset check`: 0 errors, 0
+warnings (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -133,3 +145,15 @@ March to May, so every train side keeps half the payments (issue 1)?
      the reasoning down."
    [^if-split19]: **SPLIT-19** (Should): "When the source defines the split (a competition's or a paper's official
      periods), follow it."
+
+   **Lennart (2026-11-11, ok):** As implemented (A).
+
+   **Resolved (2026-11-11, Lennart):** A, as implemented: the test windows stay March, April and May 2018, one month
+   each after the one-month gap. SPLIT-14 as amended on 2026-11-11 admits them: May and April train on 70.7% and 53.5%
+   of the payments, and March on 38.9%, above 30% and one window under half against two above. The windows walk back
+   from the newest because six months of payments leave no other choice: with the gap a February window would train on
+   December only (137,321 payments, 23.3%). `temporal` is unchanged; `task_summary.split` and `splits_comment` name the
+   three months, their 89,326, 83,655 and 101,632 test payments, the train sides of 417,559, 315,927 and 229,906, the
+   March window under half with its share, the month's source (the winners' month groups) and the gap's (the
+   competition); the two `curation_comments` bullets on the horizon and the gap say the same. The record has the
+   decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings (README not regenerated).

@@ -79,6 +79,13 @@ data that it fits (MET-2: its unit exists, every input it needs ships and the te
 what the source's meant) and that the target is on the scale the source scored (MET-3). Note where you looked, for the
 reason of a fallback.
 
+List every file of the release (for a Kaggle competition `kaggle competitions files -c <name>`, for a dataset
+`kaggle datasets files <owner/name>`; the data page of any other source) and decide for each whether the definition
+reads it. Download the ones it reads, and say in `curation_comments` for every file left out why (no labels, another
+task, a copy of a file read). A file left out without a reason is a gap a review cannot see, since the panel checks the
+definition against the data it loads (g_research_crypto_forecasting_1m: `supplemental_train.csv`, four newer months of
+the same series, never downloaded; Lennart, 2026-11-11: "how did we miss this data in the first pass?").
+
 ## Step 2: Scaffold
 
 Read the closest reference definition in full (definitions.md, "Reference definitions"), then:

@@ -342,6 +342,38 @@ months rather than add September 2020 (issue 6)?
    [^aq-use10]: **USE-10** (Must): decide from the use case whether the entity the model predicts for is new or known;
      here a known site.
 
+   **Lennart (2026-11-11, change):** Option B: Six months.
+
+   **Consistency check (AI, 2026-11-11):** Add September 2020, whose Nakawa hours have no history, when on 2026-11-05 you
+   left the same month out for that reason?
+
+   * **Problem:**
+     - On 2026-11-05 you chose five months from October over six from September (issue 1, A over C), whose drawback was
+       that September scores Nakawa with no training hour[^aq6-prec].
+     - Nothing has changed since: Nakawa's first hour is 19 September 16:00, so 63 of September's 462 test hours (13.6%)
+       are at a site the model has never seen, in a task about known sites[^aq6-use10].
+     - Today's amended floor leaves September (53.0%) as it was but opens August 2020 (47.7%), the end of the June-August
+       dry season that no test month holds[^aq6-14].
+   * **Background:** August 2020 holds 576 hours, all at Makerere, whose 306 hours from 15 July are in August's train
+     side, as Nakawa's 63 September hours are in October's. A task of 10,828 hours gets nine splits at random.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Six months, Nakawa's September hours not scored | tests September 2020 without its 63 Nakawa hours (a custom split) | the sixth window you marked; every scored hour at a site with history | needs a custom split; a third rainy month next to October |
+     | b | Five months (implemented) | October 2020 to February 2021, your call of 2026-11-05 | the call stands; no hour at an unseen site | five windows where this size gets nine |
+     | c | Six months with August 2020 | tests August 2020 instead of September (47.7%, the one window under half) | a third season; no unseen site; no custom split | one site only in that month; trains on under half |
+     | d | Six months as marked | scores September whole | the mark as given | scores a site the model has never seen in a known-site task, which a Must rules out |
+
+   * **Recommendation:** c: the sixth window lands in the season the five lack, with every scored hour at a site the model
+     has seen. **Decision:** a, b, c or d?
+
+   [^aq6-prec]: CC 2026-11-05, Lennart (issue 1, A); splits.md Cases, SPLIT-20, this dataset.
+   [^aq6-use10]: **USE-10** (Must): decide from the use case whether the entity is new or known; a cold start predicts for
+     an entity without history.
+   [^aq6-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): the newest window and one other train on at least 50%;
+     further windows down to 30%, no more of them under 50% than at or above it.
+
 **Review panel:** ship after changes (mediator). Tier full, a second pass after Lennart's PR #33 review (2026-11-04), 12 reports. Claims: 24, 12 hold, 9 refuted (stale or overstated text, fixed in `dataset.py`; the record's `required_split` is in the field row and its 15-hour figures in issue 4), 1 concern (issue 2), 2 untested. Blind review: include with changes; its main concerns are that the eight site descriptors repeat the site label (kept: legitimate for known sites, LEAK-34) and that the windows mix later time with newer sites. Task gamer: its best exploit, the previous hour's reference, lowers mean RMSE from 18.21 to 16.28, a leak under the stated prediction point; nothing else beat the noise. Agreed: no leak, the temporal regime, the site descriptors kept, RMSE, the text fixes, the spike rule on training rows only, one dead-channel rule for both sensors. Disputed: SPLIT-20, widen the windows or keep them with an exception (issue 1); the clause and rank of the Nakawa outage (issue 3).
 
 <details><summary>Mediator</summary>

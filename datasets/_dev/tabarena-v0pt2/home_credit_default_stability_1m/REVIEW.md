@@ -55,6 +55,31 @@ dated CHANGELOG entry, `dataset check`.
 
 [^h-split14]: **SPLIT-14** (Must): at least 3 windows, and no window's train side holds less than 50% of the data.
 
+**Lennart (2026-11-11, discuss):** Please explain the argument of the scorecard to me here
+
+**Answer (AI, 2026-11-11):** The scorecard argument, and four months now that the floor is amended?
+
+* **Problem:**
+  - A credit scorecard is fit on applications whose default is known and then scores every new application until the
+    next refit; Home Credit's competition ("Credit Risk Model Stability") fit one model and scored it on each week
+    after its training data, rewarding a model whose quality decays least ("When a model runs in production, it can
+    only see past performance and predictions").
+  - So the horizon is how long one fit keeps scoring: the longer the window, the closer to that use; no source gives
+    Home Credit's refit cadence, so the length is the longest that keeps the floor.
+  - Under the amended floor (2026-11-11) four months gives three windows that all keep half the applications, and five
+    months three with the oldest at 35.1%.
+* **Options:**
+
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | a | Two months (implemented) | issue 1's windows | 3 windows of 69,037 to 241,856 applications | issue 1's choice | a length cut from another benchmark's test period |
+  | b | Three months | 6 July-5 October 2020, March-May 2020, November 2019-January 2020 (90.6%, 80.7%, 54.3%) | 3 windows of 97,762 to 328,606 applications | before, across and after the March 2020 break | shorter than a scorecard's use |
+  | c | Four months | July-5 October 2020, March-June 2020, November 2019-February 2020 (90.2%, 80.7%, 54.3%) | 3 windows of 143,724 to 403,789 applications | the longest length with every window above half; before, across and after the break | the windows tile the eligible span: no choice left |
+  | d | Five months | June-5 October 2020, January-May 2020, August-December 2019 (87.1%, 70.1%, 35.1%) | 3 windows of 196,202 to 534,452 applications | the longest the amended floor admits | the oldest trains on 35.1% |
+
+* **Recommendation:** c: a scorecard serves for months, and four months is the longest length whose three windows all
+  keep half the applications. **Decision:** a, b, c or d?
+
 **Issues for Lennart:**
 
 1. **Which two-month windows: the three newest, or the newest, the change of March 2020 and the 2019 holidays?**
@@ -148,3 +173,8 @@ dated CHANGELOG entry, `dataset check`.
      cadence, and no source states one (the Horizon block above).
    - The horizon sign-off (H) proposes 3 months, the longest length that keeps three windows above the floor; this
      issue waits on it and its windows are proposed again at the length you choose.
+
+   **Answer (AI, 2026-11-11):**
+   - The windows follow the length you choose in the horizon sign-off (H), which explains the scorecard argument and
+     adds four and five months under the amended floor; at three, four or five months exactly three windows remain,
+     so this issue closes with H's choice.

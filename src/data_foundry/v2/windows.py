@@ -56,12 +56,18 @@ class Window:
     chosen: bool = False
 
 
+MIN_TRAIN_FRACTION = 0.3
+"""SPLIT-14's lower bound (amended 2026-11-11): the newest window and one other train on at least 50% of the rows,
+further windows on at least 30%; the candidates reach down to it, and their train share shows which are core windows."""
+
+
 def candidate_windows(
-    df: pd.DataFrame, time_on: str, windows: TemporalSplits, *, min_train_fraction: float = 0.5
+    df: pd.DataFrame, time_on: str, windows: TemporalSplits, *, min_train_fraction: float = MIN_TRAIN_FRACTION
 ) -> list[Window]:
     """The windows of ``windows``' length, gap and step, walking back from the newest data, newest first.
 
-    Every train side keeps at least ``min_train_fraction`` of the rows (SPLIT-14). ``windows.cutoffs`` and
+    Every train side keeps at least ``min_train_fraction`` of the rows (SPLIT-14's lower bound, 30%; the newest
+    window and one other keep 50%). ``windows.cutoffs`` and
     ``windows.n_windows`` are ignored: these are the candidates, not the choice. Each side is a range of positions, so
     a frame of tens of millions of rows needs no index lists.
     """

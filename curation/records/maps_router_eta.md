@@ -52,6 +52,12 @@ CC (2026-10-21, Lennart): check SPLIT-9 on the weekly test windows and add a gap
 
 **Assessment (AI, 2026-11-10):** priority for the review of the test windows (PR #78), which this record never had. Priority 3: gap 0, use case 0 (TabReD names the task, not who acts on it), source + (the TabReD paper), shape +, risk 0 (the oldest window below the floor is repairable, issue 1).
 
+CC (2026-11-11, Lennart): REVIEW issue 1 (which three test weeks), "As implemented (A), in reply to the consistency check.": the three newest weeks, 4-10 December, 27 November to 3 December and 20-26 November 2023, stay, in place of the AI's overlapping weeks; this answers the consistency check of 2026-11-10, as SPLIT-14 as amended on 2026-11-11 admits the oldest week, which trains on 44.8% of all routes (one window under half, two above; counted on all rows). The windows walk back from the newest because the 40 days leave no other choice: a fourth whole week would train on about a quarter.
+
+CC (2026-11-11, Lennart): the declared horizon (7 days, a one-day gap, the newest three weeks) is checked, as a week is TabReD's own validation and test length and holds every weekday once; TabReD states no refit cadence, so "a model refit every week" is no longer claimed.
+
+**Assessment (AI, 2026-11-11):** applied in dataset.py, text only: `temporal` unchanged (`window=7, unit="days", n_windows=3, gap=1`); counted on all 13,639,272 routes, test 2,444,459, 2,385,262 and 2,401,353 before the 500k sampling (500,000 tested each), train 10,902,438, 8,496,883 and 6,108,934 (79.9%, 62.3%, 44.8%); a fourth week, 13-19 November, would train on 3,704,756 (27.2%). "As for a model refit every week" is gone from `task_summary.split`, and `splits_comment` reads "at a window's start" for "at a weekly refit"; both now name the three weeks (the two older ones TabReD's own validation and test weeks), the oldest under half with its share, why the windows walk back, and that TabReD states no refit cadence. The definition's split step gives these windows and train sides; `dataset check` was not run to the end (a full check of the 13.6M routes was stopped after 52 minutes, on the coordinator's instruction) and is due with the next build (README not regenerated).
+
 ## Reference
 
 TabRed

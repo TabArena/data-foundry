@@ -113,3 +113,29 @@ two-month horizon.
    [^ab-split10]: **SPLIT-10** (Should): when a label is known only some time after its row, train on the rows whose
      outcome is known by the window's start; the exception of 2026-10-21 (Lennart) sets gap 0 because the label's
      delay would break the 50% floor.
+
+   **Lennart (2026-11-11, ok):** As implemented (A).
+
+   **Consistency check (AI, 2026-11-11):** Keep the three newest pairs of months, now that the amended floor opens the
+   other half of the second year?
+
+   * **Problem:**
+     - Issue 5's A walks back from the newest with the reason the rule accepts, a history too short for others: after the
+       repeat-client filter, no pair before months 17-18 kept half the rows[^ab5-15].
+     - Under today's amended floor, pairs starting at months 12 to 16 train on 33.5% to 49.9% after the filter, so one of
+       them can be the window under half[^ab5-14].
+     - Months 12 to 17 are the other half of the second year, a season no window tests.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Months 22-23, 20-21 and 18-19, as marked (implemented) | A: 83.4%, 72.9%, 60.3% after the filter | the most training data; months 20-21, the highest default rates | no window in the other half of the year, now open |
+     | b | Months 22-23, 20-21 and 14-15 | swaps 18-19 for 14-15 (90,937 products, 41.1% after the filter) | both halves of the year; keeps the default peak of 20-21 | one window under half |
+     | c | Months 22-23, 19-20 and 16-17 | spaced three months apart (83.4%, 67.0%, 49.9%) | spread like this round's other choices | drops 20-21, the highest default rates |
+
+   * **Recommendation:** b: it keeps the newest window and the default peak and adds the other half of the year with one
+     train side under half. **Decision:** a, b or c?
+
+   [^ab5-15]: **SPLIT-15** (Should for the other windows): "Walking back from the newest ... needs its reason too, such as
+     a history too short for others".
+   [^ab5-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart). The gap-0 exception to **SPLIT-10** still holds.

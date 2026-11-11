@@ -6,7 +6,7 @@ length. Nothing is left open.
 
 **Main points:** Settled on 2026-11-10: the three weeks from 14 December 2023 to 3 January 2024 stay, and the splits
 comment says they are the only weeks above the floor and cover only the weeks before and over New Year (issue 1, B);
-the declared horizon is checked.
+the declared horizon is checked. Open: test every other week, now that the amended floor opens early December (issue 2)?
 
 **Horizon:**
 
@@ -112,3 +112,34 @@ cooking times follow a weekly cycle).
    TabReD's refit. Test 1,662,794, 2,040,512 and 1,921,331 orders before the 500k cap, train 10,856,304, 8,832,570 and
    6,935,762 (84.8%, 69.0%, 54.2%). The record has the decision and the horizon CC lines. `dataset check`: 0 errors,
    0 warnings (README not regenerated).
+
+2. **Test every other week, now that the amended floor opens early December?**
+
+   * **Problem:**
+     - Issue 1 kept the three weeks from 14 December 2023 to 3 January 2024 because they were the only weeks whose
+       train side held half the orders; the floor amended on 2026-11-11 admits further windows down to 30%[^ck2-14].
+     - 4-10 December now qualifies (37.5% of the orders for training), a full week with orders on every day, before the
+       holiday run-up that all three of today's windows lie in.
+     - For delivery_eta_1m, from the same TabReD release family, you chose every other week on 2026-11-10.
+   * **Background:** the earliest weeks are short: 30 November-6 December trains on 28.9%, under the bound, and the weeks
+     from 5 December lose orders to the empty 11-12 December. Cooking times rise toward New Year (mean log minutes 2.548,
+     2.554 and 2.599 in today's windows against 2.527 to 2.532 from 16 November to 6 December).
+   * **Options:**
+
+     | | Option | What it does | Test windows | Pro | Con |
+     |---|---|---|---|---|---|
+     | A | The three newest weeks (implemented) | 28 December-3 January, 21-27 December, 14-20 December (84.8%, 69.0%, 54.2%) | 3 windows of 1.66M to 2.04M orders (500,000 tested each) | every train side above half; your call of 2026-11-10 | all three in the holiday run-up |
+     | B | Every other week | 28 December-3 January, 14-20 December, 4-10 December (84.8%, 54.2%, 37.5%) | 3 windows of 1.66M to 1.92M orders (500,000 tested each) | a week before the run-up; decides cooking like delivery_eta_1m | the oldest trains on 37.5% |
+
+   * **Recommendation:** B: it adds the one week before the holiday run-up the data holds, as for delivery_eta_1m.
+     **Decision:** A or B?
+
+   **Notes for the AI:** on B, `temporal = Temporal(on="timestamp", splits=TemporalSplits(window=7, unit="days",
+   cutoffs=("2023-12-28", "2023-12-14", "2023-12-04"), gap=1))`: test 1,662,794, 1,921,331 and 1,861,029 orders before
+   the 500k cap, train 10,856,304, 6,935,762 and 4,797,156 (84.8%, 54.2%, 37.5%). Then
+   rewrite `task_summary.split` and `splits_comment` (the windows, the 37.5% window named with its share, the reason),
+   a CC line, a dated CHANGELOG entry and `dataset check`.
+
+   [^ck2-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): the newest window and at least one other train on at
+     least 50% of the data; further windows down to 30%, and at most as many under 50% as at or above.
+

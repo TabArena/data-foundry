@@ -1,5 +1,41 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11, the floor in two tiers and the curator's window decisions, round 2 (no container built)
+
+SPLIT-14 is amended (Lennart, 2026-11-11): the newest window and at least one other train on at least 50% of the rows;
+further windows may train down to 30% (lower only with a reason the curator accepts), and at most as many windows
+train under 50% as at or above; the splits comment names every window under 50%, and no model score is required. In
+every floor case of the two rounds at least two windows already kept half the rows; a flat 40% would still have cut
+windows the curator kept. `dataset windows` lists candidates down to 30%. The curator's round-2 marks are applied where
+the precedent check found them consistent; the README files follow at the next `dataset check`.
+
+- Windows changed: climate_model_weather_forecasting_1m (24-30 July, 1-7 May and 13-19 February 2023 with a 3-day gap,
+  as a forecast is issued up to three days ahead; horizon B, issue 1 B), pkdd_15_taxi_trip_time_prediction_ii_1m (the
+  calendar months February, April and June 2014; horizon B, issue 1 B), mortgage (2015 Q1, 2012 Q2 and 2009 Q3, the
+  calm, recovery and crisis regimes; issue 16 B), noaa_storm_events_damage (2025, 2021 and 2017; issue 16 B; the
+  newest window's gap rows are in no split, an accepted warning), rain_in_australia (26 fortnights one every 16 weeks,
+  May 2018 to January 2026; issue 7 B), rossmann_store_sales (20 June-31 July 2015, the Christmas weeks of 2014 and
+  late spring 2014; issue 1 B; the gap day in no split, an accepted warning).
+- Windows kept, now within the amended floor or argued anew: anes_voting_2026 (nine elections, the four oldest on 49.2%
+  to 40.0%), ieee_fraud_detection (March-May 2018, March on 38.9%), maps_router_eta_1m (the three newest weeks, the
+  oldest on 44.8%; the consistency check of 2026-11-10 closed; its full check was stopped after 52 minutes, the counts
+  are the definition's own), mercedes_benz_greener_manufacturing (nine windows of 320 cars, three on 46.7% to 31.5%),
+  melbourne_housing_market and perth_house_prices (stale texts fixed). Each has its horizon signed off.
+- g_research_crypto_forecasting_1m: the release's `supplemental_train.csv` (21 September 2021 to 24 January 2022,
+  2,518,278 rows) is downloaded and read with train.csv, the history features running across the seam (issue 10, B);
+  the frame grows to 26,001,823 rows, the model figures are dated to the windows that ended on 20 September 2021, the
+  91-day horizon is signed off, and issue 9 is proposed again on the longer history. The newest window holds 99
+  EOS.IO bars of 26-27 October 2021 with a Low near 1.09 at a price near 4.8, kept and noted.
+- Raised: consistency checks on airqo issue 6 (September scores a site without history), kickstarter issue 1 (six or
+  nine years), lending_club issue 1 (a 2014 quarter) and alfa_battle issue 5 (the other half of the year); answers on
+  the horizons of chicago_traffic_crashes (one month), home_credit_default_stability_1m (the scorecard argument; four
+  months), sberbank_housing_market_forecasting (seven months, the sources' shortest) and on hotel_booking_demand
+  (all ten dates) and onlinenewspopularity (nine or seventeen windows); cooking_time_1m issue 2 (every other week, now
+  that the floor opens 4-10 December). nyc_taxi_trip_duration_1m's horizon reason "calendar months would leave only
+  May and June above the floor" is reworded: months would now give three windows, but no source speaks for a month.
+- `/add-dataset` and the column auditor now list every file of a release and ask for a reason for each file left out
+  (g_research's supplemental file was never downloaded).
+
 ## 2026-11-10, horizon audit and the curator's window decisions, round 1 (no container built)
 
 The curator's marks on the test-windows board (Lennart, 2026-11-10) are applied where the window length holds; a

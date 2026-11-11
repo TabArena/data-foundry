@@ -122,3 +122,24 @@ test sets over 17 months, and the share level falls through 2014. `dataset.py` i
    [^onp-split20]: **SPLIT-20** (Should), cases: aeolus, "two-week windows with one of three in the holiday peak
      (2026-10-12, Lennart)"; airqo_low_cost_air_quality_monitor_calibration_challenge, "five monthly windows from
      October 2020 ... so the test covers both seasons" (2026-11-05, Lennart, issue 1).
+
+   **Lennart (2026-11-11, change):** Option B: One window every five weeks. ; we could also use more windows?
+
+   **Answer (AI, 2026-11-11):** Keep nine windows, or test more of the two-week windows the amended floor admits?
+
+   * **Problem:**
+     - Two-week windows with the one-week gap give 22 candidates whose train side holds at least half the articles, and
+       12 more down to 30% that the amended floor admits[^a-14].
+     - A random split of 39,643 articles gets 3 repeats of 3 folds, nine splits, which is what B's nine windows match.
+     - More windows test more weeks of the year but repeat a fit for each, and neighbouring windows hold similar weeks.
+   * **Options:**
+
+     | | Option | What it does | Test windows | Pro | Con |
+     |---|---|---|---|---|---|
+     | a | Nine, every five weeks (your B) | 9 March to 27 December 2014 | 9 of 699 to 1,003 articles | as many splits as a random split of this size; spread over the year | nine of the 22 weeks above half |
+     | b | Seventeen, about every three weeks | down to the 30% bound, 17 windows | 17 of about 700 to 1,000 articles | almost twice the test articles; every season more than once | nearly twice the fits; neighbouring windows alike |
+
+   * **Recommendation:** a: nine windows already match a random split of this size and cover the year.
+     **Decision:** a or b?
+
+   [^a-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): the newest window and at least one other train on at least 50% of the data; further windows down to 30%, and at most as many windows under 50% as at or above it.

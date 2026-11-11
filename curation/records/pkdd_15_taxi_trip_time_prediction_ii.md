@@ -101,3 +101,9 @@ CC (2026-10-26, Lennart): verdict ship.
 **Assessment (AI, 2026-10-26):** what the encoding is worth here, from the review panel of 2026-10-20 (before the 100 m cut): LightGBM (300 trees, learning rate 0.1, 63 leaves, one fit per split) scored R^2 0.503 / 0.482 / 0.498 on the June / May / April windows with the local hour, weekday and day of year, and 0.483 / 0.452 / 0.462 with AutoGluon's date parts.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `chicago_taxi_trip_duration` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-11, Lennart): REVIEW.md issue 1, B ("Agree. Option B: February, April and June."): the test windows are the calendar months February, April and June 2014 (horizon, B), in place of April, May and June, so one window falls in the winter.
+
+CC (2026-11-11, Lennart): the declared horizon (calendar months, a one-day gap, windows starting 2014-06-01, 2014-04-01 and 2014-02-01) is checked, as no source gives a refit cadence and the only horizon the source shows is one model trained on the year and used for months without a refit, so calendar months are the longest windows that leave a choice of seasons (REVIEW.md horizon, B: "Option B: Calendar months.").
+
+**Assessment (AI, 2026-11-11):** applied issue 1 (B) and the horizon (B): `temporal` declares calendar months from 2014-06-01, 2014-04-01 and 2014-02-01 with a one-day gap; test 146,714, 130,112 and 122,831 trips, train 1,484,039, 1,200,383 and 943,912 (90.7%, 73.4% and 57.7% of the 1,636,276 trips); without the gap 47, 7 and 21 training trips would end after the window start, with it none; 100%, 99.93% and 100% of the June, April and February trips are by taxis seen before. The R^2 figures of the notes stay those of the April-June windows, dated as such. `dataset check`: 0 errors, 0 warnings.

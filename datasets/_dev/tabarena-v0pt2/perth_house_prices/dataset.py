@@ -71,8 +71,9 @@ class PerthHousePrices(AbstractCuratedDataset):
             "(blank before they opened) with their distances, and that school's rank of 2019 or later."
         ),
         split=(
-            "Each test window is one month, every third month from December 2018 to December 2020, trained on all "
-            "earlier sales, as for a model refit at the start of each month."
+            "Each test window is one month, the shortest the month-dated sales allow, every third month from "
+            "December 2018 to December 2020 (four seasons, three years), trained on all earlier sales (67% to 99%), "
+            "as for a model refit at the start of each month."
         ),
         changes=(
             "We drop 563 sales dated before the house was built (land or off-the-plan sales), blank the station or "
@@ -122,7 +123,7 @@ class PerthHousePrices(AbstractCuratedDataset):
         We start with all_perth_310121.csv from the Kaggle dataset syuzai/perth-house-prices: 33,656 sales in 321 suburbs of Perth, dated by month from April 1988 to December 2020, scraped from house.speakingsame.com.
 
         - Prediction point: a property sells, and a valuation model refit monthly on all earlier sales predicts its price from the listing, the address and the location.
-        - Temporal split on `DATE_SOLD`: 9 monthly test windows, April to December 2020 (splits comment).
+        - Temporal split on `DATE_SOLD`: 9 one-month test windows, every third month from December 2018 to December 2020 (since 2026-10-26, kept 2026-11-11; splits comment).
         - `DATE_SOLD` is the sale month ("09-2018", a trailing carriage return stripped), parsed to the first day of the month; it is the time column and a feature.
         - The target is the natural log of `PRICE`, renamed to `log_PRICE`.
         - Sampling: a property appears only with its latest sale before the scrape, and each suburb holds only its newest sales, so the older years are thin (decision table).
@@ -155,7 +156,7 @@ class PerthHousePrices(AbstractCuratedDataset):
     # Splits: 9 monthly windows (the 3 x 3 an IID task of this size would get), every third month back from December 2020.
     temporal = Temporal(on="DATE_SOLD", splits=TemporalSplits(window=1, unit="months", n_windows=9, step=3))
     splits_comment = """
-        A price model refit at the start of every month predicts that month's sales: 9 test windows of one calendar month, every third month back from December 2020 (December, September, June and March of 2020 and 2019, and December 2018), newest first, each trained on all earlier sales (CC 2026-10-26, SPLIT-20). Nine contiguous windows would all fall in April-December 2020, the COVID months and the stale-record period, so the windows span two years with one-month windows and the monthly refit kept; 5 of the 9 lie before COVID. The source dates sales by month only. An IID task of this size would get 3 x 3 splits. All rows train, from 1988 on (CC 2026-10-26: the history a monthly refit would have). Exception to SPLIT-10 (2026-10-26, Lennart): no gap. The month resolution allows no gap shorter than the whole previous month, more than the real delay (an archived page of 14 April 2021 lists four sales of April 2021 among the 10 newest of Mount Lawley), and the newest month present early (December 2020, 0.71 of November's count) shows no price selection (mean residual +0.017 against +0.003 to +0.025 in July-November); serves P4, as for ames_housing.
+        A price model refit at the start of every month predicts that month's sales. A month is the shortest window the data allow, as the source dates sales by month only; the source, a Kaggle scrape of house.speakingsame.com, names no task or horizon, the monthly refit is the house-price family's convention (zillow_prize's one-month windows), and Cotality, Australia's main valuation provider, reports its model's accuracy monthly (https://www.cotality.com/au/products/avm). The test windows are 9 calendar months, every third month back from December 2020 (December, September, June and March of 2020 and 2019, and December 2018), newest first, each trained on all earlier sales (CC 2026-10-26, SPLIT-20; kept on 2026-11-11). Nine contiguous windows would all fall in April-December 2020, the COVID months and the stale-record period; every third month spans three calendar years and Perth's four seasons, leaves out April and May 2020, the eligible months with the fewest sales (316 and 284), and puts 5 of the 9 before COVID. An IID task of this size would get 3 x 3 splits; 36 one-month windows, from January 2018 on, train on half the sales or more. The windows hold 412, 569, 374, 387, 367, 416, 475, 434 and 479 sales. All rows train, from 1988 on (CC 2026-10-26: the history a monthly refit would have): 32,678, 30,902, 29,558, 28,571, 27,462, 26,118, 24,637, 23,342 and 22,065 sales (98.8%, 93.4%, 89.3%, 86.3%, 83.0%, 78.9%, 74.5%, 70.5% and 66.7%), so no window trains on less than half. No gap (Lennart, 2026-10-26; an exception to SPLIT-10 then, an application of it since its amendment of 2026-11-04). The month resolution allows no gap shorter than the whole previous month, more than the real delay (an archived page of 14 April 2021 lists four sales of April 2021 among the 10 newest of Mount Lawley), and the newest month present early (December 2020, 0.71 of November's count) shows no price selection (mean residual +0.017 against +0.003 to +0.025 in July-November); serves P4, as for ames_housing.
     """
     accepted_check_warnings = {
         "meta_time_horizon_mismatch": "`DATE_SOLD` holds the first day of the sale month (the source gives no day), "
@@ -321,7 +322,8 @@ class PerthHousePrices(AbstractCuratedDataset):
             Decision(
                 "Each suburb holds its newest sales only",
                 "Busy suburbs start in 2018-2020, quiet ones reach back decades, so old training years are thin; "
-                "the test windows (April-December 2020) hold the newest sales of every suburb.",
+                "the test windows (every third month from December 2018 to December 2020) fall in the newest years, "
+                "when 310 of the 321 suburbs already have sales (by December 2018).",
                 coverage,
             ),
             Decision(

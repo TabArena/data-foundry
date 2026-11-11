@@ -38,6 +38,32 @@ January 2013, so every train side keeps half the sales (issue 1)?
 * **Recommendation:** B: five months is the longest length that keeps three separate windows above the floor in the
   sixteen months open, nearest the sources' test periods. **Decision:** A, B, C, D or E?
 
+**Lennart (2026-11-11, discuss):** So we should do 7-11 months from the source, why dont we do 7 then? or is it too little
+training data?
+
+**Answer (AI, 2026-11-11):** Use 7-month windows, the shortest test period of the sources, now that the amended floor
+admits one window at 35%?
+
+* **Problem:**
+  - The sources test 7 to 11 months (Kaggle: July 2015 to May 2016; TabReD: 7 months), and 7 months was out only
+    because its third window trains on 35.4% of the sales.
+  - Since 2026-11-11 the newest window and one other must train on at least half the sales and further windows on at
+    least 30%[^a-14], so 7 months gives exactly three windows: two above half and one at 35.4%.
+  - Today's six months test five windows, three of them under half (44.3%, 29%, 17.8%), which the amended floor does
+    not admit.
+* **Options:**
+
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | a | Seven months | December 2014-June 2015, May-November 2014, October 2013-April 2014 (83.6%, 59.1%, 35.4%) | 3 windows of 4,647 to 6,936 sales | the sources' shortest test period; no choice of windows left to argue | the oldest trains on 35.4% |
+  | b | Six months, three windows | January-June 2015, July-December 2014, January-June 2014 (89.2%, 67.0%, 44.3%) | 3 windows of 3,064 to 6,434 sales | today's length; the oldest trains on 44.3% | a length no source uses |
+  | c | Five months (the block's B) | February-June 2015, September 2014-January 2015, April-August 2014 (90.6%, 72.1%, 54.8%) | 3 windows of 2,670 to 5,234 sales | every window above half | shorter than every source's test period |
+
+* **Recommendation:** a: the length the sources use, and the amended floor admits its third window.
+  **Decision:** a, b or c?
+
+[^a-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): the newest window and at least one other train on at least 50% of the data; further windows down to 30%, and at most as many windows under 50% as at or above it.
+
 **Issues for Lennart:**
 
 1. **Which test windows should replace the five half-years from January 2013?**
@@ -130,3 +156,12 @@ January 2013, so every train side keeps half the sales (issue 1)?
    [^sh-split12]: **SPLIT-12** (Should): "The horizon is a human judgment from the source: how far ahead the actor
      predicts ..., the competition's own test window, the refit cadence. Choose the test windows to match it and write
      the reasoning down."
+
+   **Lennart (2026-11-11, discuss):** 27 and 18 % seem to low indeed, come back to this case here after you looked over
+   the others and my prompt
+
+   **Answer (AI, 2026-11-11):**
+   - The floor is amended (2026-11-11): two windows on at least half the sales, further windows down to 30%, never more
+     windows under half than above. The 29% and 17.8% windows stay out under it.
+   - The windows now follow the length you choose in the horizon (H): at 7 months, 6 months or 5 months exactly three
+     windows remain, so this issue closes with H's choice.

@@ -119,6 +119,31 @@ one-year horizon.
      of that size would get folds, then check that they are still meaningful (SPLIT-16 to SPLIT-18)."
    [^ks-split14]: **SPLIT-14** (Must): at least 3 windows, and no window's train side holds less than 50% of the data.
 
+   **Lennart (2026-11-11, change):** Option C: All six years.
+
+   **Consistency check (AI, 2026-11-11):** Does "all six years" mean 2020 to 2025, or every year the amended floor opens,
+   2017 to 2025?
+
+   * **Problem:**
+     - Option C was every eligible year, which meant six when every train side had to keep half, chosen to come closest to
+       the nine splits a table of this size gets[^ks1-15].
+     - Under today's amended floor, with issue 2's launch dates and 60-day gap, 2019, 2018 and 2017 train on 47.0%, 40.2%
+       and 32.4%, so they can join as three windows under half beside six above it[^ks1-14].
+     - anes_voting_2026 and mercedes_benz_greener_manufacturing keep nine windows this round, four and three under half.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Six years, 2020 to 2025 | C as written: 9,432 to 23,096 projects a window, train sides 53.2% to 85.9% | every train side keeps half | six windows where the count is nine |
+     | b | Nine years, 2017 to 2025 | adds 2019, 2018 and 2017 (11,187, 12,312 and 14,286 projects) | the count this size gets; every year now open, as C meant | three train sides under half, named in the splits comment |
+
+   * **Recommendation:** b: C asked for every eligible year to approach nine windows, and the amended floor makes it
+     exactly nine. **Decision:** a or b?
+
+   [^ks1-15]: **SPLIT-15** (Should for the other windows): "as many windows as an IID or grouped task of that size would
+     get folds" (185,444 rows: 3 x 3).
+   [^ks1-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): the two tiers, 50% and 30%.
+
 2. **Date the projects by launch and leave out the launches of the scrape's last 60 days?**
 
    * **Problem:**

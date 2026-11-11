@@ -120,3 +120,27 @@ September 2016 to May 2017 (issue 1)?
      Andrej): "The newest window is always a test window: it is the deployment period. ... Every choice stays above
      SPLIT-14's floor; the length and the gap come from SPLIT-12; as many windows as an IID or grouped task of that
      size would get folds, then check that they are still meaningful (SPLIT-16 to SPLIT-18)."
+
+   **Lennart (2026-11-11, discuss):** Why can we not extend it or roll back from the newest data to include 1 Jun in
+   option (A) as well?
+
+   **Answer (AI, 2026-11-11):** Test all ten dates, 1 September 2016 to 1 June 2017, now that the amended floor admits
+   the two oldest?
+
+   * **Problem:**
+     - Option A left out 1 June 2017 only because it kept today's nine dates, and B left out September and October 2016
+       because their train sides hold 44.0% and 48.3% of the bookings.
+     - Since 2026-11-11 windows under half are admitted down to 30% when the newest and one other window are above it
+       and no more windows are under half than above[^a-14]: the ten dates have eight above half and two under.
+     - 1 June 2017 is the newest date whose arrivals the data holds complete (to 31 August 2017).
+   * **Options:**
+
+     | | Option | What it does | Test windows | Pro | Con |
+     |---|---|---|---|---|---|
+     | a | All ten dates | the nine dates of A and 1 June 2017 | 10 dates of 2,474 to 6,511 open bookings | every date with complete arrivals; both autumns 2016 and the summer 2017 | two train sides under half (44.0%, 48.3%) |
+     | b | B as proposed | the eight dates 1 November 2016 to 1 June 2017 | 8 dates of 2,474 to 6,511 open bookings | every train side above half | no September or October date |
+
+   * **Recommendation:** a: it adds the newest complete date to today's dates, and the amended floor admits the two
+     oldest. **Decision:** a or b?
+
+   [^a-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart): the newest window and at least one other train on at least 50% of the data; further windows down to 30%, and at most as many windows under 50% as at or above it.

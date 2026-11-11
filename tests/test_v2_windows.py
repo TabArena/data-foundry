@@ -52,11 +52,17 @@ def test_the_bounds_are_the_splits_as_position_ranges() -> None:
 def test_the_candidates_walk_back_while_half_the_rows_train() -> None:
     """The candidates keep SPLIT-14's floor, newest first, as ranges."""
     df = three_years()
-    candidates = candidate_windows(df, "t", TemporalSplits(window=1, unit="months", n_windows=3))
+    candidates = candidate_windows(
+        df, "t", TemporalSplits(window=1, unit="months", n_windows=3), min_train_fraction=0.5
+    )
     assert len(candidates) == 17  # August 2022 to December 2023: the train side keeps at least half the rows
     assert all(len(w.train) >= 0.5 * len(df) for w in candidates)
     assert df["t"].iloc[candidates[0].test[0]] == pd.Timestamp("2023-12-01")  # the newest first
     assert isinstance(candidates[0].train, range)  # no index lists
+    # By default the candidates reach down to SPLIT-14's lower bound of 30% (amended 2026-11-11).
+    lower = candidate_windows(df, "t", TemporalSplits(window=1, unit="months", n_windows=3))
+    assert len(lower) == 25
+    assert min(len(w.train) for w in lower) >= 0.3 * len(df)
 
 
 def test_the_statistics_name_the_months_the_target_and_the_drift() -> None:
@@ -103,9 +109,9 @@ def test_a_definition_marks_its_own_windows(tmp_path: Path, warehouse: Path, cap
     del warehouse  # 30 days of 20 rows; the definition tests the newest 3 of 5 days
     write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=temporal_version_body())
     ds = get_dataset(tmp_path / "datasets", "toy_ds_0p19k")
-    table = ds.window_stats()
+    table = ds.window_stats(min_train_fraction=0.5)
     assert list(table["chosen"]) == [True, True, True]  # a 5-day window above the floor: only the three own
-    finer = ds.window_stats(window=2, step=2)
+    finer = ds.window_stats(window=2, step=2, min_train_fraction=0.5)
     assert finer["chosen"].sum() == 3  # the own windows, listed as rows of their own
     assert len(finer) == 7 + 3
     parser = argparse.ArgumentParser()
@@ -113,7 +119,7 @@ def test_a_definition_marks_its_own_windows(tmp_path: Path, warehouse: Path, cap
     args = parser.parse_args(["dataset", "windows", "toy_ds_0p19k", "--root", str(tmp_path / "datasets")])
     assert args.func(args) == 0
     out = capsys.readouterr().out
-    assert "3 window(s); * marks the definition's own" in out
+    assert "window(s); * marks the definition's own" in out  # down to the 30% bound by default
     assert "psi_max" in out
 
 
@@ -150,6 +156,6 @@ def test_unseen_categories_read_the_whole_train_side_and_free_text_is_left_out()
 def test_the_floor_counts_rows_also_for_unique_windows() -> None:
     """Windows of distinct time values keep half the rows for training, not half the values (SPLIT-14)."""
     df = pd.DataFrame({"era": np.repeat(np.arange(1, 11), [1, 1, 1, 1, 1, 100, 100, 100, 100, 100])})
-    windows = candidate_windows(df, "era", TemporalSplits(window=1, unit="unique", n_windows=3))
+    windows = candidate_windows(df, "era", TemporalSplits(window=1, unit="unique", n_windows=3), min_train_fraction=0.5)
     assert [int(df["era"].iloc[w.test[0]]) for w in windows] == [10, 9]  # era 8 trains on 40.4% of the rows
     assert all(len(w.train) >= 0.5 * len(df) for w in windows)

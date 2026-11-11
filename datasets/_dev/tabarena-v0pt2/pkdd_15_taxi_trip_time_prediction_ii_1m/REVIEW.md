@@ -1,11 +1,11 @@
 # pkdd_15_taxi_trip_time_prediction_ii
 
-**Outcome:** added as `pkdd_15_taxi_trip_time_prediction_ii_1m`. Verdict ship on 2026-10-26; the rule on test windows
-was rewritten on 2026-11-10, so the three test months (April, May and June 2014) are put to the curator again. The AI
-proposes keeping June and April and testing February instead of May, so that one window falls in winter.
+**Outcome:** added as `pkdd_15_taxi_trip_time_prediction_ii_1m`. Verdict ship on 2026-10-26; on 2026-11-11 you chose
+calendar months (H, B) and February, April and June 2014 as the test months (issue 1, B); both are applied and nothing
+is left open.
 
-**Main points:** First the horizon sign-off (H), from the horizon audit of 2026-11-10: calendar months, 30 days or
-weeks as for nyc? Issue 1 waits on it: April, May and June 2014 (as now), or February, April and June (your pick)?
+**Main points:** Settled on 2026-11-11: the test windows are the calendar months February, April and June 2014, as one
+model trained on the trips so far serves for months, and one window falls in the winter.
 
 **Horizon:**
 
@@ -59,6 +59,18 @@ three weeks in issue 1 again (`dataset windows ... --window 7 --unit days --gap 
 [^h-split12]: **SPLIT-12** (Should): "The horizon is a human judgment from the source: how far ahead the actor
   predicts ..., the competition's own test window, the refit cadence. Choose the test windows to match it and write
   the reasoning down."
+
+**Lennart (2026-11-11, change):** Option B: Calendar months.
+
+**Resolved (2026-11-11, Lennart):** B. `temporal` declares calendar months starting 2014-06-01, 2014-04-01 and
+2014-02-01 with `gap=1, gap_unit="days"`. `task_summary.split` and `splits_comment` give the reason from this block: no
+source gives a refit cadence, the challenge used one model trained on its year for months without a refit, and
+calendar months are the longest windows that still leave a choice of seasons; the comment names the week of
+nyc_taxi_trip_duration_1m and why it differs, and drops "the monthly length follows the source". Without the gap 47, 7
+and 21 training trips (June, April, February) would end after the window start, with it none. Test 146,714, 130,112
+and 122,831 trips, train 1,484,039, 1,200,383 and 943,912 (90.7%, 73.4%, 57.7% of 1,636,276); the 5,523 trips of 31
+May 2014, the newest window's gap day, lie in no split. The record has the horizon CC line. `dataset check`: 0 errors,
+0 warnings (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -114,3 +126,14 @@ three weeks in issue 1 again (`dataset windows ... --window 7 --unit days --gap 
    - Your months stand under its options A (30 days, the February window running to 2 March) and B (calendar months);
      under C (one week, as nyc_taxi_trip_duration_1m) the windows are proposed again. This issue waits on the horizon
      sign-off (H).
+
+   **Lennart (2026-11-11, change):** Agree. Option B: February, April and June.
+
+   **Resolved (2026-11-11, Lennart):** B, as calendar months (H, B): the test windows are June, April and February 2014.
+   `splits_comment` names them and why each (June the newest, with São João; April with Easter; February in the
+   winter, when the trips are slowest), replaces "the April to June test season has no earlier copy in train" (the
+   February window's train side holds the winter months before it), recounts the trips that end after a window start
+   without the gap (47, 7 and 21) and gives 146,714, 130,112 and 122,831 trips per window in place of the stale 131,648
+   to 151,406. The decision table of recurring taxis follows the test months (100%, 99.93% and 100% of the February,
+   April and June trips by taxis seen before), and the notes' R^2 figures are dated as measured on the April-June
+   windows. The record has the decision CC line. `dataset check`: 0 errors, 0 warnings.

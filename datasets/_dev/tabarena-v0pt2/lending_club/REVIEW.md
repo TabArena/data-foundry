@@ -101,3 +101,29 @@ horizon is kept. `dataset.py` is unchanged until you decide.
    [^lc-split10]: **SPLIT-10** (Should): when a label is known only some time after its row, train on the rows whose
      outcome is known by the window's start; the exception of 2026-10-21 (Lennart) sets gap 0 because the label's
      delay would break the 50% floor.
+
+   **Lennart (2026-11-11, change):** Option B: 2015 Q4, Q2 and Q1.
+
+   **Consistency check (AI, 2026-11-11):** Keep all three test windows in 2015, now that the amended floor opens 2014?
+
+   * **Problem:**
+     - Option B spreads the windows over 2015 because other years were not open: before today only its four quarters kept
+       half the loans for training[^lc1-15].
+     - Under today's amended floor 2014 Q4, Q3 and Q2 train on 45.9%, 39.2% and 33.0%, so one of them can be the window
+       under half[^lc1-14].
+     - Every other mark of this round with another year open took one (mortgage, noaa_storm_events_damage,
+       rossmann_store_sales, rain_in_australia, g_research_crypto_forecasting_1m).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | 2015 Q4, Q2 and Q1, as marked | B: 85.5%, 62.8%, 53.9% | every train side keeps half; the default rate barely moves between quarters (14.6% to 15.4%) | one year only, where another is now open |
+     | b | 2015 Q4, 2015 Q2 and 2014 Q4 | swaps 2015 Q1 for 2014 Q4 (49,197 loans, 45.9%) | another year at the smallest cost in training data | two fourth quarters, no first quarter |
+     | c | 2015 Q4, 2015 Q1 and 2014 Q2 | evenly over the seven open quarters (85.5%, 53.9%, 33.0%) | two years and three seasons | the oldest trains on a third of the loans |
+
+   * **Recommendation:** b, with low stakes: it adds another year at the smallest cost in training data.
+     **Decision:** a, b or c?
+
+   [^lc1-15]: **SPLIT-15** (Should for the other windows): "Prefer windows in other years, then other seasons ...".
+   [^lc1-14]: **SPLIT-14** (Must; amended 2026-11-11, Lennart). The gap-0 exception to **SPLIT-10** (2026-10-21) still
+     holds under any option.

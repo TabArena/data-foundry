@@ -1,12 +1,11 @@
 # climate_model_weather_forecasting
 
-**Outcome:** added as `climate_model_weather_forecasting_1m`. Under the rule on choosing test windows, rewritten on
-2026-11-10, the AI proposes to keep the newest week (24-30 July 2023) and to replace the two other July weeks with a
-week in May and one in February 2023 (issue 1). `dataset.py` is unchanged until you decide.
+**Outcome:** added as `climate_model_weather_forecasting_1m`. On 2026-11-11 you chose a 3-day gap before each one-week
+window (H, B) and the weeks of 24-30 July, 1-7 May and 13-19 February 2023 (issue 1, B); both are applied and nothing
+is left open.
 
-**Main points:** First the horizon sign-off (H), from the horizon audit of 2026-11-10: add a 3-day gap, since
-forecasts are issued up to three days ahead? Issue 1, your windows (July, May, February), waits on it; with the gap
-February moves to 13-19 February.
+**Main points:** Settled on 2026-11-11: three one-week windows from February to July 2023, each trained on what was
+measured three days before it, as a forecast is issued up to three days ahead.
 
 **Horizon:**
 
@@ -65,6 +64,17 @@ issue 1's B as marked (cutoffs 2023-07-24, 2023-05-01, 2023-02-06, no gap) and t
 [^h-split10]: **SPLIT-10** (Should): when a label is known only some time after its row, train on the rows whose
   outcome is known by the window's start; "a forecast made a day ahead is a gap too".
 [^h-split14]: **SPLIT-14** (Must): at least 3 windows, and no window's train side holds less than 50% of the data.
+
+**Lennart (2026-11-11, change):** Option B: A 3-day gap.
+
+**Resolved (2026-11-11, Lennart):** B. `temporal` declares 7-day windows starting 2023-07-24, 2023-05-01 and
+2023-02-13 with `gap=3, gap_unit="days"`. `task_summary.split`, `changes`, `splits_comment` and the row-budget note
+give the windows and why each, the gap and its reason (19.7%, 21.8% and 21.3% of the windows' forecasts were issued
+before the window starts; a station's error carries over for days) and the week's reason from this block; the splits
+comment also says that SPLIT-14 as amended on 2026-11-11 would admit 6-12 February (49.95%), and that 13-19 February
+is your pick. Test 377,992, 385,508 and 270,717 rows, train 16,429,730, 11,733,079 and 8,739,284 (96.9%, 69.2%,
+51.6% of 16,951,828); the 144,106 rows of 21-23 July 2023, the newest window's gap, lie in no split. The record has
+the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -137,3 +147,13 @@ issue 1's B as marked (cutoffs 2023-07-24, 2023-05-01, 2023-02-06, no gap) and t
      asks for a 3-day gap.
    - With that gap your February week (6-12 February) would train on just under half the rows; 13-19 February keeps your
      pick above the floor. This issue waits on the horizon sign-off (H).
+
+   **Lennart (2026-11-11, change):** Option B: July, May, February.
+
+   **Resolved (2026-11-11, Lennart):** B, with the 3-day gap of the horizon sign-off (H, B): the test weeks are 24-30
+   July, 1-7 May and 13-19 February 2023 (`cutoffs=("2023-07-24", "2023-05-01", "2023-02-13")`); February moves one
+   week from the notes above so that its train side keeps half the rows with the gap. `task_summary.split` and
+   `splits_comment` name the windows and why each: the newest; the warmest month (mean measured temperature 28.06
+   against 26.55 on its train side); late winter, when the upper-air forecasts differ most from training. Test 377,992,
+   385,508 and 270,717 rows, train 96.9%, 69.2% and 51.6%. The record has the decision CC line. `dataset check`: 0
+   errors, 0 warnings.

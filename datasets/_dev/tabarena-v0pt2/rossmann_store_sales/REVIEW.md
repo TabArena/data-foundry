@@ -1,13 +1,11 @@
 # rossmann_store_sales
 
-**Outcome:** added. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI proposes to keep the
-newest six weeks (20 June to 31 July 2015) and to replace the two windows before it with the Christmas weeks of 2014
-(22 November 2014 to 2 January 2015) and late spring 2014 (26 April to 6 June 2014), so the three windows span two
-years and three seasons (issue 1). The six-week horizon is the one Kaggle states and stays. `dataset.py` is unchanged
-until you decide.
+**Outcome:** added. On 2026-11-11 you kept the six-week windows with the one-day gap (Horizon, ok) and chose the newest
+six weeks, the Christmas weeks of 2014 and late spring 2014 as the test windows (issue 1, B); both are applied and
+nothing is left open.
 
-**Main points:** Test on the newest six weeks, the Christmas weeks of 2014 and late spring 2014 instead of the three
-newest six-week windows (issue 1)? Sign off the six-week horizon with its one-day gap.
+**Main points:** Settled on 2026-11-11: three six-week windows over two years and three seasons, the Christmas peak
+among them, with the managers' six-week horizon checked.
 
 **Horizon:**
 
@@ -35,6 +33,13 @@ newest six-week windows (issue 1)? Sign off the six-week horizon with its one-da
 
 * **Recommendation:** A: six weeks is the managers' horizon as Kaggle states it, and the gap changes one training day
   per window. **Decision:** A, B or C?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, the 42-day windows with the one-day gap stay. `splits_comment` gives the reason
+from this block: Kaggle states the managers' horizon as six weeks, the competition's own test period (48 days) is about
+as long, and the gap is ours, a planning gap that drops one training day per window. The record has the horizon CC
+line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -111,3 +116,13 @@ newest six-week windows (issue 1)? Sign off the six-week horizon with its one-da
    [^rss-split20]: **SPLIT-20** (Should), cases: aeolus, "two-week windows with one of three in the holiday peak
      (2026-10-12, Lennart)"; airqo_low_cost_air_quality_monitor_calibration_challenge, "five monthly windows from
      October 2020 ... so the test covers both seasons" (2026-11-05, Lennart, issue 1).
+
+   **Lennart (2026-11-11, change):** Option B: Spread over the eligible history.
+
+   **Resolved (2026-11-11, Lennart):** B. `temporal` declares `cutoffs=("2015-06-20", "2014-11-22", "2014-04-26")`
+   with the one-day gap: test 40,282, 31,203 and 38,107 store-days, train 802,996, 617,355 and 443,771 (95.1%, 73.1%,
+   52.6%). `task_summary.split` and `splits_comment` name the windows and why each, "evenly spaced over the 11 windows
+   that keep half the store-days" (the Christmas weeks sell 8,478 per open store-day against 6,837 on their train side,
+   24% more), and the 180 stores without rows from July to December 2014. The 1,114 store-days of 19 June 2015, the
+   newest window's gap day, are now in no split (an accepted `splits_rows_unused` warning with that reason). The record
+   has the decision CC line. `dataset check`: 0 errors, 0 warnings.

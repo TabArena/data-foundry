@@ -7,9 +7,8 @@ the survey-weight note, is made. The data is the ANES Time Series Cumulative Dat
 whether the respondent says after the election that they voted (78% say so), predicted from the year and the
 pre-election answers. Each of the last nine studies (1996 to 2024) is the test data once, with every earlier study for
 training, and the score is ROC AUC (our default for a binary task when the source sets no score, in place of TableShift's accuracy; Lennart's call of 2026-10-21).
-Under the rule on choosing test windows, rewritten on 2026-11-10, the AI proposes to test only the five elections from
-2008 to 2024, since the four older test studies train on less than half the respondents (issue 1); `dataset.py` is
-unchanged until you decide.
+On 2026-11-11 you kept the nine test studies, 1996 to 2024, one election each without a gap (issue 1 and the horizon,
+A), which the amended floor admits with the four oldest training on 40.0% to 49.2% of the respondents.
 
 Validity: SEL, USE-1 (fit approximate), SPLIT (temporal, 9 test years) and PROV hold as settled before; the new rules
 reopen none of them. LEAK-10 and LEAK-41 hold for the weights: none of the nine survey-weight columns is a feature, and
@@ -37,8 +36,8 @@ auditor; quoting the codebook's weight entry when the note is next edited would 
 over inference).
 
 **Main points:** Only the verdict: the re-review left no issue, so the dataset ships unless you decide otherwise; the
-codebook follow-up in the outcome needs no decision. Since the window rule of 2026-11-10: test the five elections
-2008 to 2024 instead of the nine studies from 1996, so every train side keeps half the respondents (issue 1)?
+codebook follow-up in the outcome needs no decision. Settled on 2026-11-11: the nine studies 1996 to 2024 stay the
+test windows (issue 1, A), and the declared horizon of one election without a gap is checked.
 
 **Record judgment:** valid. The record fields agree with the definition (the record's `Website` counts as `Other`).
 Before this review the record had no line on the survey weights; its Assessment line of 2026-11-06 adds one. The
@@ -74,6 +73,15 @@ was outside this review.
 
 * **Recommendation:** A: one election is the step at which a pollster applies a screen built on the elections before, as
   Pew describes; two elections leave two windows, and four calendar years give the same ones. **Decision:** A, B or C?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, one study per window with no gap, kept: a pollster builds a likely-voter screen
+from the elections already studied and applies it at the next one, the test Pew names, so each window is one election
+and a model is up to four years old, as a pollster's would be. `temporal` is unchanged; `task_summary.split` and
+`splits_comment` give this reason, that no source sets a length (ANES sets no task, TableShift splits by region), and
+why no gap is needed (the labels come from the post-election interview, years before the next study). The record has
+the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -155,6 +163,18 @@ was outside this review.
      argued from the use case ... Every choice stays above SPLIT-14's floor; the length and the gap come from
      SPLIT-12; as many windows as an IID or grouped task of that size would get folds, then check that they are still
      meaningful (SPLIT-16 to SPLIT-18)."
+
+   **Lennart (2026-11-11, ok):** As implemented (A).
+
+   **Resolved (2026-11-11, Lennart):** A, as implemented: the nine studies 1996 to 2024 stay the test windows. SPLIT-14
+   as amended on 2026-11-11 admits them: the five newest train on 51.4% to 89.8% of the respondents, and the four
+   oldest, 2004, 2002, 2000 and 1996, on 49.2%, 46.4%, 43.2% and 40.0%, all above 30% and no more windows under half
+   than at or above it. Nine is also the count a random split of 48,587 respondents gets (3 x 3 folds). `temporal` is
+   unchanged; `task_summary.split` names the nine studies and that the four oldest train on 40% to 49%, and
+   `splits_comment` names the windows, their test respondents (4,954, 7,442, 3,648, 5,488, 2,102, 1,066, 1,344, 1,554
+   and 1,534) and train sides (43,633 down to 19,455), the four under half with their shares, the length's reason and
+   the absent gap. The record has the decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings (README
+   not regenerated).
 
 **Review panel:** ship after changes (mediator). Tier focused, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
 MET-16: the claim auditor, then the mediator. Claims: 9; 6 hold, 1 refuted (the survey-weight note left out the

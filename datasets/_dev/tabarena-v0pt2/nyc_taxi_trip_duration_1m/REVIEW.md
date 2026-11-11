@@ -11,7 +11,8 @@ B), and the declared horizon is checked.
 
 * **Verdict:** keep the 7-day windows with a new reason (medium-high confidence): the competition gives no horizon
   (its test set is a random 30% of the same days); an ETA service refits often, a week is the shortest window that
-  holds each weekday once, and calendar months would leave only May and June above the floor.
+  holds each weekday once, and no source speaks for a calendar month (under the floor amended on 2026-11-11 months
+  would give three windows, June, May and April on 49.1%; before it only May and June).
 * **Length:** the splits comment said only "as for the other ETA tasks of the collection", a reason of consistency;
   no source on how often a trip-duration model is refit was found (the Kaggle competition; Uber's DeepETA post:
   "Periodic auto retraining workflows are set up to retrain and validate the model").
@@ -25,7 +26,7 @@ B), and the declared horizon is checked.
   | | Option | What it does | Pro | Con |
   |---|---|---|---|---|
   | A | One week, one-day gap (implemented) | 7-day windows: 24-30 June, 27 May-2 June and 8-14 April 2016 | the shortest window that holds each weekday once; an ETA service refits often | the competition gives no horizon; no source on a refit cadence |
-  | B | A calendar month | only May and June above the floor | more trips per window | two windows, fewer than three |
+  | B | A calendar month | June, May and April 2016 (83.5%, 66.3%, 49.1%; before the floor's amendment of 2026-11-11 only May and June) | more trips per window | no source for a month; the windows tile April to June, no choice left |
   | C | 14 days | 6 candidates from 8 April | each weekday twice | three of them cover half the eligible span; no reason from the use case |
 
 * **Recommendation:** A: the shortest window that holds each weekday once; a calendar month leaves two windows, and

@@ -31,5 +31,11 @@ When the task has a training weight (`sample_weight`, such as a realized time on
 values too, and judge each feature that predicts it (probe 22, `leak_probes.py <name> --weight-proxy`) by its timing
 (LEAK-41): a feature known at the quote stays (USE-6); one set or cut after the prediction point goes.
 
+Before the columns, the files: list every file of the release (for Kaggle, `kaggle competitions files -c <name>` or
+`kaggle datasets files <owner/name>`; the source's data page otherwise) against the files `_load_raw` reads and the
+reasons `curation_comments` gives for each file left out. A file left out without a reason (more rows of the same
+series, newer periods, a table of more features) is a finding (g_research_crypto_forecasting_1m, 2026-11-11: its
+supplemental file of four newer months was never downloaded).
+
 Never edit a repository file. Return the column table (column | meaning | known at prediction? | dtype and cleaning |
 verdict | rule), then the problems ranked by `principles.md`, each with its evidence and the mildest remedy.

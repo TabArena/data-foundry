@@ -1,11 +1,10 @@
 # mercedes_benz_greener_manufacturing
 
-**Outcome:** added. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI proposes nine windows of
-233 cars over the newest half of the cars, in place of nine windows of 320 cars whose three oldest train on less than
-half the cars (issue 1). `dataset.py` is unchanged until you decide.
+**Outcome:** added. On 2026-11-11 you kept the nine windows of 320 cars from ID 2,628 on (issue 1 and the horizon,
+A), which the amended floor admits with the three oldest training on 46.7%, 39.1% and 31.5% of the cars.
 
-**Main points:** Test nine windows of 233 cars over the newest half, instead of nine of 320 cars reaching back to the
-1,325th car, so every train side keeps half the cars (issue 1)?
+**Main points:** Settled on 2026-11-11: the nine windows of 320 cars stay (issue 1, A), and the declared length of
+320 cars without a gap is checked: no source gives a length, and 320 tests 2,880 cars where 233 would test 2,097.
 
 **Horizon:**
 
@@ -34,6 +33,15 @@ half the cars (issue 1). `dataset.py` is unchanged until you decide.
 
 * **Recommendation:** B: with no source for a length, 233 cars fill the newest half the floor allows with the nine
   windows a task of this size gets, at about one block of the data's own `X5` code. **Decision:** A, B, C or D?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, windows of 320 cars without a gap, kept, in place of the AI's 233: no source
+gives either length, and the amended floor of 2026-11-11 admits nine windows of 320, which test 2,880 cars against
+2,097 at 233. `splits_comment` now says that 320 is the arithmetic of the first curation's `TimeSeriesSplit`, not a
+horizon, and why it is kept, and that no gap is needed (a car's time is known when it leaves the bench). `temporal` is
+unchanged. The record has the horizon CC line. `dataset check`: 0 errors; its 2 warnings (11 constant and 45
+duplicated option columns) are about the data, not the windows, and are not settled here (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -122,3 +130,16 @@ half the cars (issue 1). `dataset.py` is unchanged until you decide.
      argued from the use case ... Every choice stays above SPLIT-14's floor; the length and the gap come from
      SPLIT-12; as many windows as an IID or grouped task of that size would get folds, then check that they are still
      meaningful (SPLIT-16 to SPLIT-18)."
+
+   **Lennart (2026-11-11, ok):** As implemented (A).
+
+   **Resolved (2026-11-11, Lennart):** A, as implemented: the nine windows of 320 cars, IDs 2,628 to 8,417, stay.
+   SPLIT-14 as amended on 2026-11-11 admits them: the six newest train on 54.3% to 92.4% of the cars, and the three
+   oldest on 46.7%, 39.1% and 31.5%, all above 30% and fewer windows under half than at or above it. They test 2,880
+   cars, against 2,097 for nine windows of 233; no source gives either length. `temporal` is unchanged;
+   `task_summary.split` no longer says "the first 1,000 cars are always in training" (the oldest window trains on
+   1,324) and names the train sides, `splits_comment` names the nine windows by car ID, the train sides of 3,884 down
+   to 1,324 cars, the three under half with their shares, the length's origin and reason, and the absent gap, and the
+   outlier bullet of `curation_comments` no longer speaks of the first 1,000 cars. The record has the decision and the
+   horizon CC lines. `dataset check`: 0 errors; its 2 warnings (constant and duplicated option columns) are about the
+   data and not settled here (README not regenerated).

@@ -1,12 +1,10 @@
 # mortgage
 
-**Outcome:** added. You shipped it on 2026-10-26. Under the rule on choosing test windows, rewritten on 2026-11-10,
-the AI recommends testing 2015 Q1, 2012 Q2 and 2009 Q3 instead of the three newest quarters, so the windows cover
-the calm years, the recovery and the crisis in three different quarters of the year (issue 16). The one-quarter
-horizon is kept. `dataset.py` is unchanged until you decide.
+**Outcome:** added. You shipped it on 2026-10-26; on 2026-11-11 you chose 2015 Q1, 2012 Q2 and 2009 Q3 as the test
+quarters (issue 16, B) and kept the one-quarter horizon (H, ok); both are applied and nothing is left open.
 
-**Main points:** Test on 2015 Q1, 2012 Q2 and 2009 Q3 instead of 2014 Q3 to 2015 Q1 (issue 16)? Sign off the
-one-quarter horizon.
+**Main points:** Settled on 2026-11-11: one test quarter in each regime the book went through, the calm years, the
+recovery and the crisis, with the one-quarter horizon checked.
 
 **Horizon:**
 
@@ -37,6 +35,13 @@ one-quarter horizon.
 
 * **Recommendation:** A: the book tests one quarter, the label looks one quarter ahead, and the use case scores the book
   every quarter. **Decision:** A, B or C?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, the one-quarter windows without a gap stay. `splits_comment` gives the reason
+from this block: a quarter is the book's backtest window and the label's own horizon, and the use case scores the book
+at every quarter's start; no source gives a refit cadence, and the backtest quote stays marked unverified. The record
+has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -105,3 +110,14 @@ one-quarter horizon.
      other years, then other seasons, then other months, weeks or days, over the windows just before the newest."
    [^mo-split19]: **SPLIT-19** (Should): "When the source defines the split (a competition's or a paper's official
      periods), follow it."
+
+   **Lennart (2026-11-11, change):** Option B: Three years, three seasons.
+
+   **Resolved (2026-11-11, Lennart):** B. `temporal` declares `cutoffs=(60, 49, 38)`: test 8,004, 9,431 and 15,921
+   loan-quarters, train 613,649, 513,686 and 376,900 (98.7%, 82.6%, 60.6%). `task_summary.split` and `splits_comment`
+   name the windows and rest the spread on the three regimes (default / payoff 0.5% / 1.8% in 2015 Q1, 2.1% / 1.9% in
+   2012 Q2, 4.4% / 2.4% in 2009 Q3), with the recounted share of test rows whose loan has earlier quarters in train
+   (99.4%, 99.7%, 99.98%). The decision tables follow the cutoffs (the balance table by test period, the windows table,
+   the macro table), the notes count 37 rows of joining loans and 8 of the 501 dropped last rows in the new windows
+   (one row of the copied ids would fall in period 38), and the LightGBM figures are marked as measured on periods 58
+   to 60. The record has the decision CC line. `dataset check`: 0 errors, 0 warnings.

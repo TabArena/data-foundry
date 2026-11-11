@@ -1,12 +1,12 @@
 # maps_router_eta
 
-**Outcome:** added as `maps_router_eta_1m`. In the working copy since the migration; the rule on test windows was
-rewritten on 2026-11-10. The data cover 40 days, so no window can test another year, season or holiday period, and
-the oldest of today's three test weeks trains on 44.8% of the routes, below the half every train side must keep. The
-AI proposes three whole weeks that overlap by one or two days, which keep every train side above half.
+**Outcome:** added as `maps_router_eta_1m`. On 2026-11-11 you kept the three newest weeks, 20 November to 10
+December 2023, with the one-day gap (issue 1, in reply to the consistency check, and the horizon, A), which the
+amended floor admits with the oldest week training on 44.8% of the routes.
 
-**Main points:** Keep the three newest weeks (the oldest below the floor), or test three overlapping weeks or three
-six-day windows that keep it?
+**Main points:** Settled on 2026-11-11: the three newest weeks stay (issue 1, A, closing the consistency check),
+and the declared horizon of one week with a one-day gap is checked, a week being TabReD's own validation and test
+length.
 
 **Horizon:**
 
@@ -32,6 +32,16 @@ six-day windows that keep it?
 * **Recommendation:** A: the length of the source's own validation and test periods, holding every weekday once; the
   floor is issue 1's question, and a daily refit, which one-day windows would fit, is named by no source.
   **Decision:** A, B, C or D?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, 7-day windows with a one-day gap, kept: a week is TabReD's own validation and
+test length, holds every weekday once, and travel times are lower on weekends. "As for a model refit every week" is
+gone from `task_summary.split` and from `splits_comment` ("at a weekly refit" now reads "at a window's start"), which
+now say that TabReD states no refit cadence, so the length says how long one fitted model serves; the one-day gap
+covers the longest drive, 16.6 hours. `temporal` is unchanged. The record has the horizon CC line. `dataset check`
+was not run to the end for this text-only change (a full check of the 13.6M routes was stopped after 52 minutes);
+the windows were counted with the definition's own split step (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -127,3 +137,18 @@ six-day windows that keep it?
      above SPLIT-14's floor."
    [^mc-12]: **SPLIT-12** (Should): the horizon comes from the source or the refit cadence.
    [^mc-19]: **SPLIT-19** (Should): follow the source's split; it ranks below SPLIT-14, a Must.
+
+   **Lennart (2026-11-11, ok):** As implemented (A), in reply to the consistency check.
+
+   **Resolved (2026-11-11, Lennart):** A, as implemented: the three newest weeks stay, 4-10 December, 27 November to
+   3 December and 20-26 November 2023 (the last two TabReD's own test and validation weeks). This closes the
+   consistency check of 2026-11-10: SPLIT-14 as amended on 2026-11-11 admits the oldest week, since the newest window
+   and at least one other train on half the rows or more and a further window may train on down to 30%, with no
+   condition on recurring entities; counted on all 13,639,272 routes, the train sides hold 10,902,438, 8,496,883 and
+   6,108,934 (79.9%, 62.3% and 44.8%), one window under half against two above. The windows walk back from the newest
+   because the 40 days leave no other choice: a fourth whole week, 13-19 November, would train on 27.2%. `temporal` is
+   unchanged; `task_summary.split` and `splits_comment` name the three weeks, their 2,444,459, 2,385,262 and 2,401,353
+   routes before the 500k sampling, the train sides, the oldest under half with its share and why, and what the 40
+   days cannot test. The record has the decision and the horizon CC lines. `dataset check` was not run to the end
+   (stopped after 52 minutes on the 13.6M routes; the change is text only); the definition's split step gives the
+   same three windows and train sides (README not regenerated).

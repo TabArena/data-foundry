@@ -1,12 +1,12 @@
 # melbourne_housing_market
 
-**Outcome:** added. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI recommends keeping the
-nine windows of three weekly result sheets, 12 August 2017 to 17 March 2018 (issue 10): they cover every eligible
-window but one, 15-29 July 2017, a second winter window whose train side holds only six sheets of the full file's
-suburbs. `dataset.py` is unchanged until you decide.
+**Outcome:** added. On 2026-11-11 you kept the nine windows of three weekly result sheets, 12 August 2017 to
+17 March 2018, without a gap (issue 10 and the horizon, A); the splits comment now gives the four-week auction
+campaign as the length's reason and the count of nine and the inner-suburbs-only file before 27 May 2017 as the
+reasons for walking back from the newest.
 
-**Main points:** Keep the nine windows, or add the tenth eligible one, 15-29 July 2017 (issue 10)? Sign off the
-horizon of three weekly sheets without a gap.
+**Main points:** Settled on 2026-11-11: the nine windows of three sheets stay (issue 10, A), and the declared
+horizon of three weekly sheets without a gap is checked.
 
 **Horizon:**
 
@@ -39,6 +39,16 @@ horizon of three weekly sheets without a gap.
 
 * **Recommendation:** A: three sheets stay within the four-week campaign and leave room for nine windows above the
   floor, where four sheets leave seven. **Decision:** A, B or C?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, three weekly sheets without a gap, kept: a Melbourne auction campaign runs
+about four weeks, so a price estimated during it looks one to four sheets ahead, and three sheets give nine windows
+that each train on at least 55.3% of the sales; the Kaggle upload names no task or horizon. `splits_comment` now gives
+the campaign as the length's reason, with its source, `task_summary.split` names the campaign and the 55% to 95% train
+sides, and the decision table "Test windows of three weekly sheets" leads with the campaign. The no-gap call of
+2026-10-21 stays as measured. `temporal` is unchanged. The record has the horizon CC line. `dataset check`: 0 errors,
+0 warnings (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -115,3 +125,17 @@ horizon of three weekly sheets without a gap.
      melbourne_housing_market: "no window length for the whole family: each keeps the horizon of its own source or
      refit cadence (three weeks; one month, spaced; two months; one month after a one-month gap; three weekly
      sheets)" (2026-10-21, Lennart).
+
+   **Lennart (2026-11-11, ok):** As implemented (A).
+
+   **Resolved (2026-11-11, Lennart):** A, as implemented: the nine windows of three sheets, 12 August 2017 to 17 March
+   2018, stay (test 1,119, 1,069, 93, 1,526, 1,033, 1,550, 868, 1,140 and 1,115 sales; train 20,147 down to 11,753,
+   94.7% to 55.3%, none under half). `splits_comment` now says why they walk back from the newest: nine is the count of
+   splits an IID task of this size gets, and further back the train sides hold mostly the sales before 27 May 2017,
+   when the file holds only the inner suburbs (79.2% of the tenth window's train side, all of it from the window of
+   27 May 2017 on), while a window before 27 May 2017 tests the inner suburbs only. It does not say that the eligible
+   history is eight months: since the amendment of SPLIT-14 of 2026-11-11 a window may train on down to 30%, which
+   reaches back to March 2017 (31.1%). A correction to the issue: the sentence "no dataset tests more windows than the
+   folds an IID task of its size would get" is false, as rain_in_australia tests 26 two-week windows where an IID task
+   of its 264,562 rows gets nine folds. `temporal` is unchanged. The record has the decision and the horizon CC lines.
+   `dataset check`: 0 errors, 0 warnings (README not regenerated).

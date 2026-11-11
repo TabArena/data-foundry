@@ -1202,7 +1202,7 @@ class AbstractCuratedDataset(ABC):
         gap: int | None = None,
         gap_unit: str | None = None,
         step: int | None = None,
-        min_train_fraction: float = 0.5,
+        min_train_fraction: float = 0.3,
         n_rows: int = 100_000,
     ) -> pd.DataFrame:
         """The candidate test windows of this temporal task and their statistics, for choosing its windows (SPLIT-15).

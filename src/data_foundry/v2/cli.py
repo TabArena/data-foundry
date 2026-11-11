@@ -329,7 +329,10 @@ def add_dataset_parser(sub: argparse._SubParsersAction) -> None:
     windows.add_argument("--gap-unit", default=None, help="Unit of the gap (default: the declared one).")
     windows.add_argument("--step", type=int, default=None, help="How far candidates move back (default: the window).")
     windows.add_argument(
-        "--min-train-fraction", type=float, default=0.5, help="Every train side keeps this share of the rows (0.5)."
+        "--min-train-fraction",
+        type=float,
+        default=0.3,
+        help="Every train side keeps this share of the rows (0.3, SPLIT-14's lower bound; core windows keep 0.5).",
     )
     windows.add_argument("--rows", type=int, default=100_000, help="Rows sampled per side for the statistics.")
     windows.add_argument("--csv", default=None, help="Also write the full table to this CSV file.")

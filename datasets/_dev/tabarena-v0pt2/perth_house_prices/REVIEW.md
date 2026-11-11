@@ -1,13 +1,11 @@
 # perth_house_prices
 
-**Outcome:** added. Under the rule on choosing test windows, rewritten on 2026-11-10, the AI recommends keeping the
-nine one-month windows every third month from December 2018 to December 2020 that you chose on 2026-10-26 (issue
-15): they already span three years and all four seasons and stay out of April and May 2020, the COVID months with the
-fewest sales. One fix is due under either answer: a bullet of `curation_comments` still names the old windows
-(April to December 2020). `dataset.py` is unchanged until you decide.
+**Outcome:** added. On 2026-11-11 you kept the nine one-month windows every third month from December 2018 to
+December 2020, without a gap (issue 15 and the horizon, A); the stale bullet that named April to December 2020 is
+fixed.
 
-**Main points:** Keep the windows every third month from December 2018, or spread them every fourth month back to
-April 2018 (issue 15)? Sign off the one-month horizon without a gap.
+**Main points:** Settled on 2026-11-11: the windows every third month from December 2018 stay (issue 15, A), and
+the declared horizon of one month without a gap is checked.
 
 **Horizon:**
 
@@ -37,6 +35,15 @@ April 2018 (issue 15)? Sign off the one-month horizon without a gap.
 
 * **Recommendation:** A: a month is the shortest window the month-dated sales allow, and it matches the monthly accuracy
   checks of Australia's main valuation service and the family's one-month windows. **Decision:** A, B or C?
+
+**Lennart (2026-11-11, ok):** As implemented (A).
+
+**Resolved (2026-11-11, Lennart):** A, one calendar month without a gap, kept: the source dates sales by month, so a
+month is the shortest window the data allow, and it matches the monthly accuracy reports of Cotality, Australia's main
+valuation provider, and the family's one-month windows. `splits_comment` and `task_summary.split` now give this reason;
+the gap clause no longer calls the no-gap call an exception: it is the curator's call of 2026-10-26, an application of
+the rule on late labels since its amendment of 2026-11-04. `temporal` is unchanged. The record has the horizon CC line.
+`dataset check`: 0 errors, 0 warnings (README not regenerated).
 
 **Issues for Lennart:**
 
@@ -118,3 +125,15 @@ April 2018 (issue 15)? Sign off the one-month horizon without a gap.
    [^php-split20]: **SPLIT-20** (Should), case perth_house_prices: "one-month windows every third month back from
      December 2020 (`step=3`) instead of nine contiguous months in 2020, so most windows fall outside the COVID months
      and the stale-record period; chosen from counts, not scores (2026-10-26, Lennart)".
+
+   **Lennart (2026-11-11, ok):** As implemented (A).
+
+   **Resolved (2026-11-11, Lennart):** A, as implemented: the nine one-month windows every third month from December
+   2018 to December 2020 stay (test 412, 569, 374, 387, 367, 416, 475, 434 and 479 sales; train 32,678 down to 22,065,
+   98.8% to 66.7%, none under half). `splits_comment` now gives the reason under the rewritten rule: the windows span
+   three calendar years and Perth's four seasons, leave out April and May 2020 (316 and 284 sales), and 36 one-month
+   windows from January 2018 on train on half the sales or more. The stale bullet "9 monthly test windows, April to
+   December 2020" of `curation_comments` now names the windows decided on 2026-10-26, and so does the decision table
+   "Each suburb holds its newest sales only", which also named April to December 2020 (310 of the 321 suburbs have
+   sales by December 2018). `temporal` is unchanged. The record has the decision and the horizon CC lines. `dataset
+   check`: 0 errors, 0 warnings (README not regenerated).

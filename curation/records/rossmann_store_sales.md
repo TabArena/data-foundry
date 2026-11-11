@@ -45,6 +45,12 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: DayOfWeek (an uno
 
 **Assessment (AI, 2026-11-10):** priority for the review of the test windows and horizons, which this record never had. Priority 3: gap 0, use case 0, source + (Rossmann's competition), shape +, risk 0 (the open issue is the choice of windows).
 
+CC (2026-11-11, Lennart): REVIEW.md issue 1, B ("Option B: Spread over the eligible history."): the test windows are 20 June to 31 July 2015, the Christmas weeks of 2014 (22 November 2014 to 2 January 2015) and late spring 2014 (26 April to 6 June), evenly spaced over the 11 windows that keep half the store-days, in place of the newest 18 weeks.
+
+CC (2026-11-11, Lennart): the declared horizon (42 days, a one-day gap, windows starting 2015-06-20, 2014-11-22 and 2014-04-26) is checked, as Kaggle states the store managers' horizon as six weeks and the competition's own test period, 48 days, is about as long (REVIEW.md horizon, ok).
+
+**Assessment (AI, 2026-11-11):** applied issue 1 (B): test 40,282, 31,203 and 38,107 store-days, train 802,996, 617,355 and 443,771 (95.1%, 73.1% and 52.6%); the Christmas window sells 8,478 per open store-day against 6,837 on its train side and tests 935 stores until 31 December. The 1,114 store-days of 19 June 2015, the newest window's gap day, lie in no split (an accepted warning). `dataset check`: 0 errors, 0 warnings.
+
 ## Reference
 
 FlorianKnauer and Will Cukierski. Rossmann Store Sales. https://kaggle.com/competitions/rossmann-store-sales, 2015. Kaggle.
