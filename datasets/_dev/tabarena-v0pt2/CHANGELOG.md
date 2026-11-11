@@ -1,5 +1,22 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11 (evening), lung_adenocarcinoma_metastasis reviewed (Andrej; no container built)
+
+- A full review panel (claim, column and split audits, a pathologist's view, a blind reviewer, a task gamer, a
+  precedent check, advocate and critic, mediator): ship after changes, all applied. The 67 `AFFX` control probes
+  dropped: they measure the preparation and separate the classes (ROC AUC 0.695 together; the earlier note of 0.42
+  came from a run that paired labels with the wrong arrays). Dropped as rows: AD355 and AD360 (no clinical data, like
+  the `A` patients) and AD218 and AD224, which the sheet codes inconsistently (the same second-review note, "ad w met?"
+  and "ad m met?", once a metastasis and once a primary; AD218 lies in the paper's colon expression cluster). 123 rows,
+  15 metastases (8 colon, 4 breast, 3 other), 5 per test fold.
+- Record markers `Class-dependent Recording` (the metastasis arrays call fewer genes present, ROC AUC 0.722; it runs
+  through every gene and stays, carrying a small part of the score) and `Selection Bias` (all resected
+  adenocarcinomas, while the question arises only after an earlier cancer elsewhere, which is not recorded); priority
+  1. The use-case reason restated: the flag is written in the tumour's pathology note but rests on an earlier cancer
+  outside the specimen (USE-1 text and Cases row). LEAK-15 gains the case, the TP-5 row the new numbers.
+- `dataset check` 0 errors, 0 warnings, README regenerated; task probe no flag (random forest 0.876, logistic
+  regression 0.836, LightGBM 0.811; out of fold on the 125 rows, colon metastases separated at 0.984, breast at 0.76).
+
 ## 2026-11-11, lung_adenocarcinoma_metastasis added from lung_cancer's arrays (Andrej; no container built)
 
 - lung_adenocarcinoma_metastasis (new; BeyondArena v0.2 review page, lung_cancer issues 7, B, 4, B and 8, A): the

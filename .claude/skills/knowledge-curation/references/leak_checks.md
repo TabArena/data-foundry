@@ -159,8 +159,11 @@ practice, and that cannot be undone (no batch id to drop, no format to harmonise
 dataset: a feature subset does not help when it also separates same-label groups. An artefact confined to features a
 practical model would not rely on is fixed (LEAK-13, LEAK-14, LEAK-39) or kept with a note. Test: probes 7, 8 and 17,
 and the score without the affected features. Cases: prostate_cancer_detection (retired), gallstone_disease (kept),
-lung_cancer (repaired: rebuilt from the origin's per-array files, where the spike-in control probes no longer
-separate the classes; later retired on its use case; the arrays ship on as lung_adenocarcinoma_metastasis).
+lung_adenocarcinoma_metastasis (kept: its metastasis arrays call fewer genes present, which runs through every gene
+but leaves logistic regression at 0.855 to 0.857 once each array's noise floor is subtracted; the control probes,
+which separate the classes, dropped), lung_cancer (repaired: rebuilt from the origin's per-array files, where the
+spike-in control probes no longer separate the classes; later retired on its use case; the arrays ship on as
+lung_adenocarcinoma_metastasis).
 
 **LEAK-39 (Must).** Rows of one class recorded through a separate route, found by a recording fingerprint (number
 formats, a derived column that follows another definition, a shifted measurement) rather than a source column, are
