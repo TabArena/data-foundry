@@ -2,7 +2,7 @@
 
 **Outcome:** added. Huesken et al. (2005) siRNA knockdown efficacy, rebuilt from the corrected original supplement: 2,431 guides, 266 features, 30 target genes held out whole, scored by the per-gene correlation. The second-pass review panel (full tier, after your PR #33 review of 2026-11-04) recommends shipping after wording changes, applied in `dataset.py` (the README rebuild is pending your ask); no leak, no refuted claim on the data, no exploit beyond noise. What stays open is whether the unrun sequence-model test gates the shipment (SEL-12), and three small choices (the optional rule rows are an item across datasets).
 
-**Main points:** Is a small CNN on the 30 folds a gate for shipping, or does the `Revisit later` tag with a named reopening test suffice (issue 4)? Make the shared metric score a constant prediction (issue 6)? Drop the 19 redundant guide columns or only note them (issue 5)? Add a companion view (issue 8)?
+**Main points:** Is a small CNN on the 30 folds a gate for shipping, or does the `Revisit later` tag with a named reopening test suffice (issue 4)? Make the shared metric score a constant prediction (issue 6)? Drop the 19 redundant guide columns or only note them (issue 5)? Add a companion view (issue 8)? Open: the split count, 20 x 3 in genes instead of 10 x 3 (issue 10).
 
 **Record judgment:** valid, keep (`Yes`).
 Validity: SEL-12 open (no sequence model run, no finding of "clearly better"); USE-1, USE-3, USE-5 hold with an approximate fit (USE-4, USE-8); LEAK-10 holds (266 features from guide and insert, best exploit +0.0015); SPLIT-4, SPLIT-5 hold (0 shared genes in 30 splits); PROV-13 holds (both PDF hashes, control scale 0.900/0.354, 2,431 rows).
@@ -184,6 +184,34 @@ Left for you: issues 4, 6, 5, 8.
    **Resolved (2026-11-05, Lennart):** B. `grouping.context="all_rows"`; `dataset check` clean; a SPLIT-23 Cases row
    beside protein and sat11. The focused panel waits for your go-ahead; the measurement it would make is above (context
    adds nothing here).
+
+10. **Twenty repeats of the gene split, as the split count in scored units gives, instead of ten?**
+
+   * **Problem:**
+     - The score averages one correlation per target gene, and the split holds out whole genes, so the split count
+       now counts the 30 genes, not the 2,431 guides; 20 training genes give 20 x 3 splits, where the definition was
+       built with 10 x 3.
+     - The same change on protein_model_quality_rf_pcp (its issue 10) showed that three repeats there rank close
+       methods by chance; here the count moves from ten to twenty, which was not measured.
+     - Ship 20 x 3, or keep 10 x 3?
+   * **Effect on the task:** not measured here (the raw supplement is not in the local warehouse). Each test fold
+     holds about 10 genes; the panel's LightGBM beat ridge on 29 of 30 splits by the metric, a gap far larger than
+     the protein dataset's.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 10 x 3 (implemented) | the splits as built | 30 fits per method | departs from the rule without a measured reason |
+     | B | 20 x 3 | the split count in scored units, at the next `dataset check` | the count the rule gives for 30 held-out genes | 60 fits on 2,431 rows |
+
+   * **Recommendation:** B: the split holds out the genes the metric scores, the case the rule is written for, and
+     60 fits on 2,431 rows cost little[^10a]. **Decision:** A or B?
+
+   [^10a]: **SPLIT-33** (Should): repeated 3-fold cross-validation with 20, 10, 3 or 1 repeats by the size of the
+     train side, counted in the units the metric scores when the split holds each one out whole.
+
+   **Notes for the AI:** on B, `dataset check` (the definition is unchanged; the protocol gives 20 x 3), a CC line in
+   the record, CHANGELOG.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after your PR #33 review of 2026-11-04. Claim audit: 21 claims, 15 hold, 3 partly hold (constant prediction scores NaN, the RMSE gene-mean figure reproduced only in size, stale record text), 1 refuted and fixed (a metric-reason figure, not the data: the "97% and 80% of folds" figure; the reproduced values are 30 of 30 by RMSE and 29 of 30 by the metric), 2 untested (Kendall tau 0.64 and the sequence-model test). Blind review: include with changes; main concern `target_gene` as a feature, refuted because the kit's `features()` excludes it (266 features). Task gamer: nothing games the task; best exploit overlap-graph features of the target windows, +0.0015 per-gene correlation on 30 splits (noise), and the honest gain of a gene-centred training target without the window columns, 0.6461 to 0.6686 (single seed, about one split SD). Agreed: no exclusion, the data, splits, hashes and control scale verified, no leak, the exception to MET-5 stands, and the edit list (applied). Disputed: whether the unrun CNN gates shipping (SEL-12, issue 4), whether the NaN on a constant prediction is a defect or a note (MET-2, issue 6), and whether the redundant guide columns are dropped or noted (CLEAN-8, issue 5).
 

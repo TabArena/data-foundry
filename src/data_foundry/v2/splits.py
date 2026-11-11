@@ -106,6 +106,17 @@ def metric_group_column(task: PredictiveMLTaskMetadataV2) -> str | None:
     return task.objective_metric.inputs.get("group")
 
 
+def scored_groups_held_out_whole(df: pd.DataFrame, group_on: str | list[str] | None, score_group_on: str) -> bool:
+    """Whether every group the metric scores lies in one group of the split, so a test fold holds it whole: the
+    metric's group is the split's group or sits inside one (an instance inside its problem class). ``False`` for an
+    IID split, which cuts every group across folds.
+    """
+    if group_on is None:
+        return False
+    keyed, key = one_group_column(df, group_on)
+    return bool(keyed.groupby(score_group_on, dropna=False, observed=True)[key].nunique(dropna=False).max() <= 1)
+
+
 def recommended_dimensions(
     df: pd.DataFrame,
     *,
@@ -116,15 +127,19 @@ def recommended_dimensions(
     """``(n_repeats, n_folds)`` for IID or grouped cross-validation on ``df``.
 
     The size is the train side of a 3-fold split, in the units the metric scores: 2/3 of the distinct values of
-    ``score_group_on`` when the metric scores per group (one PAR10 per instance over a row per instance and solver),
-    else of the groups for ``per_group`` labels, else of the rows. Below 500 it gets 20 repeats, below 2,500 10, below
-    250k 3, and 1 above. A frame of :data:`SINGLE_REPEAT_ROWS` rows or more always gets one repeat.
+    ``score_group_on`` when the metric scores per group and each of its groups lies in one group of the split, so a
+    test fold holds it whole (one PAR10 per instance over a row per instance and solver, the instances held out or
+    inside held-out classes); else of the groups for ``per_group`` labels, else of the rows. A metric group the split
+    cuts across folds (a survey year over stations held out) is scored on part of its rows in every fold, so its count
+    says little about the noise and the rows count. Below 500 it gets 20 repeats, below 2,500 10, below 250k 3, and 1
+    above. A frame of :data:`SINGLE_REPEAT_ROWS` rows or more always gets one repeat.
 
     Args:
         df: The frame to split.
         group_on: The split's group column(s), for grouped data.
         group_labels: The grouping's labels; ``"per_group"`` counts the groups of ``group_on``.
-        score_group_on: The metric's group column (:func:`metric_group_column`); its distinct values are counted.
+        score_group_on: The metric's group column (:func:`metric_group_column`); its distinct values are counted
+            when each lies in one group of ``group_on``.
 
     Returns:
         ``(n_repeats, n_folds)``.
@@ -132,7 +147,7 @@ def recommended_dimensions(
     n = len(df)
     if n >= SINGLE_REPEAT_ROWS:
         return 1, N_FOLDS
-    if score_group_on is not None:
+    if score_group_on is not None and scored_groups_held_out_whole(df, group_on, score_group_on):
         n = df[score_group_on].nunique(dropna=False)
     elif group_on is not None and group_labels == "per_group":
         df, group_on = one_group_column(df, group_on)

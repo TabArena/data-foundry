@@ -16,8 +16,8 @@ measured. Quality: three constant columns (`POSNEG_RATIO_CLAUSE_max`, `UNARY`, `
 file too) can go without a decision. Weighed: a documented algorithm-selection benchmark scored by its source's metric
 (+), few instances per fold and an untested spread under PAR10 (-).
 
-**Main points:** Ship: 20 x 3 splits, timeouts at the recorded 5,000 s, PAR10 (issues 1-3 resolved). Open: how
-a tie at the lowest prediction is scored (issue 4).
+**Main points:** Ship: 20 x 3 splits, timeouts at the recorded 5,000 s, PAR10 (issues 1-4 resolved);
+PAR10 alone picks the solver, a tie counted as PAR10 defines it (issue 4).
 
 **Record judgment:** valid. The task is the one the curator chose (one model for all solvers, from instance and
 solver features, as in Pulatov et al. 2022), and the split by instance rather than by instance family is his decision
@@ -175,7 +175,38 @@ are added. The `Multi-target` tag stays (one runtime per solver, stacked as rows
    [^4a]: definitions.md ("Grouped"): when the metric chooses per instance by itself (`par_k`), the grouping declares
      `prediction_unit="row"` and no aggregation.
 
+   **Andrej (2026-11-11, discuss):** Is it a standardization for the two related tasks that does not change the
+   functionality?
+
+   **Answer (AI, 2026-11-11):** Yes, for any model that does not tie; a score changes only where predictions tie.
+   - What B changes: only who picks the solver. With `select_min` the scorer keeps the row with the lowest prediction
+     per instance and hands PAR10 that one row; with B PAR10 gets all rows and picks the same lowest row itself. The
+     target, features, splits, the instance as the metric's group and PAR10's charge for a timeout stay as they are.
+   - Where it differs: a tie at an instance's lowest prediction. `select_min` scores the solver first in the file,
+     PAR10 the mean of the tied solvers' costs.
+   - Measured on the 60 shipped splits (3,680 test instances), PAR10 in seconds:
+
+     | Model | Instances tied | `select_min` (A) | PAR10 alone (B) | Largest split difference |
+     |---|---|---|---|---|
+     | LightGBM | 0 | 8,970 | 8,970 | 0 |
+     | Random forest | 0 | 8,323 | 8,323 | 0 |
+     | Linear, one per solver | 0 | 11,350 | 11,350 | 0 |
+     | Constant prediction | 3,680 | 19,140 | 18,539 | 5,107 |
+
+   - Also changed: the README's split line loses "one prediction per group (select_min)", and the container's
+     grouping reads `prediction_unit: row` with no aggregation, as asp_potassco_classification's does.
+   - A model that predicts ties (rounded or capped predictions, a constant fallback) is scored by row order under A
+     and by PAR10's own rule under B. The recommendation stays B. **Decision:** A or B?
+
    **Notes for the AI:** on B, in `grouping` set `prediction_unit="row"` and remove `aggregation` (`context="all_rows"`
    stays), the grouping's `definition` unchanged, `dataset check`, a CC line in the record, CHANGELOG, and the
    "still declares `select_min`" line in definitions.md goes. On A, that line says it is kept and why. Tie counts: a
    re-fit of issue 3's LightGBM, random forest and linear models on the shipped target.
+
+   **Andrej (2026-11-11, change):** Option B: PAR10 chooses alone.
+
+   **Resolved (2026-11-11, Andrej):** B: the grouping declares `prediction_unit="row"` and no aggregation, so PAR10
+   picks the solver predicted fastest per instance and counts a tie as the mean of the tied solvers' costs; the same
+   form as asp_potassco_classification. `dataset check` 0 errors (the known constant-column warning); README
+   regenerated. The trained models score the same as before; the shipped container keeps `select_min` until its next
+   build.

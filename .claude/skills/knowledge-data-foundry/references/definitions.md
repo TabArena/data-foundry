@@ -482,7 +482,8 @@ version (all found in the v0.2 copy, 2026-10-06):
 
 Keep the default: no split attributes. The base class runs the v2 split protocol (`src/data_foundry/v2/splits.py`):
 always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of the train side, in the units the metric
-scores (the groups of the metric's `group` input, else the groups of `per_group` labels, else the rows; SPLIT-33,
+scores (the groups of the metric's `group` input when the split holds each out whole, else the groups of `per_group`
+labels, else the rows; SPLIT-33,
 `recommended_dimensions`),
 built by `iid_splits` / `grouped_splits` with the benchmark seed, on the full frame: Data Foundry caps no split unless
 the definition declares a `row_budget` (a sub-sampled version, below). The comment is "Default splits."; set
@@ -526,7 +527,6 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
   * something larger (asp_potassco_classification: problem classes): the grouping is on the class, and the
     anonymised instance ships as `ScoringColumn(column="instance_id", role="group", used_by="par_k")`, never a
     feature.
-  sat11_hand_algo_runtime still declares `select_min`; dropping it is open in its `REVIEW.md`.
 * `context`: `all_rows` when all rows of a new group are known when predicting, `past_rows` when only its earlier rows
   are (needs `time_on`), `none` when each row stands alone.
 * `definition` is required: what one group is, why groups are held out (the use case), and the source with a quote.

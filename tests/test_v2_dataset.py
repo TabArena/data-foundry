@@ -1490,10 +1490,10 @@ def test_scoring_columns_are_kept_out_of_the_features(tmp_path: Path, warehouse:
         get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
 
 
-def test_a_metric_that_scores_per_group_sets_the_repeats_by_its_groups(
+def test_a_metric_group_cut_across_iid_folds_leaves_the_repeats_to_the_rows(
     tmp_path: Path, warehouse: Path, era_metric: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """The default splits and the protocol check both count the metric's 6 eras, not the 600 rows."""
+    """An IID split cuts the metric's 6 eras across folds: the default splits and the protocol check count the rows."""
     del warehouse
     monkeypatch.setattr(protocol, "REPEATS_BY_TRAIN_SIZE", ((5, 20), (2_500, 10), (250_000, 3)))  # 4 of 6 eras: 20
     body = (
@@ -1507,7 +1507,7 @@ def test_a_metric_that_scores_per_group_sets_the_repeats_by_its_groups(
     write_definition(tmp_path / "datasets", body=body)
     result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
     assert result.ok, result.bundle_report.summary()
-    assert len(result.container.experiment_metadata.splits) == 20  # 400 train rows alone would give 10
+    assert len(result.container.experiment_metadata.splits) == 10  # 400 train rows; 4 of 6 eras would give 20
     assert "splits_dimensions_off_protocol" not in [r.slug for r in result.bundle_report.results]
 
 
