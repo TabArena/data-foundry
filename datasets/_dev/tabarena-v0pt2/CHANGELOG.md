@@ -5,6 +5,8 @@
 - lung_cancer (BeyondArena v0.2 review page, issue 6, B): `No (Retired)` with `No Good Target / Scientific
   Discovery`, on its use case: the histology of resected tumours, which the slide settles, needs no prediction;
   molecular typing matters on ambiguous small biopsies and tumours of unknown origin, which the data lacks. The
+  source never predicts the histology: Bhattacharjee et al. (2001) cluster the specimens into a taxonomy of
+  adenocarcinoma subclasses, and their one diagnostic claim is primary against extrapulmonary metastasis. The
   study's other targets were tested and fail: 16 possible metastases (ROC AUC 0.861, about 5 per test fold);
   survival after resection, where the arrays score near shuffled labels and stage and age carry the signal;
   lymph-node involvement (0.60). Record CC line, `v2_path` cleared, folder removed; a Cases row under USE-1 beside
