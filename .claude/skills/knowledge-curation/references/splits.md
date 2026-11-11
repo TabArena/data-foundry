@@ -187,6 +187,49 @@ collection facts and the prototype makes that visible. Cases: the arrival study 
 framingham_heart_study_fhs (`DelayedTarget`), houses and 5g_energy_consumption (`Snapshot`), thyroid_discordant
 (`StationaryRelation`, measured), musk (`Timeless`), heloc (`ForcedIIDFromTemporal`).
 
+**SPLIT-34 (Should; relates to SPLIT-4, SPLIT-31 and SPLIT-32).** In a catalogue of items whose target is a fixed
+property (molecules, materials, sky objects, apps, protein targets), three keys can keep a test item apart from
+training, and each tests something else:
+
+* **the item:** its copies and re-measurements stay on one side (a structure, a composition, a mix; SPLIT-24,
+  SPLIT-26);
+* **its family:** a series not measured yet (a scaffold, an element set, a plate, a protein target);
+* **when it entered the catalogue:** the items made or found after the training data (its first publication, its
+  registration number, the night of its spectrum, a competition round).
+
+Which key stands for the use case is information from the use case and the source. When the actor predicts for items
+that will be made or found later (a chemist's next compounds, a screen for new superconductors, a survey's next
+objects), the items arrive over time even though each one's target is fixed (SPLIT-32, the drifting catalogue). Where
+the release or a parent source dates the items, a family key still trains on later families and on a test item's
+siblings from the same paper or batch, which the actor does not have; the date does not. When the actor fills in an
+inventory that already exists (a regulator's untested chemicals), nothing comes later, and the family key stands for
+the less similar items of that inventory; the inventory itself, where the source has it, is the reference for how
+close the test items should be to training. A date whose newest labels are not final (`Target: Open Window`) tests
+the delay of the label more than the items.
+
+A split by entry date keys on each item's first date, so an item's later re-measurements stay with it. What each key
+changes can be measured on the same test items: the score, and the share of test items with a close training analog
+(for molecules, Tanimoto 0.7 or more on Morgan radius 2), under the family key and under the date.
+
+Why: no key is the harder one by kind. On the catalogues measured so far, some family keys left most of a random
+split's closeness in place, some came close to the date, and on one the date tested little the family key did not:
+
+| Dataset | Item or family key | By entry date |
+|---|---|---|
+| qsar_tid_11 | scaffold: RMSE 0.68-0.90, 62-75% close analogs, 85-90% of those from the test compound's own year | first publication year: RMSE 1.11-1.31, 12-26% close analogs |
+| sdss_17 | plate: log loss 0.338, sky cell of 10 degrees 0.354 (random 0.331) | year of the spectrum: 0.506 |
+| apistox | scaffold: 14-19% close analogs (random 17-30%) | decade of first publication: 10-24% |
+| superconductivity | composition: RMSE 8.4-14.2 K; element set: 11.7-18.0 K; the iron-based family held out: 20.1 K on its 2009-2019 compositions | first report year: 12.7-18.2 K (12.8 K on the iron-based) |
+| nci_aids_antiviral_screen | scaffold-disjoint on the same test compounds: ROC AUC 0.717-0.739, 4.3% close analogs | registration order (NSC), not the order of entry into the screen: 0.749-0.774, 8.4% close analogs, near random (0.762-0.770, 9.8%) |
+| protein_model_quality_rf_pcp | protein target, CASP7-9: per-protein Pearson 0.34-0.57 | CASP round, CASP7-9: 0.30-0.56; CASP10, whose descriptors follow another convention: about 0 against 0.62 for the protein key |
+
+The family key decides most: an element set holds out nearly what the date holds out, a scaffold or a plate does not;
+and where the rounds are distinct targets, the date adds little until the way the features are recorded changes.
+
+Cases: qsar_tid_11, sdss_17, apistox, superconductivity, protein_model_quality_rf_pcp, nci_aids_antiviral_screen,
+drug_induced_autoimmunity_prediction (`Target: Open Window`), qsar_oral_toxicity (an untested inventory as the
+reference).
+
 ### Temporal tasks
 
 Every feature has to have existed at the prediction time of its row: LEAK-10 in [leak_checks.md](leak_checks.md).
@@ -333,7 +376,8 @@ qsar_bioconcentration: "in other cases, we also moved towards a scaffold split a
 molecule dataset whose rows carry exact structures groups on the Bemis-Murcko scaffold, as a new chemical under
 assessment often comes from a series not yet measured. A molecule without a ring is a group of its own, and so is each
 molecule of a scaffold that holds more than a tenth of the molecules, which is no series and would leave folds of very
-unequal size (`scaffold_groups` in `data_foundry.v2.chemistry`). Cases: drug_induced_autoimmunity_prediction,
+unequal size (`scaffold_groups` in `data_foundry.v2.chemistry`). Where the molecules are dated, SPLIT-34 says what a
+split by first publication tests that the scaffold does not. Cases: drug_induced_autoimmunity_prediction,
 qsar_bioconcentration, qsar_oral_toxicity, qsar_tid_11.
 
 The hidden-group cases and the probe's calibration are in [task_probes.md](task_probes.md), "Hidden groups".
@@ -434,6 +478,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-31 | qsar_oral_toxicity | reopened under the amendment: every row has its own QSAR-ready structure since 2026-10-21, so the scaffold is exact; ring-less chemicals (23%) and the bare benzene ring (18%) alone; close training analogs fall from 24.7% to 16.3%, against 11.0% for the untested chemicals, so the fit stays approximate (2026-10-26, Lennart) | applied |
 | SPLIT-31 | qsar_tid_11 | scaffold groups in place of IID: the file carries ChEMBL compound ids, and ChEMBL 17 (the release the data was drawn from) gives every one its structure; 21 ring-less compounds alone, the bare benzene ring 2%; close training analogs fall from 79.7% to 59.2%, untuned LightGBM RMSE 0.794 to 0.920; the features stay the source's fingerprint (2026-11-01, Lennart) | applied |
 | SPLIT-24, SPLIT-26, SPLIT-4 | boreal_postfire_lichen_biomass | one group per Saskatchewan plot kept (the names carry no burn key), with the measured effect in the notes, over a burn key joined from an outside source (Canada's NFDB and NBAC fire polygons, point in polygon on the plot's fire year): tried on 2026-11-09 and taken back on 2026-11-10 (Andrej: "Back to A, with the note"). 94 of 190 SK plots lay inside a mapped burn of their year (none of the 66 dated before 1945); burn-mates in training flattered the SK RMSE by about 5 kg/ha against a fold-draw SE of about 40, and no model changed rank; the join cost 2 GB of maps, a shapefile reader and a build tied to NFDB's current version only | applied |
+| SPLIT-34 | apistox | split by the decade of first publication (four expanding windows), not by scaffold: the use case predicts compounds that appear later, and the windows leave 10-24% of the test compounds a close training analog, against 14-19% for scaffold groups and 17-30% at random | applied |
 | SPLIT-33 | asp_potassco_classification, sat11_hand_algo_runtime | one row per instance and configuration, scored by PAR10 per instance: the repeats follow the instances (1,212: 10 x 3; 184: 20 x 3), not the runs (13,332: 3 x 3; 1,840: 10 x 3) | applied |
 | SPLIT-33 | wadden_sea_sibes_macoma_abundance | scored per survey year (15) over a split by station: every test fold holds part of every year, about 1,300 stations a year, so the years do not set the repeats; the rows do (59,044: 3 x 3, not 20 x 3) | applied |
 

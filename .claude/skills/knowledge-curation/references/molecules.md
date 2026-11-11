@@ -122,8 +122,10 @@ The task is going from the structure to a prediction (Lennart, 2026-11-01). So:
   Scores drop by design: drug_induced_autoimmunity_prediction's TabPFN fell from 0.854 to 0.768 ROC AUC, and
   qsar_tid_11's LightGBM from 0.747 to 0.657 R^2. Under random splits a nearest-neighbour lookup with no model reached
   0.822 on drug_induced.
-* **A source's time split can stand in.** apistox's decade windows give 10-24% close analogs, against 14-19% for
-  scaffold groups and 17-30% at random, so it stays temporal.
+* **A date can stand in for the scaffold, or not (SPLIT-34).** apistox's decade windows give 10-24% close analogs,
+  against 14-19% for scaffold groups and 17-30% at random, so it stays temporal. qsar_tid_11's first ChEMBL years
+  leave 12-26% close analogs where its scaffold folds leave 62-75%. nci_aids_antiviral_screen's registration order
+  leaves 8.4%, more than its scaffold groups (4.3%), and is not the order of entry into the screen.
 
 ## Use case, targets and metrics
 
