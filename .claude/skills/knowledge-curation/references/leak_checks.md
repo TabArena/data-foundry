@@ -305,14 +305,25 @@ whose timing is known to be late (a value looked up at extraction) is LEAK-10's,
 removing an unverified signal from host-designed data is arbitrary. The rule covers only fields whose timing cannot be
 tested. When a conditional test measures the mechanism (the field's missingness or fill, given the covariates known at
 the prediction point, differs by outcome), LEAK-10 applies and the field is dropped, even if the host's test file
-carries it the same way: that file is a holdout of the same snapshot, not deployment data. Cases: homesite
-(`PropertyField37` x `PersonalField12`, AUC 0.965 to 0.915, kept); kick's `WheelType` was kept here on 2026-10-01 and
-dropped under LEAK-10 on 2026-10-22, with `WheelTypeID`, `PRIMEUNIT` and `AUCGUART` (expresso's REGION the same way);
-fraud_detection_in_electricity_and_gas_consumption_1m cuts its invoice history at 2013-01-01 on the same kind of
-measured step (2026-10-26, Lennart). Named fields kept: african_credit_scoring_challenge `Amount_Funded_By_Lender`,
-medical_facility_operational_data's expected-delay table, tunisian_fraud_detection_challenge's refund and
-regularisation fields, sendy_logistics_challenge `Distance (KM)` (tested: not measured between the rider's two taps; a
-GPS total recorded after delivery not excluded) (2026-11-05, Lennart).
+carries it the same way: that file is a holdout of the same snapshot, not deployment data. The size of the effect is
+such a test too: a field that fixes an outcome no one could know at the prediction point (a person's later decision)
+at near-certainty inside a large group, where the rest of the data shows no such certainty, is a measured mechanism,
+and LEAK-10 applies; fields that mark the same rows go with it. The search continues after the first such field until
+no large group fixes that decision at near-certainty (measured by a shallow tree on all rows, for example depth 6 with
+groups of at least 300 rows), dropping the fewest fields that remove every such group; a field graded on its own stays.
+A graded difference in rates is no such test, and the other direction (rows the decision cannot reach, such as a quote
+that cannot be bought) is known at the prediction point and stays. Cases: homesite (`PropertyField37` x
+`PersonalField12`, with `PersonalField9` and `PersonalField10A/B`, which mark the same non-buyers: inside one branch
+99.3-99.8% against 0.14% buyers, 13.6-15.5% in the other; then `PersonalField2`, whose 0 with `PersonalField1` = 1
+marked 7,266 quotes at 98.0% bought, and `PersonalField13`, whose 1 marked 2,092 at 97.8%, until no group of 300 quotes
+converted at 95% or more; `PersonalField1`, graded alone, kept; dropped); kick's `WheelType` was kept here on
+2026-10-01 and dropped under LEAK-10 on 2026-10-22, with `WheelTypeID`, `PRIMEUNIT` and `AUCGUART` (expresso's
+REGION the same way); fraud_detection_in_electricity_and_gas_consumption_1m cuts its invoice history at 2013-01-01
+on the same kind of measured step (2026-10-26, Lennart). Named fields kept: african_credit_scoring_challenge
+`Amount_Funded_By_Lender`, medical_facility_operational_data's expected-delay table,
+tunisian_fraud_detection_challenge's refund and regularisation fields, sendy_logistics_challenge `Distance (KM)`
+(tested: not measured between the rider's two taps; a GPS total recorded after delivery not excluded) (2026-11-05,
+Lennart).
 
 Also not a leak, with their home elsewhere:
 
@@ -497,6 +508,7 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-10 | Fitted from the same measurement that gives the label | drop it for the task we frame | sdss_17 `redshift` (photometric task) |
 | LEAK-10 | Targeting or pointing ids (they encode pre-selection or the observation date) | drop them | sdss_17 `plate`, `fiber_ID` (AUC 0.80 alone; they made log loss worse) |
 | LEAK-10, LEAK-38 (precedent, Lennart, 2026-10-22) | A named field whose missingness or fill, given the covariates known at the prediction point, differs by outcome (a conditional test), although the host's test file carries it the same way | drop it | expresso_churn_prediction REGION (flag AUC 0.936 among customers active all 62 days); kick `WheelType`/`WheelTypeID` (1.2% predicted missing for bad buys, 24.9% observed) and `PRIMEUNIT`/`AUCGUART` (42.3% predicted filled, 7.8% observed) |
+| LEAK-10, LEAK-38 | An anonymised field whose timing cannot be tested, but which fixes a person's later decision at near-certainty inside a large group | drop it, with every field that marks the same rows, and continue with the fewest fields until no large group is near-certain | homesite_quote_conversion: `PropertyField37` = Y with `PersonalField12` codes 1-3 99.3-99.8% bought (19,934 quotes), code 5 0.14% (54,769; the same rows as `PersonalField9` = 3); with N the same codes 13.6-15.5%; then `PersonalField2` (with `PersonalField1` = 1: 7,266 quotes, 98.0%) and `PersonalField13` (2,092, 97.8%); nine monthly windows ROC AUC 0.956 with every field, 0.898 without the seven |
 | LEAK-11 | Measured after the outcome, but it weakens the signal | keep it and note it | south_africa_coronary_heart_disease (ESL Sec. 5.2.2, p. 148; dropping `sbp`, `obesity`: AUC 0.774 to 0.778) |
 | LEAK-12 (SPLIT-9) | Temporal: training rows whose label is not yet known at the prediction point | filter training rows by an as-of date | hotel_booking_demand: in-window cancellations in train were 100% cancelled (log loss 1.7 to 0.33); a filter on `ReservationStatusDate` keeps the shortcut |
 | LEAK-13 | Class-specific recording conventions | harmonise (round every row to the shared precision, drop a column only one class has); first measure how much the fix removes | hepatitis_c_prediction (7 lab columns rounded, `ALP` dropped) |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: homesite_quote_conversion
 container_format: 2
-checksum: v2:8cba563153ee78ca1439cde706f337361fe436def27f840553d06bced238bd55
+checksum: v2:e2ad1ad8559f3025ea6ce24a8a73e89f9c79b4134752664031dbfaf6a12497c2
 build:
   uuid: 01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4
   checksum: v2:34b44a2882689d641bdce45ee35249fd576143b28b1ab493589cfccd8e2d8915
@@ -20,12 +20,12 @@ build:
 build_stale: true
 data:
   n_rows: 260753
-  n_features: 295
+  n_features: 287
   dtypes:
-    category: 27
+    category: 26
     datetime64[ns]: 1
-    float64: 148
-    int64: 120
+    float64: 146
+    int64: 115
   n_test_dataset_rows: null
 task:
   target: QuoteConversion_Flag
@@ -33,37 +33,38 @@ task:
   metric: roc_auc
   metric_origin: source
   scoring_columns: null
-  split_regime: iid
+  split_regime: temporal_non_iid
   stratify_on: QuoteConversion_Flag
-  time_on: null
+  time_on: Original_Quote_Date
   group_on: null
   group_labels: null
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 3
-  n_folds: 3
+  n_repeats: 9
+  n_folds: 1
   random_state: 4267
-  time_horizon: null
-  time_horizon_unit: null
+  time_horizon: 1
+  time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 173835
-    max: 173836
+    min: 184261
+    max: 254663
   n_test:
-    min: 86917
-    max: 86918
+    min: 6090
+    max: 12241
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - dataset_constant_column
-  - dataset_missing_value_label
+  warnings: []
   infos:
   - dataset_duplicates_skipped
   - dataset_pure_feature_value_skipped
-  accepted: {}
+  accepted:
+    dataset_constant_column: 'Twelve presence flags: 25 or missing (the source''s
+      -1, set to missing), filled in about 2.5% of the quotes; the buyers'' share
+      differs between filled and missing (GeographicField14A 4.4% against 19.1%).'
 decisions: []
 ---
 
@@ -71,9 +72,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `QuoteConversion_Flag`, scored with `roc_auc` on IID splits. 260,753 rows and 295 features. Source: Kaggle (2015).
+Binary classification of `QuoteConversion_Flag`, scored with `roc_auc` on temporal splits by `Original_Quote_Date`. 260,753 rows and 287 features. Source: Kaggle (2015).
 
-Built as `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8cba563153ee78ca1439cde706f337361fe436def27f840553d06bced238bd55`, so the build is stale. See [Build](#build).
+Built as `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e2ad1ad8559f3025ea6ce24a8a73e89f9c79b4134752664031dbfaf6a12497c2`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -87,9 +88,11 @@ Built as `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` on 2026-10-06, but `dataset.py` 
 
 **Known at prediction time.** The quote date and about 300 anonymised fields on the coverage, the sale, the customer, the property and its area.
 
-**What the test data stands for.** Random quotes, as in the competition, whose test quotes cover the same dates; TabRed split this data by date instead.
+**What the test data stands for.** The test data is the most recent quotes, in nine windows of one month (September 2014 to May 2015, the last to the 18th), each trained on every earlier quote, with no gap: a purchase is recorded within days.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** Random quotes mirror Homesite's task of scoring its quotes. Two anonymised fields look like a status code filled in after the quote (one combination holds 99.3% buyers, another 0.14%; ROC AUC 0.965 with them, 0.915 without). They are kept, as Homesite released them and their meaning cannot be checked, and noted; a kept leak does not make the fit approximate (USE-8 as amended 2026-10-21).
+**Our changes to the source.** We split by quote date instead of the competition's random split, whose test quotes cover the same dates, as TabReD does; seven anonymised fields that mark the purchase are dropped.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The split by quote date mirrors Homesite scoring the quotes it issues next. Anonymised fields that read like a status filled in after the quote are dropped (one combination held 99.3% to 99.8% buyers), with the fields marking the same quotes, until no large group is 95% buyers: no model scoring a quote before the customer decides could know the purchase that precisely.
 
 ## Files in this folder
 
@@ -98,7 +101,7 @@ Built as `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/homesite_quote_conversion.md`](../../../../curation/records/homesite_quote_conversion.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/homesite_quote_conversion.md`](../../../../curation/records/homesite_quote_conversion.md)
 - The original source: <https://www.kaggle.com/competitions/homesite-quote-conversion>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -130,14 +133,15 @@ Only curators run `build`, when the dataset ships.
 | year | 2015 |
 | domain | insurance |
 | license | Kaggle Competition Rules |
-| data_tags | IID, Anonymized |
+| data_tags | Non-IID, Temporal, Anonymized |
 | reference | Darrel2015HomesiteQuoteConversion |
-| rows x columns | 260,753 x 296 |
+| rows x columns | 260,753 x 288 |
 | task.target | QuoteConversion_Flag |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
-| task.split_regime | iid |
+| task.split_regime | temporal_non_iid |
 | task.stratify_on | QuoteConversion_Flag |
+| task.time_on | Original_Quote_Date |
 
 **Metric**
 
@@ -150,9 +154,9 @@ Only curators run `build`, when the dataset ships.
 | definition | Area under the ROC curve between predicted probability of QuoteConversion_Flag and the observed label. |
 
 <details>
-<summary>Feature types: 27 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 26 categorical, 0 string, 1 datetime</summary>
 
-- categorical (27): `QuoteConversion_Flag`, `Field6`, `Field12`, `CoverageField8`, `CoverageField9`, `SalesField7`, `PersonalField7`, `PersonalField16`, `PersonalField17`, `PersonalField18`, `PersonalField19`, `PropertyField3`, `PropertyField4`, `PropertyField5`, `PropertyField7`, `PropertyField14`, `PropertyField28`, `PropertyField30`, `PropertyField31`, `PropertyField32`, `PropertyField33`, `PropertyField34`, `PropertyField36`, `PropertyField37`, `PropertyField38`, `GeographicField63`, `GeographicField64`
+- categorical (26): `QuoteConversion_Flag`, `Field6`, `Field12`, `CoverageField8`, `CoverageField9`, `SalesField7`, `PersonalField7`, `PersonalField16`, `PersonalField17`, `PersonalField18`, `PersonalField19`, `PropertyField3`, `PropertyField4`, `PropertyField5`, `PropertyField7`, `PropertyField14`, `PropertyField28`, `PropertyField30`, `PropertyField31`, `PropertyField32`, `PropertyField33`, `PropertyField34`, `PropertyField36`, `PropertyField38`, `GeographicField63`, `GeographicField64`
 - string (0): none
 - datetime (1): `Original_Quote_Date`
 
@@ -175,15 +179,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 260,753 rows of the final frame (random rows: the frame is shuffled); 12 of 296 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 260,753 rows of the final frame (the oldest rows: the frame is sorted by `Original_Quote_Date`); 12 of 288 columns, the target first. Cells are cut at 40 characters.
 
 | QuoteConversion_Flag | Original_Quote_Date | Field6 | Field7 | Field8 | Field9 | Field10 | Field11 | Field12 | CoverageField1A | CoverageField1B | CoverageField2A |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 2014-08-25 00:00:00 | E | 16 | 0.9364 | 0.0006 | 1487 | 1.3045 | N | 7 | 11 | 7 |
-| No | 2013-01-14 00:00:00 | B | 23 | 0.9219 | 0.0006 | 965 | 1 | N | 6 | 9 | 6 |
-| Yes | 2015-03-02 00:00:00 | F | 22 | 1.0101 | 0.004 | 548 | 1.2694 | N | 12 | 20 | 13 |
-| No | 2014-05-20 00:00:00 | J | 26 | 0.8928 | 0.0004 | 1113 | 1.2665 | N | 24 | 25 | 24 |
-| No | 2013-07-01 00:00:00 | B | 24 | 0.9403 | 0.0006 | 965 | 1.02 | N | 4 | 5 | 4 |
+| No | 2013-01-01 00:00:00 | B | 23 | 0.9219 | 0.0006 | 965 | 1 | N | 16 | 23 | 16 |
+| No | 2013-01-01 00:00:00 | J | 23 | 0.9559 | 0.0004 | 1165 | 1.2392 | N | 12 | 20 | 12 |
+| No | 2013-01-01 00:00:00 | E | 8 | 0.9368 | 0.0006 | 1480 | 1.2714 | N | 1 | 1 | 1 |
+| No | 2013-01-01 00:00:00 | J | 23 | 0.9559 | 0.0004 | 1165 | 1.2392 | N | 7 | 12 | 7 |
+| No | 2013-01-01 00:00:00 | F | 3 | 0.9223 | 0.0038 | 564 | 1.067 | N | 7 | 10 | 7 |
 
 ## Curation notes
 
@@ -193,46 +197,68 @@ We start with the train.csv from Kaggle.
 - The data contains decoded spatial information.
 - We fix the Field10 column to be integer instead of string with ',' characters.
 - We convert the Original_Quote_Date to datetime.
-- IMPORTANT NOTE: this dataset was used as a non-IID task by TabRed. We keep it as an IID task, because: (A) the Kaggle discussions regarding validation converged on doing IID cross-validation, (B) based on our understanding of the prediction task IID seems most appropriate, and (C) the official test data on Kaggle contains timestamps from the same period as the train. Concluding from this, we think that treating the data as IID is appropriate and that potential temporal leakage is insignificant (due to A and B) or intended (due to C).
-- We drop the ID number and constant columns.
+- Split by quote date (2026-11-11, Andrej; SPLIT-6), as TabReD does, instead of the competition's random split, whose test quotes cover the same dates: Homesite scores the quotes it issues next, and conversion drifts (15.3% to 19.9% a month in the test windows). Nine monthly windows back from May 2015 (the last a partial month, to the 18th), each trained on every earlier quote (at least 70.7% of the rows). Before the drops of the fields below, untuned LightGBM scored ROC AUC 0.956 on average over the windows (0.943 to 0.963) against 0.964 on random folds; nearly all of the gap is the test months themselves (training on as many random quotes adds 0.0017).
+- No gap (2026-11-11, Andrej; SPLIT-10): the last weekdays of the release convert as before (18 May 2015: 19.3%), so purchases are recorded within days, and the source names no horizon. After the drops, a gap of 7 days changes the mean ROC AUC from 0.9043 to 0.9040, 30 days to 0.9025 (untuned LightGBM, nine windows).
+- We drop the ID number and constant columns (PropertyField6 is 0 in every row), and set the blank level of GeographicField63 (2 quotes) to missing.
 - We replace -1 with NaN (https://www.kaggle.com/competitions/homesite-quote-conversion/discussion/17417) and keep ordinals as numeric features following TabRed's preprocessing.
-- Potential leak, kept on purpose: "PropertyField37" x "PersonalField12" looks like a status code that may be filled after the quote. (Y, 1-4) holds 20,008 quotes of which 99.3% converted (40.6% of all conversions), while (Y, 5) holds 54,769 quotes of which 0.14% converted. Dropping both fields lowers LightGBM ROC AUC from 0.965 to 0.915. We keep them because the fields are anonymised and the meaning cannot be checked, Homesite set the competition up with them (the official test data has the same fields), and the Kaggle discussions do not flag them. Revisit if the fields are ever documented.
+- We drop "PropertyField37" and "PersonalField12" (2026-11-11, Andrej; LEAK-10): together they read like a status code filled in after the quote. With PropertyField37 = Y, PersonalField12 codes 1 to 3 converted at 99.3% to 99.8% (19,934 quotes) and code 5 at 0.14% (54,769 quotes, all but one of the code-5 quotes); with N, codes 1 to 3 convert at 13.6% to 15.5%, below the base rate of 18.75%. The pattern holds in every quarter 2013 to 2015. No field can tell a customer's purchase before the decision with that precision, so the pair is treated as recorded after it, although the fields are anonymised and Kaggle's test file carries them. Dropping both lowers untuned LightGBM ROC AUC from 0.965 to 0.952 (3 random folds, 2026-11-11). PersonalField9 = 3 and missing PersonalField10A/B mark the same quotes as code 5 (54,785 quotes, 0.14% converted), so they are dropped too (2026-11-11, Andrej): 0.916 without all five. Other levels with almost no buyers stay (Field7 = 23, PropertyField29 = 0): none marks the code-5 quotes as a whole and none has a near-certain buyer side; a quote that cannot be bought is known when it is issued.
+- We drop "PersonalField2" and "PersonalField13" (2026-11-11, Andrej; LEAK-10): after the five fields above, PersonalField1 = 1 with PersonalField2 = 0 still marked 7,266 quotes at 98.0% bought (4,987 outside the dropped buyer codes at 97.1%, 97% to 100% in every quarter), and PersonalField13 = 1 marked 2,092 at 97.8%. Each field on its own is graded (PersonalField1 = 1: 21.0% against 12.9%), so the fewest fields that leave no group of at least 300 quotes converting at 95% or more (a depth-6 tree on all quotes) are dropped, and PersonalField1 stays. Mean ROC AUC over the nine windows (untuned LightGBM): 0.956 with every field, 0.904 without the five fields, 0.898 without the seven. The near-zero side stays (PropertyField29 filled, Field7 = 23, PersonalField4A/B or PropertyField38 missing, PropertyField18 = 0: 66,506 quotes, 12 buyers), as a quote that cannot be bought is known when it is issued. Half the quotes (130,844) carry no near-certain marker either way; on them the model scores 0.859.
+- Potential leak, kept on purpose: SalesField5 is the strongest field (35% of the model's gain; on the quotes no near-certain marker settles, level 5 converts at 6.7% (71,454 quotes), levels 2 to 4 at 30.5% to 32.5%, the same in 2013, 2014 and 2015; 0.765 alone). It may record the sales channel, known at the quote, or a sales stage the customer reached, partly after it; the anonymisation hides which. It is graded, not near-certain, so it stays under the rule for untestable anonymised fields (2026-11-11, Andrej; LEAK-38); without it the mean ROC AUC is 0.879. Revisit if Homesite's field descriptions surface.
 - The target (2026-11-01, CLEAN-25): `QuoteConversion_Flag` ships its classes as words (1 is the event). Binary:
   "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
-Default splits.
+Expanding-window temporal splits: 9 test window(s) of 1 months, walking back from the newest data, newest first; train is all earlier data.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 173,835 to 173,836 rows, test 86,917 to 86,918 rows.
+9 repeat(s) x 1 fold(s) with seed 4267; train 184,261 to 254,663 rows, test 6,090 to 12,241 rows. Prediction horizon: 1 months.
 
-| repeat | fold | n_train | n_test |
-|---|---|---|---|
-| 0 | 0 | 173835 | 86918 |
-| 0 | 1 | 173835 | 86918 |
-| 0 | 2 | 173836 | 86917 |
-| 1 | 0 | 173835 | 86918 |
-| 1 | 1 | 173835 | 86918 |
-| 1 | 2 | 173836 | 86917 |
-| 2 | 0 | 173835 | 86918 |
-| 2 | 1 | 173835 | 86918 |
-| 2 | 2 | 173836 | 86917 |
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 254663 | 6090 | 2013-01-01 00:00:00 | 2015-04-30 00:00:00 | 2015-05-01 00:00:00 | 2015-05-18 00:00:00 |
+| 1 | 0 | 244458 | 10205 | 2013-01-01 00:00:00 | 2015-03-31 00:00:00 | 2015-04-01 00:00:00 | 2015-04-30 00:00:00 |
+| 2 | 0 | 232217 | 12241 | 2013-01-01 00:00:00 | 2015-02-28 00:00:00 | 2015-03-01 00:00:00 | 2015-03-31 00:00:00 |
+| 3 | 0 | 224320 | 7897 | 2013-01-01 00:00:00 | 2015-01-31 00:00:00 | 2015-02-01 00:00:00 | 2015-02-28 00:00:00 |
+| 4 | 0 | 214565 | 9755 | 2013-01-01 00:00:00 | 2014-12-31 00:00:00 | 2015-01-01 00:00:00 | 2015-01-31 00:00:00 |
+| 5 | 0 | 207620 | 6945 | 2013-01-01 00:00:00 | 2014-11-30 00:00:00 | 2014-12-01 00:00:00 | 2014-12-31 00:00:00 |
+| 6 | 0 | 200188 | 7432 | 2013-01-01 00:00:00 | 2014-10-31 00:00:00 | 2014-11-01 00:00:00 | 2014-11-30 00:00:00 |
+| 7 | 0 | 192328 | 7860 | 2013-01-01 00:00:00 | 2014-09-30 00:00:00 | 2014-10-01 00:00:00 | 2014-10-31 00:00:00 |
+| 8 | 0 | 184261 | 8067 | 2013-01-01 00:00:00 | 2014-08-31 00:00:00 | 2014-09-01 00:00:00 | 2014-09-30 00:00:00 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows homesite_quote_conversion`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | May 2015 | 6090 | 0.977 | Yes 18.3% (about 1,114) | Yes 18.9% (about 48,119) | 5.325 | Field8 (5.33), PersonalField28 (4.54), PersonalField46 (4.38) | 0 |
+| 1 | Apr 2015 | 10205 | 0.938 | Yes 19.9% (about 2,034) | Yes 18.7% (about 45,714) | 5.477 | Field8 (5.48), Field6 (3.05), Field7 (2.69) | 0 |
+| 2 | Mar 2015 | 12241 | 0.891 | Yes 17.4% (about 2,136) | Yes 18.9% (about 43,924) | 3.761 | Field8 (3.76), Field6 (3.29), Field10 (3.19) | 0.0001 |
+| 3 | Feb 2015 | 7897 | 0.86 | Yes 16.0% (about 1,261) | Yes 18.7% (about 42,015) | 4.919 | Field8 (4.92), Field6 (4.23), Field10 (3.29) | 0 |
+| 4 | Jan 2015 | 9755 | 0.823 | Yes 15.3% (about 1,497) | Yes 19.8% (about 42,548) | 3.681 | Field8 (3.68), Field10 (3.50), PersonalField45 (3.15) | 0 |
+| 5 | Dec 2014 | 6945 | 0.796 | Yes 17.9% (about 1,246) | Yes 18.8% (about 39,126) | 4.469 | Field8 (4.47), Field10 (3.60), PersonalField45 (3.27) | 0.0001 |
+| 6 | Nov 2014 | 7432 | 0.768 | Yes 18.9% (about 1,407) | Yes 19.1% (about 38,226) | 4.552 | Field8 (4.55), Field10 (3.78), PersonalField45 (3.36) | 0 |
+| 7 | Oct 2014 | 7860 | 0.738 | Yes 17.2% (about 1,348) | Yes 19.1% (about 36,735) | 4.676 | Field8 (4.68), Field10 (3.98), PersonalField45 (3.52) | 0.0003 |
+| 8 | Sep 2014 | 8067 | 0.707 | Yes 16.2% (about 1,310) | Yes 19.2% (about 35,452) | 5.078 | Field8 (5.08), Field10 (4.15), PersonalField45 (3.69) | 0.0001 |
 
 ## Bundle checks
 
-0 error(s), 2 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_constant_column`: 13 constant column(s) (1 distinct non-null value): ['PropertyField2A', 'PropertyField6', 'PropertyField11A', 'GeographicField5A', 'GeographicField14A']. (hint: Drop them unless the constant is meaningful for the task.)
-- **warning** `dataset_missing_value_label`: 1 label column(s) contain missing-value-looking levels: GeographicField63=[' ']. (hint: Convert proxy missing values to explicit `pd.NA` (curation guidelines).)
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 77,182,888 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
-- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 77,182,888 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 75,096,864 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 75,096,864 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
+
+Accepted on purpose:
+
+- `dataset_constant_column`: Twelve presence flags: 25 or missing (the source's -1, set to missing), filled in about 2.5% of the quotes; the buyers' share differs between filled and missing (GeographicField14A 4.4% against 19.1%).
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (296 rows)</summary>
+<summary>Show the table (288 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -260,8 +286,7 @@ Default splits.
 | PropertyField30 | category | 0 | 0 | 2 | N, Y |
 | PropertyField31 | category | 0 | 0 | 4 | O, K, N, M |
 | PropertyField33 | category | 0 | 0 | 4 | H, G, E, F |
-| PropertyField37 | category | 0 | 0 | 2 | N, Y |
-| GeographicField63 | category | 0 | 0 | 3 | N, Y, |
+| GeographicField63 | category | 2 | 0 | 2 | N, Y |
 | GeographicField64 | category | 0 | 0 | 4 | CA, NJ, TX, IL |
 | Original_Quote_Date | datetime64\[ns\] | 0 | 0 | 868 | 2014-03-03 00:00:00, 2015-03-31 00:00:00, 2014-02-24 00:00:00, 2015-03-23 00:00… |
 | GeographicField21A | float64 | 254285 | 97.52 | 1 | 25.0 |
@@ -278,15 +303,13 @@ Default splits.
 | GeographicField14A | float64 | 253814 | 97.34 | 1 | 25.0 |
 | PropertyField29 | float64 | 200685 | 76.96 | 2 | 0.0, 1.0 |
 | PersonalField84 | float64 | 124208 | 47.63 | 7 | 2.0, 1.0, 5.0, 3.0, 7.0, 4.0, 8.0 |
-| PersonalField10A | float64 | 54785 | 21.01 | 25 | 5.0, 6.0, 7.0, 4.0, 8.0, 9.0, 25.0, 1.0, 10.0, 11.0 |
-| PersonalField10B | float64 | 54785 | 21.01 | 25 | 3.0, 10.0, 12.0, 7.0, 5.0, 17.0, 14.0, 25.0, 20.0, 15.0 |
 | PersonalField4A | float64 | 24526 | 9.41 | 25 | 7.0, 13.0, 5.0, 6.0, 4.0, 8.0, 9.0, 10.0, 11.0, 12.0 |
 | PersonalField4B | float64 | 24526 | 9.41 | 25 | 5.0, 8.0, 10.0, 12.0, 13.0, 21.0, 24.0, 16.0, 15.0, 3.0 |
 | GeographicField37A | float64 | 3101 | 1.19 | 25 | 3.0, 4.0, 5.0, 2.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0 |
 | GeographicField37B | float64 | 3101 | 1.19 | 25 | 10.0, 5.0, 8.0, 21.0, 3.0, 15.0, 4.0, 22.0, 7.0, 16.0 |
 | GeographicField55A | float64 | 1553 | 0.6 | 25 | 4.0, 3.0, 5.0, 6.0, 7.0, 2.0, 8.0, 9.0, 10.0, 11.0 |
 | GeographicField55B | float64 | 1553 | 0.6 | 25 | 9.0, 4.0, 12.0, 20.0, 5.0, 25.0, 7.0, 21.0, 18.0, 2.0 |
-| GeographicField56B | float64 | 1553 | 0.6 | 24 | 2.0, 10.0, 25.0, 22.0, 11.0, 12.0, 23.0, 17.0, 5.0, 20.0 |
+| GeographicField56B | float64 | 1553 | 0.6 | 24 | 2.0, 10.0, 25.0, 22.0, 12.0, 11.0, 23.0, 17.0, 5.0, 20.0 |
 | GeographicField54A | float64 | 1544 | 0.59 | 25 | 15.0, 14.0, 16.0, 13.0, 12.0, 17.0, 11.0, 10.0, 18.0, 19.0 |
 | GeographicField54B | float64 | 1544 | 0.59 | 25 | 2.0, 8.0, 25.0, 17.0, 24.0, 9.0, 14.0, 13.0, 7.0, 18.0 |
 | GeographicField2A | float64 | 1260 | 0.48 | 25 | 14.0, 13.0, 12.0, 11.0, 16.0, 17.0, 18.0, 15.0, 10.0, 9.0 |
@@ -296,8 +319,11 @@ Default splits.
 | GeographicField49A | float64 | 1248 | 0.48 | 25 | 18.0, 17.0, 19.0, 20.0, 16.0, 15.0, 21.0, 14.0, 13.0, 22.0 |
 | GeographicField49B | float64 | 1248 | 0.48 | 25 | 25.0, 13.0, 23.0, 16.0, 17.0, 12.0, 18.0, 5.0, 3.0, 1.0 |
 | GeographicField50A | float64 | 1248 | 0.48 | 25 | 17.0, 16.0, 18.0, 15.0, 14.0, 19.0, 20.0, 13.0, 21.0, 22.0 |
+| GeographicField50B | float64 | 1248 | 0.48 | 25 | 23.0, 11.0, 20.0, 1.0, 10.0, 2.0, 14.0, 24.0, 19.0, 18.0 |
+| GeographicField51A | float64 | 1248 | 0.48 | 25 | 14.0, 15.0, 13.0, 11.0, 17.0, 16.0, 12.0, 18.0, 10.0, 9.0 |
+| GeographicField51B | float64 | 1248 | 0.48 | 25 | 25.0, 17.0, 16.0, 10.0, 21.0, 22.0, 7.0, 13.0, 4.0, 6.0 |
 
-(236 more rows not shown)
+(228 more rows not shown)
 
 </details>
 
@@ -311,7 +337,7 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (268 rows)</summary>
+<summary>Show the table (261 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -351,18 +377,12 @@ Default splits.
 | SalesField14 | 260753 | 0.0955272 | 0.367653 | 0 | 14 |
 | SalesField15 | 260753 | 0.0981887 | 0.374738 | 0 | 14 |
 | PersonalField1 | 260753 | 0.726515 | 0.445748 | 0 | 1 |
-| PersonalField2 | 260753 | 0.699156 | 0.458626 | 0 | 1 |
 | PersonalField4A | 236227 | 10.8438 | 6.17819 | 1 | 25 |
 | PersonalField4B | 236227 | 13.2843 | 7.17794 | 1 | 25 |
 | PersonalField5 | 260753 | 6.63078 | 0.568167 | 1 | 10 |
 | PersonalField6 | 260753 | 0.370278 | 0.48288 | 0 | 1 |
 | PersonalField8 | 260753 | 1.00015 | 0.0125385 | 1 | 3 |
-| PersonalField9 | 260753 | 2.15224 | 0.494768 | 1 | 3 |
-| PersonalField10A | 205968 | 9.0299 | 6.0289 | 1 | 25 |
-| PersonalField10B | 205968 | 13.1013 | 7.16132 | 1 | 25 |
 | PersonalField11 | 260753 | 0.0235625 | 0.160741 | 0 | 4 |
-| PersonalField12 | 260753 | 2.20429 | 1.66365 | 1 | 5 |
-| PersonalField13 | 260753 | 1.99218 | 0.0908472 | 1 | 4 |
 | PersonalField14 | 260753 | 2.95442 | 1.34908 | 1 | 54 |
 | PersonalField15 | 260753 | 16.1659 | 8.16444 | 1 | 24 |
 | PersonalField22 | 260753 | 1.04933 | 0.345003 | 1 | 7 |
@@ -375,15 +395,21 @@ Default splits.
 | PersonalField29 | 260753 | 1.52218 | 0.604798 | 1 | 7 |
 | PersonalField30 | 260753 | 0.0559648 | 0.246379 | 0 | 22 |
 | PersonalField31 | 260753 | 0.296833 | 0.469694 | 0 | 23 |
+| PersonalField32 | 260753 | 0.470196 | 0.512921 | 0 | 23 |
+| PersonalField33 | 260753 | 0.497674 | 0.517218 | 0 | 23 |
+| PersonalField34 | 260753 | 1.00779 | 0.121861 | 1 | 7 |
+| PersonalField35 | 260753 | 0.00329431 | 0.0618092 | 0 | 5 |
+| PersonalField36 | 260753 | 0.00401146 | 0.0691766 | 0 | 5 |
+| PersonalField37 | 260753 | 0.00490119 | 0.0765439 | 0 | 5 |
 
-(208 more rows not shown)
+(201 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (104 rows)</summary>
+<summary>Show the table (102 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -406,7 +432,7 @@ Default splits.
 | Field6 | 5 | K | 13226 | 5.07 |
 | GeographicField63 | 1 | N | 254712 | 97.68 |
 | GeographicField63 | 2 | Y | 6039 | 2.32 |
-| GeographicField63 | 3 |  | 2 | 0 |
+| GeographicField63 | 3 | &lt;NA> | 2 | 0 |
 | GeographicField64 | 1 | CA | 94725 | 36.33 |
 | GeographicField64 | 2 | NJ | 69293 | 26.57 |
 | GeographicField64 | 3 | TX | 65011 | 24.93 |
@@ -448,7 +474,7 @@ Default splits.
 | PropertyField28 | 3 | D | 6994 | 2.68 |
 | PropertyField28 | 4 | C | 1249 | 0.48 |
 
-(44 more rows not shown)
+(42 more rows not shown)
 
 </details>
 
@@ -463,4 +489,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8cba563153ee78ca1439cde706f337361fe436def27f840553d06bced238bd55` |
+| stale | yes: the definition now gives checksum `v2:e2ad1ad8559f3025ea6ce24a8a73e89f9c79b4134752664031dbfaf6a12497c2` |

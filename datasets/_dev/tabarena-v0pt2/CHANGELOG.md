@@ -1,5 +1,27 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11, homesite_quote_conversion: split by quote date, status-like fields dropped (no container built)
+
+Andrej's review of the dataset (record, Review issues 1 to 7):
+
+- Split by quote date instead of at random: `Temporal(on="Original_Quote_Date")`, nine windows of one month back from
+  May 2015 (the last to the 18th), each trained on every earlier quote (184,261 to 254,663 training quotes, 6,090 to
+  12,241 test quotes), no gap (purchases are recorded within days; a 7-day gap moves the mean ROC AUC by 0.0003).
+  Record `required_split` Temporal (NON-IID), tag `Non-IID (Temporal)` in place of `Larger IID Data`; `year`
+  2015.
+- Seven anonymised fields dropped as a status recorded after the quote (LEAK-10 through LEAK-38's new near-certainty
+  clause): `PropertyField37` and `PersonalField12` (with `Y`, codes 1-3 99.3-99.8% bought, code 5 0.14%),
+  `PersonalField9` and `PersonalField10A/B` (the same code-5 quotes), then `PersonalField2` and `PersonalField13`
+  (98.0% and 97.8% buyer groups), the fewest fields that leave no group of 300 quotes at 95% bought. Mean ROC AUC over
+  the nine windows (untuned LightGBM) 0.956 with every field, 0.898 without the seven. The near-zero side stays.
+- `SalesField5`, the strongest remaining field (graded), kept with a `Potential leak, kept on purpose:` note.
+- `PropertyField6` (constant) dropped, the blank level of `GeographicField63` set to missing, twelve presence flags
+  accepted under `dataset_constant_column`.
+- `split`, `changes` and `fit_reason` restated. 287 features, checksum `v2:e2ad1ad...`; `dataset check` 0 errors, 0
+  warnings, README regenerated.
+- Guidelines: LEAK-38 gains the near-certainty clause with its stopping point, and a LEAK-10 mechanisms row; the
+  USE-8 cases in `use_case.md` note that homesite's kept leak was dropped.
+
 ## 2026-11-11, each dataset's review moves into its curation record (no container built)
 
 Lennart, 2026-11-11: "We want the curation record to be the single source of information, not spread across multiple
