@@ -157,6 +157,12 @@ class IeeeFraudDetection(AbstractCuratedDataset):
         on="Transaction_date",
         splits=TemporalSplits(window=1, unit="months", n_windows=3, gap=1),
     )
+    accepted_check_warnings = {
+        "splits_train_under_half": (
+            "Signed off (Lennart, 2026-11-11, review issue 1, A): March 2018 trains on 38.9% of the payments, "
+            "beside May and April on 70.7% and 53.5%; SPLIT-14's two tiers admit it."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # LOAD TRAIN

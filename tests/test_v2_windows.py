@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
 import pytest
 from data_foundry.v2 import get_dataset
 from data_foundry.v2.cli import add_dataset_parser
+from data_foundry.v2.dataset import AbstractCuratedDataset
 from data_foundry.v2.splits import TemporalSplits, temporal_window_splits, window_bounds
 from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
@@ -159,3 +161,24 @@ def test_the_floor_counts_rows_also_for_unique_windows() -> None:
     windows = candidate_windows(df, "era", TemporalSplits(window=1, unit="unique", n_windows=3), min_train_fraction=0.5)
     assert [int(df["era"].iloc[w.test[0]]) for w in windows] == [10, 9]  # era 8 trains on 40.4% of the rows
     assert all(len(w.train) >= 0.5 * len(df) for w in windows)
+
+
+def test_the_floor_findings_ask_for_the_curators_sign_off() -> None:
+    """Windows under half warn (the curator signs each off), under 30% warn again, a broken core is an error; the
+    shares count every row of the curated frame, not only the container's (SPLIT-14, amended 2026-11-11).
+    """
+
+    def findings(train_sizes: list[int], frame_rows: int = 100) -> dict[str, str]:
+        splits = {i: {0: (list(range(n)), [n])} for i, n in enumerate(train_sizes)}
+        container = SimpleNamespace(experiment_metadata=SimpleNamespace(splits=splits), dataset=range(60))
+        definition = SimpleNamespace(temporal=object(), _frame_rows=frame_rows)
+        return {r.slug: r.severity for r in AbstractCuratedDataset._floor_findings(definition, container)}
+
+    assert findings([90, 70, 55]) == {}
+    assert findings([90, 70, 45]) == {"splits_train_under_half": "warning"}
+    assert findings([90, 70, 45, 25]) == {"splits_train_under_half": "warning", "splits_train_under_floor": "warning"}
+    assert findings([90, 45, 40])["splits_floor_core"] == "error"  # one window at half or more
+    assert findings([45, 70, 60])["splits_floor_core"] == "error"  # the newest under half
+    assert findings([90, 70, 45, 40, 35])["splits_floor_core"] == "error"  # more windows under half than above
+    assert findings([50, 45, 40], frame_rows=100)["splits_floor_core"] == "error"
+    assert findings([55, 52, 45], frame_rows=100) == {"splits_train_under_half": "warning"}

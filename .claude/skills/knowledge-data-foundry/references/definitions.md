@@ -556,7 +556,9 @@ rows (SPLIT-17 in [splits.md](../../knowledge-curation/references/splits.md)). C
 newest `1 - min_train_fraction` of the values.
 
 **Choosing the test windows (SPLIT-15).** Which windows a temporal task tests on is the curator's call, argued per
-dataset; the newest window is always one of them. The evidence is statistics of the data, never a model's score:
+dataset; the newest window is always one of them. A window that trains on less than half the rows is the curator's
+sign-off every time: `dataset check` warns `splits_train_under_half`, and the review raises it as an issue. The evidence
+is statistics of the data, never a model's score:
 
 ```bash
 .venv/bin/python -m data_foundry.curation.cli dataset windows <name> --root datasets/_dev/tabarena-v0pt2
@@ -813,6 +815,7 @@ changed, appeared or went; `raw_files_missing` (error) a pattern that matches no
 | `groups_not_clustered` (info) | rows no closer to their group than chance: compare IID and grouped scores before keeping the grouping |
 | `splits_test_single_class`, `splits_test_target_constant` | a test fold whose metric is undefined: fewer, larger folds or windows, or the task is too small |
 | `splits_test_minority_few`, `splits_test_class_missing` | test folds with under 10 rows of the rarer class, or without some class: widen the windows, merge by convention, or accept with the counts |
+| `splits_train_under_half`, `splits_train_under_floor`, `splits_floor_core` (error) | a window trains on less than half the curated frame's rows (under 30%; or the core of SPLIT-14 breaks): raise an issue for the curator's sign-off with the windows and their shares and an option without them; accept the warning only with the curator's CC date, never on the AI's word |
 | `task_target_value_dominant` | one value holds half of a regression target: name the cap, placeholder or zero inflation in `curation_comments`, drop censored rows, or accept with the reason |
 | `meta_tags_*` | tags agree with the split regime |
 | `meta_bibtex_*` | balanced braces, keys defined, `&`, `%`, `_` escaped |

@@ -177,6 +177,9 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   proposal) and re-runs `dataset check`. Either way the record gets the CC line "the declared horizon (<length>,
   <windows>, <gap>) is checked, ..." and the definition's `splits_comment` the reason from the Horizon block, and the
   block a `**Resolved (<date>, <curator>):**` turn; `discuss`: an `**Answer (AI, <date>):**` turn in the block.
+* **A window under half the rows:** once the curator signs it off, the record gets the CC line and the definition
+  accepts `splits_train_under_half` (and `splits_train_under_floor` under 30%) in `accepted_check_warnings`, with the
+  windows, their shares and the CC date; never before the curator's mark (SPLIT-14, amended 2026-11-11).
 * **No open issue:** a record of the review whose issues, field rows and metric (when marked) are all settled ships by
   default (Lennart, 2026-11-05); apply it as **ship**, with the metric's CC line in the form the page reads ("the
   declared metric (...) is checked, ...") when the round marked the metric; the next build leaves it off the page

@@ -12300,6 +12300,13 @@ class AnesVoting2026(AbstractCuratedDataset):
         horizon_unit="years",
         time_unit="years",
     )
+    accepted_check_warnings = {
+        "splits_train_under_half": (
+            "Signed off (Lennart, 2026-11-11, review issue 1, A): the four oldest elections train on 49.2%, "
+            "46.4%, 43.2% and 40.0% of the respondents, beside five on 51.4% to 89.8%; SPLIT-14's two tiers admit "
+            "them."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "anes_timeseries_cdf_csv_20260205.csv", low_memory=False)

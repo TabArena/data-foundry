@@ -131,9 +131,12 @@ predicts for known entities, and a question when the use case is a new entity (U
 **SPLIT-14 (Must; amended 2026-11-08 and 2026-11-11, Lennart).** A temporal task has at least 3 windows. The newest
 window and at least one other train on at least 50% of the data; further windows may train on less, down to 30% of the
 data, and at most as many windows train on less than 50% as on 50% or more. A window under 30% needs a reason the
-curator accepts for that dataset. The splits comment names every window under 50% and its train share; no model score is
-required for it. Why: a much smaller train side is too unlike the real application, but in every floor case of the
-reviews of 2026-11-10 and 2026-11-11 at least two windows already trained on 50% or more, and the windows below them
+curator accepts for that dataset. Every window under 50% needs the curator's sign-off: the review raises it as an issue,
+`dataset check` warns (`splits_train_under_half`, and `splits_train_under_floor` under 30%; a broken core is the error
+`splits_floor_core`), and the definition accepts the warning only once the record carries the curator's CC line, never
+on the AI's word (Lennart, 2026-11-11). The splits comment names every window under 50% and its train share; no model
+score is required for it. Why: a much smaller train side is too unlike the real application, but in every floor case of
+the reviews of 2026-11-10 and 2026-11-11 at least two windows already trained on 50% or more, and the windows below them
 added years, seasons, events or test rows the newest windows lack (Lennart, 2026-11-11: "we very much noticed that the
 floor can be below 50% to get better/more test windows quite frequently ... In some cases we can also go lower"). A flat
 lower floor would not do: at 40% mercedes_benz_greener_manufacturing (31.5%) and ieee_fraud_detection (38.9%) would

@@ -97,6 +97,12 @@ class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
         on="time_index",
         splits=TemporalSplits(window=320, unit="rows", n_windows=9),
     )
+    accepted_check_warnings = {
+        "splits_train_under_half": (
+            "Signed off (Lennart, 2026-11-11, review issue 1, A): the three oldest windows train on 46.7%, 39.1% "
+            "and 31.5% of the cars, beside six on 54.3% to 92.4%; SPLIT-14's two tiers admit them."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "train.csv")

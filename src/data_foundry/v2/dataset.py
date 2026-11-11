@@ -130,6 +130,12 @@ CLI_COMMAND = ".venv/bin/python -m data_foundry.curation.cli"
 that happens to be first on PATH."""
 
 DEFAULT_SPLITS_COMMENT = "Default splits."
+
+FLOOR_CORE = 0.5
+"""SPLIT-14's core: the newest window and at least one other train on this share of the rows or more."""
+
+FLOOR_LOWER = 0.3
+"""SPLIT-14's lower bound for further windows (amended 2026-11-11); lower only with a reason the curator accepts."""
 """The splits comment of every dataset on the recommended IID or grouped splits."""
 
 
@@ -1296,6 +1302,7 @@ class AbstractCuratedDataset(ABC):
         """Rebuild the frame from the raw data, split it and attach the metadata. Nothing is saved."""
         df, test = self.process()
         plan = self.make_splits(df)
+        self._frame_rows = len(df)  # the floor counts every row, also those a row budget leaves out of the container
         horizon, unit = _horizon(type(self))
         gap, gap_unit = _gap(type(self))
         splits_metadata = PredictiveMLSplitsMetadata(
@@ -1464,6 +1471,7 @@ class AbstractCuratedDataset(ABC):
             ("task", lambda: task_checks.task_findings(container)),
             ("extra", lambda: self._extra_checks(container)),
             ("raw files", lambda: self._raw_file_findings(container.dataset_metadata.raw_files)),
+            ("floor", lambda: self._floor_findings(container)),
         ):
             try:
                 own += run()
@@ -1488,6 +1496,67 @@ class AbstractCuratedDataset(ABC):
             print("\n".join(["Metric:", *container.task_metadata.objective_metric.describe_lines()]))
             print(report.summary())
         return report
+
+    def _floor_findings(self, container: CuratedContainer) -> list[CheckResult]:
+        """SPLIT-14 (amended 2026-11-11): the newest window and at least one other train on at least half the rows,
+        further windows down to 30%, never more windows under half than at or above it.
+
+        A window under half is a warning the curator signs off (the review raises it as an issue, and the definition
+        accepts the warning once the record carries the curator's CC line); under 30% a warning that needs a reason
+        the curator accepts; a broken core an error. The shares count every row of the curated frame: a `_1m`
+        version's container keeps every training row but samples its test windows.
+        """
+        if self.temporal is None:
+            return []
+        n_rows = getattr(self, "_frame_rows", None) or len(container.dataset)
+        windows = [
+            (repeat, len(train) / n_rows)
+            for repeat, folds in container.experiment_metadata.splits.items()
+            for train, _test in folds.values()
+        ]
+        if len(windows) < 2:
+            return []
+        shares = {repeat: share for repeat, share in windows}
+        newest = min(shares)  # repeat 0 is the newest window
+        core = [r for r, s in shares.items() if s >= FLOOR_CORE]
+        under = {r: s for r, s in shares.items() if s < FLOOR_CORE}
+        low = {r: s for r, s in under.items() if s < FLOOR_LOWER}
+        listed = ", ".join(f"window {r} on {s:.1%}" for r, s in sorted(under.items()))
+        findings = []
+        if newest not in core or len(core) < 2 or len(under) > len(core):
+            findings.append(
+                CheckResult(
+                    "splits_floor_core",
+                    "error",
+                    f"The core of SPLIT-14 does not hold: {len(core)} window(s) train on half the rows or more"
+                    f"{'' if newest in core else ', not the newest'}, {len(under)} on less ({listed}).",
+                    hint="The newest window and at least one other train on at least 50% of the rows, and at most as "
+                    "many windows train on less (knowledge-curation splits.md, SPLIT-14).",
+                )
+            )
+        if under:
+            findings.append(
+                CheckResult(
+                    "splits_train_under_half",
+                    "warning",
+                    f"{len(under)} window(s) train on less than half the rows: {listed}.",
+                    hint="SPLIT-14 admits them, but the curator signs off each: raise it in the REVIEW.md, and once "
+                    "the record carries the curator's CC line, accept this warning with that date.",
+                )
+            )
+        if low:
+            findings.append(
+                CheckResult(
+                    "splits_train_under_floor",
+                    "warning",
+                    "Window(s) under SPLIT-14's lower bound of 30%: "
+                    + ", ".join(f"window {r} on {s:.1%}" for r, s in sorted(low.items()))
+                    + ".",
+                    hint="Allowed only with a reason the curator accepts for this dataset, in the splits comment and "
+                    "the record's CC line; then accept this warning with it.",
+                )
+            )
+        return findings
 
     def _summary_checks(self) -> list[CheckResult]:
         """Findings about :attr:`task_summary`: missing, no use case, or too long to read at a glance."""

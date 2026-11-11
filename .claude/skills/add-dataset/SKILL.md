@@ -122,7 +122,10 @@ domain and source from the record.
    look for the faster versions in its Kaggle discussions and notebooks and check them), tested in
    `tests/test_v2_metrics_custom.py` to equal the official code on random inputs, on one hand-computed case, and timed
    on 1M rows. Never `Metric.local` in the working copy.
-6. `accepted_check_warnings` stays empty: the curator fills it once the warnings are known, one reason per slug.
+6. `accepted_check_warnings` stays empty: the curator fills it once the warnings are known, one reason per slug. A
+   temporal task with a window under half the rows (`splits_train_under_half`, `splits_train_under_floor`) always gets
+   an issue in the REVIEW.md for the curator's sign-off: the windows and their shares, the reason for each, and an
+   option without them (SPLIT-14, amended 2026-11-11).
 7. `_decisions` and `_extra_checks` only when there is something to show or test.
 
 Then point the record at the definition:

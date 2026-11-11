@@ -35,6 +35,12 @@ the precedent check found them consistent; the README files follow at the next `
   May and June above the floor" is reworded: months would now give three windows, but no source speaks for a month.
 - `/add-dataset` and the column auditor now list every file of a release and ask for a reason for each file left out
   (g_research's supplemental file was never downloaded).
+- Every window under half the rows needs the curator's sign-off (Lennart, 2026-11-11): `dataset check` warns
+  `splits_train_under_half` (and `splits_train_under_floor` under 30%; a broken core is the error `splits_floor_core`),
+  counted on the curated frame's rows; the review raises it as an issue, and the definition accepts the warning only
+  with the curator's CC date. The six definitions already signed off accept it: wisconsin_local_government_property_
+  insurance_fund (2026-11-08), ashrae_great_energy_predictor_iii_1m (2026-11-10), anes_voting_2026,
+  ieee_fraud_detection, maps_router_eta_1m and mercedes_benz_greener_manufacturing (2026-11-11).
 
 ## 2026-11-10, horizon audit and the curator's window decisions, round 1 (no container built)
 

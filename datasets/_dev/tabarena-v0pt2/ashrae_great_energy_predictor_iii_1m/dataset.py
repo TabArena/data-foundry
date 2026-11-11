@@ -247,6 +247,12 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         on="timestamp",
         splits=TemporalSplits(window=4, unit="months", cutoffs=("2017-01-01", "2017-05-01", "2017-09-01")),
     )
+    accepted_check_warnings = {
+        "splits_train_under_half": (
+            "Signed off (Lennart, 2026-11-10, review issue 1, A): January-April 2017 trains on 49.47% of the "
+            "readings, beside 66.0% and 83.0%; SPLIT-14's two tiers admit it."
+        ),
+    }
     splits_comment = """
         Three test windows of 4 months tile 2017, the competition's first test year: September-December, May-August and January-April 2017, newest first; train is all earlier hours. The newest window always stays, and at 4 months January-April and May-August are the only two windows that overlap neither it nor each other, so the three windows test each season once (kept by the curator on 2026-11-10).
         A window is the horizon: a savings baseline is fit once on the year before a retrofit and predicts the year or two after it without a refit (the competition trained on 2016 to predict 2017 and 2018, GEPIII overview, Miller et al. 2020, Sec. 2.2; CalTRACK, Sec. 3.1.3 and 3.6.1.1; LBNL's NMEC guidance v2.0, p. 10), so the window is the longest that gives three windows inside 2017: four months. Windows of 3 or 2 months would fit (9 and 10 candidates above the floor) but score a model refit more often, an easier task than the use case.

@@ -98,6 +98,12 @@ class MapsRouterEta1m(AbstractCuratedDataset):
         on="timestamp",
         splits=TemporalSplits(window=7, unit="days", n_windows=3, gap=1),
     )
+    accepted_check_warnings = {
+        "splits_train_under_half": (
+            "Signed off (Lennart, 2026-11-11, review issue 1, A): the oldest week trains on 44.8% of all routes, "
+            "beside 79.9% and 62.3%; SPLIT-14's two tiers admit it."
+        ),
+    }
     row_budget = RowBudget(train=1_000_000, test=500_000)
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

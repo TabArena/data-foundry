@@ -17,6 +17,10 @@ Check, with numbers (load through `.claude/skills/knowledge-data-foundry/scripts
 Python run):
 
 * the regime the use case implies (new entity or known entity; a stream over time), against the one declared;
+* temporal, the floor: every window that trains on less than half the rows needs the curator's sign-off (SPLIT-14,
+  amended 2026-11-11; `dataset check` warns `splits_train_under_half`): list each with its share and the reason it
+  is tested, and say whether the core holds (the newest window and one other at half or more, never more windows
+  under half than at or above); the main session raises it as an issue;
 * temporal, the horizon and the time frame first: argue the window length and the gap from the source and the use
   case (how far ahead the actor predicts, how often a deployed model is refit, the label delay; SPLIT-12), say which
   of it the source states and which is our assumption, weigh one to three other lengths (how many windows each keeps
