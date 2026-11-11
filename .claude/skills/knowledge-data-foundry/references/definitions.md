@@ -472,7 +472,8 @@ version (all found in the v0.2 copy, 2026-10-06):
 
 Keep the default: no split attributes. The base class runs the v2 split protocol (`src/data_foundry/v2/splits.py`):
 always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of the train side, in the units the metric
-scores (the groups of the metric's `group` input, else the groups of `per_group` labels, else the rows; SPLIT-33,
+scores (the groups of the metric's `group` input when the split holds each out whole, else the groups of `per_group`
+labels, else the rows; SPLIT-33,
 `recommended_dimensions`),
 built by `iid_splits` / `grouped_splits` with the benchmark seed, on the full frame: Data Foundry caps no split unless
 the definition declares a `row_budget` (a sub-sampled version, below). The comment is "Default splits."; set
