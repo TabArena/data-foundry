@@ -59,11 +59,13 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: real SAT-competition runs scored by the source's PAR10 of the predicted-fastest solver; only the spread under PAR10 is unmeasured. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
 
-CC (2026-11-06, Andrej): the split count follows the scored units (new rule SPLIT-33, decided on asp_potassco_classification): PAR10 scores per instance, and 184 instances leave a training side of 122, so 20 x 3 splits instead of 10 x 3 counted in runs. `dataset check` 0 errors (the known constant-column warning); the shipped container keeps 10 x 3 until its next build.
-
-CC (2026-11-06, Andrej): ship (review page issue 1): 20 x 3 splits under the split rule in scored units (issue 2); a timed-out run stays at the recorded 5,000 s in the log target (issue 3), since it is the value ASlib records and how to treat a censored run is part of what a model has to work out; counting it at the 50,000 s PAR10 charge made every model pick 17-19% better but would replace the recorded value. Metric (PAR10) and split checked and kept.
+CC (2026-11-06, Andrej): ship (review page issue 1); a timed-out run stays at the recorded 5,000 s in the log target (issue 3), since it is the value ASlib records and how to treat a censored run is part of what a model has to work out; counting it at the 50,000 s PAR10 charge made every model pick 17-19% better but would replace the recorded value. Metric (PAR10) and split checked and kept.
 
 CC (2026-11-11, Andrej): PAR10 alone picks the solver (review page issue 4, B): the grouping declares `prediction_unit="row"` and no aggregation instead of `select_min`, so a tie at an instance's lowest prediction counts as the mean of the tied solvers' costs, as PAR10 defines it, not as the solver first in the file; the same form as asp_potassco_classification. Trained models never tie on the 60 splits and score the same (LightGBM 8,970 s, random forest 8,323 s, linear 11,350 s); a constant prediction moves from 19,140 s to 18,539 s. `dataset check` 0 errors.
+
+CC (2026-11-12, Lennart): the split count in scored units (the review's issue 2, rule SPLIT-33) moves out of this
+PR into its own, to be decided with the other grouped datasets and reopened there; it is removed from this record
+for now. Until then the protocol counts the 1,840 rows: 10 x 3 splits.
 
 ## Review
 
@@ -83,8 +85,8 @@ measured. Quality: three constant columns (`POSNEG_RATIO_CLAUSE_max`, `UNARY`, `
 file too) can go without a decision. Weighed: a documented algorithm-selection benchmark scored by its source's metric
 (+), few instances per fold and an untested spread under PAR10 (-).
 
-**Main points:** Ship: 20 x 3 splits, timeouts at the recorded 5,000 s, PAR10 (issues 1-4 resolved);
-PAR10 alone picks the solver, a tie counted as PAR10 defines it (issue 4).
+**Main points:** Ship: timeouts at the recorded 5,000 s, PAR10 (issues 1, 3 and 4 resolved); PAR10 alone picks the
+solver, a tie counted as PAR10 defines it (issue 4). The split count (2) is deferred to its own PR.
 
 **Record judgment:** valid. The task is the one the curator chose (one model for all solvers, from instance and
 solver features, as in Pulatov et al. 2022), and the split by instance rather than by instance family is his decision
@@ -151,27 +153,14 @@ are added. The `Multi-target` tag stays (one runtime per solver, stacked as rows
 
    **Resolved (2026-11-06, Andrej):** ship (A), with issues 2 and 3 as decided below; metric and split checked.
 
+   **Deferred (2026-11-12):** issue 2, the split count, moved to its own PR (Lennart); this dataset ships with the
+   protocol's count of its 1,840 rows, 10 x 3 splits, until that PR decides.
+
 2. **Split count: 20 x 3 splits, counted in instances, instead of 10 x 3 counted in runs?**
 
-   * **Problem:**
-     - The split protocol now counts the units the metric scores (SPLIT-33, decided on asp_potassco_classification
-       issue 2, B, "count the scored groups everywhere"); PAR10 scores per instance, and 184 instances leave a training
-       side of 122, below 500, so this dataset gets 20 repeats instead of the 10 its 1,840 runs gave.
-     - `dataset check` already gives 20 x 3 (training 1,220 to 1,230 runs, test 610 to 620); the shipped container keeps
-       10 x 3 until its next build.
-     - Keep the 20 x 3 the rule gives, or keep 10 x 3 here by an exception?
-   * **Effect on the task:** 60 splits instead of 30, each test fold 61 or 62 instances; the score averages over twice
-     as many folds, which the noise of few instances per fold needs.
-   * **Options:**
-
-     | | Option | What it does | Pro | Con |
-     |---|---|---|---|---|
-     | A | 20 x 3 (implemented) | the protocol's count in instances | follows the rule just decided; steadier score | twice the compute of 10 x 3 (1,840 rows, small) |
-     | B | 10 x 3 by exception | `splits_comment` and an override in the definition | the splits as shipped | an exception to the rule with no fact that sets this dataset apart |
-
-   * **Recommendation:** A, the rule applied. **Decision:** A or B?
-
-   **Resolved (2026-11-06, Andrej):** 20 x 3 splits (A), the rule applied; `dataset check` confirms them.
+   **Deferred (2026-11-12):** Lennart moved the split count in scored units (rule SPLIT-33) out of this PR into
+   its own, to be decided with the other grouped datasets; this issue is reopened there. Until then the protocol
+   counts the 1,840 rows: 10 x 3 splits.
 
 3. **Count a timed-out run as the recorded 5,000 s, or as the 50,000 s PAR10 charges for it?**
 

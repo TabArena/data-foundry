@@ -111,7 +111,7 @@ against PSIPRED, as the notes cite from Sections 2.2-2.3; EV-7). No action propo
 
 **Main points:** Three changes the panel could not make itself: drop the relaxed natives (issue 4), let models see a
 protein's other candidates (issue 5) and fix the metric's left-out proteins in the library (issue 6); then the
-`Outdated` consistency check (7), a SEL-9 Tensions row (8) and whether `huesken_sirna_efficacy` follows issue 5 (9). Open: the split count, 20 x 3 in proteins instead of 3 x 3 (issue 10).
+`Outdated` consistency check (7), a SEL-9 Tensions row (8) and whether `huesken_sirna_efficacy` follows issue 5 (9).
 
 **Issues for Lennart:**
 
@@ -343,48 +343,6 @@ protein's other candidates (issue 5) and fix the metric's left-out proteins in t
    **Resolved (2026-11-05, Lennart):** A. huesken_sirna_efficacy is reopened as its issue 9 (`context="all_rows"` now or
    after a focused panel), with a CC line in its record. This also answers the consistency check on issue 5 with (b):
    huesken follows this dataset.
-
-10. **Twenty repeats of the protein split, as the split count in scored units gives, instead of three?**
-
-   * **Problem:**
-     - The score averages one correlation per protein, so the split count now counts the 445 proteins, not the 94,083
-       rows; 297 training proteins give 20 x 3 splits, where the definition was built with 3 x 3.
-     - Three repeats do not rank close methods reliably: on two of three disjoint blocks of three repeats LightGBM and
-       the random forest come out in the opposite order to the full run.
-     - Ship 20 x 3, or keep fewer splits with these measurements as the reason?
-   * **Effect on the task:** LightGBM (500 trees), a random forest and ridge, untuned, on the 20 x 3 splits under the
-     declared metric (the per-protein Pearson correlation, averaged over proteins); t is the mean difference over its
-     standard error across repeats:
-
-     | Repeats | Order | LightGBM - forest | LightGBM - ridge | Forest - ridge |
-     |---|---|---|---|---|
-     | 0-2 | ridge, forest, LightGBM | -0.003 (t -1.1) | -0.009 (t -3.0) | -0.006 |
-     | 3-5 | ridge, LightGBM, forest | +0.001 (t 0.5) | | |
-     | 6-8 | ridge, LightGBM, forest | +0.002 (t 0.8) | | |
-     | 0-9 | ridge, forest, LightGBM | -0.001 (t -0.5) | -0.006 (t -2.1) | -0.005 (t -2.0) |
-     | 10-19 | ridge, forest, LightGBM | -0.004 (t -3.9) | | |
-     | all 20 | ridge, forest, LightGBM | -0.003 (t -2.6) | -0.008 (t -4.5) | -0.006 (t -3.8) |
-
-     Mean scores over the 60 splits: ridge 0.328, forest 0.322, LightGBM 0.320. The 60 fits took 34 s (LightGBM), 42 s
-     (forest) and 1 s (ridge) in all. Ridge leading differs from the panel's LightGBM 0.355 against ridge 0.294 on the
-     9 earlier splits, which predate the exclusion of the relaxed natives (issue 4); worth a look of its own.
-   * **Options:**
-
-     | | Option | What it does | Pro | Con |
-     |---|---|---|---|---|
-     | A | 3 x 3 (implemented) | the splits as built | 9 fits per method | close methods ranked by chance (two of three blocks flip LightGBM and the forest) |
-     | B | 20 x 3 | the split count in scored units, at the next `dataset check` | separates all three pairs; the count the rule gives; cheap for these methods | 60 fits per method, more for heavy ones |
-     | C | 10 x 3 | an exception to the rule | 30 fits | one block of ten separates LightGBM and the forest, the other does not |
-
-   * **Recommendation:** B: twenty repeats are the first that rank the three methods the same way every time, and the
-     cost is in compute, not in the data[^10a]. **Decision:** A, B or C?
-
-   [^10a]: **SPLIT-33** (Should): repeated 3-fold cross-validation with 20, 10, 3 or 1 repeats by the size of the
-     train side, counted in the units the metric scores when the split holds each one out whole.
-
-   **Notes for the AI:** on B, `dataset check` (the definition is unchanged; the protocol gives 20 x 3), a CC line in
-   the record, CHANGELOG. On C, a `splits_comment` naming the measurement and the exception, and a SPLIT-33 Cases
-   row. Evidence: `~/claude_jobs/protein_splits/` (run.py, res_*.csv, summary.txt).
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's review of PR #33 on 2026-11-04.
 Claims: 43 listed, 19 audit rows: 12 hold, 2 refuted (the "each such row has a same-length sibling" note, now 132 of

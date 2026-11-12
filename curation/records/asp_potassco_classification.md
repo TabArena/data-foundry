@@ -57,13 +57,15 @@ CC (2026-11-04, Andrej): the task is now runtime regression scored by PAR10 (opt
 - The bar: always running the configuration most often fastest in training gives 611 s, the best possible pick per instance 21 s (30 splits of the earlier definition); a model has to close part of that gap on problem classes it has not seen.
 - ASlib's feature costs are left out (the same whichever configuration is picked). To do: rename the dataset (it is no longer a classification) once the review page is done; its marks are stored under this name.
 
-**Assessment (AI, 2026-11-04):** implemented B in dataset.py: target `runtime` (log), `algorithm` categorical, anonymised `instance_id` a scoring column (role group) of `par_k` (cutoff 600, k 10, `Metric.source`), Grouping on `task_id`; 1,963 timeouts (15% of runs, on 38% of instances) kept at 600 s. `dataset check`: 0 errors, 1 warning (the two constant columns `Removed_Nogoods-1/-2`, already known); par_k computable on every split. The split protocol now gives 3 x 3 splits (13,332 rows) instead of 10 x 3, 32 problem classes per test fold. On the 9 new splits, PAR10 in seconds: untuned LightGBM 699, always the configuration most often fastest in training 754, single best by training PAR10 1,045, best possible 22; LightGBM beats the most-often-fastest rule on 6 of 9 splits, and splits range from 124 to 1,281 s, set by a few problem classes. Task probes (R^2 per row, 5 of 9 splits): random forest 0.57, LightGBM 0.56, linear -0.44, best single feature 0.17, no flags. Leak probes: no single feature above 0.28; 2.0% of test rows have an exact feature copy in train (the instances with repeated features). Group probes: IID R^2 0.90 against grouped 0.53, so the class split matters. Evidence: ~/claude_jobs/ba_marks_1104/asp_potassco_classification/.
+**Assessment (AI, 2026-11-04):** implemented B in dataset.py: target `runtime` (log), `algorithm` categorical, anonymised `instance_id` a scoring column (role group) of `par_k` (cutoff 600, k 10, `Metric.source`), Grouping on `task_id`; 1,963 timeouts (15% of runs, on 38% of instances) kept at 600 s. `dataset check`: 0 errors, 1 warning (the two constant columns `Removed_Nogoods-1/-2`, already known); par_k computable on every split. The split protocol now gives 3 x 3 splits (13,332 rows) instead of 10 x 3, 32 problem classes per test fold. On the 9 new splits, PAR10 in seconds: untuned LightGBM 699, always the configuration most often fastest in training 754, single best by training PAR10 1,045, best possible 22; LightGBM beats the most-often-fastest rule on 6 of 9 splits, and splits range from 124 to 1,281 s, set by a few problem classes. Task probes (R^2 per row, 5 of 9 splits): random forest 0.57, LightGBM 0.56, linear -0.44, best single feature 0.17, no flags. Leak probes: no single feature above 0.28; 2.0% of test rows have an exact feature copy in train (the instances with repeated features). Group probes: IID R^2 0.90 against grouped 0.53, so the class split matters.
 
-CC (2026-11-05, Andrej): the splits now count instances, not runs: 10 repeats of 3 folds (30 splits) where the 13,332 runs gave 3 x 3. The score is one PAR10 per instance, so its noise depends on the 1,212 instances, not on the 11 rows each has; counted this way the task gets the splits it would get with one row per instance. The same count moves sat11_hand_algo_runtime from 10 x 3 to 20 x 3, open for confirmation in the record's Review (issue 2). The task summary now says 32 of the 96 problem classes per test fold (it said 27 to 36, a count from the classification splits).
-
-CC (2026-11-06, Andrej): the split count follows the scored units everywhere (review page issue 2, B; new rule SPLIT-33): 1,212 instances give 10 x 3 splits. The same count moves sat11_hand_algo_runtime to 20 x 3. Timeouts and the log scale of the target are open as their own questions on the review page.
+CC (2026-11-05, Andrej): the task summary now says 32 of the 96 problem classes per test fold (it said 27 to 36, a count from the classification splits).
 
 CC (2026-11-06, Andrej): the target stays on the log scale (review page issue 4), and a timed-out run stays at the recorded 600 s (issue 3): the target is the runtime as ASlib records it and how to treat a censored run is left to the models, unless a change clearly benefits all models equally, which counting timeouts at the 6,000 s PAR10 charge does not here (within noise, mixed across models). The scoring stays ASlib's PAR10. Metric and split checked.
+
+CC (2026-11-12, Lennart): the split count in scored units (the review's issue 2, rule SPLIT-33) moves out of this
+PR into its own, to be decided with the other grouped datasets and reopened there; it is removed from this record
+for now. Until then the protocol counts the 13,332 rows: 3 x 3 splits.
 
 **Assessment (AI, 2026-11-08):** one vote per unit (the scan of 2026-11-08 after boreal_postfire_lichen_biomass's issue 7): the 96 problem classes hold 1 to 134 instances (median 5), and the largest 10% of them hold 51% of the instances, so a few large classes decide about half of the log loss; the selector acts per instance, and the split holds out whole classes. Weighting each instance by 1 over its class's instances ranks 8 untuned models at Kendall tau 0.86 per split (lowest 0.64) and 0.86 for the ranking by the mean over the 30 shipped splits, the same best model on 17 of 30. Open for Lennart as issue 5 of the record's Review (numbered after issues 1 to 4 of the PAR10 branch); recommended: per instance, with a note that names the imbalance (B).
 
@@ -89,9 +91,9 @@ columns (`Removed_Nogoods-1`, `Removed_Nogoods-2`, 0 or missing) and 5 rows that
 another label. Weighed: a documented algorithm-selection benchmark and a strict split (+), a modest signal over the
 class shares (-), a label that scores a pick 0.05 s slower as wrong as a timeout (-), which issue 1 can fix.
 
-**Main points:** All resolved: runtime regression scored by PAR10 (1), splits in scored units (2), timeouts at the
-recorded 600 s (3), the log scale (4); scored per instance, with a note on the large problem classes (5, Lennart,
-2026-11-08). The rename (no longer `_classification`) waits until the page is done.
+**Main points:** All resolved: runtime regression scored by PAR10 (1), timeouts at the recorded 600 s (3), the log
+scale (4); scored per instance, with a note on the large problem classes (5, Lennart, 2026-11-08). The split count
+(2) is deferred to its own PR. The rename (no longer `_classification`) waits until the page is done.
 
 **Record judgment:** valid. An algorithm-selection scenario of the ASlib library, built from claspfolio 2's Potassco
 set; the runs and features are the library's own files, so the source is strong. The curator kept it twice after the
@@ -214,7 +216,7 @@ call, and its reason ("the 11 runtimes are not shipped") describes our choice, n
    is picked, so leave them out and say so in the metric's definition. `metric` becomes `Metric.source`, `fit_reason`
    drops the near-tie sentence, the record's `problem_type` goes back to Regression, and the name ends in
    `_classification`: a rename waits until the review page is done (its marks are stored under the name). Re-run
-   `dataset check` and the task probes. Evidence: `~/claude_jobs/asp_bc/` (prep.py, run.py, summarize.py, res_*.csv).
+   `dataset check` and the task probes.
 
    **Andrej (2026-11-04, discuss):** We go with B. Also add an explanation to the record.
 
@@ -230,92 +232,9 @@ call, and its reason ("the 11 runtimes are not shipped") describes our choice, n
 
 2. **Keep 3 x 3 splits now that the table has one row per run, or go back to 10 x 3?**
 
-   * **Problem:**
-     - The reframe of issue 1 multiplies the rows by 11 (1,212 instances to 13,332 rows), and the split protocol sets
-       the repeats from the row count: 13,332 rows get 3 repeats of 3 folds, where 1,212 rows got 10.
-     - The score is per instance, not per row: PAR10 averages over the 335 to 518 test instances of a fold, so the
-       protocol now counts eleven times more units than are scored.
-     - PAR10 swings strongly between splits, so 9 splits give a noisier score than 30.
-   * **Experiments:** untuned LightGBM on the 9 new splits: PAR10 from 124 to 1,281 s (mean 699); always the
-     configuration most often fastest in training 227 to 1,510 s (mean 754); LightGBM beats that rule on 6 of 9
-     splits. Over 30 splits the same comparison had a spread between splits of about 400 s, set by a few problem
-     classes.
-   * **Consistency:** sat11_hand_algo_runtime has the same form (one row per instance and solver, PAR10 per instance)
-     and gets 10 repeats only because its table is smaller (1,835 rows).
-   * **Options:**
-
-     | | Option | What it does | Pro | Con |
-     |---|---|---|---|---|
-     | A | 3 x 3 (implemented) | the protocol as it is | no framework change | 9 noisy splits; the dataset's weight in the benchmark depends on how its rows are laid out |
-     | B | Count the scored units | the protocol counts the metric's scoring group (here instances) instead of rows when a metric scores per group: 1,212 instances give 10 x 3 | general: the same task gets the same splits in either layout; sat11 unchanged | a small framework change and a rule amendment; other per-group metrics may change their repeats |
-     | C | Override per definition | a definition may set its repeats (10 x 3) | no effect on other datasets | an exception by hand; the next long-format dataset needs one too |
-
-   * **Recommendation:** B, as the number of splits should follow the number of predictions scored, not the table's
-     layout. **Decision:** 3 x 3 (A), count the scored units (B) or override here (C)?
-
-   **Notes for the AI:** on B, `recommended_dimensions` (src/data_foundry/v2/splits.py) takes the metric's group
-   scoring column, when there is one, as the unit count; list which accepted definitions change their repeats before
-   asking for the rule amendment in splits.md. Per-split numbers: `~/claude_jobs/ba_marks_1104/asp_potassco_classification/par10_new_splits.csv`.
-
-   **Andrej (2026-11-05, change):** I vote for B.
-
-   **Answer (AI, 2026-11-05):**
-
-   * **Done:** B is in the split protocol: when the metric scores per group (its group input, here the anonymised
-     instance), the repeats follow the number of those groups instead of the rows; otherwise the rows, or the groups
-     when each group has one label, as before. The default splits and the check that compares a container with the
-     protocol count the same way. `dataset check` now gives this dataset 10 x 3 splits (32 problem classes and 285 to
-     572 instances per test fold), 0 errors and the known warning on the two constant columns; the first 9 of the 30
-     splits are the 9 measured above. The task summary said 27 to 36 classes per fold and now says 32 of the 96.
-   * **Which definitions change:** two, this one and sat11_hand_algo_runtime. The table lists every definition whose
-     metric scores per group and whose splits this count sets; numerai_v5_2_1m and noaa_afsc_bottom_trawl_survey_cpue
-     also score per group, but split by time windows, which the count does not set.
-
-     | Dataset | Rows | Scored groups | Before | Under B |
-     |---|---|---|---|---|
-     | asp_potassco_classification | 13,332 | 1,212 instances | 3 x 3 | 10 x 3 |
-     | sat11_hand_algo_runtime | 1,840 | 184 instances | 10 x 3 | 20 x 3 |
-     | micro_mass | 571 | 213 strains | 20 x 3 (strains counted already, one label each) | 20 x 3 |
-     | sepsis_prediction_1m | 1,499,999 | 38,992 patients | 1 x 3 (1.25M rows or more: one repeat) | 1 x 3 |
-
-   * **sat11 changes, against "sat11 unchanged" in the options table:** its 184 instances leave a train side of 122,
-     below 500, so 20 repeats; the table had counted its 1,840 rows. B's principle gives the same: sat11 with one row
-     per instance would get 20 x 3 too. Its review counts few instances per fold (61 per test fold) as a minus, which
-     60 splits average better than 30. Its container and README keep 10 x 3 until its next check and build, and a
-     bundle check of the shipped container flags it as off protocol (a warning) until then.
-   * **The rule:** splits.md has no rule on the number of repeats; the count lives only in the code and in the repo's
-     description of the default splits. Proposed amendment:
-     - splits.md, a new rule (Should) at the end of "The split and the regimes": "An IID or grouped task gets
-       repeated 3-fold cross-validation, with 20, 10, 3 or 1 repeats as its train side holds fewer than 500, 2,500 or
-       250,000 units, or more; a frame of 1.25M rows or more gets one repeat. The unit is what the metric scores: the
-       group when the metric scores per group (a PAR10 per instance over one row per instance and configuration),
-       else the group when each group has one label, else the row. Why: the noise of a score follows the number of
-       units scored, so a task gets the same splits whatever the layout of its table. Cases:
-       asp_potassco_classification, sat11_hand_algo_runtime."
-     - Its Cases row: "asp_potassco_classification, sat11_hand_algo_runtime | one row per instance and
-       configuration, scored by PAR10 per instance: the repeats follow the instances (1,212: 10 x 3; 184: 20 x 3), not
-       the runs (13,332: 3 x 3; 1,840: 10 x 3) | applied".
-     - definitions.md, "IID and grouped": "with 20, 10, 3 or 1 repeats by the size of the train side" becomes "with
-       20, 10, 3 or 1 repeats by the size of the train side, in the units the metric scores (the groups of the
-       metric's `group` input, else the groups of `per_group` labels, else the rows)".
-   * **Options:**
-
-     | | Option | What it does | Pro | Con |
-     |---|---|---|---|---|
-     | B | Count the scored groups everywhere (implemented) | asp 10 x 3; sat11 20 x 3 at its next build; the rule added as proposed | one count for every dataset; a task gets the same splits in either layout; sat11's few test instances per fold averaged over 60 splits | sat11's splits change |
-     | C | Keep sat11 at 10 x 3 | sat11 overrides the protocol in its definition, with a `splits_comment` | sat11's splits as built | an exception by hand against the rule just added, with no reason in sat11's task |
-
-   * **Recommendation:** B as implemented: sat11's change is the count you chose applied to it, and its 1,840 rows
-     make 60 splits cheap[^2a]. **Decision:** confirm B with sat11 at 20 x 3 and the rule text above, or keep sat11 at
-     10 x 3 (C)?
-
-   [^2a]: **MET-1** (Must): the declared metric scores the decision of the use case, at the unit the actor acts on.
-
-   **Andrej (2026-11-06, change):** Reply (B): Count the scored groups everywhere
-
-   **Resolved (2026-11-06, Andrej):** B everywhere: the split protocol counts the units the metric scores (SPLIT-33,
-   new, in splits.md with its Cases row; definitions.md says the same). This dataset gets 10 x 3 splits;
-   sat11_hand_algo_runtime 20 x 3 at its next build (184 instances), its shipped container keeping 10 x 3 until then.
+   **Deferred (2026-11-12):** Lennart moved the split count in scored units (rule SPLIT-33) out of this PR into
+   its own, to be decided with the other grouped datasets; this issue is reopened there. Until then the protocol
+   counts the 13,332 rows: 3 x 3 splits.
 
 3. **Count a timed-out run as the 600 s limit in the target, or as the 6,000 s that PAR10 charges for it?**
 
@@ -423,9 +342,7 @@ call, and its reason ("the 11 runtimes are not shipped") describes our choice, n
    timeout bullet of both notes, with the numbers above. Re-run `dataset check` and the task probes on both, a
    CHANGELOG entry, a CC line in both records (checked_by Andrej). The censored model is Schmee and Hahn's imputation
    as in Hutter et al. 2014: a normal model of the log runtime around out-of-fold predictions (folds by problem class
-   here, by instance on sat11), three rounds (two for TabPFN), capped at 100 x the limit. Evidence:
-   `~/claude_jobs/asp_timeout/` (`run.py` targets `log600`, `log6000`, `censored`, `drop_timeouts`, `hurdle`;
-   `summarize.py`, `tables.py`; `res/` for the shipped splits, `res_sat11/`, `res_iid/` for the random split).
+   here, by instance on sat11), three rounds (two for TabPFN), capped at 100 x the limit.
 
    [^3a]: **CLEAN-1** (Should): clean to the state an expert would ship; read what the source's top solutions and the
      data owners did.
@@ -583,8 +500,6 @@ call, and its reason ("the 11 runtimes are not shipped") describes our choice, n
    seconds ships as a `ScoringColumn`, the target becomes the rank or the log ratio, and `par_k` needs a variant that
    reads the cost from that column (a new input role, a reference implementation and a test against a hand count),
    with the spec's `target_transform` back to `identity`. Any change applies to sat11_hand_algo_runtime too.
-   Evidence: `~/claude_jobs/asp_timeout/` (targets `log600`, `raw600`, `log1p600`, `rel_log600`, `log6000`,
-   `raw6000`, `log1p6000`, `rel_log6000`, `rank`).
 
    [^4a]: **MET-3** (Must): the declared metric is the one on the scale the task means; the target may ship on the
      scale a practitioner models it on, and the metric is computed after the inverse of both the true values and the
