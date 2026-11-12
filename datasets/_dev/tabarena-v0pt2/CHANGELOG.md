@@ -1,5 +1,10 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-12 (SuperLender excluded from redistributable contribution)
+
+- Myunghwan rejected `loan_default_prediction_challenge` for this release: the original DSN/Zindi challenge Rules / Datasets and packages prohibit redistribution to nonparticipants, including public GitHub/Kaggle uploads. Source: https://zindi.world/competitions/data-science-nigeria-challenge-1-loan-default-prediction (checked 2026-11-12). No applicable source-owner permission is established; a participant copy does not grant it.
+- Set the record to `No`, remove its working-copy package and clear `v2_path`. Preserve earlier scientific acceptance, qualification and build history; this release decision supersedes ship acceptance without asserting a scientific defect. Raw inputs and existing containers remain local and untouched. Reopen only with suitable redistribution permission or a licensed source.
+
 ## 2026-11-10: Chromophore integrated into the accepted draft batch
 
 - Add the curator-accepted and built `chromophore_optical_properties_db` package, preserving the clean source/build commits and resolved review history. Its generated definition, README and REVIEW are byte-identical to the verified build version; no dataset build or model fit is repeated for integration.

@@ -3,11 +3,7 @@ unique_name: loan_default_prediction_challenge
 name: loan-default-prediction-challenge
 checked_by:
 - Myunghwan
-data_foundry_status:
-- WIP (Triage)
-- 'DF: Yes'
-claimed_by: Myunghwan
-suggestion: 'Yes'
+suggestion: 'No'
 priority: 2
 collections:
 - New (BeyondArena)
@@ -23,7 +19,6 @@ source_links:
 - https://zindi.africa/competitions/data-science-nigeria-challenge-1-loan-default-prediction
 - https://zindi.world/competitions/data-science-nigeria-challenge-1-loan-default-prediction/data
 - https://zindi.world/competitions/loan-default-prediction-challenge
-v2_path: datasets/_dev/tabarena-v0pt2/loan_default_prediction_challenge/dataset.py
 source_row: 898
 type_adapter_id: curation-record-v1
 ---
@@ -86,3 +81,5 @@ CC (2026-11-08, Myunghwan): Explicitly requested tabarena-build-commit for this 
 **Assessment (AI, 2026-11-08):** Built and verified 01a1be30-45b2-71ef-901f-e94be6c0c4dd (v2:322cbc2623bd4067697bf91c009aec047dedc6b204ba35d8c6bd16cd861dc120) from clean definition commit 73360580f6752ec1713d2d7d0e8d11e4d4efafcf. Format 2, 4,368 labeled loans, 32 predictors, context ROC AUC and nine unchanged borrower-disjoint random folds. Save/reload verification and reproduction from exactly four traced raw inputs yield the same checksum; no new warning or error. Raw inputs still match the pinned participant-copy manifest. The full test suite passed 2,017 tests with 286 skipped after rerunning 18 sandbox-blocked localhost tests with socket access. Existing models/probes are reusable after exact data/fold checks; no model retuning, redistribution or new scientific approval occurred. Source-copy equality and timing/release limitations remain as approved.
 
 **Assessment (AI, 2026-11-09):** Add the explicitly accepted and verified SuperLender package to draft PR #59. DF: Yes records this integration proposal; retain Myunghwan's actual triage/WIP claim mirror until merge. Remove only the settled TBD placeholder. The claim was refreshed with completed-work/PR context and a seven-day expiry; stage and original claimed-at time are preserved. Definition, generated build card and resolved panel history are byte-identical to the verified source commit b6675fd1f5f24c01d38997803cebfe8d68eeed28, whose build-source commit remains reachable. No new data, target, predictor, metric, split, model fit or build is introduced. Source-copy, timing, cohort and redistribution limits remain as documented.
+
+CC (2026-11-12, Myunghwan): Reject SuperLender / loan_default_prediction_challenge from the intended redistributable benchmark and PR #59. The original 2018 DSN/Zindi challenge Rules, Datasets and packages, prohibit making competition data available to nonparticipants, explicitly including public Kaggle/GitHub uploads: https://zindi.world/competitions/data-science-nigeria-challenge-1-loan-default-prediction (checked 2026-11-12). No source-owner permission for this benchmark redistribution is established. A participant-hosted copy is not a redistribution grant. Remove the working-copy definition, generated card and review file and clear its pointer; retain earlier qualification, decisions and build history as historical evidence. This supersedes the November 8 ship decision for release purposes only; no scientific invalidity, ethical defect or new general scientific rule is asserted. Reconsider only with applicable written redistribution permission or a suitably licensed original source. This explicit curator decision is a case-specific release exclusion despite the usual convention that licensing is not a scientific verdict reason. Local raw files and containers are preserved.
