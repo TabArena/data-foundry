@@ -550,6 +550,77 @@ def test_temporal_rejects_inconsistent_declarations() -> None:
         Temporal(on="")
 
 
+def temporal_body(*, feature: bool) -> str:
+    """A temporal ``toy_ds``: the 600 toy rows over 30 days (20 per day), 3 windows of 5 days."""
+    flag = "" if feature else ", feature=False"
+    return (
+        DEFINITION.format(name="toy_ds", comment="Toy data.")
+        .replace(
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, "
+            "drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, "
+            "TemporalSplits, drop_columns",
+        )
+        .replace(
+            '        return drop_columns(df, ["row_id"])',
+            '        df["t"] = pd.Timestamp("2024-01-01") + pd.to_timedelta(df["row_id"] // 20, unit="D")\n'
+            '        return drop_columns(df, ["row_id"])',
+        )
+        .replace(
+            '        return FeatureTypes(categorical=["colour"])',
+            '        return FeatureTypes(categorical=["colour"], datetime=["t"])',
+        )
+        .replace(
+            '    target = "y"\n',
+            f'    temporal = Temporal(on="t", splits=TemporalSplits(window=5, unit="days", n_windows=3){flag})\n'
+            '    target = "y"\n',
+        )
+    )
+
+
+def test_a_time_column_declared_no_input_orders_the_splits_but_is_no_feature(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    folder = write_definition(tmp_path / "datasets", body=temporal_body(feature=False))
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert result.ok, result.bundle_report.summary()
+    container = result.container
+    assert container.task_metadata.time_on == "t"
+    assert container.task_metadata.time_is_feature is False
+    assert "t" in container.dataset.columns  # kept in the frame to order and split the rows
+    assert feature_columns(container) == ["x1", "colour"]
+    assert container._feature_dtype_counts()["datetime"] == 0
+    assert "time_is_feature:       False" in container.task_metadata.describe()
+    text = (folder / "README.md").read_text()
+    assert "  time_is_feature: false\n" in text  # front matter
+    assert "| task.time_is_feature | False |" in text
+    assert "The time column `t` orders and splits the rows and is no model input" in text
+    assert "and 2 features" in text
+    assert "2024-01" in text  # the split table still shows the windows' time ranges
+    loaded = CuratedContainer.load(container.save(tmp_path / "saved"))
+    assert loaded.task_metadata.time_is_feature is False
+    assert loaded.verify()
+    assert feature_columns(loaded) == ["x1", "colour"]
+
+
+def test_a_time_column_is_a_feature_by_default_and_leaves_the_metadata_as_it_was(
+    tmp_path: Path, warehouse: Path
+) -> None:
+    del warehouse
+    folder = write_definition(tmp_path / "datasets", body=temporal_body(feature=True))
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert result.ok, result.bundle_report.summary()
+    assert feature_columns(result.container) == ["x1", "colour", "t"]
+    assert "time_is_feature" not in (folder / "README.md").read_text()
+    saved = result.container.save(tmp_path / "saved")
+    task_json = next(saved.glob("task_metadata.*.json")).read_text()
+    assert "time_is_feature" not in task_json  # nor in the checksum
+
+
+def test_temporal_feature_must_be_a_bool() -> None:
+    with pytest.raises(ValueError, match="True or False"):
+        Temporal(on="t", feature="no")  # type: ignore[arg-type]
+
+
 def test_grouping_is_stored_in_a_format_2_task() -> None:
     grouping = Grouping(
         on="g",
