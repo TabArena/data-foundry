@@ -141,7 +141,9 @@ The task is going from the structure to a prediction (Lennart, 2026-11-01). So:
   MoleculeNet, OGB's `ogbg-molhiv`, ChemPile), and that binary call is what a screening team acts on, so
   `nci_aids_antiviral_screen` ships it (Lennart, 2026-11-02). What a merge gives up belongs in a decision table: there
   the two active classes are a potency scale, which the log selectivity index separates at ROC AUC 0.948.
-* **Censored values are no regression target.** The NCI screen's EC50 was not reached in 38,048 of 39,365 rows.
+* **The NCI screen's censored values are no regression target:** its EC50 was not reached in 38,048 of 39,365 rows.
+  Censoring is decided case by case: asp_potassco_classification and sat11_hand_algo_runtime keep a solver's
+  timeout at its recorded limit (a minority of the runs, charged by the metric, PAR10).
 * **Impossible values leave** (qsar_tid_11's pXC50 of -6.24). Values that are medians over many sources are noted.
 * **Metrics:**
   * The Milano group reports the non-error rate (balanced accuracy) as its house measure, not one deliberate choice, so

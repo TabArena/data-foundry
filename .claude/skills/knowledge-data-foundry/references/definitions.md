@@ -438,7 +438,9 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 # 10. TODO(verify): target transform: `np.log` / `np.log1p` a skewed positive target and rename the column; skip it
 #     when the source already logged it or a deviance scores the target (CLEAN-16). A count or amount over a realized
 #     amount at risk becomes the rate, the amount its weight scoring column and `sample_weight` (MET-14, MET-15).
-# 11. TODO(verify): censored or capped target values (drop the capped rows or document the cap).
+# 11. TODO(verify): censored or capped target values: decide case by case and document it in `curation_comments`
+#     (asp_potassco_classification and sat11_hand_algo_runtime keep a timed-out run at its recorded limit and drop
+#     only the instances on which every configuration timed out; a target censored by the download date: LEAK-24).
 # 12. TODO(verify): rows the use case never sees (a row without the input the prediction acts on; bias_correction's
 #     days without an LDAPS run).
 # 13. TODO(verify): recording errors cleaned to the state an expert would ship (the top solutions' and data owners'
@@ -503,8 +505,19 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
 * `prediction_unit` and `aggregation` come from what one real-world prediction is in the source: `mean` for replicate
   measurements of one label, `any` for multiple-instance data (musk: a molecule is a musk if any conformation is),
   `last` when the latest row carries the label (amex; needs `time_on`), `select_min` / `select_max` when one row is
-  chosen by its prediction and scored by its true value (sat11: run the algorithm predicted fastest). Everything else
-  is `row`.
+  chosen by its prediction and scored by its true value under a metric that does not choose by itself. Everything
+  else is `row`.
+* Algorithm selection (one row per instance and algorithm, the runtime as the target, the algorithm predicted
+  fastest is run): the metric chooses. `par_k` takes the instance as its `group` input, picks per instance the row
+  with the lowest prediction and counts rows tied there as the mean of their costs. Declare `prediction_unit="row"`
+  and no aggregation: the scorer applies an aggregation before the metric, so `select_min` would choose first and
+  break a tie by the order of the rows (a constant prediction on sat11_hand_algo_runtime scores 19,140 s, always the
+  first solver in the file, against 18,539 s under `par_k`'s rule; trained models did not tie). What the split holds
+  out decides where the instance comes from:
+  * instances (sat11_hand_algo_runtime): the grouping is on the instance, and the metric reads that column (MET-2);
+  * something larger (asp_potassco_classification: problem classes): the grouping is on the class, and the
+    anonymised instance ships as `ScoringColumn(column="instance_id", role="group", used_by="par_k")`, never a
+    feature.
 * `context`: `all_rows` when all rows of a new group are known when predicting, `past_rows` when only its earlier rows
   are (needs `time_on`), `none` when each row stands alone.
 * `definition` is required: what one group is, why groups are held out (the use case), and the source with a quote.
@@ -831,7 +844,7 @@ changed, appeared or went; `raw_files_missing` (error) a pattern that matches no
 | `splits_train_under_half`, `splits_train_under_floor`, `splits_floor_core` (error) | a window trains on less than half the curated frame's rows (under 30%; or the core of SPLIT-14 breaks): raise an issue for the curator's sign-off with the windows and their shares and an option without them; accept the warning only with the curator's CC date, never on the AI's word |
 | `splits_feature_missing_in_test` | a feature 95% or more missing on one side of a window and at most half missing on the other (read on up to 100k rows a side): a column that stops or starts being recorded within the history. Name it in `curation_comments` and raise it for the curator (drop it, keep it as the deployed model met it, or start the data at the change); accept only with the curator's decision |
 | `time_newest_period_short` | the newest 30 days of a date column hold under 60% of the median rows a day of the 30-day spans before: compare the newest period's target rate with earlier ones; a download or scrape cut before the outcomes were complete is cut off (LEAK-24), a seasonal low or a real decline is accepted with the numbers |
-| `task_target_value_dominant` | one value holds half of a regression target: name the cap, placeholder or zero inflation in `curation_comments`, drop censored rows, or accept with the reason |
+| `task_target_value_dominant` | one value holds half of a regression target: name the cap, timeout, placeholder or zero inflation in `curation_comments`; keep or drop censored rows case by case (sat11_hand_algo_runtime keeps its timeouts at the recorded limit), or accept with the reason |
 | `meta_tags_*` | tags agree with the split regime |
 | `meta_bibtex_*` | balanced braces, keys defined, `&`, `%`, `_` escaped |
 | `meta_placeholder_left`, `definition_todo_left`, `definition_license_placeholder` | every TODO in the metadata (the licence included) and every `TODO(verify)` in `dataset.py` is resolved before `build` |
