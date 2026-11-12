@@ -1,5 +1,12 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-12 — Verify isolated MixtureSolDB build
+
+- Format2 UUID `01a1d1f0-286b-7e20-8dc4-5c1d644767bc`, checksum `v2:0626ceb07c13ab2449c16f6f5daae3d8564ac5b21de738142da9074374f2b729`, built from clean source `a6e54dba6f24a54446b7619d0b83cbb98264a3f6`. Saved reload and reproduction from the 41,107,737-byte CSV alone, regenerating the derived raw-hash cache pass with zero errors/warnings.
+- Current provenance/container metadata changes the checksum from the earlier local build. The complete165,781-row scientific frame, seven inputs, target, all nine family folds and ln-RMSE scoring remain exact; accepted qualification applies without another model fit. Original build history remains preserved locally.
+- Current-source tests2,523 passed/304 skipped;188 definitions import; vocabulary, pointers and pinned Ruff pass. The complete review and resolved IDs live in the record, with portable evidence text. This change is independent and targets main.
+
+
 ## 2026-11-12 — Add accepted MixtureSolDB molecular-solvent regression
 
 - Myunghwan accepted natural-log mole-fraction regression and RMSE directly on ln values, with whole-solute-family holdout, on November11. Apply the settled exclusions of22 composition-uncertain source rows and1,309 valid active-polymer observations outside the selected molecular-solvent population; preserve all810 solutes and606 families across165,781 observations.

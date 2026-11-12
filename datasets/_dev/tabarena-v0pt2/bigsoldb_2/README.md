@@ -4,12 +4,12 @@ unique_name: bigsoldb_2
 container_format: 2
 checksum: v2:0626ceb07c13ab2449c16f6f5daae3d8564ac5b21de738142da9074374f2b729
 build:
-  uuid: 01a1d1d6-f565-7392-ad66-859abfb1d4c5
-  checksum: v2:e24d51cb9402a5fa6b3281c88ae31c49f40dcdad6a740ba37d1807b05def1069
-  built_at: '2026-11-12T22:18:09+00:00'
-  path: bigsoldb_2/01a1d1d6-f565-7392-ad66-859abfb1d4c5
+  uuid: 01a1d1f0-286b-7e20-8dc4-5c1d644767bc
+  checksum: v2:0626ceb07c13ab2449c16f6f5daae3d8564ac5b21de738142da9074374f2b729
+  built_at: '2026-11-12T22:45:41+00:00'
+  path: bigsoldb_2/01a1d1f0-286b-7e20-8dc4-5c1d644767bc
   data_foundry_version: 0.0.5
-  git_sha: 8aa9277900dd9a175af063275736e3e21292a81b
+  git_sha: a6e54dba6f24a54446b7619d0b83cbb98264a3f6
   libraries:
     python: 3.12.3
     pandas: 3.1.0
@@ -17,7 +17,7 @@ build:
     pyarrow: 26.0.0
     scikit-learn: 1.7.2
     polars: 2.0.0
-build_stale: true
+build_stale: false
 raw_files:
   raw/MixtureSolDB.csv: be72940b1d9ba03eacf142cfb26e774b658617dbf8fefb3cfb96f27c4da5e51d
 data:
@@ -83,7 +83,7 @@ decisions:
 
 Regression of `ln_solubility_mole_fraction`, scored with `rmse` on grouped splits by `solute_family`. 165,781 rows and 7 features. Source: Other (2025).
 
-Built as `01a1d1d6-f565-7392-ad66-859abfb1d4c5` on 2026-11-12, but `dataset.py` has changed since: it now gives checksum `v2:0626ceb07c13ab2449c16f6f5daae3d8564ac5b21de738142da9074374f2b729`, so the build is stale. See [Build](#build).
+Built as `01a1d1f0-286b-7e20-8dc4-5c1d644767bc` on 2026-11-12. See [Build](#build).
 
 ## In brief
 
@@ -410,11 +410,10 @@ Counts are measured from verified v3 bytes. No new outcome averaging or target s
 
 | field | value |
 |---|---|
-| uuid | 01a1d1d6-f565-7392-ad66-859abfb1d4c5 |
-| checksum | v2:e24d51cb9402a5fa6b3281c88ae31c49f40dcdad6a740ba37d1807b05def1069 |
-| built_at | 2026-11-12T22:18:09+00:00 |
-| path | bigsoldb_2/01a1d1d6-f565-7392-ad66-859abfb1d4c5 |
+| uuid | 01a1d1f0-286b-7e20-8dc4-5c1d644767bc |
+| checksum | v2:0626ceb07c13ab2449c16f6f5daae3d8564ac5b21de738142da9074374f2b729 |
+| built_at | 2026-11-12T22:45:41+00:00 |
+| path | bigsoldb_2/01a1d1f0-286b-7e20-8dc4-5c1d644767bc |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8aa9277900dd9a175af063275736e3e21292a81b |
+| git_sha | a6e54dba6f24a54446b7619d0b83cbb98264a3f6 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:0626ceb07c13ab2449c16f6f5daae3d8564ac5b21de738142da9074374f2b729` |
