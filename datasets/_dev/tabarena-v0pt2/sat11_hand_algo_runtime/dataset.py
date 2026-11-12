@@ -94,6 +94,10 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
         - The description says 'If features are "?", the instance was solved during feature computation.' but from the status file we can see that no task was presovled. So it is unclear what this is referring to. We believe that in all cases we have nan values for features, it is a case of the feature running into a memout, timeout, or crash as stated by the description.
         - The runtimes are right-censored: every run was stopped at the cutoff of 5,000 s, and a timeout is stored as a runtime of 5,000 s (the slowest finished run took 4,996 s, so `runtime == log(5000)` marks a timeout). A regression model and RMSE take that cutoff as the exact runtime, which biases predictions down (Hutter et al. 2014, section 9). We drop the 112 of 296 instances on which all 10 algorithms time out (1,120 rows): their labels are only lower bounds, and they cannot change which algorithm is selected (every choice costs the same; the single-best to virtual-best PAR10 gap is the same with or without them). We keep the 666 timeouts of the other 184 instances at the cutoff: selecting the fastest algorithm needs every algorithm's outcome, and the cutoff keeps the order within an instance (every finished run is faster) and is enough to compute PAR10.
         - A survival task type (a censoring indicator, a censoring-aware loss and metric) could use every run, including the 112 dropped instances, as survival-based algorithm selectors do (for example Run2Survive, Tornede et al. 2020). The raw files keep them; TabArena has no such task type yet.
+        - Timeouts stay at the recorded 5,000 s in the target (Andrej, 2026-11-06): it is the value ASlib records, and how to
+          treat a censored run is part of what a model has to work out; the scoring, ASlib's PAR10, charges a timeout ten
+          times the limit. Counting timeouts at that charge (50,000 s) in the target made LightGBM, a random forest,
+          linear models and TabPFN pick 17-19% better on the 60 splits, but it would replace the recorded value.
         - We log scale the target.
         - We drop duplicated columns and remove features that leak the target or are not relevant for the predictive task.
     """
@@ -123,8 +127,7 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
     grouping = Grouping(
         on="instance_id",
         labels="per_sample",
-        prediction_unit="group",
-        aggregation="select_min",
+        prediction_unit="row",
         context="all_rows",
         definition="""
             One group is a SAT instance; its rows are the runs of the 10 candidate algorithms on it, described by instance and algorithm features, with the log runtime as the target. The use case is algorithm selection: predict every algorithm's runtime on a new instance and run the one predicted fastest (ASlib, Bischl et al. 2016; one model for all algorithms as in Pulatov et al. 2022), scored by the selected algorithm's true runtime (PAR10, or the share of the gap between the single best and the virtual best solver that is closed). The split holds out instances as ASlib's folds do; the instances also come in families, which the split does not separate.

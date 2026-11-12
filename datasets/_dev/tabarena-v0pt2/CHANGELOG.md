@@ -11,14 +11,30 @@ to be decided on its own with the grouped datasets it changes.
   the rows. Rule SPLIT-33 (proposed) in splits.md, the same wording in definitions.md and split_protocol.md.
 - At their next `dataset check`: `sat11_hand_algo_runtime` 10 x 3 to 20 x 3 (184 instances), `huesken_sirna_efficacy`
   10 x 3 to 20 x 3 (30 genes), `protein_model_quality_rf_pcp` 3 x 3 to 20 x 3 (445 proteins),
-  `sepsis_prediction_1m` 1 x 3 to 3 x 3 (40,336 patients). micro_mass (its strains are counted already) and wadden
-  (rows) keep theirs. `asp_potassco_classification` follows once #79's long format is merged: 1,212 instances, 10 x 3
-  instead of the 3 x 3 its 13,332 rows give; its issue 2 and sat11's reopen here then.
+  `sepsis_prediction_1m` 1 x 3 to 3 x 3 (40,336 patients), `asp_potassco_classification` 3 x 3 to 10 x 3 (1,212
+  instances; its long format is on main since #79). micro_mass (its strains are counted already) and wadden (rows)
+  keep theirs.
+- `asp_potassco_classification` and `sat11_hand_algo_runtime`: issue 2 of each (the split count), deferred when #79
+  merged, is open again in its record, to be settled with the rule.
 - `protein_model_quality_rf_pcp` and `huesken_sirna_efficacy` (issue 10 each, written on #79's branch on 2026-11-11, no
   definition change): ship 20 x 3 under the rule, or keep the splits as built? On protein, LightGBM, a random forest
   and ridge on the 20 x 3 splits (per-protein correlation): two of three disjoint blocks of three repeats rank LightGBM
   and the forest the other way round; ten repeats separate them in one block of ten, not the other; twenty separate
   all three pairs. Huesken not measured. 20 x 3 recommended for both.
+
+## 2026-11-12, asp_potassco_classification and sat11_hand_algo_runtime: the split count moves to its own PR (no container built)
+
+Lennart, 2026-11-12: the split count in scored units (rule SPLIT-33, `recommended_dimensions` counting the metric's
+groups) leaves this PR for one of its own, to be decided with the other grouped datasets; this PR keeps the two
+datasets' changes.
+
+- `asp_potassco_classification` and `sat11_hand_algo_runtime`: issue 2 of each, the split count, is deferred and
+  reopens in that PR; the records' CC lines on it are replaced by one that says so. Under the protocol on main the
+  two datasets count their rows: 13,332 rows give asp 3 x 3 splits, 1,840 rows give sat11 10 x 3. `dataset check`
+  re-run on both, README regenerated.
+- The rule SPLIT-33 in splits.md, its sentence in definitions.md, the code and its tests, and the new issue 10 of
+  `huesken_sirna_efficacy` and `protein_model_quality_rf_pcp` go with the split count.
+- The pointers to local job folders in asp's record are removed (the rule of 2026-11-11); the facts around them stay.
 
 ## 2026-11-12, the collection sets the row budget (no container built)
 
@@ -306,6 +322,15 @@ horizon (...) is checked". The README files follow at the next `dataset check`; 
   spanish_homeowners_motor_insurance_2010_2014 and wisconsin_local_government_property_insurance_fund, `"months"` for
   alfa_battle_2_0_task_2, `"quarters"` for mortgage. Their frames and splits are unchanged; their containers carry
   the field at the next check.
+
+
+## 2026-11-11, sat11_hand_algo_runtime: PAR10 alone picks the solver (nothing rebuilt)
+
+- `sat11_hand_algo_runtime` (issue 4, B): PAR10 alone picks the solver: the grouping declares `prediction_unit="row"`
+  and no aggregation instead of `select_min`, so a tie counts as the mean of the tied solvers' costs, as in
+  asp_potassco_classification. Trained models score the same (no tie on the 60 splits); a constant prediction 18,539 s
+  instead of 19,140 s. `dataset check` 0 errors, README regenerated, record CC line; definitions.md no longer names
+  sat11 as declaring `select_min`. Nothing rebuilt.
 
 ## 2026-11-10, sources as a list, slim v2 dataset metadata, no `version_of` (no container built)
 
@@ -933,6 +958,72 @@ noaa_storm's definitions now differ from any build.
   recommended). Issue 11: one of the Flash Flood onsets in NWSI Sec. 14 is damage to a building, and under the deviance
   the Flash Flood duration carries much of the skill (+31% to +102% of the deviance on its rows when blanked; B, keep
   with a note, recommended).
+
+## 2026-11-06, asp_potassco_classification and sat11_hand_algo_runtime: Andrej's marks, third round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 2, B confirmed): the split count follows the units the metric scores, for every
+  dataset: new rule SPLIT-33 in splits.md (with its Cases row) and the same wording in definitions.md; this dataset
+  10 x 3. `sat11_hand_algo_runtime`: `dataset check` now gives 20 x 3 (184 instances), README regenerated, record CC
+  line; its container keeps 10 x 3 until the next build. Andrej's question on the 600 s timeouts and the log scale is
+  being answered as new issues.
+- `sat11_hand_algo_runtime` (issues 1-3: ship, 20 x 3, A) and `asp_potassco_classification` (issue 3, A): timed-out
+  runs stay at the recorded limit in the log target (5,000 s and 600 s), since it is the value ASlib records and how to
+  treat a censored run is left to the models; the reason, with the measured effect of the PAR10 charge, is in both
+  definitions' curation notes and records. `dataset check` 0 errors on both (the known constant-column warning each).
+- `sat11_hand_algo_runtime` (new issue 4, no definition change): the grouping's `select_min` chooses the solver
+  before PAR10 does and breaks a tie by the order of the rows, where PAR10 counts tied picks as their mean. The
+  trained models never tie (0 of 3,680 test instances over the 60 splits); a constant prediction scores 19,140 s
+  against 18,539 s. Dropping the aggregation recommended. definitions.md now describes both layouts of algorithm
+  selection (instances held out; a larger group held out, the instance the metric's `group` scoring column). Open.
+- `sat11_hand_algo_runtime` (Andrej: a decision item for every suggested change): new issue 2 (20 x 3 splits under
+  SPLIT-33, recommended) and issue 3 (a timed-out run counted as the recorded 5,000 s or the 50,000 s PAR10 charge;
+  the charge recommended, every model 17-19% better); `asp_potassco_classification` issue 3 narrowed to that dataset
+  (recorded 600 s recommended). No definition change.
+- `asp_potassco_classification` issue 4 resolved: the log scale kept (also in sat11_hand_algo_runtime). Issue 3 answered
+  on Andrej's principle (the target as the source records it, unless a change clearly benefits all models equally; the
+  scoring from the domain): ASlib records every timeout at the limit (600 s, 5,000 s), so the shipped target is not
+  adapted; the PAR10 charge clears the bar only in sat11 (all four models 17-19% better). Open.
+  `sat11_hand_algo_runtime` issue 1: Andrej's question answered (affected: 20 x 3 splits, the log scale; the timeout
+  target follows asp issue 3). Open.
+- `asp_potassco_classification` (new issues 3 and 4, Andrej's question, no definition change): the target of a
+  timed-out run (the 600 s limit, the 6,000 s PAR10 charge, a censored model, a timeout classifier, or no timeouts in
+  training) and its scale (log seconds against raw seconds, log1p, the PAR10 cost, the rank or the runtime relative to
+  the instance's fastest), measured by the PAR10 of the pick on the shipped splits and on sat11_hand_algo_runtime's 60.
+  Recommended: a timeout at 10 x the limit in both datasets (no measurable change here, 17-19% better picks on sat11),
+  the log kept. Open.
+
+## 2026-11-05, asp_potassco_classification: Andrej's marks on the v0.2 review page, second round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 2, B): the split protocol counts the units a metric scores. When the metric has
+  a group input, `recommended_dimensions` counts its groups instead of the rows, so 1,212 instances give 10 x 3 splits
+  instead of 3 x 3; `dataset check` 0 errors. The task summary now says 32 of the 96 problem classes per test fold (was
+  27 to 36). The same count moves `sat11_hand_algo_runtime` from 10 x 3 to 20 x 3 at its next build (184 instances);
+  open for confirmation in issue 2, with the rule amendment proposed there.
+
+## 2026-11-04, asp_potassco_classification: Andrej's marks on the v0.2 review page, first round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 1, B): reframed as runtime regression, as sat11_hand_algo_runtime: one row per
+  instance and clasp configuration (13,332 rows), the log runtime as target with timeouts at 600 s, `algorithm`
+  categorical, the anonymised `instance_id` a scoring column; scored by PAR10 (`par_k`, cutoff 600, k 10, the source's
+  metric) instead of log loss on the fastest label; ASlib's feature costs left out. `dataset check` 0 errors, task
+  probes no flag. The split protocol now gives 3 x 3 splits instead of 10 x 3: new issue 2. The rename waits until the
+  review page is done.
+
+## 2026-11-04, asp_potassco_classification issue 1 answered (no definition changed)
+
+- Andrej asked whether option B (runtime regression, as sat11) or C (the fastest label, scored by the chosen
+  configuration's runtime) serves the use case better. The answer in its `REVIEW.md` recommends B: only B lets a model
+  learn the timeouts that make up 96% of the user's loss, and it works with the framework as it is (a prototype split
+  by problem class with PAR10 per instance), while C needs a change of the metric spec. Each model trained both ways
+  on the 30 shipped splits (Slurm) favours neither: LightGBM and the forests pick better as in B, k-nearest
+  neighbours, the linear model and TabPFN as in C, and no method reliably beats always running the configuration most
+  often fastest in training. The issue stays open.
+
+## 2026-11-04, asp_potassco_classification and sat11_hand_algo_runtime: open questions in REVIEW.md for Andrej's review
+
+- A `REVIEW.md` in both folders, two of the 108 written for the BeyondArena v0.2 review page, without a panel, from
+  the evidence gathered so far: the records, earlier experiments and model runs on the shipped data. Both records carry
+  a `priority` and an `**Assessment (AI, 2026-11-04):**` line with its factors.
 
 ## 2026-11-06, PR #47: re-review under the exposure rules (no container built)
 
