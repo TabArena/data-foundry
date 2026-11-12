@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-11 18:38 UTC: 165 claim(s) (Andrej 131, Lennart 12, Myunghwan 22).
+As of 2026-11-12 11:45 UTC: 167 claim(s) (Andrej 133, Lennart 12, Myunghwan 22).
 
 ## Andrej
 
@@ -52,6 +52,7 @@ As of 2026-11-11 18:38 UTC: 165 claim(s) (Andrej 131, Lennart 12, Myunghwan 22).
 | `eryhemato_squamous_disease` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `fiat_500` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `food_delivery_time` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
+| `force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition` | review | 2026-11-12 | 2026-11-19 | BeyondArena v0.2 review page (Andrej) |
 | `forensic_glass_identification` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `forest_fires` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `frempl_french_motor_personal_line` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
@@ -117,6 +118,7 @@ As of 2026-11-11 18:38 UTC: 165 claim(s) (Andrej 131, Lennart 12, Myunghwan 22).
 | `santander_customer_satisfaction` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `santander_customer_transaction_prediction` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `santander_transaction_value` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
+| `sarcoma` | review | 2026-11-12 | 2026-11-19 | BeyondArena v0.2 review page (Andrej) |
 | `sat11_hand_algo_runtime` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `sberbank_housing_market_forecasting` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `sdss_17` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
