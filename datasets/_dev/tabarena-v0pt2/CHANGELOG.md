@@ -1,5 +1,25 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-12, the split count in scored units (SPLIT-33), in a PR of its own (no container built)
+
+Lennart, 2026-11-12: the count moves out of #79 (asp_potassco_classification and sat11_hand_algo_runtime under PAR10),
+to be decided on its own with the grouped datasets it changes.
+
+- `recommended_dimensions` and the protocol check count the groups the metric scores (its `group` input) when the
+  split holds each one out whole: the split's group, or a group inside one; a metric group the split cuts across folds
+  (wadden_sea_sibes_macoma_abundance's survey years over stations, any group under an IID split) leaves the count to
+  the rows. Rule SPLIT-33 (proposed) in splits.md, the same wording in definitions.md and split_protocol.md.
+- At their next `dataset check`: `sat11_hand_algo_runtime` 10 x 3 to 20 x 3 (184 instances), `huesken_sirna_efficacy`
+  10 x 3 to 20 x 3 (30 genes), `protein_model_quality_rf_pcp` 3 x 3 to 20 x 3 (445 proteins),
+  `sepsis_prediction_1m` 1 x 3 to 3 x 3 (40,336 patients). micro_mass (its strains are counted already) and wadden
+  (rows) keep theirs. `asp_potassco_classification` follows once #79's long format is merged: 1,212 instances, 10 x 3
+  instead of the 3 x 3 its 13,332 rows give; its issue 2 and sat11's reopen here then.
+- `protein_model_quality_rf_pcp` and `huesken_sirna_efficacy` (issue 10 each, written on #79's branch on 2026-11-11, no
+  definition change): ship 20 x 3 under the rule, or keep the splits as built? On protein, LightGBM, a random forest
+  and ridge on the 20 x 3 splits (per-protein correlation): two of three disjoint blocks of three repeats rank LightGBM
+  and the forest the other way round; ten repeats separate them in one block of ten, not the other; twenty separate
+  all three pairs. Huesken not measured. 20 x 3 recommended for both.
+
 ## 2026-11-12, the collection sets the row budget (no container built)
 
 Lennart, 2026-11-12: TabArena v0.2's budget (1M train, 500k test rows per split) is the collection's, set once and

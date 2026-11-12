@@ -10,8 +10,9 @@ in [`collection.py`](../../../../datasets/_dev/tabarena-v0pt2/collection.py).
 
 - Every task has at least 3 test folds: IID and grouped data get repeated 3-fold cross-validation, temporal data at
   least 3 time windows.
-- IID and grouped tasks get 20, 10, 3 or 1 repeats by the units on the train side (rows, or groups when one label
-  covers a group), at any size of the frame.
+- IID and grouped tasks get 20, 10, 3 or 1 repeats by the units on the train side, at any size of the frame: the
+  groups the metric scores when the split holds each out whole (SPLIT-33), else the groups when one label covers a
+  group, else the rows.
 - The row budget (1M train, 500k test rows per split) applies after the split, and only to a version named
   `<name>_1m`: its container caps each test side, and the benchmark samples the train side before each fit.
 - A definition declares no budget; the build refuses a name that does not match what its splits need.
@@ -24,7 +25,7 @@ in [`collection.py`](../../../../datasets/_dev/tabarena-v0pt2/collection.py).
 flowchart TD
     A["A definition in the working copy, on its full frame"] --> Q1{"Which regime?"}
     Q1 -->|IID| U1["Unit: a row"]
-    Q1 -->|Grouped| U2["Unit: a group if labels='per_group',<br/>else a row; folds keep groups whole"]
+    Q1 -->|Grouped| U2["Unit: the metric's group if the split holds each out whole,<br/>else a group if labels='per_group', else a row;<br/>folds keep groups whole"]
     Q1 -->|Temporal| W["At least 3 windows, newest last;<br/>train side: every earlier row minus the gap"]
     U1 --> R["Repeats of 3-fold CV by the units on the train side (2/3):<br/>under 500: 20 × 3 = 60 splits<br/>under 2,500: 10 × 3 = 30 splits<br/>under 250,000: 3 × 3 = 9 splits<br/>otherwise: 1 × 3 = 3 splits"]
     U2 --> R
@@ -109,5 +110,6 @@ state (their containers were built before the budget moved after the split, issu
 | Name of a version with the budget | `<name>_1m` | `RowBudget.suffix`, `effective_row_budget` |
 | Seed | 4267 | `SPLIT_RANDOM_STATE` |
 
-**Open:** a grouped task with `per_sample` labels counts rows, although its folds move whole groups. Counting the
-held-out groups instead would change the repeats of 18 of the 39 grouped datasets; the decision and #79 settle it.
+**Open:** a grouped task whose metric scores rows, with `per_sample` labels, counts rows, although its folds move
+whole groups. Counting the held-out groups for every grouped task would change the repeats of 14 more of the 39
+grouped datasets (electric_motor and the FORCE 2020 well logs from 3 splits to 60).

@@ -1173,7 +1173,12 @@ class AbstractCuratedDataset(ABC):
     def _cross_validation(self, df: pd.DataFrame) -> Splits:
         """The recommended IID or grouped 3-fold cross-validation on ``df``."""
         task = self.task_metadata
-        n_repeats, n_folds = protocol.recommended_dimensions(df, group_on=task.group_on, group_labels=task.group_labels)
+        n_repeats, n_folds = protocol.recommended_dimensions(
+            df,
+            group_on=task.group_on,
+            group_labels=task.group_labels,
+            score_group_on=protocol.metric_group_column(task),
+        )
         if task.group_on is None:
             return protocol.iid_splits(
                 df,

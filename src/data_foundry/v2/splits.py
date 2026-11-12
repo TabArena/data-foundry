@@ -1,8 +1,9 @@
 """The v2 split protocol: how every v2 dataset is split, and the checks that hold it.
 
 * IID and grouped data get repeated 3-fold cross-validation on the full frame. The number of repeats follows the
-  size of the train side in units, rows or groups (:func:`recommended_dimensions`): 20, 10, 3 or 1, at any size of
-  the frame, so every IID or grouped task has at least 3 splits.
+  size of the train side in the units the metric scores: the metric's groups when the split holds each out whole,
+  else the groups of ``per_group`` labels, else the rows (:func:`recommended_dimensions`): 20, 10, 3 or 1, at any size
+  of the frame, so every IID or grouped task has at least 3 splits.
 * Temporal data gets at least 3 expanding windows (:class:`TemporalSplits`).
 * Data Foundry sets no row budget: by default the splits use the full frame and no side is capped. A sub-sampled
   version is named after its train budget (``<name>_1m``, ``<name>_10m``) and either declares the budget
@@ -32,6 +33,7 @@ from data_foundry.v2._optional import import_build_dependency
 
 if TYPE_CHECKING:
     from data_foundry.curation_container import CuratedContainer
+    from data_foundry.schema import PredictiveMLTaskMetadataV2
 
 Splits = dict[int, dict[int, tuple[list[int], list[int]]]]
 """Outer splits: ``{repeat: {fold: (train_positions, test_positions)}}``."""
@@ -101,17 +103,56 @@ def one_group_column(df: pd.DataFrame, group_on: str | list[str] | None) -> tupl
     return df.assign(**{GROUP_KEY: key}), GROUP_KEY
 
 
+def metric_group_column(task: PredictiveMLTaskMetadataV2) -> str | None:
+    """The column whose values the task's metric scores one by one (its ``group`` input: an instance, a patient, an
+    era), or ``None`` for a metric that scores rows.
+    """
+    return task.objective_metric.inputs.get("group")
+
+
+def scored_groups_held_out_whole(df: pd.DataFrame, group_on: str | list[str] | None, score_group_on: str) -> bool:
+    """Whether every group the metric scores lies in one group of the split, so a test fold holds it whole: the
+    metric's group is the split's group or sits inside one (an instance inside its problem class). ``False`` for an
+    IID split, which cuts every group across folds.
+    """
+    if group_on is None:
+        return False
+    keyed, key = one_group_column(df, group_on)
+    return bool(keyed.groupby(score_group_on, dropna=False, observed=True)[key].nunique(dropna=False).max() <= 1)
+
+
 def recommended_dimensions(
-    df: pd.DataFrame, *, group_on: str | list[str] | None = None, group_labels: str | None = None
+    df: pd.DataFrame,
+    *,
+    group_on: str | list[str] | None = None,
+    group_labels: str | None = None,
+    score_group_on: str | None = None,
 ) -> tuple[int, int]:
     """``(n_repeats, n_folds)`` for IID or grouped cross-validation on ``df``.
 
-    The size is the train side of a 3-fold split (2/3 of the rows, or of the groups for ``per_group`` labels):
-    below 500 it gets 20 repeats, below 2,500 10, below 250k 3, and 1 above, however many rows the frame has. A row
-    budget does not change the count: it caps the sides after the split (:func:`fit_splits_to_budget`).
+    The size is the train side of a 3-fold split, in the units the metric scores: 2/3 of the distinct values of
+    ``score_group_on`` when the metric scores per group and each of its groups lies in one group of the split, so a
+    test fold holds it whole (one PAR10 per instance over a row per instance and solver, the instances held out or
+    inside held-out classes); else of the groups for ``per_group`` labels, else of the rows. A metric group the split
+    cuts across folds (a survey year over stations held out) is scored on part of its rows in every fold, so its count
+    says little about the noise and the rows count. Below 500 it gets 20 repeats, below 2,500 10, below 250k 3, and 1
+    above, however many rows the frame has. A row budget does not change the count: it caps the sides after the split
+    (:func:`fit_splits_to_budget`).
+
+    Args:
+        df: The frame to split.
+        group_on: The split's group column(s), for grouped data.
+        group_labels: The grouping's labels; ``"per_group"`` counts the groups of ``group_on``.
+        score_group_on: The metric's group column (:func:`metric_group_column`); its distinct values are counted
+            when each lies in one group of ``group_on``.
+
+    Returns:
+        ``(n_repeats, n_folds)``.
     """
     n = len(df)
-    if group_on is not None and group_labels == "per_group":
+    if score_group_on is not None and scored_groups_held_out_whole(df, group_on, score_group_on):
+        n = df[score_group_on].nunique(dropna=False)
+    elif group_on is not None and group_labels == "per_group":
         df, group_on = one_group_column(df, group_on)
         n = df[group_on].nunique()
     n_train = int(n * 2 / 3)
@@ -1088,7 +1129,12 @@ def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
     if not flat or len(folds_per_repeat) != 1:
         return findings
     actual = (len(splits), folds_per_repeat.pop())
-    recommended = recommended_dimensions(container.dataset, group_on=task.group_on, group_labels=task.group_labels)
+    recommended = recommended_dimensions(
+        container.dataset,
+        group_on=task.group_on,
+        group_labels=task.group_labels,
+        score_group_on=metric_group_column(task),
+    )
     if actual != recommended:
         findings.append(
             CheckResult(
