@@ -814,7 +814,7 @@ changed, appeared or went; `raw_files_missing` (error) a pattern that matches no
 | `task_group_labels_per_group_violated`, `task_group_on_unique_per_row` | pick `per_group` or `per_sample` correctly |
 | `splits_temporal_leakage`, `splits_temporal_order` | expanding train, newest window first |
 | `splits_rows_unused` | IID and grouped splits cover every row |
-| `splits_train_over_budget`, `splits_test_over_budget` | a split side over the container's `row_budget` (only a version with a budget is checked; format 1 keeps the v1 1M / 250k): the splits of a custom `_make_splits` must keep to it ("Larger than the row budget") |
+| `splits_test_over_budget` | a test side over the container's `row_budget` (only a version with a budget is checked; a benchmark sub-samples the train sides): the splits of a custom `_make_splits` must keep to it ("Larger than the row budget") |
 | `splits_too_few` | a temporal task with fewer than 3 test windows: declare at least 3 |
 | `meta_time_horizon_missing` | a fixed-length window in `Temporal(splits=...)`, or `Temporal(horizon=..., horizon_unit=...)` |
 | `meta_time_gap_without_time_on` | a gap belongs to a temporal task |

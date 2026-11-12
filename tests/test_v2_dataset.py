@@ -828,12 +828,8 @@ def test_a_version_whose_budget_changes_nothing_is_refused(tmp_path: Path, wareh
         ds.make_splits()
 
 
-def test_a_version_records_its_budget_and_is_held_to_it(
-    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_a_version_records_its_budget_and_is_held_to_it(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
-    monkeypatch.setattr("data_foundry.bundle_checks.SPLIT_TRAIN_ROW_BUDGET", 100)  # the v1 budgets: format 1 only
-    monkeypatch.setattr("data_foundry.bundle_checks.SPLIT_TEST_ROW_BUDGET", 10)
     ds = make_version(tmp_path / "datasets")
     result = ds.check(verbose=False)
     container = result.container

@@ -377,16 +377,14 @@ def slugs(container) -> list[str]:
     return [r.slug for r in protocol_checks(container)]
 
 
-def test_the_bundle_checks_judge_each_format_by_its_own_protocol(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_only_a_format_2_container_is_judged_by_the_split_protocol() -> None:
     df = make_iid_frame(60)
     single = PredictiveMLSplitsMetadata(splits_comment="x", splits={0: {0: (list(range(40)), list(range(40, 60)))}})
-    monkeypatch.setattr(bundle_checks, "SPLIT_TEST_ROW_BUDGET", 10)  # the v1 budget: the 20 test rows are over it
     v1_slugs = bundle_checks.run_bundle_checks(make_container(df, experiment_metadata=single), verbose=False).slugs
     v2_slugs = bundle_checks.run_bundle_checks(make_v2_container(df, experiment_metadata=single), verbose=False).slugs
-    assert v1_slugs.count("splits_dimensions_off_protocol") == 1
-    assert "splits_test_over_budget" in v1_slugs
-    assert v2_slugs.count("splits_dimensions_off_protocol") == 1  # from the v2 protocol checks only
-    assert "splits_test_over_budget" not in v2_slugs
+    assert "splits_dimensions_off_protocol" not in v1_slugs  # format 1 is frozen: no protocol check is left for it
+    assert v2_slugs.count("splits_dimensions_off_protocol") == 1
+    assert "splits_test_over_budget" not in v2_slugs  # no budget recorded: no size limit
 
 
 def test_protocol_checks_pass_the_recommended_splits() -> None:

@@ -24,11 +24,10 @@ Usage in a curation notebook — build the container, check it, then save::
 Every finding carries a stable ``slug``; pass ``ignore=["slug", ...]`` to accept a
 finding on purpose (the notebook then documents the accepted deviation).
 
-The split protocol a bundle is judged by follows its container format
-(:attr:`~data_foundry.curation_container.CuratedContainer.format_version`): format 1 (the v1 notebooks, the shipped
-BeyondArena containers) by the v1 protocol of :mod:`data_foundry.curation_recommendations` (repeat ladder, 250k test
-rows), format 2 (the v2 definitions) by :func:`data_foundry.v2.splits.protocol_checks` (always 3 folds, and the
-row budget the container records, if any). Every other check is the same for both formats.
+A format-2 container (the v2 definitions) is also judged by the v2 split protocol,
+:func:`data_foundry.v2.splits.protocol_checks` (always 3 folds, and the row budget the container records, if any).
+Format 1 (the v1 notebooks, the shipped BeyondArena containers, frozen) has no split-protocol check left: its
+containers are pinned and never rebuilt. Every other check is the same for both formats.
 """
 
 from __future__ import annotations
@@ -45,7 +44,6 @@ import numpy as np
 import pandas as pd
 
 from data_foundry.curation_container import CuratedContainer
-from data_foundry.curation_recommendations import SPLIT_TEST_ROW_BUDGET, SPLIT_TRAIN_ROW_BUDGET
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
 from data_foundry.schema import DatasetMetadata, as_column_list
 from data_foundry.utils.checksum import categorical_details
@@ -1464,7 +1462,7 @@ def _check_time_column(ctx: _Ctx) -> Iterator[CheckResult]:
                 f"Dataset is not sorted ascending by `time_on={task.time_on!r}`.",
                 hint="Temporal data should be sorted chronologically (curation guidelines): "
                 "`df = df.sort_values(time_on).reset_index(drop=True)` before building the splits. Expected only "
-                "when rows were subsampled per split afterwards (`curation_recommendations.subsample_temporal`) — "
+                "when a split step reduced the frame per split afterwards — "
                 "the per-fold leakage check is what actually guards the protocol.",
             )
 
@@ -1785,83 +1783,6 @@ def _check_splits_groups(ctx: _Ctx) -> Iterator[CheckResult]:
             "error",
             f"{len(leaking)} fold(s) share a `group_on` value between train and test: {leaking[:5]}.",
             hint="A grouped split must keep every group entirely in one side of the split.",
-        )
-
-
-@_check
-def _check_splits_dimensions(ctx: _Ctx) -> Iterator[CheckResult]:
-    """Compare the split dimensions against the recommended v1 protocol (format 1 only)."""
-    from data_foundry.curation_recommendations import get_recommended_splits_dimensions
-
-    task = ctx.task
-    if ctx.container.format_version != 1 or ctx.df is None or task.time_on is not None or not ctx.flat_splits:
-        return
-    if isinstance(task.group_on, list):
-        # The recommendation helper only understands a single group column.
-        return
-    n_repeats = len(ctx.splits_metadata.splits)
-    folds_per_repeat = {len(folds) for folds in ctx.splits_metadata.splits.values()}
-    if len(folds_per_repeat) != 1:
-        return
-    n_folds = next(iter(folds_per_repeat))
-    if (n_repeats, n_folds) == (1, 1) and len(ctx.flat_splits[0][2]) >= 0.99 * SPLIT_TRAIN_ROW_BUDGET:
-        # A `_1m` split capped at the row budget: whole groups can leave it a few rows short of
-        # train + test budget, which would otherwise drop the frame into the 1x3 size band.
-        return
-
-    try:
-        recommended = get_recommended_splits_dimensions(
-            dataset=ctx.df,
-            group_on=task.group_on if isinstance(task.group_on, str) else None,
-            time_on=None,
-            group_labels=task.group_labels,
-        )
-    except (ValueError, KeyError):
-        return
-    rec_repeats, rec_folds, rec_test_size = recommended
-    if (n_repeats, n_folds) != (rec_repeats, rec_folds):
-        yield CheckResult(
-            "splits_dimensions_off_protocol",
-            "warning",
-            f"Splits are {n_repeats}x{n_folds} but the recommendation for this size is {rec_repeats}x{rec_folds}"
-            + (f" (test_size={rec_test_size:,})" if rec_test_size else "")
-            + ".",
-            hint="Deviating is allowed when the task demands it — record why in `splits_comment`.",
-        )
-
-
-@_check
-def _check_splits_row_budget(ctx: _Ctx) -> Iterator[CheckResult]:
-    """Format 1: no outer split may train on more than 1M rows or test on more than 250k (the v1 protocol).
-
-    Format 2 has no protocol budget: a container is held to the ``row_budget`` it records, if any
-    (:func:`data_foundry.v2.splits.protocol_checks`).
-    """
-    if not ctx.flat_splits or ctx.container.format_version != 1:
-        return
-    train_budget, test_budget = SPLIT_TRAIN_ROW_BUDGET, SPLIT_TEST_ROW_BUDGET
-    over_train = [(r, f, len(train)) for r, f, train, _test in ctx.flat_splits if len(train) > train_budget]
-    over_test = [(r, f, len(test)) for r, f, _train, test in ctx.flat_splits if len(test) > test_budget]
-    if over_train:
-        largest = max(n for *_, n in over_train)
-        yield CheckResult(
-            "splits_train_over_budget",
-            "error",
-            f"{len(over_train)} split(s) train on more than {train_budget:,} rows (largest: {largest:,}); "
-            f"first: {[(r, f) for r, f, _ in over_train[:5]]}.",
-            hint="Sub-sample each split's train side to the budget, e.g. with "
-            "`curation_recommendations.subsample_temporal(train_cap=1_000_000)`; for grouped splits, sample whole "
-            "groups until the train side fits.",
-        )
-    if over_test:
-        largest = max(n for *_, n in over_test)
-        yield CheckResult(
-            "splits_test_over_budget",
-            "warning",
-            f"{len(over_test)} split(s) test on more than {test_budget:,} rows (largest: {largest:,}); "
-            f"first: {[(r, f) for r, f, _ in over_test[:5]]}.",
-            hint="Cap the test side (e.g. `subsample_temporal(test_cap=250_000)`), or accept it in `ignore=[...]` "
-            "with the reason, e.g. when a grouped split cannot hit the cap without dropping whole groups.",
         )
 
 
