@@ -21,6 +21,8 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
+- MixtureSolDB has a curator-accepted molecular-solvent regression; its scoped build report records the source revision, local container, checks and raw-input reproduction. Other datasets were not rebuilt.
+
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows

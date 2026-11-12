@@ -1,5 +1,12 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-12 — Add accepted MixtureSolDB molecular-solvent regression
+
+- Myunghwan accepted natural-log mole-fraction regression and RMSE directly on ln values, with whole-solute-family holdout, on November11. Apply the settled exclusions of22 composition-uncertain source rows and1,309 valid active-polymer observations outside the selected molecular-solvent population; preserve all810 solutes and606 families across165,781 observations.
+- Keep typed structures, planned temperature and mixture fractions/basis; remove alternative outcomes and identifiers. Retain the source-supported110-row dapsone correction, exact input-target deduplication, molecular pure endpoints and explicit structural-identity grouping.
+- Migrate source provenance to the current Source API and preserve every review issue and panel report in the curation record. Current-framework data, inputs, target, all nine folds and scorer match accepted qualification exactly. A fresh isolated clean source/build identity and traced-input verification follow.
+
+
 ## 2026-11-12, asp_potassco_classification and sat11_hand_algo_runtime: the split count moves to its own PR (no container built)
 
 Lennart, 2026-11-12: the split count in scored units (rule SPLIT-33, `recommended_dimensions` counting the metric's
