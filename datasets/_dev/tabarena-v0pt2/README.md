@@ -21,6 +21,8 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
+- Selected build on November 12, 2026: one MixtureSolDB format-2 container, from one traced CSV (41,107,737 bytes). Saved reload and traced-input checksum reproduction pass; the complete scientific frame and all nine folds match accepted qualification. See its generated report and CHANGELOG. Other datasets were not rebuilt.
+
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows
