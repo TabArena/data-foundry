@@ -308,6 +308,9 @@ horizon (...) is checked". The README files follow at the next `dataset check`; 
   simple (+0.0024 ROC AUC over age alone, too small to matter in practice).
 - The record is `No (Retired)` with `Trivial` and a CC line, `v2_path` is cleared and the folder is removed; the TP-4
   case row and case list and the evidence.md example are updated.
+- Restated on 2026-11-12 (Lennart): paired per split the methods lead the rule on 8 or 9 of 9 splits, so under TP-4 as
+  amended that day this is not a match but a real gain too small for any decision (step 2, the curator's call); the
+  record's CC line, the case row and the evidence.md example say so.
 
 ## 2026-11-10, lung_cancer retired (Andrej; no container built)
 

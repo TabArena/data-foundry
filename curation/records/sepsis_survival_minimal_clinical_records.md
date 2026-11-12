@@ -50,7 +50,20 @@ CC (2026-11-10, Andrej): retired (`No (Retired)`, `Trivial`): a clinician's rule
 - **What TabPFN adds over age:** it keeps age's order on 94% of (died, survived) pairs; its gain (+0.0024) is men counted a few years older (+0.0019 net of large gains and losses) and a repeat episode in younger patients (+0.0005).
 - **Why the earlier keep does not hold:** age alone below the best on every fold (Lennart, 2026-10-06) met the single-feature test of the time; the amended test counts a rule within the spread of the folds as a match, which makes the dataset a candidate to drop, not a forced retirement.
 - **Curator call on top of the rules:** retired because the task is both almost solved and very simple. Almost solved: TabPFN 3.5 (0.7068) sits within about 0.002 of the best achievable ranking (about 0.709). Very simple: its gain over a naive baseline is +0.0024 ROC AUC over age alone and +0.0010 over the unfitted rule, too small to change any decision in practice; a benchmark task on which every method lands within 0.003 of a clinician's rule ranks nothing but smoothing.
-Marker `Trivial` added, `v2_path` cleared, folder removed. Evidence: `~/claude_jobs/sepsis_tabpfn/` (TabPFN 3.5 on an A100, Slurm 1376270 and 1376610; `offset_fit.py`, `optimal.py`, `oracle_null.py`, `train_optimal.py`, `pairs.py`).
+Marker `Trivial` added, `v2_path` cleared, folder removed. Evidence: TabPFN 3.5 on an A100 (Slurm 1376270 and 1376610).
+
+CC (2026-11-12, Lennart): the retirement stands, restated under TP-4 as amended on 2026-11-12 (compared paired per
+split; a gain of the methods over a rule that is real but too small for the use case's decision is step 2, the
+curator's call).
+- **Paired per split, the methods beat the rule:** TabPFN 3.5 is ahead of age + 5 years for men on 8 of the 9 shipped
+  splits (+0.0010 ± 0.0002); on BeyondArena's 9 folds the best tuned methods (TabPFN-3, tuned LightGBM, RealMLP) are
+  ahead on 9 of 9 (+0.0012, sd 0.0004). That is a real gain, not a match; "within the spread of the folds" above read
+  the folds' own range (0.699 to 0.710), which hits the rule and the methods alike.
+- **Step 2, the gain does not matter:** +0.001 AUC over the rule (+0.0024 over age alone) changes no decision about a
+  patient. TabPFN is the best model on BeyondArena for this dataset, and the tuned methods span 0.0015 AUC (0.7056 to
+  0.7071), so the task ranks nothing but how well a method smooths an age curve. Lennart on PR #77: "the spread on
+  this dataset is anyhow minimal, so it is fair to call it trivial and not representative under our new rules."
+Marker `Trivial` kept.
 
 ## Reference
 
