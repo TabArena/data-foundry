@@ -11,7 +11,6 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     Temporal,
@@ -259,7 +258,6 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         The oldest window trains on 2016 alone: 50.07% of the hours (8,784 of 17,544) but 49.47% of the rows (19,325,311 of 39,062,170), as 2016 has more gaps and drops (site 0's recording gap). We keep it under the floor's amendment of 2026-11-08: the two newer windows train on 66.0% and 83.0% of the rows, and an older window may train on 40% or more when most test entities recur; here every test meter's building is in training, and folds by entity would test unseen buildings. LightGBM (one seed, default parameters with 1,000 trees and early stopping on the last 10% of each train sample in time order, fit on the default 1M sample of the newest year before each window, the date in the recommended encoding) scores RMSLE 1.212, 1.342 and 1.213, newest first: 1.277 on the two valid windows and 1.256 on all three. The oldest window scores like the newest and moves the mean by about 0.02; the direction comes from May-August, which the absolute date features (year, total seconds) make harder: without them the scores are 1.240, 1.176 and 1.247 (1.208 on the two valid windows, 1.221 on all three).
         Each test window keeps at most 500k of its rows, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows, by default a random 1M of the newest year before the window (`subsample_train`).
     """
-    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         read = {

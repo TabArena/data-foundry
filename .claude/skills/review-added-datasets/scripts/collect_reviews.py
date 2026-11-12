@@ -119,6 +119,8 @@ class Collected:
     all``); by default none, so the page shows no metric (Lennart, 2026-11-10)."""
     horizon_marks: set[str] | None = None
     """The same for a temporal task's horizon and test windows (``--horizon-marks``; Lennart, 2026-11-10)."""
+    split_marks: set[str] | None = None
+    """The same for the declared split (``--split-marks``)."""
 
     @property
     def n_folders(self) -> int:
@@ -496,13 +498,14 @@ def is_settled(
     records: Path,
     metric_marks: set[str] | frozenset[str] | None = frozenset(),
     horizon_marks: set[str] | frozenset[str] | None = frozenset(),
+    split_marks: set[str] | frozenset[str] | None = frozenset(),
 ) -> bool:
     """Whether nothing on ``entry`` waits for the curator: every issue resolved (none left deferred), no record-field
     row, no triage verdict to verify, and, for a dataset with a folder whose metric the round marks (``metric_marks``,
     ``None`` for every record), the record's CC line that the declared metric is checked; likewise for the horizon
-    (``horizon_marks``). Such a record ships by default and leaves the page (Lennart, 2026-11-08); its review stays
-    in the record. A metric or a horizon the round does not ask about never keeps a record on the page (Lennart,
-    2026-11-10).
+    (``horizon_marks``) and the split (``split_marks``). Such a record ships by default and leaves the page (Lennart,
+    2026-11-08); its review stays in the record. A metric, a horizon or a split the round does not ask about never
+    keeps a record on the page (Lennart, 2026-11-10).
     """
     if entry.fields:
         return False
@@ -518,18 +521,25 @@ def is_settled(
         return False
     if not entry.folder:
         return True
-    for marks, checked in ((metric_marks, brp._metric_checked), (horizon_marks, brp._horizon_checked)):
+    for marks, checked in (
+        (metric_marks, brp._metric_checked),
+        (horizon_marks, brp._horizon_checked),
+        (split_marks, brp._split_checked),
+    ):
         if (marks is None or entry.name in marks) and checked(record) is None:
             return False
     return True
 
 
 def _settled_lines(collected: Collected) -> list[str]:
-    """The report's lines naming the records whose metric the round marks and those left out as settled, or nothing."""
+    """The report's lines naming the records whose metric, horizon or split the round marks and those left out as
+    settled, or nothing.
+    """
     out = []
     for label, marks in (
         (brp.METRIC_MARKS_LABEL, collected.metric_marks),
         (brp.HORIZON_MARKS_LABEL, collected.horizon_marks),
+        (brp.SPLIT_MARKS_LABEL, collected.split_marks),
     ):
         if marks is None:
             out += [f"{label} all.", ""]
@@ -635,7 +645,7 @@ def check_report(path: Path, collected: Collected) -> None:
 
 
 def _marks(value: str | None) -> set[str] | None:
-    """The names of a ``--metric-marks`` or ``--horizon-marks`` flag (``None`` for ``all``)."""
+    """The names of a ``--metric-marks``, ``--horizon-marks`` or ``--split-marks`` flag (``None`` for ``all``)."""
     marks = {n.strip() for n in (value or "").split(",") if n.strip()}
     return None if marks == {"all"} else marks
 
@@ -664,6 +674,13 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     parser.add_argument(
+        "--split-marks",
+        help=(
+            "Comma-separated unique names, or `all`: the records whose declared split is a choice of this round (new "
+            "datasets, a proposed split change). The page shows the split and a mark on it only for these."
+        ),
+    )
+    parser.add_argument(
         "--keep-settled",
         action="store_true",
         help="Keep the records with nothing left to decide (left out by default: they ship by default).",
@@ -675,16 +692,26 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(f"--date {args.date!r} is not YYYY-MM-DD")
     names = [n.strip() for n in args.names.split(",") if n.strip()] if args.names else None
     metric_marks, horizon_marks = _marks(args.metric_marks), _marks(args.horizon_marks)
+    split_marks = _marks(args.split_marks)
     try:
         collected = collect(args.root, args.records, names)
-        for flag, marks in (("--metric-marks", metric_marks), ("--horizon-marks", horizon_marks)):
+        for flag, marks in (
+            ("--metric-marks", metric_marks),
+            ("--horizon-marks", horizon_marks),
+            ("--split-marks", split_marks),
+        ):
             unknown = sorted((marks or set()) - {e.name for e in collected.entries})
             if unknown:
                 print(f"error: {flag} names records without open review: {', '.join(unknown)}", file=sys.stderr)
                 return 1
         collected.metric_marks, collected.horizon_marks = metric_marks, horizon_marks
+        collected.split_marks = split_marks
         if not args.keep_settled:
-            settled = [e.name for e in collected.entries if is_settled(e, args.records, metric_marks, horizon_marks)]
+            settled = [
+                e.name
+                for e in collected.entries
+                if is_settled(e, args.records, metric_marks, horizon_marks, split_marks)
+            ]
             collected.entries = [e for e in collected.entries if e.name not in settled]
             collected.settled = settled
         if not collected.entries and not collected.across_items:

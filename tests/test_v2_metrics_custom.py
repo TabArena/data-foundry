@@ -1,8 +1,8 @@
 """The custom metrics of ``data_foundry.v2.metrics`` against their official or reference implementations.
 
 Each official implementation is vendored below, as published (only reformatted, with the I/O around it removed), with
-its source. Each metric is also checked on a small case computed by hand. The 1M-row timings are in
-``local-data-warehouse/_runs/2026-10-21_metrics/bench.py`` (not part of the test run).
+its source. Each metric is also checked on a small case computed by hand. The 1M-row timings were measured
+once, on 2026-10-21, and are not part of the test run.
 """
 
 from __future__ import annotations
@@ -102,9 +102,7 @@ def test_cost_matrix_refuses_bad_params() -> None:
 
 
 def apk(yt, s, k):
-    """AP@k of local-data-warehouse/_runs/2026-10-21_crosscut/metric_originals/hunt.py (Avito's scorer is not
-    public; the formula of its evaluation page).
-    """
+    """AP@k by the formula of Avito's evaluation page (its scorer is not public)."""
     order = np.argsort(-s)[:k]
     rel = yt[order]
     prec = np.cumsum(rel) / np.arange(1, len(rel) + 1)

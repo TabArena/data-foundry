@@ -14,7 +14,6 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     Temporal,
@@ -299,7 +298,6 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
             "April-June 2020, as the bank recorded them (curation_comments)."
         ),
     }
-    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     # The raw tables are too large for pandas: `_prepare_raw_files` joins them with polars once (following
     # TabRed's homecredit.py, https://github.com/yandex-research/tabred/blob/main/preprocessing/homecredit.py)

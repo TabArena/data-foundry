@@ -61,9 +61,9 @@ class ClassName(AbstractCuratedDataset):
 
         - TODO(verify): what was dropped and why (identifiers, leaking features, constant columns).
     """
-    # TabArena v0.2 ships data over its row budget (a split side over 1M train / 500k test rows) as a sub-sampled
-    # version named `<name>_1m` (it reads the raw files of `<name>`), which also sets
-    # row_budget = RowBudget(train=1_000_000, test=500_000)  (from data_foundry.v2 import RowBudget).
+    # TabArena v0.2 ships data over its row budget (a split side over 1M train / 500k test rows) as the version
+    # `<name>_1m` (folder and unique_name; it reads the raw files of `<name>`). The working copy's collection.py
+    # sets the budget, so the definition declares none; the build says when the name must carry the suffix.
 
     # Task (stratifying on a classification target is the default)
     target = "TODO"

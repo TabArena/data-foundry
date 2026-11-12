@@ -18,10 +18,11 @@ and **grouped** (generalise to unseen entities such as patients or customers).
 > benchmarks, and most of them are non-IID. Candidates of that size carry the tag **`Review Prio 1 (Atlas)`** in
 > the curation log (the tag comes from the earlier Atlas plan for a large-data collection, now folded into
 > TabArena v0.2); pick from them first (section 7). Data Foundry itself sets no row budget; TabArena v0.2 tests on
-> at most 500k rows per split and trains on at most 1M: a dataset whose splits have a side over that ships as a
-> `<name>_1m` version with `row_budget = RowBudget(train=1_000_000, test=500_000)`. Its container caps each test
+> at most 500k rows per split and trains on at most 1M: a dataset whose splits have a side over that ships as the
+> version `<name>_1m`, which gets the budget from the working copy's `collection.py`. Its container caps each test
 > side at 500k rows and keeps every training row; the benchmark draws the 1M it fits on (a random sample of the
-> newest year of a temporal side, by default).
+> newest year of a temporal side, by default). The whole path, as a decision tree:
+> [`split_protocol.md`](../../../.claude/skills/knowledge-data-foundry/references/split_protocol.md).
 
 The selection criteria (unique source, a real predictive task, no irreversible leakage, ethically unambiguous, not
 trivial) are the same for every dataset; the [**📖 Guidelines**](https://tabarena.github.io/data-foundry/guidelines.html)

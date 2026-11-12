@@ -137,8 +137,7 @@ premium), and the family's amount targets keep it. Net negative totals (IDA reco
 frempl; raw charge, scored by the normalized Gini as a stand-in for the game's market, as in pg17. `problem_type` stays
 `Regression` (the earlier "update" mark on that field is superseded); `Two-Regime Zeros` back.
 
-**Assessment (AI, 2026-11-02):** the charge target measured (record `_runs/2026-11-02_pg16_amount_check` and
-`_runs/2026-11-02_pg16_expanding`). On the expanding windows (newest first), normalized Gini: the length alone 0.101 /
+**Assessment (AI, 2026-11-02):** the charge target measured. On the expanding windows (newest first), normalized Gini: the length alone 0.101 /
 0.150 / 0.066, a Tweedie GLM 0.167 / 0.270 / 0.268, a regularised Tweedie LightGBM 0.155 / 0.245 / 0.276 (bootstrap SE
 0.071 / 0.043 / 0.023). TP-4 holds, on the newest window (103 positive charges) only by about one SE. All the signal is
 frequency: a Poisson model of the claim count ranks the charges at 0.202 / 0.271 / 0.279, and the log charge among
@@ -1465,8 +1464,7 @@ kept with your note on the hold-out in `splits_comment`; rows, target, split and
    **Notes for the AI:** on E: `_make_splits` builds the 3 x 3 folds by `fleet_group` as now and keeps each test side
    to its periods of 2013 (training sides unchanged); `ForcedGroupedFromTemporal` stays; rewrite `task_summary.split`,
    `splits_comment` (with Andrej's note of 2026-11-10 and this comparison) and Decision 2; CC line, CHANGELOG entry;
-   re-run `dataset check` and probes 22 and 23. Run folder: `~/workdir/ta_clones/ta_data_curation/runs/2026-11-10_pg16_splits/`
-   (`pg16_splits.py`, `pg16_approx.py`, `pg16_loyo.py`; `res.csv`, `approx.csv`, `loyo.csv`).
+   re-run `dataset check` and probes 22 and 23.
 
    **Andrej (2026-11-10, discuss):** Disagree: We go with A over E because it provides the larger test size.
 

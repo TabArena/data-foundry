@@ -12,6 +12,12 @@ from __future__ import annotations
 
 from data_foundry.collections._core import DatasetCollection
 from data_foundry.collections._sources import HuggingFaceSource
+from data_foundry.schema import RowBudget
+
+TABARENA_V0PT2_ROW_BUDGET = RowBudget(train=1_000_000, test=500_000)
+"""TabArena v0.2 trains on at most 1M and tests on at most 500k rows per split (Lennart, 2026-10-21). The working
+copy's ``collection.py`` builds every definition with it (a ``<name>_1m`` version gets it), and the collection,
+once registered, holds every container to it (:meth:`DatasetCollection.budget_findings`)."""
 
 BEYOND_ARENA_UUIDS = (
     "airfoil_self_noise/019d7366-4673-7d9a-9821-35604af616f6",

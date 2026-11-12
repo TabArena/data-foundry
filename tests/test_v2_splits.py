@@ -1,27 +1,20 @@
 """Tests for the v2 split protocol (``data_foundry.v2.splits``).
 
-The cross-validation builders must give exactly the splits of the v1 helpers, so a v2 dataset below 1.25M rows
-keeps its splits and its checksum; those tests are the only link to ``curation_recommendations``.
+The cross-validation builders are pinned by a checksum of their splits: a change to them would change the splits,
+and so the checksum, of every container built since.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
+
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry import (
-    bundle_checks,
-    curation_recommendations as v1,
-)
-from data_foundry.schema import (
-    Grouping,
-    PredictiveMLSplitsMetadata,
-    PredictiveMLTaskMetadataV2,
-    RowBudget,
-    TrainSampling,
-)
+from data_foundry import bundle_checks
+from data_foundry.schema import PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2, RowBudget, TrainSampling
 from data_foundry.v2 import splits as protocol
-from data_foundry.v2.metrics import Metric
 from data_foundry.v2.splits import (
     fit_splits_to_budget,
     grouped_splits,
@@ -30,7 +23,6 @@ from data_foundry.v2.splits import (
     recommended_dimensions,
     sample_temporal_splits,
     sample_train_positions,
-    subsample_frame,
     subsample_train,
 )
 
@@ -70,34 +62,31 @@ def grouped_frame(n_groups: int = 120, *, per_group: bool, seed: int = 0) -> pd.
     return pd.DataFrame({"g": groups, "y": pd.Categorical(labels), "pos": np.arange(len(groups))})
 
 
-# --- the same splits as v1 below 1.25M rows ----------------------------------------------------------------------
-@pytest.mark.parametrize("stratify_on", ["y", None])
-def test_iid_splits_equal_the_v1_splits(stratify_on: str | None) -> None:
-    df = labelled_frame()
-    got = iid_splits(df, n_repeats=3, stratify_on=stratify_on)
-    expected = v1.get_recommended_iid_splits(
-        dataset=df, n_repeats=3, n_splits=3, test_size=None, stratify_on=stratify_on, random_state=4267
-    )
-    assert got == expected
+def splits_digest(splits: dict) -> str:
+    """A short checksum of a set of splits."""
+    return hashlib.sha256(json.dumps(splits, sort_keys=True).encode()).hexdigest()[:16]
 
 
-@pytest.mark.parametrize("per_group", [True, False])
-@pytest.mark.parametrize("stratify_on", ["y", None])
-def test_grouped_splits_equal_the_v1_splits(*, per_group: bool, stratify_on: str | None) -> None:
-    df = grouped_frame(per_group=per_group)
+# --- the builders' splits are pinned -----------------------------------------------------------------------------
+@pytest.mark.parametrize(("stratify_on", "digest"), [("y", "ea2677f90aa6b34d"), (None, "c60489ba1251853b")])
+def test_iid_splits_are_pinned(stratify_on: str | None, digest: str) -> None:
+    assert splits_digest(iid_splits(labelled_frame(), n_repeats=3, stratify_on=stratify_on)) == digest
+
+
+@pytest.mark.parametrize(
+    ("per_group", "stratify_on", "digest"),
+    [
+        (True, "y", "2f2c4213ad60503a"),
+        (True, None, "4a779b7fa3701698"),
+        (False, "y", "7e8136e69e8bed07"),
+        (False, None, "49dd36ae92a01c5a"),
+    ],
+)
+def test_grouped_splits_are_pinned(*, per_group: bool, stratify_on: str | None, digest: str) -> None:
     labels = "per_group" if per_group else "per_sample"
+    df = grouped_frame(per_group=per_group)
     got = grouped_splits(df, n_repeats=3, group_on="g", group_labels=labels, stratify_on=stratify_on)
-    expected = v1.get_recommended_grouped_splits(
-        dataset=df,
-        n_repeats=3,
-        n_splits=3,
-        group_on="g",
-        group_labels=labels,
-        test_size=None,
-        stratify_on=stratify_on,
-        random_state=4267,
-    )
-    assert got == expected
+    assert splits_digest(got) == digest
 
 
 def test_per_group_splits_reject_a_group_with_several_labels() -> None:
@@ -106,103 +95,28 @@ def test_per_group_splits_reject_a_group_with_several_labels() -> None:
         grouped_splits(df, n_repeats=1, group_on="g", group_labels="per_group", stratify_on="y")
 
 
-@pytest.mark.parametrize("n", [100, 500, 2_499, 2_500, 249_999, 250_000, 999_999, 1_000_000, 1_249_999])
-def test_dimensions_equal_v1_below_the_single_split_size(n: int) -> None:
-    expected = v1.get_recommended_splits_dimensions(dataset=Sized(n))
-    assert recommended_dimensions(Sized(n)) == expected[:2]
+@pytest.mark.parametrize(
+    ("n", "repeats"),
+    [
+        (100, 20),
+        (749, 20),  # 499 on the train side
+        (750, 10),
+        (3_749, 10),
+        (3_750, 3),
+        (374_999, 3),
+        (375_000, 1),  # 250,000 on the train side
+        (5_000_000, 1),
+    ],
+)
+def test_repeats_follow_the_train_side_in_rows(n: int, repeats: int) -> None:
+    assert recommended_dimensions(Sized(n)) == (repeats, 3)
 
 
-@pytest.mark.parametrize("n", [1_250_000, 1_500_000, 5_000_000])
-def test_large_frames_get_one_repeat_of_three_folds(n: int) -> None:
-    assert recommended_dimensions(Sized(n)) == (1, 3)
-
-
-def test_per_group_frames_count_groups_until_they_are_large(monkeypatch: pytest.MonkeyPatch) -> None:
-    df = pd.DataFrame({"g": np.repeat(np.arange(10), 12), "y": 0})  # 120 rows, 10 groups
-    assert recommended_dimensions(df, group_on="g", group_labels="per_group") == (20, 3)
-    monkeypatch.setattr(protocol, "SINGLE_REPEAT_ROWS", 100)
-    assert recommended_dimensions(df, group_on="g", group_labels="per_group") == (1, 3)
-
-
-def runs_frame(n_instances: int, n_runs: int) -> pd.DataFrame:
-    """One row per instance and run (a solver's runtime), the instances in 10 classes, as in algorithm selection."""
-    instances = np.repeat(np.arange(n_instances), n_runs)
-    runtimes = np.arange(len(instances), dtype=float)
-    return pd.DataFrame({"instance": instances, "cls": instances % 10, "target": runtimes})
-
-
-def test_a_metric_that_scores_per_group_counts_its_groups_not_the_rows() -> None:
-    """A long-format table gets the splits of the same task with one row per scored unit."""
-    df = runs_frame(1_212, 11)  # 13,332 rows; the metric scores 1,212 instances
-    assert recommended_dimensions(df, group_on="cls", group_labels="per_sample") == (3, 3)
-    assert recommended_dimensions(df, group_on="cls", group_labels="per_sample", score_group_on="instance") == (10, 3)
-    assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", score_group_on="instance") == (
-        10,
-        3,
-    )
-    one_row_per_instance = df.drop_duplicates("instance").reset_index(drop=True)
-    assert recommended_dimensions(one_row_per_instance) == (10, 3)  # the same task in the other layout
-
-
-def test_a_scored_group_frame_gets_one_repeat_when_it_is_large(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The row budget still caps the repeats of a frame scored per group."""
-    df = runs_frame(30, 10)  # 300 rows, 30 instances
-    assert recommended_dimensions(df, group_on="instance", score_group_on="instance") == (20, 3)
-    monkeypatch.setattr(protocol, "SINGLE_REPEAT_ROWS", 300)
-    assert recommended_dimensions(df, group_on="instance", score_group_on="instance") == (1, 3)
-
-
-def test_a_metric_group_the_split_cuts_across_folds_counts_rows() -> None:
-    """A metric group spread over several split groups (a survey year over stations), or over an IID split, is scored
-    on part of its rows in every fold: the rows count, not the groups."""
-    df = runs_frame(1_212, 11)  # 13,332 rows
-    df["year"] = df["instance"] % 15  # 15 years, each across many instances and all 10 classes
-    assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", score_group_on="year") == (3, 3)
-    assert recommended_dimensions(df, score_group_on="instance") == (3, 3)  # IID: every instance cut across folds
-    assert protocol.scored_groups_held_out_whole(df, "cls", "instance")
-    assert not protocol.scored_groups_held_out_whole(df, "cls", "year")
-    assert not protocol.scored_groups_held_out_whole(df, None, "instance")
-
-
-def test_metric_group_column_is_the_metrics_group_input() -> None:
-    """The metric's ``group`` input names the scored unit; a metric without one scores rows."""
-    par10 = Metric.source("par_k", params={"cutoff": 600}, inputs={"group": "instance"})
-    task = PredictiveMLTaskMetadataV2(
-        target_column_name="target", problem_type="regression", objective_metric=make_spec("regression", par10)
-    )
-    assert protocol.metric_group_column(task) == "instance"
-    assert protocol.metric_group_column(V2_TASK) is None  # a metric that scores rows
-
-
-def test_the_seed_is_the_v1_seed() -> None:
-    assert protocol.SPLIT_RANDOM_STATE == v1.SPLIT_RANDOM_STATE
-
-
-# --- sub-sampling the frame ---------------------------------------------------------------------------------------
-def test_subsample_frame_samples_rows_in_order_and_keeps_the_class_balance() -> None:
-    df = labelled_frame(n=3_000)
-    out = subsample_frame(df, stratify_on="y", n_rows=900)
-    assert len(out) == 900
-    assert out.index.equals(pd.RangeIndex(900))
-    assert out["t"].is_monotonic_increasing  # the row order is kept
-    before = df["y"].value_counts(normalize=True)
-    after = out["y"].value_counts(normalize=True)
-    assert (before - after).abs().max() < 0.01
-
-
-def test_subsample_frame_keeps_whole_groups() -> None:
-    df = grouped_frame(n_groups=600, per_group=True)
-    out = subsample_frame(df, group_on="g", stratify_on="y", n_rows=len(df) // 3)
-    assert len(out) <= len(df) // 3
-    assert out["pos"].is_monotonic_increasing
-    kept = out["g"].value_counts()
-    assert kept.equals(df["g"].value_counts().reindex(kept.index))  # every kept group is complete
-    assert abs((out["y"] == "b").mean() - (df["y"] == "b").mean()) < 0.05
-
-
-def test_subsample_frame_within_budget_returns_the_frame() -> None:
-    df = labelled_frame()
-    assert subsample_frame(df, n_rows=len(df)) is df
+def test_per_group_frames_count_groups_at_any_size() -> None:
+    small = pd.DataFrame({"g": np.repeat(np.arange(10), 12), "y": 0})  # 120 rows, 10 groups
+    assert recommended_dimensions(small, group_on="g", group_labels="per_group") == (20, 3)
+    large = pd.DataFrame({"g": np.repeat(np.arange(10), 130_000), "y": 0})  # 1.3M rows, still 10 groups
+    assert recommended_dimensions(large, group_on="g", group_labels="per_group") == (20, 3)
 
 
 # --- fitting the cross-validation to a row budget ---------------------------------------------------------------
@@ -463,16 +377,14 @@ def slugs(container) -> list[str]:
     return [r.slug for r in protocol_checks(container)]
 
 
-def test_the_bundle_checks_judge_each_format_by_its_own_protocol(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_only_a_format_2_container_is_judged_by_the_split_protocol() -> None:
     df = make_iid_frame(60)
     single = PredictiveMLSplitsMetadata(splits_comment="x", splits={0: {0: (list(range(40)), list(range(40, 60)))}})
-    monkeypatch.setattr(bundle_checks, "SPLIT_TEST_ROW_BUDGET", 10)  # the v1 budget: the 20 test rows are over it
     v1_slugs = bundle_checks.run_bundle_checks(make_container(df, experiment_metadata=single), verbose=False).slugs
     v2_slugs = bundle_checks.run_bundle_checks(make_v2_container(df, experiment_metadata=single), verbose=False).slugs
-    assert v1_slugs.count("splits_dimensions_off_protocol") == 1
-    assert "splits_test_over_budget" in v1_slugs
-    assert v2_slugs.count("splits_dimensions_off_protocol") == 1  # from the v2 protocol checks only
-    assert "splits_test_over_budget" not in v2_slugs
+    assert "splits_dimensions_off_protocol" not in v1_slugs  # format 1 is frozen: no protocol check is left for it
+    assert v2_slugs.count("splits_dimensions_off_protocol") == 1
+    assert "splits_test_over_budget" not in v2_slugs  # no budget recorded: no size limit
 
 
 def test_protocol_checks_pass_the_recommended_splits() -> None:
@@ -487,24 +399,6 @@ def test_protocol_checks_flag_a_single_split() -> None:
     single = {0: {0: (list(range(40)), list(range(40, 60)))}}
     container = make_v2_container(df, experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="x", splits=single))
     assert "splits_dimensions_off_protocol" in slugs(container)
-
-
-@pytest.mark.parametrize(("n_repeats", "flagged"), [(20, False), (10, True)])
-def test_protocol_checks_count_the_groups_a_metric_scores(*, n_repeats: int, flagged: bool) -> None:
-    """The check wants the repeats of the scored instances, as the default splits give them."""
-    df = runs_frame(120, 11)  # 1,320 rows: 10 repeats by rows, 20 by the 120 scored instances
-    par10 = Metric.source("par_k", params={"cutoff": 600}, inputs={"group": "instance"})
-    task = PredictiveMLTaskMetadataV2(
-        target_column_name="target",
-        problem_type="regression",
-        objective_metric=make_spec("regression", par10),
-        grouping=Grouping(on="cls", labels="per_sample"),
-    )
-    splits = grouped_splits(df, n_repeats=n_repeats, group_on="cls", group_labels="per_sample")
-    container = make_container(
-        df, task_metadata=task, experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="x", splits=splits)
-    )
-    assert ("splits_dimensions_off_protocol" in slugs(container)) is flagged
 
 
 @pytest.mark.parametrize(
@@ -568,7 +462,11 @@ def test_several_group_columns_make_one_group_per_combination() -> None:
     for folds in splits.values():
         for train, test in folds.values():
             assert not set(key.iloc[train]) & set(key.iloc[test])
-    assert protocol.subsample_frame(df, group_on=["a", "b"], n_rows=100).groupby(["a", "b"], dropna=False).ngroups
+    fitted, sampled = protocol.fit_splits_to_budget(df, splits, RowBudget(train=200, test=40), group_on=["a", "b"])
+    assert sampled
+    for folds in fitted.values():
+        for train, test in folds.values():
+            assert not set(key.iloc[train]) & set(key.iloc[test])  # the sampled test sides keep combinations whole
     single, _ = protocol.one_group_column(df, "a")
     assert single is df  # one column: the frame and its splits are as before
 

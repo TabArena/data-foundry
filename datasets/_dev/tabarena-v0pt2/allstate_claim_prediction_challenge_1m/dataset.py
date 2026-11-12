@@ -13,7 +13,6 @@ from data_foundry.v2 import (
     FeatureTypes,
     Grouping,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     drop_columns,
@@ -189,8 +188,7 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
         Default splits, grouped by household (Household_ID): 3 folds over the 2.75M rows of the 2006 renewal book (claim rate 0.82%), each testing on at most 500k rows, whole households drawn at random from its third, and training on every other row (about 2.25M), which a benchmark sub-samples to 1M rows by whole households (`subsample_train`). The task is temporal by its use case: the competition gave 2005-2007 for training and scored 2008 (public leaderboard) and 2009 (final ranking), whose claims were never published. With 2007 dropped (its large claims look unsettled) and 2005 used as the history of 2006, one labelled target year is left, so no window of a temporal split exists and the task ships under SPLIT-8 (ForcedGroupedFromTemporal): the folds hold out whole households, whose vehicles share the household's record, so random rows would put a household's other cars on both sides. Before the history was built, trained on 2005 and scored on 2006 all rows reached 0.064, above the folds by household of that build (0.022 to 0.054) and inside the nine folds of the renewal book (0.022 to 0.106), so the forced split shows no cost this noise can measure. The training rows are the test year's other households, their amounts read at the release (about 2011, the file's date), more developed than Allstate had at the 2006 renewal, when it would have trained on 2005 and earlier; both sides of every fold hold amounts of the same maturity. What the folds do not test: new business (the cars that joined during 2006 are left out), vehicle series not seen in training (0.02% of test rows on the earlier folds), and a rating at a known date within the year. A release with dates beyond 2007 should get a temporal split. Shipped forced on the curator's call (Andrej, 2026-11-02: "Forced group splits should be fine"; 2026-11-03: the 2006 renewal book; Lennart, 2026-11-08: only the cars on the policy at the start of 2006; Andrej, 2026-11-09: the split by household stays).
     """
 
-    # Splits
-    row_budget = RowBudget(train=1_000_000, test=500_000)
+    # Splits: the `_1m` version gets the collection's row budget (`collection.py`) by its name.
     accepted_check_warnings = {
         "groups_labels_constant": (
             "The label is one per vehicle-year and claims are rare (0.82%), so 98.2% of the households with two or "

@@ -11,7 +11,6 @@ from data_foundry.v2 import (
     FeatureTypes,
     Grouping,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     drop_columns,
@@ -251,7 +250,6 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
         forward: the labels are undated findings of 2013-2019, one per client, so no test window or gap can be set,
         and train and test clients share the same years, as in the challenge.
     """
-    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         text = {"client_id": str, "creation_date": str}

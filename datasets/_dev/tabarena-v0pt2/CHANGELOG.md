@@ -1,5 +1,52 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-12, the collection sets the row budget (no container built)
+
+Lennart, 2026-11-12: TabArena v0.2's budget (1M train, 500k test rows per split) is the collection's, set once and
+checked by the build and by the collection, instead of a declaration in each definition that only a test of the
+READMEs held to.
+
+- `collection.py` (new, next to the dataset folders) sets `row_budget = TABARENA_V0PT2_ROW_BUDGET`
+  (`data_foundry.collections`). A definition declares no budget: a `<name>_1m` version gets the collection's by its
+  name. The build refuses a dataset whose splits have a side over the budget without the suffix (it names the folder
+  to make), and, as before, a `_1m` version whose splits keep within it.
+- `DatasetCollection(row_budget=...)`: once the v0.2 collection is registered, `verify=True` and
+  `check_collection_bundles.py` hold every container to the budget (`budget_findings`: a test side over 500k rows, a
+  train side over 1M without the budget recorded, another budget, a budget without its train sampling).
+- The 18 `_1m` versions drop their `row_budget` line and get the same budget by their name (Lennart, 2026-11-12:
+  across claims); a definition in the collection that declares a budget is refused. No split changes.
+- knowledge-data-foundry `references/split_protocol.md` (new) documents the path from a definition to the fit as a
+  decision tree, with worked examples, the guards and where each number is set; `README.md`, `GETTING_STARTED.md`
+  and `definitions.md` link it.
+
+## 2026-11-12, repeats follow the units at every frame size (no container built)
+
+Lennart, 2026-11-12: every IID and grouped task gets 3-fold cross-validation, so at least 3 splits, and its number of
+repeats follows its units (rows, or groups for `per_group` labels) whatever the size of the frame. A row budget only
+caps the sides after the split.
+
+- The v2 protocol drops its 1.25M-row cap (`SINGLE_REPEAT_ROWS`), which gave a frame of that size one repeat however
+  few its groups. Counted by rows, 375k rows already give one repeat, so only a large frame counted by groups changes:
+  `fraud_detection_in_electricity_and_gas_consumption_1m` (1,862,650 invoices of 81,531 clients) gets 3 repeats, 9
+  splits, at its next build, each still testing on at most 500k rows; `amex_non_iid_1m` (458,913 customers) keeps one.
+- Library: `subsample_frame` is gone (no caller since the 2026-11-10 entry: a budget applies after the split), the
+  `splits.py` docstring describes that order, and the split tests pin the builders' splits by a checksum instead of
+  comparing them with the v1 helpers.
+- The shipped `_1m` containers still predate the 2026-11-10 entry (frames cut to 1.5M rows before the split); their
+  READMEs change at the next build.
+
+## 2026-11-11, no local paths in committed text (no container built)
+
+Lennart, 2026-11-11: a pointer to a folder that only one machine has (a run folder of the local warehouse, a job folder
+in someone's home) is no evidence for anyone else. Committed text now names no local path; the evidence goes into the
+text and a script worth keeping into the repository (knowledge-data-foundry, house rules; `tests/test_no_local_paths.py`).
+
+- The pointers are removed, the facts around them stay: 12 records (the comments of 10, the reviews of 3), this
+  CHANGELOG (7 entries), the cross-dataset `REVIEW.md` (one item), `BENCHMARK_CHANGES_TODO.md`, `metrics.md` and two test
+  docstrings; a script's hard-coded warehouse path now resolves from the repository.
+- `drug_induced_autoimmunity_prediction`: two notes of `curation_comments` lose their pointer (text only, the data are
+  unchanged; the text is part of the checksum, so its README has a new one). Its build was stale before.
+
 ## 2026-11-11, each dataset's review moves into its curation record (no container built)
 
 Lennart, 2026-11-11: "We want the curation record to be the single source of information, not spread across multiple
@@ -1091,9 +1138,9 @@ noaa_storm's definitions now differ from any build.
 ## 2026-11-06, PR #47: re-review under the exposure rules (no container built)
 
 Seventeen of the twenty datasets the exposure rework touched went through the review panel again under LEAK-41 and
-MET-14 to MET-16 (full panel where the definition changed, focused elsewhere; run folder
-`_runs/2026-11-06_exposure_review/`, not committed); the three Kaggle datasets wait for their data. Each of the
-seventeen REVIEW.md files has a new `**Review panel:**` block (the old one kept in the run folder and in git) and its
+MET-14 to MET-16 (full panel where the definition changed, focused elsewhere); the three Kaggle datasets wait for their
+data. Each of the seventeen REVIEW.md files has a new `**Review panel:**` block (the old one kept in the run folder and
+in git) and its
 new questions as open issues; each record has the panel's Assessment line. The changes below need no decision.
 
 - `fremtpl2`: text only (the LEAK-41 report on the declared metric, the duplicate counts, the 19-row rating profile in
@@ -1239,6 +1286,44 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
   sampled test sides leave out.
 - READMEs of the 17 regenerated by `dataset check` (0 errors, 0 warnings; new checksums, since the budget is part of
   the metadata); nothing rebuilt. `GETTING_STARTED.md` and `BENCHMARK_CHANGES_TODO.md` say how v0.2 uses the budget.
+
+
+## 2026-11-05, three generated datasets retired (Andrej's marks on the BeyondArena v0.2 review page)
+
+- Retired as generated data: each record is `No (Retired)` with `AHDS` and a CC line giving the evidence, its folder is
+  removed and `v2_path` cleared. `DF: Yes`, the collection tags and the pinned BeyondArena containers stay.
+  - `bank_customer_churn` (TabArena v0.1; also `Missing source information`): a class-rooted Bayes net written down by
+    hand (churn first, each column given churn and at most two other columns) beats all 40 benchmark methods when used
+    as a classifier (1 - ROC AUC 0.1213 against 0.1233 for the best method); seven of ten columns cannot be told from
+    copies shuffled within each class. `superdatascience_churn_modelling`, the same course table, gains `AHDS`.
+  - `food_delivery_time` (TabArena v0.1): the delivery time is a 5-minute block plus a uniform minute that no feature
+    predicts, the other columns change only at the block edges, and no courier ID keeps one age, rating or vehicle.
+    `problem_type` and `domain` set from the definition.
+  - `santander_customer_transaction_prediction`: within each class the 200 columns are independent at the chance rate,
+    and real rows cannot be told from rows shuffled within each class (ROC AUC 0.49, against 1.0 on
+    santander_customer_satisfaction), so naive Bayes is right by construction and matches TabPFN-3.5. `Anonymized`
+    stays.
+- Guidelines: provenance.md, "Is the data generated?", gains test 8 (columns shuffled within each class) and test 9 (a
+  target drawn as a coarse level plus a uniform remainder), and an example under test 6 (IDs that keep no attributes);
+  PROV-3 names the three datasets as cases. task_probes.md and evidence.md no longer cite santander as real data.
+
+## 2026-11-05, class-dependent recording documented on four datasets; duplicates note on one (no data change)
+
+- `biogeographical_ancestry_prediction`, `hepatitis_c_prediction`, `horse_colic_survival`, `lung_cancer`: one
+  `curation_comments` bullet each on how the classes were recorded differently, and the record marker
+  `Class-dependent Recording`. Found by a sweep of the number-format probe over the shipped classification datasets
+  (2026-10-27) and the October reviews. Comments only, the data are unchanged; the text is part of the checksum.
+  - Fixed earlier, now documented: Turkey's separate source (biogeographical, the class is dropped); the donors' and
+    patients' precision conventions and ALP (hepatitis_c, seven labs rounded, ALP dropped).
+  - Not harmonised yet, open: horse colic's `total_protein` units (the unit alone tells died from euthanized, ROC AUC
+    0.79; one unit for all rows raises TabPFN 3.5's log loss from 0.682 to 0.724).
+  - Kept with a note: lung cancer's 47 replicate-averaged adenocarcinoma rows and its spike-in control probes; neither
+    carries the score (log loss 0.141 as shipped; 0.146 without the averaged rows, 0.139 without the control probes).
+- `early_stage_diabetes_risk_prediction`: a curation note says the dropped duplicates are uneven by class (61% of the
+  negative rows repeat another row, 46% of the positive rows), so dropping them moves the positive share from 62% to
+  69% and leaves 78 negatives; 74% of rows 260 to 519 repeat a row from 0 to 259. Data unchanged.
+- Not built. READMEs regenerated with `dataset check` (0 errors, 0 warnings) except `lung_cancer`'s: its raw file (the
+  PNAS supplement) has to be downloaded by hand, so its README still shows the earlier notes and checksum.
 
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 
@@ -1902,8 +1987,7 @@ a declared spectrum is in scope unless a spectrum model is clearly better (SEL-1
   | Logistic regression | 0.663 | 0.646 (26/60) | 0.708 |
 
   The default stays the published workflow; PR #21's log suits TabPFN and the linear models better, which is one
-  decision for all raw mass spectra (open with the curator). TabPFN ran on one GPU (SkyPilot managed job 29360);
-  scripts and per-split results in `local-data-warehouse/_runs/2026-11-02_spectra/`.
+  decision for all raw mass spectra (open with the curator). TabPFN ran on one GPU (SkyPilot managed job 29360).
 - **Benchmark:** `BENCHMARK_CHANGES_TODO.md`, "Spectra (feature groups)".
 - Not rebuilt; both builds were already stale.
 
@@ -2143,9 +2227,9 @@ loads: every shared column is identical on every row, so the link needs no key.
   words; a score or rating with no words per level, or words only at its two ends, is a number; bands keep their band
   text. CLEAN-12 and CLEAN-14 amended; `decode(df, CODE_LABELS)` in the v2 API (a code without a label raises), after
   `set_missing`.
-- Six agents read the codebooks for every coded column of 44 definitions
-  (`local-data-warehouse/_runs/2026-10-30_ordinal/decode/`). In 29 definitions 377 coded columns now carry their
-  words (BI-RADS density "almost entirely fatty" to "extremely dense", ames' ratings "very poor" to "very excellent",
+- Six agents read the codebooks for every coded column of 44 definitions. In 29 definitions 377 coded columns now
+  carry their words (BI-RADS density "almost entirely fatty" to "extremely dense", ames' ratings "very poor" to "very
+  excellent",
   the ANES codes, coil_2000's percentage and guilder bands,
   early_learning_predictors' answers), and 54 scores and ratings are numbers again (california_house_prices_2020's
   school ratings, miami_housing's `structure_quality`, eryhemato_squamous_disease's ten findings, student_portuguese's
@@ -2282,9 +2366,9 @@ loads: every shared column is identical on every row, so the link needs no key.
   missing. The container already kept the order; the README lists ordinal columns with their levels. An ordinal
   column may also be named among the categorical ones.
 - 220 ordinal scales in 39 definitions are ordered categories now, in the order of each source's codebook (often not
-  the order of the codes): seven agents read the codebooks for 1,980 candidate columns of 95 datasets
-  (`local-data-warehouse/_runs/2026-10-30_ordinal/`). anes_voting_2026's 20 likes-dislikes indices and counts are
-  numbers. Codes outside a scale that mean unknown (don't know, refused, not asked, undocumented codes) are missing.
+  the order of the codes): seven agents read the codebooks for 1,980 candidate columns of 95 datasets.
+  anes_voting_2026's 20 likes-dislikes indices and counts are numbers. Codes outside a scale that mean unknown (don't
+  know, refused, not asked, undocumented codes) are missing.
   Left unordered, for the curator's review board: 39 columns with a level outside the scale that is a state of its own
   (no basement, not prescribed, no checking account), partial orders, cycles and orders of low confidence. Left as
   they are: 167 ordinal scales shipped as numbers (point 3) and 22 codes shipped as numbers (point 4).
@@ -2349,7 +2433,7 @@ loads: every shared column is identical on every row, so the link needs no key.
   fragments N-073 and C-026, which count the atoms of that type (0 to 3 and 0 to 12); the definition had typed them
   categorical while their meaning was unknown. The curation note on "numeric-ordinal" features is replaced. CC line in
   the record, CLEAN-14 Cases row. `dataset check`: 0 errors, 0 warnings. Not built.
-- The sweep, once, over the 163 definitions (outputs in `local-data-warehouse/_runs/2026-10-30_dtype_sweep/`): 489
+- The sweep, once, over the 163 definitions: 489
   flagged columns in 48 datasets, 358 of them only `numeric_levels` (codes, ids). Beyond the two datasets above,
   the findings went to the curator and nothing else changed here: `early_learning_predictors` (45 counts and amounts
   typed categorical, with Stata missing codes `.a` and `.b` among the numbers), counts with open ends typed
@@ -2432,7 +2516,6 @@ Myunghwan: "yes, ship" after review-added-datasets. Accepted the 21,199-row, 13-
 - Applied Myunghwan's 2026-10-29 review answers for `chicago_traffic_crashes_1m`: accepted final-snapshot injury labels and closer-to-fact scene framing; accepted the physical-device-MISSING warning. Recorded the dataset-specific SPLIT-10 exception without changing the rule. Speed discussion and final inclusion remain open; data, features and splits are unchanged. No build or commit.
 - Revised `chicago_traffic_crashes_1m` on 2026-10-29: restored five physical-condition fields by Myunghwan direction with measured availability risk and explicit LEAK-10/38 disagreement. Affected checks/probes and focused independent review completed for the 21-input recipe. One source-semantic warning is proposed for acceptance; final inclusion and build remain undecided.
 - Prepared `chicago_traffic_crashes_1m` for review of the curator-authorized approximate five-class injury task: 16 scene/context inputs, hourly event time, notification-eligible quarterly training, original-source copy removal and log loss. Five condition fields are withheld for conditional recording concerns; outcome/report/investigation fields remain excluded. Native checks and independent panel evidence support review; final surrogate decisions remain open. No container build, warning acceptance, source commit or publication.
-
 
 Every change to this folder gets an entry here, newest first: edited definitions or helper files, added or removed
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
@@ -2573,7 +2656,7 @@ record, audit or PR that motivated it.
 - `drug_induced_autoimmunity_prediction`: `SMILES` is kept as a string feature instead of being dropped (177
   features instead of 176; 587 rows and the scaffold groups unchanged). The source's descriptors lose structure a
   model can use: next to them, MACCS keys computed from the SMILES lift the scaffold-grouped ROC AUC of TabPFN 3.5
-  from 0.803 to 0.826 and of a random forest from 0.770 to 0.795 (`~/claude_jobs/dia_review/`), so we ship the
+  from 0.803 to 0.826 and of a random forest from 0.770 to 0.795, so we ship the
   string rather than one chosen fingerprint. This overrides, for this dataset only, the 2026-10-14 rule of dropping
   the SMILES in every SMILES dataset.
 - `drug_induced_autoimmunity_prediction`: `dataset_identifier_column` accepted (one SMILES per row): the structure
@@ -2939,8 +3022,7 @@ consistency checks in the folder's `REVIEW.md` and are not applied yet. Nothing 
   AUC 0.888, 0.906 and 0.739 against 0.913, 0.914 and 0.708). BeyondArena datasets; the shipped notebooks and
   collection pins are unchanged, and their containers and raw files stay in the warehouse.
 - Records: `heart_statlog` is `No` + `Duplicate` (all 270 rows are Cleveland rows with the same label). Andrej's
-  review in [`curation/records/heart_disease.md`](../../../curation/records/heart_disease.md); evidence in
-  `~/claude_jobs/heart_pool/`.
+  review in [`curation/records/heart_disease.md`](../../../curation/records/heart_disease.md).
 - `heart_disease` declares the metric the three sites declared on `main` (roc_auc fallback, accepted by Lennart
   2026-10-21 for the heart_disease datasets).
 

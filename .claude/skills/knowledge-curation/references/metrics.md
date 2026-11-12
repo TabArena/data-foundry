@@ -319,8 +319,8 @@ five times in a decision the actor makes once; on the six cases one vote per uni
 ## Cases
 
 Precedents: how a rule was applied. They never change a rule; an exception is listed with the fact that set it apart.
-The rows marked `proposed` come from the metric sweep of 2026-10-21 (`local-data-warehouse/_runs/2026-10-21_metrics/`)
-and wait for the curator; the others are decided.
+The rows marked `proposed` come from the metric sweep of 2026-10-21 and wait for the curator; the others are
+decided.
 
 | Rule | Dataset | Decision | Decisive evidence | Kind |
 |---|---|---|---|---|

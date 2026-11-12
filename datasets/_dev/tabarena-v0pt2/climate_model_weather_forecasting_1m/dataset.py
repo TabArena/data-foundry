@@ -10,7 +10,6 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     Temporal,
@@ -115,7 +114,6 @@ class ClimateModelWeatherForecasting1m(AbstractCuratedDataset):
             window=7, unit="days", cutoffs=("2023-07-24", "2023-05-01", "2023-02-13"), gap=3, gap_unit="days"
         ),
     )
-    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_parquet(raw_dir / "weather.parquet")

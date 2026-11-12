@@ -311,7 +311,6 @@ data-foundry/
 │   ├── schema.py             # DatasetMetadata, PredictiveMLTaskMetadata (format 1) / V2 (+ Grouping), PredictiveMLSplitsMetadata
 │   ├── curation_container.py # CuratedContainer (save/load + describe + checksum)
 │   ├── collections/          # BEYOND_ARENA, DatasetCollection, HuggingFaceSource, cache helpers
-│   ├── curation_recommendations.py  # the v1 split helpers (DATA_FOUNDRY_V1.md)
 │   ├── dataset_checks.py     # run_all_checks(...) — sanity stats, rendered in each dataset's README
 │   ├── bundle_checks.py      # run_bundle_checks(...) / verify_saved_container(...) — bundle integrity
 │   ├── curation/             # curation log toolkit — CurationRecord, store, dashboard (serve), import/export, build-site
