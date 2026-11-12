@@ -1,6 +1,0 @@
-name: loan_default_prediction_challenge
-holder: Myunghwan
-stage: triage
-claimed_at: '2026-10-28T03:20:07Z'
-expires_at: '2026-11-16T19:20:59Z'
-note: 'Myunghwan: reviewed, explicitly accepted and built; integrating verified SuperLender package into draft PR #59. AUROC; borrower-disjoint random folds. Retain ownership until main; no benchmark control plane.'
