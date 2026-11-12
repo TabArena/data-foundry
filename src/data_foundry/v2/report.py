@@ -151,7 +151,7 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
         **_raw_files_front(getattr(container.dataset_metadata, "raw_files", None)),
         "data": {
             "n_rows": len(df),
-            # the target, the group and the scoring columns are not features
+            # the target, the group and the scoring columns (and a time column declared no input) are not features
             "n_features": len(feature_columns(container)),
             "dtypes": {str(k): int(v) for k, v in df.dtypes.astype(str).value_counts().sort_index().items()},
             "n_test_dataset_rows": None if container.test_dataset is None else len(container.test_dataset),
@@ -172,6 +172,8 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             "stratify_on": task.stratify_on,
             "time_on": task.time_on,
             **({"time_unit": task.time_unit} if getattr(task, "time_unit", None) else {}),
+            # only for a time column that is no model input, so every other README's front matter stays as it was
+            **({"time_is_feature": False} if not getattr(task, "time_is_feature", True) else {}),
             "group_on": task.group_on,
             "group_labels": task.group_labels,
             "group_time_on": task.group_time_on,
@@ -673,7 +675,13 @@ def _splits_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
                 f" The train sides keep every row available to them; `subsample_train` draws the {budget} rows a "
                 f"benchmark fits on from {how}, as {unit}."
             )
-    table = split_summary(container.dataset, meta.splits, time_on=container.task_metadata.time_on)
+    task = container.task_metadata
+    if task.time_on is not None and not getattr(task, "time_is_feature", True):
+        shape += (
+            f" The time column `{task.time_on}` orders and splits the rows and is no model input: "
+            "`feature_columns(container)` leaves it out."
+        )
+    table = split_summary(container.dataset, meta.splits, time_on=task.time_on)
     out = ["## Splits", "", meta.splits_comment.strip(), "", shape, ""]
     return out + _maybe_collapsed(f"Show all {len(table)} splits", _table(table), len(table)) + _window_section(result)
 

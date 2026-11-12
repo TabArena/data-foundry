@@ -20,6 +20,7 @@ from data_foundry.schema import (
     RowBudget,
     Source,
 )
+from data_foundry.utils.checksum import encode_pydantic_metadata
 
 from tests.test_bundle_checks import make_spec
 
@@ -829,6 +830,7 @@ def test_an_unknown_metadata_type_names_a_newer_format(tmp_path):
         ),
         ("binary_classification", {"grouping": Grouping(on="y", labels="per_sample")}, "cannot be a time or group"),
         ("regression", {"stratify_on": "y"}, "cannot be stratified"),
+        ("binary_classification", {"time_is_feature": False}, "needs a temporal task"),
     ],
 )
 def test_format_2_task_rejects_what_does_not_fit(problem_type, kwargs, match):
@@ -875,6 +877,17 @@ def test_every_field_added_after_the_release_is_omitted_while_unset():
         added = {f.name for f in dataclasses.fields(cls)} - V0_0_5_FIELDS[cls.__name__]
         omitted = set(getattr(cls, "_OMIT_WHEN_UNSET", ()))
         assert added <= omitted, f"{cls.__name__}: {sorted(added - omitted)} would change every older checksum"
+
+
+def test_time_is_feature_enters_the_checksum_only_when_false():
+    def task(**kwargs):
+        return PredictiveMLTaskMetadataV2(
+            target_column_name="y", problem_type="regression", objective_metric=make_spec(), time_on="t", **kwargs
+        )
+
+    assert b"time_is_feature" not in encode_pydantic_metadata(task())
+    assert encode_pydantic_metadata(task(time_is_feature=True)) == encode_pydantic_metadata(task())
+    assert b'"time_is_feature":false' in encode_pydantic_metadata(task(time_is_feature=False))
 
 
 def test_the_packaged_toy_container_keeps_its_original_checksum():
