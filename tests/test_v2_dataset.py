@@ -828,12 +828,8 @@ def test_a_version_whose_budget_changes_nothing_is_refused(tmp_path: Path, wareh
         ds.make_splits()
 
 
-def test_a_version_records_its_budget_and_is_held_to_it(
-    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_a_version_records_its_budget_and_is_held_to_it(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
-    monkeypatch.setattr("data_foundry.bundle_checks.SPLIT_TRAIN_ROW_BUDGET", 100)  # the v1 budgets: format 1 only
-    monkeypatch.setattr("data_foundry.bundle_checks.SPLIT_TEST_ROW_BUDGET", 10)
     ds = make_version(tmp_path / "datasets")
     result = ds.check(verbose=False)
     container = result.container
@@ -862,6 +858,65 @@ def test_a_version_records_its_budget_and_is_held_to_it(
     }
     assert "splits_train_over_budget" not in findings  # the train sides are the benchmark's to sub-sample
     assert findings["splits_test_over_budget"] == "warning"
+
+
+# --- a collection's row budget (`collection.py` next to the dataset folders) -------------------------------------
+def write_collection(root: Path, budget: str = "RowBudget(train=200, test=50)") -> None:
+    """Write ``<root>/collection.py`` setting the collection's row budget."""
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "collection.py").write_text(f"from data_foundry.v2 import RowBudget\n\nrow_budget = {budget}\n")
+
+
+def test_a_collection_version_gets_the_budget_by_its_name(tmp_path: Path, warehouse: Path) -> None:
+    root = tmp_path / "datasets"
+    write_collection(root)
+    write_definition(root, "toy_ds_0p2k")  # no `row_budget`: the collection's applies to the `_0p2k` version
+    ds = get_dataset(root, "toy_ds_0p2k")
+    assert ds.raw_dir == warehouse / "toy_ds"
+    plan = ds.make_splits()
+    assert len(plan.df) == 600
+    assert fold_sizes(plan.splits) == {(550, 50)}  # each third tests on 50 rows; its other 150 rows train
+    meta = ds.to_container().experiment_metadata
+    assert meta.row_budget == RowBudget(train=200, test=50)
+    assert meta.train_sampling == TrainSampling(default="random", unit="rows", stratify_on="y")
+
+
+def test_a_collection_dataset_over_the_budget_must_be_its_version(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    root = tmp_path / "datasets"
+    write_collection(root)
+    write_definition(root)
+    with pytest.raises(DatasetDefinitionError, match="Name the folder and `unique_name` `toy_ds_0p2k`"):
+        get_dataset(root, "toy_ds").make_splits()
+
+
+def test_a_collection_dataset_within_the_budget_keeps_its_full_splits(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    root = tmp_path / "datasets"
+    write_collection(root, "RowBudget(train=1_000_000, test=500_000)")
+    write_definition(root)
+    ds = get_dataset(root, "toy_ds")
+    plan = ds.make_splits()
+    assert plan.splits == ds._cross_validation(plan.df)
+    assert ds.to_container().experiment_metadata.row_budget is None  # nothing applied, nothing recorded
+
+
+def test_a_collection_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    root = tmp_path / "datasets"
+    write_collection(root, "RowBudget(train=1_000_000, test=500_000)")
+    write_definition(root, "toy_ds_1m")
+    with pytest.raises(DatasetDefinitionError, match="drop the `_1m` suffix from the folder and `unique_name`"):
+        get_dataset(root, "toy_ds_1m").make_splits()
+
+
+def test_a_definition_in_a_collection_declares_no_budget(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    root = tmp_path / "datasets"
+    write_collection(root)
+    write_definition(root, "toy_ds_0p2k", body=version_body())  # even the collection's own budget
+    with pytest.raises(DatasetDefinitionError, match="the collection sets the row budget"):
+        get_dataset(root, "toy_ds_0p2k")
 
 
 def temporal_version_body(

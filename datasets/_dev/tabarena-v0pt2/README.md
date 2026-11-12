@@ -4,6 +4,8 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 - **New here?** [`GETTING_STARTED.md`](GETTING_STARTED.md): set-up, the two workflows (settling a record, adding a
   dataset) and the large-data candidates to start with.
+- **How a dataset is split** (folds, repeats, the 1M / 500k row budget and the `_1m` versions): the decision tree in
+  [`split_protocol.md`](../../../.claude/skills/knowledge-data-foundry/references/split_protocol.md) of the knowledge-data-foundry skill.
 - **Every change is logged** in [`CHANGELOG.md`](CHANGELOG.md): edits, added or removed files, re-runs that change a
   container.
 - Changes the benchmark harness (TabArena) needs for these datasets, for example scoring grouped tasks per group, are

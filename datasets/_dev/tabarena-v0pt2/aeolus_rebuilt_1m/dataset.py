@@ -15,7 +15,6 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     Temporal,
@@ -472,7 +471,6 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
         on="FL_DATE",
         splits=TemporalSplits(window=14, unit="days", gap=1, cutoffs=("2024-12-18", "2024-07-03", "2024-03-13")),
     )
-    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     # The 25 monthly BTS files (zipped CSVs) and about 1,800 station-year weather files are converted once into two
     # parquet files; everything else is read as it is.

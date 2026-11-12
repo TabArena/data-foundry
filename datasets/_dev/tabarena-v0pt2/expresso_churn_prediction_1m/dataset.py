@@ -10,7 +10,6 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     drop_columns,
@@ -163,7 +162,6 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
 
     # Splits: IID (one snapshot, no time index). The `_1m` version samples each fold's test third to 500k rows; the
     # 1M train budget is recorded for a benchmark, which sub-samples each train side (`subsample_train`).
-    row_budget = RowBudget(train=1_000_000, test=500_000)
     accepted_check_warnings = {
         "dataset_duplicate_rows": "Every row is a different customer (unique user_id). The copies are customers "
         "mostly (75.3% of the 678,270 copies in the full file) described only by a tenure band and their active days, "

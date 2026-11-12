@@ -288,8 +288,9 @@ def _raw_state(ds: AbstractCuratedDataset, frame: pd.DataFrame) -> tuple[pd.Data
 
 
 def _row_positions(frame: pd.DataFrame, processed: pd.DataFrame) -> np.ndarray | None:
-    """The position in ``processed`` of each row of ``frame``: the same frame, or one the split step sub-sampled
-    keeping the row order (``subsample_frame``); None when the rows of ``frame`` are not in ``processed``'s order.
+    """The position in ``processed`` of each row of ``frame``: the same frame, or one the split step reduced keeping
+    the row order (a temporal version's ``sample_temporal_splits`` drops the rows no split uses); None when the rows
+    of ``frame`` are not in ``processed``'s order.
     """
     if len(frame) == len(processed) and frame.equals(processed):
         return np.arange(len(processed))

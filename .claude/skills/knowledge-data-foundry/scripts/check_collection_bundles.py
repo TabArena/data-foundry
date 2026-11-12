@@ -1,4 +1,5 @@
-"""Run the bundle checks over every container of a collection and report findings by check.
+"""Run the bundle checks over every container of a collection and report findings by check, with the collection's
+row budget when it sets one (``collection_row_budget``).
 
 Use this to (a) audit an already-shipped collection and (b) calibrate a new check in
 ``data_foundry.bundle_checks`` before choosing its severity: a rule that fires on many
@@ -68,10 +69,14 @@ def main() -> int:
             continue
 
         report = run_bundle_checks(container, verbose=False, **check_kwargs)
-        counts["clean" if report.ok else "with_errors"] += 1
+        over_budget = collection.budget_findings(container)  # the collection's row budget, if it sets one
+        counts["clean" if report.ok and not over_budget else "with_errors"] += 1
         for result in report.results:
             severities[result.slug] = result.severity
             findings[result.slug].append(f"{container.dataset_metadata.unique_name}: {result.message}")
+        for message in over_budget:
+            severities["collection_row_budget"] = "error"
+            findings["collection_row_budget"].append(f"{container.dataset_metadata.unique_name}: {message}")
         del container, report
         gc.collect()
 
