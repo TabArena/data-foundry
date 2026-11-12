@@ -5,6 +5,7 @@ from __future__ import annotations
 from data_foundry.collections._core import CollectionEntry, DatasetCollection
 from data_foundry.collections._registry import (
     BEYOND_ARENA,
+    SELECT_ARENA,
     get_collection,
     list_collections,
 )
@@ -22,6 +23,7 @@ __all__ = [
     "BEYOND_ARENA",
     "DATA_FOUNDRY_CACHE_ENV",
     "DEFAULT_CACHE_DIR",
+    "SELECT_ARENA",
     "CollectionEntry",
     "DataSource",
     "DatasetCollection",
