@@ -1,6 +1,6 @@
 name: open_soil_spectral_library
-holder: Myunghwan
+holder: Andrej
 stage: review
-claimed_at: '2026-10-23T16:27:03Z'
-expires_at: '2026-11-04T03:18:24Z'
-note: Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized.
+claimed_at: '2026-11-12T13:29:33Z'
+expires_at: '2026-11-19T13:29:33Z'
+note: 'Catalogue split keys (PR #81): collection facts and open split issues'

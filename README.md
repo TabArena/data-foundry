@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-12 11:45 UTC: 167 claim(s) (Andrej 133, Lennart 12, Myunghwan 22).
+As of 2026-11-12 13:29 UTC: 167 claim(s) (Andrej 135, Lennart 12, Myunghwan 20).
 
 ## Andrej
 
@@ -99,6 +99,7 @@ As of 2026-11-12 11:45 UTC: 167 claim(s) (Andrej 133, Lennart 12, Myunghwan 22).
 | `noaa_storm_events_damage` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `obesity_estimation` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `online_shoppers_purchasing_intention_dataset` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
+| `open_soil_spectral_library` | review | 2026-11-12 | 2026-11-19 | Catalogue split keys (PR #81): collection facts and open split issues |
 | `otto_group_product_classification_challenge` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `pancreatic_cancer_mouse_detection` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
 | `polish_companies_bankruptcy` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
@@ -106,6 +107,7 @@ As of 2026-11-12 11:45 UTC: 167 claim(s) (Andrej 133, Lennart 12, Myunghwan 22).
 | `predict_students_dropout_and_academic_success` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `pricing_game_2016_french_fleet` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `pricing_game_2017_french_mtpl` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `protein_model_quality_rf_pcp` | review | 2026-11-12 | 2026-11-19 | Catalogue split keys (PR #81): collection facts and open split issues |
 | `pva_revenue_prediction_kddcup98` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `qsar_aquatic_toxicity` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `qsar_bioconcentration` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
@@ -178,10 +180,8 @@ As of 2026-11-12 11:45 UTC: 167 claim(s) (Andrej 133, Lennart 12, Myunghwan 22).
 | `lt_vehicle_loan_default_prediction` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `medical_facility_operational_data` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `meituan_food_delivery_time` | triage | 2026-11-05 | 2026-11-16 | Forecast-free accepted-at ETA approved and built; 568545 rows,15 predictors; reload and traced-input reproduction pass. Publishing draft PR from myunghwan/meituan-forecast-free-20261109; retain ownership pending main integration. |
-| `open_soil_spectral_library` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `papyrus_bioactivity` | triage | 2026-11-10 | 2026-11-17 | Myunghwan: review accepted with RMSE as declared; Papyrus source-mean potency build verified and committed. Integrating into existing draft PR59. Scaffold holdout across proteins; pointwise prediction; retain claim until main. No control plane. |
 | `prc_2024_aircraft_takeoff_weight` | triage | 2026-11-10 | 2026-11-17 | Myunghwan requested non-pending dependency candidates reserved; Papyrus screening review first. Label collection must finish before held-out prediction starts. |
-| `protein_model_quality_rf_pcp` | review | 2026-10-28 | 2026-11-06 (expired) | Curator accepted; build, reload and traced-input reproduction complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 . Accepted approximations and source/descriptor limits are documented. Awaiting PR review/merge; retain Myunghwan ownership until merged. |
 | `riiid_answer_correctness` | triage | 2026-11-10 | 2026-11-17 | Myunghwan requested non-pending dependency candidates reserved; Papyrus screening review first. Label collection must finish before held-out prediction starts. |
 | `sendy_logistics_challenge` | review | 2026-10-28 | 2026-11-06 (expired) | Curator ship accepted; build and verification complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 (commit 46e8b32). Placement-to-arrival RMSE; 21,199 rows, 13 predictors, random 3x3 folds. Awaiting PR review/merge; retain Myunghwan ownership until merged. |
 | `tunisian_fraud_detection_challenge` | triage | 2026-10-28 | 2026-11-04 (expired) | Next Myunghwan curation batch: highest remaining eligible priority 3; existing screening dossiers await curator review. Reservation only; no scientific acceptance or build. |
