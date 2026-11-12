@@ -21,7 +21,8 @@ and **grouped** (generalise to unseen entities such as patients or customers).
 > at most 500k rows per split and trains on at most 1M: a dataset whose splits have a side over that ships as the
 > version `<name>_1m`, which gets the budget from the working copy's `collection.py`. Its container caps each test
 > side at 500k rows and keeps every training row; the benchmark draws the 1M it fits on (a random sample of the
-> newest year of a temporal side, by default).
+> newest year of a temporal side, by default). The whole path, as a decision tree:
+> [`split_protocol.md`](../../../.claude/skills/knowledge-data-foundry/references/split_protocol.md).
 
 The selection criteria (unique source, a real predictive task, no irreversible leakage, ethically unambiguous, not
 trivial) are the same for every dataset; the [**📖 Guidelines**](https://tabarena.github.io/data-foundry/guidelines.html)

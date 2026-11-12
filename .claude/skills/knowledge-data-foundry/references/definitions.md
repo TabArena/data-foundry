@@ -474,7 +474,8 @@ version (all found in the v0.2 copy, 2026-10-06):
 Keep the default: no split attributes. The base class runs the v2 split protocol (`src/data_foundry/v2/splits.py`):
 always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of the train side (`recommended_dimensions`),
 built by `iid_splits` / `grouped_splits` with the benchmark seed, on the full frame: Data Foundry caps no split unless
-the definition is a version with a row budget (a `_1m` version, below). The comment is "Default splits."; set
+the definition is a version with a row budget (a `_1m` version, below; the whole path as a decision tree:
+[split_protocol.md](split_protocol.md)). The comment is "Default splits."; set
 `splits_comment` only when there is something to say (a split that deliberately differs from the source's protocol,
 what a grouped test fold holds).
 
@@ -589,6 +590,9 @@ hotel_booking_demand). The training history the use case calls for is set in `_l
 `History:` bullet (aeolus_1m: flights from 2023 on).
 
 ### Larger than the row budget: the `_1m` version
+
+The whole path from a definition to the fit, as a decision tree with worked examples:
+[split_protocol.md](split_protocol.md).
 
 Data Foundry sets no row budget: by default every split uses the full frame and no side is capped. A benchmark's
 budget, `row_budget = RowBudget(train=N, test=M)` (from `data_foundry.v2`), works on the two sides differently

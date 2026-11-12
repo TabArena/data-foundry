@@ -15,6 +15,9 @@ READMEs held to.
   train side over 1M without the budget recorded, another budget, a budget without its train sampling).
 - The 18 `_1m` versions drop their `row_budget` line and get the same budget by their name (Lennart, 2026-11-12:
   across claims); a definition in the collection that declares a budget is refused. No split changes.
+- knowledge-data-foundry `references/split_protocol.md` (new) documents the path from a definition to the fit as a
+  decision tree, with worked examples, the guards and where each number is set; `README.md`, `GETTING_STARTED.md`
+  and `definitions.md` link it.
 
 ## 2026-11-12, repeats follow the units at every frame size (no container built)
 
