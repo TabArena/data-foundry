@@ -298,7 +298,10 @@ and judge the model comparison on the data, not on the marker. The marker does n
 approximate: the fit is direct when the real-world setting of the use case has the same bias, and approximate when it
 does not (USE-8 in [use_case.md](use_case.md)). The marker stays either way, since it says something special about the
 data (Lennart, 2026-10-27). `eryhemato_squamous_disease` is the example: 93% of its lichen planus patients have mouth
-lesions and no other patient does, against 19% to 63% in clinic series; kept, with an approximate fit.
+lesions and no other patient does, against 19% to 63% in clinic series; kept, with an approximate fit. A selection does
+not retire a dataset by itself: early_stage_diabetes_risk_prediction (patients of a diabetes hospital, 69% diabetic) was
+retired because no testing decision is made from its symptoms (USE-2, USE-8), and its `Selection Bias` marker stays
+(Lennart, 2026-11-11).
 
 No marker when:
 
@@ -313,9 +316,9 @@ No marker when:
   patients), a question of the use-case fit.
 
 `Not Representative` is a different flag: the task or its setup is not the real application (features practitioners no
-longer use, a prediction no decision rests on). A record carries both when both hold (`audiology_diagnosis`). The
-clause on objects picked for measurement and the cases without a marker were added on the review of PR #16 (Lennart,
-2026-10-27).
+longer use, a prediction no decision rests on). A record carries both when both hold (`audiology_diagnosis`;
+`early_stage_diabetes_risk_prediction`: a hospital sample, and symptoms no testing decision is made from). The clause on
+objects picked for measurement and the cases without a marker were added on the review of PR #16 (Lennart, 2026-10-27).
 
 ### Leakage and irreversible damage
 
