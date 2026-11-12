@@ -88,6 +88,8 @@ CC (2026-11-11, Andrej): the metastasis target ships as its own dataset, `lung_a
 - **Why a new record:** rows (127 adenocarcinomas against 197 specimens), target (metastasis flag against histology) and values (one MAS5 array against Dataset A's MAS4 means) all changed, which PROV-14 calls a new dataset.
 - **The source's task, from the paper's full text** (in GEO's caArray archive): "A key issue in lung tumor diagnosis is the discrimination of a primary lung adenocarcinoma from a distant metastasis to the lung" (Results).
 
+CC (2026-11-11, Lennart): USE-1 is amended on `lung_adenocarcinoma_metastasis` (its review issue 1, B): the line between a label read from the specimen and settled there (this record's histology, a cross-check) and a label that rests on information outside the specimen (the metastasis flag, a prediction target) is now written into USE-1 with its date, curator and cases, so the "Not a rule change" of the CC of 2026-11-10 is superseded; this record's retirement is unchanged. The new record is cited under PROV-7 (one source, two tasks), not PROV-14.
+
 ## Reference
 
 @article{bhattacharjee2001classification,

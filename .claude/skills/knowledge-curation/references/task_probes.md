@@ -22,32 +22,57 @@ starts from the precedent.
 models, so check every flag against the benchmark's tuned methods before acting on it (Methods, "How to check a
 flag"). Cases: clock_protein_toxicity, asp_potassco_classification, consumer_complaints_1m.
 
-**TP-2 (Should).** A small but real signal is no reason to retire, and neither is a cutoff on the best skill. Retire,
-fix or keep a task for a concrete reason found in the task itself; until one is found, the task stays. Real means it
-beats shuffled labels on the split the use case needs: the best method's mean skill against the same method on
-shuffled labels and the same splits. Beating the dummy on most folds is not enough: repeated folds overlap, and
-shuffled labels often reach better than baseline performance too, but randomly. A task whose methods stay within what
-shuffled labels give has no signal and is retired. A signal found by screening many candidate scores on the same rows
-counts only when it holds on rows it was not chosen on. Marker: `No Signal`. Cases: forest_fires,
-clock_protein_toxicity.
+**TP-2 (Should; amended 2026-11-11, Lennart and Andrej).** A signal is judged in two steps; only the first is a test.
+
+1. **Is there a signal?** Test it on the split the use case needs, under the declared metric, against the best
+   constant under that metric (the median for MAE, the mean for RMSE, the class shares for log loss, 0.5 for ROC AUC):
+   * with tuned methods of several families (TP-1, SPLIT-27), never one untuned run or one foundation model alone;
+     foundation models do worse on grouped data;
+   * with validation that follows the split: on a grouped task, early stopping and tuning use folds grouped the same
+     way;
+   * against the same pipeline, tuning included, on shuffled labels and the same splits. Beating the constant on most
+     folds is not enough: repeated folds overlap, and shuffled labels often do it too.
+
+   When no method beats its shuffled labels, the task has no signal and is retired (`No Signal`). Report the spread of
+   the shuffled runs: it is the smallest gain the data can show (clock_protein_toxicity: AUC 0.45 to 0.55 on shuffled
+   labels with 169 molecules, so the best method's 0.536 cannot be told apart from noise, p = 0.16). A signal found by
+   screening many candidate scores on the same rows counts only when it holds on rows it was not chosen on.
+2. **Does the signal matter?** A real signal keeps the task: being hard to learn is no reason to retire, and no cutoff
+   on the skill decides. The curator may, case by case, retire a task whose real gain is too small to change the
+   decision the use case makes. State the gain in the target's own unit against the error the decision faces, and
+   weigh what small gains are worth in that use case (a market where tiny gains are the value against a dispatch where
+   they change nothing). Before retiring, check whether a metric closer to the decision would show a larger gain, and
+   whether the data can carry it. The AI reports the gain and both sides, and does not retire on this step itself.
+
+Marker: `No Signal`. Cases: clock_protein_toxicity (step 1), forest_fires (step 2).
 
 **TP-3 (Must).** If tuned methods spread, keep the dataset. No further discussion is needed (a rule of an earlier
 part still wins). Cases: gallstone_disease, electric_motor_temperature_prediction, hr_analytics.
 
-**TP-4 (Must).** `Trivial` needs proof. Read what the dominant feature means first: the natural core of a task (a
-listed price for a sale price, age for survival) is expected to dominate, which rules out a leak but not the test.
-Then test it: the raw feature, chosen on each split's training side, against the methods fold by fold. The same
-holds for a rule not fitted on these data (a
-formula the source or the field publishes, the field's definition of the label, a textbook or clinical score): if the
-methods learn nothing better than such a rule, the data cannot be used for prediction. Take the rule from the field's
-sources, not from the rows; it needs no training side, so it is scored as it stands on every test fold. Before ruling
-it out, look at where its misses go: the field's measurement can be spread over more columns than the rule read. A
-feature or rule that beats the methods is proof: `Trivial`. One that matches them (within the spread of the folds)
-makes the dataset a candidate to drop, and the curator decides. Marker: `Trivial`. Cases: fitness_club (beats, yes,
-retired); audiology_diagnosis (a textbook rule beats, yes, retired); ljubljana_breast_cancer (a clinical score
-matches, the curator's call: retired); sepsis_survival (age plus about five years for men matches, the
-curator's call: retired, as almost solved and so simple that the gains over age alone, +0.0024 AUC, do not matter
-in practice); california (no, kept).
+**TP-4 (Must; amended 2026-11-12, Lennart and Andrej).** `Trivial` needs proof. Read what the dominant feature means
+first: the natural core of a task (a listed price for a sale price, age for survival) is expected to dominate, which
+rules out a leak but not the test. Then judge it in two steps, as TP-2; only the first is a test.
+
+1. **Does a feature or a rule do as well as the methods?** The raw feature, chosen on each split's training side, or a
+   rule not fitted on these data (a formula the source or the field publishes, the field's definition of the label, a
+   textbook or clinical score), against the best methods, paired per split (Methods, "A rule not fitted on the
+   data"). Take the rule from the field's sources, not from the rows; it needs no training side, so it is scored as it
+   stands on every test fold. Before ruling it out, look at where its misses go: the field's measurement can be spread
+   over more columns than the rule read.
+   * It beats the methods: proof, `Trivial`; the data cannot be used for prediction.
+   * It matches them (a paired difference small against its spread, each side ahead on about half of the splits): the
+     dataset is a candidate to drop, and the curator decides; a dataset dropped on a match is retired as `Trivial`.
+   * The methods beat it on most splits: their gain is real; step 2.
+2. **Does the gain over it matter?** A real gain keeps the task. The curator may, case by case, retire a task whose
+   gain over the feature or rule is too small to change the decision the use case makes, as `Trivial` (step 2 of
+   TP-2, for the gain over a feature or rule). State the gain in the metric's unit against the spread of the tuned
+   methods and the decision it would change. The AI reports the gain and both sides, and does not retire on this step
+   itself.
+
+Marker: `Trivial`. Cases: fitness_club (a feature beats, retired); audiology_diagnosis (a textbook rule beats,
+retired); ljubljana_breast_cancer (a published prognostic index matches, the curator's call: retired);
+sepsis_survival_minimal_clinical_records (the methods beat age plus five years for men by about 0.001 AUC on every
+split, step 2, the curator's call: retired); california (no, kept).
 
 **TP-5 (Must).** `Too Small` means a handful of units of a class, per test fold and in total, counted in the unit the
 task is scored on (parkinsons: 8 healthy people, 2-3 per fold; retired). A small dataset as such is a tiny-data task
@@ -106,7 +131,9 @@ generated-data probes with their calibrations.
   Kendall's W says how well the method ranks agree across folds; it is low on small folds even when the mean ranking
   is stable. Add the raw-feature test of TP-4. Say so when the results ran on another version of the data (another
   split, other columns, other scoring). In Data Foundry: `tuned_results.py`
-  ([checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md)).
+  ([checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md)). A `no_signal` flag is
+  answered by step 1 of TP-2 (tuned families, validation grouped like the split, the whole pipeline on shuffled
+  labels), not by the benchmark's counts of folds above the dummy.
 * **A dominant feature** falls in one of three cases: a leak or a definition (recorded after the outcome, or the label
   is derived from it; run the leak probes), the natural core of the task (TP-4), or a shortcut with no domain reason
   (a generated or edited dataset: PROV-3 in [provenance.md](provenance.md), "Is the data generated?"). Look at the raw
@@ -116,14 +143,19 @@ generated-data probes with their calibrations.
   ships: a clinical or prognostic score, a published formula, the label's definition, an expert system's rules, a
   domain theory shipped with the data, and a column that is another system's prediction of the target (a vendor or
   bureau score, a quoted premium, a listed price). Then:
-  - Compare it with the best method on the shipped splits (tuned results where they exist), paired per split: the
-    mean difference with its standard error and the splits on which the rule is at least as good. A match is a
-    difference small against the spread of the best method's own score across splits, even when the method is ahead
-    on most of them (sepsis_survival: age plus five years for men 0.7059 against 0.7068 for TabPFN 3.5, ahead on 8 of
-    9 splits, whose scores run from 0.699 to 0.710).
+  - Compare it with the best methods on the shipped splits (tuned results where they exist), paired per split: the
+    mean difference, the standard deviation of the per-split differences, and the share of splits on which each side
+    is ahead. A match is a mean difference small against that spread, with each side ahead on about half of the
+    splits (ljubljana_breast_cancer: the Nottingham Prognostic Index 0.725 against 0.721 for TabDPT-1.3, paired
+    -0.004 with sd 0.028, TabDPT-1.3 ahead on 55% of 60 splits). Methods ahead on most splits beat the rule, however
+    small the gain, and step 2 of TP-4 applies (sepsis_survival: the best tuned methods 0.0012 above age plus five
+    years for men on 9 of 9 folds, sd 0.0004). Do not judge against the spread of the best method's own score across
+    splits: it mixes in how hard each test fold is, which hits the rule and the method alike (ljubljana: sd 0.045,
+    paired 0.028; sepsis: scores from 0.699 to 0.710, paired sd 0.0004).
   - A constant set by hand (a weight, an offset, a cut-off) keeps the rule unfitted when fitting it on each training
     side changes nothing (the offset for men fitted per side: 3 to 5 years, 0.7058). A cut-off read off the rows makes
-    it fitted (ljubljana_breast_cancer's 2-node cut-off, of unrecorded source, was named in the decision).
+    it fitted: ljubljana_breast_cancer's 3-item score set more than 2 involved nodes, of unrecorded source and the best
+    of the cuts the bins allow, so the decision rests on the published index instead.
   - A rule gives a rank or a class. Compare it on a rank metric (ROC AUC, accuracy), or for log loss calibrate its
     score once on the training side with one monotone fit.
   - With a few low-cardinality columns, bound the best achievable score: each cell's rate measured on all rows,
@@ -131,9 +163,9 @@ generated-data probes with their calibrations.
     labels, 0.717 against 0.704 for the curve on simulated ones, so about 0.709 is achievable). A rule and the methods
     both near that bound leave nothing to rank.
   - A screen of the BeyondArena v0.2 datasets (2026-11-10) found such rules close to the methods on few: a 3-item
-    prognostic score (ljubljana_breast_cancer), age and sex (sepsis_survival), an exercise-test count on one hospital
-    of heart_disease; the rest stay well below (published cardiovascular points, bureau scores, insurers' premiums,
-    textbook marker genes, a splice-site domain theory).
+    prognostic score (ljubljana_breast_cancer; on 2026-11-12 the Nottingham Prognostic Index), age and sex
+    (sepsis_survival), an exercise-test count on one hospital of heart_disease; the rest stay well below (published
+    cardiovascular points, bureau scores, insurers' premiums, textbook marker genes, a splice-site domain theory).
 * **A zero-inflated regression target** (forest_fires: 48% zeros). Check the oracle bound (the true zero / non-zero
   indicator with the positives' train mean: R² 0.58) and a hurdle model, P(y > 0) × E[y | y > 0], with its two stages
   reported apart (AUC of y > 0: 0.51-0.58; R² on the positive rows: below 0). Neither stage was learnable, so the
@@ -162,7 +194,7 @@ ashrae_great_energy_predictor_iii in the Cases table.
 
 | Flag | Rule | What the script computes | First check |
 |---|---|---|---|
-| `no_signal` | TP-1, TP-2 | The best family's mean skill is not above twice its standard error (or 0.02). | Tuned results: do the strongest regularised methods beat the dummy fold by fold? Untuned models overfit noise. If one does, by a little, check the split and shuffled labels (TP-2): forest_fires' signal was same-day fires across a random split. Within shuffled labels: `No Signal` (forest_fires, clock_protein_toxicity, retired); asp_potassco_classification kept. |
+| `no_signal` | TP-1, TP-2 | The best family's mean skill is not above twice its standard error (or 0.02). | Tuned results: do the strongest regularised methods beat the dummy fold by fold? Untuned models overfit noise. If one does, by a little, check the split and the whole pipeline on shuffled labels (step 1 of TP-2): part of forest_fires' signal was same-day fires across a random split. Within shuffled labels: `No Signal` (clock_protein_toxicity, retired). A real but small gain is the curator's call (step 2: forest_fires, retired); asp_potassco_classification kept. |
 | `solved` | TP-6, TP-4 | ROC AUC, macro ROC AUC or R² of at least 0.995. | A leak or a lookup (leak probes, shallow tree); then a stage of the source where the task is not solved. |
 | `no_spread` | TP-3 | The best and worst family differ by less than twice the standard error of their per-split difference (or 0.01). | Tuned results: if methods spread, keep (TP-3). On a large, low-noise dataset strong methods converge (amex); on a small one it is noise. |
 | `one_feature` | TP-4 | The best single feature, chosen on each split's training side, reaches 95% of the best family's skill and leaves at most 1.25 times its remaining error (1 − skill). | TP-4: what the feature means, then the raw feature against the methods fold by fold (`tuned_results.py --feature auto`). |
@@ -361,19 +393,19 @@ task-probe flags the decision answers. The decisions on metrics (2026-10-21) are
 | Rule | Dataset | Flags | Decision | Decisive evidence | Kind |
 |---|---|---|---|---|---|
 | TP-4 | fitness_club | one_feature | retired, `Trivial` (2026-10-05) | `months_as_member` alone, chosen on all 30 training sides, AUC 0.822, above all 37 configurations; `days_before` = 2 × weekday in 1,251 of 1,500 rows (generated) | applied |
-| TP-4 | audiology_diagnosis | none (a rule check) | retired, `Trivial` (2026-11-10, Andrej) | the textbook definition, not fitted: conductive or mixed for an air-bone gap or a tympanogram other than type A, sensorineural for abnormal air conduction or any of the audiogram's 40 pattern codes, otherwise normal; 194 of 195 cases (accuracy 0.995) against 0.968 for the best of logistic regression, random forest and gradient boosting; reading air conduction alone it reached 0.764, as the coarse code reads normal for 45 high-frequency losses that the pattern codes carry | applied |
-| TP-4 | ljubljana_breast_cancer | none (a rule check) | retired, `Trivial` and `Outdated` (2026-11-10, Andrej) | an untrained score, one point each for grade 3, more than 2 involved nodes and a capsular breach: ROC AUC 0.710 against 0.717 for TabPFN 3.5 (at least as good on 28 of 60 folds) and 0.710 for a random forest; a match, so a candidate, and the curator retired it: nothing learnable beats three standard prognostic factors | applied |
+| TP-4 | audiology_diagnosis | none (a rule check) | retired, `Trivial` (2026-11-10, Andrej) | the textbook definition, not fitted: conductive or mixed for an air-bone gap or a tympanogram other than type A, sensorineural for abnormal air conduction or any of the audiogram's 40 pattern codes, otherwise normal; 194 of 195 cases (accuracy 0.995) against 0.968 for the best of logistic regression, random forest and gradient boosting; reading air conduction alone it reached 0.764, as the coarse code reads normal for 45 high-frequency losses that the pattern codes carry; rechecked with tuned methods (2026-11-11, Lennart): on the 60 v2 splits the rule, calibrated once per training side for log loss, beats tuned logistic regression, RealMLP and tuned LightGBM on every split (log loss 0.047 against 0.187 at best, accuracy 0.995 against 0.940) | applied |
+| TP-4 | ljubljana_breast_cancer | none (a rule check) | retired, `Trivial` and `Outdated` (2026-11-10, Andrej); the proof restated (2026-11-12, Lennart and Andrej) | the Nottingham Prognostic Index (Haybittle 1982: 0.2 × size in cm + grade + node stage), published and not fitted: ROC AUC 0.725 against 0.721 for TabDPT-1.3 on the 60 v2 splits, paired -0.004 (sd 0.028), TabDPT-1.3 ahead on 55%; on BeyondArena's folds 0.726, at or above all 37 methods on average, TabDPT-1.3 and LimiX-2 level with it (-0.004, ahead on half of their 34 folds); a match, so a candidate, and the curator retired it. The first proof, a 3-item score (0.710), had a node cut-off of unrecorded source, and TabDPT-1.3 beats it (+0.011, ahead on 65%) | applied |
 | TP-5 | parkinsons_biomedical_voice_measurements | no_spread, one_feature, unstable | retired, `Too Small` (2026-10-05) | 8 healthy people, 2-3 per test fold; ranks less stable than on 98% of BeyondArena | applied |
 | TP-7 | audiology_diagnosis | no_spread, unstable | target re-defined, rebuilt (2026-10-06); retired (2026-11-05) | our own 3-class merge replaced by hearing loss with or without a conductive part; duplicates and non-hearing-loss diagnoses dropped; no flags since, but the new type is read off five of its features (accuracy 0.903 of 0.938) and an unfitted textbook rule on the audiogram assigns 194 of 195 cases (TP-4) | applied |
 | TP-6 | eryhemato_squamous_disease | solved | clinical features only, rebuilt (2026-10-06) | macro AUC 0.999 with the biopsy features, 0.98 and 87% accuracy before the biopsy | applied |
-| TP-2 | forest_fires | no_signal | kept (2026-10-06); re-split by day; retired (2026-11-05) | TabPFN-3.5 beats the mean on 26 of 32 folds (R² 0.013); a hurdle model adds nothing. Fires of one day share the station's daily fire weather index values; split by day, R² -0.002, within shuffled labels (p = 0.16; random splits p = 0.005) | applied |
-| TP-1 | clock_protein_toxicity | no_signal | kept (2026-10-06); retired (2026-11-05) | LightGBM above AUC 0.5 on 44 of 60 folds (0.539); the probe's single feature was a selection effect; shuffled labels do as well (p = 0.71) | applied |
+| TP-2 | forest_fires | no_signal | kept (2026-10-06); re-split by day; retired (2026-11-05); rechecked (2026-11-11) | step 2: on day-grouped splits tuned LightGBM beats the training median beyond shuffled labels (MAE 12.69 against 12.71 ha, p = 0.02), 0.02 ha per fire against a typical error of 12.7 ha, which changes no dispatch of crews; a per-day ranking of fires would fit the decision, but 160 of 227 days have one or two fires (Lennart and Andrej) | applied |
+| TP-2 | clock_protein_toxicity | no_signal | kept (2026-10-06); retired (2026-11-05); rechecked (2026-11-11) | step 1: tuned and early-stopped LightGBM, tuned logistic regression, RealMLP and TabDPT-1.3 all within shuffled labels on the 60 v2 splits (best AUC 0.536, p = 0.16; shuffled runs 0.45 to 0.55) | applied |
 | TP-1 | asp_potassco_classification | no_signal | kept (2026-10-06) | TabICLv2 beats the class shares on 30 of 30 folds; label noisy (62% of runner-ups within 1 s) | applied |
 | TP-4 | sepsis_survival_minimal_clinical_records | one_feature | kept (2026-10-06); retired, `Trivial` (2026-11-10, Andrej) | age alone AUC 0.704, below the best (0.707) on every fold; 975 distinct cases by design. Reassessed under the amended test: age + 5 years for men, not fitted, 0.7059 against 0.7068 for TabPFN 3.5 (the splits run from 0.699 to 0.710), the best train-only smoother 0.7065, the best achievable about 0.709; a match, so a candidate; the curator retired it as almost solved (TabPFN within about 0.002 of the best achievable) and so simple that the gain over age alone (+0.0024) does not matter in practice | applied |
 | TP-4 | california_house_prices_2020 | one_feature | kept (2026-10-06) | the listed price is the natural core; sold = listed R² 0.89-0.91, methods 0.93-0.945 | applied |
 | TP-4 | aps_failure | one_feature | kept (2026-10-06) | the per-split single feature (AUC 0.970) stays below all 20 configurations; AUC near its ceiling | applied |
 | TP-5 | musk | no_spread, unstable | kept (2026-10-06) | 13 musk and 21 non-musk molecules per fold: a tiny-data task | applied |
-| TP-5 | lung_adenocarcinoma_metastasis | none | kept (2026-11-11, Andrej) | 15 metastases in 123 rows, 5 per test fold: no flag, random forest ROC AUC 0.876 ahead of the class shares on 30 of 30 splits, logistic regression 0.836, LightGBM 0.811; a reading of "too few to rank methods" without the probes (2026-11-10) did not hold | applied |
+| TP-5 | lung_adenocarcinoma_metastasis | none | kept (2026-11-11, Andrej; confirmed 2026-11-11, Lennart, review issue 2, A) | 15 metastases in 123 rows, 5 per test fold, about twice parkinsons' 2 to 3: random forest ROC AUC 0.878 ahead of the class shares on 30 of 30 splits, logistic regression 0.849, LightGBM 0.819 (with age, sex and pack-years). The probe's few-minority flag fires below 5, so it cannot tell at exactly 5. Only method gaps of about 0.08 rank (bootstrap over the patients: random forest minus logistic regression -0.007 to +0.089). Kendall's W of four default families is 0.187, beside parkinsons 0.204 and musk 0.120: the measure parkinsons was described by does not separate the kept musk from the retired parkinsons, so the count decided. The first accepted `splits_test_minority_few`; a reading of "too few to rank methods" without the probes (2026-11-10) did not hold | applied |
 | TP-1 | pancreatic_cancer_mouse_detection | unstable | kept (2026-10-06) | foundation models above AUC 0.5 on all their folds; the `t` file suffix is an open question in the record | applied |
 | TP-1 | heart_disease | unstable | kept (2026-10-27) | one atypical hospital: Long Beach is the hardest under every split, in-site too, while the linear model beats the class shares at all three; re-check with tuned results after the build; no amendment for grouped tasks for now (Lennart) | applied |
 | TP-2 | amex_non_iid_1m | no_spread | kept (2026-10-06) | strong methods converge at AUC 0.95 on 1.5M rows | applied |

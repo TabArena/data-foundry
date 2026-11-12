@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: lung_adenocarcinoma_metastasis
 container_format: 2
-checksum: v2:63c59679eddbe8177058cd3ab20ed58df9b6a9c0f523f6bdb173b223ac561af5
+checksum: v2:68f72e86414e1cda3596d17277025e830cc53324848d29ad63545c69e555aa1e
 build:
   uuid: 01a111fa-f2d2-7673-a757-142728cdfd4c
   checksum: v2:6972b53e8d88f2ce4f384612e30af8d5814ee00e2631e91f51f8f322b97a51d0
@@ -20,10 +20,10 @@ build:
 build_stale: true
 data:
   n_rows: 123
-  n_features: 12558
+  n_features: 12561
   dtypes:
-    category: 1
-    float64: 12558
+    category: 2
+    float64: 12560
   n_test_dataset_rows: null
 task:
   target: Metastasis
@@ -60,10 +60,11 @@ bundle_checks:
   accepted:
     meta_license_unknown: GEO gives no licence for the GSE83227 deposit; the PNAS
       supplement states none either.
-    splits_test_minority_few: 15 metastases give 5 per test fold; the task probe on
-      these folds raises no flag and the methods separate (random forest ROC AUC 0.876
-      against logistic regression 0.836; 2026-11-11, Andrej, lung_cancer review issue
-      7).
+    splits_test_minority_few: '15 metastases give 5 per test fold, about twice parkinsons''
+      2 to 3; only method gaps of about 0.08 ROC AUC rank (bootstrap over the patients:
+      random forest minus logistic regression -0.007 to +0.089), and Kendall''s W
+      of four default families is 0.187, beside parkinsons 0.204 (retired) and musk
+      0.120 (kept), so the count decided (2026-11-11, Lennart, review issue 2, A).'
 decisions: []
 ---
 
@@ -71,27 +72,27 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Metastasis`, scored with `roc_auc` on IID splits. 123 rows and 12,558 features. Source: Other (2001).
+Binary classification of `Metastasis`, scored with `roc_auc` on IID splits. 123 rows and 12,561 features. Source: Other (2001).
 
-Built as `01a111fa-f2d2-7673-a757-142728cdfd4c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:63c59679eddbe8177058cd3ab20ed58df9b6a9c0f523f6bdb173b223ac561af5`, so the build is stale. See [Build](#build).
+Built as `01a111fa-f2d2-7673-a757-142728cdfd4c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:68f72e86414e1cda3596d17277025e830cc53324848d29ad63545c69e555aa1e`, so the build is stale. See [Build](#build).
 
 ## In brief
 
 **Question.** Is an adenocarcinoma resected from the lung a primary lung cancer, or a metastasis from another organ?
 
-**Use case.** For example, a pathologist working up an adenocarcinoma in the lung of a patient with an earlier cancer elsewhere decides whether it is a new lung primary or a metastasis, which changes staging and treatment ("a key issue in lung tumor diagnosis", Bhattacharjee et al. 2001). The call is read from the tumour's pathology but is not settled there: it rests on the earlier cancer.
+**Use case.** For example, a pathologist working up an adenocarcinoma in the lung of a patient with an earlier cancer elsewhere, when the stains leave the origin open, orders an expression tissue-of-origin test as a second opinion: is it a new lung primary or a metastasis? The answer changes staging and treatment ("a key issue in lung tumor diagnosis", Bhattacharjee et al. 2001).
 
-**One row.** One adenocarcinoma resected from the lung in a 2001 study in Boston (Bhattacharjee et al.), profiled on one microarray: the 123 patients with clinical data and a determined flag.
+**One row.** One adenocarcinoma resected from the lung in a 2001 study in Boston (Bhattacharjee et al.), profiled on one microarray, with the patient's age, sex and smoking history: the 123 patients with clinical data and a determined flag.
 
-**Predicted.** Whether the study's annotation sheet flags the tumour as a possible metastasis from another organ (15, 12%: 8 colon, 4 breast, 3 other) or not (a primary lung adenocarcinoma).
+**Predicted.** Whether the study's annotation sheet flags the tumour as a possible metastasis from another organ ("Yes", 15, 12%: 8 colon, 4 breast, 3 other) or not ("No", a primary lung adenocarcinoma).
 
-**Known at prediction time.** The expression of the 12,558 human probe sets on the tumour's array, summarised on that array alone (MAS5), on its linear scale.
+**Known at prediction time.** The expression of the 12,558 human probe sets on the tumour's array, summarised on that array alone (MAS5), on its linear scale; the patient's age, sex and pack-years of smoking.
 
 **What the test data stands for.** Random patients, so the test data stands for tumours of new patients of the same study.
 
-**Our changes to the source.** The target comes from the study's annotation sheet in GEO (`SampleData.xls`, DATASET B), not the histology of its Dataset A; only adenocarcinomas with clinical data and a determined flag are kept, and the 67 control probes are dropped. The arrays are rebuilt from GEO: one per tumour (first piece, first hybridisation), each with its own MAS5 signal, instead of Dataset A's MAS4 means of up to four.
+**Our changes to the source.** The target comes from the study's annotation sheet in GEO (`SampleData.xls`, DATASET B), not Dataset A's histology; only adenocarcinomas with clinical data and a determined flag are kept, the 67 control probes are dropped, and age, sex and pack-years are added. Each tumour has one array from GEO with its own MAS5 signal, instead of Dataset A's MAS4 means.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The label is the study's flag of a possible metastasis, written in the tumour's pathology report from the clinical history ("c/w colon met", "?Br MET"), not a confirmed origin; the 8 colon calls are the firmest and the easiest. The rows are all resected adenocarcinomas of one centre, while the question arises only in patients with an earlier cancer elsewhere, and which primaries had one is not recorded (`Selection Bias`).
+> **Use case fit: approximate (a stand-in with a known gap).** The label is the study's flag of a possible metastasis, written from the clinical history ("c/w colon met", "?Br MET"), not a confirmed origin; 4 of the 15 were staged as lung primaries. The negatives have, in the sheet's words, "no history or path indicating non adeno", so a new lung primary after an earlier cancer elsewhere, the hard case, is absent (`Selection Bias`).
 
 ## Files in this folder
 
@@ -100,7 +101,7 @@ Built as `01a111fa-f2d2-7673-a757-142728cdfd4c` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/lung_adenocarcinoma_metastasis.md`](../../../../curation/records/lung_adenocarcinoma_metastasis.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/lung_adenocarcinoma_metastasis.md`](../../../../curation/records/lung_adenocarcinoma_metastasis.md)
 - The original source: <https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE83227>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -140,7 +141,7 @@ Only curators run `build`, when the dataset ships.
 | license |  |
 | data_tags | IID |
 | reference | bhattacharjee2001classification |
-| rows x columns | 123 x 12,559 |
+| rows x columns | 123 x 12,562 |
 | task.target | Metastasis |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -157,9 +158,9 @@ Only curators run `build`, when the dataset ships.
 | reason | The source clusters the samples and names the discrimination of primary lung adenocarcinomas from metastases as a diagnostic use, but scores no classifier for it (Bhattacharjee et al. 2001). |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `Metastasis`
+- categorical (2): `sex`, `Metastasis`
 - string (0): none
 - datetime (0): none
 
@@ -185,37 +186,39 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 123 rows of the final frame (random rows: the frame is shuffled); 12 of 12,559 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 123 rows of the final frame (random rows: the frame is shuffled); 12 of 12,562 columns, the target first. Cells are cut at 40 characters.
 
-| Metastasis | 31307_at | 31308_at | 31309_r_at | 31310_at | 31311_at | 31312_at | 31313_at | 31314_at | 31315_at | 31316_at | 31317_r_at |
+| Metastasis | age | sex | pack_years | 31307_at | 31308_at | 31309_r_at | 31310_at | 31311_at | 31312_at | 31313_at | 31314_at |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| primary lung | 7 | 36.8 | 6.6 | 14.8 | 16.4 | 90.1 | 51.2 | 48.2 | 1632.7 | 3.6 | 425.2 |
-| primary lung | 286.8 | 40.4 | 94.7 | 40.4 | 63.7 | 60.7 | 46.2 | 235.7 | 2529.1 | 13.6 | 1045.2 |
-| primary lung | 2.1 | 90.1 | 12 | 19.4 | 4.8 | 47.3 | 35.8 | 45.4 | 349.6 | 28.2 | 316 |
-| primary lung | 2.9 | 84 | 10.6 | 8.7 | 13.7 | 46.4 | 34.1 | 22.3 | 7798.4 | 7.5 | 530.1 |
-| primary lung | 4.2 | 70.7 | 82.9 | 33.1 | 28.2 | 79.7 | 43.1 | 102.7 | 2099.3 | 7.3 | 490.4 |
+| No | 46 | male | 90 | 8.8 | 19.7 | 41.4 | 23.7 | 59.2 | 23.9 | 20.2 | 26.6 |
+| No | 67 | male | 54 | 2.5 | 15.5 | 4.7 | 19.6 | 10.8 | 25 | 20 | 61.3 |
+| Yes | 76 | female | 0 | 11.4 | 13.8 | 13 | 13.6 | 31.2 | 81.1 | 69.4 | 34.6 |
+| No | 57 | female | 27 | 11.7 | 9.1 | 171.9 | 139.4 | 61.5 | 96.4 | 35.4 | 429.5 |
+| No | 65 | female | 69 | 2 | 39.1 | 10.2 | 9.2 | 24.9 | 32.6 | 21.9 | 20.5 |
 
 ## Curation notes
 
-- Prediction point: an adenocarcinoma has been resected from the lung and profiled; the pathologist weighs the clinical history (an earlier cancer elsewhere), and the profile is a second opinion. The source names the task: "A key issue in lung tumor diagnosis is the discrimination of a primary lung adenocarcinoma from a distant metastasis to the lung" (Bhattacharjee et al. 2001, Results); "metastases of nonlung origin can be difficult to distinguish from lung adenocarcinomas" (Introduction). In practice the work-up is immunohistochemistry and comparison with the earlier tumour; an expression array is not used today.
+- Prediction point: an adenocarcinoma has been resected from the lung and profiled; the pathologist weighs the clinical history (an earlier cancer elsewhere), and the profile is a second opinion. The source names the task: "A key issue in lung tumor diagnosis is the discrimination of a primary lung adenocarcinoma from a distant metastasis to the lung" (Bhattacharjee et al. 2001, Results); "metastases of nonlung origin can be difficult to distinguish from lung adenocarcinomas" (Introduction). In practice the work-up is immunohistochemistry, comparison with the earlier tumour and comparative sequencing; expression tissue-of-origin assays (Pathwork Tissue of Origin, CancerTYPE ID) exist as a second opinion when the stains leave the origin open, mostly for cancers whose origin is unknown and on formalin-fixed tissue, and the NCCN guidelines do not recommend them as standard. The pathologist's tool in this use case is such an assay (USE-1, amended on this case, 2026-11-11, Lennart).
 - CC (2026-11-11, Andrej): a new dataset from the arrays of `lung_cancer`, whose histology target was retired on 2026-11-10 (the slide settles it on resected tumours): the target is metastasis against primary, under its own record since rows, target and values all changed (lung_cancer review issues 7, B, and 4, B). All flags of the sheet count (issue 8, A) except AD218's, dropped with AD224 as undetermined (2026-11-11, Andrej, review issue 2, B).
-- Label: sheet DATASET B of `SampleData.xls` marks 16 of the study's 139 adenocarcinomas as "possible mets" (`Colon Met` 8, `Breast` 4, `other met` 4) and counts the rest as "Adenocarcinoma w/ no history or path indicating non adeno". 15 of the 16 are written in the resected tumour's own clinical pathology note ("MET COLON", "c/w colon met", "?Br MET", "(met)"); AD218's only note is the study's second reading (`PATH II`, "ad w met?"). The call is read from the specimen's pathology but not settled there: it rests on the earlier cancer outside the specimen. The 8 colon flags are the firmest; 7 of them are the paper's "seven samples [...] previously diagnosed as metastases of colonic origin". The paper speaks of 12 suspected metastases: 12 flags carry a firm note, the other 4 are the three "?Br MET" (AD163, AD172, AD186) and AD218 (dropped, below). 15 flags remain.
+- Label: sheet DATASET B of `SampleData.xls` marks 16 of the study's 139 adenocarcinomas as "possible mets" (`Colon Met` 8, `Breast` 4, `other met` 4) and counts the rest as "Adenocarcinoma w/ no history or path indicating non adeno". 15 of the 16 are written in the resected tumour's own clinical pathology note ("MET COLON", "c/w colon met", "?Br MET", "(met)"); AD218's only note is the study's second reading (`PATH II`, "ad w met?"). The call is read from the specimen's pathology but not settled there: it rests on the earlier cancer outside the specimen. The 8 colon flags are the firmest; 7 of them are the paper's "seven samples [...] previously diagnosed as metastases of colonic origin". The paper speaks of 12 suspected metastases: 12 flags carry a firm note, the other 4 are the three "?Br MET" (AD163, AD172, AD186) and AD218 (dropped, below). 15 flags remain. 4 of them (AD163, AD172, AD178, AD186) were staged as lung primaries (GEO's stage without M1), and the paper's 12 suspected metastases appear to leave out two or three of them; they stay as the sheet codes them (review panel, 2026-11-11).
 - Rows: 123 adenocarcinomas. Of the paper's "125 adenocarcinoma samples [...] associated with clinical data", AD218 and AD224 are dropped as undetermined (below). Dropped as never assessed: the 12 patients whose title starts with `A` (`AD1` to `AD31` in the sheet) and AD355 and AD360, whose clinical fields are all empty.
-- Size (2026-11-11, shipped splits of the 123 rows, task probe, 30 of the 60 splits): 5 metastases per test fold; no flag; random forest ROC AUC 0.876 (ahead of the class shares on every split), selected-features linear 0.851, logistic regression 0.836, LightGBM 0.811; the best single probe set chosen on each training side 0.652. On the 125 rows before AD218 and AD224 were dropped: random forest 0.886, logistic regression 0.851 (other splits; on the same folds dropping the two moves no score). On the 127 rows before the last changes TabPFN 3.5 reached 0.882 and k-nearest neighbours 0.779; ten pathology marker genes, unfitted (CDX2, KRT20, CDH17, GATA3, TFF1, ESR1 against NKX2-1, NAPSA, SFTPC, SFTPB), 0.819. Out of fold the random forest separates the colon metastases at 0.984, the breast ones at 0.76 and the others at 0.83: the score rests mostly on colon against lung.
-- Metric: ROC AUC, the fallback for a binary task; the source scores no classifier. On log loss the random forest beats the class shares (0.289 against 0.371) while logistic regression and LightGBM do not.
-- Class-dependent recording (record marker `Class-dependent Recording`, 2026-11-11, review panel): the metastasis arrays call fewer probe sets present (share present, ROC AUC 0.722, permutation p 0.01) and show a higher noise floor (0.70) and more 18S rRNA (control probe 0.784). Whether a metastasis's other transcriptome or weaker RNA causes it is open; tumour content does not (Spearman -0.20), nor the processing batch. The 67 `AFFX` control probes (0.695 together, p 0.02) measure the preparation and are dropped, at no cost (random forest 0.894 to 0.893). The share present runs through every gene and cannot be removed: subtracting each array's noise floor leaves logistic regression at 0.855 to 0.857. An earlier note here gave the controls 0.42; that run paired the labels with the wrong arrays.
+- Size (2026-11-11, shipped splits of the 123 rows with age, sex and pack-years, task probe, 30 of the 60 splits): 5 metastases per test fold, about twice parkinsons' 2 to 3; the probe's few-minority flag fires below 5, so its silence decides nothing here. Random forest ROC AUC 0.878 (ahead of the class shares on every split), selected-features linear 0.865, logistic regression 0.849, LightGBM 0.819; the best single probe set chosen on each training side 0.635 (expression alone: 0.876, 0.851, 0.836, 0.811 and 0.652). Only method gaps of about 0.08 ROC AUC rank: under a bootstrap over the patients (500 draws) random forest minus logistic regression is -0.007 to +0.089, while random forest and extra trees each beat LightGBM. Kendall's W of four default families (random forest, extra trees, logistic regression, LightGBM) across the 60 folds is 0.187, beside parkinsons 0.204 (retired) and musk 0.120 (kept): it does not separate the two precedents, so the size was decided on the count (2026-11-11, Lennart, review issue 2, A). On the 125 rows before AD218 and AD224 were dropped: random forest 0.886, logistic regression 0.851 (other splits; on the same folds dropping the two moves no score). On the 127 rows before those changes TabPFN 3.5 reached 0.882 and k-nearest neighbours 0.779. Nine pathology marker genes, unfitted (CDX2, KRT20, CDH17, GATA3, TFF1, ESR1 against NKX2-1, SFTPC, SFTPB; NAPSA has no probe set on HG-U95Av2), reach 0.82. Out of fold the random forest separates the colon metastases at 0.98, the breast ones at 0.75 and the 3 others at 0.76 to 0.83 (unstable): the score rests mostly on colon against lung.
+- Metric: ROC AUC, the fallback for a binary task; the source scores no classifier (its only classifier, k-nearest neighbours on signal-to-noise marker genes, picks the marker genes of its expression clusters and is never scored on the metastasis call). On log loss the random forest beats the class shares (0.286 against 0.371) while logistic regression and LightGBM do not. The declared metric is checked (2026-11-11, Lennart).
+- Class-dependent recording (record marker `Class-dependent Recording`; rewritten by the review panel of 2026-11-11): the metastasis arrays are dimmer, and MAS5's per-array scaling multiplies the same raw noise up. The scaling factor alone separates the classes at ROC AUC 0.62 and the share of probe sets called present at 0.71 (permutation p 0.01); it shows in the noise-floor probe sets of genes lung tissue does not express (`1513_at`, `31760_at`, about 0.71), while the scanner's noise, RawQ and background do not differ (0.48 to 0.52). The difference holds within processing batches (pairs within one IVT batch 0.74), and the batch adds a component of its own; tumour content does not explain it (Spearman -0.18). It does not carry the score: ranking the genes within each array removes it at no cost (logistic regression 0.848 against 0.846), and regressing every gene on the scaling factor and the share present inside the folds leaves at least 0.800, a lower bound since it also removes colon biology. Kept under LEAK-15, which retires only an artefact that cannot be undone. The 67 `AFFX` control probes (ROC AUC 0.62 to 0.74 together, by model) measure the preparation and are dropped, at no cost (random forest 0.894 to 0.893). An earlier note here gave the controls 0.42; that run paired the labels with the wrong arrays.
 - CC (2026-11-11, Andrej): AD218 and AD224 dropped as undetermined (review issue 2, B). AD218 (`other met`) is flagged only by the study's second pathology review (`PATH II`, "ad w met?") and lies in the study's colon-metastasis expression cluster `CM`, so its flag may follow the clustering; AD224 carries the same `PATH II` wording ("ad m met?") and is coded primary. The sheet codes the same evidence both ways; dropping both takes no side. No score moves (random forest 0.895 to 0.893, panel experiment on the shipped folds).
 - Known label doubts, kept as the source codes them (never relabelled from expression): AD320 (unflagged, in `CM`, the random forest's top-ranked row) and AD368 (the paper: high "albumin, transferrin, and other markers associated with the liver", "not identified as a metastasis") are primaries the source itself suspects. AD350, the colon flag outside `CM`, is a mucinous tumour, a known lung mimic of colon.
-- Selection (record marker `Selection Bias`): the rows are all resected adenocarcinomas, but the question arises only in patients with an earlier cancer elsewhere, and which primaries had one is not recorded; neither is the earlier cancer, the input the pathologist always has.
-- Not features: GEO's age, sex, stage and pack-years, and the sheet's survival, stage, relapse site, expression cluster and pathology notes (the cluster holds 8 of the 15 positives; GEO's stage reads M1 for 11 of the 15 flags).
+- Selection (record marker `Selection Bias`): the sheet counts the negatives as "Adenocarcinoma w/ no history or path indicating non adeno", so they were chosen for having no recorded earlier cancer. The hard cases, a new lung primary in a patient with an earlier cancer elsewhere, are absent, while the question arises only in such patients; the earlier cancer, the input the pathologist always has, is not recorded either.
+- Features beyond the arrays: age, sex and pack-years from GEO, known at surgery (USE-6; review issue 3, B): the random forest moves from 0.879 to 0.884 with them, logistic regression not at all (review panel, 2026-11-11). Sex was already in the arrays (XIST alone separates the sexes at 0.96). Two pack-years are missing in GEO (one metastasis, one primary) and stay missing. Not features: GEO's stage, and the sheet's survival, stage, relapse site, expression cluster and pathology notes (the cluster holds 8 of the 15 positives; GEO's stage reads M1 for 11 of the 15 flags; the notes hold "met" for 14 of the 15).
 - Values: the MAS5 signal ships on its linear scale, as the study deposited it. Every row is a public GEO array whose flag is published in the same series.
 - Source: GEO GSE83227, the study's deposit of all 254 arrays (Affymetrix HG-U95Av2), each with its raw scan, its MAS5 output and the specimen's histology; the caArray archive in the same series holds the annotation sheet and the paper (13790.pdf). The paper's Dataset A (PNAS supplement; OpenML 45093 is a copy) averages up to four arrays per adenocarcinoma patient and uses MAS4 values.
 - CC (2026-11-10, Andrej): rebuilt from GEO (lung_cancer issue 1, D). One array per tumour, the first piece and first hybridisation (the first title in sorted order: `157T1` before `157T2`, `347T1-1` before `347T1-2`), because a lab profiles a new specimen once; the value is the array's MAS5 `Signal`, scaled on that array alone, so no test array depends on the training arrays.
-- Time basis: Timeless: whether a resected tumour started in the lung or elsewhere does not change; the profiles were measured on banked specimens for one study, scanned between 16 March and 17 April 2001, so when a tumour was resected plays no role. Not tested: tumours from another hospital, or arrays processed in another laboratory.
+- Array choice (review panel, 2026-11-11): the first title in GEO's sorted order is not always the first hybridisation. For the 10 tumours titled `-1`/`-2` (AD131, AD183, AD255, AD301, AD338, AD340, AD341, AD346, AD347, AD350; two of them metastases) it is the later preparation, and the study's own Dataset A names the other array `Sample1`; the shipped array is the study's `Sample1` for 113 of the 123 tumours. Taking `Sample1` throughout moves no score (random forest 0.879 to 0.870, logistic regression 0.844 to 0.833, within the noise).
+- Time basis: Timeless: whether a resected tumour started in the lung or elsewhere does not change; the profiles were measured on banked specimens for one study (the 123 arrays scanned between 16 March and 17 April 2001, the study's last on 25 April), so when a tumour was resected plays no role. Not tested: tumours from another hospital, or arrays processed in another laboratory.
+- CC (2026-11-11, Lennart): the second review panel's issues: 1, B (USE-1 amended on this case; the use case names the expression tissue-of-origin test as the pathologist's second opinion), 2, A (kept at 15 metastases, 5 per test fold), 3, B (the nine agreed fixes: age, sex and pack-years as features, the target as No / Yes, the notes on the negatives, the four positives staged as primaries, the recording mechanism, and the claim corrections); the declared metric, ROC AUC (fallback), is checked.
 
 ## Splits
 
-Random patients, stratified on the target: each row is the one tumour of one patient (the normal lung of patient 268 is not a row), so no grouping is needed. 5 metastases fall in each test fold of a 3-fold split; 5 folds would leave 3. The 6 IVT batches and 10 scan days hold 0 to 4 metastases each, and folds grouped by either score as the random split does (random forest pooled ROC AUC 0.883 to 0.889 against 0.884, review panel 2026-11-11).
+Random patients, stratified on the target: each row is the one tumour of one patient (the normal lung of patient 268 is not a row), so no grouping is needed. 5 metastases fall in each test fold of a 3-fold split; 5 folds would leave 3. The 6 IVT batches and 10 scan days hold 0 to 4 metastases each, and folds grouped by either score as the random split does (random forest pooled ROC AUC over 5 seeds of grouped 3-fold: by batch 0.856 to 0.897, by scan day 0.868 to 0.903; the shipped 20 random repeats 0.872; review panel, 2026-11-11).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 82 rows, test 41 rows.
 
@@ -289,85 +292,85 @@ Random patients, stratified on the target: each row is the one tumour of one pat
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 Accepted on purpose:
 
 - `meta_license_unknown`: GEO gives no licence for the GSE83227 deposit; the PNAS supplement states none either.
-- `splits_test_minority_few`: 15 metastases give 5 per test fold; the task probe on these folds raises no flag and the methods separate (random forest ROC AUC 0.876 against logistic regression 0.836; 2026-11-11, Andrej, lung_cancer review issue 7).
+- `splits_test_minority_few`: 15 metastases give 5 per test fold, about twice parkinsons' 2 to 3; only method gaps of about 0.08 ROC AUC rank (bootstrap over the patients: random forest minus logistic regression -0.007 to +0.089), and Kendall's W of four default families is 0.187, beside parkinsons 0.204 (retired) and musk 0.120 (kept), so the count decided (2026-11-11, Lennart, review issue 2, A).
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (12,559 rows)</summary>
+<summary>Show the table (12,562 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Metastasis | category | 0 | 0 | 2 | primary lung, metastasis from another organ |
-| 31307_at | float64 | 0 | 0 | 93 | 2.9, 8.6, 7.8, 2.3, 5.7, 5.5, 7.6, 3.4, 4.5, 3.2 |
-| 31308_at | float64 | 0 | 0 | 112 | 13.8, 10.1, 15.5, 7.6, 11.0, 15.7, 79.1, 12.2, 10.3, 60.8 |
-| 31309_r_at | float64 | 0 | 0 | 101 | 6.6, 12.0, 9.5, 7.4, 3.5, 3.8, 8.4, 2.3, 8.1, 6.4 |
-| 31310_at | float64 | 0 | 0 | 108 | 40.4, 16.7, 20.6, 23.7, 17.6, 9.7, 19.3, 26.1, 37.0, 16.4 |
-| 31311_at | float64 | 0 | 0 | 115 | 31.2, 36.9, 15.9, 36.1, 22.5, 21.0, 17.5, 13.5, 28.2, 25.2 |
-| 31312_at | float64 | 0 | 0 | 116 | 60.7, 40.9, 37.9, 62.4, 63.0, 80.4, 84.9, 46.4, 81.2, 47.3 |
-| 31313_at | float64 | 0 | 0 | 109 | 34.1, 46.2, 30.7, 24.8, 36.0, 27.8, 57.8, 28.0, 27.3, 29.8 |
-| 31314_at | float64 | 0 | 0 | 117 | 26.6, 36.6, 62.3, 37.4, 42.4, 102.7, 22.3, 32.9, 121.4, 22.7 |
-| 31315_at | float64 | 0 | 0 | 123 | 1632.7, 2529.1, 349.6, 7798.4, 2099.3, 2739.2, 2310.6, 15325.4, 2545.4, 695.9 |
-| 31316_at | float64 | 0 | 0 | 85 | 3.8, 6.0, 4.4, 3.1, 3.6, 6.5, 5.3, 5.6, 5.2, 3.3 |
-| 31317_r_at | float64 | 0 | 0 | 122 | 161.6, 425.2, 316.0, 530.1, 490.4, 529.8, 552.4, 322.8, 359.5, 1045.2 |
-| 31318_at | float64 | 0 | 0 | 103 | 7.9, 6.6, 7.8, 8.0, 8.8, 7.0, 6.9, 7.1, 12.3, 5.5 |
-| 31319_at | float64 | 0 | 0 | 122 | 468.7, 543.0, 40.8, 2237.1, 499.6, 922.4, 1115.4, 2472.8, 576.4, 613.0 |
-| 31320_at | float64 | 0 | 0 | 121 | 324.3, 189.6, 765.0, 182.8, 1103.2, 549.1, 318.3, 784.6, 372.0, 680.6 |
-| 31321_at | float64 | 0 | 0 | 121 | 161.0, 227.7, 48.7, 186.3, 182.1, 144.5, 313.8, 165.8, 251.3, 334.2 |
-| 31322_at | float64 | 0 | 0 | 114 | 17.1, 28.9, 6.6, 11.2, 66.6, 4.9, 30.0, 43.6, 20.1, 68.6 |
-| 31323_r_at | float64 | 0 | 0 | 112 | 53.4, 48.2, 102.8, 48.7, 53.1, 52.8, 57.7, 68.9, 56.1, 40.3 |
-| 31324_at | float64 | 0 | 0 | 123 | 103.7, 348.3, 235.7, 229.0, 203.8, 50.7, 149.5, 164.7, 207.4, 269.5 |
-| 31325_at | float64 | 0 | 0 | 116 | 58.0, 77.6, 49.2, 50.8, 53.3, 73.3, 75.5, 95.2, 21.4, 62.0 |
-| 31326_at | float64 | 0 | 0 | 121 | 130.7, 123.1, 144.8, 145.1, 173.0, 93.9, 167.6, 119.7, 122.8, 143.3 |
-| 31327_at | float64 | 0 | 0 | 101 | 15.8, 6.0, 10.9, 9.6, 18.1, 4.0, 11.8, 6.5, 7.8, 13.4 |
-| 31328_at | float64 | 0 | 0 | 122 | 127.2, 183.1, 51.7, 123.5, 41.0, 167.5, 292.4, 189.7, 122.9, 343.6 |
-| 31329_at | float64 | 0 | 0 | 117 | 28.7, 8.1, 13.4, 74.4, 12.0, 5.0, 4.2, 121.7, 86.5, 44.6 |
-| 31330_at | float64 | 0 | 0 | 123 | 23751.8, 25844.9, 12286.5, 10689.6, 17830.4, 15725.7, 13656.4, 16725.7, 12624.5… |
-| 31331_at | float64 | 0 | 0 | 119 | 20.1, 112.1, 176.8, 77.8, 136.7, 72.6, 45.9, 135.7, 14.6, 97.8 |
-| 31332_at | float64 | 0 | 0 | 104 | 8.0, 5.2, 9.1, 6.3, 22.6, 7.8, 4.6, 22.4, 8.8, 10.7 |
-| 31333_at | float64 | 0 | 0 | 116 | 17.7, 19.4, 16.3, 16.2, 31.2, 54.6, 46.9, 12.5, 16.5, 35.1 |
-| 31334_at | float64 | 0 | 0 | 117 | 35.9, 22.4, 23.0, 22.3, 49.1, 37.3, 65.6, 67.9, 41.9, 70.4 |
-| 31335_at | float64 | 0 | 0 | 123 | 190.2, 214.8, 120.3, 178.7, 117.6, 59.3, 63.7, 43.5, 57.5, 41.9 |
-| 31336_at | float64 | 0 | 0 | 112 | 11.4, 9.3, 9.2, 32.0, 25.7, 69.4, 7.6, 22.3, 15.7, 10.6 |
-| 31337_at | float64 | 0 | 0 | 123 | 508.0, 125.1, 439.1, 490.9, 147.0, 238.5, 266.2, 414.0, 275.2, 518.6 |
-| 31338_at | float64 | 0 | 0 | 110 | 9.9, 25.1, 67.9, 9.3, 11.4, 15.5, 6.7, 10.0, 11.5, 16.3 |
-| 31339_at | float64 | 0 | 0 | 106 | 16.1, 26.7, 19.5, 20.9, 17.9, 15.6, 20.6, 12.9, 19.2, 8.0 |
-| 31340_at | float64 | 0 | 0 | 119 | 39.2, 14.9, 32.1, 47.8, 175.4, 22.7, 40.7, 24.2, 59.0, 90.7 |
-| 31341_at | float64 | 0 | 0 | 120 | 124.8, 103.4, 153.0, 238.5, 405.5, 71.9, 467.4, 152.7, 144.2, 207.8 |
-| 31342_at | float64 | 0 | 0 | 120 | 254.6, 395.9, 270.4, 297.8, 400.8, 344.0, 364.6, 313.3, 297.9, 131.9 |
-| 31343_at | float64 | 0 | 0 | 105 | 10.8, 4.6, 8.4, 5.5, 7.4, 6.4, 13.3, 4.0, 11.2, 7.0 |
-| 31344_at | float64 | 0 | 0 | 122 | 586.4, 95.1, 92.3, 76.4, 205.0, 429.6, 55.1, 1075.4, 261.4, 75.9 |
-| 31345_at | float64 | 0 | 0 | 121 | 103.8, 53.5, 87.3, 20.0, 22.5, 85.8, 112.5, 41.6, 90.0, 17.1 |
-| 31346_at | float64 | 0 | 0 | 113 | 78.4, 95.0, 110.1, 68.0, 97.4, 89.7, 83.3, 193.6, 70.9, 111.8 |
-| 31347_at | float64 | 0 | 0 | 123 | 681.9, 792.7, 52.1, 1977.1, 2732.4, 613.5, 1628.1, 3668.0, 1434.9, 74.0 |
-| 31348_at | float64 | 0 | 0 | 94 | 10.8, 19.6, 10.4, 13.7, 8.4, 10.3, 22.7, 10.9, 13.8, 8.7 |
-| 31349_at | float64 | 0 | 0 | 121 | 36.6, 38.8, 30.6, 163.5, 73.0, 59.8, 46.1, 104.0, 67.8, 39.2 |
-| 31350_at | float64 | 0 | 0 | 123 | 522.5, 345.4, 333.9, 507.3, 353.4, 292.1, 598.5, 209.0, 716.2, 312.5 |
-| 31351_at | float64 | 0 | 0 | 110 | 15.7, 11.5, 30.2, 26.2, 22.4, 15.8, 17.9, 15.4, 8.9, 7.1 |
-| 31352_at | float64 | 0 | 0 | 118 | 99.1, 48.1, 60.6, 24.5, 86.4, 137.2, 26.2, 87.9, 17.7, 103.6 |
-| 31353_f_at | float64 | 0 | 0 | 120 | 513.1, 450.4, 511.5, 481.5, 426.9, 528.0, 198.6, 451.2, 559.0, 416.0 |
-| 31354_r_at | float64 | 0 | 0 | 119 | 43.4, 68.4, 91.9, 69.4, 44.3, 94.5, 93.0, 38.6, 41.7, 130.5 |
-| 31355_at | float64 | 0 | 0 | 116 | 60.1, 42.9, 122.0, 66.9, 50.1, 73.5, 63.7, 57.5, 35.0, 1245.7 |
-| 31356_at | float64 | 0 | 0 | 121 | 142.5, 179.5, 79.4, 93.2, 90.7, 144.7, 225.5, 48.3, 123.5, 133.4 |
-| 31357_at | float64 | 0 | 0 | 107 | 11.7, 17.6, 14.0, 11.9, 46.2, 12.2, 6.6, 6.3, 7.1, 19.9 |
-| 31358_at | float64 | 0 | 0 | 113 | 8.2, 25.5, 9.9, 28.6, 15.9, 8.5, 4.8, 14.7, 16.5, 128.5 |
-| 31359_at | float64 | 0 | 0 | 80 | 3.2, 2.9, 2.6, 5.2, 4.6, 4.0, 5.1, 2.4, 4.5, 4.1 |
-| 31360_at | float64 | 0 | 0 | 111 | 16.8, 100.4, 20.6, 21.1, 27.7, 19.5, 26.9, 22.2, 22.1, 16.3 |
-| 31361_at | float64 | 0 | 0 | 103 | 30.5, 12.8, 29.8, 16.1, 25.8, 21.6, 18.8, 12.6, 35.0, 22.6 |
-| 31362_at | float64 | 0 | 0 | 119 | 34.7, 46.1, 112.8, 29.9, 53.3, 297.7, 27.2, 96.3, 57.7, 65.8 |
-| 31363_at | float64 | 0 | 0 | 120 | 132.8, 168.8, 204.1, 98.3, 90.9, 41.0, 178.7, 151.8, 43.8, 29.9 |
-| 31364_i_at | float64 | 0 | 0 | 115 | 59.3, 23.7, 30.3, 41.7, 32.9, 47.1, 67.1, 32.5, 72.5, 16.4 |
-| 31365_f_at | float64 | 0 | 0 | 117 | 73.4, 111.8, 61.1, 93.4, 55.9, 26.0, 8.9, 184.1, 98.9, 55.8 |
+| Metastasis | category | 0 | 0 | 2 | No, Yes |
+| sex | category | 0 | 0 | 2 | female, male |
+| pack_years | float64 | 2 | 1.63 | 42 | 0.0, 40.0, 60.0, 100.0, 50.0, 75.0, 80.0, 45.0, 10.0, 30.0 |
+| age | float64 | 0 | 0 | 44 | 69.0, 61.0, 65.0, 56.0, 59.0, 64.0, 71.0, 68.0, 60.0, 63.0 |
+| 31307_at | float64 | 0 | 0 | 93 | 8.6, 2.9, 5.5, 2.3, 7.8, 5.7, 8.7, 4.5, 4.2, 2.6 |
+| 31308_at | float64 | 0 | 0 | 112 | 13.8, 10.1, 15.7, 15.5, 7.6, 11.0, 12.2, 10.3, 79.1, 15.3 |
+| 31309_r_at | float64 | 0 | 0 | 101 | 12.0, 9.5, 7.4, 6.6, 3.5, 8.4, 126.8, 8.1, 8.0, 6.4 |
+| 31310_at | float64 | 0 | 0 | 108 | 23.7, 9.2, 20.8, 16.4, 37.0, 26.1, 40.4, 19.3, 24.9, 18.2 |
+| 31311_at | float64 | 0 | 0 | 115 | 31.2, 36.9, 17.5, 22.5, 21.0, 36.1, 13.5, 15.9, 61.5, 24.5 |
+| 31312_at | float64 | 0 | 0 | 116 | 63.0, 40.9, 62.4, 80.4, 84.9, 37.9, 60.7, 32.6, 96.4, 75.2 |
+| 31313_at | float64 | 0 | 0 | 109 | 34.1, 28.0, 22.4, 27.3, 46.2, 36.0, 38.4, 57.8, 29.8, 27.8 |
+| 31314_at | float64 | 0 | 0 | 117 | 26.6, 37.4, 62.3, 36.6, 42.4, 20.5, 201.0, 93.1, 178.2, 122.4 |
+| 31315_at | float64 | 0 | 0 | 123 | 507.9, 1356.6, 3207.6, 938.8, 27332.8, 6252.0, 2196.2, 2254.0, 3656.9, 1913.0 |
+| 31316_at | float64 | 0 | 0 | 85 | 3.8, 3.1, 4.4, 6.0, 5.6, 5.3, 5.2, 6.5, 4.3, 3.3 |
+| 31317_r_at | float64 | 0 | 0 | 122 | 161.6, 210.3, 325.6, 397.2, 823.2, 555.6, 400.6, 281.1, 150.3, 292.3 |
+| 31318_at | float64 | 0 | 0 | 103 | 7.9, 7.0, 8.8, 7.8, 6.6, 8.0, 17.3, 5.2, 7.1, 6.9 |
+| 31319_at | float64 | 0 | 0 | 122 | 468.7, 330.2, 1049.8, 87.9, 2494.2, 1810.7, 1303.9, 817.3, 589.9, 356.6 |
+| 31320_at | float64 | 0 | 0 | 121 | 324.3, 189.6, 159.1, 839.1, 941.2, 815.0, 422.3, 151.9, 307.5, 507.6 |
+| 31321_at | float64 | 0 | 0 | 121 | 227.7, 161.0, 131.0, 150.6, 175.4, 31.5, 312.8, 134.4, 222.6, 160.9 |
+| 31322_at | float64 | 0 | 0 | 114 | 28.9, 43.6, 4.9, 6.6, 30.0, 66.6, 20.1, 11.2, 17.1, 3.4 |
+| 31323_r_at | float64 | 0 | 0 | 112 | 48.7, 68.9, 48.2, 102.8, 53.4, 53.1, 40.3, 57.7, 52.8, 56.1 |
+| 31324_at | float64 | 0 | 0 | 123 | 205.0, 161.8, 191.1, 363.1, 31.3, 173.6, 388.2, 101.2, 182.5, 56.1 |
+| 31325_at | float64 | 0 | 0 | 116 | 58.0, 50.8, 49.2, 77.6, 53.3, 73.3, 75.5, 88.9, 64.8, 44.6 |
+| 31326_at | float64 | 0 | 0 | 121 | 123.1, 130.7, 97.9, 219.8, 147.0, 190.1, 163.3, 96.3, 156.6, 109.3 |
+| 31327_at | float64 | 0 | 0 | 101 | 6.0, 10.9, 15.8, 9.6, 12.0, 18.1, 13.4, 7.8, 13.3, 19.4 |
+| 31328_at | float64 | 0 | 0 | 122 | 127.2, 62.7, 224.1, 413.1, 61.6, 176.0, 192.0, 49.8, 173.9, 141.5 |
+| 31329_at | float64 | 0 | 0 | 117 | 12.0, 74.4, 13.4, 5.0, 8.1, 28.7, 34.2, 3.3, 12.1, 27.5 |
+| 31330_at | float64 | 0 | 0 | 123 | 12090.4, 16763.9, 30561.5, 13021.5, 13656.9, 17337.0, 9587.4, 18505.8, 18158.4,… |
+| 31331_at | float64 | 0 | 0 | 119 | 112.1, 20.1, 11.3, 14.5, 210.9, 88.4, 68.2, 99.5, 100.0, 97.9 |
+| 31332_at | float64 | 0 | 0 | 104 | 5.2, 8.0, 7.2, 6.3, 13.1, 43.3, 4.9, 22.4, 4.6, 17.9 |
+| 31333_at | float64 | 0 | 0 | 116 | 17.7, 19.4, 54.6, 16.3, 16.2, 31.2, 99.5, 6.4, 18.5, 25.4 |
+| 31334_at | float64 | 0 | 0 | 117 | 49.1, 37.3, 35.9, 22.4, 22.3, 23.0, 58.2, 20.9, 39.8, 18.7 |
+| 31335_at | float64 | 0 | 0 | 123 | 85.8, 247.2, 85.5, 35.1, 110.5, 467.6, 285.4, 28.0, 104.8, 148.7 |
+| 31336_at | float64 | 0 | 0 | 112 | 25.7, 15.7, 7.6, 69.4, 9.3, 10.6, 11.4, 13.8, 9.2, 22.3 |
+| 31337_at | float64 | 0 | 0 | 123 | 408.6, 213.7, 436.3, 329.6, 314.2, 158.9, 505.2, 198.7, 591.3, 467.9 |
+| 31338_at | float64 | 0 | 0 | 110 | 9.9, 11.4, 9.3, 10.0, 67.9, 8.4, 16.3, 6.7, 11.5, 25.1 |
+| 31339_at | float64 | 0 | 0 | 106 | 16.1, 26.7, 21.0, 12.9, 32.1, 15.6, 19.2, 23.7, 17.9, 20.6 |
+| 31340_at | float64 | 0 | 0 | 119 | 14.9, 47.8, 32.1, 39.2, 31.7, 41.1, 69.3, 23.1, 141.5, 71.7 |
+| 31341_at | float64 | 0 | 0 | 120 | 153.0, 103.4, 124.8, 97.7, 157.8, 302.2, 191.7, 118.3, 173.7, 339.0 |
+| 31342_at | float64 | 0 | 0 | 120 | 270.4, 395.9, 254.6, 566.7, 298.0, 397.6, 214.8, 345.8, 270.0, 194.4 |
+| 31343_at | float64 | 0 | 0 | 105 | 10.8, 4.6, 11.2, 5.0, 14.5, 6.4, 4.0, 12.2, 7.4, 13.3 |
+| 31344_at | float64 | 0 | 0 | 122 | 586.4, 64.6, 261.7, 56.9, 901.6, 751.9, 95.8, 300.7, 316.4, 107.1 |
+| 31345_at | float64 | 0 | 0 | 121 | 103.8, 53.5, 43.3, 257.3, 99.2, 141.3, 199.8, 81.9, 75.4, 12.3 |
+| 31346_at | float64 | 0 | 0 | 113 | 78.4, 95.0, 110.1, 89.7, 83.3, 97.4, 68.0, 53.2, 87.1, 96.3 |
+| 31347_at | float64 | 0 | 0 | 123 | 206.1, 814.8, 1916.7, 467.7, 3185.1, 2066.4, 1277.3, 2690.3, 707.6, 834.3 |
+| 31348_at | float64 | 0 | 0 | 94 | 10.8, 13.7, 19.6, 10.4, 14.2, 13.8, 10.3, 18.6, 11.0, 10.1 |
+| 31349_at | float64 | 0 | 0 | 121 | 38.8, 36.6, 191.1, 129.5, 65.4, 64.7, 234.2, 68.9, 33.6, 28.3 |
+| 31350_at | float64 | 0 | 0 | 123 | 363.1, 564.6, 599.0, 668.5, 513.4, 135.8, 864.7, 171.6, 135.7, 409.1 |
+| 31351_at | float64 | 0 | 0 | 110 | 30.2, 10.9, 11.5, 7.1, 34.2, 26.2, 17.9, 15.4, 16.7, 22.4 |
+| 31352_at | float64 | 0 | 0 | 118 | 99.1, 48.1, 24.5, 60.6, 29.5, 120.8, 85.8, 44.9, 8.1, 39.5 |
+| 31353_f_at | float64 | 0 | 0 | 120 | 511.5, 450.4, 513.1, 347.0, 600.1, 321.8, 416.1, 461.9, 344.8, 535.8 |
+| 31354_r_at | float64 | 0 | 0 | 119 | 91.9, 69.4, 68.4, 43.4, 87.9, 51.6, 80.8, 52.3, 112.2, 92.4 |
+| 31355_at | float64 | 0 | 0 | 116 | 42.9, 60.1, 66.9, 122.0, 50.1, 60.4, 701.5, 50.6, 118.6, 58.5 |
+| 31356_at | float64 | 0 | 0 | 121 | 142.5, 179.5, 141.5, 313.3, 185.1, 177.6, 320.5, 48.9, 141.7, 184.5 |
+| 31357_at | float64 | 0 | 0 | 107 | 11.7, 17.6, 13.1, 7.1, 14.0, 6.6, 6.3, 19.9, 16.6, 11.9 |
+| 31358_at | float64 | 0 | 0 | 113 | 8.2, 15.9, 16.5, 9.9, 8.5, 28.6, 4.8, 14.7, 25.5, 13.2 |
+| 31359_at | float64 | 0 | 0 | 80 | 3.2, 4.6, 2.9, 5.2, 2.6, 4.0, 5.1, 2.4, 4.5, 4.1 |
+| 31360_at | float64 | 0 | 0 | 111 | 16.8, 20.6, 27.7, 100.4, 9.5, 22.2, 16.3, 22.1, 21.1, 26.9 |
+| 31361_at | float64 | 0 | 0 | 103 | 30.5, 12.8, 34.8, 25.8, 24.4, 21.6, 19.8, 12.6, 35.0, 13.2 |
+| 31362_at | float64 | 0 | 0 | 119 | 112.8, 29.9, 34.7, 46.1, 38.9, 56.1, 122.4, 24.4, 15.3, 70.5 |
 
-(12,499 more rows not shown)
+(12,502 more rows not shown)
 
 </details>
 
@@ -375,16 +378,18 @@ Accepted on purpose:
 
 | Metastasis | count | pct |
 |---|---|---|
-| primary lung | 108 | 87.8 |
-| metastasis from another organ | 15 | 12.2 |
+| No | 108 | 87.8 |
+| Yes | 15 | 12.2 |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (12,558 rows)</summary>
+<summary>Show the table (12,560 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
+| age | 123 | 63.0488 | 10.2372 | 33 | 88 |
+| pack_years | 121 | 44.9079 | 34.9343 | 0 | 140 |
 | 31307_at | 123 | 16.9415 | 36.0333 | 1.6 | 286.8 |
 | 31308_at | 123 | 37.0764 | 33.2813 | 4.1 | 180.3 |
 | 31309_r_at | 123 | 32.0951 | 40.5587 | 2.3 | 213.8 |
@@ -443,10 +448,8 @@ Accepted on purpose:
 | 31362_at | 123 | 76.9748 | 57.2353 | 10.8 | 316.1 |
 | 31363_at | 123 | 141.658 | 76.1982 | 18.1 | 412.2 |
 | 31364_i_at | 123 | 67.1512 | 50.0511 | 12.8 | 261.7 |
-| 31365_f_at | 123 | 87.6862 | 41.5386 | 8.9 | 208.1 |
-| 31366_at | 123 | 43.9618 | 33.4172 | 10.9 | 195.3 |
 
-(12,498 more rows not shown)
+(12,500 more rows not shown)
 
 </details>
 
@@ -454,8 +457,10 @@ Accepted on purpose:
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Metastasis | 1 | primary lung | 108 | 87.8 |
-| Metastasis | 2 | metastasis from another organ | 15 | 12.2 |
+| Metastasis | 1 | No | 108 | 87.8 |
+| Metastasis | 2 | Yes | 15 | 12.2 |
+| sex | 1 | female | 71 | 57.72 |
+| sex | 2 | male | 52 | 42.28 |
 
 ## Build
 
@@ -468,4 +473,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:63c59679eddbe8177058cd3ab20ed58df9b6a9c0f523f6bdb173b223ac561af5` |
+| stale | yes: the definition now gives checksum `v2:68f72e86414e1cda3596d17277025e830cc53324848d29ad63545c69e555aa1e` |

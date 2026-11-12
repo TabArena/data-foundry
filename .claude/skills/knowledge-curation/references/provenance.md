@@ -61,7 +61,7 @@ distinct task: a swapped target, another slice of the same cohort, added or drop
 
 **PROV-7 (Must; narrows PROV-4 and PROV-6).** Records that share a source but give different tasks are not
 duplicates. The comments say why they are distinct, ideally each with its own DOI. Cases:
-parkinsons_biomedical_voice_measurements, amex_iid.
+parkinsons_biomedical_voice_measurements, amex_iid, lung_adenocarcinoma_metastasis (lung_cancer's arrays).
 
 ### The source is the first publication
 
@@ -239,6 +239,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | PROV-6 | hiva_agnostic, nci_aids_antiviral_screen | a challenge's fingerprint build of a public screen against the screen's own structure release: HIVA's 4,229 labelled rows link to NSC numbers by their bits (97% with confidence) and every label agrees with the NCI file, and its three parts are 42,678 against the screen's 42,682 structure-bearing compounds, so it adds no compound and no label; what it adds is one 2006 ChemTK representation nobody can recompute, which CLEAN-24 as amended drops everywhere else. The structure release wins over the fingerprint build of the same rows: the same shape as ames_mutagenicity / tdc_ames, astrazeneca_chembl_logd74 / tdc_lipophilicity_astrazeneca and bbbp_martins / tdc_bbb_martins, flagged 2026-10-31 (2026-11-02, Lennart) | applied |
 | PROV-7 | parkinsons_biomedical_voice_measurements, telemonitoring_parkinsons_biomedical_voice_measurements | one source, two tasks: the first detects a disorder, the second tracks its progression ([selection.md](selection.md), "Duplicates and versions") | applied |
 | PROV-7 | amex_iid, amex_non_iid | the IID and grouped versions of one competition ([selection.md](selection.md), "Duplicates and versions") | applied |
+| PROV-7 | lung_cancer, lung_adenocarcinoma_metastasis | one study's arrays, two tasks: lung_cancer's histology (retired 2026-11-10) and the study's flag of a possible metastasis from another organ, a new record with its own rows and target (2026-11-11, Andrej); the rebuild from the study's GEO deposit (one MAS5 array per specimen instead of Dataset A's MAS4 means) was a repair under lung_cancer (PROV-13, PROV-14). Cited as PROV-14 until the review of 2026-11-11 (Lennart) | applied |
 | PROV-8, PROV-9 | airfoil_self_noise | 1989 and NASA RP-1218, not UCI 2014: the report's Figs. 11-43 show every measured value (the scaled target and the thickness are the report's formulas of them), and UCI's file was digitised from them (Lau, López and Oñate, CIMNE PI-335, Sec. 4.1), so it is a copy; the report's tables do not list the levels (2026-10-20, Lennart; PROV-9 amended) | applied |
 | PROV-9 | first_principles_tully_fisher | 1977 and Tully and Fisher (A&A 54), not PMLB: its 18 rows were read off the paper's Fig. 5(a); real measurements, so not `AHDS` (2026-10-20, Lennart) | applied |
 | PROV-9 | nikuradse_1, nikuradse_2 | 1933 and Nikuradse's VDI-Forschungsheft 361, not PMLB or the 1950 NACA translation: its Tables 2-8 hold the 362 measurements (2026-10-20, Lennart) | applied |
@@ -248,7 +249,6 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | PROV-13, PROV-15 | SUPPORT2 | the copy's phase II physiology held rows of the wrong patient; restored from the study data (ICPSR 2957) | applied |
 | PROV-14 | SUPPORT2 (2_month_survival_rate_prediction), cirrhosis_patient_survival_prediction, framingham_heart_study_fhs | repairs: the same units and features, damaged values restored from the origin, kept under their records (framingham: 4,240 participants matched row for row on 15 features, 249 labels turned from Yes to No, 16 rows dropped); PROV-14 amended (2026-10-21, Lennart) | applied |
 | PROV-11, PROV-14 | corporate_credit_rating | a rebuild from other sources (the agencies' rating histories, SEC EDGAR): a new record, corporate_issuer_credit_rating (2026-10-16, Lennart) | applied |
-| PROV-14 | lung_cancer | rebuilt from the study's GEO deposit (one MAS5 array per specimen instead of Dataset A's MAS4 means) and given a new target and rows: a new record, lung_adenocarcinoma_metastasis, with lung_cancer retired, as coad_colon_adenocarcinoma and aeolus (2026-11-11, Andrej) | applied |
 | PROV-13 | ashrae | the readings put in kWh from the data owners' raw files | applied |
 | PROV-13 | coad_colon_adenocarcinoma | retired for a rebuild from the GDC's per-sample files | applied |
 | PROV-13 | corporate_credit_rating | retired for a rebuild from the agencies' own rating histories | applied |

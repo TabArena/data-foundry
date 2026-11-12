@@ -73,13 +73,14 @@ ov_ovarian_cancer (Lennart, 2026-10-12).
 or the field's definition of the label by measurements in the table (the type of hearing loss by the audiogram,
 spondylolisthesis by the size of the slip). Drop the rule's inputs first and test what the rest predicts:
 * the rest makes a real task with a decision: ship it without the inputs;
-* the rest does not beat a constant, or stays within what shuffled labels give: the task is out, `No Signal` (TP-2);
+* the rest shows no signal by step 1 of TP-2 (no tuned method beats the same pipeline on shuffled labels): the task
+  is out, `No Signal`; a real but small signal is the curator's call (step 2 of TP-2);
 * too few features are left to carry the task: the label was likely no good target, and the task is out,
   `No Good Target / Scientific Discovery`;
 * the inputs are at hand at the decision and the rule, not fitted on these data, beats the methods: `Trivial`
-  (TP-4); when it only matches them, the dataset is a candidate to drop and the curator decides. When the rest still
-  carries a signal, it is kept and reassessed from scratch as a new task (use case, signal, split), and ships only if
-  it passes.
+  (TP-4); when it only matches them, the dataset is a candidate to drop and the curator decides (`Trivial` when
+  dropped). When the rest still carries a signal, it is kept and reassessed from scratch as a new task (use case,
+  signal, split), and ships only if it passes.
 
 Marker: the one the branch names. Cases: account_debt_south_africa,
 central_international_medical_college_and_hospital_health_risk_prediction (NEWS2), audiology_diagnosis; the rest kept
@@ -264,16 +265,18 @@ A table without a genuine predictive target is `No Good Target / Scientific Disc
 
 ### Trivial, too small, empty
 
-`Trivial` (one feature, or a rule not fitted on these data, beats the best methods, or the task is solved perfectly)
-is `No` (TP-4; one that only matches them makes the dataset a candidate to drop, the curator's call), and `Too Small`
-(a handful of units of a class per test fold) is `No` or `TBD -> 2nd Tier` (TP-5). Both need evidence from the task's
-own splits; the rules are in [task_probes.md](task_probes.md). A small but real signal, or methods that tie on a hard
-task, is not trivial and no reason to retire (TP-2); methods that stay within what shuffled
-labels give are `No Signal`, and the task is retired (TP-2). A label a rule assigns from columns we ship, by a published
-formula or by the field's definition, follows SEL-5. Under class imbalance, accuracy against the majority class is no
-evidence in either direction ([evidence.md](evidence.md), EV-5; Lennart, 2026-09-23): judge learnability
-with ROC AUC or log loss against the class prior, and fit a quick gradient-boosting model on the features known at
-prediction time when the data loads (`us_accidents`: its published "78% accuracy" settled nothing).
+`Trivial` (one feature, or a rule not fitted on these data, beats the best methods, or the task is solved perfectly) is
+`No` (TP-4; one that only matches them makes the dataset a candidate to drop, and a gain of the methods over it too
+small for the use case's decision is the curator's call too, both `Trivial` when dropped), and `Too Small` (a handful of
+units of a class per test fold) is `No` or `TBD -> 2nd Tier` (TP-5). Both need evidence from the task's own splits; the
+rules are in [task_probes.md](task_probes.md). A small but real signal, or methods that tie on a hard task, is not
+trivial and no reason to retire (TP-2); methods that stay within what shuffled labels give are `No Signal`, and the task
+is retired (step 1 of TP-2). A real signal too small to change the use case's decision is the curator's call, case by
+case (step 2 of TP-2). A label a rule assigns from columns we ship, by a published formula or by the field's definition,
+follows SEL-5. Under class imbalance, accuracy against the majority class is no evidence in either direction
+([evidence.md](evidence.md), EV-5; Lennart, 2026-09-23): judge learnability with ROC AUC or log loss against the class
+prior, and fit a quick gradient-boosting model on the features known at prediction time when the data loads
+(`us_accidents`: its published "78% accuracy" settled nothing).
 
 ### Small or dated, and the task is still done today
 
@@ -298,7 +301,10 @@ and judge the model comparison on the data, not on the marker. The marker does n
 approximate: the fit is direct when the real-world setting of the use case has the same bias, and approximate when it
 does not (USE-8 in [use_case.md](use_case.md)). The marker stays either way, since it says something special about the
 data (Lennart, 2026-10-27). `eryhemato_squamous_disease` is the example: 93% of its lichen planus patients have mouth
-lesions and no other patient does, against 19% to 63% in clinic series; kept, with an approximate fit.
+lesions and no other patient does, against 19% to 63% in clinic series; kept, with an approximate fit. A selection does
+not retire a dataset by itself: early_stage_diabetes_risk_prediction (patients of a diabetes hospital, 69% diabetic) was
+retired because no testing decision is made from its symptoms (USE-2, USE-8), and its `Selection Bias` marker stays
+(Lennart, 2026-11-11).
 
 No marker when:
 
@@ -313,9 +319,9 @@ No marker when:
   patients), a question of the use-case fit.
 
 `Not Representative` is a different flag: the task or its setup is not the real application (features practitioners no
-longer use, a prediction no decision rests on). A record carries both when both hold (`audiology_diagnosis`). The
-clause on objects picked for measurement and the cases without a marker were added on the review of PR #16 (Lennart,
-2026-10-27).
+longer use, a prediction no decision rests on). A record carries both when both hold (`audiology_diagnosis`;
+`early_stage_diabetes_risk_prediction`: a hospital sample, and symptoms no testing decision is made from). The clause on
+objects picked for measurement and the cases without a marker were added on the review of PR #16 (Lennart, 2026-10-27).
 
 ### Leakage and irreversible damage
 
@@ -430,7 +436,7 @@ marker records where a record stands, not an issue of the data.
 | `No Good Target (yet)` | real data without a predictive target so far (a listing, a survey, a table built for another purpose); one may be defined later, and such records mostly wait as `TBD -> 2nd Tier` | none |
 | `No Good Target / Scientific Discovery` | no genuine predictive target: a discovery, survey or look-back table, a label no decision fits | SEL-3, SEL-4, SEL-5, SEL-6, SEL-7; USE-2, USE-8 ([use_case.md](use_case.md)) |
 | `Data Quality Issue` | damage that cannot be undone or repaired: a supervised transform fit on the whole labelled set, a manipulated real table | LEAK-27 ([leak_checks.md](leak_checks.md)); PROV-3 ([provenance.md](provenance.md)) |
-| `Trivial` | one feature, or a rule not fitted on these data (a published formula, the field's definition, a textbook or clinical score), beats the best methods, or the task is solved perfectly; one that matches them makes a candidate to drop, the curator's call | TP-4; SEL-5 |
+| `Trivial` | one feature, or a rule not fitted on these data (a published formula, the field's definition, a textbook or clinical score), beats the best methods, or the task is solved perfectly; one that matches them, or that the methods beat by a gain too small for the use case's decision, makes a candidate to drop, the curator's call | TP-4; SEL-5 |
 | `Image` | an image or video task, including features computed from an image to describe its content | SEL-12, SEL-13 |
 | `Time-series (Forecasting)` | future values of a series over a horizon | SEL-10 |
 | `NLP (Text)` | a raw-text task where language models dominate | SEL-12 |
@@ -438,7 +444,7 @@ marker records where a record stands, not an issue of the data.
 | `Out-of-scope Task (CTR/RecSys/Ranking)` | a recommendation, ranking, click-through-rate or information-retrieval task | SEL-9 (SEL-8) |
 | `Ethical Issue` | an ethical concern, such as subjects or creators who object to ML use | SEL-1 |
 | `Too Small` | a handful of units of a class per test fold and in total | TP-5 (TP-8 for a short class, TP-9 for the windows of a temporal task) |
-| `No Signal` | no signal on the split the use case needs: the best methods do not beat a constant, or stay within what the same methods reach on shuffled labels; a small but real signal is no reason to retire | TP-2 ([task_probes.md](task_probes.md)); SPLIT-28 ([splits.md](splits.md)); SEL-5 |
+| `No Signal` | no usable signal on the split the use case needs: no method beats the same pipeline on shuffled labels, or the curator judges the real gain too small for the use case's decision; a small but real signal is otherwise no reason to retire | TP-2 ([task_probes.md](task_probes.md)); SPLIT-28 ([splits.md](splits.md)); SEL-5 |
 | `Not Representative` | the task or its setup does not represent the real application (features practitioners no longer use for the task, a prediction no decision rests on); a selective sample is `Selection Bias` | none |
 | `Selection Bias` | the rows are not drawn from the population the use case predicts for (cases and controls collected apart, only typical or confirmed cases, a volunteer or teaching collection, objects picked for measurement when the use case predicts for the others); a concern flag, usually on `Yes` records | none (Patterns, "Selection bias") |
 | `Anonymized` | feature names or values replaced on purpose (symbols, `var_<n>`, hashed codes), so what a column measures, its timing and leaks cannot be checked; a concern flag, no exclusion reason; goes with the definition's `Anonymized` data tag | none (Patterns, "Anonymized data") |
