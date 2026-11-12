@@ -68,8 +68,9 @@ NoIndentMetadata = [
 
 def feature_columns(container: CuratedContainer) -> list[str]:
     """The model's input columns, in frame order: every column but the target, the group column(s) and, in format 2,
-    the scoring columns (:class:`~data_foundry.schema.ScoringColumn`: metric inputs, never features) and the unit of a
-    unit weight (:class:`~data_foundry.schema.UnitWeight`).
+    the scoring columns (:class:`~data_foundry.schema.ScoringColumn`: metric inputs, never features), the unit of a
+    unit weight (:class:`~data_foundry.schema.UnitWeight`) and a time column declared as no model input
+    (``time_is_feature=False``: the actor does not hold it at the prediction point).
 
     ``X = container.dataset[feature_columns(container)]``.
     """
@@ -80,6 +81,8 @@ def feature_columns(container: CuratedContainer) -> list[str]:
     unit = getattr(task, "unit_weight", None)
     if unit is not None:
         excluded.add(unit.unit)
+    if task.time_on is not None and not getattr(task, "time_is_feature", True):
+        excluded.add(task.time_on)
     return [c for c in container.dataset.columns if c not in excluded]
 
 
@@ -313,7 +316,7 @@ class CuratedContainer:
     def _feature_dtype_counts(self) -> dict[str, int]:
         """Count feature-column dtypes.
 
-        Counts the :func:`feature_columns` (no target, group or scoring column). Binary
+        Counts the :func:`feature_columns` (no target, group, scoring or non-feature time column). Binary
         columns (exactly two distinct non-null values, regardless of dtype)
         are counted only in the ``binary`` bucket — the ``numeric``,
         ``categorical``, ``datetime``, and ``text`` buckets all exclude
