@@ -280,10 +280,11 @@ from the features (a score, a label defined by thresholds) or a leak gives the f
 tests of PROV-3 in [provenance.md](provenance.md): dependence that the world would show but the data does not (churn's
 area codes spread over all states alike), several columns with one distribution, every row of a group following a rule.
 When you can, write the generator down: that settles it. For the independence marks, name the dependence the domain must
-show (AST and ALT in liver patients, size and equity in banks) and check it directly. Either statistic alone is common
-in real data: santander_customer_transaction_prediction has 5.4% of its pairs dependent but no uniform column,
-homesite_quote_conversion 13 of 42 uniform columns (each `...B` field codes its `...A` field in 25 equal-frequency bins)
-but 45% of its pairs dependent, and bank_customer_churn has one uniform column, `estimated_salary`.
+show (AST and ALT in liver patients, size and equity in banks) and check it directly. Either statistic alone
+misleads: homesite_quote_conversion, real, has 13 of 42 uniform columns (each `...B` field codes its `...A` field in 25
+equal-frequency bins) but 45% of its pairs dependent; santander_customer_transaction_prediction has 5.4% of its pairs
+dependent overall and no uniform column, yet within each class its pairs sit at the chance rate (generated); and
+bank_customer_churn, also generated, has only one uniform column, `estimated_salary`.
 
 Calibration on 2026-10-06 (all 128 datasets of the working copy): the probe flags the two datasets known to be
 generated and no other. The nearest regression is student_portuguese_performance (2.6% exact against 0.0%), the
