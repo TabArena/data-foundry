@@ -804,6 +804,37 @@ def test_metric_is_resolved_by_the_records_cc_line(brp, tmp_path):
     assert brp._metric_checked(tmp_path / "missing.md") is None
 
 
+def test_the_split_is_marked_only_when_the_round_asks(crv, brp, tmp_path):
+    """The split, like the metric, keeps a settled record on the page only when --split-marks names it, until the
+    record's CC line says the declared split is checked; the report's header names the records, and the page's
+    split box and mark are gated on them.
+    """
+    file = AIRFOIL
+    text = (REVIEW_FILES / file).read_text()
+    fields = text[text.index("**Record fields that disagree") : text.index("**Record judgment:**")]
+    issues = text[text.index("**Issues for the curator:**") : text.index("**Review panel:**")]
+    root, records, _ = _broken_copy(tmp_path, file, text, text.replace(fields, "").replace(issues, ""))
+    out = tmp_path / "report.md"
+    assert _collect_fixture(crv, root, records, out) == 0
+    assert "### airfoil_self_noise" not in out.read_text()
+    assert _collect_fixture(crv, root, records, out, "--split-marks", "airfoil_self_noise") == 0
+    assert "**Split marks:** `airfoil_self_noise`." in out.read_text()
+    assert brp.parse_report(out)["split_marks"] == {"airfoil_self_noise"}
+    assert _collect_fixture(crv, root, records, out, "--split-marks", "no_such_record") == 1
+
+    record = records / "airfoil_self_noise.md"
+    assert brp._split_checked(record) is None
+    _add_comment(record, "CC (2026-11-12, Lennart): the declared split (iid, 3 x 3 folds) is checked, as declared.")
+    assert brp._split_checked(record)["date"] == "2026-11-12"
+    assert _collect_fixture(crv, root, records, out, "--split-marks", "airfoil_self_noise") == 0
+    assert "### airfoil_self_noise" not in out.read_text()
+
+    page = TEMPLATE.read_text()
+    assert "const hasSplitMark = (d) => !!d.splitMark && " in page
+    assert "&& !d.splitChecked;" in page
+    assert 'if (!d.splitMark) return "";' in page
+
+
 def test_thread_gives_the_ai_turn_the_curator_replies_to(brp):
     """An issue whose last turn is the AI's carries an `askId` (the page counts it unmarked until a reply names it);
     a new AI turn gets a new id; an issue whose last turn is the curator's or a closing label has none.

@@ -635,6 +635,7 @@ def parse_report(path: Path) -> dict[str, Any]:
         "header_md": "\n".join(lines[1 : parts[0][0]]),
         "metric_marks": _metric_marks(lines[1 : parts[0][0]]),
         "horizon_marks": _metric_marks(lines[1 : parts[0][0]], HORIZON_MARKS_LABEL),
+        "split_marks": _metric_marks(lines[1 : parts[0][0]], SPLIT_MARKS_LABEL),
         "rows": rows,
         "fields": fields,
         "crosscut": crosscut,
@@ -1025,6 +1026,11 @@ dataset (Lennart, 2026-11-10: "for new datasets, the curator should also sign of
 the metric)")."""
 
 
+SPLIT_MARKS_LABEL = "**Split marks:**"
+"""The same for the declared split (the regime, its columns, the time basis, the folds), which the page shows in the
+Use case tab above the metric: on the page, with a mark, only when the round asks about it."""
+
+
 def _metric_marks(lines: list[str], label: str = METRIC_MARKS_LABEL) -> set[str] | None:
     """The records of the header's marks line ``label`` (``None``: all), or none without that line."""
     for line in lines:
@@ -1056,6 +1062,11 @@ METRIC_CHECKED = re.compile(
 )
 
 
+SPLIT_CHECKED = re.compile(
+    r"^CC \((?P<date>\d{4}-\d{2}-\d{2}), (?P<who>[^)]+)\): the declared split\b.*?\bis checked\b.*$", re.MULTILINE
+)
+
+
 def _metric_checked(path: Path) -> dict | None:
     """The record's latest CC line saying the declared metric is checked (the curator's metric mark, applied): the page
     then shows that line instead of the mark and does not count the metric as open.
@@ -1070,6 +1081,15 @@ def _metric_checked(path: Path) -> dict | None:
 def _horizon_checked(path: Path) -> dict | None:
     """The record's latest CC line saying the declared horizon is checked (the curator's horizon mark, applied)."""
     found = list(HORIZON_CHECKED.finditer(_without_review(_frontmatter(path.read_text())[1]))) if path.is_file() else []
+    if not found:
+        return None
+    m = found[-1]
+    return {"date": m["date"], "by": m["who"], "html": MD.renderInline(m.group(0))}
+
+
+def _split_checked(path: Path) -> dict | None:
+    """The record's latest CC line saying the declared split is checked (the curator's split mark, applied)."""
+    found = list(SPLIT_CHECKED.finditer(_without_review(_frontmatter(path.read_text())[1]))) if path.is_file() else []
     if not found:
         return None
     m = found[-1]
@@ -1532,6 +1552,7 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
     decided = _decided(record_path)
     fields = report["fields"].get(name, [])
     marks, hmarks = report.get("metric_marks", set()), report.get("horizon_marks", set())
+    smarks = report.get("split_marks", set())
     horizon = _horizon_item(rec["blocks"].get("horizon", ""), files["temporal"], record_path)
     items = [horizon] if horizon and (hmarks is None or name in hmarks) else []
     return {
@@ -1571,6 +1592,8 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
         "metricChecked": _metric_checked(record_path),
         "metricMark": marks is None or name in marks,
         "split": files["split"],
+        "splitMark": smarks is None or name in smarks,
+        "splitChecked": _split_checked(record_path),
         "meta": files["meta"],
         "readme": files["readme"],
         "retiredCommit": files.get("retiredCommit"),

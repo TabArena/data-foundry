@@ -550,8 +550,9 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   // 2026-11-10, "hidden unless asked for"), and takes a mark until the record carries the curator's CC line that it
   // is checked (then it is resolved).
   const hasMetricMark = (d) => !!d.metricMark && !!d.metric && !!d.folder && !d.retired && d.cat !== "decided" && !d.metricChecked;
-  // The mark on the declared split (stored as `split: {d, note}`), with the same choices as the metric's.
-  const hasSplitMark = (d) => !!d.split && !!d.folder && !d.retired && d.cat !== "decided";
+  // The declared split, the same way (`splitMark`: --split-marks), with the metric's choices (stored as
+  // `split: {d, note}`); the CC line that the declared split is checked resolves it.
+  const hasSplitMark = (d) => !!d.splitMark && !!d.split && !!d.folder && !d.retired && d.cat !== "decided" && !d.splitChecked;
   const X_OPTS = [["ok", "Go ahead"], ["leave", "Leave as is"], ["discuss", "Discuss"]];
   const FIELD_OPTS = [["update", "Take definition's value"], ["keep", "Keep record's value"]];
   /* A record-field row's buttons name the value each one leaves in the record. */
@@ -674,7 +675,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     if (c.total === 0) return r.verdict ? "done" : '<span class="needverdict" title="Every issue is settled, so it ships">ship (no issues)</span>';
     return c.done + "/" + c.total;
   }
-  /* A decided record (triage said No) whose REVIEW.md has an open issue again: its open issues take marks. */
+  /* A decided record (triage said No) whose record's review has an open issue again: its open issues take marks. */
   const reopened = (d) => d.cat === "decided" && d.items.some((it) => !it.resolved);
   const refOnly = (d) => d.cat === "decided" && !reopened(d);
   function counts(d) {
@@ -840,7 +841,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   }
   const prioLabel = (p) => (p ? "Priority " + p : "No priority");
   /* A record whose verdict is ship and that has nothing left open (every issue resolved, no field row, the metric and
-     split marked, not parked) leaves its priority group for the "To ship" group at the end of the list. */
+     split marked where the round asks about them, not parked) leaves its priority group for the "To ship" group at the
+     end of the list. */
   const readyToShip = (d) => {
     if (verdictOf(d) !== "ship" || parked(d) || d.fields.length || d.items.some((it) => !it.resolved)) return false;
     const c = counts(d);
@@ -1026,6 +1028,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     ForcedGroupedFromTemporal: "a grouped split, though the use case is temporal: the data has no usable time",
   };
   function splitHtml(d) {
+    if (!d.splitMark) return "";
     const s = d.split;
     if (!s) return d.folder ? '<p class="missing-note">No split: the README states none in its front matter.</p>' : "";
     const n = (v) => Number(v).toLocaleString("en");
@@ -1070,6 +1073,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       splitMarkHtml(d) + "</section>";
   }
   function splitMarkHtml(d) {
+    if (d.splitChecked) return '<p class="srcnote">Resolved: ' + d.splitChecked.html + "</p>";
+    if (parked(d)) return '<p class="srcnote">Parked: the split waits for the deferred issue of this record.</p>';
     if (!hasSplitMark(d)) return "";
     const st = peekRev(d.name).split || {};
     const ro = mode === "readonly" ? " disabled" : "";
@@ -1109,7 +1114,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     }
     let h = s.question ? '<p class="question">' + esc(s.question) + "</p>" : "";
     const f = s.fields || {};
-    h += '<dl class="fields">' + SUM_LABELS.filter(([k]) => f[k] && !(k === "split" && d.split)).map(([k, l]) =>
+    h += '<dl class="fields">' + SUM_LABELS.filter(([k]) => f[k] && !(k === "split" && d.split && d.splitMark)).map(([k, l]) =>
       "<dt" + (k === "use_case" ? ' class="usecase"' : "") + ">" + esc(l) + "</dt><dd>" + esc(f[k]) + "</dd>").join("") + "</dl>";
     if (FIT[s.fit]) {
       h += '<section class="judge ' + esc(s.fit) + '" aria-labelledby="jh"><h3 id="jh">AI judgement (proposed)</h3>' +
