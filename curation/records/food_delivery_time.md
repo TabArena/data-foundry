@@ -13,13 +13,20 @@ decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
 - Random (IID)
-original_source: Kaggle
-year: '2023'
+original_source: Other
+year: '2022'
 domain: business & marketing
 required_split:
 - Random (IID)
 problem_type: Regression
 source_links:
+- '# the first publication: HackerEarth hiring challenge for Amazon business research analysts, 26 Aug-5 Sep 2022'
+- https://assessment.hackerearth.com/challenges/hiring/amazon-business-research-analyst-hiring-challenge/
+- '# the challenge files as copied to Kaggle while it ran: one text file per order, 45,593 train, 11,399 test'
+- https://www.kaggle.com/datasets/syednusrath/amazon-business-research-analyst
+- '# the challenge files as two 20-column CSVs (2022); its provenance field names the HackerEarth competition'
+- https://www.kaggle.com/datasets/gauravmalik26/food-delivery-dataset
+- '# the 10-column cut of that train.csv we shipped (2023)'
 - https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time
 notebook_path: datasets/beyond_iid/old_iid/food_delivery_time/food_delivery_time.ipynb
 type_adapter_id: curation-record-v1
@@ -66,6 +73,17 @@ CC (2026-11-05, Andrej): retired as generated data (`No (Retired)`, `AHDS`). The
 - **Other parts were already known to be made, and the larger file shares the marks:** delivery points are the restaurant plus one of 12 equal offsets (2026-10-14); in the 20-column file age 29 and rating 4.6 fill the missing entries, and its weather, traffic and order times follow the same block rule, so a rebuild from it is no way out.
 Record fields `problem_type` (Regression) and `domain` (business & marketing) set from the definition. A real source for the task, `meituan_food_delivery_time`, is screened in its own record.
 
+**Assessment (AI, 2026-11-12):** source found. The rows were first published as the data of a HackerEarth hiring challenge for Amazon business research analysts ("Business Research Analyst Assessment", 26 August to 5 September 2022, https://assessment.hackerearth.com/challenges/hiring/amazon-business-research-analyst-hiring-challenge/), so `original_source` is now `Other` and `year` 2022 (PROV-8, PROV-9).
+- **The challenge:** its statement, as copied to Kaggle while the challenge ran (syednusrath, 2022-08-27): "You are working as a data scientist at a food delivery company. [...] Develop a machine learning model that can calculate the time taken by the delivery person to deliver the order", scored by 100 × R². The files hold one text file per order, 45,593 training orders and 11,399 test orders without labels. The statement names no company whose orders these are, so "an unnamed Indian platform" and "no documented origin" in the CC of 2026-11-05 no longer hold. The challenge page shows the dates but not the statement; the statement is quoted from the Kaggle copies. Nothing in the origin says how the rows were made (no company, place, period or collection method, and no word on real or generated data), so the `AHDS` call rests on the tests above alone.
+- **The chain to the file we shipped:** gauravmalik26 joined the challenge files into two 20-column CSVs (2022; Kaggle provenance field: "This dataset is gathered from machine learning competition conducted by HackerEarth."). rajatkumar30's 10-column file (2023) is that train.csv row for row: all 45,593 rows keep the courier, the restaurant latitude and the delivery time, and 1,565 IDs were turned into numbers by a spreadsheet (0x3e60 became 3E+60).
+- **The 142 rows the definition dropped as duplicate IDs were distinct orders:** their IDs are unique in the challenge file and collided only after the spreadsheet conversion. The source changes nothing in the `AHDS` evidence above.
+
 ## Reference
 
+HackerEarth, Amazon Business Research Analyst hiring challenge ("Business Research Analyst Assessment"), 26 August to 5 September 2022:
+https://assessment.hackerearth.com/challenges/hiring/amazon-business-research-analyst-hiring-challenge/
+
+Kaggle copies: the challenge files (2022), the 20-column CSVs (2022), the 10-column file we shipped (2023):
+https://www.kaggle.com/datasets/syednusrath/amazon-business-research-analyst
+https://www.kaggle.com/datasets/gauravmalik26/food-delivery-dataset
 https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time
