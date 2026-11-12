@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-12 18:10 UTC: 169 claim(s) (Andrej 138, Lennart 12, Myunghwan 19).
+As of 2026-11-12 23:05 UTC: 169 claim(s) (Andrej 138, Lennart 12, Myunghwan 19).
 
 ## Andrej
 
@@ -171,7 +171,7 @@ As of 2026-11-12 18:10 UTC: 169 claim(s) (Andrej 138, Lennart 12, Myunghwan 19).
 | `2024_lusaka_mobility_prediction_hackathon` | review | 2026-10-28 | 2026-11-06 (expired) | Curator accepted; build, reload and traced-input reproduction complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 . Accepted approximations and source/descriptor limits are documented. Awaiting PR review/merge; retain Myunghwan ownership until merged. |
 | `ai4d_lab_tanzania_tourism_classification_challenge` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `airqo_low_cost_air_quality_monitor_calibration_challenge` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
-| `bigsoldb_2` | triage | 2026-11-10 | 2026-11-17 | Myunghwan requested non-pending dependency candidates reserved; Papyrus screening review first. Label collection must finish before held-out prediction starts. |
+| `bigsoldb_2` | triage | 2026-11-10 | 2026-11-19 | Myunghwan accepted molecular-solvent ln mole-fraction regression with direct ln-RMSE. Verified current-main build: 165,781 rows, 810 solutes, 606 families, seven inputs, nine folds; zero errors/warnings, saved reload and CSV-only checksum reproduction pass. Draft PR #96: https://github.com/TabArena/data-foundry/pull/96 . Retain Myunghwan ownership until merged; both source-row and active-polymer exclusions are settled. |
 | `chicago_rideshare_trip_duration` | triage | 2026-11-10 | 2026-11-17 | Myunghwan requested non-pending dependency candidates reserved; Papyrus screening review first. Label collection must finish before held-out prediction starts. |
 | `chicago_traffic_crashes` | triage | 2026-10-29 | 2026-11-05 (expired) | Selected by Myunghwan as the next large-scale candidate (about 1.1 million crashes). Reservation for screening review; no scientific inclusion or build decision. |
 | `chromophore_optical_properties_db` | triage | 2026-11-05 | 2026-11-17 | Curator accepted first absorption-peak regression with 1A/2A, fallback RMSE and gas warning. Build, reload and single-traced-CSV checksum reproduction complete; 17,510 rows, 3,335 groups, nine folds. Source/build commits 8a50be6cc and 144b0ae82. Integration into existing draft PR #59: https://github.com/TabArena/data-foundry/pull/59 . Retain Myunghwan ownership until merged. |

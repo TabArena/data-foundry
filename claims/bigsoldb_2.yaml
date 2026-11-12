@@ -2,5 +2,5 @@ name: bigsoldb_2
 holder: Myunghwan
 stage: triage
 claimed_at: '2026-11-10T01:02:44Z'
-expires_at: '2026-11-17T01:02:44Z'
-note: Myunghwan requested non-pending dependency candidates reserved; Papyrus screening review first. Label collection must finish before held-out prediction starts.
+expires_at: '2026-11-19T23:05:40Z'
+note: 'Myunghwan accepted molecular-solvent ln mole-fraction regression with direct ln-RMSE. Verified current-main build: 165,781 rows, 810 solutes, 606 families, seven inputs, nine folds; zero errors/warnings, saved reload and CSV-only checksum reproduction pass. Draft PR #96: https://github.com/TabArena/data-foundry/pull/96 . Retain Myunghwan ownership until merged; both source-row and active-polymer exclusions are settled.'
