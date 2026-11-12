@@ -15,6 +15,8 @@ in [`collection.py`](../../../../datasets/_dev/tabarena-v0pt2/collection.py).
 - The row budget (1M train, 500k test rows per split) applies after the split, and only to a version named
   `<name>_1m`: its container caps each test side, and the benchmark samples the train side before each fit.
 - A definition declares no budget; the build refuses a name that does not match what its splits need.
+- The folds, the repeats and the budget are defaults: a dataset whose task needs other splits deviates on purpose and
+  says why ([Defaults and deviations](#defaults-and-deviations)).
 
 ## The decision tree
 
@@ -52,6 +54,23 @@ depends on the windows, since the newest train side holds almost the whole frame
 rows: stratified rows (IID), whole groups (grouped), or the newest year before the window, extended back in time until
 it holds 1M rows, then a random 1M of those (temporal). Without a budget the model trains on the whole train side.
 The score is taken on the test side as stored.
+
+## Defaults and deviations
+
+The protocol is the default, not a constraint on the task (SPLIT-1 in
+[splits.md](../../knowledge-curation/references/splits.md): the split mirrors the application).
+
+- **Other splits.** A definition whose task needs other folds or repeats implements `_make_splits` (returning a
+  `SplitPlan`), says why in `splits_comment`, and accepts the check `splits_dimensions_off_protocol` with that reason
+  in `accepted_check_warnings`. Precedent: heart_disease holds out one hospital at a time, 3 splits, since more
+  repeats would draw the same three folds again. Temporal windows are chosen per dataset anyway (`TemporalSplits`,
+  SPLIT-15).
+- **Another budget for every dataset.** The budget is the collection's: change `row_budget` in `collection.py` (and
+  `TABARENA_V0PT2_ROW_BUDGET`), and every version follows on its next build; a new train budget renames the versions
+  (`RowBudget.suffix`: `_1m`, `_2p5m`, `_10m`).
+- **Another budget for one dataset.** Not possible today: a definition of the working copy that declares `row_budget`
+  is refused, so all of TabArena v0.2 trains and tests on the same budget. A custom `_make_splits` keeps its sides
+  within the budget itself (sample there), since the build refuses a plain name whose splits go over it.
 
 ## Examples
 
