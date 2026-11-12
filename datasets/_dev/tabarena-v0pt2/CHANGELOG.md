@@ -1,5 +1,37 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-12, the collection sets the row budget (no container built)
+
+Lennart, 2026-11-12: TabArena v0.2's budget (1M train, 500k test rows per split) is the collection's, set once and
+checked by the build and by the collection, instead of a declaration in each definition that only a test of the
+READMEs held to.
+
+- `collection.py` (new, next to the dataset folders) sets `row_budget = TABARENA_V0PT2_ROW_BUDGET`
+  (`data_foundry.collections`). A definition declares no budget: a `<name>_1m` version gets the collection's by its
+  name. The build refuses a dataset whose splits have a side over the budget without the suffix (it names the folder
+  to make), and, as before, a `_1m` version whose splits keep within it.
+- `DatasetCollection(row_budget=...)`: once the v0.2 collection is registered, `verify=True` and
+  `check_collection_bundles.py` hold every container to the budget (`budget_findings`: a test side over 500k rows, a
+  train side over 1M without the budget recorded, another budget, a budget without its train sampling).
+- The 18 `_1m` versions drop their `row_budget` line and get the same budget by their name (Lennart, 2026-11-12:
+  across claims); a definition in the collection that declares a budget is refused. No split changes.
+
+## 2026-11-12, repeats follow the units at every frame size (no container built)
+
+Lennart, 2026-11-12: every IID and grouped task gets 3-fold cross-validation, so at least 3 splits, and its number of
+repeats follows its units (rows, or groups for `per_group` labels) whatever the size of the frame. A row budget only
+caps the sides after the split.
+
+- The v2 protocol drops its 1.25M-row cap (`SINGLE_REPEAT_ROWS`), which gave a frame of that size one repeat however
+  few its groups. Counted by rows, 375k rows already give one repeat, so only a large frame counted by groups changes:
+  `fraud_detection_in_electricity_and_gas_consumption_1m` (1,862,650 invoices of 81,531 clients) gets 3 repeats, 9
+  splits, at its next build, each still testing on at most 500k rows; `amex_non_iid_1m` (458,913 customers) keeps one.
+- Library: `subsample_frame` is gone (no caller since the 2026-11-10 entry: a budget applies after the split), the
+  `splits.py` docstring describes that order, and the split tests pin the builders' splits by a checksum instead of
+  comparing them with the v1 helpers.
+- The shipped `_1m` containers still predate the 2026-11-10 entry (frames cut to 1.5M rows before the split); their
+  READMEs change at the next build.
+
 ## 2026-11-11, no local paths in committed text (no container built)
 
 Lennart, 2026-11-11: a pointer to a folder that only one machine has (a run folder of the local warehouse, a job folder

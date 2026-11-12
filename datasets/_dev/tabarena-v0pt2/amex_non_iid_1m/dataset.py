@@ -10,7 +10,6 @@ from data_foundry.v2 import (
     FeatureTypes,
     Grouping,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     decode,
@@ -117,8 +116,7 @@ class AmexNonIid1m(AbstractCuratedDataset):
         """,
     )
 
-    # Splits
-    row_budget = RowBudget(train=1_000_000, test=500_000)
+    # Splits: the `_1m` version gets the collection's row budget (`collection.py`) by its name.
     accepted_check_warnings = {
         "dataset_constant_column": "D_87 is 1 or missing, as in AMEX's original data (1 in 3,865 of 5.5M statements); "
         "raddar's -1 is its missing value (CLEAN-10, 2026-10-30), so whether it is present is the column's information.",

@@ -76,6 +76,7 @@ from data_foundry.bundle_checks import (
     run_bundle_checks,
     verify_saved_container,
 )
+from data_foundry.collections import collection_file_budget
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
@@ -464,8 +465,9 @@ class AbstractCuratedDataset(ABC):
 
     # --- dataset ------------------------------------------------------------------------------------
     unique_name: ClassVar[str]
-    """Snake-case name; equal to the folder name. A version sub-sampled to a :attr:`row_budget` is named
-    ``<name>_<suffix>`` after its train budget (``_1m``, ``_10m``) and reads the raw files of ``<name>``."""
+    """Snake-case name; equal to the folder name. A version sub-sampled to a row budget is named ``<name>_<suffix>``
+    after its train budget (``_1m``, ``_10m``) and reads the raw files of ``<name>``; in a collection with a budget
+    (:func:`collection_row_budget`) the suffix alone makes the version."""
     domain: ClassVar[str]
     """One of :data:`data_foundry.schema.Domain`."""
     sources: ClassVar[tuple[Source, ...]]
@@ -558,7 +560,11 @@ class AbstractCuratedDataset(ABC):
     window, and a benchmark sub-samples them to ``train`` rows before a fit
     (:func:`~data_foundry.v2.splits.subsample_train`: the newest year at random for temporal data). TabArena v0.2 uses
     ``RowBudget(train=1_000_000, test=500_000)``; a budget that changes nothing (no test side over ``test`` and no
-    train side over ``train``) is refused (take the dataset fully)."""
+    train side over ``train``) is refused (take the dataset fully).
+
+    A collection sets its budget once instead (:func:`collection_row_budget`, ``row_budget`` in the ``collection.py``
+    next to the dataset folders): a definition in it leaves this out, a ``<name>_<suffix>`` version gets the budget by
+    its name (:func:`effective_row_budget`), and the build refuses a name that does not match what the splits need."""
 
     # --- checks and raw files ----------------------------------------------------------------------
     accepted_check_warnings: ClassVar[dict[str, str]] = {}
@@ -1059,7 +1065,7 @@ class AbstractCuratedDataset(ABC):
         """
         task = self.task_metadata
         temporal = task.time_on is not None
-        budget = self.row_budget
+        budget = effective_row_budget(type(self))
         if budget is None:
             if temporal:
                 splits, comment = self._window_splits(df)
@@ -1104,8 +1110,13 @@ class AbstractCuratedDataset(ABC):
         if not trimmed and longest_train <= budget.train:
             msg = (
                 f"{type(self).__name__}: the frame has {len(df):,} rows and no split side exceeds the row budget "
-                f"({train_budget} train, {test_budget} test rows). Take the dataset fully: drop `row_budget` and the "
-                f"`_{budget.suffix}` version."
+                f"({train_budget} train, {test_budget} test rows). Take the dataset fully: "
+                + (
+                    f"drop `row_budget` and the `_{budget.suffix}` version."
+                    if type(self).row_budget is not None
+                    else f"drop the `_{budget.suffix}` suffix from the folder and `unique_name` (the collection's "
+                    "budget applies only to a version named after it)."
+                )
             )
             raise DatasetDefinitionError(msg)
         return SplitPlan(splits=splits, df=df, comment=comment)
@@ -1118,7 +1129,7 @@ class AbstractCuratedDataset(ABC):
         random. Whole groups for a grouped task, whole time values with ``TemporalSplits(sample_by="time")``;
         stratified like the splits.
         """
-        if self.row_budget is None:
+        if effective_row_budget(type(self)) is None:
             return None
         task = self.task_metadata
         by_time = self._samples_by_time()
@@ -1181,6 +1192,27 @@ class AbstractCuratedDataset(ABC):
             random_state=self.SPLIT_RANDOM_STATE,
         )
 
+    def _check_collection_budget(self, splits: Splits) -> None:
+        """Refuse splits over the collection's row budget (:func:`collection_row_budget`) when the definition is not
+        the version that gets it: ``<name>_<suffix>``, which the collection's budget then samples to.
+        """
+        budget = collection_row_budget(type(self))
+        if budget is None or effective_row_budget(type(self)) is not None:
+            return
+        sides = [(len(train), len(test)) for folds in splits.values() for train, test in folds.values()]
+        if not sides:
+            return
+        longest_train, longest_test = max(n for n, _ in sides), max(n for _, n in sides)
+        if longest_train > budget.train or longest_test > budget.test:
+            name = type(self).__name__
+            msg = (
+                f"{name}: a split trains on up to {longest_train:,} rows and tests on up to {longest_test:,}, over the "
+                f"collection's row budget ({budget.train:,} train, {budget.test:,} test rows; `collection.py`). Name "
+                f"the folder and `unique_name` `{self.unique_name}_{budget.suffix}`: that version gets the budget, its "
+                "test sides sampled to it and its train sides sub-sampled by a benchmark."
+            )
+            raise DatasetDefinitionError(msg)
+
     def make_splits(self, df: pd.DataFrame | None = None) -> SplitPlan:
         """Run :meth:`_make_splits` on ``df`` (default: :attr:`df`) and normalise it to a SplitPlan.
 
@@ -1192,6 +1224,7 @@ class AbstractCuratedDataset(ABC):
         plan = self._make_splits(df)
         if not isinstance(plan, SplitPlan):
             plan = SplitPlan(splits=plan)
+        self._check_collection_budget(plan.splits)
         plan.splits = _in_row_order(plan.splits)
         if plan.df is None:
             plan.df = df
@@ -1218,7 +1251,7 @@ class AbstractCuratedDataset(ABC):
         if unit is not None and not pd.api.types.is_numeric_dtype(times):
             msg = f"{name}: `time_unit` counts steps of a numeric time column; `{times.name}` is {times.dtype}."
             raise DatasetDefinitionError(msg)
-        if unit is None and not dated and self.row_budget is not None:
+        if unit is None and not dated and effective_row_budget(type(self)) is not None:
             msg = (
                 f"{name}: a benchmark samples the train sides of a version with a `row_budget` from their newest year, "
                 f"and `{times.name}` is no date: declare what one step of it counts, `Temporal(..., time_unit=...)` "
@@ -1341,7 +1374,7 @@ class AbstractCuratedDataset(ABC):
             time_horizon_unit=unit,
             time_gap=gap,
             time_gap_unit=gap_unit,
-            row_budget=self.row_budget,
+            row_budget=effective_row_budget(type(self)),
             train_sampling=self.train_sampling(plan.df),
         )
         manifest = self.raw_manifest(getattr(self, "_rows_per_file", None))
@@ -2137,14 +2170,42 @@ def raw_owner(cls: type[AbstractCuratedDataset]) -> type[AbstractCuratedDataset]
     return next((k for k in reversed(chain) if "download_description" in vars(k)), chain[-1])
 
 
+def collection_row_budget(cls: type) -> RowBudget | None:
+    """The row budget of the collection a definition belongs to: ``row_budget`` in the collection file
+    (:data:`~data_foundry.collections.COLLECTION_FILE`) of the folder that holds its dataset folder
+    (``datasets/_dev/tabarena-v0pt2/collection.py``); None outside a collection or for a collection without a budget.
+    """
+    try:
+        file = Path(inspect.getfile(cls)).resolve()
+    except (TypeError, OSError):  # a class with no source file
+        return None
+    try:
+        return collection_file_budget(file.parent.parent)
+    except (TypeError, ValueError) as error:
+        raise DatasetDefinitionError(str(error)) from error
+
+
+def effective_row_budget(cls: type[AbstractCuratedDataset]) -> RowBudget | None:
+    """The row budget a definition is built with: its own :attr:`~AbstractCuratedDataset.row_budget`, else its
+    collection's (:func:`collection_row_budget`) when its name carries that budget's suffix (``<name>_1m``), else
+    None.
+    """
+    if cls.row_budget is not None:
+        return cls.row_budget
+    budget = collection_row_budget(cls)
+    if budget is not None and getattr(cls, "unique_name", "").endswith(f"_{budget.suffix}"):
+        return budget
+    return None
+
+
 def raw_name(cls: type[AbstractCuratedDataset]) -> str:
     """The warehouse folder of a definition's raw files.
 
     The ``unique_name`` of its :func:`raw_owner` (the family root, or itself), without the suffix of that
-    definition's :attr:`~AbstractCuratedDataset.row_budget` (``cooking_time_1m`` reads ``cooking_time``).
+    definition's row budget (:func:`effective_row_budget`; ``cooking_time_1m`` reads ``cooking_time``).
     """
     root = raw_owner(cls)
-    budget = root.row_budget
+    budget = effective_row_budget(root)
     suffix = f"_{budget.suffix}" if budget is not None else ""
     if suffix and root.unique_name.endswith(suffix):
         return root.unique_name[: -len(suffix)]
@@ -2385,9 +2446,16 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             "`subsample_to_budget` is replaced by the budget itself: `row_budget = RowBudget(train=1_000_000, "
             "test=500_000)` for a `_1m` version (`from data_foundry.v2 import RowBudget`)."
         )
-    budget = cls.row_budget
-    if budget is not None and not isinstance(budget, RowBudget):
+    declared = cls.row_budget
+    if declared is not None and not isinstance(declared, RowBudget):
         fail("`row_budget` must be a `RowBudget(train=..., test=...)`.")
+    collection = collection_row_budget(cls)
+    if declared is not None and collection is not None:
+        fail(
+            f"the collection sets the row budget ({collection}, in its `collection.py`): drop `row_budget`; a "
+            f"`<name>_{collection.suffix}` version gets the collection's budget by its name."
+        )
+    budget = effective_row_budget(cls)
     if (
         cls.temporal is not None
         and cls.temporal.splits is not None
@@ -2398,7 +2466,7 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
     if budget is not None:
         if custom_splits:
             fail("`row_budget` is ignored when the class implements `_make_splits`; sample there instead.")
-        if not cls.unique_name.endswith(f"_{budget.suffix}"):
+        if declared is not None and not cls.unique_name.endswith(f"_{budget.suffix}"):
             fail(
                 f"a version sub-sampled to `row_budget` is named `<name>_{budget.suffix}` and reads the raw files of "
                 "`<name>`."

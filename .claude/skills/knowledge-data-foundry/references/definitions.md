@@ -116,7 +116,8 @@ validates, `unique_name` equals the folder name, every accepted warning has a re
 `Temporal` (the flat `time_on`, `group_on`, `group_labels`, `group_time_on`, `temporal_splits`, `time_horizon`,
 `time_horizon_unit` attributes are refused), a grouping has a `definition`, a temporal task has windows or
 `_make_splits` and a horizon, `sources` is a tuple of `Source` with exactly one publication (listed first, with a
-four-digit `year` and a `bibtex`), a `row_budget` needs the name `<name>_<suffix>` (`_1m`), the removed `year`,
+four-digit `year` and a `bibtex`), a `row_budget` needs the name `<name>_<suffix>` (`_1m`) and is refused in a
+collection that sets a budget, the removed `year`,
 `source`, `source_url`, `license`, `bibtex`, `bibtex_key`, `version_of`, `version_comment` and `raw_data_from` are
 refused with what replaced them, `prepared_raw_files` needs `_prepare_raw_files`, a multi-column `stratify_on` is
 refused (build one key in `_clean`), `Temporal(splits=...)` or `row_budget` together with a custom `_make_splits` is
@@ -473,7 +474,7 @@ version (all found in the v0.2 copy, 2026-10-06):
 Keep the default: no split attributes. The base class runs the v2 split protocol (`src/data_foundry/v2/splits.py`):
 always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of the train side (`recommended_dimensions`),
 built by `iid_splits` / `grouped_splits` with the benchmark seed, on the full frame: Data Foundry caps no split unless
-the definition declares a `row_budget` (a `_1m` version, below). The comment is "Default splits."; set
+the definition is a version with a row budget (a `_1m` version, below). The comment is "Default splits."; set
 `splits_comment` only when there is something to say (a split that deliberately differs from the source's protocol,
 what a grouped test fold holds).
 
@@ -615,14 +616,20 @@ The container records the budget (`experiment_metadata.row_budget`) and the samp
 split checks warn on a test side over M (`splits_test_over_budget`) and fail a budget without its sampling
 (`splits_train_sampling_missing`).
 
-TabArena v0.2 uses 1M train / 500k test rows (Lennart, 2026-10-21: at most 1M training rows). A v0.2 dataset whose
-splits, without a budget, have a side over that ships as a version that declares the budget, whatever the size of its
-frame (nyc_taxi_trip_duration: 1.45M rows, train sides of 1.28M to 1.39M), and `tests/test_v2_datasets.py` holds every
-v0.2 README to it. The version has its own folder and class, `<unique_name>_1m/dataset.py`, with
-`unique_name = "<name>_1m"` and `row_budget = RowBudget(train=1_000_000, test=500_000)`; `curation_comments` says why
-it carries a budget. It reads the raw files of `<name>`, its name without the budget suffix, and is saved under its own
-name. The suffix marks the benchmark's N that the container records (`RowBudget.suffix`: `_1m`; `_10m` for
-`RowBudget(train=10_000_000, test=250_000)`, `_2p5m`, `_300k`). The splits adapt to the budget:
+TabArena v0.2 uses 1M train / 500k test rows (Lennart, 2026-10-21: at most 1M training rows), set once for the working
+copy in `datasets/_dev/tabarena-v0pt2/collection.py` (`TABARENA_V0PT2_ROW_BUDGET` from `data_foundry.collections`;
+Lennart, 2026-11-12). A definition there declares no `row_budget`: a v0.2 dataset whose splits have a side over the
+budget, whatever the size of its frame (nyc_taxi_trip_duration: 1.45M rows, train sides of 1.28M to 1.39M), is the
+version named `<name>_1m`, folder and `unique_name`, and gets the collection's budget by its name
+(`effective_row_budget`). The build refuses a dataset over the budget without the suffix (it names the folder to make)
+and a `_1m` version whose splits keep within the budget anyway (take the dataset fully); `tests/test_v2_datasets.py`
+holds every v0.2 README to the budget, and the registered collection (`DatasetCollection(row_budget=...)`) holds every
+container to it on `verify=True` (`budget_findings`). A definition in the collection that declares a `row_budget` is
+refused. Outside a collection a definition declares `row_budget = RowBudget(train=N, test=M)` itself and is named after
+it. The version has its own folder and class, `<name>_1m/dataset.py`; `curation_comments` says why it carries a budget.
+It reads the raw files of `<name>`, its name without the budget suffix, and is saved under its own name. The suffix
+marks the benchmark's N that the container records (`RowBudget.suffix`: `_1m`; `_10m` for `RowBudget(train=10_000_000,
+test=250_000)`, `_2p5m`, `_300k`). The splits adapt to the budget:
 
 * IID or grouped data: the full frame is split into the usual 3 folds; each fold tests on up to `test` rows of its
   third (stratified, or whole groups) and trains on every other row (`fit_splits_to_budget`). A test budget above
@@ -970,7 +977,7 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
 | Grouped | `airfoil_self_noise/dataset.py`, `early_learning_predictors/dataset.py`, `musk/dataset.py`, `emscad/dataset.py` | `Grouping` with a `definition` citing the source (airfoil: a setup built from two columns, with the source's prediction use quoted; musk: one prediction per molecule, `aggregation="any"`), rule-based leak drops in `_clean`, long feature lists (early_learning), a group id built from the data and an accepted group finding (emscad). |
 | Temporal | `kick/dataset.py` | `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)`, a datetime in `_feature_types`, and `_decisions` with a table and a figure. |
 | Temporal with late labels | `brazilian_ecommerce/dataset.py`, `sf_permit_time/dataset.py` | `_make_splits` training on rows whose label had arrived, with the gap on `Temporal`. |
-| A `_1m` version (row budget) | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | `row_budget = RowBudget(train=1_000_000, test=500_000)` with the name `<name>_1m`, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
+| A `_1m` version (row budget) | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | the name `<name>_1m`, which gets the collection's budget, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
 | Heavy raw data | `acquire_valued_shoppers_challenge/dataset.py` | `prepared_raw_files` + `_prepare_raw_files` (a polars join run once), fixed calendar windows. |
 
 ## What the benchmark harness does with a definition
