@@ -218,5 +218,5 @@ and the editor) for a re-check after a small change. Say which tier ran.
 
 Report: the folder and its outcome in one line; the panel's recommendation and the disputed points; the issues for the
 curator by rank; every `TODO(verify)` left, grouped by method; what could not be checked; next steps with paths filled
-in (`/review-added-datasets`, with `--names` for a batch, `--metric-marks` with the same names, since their
-metrics are new, and `--horizon-marks` with the temporal ones).
+in (`/review-added-datasets`, with `--names` for a batch, `--metric-marks` and `--split-marks` with the same names,
+since their metrics and splits are new, and `--horizon-marks` with the temporal ones).

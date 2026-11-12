@@ -32,6 +32,8 @@ dataset:
        <cutoffs or the newest N>) is checked, <why, from H's verdict>.` This opening is what the page reads.
      - for the metric, when the round marked it: `CC (<date>, <curator>): the declared metric (<name>) is checked,
        ...`
+     - for the split, when the round marked it: `CC (<date>, <curator>): the declared split (<regime> on <columns>,
+       <folds>) is checked, ...`
      - one `**Assessment (AI, <date>):**` line with the evidence (counts, shares).
    - `## Review`, with exact-string edits of the current record file (the Edit tool, after the save above), or through
      `record.review` in the same load and save; never by saving a record loaded before:
