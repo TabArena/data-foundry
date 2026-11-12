@@ -10,6 +10,7 @@ data_foundry_status:
 suggestion: No (Retired)
 decision_markers:
 - Trivial
+- Not Representative
 tags:
 - Larger IID Data
 - Tiny Data
@@ -63,7 +64,8 @@ curator's call).
   patient. TabPFN is the best model on BeyondArena for this dataset, and the tuned methods span 0.0015 AUC (0.7056 to
   0.7071), so the task ranks nothing but how well a method smooths an age curve. Lennart on PR #77: "the spread on
   this dataset is anyhow minimal, so it is fair to call it trivial and not representative under our new rules."
-Marker `Trivial` kept.
+Markers `Trivial` kept and `Not Representative` added (Lennart, 2026-11-12, as in his comment quoted above: "trivial
+and not representative"): the tuned methods land within 0.0015 AUC of each other and 0.001 of a clinician's rule.
 
 ## Reference
 

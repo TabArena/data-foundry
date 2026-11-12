@@ -251,7 +251,7 @@ horizon (...) is checked". The README files follow at the next `dataset check`; 
   case row and case list and the evidence.md example are updated.
 - Restated on 2026-11-12 (Lennart): paired per split the methods lead the rule on 8 or 9 of 9 splits, so under TP-4 as
   amended that day this is not a match but a real gain too small for any decision (step 2, the curator's call); the
-  record's CC line, the case row and the evidence.md example say so.
+  record's CC line, the case row and the evidence.md example say so. The record adds `Not Representative`.
 
 ## 2026-11-10, `ljubljana_breast_cancer` retired as `Trivial` (Andrej's mark on the BeyondArena v0.2 review page)
 
