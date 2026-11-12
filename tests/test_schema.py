@@ -374,8 +374,28 @@ def test_predictive_splits_metadata_row_budget_is_left_out_of_the_checksum_while
     assert plain.row_budget is None
     assert b"row_budget" not in encode_pydantic_metadata(plain)  # a container saved before the field keeps verifying
     assert encode_pydantic_metadata(plain) != encode_pydantic_metadata(budgeted)
-    assert "row_budget:          at most 0.002k train / 0.002k test rows per split" in budgeted.describe()
+    assert "row_budget:          at most 0.002k test rows per split; a benchmark trains on at most 0.002k" in (
+        budgeted.describe()
+    )
     assert "row_budget" not in plain.describe()
+
+
+def test_train_sampling_needs_a_row_budget_and_is_left_out_while_unset():
+    from data_foundry.schema import TrainSampling  # noqa: PLC0415
+
+    splits = {0: {0: ([0, 1], [2, 3])}}
+    sampling = TrainSampling(default="newest_year", unit="time_values")
+    with pytest.raises((ValueError, pydantic.ValidationError), match="set row_budget"):
+        PredictiveMLSplitsMetadata(splits_comment="x", splits=splits, train_sampling=sampling)
+    budget = RowBudget(train=2, test=2)
+    with_sampling = PredictiveMLSplitsMetadata(
+        splits_comment="x", splits=splits, row_budget=budget, train_sampling=sampling
+    )
+    without = PredictiveMLSplitsMetadata(splits_comment="x", splits=splits, row_budget=budget)
+    assert b"train_sampling" not in encode_pydantic_metadata(without)
+    assert encode_pydantic_metadata(with_sampling) != encode_pydantic_metadata(without)
+    with pytest.raises(pydantic.ValidationError):
+        TrainSampling(default="newest_rows", unit="rows")
 
 
 @pytest.mark.parametrize(
@@ -545,6 +565,22 @@ def test_format_2_task_reads_the_group_fields_from_the_grouping():
     )
     assert (task.group_on, task.group_labels, task.group_time_on) == (["a", "b"], "per_sample", "t")
     assert task.split_regime == "grouped_non_iid"
+
+
+def test_time_unit_needs_a_time_column_and_is_left_out_while_unset():
+    """A numeric time column's calendar travels with the task; containers without it keep their bytes."""
+
+    def task(**kwargs) -> PredictiveMLTaskMetadataV2:
+        return PredictiveMLTaskMetadataV2(
+            target_column_name="y", problem_type="regression", objective_metric=make_spec(), **kwargs
+        )
+
+    with pytest.raises(pydantic.ValidationError, match="set time_on"):
+        task(time_unit="weeks")
+    with pytest.raises(pydantic.ValidationError):
+        task(time_on="era", time_unit="fortnights")
+    assert b"time_unit" not in encode_pydantic_metadata(task(time_on="era"))
+    assert b'"time_unit":"weeks"' in encode_pydantic_metadata(task(time_on="era", time_unit="weeks")).replace(b" ", b"")
 
 
 def test_format_1_task_takes_no_grouping():

@@ -7,7 +7,7 @@ docstrings and to commit messages.
 
 ## The judgment record
 
-A verdict, an assessment, a `REVIEW.md` outcome and a mediator's report all have the shape of
+A verdict, an assessment, a review's outcome and a mediator's report all have the shape of
 [principles.md](principles.md), "How to decide": the verdict first, then validity, value and quality with the rule IDs
 that held, were triggered (and how fixed) or were departed from, the factors weighed, and what is left for the
 curator. A reader sees in a few lines which rule decided and why it outranks another.
@@ -119,6 +119,7 @@ first and the details below it, so the curator can stop reading once the decisio
 
 ## In Data Foundry
 
-Where each kind of text lives (record comment lines, `curation_comments`, `task_summary`, `REVIEW.md`) and the
-prefixes our notes use: [records.md](../../knowledge-data-foundry/references/records.md) and
+Where each kind of text lives (record comment lines, the record's `## Review` with the questions for the curator,
+`curation_comments`, `task_summary`) and the prefixes our notes use:
+[records.md](../../knowledge-data-foundry/references/records.md) and
 [definitions.md](../../knowledge-data-foundry/references/definitions.md).

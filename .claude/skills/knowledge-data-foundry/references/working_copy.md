@@ -8,14 +8,15 @@ plus:
 * `GETTING_STARTED.md`: the way in for a new curator;
 * `CHANGELOG.md`: the dated log of every change, newest first;
 * `BENCHMARK_CHANGES_TODO.md`: what the TabArena harness still needs (group columns, per-group scoring, metrics);
-* a `REVIEW.md` in a dataset folder while that dataset has open issues for the curator.
+* `REVIEW.md`: the review items that span datasets (a rule, a framework change). A dataset's own review is in its
+  record, never in its folder (below).
 
 ## Rules
 
 * Every change to the copy (an edited definition or helper file, an added or removed dataset, a re-run that makes a
   new container) gets a dated `CHANGELOG.md` entry.
 * A dataset retired to `No (Retired)` or `No` is removed from the copy (its definition stays in the git history), and
-  its record's `v2_path` is cleared in the same change ([records.md](records.md)).
+  its record's `v2_path` is cleared in the same change ([records.md](records.md)); the record keeps its review.
 * New work is v2 only. The BeyondArena notebooks are Data Foundry v1; never add or re-curate a dataset with v1
   ([DATA_FOUNDRY_V1.md](../../../../DATA_FOUNDRY_V1.md)). Collections still ship both container formats.
 * The docs of the copy list no dataset names or counts that change quickly; the generated table and the filtered
@@ -23,22 +24,29 @@ plus:
 * A generated `README.md` is never edited by hand. Text it takes from the code (a script path, a check message) stays
   stale until the next `dataset check` or build of that folder.
 
-## Open issues: `REVIEW.md`
+## Reviews: the record's `## Review`
 
-While a dataset has questions for the curator, they live in `<folder>/REVIEW.md`, next to the definition they concern:
-a short outcome, the open issues numbered, the alternatives with their numbers, the record fields that disagree with
-the definition, and public evidence links. The format is the review skill's
-[review_file_format.md](../../review-added-datasets/references/review_file_format.md). Cross-dataset items go into a
-root `datasets/_dev/tabarena-v0pt2/REVIEW.md` while they are open: only what is decided once for many datasets (a rule,
-a framework change, a family stance). A choice taken per dataset, even one a scan found in several, goes into each
-dataset's own `REVIEW.md` as its own issue (Lennart, 2026-11-08). A record without a folder keeps its open issues in
-an `**Open issues (AI, date):**` block of the record.
+A dataset's review is the `## Review` section of its curation record, `curation/records/<unique_name>.md`, so the
+record is the one source of the dataset's curation (Lennart, 2026-11-11). It holds the outcome, the open and settled
+issues numbered with every turn, the alternatives, the record fields that disagree with the definition, public
+evidence links and the review panel; what it holds and how to edit it is in [records.md](records.md), "The review
+section", and the format is the review skill's
+[review_file_format.md](../../review-added-datasets/references/review_file_format.md). No dataset folder holds a
+`REVIEW.md`, and none is created: `/add-dataset` writes the review into the record (Step 8), a re-check adds to it,
+and a record without a folder keeps its open issues there too, with an outcome that starts `not added`. A choice taken
+per dataset, even one a scan found in several, goes into each dataset's own review as its own issue (Lennart,
+2026-11-08).
 
-When the curator settles an issue, its decision goes into `dataset.py` (code and `curation_comments`) and the record
-(a `CC` line), and the issue stays in `REVIEW.md` with a closing `**Resolved (<date>, <who>):**` turn; the file is
-never deleted, so the review page keeps every dataset and its decisions (Andrej, 2026-11-02). `/review-added-datasets`
-builds the review page from these files. The process log of a run (what was tried, probe outputs, scraped pages,
-evidence scripts) stays in the local run folder `local-data-warehouse/_runs/<date>_<run>/`, never in git.
+The working copy's `datasets/_dev/tabarena-v0pt2/REVIEW.md` holds only what is decided once for many datasets (a
+rule, a framework change, a family stance). It is the one review file outside the records.
+
+When the curator settles an issue, its decision goes into `dataset.py` (code and `curation_comments`) and the record:
+the curator's turn and a closing `**Resolved (<date>, <who>):**` turn in its review, a `CC` line in its comments. A
+review is never deleted, so the record keeps every decision and how it was reached (Andrej, 2026-11-02).
+`/review-added-datasets` builds the review page from the records' reviews (`collect_reviews.py`). The report and the
+page it generates stay in the local run folder `local-data-warehouse/_runs/<date>_<run>/` and are never committed:
+they are the only files between the record and the page. The process log of a run (what was tried, probe outputs,
+scraped pages, evidence scripts) stays there too, never in git.
 
 ## Builds
 
@@ -62,7 +70,8 @@ datasets at once: [rebuild.md](rebuild.md).
 `local-data-warehouse/` (gitignored) holds the raw files of each dataset, the containers, and the run folders
 (`_runs/<date>_<run>/`: run reports, review-page sources, agents' outputs and evidence). Its data never leaves the
 machine and is never committed; personal data in raw files (ids, phone numbers, names) stays there (Lennart,
-2026-10-12). A private review page built from a run folder may be published for the curator. `minimal_inputs.py` (see
+2026-10-12). A private review page built from a run folder may be published for the curator. No committed file names
+a run folder or another local path ([SKILL.md](../SKILL.md), house rules). `minimal_inputs.py` (see
 [rebuild.md](rebuild.md)) collects the raw files the builds read into a local zip backup.
 
 After a verified rebuild (every new container reloads with its checksum and the traced-input check passes), the

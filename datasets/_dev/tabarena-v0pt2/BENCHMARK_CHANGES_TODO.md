@@ -76,8 +76,7 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
     already in the metric). The sources fixed hard-label decisions (MET-4, MET-6), so the metric stays and the
     threshold becomes part of the method.
 
-  The metrics per dataset, from the metric decisions of 2026-10-21
-  (`local-data-warehouse/_runs/2026-10-21_metrics/decisions.json`; 15 of them wait for the curator, marked `*`):
+  The metrics per dataset, from the metric decisions of 2026-10-21 (15 of them wait for the curator, marked `*`):
 
   | Metric | Kind, prediction | Datasets |
   |---|---|---|
@@ -379,16 +378,33 @@ ignores them, since the bins stay numeric features.
   these containers as written by a newer version, so the floor above must be a release that has it. The adapter reads
   the splits through `experiment_metadata.splits` and needs no change.
 
-## Frame sizes of the v2 split protocol
+## The train budget of the `_1m` versions (issue #70, 2026-11-10)
 
-- [ ] **A sub-sampled version records its row budget** (`experiment_metadata.row_budget`: `{train, test}`, absent
-  without one; PR #64, 2026-11-06): the 17 `_1m` versions carry `{train: 1000000, test: 500000}` once rebuilt, every
-  other v0.2 container none. The TabArena adapter can read it to tell a sub-sampled version from a full dataset, and
-  larger versions for large-data experiments (`_10m`) will carry their own.
+Since issue #70 a `_1m` version caps only its test sides in the container (at most 500k rows per split). Its train
+sides keep every row they may use: all earlier rows of a temporal window (minus the gap), every row of an IID or
+grouped fold outside its test side. The container records the budget, `experiment_metadata.row_budget`
+(`{train: 1000000, test: 500000}`), and the default sampler, `experiment_metadata.train_sampling` (`default`:
+`newest_year` or `random`; `unit`: `rows`, `groups` or `time_values`; `stratify_on`). Every other v0.2 container has
+neither. The 18 versions carry them once rebuilt.
 
-- [ ] **Temporal `_1m` versions ship up to 2.5M rows** (each split still trains on at most 1M and tests on at most
-  500k rows): check storage and loading for `cooking_time_1m`, `delivery_eta_1m` and `maps_router_eta_1m` (2.5M rows,
-  989 float columns for maps).
+- [ ] **Fit on at most `row_budget.train` rows.** Before each fit the adapter takes the train positions from
+  `data_foundry.v2.subsample_train(container, repeat, fold)`: for a temporal train side the newest year, extended back
+  in time until it holds 1M rows, and a random 1M of those (numerai's year is 52 eras, from
+  `task_metadata.time_unit`); whole groups of a grouped one, stratified rows of an IID one. It is deterministic and returns the train side whole for a container
+  without a budget. Without this step a model trains on the whole history.
+- [ ] **N is a hard cap, validation included.** The rows a fit uses for training and inner validation together are
+  at most `row_budget.train`: the inner validation is drawn from the sampled rows, never added to them (Lennart,
+  2026-11-10).
+- [ ] **A model's own sampler is a hook, reported as its own track.** A method may choose its N rows itself (more of
+  the recent past, another window of the history, by recency weights), only from the split's train side and only when
+  it keeps `train_sampling.unit` (whole groups, whole time values). Results with a custom sampler are a separate track
+  of the leaderboard, never mixed with the default one.
+- [ ] **Load only a split's rows.** A rebuilt version ships its whole history, tens of millions of rows for the
+  largest (the sizes come with the next check of the working copy). A worker reads the rows of its split from
+  `rows.parquet` and the sampled train rows from `dataset.parquet`, instead of the whole frame per fit; check storage
+  and loading for the largest (maps_router_eta_1m has 989 float columns).
+- [ ] **Larger budgets.** A `_10m` version for large-data experiments carries its own `row_budget`; the adapter reads
+  N from the container, never assumes 1M.
 
 ## Model defaults
 

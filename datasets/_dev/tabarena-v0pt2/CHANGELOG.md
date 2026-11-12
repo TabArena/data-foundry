@@ -1,5 +1,257 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-11, no local paths in committed text (no container built)
+
+Lennart, 2026-11-11: a pointer to a folder that only one machine has (a run folder of the local warehouse, a job folder
+in someone's home) is no evidence for anyone else. Committed text now names no local path; the evidence goes into the
+text and a script worth keeping into the repository (knowledge-data-foundry, house rules; `tests/test_no_local_paths.py`).
+
+- The pointers are removed, the facts around them stay: 12 records (the comments of 10, the reviews of 3), this
+  CHANGELOG (7 entries), the cross-dataset `REVIEW.md` (one item), `BENCHMARK_CHANGES_TODO.md`, `metrics.md` and two test
+  docstrings; a script's hard-coded warehouse path now resolves from the repository.
+- `drug_induced_autoimmunity_prediction`: two notes of `curation_comments` lose their pointer (text only, the data are
+  unchanged; the text is part of the checksum, so its README has a new one). Its build was stale before.
+
+## 2026-11-11, each dataset's review moves into its curation record (no container built)
+
+Lennart, 2026-11-11: "We want the curation record to be the single source of information, not spread across multiple
+files." A dataset's review (the outcome, the main points, the Horizon block, the numbered issues with every turn, the
+review panel) is now the `## Review` section of its record, `curation/records/<unique_name>.md`, between `## Comments`
+and `## Reference`; from now on `/add-dataset` writes it there and `/review-added-datasets` applies the curator's turns
+there. A review is still never deleted (Andrej, 2026-11-02).
+
+- The 63 `REVIEW.md` files of the dataset folders moved unchanged into their records (without the title line) and are
+  deleted; their relative links point from the records now. Collected before and after, the reviews give the same 63
+  records, 234 issues and 31 review panels.
+- The 294 lines of record comments and definitions that pointed to a folder's `REVIEW.md` ("REVIEW.md issue 3") point
+  to the record's review ("Review issue 3"); lines that tell of a review file being removed, and pointers to the
+  working copy's cross-dataset `REVIEW.md`, stay as written.
+- The working copy's cross-dataset `REVIEW.md` stays: it belongs to no record.
+- The collector refuses a `REVIEW.md` in a dataset folder and an open-issues block in a record's comments; a test fails
+  a PR that adds a folder `REVIEW.md`; `move_reviews_to_records.py` (review-added-datasets) moves one, for a branch
+  rebased onto this change. The README of a folder no longer lists a `REVIEW.md`; the READMEs follow at the next
+  `dataset check`.
+
+## 2026-11-11, the curator's marks on the two new temporal checks (no container built)
+
+Both cross-dataset items are applied as recommended (Lennart, 2026-11-11, A on each); the README files follow at the
+next `dataset check`.
+
+- Columns recorded on one side of a window only: anes_voting_2026 (95 questions asked in some election years),
+  college_scorecard (`DISTANCEONLY` from the 2011 cohort), home_credit_default_stability_1m (12 columns that stop in
+  September-October 2019, 15 that start in April-June 2020), onlinenewspopularity (`kw_min_min`, -1 in every 2014
+  article), rain_in_australia (12 station readings while an instrument is offline),
+  sberbank_housing_market_forecasting (three one-year lags of macro columns) and
+  wisconsin_local_government_property_insurance_fund (`NoClaimCredit`, missing by construction in 2006-2007) each
+  name the columns in a `curation_comments` bullet and accept `splits_feature_missing_in_test`.
+- coffee_rating_prediction drops the 2 reviews of October 2023, the scrape's partial last month; its 2-month windows
+  walk back from August-September 2023 (12 windows to October-November 2021, in place of 13).
+- consumer_complaints_1m (December 2025, complaints in progress left out), rosbank1 (the thin tail of the client
+  intake in November-December 2017) and sberbank_housing_market_forecasting (the market after the December 2014 rush)
+  accept `time_newest_period_short` with the numbers.
+
+## 2026-11-11, two new temporal checks from the review rounds (no container built)
+
+Two findings of the window reviews that no check caught are now checks of `dataset check`, run on all 54 temporal
+definitions; what they found is raised on the review board as two cross-dataset items (`REVIEW.md`, "From the two new
+temporal checks of 2026-11-11").
+
+- `splits_feature_missing_in_test` (warning): a feature 95% or more missing on one side of a temporal window and at
+  most half missing on the other, a column that starts or stops being recorded within the history (delivery_eta_1m's
+  45 features from 23 November 2023). It fires on eight definitions. delivery_eta_1m accepts it with the curator's
+  decision of 2026-11-10 (issue 2, A); the other seven (anes_voting_2026, college_scorecard,
+  home_credit_default_stability_1m, onlinenewspopularity, rain_in_australia, sberbank_housing_market_forecasting,
+  wisconsin_local_government_property_insurance_fund) wait for the cross-dataset item.
+- `time_newest_period_short` (warning): the newest 30 days of a date column hold under 60% of the median rows a day of
+  the 30-day spans before, often a download or scrape cut (kickstarter). It fires on coffee_rating_prediction,
+  consumer_complaints_1m, rosbank1 and sberbank_housing_market_forecasting, all four in the second item.
+- `dataset windows` measures the feature drift of a window on 16 threads (six windows of a synthetic frame of 1M rows
+  and 410 features: 13.1 s to 4.0 s).
+- Skills: `review-added-datasets` has a brief for agents that apply a round's decisions in parallel
+  (`references/apply_brief.md`); `agent_runs.md` lists the lessons on files agents share; `claims.md` says what a PR
+  does when the curator sets the claims board aside; the column and split auditors and `/add-dataset` name the new
+  checks.
+
+## 2026-11-11, the curator's window decisions, round 3 (no container built)
+
+The curator's replies to the round-2 answers and consistency checks are applied; each takes the option the AI turn
+recommended. Every window under half the rows is signed off in the record and accepted in the definition with that
+date (SPLIT-14 as amended on 2026-11-11). The README files follow at the next `dataset check`.
+
+- airqo_low_cost_air_quality_monitor_calibration_challenge: August 2020 joins the test windows as a sixth month, the end
+  of the June-August dry season, training on 47.7% of the hours, signed off (issue 6, reply (c)); September 2020 stays
+  out because Nakawa has no earlier hour.
+- alfa_battle_2_0_task_2: months 14-15 replace 18-19 as the oldest test window, so the other half of the second year is
+  tested; it trains on 41.1% of the rows after the repeat-client filter, signed off (issue 5, reply (b)).
+- lending_club: test windows 2015 Q4, 2015 Q2 and 2014 Q4, spread over two years; 2014 Q4 trains on 45.9% of the loans,
+  signed off (issue 1, reply (b)); the gap-0 exception stays.
+- onlinenewspopularity: nine two-week windows, one every five weeks from 9 March to 27 December 2014, replace the newest
+  nine (issue 11, B); every train side keeps 53.6% or more; the newest window's gap week (489 articles) is in no split,
+  an accepted warning; figures measured on the old windows dated as such.
+- cooking_time_1m: the newest week and every other week before it (28 December-3 January, 14-20 December, 4-10
+  December), superseding the three newest weeks of 2026-11-10; 4-10 December trains on 37.5% of the orders, signed off
+  (issue 2, B).
+- chicago_traffic_crashes: one-month test windows with the one-month gap (the city's monthly fatal-crash review;
+  horizon, b), nine months spread from January 2023 to September 2026, each in another calendar month (issue 12, B), in
+  place of the nine newest quarters; the notification filter applies at each month start; every window trains on
+  57.5-98.1% of the crashes; the newest window's gap month is in no split, an accepted warning.
+- home_credit_default_stability_1m: four-month test windows (horizon, c), July to 5 October 2020, March to June 2020 and
+  November 2019 to February 2020, after, across and before the drop of late March 2020, in place of three two-month
+  windows from May 2020; the metric stand-in's reason gives the 14-19 weeks per window.
+- sberbank_housing_market_forecasting: seven-month test windows, the shortest test period of the sources (horizon, a),
+  December 2014 to June 2015, May to November 2014 and October 2013 to April 2014, in place of five half-years; the
+  oldest trains on 35.4%, signed off.
+- kickstarter: windows dated by launch (`launched_at`) with a 60-day gap, the 1,673 projects launched in the scrape's
+  last 60 days (from 2025-11-13 11:00) dropped (185,444 rows); the nine launch years 2025 back to 2017 are the test
+  windows, the three oldest on 47.0%, 40.2% and 32.4%, signed off (issues 1 and 2).
+- hotel_booking_demand: the test predicts at ten dates, 1 September 2016 to 1 June 2017 (1 June added); the two oldest
+  train on 48.3% and 44.0% of the bookings, signed off (issue 1, reply a).
+- g_research_crypto_forecasting_1m: test windows from 2021-10-25, 2020-12-22 and 2020-02-28 (the newest, the 2021 bull
+  run, the 2020 crash); the crash window trains on 48.25%, signed off (issue 9, reply a); issue 8's check against each
+  coin's naive forecast (TP-10 leg 1) is to be measured again on these windows.
+
+## 2026-11-11, the floor in two tiers and the curator's window decisions, round 2 (no container built)
+
+SPLIT-14 is amended (Lennart, 2026-11-11): the newest window and at least one other train on at least 50% of the rows;
+further windows may train down to 30% (lower only with a reason the curator accepts), and at most as many windows
+train under 50% as at or above; the splits comment names every window under 50%, and no model score is required. In
+every floor case of the two rounds at least two windows already kept half the rows; a flat 40% would still have cut
+windows the curator kept. `dataset windows` lists candidates down to 30%. The curator's round-2 marks are applied where
+the precedent check found them consistent; the README files follow at the next `dataset check`.
+
+- Windows changed: climate_model_weather_forecasting_1m (24-30 July, 1-7 May and 13-19 February 2023 with a 3-day gap,
+  as a forecast is issued up to three days ahead; horizon B, issue 1 B), pkdd_15_taxi_trip_time_prediction_ii_1m (the
+  calendar months February, April and June 2014; horizon B, issue 1 B), mortgage (2015 Q1, 2012 Q2 and 2009 Q3, the
+  calm, recovery and crisis regimes; issue 16 B), noaa_storm_events_damage (2025, 2021 and 2017; issue 16 B; the
+  newest window's gap rows are in no split, an accepted warning), rain_in_australia (26 fortnights one every 16 weeks,
+  May 2018 to January 2026; issue 7 B), rossmann_store_sales (20 June-31 July 2015, the Christmas weeks of 2014 and
+  late spring 2014; issue 1 B; the gap day in no split, an accepted warning).
+- Windows kept, now within the amended floor or argued anew: anes_voting_2026 (nine elections, the four oldest on 49.2%
+  to 40.0%), ieee_fraud_detection (March-May 2018, March on 38.9%), maps_router_eta_1m (the three newest weeks, the
+  oldest on 44.8%; the consistency check of 2026-11-10 closed; its full check was stopped after 52 minutes, the counts
+  are the definition's own), mercedes_benz_greener_manufacturing (nine windows of 320 cars, three on 46.7% to 31.5%),
+  melbourne_housing_market and perth_house_prices (stale texts fixed). Each has its horizon signed off.
+- g_research_crypto_forecasting_1m: the release's `supplemental_train.csv` (21 September 2021 to 24 January 2022,
+  2,518,278 rows) is downloaded and read with train.csv, the history features running across the seam (issue 10, B);
+  the frame grows to 26,001,823 rows, the model figures are dated to the windows that ended on 20 September 2021, the
+  91-day horizon is signed off, and issue 9 is proposed again on the longer history. The newest window holds 99
+  EOS.IO bars of 26-27 October 2021 with a Low near 1.09 at a price near 4.8, kept and noted.
+- Raised: consistency checks on airqo issue 6 (September scores a site without history), kickstarter issue 1 (six or
+  nine years), lending_club issue 1 (a 2014 quarter) and alfa_battle issue 5 (the other half of the year); answers on
+  the horizons of chicago_traffic_crashes (one month), home_credit_default_stability_1m (the scorecard argument; four
+  months), sberbank_housing_market_forecasting (seven months, the sources' shortest) and on hotel_booking_demand
+  (all ten dates) and onlinenewspopularity (nine or seventeen windows); cooking_time_1m issue 2 (every other week, now
+  that the floor opens 4-10 December). nyc_taxi_trip_duration_1m's horizon reason "calendar months would leave only
+  May and June above the floor" is reworded: months would now give three windows, but no source speaks for a month.
+- `/add-dataset` and the column auditor now list every file of a release and ask for a reason for each file left out
+  (g_research's supplemental file was never downloaded).
+- Every window under half the rows needs the curator's sign-off (Lennart, 2026-11-11): `dataset check` warns
+  `splits_train_under_half` (and `splits_train_under_floor` under 30%; a broken core is the error `splits_floor_core`),
+  counted on the curated frame's rows; the review raises it as an issue, and the definition accepts the warning only
+  with the curator's CC date. The six definitions already signed off accept it: wisconsin_local_government_property_
+  insurance_fund (2026-11-08), ashrae_great_energy_predictor_iii_1m (2026-11-10), anes_voting_2026,
+  ieee_fraud_detection, maps_router_eta_1m and mercedes_benz_greener_manufacturing (2026-11-11).
+
+## 2026-11-10, horizon audit and the curator's window decisions, round 1 (no container built)
+
+The curator's marks on the test-windows board (Lennart, 2026-11-10) are applied where the window length holds; a
+model-free audit argued each length from its source ("if the current time horizon makes sense and is justifiable keep
+it and resolve them, otherwise raise them"). Every temporal dataset on the board now has a `**Horizon:**` block in its
+REVIEW.md, which the curator signs off like the metric; each record of a settled horizon has the CC line "the declared
+horizon (...) is checked". The README files follow at the next `dataset check`; the containers at the next build.
+
+- aeolus_rebuilt_1m: test windows chosen by season (issue 1, B): 18-31 December, 3-16 July and 13-26 March 2024
+  instead of the newest six weeks; 14 days and the one-day gap stay, with a new reason (no source states a refit
+  cadence; two weeks keep a window under the 500k test cap and spread a single storm or outage). The 17,947 flights of
+  2024-12-17, the newest window's gap day, are in no split and leave the frame (13,690,703 rows); `TEST_WINDOWS`, the
+  fit reason's cancellation share and the notes on the earlier windows follow.
+- nyc_taxi_trip_duration_1m: test weeks 24-30 June, 27 May-2 June (Memorial Day) and 8-14 April 2016 instead of the
+  last three weeks of June (issue 1, B); 7 days and the one-day gap stay, with a new reason. The 8,028 trips of 23 June
+  leave the frame (1,434,623 rows); the April train side (766,644) is under the 1M budget; stale counts fixed and the
+  June LightGBM scores labelled.
+- delivery_eta_1m: test weeks 1-7 January, 18-24 December and 4-10 December 2023 (every other week; issue 1, B)
+  instead of the last three weeks; the 45 features `num_76` to `num_121` that stop on 23 November 2023 stay, with a
+  `Kept on purpose` note (issue 2, A: the prediction point, and the block is still present in every test window).
+- cooking_time_1m: the three weeks from 14 December 2023 to 3 January 2024 stay, now declared as cutoffs; the splits
+  comment says they are the only weeks above the 50% floor and lie before and over New Year (issue 1, B).
+- consumer_complaints_1m: test quarters October-December 2025, January-March 2025 and July-September 2024 (issue 1, B);
+  the quarter is stated as an assumed refit cadence, the "180 days" corrected to the CFPB's 15 and 60 days, and the
+  notes state the one to two months of open closures each train side holds.
+- ashrae_great_energy_predictor_iii_1m: windows unchanged (issue 1 resolved as A); the use case (a savings baseline fit
+  once and used for a year or more) is the reason for 4 months, SPLIT-14's amendment of 2026-11-08 the reason for the
+  oldest window (49.47%, was 49.12%), with LightGBM's RMSLE on the two valid windows next to all three; an ashrae row
+  under SPLIT-14 in splits.md's Cases.
+- numerai_v5_2_1m: windows unchanged (issue 12 resolved as A); Numerai's one-year ranking is the reason for 52-era
+  windows, and v5.0's feature date the reason for walking back from the newest.
+- "Refit every week (TabReD)" is removed from delivery_eta_1m and cooking_time_1m: TabReD states no refit cadence; a
+  week is its validation and test length.
+- Raised, not applied: the horizon sign-offs of pkdd_15 (calendar months, 30 days or a week), climate_model (a 3-day
+  gap, since a forecast is issued up to three days ahead) and home_credit (three-month windows), and g_research issue 10
+  (the release's supplemental file, 21 September 2021 to 24 January 2022); their window issues wait on these.
+- The review page shows each `**Horizon:**` block as the record's first issue, "H", in the issue shape (verdict, a
+  closed Details box with the declared windows, an options table with today's length as the implemented row,
+  recommendation); the blocks are rewritten in that shape, and the separate horizon issues of pkdd_15, climate_model
+  and home_credit are folded into their blocks.
+  maps_router_eta_1m issue 1 has a consistency check: the marked A keeps a train side of 44.8%, under the floor, and
+  the floor's 40% allowance needs recurring entities.
+- Window proposals with a Horizon block for the 17 other temporal datasets whose windows do not reach back to the 50%
+  floor or fall below it: mortgage, lending_club, kickstarter (and its issue 2: date by launch, since the scrape cuts
+  the newest year), alfa_battle_2_0_task_2, rain_in_australia, noaa_storm_events_damage,
+  airqo_low_cost_air_quality_monitor_calibration_challenge, chicago_traffic_crashes, rossmann_store_sales,
+  onlinenewspopularity, perth_house_prices, melbourne_housing_market, anes_voting_2026, ieee_fraud_detection,
+  mercedes_benz_greener_manufacturing, sberbank_housing_market_forecasting, hotel_booking_demand. The other 25
+  temporal definitions already use every window above the floor.
+
+## 2026-11-10, test windows chosen per dataset (SPLIT-15); proposals for the temporal `_1m` versions (no definition changed)
+
+- SPLIT-15 is rewritten: the newest window is always a test window, and the others are the curator's choice per
+  dataset, argued from the use case with statistics of the data, never a model's score. `dataset windows <name>`
+  lists the candidate windows with their months, rows, train share, target and feature drift; the README's splits
+  section describes the chosen windows ("The test windows", at the next check). Explicit `cutoffs` must include the
+  newest window; the 11 definitions that declare cutoffs do.
+- A proposal on the test windows is an open issue in the REVIEW.md of 11 temporal `_1m` versions, for the curator to
+  decide: other windows for aeolus_rebuilt_1m, climate_model_weather_forecasting_1m, delivery_eta_1m,
+  nyc_taxi_trip_duration_1m, pkdd_15_taxi_trip_time_prediction_ii_1m, maps_router_eta_1m, consumer_complaints_1m and
+  home_credit_default_stability_1m; today's windows for numerai_v5_2_1m and ashrae_great_energy_predictor_iii_1m;
+  cooking_time_1m has no alternative above the floor (its splits comment should say what it cannot test).
+  g_research_crypto_forecasting_1m's proposal is in the PR description, as its folder is held by another session.
+- Found on the way: maps_router_eta_1m's oldest window trains on 44.8% of all routes, below SPLIT-14's floor, now
+  that the container keeps every route (its proposal fixes it); ashrae_great_energy_predictor_iii_1m's January-April
+  window trains on 49.47% (the splits comment says 49.12%), under the floor's 40% allowance for recurring meters;
+  delivery_eta_1m's features change on 23-24 November 2023 (`num_96` goes from 1.8% to 99.7% missing, 31 of 217
+  numeric features move by more than half a standard deviation), which no curation note mentions yet.
+
+## 2026-11-10, the `_1m` versions keep every training row (issue #70; no container built)
+
+- A `row_budget` now caps only the test sides in the container: each split tests on at most 500k rows, drawn as
+  before (stratified, whole groups, whole time values). The train sides keep every row they may use: all earlier rows
+  of a temporal window minus the gap, every row of an IID or grouped fold outside its test side. A benchmark fits on
+  at most 1M of them, drawn by `subsample_train` (`data_foundry.v2`); the container records the default sampler in
+  `experiment_metadata.train_sampling`: for a temporal train side the newest year, extended back in time until it
+  holds 1M rows, and a random 1M of those (whole minutes for g_research_crypto_forecasting_1m); whole groups of a
+  grouped side; stratified rows otherwise.
+- IID and grouped versions no longer sub-sample the frame to 1.5M rows before the split: the 3-fold cross-validation
+  runs on the full frame, and the test rows over the cap train in their fold.
+- The 18 `_1m` definitions describe the new sampling in `task_summary.split`, the row-budget bullet of
+  `curation_comments`, their `splits_comment` and `History` bullets. Their windows, cleaning and code are unchanged.
+  Their frames, splits and READMEs change at the next check: the frames grow to the full data.
+- Counts of the earlier 1.5M-row sample, recounted on the full frame: amex_non_iid_1m has 458,913 customers (was
+  124,466); huntprohibited_1m keeps all 29 ads priced 999,999,999 (was 14) and 10,331 priced 1, 18.7% blocked (was
+  3,962, 19.0%); fraud_detection_in_electricity_and_gas_consumption_1m has 61 rows that repeat another row of the same
+  client (was 57); allstate_claim_prediction_challenge_1m no longer gives the claims per test fold.
+- Scores in the notes that were measured on the earlier train sides (a random 1M rows) stay, dated as measured then.
+  home_credit_default_stability_1m: the newest year before its July and September windows holds 940k and 825k rows,
+  so the rule extends it back to 12 to 14 months. g_research_crypto_forecasting_1m keeps the default rule although its
+  History bullet measured only all history against the newest 1M rows: the sampler follows a rule that is good on
+  average, not a call per dataset (Lennart, 2026-11-10).
+- `Temporal(time_unit=...)`, stored as `task_metadata.time_unit`, says what one step of a numeric time column counts.
+  numerai_v5_2_1m declares `"weeks"`, so its newest year is 52 eras, extended back to the newest 151 to 159 eras (1M
+  rows) per window, in place of a random 1M of all eras. Seven definitions without a budget declare it too, as their
+  horizon already said: `"years"` for apistox, anes_voting_2026, college_scorecard,
+  spanish_homeowners_motor_insurance_2010_2014 and wisconsin_local_government_property_insurance_fund, `"months"` for
+  alfa_battle_2_0_task_2, `"quarters"` for mortgage. Their frames and splits are unchanged; their containers carry
+  the field at the next check.
+
 ## 2026-11-10, sources as a list, slim v2 dataset metadata, no `version_of` (no container built)
 
 - Every definition declares `sources = (Source(role="publication", platform=..., url=..., license=..., year=...,
@@ -630,9 +882,9 @@ noaa_storm's definitions now differ from any build.
 ## 2026-11-06, PR #47: re-review under the exposure rules (no container built)
 
 Seventeen of the twenty datasets the exposure rework touched went through the review panel again under LEAK-41 and
-MET-14 to MET-16 (full panel where the definition changed, focused elsewhere; run folder
-`_runs/2026-11-06_exposure_review/`, not committed); the three Kaggle datasets wait for their data. Each of the
-seventeen REVIEW.md files has a new `**Review panel:**` block (the old one kept in the run folder and in git) and its
+MET-14 to MET-16 (full panel where the definition changed, focused elsewhere); the three Kaggle datasets wait for their
+data. Each of the seventeen REVIEW.md files has a new `**Review panel:**` block (the old one kept in the run folder and
+in git) and its
 new questions as open issues; each record has the panel's Assessment line. The changes below need no decision.
 
 - `fremtpl2`: text only (the LEAK-41 report on the declared metric, the duplicate counts, the 19-row rating profile in
@@ -778,6 +1030,44 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
   sampled test sides leave out.
 - READMEs of the 17 regenerated by `dataset check` (0 errors, 0 warnings; new checksums, since the budget is part of
   the metadata); nothing rebuilt. `GETTING_STARTED.md` and `BENCHMARK_CHANGES_TODO.md` say how v0.2 uses the budget.
+
+
+## 2026-11-05, three generated datasets retired (Andrej's marks on the BeyondArena v0.2 review page)
+
+- Retired as generated data: each record is `No (Retired)` with `AHDS` and a CC line giving the evidence, its folder is
+  removed and `v2_path` cleared. `DF: Yes`, the collection tags and the pinned BeyondArena containers stay.
+  - `bank_customer_churn` (TabArena v0.1; also `Missing source information`): a class-rooted Bayes net written down by
+    hand (churn first, each column given churn and at most two other columns) beats all 40 benchmark methods when used
+    as a classifier (1 - ROC AUC 0.1213 against 0.1233 for the best method); seven of ten columns cannot be told from
+    copies shuffled within each class. `superdatascience_churn_modelling`, the same course table, gains `AHDS`.
+  - `food_delivery_time` (TabArena v0.1): the delivery time is a 5-minute block plus a uniform minute that no feature
+    predicts, the other columns change only at the block edges, and no courier ID keeps one age, rating or vehicle.
+    `problem_type` and `domain` set from the definition.
+  - `santander_customer_transaction_prediction`: within each class the 200 columns are independent at the chance rate,
+    and real rows cannot be told from rows shuffled within each class (ROC AUC 0.49, against 1.0 on
+    santander_customer_satisfaction), so naive Bayes is right by construction and matches TabPFN-3.5. `Anonymized`
+    stays.
+- Guidelines: provenance.md, "Is the data generated?", gains test 8 (columns shuffled within each class) and test 9 (a
+  target drawn as a coarse level plus a uniform remainder), and an example under test 6 (IDs that keep no attributes);
+  PROV-3 names the three datasets as cases. task_probes.md and evidence.md no longer cite santander as real data.
+
+## 2026-11-05, class-dependent recording documented on four datasets; duplicates note on one (no data change)
+
+- `biogeographical_ancestry_prediction`, `hepatitis_c_prediction`, `horse_colic_survival`, `lung_cancer`: one
+  `curation_comments` bullet each on how the classes were recorded differently, and the record marker
+  `Class-dependent Recording`. Found by a sweep of the number-format probe over the shipped classification datasets
+  (2026-10-27) and the October reviews. Comments only, the data are unchanged; the text is part of the checksum.
+  - Fixed earlier, now documented: Turkey's separate source (biogeographical, the class is dropped); the donors' and
+    patients' precision conventions and ALP (hepatitis_c, seven labs rounded, ALP dropped).
+  - Not harmonised yet, open: horse colic's `total_protein` units (the unit alone tells died from euthanized, ROC AUC
+    0.79; one unit for all rows raises TabPFN 3.5's log loss from 0.682 to 0.724).
+  - Kept with a note: lung cancer's 47 replicate-averaged adenocarcinoma rows and its spike-in control probes; neither
+    carries the score (log loss 0.141 as shipped; 0.146 without the averaged rows, 0.139 without the control probes).
+- `early_stage_diabetes_risk_prediction`: a curation note says the dropped duplicates are uneven by class (61% of the
+  negative rows repeat another row, 46% of the positive rows), so dropping them moves the positive share from 62% to
+  69% and leaves 78 negatives; 74% of rows 260 to 519 repeat a row from 0 to 259. Data unchanged.
+- Not built. READMEs regenerated with `dataset check` (0 errors, 0 warnings) except `lung_cancer`'s: its raw file (the
+  PNAS supplement) has to be downloaded by hand, so its README still shows the earlier notes and checksum.
 
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 
@@ -1441,8 +1731,7 @@ a declared spectrum is in scope unless a spectrum model is clearly better (SEL-1
   | Logistic regression | 0.663 | 0.646 (26/60) | 0.708 |
 
   The default stays the published workflow; PR #21's log suits TabPFN and the linear models better, which is one
-  decision for all raw mass spectra (open with the curator). TabPFN ran on one GPU (SkyPilot managed job 29360);
-  scripts and per-split results in `local-data-warehouse/_runs/2026-11-02_spectra/`.
+  decision for all raw mass spectra (open with the curator). TabPFN ran on one GPU (SkyPilot managed job 29360).
 - **Benchmark:** `BENCHMARK_CHANGES_TODO.md`, "Spectra (feature groups)".
 - Not rebuilt; both builds were already stale.
 
@@ -1682,9 +1971,9 @@ loads: every shared column is identical on every row, so the link needs no key.
   words; a score or rating with no words per level, or words only at its two ends, is a number; bands keep their band
   text. CLEAN-12 and CLEAN-14 amended; `decode(df, CODE_LABELS)` in the v2 API (a code without a label raises), after
   `set_missing`.
-- Six agents read the codebooks for every coded column of 44 definitions
-  (`local-data-warehouse/_runs/2026-10-30_ordinal/decode/`). In 29 definitions 377 coded columns now carry their
-  words (BI-RADS density "almost entirely fatty" to "extremely dense", ames' ratings "very poor" to "very excellent",
+- Six agents read the codebooks for every coded column of 44 definitions. In 29 definitions 377 coded columns now
+  carry their words (BI-RADS density "almost entirely fatty" to "extremely dense", ames' ratings "very poor" to "very
+  excellent",
   the ANES codes, coil_2000's percentage and guilder bands,
   early_learning_predictors' answers), and 54 scores and ratings are numbers again (california_house_prices_2020's
   school ratings, miami_housing's `structure_quality`, eryhemato_squamous_disease's ten findings, student_portuguese's
@@ -1821,9 +2110,9 @@ loads: every shared column is identical on every row, so the link needs no key.
   missing. The container already kept the order; the README lists ordinal columns with their levels. An ordinal
   column may also be named among the categorical ones.
 - 220 ordinal scales in 39 definitions are ordered categories now, in the order of each source's codebook (often not
-  the order of the codes): seven agents read the codebooks for 1,980 candidate columns of 95 datasets
-  (`local-data-warehouse/_runs/2026-10-30_ordinal/`). anes_voting_2026's 20 likes-dislikes indices and counts are
-  numbers. Codes outside a scale that mean unknown (don't know, refused, not asked, undocumented codes) are missing.
+  the order of the codes): seven agents read the codebooks for 1,980 candidate columns of 95 datasets.
+  anes_voting_2026's 20 likes-dislikes indices and counts are numbers. Codes outside a scale that mean unknown (don't
+  know, refused, not asked, undocumented codes) are missing.
   Left unordered, for the curator's review board: 39 columns with a level outside the scale that is a state of its own
   (no basement, not prescribed, no checking account), partial orders, cycles and orders of low confidence. Left as
   they are: 167 ordinal scales shipped as numbers (point 3) and 22 codes shipped as numbers (point 4).
@@ -1888,7 +2177,7 @@ loads: every shared column is identical on every row, so the link needs no key.
   fragments N-073 and C-026, which count the atoms of that type (0 to 3 and 0 to 12); the definition had typed them
   categorical while their meaning was unknown. The curation note on "numeric-ordinal" features is replaced. CC line in
   the record, CLEAN-14 Cases row. `dataset check`: 0 errors, 0 warnings. Not built.
-- The sweep, once, over the 163 definitions (outputs in `local-data-warehouse/_runs/2026-10-30_dtype_sweep/`): 489
+- The sweep, once, over the 163 definitions: 489
   flagged columns in 48 datasets, 358 of them only `numeric_levels` (codes, ids). Beyond the two datasets above,
   the findings went to the curator and nothing else changed here: `early_learning_predictors` (45 counts and amounts
   typed categorical, with Stata missing codes `.a` and `.b` among the numbers), counts with open ends typed
@@ -1971,7 +2260,6 @@ Myunghwan: "yes, ship" after review-added-datasets. Accepted the 21,199-row, 13-
 - Applied Myunghwan's 2026-10-29 review answers for `chicago_traffic_crashes_1m`: accepted final-snapshot injury labels and closer-to-fact scene framing; accepted the physical-device-MISSING warning. Recorded the dataset-specific SPLIT-10 exception without changing the rule. Speed discussion and final inclusion remain open; data, features and splits are unchanged. No build or commit.
 - Revised `chicago_traffic_crashes_1m` on 2026-10-29: restored five physical-condition fields by Myunghwan direction with measured availability risk and explicit LEAK-10/38 disagreement. Affected checks/probes and focused independent review completed for the 21-input recipe. One source-semantic warning is proposed for acceptance; final inclusion and build remain undecided.
 - Prepared `chicago_traffic_crashes_1m` for review of the curator-authorized approximate five-class injury task: 16 scene/context inputs, hourly event time, notification-eligible quarterly training, original-source copy removal and log loss. Five condition fields are withheld for conditional recording concerns; outcome/report/investigation fields remain excluded. Native checks and independent panel evidence support review; final surrogate decisions remain open. No container build, warning acceptance, source commit or publication.
-
 
 Every change to this folder gets an entry here, newest first: edited definitions or helper files, added or removed
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
@@ -2112,7 +2400,7 @@ record, audit or PR that motivated it.
 - `drug_induced_autoimmunity_prediction`: `SMILES` is kept as a string feature instead of being dropped (177
   features instead of 176; 587 rows and the scaffold groups unchanged). The source's descriptors lose structure a
   model can use: next to them, MACCS keys computed from the SMILES lift the scaffold-grouped ROC AUC of TabPFN 3.5
-  from 0.803 to 0.826 and of a random forest from 0.770 to 0.795 (`~/claude_jobs/dia_review/`), so we ship the
+  from 0.803 to 0.826 and of a random forest from 0.770 to 0.795, so we ship the
   string rather than one chosen fingerprint. This overrides, for this dataset only, the 2026-10-14 rule of dropping
   the SMILES in every SMILES dataset.
 - `drug_induced_autoimmunity_prediction`: `dataset_identifier_column` accepted (one SMILES per row): the structure
@@ -2478,8 +2766,7 @@ consistency checks in the folder's `REVIEW.md` and are not applied yet. Nothing 
   AUC 0.888, 0.906 and 0.739 against 0.913, 0.914 and 0.708). BeyondArena datasets; the shipped notebooks and
   collection pins are unchanged, and their containers and raw files stay in the warehouse.
 - Records: `heart_statlog` is `No` + `Duplicate` (all 270 rows are Cleveland rows with the same label). Andrej's
-  review in [`curation/records/heart_disease.md`](../../../curation/records/heart_disease.md); evidence in
-  `~/claude_jobs/heart_pool/`.
+  review in [`curation/records/heart_disease.md`](../../../curation/records/heart_disease.md).
 - `heart_disease` declares the metric the three sites declared on `main` (roc_auc fallback, accepted by Lennart
   2026-10-21 for the heart_disease datasets).
 

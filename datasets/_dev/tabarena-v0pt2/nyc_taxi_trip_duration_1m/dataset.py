@@ -83,8 +83,8 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
         ),
         row=(
             "One yellow-cab trip in New York City, January to June 2016, from a sample of the Taxi and Limousine "
-            "Commission's trip records (1,447,167 trips after cleaning, of which the 1,166,477 that a split uses are "
-            "kept)."
+            "Commission's trip records (1,442,651 trips after cleaning; the 8,028 of 23 June 2016, the gap day before "
+            "the newest window, are in no split)."
         ),
         predicted="The trip's duration in seconds, on a log scale.",
         known=(
@@ -92,8 +92,10 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
             " company of the cab's meter system."
         ),
         split=(
-            "Each of the last three weeks of June 2016 is a test window; training is a random million trips picked "
-            "up at least a day before the window, as for a model refit weekly."
+            "The test windows are three weeks of 2016: the newest (24-30 June), the Memorial Day week (27 May-2 June) "
+            "and a spring week (8-14 April); a week is the shortest window that holds each weekday once. Training is "
+            "every trip picked up at least a day before the window, of which a benchmark fits on at most a random "
+            "million."
         ),
         changes=(
             "We split by week instead of the competition's random sample of the same days, drop a flag set only after"
@@ -171,10 +173,10 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
         - We drop the trips whose drop-off lies within 100 m of the pickup (Lennart, CC 2026-10-26, USE-7; the radius of pkdd_15_taxi_trip_time_prediction_ii_1m): nobody names a destination that close to where they are picked up, so these rows lack the input the ETA acts on. They are the 4,539 trips (0.31%, 0.29-0.34% in every month, 73% VeriFone) whose drop-off coordinates equal the pickup coordinates to the last digit, mean target 6.04 against 6.47 for the other trips, and about 4,500 more at other coordinates: 1,082 within 10 m (median 69 s) and 3,436 at 10 to 100 m (median 230 s) (decision table).
         - We set passenger_count to missing where it is 0 (the driver did not enter it) or above the 6 seats of a cab (8 and 9), 23 trips in all, and keep the trips.
         - Anomaly: 46 kept trips imply more than 100 km/h. We keep them, as they cannot be told from real trips with certainty.
-        - Split: weekly test windows over the last 3 weeks of June 2016 (splits_comment). The competition's test set is a random 30% of every day of the same half-year, so its leaderboard measures interpolation within the period; we do not use test.csv.
-        - Note: pickup_datetime is the only time feature, and the hour matters most. LightGBM (300 trees, learning rate 0.1, 63 leaves, a random 200k of each train side, one fit per window) scores RMSE 0.373, 0.357 and 0.381 on the weekly windows (newest first) when the encoding keeps the hour (skrub's DatetimeEncoder in tabarena_default) and 0.429, 0.414 and 0.441 with AutoGluon's date parts, which lose it.
+        - Split: three weekly test windows, the newest week (24-30 June 2016), the Memorial Day week (27 May-2 June) and a week in April (8-14 April) (splits_comment; CC 2026-11-10). The competition's test set is a random 30% of every day of the same half-year, so its leaderboard measures interpolation within the period; we do not use test.csv.
+        - Note: pickup_datetime is the only time feature, and the hour matters most. LightGBM (300 trees, learning rate 0.1, 63 leaves, a random 200k of each train side, one fit per window) scored RMSE 0.373, 0.357 and 0.381 on the windows before 2026-11-10, the last three weeks of June (newest first), when the encoding keeps the hour (skrub's DatetimeEncoder in tabarena_default) and 0.429, 0.414 and 0.441 with AutoGluon's date parts, which lose it.
         - Note: the Kaggle rules (Sec. 7) allow academic research and other non-commercial use and forbid redistribution; the TLC publishes the same records on NYC Open Data without an explicit licence.
-        - The row budget: Every train side holds 1.28M to 1.39M trips, above the 1M-row budget, so the dataset ships only as this version (definitions.md, Lennart 2026-10-21). We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (none reaches it), and its train side is a random 1M of all trips picked up at least a day before the window, drawn in one random order for all windows so the train sides overlap; the frame keeps only the rows a split uses. As in delivery_eta_1m, the sample is random rather than the latest trips, so the train sides cover the whole half-year.
+        - The row budget: The two newer train sides hold 1,382,016 and 1,169,775 trips, above the 1M-row budget, so the dataset ships only as this version (definitions.md, Lennart 2026-10-21); the April one holds 766,644. Each test window keeps at most 500k of its rows (none reaches it), and each train side holds every trip picked up at least a day before the window, so the frame keeps every trip a split uses: all but the 8,028 of 23 June, the gap day before the newest window. The 1M train budget is recorded, not applied: a benchmark sub-samples each train side over 1M to 1M before a fit with `subsample_train`, by default a random 1M of the newest year before the window. The data cover six months of 2016, so the newest year is all earlier trips: as in delivery_eta_1m, the sample is random rather than the latest trips, and it covers the whole half-year.
     """
     accepted_check_warnings = {
         "meta_license_unknown": (
@@ -198,10 +200,13 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
     )
 
     # Splits
-    temporal = Temporal(on="pickup_datetime", splits=TemporalSplits(window=7, unit="days", n_windows=3, gap=1))
+    temporal = Temporal(
+        on="pickup_datetime",
+        splits=TemporalSplits(window=7, unit="days", gap=1, cutoffs=("2016-06-24", "2016-05-27", "2016-04-08")),
+    )
     row_budget = RowBudget(train=1_000_000, test=500_000)
     splits_comment = """
-        An ETA model refit every week predicts the trips of the next week, as for the other ETA tasks of the collection (delivery_eta_1m, maps_router_eta_1m). We use each of the last 3 weeks of June 2016 as a test window (newest first, 52,779 to 54,532 trips each) and the trips picked up at least one day before it as train data: 3 windows, the 1 x 3 an IID task of this size would get, and every train side holds at least 88% of the trips. The gap of one day is part of the task: a trip lasts up to 3 hours, so at a refit the last trips before it have no duration yet; without the gap 77, 119 and 127 train trips per window would end after the window start. Each train side (1.28M to 1.39M trips before the cap) is a random 1M of the earlier trips, drawn in one random order for all windows so the train sides overlap, and no test window reaches 500k rows; the frame keeps only the trips a split uses (version_comment). The competition's test set is a random sample of the same days (curation_comments); a random split is optimistic here. LightGBM (300 trees, learning rate 0.1, 63 leaves, a random 200k of each train side, one fit per split) scores RMSE 0.357-0.381 on the weekly windows, 0.355-0.364 on 3 folds of whole days and 0.353-0.355 on 3 random folds when the encoding keeps the hour (skrub's DatetimeEncoder), and 0.414-0.441, 0.401-0.410 and 0.390-0.392 with AutoGluon's date parts. Trips of one day sharing traffic and weather explain about 0.01 of the gap; the rest is the distance in time.
+        The competition gives no horizon: its test set is a random 30% of the same days (curation_comments), so a random split is optimistic here. An ETA service refits often; a week is the shortest window that holds each weekday once, and no source speaks for a calendar month here (unlike pkdd_15_taxi_trip_time_prediction_ii_1m, whose challenge used one model for months), though under the floor as amended on 2026-11-11 months would give three windows (June, May, and April on 49.1% of the trips). The trips cover January to June 2016, and only the weeks from 8 April on keep half the trips for training, so another year or the winter cannot be tested: January to March (New Year's Day, Martin Luther King Day, Presidents' Day, the blizzard of 23 January) are training only. Of the 12 eligible weeks (Friday to Thursday) we test three (CC 2026-11-10), newest first: 24-30 June, the newest; 27 May to 2 June, the week of Memorial Day (Monday 30 May), the one public holiday among them (7,041 trips a day against 7,973 and 8,065 in the weeks before and after, median straight-line speed 13.3 km/h against 12.2 and 12.4); and 8-14 April, a spring week (8,522 trips a day, 12.6 km/h). The features do not drift in any eligible week (largest population stability index 0.003), so the choice rests on the calendar. The windows hold 52,607, 49,284 and 59,653 trips, and the train sides every trip picked up at least one day before the window: 1,382,016, 1,169,775 and 766,644 trips (95.8%, 81.1% and 53.1%). The gap of one day is part of the task: a trip lasts up to 3 hours, so at a refit the last trips before it have no duration yet; without the gap 77, 112 and 100 train trips per window would end after the window start, with it none. The 8,028 trips of 23 June, the gap day before the newest window, lie in no split, so the frame leaves them out. A benchmark sub-samples a train side over 1M rows to a random 1M before a fit (`subsample_train`; the newest year before a window is the whole half-year), so the April window trains on all of its 766,644 trips; no test window reaches 500k rows. Measured before 2026-11-10, with the last three weeks of June as the windows: LightGBM (300 trees, learning rate 0.1, 63 leaves, a random 200k of each train side, one fit per split) scored RMSE 0.357-0.381 on the weekly windows, 0.355-0.364 on 3 folds of whole days and 0.353-0.355 on 3 random folds when the encoding keeps the hour (skrub's DatetimeEncoder), and 0.414-0.441, 0.401-0.410 and 0.390-0.392 with AutoGluon's date parts. Trips of one day sharing traffic and weather explain about 0.01 of the gap; the rest is the distance in time.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

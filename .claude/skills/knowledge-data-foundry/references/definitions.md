@@ -15,7 +15,9 @@ copy, [working_copy.md](working_copy.md)):
 |---|---|---|
 | `dataset.py` | the curator or the agent | The only definition: one `AbstractCuratedDataset` subclass. Flat class attributes declare the metadata, the task, the standard preprocessing and the splits; a few hooks hold the code. |
 | `README.md` (+ `figures/*.png`) | `dataset check` / `dataset build` | The dataset card and evidence: YAML front matter (build record, data and split shape, bundle-check slugs, decision titles), then the files of the folder, links, how to rebuild, the dataset and task, the curation notes, the splits, the decisions with their tables and figures, the check results and the build record. Never edited by hand. |
-| `REVIEW.md` | the agent, while issues are open | The open issues for the curator ([working_copy.md](working_copy.md)); deleted once they are settled. |
+
+The dataset's review (the issues for the curator, open and settled, and the review panel) is not in the folder: it is
+the `## Review` section of its curation record ([records.md](records.md), "The review section").
 
 Discovery is `data_foundry.v2.discover_datasets(root)` (the tasks; `discover_definitions` adds the parents of a family,
 "Families" below), and `tests/test_v2_datasets.py` tests every discovered folder (each import in its own test), so there
@@ -471,7 +473,7 @@ version (all found in the v0.2 copy, 2026-10-06):
 Keep the default: no split attributes. The base class runs the v2 split protocol (`src/data_foundry/v2/splits.py`):
 always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of the train side (`recommended_dimensions`),
 built by `iid_splits` / `grouped_splits` with the benchmark seed, on the full frame: Data Foundry caps no split unless
-the definition declares a `row_budget` (a sub-sampled version, below). The comment is "Default splits."; set
+the definition declares a `row_budget` (a `_1m` version, below). The comment is "Default splits."; set
 `splits_comment` only when there is something to say (a split that deliberately differs from the source's protocol,
 what a grouped test fold holds).
 
@@ -542,6 +544,7 @@ repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is t
 | Explicit test periods (kickstarter: calendar years) | `TemporalSplits(window=1, unit="years", cutoffs=(2023, 2024, 2025))` |
 | Windows down to a train share (coffee: 2 months; sf_permit: 6 months; both keep at least half for training) | `TemporalSplits(window=2, unit="months", min_train_fraction=0.5)` |
 | Explicit periods of several months (consumer_complaints: 3 quarters of 2025; home_credit: 3 x 2 months) | `TemporalSplits(window=3, unit="months", cutoffs=("2025-04-01", "2025-07-01", "2025-10-01"))` |
+| Windows chosen from the candidates (SPLIT-15: the newest and two in other seasons; an illustration, none in the collection yet) | `TemporalSplits(window=7, unit="days", gap=1, cutoffs=("2024-12-24", "2024-07-09", "2024-03-12"))` |
 | N windows of distinct time values (anes: election years; garments: dates; kick: derived size) | `TemporalSplits(window=1, unit="unique", n_windows=9)`, `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)` |
 | Only a row order (california, mercedes) | `TemporalSplits(window=320, unit="rows", n_windows=9)` (horizon: 320 steps); `window=None` needs `Temporal(horizon=..., horizon_unit="steps")` |
 | A gap in a smaller unit than the window (g_research_crypto_forecasting_1m: 3 x 91 days, 15-minute gap, whole minutes sampled) | `TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes", sample_by="time")` |
@@ -554,6 +557,31 @@ rows (SPLIT-17 in [splits.md](../../knowledge-curation/references/splits.md)). C
 `"unique"`, of the rows otherwise) and, with `window=None` and `unit="unique"`, sizes the windows so they cover the
 newest `1 - min_train_fraction` of the values.
 
+**Choosing the test windows (SPLIT-15).** Which windows a temporal task tests on is the curator's call, argued per
+dataset; the newest window is always one of them. A window that trains on less than half the rows is the curator's
+sign-off every time: `dataset check` warns `splits_train_under_half`, and the review raises it as an issue. The evidence
+is statistics of the data, never a model's score:
+
+```bash
+.venv/bin/python -m data_foundry.curation.cli dataset windows <name> --root datasets/_dev/tabarena-v0pt2
+#   --window 14 --unit days --step 7   other lengths or a finer step; --csv windows.csv writes every column
+```
+
+It lists the candidate windows of the declared length and gap (`window_stats` of the definition,
+`src/data_foundry/v2/windows.py`), walking back from the newest data while a train side keeps 30% of the rows
+(SPLIT-14's lower bound; the core windows keep 50%, which the train share shows), the definition's own marked `*`: the
+dates and the months covered, the weekdays of a window shorter than a week, the test rows and the train share, the
+target on each side (a binary target's event share and count, a regression target's mean and quantiles), and the drift
+of the features from the train side (the population stability index of each feature, its largest value and the features
+behind it, and the share of test rows with a category the whole train side never shows; free text and dates are left
+out). A feature that counts time (epoch seconds, a year, a running index) drifts in every window: read past it to the
+next features. Read it against the use case: which periods must a deployed model handle, which windows show them, and
+which are near copies of the newest (the same season, little drift). Declare the choice with `cutoffs` (the newest
+window's start among them; a choice without it is refused), and write the reasons into `splits_comment` with the numbers
+they rest on. A numeric time column (numerai's eras) states what one step counts with `Temporal(time_unit=...)`; the
+table then shows its values with the unit. The README's splits section shows the same statistics for the chosen windows
+("The test windows").
+
 Labels that arrive late and training rows whose label is not yet known need `_make_splits`: train on the rows whose
 outcome is known by each window's start, with the gap declared on `Temporal` (brazilian_ecommerce, sf_permit_time,
 hotel_booking_demand). The training history the use case calls for is set in `_load_raw` or `_clean`, with a
@@ -561,42 +589,57 @@ hotel_booking_demand). The training history the use case calls for is set in `_l
 
 ### Larger than the row budget: the `_1m` version
 
-Data Foundry sets no row budget: by default every split uses the full frame and no side is capped. A definition that
-should train and test on fewer rows declares the budget itself, `row_budget = RowBudget(train=..., test=...)` (from
-`data_foundry.v2`), which makes it a sub-sampled version. The container records the budget
-(`experiment_metadata.row_budget`, None without one), the README states it (`splits.row_budget`), and the split
-checks hold the container to it (`splits_train_over_budget` error, `splits_test_over_budget` warning).
+Data Foundry sets no row budget: by default every split uses the full frame and no side is capped. A benchmark's
+budget, `row_budget = RowBudget(train=N, test=M)` (from `data_foundry.v2`), works on the two sides differently
+(issue #70, Lennart 2026-11-10):
 
-TabArena v0.2 sub-samples to 1M train / 500k test rows (Lennart, 2026-10-21: at most 1M training rows). A v0.2
-dataset whose splits, without a budget, have a side over that ships only as a sub-sampled version, whatever the size
-of its frame (nyc_taxi_trip_duration: 1.45M rows, train sides of 1.28M to 1.39M), and `tests/test_v2_datasets.py`
-holds every v0.2 README to it. The version has its own folder and class, `<unique_name>_1m/dataset.py`, with
-`unique_name = "<name>_1m"` and `row_budget = RowBudget(train=1_000_000, test=500_000)`; `curation_comments` says
-why it is sub-sampled. It reads the raw files of `<name>`, its name without the budget suffix, and is saved under its
-own name. The name is `<name>_<suffix>`, the suffix from the train budget (`RowBudget.suffix`: `_1m`; `_10m` for
-`RowBudget(train=10_000_000, test=250_000)`, `_2p5m`, `_300k`), for larger versions in large-data experiments. The
-splits adapt to the budget:
+* **The test side is capped in the container.** Every split tests on at most M rows, drawn at random within its
+  window or fold (stratified, whole groups, or whole time values).
+* **The train side keeps every row available to it.** All history before a temporal window (minus the gap), or
+  every row of an IID or grouped fold outside its test side. N is recorded, not applied: a benchmark sub-samples each
+  train side to N rows before a fit, with `subsample_train(container, repeat, fold)` (from `data_foundry.v2`) or a
+  sampler of its own that keeps the constraints the container records (`experiment_metadata.train_sampling`: what to
+  keep whole, the stratum). A model can so see more history or bring its own sub-sampling, and the sampling can be
+  studied.
+* **The default sampler** (`sample_train_positions`): for temporal data, the newest year before the window, extended
+  back in time until it holds N rows, and a random N of those. A numeric time column gets its year from
+  `Temporal(time_unit=...)`, what one step counts (numerai's eras: `"weeks"`, so 52 eras); a version with a budget on
+  a numeric time column must declare it. Whole groups at random for a grouped task; random rows, stratified, for an
+  IID one. The study
+  behind it (issue #70): the newest N rows lose seasons and weekdays on dense data and changed the model ranking twice,
+  a random N of all history dilutes recent data on long histories, and a random sample of the newest year never lost
+  much and changed no ranking.
 
-* IID or grouped data: a frame above `train + test` rows is sub-sampled to it before splitting (`subsample_frame`:
-  rows stratified on the target, or whole groups). The usual 3-fold splits are built, then each fold tests on up to
-  `test` rows of its third and trains on every other row, at most `train` (`fit_splits_to_budget`; a grouped fold
-  up to whole groups). At 1M / 500k that is plain 3-fold cross-validation on 1.5M rows; at 10M / 250k each fold
-  trains on 10M and tests on 250k rows of a 10.25M-row frame. A test budget above half the train budget is not
-  reached (a fold tests on at most its third). A version whose budget changes nothing (the frame fits and no side is
-  over) is an error: take the dataset fully.
-* Temporal data: the frame is not sampled. The windows (at least 3) are built on the full data, then
-  `sample_temporal_splits` keeps at most `test` rows of each test window and a random `train` of all earlier rows
-  for each train side, drawn in one random order so the train sides overlap; the frame keeps only the rows a split
-  uses. A temporal version whose windows all fit is an error. When the rows of one time value form a cross-section
-  the target or the features are relative to (the 14 coins of a minute), `TemporalSplits(..., sample_by="time")`
-  draws whole time values instead of rows: one random order of the values, each side taking whole values while it
-  stays within its budget (the value that would cross it is dropped), without stratification
-  (g_research_crypto_forecasting_1m; Lennart, 2026-10-22). Random rows would leave about one coin per minute.
-  `sample_by` without a `row_budget` is an error.
+The container records the budget (`experiment_metadata.row_budget`) and the sampling
+(`experiment_metadata.train_sampling`); the README states both (`splits.row_budget`, `splits.train_sampling`). The
+split checks warn on a test side over M (`splits_test_over_budget`) and fail a budget without its sampling
+(`splits_train_sampling_missing`).
 
-The rows a version's sampled test sides leave out are never tested; the coverage check (`splits_rows_never_tested`)
-does not flag them when the container records a budget. A dataset that sets `splits_comment` itself states the
-sub-sampling there.
+TabArena v0.2 uses 1M train / 500k test rows (Lennart, 2026-10-21: at most 1M training rows). A v0.2 dataset whose
+splits, without a budget, have a side over that ships as a version that declares the budget, whatever the size of its
+frame (nyc_taxi_trip_duration: 1.45M rows, train sides of 1.28M to 1.39M), and `tests/test_v2_datasets.py` holds every
+v0.2 README to it. The version has its own folder and class, `<unique_name>_1m/dataset.py`, with
+`unique_name = "<name>_1m"` and `row_budget = RowBudget(train=1_000_000, test=500_000)`; `curation_comments` says why
+it carries a budget. It reads the raw files of `<name>`, its name without the budget suffix, and is saved under its own
+name. The suffix marks the benchmark's N that the container records (`RowBudget.suffix`: `_1m`; `_10m` for
+`RowBudget(train=10_000_000, test=250_000)`, `_2p5m`, `_300k`). The splits adapt to the budget:
+
+* IID or grouped data: the full frame is split into the usual 3 folds; each fold tests on up to `test` rows of its
+  third (stratified, or whole groups) and trains on every other row (`fit_splits_to_budget`). A test budget above
+  a third of the frame changes nothing.
+* Temporal data: the windows (at least 3) are built on the full data, then `sample_temporal_splits` keeps at most
+  `test` rows of each test window; every train side keeps all earlier rows, and the frame drops only the newest
+  window's unsampled rows. When the rows of one time value form a cross-section the target or the features are
+  relative to (the 14 coins of a minute), `TemporalSplits(..., sample_by="time")` draws whole time values instead of
+  rows: one random order of the values, each test side taking whole values while it stays within its budget (the
+  value that would cross it is dropped), without stratification (g_research_crypto_forecasting_1m; Lennart,
+  2026-10-22). Random rows would leave about one coin per minute. The default train sampler then draws whole time
+  values too. `sample_by` without a `row_budget` is an error.
+
+A version whose budget changes nothing (no test side over `test` and no train side over `train`) is an error: take the
+dataset fully. The rows a version's sampled test sides leave out are never tested; the coverage check
+(`splits_rows_never_tested`) does not flag them when the container records a budget. A dataset that sets
+`splits_comment` itself states the test sampling and the train budget there.
 
 ## Families: one parent, several tasks
 
@@ -774,6 +817,9 @@ changed, appeared or went; `raw_files_missing` (error) a pattern that matches no
 | `groups_not_clustered` (info) | rows no closer to their group than chance: compare IID and grouped scores before keeping the grouping |
 | `splits_test_single_class`, `splits_test_target_constant` | a test fold whose metric is undefined: fewer, larger folds or windows, or the task is too small |
 | `splits_test_minority_few`, `splits_test_class_missing` | test folds with under 10 rows of the rarer class, or without some class: widen the windows, merge by convention, or accept with the counts |
+| `splits_train_under_half`, `splits_train_under_floor`, `splits_floor_core` (error) | a window trains on less than half the curated frame's rows (under 30%; or the core of SPLIT-14 breaks): raise an issue for the curator's sign-off with the windows and their shares and an option without them; accept the warning only with the curator's CC date, never on the AI's word |
+| `splits_feature_missing_in_test` | a feature 95% or more missing on one side of a window and at most half missing on the other (read on up to 100k rows a side): a column that stops or starts being recorded within the history. Name it in `curation_comments` and raise it for the curator (drop it, keep it as the deployed model met it, or start the data at the change); accept only with the curator's decision |
+| `time_newest_period_short` | the newest 30 days of a date column hold under 60% of the median rows a day of the 30-day spans before: compare the newest period's target rate with earlier ones; a download or scrape cut before the outcomes were complete is cut off (LEAK-24), a seasonal low or a real decline is accepted with the numbers |
 | `task_target_value_dominant` | one value holds half of a regression target: name the cap, placeholder or zero inflation in `curation_comments`, drop censored rows, or accept with the reason |
 | `meta_tags_*` | tags agree with the split regime |
 | `meta_bibtex_*` | balanced braces, keys defined, `&`, `%`, `_` escaped |
@@ -924,7 +970,7 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
 | Grouped | `airfoil_self_noise/dataset.py`, `early_learning_predictors/dataset.py`, `musk/dataset.py`, `emscad/dataset.py` | `Grouping` with a `definition` citing the source (airfoil: a setup built from two columns, with the source's prediction use quoted; musk: one prediction per molecule, `aggregation="any"`), rule-based leak drops in `_clean`, long feature lists (early_learning), a group id built from the data and an accepted group finding (emscad). |
 | Temporal | `kick/dataset.py` | `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)`, a datetime in `_feature_types`, and `_decisions` with a table and a figure. |
 | Temporal with late labels | `brazilian_ecommerce/dataset.py`, `sf_permit_time/dataset.py` | `_make_splits` training on rows whose label had arrived, with the gap on `Temporal`. |
-| Sub-sampled `_1m` | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | `row_budget = RowBudget(train=1_000_000, test=500_000)` with the name `<name>_1m`, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
+| A `_1m` version (row budget) | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | `row_budget = RowBudget(train=1_000_000, test=500_000)` with the name `<name>_1m`, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
 | Heavy raw data | `acquire_valued_shoppers_challenge/dataset.py` | `prepared_raw_files` + `_prepare_raw_files` (a polars join run once), fixed calendar windows. |
 
 ## What the benchmark harness does with a definition
