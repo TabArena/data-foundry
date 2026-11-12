@@ -73,6 +73,18 @@ CC (2026-11-10, Andrej): marker changed to `Trivial`: a textbook rule, not fitte
 - **What is left without the audiogram:** the 11 case-history answers keep a small signal (log loss 0.713 against 0.762 for the class shares, outside 20 shuffled runs), so "the majority class" above holds for accuracy only; reassessed as a task of its own it has no decision, as the audiogram is the routine first test of a hearing complaint.
 Marker `No Good Target / Scientific Discovery` removed. Evidence: Slurm jobs 1374813 and the rule check of 2026-11-10.
 
+CC (2026-11-11, Lennart): retirement as `Trivial` agreed with Andrej: the rule beats every tuned method (TP-4). On
+the 60 v2 splits the unfitted rule above (calibrated once on each training side for log loss) scores log loss 0.047
+and accuracy 0.995, against 0.187 and 0.940 for tuned logistic regression, 0.239 and 0.927 for RealMLP, and 0.249 and
+0.912 for tuned LightGBM (class shares 0.763), and is at least as good on every split. The data's problems besides:
+- a teaching collection of the Protos expert system (1987), not a series of patients (`Selection Bias`, set since
+  #16);
+- 195 cases with 19 normal ears, about 6 per test fold;
+- most of the 24 original diagnoses have 4 or fewer cases, which is why the definition merged them into 3 types;
+- the coarse air-conduction code reads normal for 46 sensorineural ears, whose loss shows only in the pattern codes.
+Not added: `Data Quality Issue` (damage that cannot be undone, as `selection.md` defines it) and `Too Small` (TP-5:
+about 6 normal ears per test fold; musk was kept with 13).
+
 ## Reference
 
 @incollection{bareiss1990protos,

@@ -70,6 +70,17 @@ CC (2026-11-05, Andrej): retired (`No (Retired)`, `No Signal`): no benchmark met
 - **Why Lennart's keep of 2026-10-06 does not hold:** it rested on tuned methods beating 0.5 on most folds (LightGBM on 44 of 60), which shuffled labels do as well.
 Marker `No Signal`, new for tasks whose methods stay within what shuffled labels give on the split the use case needs. Better data for the task, `ncats_cytotoxicity_profiling`, is screened in its own record.
 
+CC (2026-11-11, Lennart): retirement agreed with Andrej under step 1 of TP-2 (amended 2026-11-11), rechecked with
+tuned models and the whole pipeline, tuning included, on shuffled labels and the 60 v2 splits (20 x 3, random
+molecules):
+- early-stopped LightGBM AUC 0.536 (shuffled labels 0.441 to 0.551, 5th to 95th percentile; p = 0.16), LightGBM tuned
+  over 50 configurations 0.522 (p = 0.18), RealMLP 0.508 (p = 0.38), tuned logistic regression 0.477 (p = 0.59),
+  TabDPT-1.3 0.444 (p = 0.95); the best of the LightGBM and logistic-regression models, picked again on each
+  shuffle, p = 0.22;
+- on shuffled labels these pipelines beat 0.5 on up to 71% to 83% of the splits (95th percentile), and BeyondArena's
+  best methods do so on 73% to 77% (0.539), within that. With 169 molecules a gain of 0.05 AUC cannot be told apart
+  from noise.
+
 ## Reference
 
 @article{gul2021structure,
