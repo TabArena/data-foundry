@@ -13,14 +13,18 @@ from data_foundry.utils.dtypes import is_str_dtype
 
 
 def omit_unset_fields(obj: Any, dumped: Any) -> Any:
-    """Drop the fields of ``obj`` listed in its ``_OMIT_WHEN_UNSET`` from ``dumped`` while they are ``None``.
+    """Drop the fields of ``obj`` listed in its ``_OMIT_WHEN_UNSET`` from ``dumped`` while they are ``None``, and
+    those in its ``_OMIT_WHEN_DEFAULT`` (field name to default) while they hold that default.
 
     Fields added to a metadata class after containers shipped are listed there, so a container that does not set
     them keeps its checksum and its saved JSON.
     """
     omit = getattr(type(obj), "_OMIT_WHEN_UNSET", ())
-    if omit and isinstance(dumped, dict):
-        dumped = {k: v for k, v in dumped.items() if not (k in omit and v is None)}
+    defaults = getattr(type(obj), "_OMIT_WHEN_DEFAULT", {})
+    if (omit or defaults) and isinstance(dumped, dict):
+        dumped = {
+            k: v for k, v in dumped.items() if not ((k in omit and v is None) or (k in defaults and v == defaults[k]))
+        }
     return dumped
 
 
