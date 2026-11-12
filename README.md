@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-12 13:29 UTC: 167 claim(s) (Andrej 135, Lennart 12, Myunghwan 20).
+As of 2026-11-12 17:05 UTC: 168 claim(s) (Andrej 136, Lennart 12, Myunghwan 20).
 
 ## Andrej
 
@@ -134,6 +134,7 @@ As of 2026-11-12 13:29 UTC: 167 claim(s) (Andrej 135, Lennart 12, Myunghwan 20).
 | `superconductivity` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
 | `taiwanese_bankruptcy_prediction` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `thyroid_discordant` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
+| `thyroid_discordant_archive` | review | 2026-11-12 | 2026-11-19 | BeyondArena v0.2 review page (Andrej): rebuild of thyroid_discordant from the archive (its issue 4, option C) |
 | `tour_travels_churn` | review | 2026-11-10 | 2026-11-17 | BeyondArena v0.2 review page (Andrej) |
 | `video_transcoding_time_prediction` | review | 2026-11-11 | 2026-11-18 | BeyondArena v0.2 review page (Andrej) |
 | `wadden_sea_sibes_macoma_abundance` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
