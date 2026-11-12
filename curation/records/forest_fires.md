@@ -78,6 +78,22 @@ CC (2026-11-05, Andrej): retired (`No (Retired)`, `No Signal`): once the leak be
 - **Why the keep of 2026-10-06 no longer holds:** it rested on random splits, which the day grouping overturned (CC 2026-10-19).
 Marker `No Signal`, as for clock_protein_toxicity. Better data for the task, `fpa_fod_attributes_wildfire_size`, is screened in its own record.
 
+CC (2026-11-11, Lennart): retirement agreed with Andrej, now under step 2 of TP-2 (amended 2026-11-11): the signal on
+unseen days is real, but too small to change the use case's decision.
+- **A tuned model finds a signal on unseen days:** on day-grouped splits (the day key FFMC|DMC|DC|ISI, 227 days,
+  20 x 3 folds, inner validation grouped by day), LightGBM tuned over 50 configurations (L1 objective on the log area)
+  beats the training median under the declared MAE in hectares beyond 100 runs of the same pipeline on shuffled
+  labels: MAE 12.69 against 12.71 ha (+0.14%), p = 0.02. Early-stopped LightGBM (-0.05%, p = 0.24) and RealMLP
+  (-3.0%, p = 0.43) do not. `No Signal` by step 1 does not hold: the evidence of 2026-11-05 rested on untuned models
+  and TabPFN-3.5 alone.
+- **The gain changes no decision:** the use case sends crews to the fire that will grow large; 0.02 ha (about 200 m²)
+  per fire against a typical error of 12.7 ha moves no dispatch. A metric closer to the decision, a ranking of the
+  fires of one day, does not fit the data: 115 of the 227 days have one fire and 160 have one or two.
+- **The day grouping holds:** of the 112 days with more than one fire, 9 mix weekdays and 2 mix months (random sets of
+  the same sizes give about 105 and 98); fires of one day have related areas (p = 0.025); grouping by day halves the
+  tuned gain of the random splits (0.29% to 0.14%).
+It supersedes the keep of 2026-10-06. Marker `No Signal` (TP-2, step 2).
+
 ## Reference
 
 @article{cortez2007data,
