@@ -9,8 +9,9 @@ data_foundry_status:
 - BeyondArena
 suggestion: No (Retired)
 decision_markers:
-- Selection Bias
+- No Good Target / Scientific Discovery
 - Not Representative
+- Selection Bias
 tags:
 - Tiny Data
 collections:
@@ -48,9 +49,17 @@ Ransohoff DF, Feinstein AR. Problems of spectrum and bias in evaluating the effi
 
 Islam MMF, Ferdousi R, Rahman S, Bushra HY. Likelihood prediction of diabetes at early stage using data mining techniques. In: Computer Vision and Machine Intelligence in Medical Image Analysis. Advances in Intelligent Systems and Computing, vol 992. Singapore: Springer; 2019:113-125. doi:10.1007/978-981-13-8798-2_12
 
+American Diabetes Association Professional Practice Committee. 2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes—2025. Diabetes Care. 2025;48(Suppl 1):S27-S49. doi:10.2337/dc25-S002
+
+Bang H, Edwards AM, Bomback AS, et al. Development and validation of a patient self-assessment score for diabetes risk. Ann Intern Med. 2009;151(11):775-783. doi:10.7326/0003-4819-151-11-200912010-00005
+
+Lindström J, Tuomilehto J. The diabetes risk score: a practical tool to predict type 2 diabetes risk. Diabetes Care. 2003;26(3):725-731. doi:10.2337/diacare.26.3.725
+
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Islam et al. 2019 report accuracy with precision, recall and F-measure, no unique metric and no threshold or costs (MET-5, MET-6).
 
 CC (2026-11-10, Andrej): stays retired, for several reasons that hold together, not one: the selection bias (69% diabetic, late symptoms such as partial paresis in 57% of positives, negatives mostly men) makes the task not even an approximate fit for early-stage screening; an untrained symptom rule reaching ROC AUC 0.905 is far too high for the noisy real task; and models solving it almost perfectly (TabPFN 3.5 0.972) is unrealistic. Markers `Selection Bias` and `Not Representative`.
+
+CC (2026-11-11, Lennart): retired because no decision is made from these features (USE-2; the fit None, USE-8). The use case was a doctor or an app deciding from a symptom questionnaire whether a person should have a blood-sugar test, but symptoms are not where that decision needs a prediction. A person with the symptoms of high blood sugar this table records (frequent urination, thirst, weight loss, blurred vision) is tested because of them, and the classic ones with one random plasma glucose of 200 mg/dL or more are a diagnosis (ADA 2025). Once the actor holds these inputs, they act on them (USE-2). People without symptoms are screened on risk factors (age, BMI, family history, blood pressure, physical activity: the ADA risk test, Bang et al. 2009; FINDRISC, Lindström and Tuomilehto 2003), of which the table has only age, sex and a yes/no obesity. No other use case fits (USE-9): the diabetes hospital the rows come from can measure blood sugar directly. The screening task is `nhanes_undiagnosed_diabetes` (adults never told they have diabetes, HbA1c at the exam), where methods reach ROC AUC 0.81 to 0.86 (AI assessment in its record) against 0.947 to 0.977 here. Markers: `No Good Target / Scientific Discovery` for the fit None; `Not Representative`, as no testing decision is made from symptoms; `Selection Bias` for the sample (patients of a diabetes hospital, 69% diabetic, 67 of the 78 negatives men, so 80 of the 91 women are positive). The reasons of 2026-11-10 would not retire it on their own: a selection the setting does not share makes the fit approximate (USE-8; eryhemato_squamous_disease and hepatitis_c_prediction kept), the untrained symptom rule (ROC AUC 0.906) stays below the methods and so is no proof of `Trivial` (TP-4), and the tuned methods spread (TP-3: tuned CatBoost above tuned logistic regression on 97% of BeyondArena's 60 folds, +0.022), while a near-saturated score is no reason by itself. This line replaces the reasons of the CC of 2026-11-10.
 
 ## Reference
 

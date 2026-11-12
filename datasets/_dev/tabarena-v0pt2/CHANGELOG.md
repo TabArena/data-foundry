@@ -1,5 +1,13 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)
+
+- Retired because no testing decision is made from a symptom questionnaire (USE-2; the fit None, USE-8). Its hospital
+  sample, the untrained symptom rule and the high scores are no reasons on their own under our rules. The record
+  adds `No Good Target / Scientific Discovery` next to `Not Representative` and `Selection Bias` (Lennart, 2026-11-11;
+  PR #58 comment). The entries of 2026-11-05 and 2026-11-10 below give the earlier reasons. USE-2, USE-8 and the
+  selection-bias pattern in `selection.md` gain the case, and say that a selection alone retires no dataset.
+
 ## 2026-11-11 (night), lung_adenocarcinoma_metastasis: the curator's marks on a second review panel (no container built)
 
 - A second full review panel (at Lennart's ask on PR #75; its reports are in the record's `## Review`): ship after
