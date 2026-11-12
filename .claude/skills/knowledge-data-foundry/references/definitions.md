@@ -269,7 +269,8 @@ A metric input known at the prediction point (a weight that is a function of the
   the frame, is never a feature, and is declared as
   `scoring_columns = (ScoringColumn(column="era", role="group", used_by="mean_group_pearsonr", description="the week a
   row belongs to; the metric is the mean of the per-era correlations"),)`. `feature_columns(container)` returns the
-  model's inputs without the target, the group column and the scoring columns, and `scorer(container)` takes the
+  model's inputs without the target, the group column, the scoring columns and a time column declared no input
+  (`Temporal(..., feature=False)`), and `scorer(container)` takes the
   scoring columns' values by row index: `scorer(container)(y_test, y_pred, test_idx)`. It reads class probabilities
   in the sorted order of the classes (scikit-learn's `classes_`), also for an ordered target, whose declared order
   stays type information; a DataFrame whose columns are the class names is matched by name, and a missing or unknown
@@ -546,6 +547,16 @@ gap and no declared unit does not import, nor does a declared gap the windows al
 (`"minutes"`, `"hours"` or a calendar unit): `TemporalSplits(window=91, unit="days", n_windows=3, gap=15,
 gap_unit="minutes")` leaves 15 minutes for a label known 16 minutes after its row (g_research_crypto_forecasting_1m;
 Lennart, 2026-10-22), stored as `time_gap=15, time_gap_unit="minutes"`.
+
+The time column is a model input unless `Temporal(..., feature=False)` says the actor does not hold it at the
+prediction point: a date that arrives with the target (sdss_17: the date of the spectrum that sets an object's class,
+2026-11-12). The column then stays in the frame, orders and splits the rows and fills the README's split table, and
+the container records `time_is_feature=False` in the task metadata (left out of the checksum while True), so
+`feature_columns(container)` leaves it out; the README states it under Splits. Only a temporal task can set it. What
+decides is whether the actor holds the column at the prediction point (the use-case rules on the prediction point and
+on what is known there, [use_case.md](../../knowledge-curation/references/use_case.md)), not whether the score drops
+without it. A scoring column is no way to hide the time column (`task_scoring_column_is_feature`), nor is dropping it
+in `_make_splits`.
 
 The data arrives sorted by the time column, and `TemporalSplits` builds the convention the bundle checks verify: one
 repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is the newest window, the rest walk back
@@ -1006,6 +1017,9 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
   pkdd_15_taxi_trip_time_prediction_ii_1m, whose only time feature is a datetime, show what is at stake (LightGBM RMSE
   0.357-0.381 with the hour against 0.414-0.441 with AutoGluon's date parts; R^2 0.482-0.503 against 0.452-0.483), and
   checks and probes may use them to test an encoding.
+* A time column declared `Temporal(..., feature=False)` (`task_metadata.time_is_feature` False) is split metadata,
+  never a feature; the harness has to drop it before fitting, as `feature_columns(container)` does (an entry of
+  `BENCHMARK_CHANGES_TODO.md`).
 * A group column is split and scoring metadata, never a feature; the harness drops it before fitting
   (`datasets/_dev/tabarena-v0pt2/BENCHMARK_CHANGES_TODO.md` lists what the harness still needs, such as per-group
   scoring and custom metrics).
