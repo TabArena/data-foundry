@@ -154,7 +154,8 @@ def test_a_scored_group_frame_counts_its_groups_at_any_size() -> None:
 
 def test_a_metric_group_the_split_cuts_across_folds_counts_rows() -> None:
     """A metric group spread over several split groups (a survey year over stations), or over an IID split, is scored
-    on part of its rows in every fold: the rows count, not the groups."""
+    on part of its rows in every fold: the rows count, not the groups.
+    """
     df = runs_frame(1_212, 11)  # 13,332 rows
     df["year"] = df["instance"] % 15  # 15 years, each across many instances and all 10 classes
     assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", score_group_on="year") == (3, 3)
