@@ -2,8 +2,8 @@
 
 The record's facts describe the source; the definition's time basis says why its split fits the use case. A few
 combinations contradict each other whatever the use case, and this test reads every record against its definition so
-that a contradiction shows up when it is written, not only on a review page. A known contradiction that waits for the
-curator is listed in ``PENDING`` with where it is decided; an entry that no longer contradicts must leave the list.
+that a contradiction shows up when it is written, not only on a review page. A known contradiction is listed in
+``PENDING`` with where it is decided or why it stands; an entry that no longer contradicts must leave the list.
 """
 
 from __future__ import annotations
@@ -23,9 +23,9 @@ PENDING = {
     "pricing_game_2017_french_mtpl": "one moment, target later, tagged forced: Review issue 8",
     "distribution_transformers_at_cauca_department": "one moment, target later, tagged forced: Review issue 1",
     "expresso_churn_prediction": "one moment, target later, tagged forced: Review issue 1",
-    "gallstone_disease": "StationaryRelation with the time lost: written exception or forced tag, for the curator",
+    "gallstone_disease": "StationaryRelation with the time lost: a written exception, the curator's call of 2026-11-11",
 }
-"""Records whose contradiction is known and waits for a decision, with where it is decided."""
+"""Records whose contradiction is known: an open review item, or a written exception the curator decided."""
 
 
 def _definition(path: Path) -> tuple[set[str], str]:
