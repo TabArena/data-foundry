@@ -54,7 +54,7 @@ CC (2026-10-19, Andrej): Split changed to scaffold-grouped; keep.
 - Record: `required_split` set to `Grouped (NON-IID)` (was `Random (IID)`, `?`); tag `Non-IID (Grouped)` added.
 
 CC (2026-10-19, Andrej): The source's descriptors lose structure; add MACCS keys before shipping. **For discussion with Lennart**, as it revisits his 2026-10-14 call for every SMILES dataset.
-- Scaffold-grouped ROC AUC, mean of 30 splits (`~/claude_jobs/dia_review/`), by what the SMILES contributes next to the source's 176 descriptors:
+- Scaffold-grouped ROC AUC, mean of 30 splits, by what the SMILES contributes next to the source's 176 descriptors:
 
   | features | LR | RF | boosting | TabPFN 3.5 |
   |---|---|---|---|---|

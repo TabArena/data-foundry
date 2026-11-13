@@ -76,8 +76,7 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
     already in the metric). The sources fixed hard-label decisions (MET-4, MET-6), so the metric stays and the
     threshold becomes part of the method.
 
-  The metrics per dataset, from the metric decisions of 2026-10-21
-  (`local-data-warehouse/_runs/2026-10-21_metrics/decisions.json`; 15 of them wait for the curator, marked `*`):
+  The metrics per dataset, from the metric decisions of 2026-10-21 (15 of them wait for the curator, marked `*`):
 
   | Metric | Kind, prediction | Datasets |
   |---|---|---|

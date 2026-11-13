@@ -10,7 +10,6 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     Temporal,
@@ -113,7 +112,6 @@ class CookingTime1m(AbstractCuratedDataset):
             "28 December-3 January and 14-20 December on 84.8% and 54.2%; SPLIT-14's two tiers admit it."
         ),
     }
-    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_parquet(raw_dir / "cooking_time.parquet")

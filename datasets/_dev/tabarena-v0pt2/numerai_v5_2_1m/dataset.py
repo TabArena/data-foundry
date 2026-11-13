@@ -13,7 +13,6 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     Temporal,
@@ -153,7 +152,6 @@ class NumeraiV521m(AbstractCuratedDataset):
         gap_unit="weeks",
         time_unit="weeks",  # one era is one week (Numerai's weekly rounds)
     )
-    row_budget = RowBudget(train=1_000_000, test=500_000)
     splits_comment = """
         Three test windows of 52 weekly eras (one year) each, newest first: eras 1184-1235, 1132-1183 and 1080-1131. Train is every era before the 4 eras that precede the window (train ends at era 1179 for the window starting at 1184). An era's 20-market-day target resolves about 5 weeks later: the download of 2026-10-06 has targets up to era 1235 and none for 1236-1240, so at era T the newest known target is that of era T - 5. Numerai's v5.2 notebook says to "embargo the first 4 eras following our last train era", but its code skips only 3 eras, so our gap is one era stricter. One year per window: Numerai ranks a model by its one-year average score ("Your model's reputation is just its 1 year average score", which "directly determines the rank of models on the model leaderboard", https://docs.numer.ai/numerai-tournament/scoring) and advises retraining at major data releases ("it's usually best to re-train your models when major versions are released", https://docs.numer.ai/numerai-tournament/data), so a model fit before the window predicts 52 weekly eras; participants refit anywhere from weekly to once per release (https://forum.numer.ai/t/how-often-do-you-re-train-your-model/8164). A year also holds every season. The newest window always stays, and the two before it walk back from it because the 2,376 features are v5.0's set of July 2024 (about era 1125) and Numerai builds its features with the targets of the eras it has, so an older window would test on eras that shaped the features: the three newest years lie as close to that date as three one-year windows allow, though not after it (45 of the 52 eras of the oldest window, 1080-1131, come before it). Windows that keep at least half the rows for training reach back to era 716 (51.4%); the curator kept the three newest years on 2026-11-10. Each test window keeps all its rows (327,025 to 361,712, under the 500k budget); each train side holds every era before the gap, and a benchmark sub-samples it to 1M rows before a fit (`subsample_train`: the newest year of eras, extended back in time until it holds 1M rows, here the newest 151 to 159 eras); the frame keeps every row. Inner validation (tuning, early stopping) must be era-blocked with a 4-era gap as well: a stock's 20-day targets overlap for 3 eras, so on the newest train side a random hold-out gives LightGBM a per-era correlation of 0.040 (t 16.8), against 0.004 (t 1.1) on the last 52 train eras after a 4-era gap.
     """

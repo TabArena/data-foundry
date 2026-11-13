@@ -13,7 +13,8 @@ review file to touch.
 Name the repository, the branch and its `.venv/bin/python`; that nothing is committed, built or pushed; that only the
 named datasets are touched; the thread caps (`OMP_NUM_THREADS=8` for a heavy run); and the run folder
 `local-data-warehouse/_runs/<date>_<round>/` for evidence and scratch output, each agent under its own name
-(`apply_<agent>.md`, never a shared file name). Then, per dataset:
+(`apply_<agent>.md`, never a shared file name), never named in a record, a definition or the CHANGELOG. Then, per
+dataset:
 
 1. **`dataset.py`:** the change the mark and its `**Notes for the AI:**` give, exactly (for windows: the `temporal`
    declaration with the cutoffs newest first; for a custom split only what the notes say). Rewrite every text the
@@ -31,6 +32,8 @@ named datasets are touched; the thread caps (`OMP_NUM_THREADS=8` for a heavy run
        <cutoffs or the newest N>) is checked, <why, from H's verdict>.` This opening is what the page reads.
      - for the metric, when the round marked it: `CC (<date>, <curator>): the declared metric (<name>) is checked,
        ...`
+     - for the split, when the round marked it: `CC (<date>, <curator>): the declared split (<regime> on <columns>,
+       <folds>) is checked, ...`
      - one `**Assessment (AI, <date>):**` line with the evidence (counts, shares).
    - `## Review`, with exact-string edits of the current record file (the Edit tool, after the save above), or through
      `record.review` in the same load and save; never by saving a record loaded before:

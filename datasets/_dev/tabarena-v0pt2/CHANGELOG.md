@@ -8,6 +8,86 @@
   PR #58 comment). The entries of 2026-11-05 and 2026-11-10 below give the earlier reasons. USE-2, USE-8 and the
   selection-bias pattern in `selection.md` gain the case, and say that a selection alone retires no dataset.
 
+## 2026-11-12, horse_colic_survival: one unit for total_protein, random horses grouped by case (Andrej; no container built)
+
+Reopened after Lennart's question (back to a random split; harmonise the recording, or retire).
+
+- Recording harmonised (CLEAN-21), replacing the exception of 2026-11-10: `total_protein` above 15 (g/L, 95 horses)
+  divided by 10 to the codebook's g/dL; the later recording's 1/2 codes in `abdominocentesis_total_protein` and
+  `nasogastric_reflux_ph` (55 cells) set to missing. Kept as recorded, untuned logistic regression scored the window
+  that first meets the new unit at log loss 2.126 against 0.761 harmonised; LightGBM and TabPFN 3.5 did not change
+  beyond noise.
+- Split: stratified grouped 20 x 3 folds on `case_number` in place of the three windows of 57 horses; `Temporal`
+  removed, `case_number` is the split's group and no longer a feature (20 features, from 21). Along the case-number
+  order survival is flat (62.2% against 62.8%, Fisher p = 1.0), and the 60 horses at positions 200 to 259, each
+  trained once on its history and once on as many random horses, score +0.020 log loss from their history for TabPFN
+  3.5 (95% interval -0.034 to +0.080), -0.008 for logistic regression and +0.016 for LightGBM. Grouping keeps the 10
+  return visits of 9 horses on the side of their first visit.
+- Guidelines: the CLEAN-21 exception row becomes an applied row; LEAK-13's horse colic case reads "re-targeted, then
+  the unit harmonised". Record: `Grouped (NON-IID)`, `Non-IID (Grouped)`, the exception line removed, two CCs and an
+  Assessment, the 2026-10-21 evidence pointer names the curation notes.
+
+## 2026-11-12, asp_potassco_classification and sat11_hand_algo_runtime: the split count moves to its own PR (no container built)
+
+Lennart, 2026-11-12: the split count in scored units (rule SPLIT-33, `recommended_dimensions` counting the metric's
+groups) leaves this PR for one of its own, to be decided with the other grouped datasets; this PR keeps the two
+datasets' changes.
+
+- `asp_potassco_classification` and `sat11_hand_algo_runtime`: issue 2 of each, the split count, is deferred and
+  reopens in that PR; the records' CC lines on it are replaced by one that says so. Under the protocol on main the
+  two datasets count their rows: 13,332 rows give asp 3 x 3 splits, 1,840 rows give sat11 10 x 3. `dataset check`
+  re-run on both, README regenerated.
+- The rule SPLIT-33 in splits.md, its sentence in definitions.md, the code and its tests, and the new issue 10 of
+  `huesken_sirna_efficacy` and `protein_model_quality_rf_pcp` go with the split count.
+- The pointers to local job folders in asp's record are removed (the rule of 2026-11-11); the facts around them stay.
+
+## 2026-11-12, the collection sets the row budget (no container built)
+
+Lennart, 2026-11-12: TabArena v0.2's budget (1M train, 500k test rows per split) is the collection's, set once and
+checked by the build and by the collection, instead of a declaration in each definition that only a test of the
+READMEs held to.
+
+- `collection.py` (new, next to the dataset folders) sets `row_budget = TABARENA_V0PT2_ROW_BUDGET`
+  (`data_foundry.collections`). A definition declares no budget: a `<name>_1m` version gets the collection's by its
+  name. The build refuses a dataset whose splits have a side over the budget without the suffix (it names the folder
+  to make), and, as before, a `_1m` version whose splits keep within it.
+- `DatasetCollection(row_budget=...)`: once the v0.2 collection is registered, `verify=True` and
+  `check_collection_bundles.py` hold every container to the budget (`budget_findings`: a test side over 500k rows, a
+  train side over 1M without the budget recorded, another budget, a budget without its train sampling).
+- The 18 `_1m` versions drop their `row_budget` line and get the same budget by their name (Lennart, 2026-11-12:
+  across claims); a definition in the collection that declares a budget is refused. No split changes.
+- knowledge-data-foundry `references/split_protocol.md` (new) documents the path from a definition to the fit as a
+  decision tree, with worked examples, the guards and where each number is set; `README.md`, `GETTING_STARTED.md`
+  and `definitions.md` link it.
+
+## 2026-11-12, repeats follow the units at every frame size (no container built)
+
+Lennart, 2026-11-12: every IID and grouped task gets 3-fold cross-validation, so at least 3 splits, and its number of
+repeats follows its units (rows, or groups for `per_group` labels) whatever the size of the frame. A row budget only
+caps the sides after the split.
+
+- The v2 protocol drops its 1.25M-row cap (`SINGLE_REPEAT_ROWS`), which gave a frame of that size one repeat however
+  few its groups. Counted by rows, 375k rows already give one repeat, so only a large frame counted by groups changes:
+  `fraud_detection_in_electricity_and_gas_consumption_1m` (1,862,650 invoices of 81,531 clients) gets 3 repeats, 9
+  splits, at its next build, each still testing on at most 500k rows; `amex_non_iid_1m` (458,913 customers) keeps one.
+- Library: `subsample_frame` is gone (no caller since the 2026-11-10 entry: a budget applies after the split), the
+  `splits.py` docstring describes that order, and the split tests pin the builders' splits by a checksum instead of
+  comparing them with the v1 helpers.
+- The shipped `_1m` containers still predate the 2026-11-10 entry (frames cut to 1.5M rows before the split); their
+  READMEs change at the next build.
+
+## 2026-11-11, no local paths in committed text (no container built)
+
+Lennart, 2026-11-11: a pointer to a folder that only one machine has (a run folder of the local warehouse, a job folder
+in someone's home) is no evidence for anyone else. Committed text now names no local path; the evidence goes into the
+text and a script worth keeping into the repository (knowledge-data-foundry, house rules; `tests/test_no_local_paths.py`).
+
+- The pointers are removed, the facts around them stay: 12 records (the comments of 10, the reviews of 3), this
+  CHANGELOG (7 entries), the cross-dataset `REVIEW.md` (one item), `BENCHMARK_CHANGES_TODO.md`, `metrics.md` and two test
+  docstrings; a script's hard-coded warehouse path now resolves from the repository.
+- `drug_induced_autoimmunity_prediction`: two notes of `curation_comments` lose their pointer (text only, the data are
+  unchanged; the text is part of the checksum, so its README has a new one). Its build was stale before.
+
 ## 2026-11-11 (night), lung_adenocarcinoma_metastasis: the curator's marks on a second review panel (no container built)
 
 - A second full review panel (at Lennart's ask on PR #75; its reports are in the record's `## Review`): ship after
@@ -270,6 +350,14 @@ horizon (...) is checked". The README files follow at the next `dataset check`; 
   alfa_battle_2_0_task_2, `"quarters"` for mortgage. Their frames and splits are unchanged; their containers carry
   the field at the next check.
 
+## 2026-11-11, sat11_hand_algo_runtime: PAR10 alone picks the solver (nothing rebuilt)
+
+- `sat11_hand_algo_runtime` (issue 4, B): PAR10 alone picks the solver: the grouping declares `prediction_unit="row"`
+  and no aggregation instead of `select_min`, so a tie counts as the mean of the tied solvers' costs, as in
+  asp_potassco_classification. Trained models score the same (no tie on the 60 splits); a constant prediction 18,539 s
+  instead of 19,140 s. `dataset check` 0 errors, README regenerated, record CC line; definitions.md no longer names
+  sat11 as declaring `select_min`. Nothing rebuilt.
+
 ## 2026-11-11 (evening), lung_adenocarcinoma_metastasis reviewed (Andrej; no container built)
 
 - A full review panel (claim, column and split audits, a pathologist's view, a blind reviewer, a task gamer, a
@@ -298,6 +386,19 @@ horizon (...) is checked". The README files follow at the next `dataset check`; 
   metastases per test fold). A new record, since rows, target and values changed (PROV-14, as coad and aeolus);
   lung_cancer stays retired for the histology, with a CC line pointing here. Cases rows under USE-1 (rewritten),
   TP-5 and PROV-14 (new); tcga_lung_histology's assessment notes the new dataset.
+
+## 2026-11-10, `sepsis_survival_minimal_clinical_records` retired as `Trivial` (Andrej; no container built)
+
+- A clinician's rule, age plus five years for men, not fitted, reaches ROC AUC 0.7059 on the 9 shipped splits against
+  0.7068 for TabPFN 3.5 and 0.7065 for the best train-only smoother; the best achievable ranking is estimated at about
+  0.709. Under the amended TP-4 that is a match, which makes the dataset a candidate to drop; the retirement is a
+  curator call on top of that: the task is almost solved (TabPFN within about 0.002 of the best achievable) and very
+  simple (+0.0024 ROC AUC over age alone, too small to matter in practice).
+- The record is `No (Retired)` with `Trivial` and a CC line, `v2_path` is cleared and the folder is removed; the TP-4
+  case row and case list and the evidence.md example are updated.
+- Restated on 2026-11-12 (Lennart): paired per split the methods lead the rule on 8 or 9 of 9 splits, so under TP-4 as
+  amended that day this is not a match but a real gain too small for any decision (step 2, the curator's call); the
+  record's CC line, the case row and the evidence.md example say so. The record adds `Not Representative`.
 
 ## 2026-11-10, lung_cancer retired (Andrej; no container built)
 
@@ -1019,12 +1120,78 @@ noaa_storm's definitions now differ from any build.
   the Flash Flood duration carries much of the skill (+31% to +102% of the deviance on its rows when blanked; B, keep
   with a note, recommended).
 
+## 2026-11-06, asp_potassco_classification and sat11_hand_algo_runtime: Andrej's marks, third round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 2, B confirmed): the split count follows the units the metric scores, for every
+  dataset: new rule SPLIT-33 in splits.md (with its Cases row) and the same wording in definitions.md; this dataset
+  10 x 3. `sat11_hand_algo_runtime`: `dataset check` now gives 20 x 3 (184 instances), README regenerated, record CC
+  line; its container keeps 10 x 3 until the next build. Andrej's question on the 600 s timeouts and the log scale is
+  being answered as new issues.
+- `sat11_hand_algo_runtime` (issues 1-3: ship, 20 x 3, A) and `asp_potassco_classification` (issue 3, A): timed-out
+  runs stay at the recorded limit in the log target (5,000 s and 600 s), since it is the value ASlib records and how to
+  treat a censored run is left to the models; the reason, with the measured effect of the PAR10 charge, is in both
+  definitions' curation notes and records. `dataset check` 0 errors on both (the known constant-column warning each).
+- `sat11_hand_algo_runtime` (new issue 4, no definition change): the grouping's `select_min` chooses the solver
+  before PAR10 does and breaks a tie by the order of the rows, where PAR10 counts tied picks as their mean. The
+  trained models never tie (0 of 3,680 test instances over the 60 splits); a constant prediction scores 19,140 s
+  against 18,539 s. Dropping the aggregation recommended. definitions.md now describes both layouts of algorithm
+  selection (instances held out; a larger group held out, the instance the metric's `group` scoring column). Open.
+- `sat11_hand_algo_runtime` (Andrej: a decision item for every suggested change): new issue 2 (20 x 3 splits under
+  SPLIT-33, recommended) and issue 3 (a timed-out run counted as the recorded 5,000 s or the 50,000 s PAR10 charge;
+  the charge recommended, every model 17-19% better); `asp_potassco_classification` issue 3 narrowed to that dataset
+  (recorded 600 s recommended). No definition change.
+- `asp_potassco_classification` issue 4 resolved: the log scale kept (also in sat11_hand_algo_runtime). Issue 3 answered
+  on Andrej's principle (the target as the source records it, unless a change clearly benefits all models equally; the
+  scoring from the domain): ASlib records every timeout at the limit (600 s, 5,000 s), so the shipped target is not
+  adapted; the PAR10 charge clears the bar only in sat11 (all four models 17-19% better). Open.
+  `sat11_hand_algo_runtime` issue 1: Andrej's question answered (affected: 20 x 3 splits, the log scale; the timeout
+  target follows asp issue 3). Open.
+- `asp_potassco_classification` (new issues 3 and 4, Andrej's question, no definition change): the target of a
+  timed-out run (the 600 s limit, the 6,000 s PAR10 charge, a censored model, a timeout classifier, or no timeouts in
+  training) and its scale (log seconds against raw seconds, log1p, the PAR10 cost, the rank or the runtime relative to
+  the instance's fastest), measured by the PAR10 of the pick on the shipped splits and on sat11_hand_algo_runtime's 60.
+  Recommended: a timeout at 10 x the limit in both datasets (no measurable change here, 17-19% better picks on sat11),
+  the log kept. Open.
+
+## 2026-11-05, asp_potassco_classification: Andrej's marks on the v0.2 review page, second round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 2, B): the split protocol counts the units a metric scores. When the metric has
+  a group input, `recommended_dimensions` counts its groups instead of the rows, so 1,212 instances give 10 x 3 splits
+  instead of 3 x 3; `dataset check` 0 errors. The task summary now says 32 of the 96 problem classes per test fold (was
+  27 to 36). The same count moves `sat11_hand_algo_runtime` from 10 x 3 to 20 x 3 at its next build (184 instances);
+  open for confirmation in issue 2, with the rule amendment proposed there.
+
+## 2026-11-04, asp_potassco_classification: Andrej's marks on the v0.2 review page, first round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 1, B): reframed as runtime regression, as sat11_hand_algo_runtime: one row per
+  instance and clasp configuration (13,332 rows), the log runtime as target with timeouts at 600 s, `algorithm`
+  categorical, the anonymised `instance_id` a scoring column; scored by PAR10 (`par_k`, cutoff 600, k 10, the source's
+  metric) instead of log loss on the fastest label; ASlib's feature costs left out. `dataset check` 0 errors, task
+  probes no flag. The split protocol now gives 3 x 3 splits instead of 10 x 3: new issue 2. The rename waits until the
+  review page is done.
+
+## 2026-11-04, asp_potassco_classification issue 1 answered (no definition changed)
+
+- Andrej asked whether option B (runtime regression, as sat11) or C (the fastest label, scored by the chosen
+  configuration's runtime) serves the use case better. The answer in its `REVIEW.md` recommends B: only B lets a model
+  learn the timeouts that make up 96% of the user's loss, and it works with the framework as it is (a prototype split
+  by problem class with PAR10 per instance), while C needs a change of the metric spec. Each model trained both ways
+  on the 30 shipped splits (Slurm) favours neither: LightGBM and the forests pick better as in B, k-nearest
+  neighbours, the linear model and TabPFN as in C, and no method reliably beats always running the configuration most
+  often fastest in training. The issue stays open.
+
+## 2026-11-04, asp_potassco_classification and sat11_hand_algo_runtime: open questions in REVIEW.md for Andrej's review
+
+- A `REVIEW.md` in both folders, two of the 108 written for the BeyondArena v0.2 review page, without a panel, from
+  the evidence gathered so far: the records, earlier experiments and model runs on the shipped data. Both records carry
+  a `priority` and an `**Assessment (AI, 2026-11-04):**` line with its factors.
+
 ## 2026-11-06, PR #47: re-review under the exposure rules (no container built)
 
 Seventeen of the twenty datasets the exposure rework touched went through the review panel again under LEAK-41 and
-MET-14 to MET-16 (full panel where the definition changed, focused elsewhere; run folder
-`_runs/2026-11-06_exposure_review/`, not committed); the three Kaggle datasets wait for their data. Each of the
-seventeen REVIEW.md files has a new `**Review panel:**` block (the old one kept in the run folder and in git) and its
+MET-14 to MET-16 (full panel where the definition changed, focused elsewhere); the three Kaggle datasets wait for their
+data. Each of the seventeen REVIEW.md files has a new `**Review panel:**` block (the old one kept in the run folder and
+in git) and its
 new questions as open issues; each record has the panel's Assessment line. The changes below need no decision.
 
 - `fremtpl2`: text only (the LEAK-41 report on the declared metric, the duplicate counts, the 19-row rating profile in
@@ -1171,7 +1338,6 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
 - READMEs of the 17 regenerated by `dataset check` (0 errors, 0 warnings; new checksums, since the budget is part of
   the metadata); nothing rebuilt. `GETTING_STARTED.md` and `BENCHMARK_CHANGES_TODO.md` say how v0.2 uses the budget.
 
-
 ## 2026-11-05, a retirement of 2026-10-27 carried out
 
 - A record Andrej set to `No (Retired)` on 2026-10-27: its folder is removed and `v2_path` cleared. `DF: Yes`, the
@@ -1231,6 +1397,8 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
   (2026-10-27) and the October reviews. Comments only, the data are unchanged; the text is part of the checksum.
   - Fixed earlier, now documented: Turkey's separate source (biogeographical, the class is dropped); the donors' and
     patients' precision conventions and ALP (hepatitis_c, seven labs rounded, ALP dropped).
+  - Changed (2026-11-10): hepatitis_c also drops ALT, recorded another way for most patients (median 4.9 to 12.8 U/L
+    in the 57 patients with ALP, below the donors' 23.1); six labs stay rounded. Its data change: 10 features, from 11.
   - Not harmonised yet, open: horse colic's `total_protein` units (the unit alone tells died from euthanized, ROC AUC
     0.79; one unit for all rows raises TabPFN 3.5's log loss from 0.682 to 0.724).
   - Kept with a note: lung cancer's 47 replicate-averaged adenocarcinoma rows and its spike-in control probes; neither
@@ -1903,8 +2071,7 @@ a declared spectrum is in scope unless a spectrum model is clearly better (SEL-1
   | Logistic regression | 0.663 | 0.646 (26/60) | 0.708 |
 
   The default stays the published workflow; PR #21's log suits TabPFN and the linear models better, which is one
-  decision for all raw mass spectra (open with the curator). TabPFN ran on one GPU (SkyPilot managed job 29360);
-  scripts and per-split results in `local-data-warehouse/_runs/2026-11-02_spectra/`.
+  decision for all raw mass spectra (open with the curator). TabPFN ran on one GPU (SkyPilot managed job 29360).
 - **Benchmark:** `BENCHMARK_CHANGES_TODO.md`, "Spectra (feature groups)".
 - Not rebuilt; both builds were already stale.
 
@@ -2144,9 +2311,9 @@ loads: every shared column is identical on every row, so the link needs no key.
   words; a score or rating with no words per level, or words only at its two ends, is a number; bands keep their band
   text. CLEAN-12 and CLEAN-14 amended; `decode(df, CODE_LABELS)` in the v2 API (a code without a label raises), after
   `set_missing`.
-- Six agents read the codebooks for every coded column of 44 definitions
-  (`local-data-warehouse/_runs/2026-10-30_ordinal/decode/`). In 29 definitions 377 coded columns now carry their
-  words (BI-RADS density "almost entirely fatty" to "extremely dense", ames' ratings "very poor" to "very excellent",
+- Six agents read the codebooks for every coded column of 44 definitions. In 29 definitions 377 coded columns now
+  carry their words (BI-RADS density "almost entirely fatty" to "extremely dense", ames' ratings "very poor" to "very
+  excellent",
   the ANES codes, coil_2000's percentage and guilder bands,
   early_learning_predictors' answers), and 54 scores and ratings are numbers again (california_house_prices_2020's
   school ratings, miami_housing's `structure_quality`, eryhemato_squamous_disease's ten findings, student_portuguese's
@@ -2283,9 +2450,9 @@ loads: every shared column is identical on every row, so the link needs no key.
   missing. The container already kept the order; the README lists ordinal columns with their levels. An ordinal
   column may also be named among the categorical ones.
 - 220 ordinal scales in 39 definitions are ordered categories now, in the order of each source's codebook (often not
-  the order of the codes): seven agents read the codebooks for 1,980 candidate columns of 95 datasets
-  (`local-data-warehouse/_runs/2026-10-30_ordinal/`). anes_voting_2026's 20 likes-dislikes indices and counts are
-  numbers. Codes outside a scale that mean unknown (don't know, refused, not asked, undocumented codes) are missing.
+  the order of the codes): seven agents read the codebooks for 1,980 candidate columns of 95 datasets.
+  anes_voting_2026's 20 likes-dislikes indices and counts are numbers. Codes outside a scale that mean unknown (don't
+  know, refused, not asked, undocumented codes) are missing.
   Left unordered, for the curator's review board: 39 columns with a level outside the scale that is a state of its own
   (no basement, not prescribed, no checking account), partial orders, cycles and orders of low confidence. Left as
   they are: 167 ordinal scales shipped as numbers (point 3) and 22 codes shipped as numbers (point 4).
@@ -2350,7 +2517,7 @@ loads: every shared column is identical on every row, so the link needs no key.
   fragments N-073 and C-026, which count the atoms of that type (0 to 3 and 0 to 12); the definition had typed them
   categorical while their meaning was unknown. The curation note on "numeric-ordinal" features is replaced. CC line in
   the record, CLEAN-14 Cases row. `dataset check`: 0 errors, 0 warnings. Not built.
-- The sweep, once, over the 163 definitions (outputs in `local-data-warehouse/_runs/2026-10-30_dtype_sweep/`): 489
+- The sweep, once, over the 163 definitions: 489
   flagged columns in 48 datasets, 358 of them only `numeric_levels` (codes, ids). Beyond the two datasets above,
   the findings went to the curator and nothing else changed here: `early_learning_predictors` (45 counts and amounts
   typed categorical, with Stata missing codes `.a` and `.b` among the numbers), counts with open ends typed
@@ -2433,7 +2600,6 @@ Myunghwan: "yes, ship" after review-added-datasets. Accepted the 21,199-row, 13-
 - Applied Myunghwan's 2026-10-29 review answers for `chicago_traffic_crashes_1m`: accepted final-snapshot injury labels and closer-to-fact scene framing; accepted the physical-device-MISSING warning. Recorded the dataset-specific SPLIT-10 exception without changing the rule. Speed discussion and final inclusion remain open; data, features and splits are unchanged. No build or commit.
 - Revised `chicago_traffic_crashes_1m` on 2026-10-29: restored five physical-condition fields by Myunghwan direction with measured availability risk and explicit LEAK-10/38 disagreement. Affected checks/probes and focused independent review completed for the 21-input recipe. One source-semantic warning is proposed for acceptance; final inclusion and build remain undecided.
 - Prepared `chicago_traffic_crashes_1m` for review of the curator-authorized approximate five-class injury task: 16 scene/context inputs, hourly event time, notification-eligible quarterly training, original-source copy removal and log loss. Five condition fields are withheld for conditional recording concerns; outcome/report/investigation fields remain excluded. Native checks and independent panel evidence support review; final surrogate decisions remain open. No container build, warning acceptance, source commit or publication.
-
 
 Every change to this folder gets an entry here, newest first: edited definitions or helper files, added or removed
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
@@ -2574,7 +2740,7 @@ record, audit or PR that motivated it.
 - `drug_induced_autoimmunity_prediction`: `SMILES` is kept as a string feature instead of being dropped (177
   features instead of 176; 587 rows and the scaffold groups unchanged). The source's descriptors lose structure a
   model can use: next to them, MACCS keys computed from the SMILES lift the scaffold-grouped ROC AUC of TabPFN 3.5
-  from 0.803 to 0.826 and of a random forest from 0.770 to 0.795 (`~/claude_jobs/dia_review/`), so we ship the
+  from 0.803 to 0.826 and of a random forest from 0.770 to 0.795, so we ship the
   string rather than one chosen fingerprint. This overrides, for this dataset only, the 2026-10-14 rule of dropping
   the SMILES in every SMILES dataset.
 - `drug_induced_autoimmunity_prediction`: `dataset_identifier_column` accepted (one SMILES per row): the structure
@@ -2940,8 +3106,7 @@ consistency checks in the folder's `REVIEW.md` and are not applied yet. Nothing 
   AUC 0.888, 0.906 and 0.739 against 0.913, 0.914 and 0.708). BeyondArena datasets; the shipped notebooks and
   collection pins are unchanged, and their containers and raw files stay in the warehouse.
 - Records: `heart_statlog` is `No` + `Duplicate` (all 270 rows are Cleveland rows with the same label). Andrej's
-  review in [`curation/records/heart_disease.md`](../../../curation/records/heart_disease.md); evidence in
-  `~/claude_jobs/heart_pool/`.
+  review in [`curation/records/heart_disease.md`](../../../curation/records/heart_disease.md).
 - `heart_disease` declares the metric the three sites declared on `main` (roc_auc fallback, accepted by Lennart
   2026-10-21 for the heart_disease datasets).
 

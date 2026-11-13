@@ -5,9 +5,9 @@ Every ``datasets/_dev/tabarena-v0pt2/<name>/dataset.py`` is discovered and check
 * always: the class imports and validates (one test per folder, so a half-filled scaffold fails its own test and not
   the collection of all the others), and its ``README.md`` belongs to it (skipped while ``dataset.py`` holds a
   ``TODO(verify)`` marker, i.e. a definition waiting for its rebuild);
-* always: its splits keep TabArena v0.2's row budget (:data:`V0PT2_ROW_BUDGET`, from the README): every test side
-  within 500k rows, and every train side within 1M unless the dataset is a ``_1m`` version that declares the budget
-  (whose train sides a benchmark sub-samples to 1M);
+* always: the working copy's ``collection.py`` sets TabArena v0.2's row budget, and the README keeps it: every test
+  side within 500k rows, and every train side within 1M unless the dataset is a ``_1m`` version, which gets the budget
+  by its name (whose train sides a benchmark sub-samples to 1M);
 * with ``DATA_FOUNDRY_V2_DATA_CHECKS=1`` and the raw data in the warehouse: a fresh ``check()`` gives the
   checksum recorded in ``README.md`` (the definition has not drifted from its evidence). This reads the
   full data, so it is opt-in.
@@ -21,7 +21,9 @@ import re
 from pathlib import Path
 
 import pytest
-from data_foundry.v2 import RowBudget, discover_datasets, load_definition, read_report
+from data_foundry.collections import TABARENA_V0PT2_ROW_BUDGET as V0PT2_ROW_BUDGET
+from data_foundry.v2 import discover_datasets, load_definition, read_report
+from data_foundry.v2.dataset import collection_row_budget, effective_row_budget
 
 ROOT = Path(__file__).resolve().parents[1] / "datasets" / "_dev" / "tabarena-v0pt2"
 FOLDERS = sorted(path.parent.name for path in ROOT.glob("*/dataset.py")) if ROOT.is_dir() else []
@@ -29,10 +31,6 @@ REGISTRY = discover_datasets(ROOT, strict=False) if ROOT.is_dir() else {}
 DATA_CHECKS = os.environ.get("DATA_FOUNDRY_V2_DATA_CHECKS") == "1"
 PENDING_ERRORS: tuple[str, ...] = ()
 """Bundle-check errors a README may record (none: every definition declares its `Metric`)."""
-V0PT2_ROW_BUDGET = RowBudget(train=1_000_000, test=500_000)
-"""TabArena v0.2 trains on at most 1M and tests on at most 500k rows per split (Lennart, 2026-10-21). Data Foundry
-sets no budget, so the collection holds its own here: a dataset over it ships as a ``_1m`` version declaring it, whose
-test sides the container caps and whose train sides a benchmark sub-samples (issue #70)."""
 
 
 def test_registry_is_not_empty() -> None:
@@ -72,24 +70,25 @@ def test_definition_has_its_report(name: str) -> None:
 
 @pytest.mark.parametrize("name", sorted(REGISTRY))
 def test_splits_keep_the_v0pt2_row_budget(name: str) -> None:
-    """Every split of the README tests within v0.2's budget, and trains within it unless the dataset declares the
-    budget (a benchmark sub-samples those train sides); a version declares exactly that budget.
+    """Every split of the README tests within v0.2's budget, and trains within it unless the dataset is a ``_1m``
+    version, which gets the collection's budget by its name (a benchmark sub-samples those train sides).
     """
     ds = REGISTRY[name]()
-    assert ds.row_budget in (None, V0PT2_ROW_BUDGET), f"{name}: v0.2 uses {V0PT2_ROW_BUDGET}"
+    assert collection_row_budget(type(ds)) == V0PT2_ROW_BUDGET, f"{name}: `collection.py` sets {V0PT2_ROW_BUDGET}"
+    budget = effective_row_budget(type(ds))
     report = read_report(ds.report_path)
     if not report:
         pytest.skip("no README.md yet")
     splits = report["splits"]
-    if ds.row_budget is None:
+    if budget is None:
         assert splits["n_train"]["max"] <= V0PT2_ROW_BUDGET.train, (
-            f"{name}: a split trains on {splits['n_train']['max']:,} rows; make a `{name}_1m` version with "
-            f"`row_budget = {V0PT2_ROW_BUDGET}`"
+            f"{name}: a split trains on {splits['n_train']['max']:,} rows; rename it `{name}_1m`, the version that "
+            "gets the collection's budget"
         )
     assert splits["n_test"]["max"] <= V0PT2_ROW_BUDGET.test, f"{name}: a split tests on {splits['n_test']['max']:,}"
-    if ds.row_budget is not None:
-        assert splits.get("row_budget") == {"train": ds.row_budget.train, "test": ds.row_budget.test}, (
-            f"{name}: README.md predates its `row_budget`; re-run `dataset check`"
+    if budget is not None:
+        assert splits.get("row_budget") == {"train": budget.train, "test": budget.test}, (
+            f"{name}: README.md predates its row budget; re-run `dataset check`"
         )
 
 

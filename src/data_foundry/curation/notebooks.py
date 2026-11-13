@@ -28,7 +28,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from data_foundry.collections import get_collection, list_collections
+from data_foundry.collections import collection_file_budget, get_collection, list_collections
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation.store import load_all, save_record
 
@@ -182,8 +182,8 @@ def resolve_v2_definition(record: CurationRecord, datasets_dir: str | Path | Non
     """Repo-relative path of the record's v2 definition in the TabArena v0.2 working copy, or None.
 
     ``<name>/dataset.py`` first; otherwise the one version of it sub-sampled to a row budget, a
-    ``<name>_<suffix>/dataset.py`` (``_1m``, ``_10m``, ``_2p5m``, ``_300k``) that declares ``row_budget`` (it replaces
-    the full-size dataset in the working copy).
+    ``<name>_<suffix>/dataset.py`` (``_1m``, ``_10m``, ``_2p5m``, ``_300k``) named after the working copy's budget
+    (its ``collection.py``) or declaring ``row_budget`` (it replaces the full-size dataset in the working copy).
     """
     root = resolve_curation_root().parent
     base = (Path(datasets_dir) if datasets_dir is not None else root / "datasets").parent
@@ -191,10 +191,12 @@ def resolve_v2_definition(record: CurationRecord, datasets_dir: str | Path | Non
     exact = tree / record.unique_name / "dataset.py"
     if exact.is_file():
         return exact.relative_to(base).as_posix()
+    budget = collection_file_budget(tree)
     variants = [
         p
         for p in sorted(tree.glob(f"{record.unique_name}_*/dataset.py"))
-        if _BUDGET_SUFFIX.fullmatch(p.parent.name[len(record.unique_name) + 1 :]) and "row_budget =" in p.read_text()
+        if _BUDGET_SUFFIX.fullmatch(suffix := p.parent.name[len(record.unique_name) + 1 :])
+        and ((budget is not None and suffix == budget.suffix) or "row_budget =" in p.read_text())
     ]
     if len(variants) == 1:
         return variants[0].relative_to(base).as_posix()
