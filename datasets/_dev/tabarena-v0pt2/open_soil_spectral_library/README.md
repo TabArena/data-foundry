@@ -336,7 +336,7 @@ Organic carbon in weight percent ships as log1p, the scale the source fits and t
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (29 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 129,231,158 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 - **info** `meta_time_basis_missing`: The split is not temporal and the definition does not say why. (hint: Add the use-case prototype (Timeless, Snapshot, DelayedTarget, StationaryRelation) with a `Time basis:` line in `curation_comments`, a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`) with its line, or the line alone with the reason, SPLIT-32.)

@@ -312,7 +312,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (29 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
 - **info** `task_metric_input_is_model_input`: The metric reads the task's group or time column(s) ['Strain'] where they are; they are not scoring columns.
 

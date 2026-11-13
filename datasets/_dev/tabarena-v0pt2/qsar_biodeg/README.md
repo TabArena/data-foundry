@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_biodeg
 container_format: 2
-checksum: v2:73920210c3c25625bfe1557ca53caa2ab3040d16525148137d5c9595f8a4bb85
+checksum: v2:93a652273e35712aa36f8c4659448c6d49651f2e2659427831f4cbee71c27545
 build:
   uuid: 01a13a7d-c2bf-742d-b04d-f9b569da1f3d
   checksum: v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `Biodegradable`, scored with `roc_auc` on grouped splits by `scaffold`. 1,055 rows and 1 features. Source: UCI (2013).
 
-Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:73920210c3c25625bfe1557ca53caa2ab3040d16525148137d5c9595f8a4bb85`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:93a652273e35712aa36f8c4659448c6d49651f2e2659427831f4cbee71c27545`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -240,7 +240,7 @@ The first 5 of 1,055 rows of the final frame (random rows: the frame is shuffled
   year 44 more (1,050 of 1,055, 1971 to 2008); the test moved from 14 days (80% of the tests before 1980) to 28
   days (88% from 2000 on), and the share readily biodegradable swings by decade (40%, 28%, 45%, 27%), a fact
   about the labels. A forward split by test year leaves 10.3% of the test chemicals a close training analog, as
-  the scaffold split does, against 11.8% at random (Slurm job 1378095; ~/claude_jobs/qsar_nite/). The split
+  the scaffold split does, against 11.8% at random (Slurm job 1378095). The split
   cannot test how labels from the older 14-day tests differ from today's 28-day ones.
 
 ## Splits
@@ -312,7 +312,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (29 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -369,4 +369,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:73920210c3c25625bfe1557ca53caa2ab3040d16525148137d5c9595f8a4bb85` |
+| stale | yes: the definition now gives checksum `v2:93a652273e35712aa36f8c4659448c6d49651f2e2659427831f4cbee71c27545` |
