@@ -1042,6 +1042,8 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
   (2026-10-27) and the October reviews. Comments only, the data are unchanged; the text is part of the checksum.
   - Fixed earlier, now documented: Turkey's separate source (biogeographical, the class is dropped); the donors' and
     patients' precision conventions and ALP (hepatitis_c, seven labs rounded, ALP dropped).
+  - Changed (2026-11-10): hepatitis_c also drops ALT, recorded another way for most patients (median 4.9 to 12.8 U/L
+    in the 57 patients with ALP, below the donors' 23.1); six labs stay rounded. Its data change: 10 features, from 11.
   - Not harmonised yet, open: horse colic's `total_protein` units (the unit alone tells died from euthanized, ROC AUC
     0.79; one unit for all rows raises TabPFN 3.5's log loss from 0.682 to 0.724).
   - Kept with a note: lung cancer's 47 replicate-averaged adenocarcinoma rows and its spike-in control probes; neither
