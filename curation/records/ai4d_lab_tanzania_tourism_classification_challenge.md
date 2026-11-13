@@ -459,7 +459,7 @@ line of 2026-11-04. The record fields agree with the definition.
      | A | Stay `ForcedIIDFromTemporal` (implemented) | the tag stays; a `Time basis:` line names too few periods (two batches) and the measured cost of the forced split | the decision stands; keeps the planner's forward use | the tag claims a forecast the statistician does not make |
      | B | `CrossSectional` | the tag and a `Time basis:` line naming the present state, the measured drift for later units and what a dated release would show | names the statistician's use case; no claim of a lost forward split | a new prototype on a decided tag; the planner's forward use is not named |
 
-   * **Recommendation:** B. **Decision:** A or B?
+   * **Recommendation:** A. **Decision:** A or B?
 
    **Notes for the AI:** on B, swap the tag, write the line, add a CC line; the split does not change. On either
    option, the line gives the measured drift above, and `splits_comment`'s "No valid window exists to measure that
@@ -467,6 +467,10 @@ line of 2026-11-04. The record fields agree with the definition.
 
    [^cs-9]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
    [^fo-9]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+
+   **Andrej (2026-11-13, discuss):** The data might be cross sectional, but the use case isn't, right?
+
+   **Answer (AI, 2026-11-13):** Right. The definition's question is the trip planner's, "Which spending category applies to a visitor's specified Tanzania trip?", a trip that has not happened yet, for which the realized trip only stands in; the survey statistician who fills in a missing band from the same form is cross-sectional, but Lennart added that actor on 2026-11-05 and kept `ForcedIIDFromTemporal` "since the planner still looks forward". The evidence above agrees: time affects the target (+0.050 log loss from the 2014 wave to the later ones), and two inferred batches are too few for windows, so the split is forced. The recommendation is now A: stay forced, with the line updated to the inferred time and the measured drift.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's PR #33 review of 2026-11-04.
 The mediator's issues 1-4 are issues 3-6 here (its issue 2 is split into issues 4 and 8).

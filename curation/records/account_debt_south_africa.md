@@ -82,12 +82,16 @@ CC (2026-10-26, Lennart): verdict ship.
      | A | Stay `ForcedIIDFromTemporal` (implemented) | the tag and its line stay | the decision stands | the tag claims a forecast the use case does not make |
      | B | `CrossSectional` | the tag and a `Time basis:` line naming the present state, the untested drift for later units and what a dated release would show | names the use case; no claim of a lost forward split | a new prototype on a decided tag |
 
-   * **Recommendation:** B. **Decision:** A or B?
+   * **Recommendation:** A. **Decision:** A or B?
 
    **Notes for the AI:** on B, swap the tag, write the line, add a CC line; the split does not change.
 
    [^cs-1]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
    [^fo-1]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+
+   **Andrej (2026-11-13, discuss):** Reading from the use case this would rather be DelayedTarget, right?
+
+   **Answer (AI, 2026-11-13):** The use case is forward ("a municipality scores its accounts to forecast how many will turn into bad debt"), so not `CrossSectional`; the recommendation is now A. But not `DelayedTarget` either: the label is the account's status at the extract itself, mostly debt older than the two billing years, so no target arrives after a shared prediction moment in this data. A present-state label standing in for a forward use case on one extract is the forced tag of one period, as for coil_2000; the definition says so ("the status at its date stands in for the forecast the data card describes"). Keep A, or tell me if you read the extract date as the shared moment after all.
 
 ## Reference
 
