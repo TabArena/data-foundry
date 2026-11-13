@@ -60,6 +60,33 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `therlid_infrared_vs_contact_temperature` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
+## Review
+
+**Outcome:** added. The AI asks which time basis fits now that `CrossSectional` names a present state (2026-11-13).
+
+**Main points:** `CrossSectional` instead of `StationaryRelation`?
+
+**Issues for Andrej:**
+
+1. **`CrossSectional` instead of `StationaryRelation`?**
+
+   * **Problem:**
+     - The oral temperature is a present state measured with the image, read for new people at their own visit[^cs-1].
+     - `StationaryRelation` now names a forward use case measured flat; this one forecasts nothing.
+     - The measurement stays: folds grouped by day score as random ones do, and past-only training costs +0.5% to +6.7% RMSE.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Stay `StationaryRelation` (implemented) | the tag and its line stay | no change | the tag claims a forward use case |
+     | B | `CrossSectional` | the tag changes; the line keeps the measured drift | names the use case; the measurement stays in the line | none found |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, swap the tag, start the line with `CrossSectional`, keep the measurement; add a CC line.
+
+   [^cs-1]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`; where dates survive, its line gives the measured drift.
+
 ## Reference
 
 Infrared Thermography for Measuring Elevated Body Temperature: Clinical Accuracy, Calibration, and Evaluation

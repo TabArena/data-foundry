@@ -133,7 +133,7 @@ holds; MET-2 holds for the definition, with a scorer risk (issue 5). Quality: CL
 CLEAN-25 hold. Weighed: source + (NBS survey, the competition's metric), size +, use case − (actor mismatch), gap +
 (multiclass is thin).
 
-**Main points:** Keep the tour-operator actor, add the survey statistician next to it, or replace it (issue 3); then
+**Main points:** Issue 9: `CrossSectional` instead of `ForcedIIDFromTemporal`? Keep the tour-operator actor, add the survey statistician next to it, or replace it (issue 3); then
 smaller calls: the copies kept under LEAK-19 (issue 7), a duplicate record for the 2020 cut (issue 4), confirming
 `mmu_2022` (issue 8), a guard on the scorer's class-column order (issue 5) and `checked_by` (issue 6).
 
@@ -384,6 +384,26 @@ line of 2026-11-04. The record fields agree with the definition.
    **Lennart (2026-11-05, change):** Option B: Add Lennart. add checked by
 
    **Resolved (2026-11-05, Lennart):** B. `checked_by` lists Lennart.
+
+9. **`CrossSectional` instead of `ForcedIIDFromTemporal`?**
+
+   * **Problem:**
+     - The definition is tagged `ForcedIIDFromTemporal`, a forward use case whose time was lost[^fo-9].
+     - The target is a present state measured with the features: the respondent's spending band, read from the rest of the same exit survey, and the use case reads it for new units at their own present[^cs-9].
+     - The tag alone changes: the split stays random.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Stay `ForcedIIDFromTemporal` (implemented) | the tag and its line stay | the decision stands | the tag claims a forecast the use case does not make |
+     | B | `CrossSectional` | the tag and a `Time basis:` line naming the present state, the untested drift for later units and what a dated release would show | names the use case; no claim of a lost forward split | a new prototype on a decided tag |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, swap the tag, write the line, add a CC line; the split does not change.
+
+   [^cs-9]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
+   [^fo-9]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's PR #33 review of 2026-11-04.
 The mediator's issues 1-4 are issues 3-6 here (its issue 2 is split into issues 4 and 8).

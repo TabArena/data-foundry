@@ -98,8 +98,10 @@ DataTags = Literal[
     #   looks back: it fills in what is missing for the time the snapshot covers, not a later time
     "Retrospective",
     "DelayedTarget",  # one shared prediction moment; the target arrives after it, in a window closed for every row
-    # a present state read through a relation that time does not move, always measured on dated data
+    # a forward use case whose target and its relation to the features are measured flat across periods (dated data)
     "StationaryRelation",
+    # a present state measured with the features (a diagnosis at the visit), read for new units at their own present
+    "CrossSectional",
     # the use case aims at groups the data does not hold (a hospital, a well, a protein, a chemical family), not at a
     #   later period: whole groups held out
     "UnseenGroup",
@@ -115,7 +117,14 @@ DataTags = Literal[
 RETIRED_DATA_TAGS = ("2ndTierData", "Snapshot")
 """Tags old containers may carry and loading accepts, but a new definition may not set."""
 
-TIME_BASIS_TAGS = ("Timeless", "Retrospective", "DelayedTarget", "StationaryRelation", "UnseenGroup")
+TIME_BASIS_TAGS = (
+    "Timeless",
+    "Retrospective",
+    "DelayedTarget",
+    "StationaryRelation",
+    "CrossSectional",
+    "UnseenGroup",
+)
 """The use-case prototypes that justify a split that is not temporal (SPLIT-32)."""
 
 FORCED_TIME_TAGS = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")

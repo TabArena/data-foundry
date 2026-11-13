@@ -63,7 +63,7 @@ CC (2026-11-05, Lennart): GitHub issue #48 review: the 10 clinical scores 0-3 sh
 the 10 clinical scores ship as unordered categories, although the definition's notes say they are numbers. The AI
 recommends numbers.
 
-**Main points:** Ship the 10 clinical scores 0 to 3 as numbers, as ordered categories, or keep them unordered?
+**Main points:** Issue 2: `CrossSectional` instead of `ForcedIIDFromTemporal`? Ship the 10 clinical scores 0 to 3 as numbers, as ordered categories, or keep them unordered?
 
 **Issues for Lennart:**
 
@@ -99,6 +99,27 @@ recommends numbers.
 
    [^1]: **CLEAN-14** (Should): a score or rating with no words per level, or words only at its two ends, is a
      number, as shipped; the test is whether the source says in words what each level is.
+
+2. **`CrossSectional` instead of `ForcedIIDFromTemporal`?**
+
+   * **Problem:**
+     - The definition is tagged `ForcedIIDFromTemporal`, a forward use case whose time was lost[^fo-2].
+     - The target is a present state measured with the features: the diagnosis, read from the clinical features of the same examination, and the use case reads it for new units at their own present[^cs-2].
+     - The tag alone changes: the split stays random.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Stay `ForcedIIDFromTemporal` (implemented) | the tag and its line stay | the decision stands | the tag claims a forecast the use case does not make |
+     | B | `CrossSectional` | the tag and a `Time basis:` line naming the present state, the untested drift for later units and what a dated release would show | names the use case; no claim of a lost forward split | a new prototype on a decided tag |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, swap the tag, write the line, add a CC line; the split does not change.
+
+   [^cs-2]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
+   [^fo-2]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+
 
 ## Reference
 

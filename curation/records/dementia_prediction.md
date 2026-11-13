@@ -74,7 +74,7 @@ rows (raised on boreal_postfire_lichen_biomass's issue 7) found that the log los
 5 times, while the use case is a first visit. Resolved on 2026-11-08: each person counts once in the log loss
 (issue 1).
 
-**Main points:** Open: none. Resolved on 2026-11-08: each person counts once in the log loss, weighted by 1 over the
+**Main points:** Issue 2: `CrossSectional` instead of `ForcedGroupedFromTemporal`? Open: none. Resolved on 2026-11-08: each person counts once in the log loss, weighted by 1 over the
 person's visits (issue 1).
 
 **Issues for Lennart:**
@@ -160,6 +160,27 @@ person's visits (issue 1).
    with no training weight (Lennart's rule of 2026-11-08: a one-vote weight is for scoring only; training with it
    measured -0.004 log loss, within noise). Follow-up visits stay scored as if each were a first visit, at one vote
    per person; the notes, the metric's reason and the record say so.
+
+2. **`CrossSectional` instead of `ForcedGroupedFromTemporal`?**
+
+   * **Problem:**
+     - The definition is tagged `ForcedGroupedFromTemporal`, a forward use case whose time was lost[^fo-2].
+     - The target is a present state measured with the features: the visit's clinical dementia rating, read from the same visit's scan and tests, and the use case reads it for new units at their own present[^cs-2].
+     - The tag alone changes: the split stays grouped by subject.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Stay `ForcedGroupedFromTemporal` (implemented) | the tag and its line stay | the decision stands | the tag claims a forecast the use case does not make |
+     | B | `CrossSectional` | the tag and a `Time basis:` line naming the present state, the untested drift for later units and what a dated release would show | names the use case; no claim of a lost forward split | a new prototype on a decided tag |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, swap the tag, write the line, add a CC line; the split does not change.
+
+   [^cs-2]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
+   [^fo-2]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+
 
 ## Reference
 
