@@ -178,7 +178,6 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
     # Task
     target = "active_in_screen"
     problem_type = "binary_classification"
-    data_tags = ("Timeless",)
     metric = Metric.from_context(
         "roc_auc",
         reason=(

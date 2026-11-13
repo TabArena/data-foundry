@@ -177,7 +177,6 @@ class QsarBioconcentration(AbstractCuratedDataset):
     # Task
     target = "bioconcentration_mechanism"
     problem_type = "multiclass_classification"
-    data_tags = ("Timeless",)
     special_features = (Smiles(column="SMILES"),)
     metric = Metric.fallback(
         reason="Grisoni et al. 2016 report the non-error rate (NER, balanced accuracy) with per-class sensitivity, specificity and precision, the Milano group's house measure, at argmax with no costs. Original rejected: NER. log_loss is the multiclass fallback."

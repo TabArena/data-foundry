@@ -123,7 +123,6 @@ class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
     # Task
     target = "Population"
     problem_type = "multiclass_classification"
-    data_tags = ("Timeless",)
     metric = Metric.fallback(
         reason=(
             "Heinzel et al. 2025 report ROC AUC, accuracy and log loss, with none named as the criterion (MET-5); "
