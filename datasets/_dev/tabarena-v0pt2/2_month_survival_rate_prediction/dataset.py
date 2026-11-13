@@ -273,6 +273,7 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         Two downloads. Every value of the dataset comes from the first; the second only tells where each patient's physiology sits in it.
 
@@ -304,6 +305,9 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         - Note: dzclass groups the eight dzgroup values into four classes; both are kept as in the source. No duplicate rows.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Time basis: ForcedIIDFromTemporal: the patients entered over the study's two phases, and the public file
+          carries no admission date; the phase, recovered through the ICPSR link, gives two periods, too few for three
+          windows. A dated release would test patients admitted after those used for training.
     """
 
     # Task

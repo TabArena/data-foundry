@@ -203,7 +203,7 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
             """,
         ),
     )
-    data_tags = ("Spatial",)
+    data_tags = ("Spatial", "Timeless")
     download_description = """
         We download the competition files from the organisers' GitHub repository, pinned to a commit (the data files
         are unchanged since they were added on 2020-11-13). The Zenodo record (https://doi.org/10.5281/zenodo.4351156)
@@ -241,6 +241,9 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
         - Partial order, left unordered (2026-11-01, CLEAN-14): `GROUP`: the groups stack by geological age, but
           regional equivalents that never occur in the same well (Viking, Tyne and Boknfjord in the Upper Jurassic, for
           example) have no order between them.
+        - Time basis: Timeless: the lithology at a depth is a property of the rock, the same whenever the well is
+          drilled and logged; the split holds out whole wells. It cannot test wells logged with later tools or in parts
+          of the North Sea the 118 wells do not cover.
     """
 
     # Task

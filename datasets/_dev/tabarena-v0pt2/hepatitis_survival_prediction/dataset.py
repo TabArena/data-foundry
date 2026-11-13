@@ -56,6 +56,7 @@ class HepatitisSurvivalPrediction(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         Get the UCI data.
 
@@ -70,6 +71,8 @@ class HepatitisSurvivalPrediction(AbstractCuratedDataset):
         - Prediction point: not stated. The inputs (examination, blood tests, biopsy histology) imply the patient's work-up; the UCI names file gives neither when they were recorded nor the follow-up period for death.
         - The target (2026-11-01, CLEAN-25): `class` ships its classes as words (1 means the patient died (UCI: 1 DIE, 2
           LIVE)). Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
+        - Time basis: ForcedIIDFromTemporal: the patients of the study were seen over time, and the file carries no date
+          (nor the follow-up period), so the time is lost. A dated release would test patients seen later.
     """
 
     # Task

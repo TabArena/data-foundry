@@ -57,6 +57,7 @@ class Fiat500(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("Snapshot",)
     download_description = """
         kaggle datasets download paolocons/another-fiat-500-dataset-1538-rows -p local-data-warehouse/fiat_500/ && unzip local-data-warehouse/fiat_500/another-fiat-500-dataset-1538-rows.zip -d local-data-warehouse/fiat_500/ && rm local-data-warehouse/fiat_500/another-fiat-500-dataset-1538-rows.zip
     """
@@ -70,6 +71,8 @@ class Fiat500(AbstractCuratedDataset):
         - We keep one row per car, its first listing (1,434 rows): 104 rows repeat the model, engine power, age, mileage and owners of another. 18 are exact copies, most 12-14 rows after the first (the crawler saw the listing on two result pages), and one car with an odd mileage such as 9,248 km appears at up to 9 places a median 396 km apart, mostly at one price (Lennart, 2026-10-14).
         - Partial order, left unordered (2026-11-01, CLEAN-14): `model`: pop is the base trim; lounge and sport are both
           above it but not ranked against each other.
+        - Time basis: Snapshot: one crawl of listings (published on Kaggle in 2020; the crawl date is not stated), whose
+          prices the use case fills in for the same market. It cannot test a later market.
     """
 
     # Task

@@ -224,6 +224,7 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("DelayedTarget",)
     download_description = r"""
         The Framingham Heart Study teaching dataset of NHLBI BioLINCC (https://biolincc.nhlbi.nih.gov/teaching/) is sent
         on request. The R package riskCommunicator redistributes it with NHLBI's permission as its data set
@@ -309,6 +310,8 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
           the use case is a patient's first assessment (USE-11), and the later exams are older, selected survivors.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Time basis: DelayedTarget: the baseline exam (period 1) is the shared prediction moment, and ASCVD within 10
+          years is a window closed for every participant (follow-up runs 24 years). It cannot test a later cohort.
     """
 
     # Task

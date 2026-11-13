@@ -85,6 +85,7 @@ class DifferentiatedThyroidCancerRecurrence(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the data from UCI (dataset 915, donated by the authors; the zip holds one file, Thyroid_Diff.csv,
         sha256 a2c65f7c8fa0e78a65aa4946961aafd45218c92760d10375fe2c778045c97b44). OpenML 46605 is a 2025 re-upload
@@ -112,6 +113,8 @@ class DifferentiatedThyroidCancerRecurrence(AbstractCuratedDataset):
         - Note: the record's `Trivial` marker came from the paper's ROC AUC 0.984-0.997 on all features combined. Here the ATA risk alone gives 0.896 on the 60 shipped splits; a random forest beats it on 59 of 60 (mean gain 0.032), unscaled logistic regression on 59 and untuned CatBoost on 60, and standardised logistic regression on 52.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 5 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Time basis: ForcedIIDFromTemporal: the clinic's patients were treated over many years, and the file carries no
+          diagnosis date, so the time is lost. A dated release would test patients treated later, under later practice.
     """
 
     # Task
