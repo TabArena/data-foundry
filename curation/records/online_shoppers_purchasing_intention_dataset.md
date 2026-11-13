@@ -12,6 +12,7 @@ suggestion: 'Yes'
 tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
+- 'Target: Later'
 original_source: UCI
 year: '2018'
 required_split:
@@ -59,11 +60,13 @@ CC (2026-10-01, Lennart): Leak audit: kept `PageValues`, dropped the February-Ma
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (True means revenue).
 
+CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 4, B): whether the visit ends in a purchase, which closes the session the features describe, so it arrives after the features; the forced tag and the split stay.
+
 ## Review
 
 **Outcome:** added. The AI asks which time basis fits now that `CrossSectional` names a present state (2026-11-13).
 
-**Main points:** Stay forced and record `Target: Later`?
+**Main points:** Nothing open: issue 4 resolved on 2026-11-13 (`Target: Later` recorded).
 
 **Issues for Andrej:**
 
@@ -83,6 +86,10 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
    * **Recommendation:** B. **Decision:** A or B?
 
    **Notes for the AI:** on B, add `Target: Later` to the record with a CC line; the definition does not change.
+
+   **Andrej (2026-11-13, change):** Option B: Record Target: Later.
+
+   **Resolved (2026-11-13, Andrej):** B. The record has `Target: Later`; the forced tag and the split stay.
 
 ## Reference
 

@@ -20,6 +20,9 @@ REPO = resolve_curation_root().parent
 LATER_TARGETS = {"Target: Later", "Target: Varying Delay", "Target: Revised Later"}
 
 PENDING = {
+    "churn_telco_south_asia": (
+        "one moment, target later, but no closed window: when the churn was observed is not stated (forced, 2026-10-21)"
+    ),
     "mobile_churn": (
         "one moment, target later, but no closed window: churn's rule and horizon are not stated (forced, 2026-10-21)"
     ),

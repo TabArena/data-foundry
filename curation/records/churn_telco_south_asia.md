@@ -3,12 +3,14 @@ unique_name: churn_telco_south_asia
 name: CHURN_TELCO_SOUTH_ASIA
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
 tags:
 - New IID
 - 'Samples: One Moment'
+- 'Target: Later'
 collections:
 - TabSTAR
 original_source: Kaggle
@@ -56,11 +58,13 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37: the user types le
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `orange_belgium_churn_uplift` (TBD -> Yes, priority 2); a related task: `bulgarian_telecom_business_churn` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 1, B): whether the subscriber churns after the two months of usage, so it arrives after the features; the forced tag and the split stay.
+
 ## Review
 
-**Outcome:** added. The AI asks to record when the label arrives (2026-11-13).
+**Outcome:** added. The record gained `Target: Later` on 2026-11-13.
 
-**Main points:** Record `Target: Later`?
+**Main points:** Nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded).
 
 **Issues for Andrej:**
 
@@ -80,6 +84,10 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37: the user types le
    * **Recommendation:** B. **Decision:** A or B?
 
    **Notes for the AI:** on B, add `Target: Later` to the record with a CC line; the definition does not change.
+
+   **Andrej (2026-11-13, change):** Option B: Record Target: Later.
+
+   **Resolved (2026-11-13, Andrej):** B. The record has `Target: Later`; the forced tag and the split stay.
 
 ## Reference
 
