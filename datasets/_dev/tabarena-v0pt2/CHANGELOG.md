@@ -1,5 +1,29 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-13, four datasets retired after review (no container built)
+
+- Each record is `No (Retired)` with its reason marker and a CC line giving the evidence; its review moves into the
+  record's `## Review`, its folder is removed and `v2_path` cleared. `DF: Yes`, the other tags and the pinned
+  BeyondArena containers stay.
+  - `naticusdroid_android_permissions_dataset` (TabArena v0.1; `Selection Bias`, Andrej, 2026-11-13): benign apps from
+    AndroZoo and malware from AMD (families of 2010-2016) differ by period, which the permissions show (ROC AUC 0.970
+    to 0.991 without the store, library and benign-only permissions), and test malware has family siblings in
+    training; the UCI file has no per-app dates or ids to separate either. `kronodroid_android_malware` (dated apps of
+    2008-2020) is the replacement candidate.
+  - `obesity_estimation` (`No Good Target / Scientific Discovery`, Andrej, 2026-11-11): the source's own label is the
+    body mass index class computed from weight and height, so the published task is circular; without them, nobody
+    predicts a body mass index from habit answers where a scale is at hand.
+  - `regensburg_pediatric_appendicitis` (`No Good Target / Scientific Discovery` beside `Class-dependent Recording`,
+    Andrej, 2026-11-06): a complicated appendicitis is found only at surgery, so the 63% of children not operated count
+    as uncomplicated; a model of the decision to operate ranks the label at ROC AUC 0.904. Versions without that
+    decision still carry the hospital's practice (operated children only: 0.815, with the complicated share moving
+    from 32% to 51% over the file).
+  - `tour_travels_churn` (`AHDS`, `Missing source information`, Andrej, 2026-11-06): in the Kaggle file's row order
+    every column but age, the label included, is one of 22 rules of the row number; the generator used as a
+    classifier beats all 40 benchmark methods on every split (1 - ROC AUC 0.0210 against 0.0317 for the best).
+- Guidelines: provenance.md names tour_travels_churn as a PROV-3 case and notes it under PROV-2, where it had been kept
+  on the untraced-upload rule; selection.md says the same.
+
 ## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)
 
 - Retired because no testing decision is made from a symptom questionnaire (USE-2; the fit None, USE-8). Its hospital

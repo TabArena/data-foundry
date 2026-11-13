@@ -378,7 +378,8 @@ competition, institution, an identifiable first uploader), we cannot tell what t
 source that is plausible but unclear in a detail stays, with a note of what to clarify (PROV-2;
 bad_customer_detection; Lennart, 2026-10-14). An upload whose first platform cannot be traced stays for now, case by
 case, when the data passes PROV-3 and there is a source to point to; the gap goes into an approximate fit with a note
-(PROV-2 as amended, Lennart, 2026-10-21; tour_travels_churn, mobile_churn).
+(PROV-2 as amended, Lennart, 2026-10-21; mobile_churn; tour_travels_churn, kept on it, was later retired under
+PROV-3).
 
 A record with too little information while the dataset's origin is known (a bare link, no description) is not
 rejected for that (PROV-2): use `TBD -> Yes` or `TBD -> 2nd Tier` and write down what to inspect (the size after
