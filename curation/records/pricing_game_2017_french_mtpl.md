@@ -194,7 +194,7 @@ metric unchanged): `drv_sex1` and `drv_sex2` are dropped, since sex is no rating
 of this collection; the task probe was re-run without them (random forest 62.30 against the constant's 63.10, 62.22
 with them). The notes' other model scores were measured with the two columns in and say so.
 
-**Main points:** No issue open. Resolved on 2026-11-10 (Andrej): issue 6, the task stays on Year 0 split by client,
+**Main points:** Retag `DelayedTarget` instead of `ForcedGroupedFromTemporal` (issue 8)? Before that, no issue was open. Resolved on 2026-11-10 (Andrej): issue 6, the task stays on Year 0 split by client,
 with a sentence on the yearly drift of the claim level (0% to 6% a year on the AIcrowd copy); issue 7, the floor stays
 at 0.1 EUR, its reason restated under MET-13 as amended on 2026-11-09 (no fact favours a higher value; the floor ranks
 only squared-error fits). Resolved on 2026-11-03: the
