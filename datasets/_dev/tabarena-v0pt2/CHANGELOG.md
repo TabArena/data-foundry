@@ -1,5 +1,19 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-13, kdd_cup_09_appetency: the cup's large set, cleaned (Andrej's decisions, no container built)
+
+- The definition reads the cup's large training set: the same 50,000 customers and appetency labels (890 buyers)
+  with all 15,000 features Orange released instead of the small set's 230. On the same customers LightGBM scores
+  ROC AUC 0.877 on the large set's columns against 0.820 on the small set's (5-fold CV x 3).
+- Dropped (CLEAN-5): 109 empty and 1,422 constant columns, and 580 exact or scaled copies of an earlier column (the
+  first of each group kept; the seven copies found in the small set fall into these groups). Presence flags stay.
+- Dropped as generated: `Var5963` (the variable of the cup's artificial toy target) and `Var11750`, both uniform and
+  without signal. 12,887 features remain (12,729 numeric, 158 categorical).
+- The random split stays, with a `Time basis:` line: one extract of Orange's customer datamart, the purchase read
+  after it in a window the source does not state.
+- The record: the review in `## Review`, the decisions as CC lines. The container changes (columns, size); it needs a
+  rebuild.
+
 ## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)
 
 - Retired because no testing decision is made from a symptom questionnaire (USE-2; the fit None, USE-8). Its hospital
