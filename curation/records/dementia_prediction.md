@@ -168,6 +168,7 @@ person's visits (issue 1).
      - The target is a present state measured with the features: the visit's clinical dementia rating, read from the same visit's scan and tests, and the use case reads it for new units at their own present[^cs-2].
      - The tag alone changes: the split stays grouped by subject.
    * **Background:** you tagged it `ForcedGroupedFromTemporal` on 2026-11-11, before `CrossSectional` existed. The use case estimates the rating at the visit from that visit's test and scan; whole people stay held out under either tag.
+   * **Recurrence:** the use case meets the same person again: a memory clinic rates people at follow-up visits, and the data holds 2 to 5 visits per person (`Entities: Recur`). A cross-sectional task meets each unit once, so A: the forced grouped tag stays.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
@@ -175,7 +176,7 @@ person's visits (issue 1).
      | A | Stay `ForcedGroupedFromTemporal` (implemented) | the tag and its line stay | the decision stands | the tag claims a forecast the use case does not make |
      | B | `CrossSectional` | the tag and a `Time basis:` line naming the present state, the untested drift for later units and what a dated release would show | names the use case; no claim of a lost forward split | a new prototype on a decided tag |
 
-   * **Recommendation:** B. **Decision:** A or B?
+   * **Recommendation:** A. **Decision:** A or B?
 
    **Notes for the AI:** on B, swap the tag, write the line, add a CC line; the split does not change.
 

@@ -57,6 +57,8 @@ def contradictions(facts: set[str], basis: set[str], regime: str) -> list[str]:
         found.append("a target measured with the features is a present state: CrossSectional, not StationaryRelation")
     if "CrossSectional" in basis and facts & LATER_TARGETS:
         found.append("CrossSectional reads a present state, and the target arrives later")
+    if "CrossSectional" in basis and "Entities: Recur" in facts:
+        found.append("CrossSectional meets each unit once, and the entities recur")
     return found
 
 
@@ -100,6 +102,7 @@ def test_pending_contradictions_still_hold(found: dict[str, list[str]]) -> None:
         ({"Samples: Over Time", "Time: Dated"}, {"StationaryRelation"}, "iid", 1),
         ({"Samples: Over Time", "Time: Lost"}, {"CrossSectional"}, "iid", 0),
         ({"Samples: Over Time", "Time: Lost", "Target: Later"}, {"CrossSectional"}, "iid", 1),
+        ({"Samples: Over Time", "Time: Lost", "Entities: Recur"}, {"CrossSectional"}, "grouped", 1),
     ],
 )
 def test_contradictions(facts: set[str], basis: set[str], regime: str, expected: int) -> None:

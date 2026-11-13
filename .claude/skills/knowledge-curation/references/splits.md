@@ -188,7 +188,10 @@ later period, at a known group or at all groups at once; where the label still m
      units was measured (dated: a temporal holdout, as for `StationaryRelation`) or is untested (time lost), and what
      a dated release would show. A label that only arrives later (a churn, a bankruptcy, a death in hospital) is no
      present state, even where the record names no `Target:` fact, and neither is a use case that forecasts from a
-     present-state label (a trip not taken yet, debt that will go bad): the use case decides.
+     present-state label (a trip not taken yet, debt that will go bad): the use case decides. It also needs the use
+     case to meet each unit once: where the same unit comes back to be scored again (a patient at follow-up visits, a
+     woman at every screening round, a truck read out again), its own history matters and the task is not
+     cross-sectional; with `Entities: Recur` in the data it never is.
    * **No, for a forward use case:** the target arrives after the features, and it and its relation to them are flat
      across periods, measured on a dated source, so a temporal split costs nothing. That is a `StationaryRelation`,
      and its line gives the measurement (thyroid_discordant: requests dated through the parent archive, a flat

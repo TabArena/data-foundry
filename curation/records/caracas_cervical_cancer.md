@@ -60,6 +60,7 @@ CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run): the STD flags sta
      - The target is a present state measured with the features: the result of her screening work-up, read from her answers at that work-up; the biopsy reports her condition then, not a later one, and the use case reads it for new units at their own present[^cs-1].
      - The tag alone changes: the split stays random.
    * **Background:** the biopsy comes after the questionnaire, so the label is confirmed later, but it reports her condition at the questionnaire; the use case triages for a present disease and forecasts no later state. If you read the work-up as a forecast, A holds.
+   * **Recurrence:** the use case meets the same woman again: cervical screening runs in rounds, and she answers the questionnaire at each. A cross-sectional task meets each unit once, so A: the forced tag stays.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
@@ -67,7 +68,7 @@ CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run): the STD flags sta
      | A | Stay `ForcedIIDFromTemporal` (implemented) | the tag and its line stay | the decision stands | the tag claims a forecast the use case does not make |
      | B | `CrossSectional` | the tag and a `Time basis:` line naming the present state, the untested drift for later units and what a dated release would show | names the use case; no claim of a lost forward split | a new prototype on a decided tag |
 
-   * **Recommendation:** B. **Decision:** A or B?
+   * **Recommendation:** A. **Decision:** A or B?
 
    **Notes for the AI:** on B, swap the tag, write the line, add a CC line; the split does not change.
 

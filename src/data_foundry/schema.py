@@ -100,7 +100,7 @@ DataTags = Literal[
     "DelayedTarget",  # one shared prediction moment; the target arrives after it, in a window closed for every row
     # a forward use case whose target and its relation to the features are measured flat across periods (dated data)
     "StationaryRelation",
-    # a present state measured with the features (a diagnosis at the visit), read for new units at their own present
+    # a present state measured with the features (a diagnosis at the visit), read once for each new unit
     "CrossSectional",
     # the use case aims at groups the data does not hold (a hospital, a well, a protein, a chemical family), not at a
     #   later period: whole groups held out
