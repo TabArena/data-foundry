@@ -1,5 +1,20 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-13, pva_revenue_prediction_kddcup98: the cup's gift amount and net revenue (no container built)
+
+Andrej's decisions of 2026-11-11 and 2026-11-12 on the dataset's review.
+
+- Target `TARGET_D`, the gift in dollars (0 for the 94.9% who did not give), regression, scored by the new custom
+  metric `net_revenue_at_cost` with cost $0.68: the KDD Cup 1998's rule, the sum of (gift - $0.68) over the donors
+  predicted to give more than $0.68, divided by the number of test donors. Before, the definition shipped the
+  response flag `TARGET_B` with ROC AUC as a stand-in; `TARGET_B` is now dropped as a copy of gift > 0.
+- `RDATE_k` and `RAMNT_k` (k = 3 to 24) blanked where the receipt is dated June 1997 or later, after the mailing the
+  target is about: 61 cells of 60 donors.
+- The random split stays: a `Time basis:` line says every row is about the one June 1997 mailing and why a split on
+  the donor dates would test new kinds of donors, not a later mailing.
+- The record: `problem_type` Regression, the review in `## Review`, the decisions as CC lines.
+- The definition changes the container (target, problem type, metric, columns); it needs a rebuild.
+
 ## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)
 
 - Retired because no testing decision is made from a symptom questionnaire (USE-2; the fit None, USE-8). Its hospital

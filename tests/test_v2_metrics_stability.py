@@ -27,6 +27,7 @@ EXAMPLE_PARAMS = {
     ("mean_tweedie_deviance", "regression"): {"power": 1.5, "min_prediction": 1.0},
     ("mean_poisson_deviance", "regression"): {"min_prediction": 1e-6},
     ("rescaled_mean_tweedie_deviance", "regression"): {"power": 1.5, "min_prediction": 1.0},
+    ("net_revenue_at_cost", "regression"): {"cost": 0.68},
 }
 """Params for metrics that cannot be declared without them."""
 
