@@ -85,7 +85,7 @@ expected to stay. Quality: missing codes, decoded ids and the drug-change scales
 Weighed: a large clinical database with a documented cohort +, a real spread +, no dates and a cohort that shifts along
 the encounter order -.
 
-**Main points:** Decided on 2026-11-11: every stay in 9 windows of encounter order (issue 1 d) and the 30-day
+**Main points:** Issue 4: Keep `time_index` as a model input? Decided on 2026-11-11: every stay in 9 windows of encounter order (issue 1 d) and the 30-day
 target (issue 2 A); `problem_type` set to Binary Classification. Issue 3 (same day): the split stays temporal with
 returning patients in the test, the order dated by the drugs, record tags `Time: Inferred` and `Entities: Recur`.
 Nothing open.
@@ -480,6 +480,26 @@ Nothing open.
    (was `Time: Dated`) and `Entities: Recur`, a CC line; the curation notes' time-order bullet gains the drug dating,
    `splits_comment` says why the split stays temporal and not grouped (SPLIT-13). Not done: the window scores split by
    returning and new patients, which would measure the mix rather than describe it.
+
+4. **Keep `time_index`, a reconstructed order, as a model input?**
+
+   * **Problem:**
+     - `time_index` is the warehouse's running encounter number (`encounter_id // 6`); it orders the temporal split and is a model input by default.
+     - california_house_prices_2020, labour_inspection_compliance and wine_quality keep their reconstructed order out of the inputs (`feature=False`), because the actor does not hold it when predicting[^lk-4].
+     - Here the actor does: the encounter number is assigned when the stay begins, so the hospital holds it at discharge, when readmission is predicted.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep as input (implemented) | `time_index` stays a feature | the actor holds it; a model can use a trend over time | the test windows lie beyond the training range of the index, where a trend extrapolates poorly |
+     | B | Split order only (`feature=False`) | `time_index` orders the windows and is dropped from the inputs | no model leans on an artificial index | drops what the actor holds at prediction |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   **Notes for the AI:** on B, declare `Temporal(..., feature=False)` (the time-column-as-split-metadata change of #98) and add a CC line.
+
+   [^lk-4]: **LEAK-10** (Must): every feature has to have existed, and be held by the actor, at the prediction time of its row; a time column that only orders the split is declared no input.
+
 
 ## Reference
 
