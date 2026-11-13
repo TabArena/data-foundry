@@ -66,25 +66,28 @@ itself, sit inside a group, or cut across groups:
 ```text
 +-----+  group (a fold keeps it whole)   [...]  scored unit (one term of the score)   x  a row
 
-Same: sat11 holds out an instance and scores that instance (PAR10 over its 10 solver runs)
+Same: the scored unit is the group
+  sat11: group = scored unit = an instance; rows: its 10 solver runs, one PAR10
   +-----------+  +-----------+  +-----------+
   | [x x x x] |  | [x x x x] |  | [x x x x] |        counted: the 184 instances, 20 x 3
   +-----------+  +-----------+  +-----------+
 
-Nested: asp holds out a problem class and scores each instance in it
+Nested: scored units sit inside a group
+  asp: groups = 96 problem classes; scored units = 1,212 instances
   +-----------+  +-----------+
   | [x x x x] |  | [x x x x] |
   | [x x x x] |  | [x x x x] |                       counted: the 1,212 instances, 10 x 3
   | [x x x x] |  | [x x x x] |
   +-----------+  +-----------+
 
-Crossing: wadden holds out stations and scores each survey year, and every year runs across many stations
+Crossing: scored units cut across groups
+  wadden: groups = 5,092 stations; scored units = 15 survey years, each across many stations
      +---+  +---+  +---+  +---+  +---+
   [==| x |==| x |==| x |==| x |==| x |==]  2008
   [==| x |==| x |==| x |==| x |==| x |==]  2009     every fold holds part of every year,
   [==| x |==| x |==| x |==| x |==| x |==]  2010     so counted: the 59,044 rows, 3 x 3
      +---+  +---+  +---+  +---+  +---+
-     stations
+     columns: stations (groups); bands: survey years (scored units)
 ```
 
 The repeats follow the scored units only when all rows of each are in the same group (same or nested). A crossing
