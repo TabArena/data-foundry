@@ -1,5 +1,15 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-13, thyroid_discordant_archive replaces thyroid_discordant (Andrej's decision, no container built)
+
+- `thyroid_discordant_archive` added: the Garvan Institute's thyroid test requests of August 1984 to January 1987
+  (UCI `thyroid0387`, 9,162 requests after 10 repeated entries), whether the laboratory commented the results as
+  discordant (report code R, 2.2%), split by the request date taken from the record id: three four-month test windows
+  from February 1986 to January 1987, each trained on every earlier request. Its review is in its record.
+- `thyroid_discordant` retired: `No (Retired)` with `Duplicate`. Its 3,711 rows are a subset of the same archive,
+  without the request date; the archive version holds the same task with 197 discordant results instead of 58 and a
+  dated split. Its folder is removed and `v2_path` cleared.
+
 ## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)
 
 - Retired because no testing decision is made from a symptom questionnaire (USE-2; the fit None, USE-8). Its hospital
