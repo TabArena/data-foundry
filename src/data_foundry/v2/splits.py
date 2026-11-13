@@ -403,9 +403,9 @@ class Temporal:
             it. A date column has its own calendar and declares none; a time that is only an order (a row number)
             has none.
         feature: Whether the time column is a model input (True by default). False when the actor does not hold it
-            at the prediction point because it arrives with the target (sdss_17: the date of the spectrum that sets
-            the class): the column stays in the frame to order and split the rows, and ``feature_columns`` leaves it
-            out. What decides is what the actor knows at the prediction point, not the score.
+            at the prediction point because it arrives with the target (the date of the spectrum that sets a sky
+            object's class): the column stays in the frame to order and split the rows, and ``feature_columns``
+            leaves it out. What decides is what the actor knows at the prediction point, not the score.
 
     The container stores the column as the task's ``time_on`` (with ``time_unit``), ``feature`` as its
     ``time_is_feature``, the horizon as the splits' ``time_horizon`` / ``time_horizon_unit`` and the gap as
