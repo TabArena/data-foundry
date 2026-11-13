@@ -260,7 +260,7 @@ settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `An
    line. The raw Kaggle file is not in the warehouse; the checks used OpenML 46912 (TabArena's copy of the same
    3,751 rows).
 
-   [^3a]: **LEAK-41** (Must, draft PR #62): repeats of a unit the data does not record get one verdict; not
+   [^3a]: **LEAK-42** (Must, draft PR #62): repeats of a unit the data does not record get one verdict; not
      recoverable when neither the units nor their order can be recovered with enough confidence: the copies that can
      be identified are dropped, and the random split stays with the remaining overlap in the notes. **SPLIT-24**
      (Must): never group on a similarity-threshold cluster.
@@ -405,7 +405,7 @@ settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `An
 
    **Resolved (2026-11-11, Andrej):** a: the random split stays; a curation bullet names the analogue overlap (no copy,
    nearest pair 16 descriptors apart), Kaggle's random-looking test draw (ROC AUC 0.485) and the lead-optimisation use
-   case; no data change. The bullet cites no rule ID until PR #62 (LEAK-41) is in the working copy.
+   case; no data change. The bullet cites no rule ID until PR #62 (LEAK-42) is in the working copy.
 
 ## Reference
 

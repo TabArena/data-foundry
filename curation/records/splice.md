@@ -188,10 +188,10 @@ place and "acceptors" in another; the definition avoids both words.
    184 copies of one record and the `HUMCYPIIE` pair dropped, and the 13 duplicated-gene windows kept with the 0.6%
    overlap.
 
-   [^1e]: **LEAK-41** (Must; draft PR #62): repeats of a unit the data does not record get one of four verdicts:
+   [^1e]: **LEAK-42** (Must; draft PR #62): repeats of a unit the data does not record get one of four verdicts:
      natural, entity fix, temporal fix or not recoverable; an entity fix takes copies of one record down to one row
      per unit, and every drop gives the label shares before and after and asks whether the target still stands.
-     **LEAK-42** (Should; draft PR #62): three tests set the verdict: a link far above a chance rate that keeps the
+     **LEAK-43** (Should; draft PR #62): three tests set the verdict: a link far above a chance rate that keeps the
      data's structure, a label that travels with the link beyond what the shared features predict, and an order.
    [^1f]: **LEAK-19** (Should): exact copies with the same label are dropped rather than grouped; copies of one
      compound go, while distinct compounds the descriptors cannot tell apart stay with the reason in the notes
