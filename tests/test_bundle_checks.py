@@ -589,7 +589,7 @@ def test_a_forced_tag_answers_why_the_split_is_not_temporal():
 
 
 def test_a_time_basis_on_a_temporal_split_is_flagged():
-    metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal", "Snapshot"])
+    metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal", "Retrospective"])
     assert "meta_time_basis_on_temporal" in slugs_of(make_temporal_container(dataset_metadata=metadata))
 
 
@@ -619,7 +619,7 @@ def _dated_frame() -> pd.DataFrame:
     ("tags", "comments", "noted"),
     [
         (["IID", "Timeless"], "- Time basis: Timeless: a fixed property.", True),
-        (["IID", "Snapshot"], "- Time basis: Snapshot: one scrape.", False),
+        (["IID", "Retrospective"], "- Time basis: Retrospective: one scrape, prices of that day.", False),
         (["IID", "DelayedTarget"], "- Time basis: DelayedTarget: one moment, gifts dated before it.", False),
         (["IID"], "- Time basis: dated, kept random by choice; a temporal split costs 0.01.", False),
         (["IID"], "Read the CSV.", True),

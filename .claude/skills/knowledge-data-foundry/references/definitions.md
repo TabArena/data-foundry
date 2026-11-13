@@ -225,19 +225,21 @@ A metric input known at the prediction point (a weight that is a function of the
   holds geographic information (ZIP, latitude and longitude, region, store location). An IID or grouped split carries
   one time basis that says why it is not temporal (SPLIT-32 in
   [splits.md](../../knowledge-curation/references/splits.md)): a use-case prototype, `"Timeless"` (the target is a
-  fixed property of the item, in a catalogue that does not drift), `"Snapshot"` (one moment with the target of that
-  moment, or a use case that fills in a time the data covers), `"DelayedTarget"` (one shared prediction moment, the
-  target later in a window closed for every row) or `"StationaryRelation"` (a present state read through a relation
-  that time does not move, always measured on a dated source) or `"NewSite"` (the use case aims at sites the data does
-  not hold, not at a later period; it needs a `grouping` on the site); or a forced tag, `"ForcedIIDFromTemporal"` when a
-  forward use case has no usable time or too few periods and ships IID (a definition that declares a `grouping` or
-  `temporal` refuses it), `"ForcedGroupedFromTemporal"` when such a task ships grouped (it needs a `grouping`;
-  SPLIT-8). Either way the definition carries a `Time basis:` line in `curation_comments` that states the fact behind
-  it and ends with what the split cannot test; a forced tag's line names its reason (time lost, or too few periods)
-  and what a dated release would change. A definition refuses two time bases, and a prototype on a temporal split or
-  without its line. `dataset check` notes a split that is not temporal and says nothing about why (no time basis and
-  no `Time basis:` line), a forced tag without its line, and date columns in the data of such a split unless the basis
-  is `Snapshot` or `DelayedTarget` or a `Time basis:` line gives the reason.
+  fixed property of the item, in a catalogue that does not drift), `"Retrospective"` (the data is one snapshot of a
+  moment or period, and the use case fills in what is missing for that time, not a later one), `"DelayedTarget"` (one
+  shared prediction moment, the target later in a window closed for every row) or `"StationaryRelation"` (a present
+  state read through a relation that time does not move, always measured on a dated source) or `"NewSite"` (the use
+  case aims at sites the data does not hold, not at a later period; it needs a `grouping` on the site); or a forced
+  tag, `"ForcedIIDFromTemporal"` when a forward use case has no usable time or too few periods and ships IID (a
+  definition that declares a `grouping` or `temporal` refuses it), `"ForcedGroupedFromTemporal"` when such a task
+  ships grouped (it needs a `grouping`; SPLIT-8). Either way the definition carries a `Time basis:` line in
+  `curation_comments` that states the fact behind it and ends with what the split cannot test; a forced tag's line
+  names its reason (time lost, or too few periods) and what a dated release would change. A definition refuses two
+  time bases, and a prototype on a temporal split or without its line. `dataset check` notes a split that is not
+  temporal and says nothing about why (no time basis and no `Time basis:` line), a forced tag without its line, and
+  date columns in the data of such a split unless the basis is `Retrospective` or `DelayedTarget` or a `Time basis:`
+  line gives the reason. `"Snapshot"` is retired (2026-11-13) for `"Retrospective"`, which names the use case rather
+  than the data; a new definition refuses it.
   `"2ndTierData"` is retired (2026-10-21): old containers that carry it still load, but a new definition refuses it;
   write the doubts as a finding and the fit as `approximate`.
 * `problem_type`: "Regression" to `"regression"`, "Binary Classification" to `"binary_classification"`,

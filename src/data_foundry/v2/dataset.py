@@ -2361,6 +2361,11 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         fail("`sources` must be a tuple of `Source(...)`, the publication first.")
     if isinstance(cls.data_tags, str):
         fail("`data_tags` must be a tuple of tags, not one string.")
+    if "Snapshot" in cls.data_tags:
+        fail(
+            "`Snapshot` is retired: tag a use case that fills in the time the data covers `Retrospective`, one that "
+            "looks forward from one shared moment `DelayedTarget` (SPLIT-32)."
+        )
     retired = [tag for tag in cls.data_tags if tag in RETIRED_DATA_TAGS]
     if retired:
         fail(

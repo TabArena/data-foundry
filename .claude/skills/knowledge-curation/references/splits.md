@@ -61,7 +61,8 @@ release cannot give the windows SPLIT-14 asks for, it ships in the closest regim
 forced from temporal, with the cost measured against the valid windows where the data has any. This covers a release
 whose rows arose over a period and lost their dates, a few cohort months of one customer base (a split by those months
 tests a change of cohort, not of time), and a release with too few periods for three windows. A release that is one
-moment (one extract, one stock month, one exam round) is not forced: SPLIT-32 gives it `Snapshot` or `DelayedTarget`.
+moment (one extract, one stock month, one exam round) is not forced: SPLIT-32 gives it `Retrospective` or
+`DelayedTarget`, or sends it to the curator when its use case looks forward from a target of that moment.
 The closest regime is IID (`ForcedIIDFromTemporal`), or grouped by the entity when the periods are stacked and the
 entities recur across them (`ForcedGroupedFromTemporal`); SPLIT-32 says when a split is forced. The definition's
 `Time basis:` line names the reason (time lost, or too few periods), says what the timestamp or a dated window would
@@ -131,12 +132,17 @@ market). The prototypes, by the questions that tell them apart:
    an observation date) tells whether the catalogue drifts; "none published" is an answer too. A catalogue that drifts
    goes on to question 4: qsar_tid_11's ChEMBL years show close training analogs from the test compound's own year for
    85-90% of its scaffold folds, and predicting each year from earlier ones raises RMSE from 0.68-0.90 to 1.11-1.31.
-2. **Is the release one moment with the target of that moment, or does the use case only fill in a time the data
-   covers?** Either is a `Snapshot` (one census, one scrape, the gaps of a logged week, a site not yet mapped in a past
-   survey; houses, fiat_500, 5g_energy_consumption), and the line names the moment or the period. When the use case
-   looks forward, the line says that the split cannot test a later moment. Time can then affect a target only through
-   samples of the same time: check that no sample of a test sample's time carries its target (one day's weather across
-   stations); if one does, group by that time unit.
+2. **Does the use case look back, into the time the data covers?** In the use case the samples arise over time, but
+   the data is one snapshot of a moment or a period, and what the use case wants is the missing information of that
+   time, not of a later one: the value of a block group the census did not record, a site not yet mapped in a past
+   survey, the hours a logged week lacks, the clients a campaign did not inspect. That is `Retrospective` (houses,
+   wadden_sea_sibes_macoma_abundance, 5g_energy_consumption, fraud_detection_in_electricity_and_gas_consumption_1m).
+   It needs that backward need: a one-moment release whose use case looks forward (prospects for a mailing, customers
+   who will leave) is not retrospective: it is a `DelayedTarget` when its target arrives after one shared moment, and
+   goes to the curator when its target is of that moment. The line names the time covered and the need, and ends with
+   what the split cannot test: a later time. Time can then affect a target only through samples of the same time:
+   check that no sample of a test sample's time carries its target (one day's weather across stations); if one does,
+   group by that time unit. `Snapshot`, which named the data rather than a use case, is retired for it (2026-11-13).
 3. **Do all samples share one prediction moment, with the target arriving after it?** A default in the next month, a
    donation at the next drive, an event within a fixed follow-up: a `DelayedTarget`. Every row was observed at the same
    moment and its outcome over the same window, so a random split draws train and test from that one moment and that
@@ -158,7 +164,8 @@ market). The prototypes, by the questions that tell them apart:
    the split groups by that unit, and the time order inside the data is not weighed. That is a `NewSite` (heart_disease:
    Detrano et al. built their model in Cleveland and applied it to the other hospitals; early_learning_predictors: a
    facility not yet assessed). The source or the use case names the transfer; a site column alone does not make one,
-   and a target that is a fixed property of the item is `Timeless`, a site not yet mapped in a past survey a `Snapshot`.
+   and a target that is a fixed property of the item is `Timeless`, a site not yet mapped in a past survey
+   `Retrospective`.
    Its line names the unit and ends with what the split cannot test: a later period, at a known site or at all sites
    at once.
    * **No:** the target is a present state read through a relation that time does not move, measured on a dated
@@ -188,7 +195,7 @@ split.
 Why: the same split can stand for the use case or flatter it, depending on how the data arrived; recording the
 collection facts and the prototype makes that visible. Cases: the arrival study of the 177 v0.2 definitions
 (2026-11-04) and the review of 98 of them (2026-11-06) are the evidence; examples are credit_card_clients_default and
-framingham_heart_study_fhs (`DelayedTarget`), houses and 5g_energy_consumption (`Snapshot`), thyroid_discordant
+framingham_heart_study_fhs (`DelayedTarget`), houses and 5g_energy_consumption (`Retrospective`), thyroid_discordant
 (`StationaryRelation`, measured), musk (`Timeless`), heart_disease (`NewSite`), heloc (`ForcedIIDFromTemporal`).
 
 ### Temporal tasks

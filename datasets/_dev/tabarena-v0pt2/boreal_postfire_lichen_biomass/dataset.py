@@ -195,7 +195,7 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Spatial", "Snapshot")
+    data_tags = ("Spatial", "Retrospective")
     download_description = """
         The data is the two Dryad deposits of Greuel et al. (2021), CC0: doi:10.5061/dryad.t1g1jwt15 (Northwest Territories, version 5 of 2026-05-18) and doi:10.5061/dryad.tb2rbnzzj (Saskatchewan, version of 2021-02-18). Dryad's per-file API answers 401 without a token, but the version download of its API redirects without a token to a zip of each version; the SHA-256 digests below equal those Dryad lists (checked 2026-11-01). The two lichen sheets are also on Zenodo, byte-identical (records 4499194 and 4552434); the NT site sheet is only on Dryad.
         mkdir -p local-data-warehouse/boreal_postfire_lichen_biomass && cd local-data-warehouse/boreal_postfire_lichen_biomass
@@ -234,8 +234,8 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
         - CC (2026-11-09, Andrej): issue 9 (B), "Site-sheet coordinates as features": every NT plot ships its transect start from `All_site_info_NT.xlsx`; the 0.01 degree grid only links CG2 and F2 and is not shipped.
         - CC (2026-11-09, Andrej): issue 8 (B), "Burn id from the national fire polygons. Before finally adding this, ablate it and analyze the impact of this decision": the SK plots are grouped by the NFDB or NBAC burn of their fire year, implemented after the ablation; superseded on 2026-11-10 (next bullet).
         - CC (2026-11-10, Andrej): issue 8 (a), "Back to A, with the note": one group per SK plot again; the grouping by the fire maps of 2026-11-09 is removed, and its measured effect is in the notes ("SK burns are not recovered").
-        - Time basis: Snapshot: the plots were surveyed once, and the use case fills in lichen biomass in burns nobody
-          surveyed; the split holds out whole burn areas. It cannot test a later survey.
+        - Time basis: Retrospective: the plots were surveyed once, and the use case fills in lichen biomass in burns
+          nobody surveyed; the split holds out whole burn areas. It cannot test a later survey.
     """
 
     # Task
