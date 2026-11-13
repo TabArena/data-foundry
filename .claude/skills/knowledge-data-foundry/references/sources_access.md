@@ -7,10 +7,12 @@ Recipes for sources a plain web fetch cannot read. Why the discussions and noteb
 
 Kaggle pages do not render for a plain fetch (JavaScript only, reCAPTCHA), so read them through the `kaggle` command
 line. The credentials are in `~/.kaggle/`. Use kaggle 2.2.2 or newer through `uvx`, so the project venv is not
-touched: the 2.2.0 in the venv gets a 403 from the discussions API.
+touched: the 2.2.0 in the venv gets a 403 from the discussions API. Add `--with six`: kaggle 2.2.2 imports it without
+declaring it, and fails with `ModuleNotFoundError: No module named 'six'` (2026-11-06). `topics show` prints the
+opening post and then every comment.
 
 ```bash
-K="uvx --from kaggle==2.2.2 kaggle -W"
+K="uvx --with six --from kaggle==2.2.2 kaggle -W"
 $K datasets metadata <owner>/<slug> -p .          # data card text (description, licence) as JSON
 $K datasets files <owner>/<slug>                  # file names, sizes, upload dates
 $K datasets topics list <owner>/<slug>            # Discussion tab: id, title, author, comments, votes

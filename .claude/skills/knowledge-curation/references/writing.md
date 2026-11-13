@@ -67,7 +67,7 @@ by a bold lead, never a paragraph of prose:
 | `**Problem:**` | required | What is decided and why it is a question: at most three sub-bullets, each one sentence; a sentence may be long (Andrej, 2026-11-03). |
 | `**Background:**` | when the problem needs more | The rest of the context: how the data or definition works, terms defined. |
 | `**Effect on the task:**` | when it differs from the problem | Which prediction gets better or worse than in practice. |
-| `**Experiments:**` | when something was measured | The numbers that decide, with how many splits or seeds, in a table (Andrej, 2026-11-10). |
+| `**Experiments:**` | when something was measured | The numbers that decide, in a table (below), with how many splits or seeds. |
 | `**Consistency:**` | when a similar dataset was decided | The precedents, and whether this follows or departs. |
 | `**Panel:**` | when the panel disagreed | Each side's best argument in one sentence. |
 | `**Unknown:**` | when a fact could not be checked | What would settle it. |
@@ -85,6 +85,15 @@ as bullets (Andrej, 2026-11-03), so keep a `;` out of a single point. Every issu
 mark "as implemented" takes the implemented row, and "change" names the letter. Mark one row `(implemented)` also
 when the question is whether to change something elsewhere (a sibling, a rule): the row that changes nothing is what
 the definition has now, and the page names it on the "As implemented" button.
+
+Results go in tables, wherever there are more than one or two numbers. Scores per model, option, window, split or
+feature, counts per class, group or period, and before/after comparisons are each a table: one row per thing compared,
+one column per measured quantity, the metric with its direction ("log loss, lower is better") and the runs (splits,
+seeds, untuned or tuned) in the bullet above the table. The bullets around a table say how it was run and what it shows,
+without repeating its numbers; a number that the table could hold does not stand in a sentence. Prose keeps only a
+single number that decides on its own ("the unit alone tells died from euthanized at ROC AUC 0.79"). This holds in every
+bullet of an issue (`**Background:**` counts as much as `**Experiments:**`), in an `**Answer (AI, <date>):**`, in a
+consistency check and in reporting back. A table needs a blank line before and after it.
 
 The text for the curator reads without the rules. Rule IDs, rule wording, the strength of a rule and the curator's
 earlier calls quoted as precedent go into footnotes (`[^1]` in the text, `[^1]: **LEAK-31** (Should): ...` at the

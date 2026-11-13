@@ -116,9 +116,8 @@ table's rows as answer buttons under the turn (a turn without a table gets Agree
 `- (a) ...` still work); a click writes `Reply (a): ...` (or `Agree.`) as the first line of the issue's note and
 highlights the row. An answer that only reports findings keeps bullets, with its rule IDs in footnotes too. In an
 issue and in every turn, measured results stand in tables, not in sentences
-([writing.md](../../knowledge-curation/references/writing.md), "Questions and issues for the curator"; Andrej,
-2026-11-10). A table inside an issue or a turn needs a blank line before and after it; without one, the lines around it
-render as table rows.
+([writing.md](../../knowledge-curation/references/writing.md), "Results go in tables"). A table inside an issue or
+a turn needs a blank line before and after it; without one, the lines around it render as table rows.
 
 The number is the key of the curator's mark (`items.<N>` on the page). Numbers are unique in the review and never
 change; gaps are fine. A new issue takes the next number after the highest the review has had, so an old mark never
