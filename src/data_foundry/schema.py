@@ -961,6 +961,11 @@ class PredictiveMLTaskMetadataV2:
     """The unit one step of a numeric ``time_on`` counts: numerai's ``era`` counts weeks, so era 1235 is a year after
     era 1183. It gives a time column that is a number its calendar (the newest year of a train side, a horizon in
     weeks). ``None`` for a date column, whose calendar is its own, and for a time that is only an order."""
+    time_is_feature: bool = True
+    """Whether the time column is a model input (:func:`~data_foundry.curation_container.feature_columns`). False
+    when the actor does not hold it at the prediction point because it arrives with the target (the date of the
+    spectrum that sets an object's class): the column then stays in the frame to order and split the rows, and is no
+    model input. Only a temporal task sets it; left out of the checksum and the saved JSON while True."""
     grouping: Grouping | None = None
     """How a grouped task is used (:class:`Grouping`): the group column, the labels, the order inside a group, the
     prediction unit, the aggregation and the context. The group column is metadata, never a model feature."""
@@ -985,17 +990,15 @@ class PredictiveMLTaskMetadataV2:
     """Fields added after containers shipped: dropped from the checksum and the saved JSON while ``None``, so a
     container saved before they existed keeps verifying."""
 
+    _OMIT_WHEN_DEFAULT: ClassVar[dict[str, Any]] = {"time_is_feature": True}
+    """Fields added after format-2 containers were built: dropped from the checksum and the saved JSON while they hold
+    their default, so a container built before they existed keeps verifying."""
+
     def __post_init__(self):
         """Validate the regime, and the rules between the grouping and the target."""
         if not (self.target_column_name or "").strip():
             raise ValueError("target_column_name must name the target column.")
-        if self.time_unit is not None and self.time_on is None:
-            raise ValueError("time_unit says what one step of the time column counts; set time_on.")
-        if self.time_on is not None and self.grouping is not None:
-            raise ValueError(
-                "A task is temporal (time_on) or grouped (grouping), not both; record the order inside a group as "
-                "grouping.time_on.",
-            )
+        self._check_time()
         if self.target_column_name in (self.time_on, self.group_time_on, *as_column_list(self.group_on)):
             raise ValueError(f"The target column ({self.target_column_name!r}) cannot be a time or group column.")
         if self.stratify_on == self.target_column_name and not self.is_classification:
@@ -1021,6 +1024,18 @@ class PredictiveMLTaskMetadataV2:
                 f"aggregation={aggregation!r} selects the row with the lowest / highest predicted value: it needs a "
                 f"regression target, got {self.problem_type!r}.",
             )
+
+    def _check_time(self) -> None:
+        """The time column: its unit, temporal or grouped (not both), and whether it is a model input."""
+        if self.time_unit is not None and self.time_on is None:
+            raise ValueError("time_unit says what one step of the time column counts; set time_on.")
+        if self.time_on is not None and self.grouping is not None:
+            raise ValueError(
+                "A task is temporal (time_on) or grouped (grouping), not both; record the order inside a group as "
+                "grouping.time_on.",
+            )
+        if not self.time_is_feature and self.time_on is None:
+            raise ValueError("time_is_feature=False needs a temporal task: it says whether `time_on` is a model input.")
 
     def _check_sample_weight(self) -> None:
         """The training weight is a scoring column of role ``weight``, never a column models use."""
@@ -1115,6 +1130,8 @@ class PredictiveMLTaskMetadataV2:
             f"  stratify_on:           {self.stratify_on}",
             f"  time_on:               {self.time_on}",
         ]
+        if not self.time_is_feature:
+            lines.append("  time_is_feature:       False (orders and splits the rows; never a model input)")
         for scoring in self.scoring_columns:
             use = "never a feature"
             if scoring.role == "weight":

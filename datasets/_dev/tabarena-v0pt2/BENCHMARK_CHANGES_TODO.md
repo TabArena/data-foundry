@@ -4,6 +4,15 @@ Changes the benchmark harness (`tabarena/`) needs so that the v0.2 datasets are 
 out of the review of grouped data on 2026-10-01 (counts and file references are from that day). The data-foundry
 side (metadata, checks, the dataset review) is tracked in the curation records and [`CHANGELOG.md`](CHANGELOG.md).
 
+## Temporal tasks
+
+- [ ] **Drop a time column declared no model input.** A v2 definition can declare `Temporal(..., feature=False)` when
+  the actor does not hold the time column at the prediction point (it arrives with the target, such as the date of the
+  spectrum that sets a sky object's class). A format-2 container then records `task_metadata.time_is_feature=False`;
+  the column stays in the frame to order the rows and for the time ranges of the splits. The adapter has to drop it
+  from the features for every pipeline, as `data_foundry.curation_container.feature_columns(container)` does; the
+  field is absent (True) on every other container.
+
 ## Grouped tasks
 
 - [ ] **Never use the group column as a model feature.** Only the `tabarena_default` preprocessing pipeline drops it
