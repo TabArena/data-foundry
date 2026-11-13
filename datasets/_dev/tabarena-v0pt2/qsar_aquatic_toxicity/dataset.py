@@ -81,6 +81,7 @@ class QsarAquaticToxicity(AbstractCuratedDataset):
         ),
     )
     special_features = (Smiles(column="SMILES"),)
+    data_tags = ("Timeless",)
     download_description = """
         We get the data from UCI.
 
@@ -102,6 +103,23 @@ class QsarAquaticToxicity(AbstractCuratedDataset):
         - The authors' 8 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure to a prediction, and the descriptors are one modelling choice of the authors). This also settles the kept potential leak the record and `fit_reason` named: a genetic algorithm chose the eight by their fit to the measured toxicity of chemicals that sit in our test folds (LEAK-31), and with the structure shipped no such selection reaches the features.
         - The structures come from the authors' own workbook, which the UCI copy left out. It is the same 546 rows in the same order: all 8 descriptors and LC50 are identical on every row, so the link is exact and needs no key. All 546 SMILES parse, and no two are the same chemical, with or without stereochemistry.
         - Split (CLEAN-24, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the structure (`scaffold_groups`); chemicals without a ring, and those of a scaffold holding more than a tenth of the set, are groups of their own. An assessor estimates the toxicity of an untested chemical, often of a series not yet measured, so whole series are held out; qsar_bioconcentration, qsar_oral_toxicity, qsar_fish_toxicity and qsar_tid_11 group the same way. The source split at random.
+        - Time basis: Timeless (Andrej, 2026-11-11; REVIEW.md issue 2, option a): a chemical's 48-hour LC50 for Daphnia
+          magna is a property of the chemical, and the Milano group compiled historic laboratory tests in 2014 without
+          dates. Dated through the EPA's ECOTOX bulk release (`ecotox_ascii_09_15_2026`), joined on the CAS-RN of the
+          authors' workbook to the Daphnia magna 48-hour LC50 records, the year being the publication year of the
+          earliest matching test: 394 of 546 chemicals (72.2%), 481 (88.1%) when only the species has to match; 1965 to
+          2018, median 1985. Where ECOTOX gives mg/L, its median per chemical matches the target at r = 0.903 (170
+          chemicals, median difference 0.06 log units). The relation does not move with the year (Spearman of first test
+          year and LC50 +0.15 on the strict join, +0.11 on the species join), and a forward split by first test year is
+          no stricter than the scaffold folds (untuned models on `encode_smiles`, RMSE, three expanding windows from
+          1986, each training side at least half the dated chemicals; Slurm 1378106, 2026-11-11): | Scheme | RMSE,
+          LightGBM / RF | Close training analog | Test scaffold in training | |---|---|---|---| | Forward by first test
+          year | 1.207 / 1.214 | 2.3% | 12-25% | | Scaffold-disjoint, any year | 1.264 / 1.300 | 0.6% | 0 | | Random,
+          any year | 1.217 / 1.216 | 2.6% | 9-23% | | Shipped scaffold folds, all 546 rows | 1.065 / 1.050 | 3.8% | 0 |
+          The first three rows score the same test chemicals of the dated windows; the last is the shipped 3-fold over
+          all rows. The split cannot test a chemical class that no tested series resembles, nor whether the 152
+          chemicals that came from EAT5 and OASIS rather than ECOTOX (undated on the strict join) follow the same
+          pattern; a publication year is an upper bound on the test date.
     """
 
     # Task

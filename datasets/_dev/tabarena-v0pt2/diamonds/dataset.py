@@ -63,6 +63,7 @@ class Diamonds(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("Retrospective",)
     download_description = """
         We download the CSV directly from the ggplot2 GitHub repository.
 
@@ -74,6 +75,9 @@ class Diamonds(AbstractCuratedDataset):
           error matters relative to the price.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Time basis: Retrospective: one scrape of the search site diamondse.info in February 2007 (Wickham, R-help,
+          April 2023); each row a listing's grading and its asking price at that moment; the use case prices a stone
+          against the same day's price list. Not tested: prices after 2007.
     """
 
     # Task

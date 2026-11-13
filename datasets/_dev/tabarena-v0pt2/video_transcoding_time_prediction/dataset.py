@@ -58,6 +58,7 @@ class VideoTranscodingTimePrediction(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("Timeless",)
     download_description = """
         wget https://archive.ics.uci.edu/static/public/335/online+video+characteristics+and+transcoding+time+dataset.zip && unzip online+video+characteristics+and+transcoding+time+dataset.zip transcoding_mesurment.tsv && rm online+video+characteristics+and+transcoding+time+dataset.zip && mkdir -p local-data-warehouse/video_transcoding_time_prediction && mv transcoding_mesurment.tsv local-data-warehouse/video_transcoding_time_prediction/
     """
@@ -69,6 +70,9 @@ class VideoTranscodingTimePrediction(AbstractCuratedDataset):
         - We log scale the target variable.
         - Metric: RMSLE on the time, computed after the inverse of the shipped log (`target_transform="log"`), not the paper's R2 on the raw time (known only from a dissertation abstract, not read); the curator accepted the log-scale error (Lennart, 2026-10-21).
         - Scored per job (Lennart, 2026-11-08, review issue 1; MET-17): each job is a decision of the scheduler. 80 of the 1,099 videos were transcoded to the full grid of 841 output settings and hold 97.8% of the jobs, so the score is in effect the error on new output settings of these videos; 1,018 videos have one job, and counting each video once would give them 93% of the weight, neither mix a cluster's queue. Counting each video once ranks 8 untuned predictors (random forest, extra trees, two LightGBM, two ridge, kNN, the training mean) like the per-job RMSLE at Kendall tau 0.90 per split on average (lowest 0.79) and 0.93 for the ranking by the mean over the 9 shipped splits, and swaps the top pair (random forest leads per job, LightGBM per video).
+        - Time basis: Timeless: designed transcoding jobs on one machine (Deneke et al. 2014); the video's properties
+          and the output setting are known before a job, no job is dated, and all jobs of a video are held out together.
+          Not tested: another machine or newer codecs.
     """
 
     # Task

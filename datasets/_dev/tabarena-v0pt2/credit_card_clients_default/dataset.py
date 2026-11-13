@@ -71,6 +71,7 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("DelayedTarget",)
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
@@ -88,6 +89,12 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `MARRIAGE`, `SEX`.
+        - Time basis: DelayedTarget: one extract of 30,000 card holders of one Taiwanese bank, scored after the
+          September 2005 statement with the same six months of history for every client (April to September 2005); the
+          target is default on the next month's payment, one month closed for every client. Every client was scored at
+          the same statement and its outcome is the same month's payment, so no test row is later than a training row
+          and the random split is IID. The client ID is not a time order (the first two quarters of IDs cannot be told
+          apart, ROC AUC 0.504). The credit limit and the demographics carry no date. Not tested: a later month.
     """
 
     # Task

@@ -54,7 +54,7 @@ class SantanderCustomerSatisfaction(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Anonymized",)
+    data_tags = ("Anonymized", "Retrospective")
     download_description = """
         We use the train.csv from the Kaggle competition.
 
@@ -72,6 +72,12 @@ class SantanderCustomerSatisfaction(AbstractCuratedDataset):
         - We keep the data otherwise as it. Several columns might be categorical and contain encoded nan values but we are not able to determine this due to anonymization.
         - The target (2026-11-01, CLEAN-25): `TARGET` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
+        - Time basis: Retrospective: one extract of Santander's customers (period not stated; competition 2016), with
+          windows of the last month to three months ending at it; the label is a state the host does not define or date,
+          read as dissatisfaction at the extract, which the use case fills in for customers not yet known to be
+          dissatisfied. No exit trace in the last month: customers whose current account emptied in the last month are
+          dissatisfied at 3.1%, against 1.8% for those who kept a balance (training file). Not tested: customers of a
+          later extract, or a label taken after the extract.
     """
 
     # Task

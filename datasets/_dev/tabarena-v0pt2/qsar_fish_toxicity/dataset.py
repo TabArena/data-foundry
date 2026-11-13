@@ -81,6 +81,7 @@ class QsarFishToxicity(AbstractCuratedDataset):
         ),
     )
     special_features = (Smiles(column="SMILES"),)
+    data_tags = ("Timeless",)
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
 
@@ -102,6 +103,24 @@ class QsarFishToxicity(AbstractCuratedDataset):
         - The target comes from the workbook as well: the UCI file rounds LC50 to 3 decimals (every row differs by at most 0.0005), the workbook gives it at full precision.
         - 24% of the rows share all six of the authors' descriptors with another row, but their structures differ: isomers the descriptors could not tell apart. With the structure shipped the pairs are distinguishable, which is one more reason the descriptors leave.
         - Split (CLEAN-24, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the structure (`scaffold_groups`); chemicals without a ring, and those of a scaffold holding more than a tenth of the set, are groups of their own. An assessor estimates the toxicity of an untested chemical, often of a series not yet measured, so whole series are held out; qsar_bioconcentration, qsar_oral_toxicity and qsar_tid_11 group the same way. The source split at random.
+        - Time basis: Timeless: a chemical's 96-hour LC50 for the fathead minnow is a property of the chemical, and the
+          Milano group compiled historic laboratory tests in 2015 without dates (Andrej, 2026-11-12; review issue 3,
+          reply a). Dated through the EPA's ECOTOX bulk release (`ecotox_ascii_09_15_2026`), joined on the CAS-RN of the
+          authors' workbook to the fathead minnow 96-hour LC50 records, the year being the publication year of the
+          earliest matching test: 850 of 908 chemicals (93.6%), 1956 to 2005, median 1984, 90% by 1990. Where ECOTOX
+          gives mg/L, its median per chemical matches the target at r = 0.923 (212 chemicals, median difference 0.02 log
+          units, 95.3% within one log unit). The relation does not move with the year (Spearman of first test year and
+          LC50 -0.06; the authors' own train share is 0.78 to 0.88 in every period), and a forward split by first test
+          year is no stricter than the scaffold folds (untuned models on `encode_smiles`, RMSE, three expanding windows,
+          each training side at least half the dated chemicals; Slurm 1378105, 2026-11-11): | Scheme | RMSE, LightGBM /
+          RF | Close training analog | Test scaffold in training | |---|---|---|---| | Forward by first test year |
+          0.970 / 0.974 | 7.2% | 15-18% | | Scaffold-disjoint, any year | 0.970 / 0.978 | 5.9% | 0 | | Random, any year
+          | 0.941 / 0.941 | 6.9% | 15-20% | | Scaffold 3-fold, all rows | 0.872 / 0.848 | 12.0% | 0 | The first three
+          rows score the same test chemicals of the dated windows; the last is a scaffold 3-fold over all rows. The
+          spread between windows (RMSE 0.81 to 1.17) is larger than the spread between schemes. The split cannot test a
+          chemistry newer than the 1990s (90% of the dated chemicals were first tested by 1990, none after 2005), nor
+          whether the 58 undated chemicals follow the same pattern; a publication year is an upper bound on the test
+          date.
     """
 
     # Task

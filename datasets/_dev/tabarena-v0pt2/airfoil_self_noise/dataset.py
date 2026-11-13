@@ -76,6 +76,7 @@ class AirfoilSelfNoise(AbstractCuratedDataset):
             name="UCI 291, digitised from the report's plots",
         ),
     )
+    data_tags = ("Timeless",)
     download_description = """
         We download UCI's copy (dataset 291, donated 2014), whose values were digitised from the figures of NASA RP-1218.
         mkdir -p local-data-warehouse/airfoil_self_noise/ && wget -P local-data-warehouse/airfoil_self_noise/ https://archive.ics.uci.edu/static/public/291/airfoil+self+noise.zip && unzip local-data-warehouse/airfoil_self_noise/airfoil+self+noise.zip -d local-data-warehouse/airfoil_self_noise/
@@ -87,6 +88,9 @@ class AirfoilSelfNoise(AbstractCuratedDataset):
         - Grouped by setup since 2026-10-20 (by run from 2026-10-06, IID before). A setup is one chord length at one angle, with its runs at all tested speeds: one figure of the report ("Each figure contains spectra for a model at a specific angle of attack for various tunnel speeds", Sec. 4.3); 33 setups, 20 run at 4 speeds and 13 at 2. Under the run split, 91.5% of the test runs had their setup in training at another speed, and the scaling lines those spectra up, so the test mostly filled in a speed; a new angle or size is the query another tunnel run cannot answer cheaply, as a new mix is for concrete_compressive_strength (grouped by mix, 2026-10-14). A random 3-fold split puts two thirds of a run's other bands in train.
         - Not grouped by chord length alone: 6 chords leave 2 held out per fold, too few groups for a stable score (R^2 SD 0.08 to 0.10 across splits), and the use case stays inside the tested range of sizes.
         - `attack-angle` is numeric since 2026-10-20 (categorical in v1, without a reason; CLEAN-14): an angle in degrees, and under the setup split 72% of the test runs (58% to 94% per split) carry an angle value absent from training. R^2, 5 x 3 folds, untuned (review panel, 2026-10-19), random / run / setup, angle numeric: extra trees 0.943 / 0.855 / 0.774, random forest 0.922 / 0.835 / 0.734, LightGBM 0.921 / 0.832 / 0.736; LightGBM with the categorical angle 0.923 / 0.806 / 0.646. On the shipped splits (10 x 3, 11 setups per test fold), untuned: LightGBM 0.727, random forest 0.717, linear 0.445; no task-probe flags (2026-10-20).
+        - Time basis: Timeless: designed wind-tunnel runs of NASA RP-1218 (Brooks, Pope and Marcolini 1989); chord,
+          angle, speed and band are set before a run and the level is measured in it; no run date or order is recorded.
+          Not tested: another airfoil profile or another tunnel, as every run is one NACA 0012 section in one tunnel.
     """
 
     # Task

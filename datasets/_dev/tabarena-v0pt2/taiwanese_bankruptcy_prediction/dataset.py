@@ -76,6 +76,14 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
         - Anomaly: the data is temporal but all features are time-invariant. This might still have a latent, non-verifiable temporal component, which we ignore for our predictive IID task.
         - ForcedIIDFromTemporal: the companies span 1999-2009 (Taiwan Economic Journal, per UCI), but no row carries its
           year, so the split stays random.
+        - Time basis: ForcedIIDFromTemporal: listed Taiwanese companies of 1999-2009, used to screen later statements;
+          no row carries its year or company. The raw file repeats its rows at a regular period (26 to about 200 rows;
+          one period after a row its closest match lies below the 1st percentile of random-pair distances for 34% of
+          rows, 13-17% at other offsets), so the rows look like company-years ordered by industry and year, but no block
+          can be dated (Time: Lost). Leak test across the split: a company's other years sit on the other side, and 69%
+          of bankrupt rows have a bankrupt row one period later (21-25% at other offsets); grouping on rebuilt chains or
+          on file segments moves ROC AUC from 0.941 to 0.939 and 0.934 (LightGBM). Years and company ids would allow a
+          split by time. Not tested: later years and companies not seen in training.
     """
 
     # Task

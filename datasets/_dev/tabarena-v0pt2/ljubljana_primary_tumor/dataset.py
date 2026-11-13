@@ -67,6 +67,7 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We get the data from UCI.
 
@@ -81,6 +82,9 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
         - The data contains many duplicates (10%), which seems to be naturally occurring given the limited amount of features. Moreover, the duplicates sometimes have different targets. We keep the duplicates. While this might bias evaluation a bit, it represents the real-world task with ambiguous features better.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Time basis: ForcedIIDFromTemporal: cancer patients of the Institute of Oncology, Ljubljana, seen before 1986
+          over an unstated period; the UCI file is sorted by site and keeps no date, so whether the site shares or the
+          diagnostic work-up drifted cannot be measured. Years of diagnosis would allow a split by period.
     """
 
     # Task

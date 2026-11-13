@@ -70,6 +70,7 @@ class BadCustomerDetection(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("StationaryRelation",)
     download_description = """
         Download the dataset from Kaggle using the Kaggle API.
 
@@ -83,6 +84,13 @@ class BadCustomerDetection(AbstractCuratedDataset):
         - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month` (1-12) stays a number. A weekday or a month is a
           position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number; named
           weekdays and months are ordered categories instead.
+        - Time basis: StationaryRelation: loans of twelve consecutive months; the uploader's file is in month order
+          (`month` 1 to 12 once, rank correlation with the row 0.996), and over the months the bad rate stays flat (6.2%
+          to 15.4%, chi-squared p = 0.35) and five monthly windows, each trained on all earlier months, score as random
+          splits of the same sizes (ROC AUC 0.737 against 0.728, untuned LightGBM; 0.739 against 0.731, logistic
+          regression). A split by month could not wait for the labels: the bad mark comes after a delay the source does
+          not state, about a loan term. Not tested: loans of a later year or another credit climate, as the file covers
+          twelve months of one lender.
     """
 
     # Task

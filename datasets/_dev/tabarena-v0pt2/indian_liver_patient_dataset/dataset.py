@@ -56,6 +56,7 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We get the data from UCI.
 
@@ -67,6 +68,12 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
         Note, the data contains a few (n=13) duplicates, that are likely naturally occurring duplicates given the features.
         - The target (2026-11-01, CLEAN-25): `Selector` ships its classes as words (1 means a liver patient (UCI)).
           Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
+        - Time basis: ForcedIIDFromTemporal: patients seen over a period the sources do not state; the file keeps no
+          date, so random patients stand in for the patients to come. The file order carries some structure (lag-1
+          correlation of 0.10 to 0.26 for age and the lab values, none for the label: 0.03) but no cost: held out by
+          file position (contiguous 5-fold, or the last third after the first two) ROC AUC stays within the spread of
+          random splits for logistic regression, random forest and TabPFN 3.5. A dated release would test later patients
+          and whether the two groups were collected in different periods, which this split cannot.
     """
 
     # Task

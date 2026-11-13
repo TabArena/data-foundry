@@ -139,6 +139,7 @@ class QsarOralToxicity(AbstractCuratedDataset):
             name="UCI 508, two of the package's three sets",
         ),
     )
+    data_tags = ("Timeless",)
     download_description = """
         The data comes from the Milano Chemometrics and QSAR Research Group's package of Ballabio et al. (2019):
         download form on their site (source_url; freeware, cite the paper). The package is a RAR archive of MATLAB
@@ -177,6 +178,20 @@ class QsarOralToxicity(AbstractCuratedDataset):
         - Fit: approximate (Lennart, 2026-10-21: "a more simulated use case than a direct real case"). The test chemicals are members of the tested reference set; the untested chemicals of the project's 48,137-chemical prediction set have fewer close analogs: 11.0% at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits; median nearest similarity 0.486), against 16.3% for the test chemicals under the scaffold groups (median 0.519) and 24.7% under a random split (0.573).
         - Scope: the input is the molecular structure, as in qsar_tid_11. Before 2026-11-01, on repeat 0 of the shipped splits, a random forest on the authors' bits (ROC AUC 0.901) and LightGBM (0.885) match a similarity-weighted nearest-neighbour model of the paper's N3 kind (Tanimoto, weight sim^10: 0.893).
         - Licence: the package's readme states it is freeware to be used with a reference to the paper; the UCI copy of the two calibration sets is CC BY 4.0.
+        - Time basis: Timeless (2026-11-11, Andrej): whether a chemical is very toxic when swallowed is a fixed property
+          of the chemical, and the use case fills in an inventory that already exists. Dated by the RTECS citation of
+          each chemical's earliest rat oral LD50 report (ToxValDB v9.6.2, the source of most ICCVAM values): 7,927 of
+          the 11,119 chemicals of the public files (71.3%), 1935 to 2023, median 1976. Four expanding windows by report
+          year (1977-80, 1981-85, 1986-90, 1991-2023) leave more close training analogs than scaffold-disjoint training
+          of the same size (12.4% against 8.6%) and a third of the test scaffolds in training (31.5%), and score the
+          same (untuned LightGBM ROC AUC 0.713 against 0.717, random forest 0.770 both), so the scaffold split holds out
+          more than a split by date would. The undated chemicals are half as often very toxic (5.2% against 9.7%), so a
+          split on the dated rows would change the class mix too. Reference population, re-measured 2026-11-11: of the
+          project's 48,135 readable prediction chemicals, 9,537 (19.8%) have their 2D structure in this dataset; of the
+          other 38,598, 11.2% have a close analog (Tanimoto 0.7 or more, Morgan radius 2, 2,048 bits; median nearest
+          0.487) in the training side of scaffold folds, against 15.1% of those folds' test chemicals (median 0.510) and
+          14.4% against all chemicals here. The split cannot test the order of the 28.7% undated chemicals, nor a change
+          in which chemicals are screened later.
     """
 
     # Task
