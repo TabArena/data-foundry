@@ -278,10 +278,16 @@ class ScoringColumn:
     role: str
     """The role it plays for the metric: a key of :attr:`MetricSpec.inputs` (``group``, ``weight``, ``order``)."""
     used_by: str
-    """The name of the metric that uses it."""
+    """The name of the metric that uses it, or ``"training"`` (:data:`TRAINING_ONLY`) for a weight that only the fit
+    reads: the task's ``sample_weight`` when the metric does not weight the rows by it (MET-16)."""
     description: str
     """What the column is and how the metric uses it, e.g. "the week a row belongs to; the metric is the mean of the
     per-era correlations"."""
+
+
+TRAINING_ONLY = "training"
+"""The ``used_by`` of a weight scoring column for training alone (MET-16): the task's ``sample_weight``, which every
+model is fitted with and no metric reads (a label's precision, a design weight when sampling depends on the outcome)."""
 
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
@@ -972,7 +978,8 @@ class PredictiveMLTaskMetadataV2:
     sample_weight: str | None = None
     """The training weight: a scoring column that every model is fitted with as each row's weight, never a feature.
     It is the metric's row weight (a rate's realized denominator such as the years insured, MET-15), so training and
-    scoring weight the rows alike. ``None``: models train unweighted."""
+    scoring weight the rows alike, or a weight for training alone that no metric reads (its scoring column declared
+    ``used_by="training"``, MET-16). ``None``: models train unweighted."""
     unit_weight: UnitWeight | None = None
     """A score that counts each unit once (:class:`UnitWeight`, MET-17): the metric's row weight column and the column
     of the unit whose rows it splits 1 among. For scoring and validation only, never a training weight. ``None``: no
@@ -1124,9 +1131,10 @@ class PredictiveMLTaskMetadataV2:
                 f"{scoring.description}"
             )
         if self.sample_weight is not None:
+            alone = any(c.column == self.sample_weight and c.used_by == TRAINING_ONLY for c in self.scoring_columns)
             lines.append(
-                f"  sample weight:         {self.sample_weight} (fit every model with it as the row weight; never a "
-                "feature)"
+                f"  sample weight:         {self.sample_weight} (fit every model with it as the row weight; "
+                f"{'for training alone, the metric does not read it; ' if alone else ''}never a feature)"
             )
         if self.unit_weight is not None:
             lines.append(

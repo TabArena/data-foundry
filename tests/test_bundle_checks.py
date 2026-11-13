@@ -1104,6 +1104,69 @@ def test_a_row_weight_without_a_sample_weight_warns():
     }
 
 
+def _replicate_container(*, used_by="training", inputs=None, sample_weight="replicates", df=None) -> CuratedContainer:
+    """A mean label over 1 to 3 replicate measurements, scored by RMSE; ``replicates`` the candidate training weight."""
+    if df is None:
+        df = make_iid_frame().assign(target=np.linspace(0.0, 3.0, 60), replicates=np.tile([1.0, 2.0, 3.0], 20))
+    column = ScoringColumn(
+        column="replicates", role="weight", used_by=used_by, description="replicate measurements behind the label"
+    )
+    scoring = [column]
+    if inputs and "plot_weight" in inputs.values():
+        scoring.append(ScoringColumn(column="plot_weight", role="weight", used_by="rmse", description="1 / quadrats"))
+    return make_v2_container(
+        df,
+        spec=_spec("rmse", inputs=inputs or {}),
+        scoring_columns=scoring,
+        problem_type="regression",
+        sample_weight=sample_weight,
+    )
+
+
+def _all_findings(container: CuratedContainer) -> dict[str, str]:
+    return {r.slug: r.severity for r in run_bundle_checks(container, verbose=False).results}
+
+
+def test_a_weight_for_training_alone_trains_and_is_not_scored():
+    """A weight the metric does not read is the training weight when its column is used by "training" (MET-16): no
+    finding, never a feature, no validation weight, and the README and `describe()` say it does not score.
+    """
+    container = _replicate_container()
+    found = _all_findings(container)
+    assert not {s for s in found if s.startswith(("task_sample_weight", "task_metric_weight", "task_weight"))}
+    assert "task_scoring_column_unused" not in found
+    assert training_weight(container) == "replicates"
+    assert "replicates" not in model_inputs(container)
+    assert validation_weight(container) is None
+    assert "for training alone, the metric does not read it" in container.task_metadata.describe()
+    assert "It is for training alone: the metric does not read it" in "\n".join(_metric_block(container.task_metadata))
+
+
+def test_a_training_weight_the_metric_ignores_must_say_so():
+    """Without `used_by="training"` a sample weight the metric does not read stays MET-15's error; a column declared
+    for training that is no sample weight, or that the metric reads, is an unused scoring column.
+    """
+    undeclared = _all_findings(_replicate_container(used_by="rmse"))
+    assert undeclared["task_sample_weight_not_metric_weight"] == "error"
+    assert undeclared["task_scoring_column_unused"] == "error"
+    assert _all_findings(_replicate_container(sample_weight=None))["task_scoring_column_unused"] == "error"
+    read = _all_findings(_replicate_container(inputs={"weight": "replicates"}))
+    assert read["task_scoring_column_unused"] == "error"
+
+
+def test_a_training_weight_beside_the_metrics_weight_is_checked_too():
+    """Both weights are checked for valid values; the metric's own weight still prompts MET-15's warning."""
+    df = make_iid_frame().assign(
+        target=np.linspace(0.0, 3.0, 60), replicates=np.tile([1.0, 2.0, 3.0], 20), plot_weight=np.tile([0.2, 0.5], 30)
+    )
+    both = _replicate_container(df=df, inputs={"weight": "plot_weight"})
+    assert weight_findings(both) == {"task_metric_weight_without_sample_weight": "warning"}
+    df.loc[0, "replicates"] = -1.0
+    assert weight_findings(_replicate_container(df=df, inputs={"weight": "plot_weight"}))["task_weight_invalid"] == (
+        "error"
+    )
+
+
 @pytest.mark.parametrize("sample_weight", ["exposure", None])
 def test_a_weight_columns_test_rows_are_for_the_scorer_only(sample_weight):
     """The README and `describe()` say it for every weight scoring column, a training weight or not (LEAK-41)."""

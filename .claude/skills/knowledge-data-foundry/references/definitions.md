@@ -338,6 +338,19 @@ A metric input known at the prediction point (a weight that is a function of the
   `curation_comments` bullet. A metric weight that is a function of the features (liberty_mutual_fire_peril_loss_cost's
   `var11_weight`, g_research_crypto_forecasting_1m's asset `Weight`) needs no sample weight: accept
   `task_metric_weight_without_sample_weight` with that reason.
+
+  A weight for training alone (MET-16: a design weight when sampling depends on the outcome, a label's precision) is
+  the `sample_weight` too, its scoring column declared `used_by="training"` and left out of the metric's `inputs`:
+
+  ```python
+  sample_weight = "replicate_weight"
+  scoring_columns = (ScoringColumn(column="replicate_weight", role="weight", used_by="training",
+                                   description="replicate measurements behind the mean label; trains, does not "
+                                   "score, since each compound is one decision"),)
+  ```
+
+  The checks then accept it as the training weight and no unused scoring column; it is never a feature, and a harness
+  still weights a validation loss by the metric's weight (`validation_weight(container)`), not by this one.
 * `unit_weight = UnitWeight(column="<weight column>", unit="<unit column>")` (optional): a score that counts each unit
   once (MET-17), e.g. each plot of boreal_postfire_lichen_biomass or each mouse of pancreatic_cancer_mouse_detection.
   The column is the metric's weight scoring column (`inputs={"weight": column}`), 1 over the unit's rows (`1.0 /
@@ -827,7 +840,7 @@ changed, appeared or went; `raw_files_missing` (error) a pattern that matches no
 | `task_target_missing_values` | drop rows with a missing target |
 | `task_target_rare_class`, `splits_test_class_unseen_in_train` | a class too rare to stratify: keep a rare class of the source's labels when its rows carry about their share of the score, merge only by a convention of the field, and accept with the counts ([task_probes.md](../../knowledge-curation/references/task_probes.md), TP-7 and TP-8) |
 | `task_metric_*` | declare `metric` with its origin and reference, the canonical name and the params and inputs the metric takes; each input column a `ScoringColumn` (Field mapping, `metric`) |
-| `task_sample_weight_not_metric_weight`, `task_weight_invalid`, `task_rate_count_not_whole`, `task_feature_looks_like_exposure` | a count or amount over a realized amount at risk: build the rate in `_clean` (assert that target x weight rebuilds the count), ship the amount as the weight scoring column the metric reads and as `sample_weight`, never as a feature (MET-14, MET-15, LEAK-41); a feature named like an amount at risk that is known at the prediction point is accepted with that reason |
+| `task_sample_weight_not_metric_weight`, `task_weight_invalid`, `task_rate_count_not_whole`, `task_feature_looks_like_exposure` | a count or amount over a realized amount at risk: build the rate in `_clean` (assert that target x weight rebuilds the count), ship the amount as the weight scoring column the metric reads and as `sample_weight`, never as a feature (MET-14, MET-15, LEAK-41); a feature named like an amount at risk that is known at the prediction point is accepted with that reason; a weight for training alone that the metric does not read is declared `used_by="training"` (MET-16) |
 | `task_stratify_*` | stratify on the target (classification) or a discrete feature |
 | `task_time_on_dtype`, `task_time_on_missing_values`, `task_time_on_not_sorted` | a datetime (`_feature_types`) or numeric time column without NaN; the base class sorts |
 | `task_group_labels_per_group_violated`, `task_group_on_unique_per_row` | pick `per_group` or `per_sample` correctly |

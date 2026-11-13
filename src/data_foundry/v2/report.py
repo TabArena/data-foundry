@@ -26,7 +26,7 @@ import yaml
 
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation_container import feature_columns
-from data_foundry.schema import resolve_warehouse_dir, rows_text
+from data_foundry.schema import TRAINING_ONLY, resolve_warehouse_dir, rows_text
 from data_foundry.v2 import group_checks
 from data_foundry.v2.dataset import (
     CLI_COMMAND,
@@ -605,12 +605,18 @@ def _metric_block(task: Any) -> list[str]:
             "",
         ]
     if weight is not None:
+        alone = any(c.column == weight and c.used_by == TRAINING_ONLY for c in task.scoring_columns)
+        why = (
+            "It is for training alone: the metric does not read it, so the score does not show whether a model used it."
+            if alone
+            else "The metric weights the test rows by the same column, so a model fitted without it targets another "
+            "quantity."
+        )
         out += [
             "**Training weight**",
             "",
             f"Fit every model with `{weight}` as each row's sample weight (`sample_weight(container)` from "
-            "`data_foundry.curation_container`), and never use it as a feature. The metric weights the test rows by "
-            "the same column, so a model fitted without it targets another quantity.",
+            f"`data_foundry.curation_container`), and never use it as a feature. {why}",
             "",
         ]
     return out
