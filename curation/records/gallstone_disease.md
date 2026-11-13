@@ -3,6 +3,7 @@ unique_name: gallstone_disease
 name: Gallstone
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -11,6 +12,8 @@ decision_markers:
 - Selection Bias
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Lost'
 collections:
 - New (BeyondArena)
 original_source: UCI
@@ -48,6 +51,10 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 3 coded columns carry their words; the target keeps its codes.
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (0 means gallstones present (UCI)).
+
+CC (2026-11-13, Andrej): the time basis is `ForcedIIDFromTemporal` instead of `StationaryRelation`:
+- `StationaryRelation` asks for a measurement on dated data, and the file keeps no visit date (`Time: Lost`), so the stationary relation was argued, not measured.
+- The random split stays; the forced tag says what it is: random patients standing in for later ones, with the drift along the file's order and what a dated release would test in the `Time basis:` line.
 
 ## Reference
 

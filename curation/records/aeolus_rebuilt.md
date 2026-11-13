@@ -11,6 +11,10 @@ decision_markers:
 - Needs extensive data wrangling
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
 original_source: GOV Website
 year: '2026'
 domain: industry & manufacturing

@@ -10,6 +10,8 @@ suggestion: 'Yes'
 tags:
 - Tiny Data
 - Non-IID (Grouped)
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
 collections:
 - TabArena Reject
 original_source: UCI

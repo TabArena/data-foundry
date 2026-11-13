@@ -13,6 +13,10 @@ claimed_by: Lennart
 suggestion: 'Yes'
 decision_markers:
 - Selection Bias
+tags:
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Entities: Recur'
 original_source: UCI
 year: '2018'
 required_split:
@@ -56,6 +60,10 @@ CC (2026-10-27, Lennart): fit approximate (was direct): a screen meets mostly ma
 CC (2026-11-08, Lennart): issue 1, B: each composition counts once. The RMSE weights an entry by 1 over its composition's number of SuperCon entries (`composition_weight`, a scoring column for the metric only, no training weight; the bundle warning accepted, since the composition fixes all 81 inputs), and the metric is declared from context with Hamidieh's per-entry RMSE named as the original, overruled on the unit the scientist decides on (MET-1, MET-17), as Stanev et al. (2018) count each material once. Every entry is still kept (SPLIT-26). Supersedes "Every entry is kept and scored per row" of Lennart's CC of 2026-10-06.
 
 CC (2026-11-08, Lennart): the declared metric (rmse, weighted by composition_weight) is checked.
+
+CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of no prototype tag (2026-11-12):
+- The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
+- The split does not change; the definition's `Time basis:` line keeps the measured evidence.
 
 ## Review
 

@@ -59,6 +59,7 @@ class EcoliProteins(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("Timeless",)
     download_description = """
         wget https://archive.ics.uci.edu/static/public/39/ecoli.zip && unzip ecoli.zip && rm ecoli.zip ecoli.names
         mkdir -p local-data-warehouse/ecoli_proteins && mv ecoli.data local-data-warehouse/ecoli_proteins/
@@ -69,6 +70,11 @@ class EcoliProteins(AbstractCuratedDataset):
         - We drop the sequence name column, which is a unique identifier.
         - We drop three classes with less than 10 samples each: omL (5), imL (2), and imS (2).
         - We drop "chg", which becomes constant after our preprocessing steps.
+        - Time basis: Timeless: a protein's location is a property of the protein and the five scores are computed from
+          its sequence, so nothing in a row arrives later. The proteins were annotated in SWISS-PROT up to 1996 (UCI
+          donation 1996-08-31), the release holds no date, and the raw order is one block per location. Not tested: a
+          protein of a family the 1996 database did not hold, and homologous proteins on both sides of the split, which
+          the dropped accessions would be needed to find.
     """
 
     # Task

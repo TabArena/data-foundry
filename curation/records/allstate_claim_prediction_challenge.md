@@ -11,6 +11,10 @@ priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
 original_source: Kaggle
 year: '2011'
 domain: insurance

@@ -11,6 +11,9 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Selection Bias
+tags:
+- 'Samples: Over Time'
+- 'Time: Lost'
 original_source: UCI
 year: '2016'
 required_split:

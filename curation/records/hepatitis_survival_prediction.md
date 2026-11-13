@@ -11,6 +11,9 @@ decision_markers:
 - Outdated
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Unknown'
 collections:
 - TabArena Reject
 original_source: UCI

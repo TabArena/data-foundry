@@ -11,6 +11,8 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
 original_source: UCI
 year: '2013'
 domain: chemistry & material science
@@ -62,6 +64,10 @@ sources, Cheng et al. and the Canadian DSL database" (Chakravarti and Alla, arXi
 of the 670 canonical structures occur here, one of them with the opposite class. The other record notes that its
 most useful role may be as an external check on this dataset's scaffold split rather than as a dataset of its
 own.
+
+CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of no prototype tag (2026-11-12):
+- The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
+- The split does not change; the definition's `Time basis:` line keeps the measured evidence.
 
 ## Reference
 

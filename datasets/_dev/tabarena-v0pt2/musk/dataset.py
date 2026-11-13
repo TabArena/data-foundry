@@ -62,12 +62,16 @@ class Musk(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("Timeless",)
     download_description = """
         wget https://archive.ics.uci.edu/static/public/75/musk+version+2.zip && unzip musk+version+2.zip clean2.data.Z && uncompress clean2.data.Z && rm musk+version+2.zip && mkdir -p local-data-warehouse/musk && mv clean2.data local-data-warehouse/musk/
     """
     curation_comments = """
         - We rename the molecule IDs to remove the target leakage from the names.
         - We drop the conformation name as it leaks information that the real task should not have (the correlation between specific conformations across samples).
+        - Time basis: Timeless: the shapes are computed from each molecule's structure, all at once, and the label is an
+          expert's judgement of the molecule's smell (Dietterich et al. 1997); no row is dated, and every shape of a
+          test molecule is held out with it. Not tested: a new chemical class outside the 102 molecules.
     """
 
     # Task

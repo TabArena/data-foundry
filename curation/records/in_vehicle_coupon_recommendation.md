@@ -11,6 +11,9 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Selection Bias
+tags:
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
 original_source: Other
 year: '2017'
 required_split:

@@ -124,6 +124,7 @@ class HorseColicSurvival(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("StationaryRelation",)
     download_description = """
         Get the train and test data from UCI.
 

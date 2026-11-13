@@ -164,6 +164,7 @@ class InfraredThermographyTemperature(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("StationaryRelation",)
     download_description = """
         We download the FLIR camera file of version 1.0.0 from PhysioNet and check it against the release's SHA256SUMS.txt.
 
@@ -192,6 +193,10 @@ class InfraredThermographyTemperature(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
           by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
           is simply not on the scale, such as Other, is missing).
+        - Time basis: StationaryRelation: the calibration is meant to hold whatever the day (Lennart, 2026-10-21), and
+          folds grouped by day score as random ones do (R^2 0.699 against 0.700). Past-only training in 6 expanding
+          windows costs +0.5% to +6.7% RMSE, and a first-year calibration over-predicts the second year by 0.06-0.09 °C,
+          which follows the changed set-up (location, camera distance). It cannot test a later set-up.
     """
 
     # Task

@@ -12,6 +12,7 @@ suggestion: 'Yes'
 tags:
 - New IID
 - Free Text (Sentences)
+- 'Samples: One Moment'
 collections:
 - TexTabBench
 - STRABLE

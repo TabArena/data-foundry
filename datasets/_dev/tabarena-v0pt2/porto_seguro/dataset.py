@@ -54,7 +54,7 @@ class PortoSeguro(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Anonymized",)
+    data_tags = ("Anonymized", "DelayedTarget")
     download_description = """
         We use the train.csv from the Kaggle competition.
 
@@ -72,6 +72,12 @@ class PortoSeguro(AbstractCuratedDataset):
         - There exist only 6 duplicates in the training data. We drop them as the portion is too small to be meaningful.
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
+        - Time basis: DelayedTarget: policy holders priced at one moment, the target a claim within the following year
+          (the host's framing; record: Samples: One Moment, Target: Later). Every row shares that moment and the claim
+          window, so no test row is later than a training row and the random split is IID. The id is a random shuffle
+          and no date survives, so neither the moment nor a later pricing round can be checked. Leak test across the
+          split: no repeated policy holder, no order along the id, the region code in ps_reg_03 held out scores the same
+          (ROC AUC 0.639). Not tested: a later pricing round.
     """
 
     # Task

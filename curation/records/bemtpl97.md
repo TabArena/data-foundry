@@ -4,6 +4,7 @@ name: beMTPL97
 checked_by:
 - Myunghwan
 - Lennart
+- Andrej
 data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
@@ -11,6 +12,9 @@ suggestion: 'Yes'
 priority: 4
 tags:
 - Two-Regime Zeros
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Later'
 original_source: Github
 year: '2019'
 domain: insurance
@@ -102,6 +106,11 @@ CC (2026-11-06, Lennart): issue 1 resolved as the rate with a sample weight (opt
 CC (2026-11-08, Lennart): the declared metric (`mean_poisson_deviance`) is checked, as declared; the record ships, with no open issue on the PR #47 review board.
 
 CC (2026-11-08, Lennart): tagged `Two-Regime Zeros`, as fremtpl2 (its issue 10, reply (c)): the tag describes the target's distribution, not the task's model, and 88.8% of the policies have no claim (144,936 of 163,212) ("Tag bemtpl97 too; the tag should when the target has the kind of distribution indepdet of just the task as far as I understand").
+
+CC (2026-11-13, Andrej): collection facts `Samples: Over Time` and `Time: Lost` in place of `Samples: One Moment`:
+- `Samples` now asks when each row's prediction point lies, not how the file was pulled (SPLIT-32, sharpened 2026-11-13). The prediction point is the quotation at each policy's start, and policies started or were surrendered through 1997, as the share of the year insured shows.
+- No start date survives, so the time is lost.
+- The forced split (`ForcedIIDFromTemporal`) now agrees with the facts.
 
 ## Review
 

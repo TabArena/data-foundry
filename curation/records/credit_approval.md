@@ -14,6 +14,8 @@ decision_markers:
 - Anonymized
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Lost'
 collections:
 - New (BeyondArena)
 original_source: UCI

@@ -91,17 +91,35 @@ DataTags = Literal[
     # Other context tags (not statistical information!)
     "Spatial",  # data that contains spatial/geographical information
     "Anonymized",  # data that has no semantic meaning anymore on purpose
-    # data that is IID by construction of the data.
-    #   - e.g. temporal data that is missing the timestamp
+    # Use-case prototypes that justify an IID or grouped split of data that is not IID (SPLIT-32); one per definition,
+    #   never on a temporal split, with a `Time basis:` line in `curation_comments`.
+    "Timeless",  # the target is a fixed property of the item, in a catalogue that does not drift
+    # the samples arise over time in the use case, but the data is one snapshot of a moment or period, and the use case
+    #   looks back: it fills in what is missing for the time the snapshot covers, not a later time
+    "Retrospective",
+    "DelayedTarget",  # one shared prediction moment; the target arrives after it, in a window closed for every row
+    # a present state read through a relation that time does not move, always measured on dated data
+    "StationaryRelation",
+    # the use case aims at groups the data does not hold (a hospital, a well, a protein, a chemical family), not at a
+    #   later period: whole groups held out
+    "UnseenGroup",
+    # Forced from temporal (SPLIT-8): a forward use case whose target time affects, but no usable time or too few
+    #   periods; the closest split, IID or grouped, with a `Time basis:` line that names the reason.
     "ForcedIIDFromTemporal",
-    # a task temporal by its use case, split grouped because it has too few periods for three test windows
     "ForcedGroupedFromTemporal",
     # Retired (2026-10-21): kept readable for containers that carry it; new definitions refuse it (RETIRED_DATA_TAGS).
     "2ndTierData",
+    "Snapshot",  # retired 2026-11-13 for `Retrospective`: it described the data, not a use case
     "WrongDomain",  # Task that was transformed to another domain (like audio) to tabular.
 ]
-RETIRED_DATA_TAGS = ("2ndTierData",)
+RETIRED_DATA_TAGS = ("2ndTierData", "Snapshot")
 """Tags old containers may carry and loading accepts, but a new definition may not set."""
+
+TIME_BASIS_TAGS = ("Timeless", "Retrospective", "DelayedTarget", "StationaryRelation", "UnseenGroup")
+"""The use-case prototypes that justify a split that is not temporal (SPLIT-32)."""
+
+FORCED_TIME_TAGS = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
+"""The forced splits of a forward use case without usable time (SPLIT-8)."""
 ProblemType = Literal["binary_classification", "multiclass_classification", "regression"]
 ProblemTypeClassification = [
     "binary_classification",

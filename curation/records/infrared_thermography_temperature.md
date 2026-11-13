@@ -11,6 +11,8 @@ decision_markers:
 - Selection Bias
 tags:
 - New IID
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - New (BeyondArena)
 original_source: Website

@@ -13,6 +13,8 @@ decision_markers:
 - Class-dependent Recording
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Lost'
 collections:
 - New (BeyondArena)
 original_source: UCI

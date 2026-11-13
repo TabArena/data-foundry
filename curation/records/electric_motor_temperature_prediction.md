@@ -13,6 +13,9 @@ decision_markers:
 tags:
 - Non-IID (Grouped)
 - Multi-target
+- 'Samples: No Time Dimension'
+- 'Time: Within Entity'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Kaggle

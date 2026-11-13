@@ -66,6 +66,7 @@ class HeartFailureFollowupSurvival(AbstractCuratedDataset):
             name="UCI 519",
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We get the data from UCI.
 
@@ -78,6 +79,7 @@ class HeartFailureFollowupSurvival(AbstractCuratedDataset):
         - We drop the "time" feature. It is the follow-up period in days (4-285; Chicco & Jurman 2020, Table 1: "Follow-up period"), and DEATH_EVENT is "If the patient died during the follow-up period". Follow-up ends at death or at censoring, so a short follow-up means an early death: the value is only known after the outcome (alone it gives ROC AUC 0.84). The paper's analysis that includes it is not a prediction-time setup.
         - The target (2026-11-01, CLEAN-25): `DEATH_EVENT` ships its classes as words (1 is the event). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
+        - Time basis: ForcedIIDFromTemporal: heart-failure patients admitted from April to December 2015, each followed from their own admission; the follow-up time dates the survivors (one end of follow-up, about mid-January 2016) but not the deaths, so no split by admission date can be built without the outcome, and random patients stand in for the patients to come. A release with admission dates would allow a split by date (Andrej, 2026-11-11).
     """
 
     # Task

@@ -13,6 +13,9 @@ priority: 2
 tags:
 - Non-IID (Temporal)
 - Free Text (Sentences)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
 collections:
 - TexTabBench
 - TabSTAR

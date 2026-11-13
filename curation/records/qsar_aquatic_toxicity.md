@@ -11,6 +11,8 @@ suggestion: Yes (Disagreement)
 tags:
 - Tiny Data
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - TabArena Reject
 original_source: UCI

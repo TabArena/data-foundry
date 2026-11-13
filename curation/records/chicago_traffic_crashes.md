@@ -13,6 +13,10 @@ decision_markers:
 - Class-dependent Recording
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Revised Later'
+- 'Features: Revised Later'
 collections:
 - New (BeyondArena)
 original_source: GOV Website

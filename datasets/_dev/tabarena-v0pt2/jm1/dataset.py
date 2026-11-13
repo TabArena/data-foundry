@@ -76,6 +76,7 @@ class Jm1(AbstractCuratedDataset):
             name="OpenML 1053, which we read (byte-identical to the PROMISE file)",
         ),
     )
+    data_tags = ("Retrospective",)
     download_description = """
         `_load_raw` reads OpenML dataset 1053 with openml-python, which downloads the file to its own cache
         (~/.cache/openml), not to local-data-warehouse/jm1/. To fetch it before a check or build:
@@ -95,6 +96,12 @@ class Jm1(AbstractCuratedDataset):
         - The source URL is jm1.arff of the PROMISE repository, donated in 2004 by Tim Menzies from the NASA Metrics Data Program; it answers over plain http but gives 404 over https, and the Wayback Machine holds the same file. We read OpenML dataset 1053, whose ARFF is byte-identical to it (see the download description).
         - The target (2026-11-01, CLEAN-25): `defects` ships its classes as words (True means defects). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
+        - Time basis: Retrospective: one extraction of the static code measures of one version of JM1, joined with each
+          function's defect reports (NASA Metrics Data Program; donated to PROMISE on 2 December 2004); the test
+          functions are functions of the same code base at the same moment (2026-11-12, Andrej, review issue 2 A).
+          When the code was measured relative to the defect reports and their fixes is not stated. The random split
+          cannot test a later release of the code, nor defects that one report shares across the functions of a file
+          (the data has no file or function name).
     """
 
     # Task

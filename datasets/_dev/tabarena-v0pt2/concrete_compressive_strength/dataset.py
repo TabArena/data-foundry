@@ -63,6 +63,7 @@ class ConcreteCompressiveStrength(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("Timeless",)
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
 
@@ -73,6 +74,9 @@ class ConcreteCompressiveStrength(AbstractCuratedDataset):
         - The 1,030 tests are 428 mixes: a mix is its amounts of the seven ingredients, and 182 mixes are tested at several ages (up to 20 tests). We add the mix as the group column `mix`, built from identical values in all seven ingredient columns; it is no feature.
         - Grouped by mix since 2026-10-14 (IID before, the split shipped in TabArena v0.1 and BeyondArena): a model is used for a mix that was not tested, while a random split gave 73% of the test rows their mix in training at another age. Mixes carry 65% of the target variance. R^2, random against grouped by mix: LightGBM 0.925 / 0.874, extra trees 0.912 / 0.881, random forest 0.901 / 0.856, MLP 0.916 / 0.838, kNN 0.882 / 0.826, ridge 0.816 / 0.804; the ranking of the models changes.
         - Note: 34 rows repeat the features of another row, a mix tested again at the same age (25 with the same strength, 9 with another); they stay, and the grouped split keeps them in the fold of their mix.
+        - Time basis: Timeless: laboratory tests of designed mixes (Yeh 1998); the amounts are chosen before casting and
+          the strength is measured at the stated age, a feature; no test date is recorded. Not tested: mixes of a
+          laboratory outside the compilation, with its own materials and curing.
     """
 
     # Task

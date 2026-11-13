@@ -11,6 +11,13 @@ suggestion: 'Yes'
 priority: 2
 decision_markers:
 - Selection Bias
+tags:
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Target: Revised Later'
+- 'Entities: Recur'
+- 'Features: Read Later'
 collections:
 - New (BeyondArena)
 original_source: Zindi

@@ -9,6 +9,9 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- 'Samples: Over Time'
+- 'Time: Lost'
 original_source: UCI
 year: '2022'
 required_split:

@@ -12,6 +12,11 @@ suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
 - Free Text (Sentences)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- 'Features: Revised Later'
 collections:
 - TexTabBench
 - STRABLE

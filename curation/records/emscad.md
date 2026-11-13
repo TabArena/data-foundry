@@ -12,6 +12,10 @@ suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
 - Free Text (Sentences)
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Revised Later'
+- 'Entities: Recur'
 collections:
 - TexTabBench
 - TabSTAR

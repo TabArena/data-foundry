@@ -9,6 +9,10 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Varying Delay'
 original_source: UCI
 year: '1994'
 required_split:

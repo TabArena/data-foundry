@@ -124,6 +124,7 @@ class CaracasCervicalCancer(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the data from UCI (dataset 383, Cervical Cancer (Risk Factors)). The zip holds one file,
         risk_factors_cervical_cancer.csv (858 rows, 36 columns; unanswered questions are "?").
@@ -149,6 +150,8 @@ class CaracasCervicalCancer(AbstractCuratedDataset):
         - Note: a label-free distance to the nearest other patient gives ROC AUC 0.70, above the untuned models (random forest 0.68). It follows the number of nonzero answers (Spearman 0.57), so we read it as the risk load of the questionnaire, not as generated data (the generated-data probe finds no rule leaves).
         - Impossible answers become missing: 2 first intercourses after the patient's current age and 2 STD diagnoses longer ago than her age (the age is the clinic's record).
         - Anomaly: other answers contradict each other without being impossible and stay as recorded: 5 patients have a `dx_*` flag set while `dx` is 0, and 7 report an STD with no STD diagnosis counted (the questions may count different things).
+        - Time basis: ForcedIIDFromTemporal: the patients came to the service over time, and the file carries no visit
+          date, so the time is lost. A dated release would test patients later than those used for training.
     """
 
     # Task

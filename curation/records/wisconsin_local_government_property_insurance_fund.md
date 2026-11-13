@@ -11,6 +11,10 @@ priority: 4
 tags:
 - Two-Regime Zeros
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
 original_source: Github
 year: '2017'
 domain: insurance

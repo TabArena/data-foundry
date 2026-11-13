@@ -10,6 +10,8 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - TabArena Reject
 - TabRed

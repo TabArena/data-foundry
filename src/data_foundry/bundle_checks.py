@@ -45,7 +45,7 @@ import pandas as pd
 
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
-from data_foundry.schema import DatasetMetadata, as_column_list
+from data_foundry.schema import FORCED_TIME_TAGS, TIME_BASIS_TAGS, DatasetMetadata, as_column_list
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
 
@@ -1903,7 +1903,7 @@ def _check_data_tags(ctx: _Ctx) -> Iterator[CheckResult]:
                 "warning",
                 f"`data_tags` claim {sorted(wrong)} but the task defines an IID split.",
                 hint="Either set `time_on`/`group_on`, or fix the tags (`ForcedIIDFromTemporal` is the tag for "
-                "temporal data shipped without a usable time index).",
+                "temporal data shipped without a usable time index, SPLIT-8).",
             )
     else:
         if expected not in tags and "GroupedTemporal" not in tags:
@@ -1935,6 +1935,51 @@ def _check_data_tags(ctx: _Ctx) -> Iterator[CheckResult]:
                 hint="Tag the regime that the split actually uses; describe the other structure in "
                 "`curation_comments`.",
             )
+
+
+@_check
+def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
+    """An IID or grouped split says why it is not temporal: a prototype, a forced tag or a `Time basis:` line."""
+    tags = set(ctx.dataset_metadata.data_tags)
+    basis = sorted(tags & set(TIME_BASIS_TAGS))
+    forced = sorted(tags & set(FORCED_TIME_TAGS))
+    has_line = "Time basis:" in (ctx.dataset_metadata.curation_comments or "")
+    if ctx.regime == "temporal_non_iid":
+        if basis:
+            yield CheckResult(
+                "meta_time_basis_on_temporal",
+                "warning",
+                f"`data_tags` carry {basis}, which say why a split is not temporal, but this split is temporal.",
+                hint="Drop the time-basis tag.",
+            )
+        return
+    if not basis and not forced and not has_line:
+        yield CheckResult(
+            "meta_time_basis_missing",
+            "info",
+            "The split is not temporal and the definition does not say why.",
+            hint=f"Add the use-case prototype ({', '.join(TIME_BASIS_TAGS)}) with a `Time basis:` line in "
+            "`curation_comments`, a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`) with its line, "
+            "or the line alone with the reason, SPLIT-32.",
+        )
+    if forced and not has_line:
+        yield CheckResult(
+            "meta_time_basis_line_missing",
+            "info",
+            f"`{forced[0]}` has no `Time basis:` line in `curation_comments`.",
+            hint="Name the reason (time lost, or too few periods) and what a dated release would change (SPLIT-8, "
+            "SPLIT-32).",
+        )
+    target = ctx.target
+    dated = [c for c in ctx.df.columns if c != target and pd.api.types.is_datetime64_any_dtype(ctx.df[c])]
+    explained = bool(set(basis) & {"Retrospective", "DelayedTarget"}) or (has_line and not basis)
+    if dated and not explained:
+        yield CheckResult(
+            "meta_time_present_unused",
+            "info",
+            f"Date columns {dated} are in the data, and the split is not temporal.",
+            hint="Information for the split (SPLIT-32): the data carries dates.",
+        )
 
 
 @_check

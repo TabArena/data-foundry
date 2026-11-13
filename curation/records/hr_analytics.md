@@ -9,6 +9,10 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Unknown'
 original_source: Other
 year: '2018'
 required_split:

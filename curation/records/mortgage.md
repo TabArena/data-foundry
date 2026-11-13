@@ -9,6 +9,10 @@ suggestion: 'Yes'
 priority: 4
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Website

@@ -1313,7 +1313,7 @@ def _split_notes(comments: str | None) -> list[str]:
     return [MD.renderInline(b) for b in bullets if SPLIT_WORD.search(b)]
 
 
-TIME_BASIS = ("Timeless", "Snapshot", "DelayedTarget", "StationaryRelation")
+TIME_BASIS = ("Timeless", "Retrospective", "Snapshot", "DelayedTarget", "StationaryRelation", "UnseenGroup")
 """The definition's use-case prototypes (SPLIT-32), as in ``data_foundry.schema.TIME_BASIS_TAGS``."""
 FORCED = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
 """The definition's forced tags (SPLIT-8), as in ``data_foundry.schema.FORCED_TIME_TAGS``."""

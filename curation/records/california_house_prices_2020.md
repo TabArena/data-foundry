@@ -13,6 +13,9 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 - Free Text (Sentences)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - AutoML_MM
 - TabSTAR

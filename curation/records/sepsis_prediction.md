@@ -9,6 +9,11 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Within Entity'
+- 'Time: Lost'
+- 'Target: Later'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 - TabSTAR

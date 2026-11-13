@@ -53,6 +53,7 @@ class ForensicGlassIdentification(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("Timeless",)
     download_description = """
         We get the data from UCI.
 
@@ -66,6 +67,11 @@ class ForensicGlassIdentification(AbstractCuratedDataset):
         - The data contains one naturally occurring duplicate.
         - The target (2026-11-01, CLEAN-25): `Type_of_glass` ships its classes as words (glass.names, 11. Type of
           glass).
+        - Time basis: Timeless: the glass type is a property of the object the fragment came from, and the refractive
+          index and oxides are measured on the fragment, so nothing in a row arrives later. The Home Office laboratory
+          gathered the fragments from casework before September 1987 and no date is published; the Id order is a sort by
+          class and by magnesium within it. Not tested: glass made since then (36% of the rows are non-float window
+          glass, hardly made since the mid-1970s) and today's trace-element casework.
     """
 
     # Task

@@ -118,6 +118,7 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
             name="UCI 878",
         ),
     )
+    data_tags = ("StationaryRelation",)
     download_description = """
         We get the UCI data.
 
@@ -140,6 +141,17 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
           numbers (`SCORES`): `Stage`.
         - The target (2026-11-01, CLEAN-25): `death_or_transplant_within_5y` ships its classes as words (1 is the
           event). Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
+        - Time basis: StationaryRelation: the IDs follow registration within the trial and within the other patients,
+          and the censored patients' follow-up dates them (1974 to mid-1981). Measured along that order (2026-11-12):
+          the event rate shows no trend (34%, 40%, 34% and 35% by two-year period); the outcome is not autocorrelated
+          (lag-1 -0.05, permutation p 0.39; in the trial's exact ID order -0.11, p 0.08), nor is what the findings
+          miss (-0.08, p 0.15); only age alternates slightly in the trial (-0.16, p 0.015, one of 18 tests) and does
+          not reach the outcome; the event rate of the 10 nearest patients adds nothing (logistic regression ROC AUC
+          0.895 without it, 0.892 with it, 3 x 20 folds). The newest of three windows of 50 patients scores 0.921
+          against 0.861 on random folds (untuned LightGBM; logistic regression 0.846 against 0.874), with no gain
+          from later patients at equal training size. So random patients lose no realism and keep 60 folds
+          (2026-11-12, Andrej, review issue 2 A). The random split cannot test patients referred after mid-1981, nor
+          a change of referrals or treatment.
     """
 
     # Task

@@ -12,6 +12,8 @@ decision_markers:
 - Selection Bias
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Lost'
 collections:
 - TabArena Reject
 - TabSTAR

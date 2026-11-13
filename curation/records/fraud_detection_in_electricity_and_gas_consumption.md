@@ -11,6 +11,10 @@ tags:
 - Review Prio 1 (Atlas)
 - Non-IID (Grouped)
 - Revisit later
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Zindi

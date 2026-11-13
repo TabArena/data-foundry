@@ -12,6 +12,9 @@ suggestion: 'Yes'
 tags:
 - Larger IID Data
 - Free Text (Sentences)
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Varying Delay'
 collections:
 - TexTabBench
 - TabSTAR

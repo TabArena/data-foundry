@@ -16,6 +16,9 @@ decision_markers:
 tags:
 - Tiny Data
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Other

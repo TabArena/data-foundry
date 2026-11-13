@@ -81,6 +81,7 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We take the original data from UCI.
 
@@ -103,6 +104,15 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
           every column but age to a category, so they shipped unordered although the decoding above made them
           numbers. The source names only the ends of the scale ("0 indicates that the feature was not present, 3
           indicates the largest amount possible, and 1, 2 indicate the relative intermediate values").
+        - Time basis: ForcedIIDFromTemporal: patients examined over a period the source does not state (published
+          1998); the file keeps no date but has two parts, rows 1 to 169 in mixed order and rows 170 to 366 mostly in
+          runs of one diagnosis. The clinical findings tell them apart (random forest ROC AUC 0.70; 0.54 from the
+          diagnosis alone). The random split puts both parts on both sides, so each test patient has training patients
+          of its own part: on the shipped splits, logistic regression's log loss on one part's patients is 0.536 and
+          0.345 when it trains on a random mix of both parts, against 0.688 and 0.425 when it trains on as many
+          patients of the other part alone; told the part, it improves by another 0.014, and the case mix of the parts
+          adds nothing (Slurm job 1373758). Read as two collection periods, too few for three windows; dates of
+          examination would allow a split by period.
     """
 
     # Task

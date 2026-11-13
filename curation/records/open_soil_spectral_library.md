@@ -4,6 +4,7 @@ name: Open Soil Spectral Library (OSSL) / KSSL MIR soil spectra
 checked_by:
 - Myunghwan
 - Lennart
+- Andrej
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
@@ -13,6 +14,8 @@ tags:
 - Many features
 - Non-IID (Grouped)
 - Spectral Data
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - New (BeyondArena)
 original_source: Website
@@ -105,6 +108,10 @@ CC (2026-11-05, Lennart): the target column is renamed to `log1p_organic_carbon_
 CC (2026-11-05, Lennart): the `no_spread` flag is left unrecorded for this dataset only (Review issue 7, (b)): its default families all reach skill 0.98-0.985.
 
 CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
+CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of no time basis:
+- The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
+- The split does not change; the definition's `Time basis:` line keeps the measured evidence.
 
 ## Review
 

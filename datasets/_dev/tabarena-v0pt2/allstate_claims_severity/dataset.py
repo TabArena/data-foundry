@@ -59,7 +59,7 @@ class AllstateClaimsSeverity(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Anonymized",)
+    data_tags = ("Anonymized", "ForcedIIDFromTemporal")
     download_description = """
         We use the train.csv from the Kaggle competition.
 
@@ -75,6 +75,11 @@ class AllstateClaimsSeverity(AbstractCuratedDataset):
         - The data contains 1 duplicate row when ignoring the target. We drop this artifact.
         - We log scale the target, the scale a practitioner models a claim cost on; the metric is the competition's
           MAE on the loss as published, computed after the inverse (`target_transform="log"`, MET-3).
+        - Time basis: ForcedIIDFromTemporal: claims filed one by one over a period Allstate does not state, each cost
+          known after a settlement time that differs by claim; the release keeps no claim date and the id is a random
+          draw (a model tells low from high ids at ROC AUC 0.501; training on the first 80% of ids scores RMSE 0.535
+          against 0.538 to 0.541 on random splits), so random claims stand in for the claims to come. A dated release
+          would allow a split by filing date and show whether `loss` is final.
     """
 
     # Task

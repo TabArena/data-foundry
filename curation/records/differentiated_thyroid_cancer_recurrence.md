@@ -9,6 +9,9 @@ suggestion: 'Yes'
 priority: 1
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Varying Delay'
 collections:
 - TabSTAR
 original_source: UCI

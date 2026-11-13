@@ -11,6 +11,9 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Duplicate
+tags:
+- 'Samples: Over Time'
+- 'Time: Dated'
 original_source: UCI
 year: '1992'
 required_split:

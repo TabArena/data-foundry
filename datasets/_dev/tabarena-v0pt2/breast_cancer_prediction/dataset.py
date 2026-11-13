@@ -149,6 +149,7 @@ class BreastCancerPrediction(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         The Breast Cancer Surveillance Consortium distributes the BCSC Digital Mammography Dataset after a
         registration form (name, institution, e-mail, captcha) at
@@ -189,6 +190,8 @@ class BreastCancerPrediction(AbstractCuratedDataset):
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order.
+        - Time basis: ForcedIIDFromTemporal: the screening exams were collected over time, and the file carries no exam
+          date, so the time is lost. A dated release would test exams later than those used for training.
     """
 
     accepted_check_warnings = {

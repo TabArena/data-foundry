@@ -9,6 +9,9 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Larger IID Data
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Kaggle

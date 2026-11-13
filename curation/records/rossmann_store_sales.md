@@ -10,6 +10,11 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
+- 'Features: Read Later'
 collections:
 - TabArena Reject
 original_source: Kaggle

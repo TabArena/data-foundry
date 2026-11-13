@@ -11,6 +11,10 @@ priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Revised Later'
+- 'Entities: Recur'
 original_source: Other
 year: '2026'
 domain: insurance

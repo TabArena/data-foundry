@@ -12,6 +12,10 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 - Review Prio 1 (Atlas)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Kaggle

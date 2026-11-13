@@ -56,26 +56,156 @@ by an uploader, never shipped, or only implied by how the data was collected (re
 feature and the target contemporaneous). When the setup is values unfolding over time from a stream of signals, it is
 temporal or forecasting whether or not a date column survived. Cases: combined_cycle_power_plant.
 
-**SPLIT-8 (Must; narrows SPLIT-7, SPLIT-14 and USE-10).** When a task is temporal in nature or by its use case but
-the release cannot give the windows SPLIT-14 asks for, it ships in the closest regime that keeps the rows, tagged as
+**SPLIT-8 (Must; narrows SPLIT-7, SPLIT-14 and USE-10).** When a task is temporal in nature or by its use case but the
+release cannot give the windows SPLIT-14 asks for, it ships in the closest regime that keeps the rows, tagged as
 forced from temporal, with the cost measured against the valid windows where the data has any. This covers a release
-with no dates at all (one extract, the status at that moment standing in for a forecast), a release with one stock
-month of the base or a few cohort months of one customer base (a split by those months tests a change of cohort, not
-of time), and a release with too few periods for three windows. The closest regime is IID (tag
-`ForcedIIDFromTemporal`), or grouped by the entity when the periods are stacked and the entities recur across them
-(tag `ForcedGroupedFromTemporal`). Say what the timestamp or a dated window would change and that it should be
-recovered if a later release has it. A forced split, grouped or IID, gets a leak test across the split and the
-leak probes: does a row share its outcome, its unit's outcome or its period's outcome with the other side, is there
-a hidden group, an order dependence. A leak found is weighed case by case like any other: removed where it can be,
-otherwise the task may still ship as an approximate fit with the leak measured in the notes. Being forced alone never
-makes a dataset `No`, and a dataset stays tagged as forced whatever the test finds, since its source's regime was
-another. (Lennart, 2026-10-12; amended 2026-10-21, Lennart: one stock month, from
-mobile_churn and the churn snapshots; too few periods, from nba_players_2016_2019,
+whose rows arose over a period and lost their dates, a few cohort months of one customer base (a split by those months
+tests a change of cohort, not of time), and a release with too few periods for three windows. A release that is one
+moment (every row predicted at the same point) is forced only when its use case looks forward from a target of that
+moment or of unknown timing: one moment is one period, too few for windows (coil_2000, mobile_churn). Otherwise
+SPLIT-32 gives it `Retrospective` (the use case looks back) or `DelayedTarget` (the target arrives after the shared
+moment).
+The closest regime is IID (`ForcedIIDFromTemporal`), or grouped by the entity when the periods are stacked and the
+entities recur across them (`ForcedGroupedFromTemporal`); SPLIT-32 says when a split is forced. The definition's
+`Time basis:` line names the reason (time lost, or too few periods), says what the timestamp or a dated window would
+change and that it should be recovered if a later release has it. A forced split, grouped or
+IID, gets a leak test across the split and the leak probes: does a row share its outcome, its unit's outcome or its
+period's outcome with the other side, is there a hidden group, an order dependence. A leak found is weighed case by
+case like any other: removed where it can be, otherwise the task may still ship as an approximate fit with the leak
+measured in the notes. Being forced alone never makes a dataset `No`, and a dataset stays tagged as forced whatever
+the test finds, since its source's regime was another. (Lennart, 2026-10-12; amended 2026-10-21, Lennart: one stock
+month, from mobile_churn and the churn snapshots; too few periods, from nba_players_2016_2019,
 open_university_learning_analytics_dataset and distribution_transformers_at_cauca_department; amended 2026-11-02,
 Andrej, on the insurance tables of the zero-inflated batch: a leak test across a forced split; reworded 2026-11-05,
-Lennart: the test informs a case-by-case call and the forced tag stays.) Cases:
-account_debt_south_africa, mobile_churn, open_university_learning_analytics_dataset (nba_players_2016_2019 was
-retired on 2026-10-26 on its use case, not its split).
+Lennart: the test informs a case-by-case call and the forced tag stays; one-moment releases moved to SPLIT-32.) Cases:
+open_university_learning_analytics_dataset (nba_players_2016_2019 was retired on 2026-10-26 on its use case, not its
+split); account_debt_south_africa and mobile_churn, first cases here, are one-moment releases under SPLIT-32.
+
+### When information arrives
+
+**SPLIT-32 (Should; relates to SPLIT-7, SPLIT-8 and SPLIT-14).** How the data was collected for the use case, when
+each sample, each feature and the target come into existence, is information for the split. When that order varies
+from sample to sample, the data is non-IID, and how it was collected helps to see which split represents the use case
+and which features are available at the prediction point. Two sets of tags record it.
+
+The curation record describes the source by independent collection facts, true whatever task is built on it. They are
+read from the source, its documentation and its raw file (a built container's row order is shuffled and says nothing
+about time), and they do not change with the split a definition chooses. A fact the source does not settle is
+`Unknown` rather than a guess:
+
+* **Samples:** `Samples: No Time Dimension` (designed runs, or a catalogue of properties where it plays no role when
+  an item was measured), `Samples: One Moment` (every row has the same prediction point: one census, one rating date,
+  one exam round, one customer base read at one date), `Samples: Over Time` (the rows' prediction points spread over a
+  period) or `Samples: Unknown`. The fact asks when each row is predicted, not how the file was pulled: one scrape of
+  sales from several years, or one extract of policies each priced at its own start, is over time (perth_house_prices,
+  bemtpl97), with `Features: Read Later` when the attributes come from the extract. The test: could two rows'
+  prediction points lie at different times? A catalogue whose items enter in eras, or whose features mean something
+  different by when an item was made, arose over time even when each item's value is fixed: sdss_17's quasars are
+  3-11% of the spectra before 2010 and 31-46% from 2014 on, and phishing pages and malware change with their year.
+* **Time,** for samples over time: `Time: Dated` when the release or a parent source keeps the date (a date column, a
+  value that encodes the period, a date dropped from the raw file, or a parent upload that matches the rows by an id;
+  the time probe, `time_probes.py`, looks for them); `Time: Inferred` when only an order that tracks time survives,
+  with no calendar (an id, a case number, a file position); else `Time: Lost`. An order found only within each entity
+  (a policy's terms, a patient's visits, the 2 Hz samples of one bench session) is `Time: Within Entity`, whatever the
+  samples fact says (electric_motor_temperature_prediction: designed sessions, `Samples: No Time Dimension`). A time
+  recoverable only through the outcome does not count (heart_failure_followup_survival can date its survivors only).
+* **Target:** `Target: Later` (after the features, at one shared date or after a fixed window), `Target: Varying
+  Delay` (after a delay that differs between samples: a settlement, a chargeback, a follow-up), `Target: Revised
+  Later` (assigned, then updated or propagated; also a label that accrues while its window stays open, so the
+  newest samples' label is not final: drug_induced_autoimmunity_prediction counts reports since approval, and 49
+  of its 52 drugs approved from 2010 on are negative) or `Target: Unknown` (the source does not say
+  when the target arrives); no tag when the target exists with the features. More than one can hold
+  (ieee_fraud_detection: a chargeback's varying delay, and labels the host then carries along the client's later
+  payments).
+* **Entities:** `Entities: Recur` when the source holds several rows of one entity (a patient, a client, a company),
+  with or without an id. A forced split chooses between random and grouped by it (SPLIT-8), and the entity leaks of
+  SPLIT-9 and SPLIT-13 start from it (home_credit_default_risk, horse_colic_survival, lending_club).
+* **Features:** `Features: Read Later` when some features were read after their row's time and joined onto older rows
+  (one read of a store or district table at release, a price "as of current day"), `Features: Revised Later` when
+  rows were rewritten after their date (sf_permit_time's `data_as_of` stamps). Both ask for an as-of check whatever
+  the split (LEAK-10).
+
+A definition can name the use-case prototype it follows; the same source can carry different use cases (SPLIT-1's two
+applications). A definition that names one carries its tag and a `Time basis:` line in the curation notes with the
+fact behind it, ending with what the split cannot test (musk: a new chemical class; a one-moment price scrape: a later
+market). The prototypes, by the questions that tell them apart.
+
+Before them: **does the use case aim at groups the data does not hold, rather than at a later period?** A model meant
+for a new hospital, facility, well, protein or survey project, or for chemistry outside the families a source was built
+from, is tested on held-out groups; the split groups by that unit, and the time order inside the data is not weighed.
+That is `UnseenGroup` (heart_disease: Detrano et al. built their model in Cleveland and applied it to the other
+hospitals; force_2020: a well not yet drilled; superconductivity: a source that keeps its model to known chemistry).
+The source or the use case names the transfer; a group column alone does not make one. A catalogue that holds out
+families only so that no test item meets its own analog, while its use case fills in known chemistry, is `Timeless`
+(the qsar inventory sets). Its line names the group and why the use case aims at new ones, and ends with what the split
+cannot test: a later period, at a known group or at all groups at once; where the label still moves with time
+(drug_induced_autoimmunity_prediction's reporting window), the line says so.
+
+1. **Can time affect the target at all?** Not when the target is a fixed property of the item, the same whenever it is
+   measured (a material's strength, a molecule's activity, a species, the outcome of a designed run), and the use case
+   meets items drawn like the catalogue's: `Timeless`. The split is random or grouped by item family (musk,
+   sat11_hand_algo_runtime, splice). Which identifier a parent source could date the items by (a structure in ChEMBL,
+   an observation date) tells whether the catalogue drifts; "none published" is an answer too. A catalogue that drifts
+   goes on to question 4: qsar_tid_11's ChEMBL years show close training analogs from the test compound's own year for
+   85-90% of its scaffold folds, and predicting each year from earlier ones raises RMSE from 0.68-0.90 to 1.11-1.31.
+2. **Does the use case look back, into the time the data covers?** In the use case the samples arise over time, but
+   the data is one snapshot of a moment or a period, and what the use case wants is the missing information of that
+   time, not of a later one: the value of a block group the census did not record, a site not yet mapped in a past
+   survey, the hours a logged week lacks, the clients a campaign did not inspect. That is `Retrospective` (houses,
+   wadden_sea_sibes_macoma_abundance, 5g_energy_consumption, fraud_detection_in_electricity_and_gas_consumption_1m).
+   It needs that backward need: a one-moment release whose use case looks forward (prospects for a mailing, customers
+   who will leave) is not retrospective: it is a `DelayedTarget` when its target arrives after one shared moment, and
+   forced (SPLIT-8) when its target is of that moment or of unknown timing. The line names the time covered and the
+   need, and ends with what the split cannot test: a later time. Time can then affect a target only through samples of
+   the same time: check that no sample of a test sample's time carries its target (one day's weather across stations);
+   if one does, group by that time unit. `Snapshot`, which named the data rather than a use case, is retired for it
+   (2026-11-13).
+3. **Do all samples share one prediction moment, with the target arriving after it?** A default in the next month, a
+   donation at the next drive, an event within a fixed follow-up: a `DelayedTarget`. Every row was observed at the same
+   moment and its outcome over the same window, so a random split draws train and test from that one moment and that
+   one window: no test row is later than a training row, and no training label was still unknown at a test row's
+   moment. That is why a random split is IID here (blood_transfusion, credit_card_clients_default,
+   kdd_cup_09_appetency, pva_revenue_prediction_kddcup98, student_portuguese_performance). What it cannot test is the
+   next moment. The line names the moment and the target's window, which has closed for every sample (no censored
+   samples).
+4. **The samples arrive over time: does that affect the target?** It does when the target or its relation to the
+   features moves with the period (prices, a credit climate, an adversary), when how the target or the features are
+   recorded changes (a new grading, a new instrument, a new selection of cases), or when a sample's target depends on
+   samples before it (a shared shock, a label propagated along an entity, a row that exists only because an earlier
+   one was survived). A change in how often the target occurs does not count by itself. A class share that moves
+   sharply with the period is more often a change in labelling or case selection than in prevalence, and counts as a
+   change in recording (cardiotocography's suspect share falls from 36% to 1% by year,
+   lung_cancer_epithelial_genexp's cancer share rises from 6% to 81% along the sample number). The source, the time
+   probe and the target by period answer it.
+   * **No:** the target is a present state read through a relation that time does not move, measured on a dated
+     source: the target and its relation to the features are flat across periods, and a temporal split costs nothing.
+     That is a `StationaryRelation`, and its line gives the measurement (thyroid_discordant: requests dated through
+     the parent archive, a flat discordant share over 1985, monthly windows scoring like random folds). It is always
+     measured; where time is lost it cannot be, and the next branch applies.
+   * **Yes, and the time is dated or inferred:** the split is temporal (SPLIT-7, SPLIT-14).
+   * **Yes or unmeasured, and the time is lost or too short for three windows:** the split is forced (SPLIT-8):
+     `ForcedIIDFromTemporal`, or `ForcedGroupedFromTemporal` when the entities recur. It ships after SPLIT-8's leak
+     test. Its `Time basis:` line names the reason (time lost, or too few periods) and what a dated release would
+     change, with the measured cost of the forced split where the rows are dated (eryhemato_squamous_disease's two
+     file parts: training on the other part raises log loss from 0.318 to 0.381). A forward use case whose source
+     does not show how the data was collected (`Samples: Unknown`, or a shared moment it does not state) is forced
+     too: the forced tag claims only what is known (give_me_some_credit: no scoring date stated, so not a
+     `DelayedTarget`).
+5. **None of these prototypes fits:** the dataset and its use case go to the curator as an issue with the arrival
+   facts found, rather than under the nearest tag.
+
+IID data is data whose order of arrival does not vary: `Samples: No Time Dimension`, and `Samples: One Moment` with
+the target at that moment or at one shared later date (the March 2007 drive of blood_transfusion, the October 2005
+payment of credit_card_clients_default). A definition names one time basis. Whatever it is, a record with a `Target:`
+fact asks that every feature be checked against the prediction point (LEAK-1, LEAK-10), including fields the outcome
+cuts short, such as time on risk: a column that comes into existence after the prediction point is a leak whatever the
+split.
+
+Why: the same split can stand for the use case or flatter it, depending on how the data arrived; recording the
+collection facts and the prototype makes that visible. Cases: the arrival study of the 177 v0.2 definitions
+(2026-11-04) and the review of 98 of them (2026-11-06) are the evidence; examples are credit_card_clients_default and
+framingham_heart_study_fhs (`DelayedTarget`), houses and 5g_energy_consumption (`Retrospective`), thyroid_discordant
+(`StationaryRelation`, measured), musk (`Timeless`), heart_disease (`UnseenGroup`), heloc (`ForcedIIDFromTemporal`).
 
 ### Temporal tasks
 

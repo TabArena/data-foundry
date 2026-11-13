@@ -11,6 +11,10 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Features: Read Later'
 collections:
 - New (BeyondArena)
 original_source: Other

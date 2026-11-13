@@ -9,6 +9,7 @@ suggestion: 'Yes'
 priority: 2
 tags:
 - Larger IID Data
+- 'Samples: One Moment'
 collections:
 - TabSTAR
 original_source: Kaggle

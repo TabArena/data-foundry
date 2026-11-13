@@ -152,6 +152,7 @@ class CreditG(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the corrected data (UCI 573, South German Credit) from the UCI repository and unzip it to a
         predefined folder.
@@ -177,6 +178,10 @@ class CreditG(AbstractCuratedDataset):
           (`ORDINAL_LEVELS`): the balances, employment, instalment rate, residence, property, number of credits, job and
           people liable. "no checking account", "unknown / no savings account" and "unknown / no property" are states
           outside their scales: missing, by the curator's rule, as the data has no other missing value.
+        - Time basis: ForcedIIDFromTemporal: consumer credits granted from 1973 to 1975, each judged good or bad over
+          its own term (4 to 72 months, no stated horizon); neither UCI 573's file (sorted by class) nor Statlog's (no
+          order) keeps a grant date, so random loans stand in for later applicants. A dated release would allow a
+          split by grant year.
     """
 
     # Task

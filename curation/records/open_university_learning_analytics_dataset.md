@@ -9,6 +9,11 @@ suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Needs extensive data wrangling
+tags:
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Website

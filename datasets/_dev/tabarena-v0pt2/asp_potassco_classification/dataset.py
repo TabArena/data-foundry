@@ -93,6 +93,7 @@ class AspPotasscoClassification(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("Timeless",)
     download_description = r"""
         wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/ASP-POTASSCO/algorithm_runs.arff \
         && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/ASP-POTASSCO/feature_values.arff \
@@ -113,6 +114,11 @@ class AspPotasscoClassification(AbstractCuratedDataset):
         - We resolve the instance ID to a problem class (`task_id`) from its path: the instance path without the file name, for example `ASP-Comp-2011-Lparse/26-Solitaire`. A class holds different instances of one problem (here, Solitaire puzzles), and the best configuration depends on the class, which the instance features fingerprint. claspfolio 2 and ASlib split the instances at random, so their test instances come from known classes; we hold out whole classes instead, to predict the runtimes on a problem class not seen in training (the `definition` of the grouping).
         - Metric: ASlib's PAR10 of the configuration predicted fastest per instance. ASlib adds the feature costs (`feature_costs.arff`) to the selected runtime; they are the same whichever configuration is picked, so we leave them out.
         - To do: rename the dataset (it is no longer a classification task) once the BeyondArena v0.2 review page is done; its marks are stored under the current name.
+        - Time basis: Timeless: every run comes from the one experimental campaign of claspfolio 2 (Hoos, Lindauer and
+          Schaub 2014) on one machine with a 600 s limit; features and probing runs are computed before the run, and the
+          runtime is a property of the instance and the configuration on that machine. The instance collections are of
+          earlier years, but only ASP-Comp-2007, -2009 and -2011 name one, so no split by time is possible; problem
+          classes are held out instead. Not tested: another machine or a newer clasp version.
     """
 
     # Task

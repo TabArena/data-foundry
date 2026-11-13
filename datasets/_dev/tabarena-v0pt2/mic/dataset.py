@@ -213,6 +213,7 @@ class Mic(AbstractCuratedDataset):
             name="UCI 579",
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
@@ -233,6 +234,15 @@ class Mic(AbstractCuratedDataset):
           each level is carries the words, a score without them is a number): 9 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `ZSN_A`, `SEX`; 2 scores with
           no words per level are numbers (`SCORES`): `FK_STENOK`, `GB`.
+        - Time basis: ForcedIIDFromTemporal: patients admitted one by one in 1992-1995 to one hospital, the outcome
+          known at death or discharge; a model at admission is used on later patients. No admission date survives and
+          the file is sorted by outcome (survivors, survivors with a complication, deaths), so no time order can be
+          rebuilt (Time: Lost). Care drifts inside each block (Trental in the ICU 15% to 35% over the first; a model
+          tells a block's first from its second half at ROC AUC 0.82, 0.58 and 0.72), but the drifts run in opposite
+          directions across blocks, so the blocks share no calendar; the last fifth of each block scores death ROC AUC
+          0.77 against 0.84 for a random fifth (logistic regression, SD 0.02 over 30 draws). Leak test across the
+          split: no duplicates, no recurring patients, no same-day clusters (neighbouring rows differ in 21.5% of
+          coded fields, rows 100 apart in 22.2%). Admission dates would allow a split by time.
     """
 
     # Task

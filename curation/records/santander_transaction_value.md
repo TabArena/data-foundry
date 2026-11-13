@@ -11,6 +11,11 @@ decision_markers:
 - Anonymized
 tags:
 - New IID
+- 'Samples: Over Time'
+- 'Time: Within Entity'
+- 'Time: Lost'
+- 'Target: Later'
+- 'Entities: Recur'
 collections:
 - TabArena Reject
 - TabSTAR

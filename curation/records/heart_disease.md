@@ -13,6 +13,8 @@ decision_markers:
 tags:
 - Tiny Data
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - New (BeyondArena)
 original_source: UCI

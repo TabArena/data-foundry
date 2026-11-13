@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Tiny Data
+- 'Samples: No Time Dimension'
 collections:
 - TabArena Reject
 original_source: UCI

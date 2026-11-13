@@ -10,6 +10,7 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Two-Regime Zeros
+- 'Samples: One Moment'
 original_source: Other
 year: '2021'
 domain: biology & life sciences

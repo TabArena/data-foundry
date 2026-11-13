@@ -84,6 +84,7 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("Timeless",)
     download_description = """
         wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/feature_values.arff && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/algorithm_feature_values.arff && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/algorithm_runs.arff && mkdir -p local-data-warehouse/sat11_hand_algo_runtime && mv feature_values.arff algorithm_feature_values.arff algorithm_runs.arff local-data-warehouse/sat11_hand_algo_runtime/
     """
@@ -100,6 +101,9 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
           linear models and TabPFN pick 17-19% better on the 60 splits, but it would replace the recorded value.
         - We log scale the target.
         - We drop duplicated columns and remove features that leak the target or are not relevant for the predictive task.
+        - Time basis: Timeless: every solver ran on every instance in one campaign of the 2011 SAT competition with a
+          5,000 s cutoff; the features exist before any full run, and no run is dated. Not tested: a new instance
+          family, the instances of a later competition, or newer solvers.
     """
 
     # Task

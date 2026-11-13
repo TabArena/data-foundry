@@ -56,7 +56,7 @@ class Bioresponse(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Anonymized",)
+    data_tags = ("Anonymized", "Timeless")
     download_description = """
         We download the data from Kaggle and uzip it to a predefined folder.
 
@@ -66,6 +66,13 @@ class Bioresponse(AbstractCuratedDataset):
         - We changed the name of the target and mapped it to yes/no
         - Anomaly: Only train data is used, since test data is empty for target
         - Potential leak, kept on purpose: the 941 non-binary descriptors are min-max scaled over Kaggle's train and test molecules (each is exactly 0 and 1 over the 6,252 of both files, only 609 of them over the 3,751 rows we ship), so the scaling includes our test folds; no unscaled descriptors are published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if raw descriptors appear.
+        - Time basis: Timeless: the response is a property of the molecule and every descriptor is computed from its
+          structure, so nothing in a row arrives later. Boehringer Ingelheim tested the molecules over an unstated
+          period and published no date, structure or compound id, so no forward split is possible; the label drifts only
+          weakly along the file order (positive share 0.57-0.59 in the first deciles against 0.50-0.51 in the last,
+          Spearman -0.04) and the order is not known to follow the assays. Not tested: a new chemical series, as close
+          analogues cannot be grouped (nearest-neighbour label agreement 92% in the closest tenth of distances against
+          64% in the farthest).
     """
 
     # Task

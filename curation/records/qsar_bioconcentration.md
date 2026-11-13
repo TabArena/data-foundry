@@ -9,6 +9,8 @@ suggestion: 'Yes'
 priority: 2
 tags:
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - TabSTAR
 original_source: UCI

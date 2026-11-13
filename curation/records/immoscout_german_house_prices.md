@@ -10,6 +10,8 @@ suggestion: 'Yes'
 tags:
 - New IID
 - Free Text (Short)
+- 'Samples: One Moment'
+- 'Entities: Recur'
 collections:
 - TabSTAR
 original_source: Kaggle
