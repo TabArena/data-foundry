@@ -23,7 +23,6 @@ PENDING = {
     "pricing_game_2017_french_mtpl": "one moment, target later, tagged forced: Review issue 8",
     "distribution_transformers_at_cauca_department": "one moment, target later, tagged forced: Review issue 1",
     "expresso_churn_prediction": "one moment, target later, tagged forced: Review issue 1",
-    "gallstone_disease": "StationaryRelation with the time lost: a written exception, the curator's call of 2026-11-11",
 }
 """Records whose contradiction is known: an open review item, or a written exception the curator decided."""
 
