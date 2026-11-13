@@ -138,21 +138,22 @@ class Splice(AbstractCuratedDataset):
           folds of the same rows (0.6% identical). The grouping cost nothing in score (untuned LightGBM log loss 0.118
           against 0.120 at random, logistic regression 0.160 both; 10 x 3, 2026-11-10). Orthologs and sister genes in
           other entries share no identical window and still cross; grouping them by sequence similarity is barred.
-        - Time basis: Timeless: a splice junction is a property of the sequence; the windows were cut in 1992 from
-          GenBank 64.1 and labelled by its annotation. The windows' GenBank entries, dated by their earliest reference
-          year at NCBI (1,388 of 1,475 entries, 94%, 1974 to 1990), show no wave: the junction share and the
-          difficulty show no trend with the year, and predicting each later year from the earlier ones leaves as many
-          close relatives as a random draw of the same size (4.1% against 4.0% of the test windows with a training
-          window within 3 of 60 bases; 2.3% when the draw keeps out the test windows' entry components), so the
-          family key stands. Grouped by entry component, 1.6% of the test windows keep a training window within 3 of
-          60 bases, in entries no exact key links: the same gene in another primate or a sister gene. Not tested: a
-          gene with no relative among the training windows.
+        - Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case predicts the junctions of a gene
+          the training windows do not hold, which whole entry components held out stand for. A splice junction is a
+          property of the sequence; the windows were cut in 1992 from GenBank 64.1 and labelled by its annotation. The
+          windows' GenBank entries, dated by their earliest reference year at NCBI (1,388 of 1,475 entries, 94%, 1974 to
+          1990), show no wave: the junction share and the difficulty show no trend with the year, and predicting each
+          later year from the earlier ones leaves as many close relatives as a random draw of the same size (4.1%
+          against 4.0% of the test windows with a training window within 3 of 60 bases; 2.3% when the draw keeps out the
+          test windows' entry components), so the family key stands. Grouped by entry component, 1.6% of the test
+          windows keep a training window within 3 of 60 bases, in entries no exact key links: the same gene in another
+          primate or a sister gene. Not tested: a gene with no relative among the training windows.
     """
 
     # Task
     target = "SiteType"
     problem_type = "multiclass_classification"
-    data_tags = ("Timeless",)
+    data_tags = ("UnseenGroup",)
     metric = Metric.fallback(
         reason="Towell, Shavlik & Noordewier 1990-1994 report test error rates of KBANN (per class too), a habit without costs between the three site types. Original rejected: error rate. log_loss is the multiclass fallback.",
     )

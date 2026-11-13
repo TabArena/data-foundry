@@ -103,8 +103,8 @@ about time), and they do not change with the split a definition chooses. A fact 
   item was made, arose over time even when each item's value is fixed: sdss_17's quasars are 3-11% of the spectra
   before 2010 and 31-46% from 2014 on, and phishing pages and malware change with their year. A catalogue that a
   parent source dates is `Samples: Over Time` with `Time: Dated` even where the date turns out to carry nothing:
-  whether it does is measured for the time basis (`Timeless`, question 1; SPLIT-34), and the fact stays what the
-  source says.
+  whether it does is measured for the time basis (`UnseenGroup` or the entry date; SPLIT-34), and the fact stays what
+  the source says.
 * **Time,** for samples over time: `Time: Dated` when the release or a parent source keeps the date (a date column, a
   value that encodes the period, a date dropped from the raw file, or a parent upload that matches the rows by an id;
   the time probe, `time_probes.py`, looks for them); `Time: Inferred` when only an order that tracks time survives,
@@ -263,10 +263,10 @@ Which key stands for the use case is information from the use case and the sourc
      than a random draw does. A programme that adds items in series (one paper's compounds, one family of materials)
      makes waves, and a family key still trains on the siblings that arrived with the test item, which the actor
      does not have.
-5. **Otherwise the family key stands,** and the time basis says why (SPLIT-32): `UnseenGroup` where the use case aims
-   at families the data does not hold (a well not yet drilled, a protein target with no known structure), `Timeless`
-   where it fills in an inventory already collected and the date carries no wave, each with the forward split's share
-   against a random draw's in the `Time basis:` line. Where the labels are not final, the line says so.
+5. **Otherwise the family key stands,** and the time basis is `UnseenGroup` (SPLIT-32): the use case predicts for
+   families the data does not hold (a scaffold not yet tested, a well not yet drilled, a protein target with no known
+   structure), whether or not the date carries a wave. The `Time basis:` line gives the forward split's share against
+   a random draw's, which says whether it does; where the labels are not final, it says so.
 6. **A structure the use case does not hold out is disclosed with its measurement, not grouped on:** a submission
    batch whose only channel is the structure the family key already holds out, the tissue source site a laboratory's
    new patients share with its earlier ones.

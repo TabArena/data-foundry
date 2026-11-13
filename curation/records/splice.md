@@ -58,6 +58,10 @@ CC (2026-11-12, Andrej): split by GenBank entry component (BeyondArena v0.2 revi
 
 CC (2026-11-12, Andrej): the copies of one record dropped (BeyondArena v0.2 review page, issue 1, D, agreeing with the answer of 2026-11-10; LEAK-19, LEAK-20): 125 windows of 60 bases repeat (310 rows), most the same gene in overlapping GenBank entries. One row per window and label stays, both rows of `HUMCYPIIE`'s window labelled a junction and no junction go, and the 13 windows that one entry holds at two places (duplicated genes) keep one row per place: 173 rows go, 3,017 remain (exon-to-intron 685, intron-to-exon 679, neither 1,653). The entry-component groups are joined on the whole file before the drop: 1,440 over the 3,017 windows (the largest 65). On the shipped 10 x 3 folds no test window has an identical window in training and 1.6% have one within 3 of 60 bases (0.6% and 3.7% under random folds of the same rows). The marker `Duplicate` goes, as the issue's notes say: it described OpenML's StatLog copy `dna` (each base coded as binary columns), not UCI's file, which this definition reads.
 
+CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
+- The use case predicts the junctions of genes the training windows do not hold, which the held-out entry components stand for; that the entry year carries no wave is a measurement for the `Time basis:` line, not a different use case.
+- The split does not change.
+
 ## Review
 
 **Outcome:** added. The primate splice-junction windows of Towell, Noordewier and Shavlik (UCI, 1992,
