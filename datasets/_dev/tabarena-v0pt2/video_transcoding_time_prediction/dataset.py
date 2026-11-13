@@ -20,7 +20,10 @@ class VideoTranscodingTimePrediction(AbstractCuratedDataset):
             "One transcoding job with ffmpeg on one Intel i7 machine: a YouTube video converted to one output setting"
             " (68,784 jobs of 1,099 videos; 80 videos have the full grid of 841 settings, the rest mostly one job)."
         ),
-        predicted="The total transcoding time, on a log scale; the unit is not stated.",
+        predicted=(
+            "The transcoding time of a job, on a log scale; the unit is not stated, and the time does not grow with the"
+            " video's duration (33 s to 29 min), so it is likely the time of a fixed-length piece."
+        ),
         known=(
             "The input video's properties (duration, codec, bitrate, resolution, frame rate, the numbers and sizes of"
             " its frame types) and the output codec, bitrate, frame rate and resolution."
@@ -32,13 +35,15 @@ class VideoTranscodingTimePrediction(AbstractCuratedDataset):
         fit="direct",
         fit_reason=(
             "The features are known before a job starts, and held-out videos match new requests. The jobs ran on one "
-            "machine with one ffmpeg setup, so the times hold for that setup only."
+            "machine with one ffmpeg setup, so the times hold for that setup only. 81 large videos (about 27 per test "
+            "fold) carry the score; single-job videos add 2.5% of the error."
         ),
     )
 
     # Dataset
     unique_name = "video_transcoding_time_prediction"
     domain = "technology & internet"
+    data_tags = ("Timeless",)
     sources = (
         Source(
             role="publication",
@@ -58,7 +63,6 @@ class VideoTranscodingTimePrediction(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Timeless",)
     download_description = """
         wget https://archive.ics.uci.edu/static/public/335/online+video+characteristics+and+transcoding+time+dataset.zip && unzip online+video+characteristics+and+transcoding+time+dataset.zip transcoding_mesurment.tsv && rm online+video+characteristics+and+transcoding+time+dataset.zip && mkdir -p local-data-warehouse/video_transcoding_time_prediction && mv transcoding_mesurment.tsv local-data-warehouse/video_transcoding_time_prediction/
     """
@@ -73,6 +77,19 @@ class VideoTranscodingTimePrediction(AbstractCuratedDataset):
         - Time basis: Timeless: designed transcoding jobs on one machine (Deneke et al. 2014); the video's properties
           and the output setting are known before a job, no job is dated, and all jobs of a video are held out together.
           Not tested: another machine or newer codecs.
+        - Leak and score check (2026-11-10, the curator's question; kept with notes, Andrej, 2026-11-11): no column is
+          measured during or after a job (`umem` is dropped), and holding out whole videos raises LightGBM's RMSLE from
+          0.081 (row split) to 0.181. The time does not follow the video's duration (r = 0.04 on log-log), and 81 large
+          videos carry the score. RMSLE on the shipped 3 x 3 video splits:
+
+          | Model | RMSLE | SD over folds |
+          |---|---|---|
+          | constant (train mean) | 0.961 | 0.015 |
+          | log(output pixels x fps x duration) | 0.798 | 0.037 |
+          | median per output setting (840 cells) | 0.373 | 0.054 |
+          | linear (logs + codecs) | 0.346 | 0.022 |
+          | LightGBM untuned, all features | 0.181 | 0.023 |
+          | noise floor: 81 jobs measured twice | 0.113 | |
     """
 
     # Task

@@ -164,6 +164,15 @@ class SfPermitTime(AbstractCuratedDataset):
         - Permits per filing year in the cleaned data (from the v1 exploration, counted 2026-10-22): 11,958 (2015), 11,840 (2016), 12,006 (2017), 12,786 (2018), 12,194 (2019), 10,636 (2020), 9,915 (2021), 9,449 (2022), 9,063 (2023).
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Fields rewritten after filing (checked 2026-11-06): the table rewrites rows (each carries the time of its
+          last change), but comparing the February 2026 download with a read of November 2026 for the 18,420 permits
+          filed in 2022-2023, the kept fields stayed put after the issue (one description changed; costs, uses, units,
+          stories, types and flags none), while the revised cost differs from the estimated cost for 28.5%: the
+          review's changes go to Revised Cost, which we drop.
+        - Re-read due around 2027-02-06 (Andrej, 2026-11-10): the read of 6 November 2026 of the 4,106 permits filed
+          since 2025 and still open is saved; three months on, read the same permits by permit number from the API
+          and count the changes in the kept fields among those issued since, to see whether the review rewrites them
+          before the issue. Reopen the split's review issue if any field changes for more than a few permits.
     """
 
     # Task
