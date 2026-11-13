@@ -167,6 +167,7 @@ person's visits (issue 1).
      - The definition is tagged `ForcedGroupedFromTemporal`, a forward use case whose time was lost[^fo-2].
      - The target is a present state measured with the features: the visit's clinical dementia rating, read from the same visit's scan and tests, and the use case reads it for new units at their own present[^cs-2].
      - The tag alone changes: the split stays grouped by subject.
+   * **Background:** you tagged it `ForcedGroupedFromTemporal` on 2026-11-11, before `CrossSectional` existed. The use case estimates the rating at the visit from that visit's test and scan; whole people stay held out under either tag.
    * **Options:**
 
      | | Option | What it does | Pro | Con |

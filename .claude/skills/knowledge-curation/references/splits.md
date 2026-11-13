@@ -181,12 +181,14 @@ later period, at a known group or at all groups at once; where the label still m
    lung_cancer_epithelial_genexp's cancer share rises from 6% to 81% along the sample number). The source, the time
    probe and the target by period answer it.
    * **A present state:** the target is a unit's state measured together with the features (no `Target:` fact: a
-     diagnosis from the same visit, a temperature read from the same image, a page judged as it stands), and the use
-     case reads that state for new units at their own present, not a later one. That is `CrossSectional`, whether the
-     dates survive or not; the split is random, or grouped by a unit that repeats. Its line says whether the drift of
-     the relation for later units was measured (dated: a temporal holdout, as for `StationaryRelation`) or is untested
-     (time lost), and what a dated release would show. A label that only arrives later (a churn, a bankruptcy, a
-     death in hospital) is no present state, even where the record names no `Target:` fact.
+     diagnosis from the same visit, a temperature read from the same image, a page judged as it stands; a later test
+     that confirms the state the features saw, such as a biopsy, counts), and the use case reads that state for new
+     units at their own present, not a later one. That is `CrossSectional`, whether the dates survive or not; the
+     split is random, or grouped by a unit that repeats. Its line says whether the drift of the relation for later
+     units was measured (dated: a temporal holdout, as for `StationaryRelation`) or is untested (time lost), and what
+     a dated release would show. A label that only arrives later (a churn, a bankruptcy, a death in hospital) is no
+     present state, even where the record names no `Target:` fact, and neither is a use case that forecasts from a
+     present-state label (a trip not taken yet, debt that will go bad): the use case decides.
    * **No, for a forward use case:** the target arrives after the features, and it and its relation to them are flat
      across periods, measured on a dated source, so a temporal split costs nothing. That is a `StationaryRelation`,
      and its line gives the measurement (thyroid_discordant: requests dated through the parent archive, a flat

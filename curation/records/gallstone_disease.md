@@ -70,6 +70,7 @@ CC (2026-11-13, Andrej): the time basis is `ForcedIIDFromTemporal` instead of `S
      - The definition is tagged `ForcedIIDFromTemporal`, a forward use case whose time was lost[^fo-1].
      - The target is a present state measured with the features: the diagnosis at the visit, read from the same visit's laboratory values and body composition, and the use case reads it for new units at their own present[^cs-1].
      - The tag alone changes: the split stays random.
+   * **Background:** you made the tag `ForcedIIDFromTemporal` on 2026-11-13, before `CrossSectional` existed, because `StationaryRelation` cannot be measured without dates. The use case is screening at the visit where the diagnosis is made, a present state, which `CrossSectional` now names without claiming a measurement.
    * **Options:**
 
      | | Option | What it does | Pro | Con |

@@ -59,6 +59,7 @@ CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run): the STD flags sta
      - The definition is tagged `ForcedIIDFromTemporal`, a forward use case whose time was lost[^fo-1].
      - The target is a present state measured with the features: the result of her screening work-up, read from her answers at that work-up; the biopsy reports her condition then, not a later one, and the use case reads it for new units at their own present[^cs-1].
      - The tag alone changes: the split stays random.
+   * **Background:** the biopsy comes after the questionnaire, so the label is confirmed later, but it reports her condition at the questionnaire; the use case triages for a present disease and forecasts no later state. If you read the work-up as a forecast, A holds.
    * **Options:**
 
      | | Option | What it does | Pro | Con |

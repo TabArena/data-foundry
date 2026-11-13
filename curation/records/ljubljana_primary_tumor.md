@@ -62,6 +62,7 @@ CC (2026-10-27, Lennart): fit approximate (was direct): patients with metastases
      - The definition is tagged `ForcedIIDFromTemporal`, a forward use case whose time was lost[^fo-6].
      - The target is a present state measured with the features: the site of the primary tumour, read from the findings at diagnosis, and the use case reads it for new units at their own present[^cs-6].
      - The tag alone changes: the split stays random.
+   * **Background:** the primary is found after the metastases are examined, but it is where the cancer already started; the use case estimates that present fact, not a later state.
    * **Options:**
 
      | | Option | What it does | Pro | Con |

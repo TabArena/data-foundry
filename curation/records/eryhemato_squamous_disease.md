@@ -106,6 +106,7 @@ recommends numbers.
      - The definition is tagged `ForcedIIDFromTemporal`, a forward use case whose time was lost[^fo-5].
      - The target is a present state measured with the features: the diagnosis, read from the clinical features of the same examination, and the use case reads it for new units at their own present[^cs-5].
      - The tag alone changes: the split stays random.
+   * **Background:** the biopsy confirms the diagnosis after the examination, but it reports the disease the examination saw; the use case is the differential diagnosis, not a forecast.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
