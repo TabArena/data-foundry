@@ -4,13 +4,15 @@ name: ai4d-lab-tanzania-tourism-classification-challenge
 checked_by:
 - Myunghwan
 - Lennart
+- Andrej
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 4
 tags:
-- 'Samples: Unknown'
+- 'Samples: Over Time'
+- 'Time: Inferred'
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -117,6 +119,40 @@ CC (2026-11-05, Lennart): the 965 exact copies stay under LEAK-18 (few coarse fe
 CC (2026-11-05, Lennart): the scorer reads probability columns in the sorted order of the class labels (scikit-learn's classes_) and checks named columns; the ordered categories stay metadata (issue 5, C; MET-2).
 
 CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
+CC (2026-11-13, Andrej): collection facts `Samples: Over Time` and `Time: Inferred` in place of `Samples: Unknown`:
+- The release stacks two batches of NBS's yearly exit survey. 6,390 of the 6,410 rows of the 2020 cut
+  (`tanzania_tourism_prediction`, ids `tour_0` to `tour_6474`) recur here with their full profile (99.7%). All 3,015
+  rows spelled `Wildlife Tourism` and all 1,436 with an empty `travel_with` are among them; the other 18,285 rows
+  spell the activity `Widlife Tourism` (8,035) and never leave `travel_with` empty. The file order is shuffled, so the
+  batch shows only through the 2020 cut and this coding.
+- The 2020 batch is the 2014 wave (fieldwork 25 August to 7 September 2014, seven departure points, 7,491
+  respondents): its visitor mix matches the 2014 report, in the same order of markets (table, shares of visitors).
+- The other 18,285 rows are later waves, first published in 2022 ("up-to-date information"), with a different mix
+  and higher spending in the same shilling bands; 2013, with Kenya its leading market, does not fit their 2.9%. They
+  are more than any one wave of 2013 to 2021 interviewed (at most 12,575, in 2013; 5,391 in 2021), so at least two
+  waves, which the release does not tell apart.
+- No row keeps a date, and neither cut has one; what survives is the order of the two batches, with a calendar for
+  the first only (as fremtpl2's IDpol blocks), so the time is inferred, not dated. Two batches are too few periods for
+  three windows.
+- No `Target:` fact: the spending is answered on the same exit form as the features. No `Entities: Recur`: repeat
+  visitors exist (`first_trip_tz`), but nothing links a respondent across waves (as 2024_lusaka_mobility).
+
+| Share of visitors (%) | 2014 report | 2014 batch | later batch |
+|---|---|---|---|
+| Leisure and holidays | 68.9 | 68.2 | 74.3 |
+| Visiting friends and relatives | 11.6 | 11.7 | 10.1 |
+| Business | 8.9 | 9.4 | 7.1 |
+| United States | 13.7 | 14.5 | 16.2 |
+| United Kingdom | 11.3 | 10.5 | 12.9 |
+| Kenya | 4.8 | 5.1 | 2.9 |
+| Zimbabwe | 4.5 | 4.2 | 1.4 |
+| Netherlands | 3.2 | 3.1 | 2.0 |
+| Canada | 2.4 | 2.1 | 3.4 |
+
+Sources: the NBS / Bank of Tanzania International Visitors' Exit Survey reports for 2013-2020 (bot.go.tz,
+nbs.go.tz; sample size and fieldwork in each report's methodology appendix). The 2014 report's purpose table
+(14,996 visitors) and its Chart 2.1 give the first column. Evidence: `~/claude_jobs/tz_time` (link.py, blocks.py).
 
 ## Review
 
@@ -388,19 +424,46 @@ line of 2026-11-04. The record fields agree with the definition.
 9. **`CrossSectional` instead of `ForcedIIDFromTemporal`?**
 
    * **Problem:**
-     - The definition is tagged `ForcedIIDFromTemporal`, a forward use case whose time was lost[^fo-9].
+     - The definition is tagged `ForcedIIDFromTemporal`, a forward use case whose time was lost[^fo-9]. Since
+       2026-11-13 the time is inferred instead: the 2014 wave and at least two later waves (CC of 2026-11-13); two
+       batches are too few periods for three windows.
      - The target is a present state measured with the features: the respondent's spending band, read from the rest of the same exit survey, and the use case reads it for new units at their own present[^cs-9].
      - The tag alone changes: the split stays random.
+   * **Evidence (AI, 2026-11-13):** the recovered batches measure the drift of the relation, which either line can
+     give. Log loss, mean of 5 repeats; every setting trains on 4,676 rows; Slurm job 1384730:
+
+     | Test rows | Trained on | LightGBM | Logistic regression | Class prior |
+     |---|---|---|---|---|
+     | later waves (4,439) | 2014 wave | 1.161 | 1.148 | 1.597 |
+     | later waves | other later rows | 1.110 | 1.109 | 1.572 |
+     | later waves | random mix of both (the shipped split) | 1.118 | 1.116 | 1.574 |
+     | 2014 wave (1,558) | later rows | 1.391 | 1.291 | 1.644 |
+     | 2014 wave | other 2014 rows | 1.258 | 1.227 | 1.619 |
+
+     - Training on the 2014 wave and testing on the later waves costs +0.050 ± 0.011 (LightGBM) and +0.039 ± 0.005
+       (logistic regression) over training on as many later rows. The class mix alone accounts for +0.025.
+     - The bands are fixed shilling amounts, and the later rows spend more within one tour arrangement (independent:
+       Lower Cost 31.7% in 2014, 22.5% later; package tours: Higher Cost 44.7%, then 49.5%). That is prices, or edges
+       set anew for the later waves: the 0.5M-50M edges were rebuilt on 2,401 rows that are all 2014 rows. Either
+       counts as time affecting the target (SPLIT-32, question 4).
+     - The random split mixes both batches and costs only +0.007 against training on later rows alone. The features
+       tell the batches apart with ROC AUC 0.78 (the visitor mix); the label adds 0.004.
+     - The definition has no `Time basis:` line yet, so either option writes one.
+     - B fits the statistician, who fills in a respondent of the same wave. The planner estimates a trip before it is
+       made, and its spending arrives later. Lennart kept the forced tag for that reason on 2026-11-05 ("the planner
+       still looks forward").
    * **Options:**
 
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
-     | A | Stay `ForcedIIDFromTemporal` (implemented) | the tag and its line stay | the decision stands | the tag claims a forecast the use case does not make |
-     | B | `CrossSectional` | the tag and a `Time basis:` line naming the present state, the untested drift for later units and what a dated release would show | names the use case; no claim of a lost forward split | a new prototype on a decided tag |
+     | A | Stay `ForcedIIDFromTemporal` (implemented) | the tag stays; a `Time basis:` line names too few periods (two batches) and the measured cost of the forced split | the decision stands; keeps the planner's forward use | the tag claims a forecast the statistician does not make |
+     | B | `CrossSectional` | the tag and a `Time basis:` line naming the present state, the measured drift for later units and what a dated release would show | names the statistician's use case; no claim of a lost forward split | a new prototype on a decided tag; the planner's forward use is not named |
 
    * **Recommendation:** B. **Decision:** A or B?
 
-   **Notes for the AI:** on B, swap the tag, write the line, add a CC line; the split does not change.
+   **Notes for the AI:** on B, swap the tag, write the line, add a CC line; the split does not change. On either
+   option, the line gives the measured drift above, and `splits_comment`'s "No valid window exists to measure that
+   cost" and `fit_reason`'s "No survey year" go.
 
    [^cs-9]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
    [^fo-9]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
