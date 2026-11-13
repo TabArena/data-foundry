@@ -217,9 +217,7 @@ or `domain`; the definition's values can be filled in without a mark.
    pairs against 206 in a random order), likely by family; without hashes, variants and re-collected apps cannot be
    told apart. Under random 3-fold splits 79% of test apps share their set with a training app." Re-run issue 2's
    counts and rewrite issue 3's `Snapshot` line (the repeats kept, not dropped) on the full file; CHANGELOG entry;
-   `CC (<date>, Andrej):` line in the record; rebuild on the curator's ask. Evidence:
-   `~/claude_jobs/entity_review/naticusdroid_android_permissions_dataset/` (`sets.py`/`sets.log`,
-   `models.py`/`models.log`, `explore.py`).
+   `CC (<date>, Andrej):` line in the record; rebuild on the curator's ask.
 
    [^1c]: **LEAK-41** (Must, draft PR #62): repeats of a unit the data does not record are natural (distinct
      look-alikes: the random split stays and the notes give the overlap), an entity fix, a temporal fix, or not
@@ -278,7 +276,7 @@ or `domain`; the definition's values can be filled in without a mark.
      "Deep Ground Truth Analysis of Current Android Malware", DIMVA (https://cse.usf.edu/~xou/publications/dimva17.pdf),
      24,650 samples. The NATICUSdroid paper (https://doi.org/10.1016/j.jisa.2020.102696) is paywalled; the UCI page
      (https://doi.org/10.24432/C5FS64) and the authors' code (https://github.com/akshaymathur05/Naticus_Test) name no
-     source. Counts: `~/claude_jobs/marks_1112b/naticusdroid_android_permissions_dataset/source_pairs.log`.
+     source.
    [^1h]: **LEAK-18** (Should): few features and plausible repeats are natural: keep them and say so. **SPLIT-24**
      (Must): never group on a hash of the feature vector standing in for an unknown entity.
 
@@ -358,15 +356,11 @@ or `domain`; the definition's values can be filled in without a mark.
      score to rest on new permission sets only. **Decision:** keep A (a), drop the twins (b), every app (c), every
      app without the four later permissions (d), or retire (e)?
 
-   **Notes for the AI:** on c, the edit of 2026-11-12 (saved in
-   `~/claude_jobs/marks_1112b/naticusdroid_android_permissions_dataset/fix5/after_e_state/dataset.py`, `dataset
-   check` 0 errors, 0 warnings), with issue 2's counts on the full file (7.5% of benign apps) and issue 3's bullet as
+   **Notes for the AI:** on c, the edit of 2026-11-12 (`dataset check` 0 errors, 0 warnings), with issue 2's counts on the full file (7.5% of benign apps) and issue 3's bullet as
    written there; the record CC line gets the issue 1 item back. On b: in `_clean` after `drop_duplicates`, drop
    every row whose permissions occur with both labels (7,299 rows); the `dataset_conflicting_duplicate_rows` warning
    goes; `row`, `changes`, the Time basis bullet (no twins) and the 14.5% re-counted. On d: c, then drop the four
-   columns and reword `fit_reason` and the warning. On e: the retirement steps of the brief. Evidence:
-   `~/claude_jobs/marks_1112b/naticusdroid_android_permissions_dataset/fix5/` (`leaks.py`, `leaks_abc.log`,
-   `leaks_d.py`, `leaks_d.log`).
+   columns and reword `fit_reason` and the warning. On e: the retirement steps of the brief.
 
    [^1i]: Six Google Play and Play-services permissions (billing, licence check, push messaging, install referrer,
      activity recognition, Google services), the 15 that the ShortcutBadger badge library declares, and the 14 that
