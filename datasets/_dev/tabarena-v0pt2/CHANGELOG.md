@@ -1,5 +1,24 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-12, horse_colic_survival: one unit for total_protein, random horses grouped by case (Andrej; no container built)
+
+Reopened after Lennart's question (back to a random split; harmonise the recording, or retire).
+
+- Recording harmonised (CLEAN-21), replacing the exception of 2026-11-10: `total_protein` above 15 (g/L, 95 horses)
+  divided by 10 to the codebook's g/dL; the later recording's 1/2 codes in `abdominocentesis_total_protein` and
+  `nasogastric_reflux_ph` (55 cells) set to missing. Kept as recorded, untuned logistic regression scored the window
+  that first meets the new unit at log loss 2.126 against 0.761 harmonised; LightGBM and TabPFN 3.5 did not change
+  beyond noise.
+- Split: stratified grouped 20 x 3 folds on `case_number` in place of the three windows of 57 horses; `Temporal`
+  removed, `case_number` is the split's group and no longer a feature (20 features, from 21). Along the case-number
+  order survival is flat (62.2% against 62.8%, Fisher p = 1.0), and the 60 horses at positions 200 to 259, each
+  trained once on its history and once on as many random horses, score +0.020 log loss from their history for TabPFN
+  3.5 (95% interval -0.034 to +0.080), -0.008 for logistic regression and +0.016 for LightGBM. Grouping keeps the 10
+  return visits of 9 horses on the side of their first visit.
+- Guidelines: the CLEAN-21 exception row becomes an applied row; LEAK-13's horse colic case reads "re-targeted, then
+  the unit harmonised". Record: `Grouped (NON-IID)`, `Non-IID (Grouped)`, the exception line removed, two CCs and an
+  Assessment, the 2026-10-21 evidence pointer names the curation notes.
+
 ## 2026-11-11, each dataset's review moves into its curation record (no container built)
 
 Lennart, 2026-11-11: "We want the curation record to be the single source of information, not spread across multiple

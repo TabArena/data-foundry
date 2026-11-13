@@ -13,7 +13,7 @@ decision_markers:
 - Class-dependent Recording
 tags:
 - Tiny Data
-- Non-IID (Temporal)
+- Non-IID (Grouped)
 collections:
 - TabArena Reject
 - TabSTAR
@@ -21,7 +21,7 @@ original_source: UCI
 year: '1989'
 domain: biology & life sciences
 required_split:
-- Temporal (NON-IID)
+- Grouped (NON-IID)
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
@@ -44,7 +44,7 @@ Has multiple possible classes (lesion or others). Decide for one that is reasona
 
 CC (2026-10-21, Andrej): 344 horses with colic (abdominal pain) from the University of Guelph, Canada, donated in 1989; the label is whether the horse lived, died or was euthanized (put down). I disagree with keeping it.
 - **Died vs euthanized follows the admission period, and a feature gives the period away:** among non-survivors, earlier case numbers are 58 died / 14 euthanized, later ones (above about 530,560) 4 / 34, with similar clinical findings. `total_protein` (a blood value) switches from g/dL to g/L at the same time: in g/L rows 1 of 28 non-survivors died, in g/dL rows 64 of 80. Severe: one class split reflects when the horse came in, not its condition, and models use the unit (TabPFN log loss 0.68 vs 0.72 with one unit).
-- Suggest excluding, or reframing as lived vs not. Evidence: `~/claude_jobs/horse_colic_review/`.
+- Suggest excluding, or reframing as lived vs not. Evidence: the curation notes (target, recording change).
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: pain and mucous_membranes stay unordered as partial orders, noted in the definition.
 
@@ -58,12 +58,21 @@ CC (2026-11-10, Andrej): decisions on the BeyondArena v0.2 review page.
 
 **Assessment (AI, 2026-11-10):** collection, from the creators' papers: one hospital, the teaching hospital of the Ontario Veterinary College, Guelph; rows from its patient information system, lab values largely written by the lab equipment (Cecile & McLeish, https://arxiv.org/abs/1304.2344; McLeish et al., https://arxiv.org/abs/1304.1519). No admission dates; the case number orders the admissions. The first 229 case numbers (60% lived) match the 231 teaching-hospital horses of Pascoe et al. 1990 (Can J Vet Res, https://pmc.ncbi.nlm.nih.gov/articles/PMC1255672/, 61% survivors); the later 115 (67% lived) mostly follow the second recording route. A reading of the counts, not stated by the source. Records sometimes "ended because euthanasia was chosen as a solution for cost reasons", so missing values can follow the outcome. UCI's 300/68 files are not a time split.
 
-**Exception to CLEAN-21 (2026-11-10, Andrej):** `total_protein` stays in the two units the hospital recorded (g/dL, then g/L for 95 mostly later horses), and the 1/2 codes the later recording writes in `abdominocentesis_total_protein` and `nasogastric_reflux_ph` stay too. The fact that sets it apart: the recording changes once, along the time order, and is unrelated to the shipped label (Fisher p = 0.16), so the time windows test a model built on the old recording scoring horses recorded the new way. Serves P4 (a split that mirrors the application) and P5 (the data as recorded).
-
 CC (2026-11-10, Andrej): review page, issues 2, 4 and 5.
-- **Both recordings kept as a shift between earlier and later admissions** (the exception above), not harmonised.
+- **Both recordings kept as a shift between earlier and later admissions** (an exception to CLEAN-21, withdrawn on 2026-11-12), not harmonised.
 - **Return visits kept:** the 10 later visits of 9 cases stay; a returning horse is an admission to score, and the time order keeps each later visit after its first. The use case and row now name admissions, first or return.
 - **`Class-dependent Recording` stays:** the shipped target does not have it, but the source file does, so it stays in the curation record.
+
+CC (2026-11-12, Andrej): review page, issues 7 and 8 (reopened after Lennart's comment on PR #55).
+- **Recording harmonised, the exception to CLEAN-21 of 2026-11-10 withdrawn:** `total_protein` above 15 (g/L, 95 horses) is divided by 10 to the codebook's g/dL, and the 55 cells of 1/2 codes the later recording writes in `abdominocentesis_total_protein` and `nasogastric_reflux_ph` are missing. An analyst at the hospital knows its lab's unit, and the codes cannot be read as measurements. Kept as recorded, the unit only broke logistic regression in the window that first meets it (log loss 2.126 against 0.761 harmonised).
+- **The evidence pointer of 2026-10-21** now names the curation notes instead of a folder on one machine.
+
+CC (2026-11-12, Andrej): review page, issue 6, answering Lennart's question on PR #55 (back to a random split?): random horses grouped by case, 20 x 3 folds, in place of the three windows of case number.
+- Along the case-number order, the only time order the data has, survival is flat (62.2% against 62.8%, Fisher p = 1.0), and a horse trained on its history scores like one trained on as many random horses (TabPFN 3.5, harmonised recording: +0.020 log loss, 95% interval -0.034 to +0.080, 60 horses).
+- So the relation does not move with time (a stationary relation) and random horses stand for later admissions; grouping by `case_number` keeps the 10 return visits of 9 horses on the side of their first visit.
+- `Temporal` removed, `case_number` is split metadata only (20 features); `required_split` `Grouped (NON-IID)`, tag `Non-IID (Grouped)` in place of `Non-IID (Temporal)`.
+
+**Assessment (AI, 2026-11-12):** applied in `dataset.py` (`_clean`, the recording note, `changes`, the split); `dataset check` 0 errors, 0 warnings. Runs of 2026-11-12 (untuned LightGBM, logistic regression, TabPFN 3.5): random 3 x 20 against 3 x 57 windows, and single horses 200-259 trained on their history against as many random horses; no time dependence beyond the recording measurable (TabPFN, harmonised: +0.020 log loss [-0.034, +0.080]).
 
 ## Reference
 
