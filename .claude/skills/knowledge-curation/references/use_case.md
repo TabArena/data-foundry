@@ -12,14 +12,25 @@ mirrors the use case (the fit), and whether the model predicts for a new or a kn
 
 ### The use case
 
-**USE-1 (Must).** A use case is an actor, a moment and a decision: "a lender, when an application arrives, decides
-whether to approve it". Write it down before anything else, and check every column, filter, target and split choice
-against it. Why: the written prediction point finds columns no probe flags. How: the use-case checklist under Methods.
-Cases: kickstarter.
+**USE-1 (Must; amended 2026-11-11, Lennart, on lung_adenocarcinoma_metastasis).** A use case is an actor, a moment and a
+decision: "a lender, when an application arrives, decides whether to approve it". Write it down before anything else,
+and check every column, filter, target and split choice against it. Why: the written prediction point finds columns no
+probe flags. How: the use-case checklist under Methods. A label read from the same specimen the features measure, and
+settled before they are taken, leaves only a cross-check of a known label and fits no decision. A label found by a
+separate work-up is ground truth, also when the rows are a retrospective series of resolved cases, which is how such a
+task can be built at all. So is a label written in the specimen's own note that rests on information outside the
+specimen (an earlier cancer elsewhere), when the actor decides it with a tool that predicts it from such data: the slide
+cannot settle it. Cases: kickstarter; glioma_grading_clinical_and_mutation_features and lung_cancer's histology (label
+from the specimen); ljubljana_primary_tumor (label from a separate work-up); lung_adenocarcinoma_metastasis (label
+written in the specimen's pathology note but resting on an earlier cancer outside it; the actor's tool is an expression
+tissue-of-origin test as a second opinion).
 
-**USE-2 (Must).** A task no decision fits is out. The kinds of labels no decision fits are SEL-4 to SEL-7 in
-[selection.md](selection.md), and data that serves only a study looking back is SEL-3. Marker:
-`No Good Target / Scientific Discovery` (the fit None, USE-8). Cases: under SEL-3 to SEL-7.
+**USE-2 (Must).** A task no decision fits is out. The kinds of labels no decision fits are SEL-4 to SEL-7
+in [selection.md](selection.md), and data that serves only a study looking back is SEL-3. A label that stands in for
+what the features already measure fits no decision either: once the actor holds the inputs, they act on those. Marker:
+`No Good Target / Scientific Discovery` (the fit None, USE-8). Cases: under SEL-3 to SEL-7;
+blood_tests_drink_prediction; biomechanical_orthopaedic_prediction (the rest after SEL-5);
+early_stage_diabetes_risk_prediction (symptoms that prompt the test themselves).
 
 ### The prediction point
 
@@ -77,8 +88,9 @@ approximate (Lennart, 2026-10-21, differentiated_thyroid_cancer_recurrence).
 A selection bias does not by itself make a fit approximate either (`Selection Bias`, [selection.md](selection.md),
 "Selection bias"). Judge it against the real-world setting of the use case: when that setting has the same bias (it
 meets the same selected cases), the data mirrors it and the fit is direct; when it does not, the selection is a known
-gap and the fit is approximate. Either way `fit_reason` names the selection and the marker stays (Lennart,
-2026-10-27).
+gap and the fit is approximate. Either way `fit_reason` names the selection and the marker stays (Lennart, 2026-10-27).
+A selection alone never makes the fit None: a dataset with one is retired only for a reason of its own
+(early_stage_diabetes_risk_prediction; Lennart, 2026-11-11).
 
 Marker for None: `No Good Target / Scientific Discovery`. Cases: direct, airfoil_self_noise,
 2_month_survival_rate_prediction, kick and homesite_quote_conversion (a strong kept leak),
@@ -150,12 +162,17 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | USE-1, USE-3 | kickstarter | once the task was "predict at launch", the written prediction point found `staff_pick`, awarded mid-campaign, which no probe flagged (2026 leak audit) | applied |
 | USE-1, USE-5 | nba_players_2016_2019 | `No` + `No Good Target / Scientific Discovery`, `Not Representative`: no actor, moment or decision fits (the prediction point moved twice to fit the data, 25 of 35 features are end-of-season values), and the score ranks the whole ballot where the actor acts on its 2 or 3 starters; more seasons would be a rebuild of our own and fix neither (2026-10-26, Lennart) | applied |
 | USE-1 | glioma_grading_clinical_and_mutation_features | `No` + `No Good Target / Scientific Discovery`: the grade is the pathologist's diagnosis, made before the DNA is sequenced, so a model can only cross-check a label that already exists; a cross-check of a known label is no use case, and the source names no clinical setting (2026-10-26, Lennart) | applied |
+| USE-1 | lung_cancer, lung_adenocarcinoma_metastasis | lung_cancer's histology retired (2026-11-10, Andrej): resected tumours, whose slide already settles it; the source never predicts it, and clusters a taxonomy instead. The same arrays ship as lung_adenocarcinoma_metastasis (2026-11-11, Andrej) with the study's flag of a possible metastasis from another organ: the source's "key issue in lung tumor diagnosis". 15 of its flags are written in the resected tumour's own pathology note, like the histology, but hedged ("c/w colon met", "?Br MET") and resting on an earlier cancer outside the specimen, which the slide cannot settle; the 8 colon calls come closest to settled and are the easiest part (out-of-fold ROC AUC 0.984). One set of arrays carries a label on each side of the line between a cross-check and a prediction. Written into USE-1 as an amendment (2026-11-11, Lennart, review issue 1, B): the use case names the expression tissue-of-origin test (Pathwork Tissue of Origin, CancerTYPE ID) as the pathologist's second opinion when the stains leave the origin open, a niche tool used mostly for cancers whose origin is unknown; re-read under the amendment, glioma_grading_clinical_and_mutation_features, eucalyptus and tcga_lung_histology stay cross-checks (their labels are settled on the specimen) | applied |
+| USE-1, USE-8 | ljubljana_primary_tumor | kept, fit approximate (2026-11-11, Andrej): patients whose primary was found, a retrospective series with the site known for every patient, which is the ground truth the task needs; the site comes from a separate work-up, not from the specimen the features measure, unlike lung_cancer | applied |
+| USE-2 | blood_tests_drink_prediction | drinks per day estimated from five blood tests that respond to alcohol: as a stand-in for liver damage the blood tests are the better measure, and as a check of a patient's account the doctor already holds the blood values and can ask; no decision rests on the estimate: retired with `No Good Target / Scientific Discovery` | applied |
+| USE-2 | biomechanical_orthopaedic_prediction | `degree_spondylolisthesis` is the slip that defines one of the three classes (one threshold, accuracy 0.974); without it the five other measures still separate disc hernia from normal (ROC AUC 0.889, shuffled labels at most 0.59) and spondylolisthesis from the rest (0.913), so the rest was reassessed as a new task (SEL-5): disc hernia is diagnosed from MRI and symptoms the table lacks, and nobody reads spondylolisthesis from pelvic shape with the slip on the same radiograph. Retired with `No Good Target / Scientific Discovery` (2026-11-05), the reason restated on 2026-11-10 (Andrej) | applied |
+| USE-2, USE-8 | early_stage_diabetes_risk_prediction | a symptom questionnaire deciding on a blood-sugar test: a person with the symptoms is tested because of them, and screening without symptoms uses risk factors the table lacks (only age, sex and a yes/no obesity); retired with `No Good Target / Scientific Discovery` and `Not Representative`. Its hospital sample (69% diabetic, 67 of 78 negatives men) keeps `Selection Bias` but alone would have made the fit approximate, as for eryhemato_squamous_disease and hepatitis_c_prediction; the untrained symptom rule (ROC AUC 0.906, below the methods) and the high scores (tuned methods spread) are no reasons (2026-11-11, Lennart; retired by Andrej 2026-10-27) | applied |
 | USE-4 | eryhemato_squamous_disease | offered on the 12 clinical features, before the skin biopsy | applied |
 | USE-5 | corporate_credit_rating | 17% of the checkable labels were not the issuer rating; retired for a rebuild from the agencies' own histories (2026-10-16) | applied |
 | USE-5 | xente_fraud_detection_challenge | the fraud label follows a review applied above about 500k UGX on a shipped input: within the same customers' spans, 109 of 110 rows at 500k-1M are fraud against 16 of 149 at 100k-490k, minutes apart, so a 0 below the step means "not reviewed" as much as "not fraud"; `No` for now with `Data Quality Issue`, to revisit with a second curator's reading or the host's account of how `FraudResult` was set (2026-11-04, Lennart). It differs from ieee_fraud_detection, whose chargeback rule labels every transaction | applied |
 | USE-5 | cirrhosis_patient_survival_prediction | time to death over the patients who died became death or transplant within five years, over the patients followed that long | applied |
 | USE-5 | diabetes_3 | Efron et al. (2004) describe the label only as "a quantitative measure of disease progression one year after baseline", with no measure, scale, clinic or inclusion rule: kept with fit approximate and a note (2026-10-21, Lennart; USE-5 amended) | applied |
-| USE-5 | blood_tests_drink_prediction | the quantity is known (drinks per day), how it was recorded is not: kept with fit approximate | applied |
+| USE-5 | blood_tests_drink_prediction | the quantity is known (drinks per day), how it was recorded is not: kept with fit approximate; retired later (2026-11-05) on another ground, no decision rests on the prediction | applied |
 | USE-5 | mobile_churn | no churn rule and no horizon stated: approximate under the amendment, now that PROV-2 (amended 2026-10-21, Lennart) keeps a sound upload with a source to point to | applied |
 | USE-5 | wine_quality, numerai_v5_2_1m, corporate_credit_rating | a rating or grade ships as regression or as classes by the source, checked against common sense and similar use cases, with no general rule: wine_quality's 0-10 grade and numerai's target as regression, as their sources model them; corporate_credit_rating as letter classes with the rare grades merged (carried into corporate_issuer_credit_rating) (2026-10-21, Lennart) | applied |
 | USE-6 | brazilian_ecommerce | the delivery date Olist promised at checkout stays an input: it is fixed before the delivery, so it cannot leak; R^2 0.366 with it, 0.332 without (2026-10-15) | applied |

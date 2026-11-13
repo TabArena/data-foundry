@@ -62,7 +62,7 @@ distinct task: a swapped target, another slice of the same cohort, added or drop
 
 **PROV-7 (Must; narrows PROV-4 and PROV-6).** Records that share a source but give different tasks are not
 duplicates. The comments say why they are distinct, ideally each with its own DOI. Cases:
-parkinsons_biomedical_voice_measurements, amex_iid.
+parkinsons_biomedical_voice_measurements, amex_iid, lung_adenocarcinoma_metastasis (lung_cancer's arrays).
 
 ### The source is the first publication
 
@@ -100,7 +100,7 @@ sources; they go into the comments. Cases: nyc_taxi_trip_duration, melbourne_hou
 all rows, labels taken from the wrong rating), check whether the origin has the clean data before keeping the damage
 or retiring the dataset, and repair or rebuild from the origin when it has them. Scaling over all rows is a weak leak:
 LEAK-30 in [leak_checks.md](leak_checks.md). Cases: SUPPORT2, ashrae, coad_colon_adenocarcinoma,
-corporate_credit_rating.
+corporate_credit_rating, lung_cancer.
 
 **PROV-14 (Must).** A repair stays under its record: the same units and the same features, with the damaged values
 restored from the origin (PROV-13), even when the table then differs from the release. Only a rebuild from other
@@ -260,6 +260,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | PROV-6 | hiva_agnostic, nci_aids_antiviral_screen | a challenge's fingerprint build of a public screen against the screen's own structure release: HIVA's 4,229 labelled rows link to NSC numbers by their bits (97% with confidence) and every label agrees with the NCI file, and its three parts are 42,678 against the screen's 42,682 structure-bearing compounds, so it adds no compound and no label; what it adds is one 2006 ChemTK representation nobody can recompute, which CLEAN-24 as amended drops everywhere else. The structure release wins over the fingerprint build of the same rows: the same shape as ames_mutagenicity / tdc_ames, astrazeneca_chembl_logd74 / tdc_lipophilicity_astrazeneca and bbbp_martins / tdc_bbb_martins, flagged 2026-10-31 (2026-11-02, Lennart) | applied |
 | PROV-7 | parkinsons_biomedical_voice_measurements, telemonitoring_parkinsons_biomedical_voice_measurements | one source, two tasks: the first detects a disorder, the second tracks its progression ([selection.md](selection.md), "Duplicates and versions") | applied |
 | PROV-7 | amex_iid, amex_non_iid | the IID and grouped versions of one competition ([selection.md](selection.md), "Duplicates and versions") | applied |
+| PROV-7 | lung_cancer, lung_adenocarcinoma_metastasis | one study's arrays, two tasks: lung_cancer's histology (retired 2026-11-10) and the study's flag of a possible metastasis from another organ, a new record with its own rows and target (2026-11-11, Andrej); the rebuild from the study's GEO deposit (one MAS5 array per specimen instead of Dataset A's MAS4 means) was a repair under lung_cancer (PROV-13, PROV-14). Cited as PROV-14 until the review of 2026-11-11 (Lennart) | applied |
 | PROV-8, PROV-9 | airfoil_self_noise | 1989 and NASA RP-1218, not UCI 2014: the report's Figs. 11-43 show every measured value (the scaled target and the thickness are the report's formulas of them), and UCI's file was digitised from them (Lau, López and Oñate, CIMNE PI-335, Sec. 4.1), so it is a copy; the report's tables do not list the levels (2026-10-20, Lennart; PROV-9 amended) | applied |
 | PROV-9 | first_principles_tully_fisher | 1977 and Tully and Fisher (A&A 54), not PMLB: its 18 rows were read off the paper's Fig. 5(a); real measurements, so not `AHDS` (2026-10-20, Lennart) | applied |
 | PROV-9 | nikuradse_1, nikuradse_2 | 1933 and Nikuradse's VDI-Forschungsheft 361, not PMLB or the 1950 NACA translation: its Tables 2-8 hold the 362 measurements (2026-10-20, Lennart) | applied |
