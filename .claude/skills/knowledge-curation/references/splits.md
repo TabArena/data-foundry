@@ -93,15 +93,18 @@ read from the source, its documentation and its raw file (a built container's ro
 about time), and they do not change with the split a definition chooses. A fact the source does not settle is
 `Unknown` rather than a guess:
 
-* **Samples:** `Samples: No Time Dimension` (designed runs, or a catalogue of properties where it plays no role when
-  an item was measured), `Samples: One Moment` (every row has the same prediction point: one census, one rating date,
-  one exam round, one customer base read at one date), `Samples: Over Time` (the rows' prediction points spread over a
-  period) or `Samples: Unknown`. The fact asks when each row is predicted, not how the file was pulled: one scrape of
-  sales from several years, or one extract of policies each priced at its own start, is over time (perth_house_prices,
-  bemtpl97), with `Features: Read Later` when the attributes come from the extract. The test: could two rows'
-  prediction points lie at different times? A catalogue whose items enter in eras, or whose features mean something
-  different by when an item was made, arose over time even when each item's value is fixed: sdss_17's quasars are
-  3-11% of the spectra before 2010 and 31-46% from 2014 on, and phishing pages and malware change with their year.
+* **Samples:** `Samples: No Time Dimension` (designed runs, or a catalogue of fixed properties that no source dates),
+  `Samples: One Moment` (every row has the same prediction point: one census, one rating date, one exam round, one
+  customer base read at one date), `Samples: Over Time` (the rows' prediction points spread over a period) or
+  `Samples: Unknown`. The fact asks when each row is predicted, not how the file was pulled: one scrape of sales from
+  several years, or one extract of policies each priced at its own start, is over time (perth_house_prices, bemtpl97),
+  with `Features: Read Later` when the attributes come from the extract. The test: could two rows' prediction points
+  lie at different times? A catalogue whose items enter in eras, or whose features mean something different by when an
+  item was made, arose over time even when each item's value is fixed: sdss_17's quasars are 3-11% of the spectra
+  before 2010 and 31-46% from 2014 on, and phishing pages and malware change with their year. A catalogue that a
+  parent source dates is `Samples: Over Time` with `Time: Dated` even where the date turns out to carry nothing:
+  whether it does is measured for the time basis (`Timeless`, question 1; SPLIT-34), and the fact stays what the
+  source says.
 * **Time,** for samples over time: `Time: Dated` when the release or a parent source keeps the date (a date column, a
   value that encodes the period, a date dropped from the raw file, or a parent upload that matches the rows by an id;
   the time probe, `time_probes.py`, looks for them); `Time: Inferred` when only an order that tracks time survives,
@@ -149,8 +152,9 @@ later period, at a known group or at all groups at once; where the label still m
    could date the items by (a structure in ChEMBL, an observation date) tells whether a catalogue has a time
    dimension; "none published" is an answer too. A dated catalogue's use case decides between `UnseenGroup` (above)
    and the entry date (question 4), and whether the date carries a wave is measured for the line: qsar_tid_11's ChEMBL
-   years show close training analogs from the test compound's own year for 85-90% of its scaffold folds, and
-   predicting each year from earlier ones raises RMSE from 0.68-0.90 to 1.11-1.31.
+   years show close training analogs first published in the test compound's own year for 71-93% of its scaffold folds,
+   and predicting each period from the earlier ones raises RMSE from 0.80-1.04 to 0.89-1.50, which is why it ships
+   split by first publication year.
 2. **Does the use case look back, into the time the data covers?** In the use case the samples arise over time, but
    the data is one snapshot of a moment or a period, and what the use case wants is the missing information of that
    time, not of a later one: the value of a block group the census did not record, a site not yet mapped in a past
@@ -186,7 +190,9 @@ later period, at a known group or at all groups at once; where the label still m
      discordant share over 1985, monthly windows scoring like random folds). It holds whether the target is measured
      with the features (a diagnosis at the visit) or later; when the target arrives is a collection fact, not a
      prototype. It is always measured; where time is lost it cannot be, and the next branch applies.
-   * **Yes, and the time is dated or inferred:** the split is temporal (SPLIT-7, SPLIT-14).
+   * **Yes, and the time is dated or inferred:** the split is temporal (SPLIT-7, SPLIT-14). For a cut of a growing
+     catalogue, SPLIT-34 asks first whether the source's question reaches the later items at all; where it does not, a
+     change in recording is a fact for the notes, not a reason to split by time.
    * **Yes or unmeasured, and the time is lost or too short for three windows:** the split is forced (SPLIT-8):
      `ForcedIIDFromTemporal`, or `ForcedGroupedFromTemporal` when the entities recur. It ships after SPLIT-8's leak
      test. Its `Time basis:` line names the reason (time lost, or too few periods) and what a dated release would
@@ -210,6 +216,94 @@ collection facts and the prototype makes that visible. Cases: the arrival study 
 (2026-11-04) and the review of 98 of them (2026-11-06) are the evidence; examples are credit_card_clients_default and
 framingham_heart_study_fhs (`DelayedTarget`), houses and 5g_energy_consumption (`Retrospective`), thyroid_discordant
 (`StationaryRelation`, measured), musk (`Timeless`), heart_disease (`UnseenGroup`), heloc (`ForcedIIDFromTemporal`).
+
+**SPLIT-34 (Should; relates to SPLIT-4, SPLIT-31 and SPLIT-32).** A dataset drawn from an **expanding science
+catalogue** is a cut of a database or a testing programme that keeps growing: a bioactivity database's releases, a
+regulator's screening programme, a materials database, a sky survey's data releases, the rounds of a community
+experiment. Each item's target is a property of the item and does not move; what moves is **which items the catalogue
+holds**, because a programme adds them in waves - the compounds of one paper's series, one year's batch of tests, one
+targeting campaign's objects. The record carries the tag `Expanding Science Catalogue`, set at screening, so this
+rule is read before the split is chosen. Three keys can keep a test item apart from training, and each tests
+something else:
+
+* **the item:** its copies and re-measurements stay on one side (a structure, a composition, a mix; SPLIT-24,
+  SPLIT-26);
+* **its family:** a series not measured yet (a scaffold, an element set, a plate, a protein target);
+* **when it entered the catalogue:** the items added after the training data (a first publication, a test year, the
+  night of a spectrum, a competition round).
+
+Which key stands for the use case is information from the use case and the source, read in this order:
+
+1. **The item key always holds.** An item's copies and re-measurements stay on one side whichever key splits the rest
+   (SPLIT-24, SPLIT-26); a split by entry date keys on each item's first date, so they stay together there too.
+2. **The family key is the default:** the scaffold for molecules (SPLIT-31), otherwise the unit the actor has not met
+   yet (a protein target, a plate, a well, a strain, a sampled soil profile). Where no family key can be computed, or
+   none exists apart from the label, the split is random and the overlap it leaves is named.
+3. **The source's purpose sets which items the test set stands for.** The use case is the source's, cited, as it is
+   for what one prediction is (SPLIT-23): its stated aim and scope, from the abstract, the methods and the caveats.
+   Where the source keeps its model to items like those it was built from (a screen within known chemistry, a
+   regulatory estimate validated on chemicals from other sources), the family key stands and the entry date is not
+   weighed: the catalogue's later items are outside the source's question. How the catalogue arrived (new families in
+   later eras, a test protocol that changed over the span) is then a fact for the notes, with its measurement, and the
+   time basis is a `Time basis:` line naming the source's scope and what the later items hold that it leaves out.
+   Where the source's aim reaches the items that come next (compounds not yet made, the objects a survey observes
+   next), or the source names no scope, the definition's use case goes on to step 4. Where the source aims at items
+   from elsewhere (other places, other instruments) and tests on independent sets from there, the family key that
+   stands for elsewhere (a survey, a site) is the one, and the date is not weighed. The source's own split is
+   evidence of its scope only where it was chosen for the use (a time split, whole strains, whole wells); a random
+   cross-validation used by habit says nothing about it.
+4. **The entry date replaces the family key** when the use case predicts for items the catalogue does not hold yet
+   (not an inventory already collected, a closed study set or a designed experiment), the date is when the item entered
+   this catalogue (not a registration number that predates it), and the labels are final (not `Target: Revised Later`,
+   where a split by date tests the delay of the label more than the items), and when either
+   * **(a) arrival changes how the target or the features are recorded, or which items are selected** (SPLIT-32,
+     question 4): descriptors computed by another convention in a later round, targeting programmes that changed
+     what a survey observes; or
+   * **(b) the date carries the waves:** a forward split leaves the test items clearly fewer close training neighbours
+     than a random draw does. A programme that adds items in series (one paper's compounds, one family of materials)
+     makes waves, and a family key still trains on the siblings that arrived with the test item, which the actor
+     does not have.
+5. **Otherwise the family key stands,** and the time basis says why: `Timeless` (SPLIT-32) where the catalogue does
+   not grow or its date carries no wave, with the forward split's share against a random draw's in the `Time basis:`
+   line; the line alone where the labels are not final.
+6. **A structure the use case does not hold out is disclosed with its measurement, not grouped on:** a submission
+   batch whose only channel is the structure the family key already holds out, the tissue source site a laboratory's
+   new patients share with its earlier ones.
+
+The share of test items with a close training neighbour is measured on the same test items under each key (for
+molecules, Tanimoto 0.7 or more on Morgan radius 2). It says what each key leaves on the training side, and step 4 (b)
+compares the date with a random draw, never with the family key.
+
+Why: the key follows the application as the source states it, never the size of the gap (SPLIT-1, SPLIT-4, SPLIT-23,
+SPLIT-30); a lower score is not the aim and never chooses the key. On the catalogues measured so far, the share of test
+items with a close training neighbour (a score in brackets where no share was measured):
+
+| Dataset | Step | Family key | Entry date | Random | What decides |
+|---|---|---|---|---|---|
+| qsar_tid_11 | 4b | scaffold 58% | first ChEMBL year 6-30% | 79.7% | 71-93% of the scaffold split's close analogs were first published in the test compound's own year |
+| apistox | 4b | scaffold 14-19% | decade of first publication 10-24% | 17-30% | the literature adds compounds in series |
+| superconductivity | 3 | composition: 79-86% of test compositions with an element-set sibling in training | first report year 23-51% | | the source keeps its model to known chemistry ("We should not expect good predictions for completely new superconductors"); the later families (cuprates from 1986, iron-based from 2008) are outside its question |
+| sdss_17 | 4a | plate (log loss 0.338) | year of the spectrum (0.506) | (0.331) | quasars are 3-11% of the spectra before 2010 and 31-46% from 2014 on: the targeting programmes changed |
+| qsar_biodeg | 3 | scaffold 10.3% | MITI test year 10.3% | 11.8% | the source builds a regulatory screen and validates it on chemicals from other sources; the move from 14-day to 28-day tests is a fact about the labels |
+| qsar_oral_toxicity | 5 | scaffold 8.6% | report year 12.4% | 13.1% | an inventory the programme screens; its untested chemicals have 11.2% |
+| qsar_fish_toxicity | 5 | scaffold 5.9% | first ECOTOX test year 7.2% | 6.9% | the testing programme sets the pace, not the chemistry |
+| qsar_aquatic_toxicity | 5 | scaffold 0.6% | first ECOTOX test year 2.3% | 2.6% | as qsar_fish_toxicity |
+| qsar_bioconcentration | 5 | scaffold 4.6% | NITE test year 3.8% | 3.8% | as qsar_fish_toxicity; ECOTOX's years match the compiled values less well (correlation 0.744) and are left out |
+| nci_aids_antiviral_screen | 5 | scaffold 4.3% | registration order 8.4% | 9.8% | the only order predates the screen; its submission batches are disclosed (step 5) |
+| drug_induced_autoimmunity_prediction | 5 | scaffold | first approval year | | the label accrues with reports after approval |
+| protein_model_quality_rf_pcp | 5 | protein target (per-protein Pearson 0.34-0.57 on CASP7-9) | CASP round (0.30-0.56; CASP10 about 0) | | the user ranks candidate models of a target with no known structure, which the protein key holds out; CASP10's other descriptor convention is a fact for the notes |
+| open_soil_spectral_library | 3 | survey project (93-96% of test layers kept their survey in training under the pedon key) | scan date (older scans only 0.178 against 0.141 for a matched control, RMSLE) | | the source aims at scans from other instruments and sites; a whole survey is the part of that this one-instrument cut can test |
+| splice | 5 | GenBank entry component | entry year (1974-1990, 94% of entries dated): 4.1% of test windows with a training window within 3 of 60 bases | 4.0% | entries reach GenBank one at a time, so the date carries no wave |
+| force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | 5 | well: 61.9% of test wells with a training well in their block | release date 62.0% | | wells are released one at a time, two years after completion, so the date carries no wave |
+
+Cases, by step. 3, the source's scope: superconductivity, qsar_biodeg, open_soil_spectral_library (items from
+elsewhere). 4a: sdss_17. 4b: qsar_tid_11, apistox. 5: qsar_oral_toxicity (an inventory), nci_aids_antiviral_screen (the
+date predates the screen), drug_induced_autoimmunity_prediction (labels not final), qsar_fish_toxicity,
+qsar_aquatic_toxicity, qsar_bioconcentration,
+force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition, splice (no wave in the date),
+protein_model_quality_rf_pcp (the source's question is a new target). Random for want of a family key: bioresponse (no
+structure or compound id), biogeographical_ancestry_prediction (the population is the label). Step 6:
+nci_aids_antiviral_screen, sarcoma.
 
 ### Temporal tasks
 
@@ -375,8 +469,9 @@ qsar_bioconcentration: "in other cases, we also moved towards a scaffold split a
 molecule dataset whose rows carry exact structures groups on the Bemis-Murcko scaffold, as a new chemical under
 assessment often comes from a series not yet measured. A molecule without a ring is a group of its own, and so is each
 molecule of a scaffold that holds more than a tenth of the molecules, which is no series and would leave folds of very
-unequal size (`scaffold_groups` in `data_foundry.v2.chemistry`). Cases: drug_induced_autoimmunity_prediction,
-qsar_bioconcentration, qsar_oral_toxicity, qsar_tid_11.
+unequal size (`scaffold_groups` in `data_foundry.v2.chemistry`). Where the set is a cut of a catalogue that keeps
+growing, SPLIT-34 says when the date a molecule entered it replaces the scaffold. Cases:
+drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity, qsar_tid_11.
 
 The hidden-group cases and the probe's calibration are in [task_probes.md](task_probes.md), "Hidden groups".
 
@@ -477,8 +572,11 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-31 | drug_induced_autoimmunity_prediction | grouped on the Bemis-Murcko scaffold, ring-less drugs alone, the bare benzene ring one group (7% of the drugs): new candidates come from series not yet tested, as in the TDC ADMET benchmarks (2026-10-19, Lennart) | applied |
 | SPLIT-31 | qsar_bioconcentration | the amendment: scaffold groups in place of IID, ring-less chemicals and the bare benzene ring (34%) alone; close training analogs of the test chemicals fall from 12.6% to 6.4% (2026-10-26, Lennart) | applied |
 | SPLIT-31 | qsar_oral_toxicity | reopened under the amendment: every row has its own QSAR-ready structure since 2026-10-21, so the scaffold is exact; ring-less chemicals (23%) and the bare benzene ring (18%) alone; close training analogs fall from 24.7% to 16.3%, against 11.0% for the untested chemicals, so the fit stays approximate (2026-10-26, Lennart) | applied |
-| SPLIT-31 | qsar_tid_11 | scaffold groups in place of IID: the file carries ChEMBL compound ids, and ChEMBL 17 (the release the data was drawn from) gives every one its structure; 21 ring-less compounds alone, the bare benzene ring 2%; close training analogs fall from 79.7% to 59.2%, untuned LightGBM RMSE 0.794 to 0.920; the features stay the source's fingerprint (2026-11-01, Lennart) | applied |
+| SPLIT-31 | qsar_tid_11 | scaffold groups in place of IID: the file carries ChEMBL compound ids, and ChEMBL 17 (the release the data was drawn from) gives every one its structure; 21 ring-less compounds alone, the bare benzene ring 2%; close training analogs fall from 79.7% to 59.2%, untuned LightGBM RMSE 0.794 to 0.920; the features stay the source's fingerprint (2026-11-01, Lennart); superseded on 2026-11-11 by a split by first publication year, since the scaffold folds kept the test compound's siblings of its own year (SPLIT-34) | applied |
 | SPLIT-24, SPLIT-26, SPLIT-4 | boreal_postfire_lichen_biomass | one group per Saskatchewan plot kept (the names carry no burn key), with the measured effect in the notes, over a burn key joined from an outside source (Canada's NFDB and NBAC fire polygons, point in polygon on the plot's fire year): tried on 2026-11-09 and taken back on 2026-11-10 (Andrej: "Back to A, with the note"). 94 of 190 SK plots lay inside a mapped burn of their year (none of the 66 dated before 1945); burn-mates in training flattered the SK RMSE by about 5 kg/ha against a fold-draw SE of about 40, and no model changed rank; the join cost 2 GB of maps, a shapefile reader and a build tied to NFDB's current version only | applied |
+| SPLIT-34 | apistox | split by the decade of first publication (four expanding windows), not by scaffold: the use case predicts compounds that appear later, and the windows leave 10-24% of the test compounds a close training analog, against 14-19% for scaffold groups and 17-30% at random | applied |
+| SPLIT-34 | qsar_biodeg | scaffold groups kept over windows on the year of the MITI test: the source builds a regulatory screen for chemicals from outside its collection and validates it on chemicals from other sources, so the next chemicals of one testing programme are not its question; the move from 14-day to 28-day tests is recorded as a fact about the labels | applied |
+| SPLIT-34 | superconductivity | composition groups kept over windows on the first report year: the source keeps its model to known chemistry and warns against expecting good predictions for completely new superconductors; the later families and the measured drift are recorded in the notes | applied |
 
 ## In Data Foundry
 

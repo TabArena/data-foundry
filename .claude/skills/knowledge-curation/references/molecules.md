@@ -122,8 +122,20 @@ The task is going from the structure to a prediction (Lennart, 2026-11-01). So:
   Scores drop by design: drug_induced_autoimmunity_prediction's TabPFN fell from 0.854 to 0.768 ROC AUC, and
   qsar_tid_11's LightGBM from 0.747 to 0.657 R^2. Under random splits a nearest-neighbour lookup with no model reached
   0.822 on drug_induced.
-* **A source's time split can stand in.** apistox's decade windows give 10-24% close analogs, against 14-19% for
-  scaffold groups and 17-30% at random, so it stays temporal.
+* **Where the set comes from a growing catalogue, the date a molecule entered it can replace the scaffold (SPLIT-34,
+  steps 3 and 4).** First the source: a regulatory screen for chemicals from outside its collection does not ask
+  about the next chemicals of one testing programme, and the scaffold stands whatever the dates show.
+  * It does where the literature adds compounds in series, so a forward split leaves test compounds clearly fewer close
+    analogs than a random draw: apistox's decade windows 10-24% against 17-30% at random, qsar_tid_11's first ChEMBL
+    years 6-30% against 79.7%.
+  * It does not where a testing programme sets the pace rather than the chemistry. A chemical first reported in 1991
+    is often a close relative of one reported in 1965, and a forward split leaves as many close analogs as a random
+    draw: qsar_oral_toxicity 12.4% against 13.1%, qsar_fish_toxicity 7.2% against 6.9%, qsar_aquatic_toxicity 2.3%
+    against 2.6%, qsar_bioconcentration 3.8% against 3.8%.
+  * A change in how the label was measured is a fact about the labels where the source's question does not reach the
+    later chemicals: qsar_biodeg's move from 14-day to 28-day tests is recorded in its notes, and its scaffold split
+    stands. And an identifier that looks like an entry order need not be one: nci_aids_antiviral_screen's
+    registration numbers predate the screen for about a quarter of its compounds.
 
 ## Use case, targets and metrics
 

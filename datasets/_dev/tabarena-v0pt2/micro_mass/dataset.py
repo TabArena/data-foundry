@@ -83,6 +83,7 @@ class MicroMass(AbstractCuratedDataset):
     # Task
     target = "Species"
     problem_type = "multiclass_classification"
+    data_tags = ("Timeless",)
     metric = Metric.source(
         "hierarchical_balanced_accuracy",
         original="Accuracy averaged per strain, then per species (Vervier et al. 2015)",

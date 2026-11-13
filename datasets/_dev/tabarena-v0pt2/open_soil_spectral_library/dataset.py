@@ -27,19 +27,46 @@ RENAMED = [f"{PREFIX}{n}" for n in WAVENUMBERS]
 # leaves for every row (Lennart, 2026-11-04), so the shipped spectrum runs from 602 to 4,000 cm-1.
 DROPPED_EDGE = f"{PREFIX}600"
 BINS = [b for b in RENAMED if b != DROPPED_EDGE]
+PROJECT_SOURCE = "id.project_ascii_txt"
+GROUP = "survey_project"
+
+
+def linked_projects(df: pd.DataFrame) -> pd.Series:
+    """The survey project of each row; projects that share a pedon key are joined under one name (sorted, ` + `).
+
+    Two KSSL pedon keys are filed under two projects each, so a project key alone would split their layers across the
+    two sides; joining the projects they link keeps every profile whole.
+    """
+    parent = {p: p for p in df[GROUP].unique()}
+
+    def find(p: str) -> str:
+        while parent[p] != p:
+            parent[p] = parent[parent[p]]
+            p = parent[p]
+        return p
+
+    for projects in df.groupby("pedon_id")[GROUP].unique():
+        root = find(projects[0])
+        for other in projects[1:]:
+            parent[find(other)] = root
+    members: dict[str, list[str]] = {}
+    for p in parent:
+        members.setdefault(find(p), []).append(p)
+    names = {p: " + ".join(sorted(members[find(p)])) for p in parent}
+    return df[GROUP].map(names)
 
 
 class OpenSoilSpectralLibrary(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="What is the laboratory-reference organic-carbon weight percent of a prepared soil sample from its mid-infrared scan?",
-        use_case="A soil spectroscopy laboratory estimates a prepared sample's organic carbon from its mid-infrared scan instead of running the wet chemistry, as the OSSL Engine does for an uploaded scan. Evaluation holds out whole soil profiles and predicts each layer separately.",
+        use_case="A soil spectroscopy laboratory estimates a prepared sample's organic carbon from its mid-infrared scan instead of running the wet chemistry, as the OSSL Engine does for an uploaded scan. Evaluation holds out whole survey projects and predicts each layer separately.",
         row="One archived KSSL soil layer with its averaged mid-infrared spectrum and laboratory-reference label, from the July 2022 source snapshot released in OSSL v1.2.",
         predicted="Organic carbon in weight percent, estimated analytically from total carbon, with the archived S-preparation reference preferred over N preparation when both exist. It ships as log1p of the percent, the scale the source models it on, under a name that says so, and is scored by the RMSE on that log scale, the scale of the source's cross-validation and tuning.",
         known="The sample's mid-infrared absorbance spectrum, 1,700 positions from 602 to 4,000 cm-1 every 2 cm-1, declared as a spectrum. Other laboratory outcomes, identifiers and field metadata are not inputs to the source's scan-upload task, which takes the spectrum alone. A KSSL laboratory scanning its own sample also knows the layer's depths and preparation code; leaving them out is a choice of actor, the source's service over the laboratory's own use.",
-        split="Whole KSSL pedon keys (lims.pedon.id) are held out: a key is usually one soil profile whose layers are the rows, while archive campaigns and research projects share a key. Each test layer comes from a key not seen in training, scanned by the same laboratory and instrument.",
-        changes="We restrict OSSL to KSSL mid-infrared samples, ship the reference as log1p as the source models it and hold out KSSL profiles. Rows without a spectrum or reference label cannot form this prediction task.",
+        split="Whole KSSL survey projects are held out: a project is a soil survey or study whose samples reach the laboratory together, and the projects that share a soil profile are joined. Each test layer comes from a project not seen in training, scanned by the same laboratory and instrument.",
+        changes="We restrict OSSL to KSSL mid-infrared samples, ship the reference as log1p as the source models it and hold out KSSL survey projects. Rows without a spectrum or reference label cannot form this prediction task.",
         fit="approximate",
-        fit_reason="The task is the source's own calibration within one laboratory and one instrument. A laboratory using the OSSL models scans on its own instrument, and that transfer, where the source's independent evaluation finds the errors grow, is not tested. Nor are later scans or new survey projects, where one model scored about 8 to 26% worse.",
+        fit_reason="The task is the source's own calibration within one laboratory and one instrument. Transfer to a user's own instrument, where the source's independent evaluation finds the errors grow, is not tested. A held-out survey project stands for samples from elsewhere within KSSL; later scans are not tested (one model scored 26% worse on the scans of 2018 to 2022).",
     )
     unique_name = "open_soil_spectral_library"
     domain = "environmental science & climate"
@@ -71,11 +98,12 @@ class OpenSoilSpectralLibrary(AbstractCuratedDataset):
         - The 600 cm-1 edge: 53 spectra read exactly 0 at 600 cm-1 while their 602 cm-1 value is 1.27 to 1.86 (50 of them scanned in 2011, 42 on two days), a fill at the edge of the range. The bin is dropped for every row (Lennart, 2026-11-04: "do (b)"), so each spectrum stays whole, 602 to 4,000 cm-1. The other 32 exact zeros are sign changes of a near-zero absorbance above 2,000 cm-1. The 600 cm-1 bin's distinct-value count (27,193) is ordinary: the counts run from about 23,000 to 55,000 along the whole axis, and the bins to 606 cm-1 have as few. 36 spectra in 21 pedons have a negative mean absorbance, sloping to between -0.5 and -0.97 at the high-wavenumber end (a tilted baseline); they ship as published, since dropping them and similar rows from training made an honest LightGBM worse on every split (by 0.0005 to 0.006, 2026-11-04).
         - CC (2026-11-05, Lennart): the dropped 600 cm-1 edge is filed as an amendment of the spectrum rule, not an exception (issue 10, A; CLEAN-26 as amended 2026-11-05, narrowing CLEAN-11): a fill at an edge position drops that position for every row, a fill at an inner position is set missing and the column stays. Re-counted on the raw export on 2026-11-05: 53 spectra read 0 at 600 cm-1 beside 1.27 to 1.86 at 602 cm-1, and no other position from 602 to 610 cm-1 holds a 0.
         - Encodings (2026-11-04, the three folds of repeat 0, untuned: LightGBM with 500 trees, learning rate 0.1 and 30% of the bins per tree; PLS with 30 components; ridge with alpha by GCV on the training fold). On the declared scale (fitted on the shipped log1p, RMSE on log1p), LightGBM falls from 0.155 on the spectrum as it is to 0.130 with the registered ALS baseline and SNV, 0.136 with SNV alone and 0.118 with a Savitzky-Golay first derivative (11 points, order 2; both registered on 2026-11-04 as `vib-snv-r1` and `vib-sg11-d1-r1`), lower on 3 of 3 folds each. PLS gains from SNV (0.158 to 0.145, 3 of 3) and the derivative (0.150, 3 of 3), not from ALS and SNV (0.164, 0 of 3); ridge gains a little from SNV (0.142 to 0.138, 2 of 3) and from nothing else. The recommended encoding stays the spectrum as it is (CLEAN-26). The earlier figures were fitted and scored in percent (LightGBM 1.74 as it is, 1.33, 1.39 and 1.24 processed; ridge best as it is at 1.84); fitted on log1p and scored in percent, the same LightGBM gives 1.85 as it is. In percent, layers above 12% organic carbon (16% of rows) carry 79 to 95% of the squared error, and an unclipped linear fit on log1p put one layer at 118,759% (ridge with SNV, one fold: RMSE 745, and 1.86 with the predictions clipped to the training range).
-        - Restrict the source code to KSSL.SSL. Join on dataset.code_ascii_txt and id.layer_uuid_txt with one-to-one validation, never by row position or rounded coordinates. The native KSSL pedon key lims.pedon.id (renamed id.dataset.site_ascii_txt by the 2023-01-09 importer) is the group, never a model feature.
+        - Restrict the source code to KSSL.SSL. Join on dataset.code_ascii_txt and id.layer_uuid_txt with one-to-one validation, never by row position or rounded coordinates. The native KSSL pedon key lims.pedon.id (renamed id.dataset.site_ascii_txt by the 2023-01-09 importer) was the group until 2026-11-12 and is never a model feature; it now only joins the survey projects that share a profile (CC below).
         - The L1 organic-carbon label is an analytical estimate, not a spectroscopy prediction. Archived KSSL L0 S-preparation values take precedence over N preparation; the row-wise coalescence reproduces every KSSL L1 value and missingness mask (2026-10-27; not re-tested on 2026-11-04, when the local L0 export had one organic-carbon column). The upstream importer had already converted negative laboratory references to missing; this cannot recover their pre-import count.
         - Drop rows without any spectrum, and rows with a missing target. Do not clip the reference, discard zero endpoints, average repeated entities or fit a spectral transform over all rows. Raw reference values and source identities remain in the warehouse.
         - 151 layers read above 58% organic carbon, 3 of them above 70% (up to 78.45%; RaCA project MO14, N preparation, O horizons). The three above 70% equal the source's measured total carbon with no carbonate measured, and the source's L0 table carries the same values, so they stay unclipped (CLEAN-11: unusual, not shown impossible). A later KSSL release that revises these samples would reopen this.
-        - Hold out whole KSSL pedon keys. A key is usually one sampled soil profile whose layers are the rows; archive campaigns and research projects share a key (the largest, 640 rows over 151 depths, is a North Dakota archive campaign; 1,779 keys with 14% of rows repeat a depth), and replicate pits at one site have separate keys (348 locations; grouping by location gives about 0.150 against 0.148 RMSE on log1p, LightGBM, three folds). Holding a key out tests a new sample from the same laboratory and instrument. Each layer is predicted and scored separately. Myunghwan chose the key over coordinates on 2026-10-27 ("group id is slightly better. stick to group id").
+        - Superseded on 2026-11-12 by the survey project (CC below): hold out whole KSSL pedon keys. A key is usually one sampled soil profile whose layers are the rows; archive campaigns and research projects share a key (the largest, 640 rows over 151 depths, is a North Dakota archive campaign; 1,779 keys with 14% of rows repeat a depth), and replicate pits at one site have separate keys (348 locations; grouping by location gives about 0.150 against 0.148 RMSE on log1p, LightGBM, three folds). Holding a key out tests a new sample from the same laboratory and instrument. Each layer is predicted and scored separately. Myunghwan chose the key over coordinates on 2026-10-27 ("group id is slightly better. stick to group id").
+        - CC (2026-11-12, Andrej): whole KSSL survey projects are held out (issue 11, B; SPLIT-34, SPLIT-1). The source builds its models for spectra "collected on any spectrometer anywhere in the world" and tests that claim on samples kept out of calibration, from other instruments and other sites (Safanelli et al. 2025, PLoS ONE 20(1): e0296545); within this one-laboratory, one-instrument cut, a whole survey held out is the part of that scope that can be tested, while under the pedon key 93-96% of test layers kept their own project in training. The later scans in KSSL's own queue are not the source's question, so the scan date is not the split and its drift is a note in `splits_comment`. The group is `id.project_ascii_txt` from the site table: 1,548 projects on the usable rows, the largest RaCA region about 530 rows (RaCA is filed by region and part, not as one project). Two pedon keys are filed under two projects each (key 39678, the 640-row North Dakota archive campaign, under that campaign and the Cowarts monitoring wells; key 38312, 19 rows, under the MLRA 90B Marshfield catena and the WHRC archive samples), and each such pair is joined, so 1,546 groups and every profile whole. Folds of repeat 0 hold 24,887 to 25,724 test layers from 515 or 516 groups. Closeness on the first 30 principal components of the SNV spectrum: 0.01% of test layers have a training neighbour closer than the 1st percentile of the within-profile neighbour distance and 0.46% closer than the 5th, against 1.2% and 5.0% under the pedon key (2026-11-12, repeat 0). Measured on 2026-11-04 (untuned LightGBM, repeat 0, three folds), the project key gives RMSLE 0.1634 against 0.1482 under the pedon key and 0.1424 at random; the size of the gap is not the reason (SPLIT-4). The raw inputs were recreated on 2026-11-12 from the four Zenodo v1.2 files (MD5 checked) with a Python reader of the qs format in place of R; the unchanged definition reproduced its checksum before the change.
         - Ship the reference as log1p(weight percent) and score the RMSE on that scale, `rmsle` on weight percent, the source's CV and tuning scale (MET-3; Lennart, 2026-11-04: "Follow the source metric and scale"). The source fits organic carbon on log1p (`log1p()` for every property but clay, silt, sand and the two pH values) and back-transforms with `expm1()` for its independent evaluation. Myunghwan's 2026-10-27 choice of the original target compared percent with a fraction, not with log1p.
         - CC (2026-11-05, Lennart): the target column is renamed from `organic_carbon_weight_percent` to `log1p_organic_carbon_weight_percent`, the values unchanged (issue 9, A with (a); CLEAN-16). The old name stated a unit, weight percent, that the shipped values (0 to 4.375) contradict, and the blind reviewer, reading the data without our notes, concluded they could not be percent. The four kept names, `price` (diamonds, mercari), `loss` (allstate) and `area` (forest_fires), state no unit. The name puts the transform before the source's quantity, as ashrae's `log1p_meter_reading` does.
         - Metric provenance: the source tunes Cubist by RMSE on log1p (inner 5-fold CV on 2,000 samples), reports its 10-fold CV on log1p (for KSSL MIR organic carbon n = 75,929 as here, RMSE 0.114 and CCC 0.995, in `out/fitted_models_performance_v1.2.csv` of github.com/soilspectroscopy/ossl-models; the paper's S2 Table gives 0.11 and 0.99 "in the natural logarithm space"), reports its independent evaluation in percent after back-transformation (Table 5, S3 Table) and ranks its models by Lin's CCC with an RPIQ cut-off of 2 (Fig 5). The declared RMSLE is on the scale of the source's CV and tuning; the percent scale belongs to its independent evaluation sets, the instrument transfer this task does not test.
@@ -122,13 +150,13 @@ class OpenSoilSpectralLibrary(AbstractCuratedDataset):
         ),
     )
     grouping = Grouping(
-        on="pedon_id",
+        on=GROUP,
         labels="per_sample",
         prediction_unit="row",
         context="none",
-        definition="The KSSL pedon key lims.pedon.id (archived as id.dataset.site_ascii_txt): usually one sampled soil profile, whose layers are the rows. Archive campaigns and research projects share a key (the largest has 640 rows), and replicate pits at one site have separate keys (348 locations; grouping by location gives about 0.150 against 0.148 RMSLE). Holding a key out tests a new sample from the same laboratory and instrument. Each layer is predicted and scored on its own, with no group context.",
+        definition="The KSSL survey project (id.project_ascii_txt, on every row): a soil survey or research study whose samples reach the laboratory together, such as one region of the Rapid Carbon Assessment (RaCA) or an archive-scanning campaign. Two KSSL pedon keys (lims.pedon.id) are filed under two projects each, and the projects they link are joined, so every soil profile stays whole. Holding a project out tests samples from a survey the library does not hold, scanned by the same laboratory and instrument. Each layer is predicted and scored on its own, with no group context.",
     )
-    splits_comment = "Whole KSSL profiles (pedon keys) held out, three repeats of three folds with seed 4267: a test layer's key is never in training, and the laboratory and instrument are the same in training and test. 93-96% of test layers have their survey project in training; a model applied to later scans or new projects scores about 8-26% worse in RMSLE (LightGBM, 2026-11-04), and whether rankings change is untested. A project or scan-date split is a candidate variant (SPLIT-31), not built."
+    splits_comment = "Whole KSSL survey projects held out (Andrej, 2026-11-12), three repeats of three folds with seed 4267: a test layer's project, and with it its profile, is never in training, and the laboratory and instrument are the same in training and test. 1,546 groups (1,548 projects, two pairs joined by a shared pedon key), the largest 640 rows; test folds of 22,872 to 27,663 rows over the nine splits. 0.46% of test layers have a training neighbour closer than the 5th percentile of the within-profile neighbour distance, against 5.0% under the earlier pedon key. Drift between scan years, a note and not the split (untuned LightGBM, RMSLE on log1p, 2026-11-04): trained on older scans only, cutoffs at 2017, 2018 and 2019 score 0.160, 0.183 and 0.194, against 0.144, 0.169 and 0.177 for a control of the same size drawn from any date; trained on scans to 2017 and tested on those of 2018 to 2022, 0.178 against 0.141 for a matched grouped control (26% worse), the later scans under-predicted more at 3 to 12% organic carbon. The scan date is missing for 10,044 rows (13%). Transfer to another instrument and to later scans is untested."
     accepted_check_warnings = {}
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -148,7 +176,7 @@ class OpenSoilSpectralLibrary(AbstractCuratedDataset):
         lab = pd.read_csv(raw_dir / "ossl_soillab_L1_v1.2.qs.csv.gz", dtype=str, keep_default_na=False)
         site = pd.read_csv(raw_dir / "ossl_soilsite_L0_v1.2.qs.csv.gz", dtype=str, keep_default_na=False)
         lab = lab.loc[lab[KEY[0]].eq("KSSL.SSL"), KEY + [TARGET_SOURCE]]
-        site = site.loc[site[KEY[0]].eq("KSSL.SSL"), KEY + ["id.dataset.site_ascii_txt"]]
+        site = site.loc[site[KEY[0]].eq("KSSL.SSL"), KEY + ["id.dataset.site_ascii_txt", PROJECT_SOURCE]]
         assert not frame.duplicated(KEY).any()
         assert not lab.duplicated(KEY).any()
         assert not site.duplicated(KEY).any()
@@ -159,6 +187,8 @@ class OpenSoilSpectralLibrary(AbstractCuratedDataset):
         frame[TARGET_SOURCE] = pd.to_numeric(frame[TARGET_SOURCE].replace("", np.nan), errors="raise")
         frame["pedon_id"] = frame["id.dataset.site_ascii_txt"]
         assert frame["pedon_id"].ne("").all(), "Missing native pedon"
+        frame[GROUP] = frame[PROJECT_SOURCE]
+        assert frame[GROUP].ne("").all(), "Missing survey project"
         return frame
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
@@ -167,31 +197,35 @@ class OpenSoilSpectralLibrary(AbstractCuratedDataset):
         # The archive has complete or entirely absent KSSL spectra, no partial spectra.
         assert spectra.loc[has_spectrum].notna().all().all()
         valid = has_spectrum & raw[TARGET_SOURCE].notna()
-        result = raw.loc[valid, [*SOURCE_BINS, "pedon_id", TARGET_SOURCE]].copy()
+        result = raw.loc[valid, [*SOURCE_BINS, "pedon_id", GROUP, TARGET_SOURCE]].copy()
         result = result.rename(columns=dict(zip(SOURCE_BINS, RENAMED, strict=True))).drop(columns=DROPPED_EDGE)
         assert np.isfinite(result[BINS].to_numpy()).all()
         assert result[TARGET_SOURCE].between(0, 100).all(), "Investigate unexpected reference bounds; never clip"
         # The source fits organic carbon on log1p and back-transforms for its independent evaluation (MET-3); the column
         # is named after the transform (CLEAN-16).
         result[self.target] = np.log1p(result.pop(TARGET_SOURCE))
-        return result
+        # The survey project is the group (Andrej, 2026-11-12); the pedon key only joins projects that share a profile
+        # and then leaves, as it was never a model feature.
+        result[GROUP] = linked_projects(result)
+        return result.drop(columns="pedon_id")
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["pedon_id"])
+        return FeatureTypes(categorical=[GROUP])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         has_spectrum = raw[SOURCE_BINS].notna().any(axis=1)
+        usable = has_spectrum & raw[TARGET_SOURCE].notna()
         counts = pd.Series(
             {
                 "KSSL source rows": len(raw),
                 "rows without MIR": int((~has_spectrum).sum()),
                 "missing OC references": int(raw[TARGET_SOURCE].isna().sum()),
                 "usable MIR and OC": len(df),
-                "native KSSL source keys": df["pedon_id"].nunique(),
+                "native KSSL pedon keys": raw.loc[usable, "pedon_id"].nunique(),
+                "survey projects": raw.loc[usable, GROUP].nunique(),
+                "groups (projects joined by a shared pedon key)": df[GROUP].nunique(),
                 "zero OC endpoints retained": int(df[self.target].eq(0).sum()),
-                "spectra with a 0 at 600 cm-1 (bin dropped)": int(
-                    raw.loc[has_spectrum & raw[TARGET_SOURCE].notna(), SOURCE_BINS[0]].eq(0).sum()
-                ),
+                "spectra with a 0 at 600 cm-1 (bin dropped)": int(raw.loc[usable, SOURCE_BINS[0]].eq(0).sum()),
             }
         )
         return [

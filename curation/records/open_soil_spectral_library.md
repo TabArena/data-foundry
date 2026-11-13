@@ -7,7 +7,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Myunghwan
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -16,6 +16,7 @@ tags:
 - Spectral Data
 - 'Samples: Over Time'
 - 'Time: Dated'
+- Expanding Science Catalogue
 collections:
 - New (BeyondArena)
 original_source: Website
@@ -109,6 +110,20 @@ CC (2026-11-05, Lennart): the `no_spread` flag is left unrecorded for this datas
 
 CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
+CC (2026-11-12, Andrej): opened Review issue 11, which key holds the test layers apart, now that the OSSL is read as a catalogue that keeps growing.
+
+- The library grows by contribution and by re-snapshot: ours is the v1.2 July 2022 KSSL snapshot beside nine libraries, the release of 2026-10-30 a July 2025 KSSL snapshot beside twenty (zenodo.org/records/7599269/latest; docs.soilspectroscopy.org/libraries.html; new datasets arrive by mail or a pull request to soilspectroscopy/ossl-imports).
+- So the item, its family and when it entered the library are three different keys here: the pedon (shipped), the survey project (`id.project_ascii_txt`, 1,548, on every row) and KSSL's MIR scan date (`scan.mir.date.begin_iso.8601_yyyy.mm.dd`, 2011-2022, missing for 10,044 rows, 13%). Entry into the OSSL itself is one date for the whole cut, and the field sampling date predates the scanning programme, so the scan date is the only arrival order the data carries.
+- The issue reuses the 2026-11-04 panel measurements (pedon 0.1482, project 0.1634, location about 0.150, random 0.1424 RMSLE; forward by scan date 0.1599/0.1829/0.1944 against matched controls 0.1443/0.1694/0.1767, and 0.178 against 0.141 on the 2017 cut) and adds no fit of its own: the raw inputs are in neither checkout's warehouse.
+- Nothing in the definition, the split or the record's fields changed; the recommendation is C, the scan-date windows, and the decision is yours.
+
+CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` (Review issue 12): KSSL's MIR scan date, the day a layer entered the spectral library, dates 87% of the rows, 2011 to 2022. The facts describe the source and do not change with the split, which stays as it is.
+
+CC (2026-11-12, Andrej): whole survey projects now hold the test layers apart instead of pedon keys (Review issue 11, B); the input data did not change, the split did:
+- Why: the source builds its models for scans from any instrument anywhere and tests them on samples kept out of calibration, from other instruments and other sites (Safanelli et al. 2025, PLoS ONE 20(1): e0296545). Within this one-laboratory, one-instrument cut, a held-out survey is the part of that scope that can be tested; under the pedon key 93-96% of test layers kept their own survey project in training. The later scans in KSSL's own queue are not the source's question, so the scan date is no split; its drift (26% worse on the scans of 2018 to 2022 than a matched control) is a note in the split's comment.
+- How: the group is the KSSL survey project (`id.project_ascii_txt`), 1,548 projects; the two pedon keys filed under two projects each join their projects, so 1,546 groups and every soil profile stays whole. Test folds hold 22,872 to 27,663 layers over the nine splits; 0.46% of test layers have a training neighbour closer than the 5th percentile of the within-profile spectral distance, against 5.0% under the pedon key.
+- The raw inputs were recreated from the four Zenodo v1.2 files with a Python reader of the qs format instead of R, and the unchanged definition reproduced its checksum. A rebuild waits for the curator's ask.
+
 CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of no time basis:
 - The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
 - The split does not change; the definition's `Time basis:` line keeps the measured evidence.
@@ -118,7 +133,7 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of no time basis:
 **Outcome:** added. The KSSL part of the Open Soil Spectral Library v1.2: 75,929 archived soil layers, each with its
 mid-infrared spectrum (1,700 bins from 602 to 4,000 cm-1, declared as a spectrum, `state="raw"`) and its laboratory
 organic carbon, shipped as log1p and scored by `rmsle` (the RMSE of the shipped log1p values, the source's
-cross-validation and tuning scale), with whole KSSL pedon keys held out. Verdict: ship after changes (review panel,
+cross-validation and tuning scale), with whole KSSL survey projects held out (pedon keys until 2026-11-12). Verdict: ship after changes (review panel,
 full, second pass after your PR #33 review of 2026-11-04); the text changes in the definition are made, while the
 record's AI note on "issues 2-3" and the `spectra.md` table and its "1,701" are still to be updated. Validity: USE-3 and USE-5 hold (fit approximate); USE-6 holds for the source's scan-upload actor, and which
 actor to model is your call (issue 6); LEAK-1, LEAK-10, LEAK-16 and CLEAN-23 hold (rows shuffled, no attack beat the
@@ -133,9 +148,10 @@ Left for you: issues 6-10, five decisions; a rebuild on your ask (the container 
 metric and bin changes); and Myunghwan, who holds the claim and approved ("ship all", 2026-10-28) the definition
 before those changes, should be told before shipping.
 
-**Main points:** Spectrum only, or also the depths and preparation code a KSSL lab knows (6)? Record the `no_spread`
-keep (7)? File the fact that sets the log-scale metric apart from `forest_fires` (8)? Rename the target to
-`log1p_organic_carbon_weight_percent` (9)? Confirm the CLEAN-26 amendment for the dropped edge bin (10)?
+**Main points:** Settled 2026-11-05: the spectrum only (6), nothing recorded on the `no_spread` flag (7), the MET-5
+case filed (8), the target renamed to `log1p_organic_carbon_weight_percent` (9), the CLEAN-26 amendment (10). Settled
+2026-11-12: whole survey projects hold the test layers apart (11, B), and collection facts `Samples: Over Time`,
+`Time: Dated` (12). Nothing open; a rebuild waits.
 
 **Record judgment:** valid. Your CC lines of 2026-11-04 replace Myunghwan's percent target and RMSE (2026-10-27) and
 come after his "ship all" (2026-10-28); `claimed_by: Myunghwan` still reflects his stage. The CC line that cites
@@ -367,6 +383,152 @@ file in the folder; an AI note saying so is still to be added to the record. The
    stays; when only an edge position holds it, that position is dropped for every row, so each spectrum stays whole
    (narrows CLEAN-11). The facts checked on the export: 53 of 75,929 spectra read exactly 0 at 600 cm-1 beside 1.27-1.86
    at 602 cm-1. A Cases row; spectra.md cites the amendment.
+
+11. **Which key holds the test layers apart: the pedon, the survey project, or the scan date?**
+
+   * **Problem:**
+     - The library this cut comes from keeps taking contributions and re-snapshotting its sources: our release carries
+       KSSL as a July 2022 snapshot beside nine libraries, the release of 2026-10-30 a July 2025 KSSL snapshot beside
+       twenty.
+     - KSSL's scan date, the day a layer entered the spectral library, is recorded for 87% of the rows, and the survey
+       project for all of them, so all three keys a growing catalogue offers exist here[^11a].
+     - The shipped pedon key holds out the item alone: 93-96% of test layers keep their own project in training, while
+       the use case is a scan uploaded against a library that was finished before the sample arrived.
+   * **Background:**
+     - How the library grows: new datasets come in by mail to the team or as a pull request from the template in
+       [`soilspectroscopy/ossl-imports`](https://github.com/soilspectroscopy/ossl-imports), and the manual calls the
+       collection one that is actively expanding, with more libraries planned
+       ([listed libraries](https://docs.soilspectroscopy.org/libraries.html)). The 2026-10-30 release ships one zip per
+       source dataset, twenty of them, among them BESB, HSDOS, AUT, GEMAS, Geocradle, GPKOR and MTQ, which v1.2 did not
+       hold ([Zenodo, latest version](https://zenodo.org/records/7599269/latest)).
+     - What each date means: `scan.mir.date.begin_iso.8601_yyyy.mm.dd` is when KSSL scanned the layer, which is when it
+       entered the spectral library (2011 to 2022 here, missing for 10,044 rows, 13%: 32% of the XN preparations and 7%
+       of the XS); `observation.date.begin_iso.8601_yyyy.mm.dd` is when the soil was sampled in the field, which
+       predates the scanning programme, since the 2011 and 2019 campaigns rescanned archived samples. Entry into the
+       OSSL itself is one date for every row of this cut, the v1.2 snapshot, so the scan date is the only arrival order
+       the data carries.
+     - Which family keys exist: the survey project or study (`id.project_ascii_txt`), on every row, 1,548 of them; a
+       region, only half recoverable, since `id.location_olc_txt` is present on about half the rows, the coordinates run
+       from points to county and country centroids, and only 6.4% of the 16,727 RaCA rows carry a location; the soil
+       class (`pedon.taxa_usda_txt`, with the horizon designation and the texture class), which the importer aggregated
+       per pedon key, never measured as a split, and not an order in which layers arrive.
+     - What the source asks (read 2026-11-12): OSSL builds its models for spectra "collected on any spectrometer
+       anywhere in the world", and a laboratory uploads scans from its own instrument to the OSSL Engine. It backs that
+       claim with independent evaluations on samples kept out of calibration: ring trials of the same samples on 12
+       VisNIR and 20 MIR instruments, long-term research sites in the US (162 samples) and African samples (90); its
+       10-fold cross-validation describes no grouping (Safanelli et al. 2025, PLoS ONE 20(1): e0296545).
+   * **Effect on the task:** under the pedon key a model is scored on layers from the projects and the scanning years
+     its training set already holds, which is the library a laboratory has, not the sample it uploads next.
+   * **Experiments:** all of the following was measured on 2026-11-04 for the second-pass panel and nothing new was run
+     for this issue (untuned LightGBM, 600 trees, every 4th of the 1,700 bins, repeat 0, three folds; RMSLE is the RMSE
+     on the shipped log1p target). On the same rows, by key:
+
+     | Key | What it holds out | RMSLE | R² |
+     |---|---|---|---|
+     | Pedon key, 20,626 groups (shipped) | the item | 0.1482 ± 0.0056 | 0.9835 |
+     | Project, 1,548 groups | the family: a survey or study | 0.1634 ± 0.0105 | 0.9797 |
+     | Location: plus code where present, else the pedon key, 19,664 groups | the family: a place | ≈0.150 (0.1429 / 0.1585 / 0.1474) | - |
+     | Random | nothing | 0.1424 ± 0.0018 | 0.9848 |
+
+     Forward by scan date, each cutoff against a control of the same training size drawn from rows of any date and
+     scored on the same test rows:
+
+     | Cutoff | Older scans only | Control, any date, same size |
+     |---|---|---|
+     | 2017 | 0.1599 | 0.1443 |
+     | 2018 | 0.1829 | 0.1694 |
+     | 2019 | 0.1944 | 0.1767 |
+
+     - A second forward cut on the dated rows (training on scans to 2017, 38,333 rows; testing 2018 to 2022, 26,765)
+       gave 0.178 against 0.141 for a matched grouped control, 26% worse, with the later scans under-predicted more at
+       3 to 12% organic carbon (log bias -0.081 against -0.046), which reads as drift.
+     - Closeness under the shipped folds: 1.24% of test layers have a training neighbour closer than the 1st percentile
+       of the within-profile neighbour distance (about 1% expected) and 5.0% closer than the 5th (5% expected), on the
+       first 30 principal components of the SNV spectrum; 93-96% of test layers have their project in training.
+   * **Unknown:** the closeness measure was not run under the project or the scan-date key and no second model family
+     was fitted under either, because the raw inputs are in neither checkout's warehouse and recreating them takes the
+     four Zenodo v1.2 files and R with `qs` to decode them. What the 10,044 undated scans are is also unestablished, so
+     whether they could sit on the training side of a date split rather than be dropped is open. How evenly the 1,548
+     projects fill three folds is unmeasured: the largest survey, RaCA with 16,727 rows, may be one project.
+   * **Consistency:** `sdss_17` replaced a random split with calendar-year windows on the night of the spectrum, which
+     also holds out the plate (2026-11-11, you); `qsar_tid_11` replaced scaffold groups with first-publication-year
+     windows and `apistox` chose decade windows over scaffold groups, both because the actor predicts for items that
+     appear later. `nci_aids_antiviral_screen` kept the family key (2026-11-11, you), because its only recoverable
+     order, the registration number, was not an order of entry into the screen; the scan date here is an entry into the
+     spectral library, which is what separates the two.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Pedon key (implemented) | whole KSSL profiles held out, three repeats of three folds | a profile's layers never split across the two sides; every row keeps its place; the regime and the record's split fields stay | 93-96% of test layers keep their project in training; the sample that arrives after the library stays a note in `fit_reason`, not a test |
+     | B | Survey project | groups on `id.project_ascii_txt`, 1,548 groups, a native key on every row | holds out a whole survey, which is how samples reach KSSL; complete, so no row is dropped; stays grouped; the part of the source's scope (samples from other places) this one-instrument cut can test | trains on the campaigns scanned alongside the test project, which the catalogue already held; a project is a batch of soils, not a position in the queue |
+     | C | Scan-date windows | expanding windows on `scan.mir.date.begin`, the regime temporal | holds out the layers that entered the library after the training side, which is the sample the actor scores; follows the one arrival order the cut carries | 10,044 rows (13%) carry no scan date; the scan year follows the project mix, so a window tests a change of cohort as much as instrument drift; grouped becomes temporal, and the record's split fields and tags change; the source tests its models on other instruments and sites, not on later scans |
+
+   * **Recommendation:** B (changed on 2026-11-12 from C, after the source check). The source's question is a scan from
+     elsewhere: OSSL builds its models for spectra from any instrument anywhere and tests that claim on samples kept out
+     of calibration, from other instruments and other sites, so the next scans in KSSL's own queue are not its question,
+     and the drift measured between scan years belongs in the notes[^11c]. Within this one-instrument cut, a whole
+     survey held out is the part of that scope that can be tested: the pedon key keeps 93-96% of test layers' surveys in
+     training, and transfer to another instrument stays untested, as `fit_reason` says. The size of the gap each key
+     opens is not the reason[^11b]. **Decision:** A, B or C?
+
+   **Notes for the AI:** the raw inputs must be fetched again first (the `download_description` script, four Zenodo
+   v1.2 files, R with `qs` 0.27.3). On C, join `scan.mir.date.begin_iso.8601_yyyy.mm.dd` from the MIR table as the time
+   column, key each pedon's window on its first scan date so a profile scanned across two campaigns does not straddle a
+   boundary (count how many do first), decide the undated rows (drop, or training side only, with the reason measured),
+   keep the date out of the features as an id, and set the windows and the train floor from the temporal rules; then
+   `required_split`, the `Non-IID` tag, `task_summary.split`, `fit_reason` and `splits_comment` all change. On B, join
+   `id.project_ascii_txt` from the site table and group on it, with `pedon_id` kept out of the features as now; count how
+   the 1,548 projects fill three folds first (RaCA), run the closeness measure under the project key, and write the
+   scan-date measurement into `splits_comment` as a note on drift between scan years. On A,
+   write the table above into `splits_comment` beside the existing note on later scans and new projects. Any option
+   takes a CC line in the record and a rebuild.
+
+   [^11a]: **SPLIT-34** (Should): the family key is the default, and the source's stated aim and scope decide which
+     items the test set stands for; within that scope the entry date replaces it when the use case predicts for items
+     the catalogue does not hold yet, the date is when the item entered, the labels are final, and either arrival
+     changes how the target or the features are recorded, or which items are selected (as SPLIT-32's question 4 asks),
+     or a forward split leaves the test items clearly fewer close training neighbours than a random draw; otherwise the
+     family key stands and the time basis says why.
+   [^11b]: **SPLIT-1** (Must): the split is the one that most closely mirrors the real-world application. **SPLIT-4**
+     (Must): the split follows what the task does in reality, not the size of the gap.
+   [^11c]: **SPLIT-34** (Should), its step on the source's purpose: the use case is the source's, cited; where the
+     source's question does not reach the catalogue's later items, the date is not weighed and how the catalogue arrived
+     is a fact for the notes. A sentence for a source that aims at items from elsewhere and validates on independent
+     sets from there (the family key that stands for "elsewhere" is then the one) is proposed for the rule, not yet in
+     it.
+
+   **Resolved (2026-11-12, Andrej):** B: survey project. The raw inputs were fetched again (the four Zenodo v1.2 files,
+   MD5 checked) and decoded with a Python reader of the qs format instead of R; the unchanged definition reproduced its
+   checksum. The definition joins `id.project_ascii_txt` from the site table and groups on it as `survey_project`; the
+   two pedon keys filed under two projects each join their projects, so every profile stays whole, and `pedon_id`
+   leaves the frame. Fold fill and closeness (repeat 0, three folds; closeness on the first 30 principal components of
+   the SNV spectrum, against the within-profile neighbour distance):
+
+   | Key | Groups | Largest group | Test rows per fold | Closer than 1st pct. | Closer than 5th pct. |
+   |---|---|---|---|---|---|
+   | Pedon key (before) | 20,626 | 640 | 24,870-25,681 | 1.2% | 5.0% |
+   | Survey project (now) | 1,546 | 640 | 24,887-25,724 | 0.01% | 0.46% |
+
+   RaCA is filed by region and part, so no project dominates a fold (largest RaCA project 535 rows). The task summary
+   (use case, split, changes, fit reason), the group's definition, `splits_comment` (with the scan-date drift as a note)
+   and a curation bullet are updated; `dataset check` passed. CC line in the record. A rebuild waits for your ask.
+
+
+12. **Collection facts: `Samples: Over Time` and `Time: Dated`, since a source dates the items?**
+
+   * **Problem:** the record carries no `Samples:` fact, while KSSL's MIR scan date, the day a layer entered the
+     spectral library, dates 87% of the rows, 2011 to 2022. The facts describe the source and do not change with the
+     split; whether the date carries anything belongs to the open split question (issue 11)[^12a].
+   * **Change:** `Samples: Over Time` and `Time: Dated`; the data, the split and the score are unchanged.
+
+   [^12a]: **SPLIT-32** (Should): the collection facts are read from the source and do not change with the split; a
+     catalogue that a parent source dates is `Samples: Over Time` with `Time: Dated` even where the date turns out to
+     carry nothing, and whether it does is measured for the time basis.
+
+   **Resolved (2026-11-12, Andrej):** applied on approval of the plan that settled the split keys of growing catalogues
+   (one decision for the eighteen datasets of that review): the record's facts changed, with a CC line and `Andrej` in
+   `checked_by`. No definition change.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after your PR #33 review of 2026-11-04: twelve
 reports (claim, column and split auditors, domain practitioner, blind reviewer, task gamer, precedent checker, advocate
