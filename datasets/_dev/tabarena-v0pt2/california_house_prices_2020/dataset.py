@@ -2,15 +2,51 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
 
-# Entries of one sale scraped twice: the same home (address, ZIP code, year built) with the same sold price, a median
-# 61 Kaggle IDs apart (51 pairs).
-SAME_SALE_ROWS = 51
+# Entries of one sale scraped twice: the same address, ZIP code and sold price, with the same year built (51 pairs, a
+# median 61 Kaggle IDs apart) or, where one copy lacks the year, the same living area (6 pairs; issue 6 of the v0.2
+# review). One of the 6 older copies would leave anyway with the listings that predate their last sale.
+SAME_SALE_ROWS = 57
+
+
+def _same_sale(a: pd.Series, b: pd.Series) -> bool:
+    """Whether two entries of one address, ZIP code and sold price are one sale scraped twice.
+
+    They are when the year built is the same (both may be missing), or missing in one copy with the same living area.
+    """
+    ya, yb = a["Year built"], b["Year built"]
+    if (pd.isna(ya) and pd.isna(yb)) or ya == yb:
+        return True
+    if pd.isna(ya) or pd.isna(yb):
+        la, lb = a["Total interior livable area"], b["Total interior livable area"]
+        return bool(la == lb or (pd.isna(la) and pd.isna(lb)))
+    return False
+
+
+# One sale scraped under two spellings of its address ("SPACE 34" / "SPC 34"): the same description, sold price, ZIP
+# code, living area and year built within 600 Kaggle IDs (the review counted 500 steps of the shipped order;
+# the widest pair, "1754 Lebec Oaks Rd" and "1754 Lebec Rd", is 517 IDs apart; issue 4 of the v0.2 review).
+RESPELLED_SALE_ROWS = 54
+RESPELLED_MAX_ID_SPAN = 600
+
+# One transaction booked on several homes: the same sold price on two or more addresses of one street and ZIP code,
+# each sold for more than 1.5 times its list price (issue 1 of the v0.2 review).
+BUILDING_PRICE_ROWS = 14
+BUILDING_PRICE_MIN_RATIO = 1.5
+
+
+def _street(address: object) -> str:
+    """The street of an address, without house number and unit: "321 S Elm Dr #3" -> "s elm dr"."""
+    a = str(address).lower()
+    a = re.sub(r"\s*(?:#|unit|apt|ste|suite|spc|space|bldg)\s*\S*$", "", a)
+    a = re.sub(r"^[\d\-&/ .]+(?:1/2)?\s*", "", a)
+    return a.strip()
 
 
 # Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
@@ -25,22 +61,25 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
             " sell for, to set or judge an offer."
         ),
         row=(
-            "One sale of a home in California around 2020, as scraped from Redfin; Arizona homes, second copies of "
-            "one sale and homes whose listing predates their last sale are dropped."
+            "One sale of a home in California around 2020, as scraped from Zillow; Arizona homes, second copies of "
+            "one sale, one price booked on several homes and homes whose listing predates their last sale are dropped."
         ),
         predicted="The sale price in US dollars, on a log scale.",
         known=(
             "The listing (list price, listing date, description), the home's facts (type, year built, size, lot, "
             "rooms, heating, cooling, parking, appliances), its previous sale, tax assessment, address, region, and "
-            "nearby schools with ratings and distances."
+            "nearby schools with ratings and distances. The sale order (`time_index`) orders the split but is no model "
+            "input."
         ),
         split=(
             "Three test sets, each a sixth of the sales in sale order (the newest half of the sales), with all "
             "earlier sales for training. The order comes from the Kaggle row ID, as the data has no sale dates."
         ),
         changes=(
-            "We drop 5,413 listings whose description states the sold price and 2,480 whose listing describes an "
-            "earlier sale, and order and split the sales by the Kaggle ID, which follows the sale order."
+            'We drop 5,413 listings whose description states the sold price, one written after the sale ("closed '
+            'escrow"), 2,480 whose listing describes an earlier sale, 111 second copies of a sale scraped twice (57 '
+            "under one address, 54 under another spelling), and 14 sales that carry one price booked on several "
+            "homes, and order and split the sales by the Kaggle ID, which follows the sale order."
         ),
         fit="approximate",
         fit_reason=(
@@ -81,11 +120,14 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
     curation_comments = """
         We follow some common preprocessing steps from Kaggle and enhance features as much as possible.
 
-        We found out that the data was web scraped from redfin.com and that the houses are ordered by the time they were sold such that a house with a higher ID was sold later. We confirmed this by looking at the history of various houses on redfin.com that we found in the dataset and checking their order in the ID with the time they were sold. Houses with a higher ID were sold later.
+        We found out that the data was web scraped from a real-estate website and that the houses are ordered by the time they were sold such that a house with a higher ID was sold later. We confirmed this by looking at the history of various houses on redfin.com that we found in the dataset and checking their order in the ID with the time they were sold. Houses with a higher ID were sold later.
 
         - We log scale the target variable (log1p); the metric is the competition's RMSLE on the price, computed after the inverse (`target_transform="log1p"`).
-        - We do not have the exact dates but we know a higher ID means a later sale. We name the ID column accordingly to "time_index" and use it as a time feature. The data agree: sorted by ID, the latest listing date per ID decile rises from 2020-03-02 to 2020-12-30. We split on this sale order, not on "Listed On": a house is listed before it is sold, so a listing-date split could train on a house that sells after the test period starts.
+        - We do not have the exact dates but we know a higher ID means a later sale. We name the ID column accordingly to "time_index" and use it to order and split the rows. The data agree: sorted by ID, the latest listing date per ID decile rises from 2020-03-02 to 2020-12-30. We split on this sale order, not on "Listed On": a house is listed before it is sold, so a listing-date split could train on a house that sells after the test period starts.
+        - `time_index` orders and splits the rows and is no model input (`Temporal(..., feature=False)`): it arrives with the target (2026-11-12, Andrej). A home is predicted at its listing, and the sale's place in the sale order is the listing plus the time on market, known only once the home sells; the listing date (`Listed On`) stays a feature.
         - The descriptions did contain the last sold price with a standard phrase such as "This home last sold for $X in January 2020. The Zestimate for this house is $Y The Rent Zestimate for this home is $Z/mo.". In these cases $X is identical to the target variable. Given such a drastic data leakage, we remove all rows (5413) that contain this phrase in the description to ensure they are not different in other ways too.
+        - The website is Zillow, not Redfin as first assumed (2026-11-11): 5,314 descriptions carry Zillow's generated text for off-market homes ("The Zestimate for this house is $Y"), some "Note: This property is not currently for sale or for rent on Zillow.", and the column names are Zillow's fact labels ("Total interior livable area", "Appliances included", "Laundry features"); Redfin appears only in agents' own words (6 descriptions). The Kaggle host does not name the website. The sale order was checked on redfin.com, which shows the same sale histories.
+        - The one description written after the sale (Andrej, 2026-11-10 and 2026-11-11; LEAK-10): we drop the sale whose description says "Property has closed escrow for $1,500,000". Twelve more descriptions give a dollar amount within 0.5% of the sold price that is not the list price, but they are asking prices a buyer reads at the listing (a price cut, "buy it now", a probate auction's minimum overbid) or loose bounds ("under $500K"), and stay: a price known before the sale is a feature, and dropping a row because its text is close to its own label selects rows by the label. "sold for" is no rule: its 39 other descriptions speak of neighbours, earlier sales or "sold for land value".
         - Note, sometime descriptions are missing and we intend that models/pipelines need to be able to handle this.
         - When investigating the "Lot" column we found many cases where the lot size (given in sq ft) is incorrect compared to the official lot size on the internet. The parser seems to have had an issue because the website often incorrectly showed the sq ft but gave the unit as acres. We found cases that were wrong by checking the acres size of the houses and anything with more than 2000 acres was investigated and subsequently corrected.
         - We parsed the bedrooms with a proxy following Kaggle and added an additional column containing only the semi-free text descriptions of the bedrooms.
@@ -97,10 +139,12 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         - We treat ZIP codes as strings. But we add a new categorical features that puts zip code in to approximate relevant buckets of regions.
         - We fixed one entry that had a negative value for garage space, likely due to a typo. This error still exists on the website.
         - We drop the 2,480 homes (6.0%) whose last sale is on or after their listing date: the listing describes an earlier sale, and 125 of them give the price we predict as the last sale price. They were 5-6% of each test window but about half its squared error (LightGBM RMSE 0.196 with them, 0.140 without). Listings older than 6 months before the sale stay (Lennart, 2026-10-14).
-        - After all the above preprocessing, 63 homes appear more than once (same address, ZIP code and year built; 130 rows). 51 pairs give the same sold price a median 61 Kaggle IDs apart: one sale scraped twice, of which we keep the newest entry. The other 28 rows are sales at another price (a resale, or another unit at an address without a unit number) and stay, as an earlier sale is history under the temporal split (Lennart, 2026-10-21: "we want to keep real repeats, as houses can be sold several times").
+        - After all the above preprocessing, 63 homes appear more than once (same address, ZIP code and year built; 130 rows). 51 pairs give the same sold price a median 61 Kaggle IDs apart: one sale scraped twice, of which we keep the newest entry. The other 28 rows are sales at another price (a resale, or another unit at an address without a unit number) and stay, as an earlier sale is history under the temporal split (Lennart, 2026-10-21: "we want to keep real repeats, as houses can be sold several times"). A missing year built counts as a match where the living area agrees (Andrej, 2026-11-12): 6 more pairs share the address, ZIP code, sold price and living area while one copy lacks the year (four units of 555 Fulton St, San Francisco, 750 Van Ness Ave #706 and 242 Robles Way), and we keep the newest entry of each; the older Robles Way copy, a 2018 listing, would leave anyway as a listing that predates its last sale, so the final data loses 5 sales, each of which was scored twice (both copies in one test window).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 3 scores with no words per level are
           numbers (`SCORES`): `Elementary School Score`, `Middle School Score`, `High School Score`.
+        - One sale scraped under two spellings of its address (Andrej, 2026-11-11): 54 pairs share the description (over 50 characters), sold price, ZIP code, living area and year built while the address is spelled two ways ("270 Hames Rd SPACE 34" and "SPC 34", "1922-1924 Warren St" and "1922 Warren St", "1754 Lebec Oaks Rd" and "1754 Lebec Rd"), within 600 Kaggle IDs; we keep the newest entry, as for a sale scraped twice under one spelling. Four groups more than 1,000 IDs apart stay: separate units of one development at one price (900 S Dwight Ave).
+        - One transaction booked on several homes (Andrej, 2026-11-11; USE-5, CLEAN-11): we drop the 14 sales that share one sold price with another address of the same street and ZIP code, each sold for more than 1.5 times its list price, such as eight condos of 321 and 327 S Elm Dr, Beverly Hills, each listed at $1.9-3.9M and each "sold" for $35.8M: a building's price, not a home's. Eight of them carried 36% of the newest window's squared error. The other sales far from their list price (271 under half or over twice it) stay, as nothing shows they are errors.
     """
 
     # Task
@@ -116,13 +160,19 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Three test windows in sale order, each a sixth of the sales (6,510 rows), cut from the newest half; each trains on all earlier sales (50%, 67% and 83% of the rows), so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods. The earlier layout (each window a quarter of the rows) trained the oldest window on 25% of the rows, below SPLIT-14's floor (2026-10-21).
+        Three test windows in sale order, each a sixth of the sales (6,497 rows), cut from the newest half; each trains on all earlier sales (50%, 67% and 83% of the rows), so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods. The earlier layout (each window a quarter of the rows) trained the oldest window on 25% of the rows, below SPLIT-14's floor (2026-10-21).
+        The windows are cut in sale order, the time the label arrives, while a home is predicted at its listing: a test
+        home listed before its window began meets training sales that closed after its listing (80-96% of each
+        window's test homes; a gap of a third or a whole window at equal training size changes the RMSLE by -0.001 to
+        +0.005, in no consistent direction, 2026-11-11). A home enters the data only once sold, so a cut on the listing
+        date would make the newest listings the fast sellers.
     """
     temporal = Temporal(
         on="time_index",
         splits=TemporalSplits(window=None, unit="rows", n_windows=3, min_train_fraction=0.5),
-        horizon=6510,
+        horizon=6497,
         horizon_unit="steps",
+        feature=False,  # the sale order arrives with the target: no model input (2026-11-12, Andrej)
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -139,6 +189,12 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         # Remove rows with target leakage in description
         leak_mask = ~df["Summary"].isna() & (df["Summary"].str.contains("last sold for"))
         df = df[~leak_mask]
+        # ... and the one description written after the sale, "Property has closed escrow for $1,500,000" (Andrej,
+        # 2026-11-10 and 2026-11-11; LEAK-10). Other dollar amounts near the sold price are asking prices or bounds a
+        # buyer reads at the listing, and stay.
+        closed = df["Summary"].fillna("").str.contains("closed escrow", case=False)
+        assert closed.sum() == 1, "expected one description written after the sale"
+        df = df[~closed]
         # Set wrongly parsed years to NaN
         df.loc[df["Year built"].isin([0, 19, 9999, 1471, 2281]), "Year built"] = np.nan
         # Fix wrong lot sizes
@@ -229,16 +285,48 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
             raise ValueError(f"Unexpected zip code: {x}")
 
         df["Zip Region"] = df["Zip"].apply(zip_buckets)
-        # One sale scraped twice (same home, same sold price): keep the newest entry. Repeated sales of a home at
+        # One sale scraped twice (same address, ZIP code and sold price, and the same year built or, where one copy
+        # lacks it, the same living area; Andrej, 2026-11-12): keep the newest entry. Repeated sales of a home at
         # another price stay, as an earlier sale is history under the temporal split.
-        n_data = len(df)
-        same_sale = df.sort_values("time_index", kind="stable").duplicated(
-            ["Address", "Zip", "Year built", "Sold Price"], keep="last"
-        )
-        df = df[~same_sale.reindex(df.index)].sort_values("time_index", kind="stable").reset_index(drop=True)
-        assert n_data - len(df) == SAME_SALE_ROWS, "expected 51 sales scraped twice"
+        df = df.sort_values("time_index", kind="stable").reset_index(drop=True)
+        sale_key = ["Address", "Zip", "Sold Price"]
+        same_sale = []
+        for _, g in df[df.duplicated(sale_key, keep=False)].groupby(sale_key, sort=False):
+            for a, i in enumerate(g.index[:-1]):
+                if any(_same_sale(g.loc[i], g.loc[j]) for j in g.index[a + 1 :]):
+                    same_sale.append(i)
+        assert len(same_sale) == SAME_SALE_ROWS, f"expected {SAME_SALE_ROWS} sales scraped twice, got {len(same_sale)}"
+        df = df.drop(index=same_sale).reset_index(drop=True)
         # Drop homes whose listing predates their last sale: it describes an earlier sale (see curation_comments)
         df = df[~(pd.to_datetime(df["Last Sold On"]) >= pd.to_datetime(df["Listed On"]))]
+        # One sale scraped under two spellings of its address: the same description (over 50 characters), sold
+        # price, ZIP code, living area and year built on two or more addresses within 600 Kaggle IDs; keep the newest
+        # entry (Andrej, 2026-11-11)
+        key = ["Summary", "Sold Price", "Zip", "Total interior livable area", "Year built"]
+        cand = df[df["Summary"].fillna("").str.len() > 50]
+        respelled = []
+        for _, g in cand.fillna({"Total interior livable area": -1}).groupby(key, dropna=False):
+            if (
+                len(g) > 1
+                and g["Address"].nunique() > 1
+                and g["time_index"].max() - g["time_index"].min() <= RESPELLED_MAX_ID_SPAN
+            ):
+                respelled += list(g.sort_values("time_index", kind="stable").index[:-1])
+        assert len(respelled) == RESPELLED_SALE_ROWS, (
+            f"expected {RESPELLED_SALE_ROWS} respelled sales, got {len(respelled)}"
+        )
+        df = df.drop(index=respelled)
+        # Drop one transaction booked on several homes: the same sold price on two or more addresses of one street and
+        # ZIP code, each sold for more than 1.5 times its list price (Andrej, 2026-11-11; USE-5, CLEAN-11)
+        street = df["Address"].map(_street)
+        building = []
+        for _, g in df.assign(street=street).groupby(["Sold Price", "Zip", "street"]):
+            if g["Address"].nunique() > 1 and (g["Sold Price"] > BUILDING_PRICE_MIN_RATIO * g["Listed Price"]).all():
+                building += list(g.index)
+        assert len(building) == BUILDING_PRICE_ROWS, (
+            f"expected {BUILDING_PRICE_ROWS} building-price sales, got {len(building)}"
+        )
+        df = df.drop(index=building)
         # Log scale target as it is exp distributed
         df[self.task_metadata.target_column_name] = np.log1p(df[self.task_metadata.target_column_name])
         # Rest time_index (to avoid gaps from dropping rows)

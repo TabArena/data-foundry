@@ -27,8 +27,7 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         predicted="The review's overall score on a 100-point scale (82 to 98 here, mean 93).",
         known=(
             "The roaster and its location, the coffee's name and origin, the roast level and roast colour readings, "
-            "the price per gram in US dollars, the review month, and two passages of the review that describe the "
-            "coffee's taste and sum it up."
+            "the price per gram in US dollars; the review month orders the split but is no model input."
         ),
         split=(
             "Thirteen test periods of two months, walking back from the newest review, each with every earlier review"
@@ -36,13 +35,14 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         ),
         changes=(
             "We drop the scores for aroma, acidity, body, flavour, aftertaste and with milk, which make up the "
-            "overall score, and the review notes, which can mention awards."
+            "overall score, the review notes, which can mention awards, and the two passages of the review that "
+            "describe the coffee's taste and sum it up, which the reviewer writes with the score. We convert the "
+            "prices in New Taiwan dollars to US dollars."
         ),
         fit="approximate",
         fit_reason=(
-            "The two text passages are written by the reviewer together with the score and carry the reviewer's "
-            "judgement, whereas a roaster predicting the score before the review would have only its own description "
-            "of the coffee."
+            "The features are what a roaster knows before the review, but one rating service stands for the quality "
+            "a buyer meets, and the time from a roaster's submission to the review is not stated."
         ),
     )
 
@@ -78,11 +78,22 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         We start with the Kaggle version. Note, we acknowledge that the dataset is not of the highest quality and likely does not represent a real-world prediction task. Nevertheless, it can be used to test models.
 
         - We drop slug as it is a unique identifier that does not have predictive power.
-        - We drop desc_2 as it in general includes notes that may or may not be related to the coffee quality. Moreover, it sometimes leaks the rating (e.g. through award notes). We only keep desc_1 and desc_3, which are mostly descriptions of the coffee.
+        - We drop desc_2 as it in general includes notes that may or may not be related to the coffee quality. Moreover, it sometimes leaks the rating (e.g. through award notes).
+        - Dropped (Andrej, 2026-11-10; LEAK-10): desc_1 (the blind assessment) and desc_3 (the bottom line), the
+          reviewer's passages written together with the score, one clause per sensory sub-score. A roaster has neither
+          before the review; ridge on their TF-IDF alone reached skill 0.71 (RMSE 0.861 against the training mean's
+          1.598 on the 13 windows) and beat every benchmark method. Exception to LEAK-35 (2026-11-10, Andrej): the
+          passages alone explain most of the score (skill 0.71 against the rule's case of 0.25 to 0.67), and the use
+          case's roaster predicts before the review; the roaster's own information keeps skill 0.34 to 0.36.
+        - `review_date` orders and splits the rows and is no model input (`Temporal(..., feature=False)`): it arrives with the target (2026-11-12, Andrej). The roaster decides which coffees to submit before any review, and the month is the month Coffee Review published the score.
         - We drop all_text as it is a concatenation of desc_1, desc_2, and desc_3. And desc_2 includes data leakage (such as if the coffee won an award or not). Thus, we drop all_test.
         - We drop aroma, acid, body, flavor, aftertaste, and with_milk as they are all features of the rating and thus leaking the target. Any of them could be used as a target, we focus on the overall rating.
         - We parse agtron into a lower and upper value as float.
         - Note, the data contains several spatial features about locations. We do not resolve these.
+        - The prices in New Taiwan dollars (606 coffees, all from Taiwanese roasters, written "NT $") were read as US
+          dollars, as the parser split "NT" off the currency; they are converted at the table's NTD rate (0.031) and the
+          `NT_price` flag is dropped (Andrej, 2026-11-10; CLEAN-21): the Taiwanese median price per gram falls from
+          1.98 to 0.06, the others' range.
         - The price feature is extremely messy as a result of web scrapping. We resolve this feature as real tabular data (not from a web scrapper but from the database source), would have these information stored in a more structured way. We drop coffees that are measured in "capsules" units as they exist only 8 times and seem to be strong outliers. We normalizes the price to be per grams. Moreover, we convert all currencies to USD (with a fixed rate); we ignore the temporal incorrectness this may introduce as it is most likely minimal.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
@@ -109,10 +120,15 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         August-September 2023 back to October-November 2021, 62 to 137 test reviews each). Monthly windows
         (25) would follow the split-count convention, but some months hold only 2-10 reviews, which makes per-window
         RMSE noise; 2-month windows keep at least ~50 test rows each.
+        A score is published with its review month, so every training label is known when a window starts and no gap
+        is needed; the time from a roaster's submission to the review is not stated. Reviews of one month share their
+        scoring (the month explains 8% of the score's variance; some months are themed tastings), and whole two-month
+        windows keep each month on one side.
     """
     temporal = Temporal(
         on="review_date",
         splits=TemporalSplits(window=2, unit="months", min_train_fraction=0.5),
+        feature=False,  # the review month arrives with the score: no model input (2026-11-12, Andrej)
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -186,6 +202,8 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         parsed = norm.str.extract(pat_clean)
         df["NT_price"] = parsed["special"]
         df["currency_raw"] = parsed["currency"]
+        # "NT $" is New Taiwan dollars: the regex splits "NT" off, so set the currency here (CLEAN-21; Andrej, 2026-11-10)
+        df.loc[df["NT_price"] == "NT", "currency_raw"] = "NTD $"
         df["price"] = parsed["price"].str.replace(",", "", regex=False).astype("float")
         df["unit_qty"] = parsed["unit_qty"].astype("float")
         df["unit_raw"] = parsed["unit"].str.lower()
@@ -226,12 +244,15 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
             f"Found currencies not in fx_to_usd mapping: {set(df['currency_raw'].dropna().unique()) - (set(fx_to_usd.keys()))}"
         )
         df["price_per_gram_in_usd"] = df["price_per_gram"] * df["currency_raw"].map(fx_to_usd)
-        df = df.drop(columns=["unit_qty", "unit_raw", "price", "currency_raw", "price_per_gram"])
+        df = df.drop(columns=["unit_qty", "unit_raw", "price", "currency_raw", "price_per_gram", "NT_price"])
         # Drop columns
         df = df.drop(
             columns=[
                 "slug",
+                # the reviewer's passages, written with the score (Andrej, 2026-11-10)
+                "desc_1",
                 "desc_2",
+                "desc_3",
                 "all_text",
                 "aroma",
                 "acid",
@@ -253,15 +274,12 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
             ordinal=ORDINAL_LEVELS,
             categorical=[
                 "roast",
-                "NT_price",
             ],
             string=[
                 "roaster",
                 "name",
                 "location",
                 "origin",
-                "desc_1",
-                "desc_3",
             ],
             datetime={"review_date": "%B %Y"},
         )
