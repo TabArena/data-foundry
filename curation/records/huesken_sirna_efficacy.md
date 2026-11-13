@@ -276,8 +276,7 @@ Left for you: issues 4, 6, 5, 8.
    the gene's size added (the protein context model's recipe): a gain of -0.0010, paired SE 0.0025, ahead in 17 of 30
    splits. On protein the same recipe gains +0.161 (0.483 against 0.322). So `all_rows` changes no score here: what
    decides it is what the researcher knows when ranking (the use case, SPLIT-23), not the size. B costs nothing and
-   keeps the two datasets alike; A would only delay the same answer. Script:
-   `local-data-warehouse/_runs/2026-11-05_pr33_apply/huesken/context.py`.
+   keeps the two datasets alike; A would only delay the same answer.
 
    **Lennart (2026-11-05, change):** Option B: all_rows now, panel after.
 

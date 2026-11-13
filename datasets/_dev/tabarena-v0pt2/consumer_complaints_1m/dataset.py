@@ -10,7 +10,6 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     Temporal,
@@ -160,7 +159,6 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
         on="Date received",
         splits=TemporalSplits(window=3, unit="months", cutoffs=("2025-10-01", "2025-01-01", "2024-07-01")),
     )
-    row_budget = RowBudget(train=1_000_000, test=500_000)
     accepted_check_warnings = {
         "dataset_pure_feature_value": "Block, Inc. (Cash App) closes 99.8% of its complaints with an explanation "
         "throughout 2019-2025: a company response policy, and the company is known when the complaint is filed.",

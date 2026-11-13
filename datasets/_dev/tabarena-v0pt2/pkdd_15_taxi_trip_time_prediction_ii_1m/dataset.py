@@ -11,7 +11,6 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     Temporal,
@@ -188,7 +187,6 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
     splits_comment = """
         A model trained on the trips so far predicts the travel times of the next calendar month's trips: 3 test windows, the calendar months June, April and February 2014 (newest first), and train is the trips that start at least one day before the window. The length (the horizon checked, CC 2026-11-11): no source gives a refit cadence. The challenge scored five snapshots of trips under way (320 trips, 14 August to 21 December 2014; Lam et al. 2015, arXiv:1509.05257) with one model trained on its year (1 July 2013 to 30 June 2014), used 1.5 to 6 months later without a refit, so the only horizon the source shows is months long; calendar months are the longest windows that still leave a choice of seasons (60 days would give exactly three windows that tile the half-year). nyc_taxi_trip_duration_1m predicts the same kind of travel time on one-week windows, a length that rests on its weekdays and an ETA service's refit; its source shows no horizon either. The windows (CC 2026-11-10 and 2026-11-11, the curator's pick): June, the newest, with São João (23-24 June); April, with Easter (18-20 April); and February, in the winter, when Porto's trips are the slowest of the year (median straight-line speed 15.6 to 16.0 km/h from October to February, 16.7 to 17.6 from May to August). The file covers one year (July 2013 to June 2014), so no other year can be tested, and months from January 2014 keep half the trips for training; the three are spread evenly over the six months open. The gap of one day is part of the task: a trip lasts up to 3 hours, so at a refit the last trips before it have no travel time yet; without the gap 47, 7 and 21 train trips (June, April, February) would end after the window start, with it none. Each window keeps all of its trips (146,714, 130,112 and 122,831, under the 500k budget); each train side holds every eligible earlier trip (1,484,039, 1,200,383 and 943,912: 90.7%, 73.4% and 57.7% of the 1,636,276 trips), and a benchmark sub-samples it to a random 1M before a fit (`subsample_train`; the newest year before a window is all of the file before it). The 5,523 trips of 31 May 2014, the newest window's gap day, lie in no split, so the frame leaves them out. The February window's train side holds the winter months before it, while April and June have no earlier copy of their month in train.
     """
-    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     # train.csv holds every GPS point of every trip (1.9 GB of text); `_prepare_raw_files` parses the polylines once
     # into their number of points and their first and last point, and `_load_raw` starts from that table.

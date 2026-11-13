@@ -10,7 +10,6 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     Temporal,
@@ -107,7 +106,6 @@ class DeliveryEta1m(AbstractCuratedDataset):
         on="timestamp",
         splits=TemporalSplits(window=7, unit="days", cutoffs=("2024-01-01", "2023-12-18", "2023-12-04")),
     )
-    row_budget = RowBudget(train=1_000_000, test=500_000)
     accepted_check_warnings = {
         "splits_feature_missing_in_test": (
             "Decided (Lennart, 2026-11-10, review issue 2, A): the 45 features `num_76` to `num_121` stop being "
