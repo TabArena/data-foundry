@@ -3,6 +3,7 @@ unique_name: expresso_churn_prediction
 name: expresso-churn-prediction
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -62,6 +63,35 @@ CC (2026-10-22, Lennart): issue 1: confirm the REGION drop (LEAK-10).
 CC (2026-10-26, Lennart): verdict ship.
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `TENURE` (the README lists their levels).
+
+## Review
+
+**Outcome:** added as `expresso_churn_prediction_1m`. The AI asks to retag the time basis after the one-moment rule was sharpened (2026-11-13).
+
+**Main points:** Retag `DelayedTarget` instead of `ForcedIIDFromTemporal`?
+
+**Issues for Andrej:**
+
+1. **Retag `DelayedTarget` instead of `ForcedIIDFromTemporal`, now that a one-moment release is forced only when its target is of that moment?**
+
+   * **Problem:**
+     - The definition is tagged `ForcedIIDFromTemporal` (the review panel, 2026-10-20), from when every release with too few periods was forced[^8a-x].
+     - Every row is predicted at one shared moment, the end of one observation window of about three months, and the target arrives after it, with the 90 days without activity after it that define churn, a window that has closed for every customer, which is a `DelayedTarget`[^32a-x].
+     - The tag alone changes: the split stays random.
+   * **Background:** every row is a different customer active in that one window, and Zindi releases no earlier or later window.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | the tag and its line stay | the decision of 2026-10-20 stands | the tag says time was lost, which the one shared moment contradicts |
+     | B | `DelayedTarget` | the tag and its `Time basis:` line name the shared moment and the target's window | follows the record's facts and the sharpened rule; no window was ever available to measure | changes a decided tag |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, swap the tag in `data_tags` and write the `Time basis:` line as SPLIT-32 asks for a `DelayedTarget` (the moment, the window, closed for every row, what the split cannot test: the next moment); add a CC line; the split code does not change.
+
+   [^8a-x]: **SPLIT-8** (Must, sharpened 2026-11-13): a release that is one moment, every row predicted at the same point, is forced only when its use case looks forward from a target of that moment or of unknown timing; otherwise SPLIT-32 gives it `Retrospective` or `DelayedTarget`.
+   [^32a-x]: **SPLIT-32** (Should): `DelayedTarget` is one shared prediction moment with the target arriving after it, in a window closed for every row; a random or grouped split then draws train and test from that one moment and window.
 
 ## Reference
 

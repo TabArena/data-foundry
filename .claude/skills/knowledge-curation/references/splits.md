@@ -61,8 +61,10 @@ release cannot give the windows SPLIT-14 asks for, it ships in the closest regim
 forced from temporal, with the cost measured against the valid windows where the data has any. This covers a release
 whose rows arose over a period and lost their dates, a few cohort months of one customer base (a split by those months
 tests a change of cohort, not of time), and a release with too few periods for three windows. A release that is one
-moment (one extract, one stock month, one exam round) is not forced: SPLIT-32 gives it `Retrospective` or
-`DelayedTarget`, or sends it to the curator when its use case looks forward from a target of that moment.
+moment (every row predicted at the same point) is forced only when its use case looks forward from a target of that
+moment or of unknown timing: one moment is one period, too few for windows (coil_2000, mobile_churn). Otherwise
+SPLIT-32 gives it `Retrospective` (the use case looks back) or `DelayedTarget` (the target arrives after the shared
+moment).
 The closest regime is IID (`ForcedIIDFromTemporal`), or grouped by the entity when the periods are stacked and the
 entities recur across them (`ForcedGroupedFromTemporal`); SPLIT-32 says when a split is forced. The definition's
 `Time basis:` line names the reason (time lost, or too few periods), says what the timestamp or a dated window would
@@ -92,11 +94,14 @@ about time), and they do not change with the split a definition chooses. A fact 
 `Unknown` rather than a guess:
 
 * **Samples:** `Samples: No Time Dimension` (designed runs, or a catalogue of properties where it plays no role when
-  an item was measured), `Samples: One Moment` (one extract, census, scrape or exam round), `Samples: Over Time` (the
-  samples arose over a period) or `Samples: Unknown`. A catalogue whose items enter in eras, or whose features mean
-  something different by when an item was made, arose over time even when each item's value is fixed: sdss_17's
-  quasars are 3-11% of the spectra before 2010 and 31-46% from 2014 on, and phishing pages and malware change with
-  their year.
+  an item was measured), `Samples: One Moment` (every row has the same prediction point: one census, one rating date,
+  one exam round, one customer base read at one date), `Samples: Over Time` (the rows' prediction points spread over a
+  period) or `Samples: Unknown`. The fact asks when each row is predicted, not how the file was pulled: one scrape of
+  sales from several years, or one extract of policies each priced at its own start, is over time (perth_house_prices,
+  bemtpl97), with `Features: Read Later` when the attributes come from the extract. The test: could two rows'
+  prediction points lie at different times? A catalogue whose items enter in eras, or whose features mean something
+  different by when an item was made, arose over time even when each item's value is fixed: sdss_17's quasars are
+  3-11% of the spectra before 2010 and 31-46% from 2014 on, and phishing pages and malware change with their year.
 * **Time,** for samples over time: `Time: Dated` when the release or a parent source keeps the date (a date column, a
   value that encodes the period, a date dropped from the raw file, or a parent upload that matches the rows by an id;
   the time probe, `time_probes.py`, looks for them); `Time: Inferred` when only an order that tracks time survives,
@@ -139,10 +144,11 @@ market). The prototypes, by the questions that tell them apart:
    wadden_sea_sibes_macoma_abundance, 5g_energy_consumption, fraud_detection_in_electricity_and_gas_consumption_1m).
    It needs that backward need: a one-moment release whose use case looks forward (prospects for a mailing, customers
    who will leave) is not retrospective: it is a `DelayedTarget` when its target arrives after one shared moment, and
-   goes to the curator when its target is of that moment. The line names the time covered and the need, and ends with
-   what the split cannot test: a later time. Time can then affect a target only through samples of the same time:
-   check that no sample of a test sample's time carries its target (one day's weather across stations); if one does,
-   group by that time unit. `Snapshot`, which named the data rather than a use case, is retired for it (2026-11-13).
+   forced (SPLIT-8) when its target is of that moment or of unknown timing. The line names the time covered and the
+   need, and ends with what the split cannot test: a later time. Time can then affect a target only through samples of
+   the same time: check that no sample of a test sample's time carries its target (one day's weather across stations);
+   if one does, group by that time unit. `Snapshot`, which named the data rather than a use case, is retired for it
+   (2026-11-13).
 3. **Do all samples share one prediction moment, with the target arriving after it?** A default in the next month, a
    donation at the next drive, an event within a fixed follow-up: a `DelayedTarget`. Every row was observed at the same
    moment and its outcome over the same window, so a random split draws train and test from that one moment and that

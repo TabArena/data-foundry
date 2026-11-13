@@ -3,6 +3,7 @@ unique_name: distribution_transformers_at_cauca_department
 name: Distribution Transformers at Cauca Department
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -56,6 +57,35 @@ CC (2026-10-26, Lennart): verdict ship.
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `client_type` (a level outside the scale is a state of its own).
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: client_type stays unordered (non-residential types beside the strata), noted in the definition.
+
+## Review
+
+**Outcome:** added. The AI asks to retag the time basis after the one-moment rule was sharpened (2026-11-13).
+
+**Main points:** Retag `DelayedTarget` instead of `ForcedIIDFromTemporal`?
+
+**Issues for Andrej:**
+
+1. **Retag `DelayedTarget` instead of `ForcedIIDFromTemporal`, now that a one-moment release is forced only when its target is of that moment?**
+
+   * **Problem:**
+     - The definition is tagged `ForcedIIDFromTemporal` (Lennart, 2026-10-21), from when every release with too few periods was forced[^8a-x].
+     - Every row is predicted at one shared moment, the start of 2020, when the operator ranks its transformers, and the target arrives after it, with the burns during 2020, a year that has closed for every transformer, which is a `DelayedTarget`[^32a-x].
+     - The tag alone changes: the split stays random.
+   * **Background:** both files carry one inventory of the same transformers; trained on the 2019 burns and tested on 2020, LightGBM scores ROC AUC 0.648 against 0.639 on the random folds.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | the tag and its line stay | the decision of 2026-10-21 stands | the tag says time was lost, which the one shared moment contradicts |
+     | B | `DelayedTarget` | the tag and its `Time basis:` line name the shared moment and the target's window | follows the record's facts and the sharpened rule; the measured transfer from 2019 to 2020 shows no cost | changes a decided tag |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, swap the tag in `data_tags` and write the `Time basis:` line as SPLIT-32 asks for a `DelayedTarget` (the moment, the window, closed for every row, what the split cannot test: the next moment); add a CC line; the split code does not change.
+
+   [^8a-x]: **SPLIT-8** (Must, sharpened 2026-11-13): a release that is one moment, every row predicted at the same point, is forced only when its use case looks forward from a target of that moment or of unknown timing; otherwise SPLIT-32 gives it `Retrospective` or `DelayedTarget`.
+   [^32a-x]: **SPLIT-32** (Should): `DelayedTarget` is one shared prediction moment with the target arriving after it, in a window closed for every row; a random or grouped split then draws train and test from that one moment and window.
 
 ## Reference
 

@@ -10,7 +10,8 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Two-Regime Zeros
-- 'Samples: One Moment'
+- 'Samples: Over Time'
+- 'Time: Lost'
 - 'Target: Later'
 original_source: Website
 year: '2008'
@@ -137,6 +138,11 @@ CC (2026-11-09, Andrej): the training labels' maturity is stated in the notes (c
 CC (2026-11-09, Andrej): `gender` ships again as a rating factor (issue 10 of the record's Review; the cross-dataset item of the information audit, option a: "If the EU bans it today, we treat it as if it also has been banned before. For non-banned countries, we use it.", then "I go with a."). Sex leaves an insurance pricing task when the law of the country the data come from bars it today, as if the ban had always applied, and stays where that law allows it; Australian law allows it (Sex Discrimination Act 1984 (Cth), s41). The Tensions row on rating factors in principles.md is amended so. Supersedes Lennart's CC of 2026-11-08 on issue 7, which dropped `gender` under the family stance.
 
 **Assessment (AI, 2026-11-09):** applied in the definition: `gender` is back among the six rating factors (target, weight, metric and split design unchanged; adding the column changes the rows' content order and so the shipped splits). s41(1) of the Sex Discrimination Act 1984 (Cth), compilation of 1 November 2025, read: discrimination on the client's sex in the terms of an insurance policy is not unlawful when it is based on actuarial or statistical data from a source on which it is reasonable for the insurer to rely and is reasonable having regard to the data. On the new splits, every fit weighted, `gender` adds +0.004 to a Tweedie GLM (0.133 against 0.130, SE 0.001, higher with it on 7 of 9) and nothing above noise to boosting (-0.007 to +0.002 over four LightGBM settings, the regularised ones over 3 seeds). `dataset check`: 0 errors, 0 warnings; the leak probes, the weight-proxy and shared-unit probes, the hidden-group and dtype probes find nothing; the task probe's linear family scores 0.122 on the declared metric against the dummy's 0 (5 of 5 splits).
+
+CC (2026-11-13, Andrej): collection facts `Samples: Over Time` and `Time: Lost` in place of `Samples: One Moment`:
+- `Samples` now asks when each row's prediction point lies, not how the file was pulled (SPLIT-32, sharpened 2026-11-13). Each policy is priced at its own start, and the file holds policies started in 2004 and 2005 inside one observation year.
+- No date or policy id survives, and exposure does not tell the start, so the time is lost.
+- The forced split (`ForcedIIDFromTemporal`) now agrees with the facts.
 
 ## Review
 

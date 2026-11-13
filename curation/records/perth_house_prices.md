@@ -3,14 +3,17 @@ unique_name: perth_house_prices
 name: Perth-House-Prices
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
 priority: 1
 tags:
 - Non-IID (Temporal)
-- 'Samples: One Moment'
+- 'Samples: Over Time'
+- 'Time: Dated'
 - 'Target: Later'
+- 'Features: Read Later'
 collections:
 - TabSTAR
 original_source: Kaggle
@@ -76,6 +79,11 @@ CC (2026-11-11, Lennart): REVIEW issue 15 (every third month or every fourth), a
 CC (2026-11-11, Lennart): the declared horizon (one month, no gap, windows starting 2020-12-01, 2020-09-01, 2020-06-01, 2020-03-01, 2019-12-01, 2019-09-01, 2019-06-01, 2019-03-01 and 2018-12-01) is checked, as the source dates sales by month, so a month is the shortest window the data allow, and it matches the monthly accuracy reports of Cotality, Australia's main valuation provider, and the house-price family's one-month windows.
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` unchanged (`window=1, unit="months", n_windows=9, step=3`); test 412, 569, 374, 387, 367, 416, 475, 434 and 479 sales, train 32,678, 30,902, 29,558, 28,571, 27,462, 26,118, 24,637, 23,342 and 22,065 (98.8% to 66.7% of 33,090), none under half. The stale `curation_comments` bullet "9 monthly test windows, April to December 2020" now names the windows of 2026-10-26, as does the decision table on suburb coverage, which also named April to December 2020 (310 of the 321 suburbs have sales by December 2018). `splits_comment` and `task_summary.split` give the length's reason and the windows' (three years, four seasons, April and May 2020 left out; 36 one-month windows from January 2018 on train on half the sales or more), and the gap clause calls the no-gap call an application of SPLIT-10 since its amendment of 2026-11-04, as the record's CC of that day says, not an exception. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
+CC (2026-11-13, Andrej): collection facts `Samples: Over Time`, `Time: Dated` and `Features: Read Later` in place of `Samples: One Moment`:
+- `Samples` now asks when each row's prediction point lies, not how the file was pulled (SPLIT-32, sharpened 2026-11-13). The rows are sales from April 1988 to December 2020, each predicted at its own sale; only the selection of sales comes from the January 2021 scrape.
+- `DATE_SOLD` dates every sale, and the attributes, the nearest station and the school are read at the scrape and joined onto older sales.
+- The temporal split by sale month stands; it now agrees with the facts.
 
 ## Review
 
