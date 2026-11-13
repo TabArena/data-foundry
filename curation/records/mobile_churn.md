@@ -64,6 +64,9 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: month, the record
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `orange_belgium_churn_uplift` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 1, C): whether the account churns, which the data place after the month's end, so it arrives after the features; the forced tag and the split stay.
+
+CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedIIDFromTemporal`: the end of the record month is the shared prediction moment and churn follows it (`Target: Later`); the source states neither the churn rule nor its window, which is taken as closed. The random split stays.
+
 ## Review
 
 **Outcome:** added. The record gained `Target: Later` on 2026-11-13.

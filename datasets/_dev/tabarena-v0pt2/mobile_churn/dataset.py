@@ -103,7 +103,7 @@ class MobileChurn(AbstractCuratedDataset):
             name="OpenML 44231 (its license: Unknown)",
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
+    data_tags = ("DelayedTarget",)
     download_description = """
         We download the Kaggle dataset dimitaryanev/mobilechurndataxlsx (uploaded on 2019-10-31, never updated). It
         holds one file. Kaggle does not version-pin a download, so check the hash. OpenML 44231
@@ -136,6 +136,11 @@ class MobileChurn(AbstractCuratedDataset):
         - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month`, the record month (6 to 8), stays a number. A weekday or
           a month is a position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number;
           named weekdays and months are ordered categories instead.
+        - Time basis: DelayedTarget (Andrej, 2026-11-13; `ForcedIIDFromTemporal` before, 2026-10-21): the operator
+          scores each activated prepaid account at the end of its record month, the shared prediction moment (30 June
+          2013 for 97.2% of the accounts; the July and August joiners, 2.8%, at the end of theirs), and churn follows
+          it, as the data place the label after the snapshot. The source defines neither churn nor its window, so the
+          window is taken as closed for every account. It cannot test the next month's scoring.
     """
 
     # Task
