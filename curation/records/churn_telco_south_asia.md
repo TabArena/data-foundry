@@ -58,32 +58,28 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37: the user types le
 
 ## Review
 
-**Outcome:** added. The AI asks which time basis fits now that `CrossSectional` names a present state (2026-11-13).
+**Outcome:** added. The AI asks to record when the label arrives (2026-11-13).
 
-**Main points:** Stay forced and record `Target: Later`?
+**Main points:** Record `Target: Later`?
 
 **Issues for Andrej:**
 
-1. **Stay forced and record `Target: Later`, or `CrossSectional`?**
+1. **Record `Target: Later`?**
 
    * **Problem:**
-     - The record names no `Target:` fact, which reads as a target measured with the features[^cs-1].
-     - The label is whether the subscriber churns after the two months of usage: it arrives after the features, so the use case looks forward and the forced tag fits[^fo-1].
-     - The missing fact is what makes it look cross-sectional.
+     - The record names no `Target:` fact, which reads as a target measured with the features.
+     - The label is whether the subscriber churns after the two months of usage: it arrives after the features, and the forced tag already treats the use case as forward.
+   * **Background:** asked on 2026-11-13 together with `CrossSectional`, which was dropped the same day; the fact stays useful, since the `Target:` facts decide between `DelayedTarget` and a forced tag and start the leak checks.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
-     | A | Leave as is (implemented) | the forced tag stays, the record keeps no `Target:` fact | no change | the record contradicts the label's timing |
-     | B | `CrossSectional` | the tag reads the label as a present state | none found | the label arrives later, which a present state excludes |
-     | C | Stay forced, record `Target: Later` | the record gains the fact; tag and split stay | the record says when the label arrives; the facts guard can check it | none found |
+     | A | Leave as is (implemented) | no `Target:` fact | no change | the record contradicts the label's timing |
+     | B | Record `Target: Later` | the record gains the fact; tag and split stay | the record says when the label arrives; the facts guard can check it | none found |
 
-   * **Recommendation:** C. **Decision:** A, B or C?
+   * **Recommendation:** B. **Decision:** A or B?
 
-   **Notes for the AI:** on C, add `Target: Later` to the record with a CC line; the definition does not change.
-
-   [^cs-1]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
-   [^fo-1]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+   **Notes for the AI:** on B, add `Target: Later` to the record with a CC line; the definition does not change.
 
 ## Reference
 

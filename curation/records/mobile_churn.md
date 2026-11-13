@@ -3,6 +3,7 @@ unique_name: mobile_churn
 name: mobile_churn
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -12,6 +13,7 @@ decision_markers:
 tags:
 - Larger IID Data
 - 'Samples: One Moment'
+- 'Target: Later'
 collections:
 - TabSTAR
 original_source: Kaggle
@@ -61,11 +63,12 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: month, the record
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `orange_belgium_churn_uplift` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 1, C): whether the account churns, which the data place after the month's end, so it arrives after the features; the forced tag and the split stay.
 ## Review
 
-**Outcome:** added. The AI asks which time basis fits now that `CrossSectional` names a present state (2026-11-13).
+**Outcome:** added. The record gained `Target: Later` on 2026-11-13.
 
-**Main points:** Stay forced and record `Target: Later`?
+**Main points:** Nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded).
 
 **Issues for Andrej:**
 
@@ -89,6 +92,10 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: month, the record
 
    [^cs-1]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
    [^fo-1]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+
+   **Andrej (2026-11-13, change):** Option C: Stay forced, record Target: Later.
+
+   **Resolved (2026-11-13, Andrej):** C. The record has `Target: Later`; the forced tag and the split stay (`CrossSectional`, option B, was dropped the same day).
 
 ## Reference
 

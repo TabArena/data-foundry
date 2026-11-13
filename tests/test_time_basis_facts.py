@@ -20,7 +20,9 @@ REPO = resolve_curation_root().parent
 LATER_TARGETS = {"Target: Later", "Target: Varying Delay", "Target: Revised Later"}
 
 PENDING = {
-    "infrared_thermography_temperature": "a present state tagged StationaryRelation: Review issue 1",
+    "mobile_churn": (
+        "one moment, target later, but no closed window: churn's rule and horizon are not stated (forced, 2026-10-21)"
+    ),
 }
 """Records whose contradiction is known: an open review item, or a written exception the curator decided."""
 
@@ -53,12 +55,6 @@ def contradictions(facts: set[str], basis: set[str], regime: str) -> list[str]:
         found.append("no time dimension, yet forced from temporal or split by time")
     if "StationaryRelation" in basis and "Time: Lost" in facts and not facts & {"Time: Dated", "Time: Inferred"}:
         found.append("StationaryRelation is measured on dates, and the time is lost")
-    if "StationaryRelation" in basis and not any(f.startswith("Target:") for f in facts):
-        found.append("a target measured with the features is a present state: CrossSectional, not StationaryRelation")
-    if "CrossSectional" in basis and facts & LATER_TARGETS:
-        found.append("CrossSectional reads a present state, and the target arrives later")
-    if "CrossSectional" in basis and "Entities: Recur" in facts:
-        found.append("CrossSectional meets each unit once, and the entities recur")
     return found
 
 
@@ -98,11 +94,7 @@ def test_pending_contradictions_still_hold(found: dict[str, list[str]]) -> None:
         ({"Samples: One Moment"}, set(), "temporal", 1),
         ({"Samples: No Time Dimension"}, {"ForcedIIDFromTemporal"}, "iid", 1),
         ({"Samples: Over Time", "Time: Lost", "Target: Later"}, {"StationaryRelation"}, "iid", 1),
-        ({"Samples: Over Time", "Time: Dated", "Target: Later"}, {"StationaryRelation"}, "iid", 0),
-        ({"Samples: Over Time", "Time: Dated"}, {"StationaryRelation"}, "iid", 1),
-        ({"Samples: Over Time", "Time: Lost"}, {"CrossSectional"}, "iid", 0),
-        ({"Samples: Over Time", "Time: Lost", "Target: Later"}, {"CrossSectional"}, "iid", 1),
-        ({"Samples: Over Time", "Time: Lost", "Entities: Recur"}, {"CrossSectional"}, "grouped", 1),
+        ({"Samples: Over Time", "Time: Dated"}, {"StationaryRelation"}, "iid", 0),
     ],
 )
 def test_contradictions(facts: set[str], basis: set[str], regime: str, expected: int) -> None:

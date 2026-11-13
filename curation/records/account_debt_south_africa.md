@@ -63,9 +63,9 @@ CC (2026-10-26, Lennart): verdict ship.
 
 ## Review
 
-**Outcome:** added. The AI asks which time basis fits now that `CrossSectional` names a present state (2026-11-13).
+**Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
-**Main points:** `CrossSectional` instead of `ForcedIIDFromTemporal`?
+**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13.
 
 **Issues for Andrej:**
 
@@ -92,6 +92,10 @@ CC (2026-10-26, Lennart): verdict ship.
    **Andrej (2026-11-13, discuss):** Reading from the use case this would rather be DelayedTarget, right?
 
    **Answer (AI, 2026-11-13):** The use case is forward ("a municipality scores its accounts to forecast how many will turn into bad debt"), so not `CrossSectional`; the recommendation is now A. But not `DelayedTarget` either: the label is the account's status at the extract itself, mostly debt older than the two billing years, so no target arrives after a shared prediction moment in this data. A present-state label standing in for a forward use case on one extract is the forced tag of one period, as for coil_2000; the definition says so ("the status at its date stands in for the forecast the data card describes"). Keep A, or tell me if you read the extract date as the shared moment after all.
+
+   **Andrej (2026-11-13, ok):** As implemented, after the answer above.
+
+   **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
 
 ## Reference
 

@@ -62,9 +62,9 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 ## Review
 
-**Outcome:** added. The AI asks which time basis fits now that `CrossSectional` names a present state (2026-11-13).
+**Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
-**Main points:** `CrossSectional` instead of `StationaryRelation`?
+**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13.
 
 **Issues for Andrej:**
 
@@ -86,6 +86,10 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
    **Notes for the AI:** on B, swap the tag, start the line with `CrossSectional`, keep the measurement; add a CC line.
 
    [^cs-1]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`; where dates survive, its line gives the measured drift.
+
+   **Andrej (2026-11-13, change):** Option B: CrossSectional.
+
+   **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
 
 ## Reference
 

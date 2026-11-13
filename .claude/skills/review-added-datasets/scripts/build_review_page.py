@@ -1319,7 +1319,6 @@ TIME_BASIS = (
     "Snapshot",
     "DelayedTarget",
     "StationaryRelation",
-    "CrossSectional",
     "UnseenGroup",
 )
 """The definition's use-case prototypes (SPLIT-32), as in ``data_foundry.schema.TIME_BASIS_TAGS``."""

@@ -180,23 +180,12 @@ later period, at a known group or at all groups at once; where the label still m
    change in recording (cardiotocography's suspect share falls from 36% to 1% by year,
    lung_cancer_epithelial_genexp's cancer share rises from 6% to 81% along the sample number). The source, the time
    probe and the target by period answer it.
-   * **A present state:** the target is a unit's state measured together with the features (no `Target:` fact: a
-     diagnosis from the same visit, a temperature read from the same image, a page judged as it stands; a later test
-     that confirms the state the features saw, such as a biopsy, counts), and the use case reads that state for new
-     units at their own present, not a later one. That is `CrossSectional`, whether the dates survive or not; the
-     split is random, or grouped by a unit that repeats. Its line says whether the drift of the relation for later
-     units was measured (dated: a temporal holdout, as for `StationaryRelation`) or is untested (time lost), and what
-     a dated release would show. A label that only arrives later (a churn, a bankruptcy, a death in hospital) is no
-     present state, even where the record names no `Target:` fact, and neither is a use case that forecasts from a
-     present-state label (a trip not taken yet, debt that will go bad): the use case decides. It also needs the use
-     case to meet each unit once: where the same unit comes back to be scored again (a patient at follow-up visits, a
-     woman at every screening round, a truck read out again), its own history matters and the task is not
-     cross-sectional; with `Entities: Recur` in the data it never is.
-   * **No, for a forward use case:** the target arrives after the features, and it and its relation to them are flat
+   * **No:** the use case scores units later than the data, and the target and its relation to the features are flat
      across periods, measured on a dated source, so a temporal split costs nothing. That is a `StationaryRelation`,
      and its line gives the measurement (thyroid_discordant: requests dated through the parent archive, a flat
-     discordant share over 1985, monthly windows scoring like random folds). It is always measured; where time is lost
-     it cannot be, and the next branch applies.
+     discordant share over 1985, monthly windows scoring like random folds). It holds whether the target is measured
+     with the features (a diagnosis at the visit) or later; when the target arrives is a collection fact, not a
+     prototype. It is always measured; where time is lost it cannot be, and the next branch applies.
    * **Yes, and the time is dated or inferred:** the split is temporal (SPLIT-7, SPLIT-14).
    * **Yes or unmeasured, and the time is lost or too short for three windows:** the split is forced (SPLIT-8):
      `ForcedIIDFromTemporal`, or `ForcedGroupedFromTemporal` when the entities recur. It ships after SPLIT-8's leak

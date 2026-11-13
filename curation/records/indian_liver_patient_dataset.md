@@ -48,9 +48,9 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 ## Review
 
-**Outcome:** added. The AI asks which time basis fits now that `CrossSectional` names a present state (2026-11-13).
+**Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
-**Main points:** `CrossSectional` instead of `ForcedIIDFromTemporal`?
+**Main points:** Nothing open: issue 6 was withdrawn on 2026-11-13.
 
 **Issues for Andrej:**
 
@@ -73,6 +73,8 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
    [^cs-6]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
    [^fo-6]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+
+   **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
 
 ## Reference
 

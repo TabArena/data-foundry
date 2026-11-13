@@ -98,10 +98,8 @@ DataTags = Literal[
     #   looks back: it fills in what is missing for the time the snapshot covers, not a later time
     "Retrospective",
     "DelayedTarget",  # one shared prediction moment; the target arrives after it, in a window closed for every row
-    # a forward use case whose target and its relation to the features are measured flat across periods (dated data)
+    # the use case scores later units, and a measurement on dated data shows the relation does not move with time
     "StationaryRelation",
-    # a present state measured with the features (a diagnosis at the visit), read once for each new unit
-    "CrossSectional",
     # the use case aims at groups the data does not hold (a hospital, a well, a protein, a chemical family), not at a
     #   later period: whole groups held out
     "UnseenGroup",
@@ -122,7 +120,6 @@ TIME_BASIS_TAGS = (
     "Retrospective",
     "DelayedTarget",
     "StationaryRelation",
-    "CrossSectional",
     "UnseenGroup",
 )
 """The use-case prototypes that justify a split that is not temporal (SPLIT-32)."""

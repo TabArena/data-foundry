@@ -12,6 +12,7 @@ suggestion: 'Yes'
 tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
+- 'Target: Later'
 - 'Entities: Recur'
 original_source: UCI
 year: '2020'
@@ -52,6 +53,7 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `american_companies_bankruptcy` (TBD -> Yes, priority 2), `v4finbench_corporate_distress` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 5, C): whether the company goes bankrupt after the statements, so it arrives after the features; the forced tag and the split stay.
 ## Review
 
 **Outcome:** added. The AI asks which time basis fits now that `CrossSectional` names a present state (2026-11-13).
@@ -80,6 +82,10 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
    [^cs-5]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
    [^fo-5]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+
+   **Andrej (2026-11-13, change):** Option C: Stay forced, record Target: Later.
+
+   **Resolved (2026-11-13, Andrej):** C. The record has `Target: Later`; the forced tag and the split stay (`CrossSectional`, option B, was dropped the same day).
 
 ## Reference
 

@@ -74,7 +74,7 @@ rows (raised on boreal_postfire_lichen_biomass's issue 7) found that the log los
 5 times, while the use case is a first visit. Resolved on 2026-11-08: each person counts once in the log loss
 (issue 1).
 
-**Main points:** Issue 2: `CrossSectional` instead of `ForcedGroupedFromTemporal`? Open: none. Resolved on 2026-11-08: each person counts once in the log loss, weighted by 1 over the
+**Main points:** Open: none. Resolved on 2026-11-08: each person counts once in the log loss, weighted by 1 over the
 person's visits (issue 1).
 
 **Issues for Lennart:**
@@ -183,6 +183,7 @@ person's visits (issue 1).
    [^cs-2]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
    [^fo-2]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
 
+   **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
 
 ## Reference
 

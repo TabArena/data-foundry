@@ -169,7 +169,7 @@ holds; MET-2 holds for the definition, with a scorer risk (issue 5). Quality: CL
 CLEAN-25 hold. Weighed: source + (NBS survey, the competition's metric), size +, use case − (actor mismatch), gap +
 (multiclass is thin).
 
-**Main points:** Issue 9: `CrossSectional` instead of `ForcedIIDFromTemporal`? Keep the tour-operator actor, add the survey statistician next to it, or replace it (issue 3); then
+**Main points:** Keep the tour-operator actor, add the survey statistician next to it, or replace it (issue 3); then
 smaller calls: the copies kept under LEAK-19 (issue 7), a duplicate record for the 2020 cut (issue 4), confirming
 `mmu_2022` (issue 8), a guard on the scorer's class-column order (issue 5) and `checked_by` (issue 6).
 
@@ -471,6 +471,10 @@ line of 2026-11-04. The record fields agree with the definition.
    **Andrej (2026-11-13, discuss):** The data might be cross sectional, but the use case isn't, right?
 
    **Answer (AI, 2026-11-13):** Right. The definition's question is the trip planner's, "Which spending category applies to a visitor's specified Tanzania trip?", a trip that has not happened yet, for which the realized trip only stands in; the survey statistician who fills in a missing band from the same form is cross-sectional, but Lennart added that actor on 2026-11-05 and kept `ForcedIIDFromTemporal` "since the planner still looks forward". The evidence above agrees: time affects the target (+0.050 log loss from the 2014 wave to the later ones), and two inferred batches are too few for windows, so the split is forced. The recommendation is now A: stay forced, with the line updated to the inferred time and the measured drift.
+
+   **Andrej (2026-11-13, ok):** As implemented, after the answer above.
+
+   **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's PR #33 review of 2026-11-04.
 The mediator's issues 1-4 are issues 3-6 here (its issue 2 is split into issues 4 and 8).

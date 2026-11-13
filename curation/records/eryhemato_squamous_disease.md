@@ -63,7 +63,7 @@ CC (2026-11-05, Lennart): GitHub issue #48 review: the 10 clinical scores 0-3 sh
 the 10 clinical scores ship as unordered categories, although the definition's notes say they are numbers. The AI
 recommends numbers.
 
-**Main points:** Issue 5: `CrossSectional` instead of `ForcedIIDFromTemporal`? Ship the 10 clinical scores 0 to 3 as numbers, as ordered categories, or keep them unordered?
+**Main points:** Ship the 10 clinical scores 0 to 3 as numbers, as ordered categories, or keep them unordered?
 
 **Issues for Lennart:**
 
@@ -121,6 +121,7 @@ recommends numbers.
    [^cs-5]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
    [^fo-5]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
 
+   **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
 
 ## Reference
 
