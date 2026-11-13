@@ -80,6 +80,7 @@ class QsarBiodeg(AbstractCuratedDataset):
         ),
     )
     special_features = (Smiles(column="SMILES"),)
+    data_tags = ("Timeless",)
     download_description = """
         mkdir -p local-data-warehouse/qsar_biodeg/ && wget -P local-data-warehouse/qsar_biodeg/ https://archive.ics.uci.edu/static/public/254/qsar+biodegradation.zip && unzip local-data-warehouse/qsar_biodeg/qsar+biodegradation.zip -d local-data-warehouse/qsar_biodeg/ && rm local-data-warehouse/qsar_biodeg/qsar+biodegradation.zip
 
@@ -120,6 +121,9 @@ class QsarBiodeg(AbstractCuratedDataset):
           are groups of their own. A screener judges an untested chemical, often of a series not yet measured, so whole
           series are held out; qsar_bioconcentration, qsar_oral_toxicity, qsar_fish_toxicity, qsar_aquatic_toxicity and
           qsar_tid_11 group the same way. The source split at random.
+        - Time basis: Timeless: whether a molecule is readily biodegradable is a property of its structure; the split
+          holds out whole scaffolds. It cannot test chemical classes the catalogue does not hold, which the source keeps
+          its model away from.
     """
 
     # Task

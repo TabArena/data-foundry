@@ -157,6 +157,7 @@ class SirnaEfficacy(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("Timeless",)
     download_description = """
         Download Huesken's corrected supplementary Tables 2 and 3, then convert with poppler pdftotext -layout:
         https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fnbt1118/MediaObjects/41587_2005_BFnbt1118_MOESM3_ESM.pdf -> table2.pdf
@@ -184,6 +185,8 @@ class SirnaEfficacy(AbstractCuratedDataset):
         - The grouped task tests a new gene in this reporter assay. It does not certify efficacy on endogenous targets, unfamiliar experimental conditions or clinical outcomes. All original random train/test flags are discarded in favor of gene-held-out evaluation (SPLIT-4, SPLIT-5). Pooled RMSE measures activity magnitude accuracy, not demonstrated within-gene top-k selection success; no synthesis budget or decision threshold is invented.
 
         - CC (2026-10-26, Myunghwan): accepted the small-gene warning for this add-stage task. Lennart (2026-11-04) put it as the case where the group is a large set of observations over which we want to generalize, so that from the context a few groups suffice (as for a few hospitals), and a case-by-case call, not a minimum-group rule; the native ten-gene folds stay. The separate final ship verdict was explicitly given by Myunghwan on 2026-10-28. Grouped evaluation targets an unseen species/gene ID with no measured candidates (cold start); OOD here names that unseen-entity evaluation, not a separately established shift in assay conditions.
+        - Time basis: Timeless: an siRNA's inhibitory activity on its target is a property of the sequence, measured in
+          one assay; the split holds out whole target genes. It cannot test another assay or cell line.
     """
     target = "normalized_inhibitory_activity"
     problem_type = "regression"

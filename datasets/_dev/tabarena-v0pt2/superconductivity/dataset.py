@@ -87,6 +87,7 @@ class Superconductivity(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("Timeless",)
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
@@ -95,6 +96,8 @@ class Superconductivity(AbstractCuratedDataset):
     curation_comments = """
         - The 81 features are computed from the element shares of the chemical formula alone. `unique_m.csv` (row-aligned with `train.csv`, same critical temperatures) has each row's element counts and formula; from it we add the group column `composition` (see `composition_labels`): 15,164 compositions, 2,422 of them with 2 to 110 SuperCon entries (6,099 repeated rows). Their temperatures differ by a median standard deviation of 1.3 K, by more than 30 K for 132 compositions (other samples, phases or pressures, which the release does not record).
         - Grouped by composition since 2026-10-06 (IID before): a model like this is used for compositions without a measured temperature, and a random split gave 35% of the test rows an identical row in train. Every entry is kept (SPLIT-26), and each composition counts once in the score (Lennart, 2026-11-08, review issue 1): the RMSE weights an entry by 1 over its composition's number of entries (`composition_weight`), a scoring column for the metric only, no feature and no training weight. All 81 inputs are fixed by the composition (equal within 2,416 of the 2,422 compositions with several entries; in the other 6, formulas written at another scale such as `Au30Pd3.3Te66.6` and `Au0.3Pd0.033Te0.666`, they differ by floating-point noise, at most 3e-15 relative), so a model predicts one value per composition, and the materials scientist decides per composition which to synthesize (MET-1, MET-17). Unweighted, YBa2Cu3O7 (110 entries) counted 110 times a composition measured once, and the 2,422 compositions with several entries held 40% of the rows; weighted, the 12,742 compositions with one entry carry 84% of the weight. On the 9 shipped splits the weighted RMSE ranks 8 untuned predictors (random forest, extra trees, two LightGBM, two ridge, kNN, the training mean) like the per-entry RMSE at Kendall tau 0.98 per split on average (lowest 0.93) and 0.93 for the ranking by the mean over the splits, the same best model on 9 of 9. Not grouped by element set: a new composition is usually another proportion of known elements (a doping level), not a new family. Stanev et al. (2018) average the entries of a material instead (standard deviation below 5 K) and drop the rest; we keep the release's rows.
+        - Time basis: Timeless: the critical temperature of a material is a property of its composition; the split holds
+          out composition families. It cannot test material classes the catalogue does not hold.
     """
 
     # Task
