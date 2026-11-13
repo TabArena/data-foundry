@@ -66,13 +66,16 @@ The first sentence of the outcome is the record's outcome on the page and sets i
 
 Leave out what the generated README or the run's log holds: data, definition and checksum, checks, probes and
 verification rounds. The run's process log stays in its local run folder `local-data-warehouse/_runs/<run>/`, and
-no local path goes into a review. A statement that the current `dataset.py` contradicts is removed.
+no local path goes into a review (nor into any committed file: the house rules of
+[knowledge-data-foundry](../../knowledge-data-foundry/SKILL.md)). A statement that the current `dataset.py`
+contradicts is removed.
 
 ### Issues
 
 Each issue starts with `N. ` at the start of a line; its other lines are indented by three spaces (or blank). The
-title is the bold question at the start (`1. **Keep the target in decibels?**`), alone on its line. Then come, in
-this order:
+title is the bold question at the start (`1. **Keep the target in decibels?**`), alone on its line. An issue asks
+one decision: a second one is an issue of its own, and a change proposed for a dataset is an issue in the review of
+that dataset's own record, never only a line in another dataset's issue or answer. Then come, in this order:
 
 1. The bullets of [writing.md](../../knowledge-curation/references/writing.md) ("Questions and issues for the
    curator"), each opened by its bold lead: `**Problem:**` (at most three sub-bullets of one sentence each), the
@@ -111,9 +114,11 @@ where needed), an options table `| | Option | What it does | Pro | Con |` with l
 `**Recommendation:**` and `**Decision:**`, the rule IDs in footnotes. The page renders it like an issue and shows the
 table's rows as answer buttons under the turn (a turn without a table gets Agree / Disagree; lettered bullets
 `- (a) ...` still work); a click writes `Reply (a): ...` (or `Agree.`) as the first line of the issue's note and
-highlights the row. An answer that only reports findings keeps prose, with its rule IDs in footnotes too. A table
-inside an issue or a turn needs a blank line before and after it; without one, the lines
-around it render as table rows.
+highlights the row. An answer that only reports findings keeps bullets, with its rule IDs in footnotes too. In an
+issue and in every turn, measured results stand in tables, not in sentences
+([writing.md](../../knowledge-curation/references/writing.md), "Questions and issues for the curator"; Andrej,
+2026-11-10). A table inside an issue or a turn needs a blank line before and after it; without one, the lines around it
+render as table rows.
 
 The number is the key of the curator's mark (`items.<N>` on the page). Numbers are unique in the review and never
 change; gaps are fine. A new issue takes the next number after the highest the review has had, so an old mark never
@@ -268,7 +273,7 @@ The report is generated from the records' reviews and the cross-dataset file: ne
   in the Summary view under "About this run". Its line `**Metric marks:** `a`, `b`.` (or `all.`), written by
   `collect_reviews.py --metric-marks`, names the records whose declared metric the page shows and marks; without it
   the page shows no metric. `**Horizon marks:**`, from `--horizon-marks`, does the same for the horizon and test
-  windows of a temporal task.
+  windows of a temporal task, and `**Split marks:**`, from `--split-marks`, for the declared split.
 * The `##` sections are recognised by how their heading starts (`## Summary`, `## Record fields`,
   `## Across datasets`); every other `##` section holds `### <unique_name>` sections.
 * The outcome cell sets the category: starting with `not added`, Not added (no folder); containing `recommended`,

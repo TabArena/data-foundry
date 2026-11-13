@@ -67,7 +67,7 @@ by a bold lead, never a paragraph of prose:
 | `**Problem:**` | required | What is decided and why it is a question: at most three sub-bullets, each one sentence; a sentence may be long (Andrej, 2026-11-03). |
 | `**Background:**` | when the problem needs more | The rest of the context: how the data or definition works, terms defined. |
 | `**Effect on the task:**` | when it differs from the problem | Which prediction gets better or worse than in practice. |
-| `**Experiments:**` | when something was measured | The numbers that decide, with how many splits or seeds. |
+| `**Experiments:**` | when something was measured | The numbers that decide, with how many splits or seeds, in a table (Andrej, 2026-11-10). |
 | `**Consistency:**` | when a similar dataset was decided | The precedents, and whether this follows or departs. |
 | `**Panel:**` | when the panel disagreed | Each side's best argument in one sentence. |
 | `**Unknown:**` | when a fact could not be checked | What would settle it. |

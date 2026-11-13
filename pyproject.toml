@@ -253,6 +253,8 @@ exclude = [
     "FBT003",
     "RUF005",
 ]
+# A collection file (`datasets/**/collection.py`) sits next to dataset folders, not in a package.
+"datasets/**/collection.py" = ["INP001"]
 # An example in its own folder (`examples/<example>/`) is a set of scripts, not a package.
 "examples/*/*.py" = ["INP001"]
 # The definitions of the examples (`examples/**/dataset.py`) follow the same rules.

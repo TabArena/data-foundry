@@ -1279,10 +1279,9 @@ class PredictiveMLSplitsMetadata:
     """
 
     split_random_state: int | None = None
-    """The seed the splits were generated with (``random_state`` of the split builders in
-    ``curation_recommendations``, :data:`~data_foundry.curation_recommendations.SPLIT_RANDOM_STATE` unless a
-    caller chose another). Lets downstream code seed an aligned split, e.g. an inner validation split, without
-    copying the number. ``None`` for splits recorded before this field existed (those k-fold and grouped k-fold
+    """The seed the splits were generated with (``random_state`` of the split builders,
+    :data:`~data_foundry.v2.splits.SPLIT_RANDOM_STATE` unless a caller chose another). Lets downstream code seed an
+    aligned split, e.g. an inner validation split, without copying the number. ``None`` for splits recorded before this field existed (those k-fold and grouped k-fold
     splits were built with the default seed) and for splits not produced by those builders.
     """
 

@@ -70,7 +70,8 @@ datasets at once: [rebuild.md](rebuild.md).
 `local-data-warehouse/` (gitignored) holds the raw files of each dataset, the containers, and the run folders
 (`_runs/<date>_<run>/`: run reports, review-page sources, agents' outputs and evidence). Its data never leaves the
 machine and is never committed; personal data in raw files (ids, phone numbers, names) stays there (Lennart,
-2026-10-12). A private review page built from a run folder may be published for the curator. `minimal_inputs.py` (see
+2026-10-12). A private review page built from a run folder may be published for the curator. No committed file names
+a run folder or another local path ([SKILL.md](../SKILL.md), house rules). `minimal_inputs.py` (see
 [rebuild.md](rebuild.md)) collects the raw files the builds read into a local zip backup.
 
 After a verified rebuild (every new container reloads with its checksum and the traced-input check passes), the
