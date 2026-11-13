@@ -290,6 +290,19 @@ TRAINING_ONLY = "training"
 model is fitted with and no metric reads (a label's precision, a design weight when sampling depends on the outcome)."""
 
 
+def training_only_weight(task: PredictiveMLTaskMetadataV2) -> str | None:
+    """The task's ``sample_weight`` when it is a weight for training alone (MET-16): its scoring column has role
+    ``weight`` and ``used_by="training"``, and the metric does not read it. ``None`` otherwise.
+    """
+    weight = getattr(task, "sample_weight", None)
+    if weight is None or weight in task.objective_metric.inputs.values():
+        return None
+    declared = any(
+        c.column == weight and c.role == "weight" and c.used_by == TRAINING_ONLY for c in task.scoring_columns
+    )
+    return weight if declared else None
+
+
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
 class UnitWeight:
     """A score that counts each unit once (MET-17): the metric's row weight is 1 over the rows of the row's unit, so
@@ -1131,7 +1144,7 @@ class PredictiveMLTaskMetadataV2:
                 f"{scoring.description}"
             )
         if self.sample_weight is not None:
-            alone = any(c.column == self.sample_weight and c.used_by == TRAINING_ONLY for c in self.scoring_columns)
+            alone = training_only_weight(self) is not None
             lines.append(
                 f"  sample weight:         {self.sample_weight} (fit every model with it as the row weight; "
                 f"{'for training alone, the metric does not read it; ' if alone else ''}never a feature)"

@@ -45,7 +45,7 @@ import pandas as pd
 
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
-from data_foundry.schema import TRAINING_ONLY, DatasetMetadata, as_column_list
+from data_foundry.schema import DatasetMetadata, as_column_list, training_only_weight
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
 
@@ -57,7 +57,6 @@ if TYPE_CHECKING:
         PredictiveMLSplitsMetadata,
         PredictiveMLTaskMetadata,
         PredictiveMLTaskMetadataV2,
-        ScoringColumn,
         Source,
         UnitWeight,
     )
@@ -1170,10 +1169,11 @@ def _scoring_column_findings(ctx: _Ctx) -> Iterator[CheckResult]:
             f"Scoring column(s) {undocumented} lack a role, a description or the metric that uses them.",
         )
     used = {column: role for role, column in spec.inputs.items()}
+    alone = training_only_weight(task)
     unused = sorted(
         c.column
         for c in scoring.values()
-        if (used.get(c.column) != c.role or c.used_by != spec.name) and not _is_training_only(task, c)
+        if (used.get(c.column) != c.role or c.used_by != spec.name) and c.column != alone
     )
     if unused:
         yield CheckResult(
@@ -1183,19 +1183,6 @@ def _scoring_column_findings(ctx: _Ctx) -> Iterator[CheckResult]:
             hint="Map the role to the column in the metric's `inputs`, or drop the column (or keep it as a feature). "
             'A weight for training alone is the `sample_weight`, its scoring column `used_by="training"` (MET-16).',
         )
-
-
-def _is_training_only(task: PredictiveMLTaskMetadataV2, column: ScoringColumn) -> bool:
-    """Whether ``column`` is the task's weight for training alone: its ``sample_weight``, of role ``weight``, declared
-    ``used_by="training"`` and not read by the metric (MET-16).
-    """
-    spec = task.objective_metric
-    return (
-        column.used_by == TRAINING_ONLY
-        and column.role == "weight"
-        and column.column == getattr(task, "sample_weight", None)
-        and column.column not in spec.inputs.values()
-    )
 
 
 _EXPOSURE_NAME = re.compile(
@@ -1251,8 +1238,7 @@ def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:
     spec = task.objective_metric
     sample_weight = getattr(task, "sample_weight", None)
     row_weight = row_weight_column(spec)
-    alone = any(_is_training_only(task, c) for c in task.scoring_columns)
-    if sample_weight is not None and sample_weight != row_weight and not alone:
+    if sample_weight is not None and sample_weight != row_weight and training_only_weight(task) is None:
         yield CheckResult(
             "task_sample_weight_not_metric_weight",
             "error",
