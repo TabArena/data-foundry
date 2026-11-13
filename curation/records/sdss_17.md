@@ -51,6 +51,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `desi_dr1_star_galaxy_quasar` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+**Assessment (AI, 2026-11-09):** `desi_dr1_star_galaxy_quasar` is the same task from another survey, not better data for this one (principles.md, Tensions, "Same task, another source"): SDSS has the u and i bands, DESI adds two infrared bands, Gaia astrometry and image morphology, and the targeting rules differ, so both enter and this record's verdict stays. This corrects the "better data" reading of 2026-10-31. If the curator relabels DESI's quasars from DESI's quasar catalogue (its REVIEW.md, issue 1, B or C), this record gets an issue to measure its class against SDSS's own quasar catalogue (DR16Q) first.
+
 ## Reference
 
 fedesoriano. (January 2022). Stellar Classification Dataset - SDSS17. Retrieved [Date Retrieved] from https://www.kaggle.com/fedesoriano/stellar-classification-dataset-sdss17.

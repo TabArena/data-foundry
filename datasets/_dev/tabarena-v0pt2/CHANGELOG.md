@@ -791,6 +791,38 @@ only when scoring. The task summary is not stored in the container, so no checks
   from `known` to `known_at_scoring`. Text only. Not checked: their raw files are not in this worktree's warehouse,
   so only the READMEs' "In brief" section is regenerated (by the generator's own function); the definitions load.
 
+## 2026-11-09, large add run: 40 datasets added with their review panels (no container built)
+
+`/add-dataset` on the records Lennart accepted on the large-candidates page of 2026-11-08. Each folder has its
+`dataset.py`, the generated `README.md` and a `REVIEW.md` holding the panel's reports and the open issues. Panel agents
+ran at effort low from 2026-11-09 afternoon on. Every definition passes `dataset check` with 0 errors; warnings
+proposed for acceptance are a last yes/no issue in the folder's `REVIEW.md`, never written into `dataset.py`.
+
+- New folders: `acs_food_stamps_2014_2024_1m`, `aegis_bronchial_airway_lung_cancer`,
+  `alfa_bank_credit_history_default_1m`, `azure_vm_lifetime_resource_central_1m`, `backblaze_hard_drive_failure_1m`,
+  `bacteria_id_raman`, `cesnet_quic22_service_classification_1m`, `chicago_taxi_trip_duration_1m`,
+  `chile_school_dropout_mineduc_1m`, `cns_tumor_methylation_classification`, `desi_dr1_star_galaxy_quasar_1m`,
+  `ember2024_malware_detection_1m`, `enem_entrance_exam_scores_1m`, `fmcsa_roadside_inspection_out_of_service_1m`,
+  `fpa_fod_wildfire_cause_1m`, `france_dvf_property_sales_1m`, `genomic_prediction_soy_yield`,
+  `github_pull_request_acceptance_1m`, `gse40279_methylation_age`, `kumc_inpatient_aki_prediction`,
+  `milk_nir_composition`, `nchs_linked_birth_infant_death_1m`, `nfip_redacted_flood_claims`,
+  `ny_wcb_assembled_claims_1m`, `nyc_motor_vehicle_collisions`, `ppnn_ecmwf_t2m_postprocessing_germany_1m`,
+  `rais_employment_separation_1m`, `raman_mlrod`, `sarcoma_methylation_classification`,
+  `sinan_dengue_case_screening_1m`, `sivep_gripe_sari_outcome`, `smartshark_release_defect_prediction`,
+  `sorel_20m_malicious_pe_1m`, `tcga_pancancer_tumor_type`, `tls_os_fingerprinting_masaryk_1m`,
+  `treehouse_pediatric_tumor_type`, `turkcell_radio_link_failure_prediction_1m`, `uk_mot_test_results_1m`,
+  `uniform_soybean_tests_yield`, `wioa_employment_after_exit`.
+- Not in the working copy: `ugr16_isp_netflow_intrusion` went back to screening (Lennart: a human has to supply the
+  data), and the scaffold of `data_fusion_2026_guardian` waits on the human-in-the-loop data task (Lennart, 2026-11-09);
+  both drafts are kept in the run folder, and their records have no `v2_path`.
+- `REVIEW.md` (across datasets): three sections from the run (rules, framework and library, records and vocabulary),
+  17 items.
+- `BENCHMARK_CHANGES_TODO.md`: a section listing the run's datasets whose test rows are predicted without the other test
+  rows (LEAK-9 protocol lines).
+- Library, uncommitted and on the review page as an item to keep or revert: `bundle_checks.py` lets unit weights sum
+  to at most 1 under a row budget; the probes' `dataset_io.py` drops a unit weight's columns from the features (tests
+  for both).
+
 ## 2026-11-08, PR #47: main merged in (#63 row table, #64 row budget; no container built)
 
 - `allstate_claim_prediction_challenge_1m`, new in this PR, declares `row_budget = RowBudget(train=1_000_000,

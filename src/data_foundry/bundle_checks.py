@@ -1190,19 +1190,25 @@ _EXPOSURE_NAME = re.compile(
 def _unit_weight_findings(ctx: _Ctx, unit: UnitWeight) -> Iterator[CheckResult]:
     """A unit weight (MET-17) gives each unit one vote: the weights of each unit's rows sum to 1, and a unit's rows
     lie on one side of every split, or a unit's vote would be split between training and test.
+
+    A sub-sampled version (a ``row_budget``) keeps only part of some units' rows: the weight is computed on the full
+    data before the sampling, so a unit's weights sum to at most 1 there, and only a sum above 1 is an error.
     """
     df = ctx.df
     if df is None or unit.column not in df.columns or unit.unit not in df.columns:
         return
     sums = pd.to_numeric(df[unit.column], errors="coerce").groupby(df[unit.unit].to_numpy(), dropna=False).sum()
-    off = sums[(sums - 1.0).abs() > 1e-6]
+    budgeted = getattr(ctx.splits_metadata, "row_budget", None) is not None
+    dev = sums - 1.0
+    off = sums[dev > 1e-6] if budgeted else sums[dev.abs() > 1e-6]
     if len(off):
+        cap = "more than 1" if budgeted else "other than 1"
         yield CheckResult(
             "task_unit_weight_not_one_per_unit",
             "error",
-            f"`unit_weight`: the weights of {len(off)} of {len(sums)} units ({unit.unit!r}) do not sum to 1 "
+            f"`unit_weight`: the weights of {len(off)} of {len(sums)} units ({unit.unit!r}) sum to {cap} "
             f"(e.g. {off.index[0]!r}: {off.iloc[0]:.6g}); each unit must count once (MET-17).",
-            hint=f'Build it as `1.0 / df.groupby("{unit.unit}")["{unit.unit}"].transform("size")`.',
+            hint=f'Build it as `1.0 / df.groupby("{unit.unit}")["{unit.unit}"].transform("size")` on the full data.',
         )
     units = df[unit.unit].to_numpy()
     split = [

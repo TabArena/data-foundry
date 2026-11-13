@@ -2,9 +2,14 @@
 unique_name: enem_entrance_exam_scores
 name: Microdados do ENEM (Exame Nacional do Ensino Medio), INEP
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
+decision_markers:
+- Selection Bias
 tags:
 - AI-Filled (Verify)
 original_source: GOV Website
@@ -12,8 +17,7 @@ domain: education
 problem_type: Regression
 source_links:
 - https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados/enem
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/enem_entrance_exam_scores_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -35,3 +39,14 @@ type_adapter_id: curation-record-v1
 - as published: one row per registrant, millions per edition (roughly 3.9 million registrants in 2023, from memory, to check in the edition's Leia-me); registration and socioeconomic-questionnaire columns plus four ...; target: the candidate's ENEM score (mean of the objective tests, or one area such as mathematics; bands of it for a classification like the Assam record's four ...; access: open.
 - Why: same task as the Assam record: predict a candidate's result in a national entrance examination from background known before the exam (sex, race, school type, parents' schooling and occupation, family income, state), the same kind of features as the Assam data (gender, caste, coaching, medium, parents' occupation); ...
 - Adds: millions of candidates per year instead of 666 from one year in one Indian state, a documented government source instead of a UCI upload with missing source information, and many editions (temporal splits possible). Notes: INEP removed some identifying variables (e.g. the school code CO_ESCOLA) from recent releases; ...
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: ENEM 2023 holds 3,933,955 registrants (counted), 2,678,264 of them with all four objective scores and the essay, x 43 inputs known at registration; from the 2024 edition on, INEP publishes the registrants' items and the scores in two files with no common key, so the task's data end with 2023; the call stands (priority 3).
+- As published: INEP's page lists one zip per edition, 1998 to 2025 (https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados/enem). microdados_enem_2023.zip is 549,511,687 bytes (Last-Modified 2026-07-09); its DADOS/MICRODADOS_ENEM_2023.csv is 1,777,162,429 bytes unzipped, ";"-separated, Latin-1, with ITENS_PROVA_2023.csv, the dictionary (xlsx, ods), read-in scripts for R, SAS and SPSS, the Leia-me and the tests (zip directory read by range requests). Counted here: 3,933,955 rows x 76 columns, one per registrant (NU_INSCRICAO is a mask); INEP's results presentation (https://download.inep.gov.br/enem/resultados/2023/apresentacao_resultados.pdf, page 3) gives 4,018,414 registrants and 2,734,100 participants (68%). The Leia-me 2023 (section 3) keeps the "modelo simplificado" introduced with ENEM 2020: CO_ESCOLA removed, NU_IDADE replaced by TP_FAIXA_ETARIA, the municipalities of birth and residence and the special-assistance requests removed, and the registrants of tests with very few takers dropped. From 2024 the zip holds PARTICIPANTES_2024.csv (462,022,669 bytes; registrant items and the questionnaire, key NU_INSCRICAO) and RESULTADOS_2024.csv (1,683,449,589 bytes; school, presence and scores, key NU_SEQUENCIAL), and the Leia-me 2024 (section 3) says: "Uma vez que as duas bases não possuem chave de ligação em comum, a informação da escola não possibilitará a identificação indevida dos participantes". Base dos Dados counts 4,332,944 rows in each 2024 file and 4,810,772 in each 2025 file (README of its ENEM pipeline, https://github.com/basedosdados/pipelines/pull/1431).
+- The task's table: one row per registrant of one edition who sat both days, the target a score (NU_NOTA_MT, another area, the mean of the four objective scores, or NU_NOTA_REDACAO). In 2023, 2,678,264 registrants have all four objective scores, every one of them an essay score too, and 2,692,427 a mathematics score (counted); 620,067 registrants are "treineiros" (not finishing secondary school in 2023, taking the exam for practice). Inputs known at registration (43 distinct): 10 registrant items (TP_FAIXA_ETARIA, TP_SEXO, TP_ESTADO_CIVIL, TP_COR_RACA, TP_NACIONALIDADE, TP_ST_CONCLUSAO, TP_ANO_CONCLUIU, TP_ESCOLA, TP_ENSINO, IN_TREINEIRO; TP_ESCOLA is "Não respondeu" on 2,532,796 rows), 5 school items (municipality, state, administration, urban or rural, operating status; filled on 958,506 rows, 24%), 2 exam-place items (municipality, state), TP_LINGUA (English or Spanish, chosen at registration) and the questionnaire Q001-Q025 (parents' schooling and occupation, household size, family income, goods in the home); the 2024 Leia-me says the questionnaire is answered "no ato da inscrição". After the exam: presence, test version (CO_PROVA, which also codes large-print, Braille and Libras versions), the four scores, the answer and key strings, essay status and its five competence scores (27 columns, all out). The 2019 file, as re-published on 2022-05-23 (zip Last-Modified), has the same 76 columns, and Q001-Q025 carry the same wording in both dictionaries, so INEP re-released at least 2019 in the simplified layout and editions 2019-2023 share one feature set for a temporal split.
+- Access: open download, no login, 526 MB to 1.04 GB per zip (2019: 659,560,141 bytes; 2022: 620,743,609; 2023: 549,511,687; 2024: 526,073,856; 2025: 1,035,674,693; HEAD requests). The INEP server does not send its intermediate certificate (RNP ICPEdu GR46 OV TLS CA 2025, published by GlobalSign) and drops long connections, so a build needs that certificate added and resumable range requests. No licence is stated on the page or in the Leia-me files read; the Leia-me cites the open-data policy only for the .ods copy of the dictionary.
+- Changes the call: the 2024 split (no common key) removes the newest editions from the task: a build uses 2023 or earlier, a temporal split such as 2019-2022 against 2023 (or one edition, IID); this answers the screening's open question on recent releases. No change to the priority (gap +, use case 0, source +, shape +, risk -: 3); TP_COR_RACA keeps the SEL-1 question for the curator, as on the Assam sibling.
+- Not checked: the counts of other editions (only 2023 counted); the 2025 Leia-me; why the 2023 file holds 84,459 rows fewer than INEP's 4,018,414 registrants (the Leia-me names only the takers of rare test versions and one participant as removed). Repeat registrants cannot be linked across editions: "O mesmo NU_INSCRICAO para anos diferentes não identifica o mesmo participante" (dictionary 2023, note 1), so a temporal split can hold the same person on both sides with no way to group them.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the actor rewritten as an NGO or MEC's CPOP cursinho, or a department filling limited places, asking the registration items on its own intake form; `Selection Bias` set, with the income gradient of absence and the treineiro share in fit_reason; `school_operating_status` dropped; 2018's school type and the modality aligned across editions; the municipalities decoded as "Name (UF) [code]"; a quantified note on 2023's blank second day, kept after the mediator's cause check); disputed: SEL-1 (sex, and the Assam sibling's `Ethical Issue` marker), LEAK-22 (the 2023 blank second day, kept), LEAK-10 (`school_operating_status`, dropped), USE-1 (the actor, rewritten), CLEAN-12 (the municipalities, decoded); for the curator: issue 1. Priority 3: gap 0, use case 0, source +, shape +, risk 0 (gap 0: education is not thin among the 151 accepted definitions; use case 0: ours, fit approximate; risk 0: the open issue confirms what is implemented and raises no leak or target question).

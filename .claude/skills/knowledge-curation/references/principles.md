@@ -103,6 +103,7 @@ stops, and the case that set it. A new decision on a tension not listed becomes 
 | Uniqueness against a distinct task (P5 and P3; PROV-6, PROV-7) | a shared source with distinct tasks is not a duplicate | versions or cuts without a distinct task are duplicates | |
 | Tiny but real (P3 and P6; TP-5, TP-8) | a small dataset is a tiny-data task | `Too Small` when a class has a handful of units per test fold | musk kept; parkinsons retired |
 | Width against model limits (P6, P7; CLEAN-22, EV-4) | width is no reason to drop features; a model's input cap is never an argument | | coad (Lennart, 2026-10-15) |
+| Same task, another source (P5 and P6; PROV-4, PROV-7) | both enter when neither is better data (other years, labels, features or framings), the reason recorded in each record | when one is better data for the task (larger or newer with the same target and features), it enters and the other stays `TBD -> Yes` for later | freddie_mac and fannie_mae, sorel_20m and ember2024, nyc_motor_vehicle_collisions next to chicago_traffic_crashes (both enter); tls_os over cesnet_os, mh_1m over kronodroid, uji_long_term over ujiindoorloc (one enters) (Lennart, 2026-11-08) |
 
 ## Precedence in the process
 

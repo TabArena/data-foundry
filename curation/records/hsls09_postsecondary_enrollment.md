@@ -2,8 +2,11 @@
 unique_name: hsls09_postsecondary_enrollment
 name: High School Longitudinal Study of 2009 (HSLS:09), base year to second follow-up public-use file
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 4
 tags:
 - AI-Filled (Verify)
@@ -16,8 +19,6 @@ source_links:
 - https://nces.ed.gov/datalab/onlinecodebook
 - https://doi.org/10.3390/bdcc9040099
 - https://nces.ed.gov/surveys/hsls09/
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -39,3 +40,12 @@ type_adapter_id: curation-record-v1
 - as published: more than 21,000 9th graders in 944 schools (data.gov); waves 2009, 2012, 2013 update, 2016; hundreds of student, parent, school and transcript-derived variables; data.gov lists the licence as CC0; target: postsecondary enrollment by 2016 (2-year or 4-year college), or high school completion; both are measured outcomes of the later waves; access: open.
 - Why: a strong federal source with a codebook, open download, an outcome measured years after the features, and a published ML use of the exact task | The same task as the Irish record (does a pupil complete upper-secondary school, i.e. sit the Leaving Certificate, from an early ability test score, family background and ...
 - Adds: a US secondary-to-postsecondary transition task grouped by school (944 schools), with survey answers, test scores and GPA as mixed features; nothing of the kind is in the benchmark | About 40x the pupils (500 in 1967 vs 21,000+ in 2009), a national probability sample 40 years newer, much richer early-known features; ...
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: 23,503 students in the public-use file x 1,020 public items gathered in 9th grade (2,007 through the 11th-grade follow-up), far wider than the screening's "hundreds"; the outcome `X6PSE` (ever enrolled in postsecondary education by June 2021, from administrative records) ships in the public file, the school id does not; the call stands, priority 4.
+- As published: the NCES HSLS:09 variable list (https://nces.ed.gov/surveys/hsls09/xls/HSLS09_VariableList_rev01-24.xlsx, read 2026-11-08): 9,721 student-level variables, 8,796 of them in the public-use file (PUF) and 925 in the restricted-use file only; 5,632 of the 8,796 are weights (analytic and BRR replicate weights). Waves: base year (fall 2009, 9th grade), first follow-up (2012), 2013 update, high school transcripts (2013-14), second follow-up (2016), postsecondary transcripts and records (2016-17), and the PEAR update (`X6*`: enrollment, federal aid and loans as of June 2021). ICPSR's record of the 2009-2013 PUF counts "23,503 students from more than 900 public and private high schools". The PUF is downloaded through the NCES DataLab online codebook; a DataLumos mirror lists `hsls_17_student_pets_sr_v1_0.csv` at about 847 MB (search result; the page refused access).
+- The task's table: one row per student, target `X6PSE` ("Ever enrolled in postsecondary education, as of June 2021 (two categories)") or `X4EVRATNDCLG` (the 2016 survey answer, imputed). Inputs known at the end of 9th grade (base-year PUF items without weights and imputation flags): 1,020, from the student questionnaire 271, student composites 112, parent 142, math teacher 134, science teacher 157, counselor 150, administrator 54; 147 of them altered on the PUF (sparse values recoded, categories merged). The 11th-grade follow-up adds 987 (student 408, composites 108, parent 203, counselor 175, administrator 93; 141 altered). The counselor and administrator items describe the school and repeat for its students; teacher items exist only for students in that teacher's course. Counted from the variable list; the rows with a known target are not counted.
+- Access: public-use file free for immediate download, no login; the restricted-use file (school ids, unaltered values) needs an NCES licence; data.gov lists the study under CC0 (screening).
+- Changes the call: the school id is suppressed on the PUF (`SCH_ID`: "Variable suppressed with -5 values on the public use file"), so the screening's grouped-by-school regime needs the restricted-use file; on the PUF the split is IID unless a key is rebuilt from the repeated school items (SPLIT-26 asks for the source's own key; not attempted). The PEAR outcome comes from records, not from the 2016 survey, and may cover more of the sample than the 2016 respondents (not checked). The wave cut stays the main build decision (LEAK-10): the transcript composites (`X3T*`, 139 PUF items) were compiled in 2013-14 and cover grades 9 to 12. Sibling: `hsls09_secondary_student_achievement` uses the same PUF. Priority 4 stands.
+- Not checked: the PUF itself (size, rows with `X6PSE` known, missing-value codes); the PEAR coverage; which outcome He et al. 2025 used.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).

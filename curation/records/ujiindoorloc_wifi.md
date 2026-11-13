@@ -2,7 +2,10 @@
 unique_name: ujiindoorloc_wifi
 name: 'UJIIndoorLoc: a multi-building and multi-floor database for WLAN fingerprint-based indoor localization'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 2
 tags:
@@ -21,8 +24,6 @@ source_links:
 - https://zenodo.org/records/14780428
 - https://zenodo.org/records/5174851 (Tampere TIE1/SAH1 2017, X,Y,Z + floor, 10,633 and 9,291 reference fingerprints, CC BY 4.0)
 - https://zenodo.org/records/6928554 (Silva et al. 2022 long-term Wi-Fi fingerprinting, 11,140 site-survey samples)
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -45,3 +46,12 @@ type_adapter_id: curation-record-v1
 - as published: 21,048 WLAN fingerprints (19,937 training and 1,111 validation, taken later), 529 columns: 520 WAP RSSI values plus building, floor, longitude, latitude, space, relative position, user, phone, ...; target: the position of the phone: longitude and latitude (regression) with floor and building (the vertical, 3D part); access: open.
 - Why: Same task as the ITU 2023 challenge (estimate a receiver's 3D position from WLAN RSSI), but published by its creators with a paper and documented collection, where the OpenML upload has no traceable source.
 - Adds: A traceable, documented source with 21k fingerprints against 14.4k untraced rows, real devices and users, and a validation set collected separately, which suits a non-IID split. The Tampere 2017 set (other_links) gives X,Y,Z directly if the 3D target matters more. Caveat: older (2013) than the ITU data.
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: the task's table is 21,048 fingerprints (19,937 training, 1,111 validation taken three months later) x 520 WAP RSSI columns, of which 273 are heard in more than 1% of the fingerprints and 113 in more than 5%. The call stands at priority 2. A competition metric exists for the joint position (EvAAL-ETRI 2015, off-site track), and it needs four predicted outputs.
+- As published: UCI 310 (https://archive.ics.uci.edu/dataset/310/ujiindoorloc), `ujiindoorloc.zip` 1,463,759 bytes with `UJIndoorLoc/trainingData.csv` (42,725,381 bytes, 19,937 rows) and `validationData.csv` (2,381,949 bytes, 1,111 rows), 529 columns each: WAP001 to WAP520 ("Positive value 100 used if WAP001 was not detected"), LONGITUDE, LATITUDE, FLOOR, BUILDINGID, SPACEID, RELATIVEPOSITION, USERID, PHONEID and TIMESTAMP (UCI variable information). Counted: training from 2013-05-30 to 2013-06-20, validation from 2013-09-19 to 2013-10-08 (the paper says 4 months later); 13 building-floor classes of 995 to 2,749 rows, all 13 in the validation file (24 rows or more each); 933 distinct coordinates in training, the paper's 933 reference points. The training file has 18 users and 16 phones; the validation file has user 0 and 11 phones, 2 of which appear in training (397 of the 1,111 rows), and SPACEID and RELATIVEPOSITION are 0 there.
+- The task's table: both files stacked, 21,048 rows x 520 RSSI inputs (counted), TIMESTAMP as the split key. Every WAP is heard somewhere; 55 never in the training file and 153 never in the validation file; 381 in more than 0.1% of the fingerprints, 273 in more than 1%, 113 in more than 5%. A fingerprint hears 17 WAPs at the median, and 76 hear none. 637 training rows copy another row in every column. SPACEID, RELATIVEPOSITION and USERID leave (parts of the label and collection metadata, empty in the validation file); PHONEID is known at prediction time, but 9 of the 11 validation phones are unseen in training.
+- Access: open, no login, a 1.5 MB zip. UCI's API returned no licence field on 2026-11-08; the screening read CC BY 4.0 on the page.
+- Changes the call: the metric. The IPIN 2015 EvAAL-ETRI off-site competition on this database scored "Method accuracy = average (SampleError(Ri, Ei))" with "SampleError(Ri, Ei) = Distance(Ri, Ei) + (penalty1 * buildingfail) + (penalty2 * floorfail)", "penalty1 is set to 50" and "penalty2 is set to 4" ("floorfail is the absolute difference between actual floor and the predicted one"; the distance is Euclidean on the projected longitude and latitude, in metres), on a "large private final test set that has not been published" (https://evaal.isti.cnr.it/2015/competitors/technical-annex-off-site). It is a competition's metric (MET-4) for the joint position, so it needs longitude, latitude, floor and building predicted together. A single-target task (a building-floor class, or one coordinate) cannot use it, so the fallback for the chosen target stays (MET-5), and the joint form is a question for /add-dataset. The priority stays 2 (gap 0, use case 0, source +, shape +, risk -). The validation file is the only later data, so a temporal split has one test fold of 1,111 rows from other users, other points and mostly other phones. Sibling: `uji_long_term_wifi_fingerprinting` (see its assessment): the same lab and task on other data, not a version (PROV-6 does not apply); the curator may take one of the two.
+- Not checked: the IPIN 2014 paper's own counts of WAPs heard; the OpenML copies; the journal paper on the 2015 competition (Torres-Sospedra et al., JAISE 9:263, 2017; the open copies answered 403).
+
+CC (2026-11-08, Lennart): kept for later (`TBD -> Yes`, priority 2) in the screening review of the large candidates, round 2.

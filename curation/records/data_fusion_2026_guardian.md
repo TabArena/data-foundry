@@ -2,8 +2,11 @@
 unique_name: data_fusion_2026_guardian
 name: Bank Fraud (Bank Fraud Datafusion)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Needs extensive data wrangling
@@ -25,8 +28,6 @@ source_links:
 - https://ods.ai/competitions/data-fusion2026-guardian/dataset
 - '# a participant''s re-upload of the competition files (Kaggle, licence ''other''), with the column dictionary'
 - https://www.kaggle.com/datasets/d1ffic00lt/data-fusion-2026-case-1
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -48,3 +49,13 @@ type_adapter_id: curation-record-v1
 - as published: 10.97M train / 591K val / 590K test, 119 features; temporal split: train 2024-10-01..2025-05-04, validation 2025-05-04..05-18, test 2025-05-18..06-01; training negatives sampled at 15%; about 0.5% ...; target: operation not confirmed by the client ('red' class; client-confirmed suspicious 'yellow' operations and all others are negatives).
 - Why: Flag bank client operations that the client did not confirm (fraud) for an anti-fraud system (Data Fusion Contest 2026, task 1 'Guardian', ODS.AI, 2026-02-09..03-30)
 - Notes: The release is operation logs of 100,000 clients over about 1.5 years (over 200M operations; about 51K red and 36K yellow labelled operations in train), with unlabelled pre-train and pre-test periods, split into train_part_1..3 parquet files and train_labels.parquet; the authors build per-operation features (event ...
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-08):** size check and access at the source, by /add-dataset (builder). The task page (read 2026-11-08) confirms the screening: task 1 'Страж', red (held, not confirmed by the client) = 1, yellow and every operation without feedback = 0, periods pretrain 2023-10-01..2024-09-30 (unlabelled), train 2024-10-01..2025-05-31 (labelled), pre-test/test 2025-06-01..2025-08-09 (633,683 operations, labels with the organisers only), PR-AUC with sklearn's `average_precision_score`. Size: about 80M labelled operations (the paper's 10.97M training rows hold every positive and 15% of the negatives of 2024-10-01..2025-05-04), so the folder is `data_fusion_2026_guardian_1m` (scaffold, `TODO(verify)` markers, features ported from the paper's public script). Access: blocked. The data tab needs an ods.ai login and joining the contest (accepting its rules); the rules (Rules_Data_Fusion_Contest_2026.pdf, 7.2.8 and 7.2.12) forbid using the data outside the contest or passing it to third parties without the organiser's (JSC T1) written permission, so the participant's Kaggle re-upload (d1ffic00lt/data-fusion-2026-case-1, licence 'Other', no terms) is not used. The sibling `data_fusion_2026_guardian_fraud` is the same competition and task (`No`, `Duplicate`); this record keeps it.
+
+**Assessment (AI, 2026-11-09):** not built in the large-datasets run of 2026-11-08: the data sits on ods.ai behind an account and the competition's rules (the Kaggle re-upload breaks rule 7.2.12), which this machine cannot pass. A person has to download the raw files; the build follows in a later round.
+
+CC (2026-11-09, Lennart): later; make this its own task with a human in the loop (the data needs a person to fetch it).
+
+**Assessment (AI, 2026-11-09):** the scaffolded definition (no README, no review) left the working copy and is kept in the run folder `local-data-warehouse/_runs/2026-11-08_large_add/data_fusion_2026_guardian/definition_draft/`; it returns when the human-in-the-loop data task (the CC line of 2026-11-09) supplies the data.

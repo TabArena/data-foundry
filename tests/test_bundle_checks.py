@@ -1258,6 +1258,19 @@ def test_a_unit_weight_that_does_not_sum_to_one_per_unit_is_an_error():
     assert unit_findings(_unit_container(df)) == {"task_unit_weight_not_one_per_unit": "error"}
 
 
+def test_a_sampled_version_may_keep_part_of_a_units_weight():
+    """Under a row budget the weight is computed before the sampling: a unit's weights may sum to less than 1, never
+    more.
+    """
+    df = _unit_frame()
+    df.loc[df["plot"] == 2, "plot_weight"] = 0.2  # two of a plot's three quadrats sampled away: 0.6 in all
+    container = _unit_container(df)
+    container.experiment_metadata.row_budget = RowBudget(train=40, test=20)
+    assert "task_unit_weight_not_one_per_unit" not in unit_findings(container)
+    df.loc[df["plot"] == 2, "plot_weight"] = 0.5
+    assert unit_findings(_unit_container(df))["task_unit_weight_not_one_per_unit"] == "error"
+
+
 def test_a_unit_on_both_sides_of_a_split_warns():
     """Random splits put a plot's quadrats on both sides: its vote is shared between training and test."""
     assert unit_findings(_unit_container(splits="iid")) == {"task_unit_weight_unit_split": "warning"}

@@ -2,8 +2,11 @@
 unique_name: fannie_mae_single_family_loan_performance
 name: Fannie Mae Single-Family Loan Performance Data
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 4
 tags:
 - AI-Filled (Verify)
@@ -20,8 +23,6 @@ source_links:
 - https://www.fanniemae.com/loanperformance
 - https://capitalmarkets.fanniemae.com/media/9066/display
 - https://capitalmarkets.fanniemae.com/credit-risk-transfer/single-family-credit-risk-transfer/fannie-mae-release-actual-loss-single-family-loan-performance-data
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -43,3 +44,18 @@ type_adapter_id: curation-record-v1
 - as published: loan-level origination data plus monthly performance for a subset of Fannie Mae's fully amortizing, full-documentation, conventional fixed-rate single-family mortgages of 30 years or less, acquired ...; target: per active loan and period, the next status: default (serious delinquency or a credit-event zero balance code), payoff (prepaid) or still active, the three ...; access: registration.
 - Why: mortgage is the Baesens textbook panel (621,653 loan-quarters, 2000 Q2-2015 Q1, from a consultancy whose site is gone; its assessment says 'No larger source exists'), with origination FICO/LTV/rate and the previous quarter's balance and LTV as features. Fannie Mae's file has the same loan-period panel and the same ...
 - Adds: Millions of loans instead of a textbook sample, 26 years (to 2026, through the 2008 crisis and the 2020 forbearance period), monthly periods, a delinquency field the old file lacks, and official documentation. A different source from the already recorded Freddie Mac loan-level dataset. Terms: registration on Data ...
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: one row per loan with a default label over a fixed horizon gives 55,729,394 loans originated 1999-2023 (labels mature by the March 2026 cutoff) x 23 origination inputs; the call stands at priority 4 under the record's loan-period framing, 3 under a per-loan default framing.
+- As published: Fannie Mae's primary dataset, one pipe-delimited CSV per acquisition quarter, origination and monthly performance in one file since the October 2020 release (FAQ of 2022-03-08, Q11, https://capitalmarkets.fanniemae.com/sites/g/files/koqyhd216/files/2022-03/sf-loan-performance-dataset-faqs.pdf), 108 columns per loan-month (from a third-party import guide, https://farahat-analytics.github.io/case-mortgage-analytics/data_raw.html; Fannie Mae's file layout answers 403 here). The Statistical Summary Tables of July 2026 (https://capitalmarkets.fanniemae.com/media/20926/display, read through the Wayback copy of 2026-10-11) count 57,864,281 loans acquired from January 2000 to March 2026, by origination year from 160,137 (1999) and 962,090 (2023) up to 5,107,633 (2003) and 4,991,580 (2020). The summary gives serious delinquency (D180) only as a share of origination UPB. Fannie Mae states no loan-month count; the same third-party guide gives "approximately 2.5 billion records" for the July 2023 release (about 55 million loans). First release 2013-04-30 (FAQ Q10: acquisitions 2000-01-01 to 2012-03-31, performance to 2012-12-31). A separate HARP dataset holds about one million refinanced loans with a mapping key. The purpose statement, now read on the archived data page (2026-07-22): the data is provided "to help investors analyze the credit and prepayment performance of loans owned or guaranteed by Fannie Mae".
+- The task's table: one row per loan at acquisition, the label built from the performance rows (for example D90 or D180, or a credit-event zero-balance code, within 24 months). Rows: 57,864,281 loans in all, 55,729,394 originated 1999-2023 (computed from the summary's per-year counts; those loans have 24 months of performance by March 2026). Inputs: the third-party list names 26 static fields; without the origination and first-payment dates (kept for the split) and the constant amortization type, 23 remain (channel, seller, rate, UPB, term, LTV, CLTV, number of borrowers, DTI, borrower and co-borrower credit scores, first-time buyer, purpose, property type, units, occupancy, state, MSA, 3-digit zip, MI percentage and type, special eligibility program, relocation flag). The UPB that ever reached D180 is 2.49% of the 1999-2023 origination UPB (computed from the summary, page 2), 13.6% for the 2007 vintage and 1.2% for 2020: a rare positive class with a strong vintage drift. Under the record's own framing (the `mortgage` loan-period panel, the next period's status) the table is the loan-months, about 2.5 billion in 2023, and needs a sample of whole loans.
+- Access: free registration on Data Dynamics and acceptance of the terms; "the Data is licensed by Fannie Mae for internal use only" and may not be redistributed without written consent (FAQ Q6), so only a definition built from each user's own download could ship (a note, EV-4). One-click download of all files; single-file downloads are capped at 100 files per hour. Fannie Mae states no total size; a third-party post gives 48.2 GB for the 2000Q1-2023Q2 archive (not opened). Every capitalmarkets.fanniemae.com page and file answers 403 to this machine; the Wayback copies were readable.
+- Changes the call: Freddie Mac's release (`freddie_mac_single_family_default`) holds the same task on the other agency's loans, a disjoint population: a second source, so no duplicate (PROV-4); PROV-7 does not apply, since it covers one source with distinct tasks. Neither is better data for the other: 57,864,281 loans acquired 2000 to March 2026 here, about 49.51 million Standard loans originated 1999 to June 2026 there, with origination fields of the same kind. Fannie Mae has 17% more loans and a co-borrower score; Freddie Mac has one more quarter, readable documents, an official random sample of 50,000 loans per vintage, and Relief Refinance loans that Fannie Mae's primary dataset excludes. The curator takes one per framing, as for `ppnn_ecmwf_t2m_postprocessing_germany` against `bias_correction_r_bias_correction_r_2`: one of the two at origination, or Fannie Mae as the periodic panel of `mortgage`'s task and Freddie Mac at origination, which gives two distinct tasks. The use case is now read (the publisher names investors and the analysis of credit and prepayment performance): use case +. The 2026-10-31 factors (gap +, use case 0, source +, shape +, risk -) summed to 3, not the 4 written; with use case + they give 4 under the panel framing (multiclass gap +) and 3 under a per-loan binary framing (no gap). Priority kept at 4.
+- Not checked: the 108-column layout and the current loan-month count from Fannie Mae's own files (403); the download size; the default definition and horizon a build would use.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+CC (2026-11-08, Lennart): framed as the loan-month panel (next month's status), while freddie_mac_single_family_default ships the per-loan task at origination; two distinct tasks on the two agencies' disjoint loans. Open: the shipped `mortgage` (the panel task, 50,000 loans) is to be decided against this one (keep both, or `mortgage` to 2nd Tier as with thailand_road_accident_fatalities_2015).
+
+**Assessment (AI, 2026-11-09):** not built in the large-datasets run of 2026-11-08: Fannie Mae's Data Dynamics needs a free account, which this machine cannot pass. A person has to download the raw files; the build follows in a later round.
+
+CC (2026-11-09, Lennart): later; make this its own task with a human in the loop (the data needs a person to fetch it).
