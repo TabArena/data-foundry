@@ -179,9 +179,9 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
         - We drop all rows where the living space is less than 10 (in Germany, this would likely not be enough living space for a real house, and thus might be a data error.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-        - Time basis: Retrospective: one scrape of the houses live on ImmoScout24 on 14 July 2020; the asking prices of
-          that day, set at listing and possibly lowered since, without listing dates; the use case prices a house
-          against the same day's market. Not tested: prices after July 2020.
+        - Time basis: Retrospective: one scrape of the houses live on ImmoScout24 on 14 July 2020; the asking prices of that
+          day, set at listing and possibly lowered since, without listing dates; the use case prices a house against
+          the same day's market. Not tested: prices after July 2020.
     """
     accepted_check_warnings = {
         "meta_license_unknown": (

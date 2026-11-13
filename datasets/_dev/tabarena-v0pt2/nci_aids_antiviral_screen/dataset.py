@@ -162,9 +162,9 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
         - Time basis: Timeless (Andrej, 2026-11-12, review of how cuts of growing catalogues split): the screen's
           conclusion for a compound is a property of the compound, and the only order the source keeps, the NSC
           registration number, is not when a compound entered the screen (about a quarter were registered long before it
-          began). A forward split on that order leaves 8.4% of the test compounds a close training analog against 9.8%
-          for a random draw of the same size and 4.3% scaffold-disjoint (splits comment), so it carries no wave of
-          arrivals the scaffold split misses. The split cannot test a chemical class the screen received only later.
+          began). A forward split on that order leaves 8.4% of the test compounds a close training analog against 9.8% for
+          a random draw of the same size and 4.3% scaffold-disjoint (splits comment), so it carries no wave of arrivals the
+          scaffold split misses. The split cannot test a chemical class the screen received only later.
     """
 
     # Task

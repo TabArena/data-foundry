@@ -176,10 +176,10 @@ class Emscad(AbstractCuratedDataset):
           is simply not on the scale, such as Other, is missing).
         - The target (2026-11-01, CLEAN-25): `fraudulent` ships its classes as words (1 is the event). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
-        - Time basis: ForcedGroupedFromTemporal: ads posted from 2012 to 2014 with no date in the release (`job_id` does
-          not follow posting time); the split groups by poster because the label is set per client, so the test posters
-          come from the same period as the training ones. Scams change over time; a dated release would allow a split by
-          posting date.
+        - Time basis: ForcedGroupedFromTemporal: ads posted from 2012 to 2014 with no date in the release (`job_id`
+          does not follow posting time); the split groups by poster because the label is set per client, so the test
+          posters come from the same period as the training ones. Scams change over time; a dated release would allow
+          a split by posting date.
     """
 
     # Task

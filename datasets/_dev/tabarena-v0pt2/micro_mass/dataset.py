@@ -75,9 +75,9 @@ class MicroMass(AbstractCuratedDataset):
           before the culture, and the row is the spectrum of that culture. The release holds no acquisition date, run or
           plate (the metadata file has the species and the strain number only), and the file order carries no campaign
           order (time probe, 2026-11-06: no order drift, p 0.58). The panel is a single 2013 deposit, the strain
-          identifier is an integer with no accession or date, and no arrival order can be recovered, so the strain key
-          stays the split (2026-11-12). Not tested: an isolate of a species or a strain type the panel does not hold,
-          and a run batch shared across strains, which no column records.
+          identifier is an integer with no accession or date, and no arrival order can be recovered, so the strain
+          key stays the split (2026-11-12). Not tested: an isolate of a species or a strain type
+          the panel does not hold, and a run batch shared across strains, which no column records.
     """
 
     # Task

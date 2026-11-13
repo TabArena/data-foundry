@@ -113,9 +113,10 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
           1.5 is Monday noon), and the source ships it as a number; named weekdays and months are ordered categories
           instead.
         - Time basis: Retrospective: one logged week of 923 stations, 2023-01-01 01:00 to 2023-01-08 00:00, hourly; the
-          energy is metered in the same hour as the load and energy-saving settings, and the use case fills in the hours
-          of stations without meters in that week while the other stations of the same hours are measured (day and hour
-          are features). Not tested: a later week, or a new station product before it runs, the challenge's aim.
+          energy is metered in the same hour as the load and energy-saving settings, and the use case fills in the
+          hours of stations without meters in that week while the other stations of the same hours are measured (day
+          and hour are features). Not tested: a later week, or a new station product before it runs, the challenge's
+          aim.
     """
     accepted_check_warnings = {
         "meta_license_unknown": (

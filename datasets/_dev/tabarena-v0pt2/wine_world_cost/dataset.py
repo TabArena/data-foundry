@@ -71,8 +71,8 @@ class WineWorldCost(AbstractCuratedDataset):
         - We parse the vintage to a numeric date value, ensuring that each wine maps to the oldest year in its special syntax.
         - We log scale the target, as the price distribution is very skewed.
         - No description states the wine's own price. Removing every sentence with price or value words changes R^2 by 0.003, so we keep the description (evidence in the record, 2026-10-14).
-        - Time basis: Retrospective: one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023;
-          the shelf prices, sales copy and catalogue attributes of that moment; the vintage is a wine attribute, not a
+        - Time basis: Retrospective: one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023; the
+          shelf prices, sales copy and catalogue attributes of that moment; the vintage is a wine attribute, not a
           time. Not tested: prices after 2023.
     """
 

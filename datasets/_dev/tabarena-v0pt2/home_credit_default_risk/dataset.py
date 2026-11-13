@@ -145,14 +145,15 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `TARGET` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
         - Time basis: ForcedIIDFromTemporal: loan applications over a period Home Credit does not state, the label
-          payment difficulties on the first instalments; a lender scores later applicants. Every date is relative to the
-          application ("time only relative to the application", HomeCredit_columns_description.csv), the default rate is
-          flat along SK_ID_CURR (7.9% to 8.3% per tenth), and the earlier applications' ids do not follow their decision
-          day (Spearman 0.02), so no date can be rebuilt (Time: Lost). Leak test across the split: 5.4% of the
-          applications share a client with another (same sex and the same days between birth and ID issue and between
-          birth and registration); the split tests each client's latest application and keeps the client's earlier ones
-          in training only (below), so no test row has its client's later application in training. The random split
-          cannot test how the score holds for later applicants; application dates would allow a split by time.
+          payment difficulties on the first instalments; a lender scores later applicants. Every date is relative to
+          the application ("time only relative to the application", HomeCredit_columns_description.csv), the default
+          rate is flat along SK_ID_CURR (7.9% to 8.3% per tenth), and the earlier applications' ids do not follow
+          their decision day (Spearman 0.02), so no date can be rebuilt (Time: Lost). Leak test across the split:
+          5.4% of the applications share a client with another (same sex and the same days between birth and ID
+          issue and between birth and registration); the split tests each client's latest application and keeps the
+          client's earlier ones in training only (below), so no test row has its client's later application in
+          training. The random split cannot test how the score holds for later applicants; application dates would
+          allow a split by time.
     """
 
     # Task

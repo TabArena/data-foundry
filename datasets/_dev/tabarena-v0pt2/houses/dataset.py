@@ -75,8 +75,8 @@ class Houses(AbstractCuratedDataset):
         - Anomaly: As always, we randomly shuffle the data before uploading. If one does not randomly shuffle the data, there would be a distribution shift from the longitude and latitude based on the original order of data samples.
         - Time basis: Retrospective: the 1990 census of every California block group; income, housing, population,
           households and the median house value come from the same census tables; the use case values a block group
-          whose value is not recorded, at the census date, with its neighbours known. Not tested: values after 1990, and
-          block groups with no known neighbours.
+          whose value is not recorded, at the census date, with its neighbours known. Not tested: values after 1990,
+          and block groups with no known neighbours.
     """
 
     # Task

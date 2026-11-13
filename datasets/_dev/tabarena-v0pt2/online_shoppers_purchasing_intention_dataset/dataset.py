@@ -86,10 +86,10 @@ class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
         - Time basis: ForcedIIDFromTemporal: the visit month (June to December of one year) is in the data and the shop
           scores later visits; not split by month, because only December can train on half of the visits (June to
           November, 75%; November would train on 31%) and the file order within a month is not the order of days, so
-          three windows do not exist; testing December on June to November costs 0.009 ROC AUC at equal training size
-          (untuned LightGBM 0.889 against 0.898; logistic regression +0.002). Each session belongs to a different user
-          (Sakar et al. 2019, Sec. 2.1). Not tested: later months, and the shift in the purchase share between months
-          (10% in June to 25% in November).
+          three windows do not exist; testing December on June to November costs 0.009 ROC AUC at equal training
+          size (untuned LightGBM 0.889 against 0.898; logistic regression +0.002). Each session belongs to a
+          different user (Sakar et al. 2019, Sec. 2.1). Not tested: later months, and the shift in the purchase share
+          between months (10% in June to 25% in November).
     """
 
     # Task

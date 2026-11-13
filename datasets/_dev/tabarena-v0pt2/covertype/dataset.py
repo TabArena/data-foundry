@@ -86,9 +86,9 @@ class Covertype(AbstractCuratedDataset):
         - Partial order, left unordered (2026-11-01, CLEAN-14): `Soil_ClimaticZone`: the altitude belts are ordered
           (lower montane < montane < subalpine < alpine), but the dry and the mixed zones within a belt are a second
           dimension.
-        - Time basis: Retrospective: one extract of the Forest Service's stand map of four wilderness areas and of
-          terrain, road and fire-point layers (date not documented, before the August 1998 donation); the task fills in
-          cells of the same areas at that moment, and cells of one stand share its label (see the look-up above). Not
+        - Time basis: Retrospective: one extract of the Forest Service's stand map of four wilderness areas and of terrain,
+          road and fire-point layers (date not documented, before the August 1998 donation); the task fills in cells
+          of the same areas at that moment, and cells of one stand share its label (see the look-up above). Not
           tested: a later map of the same areas, or land outside the four areas.
     """
 
