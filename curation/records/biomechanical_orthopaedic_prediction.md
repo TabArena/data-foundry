@@ -62,7 +62,6 @@ CC (2026-11-10, Andrej): stays retired with `No Good Target / Scientific Discove
 - **The rest carries a signal:** with `degree_spondylolisthesis` dropped, the five pelvic measures separate disc hernia from normal at ROC AUC 0.889 (160 patients; shuffled labels 0.48 on average, 0.59 at best of 20) and spondylolisthesis from the rest at 0.913 (5-fold x 5 repeats, best of logistic regression, random forest and gradient boosting).
 - **No decision waits on either task:** disc hernia is diagnosed by MRI and symptoms, which the table lacks, and the pelvic angles are measured for surgical planning; nobody reads spondylolisthesis from pelvic shape while its own measure, the slip, is on the same radiograph.
 - **Why not `Trivial`:** one threshold on the slip assigns the spondylolisthesis class (accuracy 0.974), but that is half the rows; for the three classes the slip alone reaches accuracy 0.78 against 0.85 for all six measures.
-Evidence: Slurm job 1374813 (`~/claude_jobs/sel19_reassess/`).
 
 ## Reference
 
