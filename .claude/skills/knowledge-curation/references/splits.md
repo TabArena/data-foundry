@@ -245,13 +245,13 @@ Which key stands for the use case is information from the use case and the sourc
    regulatory estimate validated on chemicals from other sources), the family key stands and the entry date is not
    weighed: the catalogue's later items are outside the source's question. How the catalogue arrived (new families in
    later eras, a test protocol that changed over the span) is then a fact for the notes, with its measurement, and the
-   time basis is a `Time basis:` line naming the source's scope and what the later items hold that it leaves out.
-   Where the source's aim reaches the items that come next (compounds not yet made, the objects a survey observes
-   next), or the source names no scope, the definition's use case goes on to step 4. Where the source aims at items
-   from elsewhere (other places, other instruments) and tests on independent sets from there, the family key that
-   stands for elsewhere (a survey, a site) is the one, and the date is not weighed. The source's own split is
-   evidence of its scope only where it was chosen for the use (a time split, whole strains, whole wells); a random
-   cross-validation used by habit says nothing about it.
+   time basis is `UnseenGroup` (SPLIT-32), its line naming the source's scope and what the later items hold that it
+   leaves out. Where the source's aim reaches the items that come next (compounds not yet made, the objects a survey
+   observes next), or the source names no scope, the definition's use case goes on to step 4. Where the source aims at
+   items from elsewhere (other places, other instruments) and tests on independent sets from there, the family key
+   that stands for elsewhere (a survey, a site) is the one, the date is not weighed, and the time basis is
+   `UnseenGroup`. The source's own split is evidence of its scope only where it was chosen for the use (a time split,
+   whole strains, whole wells); a random cross-validation used by habit says nothing about it.
 4. **The entry date replaces the family key** when the use case predicts for items the catalogue does not hold yet
    (not an inventory already collected, a closed study set or a designed experiment), the date is when the item entered
    this catalogue (not a registration number that predates it), and the labels are final (not `Target: Revised Later`,
@@ -263,9 +263,10 @@ Which key stands for the use case is information from the use case and the sourc
      than a random draw does. A programme that adds items in series (one paper's compounds, one family of materials)
      makes waves, and a family key still trains on the siblings that arrived with the test item, which the actor
      does not have.
-5. **Otherwise the family key stands,** and the time basis says why: `Timeless` (SPLIT-32) where the catalogue does
-   not grow or its date carries no wave, with the forward split's share against a random draw's in the `Time basis:`
-   line; the line alone where the labels are not final.
+5. **Otherwise the family key stands,** and the time basis says why (SPLIT-32): `UnseenGroup` where the use case aims
+   at families the data does not hold (a well not yet drilled, a protein target with no known structure), `Timeless`
+   where it fills in an inventory already collected and the date carries no wave, each with the forward split's share
+   against a random draw's in the `Time basis:` line. Where the labels are not final, the line says so.
 6. **A structure the use case does not hold out is disclosed with its measurement, not grouped on:** a submission
    batch whose only channel is the structure the family key already holds out, the tissue source site a laboratory's
    new patients share with its earlier ones.

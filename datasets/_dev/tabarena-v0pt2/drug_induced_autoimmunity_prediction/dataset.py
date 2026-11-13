@@ -100,6 +100,14 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
           on the drugs approved before a cut and tested on the later ones, ROC AUC falls against random folds of the
           same training size (untuned logistic regression, random forest and histogram gradient boosting on the source's
           RDKit descriptors, the 496 dated drugs; Slurm job 1366251, 2026-11-06):
+
+          | Test from | Training drugs | Test drugs | Forward: LR / RF / boosting | Random folds: LR / RF / boosting |
+          |---|---|---|---|---|
+          | 1990 | 219 | 277 | 0.606 / 0.642 / 0.607 | 0.716 / 0.740 / 0.721 |
+          | 1995 | 267 | 229 | 0.582 / 0.698 / 0.714 | 0.716 / 0.777 / 0.754 |
+          | 2000 | 351 | 145 | 0.617 / 0.692 / 0.765 | 0.740 / 0.794 / 0.803 |
+          | 2005 | 399 | 97 | 0.692 / 0.828 / 0.810 | 0.752 / 0.812 / 0.825 |
+
 =======
         - The fit is `approximate` (2026-11-11, Andrej): neither the InterDIA paper nor its repository says how the
           drugs were picked as positive or negative, so a negative most likely means that no autoimmune reaction had
@@ -108,16 +116,6 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
           positive, its active metabolite desvenlafaxine negative). The positives' meaning is clear and the classic
           drug-induced lupus drugs are all positive (2026-10-19), so the label definition is unverified rather than
           wrong.
-        - Time basis: no prototype fits. Whether a drug can cause an autoimmune reaction is a property of its
-          structure, but the label is what had been reported by the compilation (InterDIA, 2025), so it accrues with
-          time on the market: ChEMBL dates 496 of the 587 drugs by first approval (1940-2020; the API's
-          `molecule_structures__canonical_smiles__flexmatch` and `first_approval`, 2026-11-06) and the positive share
-          falls with the approval era (the table in the next bullet). The split holds out scaffolds, which separates
-          eras only in part (mean approval-year gap within a scaffold group 14.5 years against 19.1 for all pairs).
-          Not tested: a newly approved drug, whose reporting window is still open. Trained on the drugs approved
-          before a cut and tested on the later ones, ROC AUC falls against random folds of the same training size
-          (untuned logistic regression, random forest and histogram gradient boosting on the source's RDKit
-          descriptors, the 496 dated drugs; Slurm job 1366251, 2026-11-06):
 >>>>>>> 92aa0b49 (Splitting an expanding science catalogue (SPLIT-34), replayed onto #50 and #98)
 
           | Test from | Training drugs | Test drugs | Forward: LR / RF / boosting | Random folds: LR / RF / boosting |
