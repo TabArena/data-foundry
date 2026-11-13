@@ -75,6 +75,14 @@ class AllstateClaimsSeverity(AbstractCuratedDataset):
         - The data contains 1 duplicate row when ignoring the target. We drop this artifact.
         - We log scale the target, the scale a practitioner models a claim cost on; the metric is the competition's
           MAE on the loss as published, computed after the inverse (`target_transform="log"`, MET-3).
+        - Twins, kept in a random split (natural in effect; Andrej, 2026-11-10): 7,654 claims (4.1%) share all 14
+          numeric attributes and 19 categorical columns with another claim, perhaps one claim recorded twice; 2.7% to
+          2.8% of test rows have a twin in training. A chance test puts 56% to 75% of these links on a real repeat
+          (shuffling `cont14` leaves 1,884 claims with a twin), and the cost travels a little (twin residuals after a
+          model of all columns correlate 0.07, 95% interval 0.04 to 0.11), but a perfect lookup of the twin moves the
+          RMSE on twin rows only from 0.552 to 0.551, and holding twins out together costs 0.0002 (0.5382 against
+          0.5380). The release has no policy id, and a key rebuilt from the values would tie a quarter to almost half
+          of the twin groups on a coincidence, so the split does not group on it.
         - Time basis: ForcedIIDFromTemporal: claims filed one by one over a period Allstate does not state, each cost
           known after a settlement time that differs by claim; the release keeps no claim date and the id is a random
           draw (a model tells low from high ids at ROC AUC 0.501; training on the first 80% of ids scores RMSE 0.535

@@ -10,6 +10,9 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 1
+decision_markers:
+- Selection Bias
 tags:
 - Many features
 - Non-IID (Grouped)
@@ -42,30 +45,256 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid tiny, high-dimensiona
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — the paper reports sensitivity and specificity at its classifier's operating point, with no single threshold-free metric.
 
+CC (2026-10-21, Andrej): Keep, with the raw spectra. Each row is one serum mass spectrum (intensities in 6,771 mass bins) of one of 73 mice; checked against shuffled labels, standard spectral processing and the `t` file marker.
+- Raw instrument signal: the rows are spectra before the usual processing (smoothing, removing the slowly varying background called the baseline, scaling each spectrum to its total intensity, log). Done on each spectrum without labels, that processing raises logistic regression from ROC AUC 0.66 to 0.74 and TabPFN 3.5 from 0.66 to 0.73 (better on 11 and 12 of 12 mouse-grouped folds); the data page itself asks for "normalization, baseline correction, and alignment prior to any such analysis". Not a reason to drop: after processing, ordinary tabular models are still the best tools. The data stays raw; the processing belongs in the evaluation pipeline (PR #21).
+- Weak signal: logistic regression reaches ROC AUC 0.66; with the labels shuffled between mice (200 times) it reaches 0.51 on average and 0.62 at the 95th percentile (p ≈ 0.01). Shuffled labels also beat 0.5 on at least 11 of 12 folds in 14% of the shuffles, so "above chance on every fold" alone is weak evidence. Not severe: the signal beats shuffled labels on the mouse-grouped split.
+- `t` file marker (66 files: 42 control, 24 PanIN): not a measurement batch. The run numbers and chip positions in the file names show marked and unmarked spectra, and both classes, measured mixed on the same 8-spot chips, more evenly than chance would place them. It marks about half the samples of mice bled several times and almost never a mouse's only sample (1 of 29), so it splits each mouse's bleeds in a way the files do not explain. Not severe: without the marked spectra logistic regression still reaches 0.63.
+To do: ask the authors what `t` marks and where the 10 missing control spectra went.
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `debernardi_urinary_pancreatic_cancer` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 CC (2026-11-02, Lennart): The serum spectrum is declared as a spectrum (`spectra`, CLEAN-26; PR #21, Andrej's proposal): it ships raw as the NCI-FDA page publishes it (6,771 bins of 400 ppm, m/z 800 to 11,993), the container records the bins in m/z order as a feature group, and the benchmark encodes it row by row, by default with MALDIquant's steps (square root, Savitzky-Golay over 21 points, SNIP baseline, total ion current). On the 60 shipped splits the default lifts the tree models by 0.10 to 0.15 ROC AUC, PLS-DA by 0.06 and TabPFN v3.5 by 0.03 (0.659 to 0.690); logistic regression loses 0.02. A reconstruction of PR #21's own chain, which ends in a log, scores higher for TabPFN (0.716) and the linear models; the default stays the published workflow. Full resolution: the width is the benchmark's feature-limit step's job.
 
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: Andrej's keep with the raw spectra (2026-10-21) and the spectrum declaration (2026-11-02) settle it; only questions for the authors (the t marker, 10 missing control spectra) remain. Priority 1: gap 0, use case 0, source 1, shape 0, risk -1.
+
+CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): the label is the mouse's genotype, fixed at birth, and its undated bleeds are held out with it. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
+
 **Assessment (AI, 2026-11-08):** one vote per unit (the scan of 2026-11-08 after boreal_postfire_lichen_biomass's issue 7): the 73 mice gave 1 to 6 serum samples each (median 2, 29 one), the label is the mouse's, and the use case reads each sample of an unseen mouse as a new patient's test, so a mouse bled six times counts as six patients. Weighting each sample by 1 over its mouse's samples ranks 8 untuned models at Kendall tau 0.66 per split (lowest -0.07, on 24 test mice) and 0.86 for the ranking by the mean over 30 of the shipped splits, the same best model on 23 of 30, the largest shift of the scan. Open for Lennart as issue 1 of the record's Review; recommended: each mouse counts once (B), unless the use case is a person tested again and again; ROC AUC would first need an optional weight input.
 
-CC (2026-11-08, Lennart): issue 1, B: each mouse counts once, as one patient. The ROC AUC weights a serum sample by 1 over its mouse's number of samples (`mouse_weight`, a scoring column for the metric only); each sample is still read on its own. The weight is for scoring only, never a `sample_weight`, also though it does not follow from the inputs (Lennart's rule of 2026-11-08, MET-15 amended, MET-17); the bundle warning accepted with that reason.
+CC (2026-11-08, Lennart): issue 5, B: each mouse counts once, as one patient. The ROC AUC weights a serum sample by 1 over its mouse's number of samples (`mouse_weight`, a scoring column for the metric only); each sample is still read on its own. The weight is for scoring only, never a `sample_weight`, also though it does not follow from the inputs (Lennart's rule of 2026-11-08, MET-15 amended, MET-17); the bundle warning accepted with that reason.
 
 **Assessment (AI, 2026-11-08):** training with the weight does not help: it changes a regularised logistic regression's weighted ROC AUC by -0.015 (SE 0.006, lower on 39 of 60 grouped random splits). New checksum v2:bcf94742... (not built); `dataset check` 0 errors, 0 warnings.
 
 CC (2026-11-08, Lennart): the declared metric (roc_auc, weighted by mouse_weight) is checked.
 
+CC (2026-11-11, Andrej): `Selection Bias` marker; the controls were bled about a month older than the mutants (review issue 3, C).
+- Hingorani et al. 2003, Table 2 (prospective study): mutants 5.5 ± 0.25 months (33 mice), controls 6.5 ± 0.2 months (39 mice), though the text calls them "aged-matched"; the pilot study, not in this download, was matched (9.4 against 9.0 months, Table 1). Re-read from the paper's PDF on the data page on 2026-11-11.
+- The release has no age per bleed, so the share of the signal that is age cannot be measured; written into `curation_comments` and `fit_reason`.
+- A third question for the authors, after what `t` marks and where the 10 control spectra went: the age of each mouse at each bleed.
+
+CC (2026-11-12, Andrej): the age gap is `Selection Bias` only, neither a leak nor `Class-dependent Recording` (BeyondArena v0.2 review page, issue 4, A): both classes went through the same instrument, m/z grid, chips and number format, and no feature holds the age or the class. Revisit if the authors say the `t` marker is a separate recording route.
+
 ## Review
 
-**Outcome:** added. In the working copy since the migration; a scan of 2026-11-08 for units with unequal numbers of
-rows (raised on boreal_postfire_lichen_biomass's issue 7) found that the ROC AUC counts a mouse once per serum sample,
-1 to 6 times. Resolved on 2026-11-08: each mouse counts once in the ROC AUC (issue 1).
+**Outcome:** added. The NCI-FDA Clinical Proteomics Program's serum mass spectra of the PanIN mouse study (Hingorani
+et al. 2003, Cancer Cell 4(6):437-450, https://doi.org/10.1016/S1535-6108(03)00309-X; data at
+https://home.ccr.cancer.gov/ncifdaproteomics/ppatterns.asp): 181 spectra of 73 mice, 6,771 intensity bins each, and
+whether the mouse carries pancreatic intraepithelial neoplasia (PanIN, preinvasive lesions) or is a littermate control
+(44% of the spectra); split by mouse, ROC AUC (fallback). The AI recommends shipping it as defined; Andrej's decision of
+2026-10-21 (keep, with the raw spectra) and the spectrum declaration of 2026-11-02 settle issue 1. Reviewed on
+2026-11-04 without a panel, from the gathered evidence (the record, the CHANGELOG, Andrej's earlier experiments, a
+model run on the shipped data). Validity: the label comes from the folder (genotype), the file names' class code
+never enters the features, and the mouse split removes the paper's sample-level overlap; the `t` file marker is no
+measurement batch and the signal stays without the marked spectra (ROC AUC 0.63 against 0.66). Value: on the 60
+shipped splits logistic regression beats shuffled labels (0.66 against a null mean of 0.51, 95th percentile 0.62); a
+simple model on processed spectra (total-ion-current scaling, log, merged bins, sparse logistic
+regression) reaches 1 - ROC AUC 0.251 against 0.334 for the best of 40 benchmark methods on raw bins (median 0.465),
+which
+is the gain the declared encoding hands to every method. Quality: 10 control spectra of the paper are missing from the
+download and the meaning of `t` is unknown; both are questions for the authors. Weighed: a published study set with the
+genotype as label +, a mouse-grouped split +, a weak but real signal +, a tiny high-dimensional task and open questions
+on the files -.
 
-**Main points:** Open: none. Resolved on 2026-11-08: each mouse counts once in the ROC AUC, weighted by 1 over its
-number of serum samples (issue 1).
+**Main points:** Ship as defined (issue 1 resolved; the authors' answers on `t`, the 10 missing control spectra and
+the age per bleed are still outstanding). The controls were bled about a month older: noted and marked `Selection
+Bias` (issue 3, C, resolved 2026-11-11); neither a leak nor `Class-dependent Recording` (issue 4, A, resolved
+2026-11-12; revisit if the authors say `t` is a separate recording route). The mouse split is named `Timeless`
+(issue 2, resolved 2026-11-06). Issue 5 (Lennart, 2026-11-08): Resolved on 2026-11-08: each mouse counts once in the ROC AUC, weighted by 1 over its number of serum samples (issue 1).
 
-**Issues for Lennart:**
+**Record judgment:** valid, decided. Andrej's CC of 2026-10-21 holds the evidence and the to-do (ask the authors what
+`t` marks and where the 10 control spectra went); Lennart's CC of 2026-11-02 the spectrum declaration. An earlier chat
+read the paper's Table 2 as giving the controls a mean age about a month above the mutants' (6.5 against 5.5 months)
+although the text calls them age-matched; it was not re-read for this review and belongs with the questions for the
+authors. Two small definition fixes need no mark: `bibtex` holds the entry inside stray double quotes, and the accepted
+`dataset_missing_value_sentinel` warning no longer fires (the check now skips spectrum bins; `dataset check` reports it
+as unused). The data scouting found `debernardi_urinary_pancreatic_cancer` (human urine biomarkers for pancreatic
+cancer); it is screened in its own record and does not change this task's validity.
 
-1. **Count each mouse once in the ROC AUC, or each serum sample, as now?**
+**Issues for Andrej:**
+
+1. **Keep the dataset, and ship the spectra raw or processed?**
+
+   * **Problem:**
+     - Andrej disputed Lennart's keep (2026-10-15): the signal is weak, the rows are mass spectra shipped before the
+       usual spectral processing, and a file marker `t` of unknown meaning separates some control spectra.
+     - Processing each spectrum without labels (smoothing, baseline removal, scaling to the total intensity) lifts every
+       model, so the form the spectra ship in decides how the methods rank.
+     - Keep it with the raw spectra declared as a spectrum, ship processed spectra, or retire it?
+   * **Background:** a SELDI-TOF mass spectrum is a list of ion counts over mass-to-charge bins; each spectrum carries
+     its own baseline (a slowly varying background) and overall intensity, which the field removes before analysis.
+     The data page asks for "normalization, baseline correction, and alignment prior to any such analysis". A spectrum
+     ships as the source publishes it and is declared as one, so a benchmark encodes it[^1a].
+   * **Experiments:**
+     - On the 60 shipped splits, raw bins against the declared default encoding (MALDIquant's square root,
+       Savitzky-Golay smoothing, SNIP baseline, total ion current): TabPFN v3.5 0.659 to 0.690, LightGBM 0.577 to
+       0.676, random forest 0.536 to 0.681, PLS-DA 0.635 to 0.691, logistic regression 0.663 to 0.646 (CHANGELOG,
+       2026-11-02).
+     - Logistic regression on raw bins 0.66 against 200 mouse-level label shuffles (mean 0.51, 95th percentile 0.62,
+       p about 0.01); 0.63 without the 66 `t` spectra; run numbers and chip positions show both classes and both
+       markers measured mixed on the same chips (Andrej, 2026-10-21).
+   * **Consistency:** prostate_cancer_detection, from the same NCI-FDA data bank, was retired for batch artefacts across
+     its features; here no batch separates the classes, so it does not carry.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Raw spectra, declared (implemented) | 6,771 raw bins as published, declared `Spectrum(state="raw")` with the MALDIquant default encoding | the data as published; every method gets the field's processing | the score depends on the benchmark applying the encoding |
+     | B | Processed spectra in the data | the processing done in `_clean` | models see processed spectra without a declaration | departs from shipping data as published; one processing chain fixed for all |
+     | C | Retire | `No (Retired)` | removes a tiny, weak task | loses a real, grouped, high-dimensional task whose signal beats shuffled labels |
+
+   * **Recommendation:** A, as decided: the data stays as published and the field's processing reaches every method
+     through the declaration. **Decision:** raw and declared (A), processed in the data (B) or retire (C)?
+
+   **Resolved (2026-10-21, Andrej):** (A), keep with the raw spectra; the processing belongs to the evaluation
+   pipeline (PR #21). Lennart declared the serum spectrum as a spectrum on 2026-11-02, with MALDIquant's
+   steps as the recommended encoding. Open for the authors: what `t` marks and where the 10 control spectra went.
+
+   [^1a]: **CLEAN-26** (Should): a spectrum ships as the source publishes it, one numeric column per position on its
+     axis, and is declared as a spectrum, never processed in the data.
+
+2. **Time basis: name the mouse split `Timeless`?**
+
+   * **Problem:**
+     - The label is the mouse's genotype (compound mutant or littermate control), fixed at birth, and each of its 1 to
+       6 serum spectra comes from a bleed at least 5 days after the last one; no bleed date or age ships, and the raw
+       order follows the two class folders, not time (the time probe's only flag).
+     - The record carries `Samples: No Time Dimension` and no time or target fact, which fits a designed study whose
+       only time order lies within each mouse; the split holds out whole mice and names no time basis yet.
+     - A genotype is a fixed property of the mouse, the case the `Timeless` prototype names[^2a].
+   * **Background:** the lesions the genotype stands for grow with age (a third of the ducts diseased at 5.5 months,
+     Hingorani et al. 2003), so a young mutant's serum may show little; that is label noise of the design, not time
+     reaching the label through other rows. All bleeds of a mouse are held out together, so no later bleed informs an
+     earlier one. The classes were bled at different ages (issue 3), a question of its own.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Mouse split, no time basis (implemented) | as now | nothing to change | the definition does not say why a split that is not temporal is safe in time |
+     | B | Mouse split, `Timeless` | as now; the tag and a `Time basis:` line naming the genotype and the bleeds held out together | states the fact the split rests on | none found |
+
+   * **Recommendation:** B: the label is fixed at birth and the serial bleeds stay with their mouse. **Decision:** A
+     or B?
+
+   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
+   a curation bullet `- Time basis: Timeless: the label is the genotype, fixed at birth; each mouse gave 1 to 6 bleeds
+   at least 5 days apart, undated, all held out with the mouse (Hingorani et al. 2003).`, `splits_comment`
+   unchanged; `dataset check`.
+
+   [^2a]: **SPLIT-32** (Should): how the data was collected is information for the split; the record carries the
+     source's collection facts (a time order found only within each entity does not count as dated), and a definition
+     can name the use-case prototype it follows with a `Time basis:` line. `Timeless`: the target is a fixed property
+     of the item, the same whenever it is measured; the split is random or grouped by item family.
+
+   **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the routine `Timeless` time
+   issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
+   cannot test (mice of another cohort, or spectra from another instrument run); the split and `data_tags` are
+   unchanged. The tag `Timeless` enters `data_tags` once PR #50 is in the working copy.
+
+3. **Write down that the controls were bled about a month older than the mutants, and mark it?**
+
+   * **Problem:**
+     - The paper's Table 2 gives the prospective study's mutants an average age of 5.5 ± 0.25 months (33 mice, 95
+       samples) and the controls 6.5 ± 0.2 months (39 mice, 125 samples), although its text calls the controls
+       "aged-matched".
+     - The classes were therefore bled at different ages, so a serum change with age can separate them as well as the
+       lesions; nothing in the definition says so, and the record judgment still calls the gap an unverified reading.
+     - Write it into the notes, also set the `Selection Bias` marker, or retire?
+   * **Background:** the pilot study, which this download does not hold, was matched (9.4 ± 0.3 against 9.0 ± 0.2
+     months, Table 1). The release has no age per bleed, and the mouse numbers do not settle it (controls' median
+     4,580 against 4,804, Mann-Whitney p = 0.11, and their order is not documented). Paper:
+     <https://home.ccr.cancer.gov/ncifdaproteomics/pdf/cancercell-panin.pdf>, Table 2 and "Serum proteomics".
+   * **Effect on the task:** part of what separates the classes may be the extra month of the controls rather than
+     the lesions; the signal is weak (logistic regression ROC AUC 0.66 against 0.51 for shuffled mice), so even a
+     small age effect is a real share of it. The mouse grouping cannot remove it, since the age gap runs between the
+     classes, not within a mouse.
+   * **Unknown:** each bleed's age; the authors, already asked about `t` and the 10 missing control spectra, could
+     give it, and then the age could be matched or measured.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Nothing written (implemented) | as now | none | a known difference in how the classes were sampled stays undocumented |
+     | B | Note it | a curation bullet and a clause in `fit_reason` with Table 2's ages; the age per bleed added to the questions for the authors | the user knows the classes differ in age; the mildest fix | no flag on the dashboard |
+     | C | Note it and mark it | as B, plus the `Selection Bias` marker on the record | the marker's own case, cases and controls collected apart; visible next to the verdict | one more marker on a kept dataset |
+     | D | Retire | `No (Retired)` | removes a possibly confounded weak signal | the confound is one month in adult mice and unmeasured; the keep of 2026-10-21 stands on other evidence |
+
+   * **Recommendation:** C: the age gap is a fact of how the classes were sampled, which is what the marker records[^3a],
+     and the note says how large it is; it cannot be measured until the authors give the ages. **Decision:** A, B, C
+     or D?
+
+   **Notes for the AI:** on B or C, a curation bullet: "The classes were bled at different ages: mutants 5.5 ± 0.25
+   months, controls 6.5 ± 0.2 months (Hingorani et al. 2003, Table 2), though the text calls them age-matched; the
+   release has no age per bleed, so the share of the signal that is age cannot be measured." `fit_reason` adds "the
+   controls were bled about a month older". The record's CC line names the age as a third question for the authors;
+   on C, `Selection Bias` in `decision_markers`; `Andrej` in `checked_by`; `dataset check`.
+
+   [^3a]: Selection guidelines, "Selection bias" (Andrej, 2026-10-20; Lennart, 2026-10-27): when the rows are not
+     drawn from the population the use case predicts for, such as cases and controls collected apart or in different
+     periods, mark it `Selection Bias`, name the gap in `fit_reason` and judge the model comparison on the data; the
+     verdict is usually still `Yes`.
+
+   **Andrej (2026-11-11, discuss):** We should definitely mark it as selection bias, but is that also a leak and a
+   outcome specific recording?
+
+   **Answer (AI, 2026-11-11):** marked; neither a leak nor class-dependent recording on the evidence so far. The
+   question is a decision of its own, issue 4.
+
+   **Resolved (2026-11-11, Andrej):** C ("We should definitely mark it as selection bias"): `Selection Bias` in the
+   record's `decision_markers`; a curation bullet with Table 2's ages (re-read from the paper's PDF today: mutants
+   5.5 ± 0.25 months, controls 6.5 ± 0.2, text "aged-matched"; pilot matched at 9.4 against 9.0) and why the share of
+   age cannot be measured; `fit_reason` adds that the controls were bled about a month older; the record's CC line names
+   the age per bleed as a third question for the authors. Data unchanged; `dataset check`: 0 errors, 0 warnings (1 info, the known unused accepted warning).
+
+4. **Is the age gap also a leak, or `Class-dependent Recording`?**
+
+   * **Problem:**
+     - The age gap is in which mice were bled when, not in how their spectra were recorded: both classes went through
+       the same instrument, grid and chips, and no feature holds the age or the class.
+     - A leak needs a feature that carries the label or comes after the prediction point; here the label comes from the
+       folder, the file names' class code never enters the features, and a serum change with age is biology of the
+       sampled mice, a confound.
+     - `Class-dependent Recording` needs the classes measured, formatted or filled differently; its rule says
+       "`Selection Bias` is about which rows were sampled, with the measurements alike"[^4a].
+   * **Experiments:** the files by class (pandas, no model; chips from the record's CC of 2026-10-21):
+
+     | Check | Mutants | Controls |
+     |---|---|---|
+     | Spectra | 80 | 101 |
+     | Bins, grid | 6,771, same m/z | 6,771, same m/z |
+     | Number format | one decimal throughout | one decimal throughout |
+     | Chips and runs | mixed with controls on the same 8-spot chips | mixed |
+     | `t` marker | 24 (30%) | 42 (42%) |
+     | Total ion current, median | 3.80 M | 3.48 M |
+
+     - The overall intensity is not the signal: scaling each spectrum to its total raises logistic regression from 0.66
+       to 0.74 ROC AUC.
+     - The one open point is `t`: unequal by class, it separates control spectra from each other (0.67) and marks about
+       half the bleeds of mice bled several times, so it may be later bleeds, which is age again; without the `t`
+       spectra the signal stays (0.63 against 0.66).
+   * **Unknown:** what `t` marks; if the authors name a separate processing or recording route, the recording rules
+     apply after all.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | `Selection Bias` only (implemented) | as now | names what is known: a sampling gap, the measurements alike | none found |
+     | B | Also `Class-dependent Recording` | the marker, a CC line | flags `t` before the authors answer | no recording difference shown; the marker's rule excludes a sampling gap |
+     | C | Treat as a leak, retire | `No (Retired)` | removes a possibly confounded weak signal | no feature carries the label; the age effect is unmeasured |
+
+   * **Recommendation:** A; revisit B if the authors say `t` is a separate route. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, `Class-dependent Recording` in `decision_markers`, a CC line naming `t` as the reason
+   and that no format or grid differs. On C, `No (Retired)` with the marker, the folder stays until a retirement PR.
+
+   [^4a]: leak_checks.md, "Artefacts that differ by class" (LEAK-13 to LEAK-15, LEAK-39, LEAK-40): the marker
+     `Class-dependent Recording` says the classes were measured, formatted or filled differently, so the recording can
+     give the label away; `Selection Bias` is about which rows were sampled, with the measurements alike.
+
+   **Resolved (2026-11-12, Andrej):** A (`ok` on the recommendation): `Selection Bias` only, as implemented; no
+   `Class-dependent Recording` marker and no retirement, since both classes share instrument, grid, chips and number
+   format and no feature carries the age or the class. Revisit B if the authors say `t` marks a separate recording
+   route. Record CC line; nothing else changed.
+
+5. **Count each mouse once in the ROC AUC, or each serum sample, as now?**
 
    * **Problem:**
      - A row is one serum spectrum, and the 73 mice gave 1 to 6 samples each (median 2, 29 mice one), so a mouse bled six times counts six times in the ROC AUC.

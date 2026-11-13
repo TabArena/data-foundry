@@ -49,6 +49,7 @@ class Jm1(AbstractCuratedDataset):
     # Dataset
     unique_name = "jm1"
     domain = "technology & internet"
+    data_tags = ("Retrospective",)
     sources = (
         Source(
             role="publication",
@@ -76,7 +77,6 @@ class Jm1(AbstractCuratedDataset):
             name="OpenML 1053, which we read (byte-identical to the PROMISE file)",
         ),
     )
-    data_tags = ("Retrospective",)
     download_description = """
         `_load_raw` reads OpenML dataset 1053 with openml-python, which downloads the file to its own cache
         (~/.cache/openml), not to local-data-warehouse/jm1/. To fetch it before a check or build:
@@ -96,6 +96,11 @@ class Jm1(AbstractCuratedDataset):
         - The source URL is jm1.arff of the PROMISE repository, donated in 2004 by Tim Menzies from the NASA Metrics Data Program; it answers over plain http but gives 404 over https, and the Wayback Machine holds the same file. We read OpenML dataset 1053, whose ARFF is byte-identical to it (see the download description).
         - The target (2026-11-01, CLEAN-25): `defects` ships its classes as words (True means defects). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
+        - Anomaly: on 893 rows (10.2%) all 16 Halstead and line-count measures are 0 while the size and complexity
+          measures are not (loc 4 to 1,129, v(g) 1 to 128), so the Halstead tool gave no output for those functions.
+          Kept as shipped: tested, the zeros mark no class. The flag alone scores ROC AUC 0.52 (defect share 0.30
+          against 0.21, higher among large modules and lower among small ones), and gradient boosting scores the same
+          with the zeros as shipped or set to missing (0.709 against 0.710, 5 folds; review of 2026-11-04).
         - Time basis: Retrospective: one extraction of the static code measures of one version of JM1, joined with each
           function's defect reports (NASA Metrics Data Program; donated to PROMISE on 2 December 2004); the test
           functions are functions of the same code base at the same moment (2026-11-12, Andrej, review issue 2 A).

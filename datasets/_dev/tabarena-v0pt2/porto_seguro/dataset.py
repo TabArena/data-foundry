@@ -23,7 +23,7 @@ class PortoSeguro(AbstractCuratedDataset):
         known=(
             "The insurer's anonymised features about the driver, the car and the region, whose meanings are hidden."
         ),
-        split="Random policy holders of the same period.",
+        split="Random policy holders priced at the same moment.",
         changes=("We drop a block of engineered features that the top competition solutions also dropped."),
         fit="direct",
         fit_reason=(

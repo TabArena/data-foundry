@@ -78,11 +78,6 @@ class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
         - Anomaly: the data contains time-based features that were preprocessed to create a time-invariant predictive task.
         - We keep only the sessions from June to December (6,875 of 12,330). "PageValues" is meant as a historical Google Analytics metric per page, stored and updated at regular intervals, averaged over the pages a session visits (Sakar et al. 2019, Sec. 2.1). In February, March and May, however, every one of the 560 buyers has PageValues > 0 and PageValues alone separates buyers with ROC AUC 0.974, so these values most likely include the session's own purchase (the page-value table was probably computed over that period). From June on, 27% of buyers have PageValues = 0 and its AUC is 0.814, as expected for a historical page metric. We keep PageValues and drop the early months; this cannot be proven from the data, as a change in site tracking would leave a similar pattern.
         - We drop "SpecialDay": it is non-zero only in February and May, so it is constant on the kept months.
-        - We keep the IID split: each session belongs to a different user, sampled over one year (Sakar et al. 2019, Sec. 2.1), and only the month is known.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
-          categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-        - The target (2026-11-01, CLEAN-25): `Revenue` ships its classes as words (True means revenue). Binary: "Yes" is
-          the event, the class that sorts second, so it is the metrics' positive class.
         - Time basis: ForcedIIDFromTemporal: the visit month (June to December of one year) is in the data and the shop
           scores later visits; not split by month, because only December can train on half of the visits (June to
           November, 75%; November would train on 31%) and the file order within a month is not the order of days, so
@@ -90,6 +85,14 @@ class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
           size (untuned LightGBM 0.889 against 0.898; logistic regression +0.002). Each session belongs to a
           different user (Sakar et al. 2019, Sec. 2.1). Not tested: later months, and the shift in the purchase share
           between months (10% in June to 25% in November).
+        - 40 rows repeat another (2026-11-11, Andrej; LEAK-18, LEAK-41): one-page product visits with no time, a bounce
+          and no page value, all without purchase; different users per Sakar et al. 2019, kept as natural repeats.
+          The link is at chance (37 repeats, 28 to 45 in 200 shuffles of the visitor details, against 40 observed),
+          and 0.7% to 0.9% of test rows have an identical row in training.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - The target (2026-11-01, CLEAN-25): `Revenue` ships its classes as words (True means revenue). Binary: "Yes" is
+          the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task

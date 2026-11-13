@@ -1,5 +1,25 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-13, 23 datasets kept after review: the time basis named (no container built)
+
+Andrej's decisions on the reviews of 2026-11-04 to 2026-11-12, for datasets whose data, split and metric stay as
+they were. Each definition that is not temporal names its time basis in `data_tags` with its `Time basis:` line
+(SPLIT-32): `Timeless` (airfoil_self_noise, electric_motor_temperature_prediction, musk,
+otto_group_product_classification_challenge, pancreatic_cancer_mouse_detection, video_transcoding_time_prediction),
+`Snapshot` (5g_energy_consumption, covertype, houses, jm1, santander_customer_satisfaction), `DelayedTarget`
+(credit_card_clients_default, porto_seguro), `StationaryRelation` (bad_customer_detection,
+cirrhosis_patient_survival_prediction), or a forced tag (allstate_claims_severity, eryhemato_squamous_disease,
+ljubljana_primary_tumor, online_shoppers_purchasing_intention_dataset, taiwanese_bankruptcy_prediction:
+`ForcedIIDFromTemporal`; emscad: `ForcedGroupedFromTemporal`). garments_worker_productivity and sf_permit_time stay
+temporal, with the arrival facts in their notes.
+
+- Notes from the reviews in `curation_comments` (the facts behind each time basis, what each split cannot test, the
+  measured cost of forced splits); santander_customer_satisfaction gains a column dictionary of the masked names;
+  pancreatic_cancer_mouse_detection states the source page's terms in place of an unknown licence; eryhemato and
+  taiwanese citations gain their DOI.
+- The reviews move into the records' `## Review`; the records take the decisions as CC lines and `priority`.
+- The checksums change (tags and notes); every one of these containers needs a rebuild.
+
 ## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)
 
 - Retired because no testing decision is made from a symptom questionnaire (USE-2; the fit None, USE-8). Its hospital

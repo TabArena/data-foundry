@@ -90,6 +90,7 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
     # Dataset
     unique_name = "cirrhosis_patient_survival_prediction"
     domain = "medical & healthcare"
+    data_tags = ("StationaryRelation",)
     sources = (
         Source(
             role="publication",
@@ -118,7 +119,6 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
             name="UCI 878",
         ),
     )
-    data_tags = ("StationaryRelation",)
     download_description = """
         We get the UCI data.
 

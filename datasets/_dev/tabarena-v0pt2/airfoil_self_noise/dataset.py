@@ -49,6 +49,7 @@ class AirfoilSelfNoise(AbstractCuratedDataset):
     # Dataset
     unique_name = "airfoil_self_noise"
     domain = "physics & astronomy"
+    data_tags = ("Timeless",)
     sources = (
         Source(
             role="publication",
@@ -76,7 +77,6 @@ class AirfoilSelfNoise(AbstractCuratedDataset):
             name="UCI 291, digitised from the report's plots",
         ),
     )
-    data_tags = ("Timeless",)
     download_description = """
         We download UCI's copy (dataset 291, donated 2014), whose values were digitised from the figures of NASA RP-1218.
         mkdir -p local-data-warehouse/airfoil_self_noise/ && wget -P local-data-warehouse/airfoil_self_noise/ https://archive.ics.uci.edu/static/public/291/airfoil+self+noise.zip && unzip local-data-warehouse/airfoil_self_noise/airfoil+self+noise.zip -d local-data-warehouse/airfoil_self_noise/
