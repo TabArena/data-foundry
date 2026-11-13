@@ -300,7 +300,8 @@ carries labels forward (a known entity: USE-10). Cases: ghana's reporter history
 rows whose uid had fraud in train are 95% fraud; dropping it costs 0.001-0.007 AUC; kept).
 
 **LEAK-35 (Must; narrows LEAK-10).** Text written together with the label is the task when it does not map one to one
-onto the score. Cases: coffee_rating_prediction's review text (R^2 0.25 to 0.67; kept).
+onto the score. Cases: coffee_rating_prediction's review text, kept at R^2 0.25 to 0.67, then dropped as an
+exception (below) once the passages alone reached skill 0.71 and beat every benchmark method.
 
 **LEAK-36 (Must).** A value known at prediction time that rules the outcome out is a cohort question (LEAK-22), not a
 feature leak. Cases: diabetes "Expired".
@@ -536,6 +537,7 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-31 | Supervised feature selection on the full labelled set | measure it; keep with a note when small, remove it when we can | home_credit_default_risk (the kernel's importance-based selection removed, 2026-10-19); qsar_bioconcentration (the authors' 9 Dragon descriptors removed, 2026-10-26); numerai_v5_2_1m (the 372 Faith features removed, 2026-10-26) |
 | LEAK-32 | Masked or anonymised features that may hide such a transform | a known risk of anonymised data, covered by its tag and the `Anonymized` marker; no action | ieee_fraud_detection, kdd_cup_09_appetency (Lennart, 2026-10-19) |
 | LEAK-37, LEAK-10 (precedent, Lennart, 2026-10-21) | A known input that tracks a dropped post-outcome column | kept, with a `Potential leak, kept on purpose:` note in LEAK-38's format (the mechanism, the numbers, why it stays, when to revisit) | digicow_farmer_training_adoption_challenge `topics_list` (the day's topics) predicts the dropped `has_topic_trained_on` at ROC AUC 0.885-0.902 |
+| LEAK-35 (exception) | Text written together with the label that alone explains most of the score and beats every benchmark method, while the use case's actor does not have it at the prediction point | drop it | coffee_rating_prediction: the reviewer's blind assessment and bottom line (one clause per sub-score) dropped; ridge on them alone skill 0.71 (RMSE 0.861 against the mean's 1.598, 13 windows) and rank 1 of 41; the roaster's own information keeps skill 0.34-0.36; the roaster predicts before the review |
 | [task_probes.md](task_probes.md), TP-4 | The target is a lookup of the inputs | retire (`Trivial`, often `AHDS`) | video_game_fps_prediction |
 | USE-4 ([use_case.md](use_case.md)), TP-6 | Features from a stage after the decision the task models (a biopsy after the examination) | offer the task at the source's earlier stage | eryhemato_squamous_disease: clinical features only (macro AUC 0.999 to 0.98) |
 
