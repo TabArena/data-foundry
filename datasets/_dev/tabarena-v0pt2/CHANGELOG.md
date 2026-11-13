@@ -1,5 +1,33 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-13, entity leakage: ten datasets decided on the new rules (Andrej's decisions, no container rebuilt)
+
+Repeats of a unit the data does not record (LEAK-42 to LEAK-44, SPLIT-24's calibrated link), decided per dataset:
+
+- `aps_failure`: one row per copied read-out (63,937 of 76,000 rows), then grouped by truck (61,466 trucks linked
+  at 60 equal counters); `ForcedGroupedFromTemporal` in place of the IID tag. Test rows with a linked row in training
+  fall from 25% to 0.05%.
+- `concrete_compressive_strength`: the 92 re-entries of rows 721 to 935 dropped (938 rows, 338 mixes); the mix split
+  stays, named `Timeless`; the source is "compiled from 17 published studies".
+- `forensic_glass_identification`: Id 68, Id 67 entered again, dropped (212 rows); the random split stays as our
+  decision, named `Timeless`.
+- `immoscout_german_house_prices`: one listing per house (10,203 rows); the random split named a `Snapshot` of the
+  14 July 2020 scrape.
+- `diamonds`: split by stone (43,000 stones; 40% of the rows are one stone in two price lists); a `Snapshot` of the
+  February 2007 scrape.
+- `santander_transaction_value`: grouped by customer, built from exact shifted-lag links and confirmed sparse
+  matches; `ForcedGroupedFromTemporal`.
+- `home_credit_default_risk`: each client's latest application is tested, the client's earlier applications train
+  only (2.6% of rows never tested); forced from temporal with its `Time basis:` line.
+- `indian_liver_patient_dataset`: the 13 repeated records dropped, 11 impossible values set to missing; the random
+  split stays, forced from temporal.
+- `coil_2000`: the identical rows stay, the reason written down; the random split named a `Snapshot`.
+- `early_learning_predictors`: split by facility (`id_facility` numbered per study, noted); every child and column
+  stay with the use case reworded; three free-text answers typed as strings, four multi-select lists that copy their
+  yes/no columns dropped.
+
+Each dataset's review is in its record's `## Review`.
+
 ## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)
 
 - Retired because no testing decision is made from a symptom questionnaire (USE-2; the fit None, USE-8). Its hospital

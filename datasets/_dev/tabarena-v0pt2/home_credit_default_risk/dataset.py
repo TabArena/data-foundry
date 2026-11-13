@@ -6,7 +6,17 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode, object_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    SplitPlan,
+    TaskSummary,
+    decode,
+    object_columns,
+    splits as protocol,
+)
 
 TABLES = {
     "application": "application_train.csv",
@@ -80,20 +90,24 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
             "of the loan's first installments."
         ),
         known=(
-            "504 features: the application (contract type, amounts, income, family, job, housing, documents and three"
+            "709 features: the application (contract type, amounts, income, family, job, housing, documents and three"
             " external scores) and summaries of the client's credit bureau loans, earlier Home Credit applications "
             "and their installment, card and cash-loan payment records."
         ),
-        split="Random applications; the data has no application dates.",
+        split=(
+            "Random clients' latest applications; the earlier applications of a returning client are only in "
+            "training. The data has no application dates."
+        ),
         changes=(
             "We build the features as a popular public competition notebook does, keeping categories as categories, "
-            "and keep the features it selected."
+            "but not its feature selection, which measured importance on all labelled rows."
         ),
         fit="approximate",
         fit_reason=(
-            "The features are known at the application and the label follows within the first installments, but "
-            "without application dates the test applications come from the same period as the training ones, whereas "
-            "a lender scores later applicants."
+            "The features are known at the application and the label follows within the first installments, and a "
+            "returning client's later application is tested with the earlier one in training, as a lender meets it; "
+            "but without application dates the test applications come from the same period as the training ones, "
+            "whereas a lender scores later applicants."
         ),
     )
 
@@ -135,15 +149,6 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         - We compute no statistic over all rows (Lennart, 2026-10-19): the kernel's median income per organisation type (`NEW_INC_BY_ORG`) is dropped, `NEW_SCORES_STD` stays missing where the kernel filled in its mean, and the kernel's feature selection (columns without LightGBM importance, measured on all labelled rows) is not applied, so 709 features ship instead of 504. The kernel computed these over Kaggle's train and test applications, as a competition allows; whether to keep that transductive setting for this task can be checked later.
         - Potential leak, kept on purpose: the 43 building columns (`*_AVG`, `*_MODE`, `*_MEDI`, `TOTALAREA_MODE`) are "normalized information about building where the client lives" (HomeCredit_columns_description.csv) and each spans exactly 0 to 1, so Home Credit likely scaled them over all applications, ours included; the method is not documented and no raw values exist. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak; revisit if Home Credit documents it.
         - We replace values that became inf after aggregation with NaN. This occurred across several aggregated columns.
-        - Tagged ForcedIIDFromTemporal: applications arrive over time, but the release has no application dates (its DAYS_ columns are "time only relative to the application", HomeCredit_columns_description.csv), so the split is random.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
-          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass cycles, in
-          their usual order (the wrap is not shown).
-        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
-          each level is carries the words, a score without them is a number): 2 scores with no words per level are
-          numbers (`SCORES`): `REGION_RATING_CLIENT`, `REGION_RATING_CLIENT_W_CITY`.
-        - The target (2026-11-01, CLEAN-25): `TARGET` ships its classes as words (1 is the event). Binary: "Yes" is the
-          event, the class that sorts second, so it is the metrics' positive class.
         - Time basis: ForcedIIDFromTemporal: loan applications over a period Home Credit does not state, the label
           payment difficulties on the first instalments; a lender scores later applicants. Every date is relative to
           the application ("time only relative to the application", HomeCredit_columns_description.csv), the default
@@ -154,6 +159,29 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
           client's earlier ones in training only (below), so no test row has its client's later application in
           training. The random split cannot test how the score holds for later applicants; application dates would
           allow a split by time.
+        - Returning clients (Andrej, 2026-11-11): 16,489 applications (5.4%) share a client key with another
+          (8,004 clients); inside a client the order is exact, as `DAYS_BIRTH` counts back from each application, so
+          the older (more negative) row is the later application, and in 61% of the pairs the later one lists the
+          earlier among its earlier Home Credit applications, decided that many days before. The split puts each
+          client's latest application (one-application clients included, same-day ties together) into the random
+          folds and the 7,917 earlier applications (2.6% of rows) into every train side, never tested: a lender meets
+          a returning client's later application knowing the earlier one, never the reverse. The key misses clients
+          who renewed an ID or moved between applications. LightGBM, 3 folds, ROC AUC (application table 5 seeds,
+          the earlier 504 features 3 seeds):
+
+          | Split | Test rows whose client is in training | All test rows (app / 504) | Returning clients' later applications (504) |
+          |---|---|---|---|
+          | random (shipped before) | 3.7% | 0.7578 / 0.7865 | 0.7643 |
+          | later application tested, earlier ones in training (shipped) | 2.5% | 0.7573 / 0.7862 | 0.7613 |
+          | same folds, earlier applications dropped | 0% | 0.7570 / 0.7861 | 0.7556 |
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass cycles, in
+          their usual order (the wrap is not shown).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 2 scores with no words per level are
+          numbers (`SCORES`): `REGION_RATING_CLIENT`, `REGION_RATING_CLIENT_W_CITY`.
+        - The target (2026-11-01, CLEAN-25): `TARGET` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -165,7 +193,19 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         reference="https://www.kaggle.com/competitions/home-credit-default-risk/overview/evaluation",
         definition="ROC AUC between predicted probability and TARGET",
     )
+    splits_comment = """
+        Stratified 3-fold cross-validation with 3 repeats over each client's latest application (299,590 rows;
+        one-application clients included, a client's same-day applications in one fold). The 7,917 earlier
+        applications of returning clients (2.6% of rows) are added to every train side and never tested, so a
+        returning client's later application is scored with the earlier one known, as a lender meets it. The client
+        is the same sex and the same days between birth and ID issue and between birth and registration; the
+        release has no application dates, so this stands in for a split by time.
+    """
     accepted_check_warnings = {
+        "splits_rows_never_tested": "The 7,917 earlier applications of returning clients (2.6% of rows) are training "
+        "only on purpose: the split tests each client's latest application with the earlier ones known, as a lender "
+        "meets a returning client, and never trains on a later application to test an earlier one (Andrej, "
+        "2026-11-11).",
         "dataset_missing_value_sentinel": "POS_MONTHS_BALANCE_MAX = -1 is a real value: MONTHS_BALANCE counts months "
         "relative to the application, so -1 is a POS/cash loan still reported in the month before it.",
     }
@@ -205,6 +245,38 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
         df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df.drop(columns=_copies(df.drop(columns=self.target)))
+
+    def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
+        # the client: sex and the days between birth and ID issue and between birth and registration, values fixed
+        # for a person and written relative to each application (not a feature; computed here from the features)
+        client = (
+            df["CODE_GENDER"].astype(str)
+            + "|"
+            + (df["DAYS_BIRTH"] - df["DAYS_ID_PUBLISH"]).astype(str)
+            + "|"
+            + (df["DAYS_BIRTH"] - df["DAYS_REGISTRATION"].round()).astype(str)
+        )
+        # DAYS_BIRTH counts back from the application: the most negative row is the client's latest application
+        latest = (df["DAYS_BIRTH"] == df["DAYS_BIRTH"].groupby(client).transform("min")).to_numpy()
+        pool = np.flatnonzero(latest)
+        earlier = np.flatnonzero(~latest).tolist()
+        tested = pd.DataFrame(
+            {"client": client.iloc[pool].to_numpy(), self.target: df[self.target].iloc[pool].to_numpy()}
+        )
+        tested[self.target] = tested[self.target].astype("category")
+        folds = protocol.grouped_splits(
+            tested,
+            n_repeats=3,
+            group_on="client",
+            group_labels="per_sample",
+            stratify_on=self.target,
+            random_state=self.SPLIT_RANDOM_STATE,
+        )
+        splits = {
+            repeat: {fold: (pool[train].tolist() + earlier, pool[test].tolist()) for fold, (train, test) in f.items()}
+            for repeat, f in folds.items()
+        }
+        return SplitPlan(splits=splits)
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         # the FLAG_ and REG_/LIVE_ ..._NOT_... columns are yes/no flags by the codebook: categorical (CLEAN-14); the

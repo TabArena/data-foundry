@@ -2,30 +2,30 @@
 report_format: data-foundry-report-v2
 unique_name: early_learning_predictors
 container_format: 2
-checksum: v2:bb4ddba5aea8416d38657216312a711d9ed9e6d57d6218875d3e6c651e475910
+checksum: v2:d5706fc0f76564de8ddfbba05b98de7d67c3a65d8e4aa1709d43543e8b20e25c
 build:
-  uuid: 01a111fc-59b5-7e83-8468-0ee2628e95b3
-  checksum: v2:ec3dfb429e7c17335aa5683a85458b99e78d373664de2bf4a319f46a2ea15237
-  built_at: '2026-10-06T16:11:57+00:00'
-  path: early_learning_predictors/01a111fc-59b5-7e83-8468-0ee2628e95b3
+  uuid: 01a1d456-e3ed-7619-a175-71edb149573f
+  checksum: v2:9f19f13587e587573f9567fad966ee60b791686873463504277d2ee738abeb82
+  built_at: '2026-11-13T09:57:11+00:00'
+  path: early_learning_predictors/01a1d456-e3ed-7619-a175-71edb149573f
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: 33221e166276781bf815b26fc972657cb578dfc2-dirty
   libraries:
-    python: 3.11.14
+    python: 3.11.16
     pandas: 2.3.3
-    numpy: 2.1.3
-    pyarrow: 20.0.0
+    numpy: 2.4.6
+    pyarrow: 24.0.0
     scikit-learn: 1.7.2
-    polars: 1.41.1
+    polars: 1.44.2
 build_stale: true
 data:
   n_rows: 18874
-  n_features: 739
+  n_features: 735
   dtypes:
-    category: 533
+    category: 526
     datetime64[ns]: 2
     float64: 180
-    string: 26
+    string: 29
   n_test_dataset_rows: null
 task:
   target: child_total_elom
@@ -64,10 +64,13 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings: []
+  warnings:
+  - task_feature_looks_like_exposure
   infos:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
+  - meta_time_basis_missing
+  - meta_time_present_unused
   accepted: {}
 decisions: []
 ---
@@ -76,37 +79,36 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 739 features. Source: Other (2024).
+Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 735 features. Source: Other (2024).
 
-Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bb4ddba5aea8416d38657216312a711d9ed9e6d57d6218875d3e6c651e475910`, so the build is stale. See [Build](#build).
+Built as `01a1d456-e3ed-7619-a175-71edb149573f` on 2026-11-13, but `dataset.py` has changed since: it now gives checksum `v2:d5706fc0f76564de8ddfbba05b98de7d67c3a65d8e4aa1709d43543e8b20e25c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
 **Question.** What score will a preschool child at a facility not seen before reach on a standard early learning test?
 
-**Use case.** The source asks which features of early learning programmes predict better outcomes, a study looking back. As a prediction, for example, a programme funder estimates the scores of children at a new facility from facility, staff and family surveys, to find children at risk without a full assessment.
+**Use case.** The source asks which features of early learning programmes predict better outcomes, a study looking back. As a prediction, for example, a programme funder estimates the scores of children at a new facility from the child's record and whichever facility instruments its study ran (observation, registers, the teacher's rating; in the 2021 national Index also the principal and practitioner interviews), to find children at risk without a full assessment.
 
 **One row.** One child aged 50 to 69 months assessed at an early learning facility in South Africa, 2016 to 2023 (DataDrive2030 merged surveys, 18,874 children); a few children per facility.
 
 **Predicted.** The child's total score on the Early Learning Outcomes Measure: 23 items over five areas (gross and fine motor development, numeracy, cognition and executive function, literacy and language).
 
-**Known at prediction time.** 739 features: the child's age, sex, birth date, grant, stunting, languages and years in the programme; the facility's registration, staff, building, equipment and observed practice; teacher and parent questionnaires. Many are missing for whole survey rounds.
+**Known at prediction time.** 735 features in modules: the child's record (age, sex, birth date, languages, years in the programme; height and stunting in most studies) for every child; the teacher's rating of the child (41%), the facility observation (41%) and registers (36%); the principal, programme-quality and practitioner interviews (11% to 12%, the 2021 national Index). A module a study did not run is missing.
 
 **What the test data stands for.** Whole facilities are held out, so the test data stands for facilities never surveyed; the source's competition split children at random.
 
 **Our changes to the source.** We drop the parts and other versions of the score, another child assessment, the home-learning survey (mostly missing), the survey year, the assessor's id and the timers of the data collection, and split by facility.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The source's question is explanatory. As a forecast, some surveys were made after the assessment, and the rows mix survey rounds with different questions.
+> **Use case fit: approximate (a stand-in with a known gap).** The source's question is explanatory. As a forecast, some surveys were made after the assessment; 47% of the children carry only their own record, and their scores lean on their campaign, which the model learns from the campaign's other facilities.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/early_learning_predictors.md`](../../../../curation/records/early_learning_predictors.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/early_learning_predictors.md`](../../../../curation/records/early_learning_predictors.md)
 - The original source: <https://www.datafirst.uct.ac.za/dataportal/index.php/catalog/962>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -145,7 +147,7 @@ Only curators run `build`, when the dataset ships.
 | license | Creative Commons CC-BY (Attribution-only) License |
 | data_tags | Non-IID, Grouped |
 | reference | DataDrive2030_2024_elom_thrivebyfive |
-| rows x columns | 18,874 x 741 |
+| rows x columns | 18,874 x 737 |
 | task.target | child_total_elom |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -164,11 +166,11 @@ Only curators run `build`, when the dataset ships.
 | definition | RMSE of the child's total ELOM score. |
 
 <details>
-<summary>Feature types: 447 categorical, 86 ordinal, 26 string, 2 datetime</summary>
+<summary>Feature types: 440 categorical, 86 ordinal, 29 string, 2 datetime</summary>
 
-- categorical (447): `pri_mobile`, `pri_internet_source`, `pra_agency_understand`, `pra_agency_questions`, `pra_agency_play`, `pra_agency_order`, `pra_agency_learn`, `pra_agency_explore`, `pra_agency_choice`, `gr_1_tt`, `grade_r`, `obs_building`, `obs_cooking_census`, `obs_heating_census`, `obs_lighting_census`, `obs_water`, `pra_class_language`, `pra_job`, `pra_previous`, `pra_shape`, `pri_bank`, `pri_facilities`, `pri_kitchen`, `pri_land`, `pri_location`, `pri_meal_prep`, `programme`, `id_ward_best`, `child_gender`, `child_age_group`, `child_attends`, `child_grant`, `child_has_sibling`, `child_languages`, `child_spectacles`, `dc_best`, `language_match`, `mn_best`, `phase_natemis`, `pre_covid`, `prov_best`, `certificate_register`, `certificate_registration_partial`, `certificate_registration_program`, `facility_type`, `health`, `library_access`, `obs_access`, `obs_access_disability_0`, `obs_access_disability_1`, `obs_access_disability_2`, `obs_access_disability_3`, `obs_access_disability_4`, `obs_access_disability_5`, `obs_access_disability_6`, `obs_accessible`, `obs_area`, `obs_area_0`, `obs_area_1`, `obs_area_2`, `obs_area_3`, `obs_area_4`, `obs_area_5`, `obs_area_6`, `obs_area_7`, `obs_area_8`, `obs_books`, `obs_books_age`, `obs_cooking_1`, `obs_cooking_2`, `obs_cooking_3`, `obs_cooking_4`, `obs_cooking_5`, `obs_cooking_6`, `obs_cooking_7`, `obs_electricity_working`, `obs_equipment_0`, `obs_equipment_1`, `obs_equipment_2`, `obs_equipment_3`, `obs_equipment_4`, `obs_equipment_5`, `obs_fence`, `obs_fencing_play_area`, `obs_firstaid`, `obs_gate`, `obs_handwashing_0`, `obs_handwashing_1`, `obs_handwashing_2`, `obs_handwashing_3`, `obs_handwashing_97`, `obs_handwashing_friendly`, `obs_hazard`, `obs_hazard_0`, `obs_hazard_1`, `obs_hazard_2`, `obs_hazard_3`, `obs_hazard_4`, `obs_hazard_5`, `obs_hazard_6`, `obs_hazard_7`, `obs_hazard_8`, `obs_hazard_97`, `obs_heating_1`, `obs_heating_2`, `obs_heating_3`, `obs_heating_4`, `obs_heating_5`, `obs_heating_6`, `obs_heating_7`, `obs_heating_8`, `obs_lighting_1`, `obs_lighting_2`, `obs_lighting_3`, `obs_lighting_4`, `obs_lighting_5`, `obs_lighting_6`, `obs_lighting_8`, `obs_materials`, `obs_materials_0`, `obs_materials_1`, `obs_materials_10`, `obs_materials_11`, `obs_materials_12`, `obs_materials_13`, `obs_materials_14`, `obs_materials_15`, `obs_materials_16`, `obs_materials_17`, `obs_materials_18`, `obs_materials_19`, `obs_materials_2`, `obs_materials_20`, `obs_materials_3`, `obs_materials_4`, `obs_materials_5`, `obs_materials_6`, `obs_materials_7`, `obs_materials_8`, `obs_materials_9`, `obs_materials_97`, `obs_menu_compliance`, `obs_menu_display`, `obs_menu_same`, `obs_outdoor`, `obs_potable`, `obs_safety_0`, `obs_safety_1`, `obs_safety_10`, `obs_safety_2`, `obs_safety_3`, `obs_safety_4`, `obs_safety_5`, `obs_safety_6`, `obs_safety_7`, `obs_safety_8`, `obs_safety_9`, `obs_shared`, `obs_space`, `obs_toilet`, `obs_toilet_0`, `obs_toilet_1`, `obs_toilet_2`, `obs_toilet_3`, `obs_toilet_4`, `obs_toilet_5`, `obs_toilet_6`, `obs_toilet_7`, `obs_toilet_8`, `obs_toilet_97`, `obs_toilet_clean`, `obs_toilet_paper`, `obs_toilet_size_chemical_1`, `obs_toilet_size_disability_1`, `obs_toilet_size_disability_2`, `obs_toilet_size_disability_3`, `obs_toilet_size_flush_1`, `obs_toilet_size_flush_2`, `obs_toilet_size_flush_3`, `obs_toilet_size_pit_1`, `obs_toilet_size_pit_2`, `obs_toilet_size_pit_3`, `obs_toilet_size_septic_2`, `obs_toilet_size_septic_3`, `obs_toilet_size_ventilation_1`, `obs_toilet_size_ventilation_2`, `obs_toilet_size_ventilation_3`, `obs_toilets_children`, `obs_toilets_gender`, `obs_water_running`, `position_other`, `position_other_reason`, `pqa_class`, `pqa_class_age_1`, `pqa_class_age_2`, `pqa_class_age_3`, `pqa_class_age_4`, `pqa_class_age_5`, `pqa_class_age_6`, `pra_clearance_ncp`, `pra_clearance_police`, `pra_cohort_0`, `pra_cohort_1`, `pra_cohort_2`, `pra_cohort_3`, `pra_cohort_4`, `pra_cohort_5`, `pra_cohort_6`, `pra_gender`, `pra_groupings_1`, `pra_groupings_2`, `pra_groupings_3`, `pra_groupings_4`, `pra_groupings_5`, `pra_language`, `pra_learnership`, `pra_materials_donated`, `pra_materials_kit`, `pra_materials_library`, `pra_materials_makefind`, `pra_ncf_trainer_1`, `pra_ncf_trainer_2`, `pra_ncf_trainer_3`, `pra_ncf_trainer_4`, `pra_ncf_trainer_5`, `pra_ncf_trainer_97`, `pra_ncf_training`, `pra_on_time`, `pra_online_training`, `pra_online_training_details`, `pra_paid`, `pra_parent_meeting`, `pra_parent_same_attendance`, `pra_plan_4yrs_1`, `pra_plan_4yrs_2`, `pra_plan_4yrs_3`, `pra_plan_4yrs_4`, `pra_plan_4yrs_97`, `pra_plan_5yrs_1`, `pra_plan_5yrs_2`, `pra_plan_5yrs_3`, `pra_plan_5yrs_4`, `pra_plan_5yrs_5`, `pra_plan_5yrs_97`, `pra_plan_approved`, `pra_plan_ncf`, `pra_plans_0`, `pra_plans_1`, `pra_plans_2`, `pra_plans_3`, `pra_qualification_0`, `pra_qualification_1`, `pra_qualification_2`, `pra_qualification_3`, `pra_qualification_4`, `pra_qualification_5`, `pra_qualification_6`, `pra_qualification_7`, `pra_qualification_97`, `pra_special_referrals`, `pra_special_training`, `pra_training_0`, `pra_training_1`, `pra_training_2`, `pra_training_3`, `pra_training_4`, `pra_training_5`, `pra_training_6`, `pri_aftercare`, `pri_attendance_usual`, `pri_clinic_travel_1`, `pri_clinic_travel_2`, `pri_clinic_travel_3`, `pri_clinic_travel_4`, `pri_clinic_travel_5`, `pri_clinic_travel_97`, `pri_confirm_subsidy`, `pri_covid_awareness`, `pri_covid_awareness_1`, `pri_covid_awareness_2`, `pri_covid_awareness_3`, `pri_covid_awareness_4`, `pri_covid_awareness_97`, `pri_covid_fund_applied`, `pri_covid_fund_received`, `pri_covid_precautions`, `pri_covid_precautions_1`, `pri_covid_precautions_2`, `pri_covid_precautions_3`, `pri_covid_precautions_4`, `pri_covid_precautions_5`, `pri_covid_precautions_6`, `pri_covid_precautions_97`, `pri_dsd_conditional_1`, `pri_dsd_conditional_10`, `pri_dsd_conditional_2`, `pri_dsd_conditional_3`, `pri_dsd_conditional_4`, `pri_dsd_conditional_5`, `pri_dsd_conditional_6`, `pri_dsd_conditional_7`, `pri_dsd_conditional_8`, `pri_dsd_conditional_9`, `pri_dsd_conditional_97`, `pri_dsd_previous`, `pri_dsd_unregistered_1`, `pri_dsd_unregistered_10`, `pri_dsd_unregistered_11`, `pri_dsd_unregistered_12`, `pri_dsd_unregistered_13`, `pri_dsd_unregistered_2`, `pri_dsd_unregistered_3`, `pri_dsd_unregistered_4`, `pri_dsd_unregistered_5`, `pri_dsd_unregistered_6`, `pri_dsd_unregistered_7`, `pri_dsd_unregistered_8`, `pri_dsd_unregistered_9`, `pri_dsd_unregistered_97`, `pri_expenseother`, `pri_fees`, `pri_fees_exceptions`, `pri_fees_exceptions_other`, `pri_fees_free`, `pri_firstaid`, `pri_food_donation`, `pri_food_donor_1`, `pri_food_donor_2`, `pri_food_donor_3`, `pri_food_donor_4`, `pri_food_donor_97`, `pri_food_guidance`, `pri_food_type_0`, `pri_food_type_1`, `pri_food_type_2`, `pri_food_type_3`, `pri_food_type_4`, `pri_food_type_5`, `pri_funding_1`, `pri_funding_2`, `pri_funding_3`, `pri_funding_4`, `pri_funding_5`, `pri_funding_6`, `pri_funding_7`, `pri_funding_97`, `pri_funding_donations`, `pri_funding_food`, `pri_funding_none`, `pri_funding_salary_0`, `pri_funding_salary_1`, `pri_funding_salary_2`, `pri_funding_salary_3`, `pri_funding_salary_4`, `pri_funding_salary_97`, `pri_garden`, `pri_health_0`, `pri_health_1`, `pri_health_2`, `pri_health_3`, `pri_health_4`, `pri_health_5`, `pri_health_97`, `pri_holidays`, `pri_internet`, `pri_internet_user_1`, `pri_internet_user_2`, `pri_internet_user_3`, `pri_internet_user_4`, `pri_language`, `pri_library`, `pri_library_material_1`, `pri_library_material_10`, `pri_library_material_11`, `pri_library_material_12`, `pri_library_material_2`, `pri_library_material_3`, `pri_library_material_4`, `pri_library_material_5`, `pri_library_material_6`, `pri_library_material_7`, `pri_library_material_8`, `pri_library_material_9`, `pri_meal_1`, `pri_meal_2`, `pri_meal_3`, `pri_meal_4`, `pri_meals`, `pri_money_1`, `pri_money_2`, `pri_money_3`, `pri_money_97`, `pri_network`, `pri_network_type_1`, `pri_network_type_2`, `pri_network_type_3`, `pri_network_type_97`, `pri_precovid_attendance`, `pri_qualification_0`, `pri_qualification_1`, `pri_qualification_2`, `pri_qualification_3`, `pri_qualification_4`, `pri_qualification_5`, `pri_qualification_6`, `pri_qualification_7`, `pri_qualification_97`, `pri_records_0`, `pri_records_1`, `pri_records_2`, `pri_records_3`, `pri_records_4`, `pri_records_5`, `pri_refrigerator`, `pri_registered_cipc`, `pri_registered_health`, `pri_registered_npo`, `pri_school`, `pri_staff_changes_reasons_1`, `pri_staff_changes_reasons_2`, `pri_staff_changes_reasons_3`, `pri_staff_changes_reasons_4`, `pri_staff_changes_reasons_5`, `pri_staff_changes_reasons_6`, `pri_staff_changes_reasons_97`, `pri_subsidy`, `pri_support`, `pri_support_provider_1`, `pri_support_provider_2`, `pri_support_provider_3`, `pri_support_provider_4`, `pri_support_provider_5`, `pri_support_provider_97`, `pri_transport`, `pri_zoning`, `professionals_practitioners`, `sanitation_educators_1`, `sanitation_educators_2`, `sanitation_educators_3`, `sanitation_learners`, `urban`, `teacher_emotional_met`, `teacher_selfcare_met`, `teacher_social_met`, `pra_breadwinner`, `pra_letcee_club`, `pri_funding_subsidy`
+- categorical (440): `pri_mobile`, `pri_internet_source`, `pra_agency_understand`, `pra_agency_questions`, `pra_agency_play`, `pra_agency_order`, `pra_agency_learn`, `pra_agency_explore`, `pra_agency_choice`, `gr_1_tt`, `grade_r`, `obs_building`, `obs_cooking_census`, `obs_heating_census`, `obs_lighting_census`, `obs_water`, `pra_class_language`, `pra_job`, `pra_previous`, `pra_shape`, `pri_bank`, `pri_facilities`, `pri_kitchen`, `pri_land`, `pri_location`, `pri_meal_prep`, `programme`, `id_ward_best`, `child_gender`, `child_age_group`, `child_attends`, `child_grant`, `child_has_sibling`, `child_languages`, `child_spectacles`, `dc_best`, `language_match`, `mn_best`, `phase_natemis`, `pre_covid`, `prov_best`, `certificate_register`, `certificate_registration_partial`, `certificate_registration_program`, `facility_type`, `health`, `library_access`, `obs_access`, `obs_access_disability_0`, `obs_access_disability_1`, `obs_access_disability_2`, `obs_access_disability_3`, `obs_access_disability_4`, `obs_access_disability_5`, `obs_access_disability_6`, `obs_accessible`, `obs_area_0`, `obs_area_1`, `obs_area_2`, `obs_area_3`, `obs_area_4`, `obs_area_5`, `obs_area_6`, `obs_area_7`, `obs_area_8`, `obs_books`, `obs_books_age`, `obs_cooking_1`, `obs_cooking_2`, `obs_cooking_3`, `obs_cooking_4`, `obs_cooking_5`, `obs_cooking_6`, `obs_cooking_7`, `obs_electricity_working`, `obs_equipment_0`, `obs_equipment_1`, `obs_equipment_2`, `obs_equipment_3`, `obs_equipment_4`, `obs_equipment_5`, `obs_fence`, `obs_fencing_play_area`, `obs_firstaid`, `obs_gate`, `obs_handwashing_0`, `obs_handwashing_1`, `obs_handwashing_2`, `obs_handwashing_3`, `obs_handwashing_97`, `obs_handwashing_friendly`, `obs_hazard_0`, `obs_hazard_1`, `obs_hazard_2`, `obs_hazard_3`, `obs_hazard_4`, `obs_hazard_5`, `obs_hazard_6`, `obs_hazard_7`, `obs_hazard_8`, `obs_hazard_97`, `obs_heating_1`, `obs_heating_2`, `obs_heating_3`, `obs_heating_4`, `obs_heating_5`, `obs_heating_6`, `obs_heating_7`, `obs_heating_8`, `obs_lighting_1`, `obs_lighting_2`, `obs_lighting_3`, `obs_lighting_4`, `obs_lighting_5`, `obs_lighting_6`, `obs_lighting_8`, `obs_materials_0`, `obs_materials_1`, `obs_materials_10`, `obs_materials_11`, `obs_materials_12`, `obs_materials_13`, `obs_materials_14`, `obs_materials_15`, `obs_materials_16`, `obs_materials_17`, `obs_materials_18`, `obs_materials_19`, `obs_materials_2`, `obs_materials_20`, `obs_materials_3`, `obs_materials_4`, `obs_materials_5`, `obs_materials_6`, `obs_materials_7`, `obs_materials_8`, `obs_materials_9`, `obs_materials_97`, `obs_menu_compliance`, `obs_menu_display`, `obs_menu_same`, `obs_outdoor`, `obs_potable`, `obs_safety_0`, `obs_safety_1`, `obs_safety_10`, `obs_safety_2`, `obs_safety_3`, `obs_safety_4`, `obs_safety_5`, `obs_safety_6`, `obs_safety_7`, `obs_safety_8`, `obs_safety_9`, `obs_shared`, `obs_space`, `obs_toilet`, `obs_toilet_0`, `obs_toilet_1`, `obs_toilet_2`, `obs_toilet_3`, `obs_toilet_4`, `obs_toilet_5`, `obs_toilet_6`, `obs_toilet_7`, `obs_toilet_8`, `obs_toilet_97`, `obs_toilet_clean`, `obs_toilet_paper`, `obs_toilet_size_chemical_1`, `obs_toilet_size_disability_1`, `obs_toilet_size_disability_2`, `obs_toilet_size_disability_3`, `obs_toilet_size_flush_1`, `obs_toilet_size_flush_2`, `obs_toilet_size_flush_3`, `obs_toilet_size_pit_1`, `obs_toilet_size_pit_2`, `obs_toilet_size_pit_3`, `obs_toilet_size_septic_2`, `obs_toilet_size_septic_3`, `obs_toilet_size_ventilation_1`, `obs_toilet_size_ventilation_2`, `obs_toilet_size_ventilation_3`, `obs_toilets_children`, `obs_toilets_gender`, `obs_water_running`, `position_other`, `position_other_reason`, `pqa_class`, `pqa_class_age_1`, `pqa_class_age_2`, `pqa_class_age_3`, `pqa_class_age_4`, `pqa_class_age_5`, `pqa_class_age_6`, `pra_clearance_ncp`, `pra_clearance_police`, `pra_cohort_0`, `pra_cohort_1`, `pra_cohort_2`, `pra_cohort_3`, `pra_cohort_4`, `pra_cohort_5`, `pra_cohort_6`, `pra_gender`, `pra_groupings_1`, `pra_groupings_2`, `pra_groupings_3`, `pra_groupings_4`, `pra_groupings_5`, `pra_language`, `pra_learnership`, `pra_materials_donated`, `pra_materials_kit`, `pra_materials_library`, `pra_materials_makefind`, `pra_ncf_trainer_1`, `pra_ncf_trainer_2`, `pra_ncf_trainer_3`, `pra_ncf_trainer_4`, `pra_ncf_trainer_5`, `pra_ncf_trainer_97`, `pra_ncf_training`, `pra_on_time`, `pra_online_training`, `pra_paid`, `pra_parent_meeting`, `pra_parent_same_attendance`, `pra_plan_4yrs_1`, `pra_plan_4yrs_2`, `pra_plan_4yrs_3`, `pra_plan_4yrs_4`, `pra_plan_4yrs_97`, `pra_plan_5yrs_1`, `pra_plan_5yrs_2`, `pra_plan_5yrs_3`, `pra_plan_5yrs_4`, `pra_plan_5yrs_5`, `pra_plan_5yrs_97`, `pra_plan_approved`, `pra_plan_ncf`, `pra_plans_0`, `pra_plans_1`, `pra_plans_2`, `pra_plans_3`, `pra_qualification_0`, `pra_qualification_1`, `pra_qualification_2`, `pra_qualification_3`, `pra_qualification_4`, `pra_qualification_5`, `pra_qualification_6`, `pra_qualification_7`, `pra_qualification_97`, `pra_special_referrals`, `pra_special_training`, `pra_training_0`, `pra_training_1`, `pra_training_2`, `pra_training_3`, `pra_training_4`, `pra_training_5`, `pra_training_6`, `pri_aftercare`, `pri_attendance_usual`, `pri_clinic_travel_1`, `pri_clinic_travel_2`, `pri_clinic_travel_3`, `pri_clinic_travel_4`, `pri_clinic_travel_5`, `pri_clinic_travel_97`, `pri_confirm_subsidy`, `pri_covid_awareness`, `pri_covid_awareness_1`, `pri_covid_awareness_2`, `pri_covid_awareness_3`, `pri_covid_awareness_4`, `pri_covid_awareness_97`, `pri_covid_fund_applied`, `pri_covid_fund_received`, `pri_covid_precautions_1`, `pri_covid_precautions_2`, `pri_covid_precautions_3`, `pri_covid_precautions_4`, `pri_covid_precautions_5`, `pri_covid_precautions_6`, `pri_covid_precautions_97`, `pri_dsd_conditional_1`, `pri_dsd_conditional_10`, `pri_dsd_conditional_2`, `pri_dsd_conditional_3`, `pri_dsd_conditional_4`, `pri_dsd_conditional_5`, `pri_dsd_conditional_6`, `pri_dsd_conditional_7`, `pri_dsd_conditional_8`, `pri_dsd_conditional_9`, `pri_dsd_conditional_97`, `pri_dsd_previous`, `pri_dsd_unregistered_1`, `pri_dsd_unregistered_10`, `pri_dsd_unregistered_11`, `pri_dsd_unregistered_12`, `pri_dsd_unregistered_13`, `pri_dsd_unregistered_2`, `pri_dsd_unregistered_3`, `pri_dsd_unregistered_4`, `pri_dsd_unregistered_5`, `pri_dsd_unregistered_6`, `pri_dsd_unregistered_7`, `pri_dsd_unregistered_8`, `pri_dsd_unregistered_9`, `pri_dsd_unregistered_97`, `pri_fees`, `pri_fees_exceptions`, `pri_fees_free`, `pri_firstaid`, `pri_food_donation`, `pri_food_donor_1`, `pri_food_donor_2`, `pri_food_donor_3`, `pri_food_donor_4`, `pri_food_donor_97`, `pri_food_guidance`, `pri_food_type_0`, `pri_food_type_1`, `pri_food_type_2`, `pri_food_type_3`, `pri_food_type_4`, `pri_food_type_5`, `pri_funding_1`, `pri_funding_2`, `pri_funding_3`, `pri_funding_4`, `pri_funding_5`, `pri_funding_6`, `pri_funding_7`, `pri_funding_97`, `pri_funding_donations`, `pri_funding_food`, `pri_funding_none`, `pri_funding_salary_0`, `pri_funding_salary_1`, `pri_funding_salary_2`, `pri_funding_salary_3`, `pri_funding_salary_4`, `pri_funding_salary_97`, `pri_garden`, `pri_health_0`, `pri_health_1`, `pri_health_2`, `pri_health_3`, `pri_health_4`, `pri_health_5`, `pri_health_97`, `pri_holidays`, `pri_internet`, `pri_internet_user_1`, `pri_internet_user_2`, `pri_internet_user_3`, `pri_internet_user_4`, `pri_language`, `pri_library`, `pri_library_material_1`, `pri_library_material_10`, `pri_library_material_11`, `pri_library_material_12`, `pri_library_material_2`, `pri_library_material_3`, `pri_library_material_4`, `pri_library_material_5`, `pri_library_material_6`, `pri_library_material_7`, `pri_library_material_8`, `pri_library_material_9`, `pri_meal_1`, `pri_meal_2`, `pri_meal_3`, `pri_meal_4`, `pri_meals`, `pri_money_1`, `pri_money_2`, `pri_money_3`, `pri_money_97`, `pri_network`, `pri_network_type_1`, `pri_network_type_2`, `pri_network_type_3`, `pri_network_type_97`, `pri_precovid_attendance`, `pri_qualification_0`, `pri_qualification_1`, `pri_qualification_2`, `pri_qualification_3`, `pri_qualification_4`, `pri_qualification_5`, `pri_qualification_6`, `pri_qualification_7`, `pri_qualification_97`, `pri_records_0`, `pri_records_1`, `pri_records_2`, `pri_records_3`, `pri_records_4`, `pri_records_5`, `pri_refrigerator`, `pri_registered_cipc`, `pri_registered_health`, `pri_registered_npo`, `pri_school`, `pri_staff_changes_reasons_1`, `pri_staff_changes_reasons_2`, `pri_staff_changes_reasons_3`, `pri_staff_changes_reasons_4`, `pri_staff_changes_reasons_5`, `pri_staff_changes_reasons_6`, `pri_staff_changes_reasons_97`, `pri_subsidy`, `pri_support`, `pri_support_provider_1`, `pri_support_provider_2`, `pri_support_provider_3`, `pri_support_provider_4`, `pri_support_provider_5`, `pri_support_provider_97`, `pri_transport`, `pri_zoning`, `professionals_practitioners`, `sanitation_educators_1`, `sanitation_educators_2`, `sanitation_educators_3`, `sanitation_learners`, `urban`, `teacher_emotional_met`, `teacher_selfcare_met`, `teacher_social_met`, `pra_breadwinner`, `pra_letcee_club`, `pri_funding_subsidy`
 - ordinal (86): `child_years_in_programme (1st year in the programme < 2nd year in programme < 3rd year in programme)`, `pqa_curriculum_literacy (Inadequate: Few appropriate language activities. E.g. Practitioner rarely reads < Basic: Some of the following language/literacy activities – daily story, some ap < Good: Daily story with active child participation and discussion. E.g. children)`, `pqa_curriculum_ncf (Inadequate: No evidence that programme supports NCF aims. < Basic: Learning programme focuses on some of the ELDAs and is mostly development < Good: Learning programme used covers all the ELDAs and activities are developmen)`, `pqa_curriculum_numeracy (Inadequate: Few or no appropriate maths activities, staff do not show children h < Basic: Some practitioner initiated and directed maths activities including numbe < Good: Frequent number songs, rhymes, games. Children encouraged to count objects)`, `pqa_environment_accessible (Inadequate: Few or no materials are accessible to children. < Basic: Some materials are easily accessible for children. < Good: All materials are laid out so that children can easily access them.)`, `pqa_environment_appropriate (Inadequate: Many materials are not appropriate for the developmental level and i < Basic: Most materials match the developmental level and interests of children 4 < Good: Materials provide for a range of developmental levels and interests includ)`, `pqa_environment_areas (Inadequate: There are no or fewer than 3 organised learning areas. < Basic: Three learning areas set out for children to play in (alone or with other < Good: There are 4 or more learning areas arranged so children can use them, quie)`, `pqa_environment_open (Inadequate: No open ended materials. < Basic: At least 1 example of open ended materials in each of 2 learning areas. < Good: At least 2 examples of open ended materials in each of 3 learning areas.)`, `pqa_environment_outdoor (Inadequate: Few or no outdoor equipment/opportunities. < Basic: Some outdoor equipment to promote different kinds of movement. < Good: A variety of small and large equipment to promote different kinds of movem)`, `pqa_environment_variety (Inadequate: Insufficient materials in any or all areas. E.g. children have to wa < Basic: Some materials for all learning areas. E.g. children don’t have to wait b < Good: Enough and variety of materials in all learning areas - more than 2 activi)`, `pqa_relationships_acknowledge (Inadequate: Staff do not use encouragement to acknowledge children’s efforts or < Basic: Staff sometimes use encouragement (at least 2 instances observed with 2 d < Good: Staff regularly use encouragement to acknowledge individual children’s eff)`, `pqa_relationships_discipline (Inadequate: No positive discipline observed or expectations may not be age appropriate. < Basic: No harsh methods used, control maintained, expectations age appropriate. < Good: Effective use of non-punitive methods, staff apply rules consistently, children supported to solve conflicts for themselves, express how they are feeling.)`, `pqa_relationships_peers (Inadequate: Children are discouraged from interacting (e.g. not allowed to choos < Basic: Peer interaction encouraged (e.g. free choice of who to play with), negat < Good: Staff help children develop good social behaviours, provide activities tha)`, `pqa_relationships_staff (Inadequate: Staff are not responsive to or involved with children (ignore or jus < Basic: Friendly atmosphere, some positive interactions and response to individua < Good: Frequent positive interaction, warm contact, relaxed and pleasant atmosphe)`, `pqa_teaching_choice (Inadequate: Staff direct how children use materials and carry out activities (e. < Basic: Children make at least 2 choices independent of practitioner direction ab < Good: Children make 3 or more choices during playtime (independent of practition)`, `pqa_teaching_engagement (Inadequate: Staff do not engage to support and extend children’s learning. Inter < Basic: Staff engage with one or two children to extend their learning using one < Good: Staff regularly engage to extend children’s learning using a variety of te)`, `pqa_teaching_participation (Inadequate: In large group activities staff do not ask children to offer ideas o < Basic: Children sometimes contribute or participate at own developmental levels < Good: Children contribute their own ideas and participate at own developmental l)`, `pqa_teaching_questions (Inadequate: No open ended questions to extend children’s thinking (only one word < Basic: Some questions to encourage children to reflect on an activity or idea. E < Good: Many questions to encourage children to reflect on actions and ideas in mu)`, `pqa_teaching_support (Inadequate: Staff do not support children to do things for themselves or encoura < Basic: Practitioner sometimes supports children to do things for themselves and < Good: Practitioner regularly supports children to do things for themselves and t)`, `gr_ecd (almost none < 0-25% < 25-50% < 50-75% < almost all)`, `obs_booknumber (none or almost none < less than 50 < 50-100 books < 100-250 books < more than 250 books)`, `obs_condition_equipment (bad (mostly broken and unused) < okay (some in working condition) < fine (mostly in working condition) < very good)`, `obs_infrastructure (strong state of disrepair < moderate signs of disrepair < minor signs of disrepair < well maintained)`, `obs_material_display (no, there is nothing against the walls < yes, but of poor quality and not relevant to the age group < yes, of average quality and relevant to the age group < yes, stimulating and appropriate)`, `plan (no < yes, details provided for the main activities in the week < yes, details provided for the activities each day)`, `pqa_assessment_observation (inadequate: no observation record, or the observation book is not in regular use < basic: a regular observation record/book with some written indication of remedial activities < good: many and varied observations of children's progress and a range of activities to remediate difficulties/facilitate holistic development)`, `pqa_assessment_systematic (inadequate: there is no systematic child assessment < basic: assessments done at least twice a year, using a standard format, and filed for reference < good: assessments using a standard format updated regularly, children with difficulties assessed more often)`, `pqa_curriculum_balance (inadequate: either free play or whole group activities predominate < basic: both free play and whole group activities each day and some small group times < good: substantial free play indoors and outdoors, story, music and ring time daily and regular small group teaching)`, `pqa_curriculum_plan (inadequate: no evidence of planning used to organise learning activities < basic: planning books and the playroom reflect a planned and integrated approach < good: plans are applied, taking into account children's interests and developmental appropriateness)`, `pra_adequacy_materials (inadequate < somewhat adequate < adequate < good < excellent)`, `pra_cotlands_support (neutral < very satisfied < extremely satisfied)`, `pra_cotlands_visits (1 time < 4 times < more than 10 times)`, `pra_education (below Grade 12/matric < matric/National Senior Certificate < certificate < diploma < undergraduate degree < postgraduate degree)`, `pra_engaged (seldom < sometimes < often)`, `pra_free_play (30 minutes or less < up to 1 hour < up to 2 hours < more than 3 hours)`, `pra_free_play_outdoor (30 minutes or less < up to 1 hour < up to 2 hours < up to 3 hours)`, `pra_grade (school not attended < grade 8 < grade 9 < grade 10 < grade 11 < grade 12)`, `pra_letcee_support_cluster (not satisfied < neutral < very satisfied < extremely satisfied)`, `pra_letcee_support_coach (not satisfied < neutral < very satisfied)`, `pra_motivate_mentoring (disagree strongly < disagree a little < agree a little < agree strongly)`, `pra_motivate_recognition (disagree strongly < disagree a little < agree a little < agree strongly)`, `pra_motivate_support (disagree strongly < disagree a little < agree a little < agree strongly)`, `pra_ntataise_attendance (5 times < 7 times < 8 times < 9 times < more than 10 times)`, `pra_ntataise_support (slightly satisfied < neutral < very satisfied < extremely satisfied)`, `pra_ntataise_visits (2 times < 3 times < 4 times < 5 times < 7 times < 8 times < more than 10 times)`, `pra_tuc_support (not satisfied < neutral < very satisfied < extremely satisfied)`, `pra_tuc_visits (1 time < 2 times < 4 times < 5 times < 7 times < 10 times < more than 10 times)`, `pri_covid_staff_salaries (no, not able to pay them at all < no, had to reduce their salaries < yes, salaries have remained the same)`, `pri_education (below Grade 12/matric < matric/National Senior Certificate < certificate < diploma < undergraduate degree < postgraduate degree)`, `pri_fees_paid_proportion (none of the parents < only a few parents < about half of the parents < most parents, but not all < all parents)`, `pri_food_parents_afternoon (none < some < all)`, `pri_food_parents_breakfast (none < some < all)`, `pri_food_parents_lunch (none < some < all)`, `pri_food_parents_morning (none < some < all)`, `pri_parents_activities (no, no one < yes, only one or two < yes, some parents < yes, most parents)`, `pri_parents_contact (no, no one < yes, only one or two < yes, some parents < yes, most parents)`, `pri_parents_frequency (never < annually < quarterly < monthly < weekly)`, `pri_registered_dsd (not registered < in process < conditionally registered < fully registered)`, `pri_registered_partial (not registered < in process < conditionally registered < fully registered)`, `pri_registered_programme (not registered < in process < conditionally registered < fully registered)`, `pri_same_language (none of the children < less than half of the children < more than half of the children < all children)`, `pri_separate (no, all ages learning and playing together < yes, grouped by age but using the same space < yes, grouped by age and divided into different rooms)`, `pri_staff_employed (less than half of the number of previous years < more than half of the number of previous years < about the same number as previous years < more staff than previous years)`, `pri_support_dbe (never < once < twice < three times < more than three times)`, `pri_support_dsd (never < once < twice < three times < more than three times)`, `pri_support_frequency (once a year < once a term < once a month < once a week)`, `pri_support_municipality (never < once < twice < three times < more than three times)`, `pri_support_ngo (never < once < twice < three times < more than three times)`, `rating (no books at all < lack of books, few books, or dated books < lots of books but not clearly used < lots of books and clearly used)`, `teacher_emotional_appropriate (not true < sometimes true < often true)`, `teacher_emotional_confidence (not true < sometimes true < often true)`, `teacher_emotional_independent (not true < sometimes true < often true)`, `teacher_emotional_selfstarter (not true < sometimes true < often true)`, `teacher_emotional_understand (not true < sometimes true < often true)`, `teacher_social_assistance (none of the time < a little of the time < most of the time < all of the time)`, `teacher_social_cooperate (none of the time < a little of the time < most of the time < all of the time)`, `teacher_social_ideas (none of the time < a little of the time < most of the time < all of the time)`, `teacher_social_initiative (none of the time < a little of the time < most of the time < all of the time)`, `teacher_social_nonaggressive (none of the time < a little of the time < most of the time < all of the time)`, `teacher_social_peers (none of the time < a little of the time < most of the time < all of the time)`, `teacher_emotional_adjust (not true < sometimes true < often true)`, `child_stunted (Severely stunted < Moderately stunted < Normal)`, `pra_salary (R0 < less than R500 per month < R500 – R749 < R750 – R999 < R1000 – R1249 < R1250 – R1499 < R1500 – R1999 < R2000 – R2499 < R2500 – R2999 < R3000 – R3499 < R3500 – R3999 < R4000 – R4449 < R5000 – R5999 < more than R6000)`, `pra_cotlands_attendance (1 time < more than 10 times)`, `pra_lesedi_support (neutral < very satisfied)`, `pra_letcee_clubsupport (neutral < very satisfied)`
-- string (26): `healthother`, `obs_handwashingother`, `obs_materialsother`, `obs_water_running_none`, `obs_waterother`, `pra_class_size_large`, `pra_class_space_large`, `pra_class_space_small`, `pra_education_other`, `pra_ncf_trainerother`, `pra_plan_4yrs_other`, `pra_plan_5yrs_other`, `pra_qualification_other`, `pri_covid_awareness_other`, `pri_covid_precautions_other`, `pri_dsd_conditional_other`, `pri_dsd_unregistered_other`, `pri_food_donorother`, `pri_funding_salaryother`, `pri_fundingother`, `pri_landother`, `pri_moneyother`, `pri_qualificationother`, `pri_reason_register_year`, `pri_staff_changes_reasonsother`, `pri_support_providerother`
+- string (29): `healthother`, `obs_handwashingother`, `obs_materialsother`, `obs_water_running_none`, `obs_waterother`, `pra_class_size_large`, `pra_class_space_large`, `pra_class_space_small`, `pra_education_other`, `pra_ncf_trainerother`, `pra_online_training_details`, `pra_plan_4yrs_other`, `pra_plan_5yrs_other`, `pra_qualification_other`, `pri_covid_awareness_other`, `pri_covid_precautions_other`, `pri_dsd_conditional_other`, `pri_dsd_unregistered_other`, `pri_expenseother`, `pri_fees_exceptions_other`, `pri_food_donorother`, `pri_funding_salaryother`, `pri_fundingother`, `pri_landother`, `pri_moneyother`, `pri_qualificationother`, `pri_reason_register_year`, `pri_staff_changes_reasonsother`, `pri_support_providerother`
 - datetime (2): `child_dob (%d%b%Y)`, `pra_dob (%d%b%Y)`
 
 </details>
@@ -194,21 +196,46 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffled); 12 of 741 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffled); 12 of 737 columns, the target first. Cells are cut at 40 characters.
 
 | child_total_elom | child_dob | child_gender | child_age | child_age_group | child_attendance | child_attends | child_grant | child_has_sibling | child_height | child_zha | child_stunted |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 38.01 | 2016-09-20 00:00:00 | Male | 54 | 50-59 Months | nan | nan | nan | nan | nan | nan | nan |
-| 52.79 | 2017-06-03 00:00:00 | Male | 56 | 50-59 Months | nan | nan | nan | nan | 119 | 2.50196 | Normal |
-| 42.69 | 2017-08-01 00:00:00 | Female | 50 | 50-59 Months | nan | nan | No | nan | 107 | 0.70653 | Normal |
-| 43.02 | 2017-01-20 00:00:00 | Male | 57 | 50-59 Months | nan | nan | No | nan | 100.2 | -1.79462 | Normal |
-| 43.59 | 2018-10-22 00:00:00 | Male | 60 | 60-69 Months | 3 | Yes | nan | nan | 106.5 | nan | nan |
+| 47.17 | 2017-11-27 00:00:00 | Female | 50 | 50-59 Months | nan | nan | nan | nan | 104 | 0.0223279 | Normal |
+| 41.48 | 2018-09-10 00:00:00 | Male | 54.6 | 50-59 Months | 5 | Yes | nan | nan | 105.7 | -0.29302 | Normal |
+| 54.65 | 2017-05-24 00:00:00 | Female | 53 | 50-59 Months | nan | nan | Yes | nan | 103 | -0.581308 | Normal |
+| 40.12 | 2017-07-09 00:00:00 | Male | 52 | 50-59 Months | nan | nan | Yes | nan | 99 | -1.51085 | Normal |
+| 39.7 | NaT | Male | 58.4262 | 50-59 Months | nan | nan | Yes | nan | 112.2 | 0.676712 | Normal |
 
 ## Curation notes
 
 - The data is collected for predictive analytics to find major drivers of early learning outcomes. Nevertheless, predictive performance matters and the data could also be used for identifying at risk children.
 - The data consists of different subsets that were collected at different times. Sometimes the target was even collected before the predictors. Although the data is collected over time, the task is cross-sectional. Therefore, we drop most date features, after checking whether relevant information was already extracted.
 - We use a grouped split based on id_facility to reflect a potential deployment scenario where we want to predict for a new facility. Note that a date (year) is available, but the data collection is conducted per facility so we don't use a time-based split.
+- Time order (2026-11-13, Andrej; Review issues 3 and 6): the children were assessed in about eight field
+  campaigns, 2016-2023, each its own study with its own sample of facilities and questionnaire; the date
+  follows from birth date and age (82% of the children) or the dropped `child_date` and `data_year`. A split
+  by campaign (each campaign of 2022 and 2023 tested once on all earlier ones, chosen on 2026-11-12) was
+  reverted: the facility, practitioner and teacher surveys the use case predicts from exist only in the
+  campaigns of October 2020 to December 2021 (225 to 242 columns over half filled), while those four test
+  campaigns record 11 to 30, the child's own and at most province and quintile. On them no model beat the
+  child's age alone (untuned LightGBM RMSE 15.53 on all features, 14.84 on `child_age` alone, 15.89 for the
+  training mean; r 0.32 against 0.30), and removing each campaign's mean error left 14.20 against 12.90 on
+  the facility split, so the gap is the missing features, not a campaign offset. On the facility split
+  LightGBM scores 12.91 (r 0.56; `child_age` alone 14.47). The facility split learns a campaign's level and
+  questions from its other facilities: it stands for a facility a campaign did not reach. Evidence: Slurm
+  1383049, 1383051, 1383087, 1383111, 1383112.
+- Feature modules (2026-11-13, Andrej; Review issue 7, option A): every child keeps every column; a module
+  a study did not run stays missing, so the use case is the child's record plus whichever facility
+  instruments the study ran. Children with each module (half its columns filled): the child's record 18,874;
+  the teacher's rating (21 columns) 7,785; the facility observation (160) 7,646; the registers (73) 6,873;
+  the principal interview and programme quality (291) 2,332 and the practitioner interview (139) 2,029, both
+  only in the 2021 national Index; 8,920 children have their own record only. On the facility split
+  (9 folds, untuned LightGBM, RMSE on the same test children), a model on all rows and columns scores each
+  group as well or better than one trained on that group's rows only: own record only 12.96 against 13.16
+  (`child_age` alone 14.77), with the observation 12.79 against 12.79 (14.09), with the interviews 12.19
+  against 12.27 (14.11). The own-record-only children reach r 0.58 here against 0.32 on campaigns not seen
+  in training, so most of their gain over age is their campaign, learned from its other facilities
+  (Slurm 1383202).
 - The target score ELOM is continuous, but decisions are made based on cutoffs to identify at-risk children. We keep the task as regression, to maintain the most information.
 - Note: The data consists of different age groups, for which the ELOM score is computed differently. While under these circumstances a multi-class target using the given cutoffs might be a valid choice, the age is given  as a feature and therefore, we assume that a model can be expected to learn patterns for subgroups.
 - The data is collected from several sources, including direct assessments, teacher questionnaires, parent surveys and facility data. The data is collected by different enumerators across different facilities. The target is from a separate tool (see further information below).
@@ -220,7 +247,14 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
   one level spelled two ways, merged as "Normal"; `pra_dob` is a date (`%d%b%Y`); `pri_calc_time_open` and
   `pri_calc_time_close` ("HH:MM") are present only where the hour and minute columns are and equal to them, so
   they are dropped, as is `certificate_registration_npo`, a copy of `certificate_register`; 26 columns of the
-  enumerators' free text (the "other" answers and the explanations of flagged measurements) are strings.
+  enumerators' free text (the "other" answers and the explanations of flagged measurements) are strings, and
+  three more on 2026-11-13 (Andrej; Review issue 8, option B): `pri_fees_exceptions_other` (124 different
+  answers in 581 children), `pri_expenseother` (83 in 582) and `pra_online_training_details` (66 in 346).
+- Multi-select lists dropped (2026-11-13, Andrej; Review issue 9, option B): `obs_materials`, `obs_area`,
+  `obs_hazard` and `pri_covid_precautions` hold the codes a facility ticked as one space-separated string
+  (1,134, 167, 94 and 33 different values) and agree in every cell with their per-code yes/no columns (22, 9,
+  10 and 7 columns; 7,657, 7,646, 2,343 and 2,332 children), which stay. `pri_covid_awareness` stays: it
+  disagrees with its 5 columns in 55 cells.
 - `language_match` ("Assessment language matches home", DataFirst V1328; 1 for 14,813 children, 0 for 6) holds
   the enumerator's reason in place of the answer in 16 rows. Each reason explains why the child was assessed in
   another language than at home (English at an English school or on the principal's request, a child who
@@ -253,6 +287,14 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
   dropped: it exists only in the 2021 round (5,222 children), so it is a unit of that survey's sample design
   and marks the round, which we drop as `data_year`; the ward is a place a new facility has too, recorded in
   the 2020-2022 rounds (2026-11-05, Lennart).
+- `id_facility` is numbered per study, not one number per facility across studies (2026-11-12, Andrej;
+  Review issue 4, option B). Where two campaigns share a number, the facility's province and quintile
+  agree within October 2020 to March 2022 (province 32 of 32 and 90 of 90, quintile 90 of 90) and elsewhere
+  no more often than for two random facilities (quintile 0.30 against 0.27 for the 337 numbers that 2021
+  shares with January-May 2023; province 6 of 52 and 5 of 27 for the pairs of 2022 and 2023 campaigns). So
+  about 120 facilities come back in a later campaign, all within October 2020 to March 2022, and the numbers
+  -2, -1 and 9999 hold 45 children of unknown facilities. The split groups on the number as it is: two
+  facilities that share one fall on the same side, a coarser group that cannot leak.
 - We drop `teacher_duration`, the minutes the teacher's socio-emotional rating form was open (DataFirst's
   codebook: "Teacher SEF duration in minutes"): a timer of the data collection, like the three `duration_elom`
   timers dropped above, not a property of the child, the teacher or the facility. It exists only in the
@@ -315,24 +357,27 @@ One group is an early learning facility; its rows are the children assessed ther
 | largest group | 0.3% of the rows |
 | test groups per fold | 847 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 58.9% of the rows (chance: 0.1%) |
+| nearest neighbour in the same group | 58.8% of the rows (chance: 0.1%) |
 | label variance explained by the group | 0.40 (shuffled groups: 0.13) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 4 info (27 checks run, plus the dataset's own checks).
 
+- **warning** `task_feature_looks_like_exposure`: Feature(s) ['programme_exposure'] look like an amount at risk (time insured, area swept). A realized one is cut by the outcome and never a feature; it is the rate's denominator and the weight (LEAK-41, MET-15). (hint: Say in the notes what the column is (planned or realized) and accept the warning, or ship the rate with the column as `sample_weight`.)
 - **info** `dataset_duplicate_rows`: 3 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 30 row(s) (0.2%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **info** `meta_time_basis_missing`: The split is not temporal and the definition does not say why. (hint: Add the use-case prototype (Timeless, Snapshot, DelayedTarget, StationaryRelation) with a `Time basis:` line in `curation_comments`, a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`) with its line, or the line alone with the reason, SPLIT-32.)
+- **info** `meta_time_present_unused`: Date columns ['child_dob', 'pra_dob'] are in the data, and the split is not temporal. (hint: Information for the split (SPLIT-32): the data carries dates.)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (741 rows)</summary>
+<summary>Show the table (737 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -382,7 +427,6 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | pri_library_material_6 | category | 18542 | 98.24 | 2 | yes, no |
 | pri_library_material_8 | category | 18542 | 98.24 | 2 | yes, no |
 | rating | category | 18542 | 98.24 | 4 | lots of books and clearly used, lack of books, few books, or dated books, lots … |
-| pra_online_training_details | category | 18528 | 98.17 | 66 | NONE, NQF LEVEL 6 IN ECD, PLAY SA, GRADE R PLAY BASED LEARNING COURSE, NTATAISE… |
 | library_access | category | 18518 | 98.11 | 2 | yes, no |
 | obs_toilet_size_ventilation_1 | category | 18506 | 98.05 | 2 | yes, no |
 | obs_toilet_size_ventilation_2 | category | 18506 | 98.05 | 2 | yes, no |
@@ -396,8 +440,9 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | pra_adequacy_materials | category | 18465 | 97.83 | 5 | excellent, good, somewhat adequate, inadequate, adequate |
 | pra_letcee_club | category | 18465 | 97.83 | 2 | 0.0, 1.0 |
 | pra_materials_donated | category | 18465 | 97.83 | 2 | yes, no |
+| pra_materials_kit | category | 18465 | 97.83 | 2 | no, yes |
 
-(681 more rows not shown)
+(677 more rows not shown)
 
 </details>
 
@@ -482,7 +527,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Categorical features
 
 <details>
-<summary>Show the table (1,952 rows)</summary>
+<summary>Show the table (1,932 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -547,7 +592,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | facility_type | 5 | DAY MOTHER | 364 | 1.93 |
 | gr_1_tt | 1 | &lt;NA> | 18288 | 96.9 |
 
-(1,892 more rows not shown)
+(1,872 more rows not shown)
 
 </details>
 
@@ -555,11 +600,11 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-59b5-7e83-8468-0ee2628e95b3 |
-| checksum | v2:ec3dfb429e7c17335aa5683a85458b99e78d373664de2bf4a319f46a2ea15237 |
-| built_at | 2026-10-06T16:11:57+00:00 |
-| path | early_learning_predictors/01a111fc-59b5-7e83-8468-0ee2628e95b3 |
+| uuid | 01a1d456-e3ed-7619-a175-71edb149573f |
+| checksum | v2:9f19f13587e587573f9567fad966ee60b791686873463504277d2ee738abeb82 |
+| built_at | 2026-11-13T09:57:11+00:00 |
+| path | early_learning_predictors/01a1d456-e3ed-7619-a175-71edb149573f |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:bb4ddba5aea8416d38657216312a711d9ed9e6d57d6218875d3e6c651e475910` |
+| git_sha | 33221e166276781bf815b26fc972657cb578dfc2-dirty |
+| libraries | {'python': '3.11.16', 'pandas': '2.3.3', 'numpy': '2.4.6', 'pyarrow': '24.0.0', 'scikit-learn': '1.7.2', 'polars': '1.44.2'} |
+| stale | yes: the definition now gives checksum `v2:d5706fc0f76564de8ddfbba05b98de7d67c3a65d8e4aa1709d43543e8b20e25c` |
