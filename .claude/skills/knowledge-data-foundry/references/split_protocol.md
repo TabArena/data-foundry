@@ -93,7 +93,7 @@ Crossing: scored units cut across groups
 The repeats follow the scored units only when all rows of each are in the same group (same or nested). A crossing
 scored unit is scored on part of its rows in every fold: a new draw of the folds moves stations, not years, so the years
 say little about how much the score moves between draws, and the rows count. For a grouped task,
-`recommended_dimensions` asks in this order (`scored_groups_held_out_whole` answers the last question on the data);
+`recommended_dimensions` asks in this order (`scored_units_within_groups` answers the last question on the data);
 an IID task counts rows:
 
 ```mermaid

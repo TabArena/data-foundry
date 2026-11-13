@@ -133,12 +133,12 @@ def runs_frame(n_instances: int, n_runs: int) -> pd.DataFrame:
     return pd.DataFrame({"instance": instances, "cls": instances % 10, "target": runtimes})
 
 
-def test_a_metric_that_scores_per_group_counts_its_groups_not_the_rows() -> None:
+def test_scored_units_of_several_rows_count_not_the_rows() -> None:
     """A long-format table gets the splits of the same task with one row per scored unit."""
     df = runs_frame(1_212, 11)  # 13,332 rows; the metric scores 1,212 instances
     assert recommended_dimensions(df, group_on="cls", group_labels="per_sample") == (3, 3)
-    assert recommended_dimensions(df, group_on="cls", group_labels="per_sample", score_group_on="instance") == (10, 3)
-    assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", score_group_on="instance") == (
+    assert recommended_dimensions(df, group_on="cls", group_labels="per_sample", scored_unit_on="instance") == (10, 3)
+    assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", scored_unit_on="instance") == (
         10,
         3,
     )
@@ -146,40 +146,40 @@ def test_a_metric_that_scores_per_group_counts_its_groups_not_the_rows() -> None
     assert recommended_dimensions(one_row_per_instance) == (10, 3)  # the same task in the other layout
 
 
-def test_a_scored_group_frame_counts_its_groups_at_any_size() -> None:
+def test_scored_units_count_at_any_frame_size() -> None:
     """No frame size caps the repeats: 30 scored instances give 20 repeats, also over 1.25M rows."""
     df = runs_frame(30, 45_000)  # 1,350,000 rows, 30 instances
-    assert recommended_dimensions(df, group_on="instance", score_group_on="instance") == (20, 3)
+    assert recommended_dimensions(df, group_on="instance", scored_unit_on="instance") == (20, 3)
 
 
-def test_a_metric_group_the_split_cuts_across_folds_counts_rows() -> None:
-    """A metric group spread over several split groups (a survey year over stations), or over an IID split, is scored
-    on part of its rows in every fold: the rows count, not the groups.
+def test_scored_units_that_cut_across_groups_count_rows() -> None:
+    """A scored unit spread over several groups (a survey year over stations), or over an IID split, is scored on part
+    of its rows in every fold: the rows count, not the scored units.
     """
     df = runs_frame(1_212, 11)  # 13,332 rows
     df["year"] = df["instance"] % 15  # 15 years, each across many instances and all 10 classes
-    assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", score_group_on="year") == (3, 3)
-    assert recommended_dimensions(df, score_group_on="instance") == (3, 3)  # IID: every instance cut across folds
-    assert protocol.scored_groups_held_out_whole(df, "cls", "instance")
-    assert not protocol.scored_groups_held_out_whole(df, "cls", "year")
-    assert not protocol.scored_groups_held_out_whole(df, None, "instance")
+    assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", scored_unit_on="year") == (3, 3)
+    assert recommended_dimensions(df, scored_unit_on="instance") == (3, 3)  # IID: every instance cut across folds
+    assert protocol.scored_units_within_groups(df, "cls", "instance")
+    assert not protocol.scored_units_within_groups(df, "cls", "year")
+    assert not protocol.scored_units_within_groups(df, None, "instance")
 
 
-def test_one_label_per_group_counts_the_held_out_groups_before_the_metrics_groups() -> None:
-    """With one label per held-out group, the metric's groups inside it share that label: the held-out groups count."""
+def test_one_label_per_group_counts_the_groups_before_the_scored_units() -> None:
+    """With one label per group, the scored units inside it share that label: the groups count."""
     df = runs_frame(1_212, 11)  # 1,212 instances in 10 classes
-    assert recommended_dimensions(df, group_on="cls", group_labels="per_group", score_group_on="instance") == (20, 3)
-    assert recommended_dimensions(df, group_on="cls", group_labels="per_sample", score_group_on="instance") == (10, 3)
+    assert recommended_dimensions(df, group_on="cls", group_labels="per_group", scored_unit_on="instance") == (20, 3)
+    assert recommended_dimensions(df, group_on="cls", group_labels="per_sample", scored_unit_on="instance") == (10, 3)
 
 
-def test_metric_group_column_is_the_metrics_group_input() -> None:
+def test_scored_unit_column_is_the_metrics_group_input() -> None:
     """The metric's ``group`` input names the scored unit; a metric without one scores rows."""
     par10 = Metric.source("par_k", params={"cutoff": 600}, inputs={"group": "instance"})
     task = PredictiveMLTaskMetadataV2(
         target_column_name="target", problem_type="regression", objective_metric=make_spec("regression", par10)
     )
-    assert protocol.metric_group_column(task) == "instance"
-    assert protocol.metric_group_column(V2_TASK) is None  # a metric that scores rows
+    assert protocol.scored_unit_column(task) == "instance"
+    assert protocol.scored_unit_column(V2_TASK) is None  # a metric that scores rows
 
 
 # --- fitting the cross-validation to a row budget ---------------------------------------------------------------

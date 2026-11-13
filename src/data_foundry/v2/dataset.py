@@ -1179,7 +1179,7 @@ class AbstractCuratedDataset(ABC):
             df,
             group_on=task.group_on,
             group_labels=task.group_labels,
-            score_group_on=protocol.metric_group_column(task),
+            scored_unit_on=protocol.scored_unit_column(task),
         )
         if task.group_on is None:
             return protocol.iid_splits(
