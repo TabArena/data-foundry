@@ -49,6 +49,17 @@ caps the sides after the split.
 - The shipped `_1m` containers still predate the 2026-11-10 entry (frames cut to 1.5M rows before the split); their
   READMEs change at the next build.
 
+## 2026-11-11, gossis_icu_hospital_mortality replaces wids_diabetes_mellitus (Andrej's decision, no container built)
+
+- `gossis_icu_hospital_mortality` added: the WiDS Datathon 2020 training file (MIT's GOSSIS initiative), 91,713 ICU
+  stays at 147 US hospitals, in-hospital death (8.6%) predicted at the end of the first ICU day, split by hospital
+  (`ForcedGroupedFromTemporal`: one undated year), ROC AUC as in the competition. APACHE IVa's two death probabilities
+  are dropped as another model's prediction of the target; BMI at the clipping bounds and the negative
+  `pre_icu_los_days` ship as published, with notes. Its review is in its record.
+- `wids_diabetes_mellitus` retired: `No (Retired)` with `Duplicate`, since 130,127 of its 130,157 rows are rows of the
+  WiDS 2020 files and the same cohort now ships with a target nobody knows at 24 hours. Its folder is removed and
+  `v2_path` cleared; `DF: Yes`, the collection tag and the pinned BeyondArena container stay.
+
 ## 2026-11-11, no local paths in committed text (no container built)
 
 Lennart, 2026-11-11: a pointer to a folder that only one machine has (a run folder of the local warehouse, a job folder
