@@ -78,7 +78,7 @@ family on one side lowers R² only from 0.741 to 0.733. Weighed: methods separat
 an unnamed shop and an uploader's own licence -, one shop at one time -, better data may exist (Alko's price list,
 not screened yet) -.
 
-**Main points:** Issues 1 to 4 settled (2026-11-10): the shop's copy stays with an approximate fit (1), the two spirits stay (2), the random split is named a `Snapshot` of the 2023 scrape (3), and the sentence quoting a wine's own earlier price is removed (4). Record `original_source` set to Kaggle (2026-11-11). Split settled (2026-11-11): grouped by a hand-checked producer key, 615 producers (5). Use case reframed (2026-11-11): a producer, importer or buyer estimating the UK shelf price of a wine not on the list, not the shop, which prices from its costs (6). No open issues.
+**Main points:** Issues 1 to 4 settled (2026-11-10): the shop's copy stays with an approximate fit (1), the two spirits stay (2), the random split is named a `Snapshot` of the 2023 scrape (3), and the sentence quoting a wine's own earlier price is removed (4). Record `original_source` set to Kaggle (2026-11-11). Split settled (2026-11-11): grouped by a hand-checked producer key, 615 producers (5). Use case reframed (2026-11-11): a producer, importer or buyer estimating the UK shelf price of a wine not on the list, not the shop, which prices from its costs (6). Open for Lennart (2026-11-13): whether any real use case exists, keep as a valuation proxy, mark like the sibling wine tables, or retire (7).
 
 **Record judgment:** valid, ship after the changes. Andrej disputed Lennart's `Yes` on 2026-10-15; his strongest
 points were the licence and provenance of scraped shop copy and that the copy is written for wines already priced. The
@@ -364,3 +364,43 @@ to-do notes are done.
    [^6b]: **USE-1** (Must): a use case is an actor, a moment and a decision. **USE-9** (Should): ask whether the data mirror another well-defined use case practitioners have, weighed against a use case rephrased only to excuse a gap.
 
    **Resolved (2026-11-11, Andrej):** B: reframed. `use_case` = "For example, a producer or importer offering a wine to a UK merchant estimates the shelf price it would sell at, or a buyer judges whether a wine is good value against similar wines, from its catalogue entry and description."; `question` = "What would a bottle of wine sell for in a UK wine shop, given its description?"; `fit_reason` appends "The shop sets its prices from its costs, which the data do not hold; the model stands for someone who does not know the price." (fit stays approximate; the price-tier numbers moved to the curation bullet on the copy to keep the field under 70 words); the grouping definition and the split bullet name the new actor; a curation bullet; record CC line. Text only, data unchanged.
+
+**Issues for Lennart:**
+
+7. **Use case: is there a real one at all?**
+
+   * **Problem:**
+     - Issue 6 replaced the merchant with a producer, importer or buyer, but the new actors fail the same test: no one
+       holds a wine's attributes and the shop's copy at a moment when they do not know its price.
+     - A producer or importer prices from costs too (ex-cellar price, shipping, duty, VAT, the merchant's margin: the
+       trade's price ladder), and the shop's copy does not exist before the wine is listed.
+     - A buyer or a price-comparison site sees the price next to the copy; judging value is comparing prices across
+       shops, a lookup, not a prediction.
+     - Keep as a valuation proxy without an actor, mark it like the sibling wine tables, or retire?
+   * **Background:**
+     - Hedonic price models of wine are real research[^6a], but they explain what drives prices (from attributes and
+       expert ratings), not the price of one bottle from its seller's copy.
+     - Houses are valued for a living because each one is unique and changes hands without a list price. A retail
+       wine is a mass-produced product with a list price, so a lookup always beats a prediction. diamonds ships the
+       same frame with fit direct and arguably has the same problem.
+     - The sibling wine tables wina_poland, winevivino and wine_rating_price are `TBD -> 2nd Tier` with
+       `No Good Target (yet)` (Lennart). alko_wine_price_list (screened `TBD -> Yes` as better data, 2026-10-31) would
+       face the same question.
+     - What the task offers: methods separate under the producer split (RMSLE TabPFN-3.5 0.377, LightGBM 0.410, ridge
+       on TF-IDF 0.403), and it is one of few tables that mix free text with tabular columns. Part of what a model
+       learns is how the shop's copy follows its price tiers (issue 1).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep (implemented) | ships as now; `use_case` says plainly that it is a valuation proxy with no actor; fit approximate | a text-and-table task on which methods separate; as diamonds | no actor, moment or decision[^7a] |
+     | B | As the siblings | `TBD -> 2nd Tier` with `No Good Target (yet)`, not in the collection now | consistent with the three sibling wine tables | loses the task for now |
+     | C | Retire | `No (Retired)` with `No Good Target / Scientific Discovery`, folder kept until a retirement PR | the rule applied as written[^7b] | loses the task; diamonds and alko_wine_price_list then need the same look |
+
+   * **Recommendation:** B or C: both actors written down so far fail the test that set the sibling tables aside;
+     whether a valuation proxy without an actor belongs in the benchmark is the call. **Decision:** keep (A), as the
+     siblings (B) or retire (C)?
+
+   [^7a]: **USE-1** (Must): a use case is an actor, a moment and a decision. **USE-9** (Should): weigh a use case
+     rephrased only to excuse a gap.
+   [^7b]: **USE-2** (Must): a task no decision fits is out; marker `No Good Target / Scientific Discovery`.
