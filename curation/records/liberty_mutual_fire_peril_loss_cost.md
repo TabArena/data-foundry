@@ -14,6 +14,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Later'
+- 'Entities: Recur'
 original_source: Kaggle
 year: '2014'
 domain: insurance

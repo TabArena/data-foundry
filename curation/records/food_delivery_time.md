@@ -16,6 +16,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Varying Delay'
+- 'Entities: Recur'
 original_source: Other
 year: '2022'
 domain: business & marketing

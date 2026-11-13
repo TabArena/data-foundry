@@ -16,6 +16,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Varying Delay'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Kaggle

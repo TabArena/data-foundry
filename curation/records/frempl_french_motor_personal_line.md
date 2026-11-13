@@ -14,6 +14,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Varying Delay'
+- 'Entities: Recur'
 original_source: Other
 year: '2014'
 domain: insurance

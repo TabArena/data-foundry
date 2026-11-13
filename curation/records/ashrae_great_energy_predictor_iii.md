@@ -13,6 +13,7 @@ tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Kaggle

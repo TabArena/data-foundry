@@ -17,6 +17,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Later'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Kaggle

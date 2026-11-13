@@ -13,6 +13,7 @@ tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- 'Entities: Recur'
 original_source: GOV Website
 year: '2026'
 domain: biology & life sciences

@@ -11,6 +11,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - 'Samples: No Time Dimension'
+- 'Entities: Recur'
 original_source: Other
 year: '1989'
 required_split:

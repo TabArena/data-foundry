@@ -11,6 +11,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - 'Samples: One Moment'
+- 'Entities: Recur'
 original_source: Kaggle
 year: '2020'
 required_split:

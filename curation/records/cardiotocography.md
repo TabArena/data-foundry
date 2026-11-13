@@ -14,6 +14,7 @@ tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- 'Entities: Recur'
 collections:
 - TabArena Reject
 original_source: UCI

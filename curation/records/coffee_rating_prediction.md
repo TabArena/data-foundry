@@ -16,6 +16,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Varying Delay'
+- 'Entities: Recur'
 collections:
 - CARTE/TARTE
 original_source: Website

@@ -13,6 +13,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Later'
+- 'Entities: Recur'
 - 'Features: Read Later'
 collections:
 - TabArena Reject

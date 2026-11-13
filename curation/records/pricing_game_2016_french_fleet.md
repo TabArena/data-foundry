@@ -14,6 +14,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Varying Delay'
+- 'Entities: Recur'
 year: '2016'
 domain: insurance
 required_split:

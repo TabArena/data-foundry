@@ -15,6 +15,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Revised Later'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Zindi

@@ -14,6 +14,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Varying Delay'
+- 'Entities: Recur'
 original_source: Kaggle
 year: '2015'
 domain: industry & manufacturing

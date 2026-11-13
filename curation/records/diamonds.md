@@ -11,6 +11,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - 'Samples: One Moment'
+- 'Entities: Recur'
 year: '2007'
 required_split:
 - Random (IID)

@@ -15,6 +15,7 @@ tags:
 - Non-IID (Grouped)
 - Spectral Data
 - 'Samples: No Time Dimension'
+- 'Entities: Recur'
 collections:
 - FS Benchmark
 original_source: Other

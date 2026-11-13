@@ -16,6 +16,7 @@ decision_markers:
 tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
+- 'Entities: Recur'
 original_source: UCI
 year: '2018'
 required_split:

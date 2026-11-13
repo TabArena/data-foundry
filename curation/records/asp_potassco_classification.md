@@ -14,6 +14,7 @@ priority: 4
 tags:
 - Non-IID (Grouped)
 - 'Samples: No Time Dimension'
+- 'Entities: Recur'
 collections:
 - TabArena Reject
 original_source: ASlib

@@ -14,6 +14,7 @@ decision_markers:
 tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
+- 'Entities: Recur'
 original_source: Other
 year: '2016'
 required_split:

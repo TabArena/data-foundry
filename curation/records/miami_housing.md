@@ -12,6 +12,7 @@ suggestion: 'Yes'
 tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
+- 'Entities: Recur'
 original_source: OpenML
 year: '2021'
 required_split:

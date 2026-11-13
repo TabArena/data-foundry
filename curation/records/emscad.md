@@ -15,6 +15,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Revised Later'
+- 'Entities: Recur'
 collections:
 - TexTabBench
 - TabSTAR

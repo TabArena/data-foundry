@@ -13,6 +13,7 @@ tags:
 - Non-IID (Grouped)
 - Multi-target
 - 'Samples: No Time Dimension'
+- 'Entities: Recur'
 collections:
 - TabArena Reject
 - TabSTAR

@@ -12,6 +12,7 @@ decision_markers:
 tags:
 - Random (IID)
 - 'Samples: One Moment'
+- 'Entities: Recur'
 collections:
 - TabArena Reject
 - TabSTAR

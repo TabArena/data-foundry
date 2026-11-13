@@ -17,6 +17,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Varying Delay'
+- 'Entities: Recur'
 original_source: UCI
 year: '2012'
 required_split:

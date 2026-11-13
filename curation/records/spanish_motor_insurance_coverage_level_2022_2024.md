@@ -14,6 +14,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Revised Later'
+- 'Entities: Recur'
 original_source: Other
 year: '2026'
 domain: insurance
