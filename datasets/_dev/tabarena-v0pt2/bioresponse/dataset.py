@@ -27,11 +27,10 @@ class Bioresponse(AbstractCuratedDataset):
             "Random molecules, so the test data stands for new candidates; close analogues of a test molecule can be "
             "in training, as no structure is given to group them."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
-            "The descriptors come from the structure alone, which is all a chemist has before synthesis. Without "
-            "structures the split cannot keep a chemical series together, so scores may be higher than on a truly new"
-            " series."
+            "The source names neither the response nor its assay, so what a positive means cannot be checked; without "
+            "structures the split cannot hold out a chemical series, so scores may be higher than on a new series."
         ),
     )
 
@@ -73,6 +72,13 @@ class Bioresponse(AbstractCuratedDataset):
           Spearman -0.04) and the order is not known to follow the assays. Not tested: a new chemical series, as close
           analogues cannot be grouped (nearest-neighbour label agreement 92% in the closest tenth of distances against
           64% in the farthest).
+        - Entity leakage, not recoverable (Andrej, 2026-11-11): no two molecules share all 1,776 descriptors and the
+          nearest pair differs in 16, so no copy is dropped; close analogues of one series share the label
+          (nearest-neighbour agreement 92% in the closest tenth of distances against 64% in the farthest) and cross the
+          random split, as no structure or compound id is published to group them. The random split stays: Kaggle's
+          own test set looks like a random draw (a model tells its 2,501 molecules from the 3,751 training molecules at
+          ROC AUC 0.485, against 0.484-0.497 for a random third of train; nearest-training distances match), and
+          scoring new analogues of series already in testing is the lead-optimisation use case the competition framed.
     """
 
     # Task

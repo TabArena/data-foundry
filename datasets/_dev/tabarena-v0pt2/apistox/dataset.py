@@ -48,8 +48,9 @@ class Apistox(AbstractCuratedDataset):
             " bee (the US EPA threshold); 29% are."
         ),
         known=(
-            "The chemical structure (a SMILES string), whether it is a herbicide, fungicide, insecticide or other "
-            "agrochemical, and the year the compound first appears in the literature."
+            "The chemical structure (a SMILES string) and whether it is a herbicide, fungicide, insecticide or other "
+            "agrochemical; the year the compound first appears in the literature orders the split but is no model "
+            "input."
         ),
         split=(
             "Each test window is a decade of new compounds (2014-2023, 2004-2013, 1994-2003, 1984-1993), with every "
@@ -105,13 +106,14 @@ class Apistox(AbstractCuratedDataset):
     curation_comments = """
         We start with dataset_final.csv of ApisTox from Zenodo (record 13350981): 1,035 agrochemicals with their acute toxicity to honey bees.
 
-        - Prediction point: a candidate agrochemical before its acute honey bee test, the authors' use case (Usage Notes). Known then are the structure, the intended use and the year the compound enters the literature, but not the LD50 values or any column derived from them.
+        - Prediction point: a candidate agrochemical before its acute honey bee test, the authors' use case (Usage Notes). Known then are the structure and the intended use, but not the LD50 values or any column derived from them, and a candidate is not yet in the literature.
         - Target: `toxic_to_bees` is the file's `label`, "Yes" when the LD50 is at most 11 µg per bee, the US EPA threshold (Methods, Eq. 1).
         - Dropped as recorded with or after the test: `ppdb_level` (the same LD50 cut at 1 and 100 µg), `toxicity_type` (the route with the strongest measured toxicity) and `source` (the database the label came from, which a new candidate does not have).
         - Dropped as identifiers: `name`, `CID` and `CAS`.
         - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The values are RDKit's canonical form of the source's SMILES (`canonical_smiles`; 17 strings change). Every fragment is kept: 141 compounds are salts or complexes, and stripping them to the largest fragment would make 86 rows copies of another, among them triclopyr and picloram triethylammonium, which both reduce to triethylamine. From 2026-10-14 to 2026-11-01 the definition shipped RDKit's 199 varying descriptors in place of the string. Mean ROC AUC on the 4 windows, LightGBM / random forest: 0.79 / 0.71 with the flags and the year, 0.83 / 0.82 adding the descriptors; the MACCS keys next to them change it by -0.006 / +0.004 (2026-11-01). The SMILES read as text adds 0.010 to LightGBM (character n-grams, standard error 0.023), and the default text embedding of TabArena v0.2 nothing (Assessment of 2026-10-07).
         - The four agrochemical flags stay numeric 0/1. All four at 0 is the source's "'unknown' pesticide type" (Methods), so we set those 55 rows to missing. They are more often toxic (29 of 55, against 27% of the rest), and the flags were read in 2024, not at each compound's year.
         - We rename `year` to `first_publication_year`: the year of the earliest article PubChem links to the CID, else the PubChem record's creation date, so some compounds are dated late. We keep the source's years; dropping the affected compounds moves a window's ROC AUC by at most 0.044.
+        - `first_publication_year` orders and splits the rows and is no model input (`Temporal(..., feature=False)`): it arrives with the target, since a candidate screened before its bee test has no literature yet (2026-11-12, Andrej).
         - Note: salts and mixtures of one active substance are separate rows, as in the source, so some test compounds have their parent on the training side. Under a temporal split this is the substance's own history; leaving them out costs at most 0.034 ROC AUC.
         - Split: temporal on `first_publication_year`, as the authors' time split (Methods). Their recommended MaxMin split is one test set of diverse compounds, which tests interpolation, and the v2 protocol needs repeated splits.
         - Note: bee tests of old compounds were often published decades later, so a training label is not always known at the window's cutoff. Most test dates are not given, and the acute LD50 is a property of the compound.
@@ -139,6 +141,7 @@ class Apistox(AbstractCuratedDataset):
         horizon=10,
         horizon_unit="years",
         time_unit="years",
+        feature=False,  # the literature year arrives with the target: no model input (2026-11-12, Andrej)
     )
     splits_comment = """
         Expanding-window temporal splits on the first publication year: 4 test windows of ten years (2014-2023, 2004-2013, 1994-2003, 1984-1993), newest first; train is every compound dated before the window. The windows hold 54, 106, 118 and 173 compounds (12, 22, 19 and 33 toxic), and their train sides 95%, 85%, 73% and 56% of all compounds. A model trained on the compounds known up to a year predicts the toxicity of the compounds that appear in the next ten years. Ten years is the shortest window with 50 compounds at the newest end (2016-2023 holds 37): new compounds are few in recent years. An IID task of this size would get 10 x 3 splits, but the newest half of the data (from 1977 on) holds only 526 compounds, so four windows of about 50 or more remain.
