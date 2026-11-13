@@ -412,8 +412,9 @@ Records are sparse on purpose; a missing field is usually fine.
   no problem to flag. Only the verdict is required.
 * `problem_type` can be a choice of task. A table can support a regression target or a classification one where
   taking one means dropping the other: `pva_revenue_prediction_kddcup98` has the donation amount and the donated-at-all
-  flag, two framings of one signal. Then the field records the task we ship, and the other framing goes into the
-  comments (or its own `_clf` dataset).
+  flag, two framings of one signal (it ships the amount, the KDD Cup's own target and net-revenue metric, since the
+  source says response and gift size run against each other). Then the field records the task we ship, and the other
+  framing goes into the comments (or its own `_clf` dataset).
 * `Multi-target` is for several distinct targets predicted at once (next-day minimum and maximum temperature, several
   soil nutrients). Remove it when the dataset has one target or when the targets are framings of one signal
   (CLEAN-18 in [cleaning_features.md](cleaning_features.md); caracas_cervical_cancer: four results from one work-up,
