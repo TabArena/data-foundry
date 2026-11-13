@@ -9,6 +9,8 @@ data_foundry_status:
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 4
+tags:
+- 'Samples: Unknown'
 collections:
 - New (BeyondArena)
 original_source: Zindi

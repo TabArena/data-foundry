@@ -9,6 +9,10 @@ data_foundry_status:
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 2
+tags:
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - New (BeyondArena)
 original_source: Zindi

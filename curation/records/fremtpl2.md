@@ -12,6 +12,11 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Two-Regime Zeros
+- 'Samples: Over Time'
+- 'Time: Inferred'
+- 'Target: Later'
+- 'Entities: Recur'
+- 'Features: Read Later'
 original_source: Other
 year: '2014'
 domain: insurance

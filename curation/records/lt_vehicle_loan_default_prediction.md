@@ -13,6 +13,9 @@ decision_markers:
 - Selection Bias
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
 collections:
 - TabSTAR
 original_source: Website

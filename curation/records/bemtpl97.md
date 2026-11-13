@@ -11,6 +11,8 @@ suggestion: 'Yes'
 priority: 4
 tags:
 - Two-Regime Zeros
+- 'Samples: One Moment'
+- 'Target: Later'
 original_source: Github
 year: '2019'
 domain: insurance

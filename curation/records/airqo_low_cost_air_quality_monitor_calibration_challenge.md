@@ -9,6 +9,10 @@ data_foundry_status:
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
+tags:
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Zindi
