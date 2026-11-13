@@ -311,7 +311,6 @@ redistributed. The build is stale against the current definition, so the dataset
    giving the phase counts above and stating that the recoverable wave is the project, not an entry date; no data,
    split or score changes, `dataset check`, no rebuild. On B or C, the sample identifier would have to be carried
    into the frame as a scoring column, and the class counts of each side checked before anything is declared.
-   Query and output: `~/claude_jobs/borderline_splits/force_dates/` (the panel file and the counting script).
 
    [^4a]: **SPLIT-34** (Should): a dataset drawn from an expanding science catalogue, a cut of a database or testing
      programme that keeps growing, can be split by the item, by its family or by when it entered the catalogue, and

@@ -178,8 +178,7 @@ well entered it was never asked. The AI recommends keeping the well-grouped spli
    register (entry, completion and release, the release two years after completion) and that the release order was
    measured and not taken. On B, a `released` column from the register and a temporal declaration on it, the `WELL`
    grouping dropped, and the windows checked against the floor that every training side holds at least half the rows
-   and that both rare classes reach a training side. Scripts, the dated well table and the results:
-   `~/claude_jobs/borderline_splits/`.
+   and that both rare classes reach a training side.
 
    [^9a]: **SPLIT-34** (Should): a dataset drawn from an expanding science catalogue, a cut of a database or testing
      programme that keeps growing, can be split by the item, by its family or by when it entered the catalogue, and

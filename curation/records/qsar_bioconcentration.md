@@ -234,8 +234,7 @@ split by test year holds out no more than the scaffold split. Settled: the scaff
    **Notes for the AI:** on b, a `curation_comments` bullet `- Time basis: Timeless: ...` naming the fixed property,
    the NITE dating (347 of 776, 1975-2007) and the forward-against-scaffold numbers, ending with what the split cannot
    test (the order of the undated half); the tag enters `data_tags` once PR #50 is in the working copy; then
-   `dataset check`, a CHANGELOG entry and a record CC line. Scripts and outputs: `~/claude_jobs/qsar_dating2/`
-   (`bcf_years.py`, `bcf_time_split.py`, `out/bcf_years2.csv`).
+   `dataset check`, a CHANGELOG entry and a record CC line.
 
    **Resolved (2026-11-12, Andrej):** b: the scaffold split stays. A `Time basis: Timeless:` bullet in
    `curation_comments` names the fixed property, the NITE dating (347 of 776, 1975-2007) and the forward against

@@ -327,7 +327,7 @@ before shipping outside the group.
 
    **Notes for the AI:** on a, `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`), a `Time basis:`
    bullet naming the historic compilation, the 93.6% coverage, the flat relation and what the split cannot test (a
-   chemistry later than the 1990s); keep the table. Evidence and scripts in `~/claude_jobs/qsar_ecotox/`.
+   chemistry later than the 1990s); keep the table.
 
    [^3t]: **SPLIT-32** (Should): `Timeless` when the target is a fixed property of the item and the use case meets items
      drawn like the catalogue's; which identifier a parent source could date the items by tells whether the catalogue

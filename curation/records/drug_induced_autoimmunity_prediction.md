@@ -137,7 +137,7 @@ CC (2026-11-11, Andrej): Four decisions from the v0.2 review page (folder the Re
 - Applied in `dataset.py`: `fit="approximate"` with the gap in `fit_reason`, three curation bullets (the fit, the time basis, the era gradient of the label), the reason for keeping the scaffold split in `splits_comment`; the metric's `reason` now dates InterDIA 2025, as its BibTeX does. `dataset check` 0 errors, 0 warnings, README regenerated. Not rebuilt (the build has been stale since 2026-10-14).
   - Huang L, Liu P, Huang X. InterDIA: Interpretable prediction of drug-induced autoimmunity through ensemble machine learning approaches. Toxicology. 2025;511:154064.
   - Wu Y, Zhu J, Fu P, Tong W, Hong H, Chen M. Machine Learning for Predicting Risk of Drug-Induced Autoimmune Diseases by Structural Alerts and Daily Dose. Int J Environ Res Public Health. 2021;18(13):7139. doi:10.3390/ijerph18137139
-  - ChEMBL web services (https://www.ebi.ac.uk/chembl/api/data/molecule), queried 2026-11-06; the lookup is `scripts/approval_years.py` of the review run (`~/claude_jobs/time_review/drug_induced_autoimmunity_prediction/`).
+  - ChEMBL web services (https://www.ebi.ac.uk/chembl/api/data/molecule), queried 2026-11-06.
 
 CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of no prototype (2026-11-11):
 - The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.

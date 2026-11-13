@@ -81,7 +81,6 @@ CC (2026-11-11, Andrej): kept next to `qsar_fish_toxicity` with the overlap writ
 CC (2026-11-11, Andrej): scaffold split kept and named `Timeless`, the dating written into the notes (review issue 2, a). The `Time basis:` line is in the definition's notes; the tag enters `data_tags` once PR #50 is in the working copy.
 - Dated through the EPA's ECOTOX bulk release (2026-09-15) by CAS-RN, the earliest Daphnia magna 48-hour LC50 test: 394 of 546 chemicals (72.2%), 481 (88.1%) on species alone; 1965 to 2018, median 1985; ECOTOX's values match the target at r = 0.903 (170 chemicals).
 - The relation does not move with the year (Spearman of first test year and LC50 +0.15), and a forward split by year is no stricter than the scaffold-disjoint one (RMSE LightGBM 1.207 against 1.264 on the same test chemicals).
-- Evidence: `~/claude_jobs/qsar_ecotox/` (Slurm 1378106).
 
 CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension` (Review issue 3): ECOTOX's earliest Daphnia magna 48-hour LC50 test dates 394 of 546 chemicals (72.2%), 1965 to 2018. The facts describe the source and do not change with the split, which stays as it is.
 
@@ -336,7 +335,7 @@ record's first comment ("546 samples, too small for 3-fold CV") is an outdated c
 
    **Notes for the AI:** on a, `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`), a `Time basis:`
    bullet naming the historic compilation, the coverage on both joins, the flat relation and what the split cannot
-   test; keep the table. Evidence and scripts in `~/claude_jobs/qsar_ecotox/`.
+   test; keep the table.
 
    [^2t]: **SPLIT-32** (Should): `Timeless` when the target is a fixed property of the item and the use case meets
      items drawn like the catalogue's; which identifier a parent source could date the items by tells whether the

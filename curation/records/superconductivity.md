@@ -68,7 +68,7 @@ CC (2026-11-08, Lennart): the declared metric (rmse, weighted by composition_wei
 
 CC (2026-11-11, Andrej): ship as defined (issue 1): 21,263 entries, compositions held out whole, RMSE in kelvin; nothing changed. Time basis (issue 2): date the materials through SuperCon first, then decide; open, the split is unchanged.
 
-**Assessment (AI, 2026-11-11):** dated through the NIMS SuperCon datasheet Ver.240322 (CC BY 4.0, doi:10.48505/nims.4487; reference year per entry, 1913-2023): 18,057 of the 21,263 rows (85%) match an entry by formula and Tc, 1,432 more by formula only, 1,774 (8%, 97% cuprates with variable oxygen) stay undated. The catalogue drifts: cuprates make 4,885 of 5,431 dated rows in 1987-1995, iron-based 1,574 of 3,018 after 2008; median Tc 4.4 K to 1986, 58 K 1987-95, 10.5 K 2009-19. Trained on compositions first reported up to 2008, LightGBM and extra trees score RMSE 13.2 K (R^2 0.55) on the later ones against 8.5 K (0.81) with a random training set of the same size from all eras, on the same test rows (after 2001: 14.6 K against 8.5 K). `Timeless` and `StationaryRelation` do not fit; options in Review issue 2. Scripts and outputs: ~/claude_jobs/marks_1111/superconductivity/.
+**Assessment (AI, 2026-11-11):** dated through the NIMS SuperCon datasheet Ver.240322 (CC BY 4.0, doi:10.48505/nims.4487; reference year per entry, 1913-2023): 18,057 of the 21,263 rows (85%) match an entry by formula and Tc, 1,432 more by formula only, 1,774 (8%, 97% cuprates with variable oxygen) stay undated. The catalogue drifts: cuprates make 4,885 of 5,431 dated rows in 1987-1995, iron-based 1,574 of 3,018 after 2008; median Tc 4.4 K to 1986, 58 K 1987-95, 10.5 K 2009-19. Trained on compositions first reported up to 2008, LightGBM and extra trees score RMSE 13.2 K (R^2 0.55) on the later ones against 8.5 K (0.81) with a random training set of the same size from all eras, on the same test rows (after 2001: 14.6 K against 8.5 K). `Timeless` and `StationaryRelation` do not fit; options in Review issue 2.
 
 CC (2026-11-11, Andrej): temporal split by the first report year (review issue 2, option a), in place of the grouped split on the composition.
 
@@ -87,7 +87,6 @@ CC (2026-11-11, Andrej): temporal split by the first report year (review issue 2
 - Checked on the built splits: no test row shares its 81 features with a training row, which was the composition split's reason for existing.
 - `first_year` is the split's time column and therefore one of the model's inputs, as the joined year is in qsar_tid_11 and apistox. Inside a test window every value lies after the newest training year, so it tells a model only that the row is new; the 81 features stay formula-only.
 - Collection facts corrected: `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension`, `required_split` Temporal (NON-IID), tag `Non-IID (Temporal)`.
-- Evidence: `~/claude_jobs/catalogue_splits/supercon/` (`scripts/date.py`, `scripts/time_split.py`, `out/dated.csv`, `out/time_split_v2.csv`); the definition reproduces `out/dated.csv` row for row.
 
 CC (2026-11-12, Andrej): split back to whole compositions held out (Review issue 5), on the source's scope: Hamidieh (2018) keeps the model to known chemistry ("We should not expect good predictions for completely new superconductors"), so the windows by first report year, which test later families, leave its question. The per-composition score stays; the NIMS dating and the drift between eras move into the `Time basis:` line; `Non-IID (Grouped)`, required split `Grouped (NON-IID)`. Review issue 3 (the year as a model input) is moot.
 
@@ -305,8 +304,6 @@ added yet. The record has no `problem_type` or `domain`; the definition's values
      tests both new systems and new dopings the way discovery met them. e is the choice if no outside join should
      enter the definition. **Decision:** a, b, c, d or e?
 
-   Scripts and results: `~/claude_jobs/catalogue_splits/supercon/` (`scripts/date.py`, `scripts/time_split.py`,
-   `out/dated.csv`, `out/time_split_v2.csv`).
 
    **Andrej (2026-11-11, discuss):** Reply (a): Temporal split by first report year
 
@@ -316,7 +313,7 @@ added yet. The record has no `problem_type` or `domain`; the definition's values
      4.0, attribution asked and given in the definition's download notes), by element set and element shares within
      0.003 (L1), a variable oxygen read as its number and once as a single oxygen; `first_year` is the earliest year
      of a composition's matched entries. The dating runs in `_load_raw` (`first_report_year`), takes about 4 seconds
-     and reproduces `~/claude_jobs/catalogue_splits/supercon/out/dated.csv` row for row.
+    .
    * The 100 undated rows (0.5%; 63 cuprates, median Tc 22.1 K) leave: a row without a year belongs to no window.
      99 compositions go with them. Nothing else is dropped and nothing is deduplicated.
    * Three expanding windows, the eras the issue proposed, every entry of a composition on one side:

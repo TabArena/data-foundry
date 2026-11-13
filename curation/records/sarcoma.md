@@ -122,8 +122,7 @@ as arrival keys and are in the notes (issue 5, A, 2026-11-12).
    **Notes for the AI:** on A, a `curation_comments` bullet next to the split bullet recording that TCGA is closed,
    that the plate code is recoverable only from the GDC, and the dating numbers above; no data, split or score
    changes, and no rebuild. On B, the plate codes have to be fetched per aliquot from the GDC and joined on the
-   patient barcode before any grouping is declared. Query and output:
-   `~/claude_jobs/borderline_splits/sarcoma/`.
+   patient barcode before any grouping is declared.
 
    [^5a]: **SPLIT-34** (Should): a dataset drawn from an expanding science catalogue, a cut of a database or testing
      programme that keeps growing, can be split by the item, by its family or by when it entered the catalogue, and
