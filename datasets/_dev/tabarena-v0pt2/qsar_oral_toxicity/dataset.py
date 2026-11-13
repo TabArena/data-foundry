@@ -201,7 +201,6 @@ class QsarOralToxicity(AbstractCuratedDataset):
     # Task
     target = "very_toxic"
     problem_type = "binary_classification"
-    data_tags = ("Timeless",)
     special_features = (Smiles(column="SMILES"),)
     metric = Metric.fallback(
         reason=(

@@ -130,7 +130,6 @@ class QsarAquaticToxicity(AbstractCuratedDataset):
     # Task
     target = "LC50"
     problem_type = "regression"
-    data_tags = ("Timeless",)
     metric = Metric.fallback(
         reason="Cassotti et al. 2014 report Q2 (cv and external) with RMSE; r2 and rmse rank models the same within a fold. rmse is the regression fallback."
     )

@@ -131,7 +131,6 @@ class QsarFishToxicity(AbstractCuratedDataset):
     # Task
     target = "LC50"
     problem_type = "regression"
-    data_tags = ("Timeless",)
     metric = Metric.fallback(
         reason=(
             "Cassotti et al. 2015 report R2/Q2 with RMSE on training and external sets; rmse is the "
