@@ -1072,7 +1072,8 @@ class Coil2000(AbstractCuratedDataset):
         fit="approximate",
         fit_reason=(
             "Holding a policy now stands in for interest in buying one, and the other products are recorded at the "
-            "same time as the label. The area figures are shared by neighbours, and 15% of the rows are duplicates."
+            "same time as the label. The area figures are shared by neighbours, and 27% of the rows sit in groups of "
+            "identical rows, which are distinct customers with the same few products."
         ),
     )
 
@@ -1106,7 +1107,12 @@ class Coil2000(AbstractCuratedDataset):
         - We created semantic meaningful names for the features.
         - We combined the original training and validation data into one new dataset.
         - We reversed the ordinal encoding of the original data where possible.
-        - Anomaly: the data has 15% duplicates.
+        - Identical rows (2026-11-11, LEAK-18): 2,665 rows (27%) sit in 1,104 groups of identical rows (1,561
+          repeats, 119 with the other label): customers of one postal area with the same few products (21% hold
+          none); a copy of a policy holder holds the policy in 15% of cases, so they are distinct customers and stay.
+          The two challenge files are a random partition of one undated extract; grouping the copies leaves the score
+          unchanged (ROC AUC 0.749 grouped against 0.750 random, 5-fold LightGBM). 21% to 22% of test rows have a
+          look-alike in training.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 58 columns are
           ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 55 of them decoded from the
           source's codes into its words (`CODE_LABELS`, 2026-11-01).
@@ -1119,6 +1125,14 @@ class Coil2000(AbstractCuratedDataset):
           purchases after a mailing, which one extract cannot test, so the split is forced until a dated release or the
           target's timing is known. The challenge's evaluation customers are another part of the same extract.
     """
+
+    accepted_check_warnings = {
+        "dataset_duplicate_rows": "Distinct customers of one postal area with the same few products (21% hold none); "
+        "grouping the copies leaves the score unchanged (ROC AUC 0.749 against 0.750), so they stay (LEAK-18, "
+        "the curator's decision of 2026-11-11).",
+        "dataset_conflicting_duplicate_rows": "Neighbours with the same coarse holdings, one with a caravan policy and "
+        "one without: label ambiguity the task has (LEAK-20), kept with the other identical rows.",
+    }
 
     # Task
     target = "MobileHomePolicy"
