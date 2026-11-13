@@ -95,16 +95,17 @@ an IID task counts rows:
 
 ```mermaid
 flowchart TD
-    A["A grouped task, from small to big:<br/>a row; a scored unit (rows the metric combines into one term of its score,<br/>set by its group input; one row by default); a group (grouping.on, kept whole by a fold)"] --> Q1{"Does one label cover each group?<br/>(labels='per_group')"}
-    Q1 -->|Yes| C1["Count the groups"]
-    Q1 -->|No| Q2{"Is a scored unit more than one row?<br/>(the metric's group input)"}
-    Q2 -->|"No"| C3["Count the rows"]
-    Q2 -->|Yes| Q3{"Are all rows of each scored unit<br/>in the same group?"}
-    Q3 -->|"Yes: same or nested"| C2["Count the scored units"]
+    A["A grouped task, its units from small to big:<br/>a row;<br/>a scored unit: the rows the metric combines into one term of its score,<br/>set by its group input (an instance, a gene, a survey year), one row by default;<br/>a group: the rows a fold keeps together, a value of grouping.on"]
+    A --> Q1("Labels: does one label<br/>cover each group?<br/>(labels='per_group')")
+    Q1 -->|No| Q2("Metric: is a scored unit<br/>more than one row?")
+    Q2 -->|Yes| Q3("Inside: are all rows of each<br/>scored unit in the same group?")
+    Q2 --->|No| C3["Count the rows<br/>(one row each, or units<br/>that span several groups)"]
     Q3 -->|"No: crossing"| C3
-    C1 --> R["Repeats of 3-fold CV by the counted units on the train side (2/3):<br/>under 500: 20 × 3, under 2,500: 10 × 3, under 250,000: 3 × 3, otherwise 1 × 3"]
+    Q3 -->|"Yes: same or nested"| C2["Count the scored units<br/>(same: sat11's instances,<br/>nested: asp's instances)"]
+    Q1 ---->|Yes| C1["Count the groups<br/>(one label each; scored<br/>units inside share it)"]
+    C3 --> R["Repeats of 3-fold CV by the counted units on the train side (2/3):<br/>under 500: 20 × 3, under 2,500: 10 × 3, under 250,000: 3 × 3, otherwise 1 × 3"]
     C2 --> R
-    C3 --> R
+    C1 --> R
 ```
 
 The labels come first: one label covers a whole group, so the scored units inside it add no labels and the groups
