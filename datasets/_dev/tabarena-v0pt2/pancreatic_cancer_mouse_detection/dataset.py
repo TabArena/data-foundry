@@ -45,21 +45,27 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "Mice of one lab stand in for patients. A file marker of unknown meaning separates some control spectra "
-            "from the rest and may mark a processing batch; it cannot explain the whole signal, but what it marks "
-            "needs the authors."
+            "Mice of one lab stand in for patients, and the controls were bled about a month older than the mutants "
+            "(6.5 against 5.5 months), so part of the signal may be age. A file marker of unknown meaning (`t`, 66 "
+            "spectra) separates some control spectra; it is no measurement run, and without those spectra the signal "
+            "stays (ROC AUC 0.63 against 0.66)."
         ),
     )
 
     # Dataset
     unique_name = "pancreatic_cancer_mouse_detection"
     domain = "medical & healthcare"
+    data_tags = ("Timeless",)
     sources = (
         Source(
             role="publication",
             platform="Other",
             url="https://home.ccr.cancer.gov/ncifdaproteomics/ppatterns.asp",
-            license=None,  # not given; likely public
+            license=(
+                'No licence named: the NCI-FDA Clinical Proteomics Program page offers its study sets "to the scientific '
+                'community in an unrestricted manner", cautions "against any direct comparative analysis within or between '
+                'sets" and recommends contacting the authors before such comparisons.'
+            ),
             year="2003",
             bibtex="""
                 "@article{hingorani2003preinvasive,
@@ -75,7 +81,6 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Timeless",)
     download_description = r"""
         We download the data to a predefined folder.
 
@@ -95,6 +100,7 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
         - The file names encode the class: the third token is `02` for every control file and `03` for every PanIN file, some with a `t` suffix of unknown meaning (42 of 101 control and 24 of 80 PanIN files; it is not the paper's training/blinded-test split). We take the label from the folder and the mouse ID from the second token; the class code never enters the features.
         - Each mouse counts once in the score (Lennart, 2026-11-08, review issue 1; MET-17): the ROC AUC weights a sample by 1 over its mouse's number of samples (`mouse_weight`), a scoring column for the metric only, no feature and no training weight, so the score is the chance that a random sample of a random PanIN mouse scores above a random sample of a random control mouse. The 73 mice gave 1 to 6 samples (median 2, 29 mice one), the label is the mouse's, and each mouse stands for one patient; unweighted, a mouse bled six times counted as six patients. Each sample is still read on its own. On 30 of the shipped splits the weighted ROC AUC ranks 8 untuned predictors (two logistic regressions, random forest, extra trees, two LightGBM, kNN, the class shares; raw spectrum standardized per bin) like the per-sample one at Kendall tau 0.66 per split on average (lowest -0.07, on 24 test mice) and 0.86 for the ranking by the mean over the splits, the same best model on 23 of 30. The weight is for scoring only (MET-15 as amended 2026-11-08): training a regularised logistic regression with it changes the weighted ROC AUC by -0.015 (SE 0.006, lower on 39 of 60 grouped random splits).
         - The spectrum ships raw, as the NCI-FDA page publishes it, and is declared as one (`special_features`, CLEAN-26, 2026-11-02): the container records its 6,771 columns in m/z order, and a benchmark encodes it row by row, by default with MALDIquant's steps (square root, Savitzky-Golay smoothing, SNIP baseline, total ion current). Processing the spectra lifts every model tested by 0.07 to 0.13 ROC AUC (PR #21, Andrej, 2026-10-21); the page itself recommends "appropriate normalization, baseline correction, and alignment prior to any such analysis".
+        - Selection bias (Andrej, 2026-11-11; marker `Selection Bias`): the classes were bled at different ages: mutants 5.5 ± 0.25 months, controls 6.5 ± 0.2 months (Hingorani et al. 2003, Table 2, prospective study), though the text calls the controls "aged-matched"; the pilot study, not in this download, was matched (9.4 against 9.0 months, Table 1). The release has no age per bleed, so the share of the signal that is age cannot be measured; the mouse grouping cannot remove it, since the gap runs between the classes. The measurement itself is alike for both classes: the same 6,771-bin grid and number format in every file, and both classes measured mixed on the same chips (record, 2026-10-21).
         - Time basis: Timeless: the label is the genotype, fixed at birth; each mouse gave 1 to 6 bleeds at least 5 days
           apart, undated, all held out with the mouse (Hingorani et al. 2003). Not tested: mice of another cohort, or
           spectra from another instrument run.
