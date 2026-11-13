@@ -104,6 +104,8 @@ CC (2026-11-12, Andrej): the split stays by protein, now twenty repeats of three
 - Split by CASP round (issue 10): weighed and not built, on Andrej's note "I go back to by split by protein" (issue 11, which makes the CASP10 question moot). Windows by round scored within 0.03 of a same-size protein split on CASP8 and CASP9 and 0.03 to 0.07 lower on CASP7; CASP10 scores about 0 under any split trained on the earlier rounds, because its descriptors follow another convention.
 - Twenty repeats (issue 12, B): the metric scores one correlation per protein, so the split count counts the 445 proteins (297 on the train side) and the protocol gives 20 x 3; the split code is unchanged. With three repeats, two of three blocks ranked LightGBM and a random forest in the opposite order to the full run; over the 60 splits untuned ridge scores 0.328, the forest 0.322 and LightGBM 0.320, in that order in every block of ten repeats.
 
+**Assessment (AI, 2026-11-13):** the twenty repeats of issue 12 come from the split count in scored units, which ships with its own PR (#95, SPLIT-33); until that merges, the protocol counts rows and this definition builds 3 x 3. The definition states the split by protein and no count.
+
 CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
 - The split does not change; the definition's `Time basis:` line keeps the measured evidence.

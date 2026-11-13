@@ -96,8 +96,8 @@ text and a script worth keeping into the repository (knowledge-data-foundry, hou
   one programme); shipped.
 - open_soil_spectral_library: whole survey projects held out (1,548) instead of pedon keys: the source aims at scans
   from other instruments and sites, and a whole survey is the part of that one instrument's data can test.
-- protein_model_quality_rf_pcp: the split stays by protein, now with twenty repeats of three folds (the score counts
-  proteins). qsar_fish_toxicity: the fit stays direct, the scaffold split gets `Timeless`.
+- protein_model_quality_rf_pcp: the split stays by protein; the twenty repeats decided for it (the score counts
+  proteins) come with the split count in scored units (#95). qsar_fish_toxicity: the fit stays direct, the scaffold split gets `Timeless`.
 - splice: the duplicate windows go and the split holds out GenBank entry components (`gene_group`), `Timeless` kept;
   the entries were dated (94%, 1974-1990) and the entry year carries no wave.
 - Every split change above needs a rebuild.
