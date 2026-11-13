@@ -3,6 +3,7 @@ unique_name: otto_group_product_classification_challenge
 name: Otto-Group-Product-Classification-Challenge
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -36,6 +37,8 @@ CC: "Distinguish products in 10 groups based on 93 features. Competition not won
 **Assessment (AI, 2026-10-14):** 9 classes, not 10: the training file's `target` holds Class_1 to Class_9 (61,878 products) and the competition's sample submission has nine class columns.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source log_loss — multi-class logarithmic loss, the competition's evaluation metric (Kaggle evaluation page).
+
+CC (2026-11-13, Andrej): time basis `Retrospective` instead of `Timeless`: the release is one 2015 extract (`Samples: One Moment`), which `Timeless` does not take, and the use case cleans up the existing catalogue, filling in the categories of the products it covers. The random split stays.
 
 ## Reference
 

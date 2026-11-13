@@ -19,11 +19,7 @@ from data_foundry.schema import FORCED_TIME_TAGS, TIME_BASIS_TAGS
 REPO = resolve_curation_root().parent
 LATER_TARGETS = {"Target: Later", "Target: Varying Delay", "Target: Revised Later"}
 
-PENDING = {
-    "churn_telco_south_asia": (
-        "one moment, target later, but no closed window: when the churn was observed is not stated (forced, 2026-10-21)"
-    ),
-}
+PENDING = {}
 """Records whose contradiction is known: an open review item, or a written exception the curator decided."""
 
 

@@ -65,7 +65,7 @@ class ChurnTelcoSouthAsia(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
+    data_tags = ("DelayedTarget",)
     download_description = """
         We download the Kaggle dataset mahreen/sato2015, uploaded on 2017-10-11 by the Kaggle user mahreen (OpenML
         lists the creator as MAHREENAHMED), whose data card cites the paper that introduced the data. It holds one
@@ -97,6 +97,10 @@ class ChurnTelcoSouthAsia(AbstractCuratedDataset):
         - Left unordered (2026-10-31, CLEAN-14, the curator's marks): `aug_user_type` and `sep_user_type` are a 2G or 3G
           subscription (data card); `Other` (374 subscribers, the same in both months, while 103 move between 2G and 3G)
           is undocumented and uses data like the 2G users, so it is not 4G. Two levels on the scale and one off it.
+        - Time basis: DelayedTarget (Andrej, 2026-11-13; `ForcedIIDFromTemporal` before, 2026-10-21): the operator
+          scores each subscriber after the same two months of usage (August and September 2015), the shared prediction
+          moment, and churn follows it (`Target: Later`). Neither paper says when the churn was observed, so the window
+          is taken as closed for every subscriber. It cannot test a later scoring.
     """
 
     # Task

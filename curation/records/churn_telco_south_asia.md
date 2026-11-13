@@ -60,6 +60,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37: the user types le
 
 CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 1, B): whether the subscriber churns after the two months of usage, so it arrives after the features; the forced tag and the split stay.
 
+CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedIIDFromTemporal`: the subscribers are scored after the same two months of usage, the shared prediction moment, and churn follows it (`Target: Later`); its window is taken as closed, as for mobile_churn. The random split stays.
+
 ## Review
 
 **Outcome:** added. The record gained `Target: Later` on 2026-11-13.
