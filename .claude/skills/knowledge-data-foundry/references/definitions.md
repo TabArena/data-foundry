@@ -571,16 +571,6 @@ on what is known there, [use_case.md](../../knowledge-curation/references/use_ca
 without it. A scoring column is no way to hide the time column (`task_scoring_column_is_feature`), nor is dropping it
 in `_make_splits`.
 
-The time column is a model input unless `Temporal(..., feature=False)` says the actor does not hold it at the
-prediction point: a date that arrives with the target (sdss_17: the date of the spectrum that sets an object's class,
-2026-11-12). The column then stays in the frame, orders and splits the rows and fills the README's split table, and
-the container records `time_is_feature=False` in the task metadata (left out of the checksum while True), so
-`feature_columns(container)` leaves it out; the README states it under Splits. Only a temporal task can set it. What
-decides is whether the actor holds the column at the prediction point (the use-case rules on the prediction point and
-on what is known there, [use_case.md](../../knowledge-curation/references/use_case.md)), not whether the score drops
-without it. A scoring column is no way to hide the time column (`task_scoring_column_is_feature`), nor is dropping it
-in `_make_splits`.
-
 The data arrives sorted by the time column, and `TemporalSplits` builds the convention the bundle checks verify: one
 repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is the newest window, the rest walk back
 (`splits_temporal_order`); an expanding train side, everything strictly before the window minus the gap
