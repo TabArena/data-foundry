@@ -79,6 +79,7 @@ class LungCancer(AbstractCuratedDataset):
     curation_comments = """
         - The original data comes with lung adenocarcinoma and other adenocarcinomas merged into one class already. We keep the same and were not able to find a way to reverse this from the public data.
         - We also drop the class "small-cell lung carcinoma" as it only has 6 samples, which is not a meaningful sample size for benchmarking, or the predictive task.  We could add another version with all classes in the future.
+        - Class-dependent recording (record marker `Class-dependent Recording`): 47 of the 139 adenocarcinoma rows are means of 2-4 arrays (values off the 0.01 grid of the other rows), none of the 58 other rows, and the non-human spike-in control probes alone separate the classes (one-vs-rest ROC AUC 0.85). Kept: the averaging cannot be undone from the public file, and neither artefact carries the score (logistic regression, stratified 3-fold x 20): models tell the averaged rows from single-array adenocarcinomas only weakly (ROC AUC 0.59-0.62 from values rounded to the 0.01 grid), rounding every value to that grid changes log loss from 0.141 to 0.140, dropping the 47 averaged rows gives 0.146, and dropping all 67 control probes 0.139.
     """
     accepted_check_warnings = {
         "meta_license_unknown": (

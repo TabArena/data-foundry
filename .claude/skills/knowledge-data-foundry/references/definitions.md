@@ -759,7 +759,12 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 * Destroyed meaning to reconstruct.
 * Classes recorded differently: "check number formats and missingness per class (probes 3, 9, 17); do two same-label
   subgroups separate, or rows of one class that share a format the other class rarely has (LEAK-39)? Are there
-  straight-line fills in the raw order (probe 18, LEAK-40)?"
+  straight-line fills in the raw order (probe 18, LEAK-40)?" Whatever is found, fixed or not, is one `curation_comments`
+  bullet that starts ``Class-dependent recording (record marker `Class-dependent Recording`):``: what was recorded
+  differently and how it splits by class, the score of the recording alone (before and after a fix), and what was done:
+  harmonised, dropped, kept with the reason, or `Not harmonised yet:` with what the fix would cost. The record gets the
+  marker and a short evidence note (LEAK-13 to LEAK-15, LEAK-39 and LEAK-40 in
+  [leak_checks.md](../../knowledge-curation/references/leak_checks.md)).
 * Cohort and selection, right truncation.
 * A label read off a later stage.
 * Definition bugs the audit found in shipped datasets: a numeric column listed as categorical (a 125k-level category in
