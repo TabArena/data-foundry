@@ -10,7 +10,7 @@ import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
 
 # The producer of each wine, the group of the split. The data have no producer column: the rule reads it from the
-# title, and the two tables below fix what the rule gets wrong. Every one of the 1,277 titles was checked by hand
+# title, and the two tables below fix what the rule gets wrong. Every one of the 1,279 titles was checked by hand
 # (2026-11-11); see the curation comments for what one producer is.
 _STYLE_WORDS = {
     "brut",
@@ -363,6 +363,8 @@ _PRODUCER_MERGE = {
     "jeanlouis chavy": "jean-louis chavy",
     "jeanpierre bailly": "jean-pierre bailly",
     "lâchezvous grenachesyrah": "lâchez-vous",
+    "the macallan sherry oak 12 year old single malt whisky 70cl": "the macallan",
+    "vivir tequila blanco": "vivir",
 }
 
 
@@ -404,7 +406,7 @@ class WineWorldCost(AbstractCuratedDataset):
             " and description."
         ),
         row=(
-            "One wine sold by the bottle in a UK online wine shop, priced in pounds and scraped in 2023 (1,277 wines;"
+            "One wine sold by the bottle in a UK online wine shop, priced in pounds and scraped in 2023 (1,279 wines;"
             " most likely Majestic Wine, which 78 descriptions name)."
         ),
         predicted="The price of one bottle in pounds, on a log scale.",
@@ -470,8 +472,8 @@ class WineWorldCost(AbstractCuratedDataset):
           sentence from that one description (Andrej, 2026-11-10); the 13 other descriptions that name a price in
           pounds name other wines' prices, positioning copy that stays. Removing every sentence with price or value
           words changes R^2 by 0.003, so we keep the description (evidence in the record, 2026-10-14).
-        - We drop the two spirits, rows with an ABV of 30% or more (Andrej, 2026-11-10): a 12-year-old single malt
-          whisky (40%) and a tequila; the task prices a bottle of wine. The alcohol-free and fortified wines stay.
+        - Two rows are spirits, not wine: a 12-year-old single malt whisky (Macallan Sherry Oak, 40%) and a tequila
+          (VIVIR Tequila Blanco, 40%). They stay (Andrej, 2026-11-10), as do the alcohol-free and fortified wines.
         - The shop's sales copy (title and description) is written for wines already priced and its wording follows
           the price tier (value wording at a median £13-15, critic and cru wording at £31-48), but it never states
           the price and adds about 0.09 R² over the tabular columns; it stays as part of the task, with an
@@ -484,12 +486,12 @@ class WineWorldCost(AbstractCuratedDataset):
           is pricing a wine from a producer the shop does not list yet. The data hold no listing date, so no
           split forward in time can be built; under the random split 64% of the test wines had a wine of the same
           producer in training. RMSLE, 3 folds (3 repeats for TabPFN, 10 for the others), random against grouped by
-          this producer key: TabPFN-3.5 0.345 / 0.375, LightGBM 0.383 / 0.410, ridge on TF-IDF 0.365 / 0.403; every
+          this producer key: TabPFN-3.5 0.345 / 0.377, LightGBM 0.384 / 0.410, ridge on TF-IDF 0.370 / 0.403; every
           model loses 0.03 to 0.04 and TabPFN stays ahead.
         - The producer key (`Producer`, the group column, no feature): the data have no producer column. A rule reads it
           from the title (the words before the first quoted name; else before the grape, place, a style word or the
           vintage), and two tables fix what the rule gets wrong: titles that start with an appellation, a second wine or
-          a brand (47 rows), and spelling variants, name forms, ranges and brands of one producer (339 rows). All 1,277
+          a brand (47 rows), and spelling variants, name forms, ranges and brands of one producer (339 rows). All 1,279
           titles were checked by hand (2026-11-11). One producer is the house, estate, winery or cooperative that makes
           and sells the wine under its name; its brands, ranges and second wines join it when the title or the shop's
           copy names it as their maker (Tio Pepe with Gonzalez Byass, The Ned and The King's series with Marisco
@@ -498,7 +500,7 @@ class WineWorldCost(AbstractCuratedDataset):
           Villemajou and Gérard Bertrand), and corporate owners are not merged (Dom Pérignon and Moët & Chandon,
           Alamos and Catena). The shop's own-label ranges are one group each, although some of their copy names the
           maker (Definition Fleurie by Pardon et Fils): the shop prices the range, and the maker is not named for all.
-          613 producers, 1 to 35 wines (Definition), 250 with more than one wine.
+          615 producers, 1 to 35 wines (Definition), 250 with more than one wine.
         - Time basis: Snapshot: one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023; the
           shelf prices, sales copy and catalogue attributes of that moment; the vintage is a wine attribute, not a
           time. Not tested: prices after 2023.
@@ -519,7 +521,7 @@ class WineWorldCost(AbstractCuratedDataset):
         prediction_unit="row",
         context="none",
         definition="""
-            One group is a producer: the house, estate, winery or cooperative that makes and sells the wine under its name, with its brands, ranges and second wines (613 producers, 1 to 35 wines; 250 with more than one). The data have no producer column; the key is read from the title and checked by hand (curation comments). The use case is a producer, importer or buyer estimating the shelf price of a wine not on the list, often from a producer the shop does not sell yet; such a wine has no sibling in the price list to read the price level from, so the test producers are new to the model. The shop's own-label ranges (Definition, Chosen by Majestic, Selected by Majestic, Parcel Series, Winemaker Series) are one group each. Each row is one prediction, made from the wine's catalogue entry and the shop's copy.
+            One group is a producer: the house, estate, winery or cooperative that makes and sells the wine under its name, with its brands, ranges and second wines (615 producers, 1 to 35 wines; 250 with more than one). The data have no producer column; the key is read from the title and checked by hand (curation comments). The use case is a producer, importer or buyer estimating the shelf price of a wine not on the list, often from a producer the shop does not sell yet; such a wine has no sibling in the price list to read the price level from, so the test producers are new to the model. The shop's own-label ranges (Definition, Chosen by Majestic, Selected by Majestic, Parcel Series, Winemaker Series) are one group each. Each row is one prediction, made from the wine's catalogue entry and the shop's copy.
         """,
     )
 
@@ -537,8 +539,6 @@ class WineWorldCost(AbstractCuratedDataset):
         df = df[df["Per bottle / case / each"] == "per bottle"].reset_index(drop=True)
         df["Price"] = df["Price"].apply(lambda x: x.replace("£", "").replace(" per bottle", "")).astype(float)
         df["ABV%"] = df["ABV"].apply(lambda x: str(x).replace("ABV ", "").replace("%", "")).astype(float)
-        # Two spirits (a whisky and a tequila) are not wine
-        df = df[~(df["ABV%"] >= 30)].reset_index(drop=True)
         # One description quotes its own wine's earlier price
         stated_price = "Our mission was to find the best tasting wines at £5.99."
         has_price = df["Description"].fillna("").str.contains(stated_price, regex=False)
@@ -549,7 +549,7 @@ class WineWorldCost(AbstractCuratedDataset):
         )
         # The producer, the group of the split (no feature)
         df["Producer"] = df.apply(_producer_key, axis=1)
-        assert df["Producer"].nunique() == 613
+        assert df["Producer"].nunique() == 615
         df["Capacity"] = (
             df["Capacity"]
             .map(

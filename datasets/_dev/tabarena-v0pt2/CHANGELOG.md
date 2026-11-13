@@ -5,12 +5,12 @@
 Andrej's decisions of 2026-11-10 and 2026-11-11 on the dataset's review.
 
 - Split grouped by producer, random before: the data have no producer column, so a `Producer` key is read from the
-  title by a rule and two hand-made tables fix what it gets wrong; all 1,277 titles were checked by hand (613
+  title by a rule and two hand-made tables fix what it gets wrong; all 1,279 titles were checked by hand (615
   producers, 1 to 35 wines). Under the random split 64% of the test wines had a wine of their producer in training.
 - Use case reframed: a producer, importer or buyer estimating the UK shelf price of a wine not on the list, not the
   shop, which prices from its costs.
-- The shop's sales copy stays as part of the task, with an approximate fit; the whisky and the tequila (ABV 30% or
-  more) are dropped (1,277 wines); the one sentence quoting a wine's own earlier price is removed.
+- The shop's sales copy stays as part of the task, with an approximate fit; the whisky and the tequila stay
+  (1,279 wines, as implemented); the one sentence quoting a wine's own earlier price is removed.
 - The record: `original_source` Kaggle (was Other), `Grouped (NON-IID)`, the review in `## Review`.
 
 ## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)

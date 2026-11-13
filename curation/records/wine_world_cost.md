@@ -52,11 +52,11 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after changes: the shop's copy carries real signal (+0.09 R²) and never states the price, but it is written for priced wines by an unnamed shop, so the fit should be approximate; drop the two spirits. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
 
-CC (2026-11-10, Andrej): review page marks: the shop's sales copy stays as part of the task, fit approximate (issue 1, option B: `fit_reason` names the copy written for priced wines and the unnamed shop); the whisky and the tequila (ABV 30% or more) are dropped, 1,277 wines (issue 2, ok, B); the random split is named `Snapshot` of the 2023 scrape (issue 3, B; the `Time basis:` bullet is in `curation_comments`, the tag enters `data_tags` once PR #50 is in the working copy); the sentence quoting "Majestic Loves Rose 2019"'s own earlier price (£5.99) is removed from its description (issue 4, B).
+CC (2026-11-10, Andrej): review page marks: the shop's sales copy stays as part of the task, fit approximate (issue 1, option B: `fit_reason` names the copy written for priced wines and the unnamed shop); the whisky and the tequila (ABV 40%) stay, 1,279 wines (issue 2, ok: as implemented, A); the random split is named `Snapshot` of the 2023 scrape (issue 3, B; the `Time basis:` bullet is in `curation_comments`, the tag enters `data_tags` once PR #50 is in the working copy); the sentence quoting "Majestic Loves Rose 2019"'s own earlier price (£5.99) is removed from its description (issue 4, B).
 
 CC (2026-11-11, Andrej): record field set from the definition (review page field mark): `original_source` Kaggle (was Other).
 
-CC (2026-11-11, Andrej): split grouped by producer (review page issue 5, a, the issue's C), random before. The data have no producer column: a `Producer` key is read from the title by a rule and two hand-made tables fix what the rule gets wrong; all 1,277 titles were checked by hand. Brands, ranges and second wines join their house when the title or the shop's copy names it as their maker; the shop's own-label ranges are one group each; 613 producers. `required_split` Grouped (NON-IID) (was Random (IID)). Grouping costs every model 0.03 to 0.04 RMSLE (TabPFN-3.5 0.345 to 0.375). Use case reassessment opened as issue 6.
+CC (2026-11-11, Andrej): split grouped by producer (review page issue 5, a, the issue's C), random before. The data have no producer column: a `Producer` key is read from the title by a rule and two hand-made tables fix what the rule gets wrong; all 1,279 titles were checked by hand. Brands, ranges and second wines join their house when the title or the shop's copy names it as their maker; the shop's own-label ranges are one group each; 615 producers. `required_split` Grouped (NON-IID) (was Random (IID)). Grouping costs every model 0.03 to 0.04 RMSLE (TabPFN-3.5 0.345 to 0.377). Use case reassessment opened as issue 6.
 
 CC (2026-11-11, Andrej): use case reframed (review page issue 6, B): the actor is a producer or importer estimating the UK shelf price of a wine it offers, or a buyer judging whether a wine is good value, not the shop, which prices from its costs (supplier price, duty, VAT, margin) that the data do not hold. `use_case` and `question` rewritten; `fit_reason` adds that the model stands for someone who does not know the price (fit stays approximate; its price-tier numbers moved to `curation_comments`); the grouping definition and the split bullet name the new actor. Text only, data unchanged.
 
@@ -78,7 +78,7 @@ family on one side lowers R² only from 0.741 to 0.733. Weighed: methods separat
 an unnamed shop and an uploader's own licence -, one shop at one time -, better data may exist (Alko's price list,
 not screened yet) -.
 
-**Main points:** Issues 1 to 4 settled (2026-11-10): the shop's copy stays with an approximate fit (1), the two spirits are dropped (2), the random split is named a `Snapshot` of the 2023 scrape (3), and the sentence quoting a wine's own earlier price is removed (4). Record `original_source` set to Kaggle (2026-11-11). Split settled (2026-11-11): grouped by a hand-checked producer key, 613 producers (5). Use case reframed (2026-11-11): a producer, importer or buyer estimating the UK shelf price of a wine not on the list, not the shop, which prices from its costs (6). No open issues.
+**Main points:** Issues 1 to 4 settled (2026-11-10): the shop's copy stays with an approximate fit (1), the two spirits stay (2), the random split is named a `Snapshot` of the 2023 scrape (3), and the sentence quoting a wine's own earlier price is removed (4). Record `original_source` set to Kaggle (2026-11-11). Split settled (2026-11-11): grouped by a hand-checked producer key, 615 producers (5). Use case reframed (2026-11-11): a producer, importer or buyer estimating the UK shelf price of a wine not on the list, not the shop, which prices from its costs (6). No open issues.
 
 **Record judgment:** valid, ship after the changes. Andrej disputed Lennart's `Yes` on 2026-10-15; his strongest
 points were the licence and provenance of scraped shop copy and that the copy is written for wines already priced. The
@@ -160,9 +160,10 @@ to-do notes are done.
    **Notes for the AI:** on B, drop `df["ABV%"] >= 30` in `_clean` after parsing ABV, check that exactly the whisky
    and the tequila go, add a curation note, re-run `dataset check`, and note the change in the CHANGELOG.
 
-   **Resolved (2026-11-10, Andrej):** B: `_clean` drops the rows with ABV 30% or more after parsing ABV, exactly the
-   Macallan Sherry Oak 12 Year Old and VIVIR Tequila Blanco (1,277 wines); a curation bullet and the task summary's row
-   count follow. `dataset check` re-run.
+   **Andrej (2026-11-10, ok):** As implemented (A).
+
+   **Resolved (2026-11-10, Andrej):** A: no change; the Macallan Sherry Oak 12 Year Old and VIVIR Tequila Blanco stay
+   (1,279 wines); a curation bullet names the two spirits.
 
 3. **Time basis: name the random split a `Snapshot` of the 2023 scrape?**
 
@@ -315,18 +316,18 @@ to-do notes are done.
    **Andrej (2026-11-11, discuss):** Reply (a): Grouped by producer (issue's C)
 
    **Resolved (2026-11-11, Andrej):** a (the issue's C): grouped by producer.
-   - `_clean` adds a `Producer` column (group of the split, no feature): a rule reads it from the title, and two tables in `dataset.py` fix what the rule gets wrong (47 titles that start with an appellation, a second wine or a brand; 339 rows of spelling variants, name forms, brands and ranges of one producer). All 1,277 titles were checked by hand.
+   - `_clean` adds a `Producer` column (group of the split, no feature): a rule reads it from the title, and two tables in `dataset.py` fix what the rule gets wrong (47 titles that start with an appellation, a second wine or a brand; 339 rows of spelling variants, name forms, brands and ranges of one producer). All 1,279 titles were checked by hand.
    - One producer = the house, estate, winery or cooperative selling under its name, with its brands, ranges and second wines when the title or the shop's copy names it as their maker (Tio Pepe with Gonzalez Byass, The Ned and the King's series with Marisco, Armand de Brignac with Cattier). Separately named estates and corporate owners are not merged (Lynch-Moussas and Batailley, Dom Pérignon and Moët). The shop's own-label ranges (Definition, Chosen by Majestic, Selected by Majestic, Parcel Series, Winemaker Series) are one group each.
-   - The draft's 786 keys become 613 producers (250 with more than one wine, the largest Definition with 35); the curation comments describe the method; `assert` on 613.
+   - The draft's 786 keys become 615 producers on the 1,279 wines (250 with more than one wine, the largest Definition with 35); the curation comments describe the method; `assert` on 615.
    - Task summary `split` and `changes`, `grouping` with its definition, `splits_comment`; record `required_split` Grouped (NON-IID). `dataset check`: 0 errors, 0 warnings.
    - With the checked key the random split gave 64% of the test wines their producer in training (49% with the draft key), and the draft's finding that those wines are easier no longer holds; the grouped split still costs every model 0.03 to 0.04:
 
    | Split | TabPFN-3.5 | LightGBM | Ridge, TF-IDF |
    |---|---|---|---|
-   | Random | 0.345 | 0.383 | 0.365 |
-   | Grouped by producer (checked key) | 0.375 | 0.410 | 0.403 |
+   | Random | 0.345 | 0.384 | 0.370 |
+   | Grouped by producer (checked key) | 0.377 | 0.410 | 0.403 |
 
-   RMSLE, 3 folds x 3 repeats (TabPFN) or 10.
+   RMSLE on the 1,279 wines (both spirits kept, issue 2), 3 folds x 3 repeats (TabPFN) or 10.
 
 6. **Use case: who would predict a wine's shelf price from these columns?**
 
