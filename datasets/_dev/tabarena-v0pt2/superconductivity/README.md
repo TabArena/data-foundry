@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: superconductivity
 container_format: 2
-checksum: v2:becd6c6c564df9964b3c625a9e9efb841847f8fdeace3731c7f49e17811ed11c
+checksum: v2:183cc2141ea0efa094e0b9a6a1cd96599824fdd35555f227aecf739c2b6ff75e
 build:
   uuid: 01a11308-e9d1-7f71-b3e3-e172887ea0d9
   checksum: v2:ae9420faedcbad176d7019d1dc2e30a11901aa5298622d6d3077bffb316d7a04
@@ -82,7 +82,7 @@ decisions:
 
 Regression of `critical_temp`, scored with `rmse` on grouped splits by `composition`. 21,263 rows and 81 features. Source: UCI (2018).
 
-Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:becd6c6c564df9964b3c625a9e9efb841847f8fdeace3731c7f49e17811ed11c`, so the build is stale. See [Build](#build).
+Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:183cc2141ea0efa094e0b9a6a1cd96599824fdd35555f227aecf739c2b6ff75e`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -217,7 +217,7 @@ The first 5 of 21,263 rows of the final frame (random rows: the frame is shuffle
 
 - The 81 features are computed from the element shares of the chemical formula alone. `unique_m.csv` (row-aligned with `train.csv`, same critical temperatures) has each row's element counts and formula; from it we add the group column `composition` (see `composition_labels`): 15,164 compositions, 2,422 of them with 2 to 110 SuperCon entries (6,099 repeated rows). Their temperatures differ by a median standard deviation of 1.3 K, by more than 30 K for 132 compositions (other samples, phases or pressures, which the release does not record).
 - Grouped by composition since 2026-10-06 (IID before): a model like this is used for compositions without a measured temperature, and a random split gave 35% of the test rows an identical row in train. Every entry is kept (SPLIT-26), and each composition counts once in the score (Lennart, 2026-11-08, review issue 4, issue 1 of that round): the RMSE weights an entry by 1 over its composition's number of entries (`composition_weight`), a scoring column for the metric only, no feature and no training weight. All 81 inputs are fixed by the composition (equal within 2,416 of the 2,422 compositions with several entries; in the other 6, formulas written at another scale such as `Au30Pd3.3Te66.6` and `Au0.3Pd0.033Te0.666`, they differ by floating-point noise, at most 3e-15 relative), so a model predicts one value per composition, and the materials scientist decides per composition which to synthesize (MET-1, MET-17). Unweighted, YBa2Cu3O7 (110 entries) counted 110 times a composition measured once, and the 2,422 compositions with several entries held 40% of the rows; weighted, the 12,742 compositions with one entry carry 84% of the weight. On the 9 shipped splits the weighted RMSE ranks 8 untuned predictors (random forest, extra trees, two LightGBM, two ridge, kNN, the training mean) like the per-entry RMSE at Kendall tau 0.98 per split on average (lowest 0.93) and 0.93 for the ranking by the mean over the splits, the same best model on 9 of 9. Not grouped by element set: a new composition is usually another proportion of known elements (a doping level), not a new family. Stanev et al. (2018) average the entries of a material instead (standard deviation below 5 K) and drop the rest; we keep the release's rows.
-- Time basis: no prototype tag (Andrej, 2026-11-12; review issue 5). The source keeps its model to known chemistry: Hamidieh (2018) offers it to researchers "interested in finding high temperature superconductors" to "narrow their search", warns "We should not expect good predictions for completely new superconductors" and says it "only gives predictions for superconductors"; it scored random splits of 2/3 train and 1/3 test, 25 times. Holding out whole compositions stands for that question (SPLIT-34, the source's scope), and the catalogue's later families lie outside it. The catalogue does move with time, measured and recorded here: dated through the MDR SuperCon Datasheet Ver.240322 (NIMS, doi:10.48505/nims.4487, CC BY 4.0; 21,163 of the 21,263 rows, 99.5%), it grew in waves of families (the cuprates from 1986, MgB2 in 2001, the iron-based superconductors from 2008). Windows by first report year (1996-2001, 2002-2008, 2009-2019) leave 23-51% of the test compositions an element-set sibling in training, against 79-86% when the same compositions are held out from all years (untuned LightGBM RMSE 18.2, 14.9 and 12.6 K against 14.2, 10.0 and 8.6 K; Slurm job 1377613, scripts in ~/claude_jobs/marks_1111/superconductivity/). The split cannot test a family of superconductors not yet known, which the source leaves out.
+- Time basis: no prototype tag (Andrej, 2026-11-12; review issue 5). The source keeps its model to known chemistry: Hamidieh (2018) offers it to researchers "interested in finding high temperature superconductors" to "narrow their search", warns "We should not expect good predictions for completely new superconductors" and says it "only gives predictions for superconductors"; it scored random splits of 2/3 train and 1/3 test, 25 times. Holding out whole compositions stands for that question (SPLIT-34, the source's scope), and the catalogue's later families lie outside it. The catalogue does move with time, measured and recorded here: dated through the MDR SuperCon Datasheet Ver.240322 (NIMS, doi:10.48505/nims.4487, CC BY 4.0; 21,163 of the 21,263 rows, 99.5%), it grew in waves of families (the cuprates from 1986, MgB2 in 2001, the iron-based superconductors from 2008). Windows by first report year (1996-2001, 2002-2008, 2009-2019) leave 23-51% of the test compositions an element-set sibling in training, against 79-86% when the same compositions are held out from all years (untuned LightGBM RMSE 18.2, 14.9 and 12.6 K against 14.2, 10.0 and 8.6 K; Slurm job 1377613). The split cannot test a family of superconductors not yet known, which the source leaves out.
 
 ## Splits
 
@@ -279,7 +279,7 @@ The features come from the composition alone, so the entries of one composition 
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (29 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_conflicting_duplicate_rows`: 6,027 row(s) (28.3%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 - **info** `dataset_duplicate_rows`: 66 exact duplicate row(s) (0.3% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
@@ -457,4 +457,4 @@ The features come from the composition alone, so the entries of one composition 
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:becd6c6c564df9964b3c625a9e9efb841847f8fdeace3731c7f49e17811ed11c` |
+| stale | yes: the definition now gives checksum `v2:183cc2141ea0efa094e0b9a6a1cd96599824fdd35555f227aecf739c2b6ff75e` |

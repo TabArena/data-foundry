@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: biogeographical_ancestry_prediction
 container_format: 2
-checksum: v2:ca744d974223418081ef1774a9258e16526a6d153a8afa75983a01f7be3b58af
+checksum: v2:9b90e00770768731e403d8b53c51749b68103e46c0968e04752e72d2a6212cdd
 build:
   uuid: 01a111fc-9b9e-7d5b-bb54-5ba4424f3c12
   checksum: v2:756da0d9ffa37ad6880e28e58cb2f12202f9717e6b4843cce912fbe19b61fd1e
@@ -69,7 +69,7 @@ decisions: []
 
 Multiclass classification of `Population`, scored with `log_loss` on IID splits. 607 rows and 102 features. Source: Other (2023).
 
-Built as `01a111fc-9b9e-7d5b-bb54-5ba4424f3c12` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ca744d974223418081ef1774a9258e16526a6d153a8afa75983a01f7be3b58af`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9b9e-7d5b-bb54-5ba4424f3c12` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9b90e00770768731e403d8b53c51749b68103e46c0968e04752e72d2a6212cdd`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -296,7 +296,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (29 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 Accepted on purpose:
@@ -478,4 +478,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ca744d974223418081ef1774a9258e16526a6d153a8afa75983a01f7be3b58af` |
+| stale | yes: the definition now gives checksum `v2:9b90e00770768731e403d8b53c51749b68103e46c0968e04752e72d2a6212cdd` |

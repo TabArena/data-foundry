@@ -330,7 +330,7 @@ The `rs` probes of the methylation array measure the patient's germline genotype
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (29 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
 - **info** `meta_time_basis_missing`: The split is not temporal and the definition does not say why. (hint: Add the use-case prototype (Timeless, Snapshot, DelayedTarget, StationaryRelation) with a `Time basis:` line in `curation_comments`, a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`) with its line, or the line alone with the reason, SPLIT-32.)
 

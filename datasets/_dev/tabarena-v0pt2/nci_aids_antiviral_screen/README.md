@@ -323,7 +323,7 @@ A salt and its free form, or one compound under two NSC numbers, that the screen
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (29 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 ## Data checks

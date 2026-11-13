@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: protein_model_quality_rf_pcp
 container_format: 2
-checksum: v2:bb30952d3f8fbc527840bd592793e5c833034fa1e9955c661249cd8395acf0bd
+checksum: v2:41b2827b4bf69011e97974b1264253f884ecbf4528fc99e4ae4450568e76b3f0
 build:
   uuid: 01a18ba2-013a-7001-a61c-686e78b112d7
   checksum: v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a
@@ -47,7 +47,7 @@ task:
       min: 148
       max: 149
 splits:
-  n_repeats: 20
+  n_repeats: 3
   n_folds: 3
   random_state: 4267
   time_horizon: null
@@ -55,11 +55,11 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 50557
-    max: 71679
+    min: 58011
+    max: 69448
   n_test:
-    min: 22404
-    max: 43526
+    min: 24635
+    max: 36072
 bundle_checks:
   ok: true
   errors: []
@@ -77,7 +77,7 @@ decisions: []
 
 Regression of `GDT`, scored with `mean_group_pearsonr` on grouped splits by `protein_id`. 94,083 rows and 6 features. Source: Other (2014).
 
-Built as `01a18ba2-013a-7001-a61c-686e78b112d7` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:bb30952d3f8fbc527840bd592793e5c833034fa1e9955c661249cd8395acf0bd`, so the build is stale. See [Build](#build).
+Built as `01a18ba2-013a-7001-a61c-686e78b112d7` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:41b2827b4bf69011e97974b1264253f884ecbf4528fc99e4ae4450568e76b3f0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -203,12 +203,9 @@ The first 5 of 94,083 rows of the final frame (random rows: the frame is shuffle
   (superseded 2026-11-05: 94,083 rows, the 1,011 relaxed natives leave too, CC below)
   and the three documented ambiguous zero-RMSD cases. Preserve source values and the
   historical approximate fit; no modern-generator or protein-family claim is made.
-- Models differ on the declared metric (TP-3): on the 60 shipped splits (20 x 3), untuned ridge scores
-  0.328, a random forest 0.322 and LightGBM 0.320, an order that holds in every block of ten repeats
-  (2026-11-12). On the nine splits of the earlier 3 x 3 build, untuned LightGBM scored 0.322 and
+- Models differ on the declared metric (TP-3): on the nine shipped splits, untuned LightGBM scores 0.322 and
   ridge 0.272, LightGBM higher in all nine (2026-11-05, without the relaxed natives; 0.355 against 0.294 with
-  them, review panel 2026-11-04); why the two runs order ridge and LightGBM differently was not
-  examined. The earlier five-fold comparison
+  them, review panel 2026-11-04). The earlier five-fold comparison
   (ridge RMSE 0.19318568 against LightGBM 0.17894541, 7.37%) was measured for the RMSE fallback and is
   historical.
 - The author archive has 99,987 complete rows. Exclude 4,893 IDs beginning native_ or ending _native.pdb
@@ -279,11 +276,6 @@ The first 5 of 94,083 rows of the final frame (random rows: the frame is shuffle
   within 0.03 of a same-size protein split on CASP8 and CASP9 and 0.03 to 0.07 lower on CASP7; CASP10 scores
   about 0 under any split that trains on the earlier rounds, a change of descriptor convention rather than
   time (splits_comment).
-- CC (2026-11-12, Andrej): twenty repeats of the protein split, 20 x 3 (issue 12, B; SPLIT-33): the metric
-  scores one correlation per protein, so the split count counts the 445 proteins, 297 on the train side. On
-  the earlier 3 x 3, two of three disjoint blocks of three repeats ranked LightGBM and the random forest in
-  the opposite order to the full 20 x 3 run; twenty repeats rank ridge, forest and LightGBM the same way in
-  every subset (LightGBM - ridge -0.008, t -4.5 across repeats).
 - Outdated (Lennart, 2026-11-04): six global descriptors of 2002-2012 server models; since CASP15 the
   standard is the predictor's own confidence (pLDDT). Kept as a small grouped biology task, with no new features.
 - First release is the August 2014 source archive; the paper appeared online in December 2014 and in 2015.
@@ -291,8 +283,7 @@ The first 5 of 94,083 rows of the final frame (random rows: the frame is shuffle
 
 ## Splits
 
-Twenty repeats of three-fold grouped evaluation with seed 4267: the metric scores one correlation per
-protein, so the split count counts proteins (297 on the train side). All rows of each recovered target key stay
+Default repeated three-fold grouped evaluation with seed 4267. All rows of each recovered target key stay
 together, including verified same-protein accession aliases. The selected GDT task and preserved target alternatives share test groups;
 membership is verified explicitly.
 All 342 CASP identities are verified; three retain source IDs. Sequence-family independence is not claimed.
@@ -303,10 +294,7 @@ natives; 0.340, 0.483, 0.016 and 0.03 with them), so the rounds show no drift, a
 CASP10's low score comes from its other descriptor convention (the SL note), not from time. The grouped
 split is kept (Andrej, 2026-11-12: "I go back to by split by protein").
 
-20 repeat(s) x 3 fold(s) with seed 4267; train 50,557 to 71,679 rows, test 22,404 to 43,526 rows.
-
-<details>
-<summary>Show all 60 splits</summary>
+3 repeat(s) x 3 fold(s) with seed 4267; train 58,011 to 69,448 rows, test 24,635 to 36,072 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
@@ -319,59 +307,6 @@ split is kept (Andrej, 2026-11-12: "I go back to by split by protein").
 | 2 | 0 | 58474 | 35609 |
 | 2 | 1 | 69448 | 24635 |
 | 2 | 2 | 60244 | 33839 |
-| 3 | 0 | 62965 | 31118 |
-| 3 | 1 | 56635 | 37448 |
-| 3 | 2 | 68566 | 25517 |
-| 4 | 0 | 71679 | 22404 |
-| 4 | 1 | 54090 | 39993 |
-| 4 | 2 | 62397 | 31686 |
-| 5 | 0 | 61405 | 32678 |
-| 5 | 1 | 65073 | 29010 |
-| 5 | 2 | 61688 | 32395 |
-| 6 | 0 | 63826 | 30257 |
-| 6 | 1 | 55487 | 38596 |
-| 6 | 2 | 68853 | 25230 |
-| 7 | 0 | 62916 | 31167 |
-| 7 | 1 | 63307 | 30776 |
-| 7 | 2 | 61943 | 32140 |
-| 8 | 0 | 60109 | 33974 |
-| 8 | 1 | 65076 | 29007 |
-| 8 | 2 | 62981 | 31102 |
-| 9 | 0 | 60512 | 33571 |
-| 9 | 1 | 65565 | 28518 |
-| 9 | 2 | 62089 | 31994 |
-| 10 | 0 | 68677 | 25406 |
-| 10 | 1 | 68932 | 25151 |
-| 10 | 2 | 50557 | 43526 |
-| 11 | 0 | 68892 | 25191 |
-| 11 | 1 | 56132 | 37951 |
-| 11 | 2 | 63142 | 30941 |
-| 12 | 0 | 62041 | 32042 |
-| 12 | 1 | 59134 | 34949 |
-| 12 | 2 | 66991 | 27092 |
-| 13 | 0 | 60113 | 33970 |
-| 13 | 1 | 58598 | 35485 |
-| 13 | 2 | 69455 | 24628 |
-| 14 | 0 | 57859 | 36224 |
-| 14 | 1 | 64110 | 29973 |
-| 14 | 2 | 66197 | 27886 |
-| 15 | 0 | 62128 | 31955 |
-| 15 | 1 | 63174 | 30909 |
-| 15 | 2 | 62864 | 31219 |
-| 16 | 0 | 64252 | 29831 |
-| 16 | 1 | 59177 | 34906 |
-| 16 | 2 | 64737 | 29346 |
-| 17 | 0 | 66501 | 27582 |
-| 17 | 1 | 55409 | 38674 |
-| 17 | 2 | 66256 | 27827 |
-| 18 | 0 | 58059 | 36024 |
-| 18 | 1 | 64540 | 29543 |
-| 18 | 2 | 65567 | 28516 |
-| 19 | 0 | 69000 | 25083 |
-| 19 | 1 | 58290 | 35793 |
-| 19 | 2 | 60876 | 33207 |
-
-</details>
 
 ## Group structure
 
@@ -399,7 +334,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (29 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
 - **info** `task_metric_input_is_model_input`: The metric reads the task's group or time column(s) ['protein_id'] where they are; they are not scoring columns.
 - **info** `meta_time_basis_missing`: The split is not temporal and the definition does not say why. (hint: Add the use-case prototype (Timeless, Snapshot, DelayedTarget, StationaryRelation) with a `Time basis:` line in `curation_comments`, a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`) with its line, or the line alone with the reason, SPLIT-32.)
@@ -458,4 +393,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | ea35638cb7c9dc88ff6b7f6f6316594207a68393 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:bb30952d3f8fbc527840bd592793e5c833034fa1e9955c661249cd8395acf0bd` |
+| stale | yes: the definition now gives checksum `v2:41b2827b4bf69011e97974b1264253f884ecbf4528fc99e4ae4450568e76b3f0` |
