@@ -67,7 +67,7 @@ CC (2026-11-11, Lennart): the declared horizon (320 cars, no gap, windows starti
 **Outcome:** added. On 2026-11-11 you kept the nine windows of 320 cars from ID 2,628 on (issue 1 and the horizon,
 A), which the amended floor admits with the three oldest training on 46.7%, 39.1% and 31.5% of the cars.
 
-**Main points:** Settled on 2026-11-11: the nine windows of 320 cars stay (issue 1, A), and the declared length of
+**Main points:** Issue 2: Keep `time_index` as a model input? Settled on 2026-11-11: the nine windows of 320 cars stay (issue 1, A), and the declared length of
 320 cars without a gap is checked: no source gives a length, and 320 tests 2,880 cars where 233 would test 2,097.
 
 **Horizon:**
@@ -207,6 +207,26 @@ duplicated option columns) are about the data, not the windows, and are not sett
    outlier bullet of `curation_comments` no longer speaks of the first 1,000 cars. The record has the decision and the
    horizon CC lines. `dataset check`: 0 errors; its 2 warnings (constant and duplicated option columns) are about the
    data and not settled here (README not regenerated).
+
+2. **Keep `time_index`, a reconstructed order, as a model input?**
+
+   * **Problem:**
+     - `time_index` is the car's ID read as its place in the testing sequence; it orders the temporal split and is a model input by default.
+     - california_house_prices_2020, labour_inspection_compliance and wine_quality keep their reconstructed order out of the inputs (`feature=False`), because the actor does not hold it when predicting[^lk-2].
+     - Here the actor does: a car's ID exists before its bench test, so the planner who estimates the test time holds it.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep as input (implemented) | `time_index` stays a feature | the actor holds it; a model can use a trend over time | the test windows lie beyond the training range of the index, where a trend extrapolates poorly |
+     | B | Split order only (`feature=False`) | `time_index` orders the windows and is dropped from the inputs | no model leans on an artificial index | drops what the actor holds at prediction |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   **Notes for the AI:** on B, declare `Temporal(..., feature=False)` (the time-column-as-split-metadata change of #98) and add a CC line.
+
+   [^lk-2]: **LEAK-10** (Must): every feature has to have existed, and be held by the actor, at the prediction time of its row; a time column that only orders the split is declared no input.
+
 
 ## Reference
 

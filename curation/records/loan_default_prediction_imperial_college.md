@@ -200,7 +200,7 @@ warning for -1 in nine columns is accepted: -1 is a change of -100%, and it pred
 (f648: 14.4% against 8.5%). The metric reason adds that the Gini also leans on the tail (the 1% of loans with the
 largest losses hold 38-46% of a window's loss sum, against 71-82% of RMSE's squared error).
 
-**Main points:** No issue open. Settled on 2026-11-10 (Andrej): issue 6, f615 and f617 stay with a LEAK-9 protocol
+**Main points:** Issue 7: Keep `time_index` as a model input? No issue open. Settled on 2026-11-10 (Andrej): issue 6, f615 and f617 stay with a LEAK-9 protocol
 line against reading other test rows (their gain read from the entity's next test row is an evaluation leak; with the
 row alone they add nothing on its own loss). Settled on 2026-11-09 (Andrej): issue 5, the seven aggregates stay out
 under the exception of 2026-11-03. Settled on 2026-11-08: issue 4, the record's `Data Quality Issue` marker removed
@@ -667,6 +667,25 @@ Issues 1 to 3 are settled (Andrej, 2026-11-03).
      read other test rows, is fixed in the scoring ... or by a protocol line the benchmark checks, not in the data".
      **LEAK-10** (Must): a feature holds only what existed at the prediction point; the conditional test measures no
      gain on the row's own loss.
+
+7. **Keep `time_index`, a reconstructed order, as a model input?**
+
+   * **Problem:**
+     - `time_index` is the source's id, which lists the loans from old to new; it orders the temporal split and is a model input by default.
+     - california_house_prices_2020, labour_inspection_compliance and wine_quality keep their reconstructed order out of the inputs (`feature=False`), because the actor does not hold it when predicting[^lk-7].
+     - Here the actor does: the lender knows when it grants a loan, and the index stands for that time.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep as input (implemented) | `time_index` stays a feature | the actor holds it; a model can use a trend over time | the test windows lie beyond the training range of the index, where a trend extrapolates poorly |
+     | B | Split order only (`feature=False`) | `time_index` orders the windows and is dropped from the inputs | no model leans on an artificial index | drops what the actor holds at prediction |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   **Notes for the AI:** on B, declare `Temporal(..., feature=False)` (the time-column-as-split-metadata change of #98) and add a CC line.
+
+   [^lk-7]: **LEAK-10** (Must): every feature has to have existed, and be held by the actor, at the prediction time of its row; a time column that only orders the split is declared no input.
 
 **Review panel:** ship after changes (mediator), wording and one accepted warning, now made. Tier focused, a re-review
 of 2026-11-08 under LEAK-41, MET-14 to MET-16, after the raw data arrived: the claim auditor, the column auditor and the
