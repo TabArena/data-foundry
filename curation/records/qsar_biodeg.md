@@ -75,7 +75,6 @@ CC (2026-11-11, Andrej): split by the year of the test (review issue 2, a), in p
 - Dated through NITE: its workbook of the CSCL biodegradation results of existing chemicals (https://www.nite.go.jp/data/000064112.xlsx) gives the MITI test year for 1,006 chemicals by CAS-RN, and J-CHECK's bulletin year 44 more; 5 undated chemicals leave, so 1,050 rows, tested 1971 to 2008.
 - Why: the protocol moved with the year (80% 14-day tests before 1980, 88% 28-day tests from 2000 on), the class share swings by decade (40%, 28%, 45%, 27%), and 82-88% of each decade's chemicals carry a new scaffold; a change in how the label was recorded rules out `Timeless`.
 - Four expanding windows (2003-08, 2000-02, 1994-98, 1990-93; 125, 177, 112, 111 test chemicals, train 50-88%). On the same test chemicals the split by year scores like the scaffold split (ROC AUC LightGBM / RF 0.921 / 0.933 against 0.918 / 0.926), so it is chosen for the time order, not for difficulty.
-- Evidence: `~/claude_jobs/qsar_nite/` (Slurm 1378095).
 
 CC (2026-11-12, Andrej): review page mark (issue 1, B): keep qsar_biodeg, and settle the pair with `ready_biodegradability_huang_zhang` when that set is added: measure the overlap then and retire this one if the larger set holds most of its chemicals with the same class.
 
@@ -297,7 +296,7 @@ Andrej's dispute of 2026-10-15 is not on the record.
    **Notes for the AI:** on a, add `test_year` in `_prepare_raw_files` from the NITE workbook (joined on CAS, the
    bulletin year as fallback), drop the 5 undated chemicals or keep them in the oldest training side, declare
    `temporal = Temporal(on="test_year", ...)` with the four windows, remove `grouping` and the `scaffold` column, and
-   keep the analog shares in the notes; evidence and scripts in `~/claude_jobs/qsar_nite/`.
+   keep the analog shares in the notes.
 
    [^2t]: **SPLIT-32** (Should): the arrival of the samples affects the target when how the target or the features
      are recorded changes (a new grading, a new instrument, a new selection of cases); a change in how often the

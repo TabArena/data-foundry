@@ -200,8 +200,7 @@ facts `Samples: Over Time`, `Time: Dated` (issue 3).
    the inventory use case, the RTECS dating (7,927 of 11,119, 1935-2023) and the forward-against-scaffold numbers,
    ending with what the split cannot test (the order of the undated rows); the prediction-set reference re-measured
    first; the tag enters `data_tags` once PR #50 is in the working copy; then `dataset check`, a CHANGELOG entry and a
-   record CC line. Scripts and outputs: `~/claude_jobs/qsar_dating2/` (`oral_years.py`, `oral_add_cas.py`,
-   `oral_time_split.py`, `predset_analog.py`, `out/oral_frame.csv`).
+   record CC line.
 
    **Resolved (2026-11-11, Andrej):** b (`ok` on the recommendation): the scaffold split stays; a `Time basis:
    Timeless` bullet in `curation_comments` names the fixed property, the inventory use case, the RTECS dating (7,927 of
@@ -219,8 +218,7 @@ facts `Samples: Over Time`, `Time: Dated` (issue 3).
 
    The 11.0% of the notes holds for the prediction chemicals not in the dataset (11.2%), so `fit_reason` keeps it.
    `dataset check` not run: the curator's copy of `vt_data.mat` is not in `local-data-warehouse/` on this machine; the
-   edit is a curation note only, and the README's notes are regenerated at the next check. Script:
-   `~/claude_jobs/marks_1111/qsar_oral_toxicity/night1/predset_remeasure.py` (Slurm job 1378616).
+   edit is a curation note only, and the README's notes are regenerated at the next check.
 
 3. **Collection facts: `Samples: Over Time` and `Time: Dated`, since a source dates the items?**
 

@@ -186,7 +186,7 @@ place and "acceptors" in another; the definition avoids both words.
    GenBank entry (the name before the site type) holds it at 2 or more positions, keep the first row per position of
    that entry; 13 rows come back, 3,017 rows (EI 685, IE 679, N 1,653). The curation note names the 125 groups, the
    184 copies of one record and the `HUMCYPIIE` pair dropped, and the 13 duplicated-gene windows kept with the 0.6%
-   overlap. Script and log: `~/claude_jobs/entity_review/splice/entity_check.py`, `entity_check.log`.
+   overlap.
 
    [^1e]: **LEAK-41** (Must; draft PR #62): repeats of a unit the data does not record get one of four verdicts:
      natural, entity fix, temporal fix or not recoverable; an entity fix takes copies of one record down to one row
@@ -219,7 +219,6 @@ place and "acceptors" in another; the definition avoids both words.
    * D's 13 duplicated-gene windows sit within one entry, so under either grouping they always share a fold; their 0.55%
      identical overlap goes to 0.
    * The score does not move (differences of 0.002 or less, SD 0.011 to 0.019), so the near relatives do not inflate it.
-   * Scripts `~/claude_jobs/marks_1110/splice/prep.py` and `models.py`.
    * **Recommendation:** D here, and the split in issue 3. **Decision:** D, B, C or keep A?
 
    **Andrej (2026-11-12, discuss):** Agree.
@@ -245,9 +244,6 @@ place and "acceptors" in another; the definition avoids both words.
    * `dataset check` (Slurm 1380083): 0 errors, 0 warnings, 1 info (`dataset_duplicate_rows`, 13 rows: the duplicated
      genes' second places, each pair in one group); the 184-row warning and the two-label info are gone. README
      regenerated; not rebuilt.
-   * splice is in PR #81: `~/claude_jobs/marks_1112b/splice/port_dataset.patch` and `port_record.patch` now carry
-     issues 3 and 1 (both pass `patch --dry-run -p1` in the PR #81 worktree).
-   * Scripts and logs: `~/claude_jobs/marks_1112b/splice/g6/` (Slurm 1380081, 1380082).
 
 2. **Time basis: name the random split `Timeless`?**
 
@@ -267,8 +263,7 @@ place and "acceptors" in another; the definition avoids both words.
      annotating a new primate genome has such relatives in its training data, and grouping by sequence similarity is
      barred, so the random split stays.
    * **Experiments:** UCI's `splice.data`, issue 1's B applied (3,004 windows), 3 x 3 random folds, the Hamming
-     distance of each test window to its nearest training window (model-free; script and log in
-     `~/claude_jobs/time_review/splice/`).
+     distance of each test window to its nearest training window (model-free).
    * **Options:**
 
      | | Option | What it does | Pro | Con |
@@ -310,7 +305,7 @@ place and "acceptors" in another; the definition avoids both words.
      by item family.
    * **Effect on the task:** the test windows then come from genes whose entries are all unseen. This is closer to
      annotating a new gene, while orthologs in other primates can still sit in training.
-   * **Experiments:** D's 3,017 windows, 10 x 3 folds (scripts `~/claude_jobs/marks_1110/splice/`):
+   * **Experiments:** D's 3,017 windows, 10 x 3 folds:
 
      | Split | Identical window in training | Within 3 of 60 bases | LightGBM log loss | Logistic regression |
      |---|---|---|---|---|
@@ -366,7 +361,6 @@ place and "acceptors" in another; the definition avoids both words.
    * Holding out relatives costs 0.004 to 0.009 for LightGBM and 0.010 for logistic regression, within one SD; the
      gap between the two models stays.
    * The other primates are easier, not harder: their genes are orthologs of the human ones in training.
-   * Script and log: `~/claude_jobs/marks_1111/splice/practice_splits.py`, `practice_splits.log`.
    * **Options:**
 
      | | Option | Pro | Con |
@@ -437,7 +431,7 @@ place and "acceptors" in another; the definition avoids both words.
    (94% of entries, 1974 to 1990), show no wave, and a split by entry year leaves as many close relatives as a random
    one; grouped by entry component, 1.3% of the test windows keep a training window within 3 of 60 bases (under
    issue 1's D; re-measure under another option); not tested: a gene with no relative among the training windows. Once PR #50 is in,
-   `data_tags = ("Timeless",)`. On c, `entry_year` joined in `_clean` from `~/claude_jobs/splice_dates/entry_years.csv`
+   `data_tags = ("Timeless",)`. On c, `entry_year` joined in `_clean` from an entry-year table
    copied into the folder, `Temporal(..., feature=False)` with windows 1988, 1989, 1990, the undated windows in
    training; `dataset check`.
 
@@ -471,9 +465,6 @@ place and "acceptors" in another; the definition avoids both words.
      probes were not run.
    * Record `required_split` Grouped (NON-IID), CC line. The tag `Timeless` enters `data_tags` once PR #50 is in the
      working copy.
-   * splice is in PR #81: the port waits in `~/claude_jobs/marks_1112b/splice/port_dataset.patch` and
-     `port_record.patch` (both pass `patch --dry-run`); there `data_tags = ("Timeless",)` comes with it.
-   * Script and log: `~/claude_jobs/marks_1112b/splice/measure_g2.py`, `measure_g2_final.log`.
 
 4. **Date the GenBank entries before settling the split?**
 
@@ -504,7 +495,7 @@ place and "acceptors" in another; the definition avoids both words.
    * **Recommendation:** B, as you chose for the toxicity sets: the key is in the release, so the question can be
      settled by measurement. **Decision:** A or B?
 
-   **Notes for the AI:** on B, a script under `~/claude_jobs/splice_dates/`: NCBI E-utilities (`esearch` on nuccore by
+   **Notes for the AI:** on B, a script: NCBI E-utilities (`esearch` on nuccore by
    entry name, then the earliest date in the record; a generic client name, rate-limited), coverage and range first; if
    three windows fit, the forward-against-random measurement on D's rows as a Slurm CPU job; then an answer in this
    issue and in issue 3. If the entries are dated, the record's facts become `Samples: Over Time` and `Time: Dated`
@@ -537,7 +528,7 @@ place and "acceptors" in another; the definition avoids both words.
      primate division (PRI) but 2 viral (VRL) and 1 STS.
    * Record facts `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension`, with a CC line and
      `Andrej` in `checked_by`. Definition and split unchanged; issue 3 decides the split, with an answer that uses the
-     dates. Scripts and logs: `~/claude_jobs/splice_dates/` (Slurm 1379990, 1380014).
+     dates.
 
 ## Reference
 

@@ -258,7 +258,7 @@ settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `An
    farthest) and cross the random split, as no structure or compound id is published to group them."; no data
    change, no rebuild. On B, `suggestion: No (Retired)`, folder removed, `v2_path` cleared, a `CC (<date>, Andrej):`
    line. The raw Kaggle file is not in the warehouse; the checks used OpenML 46912 (TabArena's copy of the same
-   3,751 rows). Evidence: `~/claude_jobs/entity_review/bioresponse/` (`exact.py`/`exact.log`, `near.py`/`near.log`).
+   3,751 rows).
 
    [^3a]: **LEAK-41** (Must, draft PR #62): repeats of a unit the data does not record get one verdict; not
      recoverable when neither the units nor their order can be recovered with enough confidence: the copies that can
@@ -297,7 +297,7 @@ settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `An
      an unmeasured series[^3d]. This release has no structures, so that exception cannot apply.
      Over related entities, a random split can match how the task is framed[^3e], as here.
    * So A holds, with the analogue use case and Kaggle's random split named; `fit_reason` already names the series.
-   * Script `~/claude_jobs/marks_1110/bioresponse/shift.py`; raw Kaggle files re-downloaded today.
+   * Raw Kaggle files re-downloaded today.
 
    | | Option | What it does | Pro | Con |
    |---|---|---|---|---|

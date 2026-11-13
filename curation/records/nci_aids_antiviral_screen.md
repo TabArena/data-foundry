@@ -215,8 +215,7 @@ the record's `Time: Dated` corrected to `Time: Inferred` (issue 2, B); both reso
      what a screening use case needs. **Decision:** A or B?
 
    **Notes for the AI:** on A, add a `curation_comments` bullet with the table above next to the existing note on
-   neighbouring NSC numbers, and a CC line in the record with `Andrej` in `checked_by`; scripts and results are in
-   `~/claude_jobs/catalogue_splits/nci/`. On B, a `nsc_rank` column and a temporal declaration on it, the `scaffold`
+   neighbouring NSC numbers, and a CC line in the record with `Andrej` in `checked_by`. On B, a `nsc_rank` column and a temporal declaration on it, the `scaffold`
    column and the grouping removed, and the windows checked against the floor that every training side holds at
    least half the rows.
 

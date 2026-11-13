@@ -106,7 +106,7 @@ record carry the decisions. Not built.
   the median of the modal log unit, arXiv:1709.03854); ChEMBL 17 release dump,
   https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_17/; Sheridan RP, Time-split cross-validation
   as a method for estimating the goodness of prospective prediction, J Chem Inf Model 2013;53(4):783-790,
-  doi:10.1021/ci400084k. Evidence: `~/claude_jobs/time_review/qsar_tid_11/`.
+  doi:10.1021/ci400084k.
 
 CC (2026-11-11, Andrej): `original_source` set to the definition's `OpenML` (review page field mark "update"; the record had none). The data is the OpenML upload (ID 3050) of the Olier et al. ChEMBL sets.
 
@@ -209,7 +209,7 @@ record facts corrected (issue 3), all 2026-11-11; `original_source` set to `Open
    * **What it changes:** the bounds are mostly one screen's inactive end rather than series tested to their own top
      concentration, so an option to drop that deposit (494 rows) would remove nearly half the bounds and leave the
      papers' potencies. The options as written stand; B's note can name the deposit. Counts from today's ChEMBL web
-     service (activities of CHEMBL204, 2026-11-06), script in `~/claude_jobs/time_review/qsar_tid_11/`.
+     service (activities of CHEMBL204, 2026-11-06).
 
    **Andrej (2026-11-11, change):** Option B: Keep and document.
 

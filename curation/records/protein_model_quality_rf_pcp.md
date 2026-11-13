@@ -418,7 +418,7 @@ Settled 2026-11-12: the split stays by protein (10 A, on Andrej's issue 11 note;
     Temporal(on="casp_round", splits=TemporalSplits(window=None, unit="unique", ...))`, the decoy sets always in
     training; keep `context="all_rows"` (the grouping becomes the context key only, as decided in issue 5); check the
     windows against the floor that every training side holds 50% of the rows or more; task summary `split`, `splits_comment`
-    and a curation bullet with the table; scripts in `~/claude_jobs/catalogue_splits/protein/`; `dataset check`,
+    and a curation bullet with the table; `dataset check`,
     CHANGELOG, record CC with `Andrej` in `checked_by`.
 
     [^10a]: **SPLIT-34** (Should): the family key is the default, and the source's stated aim and scope decide which
@@ -503,7 +503,7 @@ Settled 2026-11-12: the split stays by protein (10 A, on Andrej's issue 11 note;
 
    **Notes for the AI:** on B, `dataset check` (the definition is unchanged; the protocol gives 20 x 3), a CC line in
    the record, CHANGELOG. On C, a `splits_comment` naming the measurement and the exception, and a SPLIT-33 Cases
-   row. Evidence: `~/claude_jobs/protein_splits/` (run.py, res_*.csv, summary.txt).
+   row.
 
    **Resolved (2026-11-12, Andrej):** B: 20 x 3. The definition's split code is unchanged: the protocol counts the
    proteins the metric scores and gives twenty repeats of three folds, which `dataset check` now writes. The
