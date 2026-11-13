@@ -3,6 +3,7 @@ unique_name: force_2020_well_well_log_and_lithofacies_dataset_for_machine_learni
 name: FORCE 2020 Well well log and lithofacies dataset for machine learning competition
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -78,6 +79,34 @@ CC (2026-10-26, Lennart): verdict ship.
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `GROUP` (a partial order).
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: GROUP stays unordered (regional equivalents), noted in the definition.
+
+## Review
+
+**Outcome:** added. The AI asks whether the `Timeless` tag of 2026-11-13 holds before it ships unmeasured.
+
+**Main points:** Keep `Timeless` without measuring whether the catalogue drifts?
+
+**Issues for Andrej:**
+
+1. **Keep `Timeless` without measuring whether the catalogue drifts?**
+
+   * **Problem:**
+     - The definition is tagged `Timeless` (2026-11-13) because the lithology at a depth is a fixed property of the item[^tb-1].
+     - `Timeless` also asks that the catalogue does not drift, and the record says the samples arrived over time and are dated, which nobody has measured here.
+     - superconductivity, the same kind of catalogue, was measured and drifts in waves of families, so it carries no prototype tag[^sc-1].
+   * **Background:** the split holds out whole wells; the drilling date is the dated order a forward split would use.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `Timeless` (implemented) | the tag and its line stay as they are | no work; the target is a fixed property | the "does not drift" half rests on no measurement |
+     | B | Measure, then decide | a forward split on the drilling date against the grouped folds, as measured for the qsar sets: `Timeless` if it costs nothing, else no prototype tag with the measurement in the line | the tag rests on a measurement, as for the qsar sets and superconductivity | one Slurm run |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   [^tb-1]: **SPLIT-32** (Should): `Timeless` holds when the target is a fixed property of the item, the same whenever it is measured, and the use case meets items drawn like the catalogue's; a catalogue that drifts goes on to the question whether the samples' arrival over time affects the target.
+   [^sc-1]: superconductivity's `Time basis:` line: windows by first report year leave 23-51% of the test compositions an element-set sibling in training, against 79-86% when the same compositions are held out from all years.
+
 
 ## Reference
 

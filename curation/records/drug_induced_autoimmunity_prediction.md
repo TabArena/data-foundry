@@ -103,6 +103,43 @@ CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encod
 
 **Assessment (AI, 2026-11-01):** the definition now ships `SMILES` (RDKit's canonical form) in `smiles_columns`, as Andrej decided to keep it on 2026-10-26, but typed as a structure, and the source's 176 RDKit descriptors leave: the recommended encoding reproduces them (LightGBM / random forest ROC AUC over the 60 scaffold splits: source descriptors 0.771 / 0.776, our full RDKit set 0.772 / 0.777) and adds the MACCS keys (0.796 / 0.799, better on 51 and 59 of 60 splits); the SMILES read as text gives 0.763 / 0.766. The stereoisomer pairs are now found on the stereo-free canonical SMILES: the same 9 pairs, 587 drugs, 140 positive. The split groups come from `scaffold_groups` (the same 443 groups, other folds).
 
+## Review
+
+**Outcome:** added. The AI recommends a temporal split by first approval year instead of the scaffold split: the label accrues with time on the market, and a forward split costs what a random one hides.
+
+**Main points:** Split by first approval year instead of by scaffold?
+
+**Issues for Andrej:**
+
+1. **Split by first approval year instead of by scaffold?**
+
+   * **Problem:**
+     - The label counts the autoimmunity reports a drug had collected by the compilation, so a recently approved drug's label is not final[^rev].
+     - Trained on the drugs approved before a cut and tested on the later ones, ROC AUC falls 0.04 to 0.13 below random folds of the same training size.
+     - The scaffold split mixes eras: two drugs of one scaffold group lie 14.5 approval years apart on average, against 19.1 for any two drugs.
+   * **Background:** ChEMBL dates 496 of the 587 drugs by first approval (1940 to 2020); 91 stay undated. The positive share falls with the approval era. The definition names no time basis, since no prototype fits a label that accrues (2026-11-13).
+   * **Experiments:** untuned models on the source's RDKit descriptors, the 496 dated drugs:
+
+     | Test from | Training drugs | Test drugs | Forward: LR / RF / boosting | Random folds: LR / RF / boosting |
+     |---|---|---|---|---|
+     | 1990 | 219 | 277 | 0.606 / 0.642 / 0.607 | 0.716 / 0.740 / 0.721 |
+     | 1995 | 267 | 229 | 0.582 / 0.698 / 0.714 | 0.716 / 0.777 / 0.754 |
+     | 2000 | 351 | 145 | 0.617 / 0.692 / 0.765 | 0.740 / 0.794 / 0.803 |
+     | 2005 | 399 | 97 | 0.692 / 0.828 / 0.810 | 0.752 / 0.812 / 0.825 |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Scaffold split (implemented) | holds out whole scaffolds, all eras mixed | tests new chemistry; keeps all 587 drugs in every fold | scores drugs whose label is final against drugs whose label is still open; hides the measured forward cost |
+     | B | Temporal by first approval year | windows on the approval year, with a gap so the test drugs' labels have had time to accrue; the undated drugs only in training | tests the use case, a newly approved drug; follows the record's facts (dated, label revised later) | the 91 undated drugs are never tested; test windows of 97 to 277 drugs |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** approval years from ChEMBL's `first_approval`, matched by `molecule_structures__canonical_smiles__flexmatch` (2026-11-06); the measurement is Slurm job 1366251. Set the window and gap with the curator's mark; the record's facts stay.
+
+   [^rev]: **SPLIT-32** (Should): `Target: Revised Later` covers a label that accrues while its window stays open, so the newest samples' label is not final; samples over time whose target time affects, with time dated, take a temporal split.
+
 ## Reference
 
 @article{huang2025interdia,

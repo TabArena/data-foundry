@@ -4,6 +4,7 @@ name: Open Soil Spectral Library (OSSL) / KSSL MIR soil spectra
 checked_by:
 - Myunghwan
 - Lennart
+- Andrej
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
@@ -362,6 +363,25 @@ file in the folder; an AI note saying so is still to be added to the record. The
    stays; when only an edge position holds it, that position is dropped for every row, so each spectrum stays whole
    (narrows CLEAN-11). The facts checked on the export: 53 of 75,929 spectra read exactly 0 at 600 cm-1 beside 1.27-1.86
    at 602 cm-1. A Cases row; spectra.md cites the amendment.
+
+11. **Keep `Timeless` without measuring whether the catalogue drifts?**
+
+   * **Problem:**
+     - The definition is tagged `Timeless` (2026-11-13) because the organic carbon of a sampled soil layer is a fixed property of the item[^tb-11].
+     - `Timeless` also asks that the catalogue does not drift, and the record says the samples arrived over time and are dated, which nobody has measured here.
+     - superconductivity, the same kind of catalogue, was measured and drifts in waves of families, so it carries no prototype tag[^sc-11].
+   * **Background:** the split holds out whole pedons; the scan date is the dated order a forward split would use.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `Timeless` (implemented) | the tag and its line stay as they are | no work; the target is a fixed property | the "does not drift" half rests on no measurement |
+     | B | Measure, then decide | a forward split on the scan date against the grouped folds, as measured for the qsar sets: `Timeless` if it costs nothing, else no prototype tag with the measurement in the line | the tag rests on a measurement, as for the qsar sets and superconductivity | one Slurm run |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   [^tb-11]: **SPLIT-32** (Should): `Timeless` holds when the target is a fixed property of the item, the same whenever it is measured, and the use case meets items drawn like the catalogue's; a catalogue that drifts goes on to the question whether the samples' arrival over time affects the target.
+   [^sc-11]: superconductivity's `Time basis:` line: windows by first report year leave 23-51% of the test compositions an element-set sibling in training, against 79-86% when the same compositions are held out from all years.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after your PR #33 review of 2026-11-04: twelve
 reports (claim, column and split auditors, domain practitioner, blind reviewer, task gamer, precedent checker, advocate
