@@ -6,6 +6,8 @@ checked_by:
 - Andrej
 data_foundry_status:
 - 'DF: Yes'
+- WIP (DF)
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 4
 tags:
@@ -13,6 +15,7 @@ tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- Expanding Science Catalogue
 collections:
 - New (BeyondArena)
 - ChemPile
@@ -80,9 +83,159 @@ document as a change that was not an instruction: "the changes look good". The c
 instead of the published ECFP bit vector, which moves the shipped row count from 11,105 to 11,116: the old key
 merged chemicals whose bit vectors collided rather than chemicals that are the same.
 
+CC (2026-11-11, Andrej): the chemicals are dated before the time basis is named (review issue 1, C). The RTECS citation of each chemical's earliest rat oral LD50 report (ToxValDB v9.6.2) dates 7,927 of 11,119, 1935 to 2023.
+- A forward split by report year (four windows, Slurm 1378153) leaves 12.4% of test chemicals a close training analog against 8.6% scaffold-disjoint, a third of the test scaffolds in training, and scores the same; whether to keep the scaffold split and name it Timeless is review issue 2. The definition is unchanged.
+
+CC (2026-11-11, Andrej): time basis Timeless (issue 2, option b): the scaffold split stays; a curation bullet "Time basis: Timeless" states the fixed property, the inventory use case, the dating by RTECS report year (7,927 of 11,119, 1935-2023) and that a forward split by report year holds out less than the scaffold split (12.4% against 8.6% close training analogs, same score). The prediction-set reference re-measured: 19.8% of the project's 48,135 prediction chemicals are in this dataset; of the others 11.2% have a close training analog, against 15.1% of the test chemicals. The tag enters `data_tags` once the time-basis tags are in the working copy.
+
+CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension` (Review issue 3): the RTECS citation years that ToxValDB keeps date 7,927 of 11,119 chemicals (71.3%), 1935 to 2023. The facts describe the source and do not change with the split, which stays as it is.
+
 CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case predicts for items the catalogue does not hold, which the held-out scaffolds stand for; that the entry date carries no wave is a measurement for the `Time basis:` line, not a different use case.
 - `Timeless` now means a fixed target in data with no time dimension. The split does not change.
+
+## Review
+
+**Outcome:** added. The very toxic endpoint of the ICCVAM acute oral toxicity project (rat oral LD50, the data behind
+CATMoS): 11,116 chemicals with their QSAR-ready structure as a SMILES, grouped on the Bemis-Murcko scaffold (7,481
+groups). Opened on 2026-11-11 from the review of how catalogues of fixed properties split: the definition names no
+time basis for its scaffold split.
+
+**Main points:** the chemicals dated by the year of their rat oral LD50 report (issue 1, C, resolved 2026-11-11): 7,927
+of 11,119, and a split by report year holds out less than the scaffold split. Settled: the scaffold split stays, named
+`Timeless` with the dating in its `Time basis:` line (issue 2, tag waits for PR #50). Settled 2026-11-12: collection
+facts `Samples: Over Time`, `Time: Dated` (issue 3).
+
+**Issues for Andrej:**
+
+1. **Time basis: name the scaffold split `Timeless`, or date the chemicals first?**
+
+   * **Problem:**
+     - The definition splits on the scaffold and names no time basis, while the record carries
+       `Samples: No Time Dimension`.
+     - Whether a chemical is very toxic when swallowed is a fixed property of the chemical, the case the `Timeless`
+       prototype names[^1a].
+     - The project that compiled the data also published the chemicals it was built to screen, so how new the test
+       chemicals are can be measured against the actor's real population rather than guessed.
+   * **Background:** the use case is a chemical without an acute oral test, judged before any animal test; the fit is
+     already recorded as approximate, because the test chemicals are members of the tested reference set.
+   * **Experiments:** the share of chemicals with a close training analog (Tanimoto 0.7 or more, Morgan radius 2,
+     2,048 bits), measured when the scaffold split was adopted:
+
+     | Population | Close analog in training | Median nearest similarity |
+     |---|---|---|
+     | Test chemicals, random split | 24.7% | |
+     | Test chemicals, scaffold groups | 16.3% | 0.519 |
+     | The project's 48,137 untested chemicals | 11.0% | 0.486 |
+
+   * **Effect on the task:** the scaffold groups move the test chemicals most of the way toward the untested
+     inventory the actor meets, which is what the split is for here; nothing in this task arrives later, since the
+     inventory already exists.
+   * **Consistency:** on 2026-11-11 the three sibling Milano sets (qsar_biodeg, qsar_fish_toxicity,
+     qsar_aquatic_toxicity) were sent to be dated through NITE and ECOTOX before their time basis is named; this
+     dataset differs in having its screening population published, so the question it answers is already measured.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Scaffold split, no time basis (implemented) | no change | nothing to write | the definition does not say why a split that is not temporal is safe in time |
+     | B | Scaffold split, `Timeless` | the tag and a `Time basis:` line naming the fixed property and the untested inventory as the reference | states the fact the split rests on; the inventory measures what the split cannot reach | the order in which the chemicals were tested stays unmeasured |
+     | C | Date the chemicals first | look for a test or registry year per chemical, then decide as the sibling sets will | same route as the three siblings | the use case fills in an existing inventory, where nothing comes later; the ICCVAM compilation pools many databases and registries |
+
+   * **Recommendation:** B: the actor screens an inventory that already exists, and that inventory is published, so
+     it is the reference rather than a year. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`) and a
+   `curation_comments` bullet: `- Time basis: Timeless: acute oral toxicity is a property of the chemical, and the
+   use case fills in an inventory that already exists. The split holds out whole series: 16.3% of the test chemicals
+   have a close training analog, against 24.7% at random and 11.0% for the project's 48,137 untested chemicals, so
+   the split stands between a random one and the screening population.` Then `dataset check`, a CHANGELOG entry and a
+   record CC line with `Andrej` in `checked_by`.
+
+   [^1a]: **SPLIT-32** (Should): a definition can name the use-case prototype it follows; `Timeless` when the target
+     is a fixed property of the item, the same whenever it is measured, and the use case meets items drawn like the
+     catalogue's. **SPLIT-34** (Should, proposed): where the actor fills in an inventory that already exists, nothing
+     comes later and the family key stands for the less similar items of that inventory; the inventory itself, where
+     the source has it, is the reference for how close the test items should be to training.
+
+   **Andrej (2026-11-11, change):** Option C: Date the chemicals first.
+
+   **Resolved (2026-11-11, Andrej):** C ("Option C: Date the chemicals first"): dated, and the split by year measured;
+   the result and the decision it leaves are issue 2. No change to the definition.
+
+2. **Time basis after the dating: keep the scaffold split and name it `Timeless`?**
+
+   * **Problem:** a forward split by report year leaves more close training analogs than the scaffold split
+     (12.4% against 8.6%) and a third of the test scaffolds in training, and scores the same.
+   * **The dating:** ToxValDB v9.6.2 keeps the RTECS citation of each ChemIDplus LD50 record (the source of most
+     ICCVAM values); the year read from the citation of a chemical's earliest rat oral LD50 report dates 7,927 of
+     11,119 chemicals (71.3%, by DTXSID, else CAS), 1935 to 2023, median 1976.
+   * **The split, four expanding windows by report year** (1977-80, 1981-85, 1986-90, 1991-2023; 756 to 1,196 test
+     chemicals; training sides 52% to 90% of the dated), on the same test chemicals, untuned LightGBM / random forest
+     on the recommended encoding, means over the windows (Slurm 1378153):
+
+     | Scheme | ROC AUC, LightGBM / RF | Log loss, LightGBM / RF | Close training analog | Test scaffold in training |
+     |---|---|---|---|---|
+     | T, forward by report year | 0.713 / 0.770 | 0.514 / 0.283 | 12.4% | 31.5% |
+     | S, scaffold-disjoint | 0.717 / 0.770 | 0.514 / 0.281 | 8.6% | 0 |
+     | R, random | 0.747 / 0.793 | 0.486 / 0.272 | 13.1% | 32.8% |
+     | Shipped scaffold folds, all rows | 0.850 / 0.844 | 0.301 / 0.223 | 16.3% | 0 |
+
+   * The undated 28.7% are half as often very toxic (5.2% against 9.7%), and 1981-85 reports are 13.9% very toxic
+     against about 7% in the other windows, so a split on the dated rows would change the class mix too.
+   * Checked on the way: 22.4% of the project's 48,137 prediction chemicals have an identical structure among the
+     11,119 here (31.4% a close analog), so the 11.0% figure issue 1 drafted for the notes is to be re-measured on
+     the prediction chemicals not in the dataset before it is written down.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Temporal split by report year | a `report_year` column, windows by year, 3,192 undated chemicals dropped | follows the dated order | drops 28.7% of the rows, unevenly by class; holds out less than the scaffold groups |
+     | b | Scaffold split (implemented), `Timeless` | a `Time basis:` line: fixed property, the inventory use case, the dating and the table above | states what was measured; nothing dropped | the order of the undated rows stays unknown |
+     | c | Scaffold split, the measurement written down, no prototype tag | the table in the notes only | claims nothing beyond the numbers | leaves the time basis unnamed |
+
+   * **Recommendation:** b. **Decision:** a, b or c?
+
+   **Notes for the AI:** on b, a `curation_comments` bullet `- Time basis: Timeless: ...` naming the fixed property,
+   the inventory use case, the RTECS dating (7,927 of 11,119, 1935-2023) and the forward-against-scaffold numbers,
+   ending with what the split cannot test (the order of the undated rows); the prediction-set reference re-measured
+   first; the tag enters `data_tags` once PR #50 is in the working copy; then `dataset check`, a CHANGELOG entry and a
+   record CC line.
+
+   **Resolved (2026-11-11, Andrej):** b (`ok` on the recommendation): the scaffold split stays; a `Time basis:
+   Timeless` bullet in `curation_comments` names the fixed property, the inventory use case, the RTECS dating (7,927 of
+   11,119, 1935-2023), the forward-against-scaffold numbers and the undated rows' class mix, and ends with what the
+   split cannot test (the order of the undated chemicals). The tag enters `data_tags` once PR #50 is in the working
+   copy. Record CC line. The prediction-set reference, re-measured first (no model, scaffold 3x3 folds on the public
+   files' 11,119 chemicals):
+
+   | Prediction chemicals (48,135 readable) | Share | Close training analog | Median nearest similarity |
+   |---|---|---|---|
+   | 2D structure already in this dataset | 19.8% (9,537); 22.4% by identical fingerprint | | |
+   | Not in the dataset (38,598), against a fold's training side | | 11.2% | 0.487 |
+   | Not in the dataset, against all 11,119 chemicals | | 14.4% | 0.522 |
+   | Test chemicals of the same folds, for comparison | | 15.1% | 0.510 |
+
+   The 11.0% of the notes holds for the prediction chemicals not in the dataset (11.2%), so `fit_reason` keeps it.
+   `dataset check` not run: the curator's copy of `vt_data.mat` is not in `local-data-warehouse/` on this machine; the
+   edit is a curation note only, and the README's notes are regenerated at the next check.
+
+3. **Collection facts: `Samples: Over Time` and `Time: Dated`, since a source dates the items?**
+
+   * **Problem:** the record carries `Samples: No Time Dimension`, while the RTECS citation years that ToxValDB keeps
+     date 7,927 of 11,119 chemicals (71.3%), 1935 to 2023. The facts describe the source and do not change with the
+     split; whether the date carries anything belongs to the time basis `Timeless` (issue 2)[^3a].
+   * **Change:** `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension`; the data, the split
+     and the score are unchanged.
+
+   [^3a]: **SPLIT-32** (Should): the collection facts are read from the source and do not change with the split; a
+     catalogue that a parent source dates is `Samples: Over Time` with `Time: Dated` even where the date turns out to
+     carry nothing, and whether it does is measured for the time basis.
+
+   **Resolved (2026-11-12, Andrej):** applied on approval of the plan that settled the split keys of growing catalogues
+   (one decision for the eighteen datasets of that review): the record's facts changed, with a CC line and `Andrej` in
+   `checked_by`. No definition change.
+
 
 ## Reference
 

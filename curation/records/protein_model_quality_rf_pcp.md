@@ -7,7 +7,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Myunghwan
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 decision_markers:
@@ -17,6 +17,9 @@ tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- 'Samples: Over Time'
+- 'Time: Dated'
+- Expanding Science Catalogue
 original_source: Other
 year: '2014'
 domain: biology & life sciences
@@ -95,6 +98,14 @@ CC (2026-11-05, Lennart): `Outdated` stays as a note on a kept borderline datase
 
 CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
+CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` (Review issue 13): the CASP rows are dated by their round (CASP5 to CASP10, 2002 to 2012) and the classic decoy sets by their publication only. The facts describe the source and do not change with the split, which stays as it is.
+
+CC (2026-11-12, Andrej): the split stays by protein, now twenty repeats of three folds (Review issues 10-12); the input data did not change:
+- Split by CASP round (issue 10): weighed and not built, on Andrej's note "I go back to by split by protein" (issue 11, which makes the CASP10 question moot). Windows by round scored within 0.03 of a same-size protein split on CASP8 and CASP9 and 0.03 to 0.07 lower on CASP7; CASP10 scores about 0 under any split trained on the earlier rounds, because its descriptors follow another convention.
+- Twenty repeats (issue 12, B): the metric scores one correlation per protein, so the split count counts the 445 proteins (297 on the train side) and the protocol gives 20 x 3; the split code is unchanged. With three repeats, two of three blocks ranked LightGBM and a random forest in the opposite order to the full run; over the 60 splits untuned ridge scores 0.328, the forest 0.322 and LightGBM 0.320, in that order in every block of ten repeats.
+
+**Assessment (AI, 2026-11-13):** the twenty repeats of issue 12 come from the split count in scored units, which ships with its own PR (#95, SPLIT-33); until that merges, the protocol counts rows and this definition builds 3 x 3. The definition states the split by protein and no count.
+
 CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
 - The split does not change; the definition's `Time basis:` line keeps the measured evidence.
@@ -116,9 +127,11 @@ descriptors (`Outdated`) -, 64% classic decoy sets -. Not checked by the panel: 
 against PSIPRED, as the notes cite from Sections 2.2-2.3; EV-7). No action proposed; a native-based SS would be a leak
 (LEAK-10).
 
-**Main points:** Three changes the panel could not make itself: drop the relaxed natives (issue 4), let models see a
+**Main points:** Settled 2026-11-05, three changes the panel could not make itself: drop the relaxed natives (issue 4), let models see a
 protein's other candidates (issue 5) and fix the metric's left-out proteins in the library (issue 6); then the
 `Outdated` consistency check (7), a SEL-9 Tensions row (8) and whether `huesken_sirna_efficacy` follows issue 5 (9).
+Settled 2026-11-12: the split stays by protein (10 A, on Andrej's issue 11 note; 11 moot), twenty repeats of it,
+20 x 3 (12 B), and collection facts `Samples: Over Time`, `Time: Dated` (13). Nothing open.
 
 **Issues for Lennart:**
 
@@ -350,6 +363,169 @@ protein's other candidates (issue 5) and fix the metric's left-out proteins in t
    **Resolved (2026-11-05, Lennart):** A. huesken_sirna_efficacy is reopened as its issue 9 (`context="all_rows"` now or
    after a focused panel), with a CC line in its record. This also answers the consistency check on issue 5 with (b):
    huesken follows this dataset.
+
+10. **Split by CASP round (each round predicted from the decoy sets and the earlier rounds) instead of by protein?**
+
+    * **Problem:**
+      - The use case ranks the candidates of a new target, and CASP itself is a blind test of the next round, with
+        the source's own files training on CASP5-9 and validating on CASP10.
+      - The shipped split holds out proteins at random across all rounds, so a test protein of one round trains next
+        to proteins of later rounds and of its own round.
+      - CASP10's descriptors follow another convention than CASP5-9, which only its own round's targets can teach, so
+        the protein key lets a model score on something a group facing a new round would not hold[^10a].
+    * **Background:** no canonical protein appears in two CASP rounds or in a decoy set, so the protein key already
+      keeps the targets apart and what a split by round adds is the order; CASP10's descriptors follow another
+      convention than CASP5-9 (its sequence length varies within all 67 of its targets, within none of CASP6-9's),
+      which only other CASP10 targets in training can teach.
+    * **Experiments:** the definition's 94,083 rows and 445 proteins rebuilt (counts asserted); each CASP round as one
+      test window. T is trained on all decoy rows and every earlier round. S is as many rows drawn from every other
+      round and decoy set, with no test protein (the shipped kind of split; mean of 3 draws). D is the decoy sets alone.
+      G is a grouped 3-fold over all rows, scored on each round; over all rows it reproduces the review's 0.322 and
+      0.483. Features: "raw" are the six shipped descriptors; "ctx" adds each descriptor's z-score and rank within its
+      protein, SL over the protein's largest SL and the protein's size, as `context="all_rows"` allows. Untuned
+      LightGBM and random forest, mean per-protein Pearson (the declared metric), Slurm job 1377541:
+
+      | Test round | Proteins / rows | T trains on (share) | Features | T: LightGBM / RF | S: LightGBM / RF | D: LightGBM / RF | G: LightGBM / RF |
+      |---|---|---|---|---|---|---|---|
+      | CASP7 | 51 / 4,515 | 67,172 (71%) | raw | 0.301 / 0.307 | 0.340 / 0.349 | 0.075 / 0.193 | 0.371 / 0.368 |
+      | | | | ctx | 0.383 / 0.399 | 0.451 / 0.425 | 0.116 / 0.132 | 0.456 / 0.444 |
+      | CASP8 | 74 / 6,826 | 71,687 (76%) | raw | 0.338 / 0.309 | 0.346 / 0.305 | 0.119 / 0.157 | 0.343 / 0.300 |
+      | | | | ctx | 0.436 / 0.400 | 0.452 / 0.430 | 0.142 / 0.146 | 0.450 / 0.431 |
+      | CASP9 | 77 / 8,237 | 78,513 (83%) | raw | 0.472 / 0.477 | 0.451 / 0.451 | 0.262 / 0.319 | 0.461 / 0.461 |
+      | | | | ctx | 0.558 / 0.533 | 0.569 / 0.550 | 0.288 / 0.286 | 0.594 / 0.563 |
+      | CASP10 | 67 / 7,333 | 86,750 (92%) | raw | 0.005 / 0.018 | same pool as T | 0.053 / -0.013 | 0.085 / 0.068 |
+      | | | | ctx | -0.002 / -0.114 | same pool as T | 0.123 / -0.097 | 0.617 / 0.594 |
+
+      - CASP7: T trails S by 0.03 to 0.07, with fewer CASP rows in training (7,400 against S's 22,400 on average; not
+        tested as the cause). CASP8 and CASP9: within 0.03 either way.
+      - Every training side holds 71% or more of the rows. The decoy sets alone score far lower (0.08 to 0.32), so the
+        earlier rounds carry most of what transfers.
+      - Setting CASP10's SL to its protein's largest SL does not rescue the window (-0.15 to -0.01).
+    * **Effect on the task:** for CASP5-9 the split by round and the protein split test nearly the same thing. They
+      part on CASP10, where the protein split rewards a model for learning a descriptor convention from other targets
+      of the same round, which a group ranking the next round's candidates does not have.
+    * **Options:**
+
+      | | Option | What it does | Pro | Con |
+      |---|---|---|---|---|
+      | A | Protein split (implemented) | as now | nothing to change; every row can be a test row | CASP10's score comes from same-round siblings; the order of the rounds is not tested |
+      | B | By CASP round | test windows CASP7, CASP8, CASP9 (and CASP10, issue 11), each trained on the decoy sets and the earlier rounds | the use case and CASP's own design; the source's own CASP5-9 / CASP10 split | the decoy sets (64% of rows) are never test rows; three or four windows of 51-77 proteins |
+
+    * **Recommendation:** B: the use case is the next round and the source splits that way. Through CASP9 the scores
+      barely move, so B costs little where the data is consistent and shows the break where it is not.
+      **Decision:** A or B?
+
+    **Notes for the AI:** on B, a `casp_round` column parsed from the row id (case-insensitive `casp5_` counts as
+    CASP5; `fisa_casp3_*` is a decoy set, not a round) with the decoy rows dated before CASP5; `temporal =
+    Temporal(on="casp_round", splits=TemporalSplits(window=None, unit="unique", ...))`, the decoy sets always in
+    training; keep `context="all_rows"` (the grouping becomes the context key only, as decided in issue 5); check the
+    windows against the floor that every training side holds 50% of the rows or more; task summary `split`, `splits_comment`
+    and a curation bullet with the table; `dataset check`,
+    CHANGELOG, record CC with `Andrej` in `checked_by`.
+
+    [^10a]: **SPLIT-34** (Should): the family key is the default, and the source's stated aim and scope decide which
+      items the test set stands for; within that scope the entry date replaces it when the use case predicts for items
+      the catalogue does not hold yet, the date is when the item entered, the labels are final, and either arrival
+      changes how the target or the features are recorded, or which items are selected (as SPLIT-32's question 4 asks),
+      or a forward split leaves the test items clearly fewer close training neighbours than a random draw; otherwise the
+      family key stands and the time basis says why. **SPLIT-32** (Should): a sample's target or its relation to the
+      features can move with the period through how the features are recorded (a new instrument, a new convention).
+
+    **Resolved (2026-11-12, Andrej):** A: protein split kept, on his issue 11 note ("I go back to by split by
+    protein"), which overrides the `ok` on the recommended B. No `casp_round` column and no windows; the definition
+    keeps `Grouping(on="protein_id", context="all_rows")`. A curation bullet records the decision and the measurement
+    (round windows within 0.03 of a same-size protein split on CASP8 and CASP9, 0.03 to 0.07 lower on CASP7, CASP10
+    about 0), and `splits_comment` quotes the note. CC line in the record.
+
+11. **If the split goes by CASP round (issue 10 B): keep CASP10 as a test window, keep it in training only, or drop
+    it?**
+
+    * **Problem:**
+      - CASP10's inputs are not the ones the earlier rounds carry, so what CASP5-9 teaches does not reach it
+        (-0.11 to 0.02 per-protein Pearson, issue 10's table).
+      - The panel's mediator read it the same way, as another descriptor pipeline rather than a harder round.
+      - A window of that kind measures the change of pipeline rather than the models.
+    * **Background:** the mediator's figures were a per-protein Pearson of 0.006 and a top-1 GDT_TS loss of 0.317,
+      against 0.224 for picking a candidate at random.
+    * **Options:**
+
+      | | Option | What it does | Pro | Con |
+      |---|---|---|---|---|
+      | A | CASP10 as a window (implemented) | four windows; its 7,333 rows stay, as they are in the dataset now | the source's own validation round; shows what a pipeline change does | a window of noise for every model; ranks by chance there |
+      | B | CASP10 in no window | three windows (CASP7-9); CASP10 rows dropped (as the newest round, it could only be a test window) | the windows test one pipeline | 7,333 rows and the newest round leave; the notes say why |
+
+    * **Recommendation:** B, with the measurement in the notes: a window where every model scores 0 measures the
+      descriptor break, not the models. **Decision:** A or B (only if issue 10 is B)?
+
+    **Notes for the AI:** on B, drop the CASP10 rows in `_clean` with the count and the reason in a curation bullet;
+    check that the alias map still resolves every remaining protein.
+
+    **Andrej (2026-11-12, discuss):** I go back to by split by protein
+
+    **Resolved (2026-11-12, Andrej):** moot: the split stays by protein (issue 10, A), so there is no CASP window and
+    CASP10's 7,333 rows stay, held out with their proteins like every other row.
+
+12. **Twenty repeats of the protein split, as the split count in scored units gives, instead of three?**
+
+   * **Problem:**
+     - The score averages one correlation per protein, so the split count now counts the 445 proteins, not the 94,083
+       rows; 297 training proteins give 20 x 3 splits, where the definition was built with 3 x 3.
+     - Three repeats do not rank close methods reliably: on two of three disjoint blocks of three repeats LightGBM and
+       the random forest come out in the opposite order to the full run.
+     - Ship 20 x 3, or keep fewer splits with these measurements as the reason?
+   * **Effect on the task:** LightGBM (500 trees), a random forest and ridge, untuned, on the 20 x 3 splits under the
+     declared metric (the per-protein Pearson correlation, averaged over proteins); t is the mean difference over its
+     standard error across repeats:
+
+     | Repeats | Order | LightGBM - forest | LightGBM - ridge | Forest - ridge |
+     |---|---|---|---|---|
+     | 0-2 | ridge, forest, LightGBM | -0.003 (t -1.1) | -0.009 (t -3.0) | -0.006 |
+     | 3-5 | ridge, LightGBM, forest | +0.001 (t 0.5) | | |
+     | 6-8 | ridge, LightGBM, forest | +0.002 (t 0.8) | | |
+     | 0-9 | ridge, forest, LightGBM | -0.001 (t -0.5) | -0.006 (t -2.1) | -0.005 (t -2.0) |
+     | 10-19 | ridge, forest, LightGBM | -0.004 (t -3.9) | | |
+     | all 20 | ridge, forest, LightGBM | -0.003 (t -2.6) | -0.008 (t -4.5) | -0.006 (t -3.8) |
+
+     Mean scores over the 60 splits: ridge 0.328, forest 0.322, LightGBM 0.320. The 60 fits took 34 s (LightGBM), 42 s
+     (forest) and 1 s (ridge) in all. Ridge leading differs from the panel's LightGBM 0.355 against ridge 0.294 on the
+     9 earlier splits, which predate the exclusion of the relaxed natives (issue 4); worth a look of its own.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 3 x 3 (implemented) | the splits as built | 9 fits per method | close methods ranked by chance (two of three blocks flip LightGBM and the forest) |
+     | B | 20 x 3 | the split count in scored units, at the next `dataset check` | separates all three pairs; the count the rule gives; cheap for these methods | 60 fits per method, more for heavy ones |
+     | C | 10 x 3 | an exception to the rule | 30 fits | one block of ten separates LightGBM and the forest, the other does not |
+
+   * **Recommendation:** B: twenty repeats are the first that rank the three methods the same way every time, and the
+     cost is in compute, not in the data[^12a]. **Decision:** A, B or C?
+
+   [^12a]: **SPLIT-33** (Should): repeated 3-fold cross-validation with 20, 10, 3 or 1 repeats by the size of the
+     train side, counted in the units the metric scores when the split holds each one out whole.
+
+   **Notes for the AI:** on B, `dataset check` (the definition is unchanged; the protocol gives 20 x 3), a CC line in
+   the record, CHANGELOG. On C, a `splits_comment` naming the measurement and the exception, and a SPLIT-33 Cases
+   row.
+
+   **Resolved (2026-11-12, Andrej):** B: 20 x 3. The definition's split code is unchanged: the protocol counts the
+   proteins the metric scores and gives twenty repeats of three folds, which `dataset check` now writes. The
+   `splits_comment` and the TP-3 bullet state the twenty repeats and the 60-split scores (ridge 0.328, forest 0.322,
+   LightGBM 0.320); a curation bullet and a CC line in the record give the reason.
+
+13. **Collection facts: `Samples: Over Time` and `Time: Dated`, since a source dates the items?**
+
+   * **Problem:** the record carries no `Samples:` fact, while the CASP rows are dated by their round (CASP5 to CASP10,
+     2002 to 2012) and the classic decoy sets by their publication only. The facts describe the source and do not change
+     with the split; whether the date carries anything belongs to the open split questions (issues 10 and 11)[^13a].
+   * **Change:** `Samples: Over Time` and `Time: Dated`; the data, the split and the score are unchanged.
+
+   [^13a]: **SPLIT-32** (Should): the collection facts are read from the source and do not change with the split; a
+     catalogue that a parent source dates is `Samples: Over Time` with `Time: Dated` even where the date turns out to
+     carry nothing, and whether it does is measured for the time basis.
+
+   **Resolved (2026-11-12, Andrej):** applied on approval of the plan that settled the split keys of growing catalogues
+   (one decision for the eighteen datasets of that review): the record's facts changed, with a CC line and `Andrej` in
+   `checked_by`. No definition change.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's review of PR #33 on 2026-11-04.
 Claims: 43 listed, 19 audit rows: 12 hold, 2 refuted (the "each such row has a same-length sibling" note, now 132 of

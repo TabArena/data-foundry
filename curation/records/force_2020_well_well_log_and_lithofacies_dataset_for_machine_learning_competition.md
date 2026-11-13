@@ -6,6 +6,8 @@ checked_by:
 - Andrej
 data_foundry_status:
 - 'DF: Yes'
+- WIP (DF)
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 4
 tags:
@@ -13,6 +15,7 @@ tags:
 - Review Prio 1 (Atlas)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- Expanding Science Catalogue
 collections:
 - TabArena Submission
 original_source: Github
@@ -80,9 +83,132 @@ CC (2026-10-26, Lennart): verdict ship.
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: GROUP stays unordered (regional equivalents), noted in the definition.
 
+CC (2026-11-12, Andrej): reviewed under the rule for cuts of growing scientific catalogues. The Norwegian well database does grow and all 118 wells are datable from the national register (entry, completion and release, 115 of them released exactly two years after completion), but wells reach the public one by one on that clock rather than in waves: on four expanding windows of the release date a forward split leaves 62% of test wells a training well in their own licence block and the nearest one 10 km away, against 62% and 9.5 km for a random draw of wells and 0% and 39 km for a quadrant-disjoint draw (random forest, mean penalty 0.698, 0.674 and 0.768). The grouped split by well stands (Review issue 9, open).
+
+CC (2026-11-12, Andrej): review page mark (issue 9, A): the grouped split by well stays. All 118 wells are dated in the national register (released two years after completion, one by one), and a split by release date held out no more than random wells of the same size (random forest mean penalty 0.698 against 0.674; quadrant-disjoint 0.768); the measurement is in the splits comment and a curation note.
+
+CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension` (Review issue 10): the national register dates all 118 wells (entry, completion and release; released 1969 to 2018). The facts describe the source and do not change with the split, which stays as it is.
+
 CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
 - The split does not change; the definition's `Time basis:` line keeps the measured evidence.
+
+## Review
+
+**Outcome:** added. The FORCE 2020 lithology competition's 118 Norwegian North Sea wells pooled into one frame,
+1,429,591 depth samples, grouped 3-fold by well and scored with the competition's penalty matrix. Everything the
+earlier review opened was settled between 2026-10-21 and 2026-11-01 and the dataset was shipped (Lennart,
+2026-10-26). Reopened on 2026-11-12 under the review of how cuts of growing scientific catalogues split: the
+Norwegian well database does grow as wells are drilled and released, so whether this cut should be split by when a
+well entered it was never asked. The AI recommends keeping the well-grouped split.
+
+**Main points:** Settled: the grouped split by well stays, with the release-date measurement in the notes (issue 9, A,
+2026-11-12). Settled 2026-11-12: collection facts `Samples: Over Time`, `Time: Dated` (issue 10).
+
+**Issues for Andrej:**
+
+9. **Keep the grouped split by well, or split by when a well was released to the public?**
+
+   * **Problem:**
+     - A forward split by the release date leaves a test well the neighbourhood a random draw of wells leaves it
+       (62% of test wells keep a training well in their own licence block, the nearest one 10 km away), because
+       wells are released one by one two years after each is completed rather than in waves[^9a].
+     - The database does grow and every well can be dated: all 118 carry an entry, completion and release date in
+       the national register, 115 of them released exactly two years after completion.
+     - Keep the grouped split by well, or split by the release date instead?
+   * **Background:**
+     - A wave here would be a drilling campaign in a licence block; the releases that follow are not a wave, because
+       each well reaches the public database on its own two-year clock. The released wells span 1969 to 2018, with
+       28 of the 118 released in 2010 or later.
+     - The family key is spatial and was already measured for the splits comment: a random forest's log loss is
+       0.763 grouped by well, 0.814 by licence block and 1.015 by quadrant, and the median distance from a test well
+       to the nearest training well is 8 km.
+     - The labels are not the register's: the 118 interpretations were made once, for the 2020 competition, so a
+       well released in 2018 and one released in 1970 carry labels of the same vintage.
+     - The rock does not change over the span, but the recording does: only the well, the depth and the gamma ray
+       are guaranteed in every well, and the two mud-weight scales and the two rate-of-penetration units the
+       definition converts sit in particular wells, so a split along the release order can expose a change in how
+       the curves were recorded rather than a harder rock problem.
+   * **Experiments:** four expanding windows on the release date (test wells from the latest releases down, each
+     trained on every earlier well), against two keys on the same test wells: a family key `S`, training wells of
+     the same size drawn from quadrants the test wells do not use, and a random key `R`, training wells of the same
+     size drawn from the other wells. Every 5th depth sample, untuned LightGBM (200 trees) and a random forest (100
+     trees), the competition's mean penalty on hard labels and multiclass log loss, three draws for `S` and `R`;
+     Slurm job 1379231.
+
+     | Scheme | Mean penalty | Log loss | Accuracy | Test wells with a training well in their licence block | Median km to the nearest training well |
+     |---|---|---|---|---|---|
+     | T, forward by release date | 0.698 | 0.811 | 0.738 | 62.0% | 10.1 |
+     | S, quadrant-disjoint, same size | 0.768 | 0.924 | 0.721 | 0% | 38.9 |
+     | R, random wells, same size | 0.674 | 0.802 | 0.746 | 61.9% | 9.5 |
+
+     - The windows test 14, 14, 23 and 20 wells, released between January 1992 and April 2018, on training sides of
+       50.0%, 62.5%, 75.0% and 87.5% of the rows.
+     - The newest window cannot be compared: nothing is released after it, so its forward training side is almost
+       the whole pool and the two schemes coincide (penalty 0.625 forward against 0.623 random).
+     - Untuned LightGBM diverged on every scheme here, as the curator's note of 2026-10-21 records for this
+       dataset, so only the random forest is read.
+
+   * **Effect on the task:** the release order leaves a test well the neighbourhood a random draw of wells leaves it, so it holds out
+     nothing the well key does not; the spatial family key is the one that holds out a neighbourhood, at a
+     cost of 0.07 penalty and 0.12 log loss.
+   * **Consistency:** follows the screen whose recoverable order was not the order of entry, where the family key
+     was kept (`nci_aids_antiviral_screen`, 2026-11-11), and the four regulatory toxicity sets, where the testing
+     programme rather than the item set the pace; it departs from the four catalogues split by entry date
+     (`qsar_tid_11`, `apistox`, `superconductivity`, `sdss_17`), where the actor cannot hold the siblings that
+     arrived with the test item.
+   * **Sources:** the organisers' repository,
+     <https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition>; the Zenodo record,
+     <https://doi.org/10.5281/zenodo.4351156>; the wellbore tables of the Norwegian Offshore Directorate's
+     factpages, <https://factpages.sodir.no/>.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the grouped split by well (implemented) | no change; the measurement goes in the notes | holds out a well never interpreted, which is the competition's own held-out set and the use case | it leaves the test well's block neighbours in training, which a forward split would not |
+     | B | Split by the well release date | four expanding windows on the register's release date, the well grouping dropped | follows the order in which wells reach the public database | a new well's neighbours are already public, so it holds out what the interpreter has; the oldest wells carry fewer curves, so it partly tests the logging suite |
+     | C | Group by licence block | whole blocks held out, the well grouping replaced | holds out a whole neighbourhood | the interpreter does have the block's released wells, and it was already weighed for the splits comment |
+
+   * **Recommendation:** A: wells are released one by one on a fixed delay, so an interpreter meeting a new well
+     already has its released neighbours, and the measurement shows the release order holding out no more than
+     chance. **Decision:** A, B or C?
+
+   **Notes for the AI:** on A, a `splits_comment` sentence with the table above beside the existing distance and
+   licence-block figures, and a `curation_comments` bullet recording that all 118 wells are dated in the national
+   register (entry, completion and release, the release two years after completion) and that the release order was
+   measured and not taken. On B, a `released` column from the register and a temporal declaration on it, the `WELL`
+   grouping dropped, and the windows checked against the floor that every training side holds at least half the rows
+   and that both rare classes reach a training side.
+
+   [^9a]: **SPLIT-34** (Should): a dataset drawn from an expanding science catalogue, a cut of a database or testing
+     programme that keeps growing, can be split by the item, by its family or by when it entered the catalogue, and
+     where the actor predicts for items the catalogue does not hold yet the entry date holds out what a family key
+     leaves in. A catalogue that is not growing, a recoverable date that is not the date items entered, and labels
+     that are not final each put a dataset outside the case, and there the family key is the one that stands for the
+     use case.
+
+   **Resolved (2026-11-12, Andrej):** A: the grouped split by well stays. `splits_comment` gives the measurement (mean
+   penalty and log loss forward by release date 0.698 / 0.811, random wells 0.674 / 0.802, other quadrants 0.768 /
+   0.924; 62% of forward test wells keep a block neighbour); a `curation_comments` bullet records that all 118 wells
+   are dated in the national register and that the release order was measured and not taken; record CC line. Data,
+   split and score unchanged; `dataset check` re-run.
+
+10. **Collection facts: `Samples: Over Time` and `Time: Dated`, since a source dates the items?**
+
+   * **Problem:** the record carries `Samples: No Time Dimension`, while the national register dates all 118 wells
+     (entry, completion and release; released 1969 to 2018). The facts describe the source and do not change with the
+     split; whether the date carries anything belongs to the measured release order (issue 9)[^10a].
+   * **Change:** `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension`; the data, the split
+     and the score are unchanged.
+
+   [^10a]: **SPLIT-32** (Should): the collection facts are read from the source and do not change with the split; a
+     catalogue that a parent source dates is `Samples: Over Time` with `Time: Dated` even where the date turns out to
+     carry nothing, and whether it does is measured for the time basis.
+
+   **Resolved (2026-11-12, Andrej):** applied on approval of the plan that settled the split keys of growing catalogues
+   (one decision for the eighteen datasets of that review): the record's facts changed, with a CC line and `Andrej` in
+   `checked_by`. No definition change.
+
 
 ## Reference
 

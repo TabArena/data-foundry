@@ -382,6 +382,8 @@ class Temporal:
                  horizon_unit="years", gap=5, gap_unit="years")                               # gap: 5 cohorts
         Temporal(on="era", splits=TemporalSplits(window=52, unit="unique", n_windows=3, gap=4), horizon=52,
                  horizon_unit="weeks", gap=4, gap_unit="weeks", time_unit="weeks")             # an era is a week
+        Temporal(on="date", splits=TemporalSplits(window=1, unit="years", n_windows=9, min_train_fraction=0.5),
+                 feature=False)                                    # the date arrives with the target: no input
 
     Attributes:
         on: The time column; the frame is sorted by it and future rows never train a split.
@@ -400,9 +402,14 @@ class Temporal:
             needs (:func:`subsample_train`), so a version with a ``row_budget`` on a numeric time column declares
             it. A date column has its own calendar and declares none; a time that is only an order (a row number)
             has none.
+        feature: Whether the time column is a model input (True by default). False when the actor does not hold it
+            at the prediction point because it arrives with the target (the date of the spectrum that sets a sky
+            object's class): the column stays in the frame to order and split the rows, and ``feature_columns``
+            leaves it out. What decides is what the actor knows at the prediction point, not the score.
 
-    The container stores the column as the task's ``time_on`` (with ``time_unit``), the horizon as the splits'
-    ``time_horizon`` / ``time_horizon_unit`` and the gap as their ``time_gap`` / ``time_gap_unit``.
+    The container stores the column as the task's ``time_on`` (with ``time_unit``), ``feature`` as its
+    ``time_is_feature``, the horizon as the splits' ``time_horizon`` / ``time_horizon_unit`` and the gap as
+    their ``time_gap`` / ``time_gap_unit``.
     """
 
     on: str
@@ -412,6 +419,7 @@ class Temporal:
     gap: int | None = None
     gap_unit: HorizonUnit | None = None
     time_unit: TimeUnit | None = None
+    feature: bool = True
 
     def __post_init__(self) -> None:
         if self.time_unit is not None and self.time_unit not in STEPS_PER_YEAR:
@@ -419,6 +427,9 @@ class Temporal:
             raise ValueError(msg)
         if not isinstance(self.on, str) or not self.on.strip():
             msg = "Temporal.on must name the time column."
+            raise ValueError(msg)
+        if not isinstance(self.feature, bool):
+            msg = f"Temporal.feature must be True or False, got {self.feature!r}."
             raise ValueError(msg)
         if self.splits is not None and not isinstance(self.splits, TemporalSplits):
             msg = f"Temporal.splits must be a TemporalSplits, got {type(self.splits).__name__}."

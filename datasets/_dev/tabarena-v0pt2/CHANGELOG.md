@@ -88,6 +88,252 @@ text and a script worth keeping into the repository (knowledge-data-foundry, hou
 - `drug_induced_autoimmunity_prediction`: two notes of `curation_comments` lose their pointer (text only, the data are
   unchanged; the text is part of the checksum, so its README has a new one). Its build was stale before.
 
+## 2026-11-12 (evening), seven catalogue datasets: the last split questions decided (not rebuilt)
+
+- qsar_tid_11 and apistox: the year orders and splits the rows but is no model input (`Temporal(..., feature=False)`);
+  it arrives with the target, and the user screens a compound before it is published.
+- sdss_17: eight test windows, 2019 and 2020 merged into one (1,076 spectra; the 2020 window alone held 141 spectra of
+  one programme); shipped.
+- open_soil_spectral_library: whole survey projects held out (1,548) instead of pedon keys: the source aims at scans
+  from other instruments and sites, and a whole survey is the part of that one instrument's data can test.
+- protein_model_quality_rf_pcp: the split stays by protein; the twenty repeats decided for it (the score counts
+  proteins) come with the split count in scored units (#95). qsar_fish_toxicity: the fit stays direct, the scaffold split gets `Timeless`.
+- splice: the duplicate windows go and the split holds out GenBank entry components (`gene_group`), `Timeless` kept;
+  the entries were dated (94%, 1974-1990) and the entry year carries no wave.
+- Every split change above needs a rebuild.
+
+## 2026-11-12, superconductivity and qsar_biodeg: the family key again, on the source's scope (not rebuilt)
+
+- The split rule for growing catalogues gains a step: the source's stated aim and scope set which items the test set
+  stands for, before an entry date is weighed. Both sources keep their models to items like those they were built from.
+- superconductivity: whole compositions are held out again (the split of 2026-10-06), with each composition counted
+  once in the RMSE. Hamidieh (2018) warns "We should not expect good predictions for completely new superconductors",
+  and the windows by first report year tested exactly those later families. `first_year` goes, and the 100 undated rows
+  return (21,263 rows); the NIMS dating and the drift between eras stay in a `Time basis:` line.
+- qsar_biodeg: whole chemical series are held out again (the scaffold split of 2026-11-01), with all 1,055 chemicals.
+  Mansouri et al. (2013) build a REACH screen validated on chemicals from other sources, so the order in which Japan's
+  programme tested its existing chemicals is not the source's question. `test_year`, the NITE download and the J-CHECK
+  constant go; the dating and the move from 14-day to 28-day tests stay in a `Time basis:` line as facts about the labels.
+
+## 2026-11-12, sdss_17: the date of the spectrum orders the split but is no model input (not rebuilt)
+
+- v2 framework: `Temporal(..., feature=False)` declares a time column that orders and splits the rows but is no
+  model input, because it arrives with the target. The container stores it as the task metadata's
+  `time_is_feature`, left out of the checksum and the saved JSON while True, so every container built before keeps
+  verifying; `feature_columns(container)` leaves the column out, and the README states it under Splits. Only a
+  temporal task can set it. `BENCHMARK_CHANGES_TODO.md` gains the matching entry for the harness.
+- sdss_17: the date of the spectrum is no model input any more (`feature=False`): an object is classified once it is
+  imaged and before it is observed spectroscopically, and the date of its spectrum arrives with its class. 8
+  features, the same nine yearly windows. The notes also say that u to z are the SDSS model magnitudes and that the
+  spectra, which set the label, stay out, so the task remains photometric.
+
+## 2026-11-12, split keys of growing catalogues: eighteen decided reviews in one copy (qsar_biodeg needs a rebuild)
+
+- qsar_biodeg: split by the year of the MITI test, four expanding windows (2003-08, 2000-02, 1994-98, 1990-93), in
+  place of the scaffold groups (the curator's decision of 2026-11-11): the test moved from 14-day to 28-day tests over
+  the span, a change in how the label was measured. 1,050 chemicals are dated through NITE's CSCL biodegradation
+  workbook by CAS-RN, 44 more by J-CHECK's bulletin year; the 5 undated chemicals leave. A new split, so a rebuild.
+- `Timeless` enters `data_tags` for qsar_aquatic_toxicity, qsar_bioconcentration, micro_mass and
+  biogeographical_ancestry_prediction, whose `Time basis:` lines were decided to wait for the time-basis rule, and for
+  nci_aids_antiviral_screen with a new `Time basis:` line: the NSC order is registration, not entry into the screen,
+  and a forward split on it leaves 8.4% of the test compounds a close training analog against 9.8% at random.
+- Notes decided on the review page and carried into the definitions: the time-basis lines with their dating
+  (qsar_oral_toxicity, qsar_aquatic_toxicity, qsar_bioconcentration, micro_mass, biogeographical_ancestry_prediction),
+  the measured release order of the wells (force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition),
+  the checked entry into TCGA (sarcoma), the analogue overlap of the random split (bioresponse). qsar_oral_toxicity's
+  `fit_reason` keeps the 11.0% close-analog share of the untested chemicals, which the re-measurement on the 38,598
+  not in the dataset confirmed (11.2%). nci_aids_antiviral_screen keeps its registration-order table once, in
+  `splits_comment`. superconductivity's note on the per-composition score points to its renumbered review issue.
+- Apart from qsar_biodeg no row, column, split, target or metric changes.
+- `dataset check` passes on the ten changed definitions it can run; qsar_oral_toxicity's README keeps its earlier
+  notes until its next check, as the curator's copy of its source file is not on this machine.
+
+## 2026-11-11 (evening), bioresponse: the fit is approximate, the random split answered (nothing rebuilt)
+
+- `fit="approximate"` with the `fit_reason` the curator approved: the source names neither the response nor its
+  assay, so what a positive means cannot be checked, and without structures the split cannot hold out a chemical
+  series. No row, column, split, target or metric changes, and the summary is not stored in the container.
+- The `Timeless` tag and its `Time basis:` bullet, decided on 2026-11-06 to enter once the time-basis rule was in
+  the working copy, are now in the definition; `dataset check` asked for them and passes with them.
+- Was Kaggle's own split random? The competition never says - not on its description, data description or rules
+  page, and in none of its 20 forum topics; the organisers' write-up (Bentzien et al., Drug Discovery Today 18
+  (2013) 472-478) is subscription-only and its abstract does not name it. The released files are indistinguishable
+  from a random draw (a model telling test from train: ROC AUC 0.485, against 0.484-0.497 for a random third of
+  training), and a participant called the test data "an exactly comparable random sample".
+- What the random split leaves on the training side, measured on the 3,751 shipped rows (LightGBM, 10-fold, three
+  seeds): 3.6% of test rows have a training molecule within 0.5 of them and 42.3% within 3; the closest tenth of
+  distances scores log loss 0.331 and ROC AUC 0.932 against 0.586 and 0.822 for the farthest; holding out every
+  neighbour within 3 (single-linkage components, measurement only) costs 0.03 log loss and 0.02 ROC AUC. The
+  review's third issue stays open with the answer and three options.
+
+## 2026-11-11 (evening), nci_aids_antiviral_screen: the registration-order split measured and not taken
+
+- The scaffold-grouped split stays (the curator's decision on the first review issue). `splits_comment` now carries
+  the measurement as a table beside the existing note on neighbouring NSC numbers: four windows from the highest
+  numbers down, each trained on every lower number, give ROC AUC 0.749 (LightGBM) and 0.774 (random forest) with
+  8.4% of test compounds keeping a close training analog and a third of their scaffolds in training, against 0.717
+  and 0.739 with 4.3% scaffold-disjoint, 0.762 and 0.770 with 9.8% at random, and 0.786 and 0.796 with 15.4% for
+  the shipped folds.
+- Why the order is not an arrival: the NSC numbers run from 48 to 706,805 and about a quarter of the compounds sit
+  below 609,000, registered into the NCI repository long before the screen began; no public table maps them to
+  dates, and the newest window has nothing registered after it to compare against.
+- The record's `Time: Dated` was corrected to `Time: Inferred` (the second issue), since only an order survives and
+  no calendar; `Samples: Over Time` stays. Both issues now carry their resolution, so the review reads as settled.
+
+## 2026-11-11 (evening), qsar_oral_toxicity: the scaffold split named `Timeless` after dating (nothing rebuilt)
+
+- The chemicals were dated first, as the curator asked: 7,927 of 11,116 (71.3%) carry the publication year of the
+  report their LD50 came from, from the RTECS citations EPA's ToxValDB keeps per ChemIDplus record (1932-2023,
+  median about 1979). The label is the ChemIDplus value (93.8% agree within 2%).
+- A split by that year holds out less chemistry than the scaffold split: forward, 12.4% of test chemicals keep a
+  close training analog, against 13.1% for a random draw of the same size and 8.6% scaffold-disjoint, and 31.5% of
+  them share a scaffold with training; ROC AUC is 0.770 either way. The report year records when a test was run,
+  not which chemistry a screener has not met.
+- So `data_tags = ("Timeless",)` with a `Time basis:` bullet giving the coverage, the comparison and what the split
+  cannot test: a chemical class that enters the inventory later.
+- Correction carried into `fit_reason`, the fit bullet and the USE-8 cases row of the curation rules: the project's
+  48,137 untested chemicals were cited at 11.0% close analogs as the screening population, but 9,588 of them
+  (19.9%) share a QSAR-ready InChIKey with a chemical here, 22.4% match one exactly on the fingerprint and 31.4%
+  have a close analog, so a fifth of that set is not untested and the 11.0% holds only once those are set aside.
+- `dataset check` could not be run: the Milano package `vt_data.mat` is a copy the curator provided and is not in
+  this clone's warehouse. The definition's class-level validation passes (the prototype tag with its `Time basis:`
+  line, regime `Non-IID` / `Grouped` / `Timeless`), and the change touches no column, row or split.
+
+## 2026-11-11 (evening), the twelve reviews of this round move into their records (nothing rebuilt)
+
+- The reviews written today as folder `REVIEW.md` files follow the convention of 2026-11-11: each one is now the
+  `## Review` section of its record, between `## Comments` and `## Reference`, and the file is gone. The twelve:
+  apistox, nci_aids_antiviral_screen, qsar_oral_toxicity, qsar_bioconcentration, qsar_biodeg, qsar_fish_toxicity,
+  qsar_aquatic_toxicity, drug_induced_autoimmunity_prediction, sdss_17, superconductivity,
+  protein_model_quality_rf_pcp and qsar_tid_11.
+- superconductivity and protein_model_quality_rf_pcp already had a review in their record from the earlier round, so
+  the two sides were merged by hand: superconductivity keeps Lennart's per-composition scoring issue of 2026-11-08
+  under the number this round gave it (3, with the round named in its title) next to today's issues 1 and 2; protein
+  keeps issue 10 from the earlier round and adds 11 and 12.
+- The pointers that named a review file are rewritten in the records and in `qsar_tid_11/dataset.py`
+  ("Review issue 2" for "REVIEW.md issue 2"). No definition, row, split or score changes.
+
+## 2026-11-11 (evening), superconductivity: a temporal split by first report year (nothing rebuilt)
+
+- Issue 2, a (Andrej): the grouped split on the composition becomes three expanding windows by the year a
+  composition was first reported. The UCI release carries no year, so the definition joins one from the parent
+  database's own export, the MDR SuperCon Datasheet Ver.240322 (NIMS, doi:10.48505/nims.4487, CC BY 4.0, which asks
+  to be cited; `download_description` names it and the download command).
+- The join (`first_report_year` in `dataset.py`, about 4 seconds in `_load_raw`): a datasheet entry belongs to a
+  composition when it holds the same elements and its element shares lie within 0.003 (L1) of the composition's,
+  with a variable oxygen read as its number (`O7-z` as 7) and a second time as a single oxygen, since UCI writes some
+  cuprates as `...Cu3O`. `first_year` is the earliest year of a composition's matched entries. It dates 21,163 of the
+  21,263 rows (99.5%) and 15,065 of the 15,164 compositions, against 92% for an earlier match on the formula string.
+  Checks: 99.9% of the dated rows have a matched entry within 0.01 K of their own critical temperature (0.9% with the
+  compositions shuffled); restricting the match to entries above 0 K, or dropping the oxygen variant, moves the year
+  of 2.7% and 0.9% of the rows.
+- The 100 undated rows leave (0.5%; 63 cuprates, median critical temperature 22.1 K, 99 compositions): a row without
+  a year belongs to no window. Nothing else is dropped and nothing is deduplicated; the entries of a composition all
+  carry its first year, so a composition is never split, and no test row shares its 81 features with a training row.
+- Windows (`_make_splits`, the eras the review proposed, newest first): 2009-2019 trained on 18,654 rows (88%) and
+  tested on 2,509; 2002-2008 on 16,488 (78%) and 2,166; 1996-2001 on 13,180 (62%) and 3,308. They are 6, 7 and 11
+  calendar years long, so `Temporal(on="first_year", horizon=7, horizon_unit="years")` declares the middle one and
+  `splits_comment` says so. Reason: untuned LightGBM scores RMSE 18.2 / 14.9 / 12.6 K trained on the earlier years
+  against 14.2 / 10.0 / 8.6 K trained on as many rows from all eras with no test composition (a random half of each
+  window's compositions, 3 seeds, Slurm job 1377613); the old split's ease came from other dopings of the test
+  composition's element set (79-86% of test compositions had one, against 23-51% by year).
+- The `composition` key no longer groups the split, but it stays in the frame: it is the unit the score counts
+  once (`unit_weight`, issue 1 of 2026-11-08), so `composition_weight` is built from it after the undated rows
+  leave, and neither column is a model input. `first_year` is the 82nd input; inside a window every value lies
+  after the newest training year, so it carries no information about the test era, and the 81 features stay
+  formula-only. The weighting carries over to the new regime untouched: every entry of a composition carries that
+  composition's first year, so no window splits a composition's one vote.
+- `task_summary` (`known`, `split`, `changes`, `fit_reason`), `splits_comment`, the curation comments and the two
+  `Decision` blocks restated, the metric and its scoring column unchanged. 21,163 rows, 82 features, checksum
+  `v2:768e2913...`; `dataset check` 0 errors, 1 warning (`dataset_conflicting_duplicate_rows`, 6,026 rows, as before
+  the change), 2 info, README regenerated; the build stays stale (unchanged since 2026-10-06).
+- Record: `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension`, `required_split` Temporal
+  (NON-IID), tag `Non-IID (Temporal)`, and a CC line of 2026-11-11 for the decision.
+
+## 2026-11-11 (evening), qsar_tid_11: split by first publication year (Andrej's marks, nothing rebuilt)
+
+- Issue 2, C: the scaffold-grouped split is replaced by a temporal one on `first_year`, the earliest year among the
+  documents of a compound's human thrombin (CHEMBL204) activity records in ChEMBL 17. The years are a one-off extract
+  from the release's sqlite dump (EBI FTP), shipped as `chembl_17_first_year.csv` next to `dataset.py`; the build no
+  longer needs the 2 GB dump. All 5,704 compounds have a CHEMBL204 record there, 5,186 in a dated document; the other
+  518 appear only in the undated PubChem BioAssay deposit CHEMBL1201862 and take 2011, the year ChEMBL 9 loaded it.
+  `Temporal(on="first_year", splits=TemporalSplits(window=None, unit="unique", n_windows=5, min_train_fraction=0.5),
+  horizon=2, horizon_unit="years")` builds five windows of two years: 2012-13 (159 compounds), 2010-11 (744), 2008-09
+  (290), 2006-07 (598) and 2004-05 (633), trained on 5,545, 4,801, 4,511, 3,913 and 3,280 earlier compounds (97% to
+  57% of the rows). `grouping` and the `scaffold` column are gone, the scaffold numbers stay as background. The reason
+  measured on these windows and all 5,704 compounds (Slurm jobs 1378119 and 1378141): under the scaffold split 58% of
+  test compounds keep a close training analog and 71-93% of those were first published in the same year, and untuned
+  LightGBM's RMSE is 0.80-1.04 by scaffold against 0.89-1.50 by year. At an equal training size drawn from all years
+  the forward split costs about 0.2 RMSE on the oldest window and within 0.08 on the rest, where few compounds are
+  published after the window: the scaffold split's advantage is the same-year siblings, not the later papers.
+  `first_year` is a feature as well as the time column, as in apistox. `dataset check` 0 errors, 0 warnings, 1 info
+  (`meta_time_horizon_unit`: the integer years cannot be cross-checked against a calendar horizon), README
+  regenerated. Probes re-run on the new windows: task probes no flag (LightGBM R^2 0.350, skill +0.419, ahead of the
+  dummy on all five), leak probes no exact feature copy across the split and no single feature near the all-feature
+  R^2 (probe 13 reads the known mild potency drift at the end, z -3.7), `hidden_groups` 0 hits of 61 candidates,
+  `group_probes` no longer applies.
+- Issue 1, B: the 654 targets at round assay limits (11.5%; pXC50 4.30: 348, 5.00: 204, 4.00: 81, 4.70: 21) stay as
+  exact values with a note naming the limits, their counts and the bound reading (LEAK-26: documented). 306 of them
+  (47%) belong to the PubChem deposit, where 59% of the 518 compounds sit at a limit against 6.7% of the rest.
+- Issue 3, B: the record's collection facts are `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time
+  Dimension`, no `Target: Revised Later` (5.1% of the compounds have a later-year record); `required_split` Temporal
+  (NON-IID), tag Non-IID (Temporal) in place of Non-IID (Grouped).
+
+## 2026-11-11 (evening), qsar_fish_toxicity and qsar_aquatic_toxicity: the overlap counted, the chemicals dated (nothing rebuilt)
+
+- qsar_aquatic_toxicity issue 1, B (Andrej): the two sets are kept side by side and the overlap is written into both
+  definitions. Counted on the canonical SMILES of the authors' two workbooks with the stereo set aside, 237 chemicals
+  are in both (43.4% of the Daphnia set, 26.1% of the fish set; 225 under the same CAS-RN) and their LC50s correlate
+  at r = 0.81, the Daphnia values 0.37 log units more toxic. This replaces the earlier estimate of 145 to 165 shared
+  chemicals from matching MLOGP values, which was all the UCI files allowed.
+- Both workbooks were obtained from the authors' own pages (the Google Apps Script behind the notification form
+  exposes the Drive file id), and their sha256 match the definitions' `download_description`.
+- The chemicals were dated through the EPA's ECOTOX bulk release on the curator's instruction: 850 of 908 fish
+  chemicals (93.6%) and 394 of 546 Daphnia chemicals (72.2% strict, 88.1% on the species-only join). The join is
+  validated against ECOTOX's own LC50 values (r = 0.92 and 0.90, median difference 0.02 and 0.06 log units).
+- Measured against the shipped scaffold folds, a forward split by first test year is not the stricter one: it leaves
+  12 to 25% of test chemicals a scaffold the model has seen, which the scaffold split removes. The answers and the
+  tables are in each record's Review; the time basis is still open.
+- `dataset check` passes for both (27 checks, 0 errors); the generated READMEs were rewritten.
+
+## 2026-11-11 (evening), drug_induced_autoimmunity_prediction: Andrej's marks (nothing rebuilt)
+
+- Issue 2, B: the fit is `approximate`, `fit_reason` naming the undocumented negatives (a negative most likely means
+  no autoimmune reaction was reported, as in Wu et al. 2021) and the label's reporting window; a curation bullet gives
+  the gap in full. No row, split or score changes.
+- Issue 3, B: the scaffold split stays, with a `Time basis:` line and no prototype tag: the label accrues with a drug's
+  time on the market (ChEMBL dates 496 of the 587 drugs, 1940-2020), so a forward split would test the reporting delay
+  rather than the chemistry (forward cuts lose 0.03-0.13 ROC AUC up to 2000 against random folds of the same training
+  size, Slurm job 1366251). `splits_comment` says why the forward split was not taken.
+- Issue 4, B: all 587 drugs kept, the era gradient written down instead (positive share 0.058 for the 52 drugs
+  approved from 2010 on against 0.259 earlier, binomial p 0.0002; molecular weight alone separates that block at ROC
+  AUC 0.693).
+- The metric's `reason` now dates InterDIA 2025, as its BibTeX and the record do.
+- `dataset check` 0 errors, 0 warnings, README regenerated; the build stays stale (unchanged since 2026-10-14).
+- Record (issue 5, C): `Samples: No Time Dimension` replaced by `Samples: Over Time`, plus `Time: Dated` and
+  `Target: Revised Later`; CC line of 2026-11-11 for the four decisions.
+
+## 2026-11-11 (evening), sdss_17: Andrej's marks (nothing rebuilt)
+
+- Issue 2, D: split by the year of the spectrum instead of at random. The raw `MJD` becomes the time column `date`
+  in `_clean` (it stays out of the features as an id, and `plate` and `fiber_ID` stay dropped);
+  `Temporal(on="date", splits=TemporalSplits(window=1, unit="years", n_windows=9, min_train_fraction=0.5))` gives
+  nine calendar-year windows, 2012 to 2020, each trained on every earlier spectrum: 51,256 to 99,858 training and
+  141 to 11,044 test spectra (51.3% to 99.9% of the 99,999 objects). No gap. Reason: every row is a spectrum taken
+  on a dated night through a plate drilled for one targeting programme, and the programmes changed what they
+  observed (quasars 3-11% of each year's spectra in 2000-2009, 31-46% from 2014 on), while a classifier in use has
+  neither the test object's plate-mates nor the later programmes. Untuned LightGBM log loss 0.331 random, 0.338 by
+  plate, 0.354 by sky cell, 0.506 by year (0.391 against 0.506 on the same 48,743 spectra of 2012-2020); under the
+  year split TabPFN 3.5 0.439, logistic regression 0.755. The 2019 and 2020 windows hold 935 and 141 spectra, above
+  the 50 test rows below which windows are widened; 0 to 5 plates per window were also observed before it, at most
+  90 test rows. `task_summary` (`known`, `split`, `changes`, `fit_reason`), `splits_comment` and the curation
+  comments restated; `meta_time_horizon_mismatch` accepted (DR17 ends on 2020-03-24, so the newest calendar-year
+  window spans 38 days). 9 features, checksum `v2:1707eaa4...`; `dataset check` 0 errors, 0 warnings (1 accepted),
+  README regenerated.
+- Issue 4, B: a temporal split carries no time-basis tag, so `data_tags` stays empty. Issue 5, C: record tags
+  `Samples: Over Time`, `Time: Dated` and `Target: Varying Delay` in place of `Samples: No Time Dimension`,
+  `required_split` Temporal (NON-IID), tag `Non-IID (Temporal)`. Issues 1 and 3 stay open.
+
 ## 2026-11-11 (night), lung_adenocarcinoma_metastasis: the curator's marks on a second review panel (no container built)
 
 - A second full review panel (at Lennart's ask on PR #75; its reports are in the record's `## Review`): ship after

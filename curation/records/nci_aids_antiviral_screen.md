@@ -6,12 +6,15 @@ checked_by:
 - Andrej
 data_foundry_status:
 - 'DF: Yes'
+- WIP (DF)
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 4
 tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Inferred'
+- Expanding Science Catalogue
 collections:
 - ChemPile
 original_source: GOV Website
@@ -145,6 +148,140 @@ CC (2026-11-02, Lennart): PR #15 is merged, so the dataset is in Data Foundry: `
 (board and record). The definition is `datasets/_dev/tabarena-v0pt2/nci_aids_antiviral_screen/`; nothing is built
 yet, and the build waits for the curator's ask together with the other molecule datasets.
 
+CC (2026-11-11, Andrej): the scaffold-grouped split is kept and `Time: Dated` corrected to `Time: Inferred` (review issues 1 A and 2 B).
+- The NSC number is the NCI's registration order, not the order compounds entered the screen: the numbers run from 48 to 706,805 and about a quarter of the compounds sit below 609,000, registered into the repository long before the screen began.
+- Measured on four windows from the highest numbers down, each trained on every lower number (Slurm 1377598): by registration order ROC AUC 0.749 (LightGBM) and 0.774 (random forest) with 8.4% of test compounds keeping a close training analog and a third of their scaffolds in training; scaffold-disjoint 0.717 and 0.739 with 4.3%; random 0.762 and 0.770 with 9.8%; the shipped scaffold folds 0.786 and 0.796.
+- So a forward split on this order leaves a test compound a third of its own series in training and follows an order the screen never ran in; the series grouping is what the screening use case asks for.
+- No public table maps NSC numbers to registration dates, and PubChem's DTP records give deposit dates rather than registration dates, so only the order survives, which is `Time: Inferred`.
+
+CC (2026-11-12, Andrej): time basis `Timeless` for the scaffold split (Review issue 3): the screen's conclusion is a property of the compound, and the NSC order is registration, not entry into the screen; a forward split on it leaves 8.4% of the test compounds a close training analog against 9.8% for a random draw. Tag and `Time basis:` bullet in the definition.
+
 CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case predicts for items the catalogue does not hold, which the held-out scaffolds stand for; that the entry date carries no wave is a measurement for the `Time basis:` line, not a different use case.
 - `Timeless` now means a fixed target in data with no time dimension. The split does not change.
+
+## Review
+
+**Outcome:** added. The NCI Developmental Therapeutics Program's AIDS antiviral screen: the screen's conclusion for
+41,140 compounds from the structure alone, grouped on the Bemis-Murcko scaffold (20,774 groups). Opened on
+2026-11-11 from the review of how catalogues of fixed properties split: the compounds carry a registration number,
+and whether that number is a usable time index was never tested. The AI recommends keeping the scaffold split and
+correcting one collection fact.
+
+**Main points:** the scaffold split kept, with the measured split by registration order in the notes (issue 1, A), and
+the record's `Time: Dated` corrected to `Time: Inferred` (issue 2, B); both resolved 2026-11-11. Nothing open. Settled
+2026-11-12: time basis `Timeless` (issue 3).
+
+**Issues for Andrej:**
+
+1. **Keep the scaffold split, or split by registration order (NSC) instead?**
+
+   * **Problem:**
+     - The compounds carry the NCI's registration number, and the definition's notes already show that neighbouring
+       numbers are usually analogs submitted together.
+     - The use case screens compounds that have not been tested, which reads like a forward use case, so the
+       registration order is a candidate time index[^1a].
+     - The numbers run from 48 to 706,805, and about a quarter of the compounds sit below 609,000, registered into
+       the NCI repository long before the screen began, so the order is not the order of entry into the screen.
+   * **Experiments:** four test windows of about 5,140 compounds from the highest numbers down, each trained on every
+     lower number (training sides 50.0%, 62.5%, 75.0%, 87.5%; 184 to 257 actives per window); on the same test
+     compounds, T forward, S scaffold-disjoint at T's size drawn from all other numbers, and R random at T's size;
+     untuned LightGBM and random forest on the recommended encoding; means over the four windows, with the
+     shipped-like scaffold folds over all rows for reference; Slurm jobs 1377593 and 1377598:
+
+     | Scheme | Log loss, LightGBM / RF | ROC AUC, LightGBM / RF | Close training analog | Test scaffold seen in training |
+     |---|---|---|---|---|
+     | T, by registration order | 0.241 / 0.241 | 0.749 / 0.774 | 8.4% | 32.5% |
+     | S, scaffold-disjoint | 0.262 / 0.251 | 0.717 / 0.739 | 4.3% | 0 |
+     | R, random | 0.217 / 0.226 | 0.762 / 0.770 | 9.8% | 34.9% |
+     | Shipped scaffold folds, all rows | 0.187 / 0.187 | 0.786 / 0.796 | 15.4% | 0 |
+
+     - A forward training side still holds a third of the test compounds' scaffolds, because a series was often
+       registered across a wide range of numbers.
+     - The newest window cannot be compared: nothing is registered after it, so its S and R pools are T's own rows.
+   * **Effect on the task:** a forward split on this order leaves a third of the test compounds a training compound
+     of their own series, so it does not hold out what the use case says the screener lacks, and the order it follows
+     is not one the screen ever ran in.
+   * **Unknown:** what calendar year each range of numbers corresponds to; no public table maps NSC numbers to
+     registration dates, and PubChem's DTP records give deposit dates, not registration dates.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the scaffold split (implemented) | no change; the measurement goes in the notes | holds out whole series, which the use case asks for; the registration order holds out less | the order of submission stays untested as a split |
+     | B | Split by registration order | four windows on the NSC rank, the scaffold grouping dropped | follows the one order the file carries | the order is not the order of entry into the screen; it leaves a third of test scaffolds in training and scores near random |
+
+   * **Recommendation:** A: the registration number is not an arrival time for this screen, and holding out series is
+     what a screening use case needs. **Decision:** A or B?
+
+   **Notes for the AI:** on A, add a `curation_comments` bullet with the table above next to the existing note on
+   neighbouring NSC numbers, and a CC line in the record with `Andrej` in `checked_by`. On B, a `nsc_rank` column and a temporal declaration on it, the `scaffold`
+   column and the grouping removed, and the windows checked against the floor that every training side holds at
+   least half the rows.
+
+   [^1a]: **SPLIT-34** (Should, proposed): in a catalogue of items with a fixed property, the item, its family and
+     when it entered the catalogue hold out different things; where the actor predicts for items found later and the
+     source dates them, a family key still trains on later families and on siblings of the same batch. The key
+     follows the application, never the size of the gap.
+
+   **Andrej (2026-11-11, ok):** (no note)
+
+   **Resolved (2026-11-11, Andrej):** A. The scaffold-grouped split stays. The measurement is written into the
+   definition's `splits_comment` as a table next to the note on neighbouring NSC numbers: by registration order
+   ROC AUC 0.749 (LightGBM) and 0.774 (random forest) with 8.4% of test compounds keeping a close training analog
+   and a third of their scaffolds in training; scaffold-disjoint 0.717 and 0.739 with 4.3%; random 0.762 and 0.770
+   with 9.8%; the shipped folds 0.786 and 0.796 with 15.4%. The bullet also records why the order is not an
+   arrival: the numbers run from 48 to 706,805 and about a quarter of the compounds were registered before the
+   screen began, and no public table maps them to dates.
+
+2. **Correct the record's `Time: Dated` to `Time: Inferred`?**
+
+   * **Problem:**
+     - The record carries `Samples: Over Time` and `Time: Dated`, but no date ships: the only order is the NSC
+       number.
+     - A release that keeps only an order that tracks time, with no calendar, is `Time: Inferred` rather than
+       `Time: Dated`[^2a].
+     - Issue 1 also found that this particular order does not track entry into the screen for about a quarter of the
+       compounds.
+   * **Effect on the task:** none on the split; the fact is what a later curator would check a forward split against,
+     and `Dated` invites a split that issue 1 measured and advises against.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `Time: Dated` (implemented) | no change | nothing to write | no date ships; the next reader looks for one |
+     | B | `Time: Inferred`, with the limit named | the fact corrected, and a CC line saying the NSC order is registration, not entry into the screen | matches what the release carries; records what issue 1 measured | none found |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, in `curation/records/nci_aids_antiviral_screen.md` replace the `Time: Dated` tag with
+   `Time: Inferred` and add the CC line with `Andrej` in `checked_by`; `Samples: Over Time` stays.
+
+   [^2a]: **SPLIT-32** (Should): `Time: Dated` when the release or a parent source keeps the date; `Time: Inferred`
+     when only an order that tracks time survives, with no calendar (an id, a case number, a file position).
+
+   **Andrej (2026-11-11, change):** Option B: Time: Inferred, with the limit named.
+
+   **Resolved (2026-11-11, Andrej):** B. The record's `Time: Dated` becomes `Time: Inferred`, since the release
+   keeps only an order and no calendar, and the CC line names the limit: the NSC number is the registration order
+   of the NCI repository, not the order compounds entered the screen. `Samples: Over Time` stays, and `Andrej` is
+   added to `checked_by`.
+
+3. **Time basis: name the scaffold split `Timeless`?**
+
+   * **Problem:** the definition names no time basis for its scaffold split. The screen's conclusion is a property of
+     the compound, and the only order the source keeps, the NSC registration number, is not when a compound entered the
+     screen (issue 1).
+   * **Change:** `data_tags = ("Timeless",)` and a `Time basis: Timeless:` bullet: a forward split on the NSC order
+     leaves 8.4% of the test compounds a close training analog against 9.8% for a random draw and 4.3%
+     scaffold-disjoint, so the order carries no wave of arrivals the scaffold split misses; what the split cannot test
+     is a chemical class the screen received only later[^3a].
+
+   [^3a]: **SPLIT-34** (Should), its fifth step: where the entry date does not replace the family key, the family key
+     stands and the time basis says why, `Timeless` with the forward split's share against a random draw's.
+
+   **Resolved (2026-11-12, Andrej):** applied on approval of the plan that settled the split keys of growing catalogues
+   (one decision for the eighteen datasets of that review): the `Time basis: Timeless:` bullet in `curation_comments`,
+   and the tag `Timeless` in `data_tags` where the time-basis rule is in the working copy (PR #50); record CC line.
+   Data, split and score unchanged.
+
