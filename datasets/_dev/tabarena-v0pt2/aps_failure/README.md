@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: aps_failure
 container_format: 2
-checksum: v2:6ac2451f7ced58159814041875cf79db457a0e4011ba20ce901eb717a94c7e2a
+checksum: v2:68162a119d77cd6161a1ce401f4029b854fb4605de633fecf72035c339e44912
 build:
   uuid: 01a111fc-0ce6-78ed-a870-52ce14ff98d0
   checksum: v2:cae1c7b65ce55c1256886d454fc3d2a43dde6e99193119792535d6f71a0acec6
@@ -19,11 +19,12 @@ build:
     polars: 1.41.1
 build_stale: true
 data:
-  n_rows: 76000
+  n_rows: 63937
   n_features: 170
   dtypes:
     category: 1
     float64: 169
+    int32: 1
     int64: 1
   n_test_dataset_rows: null
 task:
@@ -32,13 +33,20 @@ task:
   metric: cost_matrix
   metric_origin: source
   scoring_columns: null
-  split_regime: iid
+  split_regime: grouped_non_iid
   stratify_on: AirPressureSystemFailure
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: truck
+  group_labels: per_group
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 61466
+    test_groups_per_fold:
+      min: 20488
+      max: 20489
 splits:
   n_repeats: 3
   n_folds: 3
@@ -48,18 +56,19 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 50666
-    max: 50667
+    min: 42597
+    max: 42656
   n_test:
-    min: 25333
-    max: 25334
+    min: 21281
+    max: 21340
 bundle_checks:
   ok: true
   errors: []
   warnings:
   - dataset_constant_column
   - dataset_pure_feature_value
-  infos: []
+  infos:
+  - groups_not_clustered
   accepted: {}
 decisions: []
 ---
@@ -68,9 +77,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `AirPressureSystemFailure`, scored with `cost_matrix` on IID splits. 76,000 rows and 170 features. Source: Other (2016).
+Binary classification of `AirPressureSystemFailure`, scored with `cost_matrix` on grouped splits by `truck`. 63,937 rows and 170 features. Source: Other (2016).
 
-Built as `01a111fc-0ce6-78ed-a870-52ce14ff98d0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6ac2451f7ced58159814041875cf79db457a0e4011ba20ce901eb717a94c7e2a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-0ce6-78ed-a870-52ce14ff98d0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:68162a119d77cd6161a1ce401f4029b854fb4605de633fecf72035c339e44912`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -78,17 +87,17 @@ Built as `01a111fc-0ce6-78ed-a870-52ce14ff98d0` on 2026-10-06, but `dataset.py` 
 
 **Use case.** From a truck's operational data, a workshop decides whether a mechanic should check the air pressure system, which drives braking and gear changes: a needless check costs 10 and a missed faulty truck, which may break down, costs 500 (the challenge's costs).
 
-**One row.** One heavy Scania truck in everyday use with a component failure, read from its operational data; a subset of the available data chosen by experts (76,000 trucks, IDA 2016 Industrial Challenge). The period is not stated.
+**One row.** One read-out of a heavy Scania truck in everyday use with a component failure, from its operational data; a subset of the available data chosen by experts (IDA 2016 Industrial Challenge, 76,000 rows, 63,937 once copies of one read-out are dropped). A truck can appear in more than one row. The period is not stated.
 
-**Predicted.** Whether the failure is in the specific air pressure system component (1.8% of the rows) or in a component unrelated to that system. How long before or after the failure the data were read is not stated.
+**Predicted.** Whether the failure is in the specific air pressure system component (2.0% of the rows) or in a component unrelated to that system. How long before or after the failure the data were read is not stated.
 
 **Known at prediction time.** 170 anonymised readings of the truck's operation: single counters and seven histograms whose bins count values in different ranges of a measured condition; many readings are missing.
 
-**What the test data stands for.** Random trucks, so the test data stands for new trucks like those in training. The challenge held out its last 16,000 rows, which may be later in time; the file has no dates to check.
+**What the test data stands for.** Whole trucks: rows that agree on at least 60 of the 170 counters, probably the same truck read again, stay on one side, so the test data stand for trucks not seen in training. The challenge held out its last 16,000 rows, which share trucks with its training rows and are not shown to be later in time; the files have no dates.
 
-**Our changes to the source.** We merge the challenge's training and test files and split at random.
+**Our changes to the source.** We merge the challenge's training and test files, keep one row of each set of rows that agree on at least 140 of the 170 counters (one read-out copied; 12,063 rows go), and split by truck, the rows that agree on at least 60 counters.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The challenge's test rows may be later readings; with no dates to check, a random split stands in for a split by time (the dataset is tagged as a forced random split of temporal data). When the data were read relative to the failure is not stated, so whether the model warns before a breakdown or diagnoses after it is unclear.
+> **Use case fit: approximate (a stand-in with a known gap).** Failures are undated, so a split by truck stands in for a split by time (the dataset is tagged as a forced grouped split of temporal data). When the data were read relative to the failure is not stated, so whether the model warns before a breakdown or diagnoses after it is unclear.
 
 ## Files in this folder
 
@@ -97,8 +106,9 @@ Built as `01a111fc-0ce6-78ed-a870-52ce14ff98d0` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/aps_failure.md`](../../../../curation/records/aps_failure.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/aps_failure.md`](../../../../curation/records/aps_failure.md)
 - The original source: <https://web.archive.org/web/20161011/http://ida2016.blogs.dsv.su.se/>
+- A copy (UCI 414, the re-hosted challenge zip): <https://doi.org/10.24432/C5V60Q>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
@@ -128,14 +138,17 @@ Only curators run `build`, when the dataset ships.
 | year | 2016 |
 | domain | industry & manufacturing |
 | license | CC BY 4.0 |
-| data_tags | IID, ForcedIIDFromTemporal, Anonymized |
+| data_tags | Non-IID, Grouped, ForcedGroupedFromTemporal, Anonymized |
 | reference | ida2016challenge |
-| rows x columns | 76,000 x 171 |
+| copy: UCI 414, the re-hosted challenge zip | UCI: https://doi.org/10.24432/C5V60Q; license: CC BY 4.0 |
+| rows x columns | 63,937 x 172 |
 | task.target | AirPressureSystemFailure |
 | task.problem_type | binary_classification |
 | task.metric | cost_matrix |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
 | task.stratify_on | AirPressureSystemFailure |
+| task.group_on | truck |
+| task.group_labels | per_group |
 
 **Metric**
 
@@ -174,15 +187,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 76,000 rows of the final frame (random rows: the frame is shuffled); 12 of 171 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 63,937 rows of the final frame (random rows: the frame is shuffled); 12 of 172 columns, the target first. Cells are cut at 40 characters.
 
 | AirPressureSystemFailure | aa_000 | ab_000 | ac_000 | ad_000 | ae_000 | af_000 | ag_000 | ag_001 | ag_002 | ag_003 | ag_004 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| neg | 46238 | nan | 0 | nan | 0 | 0 | 0 | 0 | 0 | 0 | 244174 |
-| neg | 31298 | nan | 234 | nan | 0 | 0 | 0 | 0 | 0 | 0 | 1478 |
-| neg | 20 | nan | 8 | 6 | 0 | 0 | 0 | 0 | 0 | 0 | 84 |
-| neg | 60 | 0 | 2.13071e+09 | 8 | 0 | 0 | 0 | 0 | 0 | 0 | 1738 |
-| neg | 16 | 0 | 4 | 4 | 0 | 0 | 0 | 0 | 0 | 0 | 12 |
+| neg | 41684 | nan | 340 | 320 | 0 | 0 | 0 | 0 | 0 | 0 | 1280 |
+| neg | 64 | 0 | 20 | 18 | 0 | 0 | 0 | 0 | 0 | 100 | 12384 |
+| neg | 92926 | nan | 5654 | 5048 | 0 | 0 | 0 | 0 | 0 | 0 | 606 |
+| neg | 40242 | nan | 282 | 280 | 0 | 0 | 0 | 0 | 0 | 0 | 236 |
+| pos | 115650 | nan | 2080 | 1834 | 0 | 0 | 0 | 8582 | 84934 | 1.39934e+06 | 2.89515e+06 |
 
 ## Curation notes
 
@@ -192,103 +205,167 @@ The first 5 of 76,000 rows of the final frame (random rows: the frame is shuffle
 - Anomaly: we cannot determine the data types of the features.
 - Anomaly: some features are bins of histograms (see original data description).
 - Metric: the challenge's cost matrix, scored from probabilities by the least expected cost rather than on hard labels (AI choice, 2026-10-21).
+- Copies of one read-out dropped, the same truck grouped (2026-11-12, Andrej; Review issue 1, option cg). Two
+  rows are linked when they share at least 5 values that 2 to 5 rows hold in their column and agree in many of
+  the 170 counters (two missing cells count as equal). With every counter shuffled within its class (10 draws),
+  no pair shares 5 such values and none agrees on more than 68 counters; in the data 17,461 pairs do.
+  - 140 counters or more (13,409 pairs): one read-out copied. 106 non-zero values match at the median (a random
+    row's best match among the rows not linked to it: 5, 99th percentile 19) and one cell differs, mostly
+    `bx_000`, by 0.012% at the median. All 133 such pairs with a failure are two failures; a model that never
+    sees a truck's copies predicts about 93 of these partners from their own counters. One row of each cluster
+    stays, the first in file order (training file first): 12,063 rows go (115 failures, 8.4% of them; 11,948
+    other trucks, 16.0%), leaving 63,937 rows with 1,260 failures; the failure share moves from 1.81% to 1.97%.
+  - 60 to 139 counters (3,966 pairs): probably the same truck read again, not a copy (47 to 81 cells differ at
+    the median); the label is the same in every pair (133 failure pairs) and `aa_000` equal in 84% to 93%. The
+    rows are one group, `truck`: the clusters of the links at 60 counters or more, found on the kept rows
+    (where a value that several copies held becomes rare: 94 more links) and on all 76,000 rows (so a link
+    through a dropped copy still joins). 63,937 rows in 61,466 trucks (2,200 with 2 to 5 rows); no truck
+    carries two labels. Below 60 counters (86 pairs, one with two labels) rows stay apart.
+  - 368 rows with 100 or more blank counters (4 failures) agree with each other on blanks only, share no rare
+    value and stay: look-alikes, not copies.
+  - 4,458 pairs of copies sit across the challenge's two files, so its own split shared trucks.
+  - Effect (untuned LightGBM, 3 folds, 2 seeds, the challenge's cost at its threshold; Slurm 1379970 and
+    1379994): test rows with a linked row in training, 25.2% under random folds on all 76,000 rows (cost per
+    row 1.145), 5.1% with one row per copied read-out and random folds (1.530), 0.05% split by truck (1.625;
+    1.539 with each truck counted once).
+- Time basis: ForcedGroupedFromTemporal: failed trucks read out over a period Scania does not state; the release
+  has no date, and the challenge's two files are not shown to be two periods (near copies across them have the
+  larger counters in the test file in 2,237 pairs, the smaller in 2,220), and the one counter that changes
+  between copies, `bx_000`, is a cumulative usage counter that moves by a small step in either direction, no
+  clock. Which component fails can move with season and fleet, so whole trucks held out stand in for the
+  trucks to come. Not tested: trucks read out later than the training trucks, which a dated release (as
+  `scania_component_x`) would allow.
 
 ## Splits
 
-Default splits.
+Stratified grouped 3-fold cross-validation over the 61,466 trucks with 3 repeats: a truck's rows stay on one
+side, and the folds are drawn over trucks, stratified by label (no truck carries two labels). Each test fold
+holds 20,488 or 20,489 trucks, about 21,300 rows and about 420 failures. 0.05% of the test rows keep a linked
+row in training (a pair sharing 5 rare values but fewer than 60 equal counters, left apart), against 25% under
+random folds on all 76,000 rows. The challenge's own split held out its last 16,000 rows, with 4,458 pairs of
+copies across its two files; the files have no dates for a temporal split.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 50,666 to 50,667 rows, test 25,333 to 25,334 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 42,597 to 42,656 rows, test 21,281 to 21,340 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 50666 | 25334 |
-| 0 | 1 | 50667 | 25333 |
-| 0 | 2 | 50667 | 25333 |
-| 1 | 0 | 50666 | 25334 |
-| 1 | 1 | 50667 | 25333 |
-| 1 | 2 | 50667 | 25333 |
-| 2 | 0 | 50666 | 25334 |
-| 2 | 1 | 50667 | 25333 |
-| 2 | 2 | 50667 | 25333 |
+| 0 | 0 | 42621 | 21316 |
+| 0 | 1 | 42597 | 21340 |
+| 0 | 2 | 42656 | 21281 |
+| 1 | 0 | 42650 | 21287 |
+| 1 | 1 | 42617 | 21320 |
+| 1 | 2 | 42607 | 21330 |
+| 2 | 0 | 42619 | 21318 |
+| 2 | 1 | 42655 | 21282 |
+| 2 | 2 | 42600 | 21337 |
+
+## Group structure
+
+One group is a truck as the data show it: the rows linked by at least 5 shared rare values and agreement on
+at least 60 of the 170 counters, probably the same truck read again (curation notes). A workshop meets each
+failed truck once and decides from its counters (the IDA 2016 Industrial Challenge's use case, a check of
+the air pressure system), so whole trucks are held out. Each row is one prediction, made from its own
+counters; no truck's rows carry two labels.
+
+| field | value |
+|---|---|
+| group column | `truck` |
+| labels | per_group |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 61,466 |
+| rows per group (min / median / max) | 1 / 1.0 / 5 |
+| largest group | 0.0% of the rows |
+| test groups per fold | 20,488 to 20,489 |
+| groups of two or more rows with a single label | 100.0% |
+| nearest neighbour in the same group | 1.2% of the rows (chance: 0.0%) |
+| label variance explained by the group | 1.00 (shuffled groups: 0.96) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
-0 error(s), 2 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 2 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_constant_column`: 1 constant column(s) (1 distinct non-null value): ['cd_000']. (hint: Drop them unless the constant is meaningful for the task.)
-- **warning** `dataset_pure_feature_value`: 8 feature value(s) determine the class on their own: bk_000 = <NA>: 29,128 rows, 99.7% AirPressureSystemFailure=neg (overall 98.2%); bl_000 = <NA>: 34,503 rows, 99.7% AirPressureSystemFailure=neg (overall 98.2%); bm_000 = <NA>: 50,095 rows, 99.8% AirPressureSystemFailure=neg (overall 98.2%); bn_000 = <NA>: 55,722 rows, 99.8% AirPressureSystemFailure=neg (overall 98.2%); bo_000 = <NA>: 58,709 rows, 99.8% AirPressureSystemFailure=neg (overall 98.2%); bp_000 = <NA>: 60,461 rows, 99.8% AirPressureSystemFailure=neg (overall 98.2%); bq_000 = <NA>: 61,703 rows, 99.8% AirPressureSystemFailure=neg (overall 98.2%); br_000 = <NA>: 62,393 rows, 99.8% AirPressureSystemFailure=neg (overall 98.2%). (hint: Often a leak: a column derived from the outcome or recorded after it. Check the column's documentation; drop it if so, otherwise accept the warning with the reason.)
+- **warning** `dataset_pure_feature_value`: 8 feature value(s) determine the class on their own: bk_000 = <NA>: 25,916 rows, 99.7% AirPressureSystemFailure=neg (overall 98.0%); bl_000 = <NA>: 30,201 rows, 99.7% AirPressureSystemFailure=neg (overall 98.0%); bm_000 = <NA>: 41,652 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); bn_000 = <NA>: 46,030 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); bo_000 = <NA>: 48,372 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); bp_000 = <NA>: 49,758 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); bq_000 = <NA>: 50,747 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); br_000 = <NA>: 51,294 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%). (hint: Often a leak: a column derived from the outcome or recorded after it. Check the column's documentation; drop it if so, otherwise accept the warning with the reason.)
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (1.2% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (1.00 vs 0.96). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (171 rows)</summary>
+<summary>Show the table (172 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | AirPressureSystemFailure | category | 0 | 0 | 2 | neg, pos |
-| br_000 | float64 | 62393 | 82.1 | 4607 | 1310700.0, 0.0, 229360.0, 205800.0, 292360.0, 250840.0, 173460.0, 267280.0, 181… |
-| bq_000 | float64 | 61703 | 81.19 | 5116 | 1310700.0, 0.0, 220000.0, 165940.0, 349100.0, 308480.0, 136780.0, 267400.0, 214… |
-| bp_000 | float64 | 60461 | 79.55 | 5863 | 1310700.0, 0.0, 161080.0, 168060.0, 289660.0, 235700.0, 241360.0, 409560.0, 229… |
-| bo_000 | float64 | 58709 | 77.25 | 6828 | 1310700.0, 0.0, 221400.0, 235860.0, 209740.0, 208740.0, 272300.0, 133900.0, 377… |
-| ab_000 | float64 | 58692 | 77.23 | 30 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 24.0 |
-| cr_000 | float64 | 58692 | 77.23 | 86 | 0.0, 44.0, 3750.0, 4.0, 54.0, 1416.0, 52.0, 1234.0, 2632.0, 1136.0 |
-| bn_000 | float64 | 55722 | 73.32 | 8216 | 1310700.0, 0.0, 182360.0, 254940.0, 184040.0, 300080.0, 222060.0, 198080.0, 162… |
-| bm_000 | float64 | 50095 | 65.91 | 10254 | 1310700.0, 0.0, 193240.0, 198100.0, 237100.0, 259560.0, 228140.0, 212200.0, 159… |
-| bl_000 | float64 | 34503 | 45.4 | 13085 | 1310700.0, 0.0, 156260.0, 174560.0, 172900.0, 213400.0, 160580.0, 181280.0, 168… |
-| bk_000 | float64 | 29128 | 38.33 | 14029 | 1310700.0, 0.0, 161880.0, 179220.0, 212520.0, 167800.0, 186480.0, 145460.0, 175… |
-| ad_000 | float64 | 18842 | 24.79 | 2027 | 0.0, 2.0, 4.0, 6.0, 10.0, 8.0, 16.0, 12.0, 14.0, 18.0 |
-| cf_000 | float64 | 18842 | 24.79 | 583 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 |
-| cg_000 | float64 | 18842 | 24.79 | 716 | 4.0, 0.0, 2.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 |
-| ch_000 | float64 | 18842 | 24.79 | 2 | 0.0, 2.0 |
-| co_000 | float64 | 18842 | 24.79 | 2045 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 |
-| ct_000 | float64 | 17526 | 23.06 | 2824 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 16.0, 14.0, 20.0 |
-| cu_000 | float64 | 17526 | 23.06 | 3818 | 0.0, 2.0, 6.0, 4.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 |
-| cv_000 | float64 | 17526 | 23.06 | 38941 | 0.0, 2280.0, 2038.0, 1442.0, 1436.0, 1332.0, 1346.0, 1328.0, 1986.0, 2530.0 |
-| cx_000 | float64 | 17526 | 23.06 | 29452 | 0.0, 52.0, 60.0, 56.0, 40.0, 68.0, 70.0, 72.0, 34.0, 42.0 |
-| cy_000 | float64 | 17526 | 23.06 | 836 | 0.0, 54.0, 16.0, 22.0, 12.0, 24.0, 14.0, 26.0, 52.0, 48.0 |
-| cz_000 | float64 | 17526 | 23.06 | 12163 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 |
-| da_000 | float64 | 17526 | 23.06 | 290 | 0.0, 170.0, 52.0, 2.0, 124.0, 66.0, 50.0, 154.0, 4.0, 6.0 |
-| db_000 | float64 | 17526 | 23.06 | 149 | 0.0, 10.0, 12.0, 14.0, 16.0, 8.0, 18.0, 22.0, 20.0, 24.0 |
-| dc_000 | float64 | 17526 | 23.06 | 39278 | 0.0, 1974.0, 1796.0, 2052.0, 2144.0, 2724.0, 2014.0, 2116.0, 1664.0, 2092.0 |
-| ec_00 | float64 | 12883 | 16.95 | 36263 | 0.0, 0.72, 0.7, 0.82, 0.74, 0.64, 0.86, 0.66, 0.8, 0.78 |
-| cm_000 | float64 | 12455 | 16.39 | 2346 | 0.0, 14.0, 12.0, 16.0, 10.0, 18.0, 8.0, 20.0, 22.0, 24.0 |
-| cl_000 | float64 | 12012 | 15.81 | 1089 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 |
-| ed_000 | float64 | 12012 | 15.81 | 4314 | 0.0, 46.0, 42.0, 48.0, 54.0, 44.0, 40.0, 38.0, 50.0, 52.0 |
-| ak_000 | float64 | 5598 | 7.37 | 194 | 0.0, 598.0, 596.0, 1196.0, 1198.0, 1794.0, 1194.0, 9994.0, 34852.0, 594.0 |
-| ca_000 | float64 | 5562 | 7.32 | 31826 | 0.0, 1880.0, 2212.0, 1610.0, 1902.0, 1786.0, 1914.0, 1816.0, 1992.0, 1942.0 |
-| df_000 | float64 | 5102 | 6.71 | 466 | 0.0, 10.0, 30.0, 60.0, 40.0, 20.0, 130.0, 100.0, 50.0, 120.0 |
-| dg_000 | float64 | 5102 | 6.71 | 1620 | 0.0, 2.0, 4.0, 8.0, 6.0, 10.0, 14.0, 22.0, 6734.0, 70434.0 |
-| dh_000 | float64 | 5102 | 6.71 | 1195 | 0.0, 10.0, 30.0, 20.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0 |
-| di_000 | float64 | 5100 | 6.71 | 6670 | 0.0, 2.0, 4.0, 6.0, 8.0, 12.0, 18.0, 16.0, 10.0, 14.0 |
-| dj_000 | float64 | 5101 | 6.71 | 80 | 0.0, 10.0, 30.0, 40.0, 60.0, 50.0, 100.0, 80.0, 70.0, 20.0 |
-| dk_000 | float64 | 5101 | 6.71 | 313 | 0.0, 4.0, 6.0, 16.0, 34.0, 8.0, 18.0, 12.0, 2.0, 406.0 |
-| dl_000 | float64 | 5102 | 6.71 | 217 | 0.0, 40.0, 410.0, 180.0, 15202350.0, 28979160.0, 60396920.0, 50.0, 230.0, 60.0 |
-| dm_000 | float64 | 5103 | 6.71 | 278 | 0.0, 6.0, 28.0, 90.0, 15070.0, 12.0, 70588.0, 8844466.0, 1536872.0, 10.0 |
-| eb_000 | float64 | 5101 | 6.71 | 33325 | 0.0, 228290.0, 752140.0, 455490.0, 10611120.0, 925120.0, 7165300.0, 451920.0, 5… |
-| ac_000 | float64 | 4261 | 5.61 | 2229 | 0.0, 2130706432.0, 2130706434.0, 2.0, 4.0, 8.0, 6.0, 12.0, 10.0, 16.0 |
-| bx_000 | float64 | 4123 | 5.42 | 66034 | 202.0, 212.0, 200.0, 216.0, 220.0, 218.0, 214.0, 224.0, 222.0, 208.0 |
-| cc_000 | float64 | 4120 | 5.42 | 52485 | 0.0, 6640.0, 7018.0, 7384.0, 5722.0, 8460.0, 89632.0, 5406.0, 5454.0, 5202.0 |
-| ar_000 | float64 | 3487 | 4.59 | 72 | 0.0, 2.0, 4.0, 6.0, 8.0, 12.0, 10.0, 14.0, 18.0, 16.0 |
-| bc_000 | float64 | 3489 | 4.59 | 3122 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 16.0, 14.0, 18.0 |
-| bd_000 | float64 | 3491 | 4.59 | 3944 | 0.0, 4.0, 2.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 |
-| bz_000 | float64 | 3486 | 4.59 | 19260 | 0.0, 6.0, 12.0, 10.0, 4.0, 16.0, 8.0, 18.0, 20.0, 26.0 |
-| cp_000 | float64 | 3487 | 4.59 | 2569 | 0.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0 |
-| de_000 | float64 | 3488 | 4.59 | 2087 | 0.0, 50.0, 48.0, 52.0, 40.0, 44.0, 42.0, 38.0, 36.0, 46.0 |
-| do_000 | float64 | 3488 | 4.59 | 23340 | 0.0, 20.0, 40.0, 60.0, 6.0, 18.0, 12.0, 4.0, 16.0, 42.0 |
-| dp_000 | float64 | 3490 | 4.59 | 12599 | 0.0, 2.0, 6.0, 4.0, 12.0, 10.0, 8.0, 18.0, 14.0, 16.0 |
-| dq_000 | float64 | 3490 | 4.59 | 9587 | 0.0, 80.0, 60.0, 100.0, 140.0, 120.0, 72.0, 48.0, 240.0, 160.0 |
-| dr_000 | float64 | 3490 | 4.59 | 7878 | 0.0, 118.0, 96.0, 6.0, 130.0, 116.0, 138.0, 104.0, 108.0, 132.0 |
-| ds_000 | float64 | 3491 | 4.59 | 30563 | 0.0, 46.0, 20.0, 40.0, 34.0, 50.0, 30.0, 28.0, 44.0, 32.0 |
-| dt_000 | float64 | 3491 | 4.59 | 17596 | 0.0, 14.0, 12.0, 16.0, 10.0, 18.0, 22.0, 8.0, 20.0, 24.0 |
-| du_000 | float64 | 3490 | 4.59 | 33450 | 0.0, 80.0, 40.0, 20.0, 60.0, 100.0, 160.0, 260.0, 660.0, 360.0 |
-| dv_000 | float64 | 3490 | 4.59 | 35505 | 0.0, 8.0, 4.0, 2.0, 6.0, 10.0, 16.0, 12.0, 20.0, 18.0 |
-| dx_000 | float64 | 3487 | 4.59 | 18079 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 16.0, 14.0, 136.0 |
-| dy_000 | float64 | 3488 | 4.59 | 7342 | 0.0, 8.0, 12.0, 4.0, 10.0, 14.0, 16.0, 6.0, 18.0, 20.0 |
-| dz_000 | float64 | 3485 | 4.59 | 51 | 0.0, 2.0, 4.0, 6.0, 8.0, 14.0, 12.0, 10.0, 42.0, 16.0 |
+| br_000 | float64 | 51294 | 80.23 | 4602 | 1310700.0, 0.0, 181280.0, 292360.0, 250840.0, 292980.0, 297420.0, 288400.0, 218… |
+| bq_000 | float64 | 50747 | 79.37 | 5114 | 1310700.0, 0.0, 163880.0, 262460.0, 187720.0, 308480.0, 136780.0, 349100.0, 160… |
+| bp_000 | float64 | 49758 | 77.82 | 5859 | 1310700.0, 0.0, 289660.0, 161080.0, 224140.0, 168060.0, 184500.0, 209460.0, 235… |
+| ab_000 | float64 | 48728 | 76.21 | 30 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 24.0 |
+| cr_000 | float64 | 48728 | 76.21 | 86 | 0.0, 44.0, 4.0, 27000.0, 9820.0, 6780.0, 38078.0, 144.0, 10.0, 460.0 |
+| bo_000 | float64 | 48372 | 75.66 | 6825 | 1310700.0, 0.0, 221400.0, 243560.0, 210260.0, 172280.0, 133900.0, 223400.0, 178… |
+| bn_000 | float64 | 46030 | 71.99 | 8212 | 1310700.0, 0.0, 222060.0, 162980.0, 300080.0, 184920.0, 184040.0, 182360.0, 159… |
+| bm_000 | float64 | 41652 | 65.15 | 10251 | 1310700.0, 0.0, 198100.0, 259560.0, 178820.0, 228140.0, 193240.0, 199260.0, 176… |
+| bl_000 | float64 | 30201 | 47.24 | 13083 | 1310700.0, 0.0, 156260.0, 181280.0, 272280.0, 196380.0, 260940.0, 179340.0, 180… |
+| bk_000 | float64 | 25916 | 40.53 | 14026 | 1310700.0, 0.0, 161880.0, 167800.0, 179220.0, 211540.0, 212520.0, 165120.0, 175… |
+| ad_000 | float64 | 17366 | 27.16 | 2014 | 0.0, 2.0, 4.0, 6.0, 10.0, 8.0, 16.0, 12.0, 14.0, 18.0 |
+| cf_000 | float64 | 17366 | 27.16 | 580 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 |
+| cg_000 | float64 | 17366 | 27.16 | 712 | 4.0, 2.0, 0.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 |
+| ch_000 | float64 | 17366 | 27.16 | 2 | 0.0, 2.0 |
+| co_000 | float64 | 17366 | 27.16 | 2031 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 |
+| ct_000 | float64 | 16129 | 25.23 | 2812 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 16.0, 14.0, 20.0 |
+| cu_000 | float64 | 16129 | 25.23 | 3796 | 0.0, 2.0, 6.0, 4.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 |
+| cv_000 | float64 | 16129 | 25.23 | 38688 | 0.0, 1442.0, 2280.0, 2038.0, 1436.0, 1346.0, 1190.0, 1328.0, 1410.0, 1368.0 |
+| cx_000 | float64 | 16129 | 25.23 | 29284 | 0.0, 52.0, 60.0, 40.0, 56.0, 68.0, 70.0, 34.0, 58.0, 72.0 |
+| cy_000 | float64 | 16129 | 25.23 | 834 | 0.0, 16.0, 54.0, 22.0, 14.0, 26.0, 24.0, 12.0, 48.0, 52.0 |
+| cz_000 | float64 | 16129 | 25.23 | 12100 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 20.0 |
+| da_000 | float64 | 16129 | 25.23 | 289 | 0.0, 2.0, 52.0, 66.0, 6.0, 170.0, 50.0, 36.0, 4.0, 26.0 |
+| db_000 | float64 | 16129 | 25.23 | 148 | 0.0, 10.0, 12.0, 16.0, 14.0, 8.0, 18.0, 22.0, 20.0, 24.0 |
+| dc_000 | float64 | 16129 | 25.23 | 39020 | 0.0, 1796.0, 1974.0, 2052.0, 2116.0, 2144.0, 2014.0, 1664.0, 2646.0, 2782.0 |
+| ec_00 | float64 | 12458 | 19.48 | 36154 | 0.0, 0.82, 0.74, 0.72, 0.7, 0.78, 0.86, 0.64, 0.8, 0.76 |
+| cm_000 | float64 | 12058 | 18.86 | 2339 | 0.0, 14.0, 12.0, 16.0, 10.0, 18.0, 8.0, 20.0, 22.0, 24.0 |
+| cl_000 | float64 | 11635 | 18.2 | 1086 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 |
+| ed_000 | float64 | 11635 | 18.2 | 4303 | 0.0, 46.0, 42.0, 48.0, 54.0, 44.0, 40.0, 38.0, 52.0, 50.0 |
+| ak_000 | float64 | 5315 | 8.31 | 194 | 0.0, 598.0, 596.0, 1196.0, 1198.0, 1794.0, 1194.0, 544.0, 594.0, 2840.0 |
+| ca_000 | float64 | 5288 | 8.27 | 31318 | 0.0, 1880.0, 1902.0, 1914.0, 1974.0, 1786.0, 1610.0, 1824.0, 2104.0, 1808.0 |
+| dm_000 | float64 | 4863 | 7.61 | 270 | 0.0, 6.0, 12.0, 28.0, 4.0, 4925928.0, 16.0, 10.0, 90.0, 2542448.0 |
+| df_000 | float64 | 4862 | 7.6 | 465 | 0.0, 10.0, 30.0, 60.0, 40.0, 20.0, 50.0, 130.0, 120.0, 100.0 |
+| dg_000 | float64 | 4862 | 7.6 | 1610 | 0.0, 2.0, 4.0, 8.0, 6.0, 10.0, 22.0, 14.0, 36.0, 662.0 |
+| dh_000 | float64 | 4862 | 7.6 | 1194 | 0.0, 10.0, 30.0, 20.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0 |
+| di_000 | float64 | 4860 | 7.6 | 6640 | 0.0, 4.0, 2.0, 6.0, 8.0, 18.0, 12.0, 10.0, 14.0, 16.0 |
+| dj_000 | float64 | 4861 | 7.6 | 80 | 0.0, 10.0, 30.0, 60.0, 80.0, 50.0, 40.0, 70.0, 90.0, 100.0 |
+| dk_000 | float64 | 4861 | 7.6 | 310 | 0.0, 4.0, 6.0, 34.0, 8.0, 16.0, 12.0, 2.0, 18.0, 92264.0 |
+| dl_000 | float64 | 4862 | 7.6 | 217 | 0.0, 40.0, 180.0, 60.0, 130.0, 50.0, 33160.0, 120.0, 1520.0, 230.0 |
+| eb_000 | float64 | 4861 | 7.6 | 33258 | 0.0, 228290.0, 752140.0, 1370640.0, 5834810.0, 1149880.0, 537290.0, 2621790.0, … |
+| ac_000 | float64 | 4047 | 6.33 | 2227 | 0.0, 2130706432.0, 2130706434.0, 2.0, 4.0, 8.0, 6.0, 12.0, 10.0, 14.0 |
+| bx_000 | float64 | 4022 | 6.29 | 55138 | 202.0, 212.0, 200.0, 224.0, 216.0, 218.0, 220.0, 222.0, 210.0, 214.0 |
+| cc_000 | float64 | 4019 | 6.29 | 52223 | 0.0, 6640.0, 89632.0, 7018.0, 5722.0, 6680.0, 2384370.0, 5454.0, 6192.0, 7384.0 |
+| bd_000 | float64 | 3303 | 5.17 | 3939 | 0.0, 4.0, 2.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0 |
+| ds_000 | float64 | 3303 | 5.17 | 30512 | 0.0, 20.0, 40.0, 46.0, 34.0, 50.0, 44.0, 30.0, 32.0, 28.0 |
+| dt_000 | float64 | 3303 | 5.17 | 17577 | 0.0, 14.0, 16.0, 12.0, 10.0, 18.0, 22.0, 20.0, 8.0, 24.0 |
+| ar_000 | float64 | 3299 | 5.16 | 72 | 0.0, 2.0, 4.0, 6.0, 8.0, 12.0, 10.0, 14.0, 18.0, 16.0 |
+| bc_000 | float64 | 3301 | 5.16 | 3115 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 16.0, 14.0, 18.0 |
+| bz_000 | float64 | 3298 | 5.16 | 19244 | 0.0, 6.0, 12.0, 4.0, 10.0, 8.0, 18.0, 16.0, 20.0, 26.0 |
+| cp_000 | float64 | 3299 | 5.16 | 2569 | 0.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0 |
+| de_000 | float64 | 3300 | 5.16 | 2083 | 50.0, 0.0, 44.0, 40.0, 52.0, 42.0, 48.0, 46.0, 38.0, 36.0 |
+| do_000 | float64 | 3300 | 5.16 | 23309 | 0.0, 20.0, 40.0, 60.0, 6.0, 18.0, 12.0, 4.0, 16.0, 42.0 |
+| dp_000 | float64 | 3302 | 5.16 | 12586 | 0.0, 2.0, 6.0, 4.0, 12.0, 10.0, 8.0, 18.0, 14.0, 16.0 |
+| dq_000 | float64 | 3302 | 5.16 | 9548 | 0.0, 80.0, 60.0, 100.0, 140.0, 120.0, 72.0, 48.0, 240.0, 160.0 |
+| dr_000 | float64 | 3302 | 5.16 | 7849 | 0.0, 118.0, 130.0, 138.0, 116.0, 6.0, 96.0, 108.0, 126.0, 142.0 |
+| du_000 | float64 | 3302 | 5.16 | 33378 | 0.0, 80.0, 40.0, 20.0, 60.0, 100.0, 160.0, 260.0, 360.0, 400.0 |
+| dv_000 | float64 | 3302 | 5.16 | 35433 | 0.0, 4.0, 8.0, 2.0, 6.0, 10.0, 16.0, 12.0, 14.0, 20.0 |
+| dx_000 | float64 | 3299 | 5.16 | 16512 | 0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 16.0, 14.0, 20.0 |
+| dy_000 | float64 | 3300 | 5.16 | 7322 | 0.0, 8.0, 12.0, 4.0, 10.0, 16.0, 14.0, 6.0, 18.0, 20.0 |
+| dz_000 | float64 | 3297 | 5.16 | 51 | 0.0, 2.0, 4.0, 6.0, 8.0, 14.0, 12.0, 10.0, 16.0, 42.0 |
 
-(111 more rows not shown)
+(112 more rows not shown)
 
 </details>
 
@@ -296,78 +373,78 @@ Default splits.
 
 | AirPressureSystemFailure | count | pct |
 |---|---|---|
-| neg | 74625 | 98.19 |
-| pos | 1375 | 1.81 |
+| neg | 62677 | 98.03 |
+| pos | 1260 | 1.97 |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (170 rows)</summary>
+<summary>Show the table (171 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| aa_000 | 76000 | 61159.8 | 264737 | 0 | 4.29497e+07 |
-| ab_000 | 17308 | 0.72556 | 3.31191 | 0 | 204 |
-| ac_000 | 71739 | 3.5644e+08 | 7.95253e+08 | 0 | 2.13071e+09 |
-| ad_000 | 57158 | 150630 | 3.59059e+07 | 0 | 8.5843e+09 |
-| ae_000 | 72810 | 6.73696 | 153.446 | 0 | 21050 |
-| af_000 | 72810 | 10.8363 | 201.595 | 0 | 20070 |
-| ag_000 | 75140 | 200.431 | 18436.1 | 0 | 3.37689e+06 |
-| ag_001 | 75140 | 1204.76 | 50990.9 | 0 | 1.04725e+07 |
-| ag_002 | 75140 | 9697.33 | 171900 | 0 | 1.91492e+07 |
-| ag_003 | 75140 | 93649 | 824416 | 0 | 7.30575e+07 |
-| ag_004 | 75140 | 448343 | 2.46874e+06 | 0 | 2.28831e+08 |
-| ag_005 | 75140 | 1.12257e+06 | 3.34655e+06 | 0 | 1.79188e+08 |
-| ag_006 | 75140 | 1.66627e+06 | 3.94242e+06 | 0 | 9.40207e+07 |
-| ag_007 | 75140 | 500795 | 1.41652e+06 | 0 | 6.33468e+07 |
-| ag_008 | 75140 | 35643.9 | 224941 | 0 | 1.77025e+07 |
-| ag_009 | 75140 | 5255.75 | 170027 | 0 | 2.51985e+07 |
-| ah_000 | 75180 | 1.83262e+06 | 4.26659e+06 | 0 | 8.20736e+07 |
-| ai_000 | 75208 | 9597.23 | 178542 | 0 | 1.77701e+07 |
-| aj_000 | 75208 | 1167.2 | 50622.7 | 0 | 5.62934e+06 |
-| ak_000 | 70402 | 968.942 | 79152 | 0 | 1.09306e+07 |
-| al_000 | 75189 | 61605.9 | 564372 | 0 | 3.77793e+07 |
-| am_0 | 75208 | 97244.7 | 886367 | 0 | 5.59035e+07 |
-| an_000 | 75189 | 3.50308e+06 | 7.9392e+06 | 0 | 1.49869e+08 |
-| ao_000 | 75249 | 3.03959e+06 | 6.9529e+06 | 0 | 1.42752e+08 |
-| ap_000 | 75189 | 1.01936e+06 | 3.16255e+06 | 0 | 1.15613e+08 |
-| aq_000 | 75249 | 449194 | 1.28814e+06 | 0 | 3.45588e+07 |
-| ar_000 | 72513 | 0.492877 | 5.3331 | 0 | 350 |
-| as_000 | 75208 | 247.334 | 28315 | 0 | 6.3837e+06 |
-| at_000 | 75208 | 5196.72 | 121130 | 0 | 1.06543e+07 |
-| au_000 | 75208 | 299.935 | 25955.7 | 0 | 5.71147e+06 |
-| av_000 | 72812 | 1145.84 | 6708.41 | 0 | 794458 |
-| ax_000 | 72811 | 377.019 | 1486.45 | 0 | 116652 |
-| ay_000 | 75137 | 14956.2 | 615250 | 0 | 7.40411e+07 |
-| ay_001 | 75137 | 11334.5 | 561403 | 0 | 8.05254e+07 |
-| ay_002 | 75137 | 11352.1 | 437759 | 0 | 3.02312e+07 |
-| ay_003 | 75137 | 7321.96 | 208619 | 0 | 1.39452e+07 |
-| ay_004 | 75137 | 10161.2 | 337652 | 0 | 4.00287e+07 |
-| ay_005 | 75137 | 106661 | 1.28824e+06 | 0 | 1.24949e+08 |
-| ay_006 | 75137 | 1.08191e+06 | 3.28818e+06 | 0 | 1.2768e+08 |
-| ay_007 | 75137 | 1.55683e+06 | 5.0885e+06 | 0 | 4.89678e+08 |
-| ay_008 | 75137 | 1.07896e+06 | 4.27957e+06 | 0 | 3.26837e+08 |
-| ay_009 | 75137 | 1158.22 | 90231 | 0 | 1.88247e+07 |
-| az_000 | 75137 | 7899.45 | 71660 | 0 | 1.01246e+07 |
-| az_001 | 75137 | 4486.53 | 33277.5 | 0 | 4.53026e+06 |
-| az_002 | 75137 | 8046.2 | 97515.5 | 0 | 1.42177e+07 |
-| az_003 | 75137 | 87721.7 | 667465 | 0 | 4.55842e+07 |
-| az_004 | 75137 | 1.48848e+06 | 4.24821e+06 | 0 | 1.32037e+08 |
-| az_005 | 75137 | 2.16288e+06 | 6.67076e+06 | 0 | 4.81047e+08 |
-| az_006 | 75137 | 102605 | 898229 | 0 | 6.45891e+07 |
-| az_007 | 75137 | 17884 | 276670 | 0 | 3.91582e+07 |
-| az_008 | 75137 | 634.162 | 14296.1 | 0 | 1.94788e+06 |
-| az_009 | 75137 | 37.6077 | 2950.18 | 0 | 666148 |
-| ba_000 | 75119 | 1.41458e+06 | 3.82542e+06 | 0 | 2.32872e+08 |
-| ba_001 | 75119 | 904111 | 2.40767e+06 | 0 | 1.42e+08 |
-| ba_002 | 75119 | 417998 | 1.21379e+06 | 0 | 5.58074e+07 |
-| ba_003 | 75119 | 277536 | 762096 | 0 | 3.69314e+07 |
-| ba_004 | 75119 | 207683 | 551786 | 0 | 2.51586e+07 |
-| ba_005 | 75119 | 190998 | 519351 | 0 | 1.92406e+07 |
-| ba_006 | 75119 | 211597 | 637850 | 0 | 1.89977e+07 |
-| ba_007 | 75119 | 186798 | 530245 | 0 | 1.54273e+07 |
+| aa_000 | 63937 | 61998.2 | 284025 | 0 | 4.29497e+07 |
+| ab_000 | 15209 | 0.759287 | 3.38616 | 0 | 204 |
+| ac_000 | 59890 | 3.36096e+08 | 7.76641e+08 | 0 | 2.13071e+09 |
+| ad_000 | 46571 | 184760 | 3.97784e+07 | 0 | 8.5843e+09 |
+| ae_000 | 60923 | 6.94641 | 164.86 | 0 | 21050 |
+| af_000 | 60923 | 11.3578 | 215.38 | 0 | 20070 |
+| ag_000 | 63089 | 174.407 | 14936.7 | 0 | 3.37689e+06 |
+| ag_001 | 63089 | 1354.51 | 55405.5 | 0 | 1.04725e+07 |
+| ag_002 | 63089 | 10775.1 | 182872 | 0 | 1.91492e+07 |
+| ag_003 | 63089 | 102130 | 882794 | 0 | 7.30575e+07 |
+| ag_004 | 63089 | 473619 | 2.60809e+06 | 0 | 2.28831e+08 |
+| ag_005 | 63089 | 1.151e+06 | 3.48582e+06 | 0 | 1.79188e+08 |
+| ag_006 | 63089 | 1.66774e+06 | 4.09765e+06 | 0 | 9.40207e+07 |
+| ag_007 | 63089 | 496273 | 1.47332e+06 | 0 | 6.33468e+07 |
+| ag_008 | 63089 | 35608.9 | 238957 | 0 | 1.77025e+07 |
+| ag_009 | 63089 | 5646.78 | 183685 | 0 | 2.51985e+07 |
+| ah_000 | 63169 | 1.85174e+06 | 4.41557e+06 | 0 | 8.20736e+07 |
+| ai_000 | 63196 | 10073 | 189706 | 0 | 1.77701e+07 |
+| aj_000 | 63196 | 1224.31 | 50028.4 | 0 | 5.62934e+06 |
+| ak_000 | 58622 | 910.88 | 74630.4 | 0 | 1.09306e+07 |
+| al_000 | 63177 | 65658.1 | 598306 | 0 | 3.77793e+07 |
+| am_0 | 63196 | 103656 | 938411 | 0 | 5.59035e+07 |
+| an_000 | 63177 | 3.52733e+06 | 8.21419e+06 | 0 | 1.49869e+08 |
+| ao_000 | 63240 | 3.06268e+06 | 7.19353e+06 | 0 | 1.42752e+08 |
+| ap_000 | 63177 | 1.04384e+06 | 3.29032e+06 | 0 | 1.15613e+08 |
+| aq_000 | 63240 | 454289 | 1.33749e+06 | 0 | 3.45588e+07 |
+| ar_000 | 60638 | 0.53633 | 5.64623 | 0 | 350 |
+| as_000 | 63196 | 294.128 | 30888.7 | 0 | 6.3837e+06 |
+| at_000 | 63196 | 5424.98 | 124710 | 0 | 1.06543e+07 |
+| au_000 | 63196 | 347.602 | 28282.9 | 0 | 5.71147e+06 |
+| av_000 | 60925 | 1109.79 | 6970.89 | 0 | 794458 |
+| ax_000 | 60924 | 368.037 | 1523.38 | 0 | 116652 |
+| ay_000 | 63088 | 16439 | 660069 | 0 | 7.40411e+07 |
+| ay_001 | 63088 | 12078.3 | 586722 | 0 | 8.05254e+07 |
+| ay_002 | 63088 | 12970.3 | 475836 | 0 | 3.02312e+07 |
+| ay_003 | 63088 | 8174.71 | 224932 | 0 | 1.39452e+07 |
+| ay_004 | 63088 | 11086.8 | 345947 | 0 | 4.00287e+07 |
+| ay_005 | 63088 | 108148 | 1.31589e+06 | 0 | 1.24949e+08 |
+| ay_006 | 63088 | 1.07025e+06 | 3.40993e+06 | 0 | 1.2768e+08 |
+| ay_007 | 63088 | 1.58847e+06 | 5.36149e+06 | 0 | 4.89678e+08 |
+| ay_008 | 63088 | 1.11337e+06 | 4.5049e+06 | 0 | 3.26837e+08 |
+| ay_009 | 63088 | 1360.56 | 98446.6 | 0 | 1.88247e+07 |
+| az_000 | 63088 | 8365.62 | 76090.6 | 0 | 1.01246e+07 |
+| az_001 | 63088 | 4761.32 | 35624.1 | 0 | 4.53026e+06 |
+| az_002 | 63088 | 8644.49 | 105794 | 0 | 1.42177e+07 |
+| az_003 | 63088 | 87104.1 | 714774 | 0 | 4.55842e+07 |
+| az_004 | 63088 | 1.47561e+06 | 4.43254e+06 | 0 | 1.32037e+08 |
+| az_005 | 63088 | 2.23198e+06 | 6.98537e+06 | 0 | 4.81047e+08 |
+| az_006 | 63088 | 105458 | 931022 | 0 | 6.45891e+07 |
+| az_007 | 63088 | 19744.3 | 298443 | 0 | 3.91582e+07 |
+| az_008 | 63088 | 658.756 | 15186.5 | 0 | 1.94788e+06 |
+| az_009 | 63088 | 37.5638 | 3045.83 | 0 | 666148 |
+| ba_000 | 63071 | 1.44302e+06 | 4.0076e+06 | 0 | 2.32872e+08 |
+| ba_001 | 63071 | 910539 | 2.51663e+06 | 0 | 1.42e+08 |
+| ba_002 | 63071 | 425386 | 1.26862e+06 | 0 | 5.58074e+07 |
+| ba_003 | 63071 | 281727 | 797904 | 0 | 3.69314e+07 |
+| ba_004 | 63071 | 210298 | 576953 | 0 | 2.51586e+07 |
+| ba_005 | 63071 | 193297 | 540318 | 0 | 1.92406e+07 |
+| ba_006 | 63071 | 214678 | 663530 | 0 | 1.89977e+07 |
+| ba_007 | 63071 | 187733 | 550067 | 0 | 1.54273e+07 |
 
-(110 more rows not shown)
+(111 more rows not shown)
 
 </details>
 
@@ -375,8 +452,8 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| AirPressureSystemFailure | 1 | neg | 74625 | 98.19 |
-| AirPressureSystemFailure | 2 | pos | 1375 | 1.81 |
+| AirPressureSystemFailure | 1 | neg | 62677 | 98.03 |
+| AirPressureSystemFailure | 2 | pos | 1260 | 1.97 |
 
 ## Build
 
@@ -389,4 +466,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6ac2451f7ced58159814041875cf79db457a0e4011ba20ce901eb717a94c7e2a` |
+| stale | yes: the definition now gives checksum `v2:68162a119d77cd6161a1ce401f4029b854fb4605de633fecf72035c339e44912` |

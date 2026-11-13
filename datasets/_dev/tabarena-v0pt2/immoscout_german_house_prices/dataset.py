@@ -79,7 +79,7 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
         use_case=("A seller or agent sets the asking price of a house from the other houses currently on the market."),
         row=(
             "One house listed for sale on the German property portal ImmoScout24, from one scrape of 14 July 2020 "
-            "(10,317 houses across the 16 states)."
+            "(10,203 houses across the 16 states)."
         ),
         predicted="The asking price in euros, on a log scale; the sale price is not in the data.",
         known=(
@@ -93,7 +93,8 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
         ),
         changes=(
             'We drop listings priced under 10,000 euros (mostly 0, likely "price on request") or with under 10 square'
-            " metres of living space, and listings repeated with identical features."
+            " metres of living space, and listings repeated with identical features; a house listed twice (the same living"
+            " space, lot, year built and place) keeps its first listing."
         ),
         fit="direct",
         fit_reason=(
@@ -176,6 +177,16 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
           `Condition` stays unordered, as "negotiable" is no state and "well_kept" does not sit against the
           renovation levels. No copy with the German labels and no scraper code were found; the Kaggle upload is
           deleted.
+        - One listing per house (2026-11-11, Andrej; LEAK-17, LEAK-42): 219 listings (2.1%) in 105 groups share living
+          space, lot, year built, state, city and place (a missing year built counts as a value), against 0.3 to 0.5
+          such rows by chance (each place's areas and years shuffled); both listings ask the same price in 94 of the
+          105 groups, and 78 groups differ in the house type: one house listed twice. The scrape has no listing date,
+          so the first listing in file order stays and 114 rows go (1.1%; 10,317 to 10,203). The target barely moves:
+          price quartiles EUR 250,000, 400,000 and 650,000 before and after, mean log price 12.877 both, its standard
+          deviation 0.848 before and 0.847 after. Before the drop 1.5% of test rows had their house in training
+          (untuned LightGBM, RMSE on the log price 0.230 on those rows against 0.387 on the rest). Same rule as
+          fiat_500 (one row per car). 25 more pairs of one place and year built whose areas differ by 5% or less
+          (0.5% of rows) stay as they are.
         - We drop all rows where the living space is less than 10 (in Germany, this would likely not be enough living space for a real house, and thus might be a data error.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
@@ -225,6 +236,9 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
         )
         # Drop duplicates ignoring the target
         df = df.drop_duplicates(subset=[c for c in df.columns if c != self.task_metadata.target_column_name])
+        # One listing per house: a house listed twice (often under two types) keeps its first listing; a missing
+        # build year counts as a value (LEAK-17, LEAK-42)
+        df = df.drop_duplicates(subset=["Living_space", "Lot", "Year_built", "State", "City", "Place"], keep="first")
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

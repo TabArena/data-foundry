@@ -16,7 +16,7 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
             "liver work-up."
         ),
         row=(
-            "One patient record from the north-east of Andhra Pradesh, India (416 liver patients and 167 others); the"
+            "One patient record from the north-east of Andhra Pradesh, India (406 liver patients and 164 others); the"
             " period is not stated."
         ),
         predicted=("Whether the record is of a liver patient (71%); how the diagnosis was made is not stated."),
@@ -27,8 +27,9 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
         split="Random patients, so the test data stands for new patients from the same collection.",
         fit="approximate",
         fit_reason=(
-            "Liver patients and others were collected as two groups (71% patients), not as the patients a doctor "
-            "sees, and the basis of the diagnosis is not stated."
+            "Liver patients and other patients were collected as two groups (71% liver patients), not as the "
+            "patients a doctor sees; a physician labelled them, but the label's criterion is not stated, and the lab "
+            "values contradict it for part of the records."
         ),
     )
 
@@ -64,16 +65,34 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
         mkdir -p local-data-warehouse/indian_liver_patient_dataset && mv "Indian Liver Patient Dataset (ILPD).csv" local-data-warehouse/indian_liver_patient_dataset/
     """
     curation_comments = """
-        We keep the data as is as it does not require any further cleaning.
-        Note, the data contains a few (n=13) duplicates, that are likely naturally occurring duplicates given the features.
-        - The target (2026-11-01, CLEAN-25): `Selector` ships its classes as words (1 means a liver patient (UCI)).
-          Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
+        - Label and source (2026-11-11, PROV-2, USE-8): the values are real lab reports, transcribed by hand: the
+          albumin-to-globulin ratio equals albumin / (total protein - albumin) cut to one decimal in 471 of 566 rows,
+          ages and enzymes heap on numbers ending in 0 or 5, the 13 copies sit on adjacent rows, and nothing looks
+          generated. A physician labelled them (Ramana et al. 2011 thank Dr. Bevera Lakshmana Rao "in labeling
+          samples"), on a criterion not stated; the hospital and period are not stated either, and the 583 records
+          are a subset, chosen in an unstated way, of the 751 of that paper. The others are other patients tested,
+          not healthy people (median albumin 3.4 g/dL). The lab values contradict the label for part of the 583
+          records: 85 of the 167 others have low albumin and 18 high bilirubin or liver enzymes, and 55 of the 416
+          patients have normal bilirubin, ALT, AST and albumin. The number format of the values gives ROC AUC 0.50
+          for the label, so no recording difference shows between the two groups.
         - Time basis: ForcedIIDFromTemporal: patients seen over a period the sources do not state; the file keeps no
           date, so random patients stand in for the patients to come. The file order carries some structure (lag-1
           correlation of 0.10 to 0.26 for age and the lab values, none for the label: 0.03) but no cost: held out by
           file position (contiguous 5-fold, or the last third after the first two) ROC AUC stays within the spread
           of random splits for logistic regression, random forest and TabPFN 3.5. A dated release would test later
           patients and whether the two groups were collected in different periods, which this split cannot.
+        - Repeated records (2026-11-11, LEAK-18, LEAK-19): 13 records appear twice, equal in age, sex and all eight
+          blood tests and with the same label; each pair sits on adjacent rows of the UCI file (rows 19/20 to 201/202),
+          and none of 500 tables with each column shuffled on its own held a repeated row. They are one record
+          entered twice, so the second copy is dropped: 583 to 570 rows, 10 liver patients and 3 others; the patient
+          share moves from 71.4% to 71.2%.
+        - Impossible values (2026-11-11, CLEAN-11): direct bilirubin is part of total bilirubin, yet it is the larger
+          in 3 rows: both bilirubin values are set to missing there. The albumin-to-globulin ratio follows from
+          albumin and total protein (globulin = total protein - albumin); where the published ratio differs from
+          that by more than 0.2 (8 rows after the drop) it is set to missing. The rows stay.
+        - Ages above 89 are recorded as 90 (UCI); this concerns 1 row and is kept as published.
+        - The target (2026-11-01, CLEAN-25): `Selector` ships its classes as words (1 means a liver patient (UCI)).
+          Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -96,7 +115,14 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
         return df
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
-        df = raw
+        # each of the 13 repeated records is one record entered twice on adjacent rows (LEAK-18, LEAK-19)
+        df = raw.drop_duplicates().reset_index(drop=True)
+        # impossible values become missing, the row stays (CLEAN-11)
+        df = df.astype({"TB": "float64", "DB": "float64", "A/G": "float64"})
+        bili_bad = df["DB"] > df["TB"]
+        df.loc[bili_bad, ["TB", "DB"]] = float("nan")
+        ag_bad = (df["A/G"] - df["ALB"] / (df["TP"] - df["ALB"])).abs() > 0.2
+        df.loc[ag_bad, "A/G"] = float("nan")
         # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
         df = decode(df, {self.target: {"1": "Yes", "2": "No"}})
         return df

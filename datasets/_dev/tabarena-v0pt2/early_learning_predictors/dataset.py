@@ -777,7 +777,9 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         use_case=(
             "The source asks which features of early learning programmes predict better outcomes, a study looking "
             "back. As a prediction, for example, a programme funder estimates the scores of children at a new "
-            "facility from facility, staff and family surveys, to find children at risk without a full assessment."
+            "facility from the child's record and whichever facility instruments its study ran (observation, "
+            "registers, the teacher's rating; in the 2021 national Index also the principal and practitioner "
+            "interviews), to find children at risk without a full assessment."
         ),
         row=(
             "One child aged 50 to 69 months assessed at an early learning facility in South Africa, 2016 to 2023 "
@@ -788,9 +790,10 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
             " motor development, numeracy, cognition and executive function, literacy and language)."
         ),
         known=(
-            "739 features: the child's age, sex, birth date, grant, stunting, languages and years in the programme; "
-            "the facility's registration, staff, building, equipment and observed practice; teacher and parent "
-            "questionnaires. Many are missing for whole survey rounds."
+            "735 features in modules: the child's record (age, sex, birth date, languages, years in the programme; "
+            "height and stunting in most studies) for every child; the teacher's rating of the child (41%), the "
+            "facility observation (41%) and registers (36%); the principal, programme-quality and practitioner "
+            "interviews (11% to 12%, the 2021 national Index). A module a study did not run is missing."
         ),
         split=(
             "Whole facilities are held out, so the test data stands for facilities never surveyed; the source's "
@@ -803,8 +806,9 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "The source's question is explanatory. As a forecast, some surveys were made after the assessment, and the "
-            "rows mix survey rounds with different questions."
+            "The source's question is explanatory. As a forecast, some surveys were made after the assessment; 47% of "
+            "the children carry only their own record, and their scores lean on their campaign, which the model "
+            "learns from the campaign's other facilities."
         ),
     )
 
@@ -849,6 +853,31 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         - The data is collected for predictive analytics to find major drivers of early learning outcomes. Nevertheless, predictive performance matters and the data could also be used for identifying at risk children.
         - The data consists of different subsets that were collected at different times. Sometimes the target was even collected before the predictors. Although the data is collected over time, the task is cross-sectional. Therefore, we drop most date features, after checking whether relevant information was already extracted.
         - We use a grouped split based on id_facility to reflect a potential deployment scenario where we want to predict for a new facility. Note that a date (year) is available, but the data collection is conducted per facility so we don't use a time-based split.
+        - Time order (2026-11-13, Andrej; Review issues 3 and 6): the children were assessed in about eight field
+          campaigns, 2016-2023, each its own study with its own sample of facilities and questionnaire; the date
+          follows from birth date and age (82% of the children) or the dropped `child_date` and `data_year`. A split
+          by campaign (each campaign of 2022 and 2023 tested once on all earlier ones, chosen on 2026-11-12) was
+          reverted: the facility, practitioner and teacher surveys the use case predicts from exist only in the
+          campaigns of October 2020 to December 2021 (225 to 242 columns over half filled), while those four test
+          campaigns record 11 to 30, the child's own and at most province and quintile. On them no model beat the
+          child's age alone (untuned LightGBM RMSE 15.53 on all features, 14.84 on `child_age` alone, 15.89 for the
+          training mean; r 0.32 against 0.30), and removing each campaign's mean error left 14.20 against 12.90 on
+          the facility split, so the gap is the missing features, not a campaign offset. On the facility split
+          LightGBM scores 12.91 (r 0.56; `child_age` alone 14.47). The facility split learns a campaign's level and
+          questions from its other facilities: it stands for a facility a campaign did not reach. Evidence: Slurm
+          1383049, 1383051, 1383087, 1383111, 1383112.
+        - Feature modules (2026-11-13, Andrej; Review issue 7, option A): every child keeps every column; a module
+          a study did not run stays missing, so the use case is the child's record plus whichever facility
+          instruments the study ran. Children with each module (half its columns filled): the child's record 18,874;
+          the teacher's rating (21 columns) 7,785; the facility observation (160) 7,646; the registers (73) 6,873;
+          the principal interview and programme quality (291) 2,332 and the practitioner interview (139) 2,029, both
+          only in the 2021 national Index; 8,920 children have their own record only. On the facility split
+          (9 folds, untuned LightGBM, RMSE on the same test children), a model on all rows and columns scores each
+          group as well or better than one trained on that group's rows only: own record only 12.96 against 13.16
+          (`child_age` alone 14.77), with the observation 12.79 against 12.79 (14.09), with the interviews 12.19
+          against 12.27 (14.11). The own-record-only children reach r 0.58 here against 0.32 on campaigns not seen
+          in training, so most of their gain over age is their campaign, learned from its other facilities
+          (Slurm 1383202).
         - The target score ELOM is continuous, but decisions are made based on cutoffs to identify at-risk children. We keep the task as regression, to maintain the most information.
         - Note: The data consists of different age groups, for which the ELOM score is computed differently. While under these circumstances a multi-class target using the given cutoffs might be a valid choice, the age is given  as a feature and therefore, we assume that a model can be expected to learn patterns for subgroups.
         - The data is collected from several sources, including direct assessments, teacher questionnaires, parent surveys and facility data. The data is collected by different enumerators across different facilities. The target is from a separate tool (see further information below).
@@ -860,7 +889,14 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
           one level spelled two ways, merged as "Normal"; `pra_dob` is a date (`%d%b%Y`); `pri_calc_time_open` and
           `pri_calc_time_close` ("HH:MM") are present only where the hour and minute columns are and equal to them, so
           they are dropped, as is `certificate_registration_npo`, a copy of `certificate_register`; 26 columns of the
-          enumerators' free text (the "other" answers and the explanations of flagged measurements) are strings.
+          enumerators' free text (the "other" answers and the explanations of flagged measurements) are strings, and
+          three more on 2026-11-13 (Andrej; Review issue 8, option B): `pri_fees_exceptions_other` (124 different
+          answers in 581 children), `pri_expenseother` (83 in 582) and `pra_online_training_details` (66 in 346).
+        - Multi-select lists dropped (2026-11-13, Andrej; Review issue 9, option B): `obs_materials`, `obs_area`,
+          `obs_hazard` and `pri_covid_precautions` hold the codes a facility ticked as one space-separated string
+          (1,134, 167, 94 and 33 different values) and agree in every cell with their per-code yes/no columns (22, 9,
+          10 and 7 columns; 7,657, 7,646, 2,343 and 2,332 children), which stay. `pri_covid_awareness` stays: it
+          disagrees with its 5 columns in 55 cells.
         - `language_match` ("Assessment language matches home", DataFirst V1328; 1 for 14,813 children, 0 for 6) holds
           the enumerator's reason in place of the answer in 16 rows. Each reason explains why the child was assessed in
           another language than at home (English at an English school or on the principal's request, a child who
@@ -893,6 +929,14 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
           dropped: it exists only in the 2021 round (5,222 children), so it is a unit of that survey's sample design
           and marks the round, which we drop as `data_year`; the ward is a place a new facility has too, recorded in
           the 2020-2022 rounds (2026-11-05, Lennart).
+        - `id_facility` is numbered per study, not one number per facility across studies (2026-11-12, Andrej;
+          Review issue 4, option B). Where two campaigns share a number, the facility's province and quintile
+          agree within October 2020 to March 2022 (province 32 of 32 and 90 of 90, quintile 90 of 90) and elsewhere
+          no more often than for two random facilities (quintile 0.30 against 0.27 for the 337 numbers that 2021
+          shares with January-May 2023; province 6 of 52 and 5 of 27 for the pairs of 2022 and 2023 campaigns). So
+          about 120 facilities come back in a later campaign, all within October 2020 to March 2022, and the numbers
+          -2, -1 and 9999 hold 45 children of unknown facilities. The split groups on the number as it is: two
+          facilities that share one fall on the same side, a coarser group that cannot leak.
         - We drop `teacher_duration`, the minutes the teacher's socio-emotional rating form was open (DataFirst's
           codebook: "Teacher SEF duration in minutes"): a timer of the data collection, like the three `duration_elom`
           timers dropped above, not a property of the child, the teacher or the facility. It exists only in the
@@ -1031,6 +1075,11 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "ward_best",
                 # how long the teacher's rating form was open: a timer of the data collection (curation notes)
                 "teacher_duration",
+                # multi-select lists, exact copies of their per-code yes/no columns (curation notes)
+                "obs_area",
+                "obs_hazard",
+                "obs_materials",
+                "pri_covid_precautions",
             ],
         )
         # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
@@ -1133,7 +1182,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "obs_access_disability_5",
                 "obs_access_disability_6",
                 "obs_accessible",
-                "obs_area",
                 "obs_area_0",
                 "obs_area_1",
                 "obs_area_2",
@@ -1169,7 +1217,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "obs_handwashing_3",
                 "obs_handwashing_97",
                 "obs_handwashing_friendly",
-                "obs_hazard",
                 "obs_hazard_0",
                 "obs_hazard_1",
                 "obs_hazard_2",
@@ -1195,7 +1242,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "obs_lighting_5",
                 "obs_lighting_6",
                 "obs_lighting_8",
-                "obs_materials",
                 "obs_materials_0",
                 "obs_materials_1",
                 "obs_materials_10",
@@ -1324,7 +1370,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pra_ncf_training",
                 "pra_on_time",
                 "pra_online_training",
-                "pra_online_training_details",
                 "pra_paid",
                 "pra_parent_meeting",
                 "pra_parent_same_attendance",
@@ -1380,7 +1425,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_covid_awareness_97",
                 "pri_covid_fund_applied",
                 "pri_covid_fund_received",
-                "pri_covid_precautions",
                 "pri_covid_precautions_1",
                 "pri_covid_precautions_2",
                 "pri_covid_precautions_3",
@@ -1414,10 +1458,8 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_dsd_unregistered_8",
                 "pri_dsd_unregistered_9",
                 "pri_dsd_unregistered_97",
-                "pri_expenseother",
                 "pri_fees",
                 "pri_fees_exceptions",
-                "pri_fees_exceptions_other",
                 "pri_fees_free",
                 "pri_firstaid",
                 "pri_food_donation",
@@ -1556,6 +1598,7 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pra_class_space_small",
                 "pra_education_other",
                 "pra_ncf_trainerother",
+                "pra_online_training_details",
                 "pra_plan_4yrs_other",
                 "pra_plan_5yrs_other",
                 "pra_qualification_other",
@@ -1563,6 +1606,8 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_covid_precautions_other",
                 "pri_dsd_conditional_other",
                 "pri_dsd_unregistered_other",
+                "pri_expenseother",
+                "pri_fees_exceptions_other",
                 "pri_food_donorother",
                 "pri_funding_salaryother",
                 "pri_fundingother",
