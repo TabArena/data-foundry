@@ -509,7 +509,9 @@ class AbstractCuratedDataset(ABC):
     """The training weight, a scoring column every model is fitted with as each row's weight, never a feature: the
     metric's row weight (``inputs={"weight": col}``). Declare it when the weight is a realized amount at risk, the
     denominator of a rate target (the years insured of a claims-per-year target, MET-15); a weight that is a function
-    of the features (a sum insured) needs none. ``None``: models train unweighted."""
+    of the features (a sum insured) needs none. A weight for training alone, which the metric does not read (a label's
+    precision, a design weight when sampling depends on the outcome), is declared here too, its scoring column
+    ``used_by="training"`` (MET-16). ``None``: models train unweighted."""
     unit_weight: ClassVar[UnitWeight | None] = None
     """A score that counts each unit once (MET-17): ``UnitWeight(column="plot_weight", unit="plot")``, the metric's
     weight scoring column (1 over the unit's rows, ``inputs={"weight": column}``) and the column naming the unit, kept
@@ -1173,7 +1175,12 @@ class AbstractCuratedDataset(ABC):
     def _cross_validation(self, df: pd.DataFrame) -> Splits:
         """The recommended IID or grouped 3-fold cross-validation on ``df``."""
         task = self.task_metadata
-        n_repeats, n_folds = protocol.recommended_dimensions(df, group_on=task.group_on, group_labels=task.group_labels)
+        n_repeats, n_folds = protocol.recommended_dimensions(
+            df,
+            group_on=task.group_on,
+            group_labels=task.group_labels,
+            scored_unit_on=protocol.scored_unit_column(task),
+        )
         if task.group_on is None:
             return protocol.iid_splits(
                 df,

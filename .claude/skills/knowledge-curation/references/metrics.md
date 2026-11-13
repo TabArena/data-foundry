@@ -258,32 +258,38 @@ decision's quantity is a sum over it (a premium earned pro rata, a book's claims
 weight (a weight scoring column read through the metric's `weight` input) and the task's `sample_weight`, never a
 feature (LEAK-41). The rule fixes the weight, not the metric: the metric is chosen per table (MET-10). When the decision
 is per unit of an equal-area map, per loan or per contract, the rate is scored unweighted and no sample weight is
-declared. A declared sample weight is always the metric's row weight. A metric weight that is a function of the features
-(liberty_mutual_fire_peril_loss_cost's `var11_weight`, g_research_crypto_forecasting_1m's asset `Weight`,
-boreal_postfire_lichen_biomass's `plot_weight`, superconductivity's `composition_weight`) needs no sample weight: the
-weighted score's best prediction at each input is the unweighted one. A unit weight that gives each unit one vote
-(MET-17) is for scoring only also when the inputs differ within the unit (pancreatic_cancer_mouse_detection's
-`mouse_weight`, dementia_prediction's `person_weight`; amended 2026-11-08, Lennart): it is no amount at risk, and it
-moves the best prediction only as far as a unit's number of rows tells about the target given the inputs (a fit with the
-weight: dementia -0.004 log loss, SE 0.003; pancreatic -0.015 AUC). Either way the bundle check
-`task_metric_weight_without_sample_weight` is accepted with that reason. Why: an unweighted fit of the rate
-estimates E[N/v | x], not the rate E[N | x] / E[v | x] that breaks even per unit; on fremtpl2 that is 1.61 times the
-portfolio rate (0.1186 against 0.0738 claims per year), and it scores worse than the constant rate (0.26187 against
-0.25342). Why the same column is a weight and never a feature (Andrej, 2026-11-09): a realized denominator is part of
-the label. It is recorded with the outcome when the period ends, and the outcome can cut it short. So it is known when
-the model is trained (past periods, all closed) and when it is scored (the test periods are closed too), but not at the
-prediction point, where a quote prices the period before it runs. The model therefore predicts the rate, which does not
-depend on the length still to come, and the length multiplies the rate afterwards: in the score, as in a premium earned
-pro rata. The training rows' weights shape the fit; the test rows' are read by the scorer only, never when predicting
-(LEAK-41; [definitions.md](../../knowledge-data-foundry/references/definitions.md), `sample_weight` under "Field
-mapping"). The task summary says so in `known_at_scoring` (Lennart, 2026-11-09).
+declared. A declared sample weight is the metric's row weight, unless it is declared for training alone (MET-16). A
+metric weight that is a function of the features (liberty_mutual_fire_peril_loss_cost's `var11_weight`,
+g_research_crypto_forecasting_1m's asset `Weight`, boreal_postfire_lichen_biomass's `plot_weight`, superconductivity's
+`composition_weight`) needs no sample weight: the weighted score's best prediction at each input is the unweighted one.
+A unit weight that gives each unit one vote (MET-17) is for scoring only also when the inputs differ within the unit
+(pancreatic_cancer_mouse_detection's `mouse_weight`, dementia_prediction's `person_weight`; amended 2026-11-08,
+Lennart): it is no amount at risk, and it moves the best prediction only as far as a unit's number of rows tells about
+the target given the inputs (a fit with the weight: dementia -0.004 log loss, SE 0.003; pancreatic -0.015 AUC). Either
+way the bundle check `task_metric_weight_without_sample_weight` is accepted with that reason. Why: an unweighted fit of
+the rate estimates E[N/v | x], not the rate E[N | x] / E[v | x] that breaks even per unit; on fremtpl2 that is 1.61
+times the portfolio rate (0.1186 against 0.0738 claims per year), and it scores worse than the constant rate (0.26187
+against 0.25342). Why the same column is a weight and never a feature (Andrej, 2026-11-09): a realized denominator is
+part of the label. It is recorded with the outcome when the period ends, and the outcome can cut it short. So it is
+known when the model is trained (past periods, all closed) and when it is scored (the test periods are closed too), but
+not at the prediction point, where a quote prices the period before it runs. The model therefore predicts the rate,
+which does not depend on the length still to come, and the length multiplies the rate afterwards: in the score, as in a
+premium earned pro rata. The training rows' weights shape the fit; the test rows' are read by the scorer only, never
+when predicting (LEAK-41; [definitions.md](../../knowledge-data-foundry/references/definitions.md), `sample_weight`
+under "Field mapping"). The task summary says so in `known_at_scoring` (Lennart, 2026-11-09).
 
-**MET-16 (Should; 2026-11-06, Lennart).** A survey or design weight is never a feature. The task is scored unweighted
-unless the use case is a population estimate; then one weight ships as a scoring column and as the sample weight, and
-folds follow the design when it is known. A weight for training alone cannot be declared, since a sample weight is
-always the metric's row weight (MET-15); the notes name it when sampling depends on the outcome. A unit weight of our
-own that gives each unit one vote (MET-17) is no survey or design weight in this sense (2026-11-08, Lennart). Cases:
-anes_voting_2026 (its nine survey-weight columns dropped from the features).
+**MET-16 (Should; 2026-11-06, Lennart; amended 2026-11-12, Lennart).** A survey or design weight is never a feature.
+The task is scored unweighted unless the use case is a population estimate; then one weight ships as a scoring column
+and as the sample weight, and folds follow the design when it is known. A weight may also be declared for training
+alone, when it says how much each row's label is worth to the fit while the decision counts the rows without it: a
+design weight when sampling depends on the outcome (the notes name the sampling), or a label's precision (the number of
+replicate measurements behind a mean). It is the task's `sample_weight`, a weight scoring column declared
+`used_by="training"` that the metric does not read, never a feature; its description says why it trains and why it
+does not score. A harness fits every model with it like any sample weight and weights a validation loss by the metric's
+weight (`validation_weight`), and the score cannot show whether a model used it. What a given harness supports today
+(AutoGluon ties the training and the validation weight to one column) does not limit what a dataset declares. A unit
+weight of our own that gives each unit one vote (MET-17) is no survey or design weight in this sense (2026-11-08,
+Lennart). Cases: anes_voting_2026 (its nine survey-weight columns dropped from the features).
 
 **MET-17 (Should; 2026-11-08, Lennart, on boreal_postfire_lichen_biomass, superconductivity,
 pancreatic_cancer_mouse_detection, dementia_prediction, asp_potassco_classification and

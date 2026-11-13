@@ -10,8 +10,9 @@ in [`collection.py`](../../../../datasets/_dev/tabarena-v0pt2/collection.py).
 
 - Every task has at least 3 test folds: IID and grouped data get repeated 3-fold cross-validation, temporal data at
   least 3 time windows.
-- IID and grouped tasks get 20, 10, 3 or 1 repeats by the units on the train side (rows, or groups when one label
-  covers a group), at any size of the frame.
+- IID and grouped tasks get 20, 10, 3 or 1 repeats by the units on the train side, at any size of the frame: the
+  groups when one label covers a group, else the scored units (set by the metric's `group` input) when all rows of
+  each are in one group (SPLIT-33), else the rows.
 - The row budget (1M train, 500k test rows per split) applies after the split, and only to a version named
   `<name>_1m`: its container caps each test side, and the benchmark samples the train side before each fit.
 - A definition declares no budget; the build refuses a name that does not match what its splits need.
@@ -24,7 +25,7 @@ in [`collection.py`](../../../../datasets/_dev/tabarena-v0pt2/collection.py).
 flowchart TD
     A["A definition in the working copy, on its full frame"] --> Q1{"Which regime?"}
     Q1 -->|IID| U1["Unit: a row"]
-    Q1 -->|Grouped| U2["Unit: a group if labels='per_group',<br/>else a row; folds keep groups whole"]
+    Q1 -->|Grouped| U2["Unit: a group if labels='per_group',<br/>else a scored unit if all its rows are in one group,<br/>else a row; folds keep groups whole"]
     Q1 -->|Temporal| W["At least 3 windows, newest last;<br/>train side: every earlier row minus the gap"]
     U1 --> R["Repeats of 3-fold CV by the units on the train side (2/3):<br/>under 500: 20 × 3 = 60 splits<br/>under 2,500: 10 × 3 = 30 splits<br/>under 250,000: 3 × 3 = 9 splits<br/>otherwise: 1 × 3 = 3 splits"]
     U2 --> R
@@ -54,6 +55,70 @@ depends on the windows, since the newest train side holds almost the whole frame
 rows: stratified rows (IID), whole groups (grouped), or the newest year before the window, extended back in time until
 it holds 1M rows, then a random 1M of those (temporal). Without a budget the model trains on the whole train side.
 The score is taken on the test side as stored.
+
+## The units counted (SPLIT-33)
+
+A grouped task has two units. A group is a value of `grouping.on`, and a fold keeps it whole. A scored unit is the
+rows the metric combines into one term of its score, set by the metric's `group` input (an instance, a patient, a
+survey year) and shipped as a scoring column; one row when the metric scores rows. A scored unit can be the group
+itself, sit inside a group, or cut across groups:
+
+```text
++-----+  group (a fold keeps it whole)   [...]  scored unit (one term of the score)   x  a row
+
+Same: the scored unit is the group
+  sat11: group = scored unit = an instance; rows: its 10 solver runs, one PAR10
+  +-----------+  +-----------+  +-----------+
+  | [x x x x] |  | [x x x x] |  | [x x x x] |        counted: the 184 instances, 20 x 3
+  +-----------+  +-----------+  +-----------+
+
+Nested: scored units sit inside a group
+  asp: groups = 96 problem classes; scored units = 1,212 instances
+  +-----------+  +-----------+
+  | [x x x x] |  | [x x x x] |
+  | [x x x x] |  | [x x x x] |                       counted: the 1,212 instances, 10 x 3
+  | [x x x x] |  | [x x x x] |
+  +-----------+  +-----------+
+
+Crossing: scored units cut across groups
+  wadden: groups = 5,092 stations; scored units = 15 survey years, each across many stations
+     +---+  +---+  +---+  +---+  +---+
+  [==| x |==| x |==| x |==| x |==| x |==]  2008
+  [==| x |==| x |==| x |==| x |==| x |==]  2009     every fold holds part of every year,
+  [==| x |==| x |==| x |==| x |==| x |==]  2010     so counted: the 59,044 rows, 3 x 3
+     +---+  +---+  +---+  +---+  +---+
+     columns: stations (groups); bands: survey years (scored units)
+```
+
+The repeats follow the scored units only when all rows of each are in the same group (same or nested). A crossing
+scored unit is scored on part of its rows in every fold: a new draw of the folds moves stations, not years, so the years
+say little about how much the score moves between draws, and the rows count. For a grouped task,
+`recommended_dimensions` asks in this order (`scored_units_within_groups` answers the last question on the data);
+an IID task counts rows:
+
+```mermaid
+flowchart TD
+    A["A grouped task, its units from small to big:<br/>a row;<br/>a scored unit: the rows the metric combines into one term of its score,<br/>set by its group input (an instance, a gene, a survey year), one row by default;<br/>a group: the rows a fold keeps together, a value of grouping.on"]
+    A --> Q1("Labels: does one label<br/>cover each group?<br/>(labels='per_group')")
+    Q1 -->|No| Q2("Metric: is a scored unit<br/>more than one row?")
+    Q2 -->|Yes| Q3("Inside: are all rows of each<br/>scored unit in the same group?")
+    Q2 --->|No| C3["Count the rows<br/>(one row each, or units<br/>that span several groups)"]
+    Q3 -->|"No: crossing"| C3
+    Q3 -->|"Yes: same or nested"| C2["Count the scored units<br/>(same: sat11's instances,<br/>nested: asp's instances)"]
+    Q1 ---->|Yes| C1["Count the groups<br/>(one label each; scored<br/>units inside share it)"]
+    C3 --> R["Repeats of 3-fold CV by the counted units on the train side (2/3):<br/>under 500: 20 × 3, under 2,500: 10 × 3, under 250,000: 3 × 3, otherwise 1 × 3"]
+    C2 --> R
+    C1 --> R
+```
+
+The labels come first: one label covers a whole group, so the scored units inside it add no labels and the groups
+count. No dataset has `per_group` labels with scored units of several rows other than its groups, so the order changes
+no count today.
+
+The count reads the split's group column, the labels and the metric's `group` input, never the weights; the row
+budget caps the sides after the split and leaves the count alone. Temporal tasks are not counted (their windows are
+declared). The counts in the figure are the train-side inputs of the ladder: 184 instances give 122 on the train side,
+1,212 give 808, 59,044 rows give 39,362.
 
 ## Defaults and deviations
 
@@ -109,5 +174,6 @@ state (their containers were built before the budget moved after the split, issu
 | Name of a version with the budget | `<name>_1m` | `RowBudget.suffix`, `effective_row_budget` |
 | Seed | 4267 | `SPLIT_RANDOM_STATE` |
 
-**Open:** a grouped task with `per_sample` labels counts rows, although its folds move whole groups. Counting the
-held-out groups instead would change the repeats of 18 of the 39 grouped datasets; the decision and #79 settle it.
+**Open:** a grouped task whose metric scores rows, with `per_sample` labels, counts rows, although its folds move
+whole groups. Counting the held-out groups for every grouped task would change the repeats of 14 more of the 39
+grouped datasets (electric_motor and the FORCE 2020 well logs from 3 splits to 60).

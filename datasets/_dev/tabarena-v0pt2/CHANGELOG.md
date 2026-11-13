@@ -1,5 +1,30 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-12, the split count in scored units (SPLIT-33), in a PR of its own (no container built)
+
+Lennart, 2026-11-12: the count moves out of #79 (asp_potassco_classification and sat11_hand_algo_runtime under PAR10),
+to be decided on its own with the grouped datasets it changes.
+
+- `recommended_dimensions` and the protocol check count the scored units (set by the metric's `group` input) when
+  all rows of each are in one group: the split's group, or a unit inside one; a scored unit the split cuts across
+  folds (wadden_sea_sibes_macoma_abundance's survey years over stations, any scored unit under an IID split) leaves
+  the count to the rows. Rule SPLIT-33 (proposed) in splits.md, the same wording in definitions.md and split_protocol.md.
+- 2026-11-13: `per_group` labels are asked first. One label covers a whole group, so the scored units inside it add
+  no labels and the groups count, whatever the metric scores. No dataset has `per_group` labels with scored units of
+  its own, so no count changes. The docs call the metric's unit a scored unit and keep "group" for `grouping.on`.
+- At their next `dataset check`: `sat11_hand_algo_runtime` 10 x 3 to 20 x 3 (184 instances), `huesken_sirna_efficacy`
+  10 x 3 to 20 x 3 (30 genes), `protein_model_quality_rf_pcp` 3 x 3 to 20 x 3 (445 proteins),
+  `sepsis_prediction_1m` 1 x 3 to 3 x 3 (40,336 patients), `asp_potassco_classification` 3 x 3 to 10 x 3 (1,212
+  instances; its long format is on main since #79). micro_mass (its strains are counted already) and wadden (rows)
+  keep theirs.
+- `asp_potassco_classification` and `sat11_hand_algo_runtime`: issue 2 of each (the split count), deferred when #79
+  merged, is open again in its record, to be settled with the rule.
+- `protein_model_quality_rf_pcp` and `huesken_sirna_efficacy` (issue 10 each, written on #79's branch on 2026-11-11, no
+  definition change): ship 20 x 3 under the rule, or keep the splits as built? On protein, LightGBM, a random forest
+  and ridge on the 20 x 3 splits (per-protein correlation): two of three disjoint blocks of three repeats rank LightGBM
+  and the forest the other way round; ten repeats separate them in one block of ten, not the other; twenty separate
+  all three pairs. Huesken not measured. 20 x 3 recommended for both.
+
 ## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)
 
 - Retired because no testing decision is made from a symptom questionnaire (USE-2; the fit None, USE-8). Its hospital
