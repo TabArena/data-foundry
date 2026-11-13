@@ -55,6 +55,7 @@ class GiveMeSomeCredit(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the data from Kaggle and uzip it to a predefined folder.
 
@@ -62,6 +63,11 @@ class GiveMeSomeCredit(AbstractCuratedDataset):
     """
     curation_comments = """
         - We renamed the target feature and its value to be more descriptive.
+        - Time basis: ForcedIIDFromTemporal: borrowers of an unnamed lender scored at dates the competition does not
+          state (before about September 2009, as the two-year windows closed before the release of September 2011), each
+          followed for two years; the release keeps no date and the row id is no time order (a model tells low from high
+          ids at ROC AUC 0.502), so random borrowers stand in for the borrowers to come. A dated release would allow a
+          split by scoring date.
     """
 
     # Task

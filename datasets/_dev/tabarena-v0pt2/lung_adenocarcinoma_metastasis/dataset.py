@@ -111,6 +111,7 @@ class LungAdenocarcinomaMetastasis(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("Timeless",)
     download_description = """
         We download the study's own deposit of its arrays from GEO (GSE83227, "caArray_meyer-00191"): the series
         matrix (sample titles and histology), each array's MAS5 output file (`.txt.gz`; the arrays of the 123

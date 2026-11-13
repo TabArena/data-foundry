@@ -85,7 +85,7 @@ class DementiaPrediction(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("WrongDomain",)
+    data_tags = ("WrongDomain", "ForcedGroupedFromTemporal")
     download_description = """
         We get the data from Mendeley version of another paper (https://www.sciencedirect.com/science/article/pii/S2352914819300917?via%3Dihub).
 
@@ -103,6 +103,11 @@ class DementiaPrediction(AbstractCuratedDataset):
           numbers (`SCORES`): `SES`.
         - The target (2026-11-01, CLEAN-25): `CDR` ships its classes as words, no_dementia < very_mild_AD < mild_AD (the
           Clinical Dementia Rating's order (CDR 0, 0.5, 1)).
+        - Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-11): the 150 people were scanned on 2 to 5 visits over
+          365 to 2,639 days during the study's years (Marcus et al. 2010), and the release keeps no calendar date, only
+          the order of each person's visits, which the definition drops. Whole people are held out, so each person's
+          course stays on one side. Not tested: people seen later than the training people, and changes of scanner or
+          protocol over the study, which dated visits would allow (a split by visit year).
     """
 
     # Task

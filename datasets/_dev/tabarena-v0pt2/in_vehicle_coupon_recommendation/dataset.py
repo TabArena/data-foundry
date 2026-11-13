@@ -150,6 +150,7 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
             name="UCI 603",
         ),
     )
+    data_tags = ("Timeless",)
     download_description = """
         We download UCI's copy (https://doi.org/10.24432/C5GS4P) of the data the authors deposited on ResearchGate,
         and unzip it to a predefined folder.
@@ -171,6 +172,12 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order.
+        - Time basis: Timeless: each row is one scenario of a fixed questionnaire, answered in the same sitting as the
+          profile (Wang et al. 2017, Sec. 6.2), so nothing in a row arrives later and no answer is in the future of
+          another. The file has no timestamp; its order is the questionnaire versions (Coffee House coupons fall from
+          38-43% of the first three deciles to 13.5% of the last), and the acceptance drift that remains after the
+          scenario cells are removed is 3-4 percentage points over the file (Spearman -0.034, 2026-11-06). Not tested: a
+          later cohort of drivers, and whether a stated yes becomes a redemption.
     """
 
     # Task

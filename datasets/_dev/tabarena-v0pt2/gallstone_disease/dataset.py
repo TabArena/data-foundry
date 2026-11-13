@@ -83,6 +83,7 @@ class GallstoneDisease(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("StationaryRelation",)
     download_description = """
         We get the data from UCI.
 
@@ -102,6 +103,14 @@ class GallstoneDisease(AbstractCuratedDataset):
           words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `Gender`, `Comorbidity`.
         - The target (2026-11-01, CLEAN-25): `Gallstone Status` ships its classes as words (0 means gallstones present
           (UCI)). Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
+        - Time basis: StationaryRelation: outpatients of one clinic, June 2022 to June 2023 (Esen et al. 2024); the
+          diagnosis and every feature come from the same visit, a present state that one year does not move beyond the
+          share of patients and the clinic's practice (the curator's call from the use case, 2026-11-11). The file keeps
+          no visit date, so this is argued, not measured. Along the file's order (rank within each sorted block) the
+          relation drifts: training on one contiguous half and testing on the other scores 0.06-0.07 ROC AUC below
+          random halves for every model, mostly because AST and ALT of those without gallstones step up mid-file; that
+          order is not shown to be time (vitamin D has no seasonal wave along it). The random split cannot test later
+          outpatients, nor whether the two groups were recruited in different months (vitamin D follows the season).
     """
 
     # Task

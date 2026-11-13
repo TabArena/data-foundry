@@ -98,6 +98,7 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("DelayedTarget",)
     download_description = """
         We get the portuguese data from the UCI repository. The math version is mostly duplicates from portuguese.
 
@@ -116,6 +117,11 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
           words (`CODE_LABELS`), in the same order; 3 unordered codes carry their words: `school`, `address`, `Pstatus`;
           6 scores with no words per level are numbers (`SCORES`): `famrel`, `freetime`, `goout`, `Dalc`, `Walc`,
           `health`.
+        - Time basis: DelayedTarget: one cohort, the 2005-2006 school year at two public schools of the Alentejo; the
+          use case predicts early in the year from background and habits, and the target is the final grade at the
+          year's end, one date closed for every student. Every student belongs to the same school year and is graded on
+          the same date, so no test row is later than a training row and the random split is IID. The questionnaire's
+          date in the year is not stated. Not tested: the next school year.
     """
 
     # Task
