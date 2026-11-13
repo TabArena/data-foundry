@@ -60,11 +60,11 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Issues for Andrej:**
 
-1. **Stay forced and record `Target: Later`, or `CrossSectional`?**
+5. **Stay forced and record `Target: Later`, or `CrossSectional`?**
 
    * **Problem:**
-     - The record names no `Target:` fact, which reads as a target measured with the features[^cs-1].
-     - The label is whether the company goes bankrupt after the statements: it arrives after the features, so the use case looks forward and the forced tag fits[^fo-1].
+     - The record names no `Target:` fact, which reads as a target measured with the features[^cs-5].
+     - The label is whether the company goes bankrupt after the statements: it arrives after the features, so the use case looks forward and the forced tag fits[^fo-5].
      - The missing fact is what makes it look cross-sectional.
    * **Options:**
 
@@ -78,8 +78,8 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
    **Notes for the AI:** on C, add `Target: Later` to the record with a CC line; the definition does not change.
 
-   [^cs-1]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
-   [^fo-1]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+   [^cs-5]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
+   [^fo-5]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
 
 ## Reference
 

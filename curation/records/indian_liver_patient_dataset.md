@@ -54,11 +54,11 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 **Issues for Andrej:**
 
-1. **`CrossSectional` instead of `ForcedIIDFromTemporal`?**
+6. **`CrossSectional` instead of `ForcedIIDFromTemporal`?**
 
    * **Problem:**
-     - The definition is tagged `ForcedIIDFromTemporal`, a forward use case whose time was lost[^fo-1].
-     - The target is a present state measured with the features: whether the record is of a liver patient, read from the same laboratory panel, and the use case reads it for new units at their own present[^cs-1].
+     - The definition is tagged `ForcedIIDFromTemporal`, a forward use case whose time was lost[^fo-6].
+     - The target is a present state measured with the features: whether the record is of a liver patient, read from the same laboratory panel, and the use case reads it for new units at their own present[^cs-6].
      - The tag alone changes: the split stays random.
    * **Options:**
 
@@ -71,8 +71,8 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
    **Notes for the AI:** on B, swap the tag, write the line, add a CC line; the split does not change.
 
-   [^cs-1]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
-   [^fo-1]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+   [^cs-6]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
+   [^fo-6]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
 
 ## Reference
 
