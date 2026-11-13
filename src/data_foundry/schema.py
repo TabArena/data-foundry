@@ -998,15 +998,7 @@ class PredictiveMLTaskMetadataV2:
         """Validate the regime, and the rules between the grouping and the target."""
         if not (self.target_column_name or "").strip():
             raise ValueError("target_column_name must name the target column.")
-        if self.time_unit is not None and self.time_on is None:
-            raise ValueError("time_unit says what one step of the time column counts; set time_on.")
-        if self.time_on is not None and self.grouping is not None:
-            raise ValueError(
-                "A task is temporal (time_on) or grouped (grouping), not both; record the order inside a group as "
-                "grouping.time_on.",
-            )
-        if not self.time_is_feature and self.time_on is None:
-            raise ValueError("time_is_feature=False needs a temporal task: it says whether `time_on` is a model input.")
+        self._check_time()
         if self.target_column_name in (self.time_on, self.group_time_on, *as_column_list(self.group_on)):
             raise ValueError(f"The target column ({self.target_column_name!r}) cannot be a time or group column.")
         if self.stratify_on == self.target_column_name and not self.is_classification:
@@ -1032,6 +1024,18 @@ class PredictiveMLTaskMetadataV2:
                 f"aggregation={aggregation!r} selects the row with the lowest / highest predicted value: it needs a "
                 f"regression target, got {self.problem_type!r}.",
             )
+
+    def _check_time(self) -> None:
+        """The time column: its unit, temporal or grouped (not both), and whether it is a model input."""
+        if self.time_unit is not None and self.time_on is None:
+            raise ValueError("time_unit says what one step of the time column counts; set time_on.")
+        if self.time_on is not None and self.grouping is not None:
+            raise ValueError(
+                "A task is temporal (time_on) or grouped (grouping), not both; record the order inside a group as "
+                "grouping.time_on.",
+            )
+        if not self.time_is_feature and self.time_on is None:
+            raise ValueError("time_is_feature=False needs a temporal task: it says whether `time_on` is a model input.")
 
     def _check_sample_weight(self) -> None:
         """The training weight is a scoring column of role ``weight``, never a column models use."""
