@@ -100,14 +100,17 @@ about time), and they do not change with the split a definition chooses. A fact 
   value that encodes the period, a date dropped from the raw file, or a parent upload that matches the rows by an id;
   the time probe, `time_probes.py`, looks for them); `Time: Inferred` when only an order that tracks time survives,
   with no calendar (an id, a case number, a file position); else `Time: Lost`. An order found only within each entity
-  (a policy's terms, a patient's visits) does not count, nor does a time recoverable only through the outcome
-  (heart_failure_followup_survival can date its survivors only).
+  (a policy's terms, a patient's visits, the 2 Hz samples of one bench session) is `Time: Within Entity`, whatever the
+  samples fact says (electric_motor_temperature_prediction: designed sessions, `Samples: No Time Dimension`). A time
+  recoverable only through the outcome does not count (heart_failure_followup_survival can date its survivors only).
 * **Target:** `Target: Later` (after the features, at one shared date or after a fixed window), `Target: Varying
   Delay` (after a delay that differs between samples: a settlement, a chargeback, a follow-up), `Target: Revised
-  Later` (assigned, then updated or propagated), `Target: Open Window` (the window is still open for the newest
-  samples at release, so their label is not final: drug_induced_autoimmunity_prediction counts reports since
-  approval, and 49 of its 52 drugs approved from 2010 on are negative) or `Target: Unknown` (the source does not say
-  when the target arrives); no tag when the target exists with the features.
+  Later` (assigned, then updated or propagated; also a label that accrues while its window stays open, so the
+  newest samples' label is not final: drug_induced_autoimmunity_prediction counts reports since approval, and 49
+  of its 52 drugs approved from 2010 on are negative) or `Target: Unknown` (the source does not say
+  when the target arrives); no tag when the target exists with the features. More than one can hold
+  (ieee_fraud_detection: a chargeback's varying delay, and labels the host then carries along the client's later
+  payments).
 * **Entities:** `Entities: Recur` when the source holds several rows of one entity (a patient, a client, a company),
   with or without an id. A forced split chooses between random and grouped by it (SPLIT-8), and the entity leaks of
   SPLIT-9 and SPLIT-13 start from it (home_credit_default_risk, horse_colic_survival, lending_club).
@@ -161,7 +164,10 @@ market). The prototypes, by the questions that tell them apart:
      `ForcedIIDFromTemporal`, or `ForcedGroupedFromTemporal` when the entities recur. It ships after SPLIT-8's leak
      test. Its `Time basis:` line names the reason (time lost, or too few periods) and what a dated release would
      change, with the measured cost of the forced split where the rows are dated (eryhemato_squamous_disease's two
-     file parts: training on the other part raises log loss from 0.318 to 0.381).
+     file parts: training on the other part raises log loss from 0.318 to 0.381). A forward use case whose source
+     does not show how the data was collected (`Samples: Unknown`, or a shared moment it does not state) is forced
+     too: the forced tag claims only what is known (give_me_some_credit: no scoring date stated, so not a
+     `DelayedTarget`).
 5. **None of these prototypes fits:** the dataset and its use case go to the curator as an issue with the arrival
    facts found, rather than under the nearest tag.
 
