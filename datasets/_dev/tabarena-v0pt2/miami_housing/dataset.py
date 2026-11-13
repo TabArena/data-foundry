@@ -7,7 +7,15 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 # Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
 SCORES = ["structure_quality"]
@@ -17,28 +25,31 @@ class MiamiHousing(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="What price will a single-family home in Miami sell for?",
         use_case=(
-            "For example, a property appraiser or a lender estimates the market value of a home from its property "
-            "record and location, using the sales of the same year."
+            "For example, a lender or a valuation site, refitting its model every month on all earlier sales, "
+            "prices the homes sold in the next month from their property record and location."
         ),
-        row="One single-family home sold in Miami in 2016 (13,776 after removing repeated parcels).",
+        row="One sale of a single-family home in Miami in 2016 (13,932 sales; 152 homes sold more than once).",
         predicted="The sale price in US dollars, on a log scale.",
         known=(
             "Latitude and longitude, land and living area, the value of special features such as pools, the age and "
             "structure quality, the month of sale, airplane noise above a threshold, and distances to the ocean, "
             "water, rail line, highway, the city centre and the nearest sub-centre."
         ),
-        split="Random homes, so the test data stands for other homes sold in the same year.",
+        split=(
+            "By month of sale: five test months, August to December 2016, each trained on all earlier months (58% "
+            "to 92% of the sales)."
+        ),
         fit="direct",
         fit_reason=(
-            "The features are property records and location facts known before a sale, and other homes of the same "
-            "year match valuing unsold homes as of that year. The source paper studies price drivers rather than "
-            "prediction."
+            "The features are property records and location facts known before a sale, and each test month is "
+            "predicted from earlier sales only, as a model in use prices later sales. The data cover one year, so "
+            "the training history is under a year. The source paper studies price drivers rather than prediction."
         ),
     )
 
     # Dataset
     unique_name = "miami_housing"
-    domain = "finance"
+    domain = "business & marketing"
     sources = (
         Source(
             role="publication",
@@ -73,8 +84,12 @@ class MiamiHousing(AbstractCuratedDataset):
     """
     curation_comments = """
         - We log scale the target.
-        - We drop duplicated homes (non-unique identifiers and location) (~1% of the data).
+        - We keep the repeated sales of one home (156 sales of 152 homes; 2026-11-11, Andrej): under the split by
+          month the earlier sale is history. There are no exact copies to drop. Six pairs repeat the price in another
+          month (possibly one sale recorded twice); they stay. Nine homes sold two or three times within one month
+          at different prices share every feature (the conflicting duplicates the checks report); they stay.
         - We drop the ID column "PARCELNO".
+        - `sale_month` (2016-MM-01), built from `month_sold`, is the time column; `month_sold` stays a feature (`sale_month` is a feature too, as a date).
         - Anomaly: while the original paper describes data with 57k samples, we only have 13k on OpenML or Kaggle.
         - The file first appeared on OpenML (43093, uploaded 2021-09-24, creator Steven C. Bourassa, citing Mayer et
           al. 2021). Kaggle deepcontractor/miami-housing-dataset copies its description and names openml.org as its
@@ -99,6 +114,27 @@ class MiamiHousing(AbstractCuratedDataset):
         target_transform="log",
     )
 
+    # Splits: five calendar months, August to December 2016, each trained on all earlier months.
+    temporal = Temporal(
+        on="sale_month",
+        splits=TemporalSplits(window=1, unit="months", n_windows=5, min_train_fraction=0.5),
+    )
+    splits_comment = """
+        A price model refit every month predicts the next month's sales: five test windows of one calendar month,
+        December back to August 2016, newest first, each trained on all earlier months (92%, 83%, 76%, 67% and 58%
+        of the 13,932 sales; 1,057 to 1,275 test sales). No gap: sales are dated by month, longer than the delay from a
+        sale to its record (SPLIT-10). The data hold one year, so training history is under a year. The earlier random
+        split (3 x 3 folds) read the task as an appraiser valuing the year's homes from the same year's sales; it was
+        replaced so that this dated house-sale table follows the regime of the others (2026-11-11, Andrej). At equal
+        training size, training on earlier months only cost +0.001 RMSLE against sales from all other months
+        (untuned LightGBM 0.147 against 0.146; ridge 0.268 against 0.267; 2026-11-06).
+    """
+    accepted_check_warnings = {
+        "meta_time_horizon_mismatch": "`sale_month` holds the first day of the sale month (the source gives no day), "
+        "so each one-month test window holds a single date and its span reads as 1 day; the windows are calendar "
+        "months (as perth_house_prices and zillow_prize).",
+    }
+
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         with open(f"{raw_dir}/miami2016.arff") as f:
             data = arff.load(f)
@@ -107,8 +143,11 @@ class MiamiHousing(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        df = df.drop_duplicates(subset=["PARCELNO"])
+        # repeated sales of a home stay (history under the split by month); only exact copies would go (none)
+        df = df.drop_duplicates()
         df = df.drop(columns=["PARCELNO"])
+        # the time column: the month of the sale (the file gives no day)
+        df["sale_month"] = pd.to_datetime({"year": 2016, "month": df["month_sold"].astype(int), "day": 1})
         df[self.task_metadata.target_column_name] = np.log(df[self.task_metadata.target_column_name])
         # scores with no words per level are numbers (CLEAN-14)
         df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)

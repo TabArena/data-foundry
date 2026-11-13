@@ -43,8 +43,8 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
             "and overall; not which product it is."
         ),
         split=(
-            "Each test window is five days of offers, five windows from 6 to 30 April 2013; training is every earlier"
-            " offer from 1 March 2013."
+            "Four test windows of five days, 11 to 30 April 2013, each trained on the offers from 1 March 2013 until"
+            " five days before it."
         ),
         changes=(
             "Following TabReD and a top competition solution, each shopper's purchase records are summarised into one"
@@ -52,9 +52,10 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "Everything the model sees is from before the offer, and later offers are tested. But the source states "
-            "no period for the repeat purchase, so in use the newest offers' outcomes would not yet be known at a "
-            "refit, while here every earlier offer comes with its final label."
+            "Everything the model sees is from before the offer, and later offers are tested after a five-day gap "
+            "that keeps the outcomes of the test window's own offer wave out of training. But the source states no "
+            "period for the repeat purchase, so in use offers of older waves may still lack their outcome at a refit,"
+            " while here every training offer comes with its final label."
         ),
     )
 
@@ -92,6 +93,9 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
         - The preprocessing by TabRed collapses customer groups into single entries per customer. So we go from grouped-temporal data to only temporal data. Future work could look into a version without preprocessing.
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
+        - Purchase history before the offer: the aggregation does not filter by date, but no purchase after the offer
+          reaches the features (the 0.6% of shoppers who bought the offer's brand in the 3 days before it repeat at
+          42.6%, those of the 7 and 14 days at 40%; checked 2026-11-06 on the shipped rows).
     """
 
     # Task
@@ -106,10 +110,21 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
         definition="ROC AUC of the probability that a shopper becomes a repeat buyer of the offer",
     )
 
-    # Splits: a model deployed for 5 days before it is refit (the test window of TabRed), 5 windows back.
+    # Splits: a model deployed for 5 days before it is refit (the test window of TabRed), 4 windows back, each
+    # trained on the offers up to 5 days before it (the gap counts in days).
+    splits_comment = """
+        A model is deployed for 5 days before it is refit (the test window of TabRed): four test windows of five days,
+        11 to 30 April 2013, each trained on the offers made up to five days before it (56% to 69% of the rows).
+        Arrival: each shopper is predicted on its offer day (1 March to 30 April 2013), from purchases before that day;
+        the offers come in waves that run over a week, and the repeat label arrives after a period the source does not
+        state, final for every row of the release. A repeat purchase is not known within days of the offer, so a refit
+        at a window's start does not know the outcomes of the wave it scores; without the gap the five newest days add
+        ROC AUC 0.061 where a window continues a wave (LightGBM, equal training size). The repeat period is not
+        published: the gap removes the same-wave outcomes, not every open label.
+    """
     temporal = Temporal(
         on="offerdate",
-        splits=TemporalSplits(window=5, unit="days", n_windows=5),
+        splits=TemporalSplits(window=5, unit="days", n_windows=4, gap=5),
     )
 
     # The raw tables are too large for pandas: `_prepare_raw_files` joins them with polars once and
