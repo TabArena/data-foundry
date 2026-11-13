@@ -1861,15 +1861,15 @@ def test_snapshot_is_retired_for_retrospective() -> None:
         _define(data_tags=("Snapshot",), curation_comments="- Time basis: one scrape.")
 
 
-def test_new_site_needs_a_grouping() -> None:
-    with pytest.raises(Exception, match="`NewSite` holds out sites"):
-        _define(data_tags=("NewSite",), curation_comments="- Time basis: a new hospital.")
+def test_unseen_group_needs_a_grouping() -> None:
+    with pytest.raises(Exception, match="`UnseenGroup` holds out whole groups"):
+        _define(data_tags=("UnseenGroup",), curation_comments="- Time basis: a new hospital.")
     cls = _define(
-        data_tags=("NewSite",),
+        data_tags=("UnseenGroup",),
         curation_comments="- Time basis: a new hospital.",
         grouping=Grouping(on="g", labels="per_sample", definition="x"),
     )
-    assert "NewSite" in cls.dataset_metadata.data_tags
+    assert "UnseenGroup" in cls.dataset_metadata.data_tags
 
 
 def test_grouped_split_takes_a_time_basis() -> None:

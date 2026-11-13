@@ -100,8 +100,9 @@ DataTags = Literal[
     "DelayedTarget",  # one shared prediction moment; the target arrives after it, in a window closed for every row
     # a present state read through a relation that time does not move, always measured on dated data
     "StationaryRelation",
-    # the use case aims at sites the data does not hold (a hospital, a facility), not at a later period: held-out sites
-    "NewSite",
+    # the use case aims at groups the data does not hold (a hospital, a well, a protein, a chemical family), not at a
+    #   later period: whole groups held out
+    "UnseenGroup",
     # Forced from temporal (SPLIT-8): a forward use case whose target time affects, but no usable time or too few
     #   periods; the closest split, IID or grouped, with a `Time basis:` line that names the reason.
     "ForcedIIDFromTemporal",
@@ -114,7 +115,7 @@ DataTags = Literal[
 RETIRED_DATA_TAGS = ("2ndTierData", "Snapshot")
 """Tags old containers may carry and loading accepts, but a new definition may not set."""
 
-TIME_BASIS_TAGS = ("Timeless", "Retrospective", "DelayedTarget", "StationaryRelation", "NewSite")
+TIME_BASIS_TAGS = ("Timeless", "Retrospective", "DelayedTarget", "StationaryRelation", "UnseenGroup")
 """The use-case prototypes that justify a split that is not temporal (SPLIT-32)."""
 
 FORCED_TIME_TAGS = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")

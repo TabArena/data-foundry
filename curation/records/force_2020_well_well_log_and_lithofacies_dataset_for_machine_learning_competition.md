@@ -3,6 +3,7 @@ unique_name: force_2020_well_well_log_and_lithofacies_dataset_for_machine_learni
 name: FORCE 2020 Well well log and lithofacies dataset for machine learning competition
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -78,6 +79,10 @@ CC (2026-10-26, Lennart): verdict ship.
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `GROUP` (a partial order).
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: GROUP stays unordered (regional equivalents), noted in the definition.
+
+CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
+- The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
+- The split does not change; the definition's `Time basis:` line keeps the measured evidence.
 
 ## Reference
 

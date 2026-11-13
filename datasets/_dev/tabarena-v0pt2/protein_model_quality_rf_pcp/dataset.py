@@ -88,7 +88,7 @@ class RfPcp(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Timeless",)
+    data_tags = ("UnseenGroup",)
     download_description = """
         Download the author's RF-PCP-DataSet.zip from
         https://downloads.sourceforge.net/project/rf-pcp/RF-PCP-DataSet.zip and extract its three CSVs under
@@ -176,9 +176,11 @@ class RfPcp(AbstractCuratedDataset):
           standard is the predictor's own confidence (pLDDT). Kept as a small grouped biology task, with no new features.
         - First release is the August 2014 source archive; the paper appeared online in December 2014 and in 2015.
           The year denotes the first release, not the paper's issue year. No source metadata is overwritten silently.
-        - Time basis: Timeless: a candidate structure's GDT against its experimental reference is fixed once both exist;
-          the split holds out whole proteins. It cannot test candidates from later prediction methods (the descriptors
-          come from 2002-2012 server models).
+        - Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case ranks the candidates of a
+          protein whose structure is not known, so the split holds out whole proteins. A candidate's GDT against its
+          reference is fixed once both exist; windows by CASP round score within 0.03 of the protein split on CASP8 and
+          CASP9. It cannot test candidates from later prediction methods (the descriptors come from 2002-2012 server
+          models).
     """
     target = "GDT"
     problem_type = "regression"

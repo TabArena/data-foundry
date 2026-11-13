@@ -228,8 +228,9 @@ A metric input known at the prediction point (a weight that is a function of the
   fixed property of the item, in a catalogue that does not drift), `"Retrospective"` (the data is one snapshot of a
   moment or period, and the use case fills in what is missing for that time, not a later one), `"DelayedTarget"` (one
   shared prediction moment, the target later in a window closed for every row) or `"StationaryRelation"` (a present
-  state read through a relation that time does not move, always measured on a dated source) or `"NewSite"` (the use
-  case aims at sites the data does not hold, not at a later period; it needs a `grouping` on the site); or a forced
+  state read through a relation that time does not move, always measured on a dated source) or `"UnseenGroup"` (the
+  use case aims at groups the data does not hold, a site, a well, a protein or a chemical family, not at a later
+  period; it needs a `grouping` on the group); or a forced
   tag, `"ForcedIIDFromTemporal"` when a forward use case has no usable time or too few periods and ships IID (a
   definition that declares a `grouping` or `temporal` refuses it), `"ForcedGroupedFromTemporal"` when such a task
   ships grouped (it needs a `grouping`; SPLIT-8). Either way the definition carries a `Time basis:` line in

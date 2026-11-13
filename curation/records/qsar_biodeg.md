@@ -65,6 +65,10 @@ of the 670 canonical structures occur here, one of them with the opposite class.
 most useful role may be as an external check on this dataset's scaffold split rather than as a dataset of its
 own.
 
+CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of no prototype tag (2026-11-12):
+- The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
+- The split does not change; the definition's `Time basis:` line keeps the measured evidence.
+
 ## Reference
 
 Mansouri, K., Ringsted, T., Ballabio, D., Todeschini, R., Consonni, V. (2013). Quantitative Structure - Activity Relationship models for ready biodegradability of chemicals. Journal of Chemical Information and Modeling, 53, 867-878

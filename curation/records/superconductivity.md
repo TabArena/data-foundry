@@ -61,6 +61,10 @@ CC (2026-11-08, Lennart): issue 1, B: each composition counts once. The RMSE wei
 
 CC (2026-11-08, Lennart): the declared metric (rmse, weighted by composition_weight) is checked.
 
+CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of no prototype tag (2026-11-12):
+- The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
+- The split does not change; the definition's `Time basis:` line keeps the measured evidence.
+
 ## Review
 
 **Outcome:** added. In the working copy since the migration; a scan of 2026-11-08 for units with unequal numbers of

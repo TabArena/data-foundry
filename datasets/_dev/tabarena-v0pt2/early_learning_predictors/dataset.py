@@ -833,7 +833,7 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("NewSite",)
+    data_tags = ("UnseenGroup",)
     download_description = r"""
         No automatic download possible!
 
@@ -917,7 +917,7 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
           `pri_mobile`, `pra_gender`; 7 scores with no words per level are numbers (`SCORES`): `quintile`,
           `pra_class_space_2`, `pra_satisfaction_support`, `ses_cat`, `ses_proxy`, `teacher_familiarity_with_child`,
           `teacher_selfcare_total`.
-        - Time basis: NewSite: the use case predicts for a facility not yet assessed, so the split holds out
+        - Time basis: UnseenGroup: the use case predicts for a facility not yet assessed, so the split holds out
           facilities and does not weigh the assessment round (dropped as `data_year`). It cannot test a later round.
     """
 

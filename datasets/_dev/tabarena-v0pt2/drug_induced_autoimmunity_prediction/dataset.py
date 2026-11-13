@@ -72,6 +72,7 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("UnseenGroup",)
     download_description = """
         wget https://archive.ics.uci.edu/static/public/1104/drug_induced_autoimmunity_prediction.zip && unzip drug_induced_autoimmunity_prediction.zip && rm drug_induced_autoimmunity_prediction.zip RDKit_ChemDes.xlsx && mkdir -p local-data-warehouse/drug_induced_autoimmunity_prediction && mv DIA_trainingset_RDKit_descriptors.csv local-data-warehouse/drug_induced_autoimmunity_prediction/ && mv DIA_testset_RDKit_descriptors.csv local-data-warehouse/drug_induced_autoimmunity_prediction/
     """
@@ -85,16 +86,17 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
         - Duplicates dropped: 9 pairs of rows are one structure once the stereo marks are set aside (the same 18 rows that share every one of the source's descriptors), stereoisomers a 2D encoding does not tell apart (PubChem): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
         - The target (2026-11-01, CLEAN-25): `Label` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
-        - Time basis: no prototype fits. Whether a drug can cause an autoimmune reaction is a property of its
-          structure, but the label is what had been reported by the compilation (InterDIA, 2025), so it accrues with
-          time on the market: ChEMBL dates 496 of the 587 drugs by first approval (1940-2020; the API's
-          `molecule_structures__canonical_smiles__flexmatch` and `first_approval`, 2026-11-06) and the positive share
-          falls with the approval era (the table in the next bullet). The split holds out scaffolds, which separates
-          eras only in part (mean approval-year gap within a scaffold group 14.5 years against 19.1 for all pairs).
-          Not tested: a newly approved drug, whose reporting window is still open. Trained on the drugs approved
-          before a cut and tested on the later ones, ROC AUC falls against random folds of the same training size
-          (untuned logistic regression, random forest and histogram gradient boosting on the source's RDKit
-          descriptors, the 496 dated drugs; Slurm job 1366251, 2026-11-06):
+        - Time basis: UnseenGroup (Andrej, 2026-11-13; no prototype before): the scaffold split holds out chemistry the
+          training drugs do not hold, as decided on 2026-11-11, and the label still moves with time. Whether a drug can
+          cause an autoimmune reaction is a property of its structure, but the label is what had been reported by the
+          compilation (InterDIA, 2025), so it accrues with time on the market: ChEMBL dates 496 of the 587 drugs by
+          first approval (1940-2020; the API's `molecule_structures__canonical_smiles__flexmatch` and `first_approval`,
+          2026-11-06) and the positive share falls with the approval era (the table in the next bullet). The split holds
+          out scaffolds, which separates eras only in part (mean approval-year gap within a scaffold group 14.5 years
+          against 19.1 for all pairs). Not tested: a newly approved drug, whose reporting window is still open. Trained
+          on the drugs approved before a cut and tested on the later ones, ROC AUC falls against random folds of the
+          same training size (untuned logistic regression, random forest and histogram gradient boosting on the source's
+          RDKit descriptors, the 496 dated drugs; Slurm job 1366251, 2026-11-06):
 
           | Test from | Training drugs | Test drugs | Forward: LR / RF / boosting | Random folds: LR / RF / boosting |
           |---|---|---|---|---|

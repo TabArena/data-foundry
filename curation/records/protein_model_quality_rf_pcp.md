@@ -4,6 +4,7 @@ name: RF-PCP (quality assessment of modeled protein structures, CASP and decoy s
 checked_by:
 - Myunghwan
 - Lennart
+- Andrej
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
@@ -93,6 +94,10 @@ CC (2026-11-05, Lennart): `grouping.context="all_rows"` (Review issue 5, B, conf
 CC (2026-11-05, Lennart): `Outdated` stays as a note on a kept borderline dataset, now rule SEL-18 (issue 7, D); a Tensions row in principles.md says a measured target scored within groups is no ranking task (issue 8, B).
 
 CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
+CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
+- The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
+- The split does not change; the definition's `Time basis:` line keeps the measured evidence.
 
 ## Review
 
