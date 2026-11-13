@@ -225,7 +225,7 @@ A metric input known at the prediction point (a weight that is a function of the
   holds geographic information (ZIP, latitude and longitude, region, store location). An IID or grouped split carries
   one time basis that says why it is not temporal (SPLIT-32 in
   [splits.md](../../knowledge-curation/references/splits.md)): a use-case prototype, `"Timeless"` (the target is a
-  fixed property of the item, in a catalogue that does not drift), `"Retrospective"` (the data is one snapshot of a
+  fixed property of the item, and the data has no time dimension), `"Retrospective"` (the data is one snapshot of a
   moment or period, and the use case fills in what is missing for that time, not a later one), `"DelayedTarget"` (one
   shared prediction moment, the target later in a window closed for every row) or `"StationaryRelation"` (a present
   state read through a relation that time does not move, always measured on a dated source) or `"UnseenGroup"` (the

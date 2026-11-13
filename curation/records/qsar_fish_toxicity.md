@@ -59,6 +59,10 @@ CC (2026-11-02, Lennart): on how the Milano workbook was downloaded ("freeware w
 through a public link rather than the authors' notification form): "that is okay for now, we can note it but it is
 not blocking us here". Noted here; regularise before this ships outside the group.
 
+CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
+- The use case predicts for items the catalogue does not hold, which the held-out scaffolds stand for; that the entry date carries no wave is a measurement for the `Time basis:` line, not a different use case.
+- `Timeless` now means a fixed target in data with no time dimension. The split does not change.
+
 ## Reference
 
 Cassotti, Matteo, et al. "A similarity-based QSAR model for predicting acute toxicity towards the fathead minnow (Pimephales promelas)." SAR and QSAR in Environmental Research 26.3 (2015): 217-243.

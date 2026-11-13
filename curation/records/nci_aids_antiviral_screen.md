@@ -3,6 +3,7 @@ unique_name: nci_aids_antiviral_screen
 name: NCI DTP AIDS Antiviral Screen data (aids_conc_may04, with the AIDO99SD structure file)
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -143,3 +144,7 @@ CC (2026-11-02, Lennart): on the priority after the binary merge removed the mul
 CC (2026-11-02, Lennart): PR #15 is merged, so the dataset is in Data Foundry: `DF: Yes`, and the claim is released
 (board and record). The definition is `datasets/_dev/tabarena-v0pt2/nci_aids_antiviral_screen/`; nothing is built
 yet, and the build waits for the curator's ask together with the other molecule datasets.
+
+CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
+- The use case predicts for items the catalogue does not hold, which the held-out scaffolds stand for; that the entry date carries no wave is a measurement for the `Time basis:` line, not a different use case.
+- `Timeless` now means a fixed target in data with no time dimension. The split does not change.

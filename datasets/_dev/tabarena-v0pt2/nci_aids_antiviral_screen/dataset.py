@@ -123,7 +123,7 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Timeless",)
+    data_tags = ("UnseenGroup",)
     download_description = """
         The files are the attachments of the NCI Developmental Therapeutics Program's "AIDS Antiviral Screen Data" page on the NCI wiki (source_url; attachments dated 2013-09-09): the screening results of May 2004 and the structures of October 1999. dtp.cancer.gov, whose bulk-data page lists the same files, served a certificate that expired on 2026-10-29. Downloaded 2026-11-01.
 
@@ -159,12 +159,14 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
         - Note: `hiva_agnostic` was the 2007 Agnostic Learning vs. Prior Knowledge challenge's cut of these compounds: its 4,229 labelled and 38,449 test compounds make 42,678, against the 42,682 conclusions with a structure here, and both are 3.52% active (149 of 4,229; 1,503 of 42,682). A linking run on 2026-11-01 recovered the NSC number behind its rows from their bits (97% with confidence) and every one of its 4,229 labels agrees with this file, so it adds no compound and no label; what it added was one 2006 ChemTK representation nobody can recompute. It is retired as a duplicate of this release (PROV-6; Lennart, 2026-11-02), and its BeyondArena and TabArena v0.1 containers stay as shipped.
         - Note: MoleculeNet's HIV.csv (41,127 compounds: 404 CA, 1,039 CM, 39,684 CI) is this SD file read by an older RDKit, salts and the stereo of the coordinates kept, and it carries the charge-code artefact repaired here: 413 `[NaH]`, 24 `[KH]` and 254 `[PH]` against 16 `[Na+]`, 11 `[K+]` and 56 `[P+]` (PROV-15, a problem of that copy; another collection's version is no reason to keep ours damaged, EV-4). So after the repair our structures differ from MoleculeNet's, and from OGB's `ogbg-molhiv` built on it, on the 690 compounds the repair touched: 40,385 of MoleculeNet's 41,116 InChIKey skeletons are among ours, where 41,077 were before the repair. Its conclusions agree with ours for 40,311 of the 40,343 stereo-free SMILES both hold; the other 32 are structures entered here under several NSC numbers with different conclusions, of which MoleculeNet kept one.
         - Licence: the DTP page states no terms.
-        - Time basis: Timeless (Andrej, 2026-11-12, review of how cuts of growing catalogues split): the screen's
-          conclusion for a compound is a property of the compound, and the only order the source keeps, the NSC
-          registration number, is not when a compound entered the screen (about a quarter were registered long before it
-          began). A forward split on that order leaves 8.4% of the test compounds a close training analog against 9.8% for
-          a random draw of the same size and 4.3% scaffold-disjoint (splits comment), so it carries no wave of arrivals the
-          scaffold split misses. The split cannot test a chemical class the screen received only later.
+        - Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before, Andrej, 2026-11-12, review of how cuts of
+          growing catalogues split): the use case screens compounds not tested yet, which whole scaffolds held out stand
+          for. The screen's conclusion for a compound is a property of the compound, and the only order the source
+          keeps, the NSC registration number, is not when a compound entered the screen (about a quarter were registered
+          long before it began). A forward split on that order leaves 8.4% of the test compounds a close training analog
+          against 9.8% for a random draw of the same size and 4.3% scaffold-disjoint (splits comment), so it carries no
+          wave of arrivals the scaffold split misses. The split cannot test a chemical class the screen received only
+          later.
     """
 
     # Task

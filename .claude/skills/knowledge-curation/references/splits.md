@@ -131,23 +131,26 @@ fact behind it, ending with what the split cannot test (musk: a new chemical cla
 market). The prototypes, by the questions that tell them apart.
 
 Before them: **does the use case aim at groups the data does not hold, rather than at a later period?** A model meant
-for a new hospital, facility, well, protein or survey project, or for chemistry outside the families a source was built
-from, is tested on held-out groups; the split groups by that unit, and the time order inside the data is not weighed.
-That is `UnseenGroup` (heart_disease: Detrano et al. built their model in Cleveland and applied it to the other
-hospitals; force_2020: a well not yet drilled; superconductivity: a source that keeps its model to known chemistry).
-The source or the use case names the transfer; a group column alone does not make one. A catalogue that holds out
-families only so that no test item meets its own analog, while its use case fills in known chemistry, is `Timeless`
-(the qsar inventory sets). Its line names the group and why the use case aims at new ones, and ends with what the split
-cannot test: a later period, at a known group or at all groups at once; where the label still moves with time
+for a new hospital, facility, well, protein or survey project, or for chemistry outside the families a source was
+built from, is tested on held-out groups; the split groups by that unit, and the time order inside the data is not
+weighed. That is `UnseenGroup` (heart_disease: Detrano et al. built their model in Cleveland and applied it to the
+other hospitals; force_2020: a well not yet drilled; superconductivity: a source that keeps its model to known
+chemistry). The source or the use case names the transfer; a group column alone does not make one. A catalogue whose
+use case predicts for items it does not hold, held out by family, is `UnseenGroup` whether or not its entry date
+carries a wave (the qsar sets, nci_aids_antiviral_screen); the line gives the forward split's share against a random
+draw's. Its line names the group and why the use case aims at new ones, and ends with what the split cannot test: a
+later period, at a known group or at all groups at once; where the label still moves with time
 (drug_induced_autoimmunity_prediction's reporting window), the line says so.
 
 1. **Can time affect the target at all?** Not when the target is a fixed property of the item, the same whenever it is
-   measured (a material's strength, a molecule's activity, a species, the outcome of a designed run), and the use case
-   meets items drawn like the catalogue's: `Timeless`. The split is random or grouped by item family (musk,
-   sat11_hand_algo_runtime, splice). Which identifier a parent source could date the items by (a structure in ChEMBL,
-   an observation date) tells whether the catalogue drifts; "none published" is an answer too. A catalogue that drifts
-   goes on to question 4: qsar_tid_11's ChEMBL years show close training analogs from the test compound's own year for
-   85-90% of its scaffold folds, and predicting each year from earlier ones raises RMSE from 0.68-0.90 to 1.11-1.31.
+   measured (a material's strength, a molecule's activity, a species, the outcome of a designed run), and the data has
+   no time dimension (designed runs, a catalogue no source dates): `Timeless`. The split is random, or grouped by the
+   item where it repeats (musk's conformations, sat11_hand_algo_runtime's instances). Which identifier a parent source
+   could date the items by (a structure in ChEMBL, an observation date) tells whether a catalogue has a time
+   dimension; "none published" is an answer too. A dated catalogue's use case decides between `UnseenGroup` (above)
+   and the entry date (question 4), and whether the date carries a wave is measured for the line: qsar_tid_11's ChEMBL
+   years show close training analogs from the test compound's own year for 85-90% of its scaffold folds, and
+   predicting each year from earlier ones raises RMSE from 0.68-0.90 to 1.11-1.31.
 2. **Does the use case look back, into the time the data covers?** In the use case the samples arise over time, but
    the data is one snapshot of a moment or a period, and what the use case wants is the missing information of that
    time, not of a later one: the value of a block group the census did not record, a site not yet mapped in a past

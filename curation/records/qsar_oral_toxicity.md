@@ -3,6 +3,7 @@ unique_name: qsar_oral_toxicity
 name: QSAR oral toxicity
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -78,6 +79,10 @@ CC (2026-11-02, Lennart): on the de-duplication change of 2026-11-01, carried to
 document as a change that was not an instruction: "the changes look good". The copies are found on the 2D structure
 instead of the published ECFP bit vector, which moves the shipped row count from 11,105 to 11,116: the old key
 merged chemicals whose bit vectors collided rather than chemicals that are the same.
+
+CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
+- The use case predicts for items the catalogue does not hold, which the held-out scaffolds stand for; that the entry date carries no wave is a measurement for the `Time basis:` line, not a different use case.
+- `Timeless` now means a fixed target in data with no time dimension. The split does not change.
 
 ## Reference
 

@@ -93,7 +93,7 @@ DataTags = Literal[
     "Anonymized",  # data that has no semantic meaning anymore on purpose
     # Use-case prototypes that justify an IID or grouped split of data that is not IID (SPLIT-32); one per definition,
     #   never on a temporal split, with a `Time basis:` line in `curation_comments`.
-    "Timeless",  # the target is a fixed property of the item, in a catalogue that does not drift
+    "Timeless",  # the target is a fixed property of the item, and the data has no time dimension
     # the samples arise over time in the use case, but the data is one snapshot of a moment or period, and the use case
     #   looks back: it fills in what is missing for the time the snapshot covers, not a later time
     "Retrospective",

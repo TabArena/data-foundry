@@ -3,6 +3,7 @@ unique_name: qsar_bioconcentration
 name: QSAR_BIOCONCENTRATION
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -125,6 +126,10 @@ Verified on the final definition: `dataset check` 0 errors and 0 warnings (27 ch
 task probes raise no flag (random forest macro ROC AUC 0.678, LightGBM 0.689, best single feature 0.589, smallest
 test class 9 rows) and the leak probes none (all features 0.705, shallow tree 0.581, no test row with an exact
 feature copy in training, 1-NN label agreement 0.621 against a chance of 0.462).
+
+CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
+- The use case predicts for items the catalogue does not hold, which the held-out scaffolds stand for; that the entry date carries no wave is a measurement for the `Time basis:` line, not a different use case.
+- `Timeless` now means a fixed target in data with no time dimension. The split does not change.
 
 ## Reference
 
