@@ -130,14 +130,14 @@ def recommended_dimensions(
 ) -> tuple[int, int]:
     """``(n_repeats, n_folds)`` for IID or grouped cross-validation on ``df``.
 
-    The size is the train side of a 3-fold split, in the units the metric scores: 2/3 of the distinct values of
-    ``score_group_on`` when the metric scores per group and each of its groups lies in one group of the split, so a
-    test fold holds it whole (one PAR10 per instance over a row per instance and solver, the instances held out or
-    inside held-out classes); else of the groups for ``per_group`` labels, else of the rows. A metric group the split
-    cuts across folds (a survey year over stations held out) is scored on part of its rows in every fold, so its count
-    says little about the noise and the rows count. Below 500 it gets 20 repeats, below 2,500 10, below 250k 3, and 1
-    above, however many rows the frame has. A row budget does not change the count: it caps the sides after the split
-    (:func:`fit_splits_to_budget`).
+    The size is the train side of a 3-fold split, in units: 2/3 of the groups for ``per_group`` labels (one label
+    covers a group, so groups inside it add no labels); else of the distinct values of ``score_group_on`` when the
+    metric scores per group and each of its groups lies in one group of the split, so a test fold holds it whole (one
+    PAR10 per instance over a row per instance and solver, the instances held out or inside held-out classes); else of
+    the rows. A metric group the split cuts across folds (a survey year over stations held out) is scored on part of
+    its rows in every fold, so its count says little about the noise and the rows count. Below 500 it gets 20
+    repeats, below 2,500 10, below 250k 3, and 1 above, however many rows the frame has. A row budget does not change
+    the count: it caps the sides after the split (:func:`fit_splits_to_budget`).
 
     Args:
         df: The frame to split.
@@ -150,11 +150,11 @@ def recommended_dimensions(
         ``(n_repeats, n_folds)``.
     """
     n = len(df)
-    if score_group_on is not None and scored_groups_held_out_whole(df, group_on, score_group_on):
-        n = df[score_group_on].nunique(dropna=False)
-    elif group_on is not None and group_labels == "per_group":
+    if group_on is not None and group_labels == "per_group":
         df, group_on = one_group_column(df, group_on)
         n = df[group_on].nunique()
+    elif score_group_on is not None and scored_groups_held_out_whole(df, group_on, score_group_on):
+        n = df[score_group_on].nunique(dropna=False)
     n_train = int(n * 2 / 3)
     for limit, repeats in REPEATS_BY_TRAIN_SIZE:
         if n_train < limit:

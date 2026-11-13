@@ -5,10 +5,13 @@
 Lennart, 2026-11-12: the count moves out of #79 (asp_potassco_classification and sat11_hand_algo_runtime under PAR10),
 to be decided on its own with the grouped datasets it changes.
 
-- `recommended_dimensions` and the protocol check count the groups the metric scores (its `group` input) when the
-  split holds each one out whole: the split's group, or a group inside one; a metric group the split cuts across folds
-  (wadden_sea_sibes_macoma_abundance's survey years over stations, any group under an IID split) leaves the count to
-  the rows. Rule SPLIT-33 (proposed) in splits.md, the same wording in definitions.md and split_protocol.md.
+- `recommended_dimensions` and the protocol check count the scored units (set by the metric's `group` input) when
+  all rows of each are in one group: the split's group, or a unit inside one; a scored unit the split cuts across
+  folds (wadden_sea_sibes_macoma_abundance's survey years over stations, any scored unit under an IID split) leaves
+  the count to the rows. Rule SPLIT-33 (proposed) in splits.md, the same wording in definitions.md and split_protocol.md.
+- 2026-11-13: `per_group` labels are asked first. One label covers a whole group, so the scored units inside it add
+  no labels and the groups count, whatever the metric scores. No dataset has `per_group` labels with scored units of
+  its own, so no count changes. The docs call the metric's unit a scored unit and keep "group" for `grouping.on`.
 - At their next `dataset check`: `sat11_hand_algo_runtime` 10 x 3 to 20 x 3 (184 instances), `huesken_sirna_efficacy`
   10 x 3 to 20 x 3 (30 genes), `protein_model_quality_rf_pcp` 3 x 3 to 20 x 3 (445 proteins),
   `sepsis_prediction_1m` 1 x 3 to 3 x 3 (40,336 patients), `asp_potassco_classification` 3 x 3 to 10 x 3 (1,212

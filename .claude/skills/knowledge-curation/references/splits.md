@@ -44,11 +44,12 @@ fact. Authors often pick a random split on data that is really temporal. Check a
 as well. A benchmark's non-IID label can also be wrong for our framing, in either direction. Cases:
 appliances_energy_prediction, kick.
 **SPLIT-33 (Should).** An IID or grouped task gets repeated 3-fold cross-validation, with 20, 10, 3 or 1 repeats as its
-train side holds fewer than 500, 2,500 or 250,000 units, or more, at any size of the frame. The unit is what the
-metric scores: the group when the metric scores per group and the split holds each such group out whole (a PAR10 per
-instance over one row per instance and solver, the instances held out or inside held-out classes), else the group
-when each group has one label, else the row. A metric group the split cuts across folds (a survey year over held-out
-stations, any group under an IID split) is scored on part of its rows in every fold, so the rows count. Why: the noise
+train side holds fewer than 500, 2,500 or 250,000 units, or more, at any size of the frame. The unit: the group
+when each has one label; else the scored unit (the rows the metric combines into one term of its score, set by its
+`group` input; one row by default) when all rows of each are in one group (a PAR10 per instance over one row per
+instance and solver, the instances held out or inside held-out classes); else the row. A scored unit the split cuts
+across folds (a survey year over held-out stations, any scored unit under an IID split) is scored on part of its rows
+in every fold, so the rows count. Why: the noise
 of a score follows the number of units scored, so a task gets the same splits whatever the layout of its table.
 Cases: sat11_hand_algo_runtime, protein_model_quality_rf_pcp, wadden_sea_sibes_macoma_abundance.
 
@@ -361,5 +362,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 
 The declarations (`Grouping`, `Temporal`, `TemporalSplits`, the gap and horizon fields), the default 3-fold protocol,
 the row budget and the `_1m` versions: [definitions.md](../../knowledge-data-foundry/references/definitions.md),
-"Splits". The probes that test grouping and hidden groups:
+"Splits". The units SPLIT-33 counts, with a figure of the same, nested and crossing cases and the counting tree:
+[split_protocol.md](../../knowledge-data-foundry/references/split_protocol.md), "The units counted". The probes that
+test grouping and hidden groups:
 [checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md).

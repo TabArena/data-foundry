@@ -165,6 +165,13 @@ def test_a_metric_group_the_split_cuts_across_folds_counts_rows() -> None:
     assert not protocol.scored_groups_held_out_whole(df, None, "instance")
 
 
+def test_one_label_per_group_counts_the_held_out_groups_before_the_metrics_groups() -> None:
+    """With one label per held-out group, the metric's groups inside it share that label: the held-out groups count."""
+    df = runs_frame(1_212, 11)  # 1,212 instances in 10 classes
+    assert recommended_dimensions(df, group_on="cls", group_labels="per_group", score_group_on="instance") == (20, 3)
+    assert recommended_dimensions(df, group_on="cls", group_labels="per_sample", score_group_on="instance") == (10, 3)
+
+
 def test_metric_group_column_is_the_metrics_group_input() -> None:
     """The metric's ``group`` input names the scored unit; a metric without one scores rows."""
     par10 = Metric.source("par_k", params={"cutoff": 600}, inputs={"group": "instance"})
