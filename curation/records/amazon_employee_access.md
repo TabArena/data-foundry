@@ -9,6 +9,10 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Varying Delay'
 original_source: Kaggle
 year: '2013'
 required_split:

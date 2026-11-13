@@ -9,6 +9,9 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Later'
 collections:
 - New (BeyondArena)
 original_source: Other

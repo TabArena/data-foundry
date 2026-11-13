@@ -11,6 +11,8 @@ decision_markers:
 - Anonymized
 tags:
 - Larger IID Data
+- 'Samples: One Moment'
+- 'Target: Later'
 collections:
 - TabArena Reject
 - TabSTAR

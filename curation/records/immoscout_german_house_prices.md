@@ -10,6 +10,7 @@ suggestion: 'Yes'
 tags:
 - New IID
 - Free Text (Short)
+- 'Samples: One Moment'
 collections:
 - TabSTAR
 original_source: Kaggle

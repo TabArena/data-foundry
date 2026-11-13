@@ -13,6 +13,7 @@ tags:
 - Non-IID (Grouped)
 - Many class
 - Spectral Data
+- 'Samples: No Time Dimension'
 collections:
 - TabArena Reject
 - TabSTAR

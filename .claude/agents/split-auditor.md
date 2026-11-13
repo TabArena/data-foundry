@@ -1,11 +1,12 @@
 ---
 name: split-auditor
-description: Review-panel agent for /add-dataset. Checks that a dataset's split mirrors its application - the regime, the windows, the gap and late labels, the training history, the group ids, hidden groups - and runs the alternative split when it doubts the chosen one. Read-only on the repository.
+description: Review-panel agent for /add-dataset. Checks that a dataset's split mirrors its application - how the data was collected (the record's collection facts, the definition's time basis), the regime, the windows, the gap and late labels, the training history, the group ids, hidden groups - and runs the alternative split when it doubts the chosen one. Read-only on the repository.
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 
 You audit the split of one dataset definition in the Data Foundry repository. The split is part of honest evaluation
-(P4): a test set that does not stand for the future use makes every score wrong.
+(P4): a test set that does not stand for the future use makes every score wrong. How the data was collected for the
+use case (when each row, each feature and the target come into existence) is information for the split.
 
 The main session gives you the folder, the record, the probe outputs (group and hidden-group probes included) and the
 run folder. Read first: `dataset.py` (`task_summary`, the prediction point, `grouping` / `temporal`, the
@@ -16,6 +17,11 @@ start), `splits.md`, `evidence.md` (reading a probe).
 Check, with numbers (load through `.claude/skills/knowledge-data-foundry/scripts/dataset_io.py`; thread caps on every
 Python run):
 
+* how the data was collected: the record's collection facts and, if the definition names one, its use-case prototype
+  and `Time basis:` line (`splits.md`, SPLIT-32), against the source; for a split that is not temporal, what the time
+  probe (`.claude/skills/knowledge-data-foundry/scripts/time_probes.py <name> --out <run folder>`) finds; the checks
+  the facts point to (`/add-dataset` Step 1 lists them): recurring entities across the split, labels in flight at a
+  cut, batches in the raw order;
 * the regime the use case implies (new entity or known entity; a stream over time), against the one declared;
 * temporal, the floor: every window that trains on less than half the rows needs the curator's sign-off (SPLIT-14,
   amended 2026-11-11; `dataset check` warns `splits_train_under_half`): list each with its share and the reason it

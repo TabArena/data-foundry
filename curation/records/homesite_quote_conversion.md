@@ -11,6 +11,9 @@ decision_markers:
 - Anonymized
 tags:
 - Larger IID Data
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - TabArena Reject
 - TabRed

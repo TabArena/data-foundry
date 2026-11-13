@@ -80,7 +80,9 @@ from data_foundry.collections import collection_file_budget
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
+    FORCED_TIME_TAGS,
     RETIRED_DATA_TAGS,
+    TIME_BASIS_TAGS,
     DatasetMetadataV2,
     Grouping,
     MetricSpec,
@@ -117,6 +119,8 @@ from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Tempor
 from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from data_foundry.schema import SpecialFeature
     from data_foundry.v2.special import SpecialFeatureSpec
 
@@ -2077,6 +2081,23 @@ def _gap(cls: type[AbstractCuratedDataset]) -> tuple[int | None, str | None]:
     return cls.temporal.resolved_gap if cls.temporal is not None else (None, None)
 
 
+def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str], None]) -> None:
+    """One time basis at most: a use-case prototype or a forced tag; a prototype never on a temporal split and always
+    with its `Time basis:` line (SPLIT-32).
+    """
+    tags = list(dict.fromkeys(cls.data_tags))
+    basis = [tag for tag in tags if tag in TIME_BASIS_TAGS or tag in FORCED_TIME_TAGS]
+    if len(basis) > 1:
+        fail(f"`data_tags` {basis}: a split has one time basis (SPLIT-32); keep the one that says why it is not.")
+    prototype = next((tag for tag in basis if tag in TIME_BASIS_TAGS), None)
+    if prototype is None:
+        return
+    if cls.temporal is not None:
+        fail(f"`{prototype}` says why a split is not temporal; this one is, so drop the tag.")
+    if "Time basis:" not in (cls.curation_comments or ""):
+        fail(f"`{prototype}` needs a `Time basis:` line in `curation_comments` stating the fact behind it (SPLIT-32).")
+
+
 def _regime_tags(cls: type[AbstractCuratedDataset]) -> list[str]:
     tags = list(dict.fromkeys(cls.data_tags))
     if not is_task(cls) or any(tag in REGIME_TAGS for tag in tags):  # a parent has no split, so no regime
@@ -2352,6 +2373,7 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         fail("`ForcedGroupedFromTemporal` marks a grouped split; declare `grouping = Grouping(...)` or drop the tag.")
     if task and "ForcedIIDFromTemporal" in cls.data_tags and (cls.grouping is not None or cls.temporal is not None):
         fail("`ForcedIIDFromTemporal` marks an IID split; drop the tag or the `grouping`/`temporal` declaration.")
+    _validate_time_basis(cls, fail)
     moved = [
         a for a in ("drop_columns", "categorical_features", "string_features", "datetime_features") if a in vars(cls)
     ]

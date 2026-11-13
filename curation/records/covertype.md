@@ -11,6 +11,7 @@ decision_markers:
 - Outdated
 tags:
 - Random (IID)
+- 'Samples: One Moment'
 collections:
 - TabArena Reject
 - TabSTAR

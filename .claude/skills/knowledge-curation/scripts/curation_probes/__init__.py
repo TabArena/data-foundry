@@ -22,6 +22,9 @@ so they run on a table from any source. Modules:
 * ``text``: the numeric model inputs and the TF-IDF + SVD text encoding the probes share.
 * ``weights``: the task's training weight and its own metric as the probes share them (fits with the weight, the
   weighted dummy, the declared metric's score and the share of predictions at its floor).
+* ``time_recovery``: does a table whose split is not temporal still carry a time order (date columns, dropped
+  date columns, the target along the row order or an ID, few-valued columns that encode the period, rows that repeat
+  one block later, one entity's rows in consecutive runs, class blocks that are several pieces).
 
 ``problem_type`` is ``"regression"`` or a classification type (any other value). A task with a training weight
 passes it as ``sample_weight`` (one value per row; ``leak``, ``task`` and ``groups`` fit and score with it). Import the

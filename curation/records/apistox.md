@@ -8,6 +8,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
+- 'Samples: No Time Dimension'
 collections:
 - New (BeyondArena)
 original_source: Other

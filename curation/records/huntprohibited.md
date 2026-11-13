@@ -13,6 +13,9 @@ tags:
 - Free Text (Sentences)
 - Larger IID Data
 - Review Prio 1 (Atlas)
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Varying Delay'
 collections:
 - New (BeyondArena)
 original_source: Kaggle

@@ -12,6 +12,9 @@ decision_markers:
 - Anonymized
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Inferred'
+- 'Target: Later'
 collections:
 - TabArena Reject
 - TabSTAR

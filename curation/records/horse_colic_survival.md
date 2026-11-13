@@ -14,6 +14,10 @@ decision_markers:
 tags:
 - Tiny Data
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Inferred'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
 collections:
 - TabArena Reject
 - TabSTAR

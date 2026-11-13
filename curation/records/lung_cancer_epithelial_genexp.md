@@ -10,6 +10,9 @@ suggestion: 'Yes'
 tags:
 - New IID
 - Many features
+- 'Samples: Over Time'
+- 'Time: Inferred'
+- 'Target: Varying Delay'
 collections:
 - FS Benchmark
 original_source: OpenML

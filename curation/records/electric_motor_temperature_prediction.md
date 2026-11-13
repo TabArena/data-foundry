@@ -13,6 +13,8 @@ decision_markers:
 tags:
 - Non-IID (Grouped)
 - Multi-target
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - New (BeyondArena)
 original_source: Kaggle

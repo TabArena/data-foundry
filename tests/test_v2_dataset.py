@@ -438,6 +438,20 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
             },
             "marks an IID split",
         ),
+        ({"data_tags": ("Snapshot", "StationaryRelation"), "curation_comments": "- Time basis: x"}, "one time basis"),
+        (
+            {
+                "data_tags": ("Snapshot",),
+                "curation_comments": "- Time basis: x",
+                "temporal": Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=2)),
+            },
+            "this one is, so drop the tag",
+        ),
+        (
+            {"data_tags": ("Snapshot", "ForcedIIDFromTemporal"), "curation_comments": "- Time basis: x"},
+            "one time basis",
+        ),
+        ({"data_tags": ("DelayedTarget",)}, "`Time basis:` line"),
     ],
 )
 def test_class_validation_rejects_bad_definitions(attrs: dict, match: str) -> None:
@@ -1831,3 +1845,18 @@ def test_a_spectrum_with_missing_intensities_is_flagged(tmp_path: Path, warehous
     warnings = [r for r in result.bundle_report.results if r.slug == "dataset_spectrum" and r.severity == "warning"]
     assert warnings, result.bundle_report.summary()
     assert "1 row(s)" in warnings[0].message
+
+
+@pytest.mark.parametrize("tag", ["Timeless", "Snapshot", "DelayedTarget", "StationaryRelation"])
+def test_a_time_basis_is_accepted_on_an_iid_split_with_its_line(tag: str) -> None:
+    cls = _define(data_tags=(tag,), curation_comments="- Time basis: one census on 1 April 1990.")
+    assert cls.dataset_metadata.data_tags == ["IID", tag]
+
+
+def test_grouped_split_takes_a_time_basis() -> None:
+    cls = _define(
+        data_tags=("DelayedTarget",),
+        curation_comments="- Time basis: one policy year; claims within it.",
+        grouping=Grouping(on="g", labels="per_group", definition="x"),
+    )
+    assert "DelayedTarget" in cls.dataset_metadata.data_tags

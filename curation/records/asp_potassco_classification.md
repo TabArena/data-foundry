@@ -13,6 +13,7 @@ suggestion: 'Yes'
 priority: 4
 tags:
 - Non-IID (Grouped)
+- 'Samples: No Time Dimension'
 collections:
 - TabArena Reject
 original_source: ASlib

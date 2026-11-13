@@ -9,6 +9,10 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
 original_source: UCI
 year: '2021'
 required_split:

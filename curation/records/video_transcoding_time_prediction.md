@@ -13,6 +13,7 @@ decision_markers:
 - Outdated
 tags:
 - Non-IID (Grouped)
+- 'Samples: No Time Dimension'
 collections:
 - TabArena Reject
 - TabSTAR

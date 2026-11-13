@@ -14,6 +14,7 @@ decision_markers:
 - Too Small
 tags:
 - Tiny Data
+- 'Samples: No Time Dimension'
 collections:
 - TabArena Reject
 original_source: Other

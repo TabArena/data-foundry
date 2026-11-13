@@ -9,6 +9,8 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- 'Entities: Recur'
 original_source: UCI
 year: '2020'
 required_split:

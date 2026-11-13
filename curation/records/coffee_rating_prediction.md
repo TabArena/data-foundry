@@ -13,6 +13,8 @@ decision_markers:
 tags:
 - Free Text (Sentences)
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - CARTE/TARTE
 original_source: Website

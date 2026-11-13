@@ -13,6 +13,7 @@ decision_markers:
 tags:
 - Tiny Data
 - New IID
+- 'Samples: No Time Dimension'
 collections:
 - New (BeyondArena)
 original_source: Other

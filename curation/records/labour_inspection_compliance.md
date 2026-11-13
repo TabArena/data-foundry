@@ -11,6 +11,10 @@ suggestion: 'Yes'
 tags:
 - Larger IID Data
 - Free Text (Sentences)
+- 'Samples: Over Time'
+- 'Time: Inferred'
+- 'Entities: Recur'
+- 'Features: Read Later'
 collections:
 - TabSTAR
 original_source: Other

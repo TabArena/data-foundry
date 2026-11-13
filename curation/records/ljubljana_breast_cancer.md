@@ -13,6 +13,8 @@ decision_markers:
 - Outdated
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Lost'
 collections:
 - New (BeyondArena)
 - TabSTAR

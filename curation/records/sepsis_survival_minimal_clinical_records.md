@@ -14,6 +14,10 @@ decision_markers:
 tags:
 - Larger IID Data
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Other
