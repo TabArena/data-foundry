@@ -126,9 +126,9 @@ When changing core code:
   `simple_metadata_exploration_v2.py` (in `scripts/beyond_arena/`) for how
   the warehouse-wide stats are computed; that file's dtype categorization
   is the reference for `CuratedContainer._feature_dtype_counts`.
-* Splits: definitions use `src/data_foundry/v2/splits.py` (the v2 protocol, declarative `TemporalSplits`).
-  `curation_recommendations.py` holds the v1 helpers of the BeyondArena notebooks; don't use or extend it for new
-  work ([`DATA_FOUNDRY_V1.md`](DATA_FOUNDRY_V1.md)).
+* Splits: definitions use `src/data_foundry/v2/splits.py` (the v2 protocol, declarative `TemporalSplits`). The v1
+  helpers of the BeyondArena notebooks were removed on 2026-11-12 (in git at `6cc3c945`;
+  [`DATA_FOUNDRY_V1.md`](DATA_FOUNDRY_V1.md)).
 
 ### Repo plumbing (CI, packaging, release)
 

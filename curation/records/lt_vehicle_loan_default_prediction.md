@@ -362,8 +362,6 @@ credit datasets or amend USE-8 (issue 6), and the postcode's dtype (issue 7).
    * **Recommendation:** a, the measured gain, and the number serves models other than trees as well. **Decision:** a, b
    or c?
 
-   Script: `local-data-warehouse/_runs/2026-11-05_pr33_apply/lt/pincode_region.py`.
-
    **Lennart (2026-11-05, change):** Agree.
 
    **Resolved (2026-11-05, Lennart):** (a). `Current_pincode_ID` ships as a number, one column; a CLEAN-14 Cases row;

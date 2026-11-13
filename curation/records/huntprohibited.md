@@ -49,7 +49,7 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 CC (2026-10-22, Lennart): issue 4: (a), keep the random split by ad (exact copies dropped; the per-ad label and the grouped run are the fact that sets it apart from emscad). Issue 9: (a), no `Spatial` tag, with the reason in the notes (the addresses sit inside one category's form text; no geographic column).
 
-**Assessment (AI, 2026-10-22):** date check (Lennart's note): no per-ad date or order; `itemid` is random (April ids spread evenly over train ids, KS p = 0.17). A used-car form change during December-March bounds the cost of the random split at about 0.002 ROC AUC and 0.02 AP (old form to new, TF-IDF logistic regression, 4 seeds). The competition validated at random and local scores tracked the leaderboard. The notes give the bounded cost; issue 10 asks to confirm the random split. Scripts: local-data-warehouse/_runs/2026-10-22_marks/huntprohibited/.
+**Assessment (AI, 2026-10-22):** date check (Lennart's note): no per-ad date or order; `itemid` is random (April ids spread evenly over train ids, KS p = 0.17). A used-car form change during December-March bounds the cost of the random split at about 0.002 ROC AUC and 0.02 AP (old form to new, TF-IDF logistic regression, 4 seeds). The competition validated at random and local scores tracked the leaderboard. The notes give the bounded cost; issue 10 asks to confirm the random split.
 
 CC (2026-10-22, Lennart): issue 10: keep the random split (no date recoverable).
 

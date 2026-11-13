@@ -728,28 +728,7 @@ def test_verify_saved_container_with_test_dataset(tmp_path):
 
 
 # --- Row budget per split -------------------------------------------------------------
-def test_splits_within_the_row_budget_pass():
-    slugs = slugs_of(make_container())
-    assert "splits_train_over_budget" not in slugs
-    assert "splits_test_over_budget" not in slugs
-
-
-def test_train_side_over_the_row_budget_is_an_error(monkeypatch):
-    monkeypatch.setattr(bundle_checks, "SPLIT_TRAIN_ROW_BUDGET", 30)  # each toy fold trains on 40 rows
-    report = run_bundle_checks(make_container(), verbose=False)
-    assert "splits_train_over_budget" in [r.slug for r in report.errors]
-
-
-def test_test_side_over_the_row_budget_is_a_warning(monkeypatch):
-    monkeypatch.setattr(bundle_checks, "SPLIT_TEST_ROW_BUDGET", 10)  # each toy fold tests on 20 rows
-    report = run_bundle_checks(make_container(), verbose=False)
-    assert "splits_test_over_budget" in [r.slug for r in report.warnings]
-    assert "splits_test_over_budget" not in [r.slug for r in report.errors]
-
-
-def test_a_format_2_container_without_a_budget_has_no_size_limit(monkeypatch):
-    monkeypatch.setattr(bundle_checks, "SPLIT_TRAIN_ROW_BUDGET", 30)  # the v1 budgets do not apply to format 2
-    monkeypatch.setattr(bundle_checks, "SPLIT_TEST_ROW_BUDGET", 10)
+def test_a_format_2_container_without_a_budget_has_no_size_limit():
     task = PredictiveMLTaskMetadataV2(
         target_column_name="target", problem_type="binary_classification", objective_metric=make_spec()
     )
@@ -771,24 +750,6 @@ def test_a_budget_explains_the_rows_its_test_samples_leave_out():
     assert "splits_rows_never_tested" in slugs_of(make_container(experiment_metadata=plain))
     budgeted = dataclasses.replace(plain, row_budget=RowBudget(train=1_000, test=1_000))
     assert "splits_rows_never_tested" not in slugs_of(make_container(experiment_metadata=budgeted))
-
-
-def single_split_container(n_train: int = 40, n: int = 60) -> CuratedContainer:
-    positions = list(range(n))
-    splits = {0: {0: (positions[:n_train], positions[n_train:])}}
-    return make_container(
-        experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="Single split.", splits=splits),
-    )
-
-
-def test_split_dimensions_skip_a_budget_capped_single_split(monkeypatch):
-    # A `_1m` split fills the train budget; whole groups can leave the frame just below 1.25M rows.
-    monkeypatch.setattr("data_foundry.bundle_checks.SPLIT_TRAIN_ROW_BUDGET", 40)
-    assert "splits_dimensions_off_protocol" not in slugs_of(single_split_container())
-
-
-def test_split_dimensions_flag_an_uncapped_single_split():
-    assert "splits_dimensions_off_protocol" in slugs_of(single_split_container())
 
 
 def test_round_trip_comparison_sees_category_order_but_not_string_storage():

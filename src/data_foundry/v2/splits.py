@@ -1,26 +1,21 @@
 """The v2 split protocol: how every v2 dataset is split, and the checks that hold it.
 
-* IID and grouped data get repeated 3-fold cross-validation. The number of repeats follows the size of the train
-  side (:func:`recommended_dimensions`): 20, 10, 3 or 1.
+* IID and grouped data get repeated 3-fold cross-validation on the full frame. The number of repeats follows the
+  size of the train side in units, rows or groups (:func:`recommended_dimensions`): 20, 10, 3 or 1, at any size of
+  the frame, so every IID or grouped task has at least 3 splits.
 * Temporal data gets at least 3 expanding windows (:class:`TemporalSplits`).
 * Data Foundry sets no row budget: by default the splits use the full frame and no side is capped. A sub-sampled
-  version declares one (``row_budget = RowBudget(train=..., test=...)``, :class:`~data_foundry.schema.RowBudget`),
-  is named after its train budget (``<name>_1m``, ``<name>_10m``) and records it in the container
-  (``experiment_metadata.row_budget``); the split checks hold the container to it (:func:`protocol_checks`).
+  version is named after its train budget (``<name>_1m``, ``<name>_10m``) and either declares the budget
+  (``row_budget = RowBudget(train=..., test=...)``, :class:`~data_foundry.schema.RowBudget`) or gets its collection's
+  by that name (a ``collection.py`` next to the dataset folders sets it); the container records it
+  (``experiment_metadata.row_budget``) and the split checks hold the container to it (:func:`protocol_checks`).
   TabArena v0.2 sub-samples its larger datasets to ``RowBudget(train=1_000_000, test=500_000)``.
-* An IID or grouped version adapts its splits to the budget: a frame above ``train + test`` rows is sub-sampled to
-  it (:func:`subsample_frame`), then each fold tests on up to ``test`` rows of its third and trains on every other
-  row, at most ``train`` (:func:`fit_splits_to_budget`). At 1M / 500k that is plain 3-fold cross-validation on 1.5M
-  rows; at 10M / 250k each fold trains on 10M and tests on 250k rows of a 10.25M-row frame.
-* A temporal version samples per window instead of sampling the frame (:func:`sample_temporal_splits`): each test
-  window keeps up to ``test`` of its rows, each train side a random ``train`` of all earlier rows (one random order
-  for all windows), and the frame keeps only the rows some split uses. ``TemporalSplits(sample_by="time")`` draws
-  whole time values instead of rows (every row of a drawn time value is kept), for data whose rows at one time form
-  a cross-section.
-
-This module does not use the v1 helpers in :mod:`data_foundry.curation_recommendations`, which keep the v1 protocol
-(one 1M / 250k split from 1.25M rows on) for the v1 notebooks. The cross-validation builders give the same splits
-as the v1 ones, so a dataset below 1.25M rows keeps its splits.
+* A budget applies after the split. The folds or windows are drawn on the full frame, then each test side keeps at
+  most ``test`` rows: :func:`fit_splits_to_budget` for IID and grouped data (rows stratified, or whole groups; the
+  test rows over the cap train in their fold), :func:`sample_temporal_splits` for temporal data (rows, or whole time
+  values with ``TemporalSplits(sample_by="time")``, for data whose rows at one time form a cross-section; the frame
+  keeps only the rows some split uses). The train sides keep every row available to them: a benchmark sub-samples
+  each to ``train`` rows before a fit (:func:`subsample_train`), as the container's ``train_sampling`` says.
 """
 
 from __future__ import annotations
@@ -42,13 +37,10 @@ Splits = dict[int, dict[int, tuple[list[int], list[int]]]]
 """Outer splits: ``{repeat: {fold: (train_positions, test_positions)}}``."""
 
 SPLIT_RANDOM_STATE = 4267
-"""The seed of every split and of the sub-sampling (the same seed as the v1 helpers)."""
+"""The seed of every split and of the sub-sampling."""
 
 N_FOLDS = 3
 """Every IID and grouped split is 3-fold cross-validation."""
-
-SINGLE_REPEAT_ROWS = 1_250_000
-"""A frame with this many rows gets a single repeat even when it has few groups (``group_labels="per_group"``)."""
 
 MIN_TEMPORAL_SPLITS = 3
 """A temporal task needs at least this many test windows."""
@@ -115,12 +107,10 @@ def recommended_dimensions(
     """``(n_repeats, n_folds)`` for IID or grouped cross-validation on ``df``.
 
     The size is the train side of a 3-fold split (2/3 of the rows, or of the groups for ``per_group`` labels):
-    below 500 it gets 20 repeats, below 2,500 10, below 250k 3, and 1 above. A frame of
-    :data:`SINGLE_REPEAT_ROWS` or more always gets one repeat.
+    below 500 it gets 20 repeats, below 2,500 10, below 250k 3, and 1 above, however many rows the frame has. A row
+    budget does not change the count: it caps the sides after the split (:func:`fit_splits_to_budget`).
     """
     n = len(df)
-    if n >= SINGLE_REPEAT_ROWS:
-        return 1, N_FOLDS
     if group_on is not None and group_labels == "per_group":
         df, group_on = one_group_column(df, group_on)
         n = df[group_on].nunique()
@@ -731,29 +721,6 @@ class SplitPlan:
     comment: str | None = None
 
 
-def subsample_frame(
-    df: pd.DataFrame,
-    *,
-    n_rows: int,
-    group_on: str | list[str] | None = None,
-    stratify_on: str | None = None,
-    random_state: int = SPLIT_RANDOM_STATE,
-) -> pd.DataFrame:
-    """Sub-sample ``df`` to ``n_rows`` rows, keeping the row order.
-
-    Without ``group_on`` rows are sampled, stratified on ``stratify_on``; with it whole groups are kept (see
-    :func:`_sample_positions`). The kept rows stay in their order, so a frame sorted by time stays sorted. A frame
-    within ``n_rows`` is returned as it is.
-    """
-    if len(df) <= n_rows:
-        return df
-    keyed, key = _sampling_columns(df, group_on, stratify_on)
-    keep = _sample_positions(
-        keyed, np.arange(len(df)), n_rows, group_on=key, stratify_on=stratify_on, random_state=random_state
-    )
-    return df.iloc[keep].reset_index(drop=True)
-
-
 def fit_splits_to_budget(
     df: pd.DataFrame,
     splits: Splits,
@@ -766,8 +733,8 @@ def fit_splits_to_budget(
     """Fit cross-validation splits to a row budget: each fold tests on at most ``budget.test`` rows of its test side
     and trains on every other row of the frame.
 
-    A test side over ``budget.test`` is sampled like :func:`subsample_frame` does (rows stratified on
-    ``stratify_on``, or whole groups), and the rows it leaves out train in that fold. The train sides are not capped:
+    A test side over ``budget.test`` is sampled (:func:`_sample_positions`: rows stratified on ``stratify_on``, or
+    whole groups), and the rows it leaves out train in that fold. The train sides are not capped:
     ``budget.train`` is for a benchmark, which sub-samples each train side before a fit (:func:`subsample_train`).
     Test sides within the budget are left as they are.
 
@@ -1089,7 +1056,7 @@ def subsample_train(
 
 def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
     """The split-protocol checks of a format-2 container; :func:`~data_foundry.bundle_checks.run_bundle_checks` runs
-    them in place of the v1 protocol checks.
+    them for every format-2 container.
 
     * ``splits_test_over_budget`` (warning): a split tests on more rows than the container's
       ``experiment_metadata.row_budget.test``. A container without a budget has no size limit; the train sides are

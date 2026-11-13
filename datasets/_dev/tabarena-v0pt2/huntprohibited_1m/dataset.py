@@ -10,7 +10,6 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     drop_columns,
@@ -117,7 +116,6 @@ class Huntprohibited1m(AbstractCuratedDataset):
 
     # Splits: IID (no time index survives). The `_1m` version samples each fold's test third to 500k rows; the 1M
     # train budget is recorded for a benchmark, which sub-samples each train side (`subsample_train`).
-    row_budget = RowBudget(train=1_000_000, test=500_000)
     accepted_check_warnings = {
         "dataset_pure_feature_value": "Real-estate ads (category Недвижимость and its subcategories) and children's "
         "clothes are almost never blocked (0.12% of 1,149,136 real-estate ads in the full file): the seller picks the "

@@ -476,12 +476,73 @@ def test_template_has_the_panel_tab_and_keeps_the_store():
     assert 'data-act="openpanel"' in page
     # The rail groups the records by priority, in the order the builder sorted them.
     assert '<li class="grp" aria-hidden="true">' in page
+    # Ship verdicts with nothing open leave their priority group for the "To ship" group at the end.
+    assert 'const groupLabel = (g) => (g === "ship" ? "To ship" : prioLabel(g));' in page
     assert '["reviews", "crosscut"].forEach((coll) => {' in page
     assert "const S = { reviews: {}, crosscut: {} };" in page
-    # The Use case tab shows the declared metric under the task summary, only when the round marks it.
-    assert 'panel("usecase", useCaseHtml(d) + metricHtml(d))' in page
+    # The Use case tab shows the declared split and the declared metric under the task summary, each with a mark; the
+    # metric only when the round marks it.
+    assert 'panel("usecase", useCaseHtml(d) + splitHtml(d) + metricHtml(d))' in page
     assert 'if (!d.metricMark) return "";' in page
     assert "const hasMetricMark = (d) => !!d.metricMark && " in page
+    assert 'data-note="split"' in page
+    assert "if (out.split && !out.split.d" in page
+
+
+def test_split_from_the_readme_and_the_definition(brp):
+    """The split comes from the README's front matter and Splits section, the Forced tags and the split notes."""
+    readme = """---
+task:
+  split_regime: temporal_non_iid
+  stratify_on: null
+  time_on: Date
+  group_on: null
+  grouping: null
+splits:
+  n_repeats: 3
+  n_folds: 1
+  random_state: 4267
+  time_horizon: 42
+  time_horizon_unit: days
+  time_gap: 1
+  time_gap_unit: days
+  n_train: {min: 10, max: 20}
+  n_test: {min: 5, max: 6}
+---
+
+## Splits
+
+Six weeks ahead, as the competition asks.
+
+3 repeat(s) x 1 fold(s) with seed 4267; train 10 to 20 rows, test 5 to 6 rows.
+
+| repeat | fold | n_train | n_test |
+|---|---|---|---|
+| 0 | 0 | 20 | 6 |
+
+## Bundle checks
+"""
+    comments = """
+        - We drop the customers column.
+        - The split follows the competition's
+          temporal test window.
+    """
+    got = brp._split(readme, ["Tabular", "ForcedIIDFromTemporal"], comments)
+    assert (got["regime"], got["time_on"], got["time_horizon"], got["n_folds"]) == ("temporal", "Date", 42, 1)
+    assert got["forced"] == ["ForcedIIDFromTemporal"]
+    assert "Six weeks ahead" in got["noteHtml"]
+    assert "repeat(s)" not in got["noteHtml"]
+    assert got["tableHtml"].count("<tr>") == 2
+    assert got["notes"] == ["The split follows the competition's temporal test window."]
+
+    default = readme.replace("Six weeks ahead, as the competition asks.", "Default splits.")
+    assert brp._split(default, [], None)["noteHtml"] == ""
+    assert brp._split("no front matter", [], None) is None
+
+    code = 'class X:\n    data_tags = ("ForcedIIDFromTemporal",)\n    curation_comments = "- a split note"\n'
+    assert brp._literal_from_source(code, "data_tags") == ("ForcedIIDFromTemporal",)
+    assert brp._literal_from_source(code, "curation_comments") == "- a split note"
+    assert brp._literal_from_source(code, "metric") is None
 
 
 def test_metric_marks_come_from_the_report_header(brp):
@@ -743,6 +804,37 @@ def test_metric_is_resolved_by_the_records_cc_line(brp, tmp_path):
     assert brp._metric_checked(tmp_path / "missing.md") is None
 
 
+def test_the_split_is_marked_only_when_the_round_asks(crv, brp, tmp_path):
+    """The split, like the metric, keeps a settled record on the page only when --split-marks names it, until the
+    record's CC line says the declared split is checked; the report's header names the records, and the page's
+    split box and mark are gated on them.
+    """
+    file = AIRFOIL
+    text = (REVIEW_FILES / file).read_text()
+    fields = text[text.index("**Record fields that disagree") : text.index("**Record judgment:**")]
+    issues = text[text.index("**Issues for the curator:**") : text.index("**Review panel:**")]
+    root, records, _ = _broken_copy(tmp_path, file, text, text.replace(fields, "").replace(issues, ""))
+    out = tmp_path / "report.md"
+    assert _collect_fixture(crv, root, records, out) == 0
+    assert "### airfoil_self_noise" not in out.read_text()
+    assert _collect_fixture(crv, root, records, out, "--split-marks", "airfoil_self_noise") == 0
+    assert "**Split marks:** `airfoil_self_noise`." in out.read_text()
+    assert brp.parse_report(out)["split_marks"] == {"airfoil_self_noise"}
+    assert _collect_fixture(crv, root, records, out, "--split-marks", "no_such_record") == 1
+
+    record = records / "airfoil_self_noise.md"
+    assert brp._split_checked(record) is None
+    _add_comment(record, "CC (2026-11-12, Lennart): the declared split (iid, 3 x 3 folds) is checked, as declared.")
+    assert brp._split_checked(record)["date"] == "2026-11-12"
+    assert _collect_fixture(crv, root, records, out, "--split-marks", "airfoil_self_noise") == 0
+    assert "### airfoil_self_noise" not in out.read_text()
+
+    page = TEMPLATE.read_text()
+    assert "const hasSplitMark = (d) => !!d.splitMark && " in page
+    assert "&& !d.splitChecked;" in page
+    assert 'if (!d.splitMark) return "";' in page
+
+
 def test_thread_gives_the_ai_turn_the_curator_replies_to(brp):
     """An issue whose last turn is the AI's carries an `askId` (the page counts it unmarked until a reply names it);
     a new AI turn gets a new id; an issue whose last turn is the curator's or a closing label has none.
@@ -800,6 +892,34 @@ def test_collector_warns_about_a_problem_out_of_shape(crv):
     assert warnings("\n" + "".join(f"     - Point {i}.\n" for i in range(4))) == [
         "x issue 1: no short problem (4 bullets, at most 3)"
     ]
+
+
+def _iid_split(brp, tags, comments):
+    readme = "---\ntask:\n  split_regime: iid\nsplits:\n  n_repeats: 3\n  n_folds: 3\n---\n"
+    return brp._split(readme, tags, comments)
+
+
+def _record(tmp_path, *tags):
+    record = tmp_path / "r.md"
+    record.write_text("---\ntags:\n" + "".join(f"- '{t}'\n" for t in tags) + "---\n")
+    return record
+
+
+def test_the_split_box_shows_the_basis_and_the_records_facts(brp, tmp_path):
+    """The time basis, its `Time basis:` line and the record's collection facts reach the split box, as information."""
+    split = _iid_split(brp, ["IID", "DelayedTarget"], "- Time basis: all clients scored in September 2005.\n- x")
+    brp._time_facts(split, _record(tmp_path, "Samples: One Moment", "Target: Later", "Entities: Recur", "Tiny Data"))
+    assert split["time"]["basis"] == "DelayedTarget"
+    assert "September 2005" in split["time"]["lineHtml"]
+    assert split["time"]["facts"] == ["Samples: One Moment", "Target: Later", "Entities: Recur"]
+
+
+def test_a_forced_tag_is_shown_as_the_time_basis(brp, tmp_path):
+    """A forced tag is the time basis the split box shows."""
+    split = _iid_split(brp, ["IID", "ForcedIIDFromTemporal"], None)
+    brp._time_facts(split, _record(tmp_path, "Samples: Over Time", "Time: Lost"))
+    assert split["time"]["basis"] == "ForcedIIDFromTemporal"
+    assert split["time"]["facts"] == ["Samples: Over Time", "Time: Lost"]
 
 
 def test_the_horizon_block_and_its_sign_off(crv, brp, tmp_path):

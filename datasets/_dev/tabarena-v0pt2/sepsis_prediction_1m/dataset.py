@@ -10,7 +10,6 @@ from data_foundry.v2 import (
     FeatureTypes,
     Grouping,
     Metric,
-    RowBudget,
     Source,
     TaskSummary,
     decode,
@@ -143,8 +142,7 @@ class SepsisPrediction1m(AbstractCuratedDataset):
         """,
     )
 
-    # Splits
-    row_budget = RowBudget(train=1_000_000, test=500_000)
+    # Splits: the `_1m` version gets the collection's row budget (`collection.py`) by its name.
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "all_files" / "Dataset.csv")

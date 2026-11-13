@@ -116,7 +116,8 @@ validates, `unique_name` equals the folder name, every accepted warning has a re
 `Temporal` (the flat `time_on`, `group_on`, `group_labels`, `group_time_on`, `temporal_splits`, `time_horizon`,
 `time_horizon_unit` attributes are refused), a grouping has a `definition`, a temporal task has windows or
 `_make_splits` and a horizon, `sources` is a tuple of `Source` with exactly one publication (listed first, with a
-four-digit `year` and a `bibtex`), a `row_budget` needs the name `<name>_<suffix>` (`_1m`), the removed `year`,
+four-digit `year` and a `bibtex`), a `row_budget` needs the name `<name>_<suffix>` (`_1m`) and is refused in a
+collection that sets a budget, the removed `year`,
 `source`, `source_url`, `license`, `bibtex`, `bibtex_key`, `version_of`, `version_comment` and `raw_data_from` are
 refused with what replaced them, `prepared_raw_files` needs `_prepare_raw_files`, a multi-column `stratify_on` is
 refused (build one key in `_clean`), `Temporal(splits=...)` or `row_budget` together with a custom `_make_splits` is
@@ -437,7 +438,9 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 # 10. TODO(verify): target transform: `np.log` / `np.log1p` a skewed positive target and rename the column; skip it
 #     when the source already logged it or a deviance scores the target (CLEAN-16). A count or amount over a realized
 #     amount at risk becomes the rate, the amount its weight scoring column and `sample_weight` (MET-14, MET-15).
-# 11. TODO(verify): censored or capped target values (drop the capped rows or document the cap).
+# 11. TODO(verify): censored or capped target values: decide case by case and document it in `curation_comments`
+#     (asp_potassco_classification and sat11_hand_algo_runtime keep a timed-out run at its recorded limit and drop
+#     only the instances on which every configuration timed out; a target censored by the download date: LEAK-24).
 # 12. TODO(verify): rows the use case never sees (a row without the input the prediction acts on; bias_correction's
 #     days without an LDAPS run).
 # 13. TODO(verify): recording errors cleaned to the state an expert would ship (the top solutions' and data owners'
@@ -473,7 +476,8 @@ version (all found in the v0.2 copy, 2026-10-06):
 Keep the default: no split attributes. The base class runs the v2 split protocol (`src/data_foundry/v2/splits.py`):
 always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of the train side (`recommended_dimensions`),
 built by `iid_splits` / `grouped_splits` with the benchmark seed, on the full frame: Data Foundry caps no split unless
-the definition declares a `row_budget` (a `_1m` version, below). The comment is "Default splits."; set
+the definition is a version with a row budget (a `_1m` version, below; the whole path as a decision tree:
+[split_protocol.md](split_protocol.md)). The comment is "Default splits."; set
 `splits_comment` only when there is something to say (a split that deliberately differs from the source's protocol,
 what a grouped test fold holds).
 
@@ -501,8 +505,19 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
 * `prediction_unit` and `aggregation` come from what one real-world prediction is in the source: `mean` for replicate
   measurements of one label, `any` for multiple-instance data (musk: a molecule is a musk if any conformation is),
   `last` when the latest row carries the label (amex; needs `time_on`), `select_min` / `select_max` when one row is
-  chosen by its prediction and scored by its true value (sat11: run the algorithm predicted fastest). Everything else
-  is `row`.
+  chosen by its prediction and scored by its true value under a metric that does not choose by itself. Everything
+  else is `row`.
+* Algorithm selection (one row per instance and algorithm, the runtime as the target, the algorithm predicted
+  fastest is run): the metric chooses. `par_k` takes the instance as its `group` input, picks per instance the row
+  with the lowest prediction and counts rows tied there as the mean of their costs. Declare `prediction_unit="row"`
+  and no aggregation: the scorer applies an aggregation before the metric, so `select_min` would choose first and
+  break a tie by the order of the rows (a constant prediction on sat11_hand_algo_runtime scores 19,140 s, always the
+  first solver in the file, against 18,539 s under `par_k`'s rule; trained models did not tie). What the split holds
+  out decides where the instance comes from:
+  * instances (sat11_hand_algo_runtime): the grouping is on the instance, and the metric reads that column (MET-2);
+  * something larger (asp_potassco_classification: problem classes): the grouping is on the class, and the
+    anonymised instance ships as `ScoringColumn(column="instance_id", role="group", used_by="par_k")`, never a
+    feature.
 * `context`: `all_rows` when all rows of a new group are known when predicting, `past_rows` when only its earlier rows
   are (needs `time_on`), `none` when each row stands alone.
 * `definition` is required: what one group is, why groups are held out (the use case), and the source with a quote.
@@ -589,6 +604,9 @@ hotel_booking_demand). The training history the use case calls for is set in `_l
 
 ### Larger than the row budget: the `_1m` version
 
+The whole path from a definition to the fit, as a decision tree with worked examples:
+[split_protocol.md](split_protocol.md).
+
 Data Foundry sets no row budget: by default every split uses the full frame and no side is capped. A benchmark's
 budget, `row_budget = RowBudget(train=N, test=M)` (from `data_foundry.v2`), works on the two sides differently
 (issue #70, Lennart 2026-11-10):
@@ -615,14 +633,20 @@ The container records the budget (`experiment_metadata.row_budget`) and the samp
 split checks warn on a test side over M (`splits_test_over_budget`) and fail a budget without its sampling
 (`splits_train_sampling_missing`).
 
-TabArena v0.2 uses 1M train / 500k test rows (Lennart, 2026-10-21: at most 1M training rows). A v0.2 dataset whose
-splits, without a budget, have a side over that ships as a version that declares the budget, whatever the size of its
-frame (nyc_taxi_trip_duration: 1.45M rows, train sides of 1.28M to 1.39M), and `tests/test_v2_datasets.py` holds every
-v0.2 README to it. The version has its own folder and class, `<unique_name>_1m/dataset.py`, with
-`unique_name = "<name>_1m"` and `row_budget = RowBudget(train=1_000_000, test=500_000)`; `curation_comments` says why
-it carries a budget. It reads the raw files of `<name>`, its name without the budget suffix, and is saved under its own
-name. The suffix marks the benchmark's N that the container records (`RowBudget.suffix`: `_1m`; `_10m` for
-`RowBudget(train=10_000_000, test=250_000)`, `_2p5m`, `_300k`). The splits adapt to the budget:
+TabArena v0.2 uses 1M train / 500k test rows (Lennart, 2026-10-21: at most 1M training rows), set once for the working
+copy in `datasets/_dev/tabarena-v0pt2/collection.py` (`TABARENA_V0PT2_ROW_BUDGET` from `data_foundry.collections`;
+Lennart, 2026-11-12). A definition there declares no `row_budget`: a v0.2 dataset whose splits have a side over the
+budget, whatever the size of its frame (nyc_taxi_trip_duration: 1.45M rows, train sides of 1.28M to 1.39M), is the
+version named `<name>_1m`, folder and `unique_name`, and gets the collection's budget by its name
+(`effective_row_budget`). The build refuses a dataset over the budget without the suffix (it names the folder to make)
+and a `_1m` version whose splits keep within the budget anyway (take the dataset fully); `tests/test_v2_datasets.py`
+holds every v0.2 README to the budget, and the registered collection (`DatasetCollection(row_budget=...)`) holds every
+container to it on `verify=True` (`budget_findings`). A definition in the collection that declares a `row_budget` is
+refused. Outside a collection a definition declares `row_budget = RowBudget(train=N, test=M)` itself and is named after
+it. The version has its own folder and class, `<name>_1m/dataset.py`; `curation_comments` says why it carries a budget.
+It reads the raw files of `<name>`, its name without the budget suffix, and is saved under its own name. The suffix
+marks the benchmark's N that the container records (`RowBudget.suffix`: `_1m`; `_10m` for `RowBudget(train=10_000_000,
+test=250_000)`, `_2p5m`, `_300k`). The splits adapt to the budget:
 
 * IID or grouped data: the full frame is split into the usual 3 folds; each fold tests on up to `test` rows of its
   third (stratified, or whole groups) and trains on every other row (`fit_splits_to_budget`). A test budget above
@@ -812,7 +836,7 @@ changed, appeared or went; `raw_files_missing` (error) a pattern that matches no
 | `task_group_labels_per_group_violated`, `task_group_on_unique_per_row` | pick `per_group` or `per_sample` correctly |
 | `splits_temporal_leakage`, `splits_temporal_order` | expanding train, newest window first |
 | `splits_rows_unused` | IID and grouped splits cover every row |
-| `splits_train_over_budget`, `splits_test_over_budget` | a split side over the container's `row_budget` (only a version with a budget is checked; format 1 keeps the v1 1M / 250k): the splits of a custom `_make_splits` must keep to it ("Larger than the row budget") |
+| `splits_test_over_budget` | a test side over the container's `row_budget` (only a version with a budget is checked; a benchmark sub-samples the train sides): the splits of a custom `_make_splits` must keep to it ("Larger than the row budget") |
 | `splits_too_few` | a temporal task with fewer than 3 test windows: declare at least 3 |
 | `meta_time_horizon_missing` | a fixed-length window in `Temporal(splits=...)`, or `Temporal(horizon=..., horizon_unit=...)` |
 | `meta_time_gap_without_time_on` | a gap belongs to a temporal task |
@@ -825,7 +849,7 @@ changed, appeared or went; `raw_files_missing` (error) a pattern that matches no
 | `splits_train_under_half`, `splits_train_under_floor`, `splits_floor_core` (error) | a window trains on less than half the curated frame's rows (under 30%; or the core of SPLIT-14 breaks): raise an issue for the curator's sign-off with the windows and their shares and an option without them; accept the warning only with the curator's CC date, never on the AI's word |
 | `splits_feature_missing_in_test` | a feature 95% or more missing on one side of a window and at most half missing on the other (read on up to 100k rows a side): a column that stops or starts being recorded within the history. Name it in `curation_comments` and raise it for the curator (drop it, keep it as the deployed model met it, or start the data at the change); accept only with the curator's decision |
 | `time_newest_period_short` | the newest 30 days of a date column hold under 60% of the median rows a day of the 30-day spans before: compare the newest period's target rate with earlier ones; a download or scrape cut before the outcomes were complete is cut off (LEAK-24), a seasonal low or a real decline is accepted with the numbers |
-| `task_target_value_dominant` | one value holds half of a regression target: name the cap, placeholder or zero inflation in `curation_comments`, drop censored rows, or accept with the reason |
+| `task_target_value_dominant` | one value holds half of a regression target: name the cap, timeout, placeholder or zero inflation in `curation_comments`; keep or drop censored rows case by case (sat11_hand_algo_runtime keeps its timeouts at the recorded limit), or accept with the reason |
 | `meta_tags_*` | tags agree with the split regime |
 | `meta_bibtex_*` | balanced braces, keys defined, `&`, `%`, `_` escaped |
 | `meta_placeholder_left`, `definition_todo_left`, `definition_license_placeholder` | every TODO in the metadata (the licence included) and every `TODO(verify)` in `dataset.py` is resolved before `build` |
@@ -975,7 +999,7 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
 | Grouped | `airfoil_self_noise/dataset.py`, `early_learning_predictors/dataset.py`, `musk/dataset.py`, `emscad/dataset.py` | `Grouping` with a `definition` citing the source (airfoil: a setup built from two columns, with the source's prediction use quoted; musk: one prediction per molecule, `aggregation="any"`), rule-based leak drops in `_clean`, long feature lists (early_learning), a group id built from the data and an accepted group finding (emscad). |
 | Temporal | `kick/dataset.py` | `TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)`, a datetime in `_feature_types`, and `_decisions` with a table and a figure. |
 | Temporal with late labels | `brazilian_ecommerce/dataset.py`, `sf_permit_time/dataset.py` | `_make_splits` training on rows whose label had arrived, with the gap on `Temporal`. |
-| A `_1m` version (row budget) | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | `row_budget = RowBudget(train=1_000_000, test=500_000)` with the name `<name>_1m`, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
+| A `_1m` version (row budget) | `sepsis_prediction_1m/dataset.py` (grouped), `delivery_eta_1m/dataset.py` (temporal) | the name `<name>_1m`, which gets the collection's budget, grouped labels per sample; 3 weekly `TemporalSplits` with a `splits_comment` that states the sub-sampling. |
 | Heavy raw data | `acquire_valued_shoppers_challenge/dataset.py` | `prepared_raw_files` + `_prepare_raw_files` (a polars join run once), fixed calendar windows. |
 
 ## What the benchmark harness does with a definition

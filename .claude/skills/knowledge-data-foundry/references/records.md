@@ -38,7 +38,9 @@ every uncommitted curation change and offer the commit.
 * `CC (YYYY-MM-DD, Name):` is the curator's decision, with its reasoning. Only for decisions the curator made (in the
   dashboard, in chat, on a review page), and then the fields change with it.
 * `**Assessment (AI, YYYY-MM-DD):**` is the AI's evidence and recommendation ("recommend ...; the curator has the
-  call"). The verdict and markers stay as they are. The review panel's summary is one such line in a fixed form,
+  call"). The verdict and markers stay as they are. The evidence is in the line itself (the numbers, the method, the
+  source), never a pointer to a run folder or another local path, which only one machine has
+  ([SKILL.md](../SKILL.md), house rules). The review panel's summary is one such line in a fixed form,
   `**Assessment (AI, YYYY-MM-DD):** review panel (<tier>): <recommendation>; disputed: ...; for the curator: issues
   ...`, written by `/add-dataset` (Step 8). It sums up in the comments the panel whose reports are in the record's
   `## Review`.

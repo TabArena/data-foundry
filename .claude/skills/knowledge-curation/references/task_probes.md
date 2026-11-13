@@ -71,7 +71,8 @@ rules out a leak but not the test. Then judge it in two steps, as TP-2; only the
 
 Marker: `Trivial`. Cases: fitness_club (a feature beats, retired); audiology_diagnosis (a textbook rule beats,
 retired); ljubljana_breast_cancer (a published prognostic index matches, the curator's call: retired);
-sepsis_survival, california (no, kept).
+sepsis_survival_minimal_clinical_records (the methods beat age plus five years for men by about 0.001 AUC on every
+split, step 2, the curator's call: retired); california (no, kept).
 
 **TP-5 (Must).** `Too Small` means a handful of units of a class, per test fold and in total, counted in the unit the
 task is scored on (parkinsons: 8 healthy people, 2-3 per fold; retired). A small dataset as such is a tiny-data task
@@ -351,10 +352,11 @@ from the features (a score, a label defined by thresholds) or a leak gives the f
 tests of PROV-3 in [provenance.md](provenance.md): dependence that the world would show but the data does not (churn's
 area codes spread over all states alike), several columns with one distribution, every row of a group following a rule.
 When you can, write the generator down: that settles it. For the independence marks, name the dependence the domain must
-show (AST and ALT in liver patients, size and equity in banks) and check it directly. Either statistic alone is common
-in real data: santander_customer_transaction_prediction has 5.4% of its pairs dependent but no uniform column,
-homesite_quote_conversion 13 of 42 uniform columns (each `...B` field codes its `...A` field in 25 equal-frequency bins)
-but 45% of its pairs dependent, and bank_customer_churn has one uniform column, `estimated_salary`.
+show (AST and ALT in liver patients, size and equity in banks) and check it directly. Either statistic alone
+misleads: homesite_quote_conversion, real, has 13 of 42 uniform columns (each `...B` field codes its `...A` field in 25
+equal-frequency bins) but 45% of its pairs dependent; santander_customer_transaction_prediction has 5.4% of its pairs
+dependent overall and no uniform column, yet within each class its pairs sit at the chance rate (generated); and
+bank_customer_churn, also generated, has only one uniform column, `estimated_salary`.
 
 Calibration on 2026-10-06 (all 128 datasets of the working copy): the probe flags the two datasets known to be
 generated and no other. The nearest regression is student_portuguese_performance (2.6% exact against 0.0%), the
@@ -399,8 +401,8 @@ task-probe flags the decision answers. The decisions on metrics (2026-10-21) are
 | TP-6 | eryhemato_squamous_disease | solved | clinical features only, rebuilt (2026-10-06) | macro AUC 0.999 with the biopsy features, 0.98 and 87% accuracy before the biopsy | applied |
 | TP-2 | forest_fires | no_signal | kept (2026-10-06); re-split by day; retired (2026-11-05); rechecked (2026-11-11) | step 2: on day-grouped splits tuned LightGBM beats the training median beyond shuffled labels (MAE 12.69 against 12.71 ha, p = 0.02), 0.02 ha per fire against a typical error of 12.7 ha, which changes no dispatch of crews; a per-day ranking of fires would fit the decision, but 160 of 227 days have one or two fires (Lennart and Andrej) | applied |
 | TP-2 | clock_protein_toxicity | no_signal | kept (2026-10-06); retired (2026-11-05); rechecked (2026-11-11) | step 1: tuned and early-stopped LightGBM, tuned logistic regression, RealMLP and TabDPT-1.3 all within shuffled labels on the 60 v2 splits (best AUC 0.536, p = 0.16; shuffled runs 0.45 to 0.55) | applied |
-| TP-1 | asp_potassco_classification | no_signal | kept (2026-10-06) | TabICLv2 beats the class shares on 30 of 30 folds; label noisy (62% of runner-ups within 1 s) | applied |
-| TP-4 | sepsis_survival_minimal_clinical_records | one_feature | kept (2026-10-06) | age alone AUC 0.704, below the best (0.707) on every fold; 975 distinct cases by design | applied |
+| TP-1 | asp_potassco_classification | no_signal | kept (2026-10-06); since reframed as runtime regression | TabICLv2 beats the class shares on 30 of 30 folds; label noisy (62% of runner-ups within 1 s); both of the fastest-configuration classification it was then | applied |
+| TP-4 | sepsis_survival_minimal_clinical_records | one_feature | kept (2026-10-06); retired, `Trivial` (2026-11-10, Andrej; restated under the amended TP-4, 2026-11-12, Lennart), `Not Representative` added (2026-11-12, Lennart) | age alone AUC 0.704, below the best (0.707) on every fold; 975 distinct cases by design. Paired per split the methods beat the unfitted rule, age + 5 years for men (0.7059): TabPFN 3.5 (0.7068) ahead on 8 of the 9 shipped splits, +0.0010 ± 0.0002; on BeyondArena's 9 folds the best tuned methods ahead on 9 of 9, +0.0012 (sd 0.0004). A real gain, not a match; step 2: it changes no decision about a patient, the tuned methods span 0.0015 AUC and TabPFN sits within about 0.002 of the best achievable ranking (about 0.709); the curator retired it | applied |
 | TP-4 | california_house_prices_2020 | one_feature | kept (2026-10-06) | the listed price is the natural core; sold = listed R² 0.89-0.91, methods 0.93-0.945 | applied |
 | TP-4 | aps_failure | one_feature | kept (2026-10-06) | the per-split single feature (AUC 0.970) stays below all 20 configurations; AUC near its ceiling | applied |
 | TP-5 | musk | no_spread, unstable | kept (2026-10-06) | 13 musk and 21 non-musk molecules per fold: a tiny-data task | applied |
@@ -425,7 +427,7 @@ task-probe flags the decision answers. The decisions on metrics (2026-10-21) are
 | TP-2 | sf_permit_time | no_spread (after the 6-month label gap) | kept (2026-10-12) | random forest, LightGBM and linear within 0.032 skill (paired SE 0.019) on 5 of 8 windows; in 2021-H2 LightGBM carries the slow COVID level forward, as a real refit in July 2021 would; no tuned results in the cache, re-check with the first tuned runs | applied |
 | TP-8 | alvin_smart_money_management_classification_challenge | few_minority | retired, `Too Small` (2026-10-12) | only Train.csv has labels: 3 windows of 27-41 test purchases from 5-12 users; Shopping has 2 test rows over all windows; the 8 rows of the rarest classes carry 51-54% of window 1's log loss | applied |
 | TP-8 | forensic_glass_identification, ljubljana_primary_tumor, mic, sarcoma | few_minority | kept (2026-10-12) | rare classes of 9-14 rows, 3-5 per test fold: 0.7-13% of the test rows, 4.8-22% of a random forest's log loss | applied |
-| TP-8 | micro_mass, asp_potassco_classification | few_minority | kept (2026-10-12) | the grouped split makes fold sizes uneven (B. thuringiensis 2-6 spectra from 8 strains, h3-n1 1-17 runs from 9 instance groups): 18% and 1.7% of the test rows, 25% and 3.9% of a random forest's log loss | applied |
+| TP-8 | micro_mass, asp_potassco_classification | few_minority | kept (2026-10-12); asp_potassco_classification since reframed as runtime regression, with no classes | the grouped split makes fold sizes uneven (B. thuringiensis 2-6 spectra from 8 strains, h3-n1 1-17 runs from 9 instance groups): 18% and 1.7% of the test rows, 25% and 3.9% of a random forest's log loss | applied |
 | TP-8, TP-1 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | few_minority, no_spread | kept (2026-10-12) | Anhydrite (1,807 rows, 10 wells) and Halite (14,711 rows, 4 wells) each miss one of 3 well-grouped test folds, accepted as `splits_test_class_missing`; no_spread comes from untuned LightGBM diverging (log loss 2.77), while random forest (0.744) and linear (0.989) spread against the class shares (1.284) | applied |
 | TP-3 | hr_analytics | no_spread | kept (2026-10-14) | rebuilt from the hackathon's own train file (Kaggle's copy added 2,623 test rows labelled 1 and gave 0.80); the real labels give ROC AUC 0.62-0.63 for every family (LightGBM +0.012 over random forest, paired SE 0.006): a real signal with a low ceiling | applied |
 | TP-3 | open_university_learning_analytics_dataset | no_spread | kept pending tuned results, to re-check with the first tuned run (2026-10-22, Lennart) | after the weight-0 TMA change, default models on all 9 grouped splits reach log-loss skill 0.173 (random forest), 0.170 (LightGBM), 0.162 (logistic regression); random forest leads by 0.011 (paired SE 0.009); every family beats the class shares on every split | applied |

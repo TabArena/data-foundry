@@ -10,6 +10,11 @@ built with it, and their shipped containers are v1 containers (format 1).
 > ([`datasets/_dev/tabarena-v0pt2/`](datasets/_dev/tabarena-v0pt2/)) re-curates the BeyondArena datasets as v2
 > definitions.
 
+> [!NOTE]
+> The v1 notebooks are legacy code: they no longer run on the current package. The v1 split helpers
+> (`curation_recommendations.py`) and the format-1 split-protocol checks were removed on 2026-11-12; commit `6cc3c945`
+> is the last state with them (`git worktree add ../df-v1 6cc3c945` to run or re-check a notebook there).
+
 This page keeps what is still needed to read, check or maintain a v1 dataset. Loading and benchmarking a shipped
 container needs none of it: `BEYOND_ARENA.get_dataset(name)` works the same for both formats (the
 [README](README.md)).
@@ -21,7 +26,7 @@ container needs none of it: `BEYOND_ARENA.get_dataset(name)` works the same for 
 | [`datasets/beyond_iid/`](datasets/beyond_iid/) | The BeyondArena notebooks (`old_iid/`, `new_iid/`, `temporal/`, `grouped/`, one `<name>/<name>.ipynb` each) and [`final_uuid_list.py`](datasets/beyond_iid/final_uuid_list.py), which pins every shipped container by `(unique_name, uuid)`. |
 | [`datasets/_maintenance/`](datasets/_maintenance/) | v1 notebooks outside a shipped collection: the re-curated TabArena v0.1 datasets (`_old_collections/tabarena-v0pt1/`), deprecated, suspended and out-of-scope datasets. |
 | [`datasets/_dev/feature_selection/`](datasets/_dev/feature_selection/) | v1 notebooks of the feature-selection work (SelectArena). |
-| [`src/data_foundry/curation_recommendations.py`](src/data_foundry/curation_recommendations.py) | The v1 split helpers. |
+| `src/data_foundry/curation_recommendations.py` | The v1 split helpers, removed on 2026-11-12 (in git at `6cc3c945`). |
 | a record's `notebook_path` | The notebook that produced the shipped container (`v2_path` names its v2 definition). |
 
 The v1 notebook template, `datasets/_template/_template.ipynb`, was removed on 2026-10-02; its last version is in
@@ -45,14 +50,16 @@ git (`git show 04e6cfe:datasets/_template/_template.ipynb`).
 or of the groups for `per_group` labels): 20 x 3 below 500, 10 x 3 below 2,500, 3 x 3 below 250,000, 1 x 3 below
 1M. From 1.25M rows a dataset gets one holdout split of 1M train and 250k test rows, in a sub-sampled `<name>_1m`
 notebook (`subsample_split_to_budget`). IID and grouped splits come from `get_recommended_iid_splits` and
-`get_recommended_grouped_splits`; temporal splits were written by hand in each notebook. `run_bundle_checks` judges
-a format-1 container by this protocol (`splits_dimensions_off_protocol`, the 250k `splits_test_over_budget`); v2
-has its own protocol (always 3 folds; no row budget unless a version declares one, 1M train and 500k test rows
-for the `_1m` versions of TabArena v0.2).
+`get_recommended_grouped_splits`; temporal splits were written by hand in each notebook. Until 2026-11-12
+`run_bundle_checks` judged a format-1 container by this protocol (`splits_dimensions_off_protocol`, the 250k
+`splits_test_over_budget`); the pinned containers cannot change, so those checks went with the helpers. v2 has its
+own protocol (always 3 folds, repeats by the units at any size; no row budget except a version's, 1M train and 500k
+test rows for the `_1m` versions of TabArena v0.2, set by the working copy's `collection.py`).
 
 ## The notebook pipeline
 
-A v1 notebook ran these steps, in this order, with the rendered output of each committed as evidence:
+A v1 notebook ran these steps, in this order, with the rendered output of each committed as evidence (the code runs
+at commit `6cc3c945`, not on the current package):
 
 ```python
 from data_foundry.schema import DatasetMetadata, PredictiveMLTaskMetadata, PredictiveMLSplitsMetadata
@@ -144,6 +151,7 @@ latest state, and the TabArena v0.2 collection will ship it.
 
 ## Maintaining a v1 notebook
 
+* A notebook runs only at commit `6cc3c945` (the v1 helpers are gone since).
 * Do not re-run a shipped notebook end to end and re-save: `save()` mints a new UUID and breaks the collection pin.
   A collection release re-ran notebooks and rewrote `final_uuid_list.py` with
   [`scripts/beyond_arena/rerun_notebooks_update_uuids.py`](scripts/beyond_arena/rerun_notebooks_update_uuids.py);

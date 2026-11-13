@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: horse_colic_survival
 container_format: 2
-checksum: v2:ade0085995f6926c33b2d09d573da1136c5e6da1a603896db87e310150c163f3
+checksum: v2:fafa489484bf799b4acd643b719f1d92d25e3e917221029676e52660cd9511e9
 build:
   uuid: 01a111fc-df0b-7d08-9ad5-3bfee18c9b55
   checksum: v2:3edea035ca49ff4f42bfa2eb137a98817c67387f49f0fb111c2fd7cf979fa727
@@ -20,7 +20,7 @@ build:
 build_stale: true
 data:
   n_rows: 344
-  n_features: 21
+  n_features: 20
   dtypes:
     category: 14
     float64: 7
@@ -32,32 +32,40 @@ task:
   metric: roc_auc
   metric_origin: fallback
   scoring_columns: null
-  split_regime: temporal_non_iid
+  split_regime: grouped_non_iid
   stratify_on: did_not_survive
-  time_on: case_number
-  group_on: null
-  group_labels: null
+  time_on: null
+  group_on: case_number
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 334
+    test_groups_per_fold:
+      min: 111
+      max: 112
 splits:
-  n_repeats: 3
-  n_folds: 1
+  n_repeats: 20
+  n_folds: 3
   random_state: 4267
-  time_horizon: 57
-  time_horizon_unit: steps
+  time_horizon: null
+  time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 173
-    max: 287
+    min: 226
+    max: 232
   n_test:
-    min: 57
-    max: 57
+    min: 112
+    max: 118
 bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
+  infos:
+  - groups_not_clustered
   accepted: {}
 decisions: []
 ---
@@ -66,9 +74,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `did_not_survive`, scored with `roc_auc` on temporal splits by `case_number`. 344 rows and 21 features. Source: UCI (1989).
+Binary classification of `did_not_survive`, scored with `roc_auc` on grouped splits by `case_number`. 344 rows and 20 features. Source: UCI (1989).
 
-Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ade0085995f6926c33b2d09d573da1136c5e6da1a603896db87e310150c163f3`, so the build is stale. See [Build](#build).
+Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fafa489484bf799b4acd643b719f1d92d25e3e917221029676e52660cd9511e9`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -76,15 +84,15 @@ Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` 
 
 **Use case.** For example, a veterinarian examining a horse with colic on arrival estimates whether it will survive, to advise the owner on surgery, treatment or euthanasia, with a model built on the hospital's earlier admissions; the horse may be on its first or a return visit.
 
-**One row.** One admission of a horse with colic to the teaching hospital of the Ontario Veterinary College, Guelph (344 admissions of 334 horses, in the order of their case numbers; the period is not stated, likely the 1980s).
+**One row.** One admission of a horse with colic to the teaching hospital of the Ontario Veterinary College, Guelph (344 admissions of 334 horses; the period is not stated, likely the 1980s).
 
 **Predicted.** Whether the horse did not survive, that is died or was euthanized: 129 of 344 (37.5%).
 
 **Known at prediction time.** Age group, rectal temperature, pulse and breathing rate, the state of the legs, gums and gut (pain, gut sounds, distension, rectal exam, abdomen), stomach-tube reflux and its acidity, and blood and belly-fluid values (packed cell volume, total protein).
 
-**What the test data stands for.** Three windows of 57 horses in case-number order, each trained on all earlier horses, so a model meets later admissions, including the hospital's change in how it recorded some lab values.
+**What the test data stands for.** Random horses, 20 times 3 folds, with all visits of one horse on the same side: along the case-number order, the only time order the data has, survival and its relation to the examination stay flat.
 
-**Our changes to the source.** We merge died and euthanized into did not survive, drop whether the horse had surgery and the lesion found, which come after the examination, and keep one row per hospital number.
+**Our changes to the source.** We merge died and euthanized into did not survive, drop whether the horse had surgery and the lesion found, which come after the examination, keep one row per hospital number, put total protein in one unit, and set codes of unknown meaning in two measured columns to missing.
 
 > **Use case fit: approximate (a stand-in with a known gap).** Not surviving includes euthanasia, a decision by owner and vet that the prediction would inform, and the source states neither when the examination values were taken nor the calendar period of the cases.
 
@@ -95,7 +103,7 @@ Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/horse_colic_survival.md`](../../../../curation/records/horse_colic_survival.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/horse_colic_survival.md`](../../../../curation/records/horse_colic_survival.md)
 - The original source: <https://doi.org/10.24432/C58W23>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -126,15 +134,16 @@ Only curators run `build`, when the dataset ships.
 | year | 1989 |
 | domain | biology & life sciences |
 | license | CC BY 4.0 |
-| data_tags | Non-IID, Temporal |
+| data_tags | Non-IID, Grouped |
 | reference | McLeish1989HorseColic |
 | rows x columns | 344 x 22 |
 | task.target | did_not_survive |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
-| task.split_regime | temporal_non_iid |
+| task.split_regime | grouped_non_iid |
 | task.stratify_on | did_not_survive |
-| task.time_on | case_number |
+| task.group_on | case_number |
+| task.group_labels | per_sample |
 
 **Metric**
 
@@ -172,15 +181,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 344 rows of the final frame (the oldest rows: the frame is sorted by `case_number`); 12 of 22 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 344 rows of the final frame (random rows: the frame is shuffled); 12 of 22 columns, the target first. Cells are cut at 40 characters.
 
 | did_not_survive | age | rectal_temperature | pulse | respiratory_rate | temperature_of_extremities | peripheral_pulse | mucous_membranes | capillary_refill_time | pain | peristalsis | abdominal_distension |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | adult | nan | 36 | 12 | normal | normal | normal pink | &lt; 3 seconds | alert, no pain | normal | none |
-| Yes | adult | nan | nan | nan | cool | absent | dark cyanotic | nan | intermittent severe pain | nan | severe |
-| Yes | adult | 38.5 | 96 | 36 | cool | reduced | nan | >= 3 seconds | depressed | absent | slight |
-| No | adult | 38.6 | 42 | 34 | warm | normal | pale cyanotic | nan | depressed | hypomotile | none |
-| Yes | adult | 36 | 42 | 30 | nan | nan | bright red / injected | &lt; 3 seconds | nan | nan | nan |
+| No | adult | 37.5 | 44 | 20 | normal | normal | pale pink | &lt; 3 seconds | nan | hypermotile | none |
+| Yes | adult | 37.1 | 84 | 40 | cool | reduced | dark cyanotic | &lt; 3 seconds | depressed | absent | severe |
+| Yes | adult | nan | 60 | 48 | cool | reduced | pale cyanotic | >= 3 seconds | intermittent severe pain | hypomotile | severe |
+| No | adult | 38.2 | 60 | nan | normal | nan | pale pink | &lt; 3 seconds | depressed | hypermotile | none |
+| No | adult | 38 | 40 | 25 | nan | normal | normal pink | &lt; 3 seconds | intermittent severe pain | hypomotile | slight |
 
 ## Curation notes
 
@@ -218,47 +227,148 @@ We start with the data from UCI and merge the train and test data.
   each level is carries the words, a score without them is a number): 8 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order; 5 unordered codes carry their words: `mucous_membranes`, `pain`,
   `abdomen`, `abdominocentesis_appearance`, `age`.
-- Recording change, kept (Exception to CLEAN-21, 2026-11-10, Andrej, review issue 2 A): `total_protein` is
-  recorded in g/L (values above 15) for 95 horses, 92 of them with case numbers above 530,560, and in g/dL for
-  209; in the g/L rows every measured `abdominocentesis_total_protein` (44 values) and `nasogastric_reflux_ph`
-  (11) is exactly 1 or 2, codes the source does not explain, while elsewhere these columns hold measurements.
-  All three stay as recorded: the recording changes once, along the time order, and is unrelated to the label
-  (Fisher p = 0.16), so the middle window tests what the hospital met, a model trained on the old recording (3
-  g/L rows of 230) scoring later horses recorded the new way (45 g/L of 57). Serves P4 (a split that mirrors
-  the application) and P5 (the data as recorded). Untuned, three windows newest first: as recorded LightGBM
-  log loss 0.549 / 0.783 / 0.917, logistic regression 0.548 / 2.324 / 0.768; harmonised 0.611 / 0.841 / 0.911
-  and 0.587 / 0.720 / 0.809. Under the source's three classes the unit told died from euthanized (ROC AUC 0.79
-  alone), which the `Class-dependent Recording` marker records.
-- Time order (2026-11-10, Andrej, review issue 3 B): `case_number` is the hospital number's first six digits (the
-  42 seven-digit numbers are a six-digit case number with one digit appended, a 9 for 25 of 28 foals); the
-  frame is sorted by case number, then by the full number, so a case's suffixed later visits come after its
-  first visit. It is the time column and ships as a feature.
+- Recording change, harmonised (2026-11-12, Andrej, review issue 7 B, CLEAN-21; replaces the exception of
+  2026-11-10): `total_protein` is recorded in g/L (values above 15) for 95 horses, 92 of them with case numbers
+  above 530,560, and in g/dL for 209; we divide the g/L values by 10, the scale of the codebook (normal 6 to
+  7.5 g/dL), as an analyst at the hospital would. In those 95 rows every measured
+  `abdominocentesis_total_protein` (44 values) and `nasogastric_reflux_ph` (11) is exactly 1 or 2, codes the
+  source does not explain, while elsewhere these columns hold measurements; we set these 55 cells to missing,
+  since they cannot be read as measurements. The recording is unrelated to survival (Fisher p = 0.16). As
+  recorded, logistic regression trained on the old unit scored the window that first meets the new one at log
+  loss 2.126 against 0.761 harmonised, while LightGBM and TabPFN 3.5 did not change beyond noise (2026-11-12).
+  Under the source's three classes the unit told died from euthanized (ROC AUC 0.79 alone), which the
+  `Class-dependent Recording` marker records.
+- Case number (2026-11-10, review issue 3; 2026-11-12, Andrej, review issue 6 D): `case_number` is the hospital
+  number's first six digits (the 42 seven-digit numbers are a six-digit case number with one digit appended, a
+  9 for 25 of 28 foals); the frame is sorted by case number, then by the full number. It orders the admissions
+  as far as the data shows and is the split's group, no model input. From 2026-11-10 to 2026-11-12 it was the
+  time column of three windows of 57 horses and a feature; on those windows' test rows, training on as many
+  random horses instead of the earlier ones scored 0.045 log loss better for LightGBM, 0.009 for TabPFN 3.5
+  and 0.003 for logistic regression (harmonised recording).
+- Time basis: StationaryRelation: admissions to one hospital, in the order of their case numbers, which stand
+  in for the missing admission dates (`Time: Inferred`; an inferred order serves the measurement as it would a
+  temporal split). Along it survival is flat (62.2% in the first half, 62.8% in the second, Fisher p = 1.0),
+  and its relation to the examination does not move measurably: each of the 60 horses at positions 200 to 259,
+  trained once on its history and once on as many random horses, scores +0.020 log loss from its history for
+  TabPFN 3.5 (95% interval -0.034 to +0.080), -0.008 for logistic regression and +0.016 for LightGBM, no
+  interval excluding zero (2026-11-12). The recording change is harmonised (above); what remains of it, 55
+  missing cells, is unrelated to survival. The measurement rules out a drift above about 0.08 log loss for
+  TabPFN 3.5 and about 0.2 for LightGBM and logistic regression; the random split cannot test a later change
+  of recording or of practice (2026-11-12, Andrej, review issue 6 D).
 - Return visits kept (2026-11-10, Andrej, review issue 4 A): nine cases appear two or three times under one
   six-digit case number with a suffix (10 later rows; the codebook: "may not be unique if the horse is treated >
-  1 time"), all first visits survived. A return visit is an admission to score; the time order keeps each
-  later visit after its first, so no window trains on a later visit and tests the first.
+  1 time"), all first visits survived. A return visit is an admission to score; the split groups by case, so no
+  fold trains on one visit of a horse and tests another (2026-11-12, review issue 6 D; until then the time
+  order kept each later visit after its first).
 
 ## Splits
 
-Three test windows of 57 horses in case-number order, walking back from the newest; each trains on all earlier
-horses (50%, 67% and 83% of the rows), so no window trains on less than half of the data (SPLIT-14). The case
-number orders the admissions but gives no dates, so the windows are counts of horses, not calendar periods.
-The outcome is known by discharge, far sooner than a window, so there is no gap. The oldest window tests
-horses recorded the old way, the middle one is the first to meet the second recording route (trained on
-almost none of it), the newest is tested after a refit that has seen it (2026-11-10, Andrej, review issue 3 B).
+Stratified grouped 20-repeated 3-fold split on `case_number`: the 334 horses (about 111 per test fold), a
+horse's return visits on the side of its first visit. The case number is the only time order (no dates);
+along it survival and its relation to the examination stay flat (`Time basis: StationaryRelation` in the
+curation notes), so random horses stand for later admissions. Not tested: a later change of recording or of
+practice. From 2026-11-10 to 2026-11-12 the split was three windows of 57 horses in case-number order
+(2026-11-12, Andrej, review issue 6 D, on Lennart's question).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 173 to 287 rows, test 57 rows. Prediction horizon: 57 steps.
+20 repeat(s) x 3 fold(s) with seed 4267; train 226 to 232 rows, test 112 to 118 rows.
 
-| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
-|---|---|---|---|---|---|---|---|
-| 0 | 0 | 287 | 57 | 514279 | 534519 | 534523 | 535415 |
-| 1 | 0 | 230 | 57 | 514279 | 530561 | 530562 | 534519 |
-| 2 | 0 | 173 | 57 | 514279 | 529796 | 529812 | 530561 |
+<details>
+<summary>Show all 60 splits</summary>
+
+| repeat | fold | n_train | n_test |
+|---|---|---|---|
+| 0 | 0 | 229 | 115 |
+| 0 | 1 | 227 | 117 |
+| 0 | 2 | 232 | 112 |
+| 1 | 0 | 231 | 113 |
+| 1 | 1 | 227 | 117 |
+| 1 | 2 | 230 | 114 |
+| 2 | 0 | 229 | 115 |
+| 2 | 1 | 228 | 116 |
+| 2 | 2 | 231 | 113 |
+| 3 | 0 | 230 | 114 |
+| 3 | 1 | 228 | 116 |
+| 3 | 2 | 230 | 114 |
+| 4 | 0 | 232 | 112 |
+| 4 | 1 | 228 | 116 |
+| 4 | 2 | 228 | 116 |
+| 5 | 0 | 231 | 113 |
+| 5 | 1 | 229 | 115 |
+| 5 | 2 | 228 | 116 |
+| 6 | 0 | 229 | 115 |
+| 6 | 1 | 229 | 115 |
+| 6 | 2 | 230 | 114 |
+| 7 | 0 | 229 | 115 |
+| 7 | 1 | 227 | 117 |
+| 7 | 2 | 232 | 112 |
+| 8 | 0 | 229 | 115 |
+| 8 | 1 | 229 | 115 |
+| 8 | 2 | 230 | 114 |
+| 9 | 0 | 232 | 112 |
+| 9 | 1 | 227 | 117 |
+| 9 | 2 | 229 | 115 |
+| 10 | 0 | 229 | 115 |
+| 10 | 1 | 227 | 117 |
+| 10 | 2 | 232 | 112 |
+| 11 | 0 | 230 | 114 |
+| 11 | 1 | 231 | 113 |
+| 11 | 2 | 227 | 117 |
+| 12 | 0 | 229 | 115 |
+| 12 | 1 | 231 | 113 |
+| 12 | 2 | 228 | 116 |
+| 13 | 0 | 229 | 115 |
+| 13 | 1 | 231 | 113 |
+| 13 | 2 | 228 | 116 |
+| 14 | 0 | 231 | 113 |
+| 14 | 1 | 228 | 116 |
+| 14 | 2 | 229 | 115 |
+| 15 | 0 | 230 | 114 |
+| 15 | 1 | 229 | 115 |
+| 15 | 2 | 229 | 115 |
+| 16 | 0 | 230 | 114 |
+| 16 | 1 | 229 | 115 |
+| 16 | 2 | 229 | 115 |
+| 17 | 0 | 231 | 113 |
+| 17 | 1 | 231 | 113 |
+| 17 | 2 | 226 | 118 |
+| 18 | 0 | 230 | 114 |
+| 18 | 1 | 230 | 114 |
+| 18 | 2 | 228 | 116 |
+| 19 | 0 | 230 | 114 |
+| 19 | 1 | 230 | 114 |
+| 19 | 2 | 228 | 116 |
+
+</details>
+
+## Group structure
+
+One group is a case number of the hospital: a horse's first visit and, for 9 cases, its 1 or 2 return visits (19 rows in all), each with its own examination and outcome (UCI codebook: the number "may not be unique if the horse is treated > 1 time"); the other 325 cases are single admissions. Each admission is one prediction, made from that admission alone, as a vet scoring a horse on arrival would. Groups are held out because a later visit tells that the first was survived (all 9 first visits lived). The use case is ours: the UCI donation's stated class is the surgical lesion.
+
+| field | value |
+|---|---|
+| group column | `case_number` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 334 |
+| rows per group (min / median / max) | 1 / 1.0 / 3 |
+| largest group | 0.9% of the rows |
+| test groups per fold | 111 to 112 |
+| groups of two or more rows with a single label | 33.3% |
+| nearest neighbour in the same group | 0.0% of the rows (chance: 0.0%) |
+| label variance explained by the group | 0.96 (shuffled groups: 0.97) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.0% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.96 vs 0.97). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
 
 ## Data checks
 
@@ -283,14 +393,14 @@ almost none of it), the newest is tested after a refit that has seen it (2026-11
 | capillary_refill_time | category | 39 | 11.34 | 2 | &lt; 3 seconds, >= 3 seconds |
 | age | category | 0 | 0 | 2 | adult, young (&lt; 6 months) |
 | did_not_survive | category | 0 | 0 | 2 | No, Yes |
-| nasogastric_reflux_ph | float64 | 281 | 81.69 | 24 | 2.0, 5.0, 7.0, 6.5, 5.5, 6.0, 4.5, 7.5, 4.0, 3.0 |
-| abdominocentesis_total_protein | float64 | 220 | 63.95 | 44 | 2.0, 1.0, 3.9, 2.8, 5.0, 2.6, 4.3, 1.4, 3.4, 3.6 |
-| respiratory_rate | float64 | 67 | 19.48 | 40 | 20.0, 24.0, 12.0, 16.0, 30.0, 40.0, 36.0, 28.0, 32.0, 60.0 |
+| nasogastric_reflux_ph | float64 | 292 | 84.88 | 23 | 5.0, 7.0, 6.5, 5.5, 6.0, 4.0, 3.0, 4.5, 7.5, 5.4 |
+| abdominocentesis_total_protein | float64 | 264 | 76.74 | 44 | 2.0, 3.9, 2.8, 1.0, 3.4, 3.6, 5.0, 1.4, 4.3, 2.6 |
+| respiratory_rate | float64 | 67 | 19.48 | 40 | 20.0, 24.0, 12.0, 16.0, 30.0, 40.0, 36.0, 28.0, 32.0, 18.0 |
 | rectal_temperature | float64 | 65 | 18.9 | 40 | 38.0, 38.2, 38.3, 38.5, 37.8, 37.5, 38.1, 38.6, 38.4, 37.7 |
-| total_protein | float64 | 40 | 11.63 | 83 | 6.5, 7.5, 7.0, 6.0, 65.0, 6.6, 6.8, 6.7, 7.2, 6.2 |
-| packed_cell_volume | float64 | 35 | 10.17 | 54 | 37.0, 45.0, 50.0, 35.0, 44.0, 40.0, 43.0, 47.0, 36.0, 33.0 |
-| pulse | float64 | 24 | 6.98 | 54 | 60.0, 48.0, 40.0, 44.0, 42.0, 88.0, 52.0, 72.0, 120.0, 100.0 |
-| case_number | int64 | 0 | 0 | 334 | 526254, 528109, 527982, 527521, 527944, 529048, 529925, 529960, 527833, 530695 |
+| total_protein | float64 | 40 | 11.63 | 52 | 6.5, 7.0, 7.5, 6.0, 6.6, 6.7, 6.8, 6.2, 6.4, 7.2 |
+| packed_cell_volume | float64 | 35 | 10.17 | 54 | 37.0, 45.0, 50.0, 44.0, 35.0, 43.0, 40.0, 36.0, 47.0, 38.0 |
+| pulse | float64 | 24 | 6.98 | 54 | 60.0, 48.0, 40.0, 44.0, 88.0, 42.0, 72.0, 120.0, 52.0, 100.0 |
+| case_number | int64 | 0 | 0 | 334 | 526254, 527833, 527982, 529960, 527944, 528109, 529925, 527521, 529048, 514279 |
 
 </details>
 
@@ -308,10 +418,10 @@ almost none of it), the newest is tested after a refit that has seen it (2026-11
 | rectal_temperature | 279 | 38.1272 | 0.719895 | 35.4 | 40.8 |
 | pulse | 320 | 70.8125 | 28.4997 | 30 | 184 |
 | respiratory_rate | 277 | 30.6823 | 18.0503 | 8 | 96 |
-| nasogastric_reflux_ph | 63 | 4.86032 | 1.9699 | 1 | 8.5 |
+| nasogastric_reflux_ph | 52 | 5.50385 | 1.50567 | 1.5 | 8.5 |
 | packed_cell_volume | 309 | 45.4576 | 10.9945 | 4 | 75 |
-| total_protein | 304 | 25.3661 | 27.9062 | 3.3 | 89 |
-| abdominocentesis_total_protein | 124 | 2.87016 | 1.87543 | 0.1 | 10.1 |
+| total_protein | 304 | 6.80658 | 1.09078 | 3.3 | 13 |
+| abdominocentesis_total_protein | 80 | 3.54875 | 2.00827 | 0.1 | 10.1 |
 | case_number | 344 | 530589 | 3036.44 | 514279 | 535415 |
 
 ### Categorical features
@@ -394,4 +504,4 @@ almost none of it), the newest is tested after a refit that has seen it (2026-11
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ade0085995f6926c33b2d09d573da1136c5e6da1a603896db87e310150c163f3` |
+| stale | yes: the definition now gives checksum `v2:fafa489484bf799b4acd643b719f1d92d25e3e917221029676e52660cd9511e9` |

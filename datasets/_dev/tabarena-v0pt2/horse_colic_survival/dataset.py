@@ -9,11 +9,10 @@ import pandas as pd
 from data_foundry.v2 import (
     AbstractCuratedDataset,
     FeatureTypes,
+    Grouping,
     Metric,
     Source,
     TaskSummary,
-    Temporal,
-    TemporalSplits,
     decode,
     set_missing,
 )
@@ -80,8 +79,7 @@ class HorseColicSurvival(AbstractCuratedDataset):
         ),
         row=(
             "One admission of a horse with colic to the teaching hospital of the Ontario Veterinary College, Guelph "
-            "(344 admissions of 334 horses, in the order of their case numbers; the period is not stated, likely the "
-            "1980s)."
+            "(344 admissions of 334 horses; the period is not stated, likely the 1980s)."
         ),
         predicted="Whether the horse did not survive, that is died or was euthanized: 129 of 344 (37.5%).",
         known=(
@@ -90,12 +88,13 @@ class HorseColicSurvival(AbstractCuratedDataset):
             "belly-fluid values (packed cell volume, total protein)."
         ),
         split=(
-            "Three windows of 57 horses in case-number order, each trained on all earlier horses, so a model meets "
-            "later admissions, including the hospital's change in how it recorded some lab values."
+            "Random horses, 20 times 3 folds, with all visits of one horse on the same side: along the case-number "
+            "order, the only time order the data has, survival and its relation to the examination stay flat."
         ),
         changes=(
             "We merge died and euthanized into did not survive, drop whether the horse had surgery and the lesion "
-            "found, which come after the examination, and keep one row per hospital number."
+            "found, which come after the examination, keep one row per hospital number, put total protein in one "
+            "unit, and set codes of unknown meaning in two measured columns to missing."
         ),
         fit="approximate",
         fit_reason=(
@@ -165,25 +164,39 @@ class HorseColicSurvival(AbstractCuratedDataset):
           each level is carries the words, a score without them is a number): 8 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 5 unordered codes carry their words: `mucous_membranes`, `pain`,
           `abdomen`, `abdominocentesis_appearance`, `age`.
-        - Recording change, kept (Exception to CLEAN-21, 2026-11-10, Andrej, review issue 2 A): `total_protein` is
-          recorded in g/L (values above 15) for 95 horses, 92 of them with case numbers above 530,560, and in g/dL for
-          209; in the g/L rows every measured `abdominocentesis_total_protein` (44 values) and `nasogastric_reflux_ph`
-          (11) is exactly 1 or 2, codes the source does not explain, while elsewhere these columns hold measurements.
-          All three stay as recorded: the recording changes once, along the time order, and is unrelated to the label
-          (Fisher p = 0.16), so the middle window tests what the hospital met, a model trained on the old recording (3
-          g/L rows of 230) scoring later horses recorded the new way (45 g/L of 57). Serves P4 (a split that mirrors
-          the application) and P5 (the data as recorded). Untuned, three windows newest first: as recorded LightGBM
-          log loss 0.549 / 0.783 / 0.917, logistic regression 0.548 / 2.324 / 0.768; harmonised 0.611 / 0.841 / 0.911
-          and 0.587 / 0.720 / 0.809. Under the source's three classes the unit told died from euthanized (ROC AUC 0.79
-          alone), which the `Class-dependent Recording` marker records.
-        - Time order (2026-11-10, Andrej, review issue 3 B): `case_number` is the hospital number's first six digits (the
-          42 seven-digit numbers are a six-digit case number with one digit appended, a 9 for 25 of 28 foals); the
-          frame is sorted by case number, then by the full number, so a case's suffixed later visits come after its
-          first visit. It is the time column and ships as a feature.
+        - Recording change, harmonised (2026-11-12, Andrej, review issue 7 B, CLEAN-21; replaces the exception of
+          2026-11-10): `total_protein` is recorded in g/L (values above 15) for 95 horses, 92 of them with case numbers
+          above 530,560, and in g/dL for 209; we divide the g/L values by 10, the scale of the codebook (normal 6 to
+          7.5 g/dL), as an analyst at the hospital would. In those 95 rows every measured
+          `abdominocentesis_total_protein` (44 values) and `nasogastric_reflux_ph` (11) is exactly 1 or 2, codes the
+          source does not explain, while elsewhere these columns hold measurements; we set these 55 cells to missing,
+          since they cannot be read as measurements. The recording is unrelated to survival (Fisher p = 0.16). As
+          recorded, logistic regression trained on the old unit scored the window that first meets the new one at log
+          loss 2.126 against 0.761 harmonised, while LightGBM and TabPFN 3.5 did not change beyond noise (2026-11-12).
+          Under the source's three classes the unit told died from euthanized (ROC AUC 0.79 alone), which the
+          `Class-dependent Recording` marker records.
+        - Case number (2026-11-10, review issue 3; 2026-11-12, Andrej, review issue 6 D): `case_number` is the hospital
+          number's first six digits (the 42 seven-digit numbers are a six-digit case number with one digit appended, a
+          9 for 25 of 28 foals); the frame is sorted by case number, then by the full number. It orders the admissions
+          as far as the data shows and is the split's group, no model input. From 2026-11-10 to 2026-11-12 it was the
+          time column of three windows of 57 horses and a feature; on those windows' test rows, training on as many
+          random horses instead of the earlier ones scored 0.045 log loss better for LightGBM, 0.009 for TabPFN 3.5
+          and 0.003 for logistic regression (harmonised recording).
+        - Time basis: StationaryRelation: admissions to one hospital, in the order of their case numbers, which stand
+          in for the missing admission dates (`Time: Inferred`; an inferred order serves the measurement as it would a
+          temporal split). Along it survival is flat (62.2% in the first half, 62.8% in the second, Fisher p = 1.0),
+          and its relation to the examination does not move measurably: each of the 60 horses at positions 200 to 259,
+          trained once on its history and once on as many random horses, scores +0.020 log loss from its history for
+          TabPFN 3.5 (95% interval -0.034 to +0.080), -0.008 for logistic regression and +0.016 for LightGBM, no
+          interval excluding zero (2026-11-12). The recording change is harmonised (above); what remains of it, 55
+          missing cells, is unrelated to survival. The measurement rules out a drift above about 0.08 log loss for
+          TabPFN 3.5 and about 0.2 for LightGBM and logistic regression; the random split cannot test a later change
+          of recording or of practice (2026-11-12, Andrej, review issue 6 D).
         - Return visits kept (2026-11-10, Andrej, review issue 4 A): nine cases appear two or three times under one
           six-digit case number with a suffix (10 later rows; the codebook: "may not be unique if the horse is treated >
-          1 time"), all first visits survived. A return visit is an admission to score; the time order keeps each
-          later visit after its first, so no window trains on a later visit and tests the first.
+          1 time"), all first visits survived. A return visit is an admission to score; the split groups by case, so no
+          fold trains on one visit of a horse and tests another (2026-11-12, review issue 6 D; until then the time
+          order kept each later visit after its first).
     """
 
     # Task
@@ -193,19 +206,25 @@ class HorseColicSurvival(AbstractCuratedDataset):
         reason="The UCI donation (McLeish & Cecile, 1989) defines no metric; its stated class attribute is the surgical lesion (attr 24), not the outcome we predict, and the survival models of the field (Pascoe et al. 1990, Bishop et al. 2022) report sensitivity and specificity at a chosen cut, not a ranking metric.",
     )
 
+    grouping = Grouping(
+        on="case_number",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a case number of the hospital: a horse's first visit and, for 9 cases, its 1 or 2 return visits (19 rows in all), each with its own examination and outcome (UCI codebook: the number "may not be unique if the horse is treated > 1 time"); the other 325 cases are single admissions. Each admission is one prediction, made from that admission alone, as a vet scoring a horse on arrival would. Groups are held out because a later visit tells that the first was survived (all 9 first visits lived). The use case is ours: the UCI donation's stated class is the surgical lesion.
+        """,
+    )
+
     # Splits
     splits_comment = """
-        Three test windows of 57 horses in case-number order, walking back from the newest; each trains on all earlier
-        horses (50%, 67% and 83% of the rows), so no window trains on less than half of the data (SPLIT-14). The case
-        number orders the admissions but gives no dates, so the windows are counts of horses, not calendar periods.
-        The outcome is known by discharge, far sooner than a window, so there is no gap. The oldest window tests
-        horses recorded the old way, the middle one is the first to meet the second recording route (trained on
-        almost none of it), the newest is tested after a refit that has seen it (2026-11-10, Andrej, review issue 3 B).
+        Stratified grouped 20-repeated 3-fold split on `case_number`: the 334 horses (about 111 per test fold), a
+        horse's return visits on the side of its first visit. The case number is the only time order (no dates);
+        along it survival and its relation to the examination stay flat (`Time basis: StationaryRelation` in the
+        curation notes), so random horses stand for later admissions. Not tested: a later change of recording or of
+        practice. From 2026-11-10 to 2026-11-12 the split was three windows of 57 horses in case-number order
+        (2026-11-12, Andrej, review issue 6 D, on Lennart's question).
     """
-    temporal = Temporal(
-        on="case_number",
-        splits=TemporalSplits(window=57, unit="rows", n_windows=3, min_train_fraction=0.5),
-    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = [
@@ -249,8 +268,8 @@ class HorseColicSurvival(AbstractCuratedDataset):
         df = df.drop_duplicates(subset=["hospital_number"], keep="first")
         # Only keep non nan outcome rows
         df = df[~df["outcome"].isna()]
-        # the case number orders the admissions: a seven-digit number is a six-digit case number with a digit appended;
-        # sort by it, then by the full number, so suffixed later visits follow the first visit (review issue 3)
+        # the case number groups a horse's visits: a seven-digit number is a six-digit case number with a digit appended;
+        # sort by it, then by the full number, so suffixed later visits follow the first visit (review issues 3 and 6)
         df["case_number"] = np.where(
             df["hospital_number"] >= 1_000_000, df["hospital_number"] // 10, df["hospital_number"]
         ).astype(int)
@@ -277,6 +296,11 @@ class HorseColicSurvival(AbstractCuratedDataset):
                 "capillary_refill_time": [3.0],
             },
         )
+        # the second recording route (review issue 7 B; CLEAN-21): `total_protein` above 15 is g/L, put on the
+        # codebook's g/dL; the route's 1/2 codes in two measured columns have no stated meaning, so they are missing
+        route = df["total_protein"] > 15
+        df.loc[route, ["abdominocentesis_total_protein", "nasogastric_reflux_ph"]] = np.nan
+        df.loc[route, "total_protein"] = df.loc[route, "total_protein"] / 10
         # the codebook's words for its codes (CLEAN-12)
         df = decode(df, CODE_LABELS)
         return df
