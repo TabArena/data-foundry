@@ -228,7 +228,8 @@ A metric input known at the prediction point (a weight that is a function of the
   fixed property of the item, in a catalogue that does not drift), `"Snapshot"` (one moment with the target of that
   moment, or a use case that fills in a time the data covers), `"DelayedTarget"` (one shared prediction moment, the
   target later in a window closed for every row) or `"StationaryRelation"` (a present state read through a relation
-  that time does not move, always measured on a dated source); or a forced tag, `"ForcedIIDFromTemporal"` when a
+  that time does not move, always measured on a dated source) or `"NewSite"` (the use case aims at sites the data does
+  not hold, not at a later period; it needs a `grouping` on the site); or a forced tag, `"ForcedIIDFromTemporal"` when a
   forward use case has no usable time or too few periods and ships IID (a definition that declares a `grouping` or
   `temporal` refuses it), `"ForcedGroupedFromTemporal"` when such a task ships grouped (it needs a `grouping`;
   SPLIT-8). Either way the definition carries a `Time basis:` line in `curation_comments` that states the fact behind

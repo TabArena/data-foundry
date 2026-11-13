@@ -1853,6 +1853,17 @@ def test_a_time_basis_is_accepted_on_an_iid_split_with_its_line(tag: str) -> Non
     assert cls.dataset_metadata.data_tags == ["IID", tag]
 
 
+def test_new_site_needs_a_grouping() -> None:
+    with pytest.raises(Exception, match="`NewSite` holds out sites"):
+        _define(data_tags=("NewSite",), curation_comments="- Time basis: a new hospital.")
+    cls = _define(
+        data_tags=("NewSite",),
+        curation_comments="- Time basis: a new hospital.",
+        grouping=Grouping(on="g", labels="per_sample", definition="x"),
+    )
+    assert "NewSite" in cls.dataset_metadata.data_tags
+
+
 def test_grouped_split_takes_a_time_basis() -> None:
     cls = _define(
         data_tags=("DelayedTarget",),

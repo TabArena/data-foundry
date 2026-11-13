@@ -153,7 +153,14 @@ market). The prototypes, by the questions that tell them apart:
    sharply with the period is more often a change in labelling or case selection than in prevalence, and counts as a
    change in recording (cardiotocography's suspect share falls from 36% to 1% by year,
    lung_cancer_epithelial_genexp's cancer share rises from 6% to 81% along the sample number). The source, the time
-   probe and the target by period answer it.
+   probe and the target by period answer it. A use case that aims at sites the data does not hold, rather than at a
+   later period, sets this question aside: a model meant for a new hospital or facility is tested on held-out ones,
+   the split groups by that unit, and the time order inside the data is not weighed. That is a `NewSite` (heart_disease:
+   Detrano et al. built their model in Cleveland and applied it to the other hospitals; early_learning_predictors: a
+   facility not yet assessed). The source or the use case names the transfer; a site column alone does not make one,
+   and a target that is a fixed property of the item is `Timeless`, a site not yet mapped in a past survey a `Snapshot`.
+   Its line names the unit and ends with what the split cannot test: a later period, at a known site or at all sites
+   at once.
    * **No:** the target is a present state read through a relation that time does not move, measured on a dated
      source: the target and its relation to the features are flat across periods, and a temporal split costs nothing.
      That is a `StationaryRelation`, and its line gives the measurement (thyroid_discordant: requests dated through
@@ -182,7 +189,7 @@ Why: the same split can stand for the use case or flatter it, depending on how t
 collection facts and the prototype makes that visible. Cases: the arrival study of the 177 v0.2 definitions
 (2026-11-04) and the review of 98 of them (2026-11-06) are the evidence; examples are credit_card_clients_default and
 framingham_heart_study_fhs (`DelayedTarget`), houses and 5g_energy_consumption (`Snapshot`), thyroid_discordant
-(`StationaryRelation`, measured), musk (`Timeless`), heloc (`ForcedIIDFromTemporal`).
+(`StationaryRelation`, measured), musk (`Timeless`), heart_disease (`NewSite`), heloc (`ForcedIIDFromTemporal`).
 
 ### Temporal tasks
 

@@ -2371,6 +2371,8 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         fail("a parent (no `target`) has no split, so no regime tag; its children get theirs from their task.")
     if task and "ForcedGroupedFromTemporal" in cls.data_tags and cls.grouping is None:
         fail("`ForcedGroupedFromTemporal` marks a grouped split; declare `grouping = Grouping(...)` or drop the tag.")
+    if task and "NewSite" in cls.data_tags and cls.grouping is None:
+        fail("`NewSite` holds out sites; declare `grouping = Grouping(...)` on the site or drop the tag.")
     if task and "ForcedIIDFromTemporal" in cls.data_tags and (cls.grouping is not None or cls.temporal is not None):
         fail("`ForcedIIDFromTemporal` marks an IID split; drop the tag or the `grouping`/`temporal` declaration.")
     _validate_time_basis(cls, fail)
