@@ -149,6 +149,10 @@ CC (2026-11-10, Andrej): the metric floor stays at 0.1 EUR (Review issue 7 (b), 
 
 CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
 
+CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedGroupedFromTemporal` (Review issue 8, B):
+- Every Year-0 premium is set at the start of the policy year and the year's claims follow: one shared moment and a closed window, which the sharpened one-moment rule names a `DelayedTarget`.
+- The split by client stays.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it; the metric's floor was lowered to 0.1 EUR on 2026-11-08 (issue 5,
@@ -194,7 +198,7 @@ metric unchanged): `drv_sex1` and `drv_sex2` are dropped, since sex is no rating
 of this collection; the task probe was re-run without them (random forest 62.30 against the constant's 63.10, 62.22
 with them). The notes' other model scores were measured with the two columns in and say so.
 
-**Main points:** Retag `DelayedTarget` instead of `ForcedGroupedFromTemporal` (issue 8)? Before that, no issue was open. Resolved on 2026-11-10 (Andrej): issue 6, the task stays on Year 0 split by client,
+**Main points:** No issue open. Resolved on 2026-11-13 (Andrej): issue 8, the time basis is `DelayedTarget`. Before that, on 2026-11-10 (Andrej): issue 6, the task stays on Year 0 split by client,
 with a sentence on the yearly drift of the claim level (0% to 6% a year on the AIcrowd copy); issue 7, the floor stays
 at 0.1 EUR, its reason restated under MET-13 as amended on 2026-11-09 (no fact favours a higher value; the floor ranks
 only squared-error fits). Resolved on 2026-11-03: the
@@ -711,6 +715,10 @@ that sex is no rating factor of any insurance pricing task (australian_vehicle_i
 
    [^8a-pg]: **SPLIT-8** (Must, sharpened 2026-11-13): a release that is one moment, every row predicted at the same point, is forced only when its use case looks forward from a target of that moment or of unknown timing; otherwise SPLIT-32 gives it `Retrospective` or `DelayedTarget`.
    [^32a-pg]: **SPLIT-32** (Should): `DelayedTarget` is one shared prediction moment with the target arriving after it, in a window closed for every row; a random or grouped split then draws train and test from that one moment and window.
+
+   **Andrej (2026-11-13, change):** Option B: DelayedTarget.
+
+   **Resolved (2026-11-13, Andrej):** B. The tag is `DelayedTarget`, with its `Time basis:` line in the definition; the split does not change.
 
 **Review panel:** ship after changes (mediator). A focused re-review of 2026-11-06 under LEAK-41 and MET-14 to MET-16,
 by a claim auditor and a mediator. Claims: 13; 9 hold (one with an off citation, now fixed), 1 holds only as a

@@ -145,7 +145,7 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
+    data_tags = ("DelayedTarget",)
     download_description = """
         We download the two yearly files of version 4 of the Mendeley Data release (doi:10.17632/yzyj46xpmy.4) by
         their file ids, which the public API lists with their SHA-256 hashes
@@ -162,7 +162,7 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
         We start with Dataset_Year_2020.xlsx of version 4 of the Mendeley Data release by Bravo, Lozano and Alvarez (2021, Data in Brief). Dataset_Year_2019.xlsx, the same transformers labelled with the 2019 burns, is read only for the decision tables.
 
         - Prediction point: the start of 2020, when the operator ranks its transformers by the risk that they burn during the year. Both files carry one inventory, identical in both, taken during or after 2020: both workbooks were created on 2020-08-05 (a template date, so circumstantial). A transformer replaced in 2020 may show its replacement. Whether the 2020 label covers the whole year is not stated; a question for the authors.
-        - One year, IID (tag ForcedIIDFromTemporal): the real use scores the known fleet one year ahead, which needs a temporal split, and two label years give one window, not three. The split follows SPLIT-8 as amended for a task with too few periods (Lennart, 2026-10-21). We keep one year rather than stacking two because the two files hold the same transformers with identical attributes, so stacking adds near-copies with a second label, and the 2019 rows are more affected by the later inventory (46% of their first burns self-protected, against 37%). The random split costs nothing measurable: LightGBM reaches ROC AUC 0.639 +- 0.012 on the 9 shipped folds and 0.648 trained on 2019 and tested on 2020; logistic regression is last under both splits, and random forest and LightGBM swap places within one standard deviation.
+        - One year, IID (tagged ForcedIIDFromTemporal until 2026-11-13, now DelayedTarget, see the time basis): the real use scores the known fleet one year ahead, which needs a temporal split, and two label years give one window, not three. The split follows SPLIT-8 as amended for a task with too few periods (Lennart, 2026-10-21). We keep one year rather than stacking two because the two files hold the same transformers with identical attributes, so stacking adds near-copies with a second label, and the 2019 rows are more affected by the later inventory (46% of their first burns self-protected, against 37%). The random split costs nothing measurable: LightGBM reaches ROC AUC 0.639 +- 0.012 on the 9 shipped folds and 0.648 trained on 2019 and tested on 2020; logistic regression is last under both splits, and random forest and LightGBM swap places within one standard deviation.
         - burn_rate is history: 5 x the 2020 rate - 4 x the 2019 rate equals each transformer's burns in 2019 (decision table), so the 2020 rate ends with 2019.
         - Dropped self_protected: in the data it marks a unit installed after a burn, set for 2.0% of the transformers that never burned in 2015-2020 and for 46% and 37% of those whose first burn was in 2019 and 2020 (decision table).
         - Dropped power_kva and installation_type (LEAK-10): they come from the same inventory, and the data shows the rating changed on replacement. Of the 163 self-protected first burns of 2020 none is 5 kVA and 68% are 10 kVA, against 9% and 31% of the 277 other first burns; self-protected units that never burned are 10% 5 kVA and 44% 10 kVA, so the units' make-up does not explain it (decision table). Revisit if the operator's replacement records or the inventory date become available.
@@ -177,6 +177,10 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
         - The lightning densities (one value per area) are features, not groups, as a transformer's area is known. A same-year area effect, which the random split could reward, is absent: last year's burn rate of the area predicts the 2020 burns better than the same year's.
         - Partial order, left unordered (2026-11-01, CLEAN-14): `client_type`: the residential strata 1-6 are ordered,
           but commercial, industrial and official clients are a second dimension.
+        - Time basis: DelayedTarget (Andrej, 2026-11-13, Review issue 1): the operator ranks its transformers at the
+          start of 2020, the shared prediction moment, from one inventory of the fleet; the target is whether a
+          transformer burned during 2020, a year that has closed for every transformer. Trained on the 2019 burns and
+          tested on 2020, LightGBM scores ROC AUC 0.648 against 0.639 on the random folds. It cannot test a later year.
     """
 
     # Task (stratified on the target)

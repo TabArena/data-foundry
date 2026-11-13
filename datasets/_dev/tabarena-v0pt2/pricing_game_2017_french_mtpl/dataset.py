@@ -124,7 +124,7 @@ class PricingGame2017FrenchMtpl(AbstractCuratedDataset):
             name="R package CASdatasets",
         ),
     )
-    data_tags = ("ForcedGroupedFromTemporal", "Spatial")
+    data_tags = ("Spatial", "DelayedTarget")
     download_description = """
         The third actuarial pricing game (Arthur Charpentier with the ACTINFO chair and the Institut des Actuaires,
         announced on https://actinfo.hypotheses.org/86 on 10 January 2017) gave its players the Year-0 underwriting
@@ -173,6 +173,10 @@ class PricingGame2017FrenchMtpl(AbstractCuratedDataset):
         - CC (2026-11-08, Lennart): the drivers' sex leaves the features, on the stance Lennart set in australian_vehicle_insurance_2004_2005's issue 7 ("A stance for the family; as if we were to simulate the case in europe always"): sex is no rating factor of any insurance pricing task of this collection, whatever the actor's jurisdiction, as under EU law (Test-Achats). Supersedes the note that kept `drv_sex1` and `drv_sex2` as legal in the data's year (AI, 2026-11-01), which shipped with Andrej's verdict of 2026-11-03. They carried almost nothing: in the task probe the random forest scores 62.30 without them and 62.22 with them, against the constant's 63.10 (the same 5 splits).
         - CC (2026-11-10, Andrej): the task stays on Year 0 split by client, with a sentence on the yearly drift of the claim level in `splits_comment` (Review issue 6 (a), "Keep, with the drift sentence"); no rebuild on the AIcrowd years.
         - CC (2026-11-10, Andrej): the metric floor stays at 0.1 EUR (Review issue 7 (b), "0.1 EUR"), its reason restated under MET-13 as amended on 2026-11-09 (Metric floor bullet).
+        - Time basis: DelayedTarget (Andrej, 2026-11-13, Review issue 8): every premium of Year 0 is set at the start of
+          the policy year, the shared prediction moment, with ages and durations counted from it; the target is the
+          year's claims, a window that has closed for every policy. Held-out clients of the same year stand in for next
+          year's policies, which the split cannot test (the splits comment gives the measured cost).
     """
 
     # Task
@@ -223,7 +227,7 @@ class PricingGame2017FrenchMtpl(AbstractCuratedDataset):
         (6 splits), so the gap is not shown to come from a client's other vehicles. The task is temporal by its use
         case, since the game's players fit a tariff on Year 0 and priced Year 1 knowing each policy's Year-0 claims, but
         CASdatasets holds the claims of Year 0 only, so held-out clients of the same year stand in for next year's
-        policies (ForcedGroupedFromTemporal, SPLIT-8). Its cost, measured on the AIcrowd copy of the portfolio (Gini,
+        policies (ForcedGroupedFromTemporal until 2026-11-13, now DelayedTarget; see the time basis). Its cost, measured on the AIcrowd copy of the portfolio (Gini,
         LightGBM Tweedie): 0.268 for this design, 0.277 for next year's held-out policies and 0.305 for next year with
         the policy's own past claims; the stand-in underrates the real task, it does not flatter it. Training on the
         test year gives every model, the constant included, that year's claim level, which a tariff would forecast; on

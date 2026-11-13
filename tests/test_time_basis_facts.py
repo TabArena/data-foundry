@@ -19,11 +19,7 @@ from data_foundry.schema import FORCED_TIME_TAGS, TIME_BASIS_TAGS
 REPO = resolve_curation_root().parent
 LATER_TARGETS = {"Target: Later", "Target: Varying Delay", "Target: Revised Later"}
 
-PENDING = {
-    "pricing_game_2017_french_mtpl": "one moment, target later, tagged forced: Review issue 8",
-    "distribution_transformers_at_cauca_department": "one moment, target later, tagged forced: Review issue 1",
-    "expresso_churn_prediction": "one moment, target later, tagged forced: Review issue 1",
-}
+PENDING = {}
 """Records whose contradiction is known: an open review item, or a written exception the curator decided."""
 
 

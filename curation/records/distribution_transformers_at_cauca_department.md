@@ -58,11 +58,15 @@ CC (2026-10-26, Lennart): verdict ship.
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: client_type stays unordered (non-residential types beside the strata), noted in the definition.
 
+CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedIIDFromTemporal` (Review issue 1, B):
+- One inventory ranked at the start of 2020, the year's burns after it: one shared moment and a closed window, which the sharpened one-moment rule names a `DelayedTarget`.
+- The random split stays.
+
 ## Review
 
 **Outcome:** added. The AI asks to retag the time basis after the one-moment rule was sharpened (2026-11-13).
 
-**Main points:** Retag `DelayedTarget` instead of `ForcedIIDFromTemporal`?
+**Main points:** Resolved on 2026-11-13 (Andrej): the time basis is `DelayedTarget` (issue 1).
 
 **Issues for Andrej:**
 
@@ -86,6 +90,10 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: client_type stays
 
    [^8a-x]: **SPLIT-8** (Must, sharpened 2026-11-13): a release that is one moment, every row predicted at the same point, is forced only when its use case looks forward from a target of that moment or of unknown timing; otherwise SPLIT-32 gives it `Retrospective` or `DelayedTarget`.
    [^32a-x]: **SPLIT-32** (Should): `DelayedTarget` is one shared prediction moment with the target arriving after it, in a window closed for every row; a random or grouped split then draws train and test from that one moment and window.
+
+   **Andrej (2026-11-13, change):** Option B: DelayedTarget.
+
+   **Resolved (2026-11-13, Andrej):** B. The tag is `DelayedTarget`, with its `Time basis:` line in the definition; the split does not change.
 
 ## Reference
 
