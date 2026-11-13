@@ -11,8 +11,9 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - 'Samples: Over Time'
-- 'Time: Dated'
+- 'Time: Inferred'
 - 'Target: Later'
+- 'Entities: Recur'
 original_source: UCI
 year: '2014'
 required_split:

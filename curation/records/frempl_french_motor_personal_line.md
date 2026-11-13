@@ -11,6 +11,9 @@ priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 original_source: Other
 year: '2014'
 domain: insurance

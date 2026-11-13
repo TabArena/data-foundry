@@ -12,7 +12,7 @@ tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Dated'
-- 'Target: Later'
+- 'Target: Varying Delay'
 - 'Features: Read Later'
 collections:
 - TabArena Reject

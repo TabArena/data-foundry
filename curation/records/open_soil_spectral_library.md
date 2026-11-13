@@ -13,6 +13,8 @@ tags:
 - Many features
 - Non-IID (Grouped)
 - Spectral Data
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - New (BeyondArena)
 original_source: Website

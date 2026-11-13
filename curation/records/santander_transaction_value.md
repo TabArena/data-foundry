@@ -12,7 +12,8 @@ decision_markers:
 tags:
 - New IID
 - 'Samples: Over Time'
-- 'Time: Dated'
+- 'Time: Within Entity'
+- 'Time: Lost'
 - 'Target: Later'
 - 'Entities: Recur'
 collections:

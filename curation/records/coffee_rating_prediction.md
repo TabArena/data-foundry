@@ -15,6 +15,7 @@ tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - CARTE/TARTE
 original_source: Website

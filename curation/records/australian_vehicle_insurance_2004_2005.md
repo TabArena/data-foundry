@@ -10,6 +10,8 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Two-Regime Zeros
+- 'Samples: One Moment'
+- 'Target: Later'
 original_source: Website
 year: '2008'
 domain: insurance

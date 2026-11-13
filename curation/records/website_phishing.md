@@ -12,7 +12,8 @@ suggestion: 'Yes'
 decision_markers:
 - Selection Bias
 tags:
-- 'Samples: No Time Dimension'
+- 'Samples: Over Time'
+- 'Time: Lost'
 original_source: UCI
 year: '2016'
 required_split:

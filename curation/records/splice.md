@@ -12,7 +12,8 @@ suggestion: 'Yes'
 decision_markers:
 - Duplicate
 tags:
-- 'Samples: No Time Dimension'
+- 'Samples: Over Time'
+- 'Time: Dated'
 original_source: UCI
 year: '1992'
 required_split:

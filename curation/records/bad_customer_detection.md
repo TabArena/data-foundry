@@ -11,7 +11,8 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - 'Samples: Over Time'
-- 'Time: Lost'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 original_source: Kaggle
 year: '2020'
 required_split:

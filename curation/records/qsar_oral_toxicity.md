@@ -10,7 +10,8 @@ priority: 4
 tags:
 - Many features
 - Non-IID (Grouped)
-- 'Samples: No Time Dimension'
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - New (BeyondArena)
 - ChemPile

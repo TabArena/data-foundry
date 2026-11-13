@@ -10,7 +10,7 @@ priority: 4
 tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
-- 'Time: Dated'
+- 'Time: Inferred'
 collections:
 - ChemPile
 original_source: GOV Website

@@ -11,6 +11,9 @@ priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
 original_source: Other
 year: '2023'
 domain: insurance

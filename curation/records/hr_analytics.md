@@ -11,7 +11,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - 'Samples: Over Time'
-- 'Time: Dated'
+- 'Time: Lost'
 - 'Target: Unknown'
 original_source: Other
 year: '2018'

@@ -11,7 +11,9 @@ suggestion: 'Yes'
 tags:
 - Tiny Data
 - Non-IID (Grouped)
-- 'Samples: No Time Dimension'
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Revised Later'
 collections:
 - New (BeyondArena)
 original_source: UCI

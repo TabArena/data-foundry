@@ -11,6 +11,8 @@ priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
 original_source: Website
 year: '2024'
 domain: biology & life sciences

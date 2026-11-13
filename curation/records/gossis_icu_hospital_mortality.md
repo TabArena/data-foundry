@@ -7,6 +7,8 @@ suggestion: TBD -> Yes
 priority: 2
 tags:
 - AI-Filled (Verify)
+- 'Samples: Over Time'
+- 'Time: Lost'
 original_source: Kaggle
 year: '2020'
 domain: medical & healthcare

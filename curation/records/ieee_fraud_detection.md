@@ -17,6 +17,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Varying Delay'
+- 'Target: Revised Later'
 - 'Entities: Recur'
 collections:
 - TabArena Reject

@@ -10,6 +10,7 @@ suggestion: 'Yes'
 tags:
 - Larger IID Data
 - 'Samples: One Moment'
+- 'Target: Later'
 collections:
 - TabArena Reject
 - TabSTAR

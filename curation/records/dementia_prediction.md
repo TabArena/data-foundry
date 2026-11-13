@@ -17,7 +17,7 @@ tags:
 - Tiny Data
 - Non-IID (Grouped)
 - 'Samples: Over Time'
-- 'Time: Dated'
+- 'Time: Lost'
 - 'Entities: Recur'
 collections:
 - New (BeyondArena)

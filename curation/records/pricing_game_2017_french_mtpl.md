@@ -11,6 +11,8 @@ priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Grouped)
+- 'Samples: One Moment'
+- 'Target: Later'
 year: '2017'
 domain: insurance
 required_split:

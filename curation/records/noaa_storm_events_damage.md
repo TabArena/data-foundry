@@ -11,6 +11,9 @@ priority: 2
 tags:
 - Two-Regime Zeros
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 original_source: GOV Website
 year: '2026'
 domain: environmental science & climate

@@ -11,7 +11,8 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
-- 'Samples: No Time Dimension'
+- 'Samples: Over Time'
+- 'Time: Dated'
 original_source: UCI
 year: '2013'
 domain: chemistry & material science
