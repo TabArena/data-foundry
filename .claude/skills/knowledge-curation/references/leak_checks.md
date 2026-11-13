@@ -148,7 +148,8 @@ point are filtered out by an as-of date: SPLIT-9 in [splits.md](splits.md). Case
 measured values, computed columns and filled cells included, and drop a column only one class has or one that was filled
 in for one class only. A convention that changed over time (a unit, a number format) counts too when the classes changed
 over the same time: it dates the row, and the date tells the class. First measure how much the fix removes. Test: probes
-4, 9 and 17. Cases: hepatitis_c_prediction, gallstone_disease, horse_colic_survival (re-targeted, then the unit harmonised).
+4, 9 and 17. Cases: hepatitis_c_prediction, gallstone_disease, horse_colic_survival (re-targeted, then the unit
+harmonised).
 
 **LEAK-14 (Must).** A class that comes from a separate source or assay is dropped once the paper confirms it. Test:
 probe 7. Cases: biogeographical_ancestry_prediction.
