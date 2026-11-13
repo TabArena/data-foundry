@@ -424,7 +424,7 @@ horizon (...) is checked". The README files follow at the next `dataset check`; 
   a normal lung). Spike-ins then reach 0.57, the scan date 0.58; logistic regression log loss 0.123 (0.141 on
   Dataset A). `dataset check` passes (one info, `groups_not_clustered`). Record: CC and Assessment lines,
   `required_split` Grouped, `source_links`, `checked_by`. LEAK-15 and LEAK-39 list it as repaired (was kept with a
-  note), PROV-13 as a case. Evidence in `~/claude_jobs/lung_raw/`.
+  note), PROV-13 as a case.
 
 ## 2026-11-10, retirement records after the review page's marks
 
