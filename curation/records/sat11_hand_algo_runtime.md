@@ -86,7 +86,8 @@ file too) can go without a decision. Weighed: a documented algorithm-selection b
 (+), few instances per fold and an untested spread under PAR10 (-).
 
 **Main points:** Ship: timeouts at the recorded 5,000 s, PAR10 (issues 1, 3 and 4 resolved); PAR10 alone picks the
-solver, a tie counted as PAR10 defines it (issue 4). The split count (2) is deferred to its own PR.
+solver, a tie counted as PAR10 defines it (issue 4). The split count (2) is open again, settled with rule
+SPLIT-33.
 
 **Record judgment:** valid. The task is the one the curator chose (one model for all solvers, from instance and
 solver features, as in Pulatov et al. 2022), and the split by instance rather than by instance family is his decision
@@ -158,9 +159,20 @@ are added. The `Multi-target` tag stays (one runtime per solver, stacked as rows
 
 2. **Split count: 20 x 3 splits, counted in instances, instead of 10 x 3 counted in runs?**
 
-   **Deferred (2026-11-12):** Lennart moved the split count in scored units (rule SPLIT-33) out of this PR into
-   its own, to be decided with the other grouped datasets; this issue is reopened there. Until then the protocol
-   counts the 1,840 rows: 10 x 3 splits.
+   Deferred on 2026-11-12, when Lennart moved the split count in scored units (rule SPLIT-33) out of #79; open again
+   in the PR on that rule, and settled with it.
+
+   * **Problem:** PAR10 scores per instance. Counted in runs (on main), the 1,840 rows give 10 x 3 splits; counted in
+     instances (SPLIT-33), the 184 instances leave a training side of 122, below 500, so 20 x 3: 60 splits of 61 or 62
+     test instances each, which the noise of few instances per fold needs.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 10 x 3 (on main) | the protocol counts the runs | the splits as shipped | the count depends on the table's layout |
+     | B | 20 x 3 under SPLIT-33 | the protocol counts the instances PAR10 scores | steadier score; same count as asp | twice the compute (1,840 rows, small) |
+
+   * **Recommendation:** B, with the rule; Andrej chose it on 2026-11-06. **Decision:** A or B?
 
 3. **Count a timed-out run as the recorded 5,000 s, or as the 50,000 s PAR10 charges for it?**
 

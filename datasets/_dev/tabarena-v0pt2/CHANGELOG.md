@@ -1,5 +1,41 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-16, regensburg_pediatric_appendicitis kept with fixes, no longer retired (no container built)
+
+- Lennart, 2026-11-16, and Andrej: the label of the children not operated is an outcome, not the surgeon's decision.
+  They were observed in hospital, with ultrasound and without antibiotics, and discharged once they improved; a model
+  of the decision to operate ranks the label at ROC AUC 0.904 because surgeons operate on the children who look
+  severe. A model of the Düsseldorf cohort, where nearly every child with appendicitis is operated, expects at most
+  about 9 complicated cases among the 82 children with appendicitis not operated (the label has none), so the
+  follow-up label misses a few, all in one direction. The record is `Yes` again with `Class-dependent Recording`;
+  `No Good Target / Scientific Discovery` is removed and the folder restored.
+- `dataset.py`: the use case flags children likely to have a complicated appendicitis at admission, for urgent
+  surgery and planning (it was the choice between surgery and conservative treatment, the choice that sets the label
+  of the children not operated). Rebound tenderness on the right and the three urine tests are dropped: their gaps
+  mark the operation (missing for none and 18% of the children not operated, 50-59% and 30-41% of the operated) and
+  their values add nothing. Age, BMI and the neutrophil share are written at the precision of the measured values
+  (`MEASURED_PRECISION`): BMI's format marked surgery, the neutrophil share's the class, and 8-decimal ages the
+  2016-2018 period. The fit stays approximate and names the follow-up label, the 37% operated and the Düsseldorf
+  estimate. `US_Number` stays dropped, now for its real reason: a case number assigned in blocks by the children's
+  group. Two free-text findings are written in one spelling (`LOCATION_SPELLINGS`, `NOTHING_FOUND`): the lymph-node
+  location was abbreviated only for children not operated and spelled out only for operated ones, and "nothing found"
+  in the gynaecological findings was written out only for operated children (the text alone told the two apart at ROC
+  AUC 0.572, 0.527 after; the full model scores the same).
+- Split: random, now tagged `ForcedIIDFromTemporal` with a `splits_comment`. Admissions run over 2016-2021 and the
+  period matters (complicated 12.0% against 18.8%), but only two periods can be told apart, too few for three test
+  windows. Training on 2016-2018 and testing on 2019-2021 costs TabPFN 3.5 0.004 ROC AUC and 0.07 log loss against
+  random splits of the same sizes.
+
+## 2026-11-16, BENCHMARK_CHANGES_TODO.md: the scorer of `net_revenue_at_cost` (no container built)
+
+- New item for the TabArena side (Lennart, review of PR #100): `net_revenue_at_cost` has no fixed best value (the
+  oracle's changes per fold) and goes below 0, while TabArena's error is `optimum - score` and bencheval refuses
+  negative errors and takes ratios of them. Check whether the wrapper and the leaderboard need a refactor, or
+  normalize the metric by the oracle's revenue in Data Foundry. Its baselines are in the item: mailing nobody
+  (every prediction at or below $0.68, negatives included) 0, mailing everyone 0.111, the cup's winner 0.153 per
+  donor.
+- The metric table lists `net_revenue_at_cost`; the adapter item says the spec carries no `optimum`.
+
 ## 2026-11-13, wine_world_cost: split by producer, use case reframed (Andrej's decisions, no container built)
 
 Andrej's decisions of 2026-11-10 and 2026-11-11 on the dataset's review.
@@ -12,6 +48,97 @@ Andrej's decisions of 2026-11-10 and 2026-11-11 on the dataset's review.
 - The shop's sales copy stays as part of the task, with an approximate fit; the whisky and the tequila stay
   (1,279 wines, as implemented); the one sentence quoting a wine's own earlier price is removed.
 - The record: `original_source` Kaggle (was Other), `Grouped (NON-IID)`, the review in `## Review`.
+
+## 2026-11-13, three datasets retired after review (no container built)
+
+- Each record is `No (Retired)` with its reason marker and a CC line giving the evidence; its review moves into the
+  record's `## Review`, its folder is removed and `v2_path` cleared. `DF: Yes`, the other tags and the pinned
+  BeyondArena containers stay.
+  - `naticusdroid_android_permissions_dataset` (TabArena v0.1; `Data Quality Issue` beside `Selection Bias`, Andrej,
+    2026-11-13; reason restated by Lennart, 2026-11-16): the malware families are the real groups and the release
+    cannot recover them (SPLIT-25). A few AMD families make up most of the malware and their variants request nearly
+    the same permissions, so test malware has family siblings in training; the UCI file has no hash, package name or
+    family to hold them out, and grouping on the permission set is barred (SPLIT-24). The two collections of different
+    periods (benign from AndroZoo, malware from AMD, families of 2010-2016) keep `Selection Bias` as a concern flag,
+    and the exact lookup is fixable; neither is the reason. `kronodroid_android_malware` (dated apps of 2008-2020, 240
+    families) is the replacement candidate.
+  - `obesity_estimation` (`No Good Target / Scientific Discovery`, Andrej, 2026-11-11): the source's own label is the
+    body mass index class computed from weight and height, so the published task is circular; without them, nobody
+    predicts a body mass index from habit answers where a scale is at hand.
+  - `tour_travels_churn` (`AHDS`, `Missing source information`, Andrej, 2026-11-06): in the Kaggle file's row order
+    every column but age, the label included, is one of 22 rules of the row number; the generator used as a
+    classifier beats all 40 benchmark methods on every split (1 - ROC AUC 0.0210 against 0.0317 for the best).
+- Guidelines: provenance.md names tour_travels_churn as a PROV-3 case and notes it under PROV-2, where it had been kept
+  on the untraced-upload rule; selection.md says the same. splits.md names naticusdroid_android_permissions_dataset
+  as a SPLIT-25 case, and selection.md as a second dataset retired for another reason that keeps its `Selection Bias`.
+
+## 2026-11-13, pva_revenue_prediction_kddcup98: the cup's gift amount and net revenue (no container built)
+
+Andrej's decisions of 2026-11-11 and 2026-11-12 on the dataset's review.
+
+- Target `TARGET_D`, the gift in dollars (0 for the 94.9% who did not give), regression, scored by the new custom
+  metric `net_revenue_at_cost` with cost $0.68: the KDD Cup 1998's rule, the sum of (gift - $0.68) over the donors
+  predicted to give more than $0.68, divided by the number of test donors. Before, the definition shipped the
+  response flag `TARGET_B` with ROC AUC as a stand-in; `TARGET_B` is now dropped as a copy of gift > 0.
+- `RDATE_k` and `RAMNT_k` (k = 3 to 24) blanked where the receipt is dated June 1997 or later, after the mailing the
+  target is about: 61 cells of 60 donors.
+- The random split stays: a `Time basis:` line says every row is about the one June 1997 mailing and why a split on
+  the donor dates would test new kinds of donors, not a later mailing.
+- The record: `problem_type` Regression, the review in `## Review`, the decisions as CC lines.
+- The definition changes the container (target, problem type, metric, columns); it needs a rebuild.
+
+## 2026-11-13, thyroid_discordant_archive replaces thyroid_discordant (Andrej's decision, no container built)
+
+- `thyroid_discordant_archive` added: the Garvan Institute's thyroid test requests of August 1984 to January 1987
+  (UCI `thyroid0387`, 9,162 requests after 10 repeated entries), whether the laboratory commented the results as
+  discordant (report code R, 2.2%), split by the request date taken from the record id: three four-month test windows
+  from February 1986 to January 1987, each trained on every earlier request. Its review is in its record.
+- `thyroid_discordant` retired: `No (Retired)` with `Duplicate`. Its 3,711 rows are a subset of the same archive,
+  without the request date; the archive version holds the same task with 197 discordant results instead of 58 and a
+  dated split. Its folder is removed and `v2_path` cleared.
+- 2026-11-16, Lennart's review: the temporal split is kept. The splits comment adds that the source split by time
+  too (the zip's ann-thyroid files, Quinlan's 1987 case-study data, train on requests of 1985 and test on those of
+  1986) and that training on earlier requests scores like random training rows of the same size. The record gets
+  `DF: Yes`; the README is regenerated (27 bundle checks on main).
+
+## 2026-11-13, kdd_cup_09_appetency: the cup's large set, cleaned (Andrej's decisions, no container built)
+
+- The definition reads the cup's large training set: the same 50,000 customers and appetency labels (890 buyers)
+  with all 15,000 features Orange released instead of the small set's 230. On the same customers LightGBM scores
+  ROC AUC 0.877 on the large set's columns against 0.820 on the small set's (5-fold CV x 3).
+- Dropped (CLEAN-5): 109 empty and 1,422 constant columns, and 580 exact or scaled copies of an earlier column (the
+  first of each group kept; the seven copies found in the small set fall into these groups). Presence flags stay.
+- Dropped as generated: `Var5963` (the variable of the cup's artificial toy target) and `Var11750`, both uniform and
+  without signal. 12,887 features remain (12,729 numeric, 158 categorical).
+- The random split stays, with a `Time basis:` line: one extract of Orange's customer datamart, the purchase read
+  after it in a window the source does not state.
+- The record: the review in `## Review`, the decisions as CC lines. The container changes (columns, size); it needs a
+  rebuild.
+
+## 2026-11-12, the split count in scored units (SPLIT-33), in a PR of its own (no container built)
+
+Lennart, 2026-11-12: the count moves out of #79 (asp_potassco_classification and sat11_hand_algo_runtime under PAR10),
+to be decided on its own with the grouped datasets it changes.
+
+- `recommended_dimensions` and the protocol check count the scored units (set by the metric's `group` input) when
+  all rows of each are in one group: the split's group, or a unit inside one; a scored unit the split cuts across
+  folds (wadden_sea_sibes_macoma_abundance's survey years over stations, any scored unit under an IID split) leaves
+  the count to the rows. Rule SPLIT-33 (proposed) in splits.md, the same wording in definitions.md and split_protocol.md.
+- 2026-11-13: `per_group` labels are asked first. One label covers a whole group, so the scored units inside it add
+  no labels and the groups count, whatever the metric scores. No dataset has `per_group` labels with scored units of
+  its own, so no count changes. The docs call the metric's unit a scored unit and keep "group" for `grouping.on`.
+- At their next `dataset check`: `sat11_hand_algo_runtime` 10 x 3 to 20 x 3 (184 instances), `huesken_sirna_efficacy`
+  10 x 3 to 20 x 3 (30 genes), `protein_model_quality_rf_pcp` 3 x 3 to 20 x 3 (445 proteins),
+  `sepsis_prediction_1m` 1 x 3 to 3 x 3 (40,336 patients), `asp_potassco_classification` 3 x 3 to 10 x 3 (1,212
+  instances; its long format is on main since #79). micro_mass (its strains are counted already) and wadden (rows)
+  keep theirs.
+- `asp_potassco_classification` and `sat11_hand_algo_runtime`: issue 2 of each (the split count), deferred when #79
+  merged, is open again in its record, to be settled with the rule.
+- `protein_model_quality_rf_pcp` and `huesken_sirna_efficacy` (issue 10 each, written on #79's branch on 2026-11-11, no
+  definition change): ship 20 x 3 under the rule, or keep the splits as built? On protein, LightGBM, a random forest
+  and ridge on the 20 x 3 splits (per-protein correlation): two of three disjoint blocks of three repeats rank LightGBM
+  and the forest the other way round; ten repeats separate them in one block of ten, not the other; twenty separate
+  all three pairs. Huesken not measured. 20 x 3 recommended for both.
 
 ## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)
 
@@ -88,6 +215,17 @@ caps the sides after the split.
   comparing them with the v1 helpers.
 - The shipped `_1m` containers still predate the 2026-11-10 entry (frames cut to 1.5M rows before the split); their
   READMEs change at the next build.
+
+## 2026-11-11, gossis_icu_hospital_mortality replaces wids_diabetes_mellitus (Andrej's decision, no container built)
+
+- `gossis_icu_hospital_mortality` added: the WiDS Datathon 2020 training file (MIT's GOSSIS initiative), 91,713 ICU
+  stays at 147 US hospitals, in-hospital death (8.6%) predicted at the end of the first ICU day, split by hospital
+  (`ForcedGroupedFromTemporal`: one undated year), ROC AUC as in the competition. APACHE IVa's two death probabilities
+  are dropped as another model's prediction of the target; BMI at the clipping bounds and the negative
+  `pre_icu_los_days` ship as published, with notes. Its review is in its record.
+- `wids_diabetes_mellitus` retired: `No (Retired)` with `Duplicate`, since 130,127 of its 130,157 rows are rows of the
+  WiDS 2020 files and the same cohort now ships with a target nobody knows at 24 hours. Its folder is removed and
+  `v2_path` cleared; `DF: Yes`, the collection tag and the pinned BeyondArena container stay.
 
 ## 2026-11-11, no local paths in committed text (no container built)
 

@@ -11,7 +11,8 @@ says everything a benchmark needs:
   (``experiment_metadata.train_sampling``: for a temporal side the newest year, extended back until it holds that
   many rows, sampled at random; whole groups of a grouped one); without a budget it returns the train side whole;
 * the features, ``feature_columns(container)``: no target, no group column, no scoring column (a metric input such
-  as an era, never a feature);
+  as an era, never a feature), no time column that dates the label (``time_of="label"``); a model that tunes on an
+  inner validation split cuts it on ``split_columns(container)`` (the group and time columns) first;
 * the training weight, ``sample_weight(container)`` (or ``None``): a scoring column every model is fitted with as each
   row's weight, never a feature, such as the years insured of a claims-per-year target; the metric weights the test
   rows by it too;

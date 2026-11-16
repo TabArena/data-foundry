@@ -1,8 +1,9 @@
 """The v2 split protocol: how every v2 dataset is split, and the checks that hold it.
 
 * IID and grouped data get repeated 3-fold cross-validation on the full frame. The number of repeats follows the
-  size of the train side in units, rows or groups (:func:`recommended_dimensions`): 20, 10, 3 or 1, at any size of
-  the frame, so every IID or grouped task has at least 3 splits.
+  size of the train side in units: the groups of ``per_group`` labels, else the scored units (the metric's ``group``
+  input) when all rows of each are in one group of the split, else the rows (:func:`recommended_dimensions`): 20, 10,
+  3 or 1, at any size of the frame, so every IID or grouped task has at least 3 splits.
 * Temporal data gets at least 3 expanding windows (:class:`TemporalSplits`).
 * Data Foundry sets no row budget: by default the splits use the full frame and no side is capped. A sub-sampled
   version is named after its train budget (``<name>_1m``, ``<name>_10m``) and either declares the budget
@@ -27,11 +28,12 @@ import numpy as np
 import pandas as pd
 
 from data_foundry.bundle_checks import CheckResult
-from data_foundry.schema import RowBudget, TimeUnit, TrainSampling, as_column_list
+from data_foundry.schema import RowBudget, TimeOf, TimeUnit, TrainSampling, as_column_list
 from data_foundry.v2._optional import import_build_dependency
 
 if TYPE_CHECKING:
     from data_foundry.curation_container import CuratedContainer
+    from data_foundry.schema import PredictiveMLTaskMetadataV2
 
 Splits = dict[int, dict[int, tuple[list[int], list[int]]]]
 """Outer splits: ``{repeat: {fold: (train_positions, test_positions)}}``."""
@@ -101,19 +103,57 @@ def one_group_column(df: pd.DataFrame, group_on: str | list[str] | None) -> tupl
     return df.assign(**{GROUP_KEY: key}), GROUP_KEY
 
 
+def scored_unit_column(task: PredictiveMLTaskMetadataV2) -> str | None:
+    """The column of the task's scored units, the rows its metric combines into one term of its score: the metric's
+    ``group`` input (an instance, a patient, an era). ``None`` for a metric that scores rows, one row a unit.
+    """
+    return task.objective_metric.inputs.get("group")
+
+
+def scored_units_within_groups(df: pd.DataFrame, group_on: str | list[str] | None, scored_unit_on: str) -> bool:
+    """Whether all rows of each scored unit are in one group of the split, so a test fold holds the unit whole: the
+    unit is the group or sits inside one (an instance inside its problem class). ``False`` for an IID split, which
+    cuts every unit across the folds.
+    """
+    if group_on is None:
+        return False
+    keyed, key = one_group_column(df, group_on)
+    return bool(keyed.groupby(scored_unit_on, dropna=False, observed=True)[key].nunique(dropna=False).max() <= 1)
+
+
 def recommended_dimensions(
-    df: pd.DataFrame, *, group_on: str | list[str] | None = None, group_labels: str | None = None
+    df: pd.DataFrame,
+    *,
+    group_on: str | list[str] | None = None,
+    group_labels: str | None = None,
+    scored_unit_on: str | None = None,
 ) -> tuple[int, int]:
     """``(n_repeats, n_folds)`` for IID or grouped cross-validation on ``df``.
 
-    The size is the train side of a 3-fold split (2/3 of the rows, or of the groups for ``per_group`` labels):
-    below 500 it gets 20 repeats, below 2,500 10, below 250k 3, and 1 above, however many rows the frame has. A row
-    budget does not change the count: it caps the sides after the split (:func:`fit_splits_to_budget`).
+    The repeats follow the units on the train side of a 3-fold split (2/3 of them): below 500 20 repeats, below
+    2,500 10, below 250k 3, and 1 above, however many rows the frame has. The units, in order: the groups for
+    ``per_group`` labels (one label covers a group, so the scored units inside it add none); else the scored units
+    when all rows of each are in one group (one PAR10 per instance over a row per instance and solver, the instances
+    held out or inside held-out classes); else the rows. A scored unit cut across groups (a survey year over held-out
+    stations) is scored on part of its rows in every fold, so its count says little about the noise and the rows
+    count. A row budget does not change the count: it caps the sides after the split (:func:`fit_splits_to_budget`).
+
+    Args:
+        df: The frame to split.
+        group_on: The split's group column(s), for grouped data.
+        group_labels: The grouping's labels; ``"per_group"`` counts the groups of ``group_on``.
+        scored_unit_on: The column of the scored units (:func:`scored_unit_column`); they are counted when all rows
+            of each are in one group of ``group_on``.
+
+    Returns:
+        ``(n_repeats, n_folds)``.
     """
     n = len(df)
     if group_on is not None and group_labels == "per_group":
         df, group_on = one_group_column(df, group_on)
         n = df[group_on].nunique()
+    elif scored_unit_on is not None and scored_units_within_groups(df, group_on, scored_unit_on):
+        n = df[scored_unit_on].nunique(dropna=False)
     n_train = int(n * 2 / 3)
     for limit, repeats in REPEATS_BY_TRAIN_SIZE:
         if n_train < limit:
@@ -382,6 +422,8 @@ class Temporal:
                  horizon_unit="years", gap=5, gap_unit="years")                               # gap: 5 cohorts
         Temporal(on="era", splits=TemporalSplits(window=52, unit="unique", n_windows=3, gap=4), horizon=52,
                  horizon_unit="weeks", gap=4, gap_unit="weeks", time_unit="weeks")             # an era is a week
+        Temporal(on="sale_order", splits=TemporalSplits(window=5000, unit="rows", n_windows=3),
+                 time_of="label", prediction_time="listed_on")   # split by sale, predicted at the listing
 
     Attributes:
         on: The time column; the frame is sorted by it and future rows never train a split.
@@ -400,9 +442,21 @@ class Temporal:
             needs (:func:`subsample_train`), so a version with a ``row_budget`` on a numeric time column declares
             it. A date column has its own calendar and declares none; a time that is only an order (a row number)
             has none.
+        time_of: What the time column dates. ``prediction`` (the default): the prediction point, the moment the
+            actor predicts (a loan's payout, a permit's filing); the actor knows it, so it is a model input, and a
+            label that arrives later needs a gap (SPLIT-10). ``label``: the moment the label became known, after the
+            prediction point (a house's sale when its price is predicted at the listing, the year a compound entered
+            a catalogue, the night of the spectrum that sets a sky object's class); the column orders and splits the
+            rows, so every training label was known at a window's start, and ``feature_columns`` leaves it out. A
+            time the actor holds at the prediction point stays a feature in its own column (the listing date).
+        prediction_time: With ``time_of="label"``, the column of the prediction point, when the data has one
+            (california_house_prices_2020's ``Listed On`` beside its sale order): a model input, named so that the
+            README and the checks know which input carries the actor's time.
 
-    The container stores the column as the task's ``time_on`` (with ``time_unit``), the horizon as the splits'
-    ``time_horizon`` / ``time_horizon_unit`` and the gap as their ``time_gap`` / ``time_gap_unit``.
+    The container stores the column as the task's ``time_on`` (with ``time_unit``), ``time_of="label"`` as its
+    ``time_of`` (a prediction time is left unset, as in every container built before the field) and
+    ``prediction_time`` as its ``prediction_time``, the horizon as the splits' ``time_horizon`` /
+    ``time_horizon_unit`` and the gap as their ``time_gap`` / ``time_gap_unit``.
     """
 
     on: str
@@ -412,6 +466,8 @@ class Temporal:
     gap: int | None = None
     gap_unit: HorizonUnit | None = None
     time_unit: TimeUnit | None = None
+    time_of: TimeOf = "prediction"
+    prediction_time: str | None = None
 
     def __post_init__(self) -> None:
         if self.time_unit is not None and self.time_unit not in STEPS_PER_YEAR:
@@ -419,6 +475,15 @@ class Temporal:
             raise ValueError(msg)
         if not isinstance(self.on, str) or not self.on.strip():
             msg = "Temporal.on must name the time column."
+            raise ValueError(msg)
+        if self.time_of not in ("prediction", "label"):
+            msg = f"Temporal.time_of must be 'prediction' or 'label', got {self.time_of!r}."
+            raise ValueError(msg)
+        if self.prediction_time is not None and (self.time_of != "label" or self.prediction_time == self.on):
+            msg = (
+                "Temporal.prediction_time names the prediction point beside a label time: set time_of='label' and a "
+                "column other than `on`."
+            )
             raise ValueError(msg)
         if self.splits is not None and not isinstance(self.splits, TemporalSplits):
             msg = f"Temporal.splits must be a TemporalSplits, got {type(self.splits).__name__}."
@@ -1088,7 +1153,12 @@ def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
     if not flat or len(folds_per_repeat) != 1:
         return findings
     actual = (len(splits), folds_per_repeat.pop())
-    recommended = recommended_dimensions(container.dataset, group_on=task.group_on, group_labels=task.group_labels)
+    recommended = recommended_dimensions(
+        container.dataset,
+        group_on=task.group_on,
+        group_labels=task.group_labels,
+        scored_unit_on=scored_unit_column(task),
+    )
     if actual != recommended:
         findings.append(
             CheckResult(
