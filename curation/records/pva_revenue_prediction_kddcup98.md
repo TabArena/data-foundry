@@ -3,10 +3,14 @@ unique_name: pva_revenue_prediction_kddcup98
 name: KDD98
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
+- WIP (DF)
+claimed_by: Andrej
 suggestion: 'Yes'
+priority: 2
 tags:
 - Larger IID Data
 collections:
@@ -17,7 +21,7 @@ year: '1998'
 domain: business & marketing
 required_split:
 - Random (IID)
-problem_type: Binary Classification
+problem_type: Regression
 original_data_state: One Table
 source_links:
 - https://www.openml.org/d/42343
@@ -52,23 +56,150 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship the KDD Cup 98's own task, the gift amount scored by the mailing's net revenue at $0.68 a piece, since the source says response and gift size run against each other, and blank 46 gift receipts dated after the mailing. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+
 CC (2026-11-05, Lennart): GitHub issue #48 review: `DOMAIN_urbanicity` stays an unordered category with a note: the dictionary calls `DOMAIN` nominal and gives no density order of City and Suburban. The declared metric is checked.
+
+CC (2026-11-06, Andrej): time basis `DelayedTarget` accepted on the BeyondArena v0.2 review page (issue 4, B, through the cross-dataset item on `DelayedTarget` issues of one-moment releases): one renewal mailing in June 1997, the target the response to it, recorded for every donor by 1998. The random split is IID here, as every row shares the moment and the outcome window, so no test row is later than a training row. The `Time basis:` line is in the definition's notes; the tag enters `data_tags` once PR #50 is in the working copy.
+
+CC (2026-11-11, Andrej): BeyondArena v0.2 review page. Issue 1 (B): the target is the gift amount `TARGET_D` in dollars (0 for non-donors), scored by the cup's net revenue (`net_revenue_at_cost`, cost $0.68, per test donor, a new custom metric in the shared library); `TARGET_B` dropped as a copy of gift > 0; `problem_type` Regression. Issue 2 (B): gift receipts dated June 1997 or later (`RDATE_k`, `RAMNT_k`) blanked, 61 cells of 60 donors. Issue 5 (B): `Target: Later` added to the tags (the gift arrives after the June 1997 mailing).
+
+CC (2026-11-12, Andrej): split checked, the random split kept as a `DelayedTarget` of the June 1997 mailing (BeyondArena v0.2 review page, issue 6, A, after the answer on samples per promotion date and target shifts): every row is about one promotion date (191,758 of the cup's 191,779 donors mailed in June 1997); the 23 earlier promotions are history columns whose responses (0.02% to 36%) the cup's lapsed-donor selection shapes, and a split on the donor dates (recruitment, last gift) tests new kinds of donors, not a later mailing. The numbers are in the definition's `Time basis:` line, which ends with what the split cannot test (the next mailing); the tag enters `data_tags` once PR #50 is in the working copy.
 
 ## Review
 
-**Outcome:** added. In the working copy since the migration; GitHub issue #48 (a column-type review of #37) proposes
-ordering `DOMAIN_urbanicity`. The AI recommends keeping it unordered and adding the note the rule asks for.
+**Outcome:** added. The KDD Cup 1998 data of the Paralyzed Veterans of America (UCI KDD archive): 191,769 lapsed
+donors (last gift 13 to 24 months earlier) who received the June 1997 renewal mailing, the cup's learning and
+validation files pooled, with 477 features (age, household and neighbourhood data bought from outside sources,
+interests, how the donor was acquired, and 24 months of promotion and gift history); the target is whether the donor
+gave (5.1%), scored by ROC AUC as a stand-in for the cup's net revenue, on random donors (since 2026-11-11 the gift amount, scored by the cup's net revenue, issue 1). The AI recommends shipping
+the cup's own task, the gift amount scored by the mailing's net revenue (issue 1), and blanking the gift receipts dated
+after the mailing (issue 2). Reviewed without a review panel, from the gathered evidence: the record, the cup's
+documentation, the BeyondArena results and checks on the shipped data; there is no model run for it. Validity:
+the cup scored a predicted dollar amount against a $0.68 mailing cost, and the source warns that the chance to respond
+and the gift size run against each other, so the shipped response target does not score the decision it names
+(issue 1); 46 donors of the shipped data carry a gift received 8 to 12 months after the mailing (issue 2). Value: on
+the one BeyondArena fold the methods spread from ROC AUC 0.583 (LIMIX-2) and 0.592 to 0.603 (linear model) to 0.632
+(tuned LightGBM), a weak but real signal. Quality: nothing else open. Weighed: a documented charity mailing with the
+cup's own cost and metric +, a changed target and a few late gift dates -.
 
-**Main points:** Keep the neighbourhood's urbanicity unordered, with a note, or order it?
+**Main points:** Nothing open. Settled 2026-11-12: the random split kept, every row being about one promotion date
+(June 1997), with the answer's numbers in the `Time basis:` line (issue 6, A). Settled 2026-11-11: the cup's gift
+amount with its net-revenue metric (issue 1), late gift receipts blanked (issue 2), `Target: Later` (issue 5); the
+random split is a `DelayedTarget` of the June 1997 mailing (issue 4).
 
-**Issues for Lennart:**
+**Record judgment:** valid as a response task, and the record's fields match the definition (the record's `Website`
+counts as `Other`). The cup's documentation (https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98doc.txt)
+names the decision and its cost, and the definition's `changes` says the target was changed. The licence is unknown
+(`license = None`), a note for the release checklist, not a curation question. A scouting run found
+`springleaf_marketing_response` (`TBD -> Yes`, not added) as more recent data for the response to a direct-mail offer;
+this record keeps the verdict its own data earns. One mailing stands in for the next (fit `approximate`); like the
+other undated snapshots of the benchmark, the split is not tagged as forced from temporal (a note across datasets).
 
-1. **Keep `DOMAIN_urbanicity` unordered, with a note on why?**
+**Issues for Andrej:**
+
+1. **Ship the cup's gift amount, scored by the mailing's net revenue, instead of the response?**
+
+   * **Problem:**
+     - The KDD Cup 98 scored a predicted gift amount per donor: mail every donor whose predicted gift exceeds the
+       $0.68 a piece costs, and sum the actual gift minus $0.68 over the mailed donors.
+     - The definition predicts only whether a donor gives and drops the amount (`TARGET_D`), so its ROC AUC is a
+       stand-in that cannot score the mailing decision the definition names.
+     - Keep the response, or ship the cup's amount and metric?
+   * **Background:** the cup's documentation, "Evaluation rules": "the program committee will use the predicted value
+     of the donation (dollar) amount"; "Sum (the actual donation amount - $0.68) over all records for which the
+     expected revenue (or predicted value of the donation) is over $0.68". And under "Background and objectives": "PVA
+     has found that there is often an inverse correlation between likelihood to respond and the dollar amount of the
+     gift, so a straight response model (a classification or discrimination task)" (quoted up to here).
+     The shipped data shows it: donors who responded had given less before (last gift $15.09
+     against $17.47, average gift $11.72 against $13.25). The amount is 0 for the 94.9% who did not give and averages
+     $15.62 among those who did ($1 to $200 in the learning file, up to $500 in the validation file), a zero-inflated
+     target like the claim costs of the insurance tables added in PR #47. The cup's metric fixes the decision
+     and its cost[^1a].
+   * **Effect on the task:** the response target rewards finding responders; the cup's target rewards finding the
+     donors worth $0.68, which differ when small gifts come from the likely responders.
+   * **Consistency:** the rule on problem types names this dataset as having chosen the response framing, with the
+     amount noted in the comments; it says a table may hold two framings, not which one to ship. The zero-inflated
+     tables of PR #47 (allstate_claim_prediction_challenge_1m, liberty_mutual_fire_peril_loss_cost) ship amounts that
+     are 0 for most rows with the host's own metric. Shipping both framings as two datasets would make them duplicates
+     of each other[^1b].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Response, ROC AUC stand-in (implemented) | `TARGET_B` as target, `TARGET_D` dropped | a standard response-modelling task; a stable binary target; no custom metric | does not score the cup's decision; the source says response and gift size run against each other |
+     | B | Gift amount, the cup's net revenue | `TARGET_D` (0 for non-donors) as target, `TARGET_B` dropped; metric: mean of (gift - $0.68) over the test donors whose predicted gift exceeds $0.68, per test donor | the cup's own task, decision and cost; adds a zero-inflated amount from outside insurance | a custom metric to write and test; a few large gifts move a fold's revenue; a rebuild |
+
+   * **Recommendation:** B, the decision the definition names needs the amount, and the cup fixed both the target and
+     the cost. **Decision:** keep the response (A), or ship the gift amount with the net revenue (B)?
+
+   **Notes for the AI:** on B, `target = "TARGET_D"` with missing set to 0 (the cup fills it for non-donors; check),
+   drop `TARGET_B`, `problem_type = "regression"`; a custom metric with a general name (for example
+   `net_revenue_at_cost`, params `cost=0.68`) in the shared metric library with its reference implementation and tests
+   (MET-12, MET-13), `Metric.source(...)` citing cup98doc.txt; ship the amount in dollars, as the decision compares
+   it with $0.68 (the scale question of the insurance family, australian_vehicle_insurance_2004_2005 issue 5, applies);
+   record `problem_type: Regression`, a CC line, the sentence of selection.md that names this dataset, CHANGELOG,
+   rebuild on Andrej's ask. The metric review page lists this dataset; settle the metric there in the same call.
+
+   [^1a]: **MET-7** (Should): when the source fixes a cost matrix, a single treatment threshold or a k from its
+     decision, declare that metric; score the mean cost per row. **MET-4** (Should): a competition's leaderboard
+     metric is the source's metric.
+   [^1b]: **PROV-6** (Must): different versions or cuts of one dataset are duplicates when neither adds a distinct task,
+     a swapped target among them. **SEL-8** (Must): the original task decides the scope.
+
+   **Resolved (2026-11-11, Andrej):** B: the target is `TARGET_D`, the gift in dollars (0 for the donors who did not
+   give; the cup's files have no missing value), `TARGET_B` is dropped as a copy of gift > 0, `problem_type` is
+   regression, and the metric is `Metric.source("net_revenue_at_cost", params={"cost": 0.68})`: the cup's sum of
+   (gift - $0.68) over the donors predicted above $0.68, divided by the number of test donors. `net_revenue_at_cost` is
+   a new custom metric in the shared library, tested against a transcription of the cup's rule, by hand, on 1M rows
+   and by the stability checks. Record `problem_type` Regression, a CC line; the sentence of selection.md that names
+   this dataset says which framing ships. Not rebuilt.
+
+2. **Blank the gift receipts dated after the June 1997 mailing?**
+
+   * **Problem:**
+     - 46 of the 144,095 donors of the shipped data carry a gift receipt dated February to June 1998 in the
+       `RDATE_*` columns (with its amount in `RAMNT_*`), credited to an earlier promotion but received 8 to 12 months
+       after the mailing the label is about.
+     - The cup's documentation says every field reflects the donor before June 1997 "except the gift receipt dates,
+       which will follow the promotion dates", so these cells come from after the prediction point.
+     - Blank these cells, or keep them?
+   * **Background:** checked on the shipped data. The other dates and summaries end before the mailing (`LASTDATE`,
+     `MAXRDATE` and `NEXTDATE` latest February 1997), so only these receipt cells are late; the 46 donors responded at
+     10.9% (5) against 5.2% overall. A value from after the prediction point goes even when small, and the smallest fix
+     blanks it[^2a][^2b].
+   * **Effect on the task:** small in size (0.03% of the rows), but a model can read a gift made after the mailing.
+   * **Consistency:** follows zillow_prize and melbourne_housing_market, which blank values recorded after the outcome.
+   * **Unknown:** the v0.2 frame holds 47,674 more donors than the shipped data (those without a birth date); their late
+     receipts are counted when the fix is applied.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep (implemented) | the late receipt dates and amounts stay | the file as published | a feature from after the mailing |
+     | B | Blank the late cells | `RDATE_k` and `RAMNT_k` set to missing where the receipt is dated June 1997 or later | every feature precedes the mailing | 46 donors (shipped data) lose one or two old-promotion gifts |
+
+   * **Recommendation:** B, a confirmed post-mailing value with a one-line fix. **Decision:** keep (A), or blank (B)?
+
+   **Notes for the AI:** on B, in `_clean` before the date parsing, for k in 3..24: `late = df[f"RDATE_{k}"] >= 9706`
+   (YYMM numbers), set `RDATE_k` and `RAMNT_k` to NaN on those rows; a `curation_comments` bullet with the count on
+   the v0.2 frame; `dataset check`; CHANGELOG entry.
+
+   [^2a]: **LEAK-10** (Must): a feature holds only what existed at the prediction point. **LEAK-6** (Must): a
+     confirmed leak goes even when small.
+   [^2b]: **LEAK-7** (Should): the smallest fix that keeps a valid signal beats dropping the column; cases include
+     blanking the values looked up after the outcome.
+
+   **Resolved (2026-11-11, Andrej):** B: in `_clean`, `RDATE_k` and `RAMNT_k` (k = 3 to 24) are set to missing where
+   the receipt is dated June 1997 or later: 61 cells of 60 donors on the v0.2 frame (191,769 donors), dated up to June
+   1998. A `curation_comments` bullet gives the count; the `Time basis:` line now calls these receipts blanked.
+
+3. **Keep `DOMAIN_urbanicity` unordered, with a note on why?**
 
    * **Problem:**
      - `DOMAIN_urbanicity` (Urban, City, Suburban, Town, Rural, the first byte of `DOMAIN`) ships as an unordered category, and the notes do not say why.
      - Issue #48 proposes Rural < Town < Suburban < City < Urban, with low confidence: it did not check City against Suburban.
-   * **Background:** The dictionary lists the levels U, C, S, T, R and calls `DOMAIN` "A nominal or symbolic field" ([cup98dic.txt](https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98dic.txt)); it does not say whether a city neighbourhood is denser than a suburb[^1].
+   * **Background:** The dictionary lists the levels U, C, S, T, R and calls `DOMAIN` "A nominal or symbolic field" ([cup98dic.txt](https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98dic.txt)); it does not say whether a city neighbourhood is denser than a suburb[^3a].
    * **Effect on the task:** Five levels in 191,769 rows; ordered or not, a model sees each level, so the choice changes little beyond the documented state.
    * **Consistency:** The second byte, `DOMAIN_ses`, is ordered because the dictionary names each level in words on one line.
    * **Options:**
@@ -91,7 +222,203 @@ ordering `DOMAIN_urbanicity`. The AI recommends keeping it unordered and adding 
 
    **Resolved (2026-11-05, Lennart):** B. `DOMAIN_urbanicity` stays unordered; `curation_comments` say why.
 
-   [^1]: **CLEAN-14** (Should): an order still unclear after the sources are checked stays unordered, with a note.
+   [^3a]: **CLEAN-14** (Should): an order still unclear after the sources are checked stays unordered, with a note.
+
+4. **Time basis: name the random split a `DelayedTarget` of the June 1997 renewal mailing?**
+
+   * **Problem:**
+     - Every donor received the same renewal mailing in June 1997, every history field is dated before it apart from the late gift receipts of issue 2, and the target is the response to that mailing, so all donors share one prediction moment with the target after it.
+     - The record says `Samples: One Moment` without a target tag (issue 5), and the random split carries no time basis, while the definition's notes already say that one mailing stands in for the next.
+     - Name it a `DelayedTarget`, with the line below?
+   * **Background:** a delayed target needs its window closed for every row and every feature in existence at the
+     moment[^4t1]. The window: the cup released the responses in 1998, and receipts dated up to June 1998 show at
+     least a year of follow-up after the mailing, the same for every donor. The features: the cup's documentation
+     says every field reflects the donor before June 1997 "except the gift receipt dates", which issue 2 blanks. The
+     many date columns (`ADATE_*`, `RDATE_*`, `LASTDATE`, ...) are the shared past of one mailing, not a time to split
+     on. What the split cannot test: the next mailing.
+   * **Effect on the task:** none on rows, splits or scores; the same holds if issue 1 ships the gift amount.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Random, no time basis (implemented) | as now | none found | the score's time meaning is not stated; `dataset check` notes the missing basis |
+     | B | Random, named `DelayedTarget` | `data_tags` gain `DelayedTarget`; a `Time basis:` line names the mailing and its window | states one mailing and one response window; follows the definition's own note | the next mailing is not tested |
+     | C | Random, forced from temporal | `data_tags` gain `ForcedIIDFromTemporal` | marks the stand-in for the next mailing | the amended rule gives a release of one moment a prototype, not the forced tag[^4t2] |
+
+   * **Recommendation:** B. **Decision:** A, B or C?
+
+   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("DelayedTarget",)` (no tag is listed now) and the
+   curation bullet "- Time basis: DelayedTarget: one renewal mailing (97NK, June 1997) to lapsed donors; every field
+   is the donor before June 1997, apart from the gift receipts of earlier promotions dated after it (blanked, issue
+   2); the target is the response to that mailing, recorded for every donor by the cup's release in 1998. The date
+   columns are the donors' shared past, not a time to split on. Not tested: the next mailing."; `dataset check` (its
+   note on date columns in a split that is not temporal is an info, answered by the line).
+
+   [^4t1]: **SPLIT-32** (Should): a definition can name the use-case prototype it follows, with a `Time basis:` line
+     stating the fact. A `DelayedTarget` has one prediction moment for all rows and the target after it; its line
+     names the moment and the window, the window has closed for every row, and every feature existed at the moment.
+     **LEAK-10** (Must): a feature holds only what existed at the prediction point.
+   [^4t2]: **SPLIT-8** (Must; reworded 2026-11-05): a release that is one moment (one extract, one stock month, one
+     exam round) is not forced; SPLIT-32 gives it `Snapshot` or `DelayedTarget`.
+
+   **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the `DelayedTarget` issues of
+   one-moment releases with one mark?" The `Time basis: DelayedTarget:` bullet is in `curation_comments`; it says why
+   the random split is IID here (every row shares the moment and the outcome window, so no test row is later than a
+   training row) and ends with what the split cannot test (the next mailing). The split and `data_tags` are unchanged;
+   the tag `DelayedTarget` enters `data_tags` once PR #50 is in the working copy. As issue 2 is open, the line names the
+   late gift receipt dates in the cup's own words instead of calling them blanked.
+
+5. **Correct the record's collection facts: add `Target: Later`?**
+
+   * **Problem:**
+     - The record carries `Samples: One Moment` and no target tag, which says the target exists with the features.
+     - The target is a gift sent in response to the June 1997 mailing and received after it, the same mailing for every donor.
+     - Add `Target: Later`?
+   * **Background:** `Target: Later` is the fact for a target after the features, at one shared date or after a fixed
+     window; no tag is for a target that exists with the features[^5t1].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep (implemented) | no target tag | none found | reads the response as existing with the history |
+     | B | Add `Target: Later` | the record's `tags` gain `Target: Later` | the response comes after the mailing | none found |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, add `Target: Later` to the record's `tags`, a `CC (<date>, Andrej):` line, and `Andrej`
+   in `checked_by`.
+
+   [^5t1]: **SPLIT-32** (Should): the record's collection facts include `Target: Later` (after the features, at one
+     shared date or after a fixed window), `Target: Varying Delay` or `Target: Revised Later`; no target tag when the
+     target exists with the features.
+
+   **Resolved (2026-11-11, Andrej):** B: `Target: Later` added to the record's tags (also in PR #50's copy of the
+   record), a CC line, `Andrej` in `checked_by`.
+
+6. **Split: make it temporal, by one of the date columns?**
+
+   * **Problem:**
+     - Every donor got the same mailing (June 1997, `ADATE_2` = 9706 for 191,758 of 191,779 donors) and answered in
+       the same window, so no donor's outcome is later than another's: the dates order donors, not outcomes.
+     - A split by a donor's history date tests a kind of donor training never saw; a model trained on the older
+       donors falls to the "mail everyone" baseline or below it (table 2).
+     - Keep the random split, or split by `ODATEDW` or `LASTDATE`?
+   * **Background:** Andrej asked on the page (2026-11-11, dataset note): "Wait it seems like there are dates. Could
+     we make this a temporal split instead?" The date columns are of three kinds: the calendar of the 23 earlier
+     promotions (`ADATE_k`, one date per promotion for nearly every donor), the receipts of earlier gifts
+     (`RDATE_k`), and per-donor history dates (`ODATEDW` the origin 1983-1997, `FISTDATE` the first gift,
+     `LASTDATE` the last gift, March 1995 to February 1997). A truly temporal split needs an earlier mailing as
+     training data. The history holds the responses to the earlier promotions, but the cup selected donors who had
+     stopped giving by mid-1996, so those outcomes are selected on: the promotions from March 1996 on show 0.02% to
+     0.9% response, the 1994-1995 ones 14% to 36% (table 1). The use case, the next mailing, goes to the same mix of
+     donors one year on; the random split with the `DelayedTarget` line (issue 4) states this, and that the next
+     mailing is not tested.
+
+     Table 1, response of the June 1997 donors to earlier promotions (share of the mailed donors with a gift recorded):
+
+     | Promotion date | 1996-06 | 1996-04 | 1996-03 | 1996-02 | 1996-01 | 1995-06 | 1994-06 | 1997-06 (target) |
+     |---|---|---|---|---|---|---|---|---|
+     | Response | 0.24% | 0.31% | 0.87% | 10.3% | 23.4% | 30.4% | 30.2% | 5.1% |
+
+     Table 2, net revenue per test donor ($, the shipped metric) of one LightGBM regressor (400 trees, one seed, not
+     tuned); "Random split" is the
+     5-fold prediction for the same test donors:
+
+     | Test set (latest 20-27%) | Test donors | Gave | Mail everyone | Random split | Trained on the earlier donors |
+     |---|---|---|---|---|---|
+     | all donors, random 5-fold | 191,769 | 5.07% | 0.111 | 0.130 | - |
+     | `ODATEDW` from 1995-01 | 51,179 | 4.09% | 0.041 | 0.083 | 0.046 |
+     | `FISTDATE` from 1995-01 | 38,734 | 3.93% | 0.035 | 0.083 | 0.028 |
+     | `LASTDATE` from 1996-02 | 52,111 | 6.15% | 0.201 | 0.212 | 0.185 |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Random, `DelayedTarget` (implemented) | as now | one mailing, one window; the next mailing's donor mix | the next mailing is not tested |
+     | B | Temporal by `ODATEDW` (origin) | train on donors recruited before 1995, test on the later recruits | a date-ordered split | not a later time: tests transfer to new recruits; the model falls to the baseline |
+     | C | Temporal by `LASTDATE` (last gift) | train on donors who lapsed earlier, test on the most recent lapsers | a date-ordered split | the same; below the baseline |
+
+   * **Recommendation:** A. The dates order donors within one mailing; no split of this file tests the next mailing.
+     **Decision:** A, B or C?
+
+   **Notes for the AI:** on A, nothing changes (a CC line that the split was checked). On B or C, `temporal` on the
+   column in `dataset.py` (cut at the 80% quantile), the `Time basis:` line rewritten (the split orders donors, not
+   outcomes), `dataset check`, the split and leak probes, CHANGELOG, record `required_split`.
+
+   **Andrej (2026-11-12, discuss):** I have several questions. How many sample per promotion date are there? Is it
+   fair to assume that something changed across those dates in how or which customers were approached? Are there
+   distribution shifts like the target % differing heavily?
+
+   **Answer (AI, 2026-11-12):** every row has the same promotion date: the target is the response to one mailing,
+   97NK of June 1997 (191,758 of 191,779 donors; 21 dated April 1997). The other 23 dates are the donors' history,
+   not other samples.
+
+   * **Samples per date:** one row per donor, all about 97NK. The 23 earlier promotions (June 1994 to June 1996) reached
+     60,000 to 188,000 of these donors each; their responses are columns (`RDATE_k`, `RAMNT_k`), not rows.
+   * **How and whom:** yes, across the earlier dates both changed. The mailing type changes by promotion (labels only,
+     blank cards, thank-you cards, greeting and Christmas cards, calendars, notepads; cup98dic.txt), and the share of
+     these donors mailed runs from 31% to 98%. For the target date it did not: 97NK sent one type to one group, every
+     donor lapsed (`RFA_2` starts with L for all 191,779).
+   * **Target shift across the earlier dates: heavy, and made by the selection.** Response runs from 0.02% to 36%. The
+     cup took donors whose last gift was 13 to 24 months before June 1997, so by construction they gave almost nothing
+     to the 1996 promotions; the 1994-1995 rates are of donors who were active then.
+   * **Shift within the target mailing, by donor dates:** moderate. Response falls from 6.1% (recruited 1986) to 3.3%
+     (recruited 1996), while the gift of those who gave rises from $12.95 to $19.80; by last gift, 3.6% (early 1995) to
+     9.9% (1997).
+
+   | Promotion | Date | Type | Donors mailed | Response | Mean gift |
+   |---|---|---|---|---|---|
+   | 97NK (target) | 1997-06 | blank card | 191,779 | 5.07% | $15.62 |
+   | 96NK | 1996-06 | blank card | 187,849 | 0.24% | $12.92 |
+   | 96TK / 96SK / 96LL | 1996-04 / 04 / 03 | thank-you / blank / labels | 187,369 / 124,433 / 184,733 | 0.31% / 0.02% / 0.87% | $13.63 / 14.42 / 14.17 |
+   | 96G1 / 96GK | 1996-02 / 01 | notepad / greeting cards | 173,682 / 184,681 | 10.3% / 23.4% | $14.98 / 15.77 |
+   | 96CC / 96WL / 96X1 / 96XK | 1995-11 to 1995-08 | calendar / labels / notepad / Christmas | 125,931 to 174,000 | 16.5% to 29.6% | $14.65 to 15.77 |
+   | 95FS to 95XK (10) | 1995-07 to 1994-09 | all types | 59,979 to 153,802 | 13.8% to 35.9% | $12.26 to 14.28 |
+   | 94FS / 94NK | 1994-07 / 06 | folded card / blank card | 78,300 / 117,298 | 19.9% / 30.2% | $12.10 / 11.38 |
+
+   | 97NK donors by | Group | Donors | Gave | Gift if gave |
+   |---|---|---|---|---|
+   | recruitment (`ODATEDW`) | 1986 | 28,964 | 6.13% | $12.95 |
+   | | 1990 | 15,413 | 5.49% | $15.12 |
+   | | 1994 | 24,223 | 4.82% | $15.41 |
+   | | 1996 | 20,416 | 3.34% | $19.80 |
+   | last gift (`LASTDATE`) | 1995 H1 / H2 | 23,576 / 91,887 | 3.64% / 4.65% | $19.84 / 16.10 |
+   | | 1996 H1 / H2, 1997 | 68,545 / 4,478 / 3,293 | 5.70% / 7.79% / 9.87% | $14.00 / 18.50 / 14.54 |
+
+   - The learning and validation files of the cup match (5.08% and 5.06% gave; mean amount $0.79 each).
+   - So: the earlier dates differ heavily, but they are a selected past, not training mailings (a model trained on
+     them learns the cup's selection); the donor dates order donors within one mailing, and a split on them tests new
+     kinds of donors (table 2 above).
+
+   | | Option | What it does | Pro | Con |
+   |---|---|---|---|---|
+   | A | Random, `DelayedTarget` (implemented) | as now | one mailing, one window | the next mailing is not tested |
+   | B | Temporal by `ODATEDW` | train on pre-1995 recruits | a date-ordered split | tests new recruits (response 4.1% against 5.1%), not a later mailing |
+   | C | Temporal by `LASTDATE` | train on earlier lapsers | a date-ordered split | the same, below the mail-everyone baseline |
+
+   * **Recommendation:** A: the file holds one promotion date; the earlier dates change in type and audience, but their
+     responses are selected by the cup's lapsed-donor rule, so no split of this file tests the next mailing.
+     **Decision:** A, B or C?
+
+   **Andrej (2026-11-12, discuss):** Reply (A): Random, DelayedTarget
+
+   **Resolved (2026-11-12, Andrej):** A: the random split stays, a `DelayedTarget` of the June 1997 mailing. The
+   `Time basis: DelayedTarget:` bullet in `curation_comments` now carries the answer's numbers and still ends with what
+   the split cannot test (the next mailing):
+
+   | Measure | Value |
+   |---|---|
+   | Donors on the target promotion date (June 1997) | 191,758 of 191,779 (21 in April 1997), all lapsed |
+   | Earlier promotions (June 1994 to June 1996) | 23, columns not rows; 60,000 to 188,000 donors each |
+   | Their response | 0.02% to 36%; 0.02% to 0.9% from March 1996 on (the cup's lapsed-donor selection) |
+   | Target response by recruitment year, 1986 / 1996 | 6.1% / 3.3% (gift if gave $12.95 / $19.80) |
+   | Target response by last gift, early 1995 / 1997 | 3.6% / 9.9% |
+   | Net revenue per test donor, recruits from 1995: date split / random folds / mail everyone | $0.046 / $0.083 / $0.041 |
+
+   * The tag `DelayedTarget` enters `data_tags` once PR #50 is in the working copy. Record CC line.
+   * Rows, columns and split unchanged, so no `dataset check`; the README is not regenerated (it shows the earlier
+     wording of the line until the next check or build). Not rebuilt.
 
 ## Reference
 
