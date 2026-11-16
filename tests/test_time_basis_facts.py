@@ -17,7 +17,6 @@ from data_foundry.curation.store import load_all
 from data_foundry.schema import FORCED_TIME_TAGS, TIME_BASIS_TAGS
 
 REPO = resolve_curation_root().parent
-LATER_TARGETS = {"Target: Later", "Target: Varying Delay", "Target: Revised Later"}
 
 PENDING = {}
 """Records whose contradiction is known: an open review item, or a written exception the curator decided."""
@@ -43,8 +42,6 @@ def contradictions(facts: set[str], basis: set[str], regime: str) -> list[str]:
     """The ways a definition's time basis and split contradict its record's collection facts."""
     found = []
     forced = bool(basis & set(FORCED_TIME_TAGS))
-    if "Samples: One Moment" in facts and forced and facts & LATER_TARGETS:
-        found.append("one moment with a later target is a DelayedTarget, not forced")
     if "Samples: One Moment" in facts and regime == "temporal":
         found.append("one moment has no time to split on")
     if "Samples: No Time Dimension" in facts and (forced or regime == "temporal"):
@@ -87,10 +84,8 @@ def test_pending_contradictions_still_hold(found: dict[str, list[str]]) -> None:
 @pytest.mark.parametrize(
     ("facts", "basis", "regime", "expected"),
     [
-        ({"Samples: One Moment", "Target: Later"}, {"ForcedIIDFromTemporal"}, "iid", 1),
+        ({"Samples: One Moment", "Target: Later"}, {"ForcedIIDFromTemporal"}, "iid", 0),
         ({"Samples: One Moment"}, {"ForcedIIDFromTemporal"}, "iid", 0),
-        ({"Samples: One Moment", "Target: Unknown"}, {"ForcedIIDFromTemporal"}, "iid", 0),
-        ({"Samples: One Moment", "Target: Later"}, {"DelayedTarget"}, "iid", 0),
         ({"Samples: One Moment"}, set(), "temporal", 1),
         ({"Samples: No Time Dimension"}, {"ForcedIIDFromTemporal"}, "iid", 1),
         ({"Samples: Over Time", "Time: Lost", "Target: Later"}, {"StationaryRelation"}, "iid", 1),

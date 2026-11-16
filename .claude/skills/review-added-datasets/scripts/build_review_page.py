@@ -1317,7 +1317,6 @@ TIME_BASIS = (
     "Timeless",
     "Retrospective",
     "Snapshot",
-    "DelayedTarget",
     "StationaryRelation",
     "AssumedStationaryRelation",
     "UnseenGroup",

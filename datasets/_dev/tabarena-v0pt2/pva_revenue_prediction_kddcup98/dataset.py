@@ -234,7 +234,7 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("DelayedTarget",)
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         wget https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98lrn.zip && unzip cup98lrn && rm cup98lrn.zip
         wget https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98val.zip && unzip cup98val && rm cup98val.zip && wget https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/valtargt.txt
@@ -278,10 +278,10 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
           than a suburb, so no order is imposed.
         - The target (2026-11-01, CLEAN-25): `TARGET_B` ships its classes as words (1 is the event). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
-        - Time basis: DelayedTarget: one renewal mailing (97NK, June 1997) to lapsed donors; every field is the donor
-          before June 1997; the target is the response to that mailing, recorded for every donor by the cup's release in
-          1998. Every donor got the same mailing and its response was recorded over the same window, so no test row is
-          later than a training row and the random split is IID. The date columns are the donors' shared past, not a
+        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): one renewal mailing
+          (97NK, June 1997) to lapsed donors; every field is the donor before June 1997; the target is the response to
+          that mailing, recorded for every donor by the cup's release in 1998. One mailing is one period, too few for
+          three windows (SPLIT-8). The date columns are the donors' shared past, not a
           time to split on (random split kept, 2026-11-12, Andrej): every row is about the one promotion date (191,758
           of the cup's 191,779 donors mailed in June 1997, 21 in April 1997; all of them lapsed). The 23 earlier
           promotions, June 1994 to June 1996, are columns, not rows: each reached 60,000 to 188,000 of these donors, in

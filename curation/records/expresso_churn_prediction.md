@@ -69,6 +69,10 @@ CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedIIDFromTem
 - One observation window scored at its end, churn in the 90 days after it: one shared moment and a closed window, which the sharpened one-moment rule names a `DelayedTarget`.
 - The random split stays.
 
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.
+
 ## Review
 
 **Outcome:** added as `expresso_churn_prediction_1m`. The AI asks to retag the time basis after the one-moment rule was sharpened (2026-11-13).

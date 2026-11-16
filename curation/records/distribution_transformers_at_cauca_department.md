@@ -63,6 +63,10 @@ CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedIIDFromTem
 - One inventory ranked at the start of 2020, the year's burns after it: one shared moment and a closed window, which the sharpened one-moment rule names a `DelayedTarget`.
 - The random split stays.
 
+CC (2026-11-16, Andrej): time basis `StationaryRelation` instead of `DelayedTarget`, which is retired:
+- Trained on the 2019 burns and tested on 2020, LightGBM scores ROC AUC 0.648 against 0.639 on the random folds: the one forward window of the source's two years costs nothing.
+- The random split stays.
+
 ## Review
 
 **Outcome:** added. The AI asks to retag the time basis after the one-moment rule was sharpened (2026-11-13).

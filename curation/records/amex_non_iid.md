@@ -59,6 +59,10 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
+CC (2026-11-16, Andrej): time basis `ForcedGroupedFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The grouped split stays.
+
 ## Reference
 
 Kaggle

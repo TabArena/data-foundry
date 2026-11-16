@@ -97,7 +97,6 @@ DataTags = Literal[
     # the samples arise over time in the use case, but the data is one snapshot of a moment or period, and the use case
     #   looks back: it fills in what is missing for the time the snapshot covers, not a later time
     "Retrospective",
-    "DelayedTarget",  # one shared prediction moment; the target arrives after it, in a window closed for every row
     # the use case scores later units, and a measurement on dated data shows the relation does not move with time
     "StationaryRelation",
     # the use case scores later units, no date survives to measure the relation on, and a person judged earlier and
@@ -125,7 +124,6 @@ RETIRED_DATA_TAGS = ("2ndTierData", "Snapshot")
 TIME_BASIS_TAGS = (
     "Timeless",
     "Retrospective",
-    "DelayedTarget",
     "StationaryRelation",
     "AssumedStationaryRelation",
     "UnseenGroup",

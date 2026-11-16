@@ -57,6 +57,10 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 CC (2026-11-05, Lennart): GitHub issue #48 review: `DOMAIN_urbanicity` stays an unordered category with a note: the dictionary calls `DOMAIN` nominal and gives no density order of City and Suburban. The declared metric is checked.
 
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.
+
 ## Review
 
 **Outcome:** added. In the working copy since the migration; GitHub issue #48 (a column-type review of #37) proposes

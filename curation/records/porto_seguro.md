@@ -44,6 +44,10 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.
+
 ## Reference
 
 Addison Howard, Adriano Moala, and Walter Reade. Porto Seguro’s Safe Driver Prediction. https://kaggle.com/competitions/porto-seguro-safe-driver-prediction, 2017. Kaggle.

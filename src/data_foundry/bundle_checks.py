@@ -1990,7 +1990,7 @@ def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
         )
     target = ctx.target
     dated = [c for c in ctx.df.columns if c != target and pd.api.types.is_datetime64_any_dtype(ctx.df[c])]
-    explained = bool(set(basis) & {"Retrospective", "DelayedTarget"}) or (has_line and not basis)
+    explained = "Retrospective" in basis or (has_line and not basis)
     if dated and not explained:
         yield CheckResult(
             "meta_time_present_unused",

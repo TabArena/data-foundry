@@ -154,6 +154,10 @@ CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedGroupedFro
 - Every Year-0 premium is set at the start of the policy year and the year's claims follow: one shared moment and a closed window, which the sharpened one-moment rule names a `DelayedTarget`.
 - The split by client stays.
 
+CC (2026-11-16, Andrej): time basis `ForcedGroupedFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The grouped split stays.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it; the metric's floor was lowered to 0.1 EUR on 2026-11-08 (issue 5,

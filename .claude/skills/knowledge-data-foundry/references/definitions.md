@@ -226,9 +226,8 @@ A metric input known at the prediction point (a weight that is a function of the
   one time basis that says why it is not temporal (SPLIT-32 in
   [splits.md](../../knowledge-curation/references/splits.md)): a use-case prototype, `"Timeless"` (the target is a
   fixed property of the item, and the data has no time dimension), `"Retrospective"` (the data is one snapshot of a
-  moment or period, and the use case fills in what is missing for that time, not a later one), `"DelayedTarget"` (one
-  shared prediction moment, the target later in a window closed for every row) or `"StationaryRelation"` (the use case
-  scores later units, and a measurement on a dated source shows the relation does not move with time) or
+  moment or period, and the use case fills in what is missing for that time, not a later one), `"StationaryRelation"`
+  (the use case scores later units, and a measurement on a dated source shows the relation does not move with time) or
   `"UnseenGroup"` (the use case aims at groups the data does not hold, a site, a well, a protein or a chemical family,
   not at a later period; it needs a `grouping` on the group); or a forced tag, `"ForcedIIDFromTemporal"` when a
   forward use case has no usable time or too few periods and ships IID (a definition that declares a `grouping` or
@@ -246,8 +245,9 @@ A metric input known at the prediction point (a weight that is a function of the
   and what a dated release would change. A definition refuses two time bases, and a prototype on a temporal split or
   without its line. `dataset check` notes a split that is not temporal and says nothing about why (no time basis and
   no `Time basis:` line), a forced tag without its line, and date columns in the data of such a split unless the basis
-  is `Retrospective` or `DelayedTarget` or a `Time basis:` line gives the reason. `"Snapshot"` is retired (2026-11-13)
-  for `"Retrospective"`, which names the use case rather than the data; a new definition refuses it.
+  is `Retrospective` or a `Time basis:` line gives the reason. `"Snapshot"` is retired (2026-11-13) for
+  `"Retrospective"`, which names the use case rather than the data, and `"DelayedTarget"` (2026-11-16) for a forced
+  tag, since one shared moment is one period; a new definition refuses both.
   `"2ndTierData"` is retired (2026-10-21): old containers that carry it still load, but a new definition refuses it;
   write the doubts as a finding and the fit as `approximate`.
 * `problem_type`: "Regression" to `"regression"`, "Binary Classification" to `"binary_classification"`,

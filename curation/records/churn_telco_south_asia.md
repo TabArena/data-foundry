@@ -63,6 +63,10 @@ CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 1, B): wh
 
 CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedIIDFromTemporal`: the subscribers are scored after the same two months of usage, the shared prediction moment, and churn follows it (`Target: Later`); its window is taken as closed, as for mobile_churn. The random split stays.
 
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.
+
 ## Review
 
 **Outcome:** added. The record gained `Target: Later` on 2026-11-13.
