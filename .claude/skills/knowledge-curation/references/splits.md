@@ -229,14 +229,14 @@ date), not which one the use case needs. Seven types:
   benchmark instances, a siRNA library), or a closed set of specimens, molecules or volunteers measured by a laboratory
   or a study protocol.
 * `Clinical Study`: patients of a clinical study, a clinic's case series or a registry, labelled by a diagnosis or a
-  follow-up outcome, with no date or order per row.
+  follow-up outcome, with no date recorded per row.
 * `Survey`: rows the survey collected itself, by its questionnaire (a clinical one too) or its sampling design
   (vegetation quadrats, a sky survey's data releases), in one round or in waves of different units.
-* `Database Snapshot`: an organisation's records released as one extract with no date or order per row: read for one
+* `Database Snapshot`: an organisation's records released as one extract with no date recorded per row: read for one
   date or period (a customer base, a product catalogue, one scrape of listings, a census table), or cases that arrived
   over time with their dates dropped.
-* `Dated Event Log`: each row is one event (a trip, an order, a loan, a sale, a report, an admission) that keeps its
-  own date or an order that tracks time.
+* `Dated Event Log`: each row is one event (a trip, an order, a loan, a sale, a report, an admission) whose raw row
+  records its date.
 * `Panel Data`: the same units observed at repeated periods or visits, one row per unit and occasion (station-hours,
   store-days, account-months, policy-years, a person's study visits).
 
@@ -247,10 +247,12 @@ Where more than one fits:
    age does not count), and most rows come from units seen on two or more occasions. The rows are the unit's periods
    or visits, not events that involve it: the storms of a county or the loans of a repeat customer are a dated event
    log.
-2. **A dated event log needs each row's own date or an order that tracks time** (`Time: Dated` or `Time: Inferred`; a
-   value that encodes the period counts). Without one, an organisation's records are a database snapshot, whatever
-   period the source names.
-3. **Dates outrank only the clinical study:** a clinical set whose rows keep a date or an order is a dated event log.
+2. **A dated event log needs a date its raw rows record** (`Time: Dated`: a date column, or a value that encodes the
+   period). An order rebuilt from the data (`Time: Inferred`: an id issued in sequence, a case number, the file's row
+   order) does not count: it is what the data allows, not what the source recorded, and the split takes it up within
+   the type (a window on the rebuilt order, SPLIT-8). Without a recorded date, an organisation's records are a database
+   snapshot, whatever period the source names.
+3. **Dates outrank only the clinical study:** a clinical set whose rows record a date is a dated event log.
    Experimental results, surveys and catalogues keep their dated rows.
 4. **A catalogue is the growing database or programme itself,** not a company's own collection, a one-off deposit or a
    closed programme; a survey's data releases are a survey.
@@ -262,22 +264,28 @@ Where more than one fits:
 
 What each type holds for the split: a catalogue its items, families and entry dates; experimental results the
 item or the run, which repeats across conditions; a clinical study patients who arrived over time with the dates lost
-(SPLIT-8), sites and patients that may recur; a survey its sampled units and its rounds; a database snapshot one read
-moment (SPLIT-32's `DelayedTarget` or `Retrospective`) or arrivals whose time is lost (SPLIT-8); a dated event log the
+or only an order rebuilt (SPLIT-8), sites and patients that may recur; a survey its sampled units and its rounds; a
+database snapshot one read moment (SPLIT-32's `DelayedTarget` or `Retrospective`) or arrivals whose time is lost or
+survives only as a rebuilt order (SPLIT-8); a dated event log the
 row's date (SPLIT-7, SPLIT-14) and the entities its events involve (SPLIT-9); panel data both the unit (SPLIT-24) and
 the occasion. `tests/test_collection_types.py` checks that each record has one type and that the date conditions of
 rules 1 to 3 agree with its collection facts.
 
 Why: the same split question reads differently by how the rows came into the table, and the type names that before
 the split is chosen. Cases, on the 174 TabArena v0.2 definitions: catalogue 15, experimental results 17, clinical
-study 13, survey 7, database snapshot 44, dated event log 56, panel data 22. Rule 1: dementia_prediction (visits),
+study 16, survey 7, database snapshot 48, dated event log 49, panel data 22. Rule 1: dementia_prediction (visits),
 sepsis_prediction_1m (stay-hours), noaa_afsc_bottom_trawl_survey_cpue (stations surveyed every year) are panel data;
 pricing_game_2016_french_fleet (most vehicles have one period), open_university_learning_analytics_dataset (few
 students register twice), allstate_claim_prediction_challenge_1m (one row per vehicle) and numerai_v5_2_1m (an id per
 stock and week) are not. Rule 2: predict_students_dropout_and_academic_success (the economic figures give the
-enrolment year); home_credit_default_risk (snapshot) against home_credit_default_stability_1m (event log), the same
-lender's applications released without and with dates. Rule 3: heart_disease, diabetes_130_us (event logs);
-infrared_thermography_temperature, wine_quality (experimental results). Rule 4: sdss_17. Rule 5: sarcoma,
+enrolment year) and california_house_prices_2020 (each row records its listing date, though the split runs on the id's
+sale order) are event logs; fremtpl2, labour_inspection_compliance, loan_default_prediction_imperial_college and
+mercedes_benz_greener_manufacturing (orders rebuilt from an id or the file's row order) are snapshots;
+home_credit_default_risk (snapshot) against home_credit_default_stability_1m (event log), the same lender's
+applications released without and with dates. Rule 3: heart_disease (UCI's raw files date each exercise test and
+angiogram) is an event log; diabetes_130_us, horse_colic_survival and lung_cancer_epithelial_genexp (orders rebuilt
+from encounter numbers, case numbers and deposit batches) are clinical studies; infrared_thermography_temperature,
+wine_quality (experimental results). Rule 4: sdss_17. Rule 5: sarcoma,
 lung_adenocarcinoma_metastasis (experimental results) against indian_liver_patient_dataset (clinical study). Rule 6:
 caracas_cervical_cancer, in_vehicle_coupon_recommendation (surveys) against student_portuguese_performance and houses
 (snapshots).

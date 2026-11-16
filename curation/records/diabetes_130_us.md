@@ -14,7 +14,7 @@ tags:
 - 'Time: Inferred'
 - 'Target: Later'
 - 'Entities: Recur'
-- Dated Event Log
+- Clinical Study
 original_source: UCI
 year: '2014'
 required_split:

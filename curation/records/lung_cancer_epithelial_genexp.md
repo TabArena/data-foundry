@@ -13,7 +13,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Inferred'
 - 'Target: Varying Delay'
-- Dated Event Log
+- Clinical Study
 collections:
 - FS Benchmark
 original_source: OpenML

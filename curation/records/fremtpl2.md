@@ -17,7 +17,7 @@ tags:
 - 'Target: Later'
 - 'Entities: Recur'
 - 'Features: Read Later'
-- Dated Event Log
+- Database Snapshot
 original_source: Other
 year: '2014'
 domain: insurance

@@ -2,8 +2,9 @@
 
 The type says how the source collected its rows; the collection facts (SPLIT-32) say when the samples arrive and where
 time lives. Three of SPLIT-35's rules tie the two: panel data needs a recorded occasion, a dated event log needs a date
-or an order per row, and a database snapshot or a clinical study whose rows keep one is a dated event log. A known
-contradiction is listed in ``PENDING`` with where it is decided; an entry that no longer contradicts leaves the list.
+its raw rows record (an order rebuilt from the data does not count), and a database snapshot or a clinical study whose
+rows record one is a dated event log. A known contradiction is listed in ``PENDING`` with where it is decided; an entry
+that no longer contradicts leaves the list.
 """
 
 from __future__ import annotations
@@ -23,10 +24,15 @@ COLLECTION_TYPES = (
     "Dated Event Log",
     "Panel Data",
 )
-DATED = {"Time: Dated", "Time: Inferred"}
-OCCASION = DATED | {"Time: Within Entity"}
+DATED = {"Time: Dated"}
+OCCASION = DATED | {"Time: Inferred", "Time: Within Entity"}
 
-PENDING: dict[str, str] = {}
+PENDING: dict[str, str] = {
+    "loan_default_prediction_imperial_college": (
+        "a snapshot whose record says `Time: Dated`, though no date is given and the loans' order is read from the file"
+        " (`Time: Inferred` under SPLIT-32); the fact is corrected on the PR that owns the collection facts (#50)"
+    ),
+}
 """Records whose contradiction is known, with where it is decided."""
 
 
@@ -39,9 +45,9 @@ def contradictions(tags: set[str]) -> list[str]:
     found = []
     dated_rows = "Samples: Over Time" in tags and bool(tags & DATED)
     if kind == "Dated Event Log" and not dated_rows:
-        found.append("a dated event log needs samples over time with a date or an order per row")
+        found.append("a dated event log needs samples over time with a date its rows record")
     if kind in ("Database Snapshot", "Clinical Study") and dated_rows:
-        found.append(f"a {kind.lower()} whose rows keep a date or an order is a dated event log")
+        found.append(f"a {kind.lower()} whose rows record a date is a dated event log")
     if kind == "Panel Data" and not tags & OCCASION:
         found.append("panel data needs a recorded occasion: a date, an inferred order or an order within the unit")
     return found
@@ -85,7 +91,9 @@ def test_pending_contradictions_still_hold(found: dict[str, list[str]]) -> None:
         ({"Dated Event Log", "Samples: Over Time", "Time: Lost"}, 1),
         ({"Database Snapshot", "Samples: Over Time", "Time: Lost"}, 0),
         ({"Database Snapshot", "Samples: One Moment"}, 0),
-        ({"Database Snapshot", "Samples: Over Time", "Time: Inferred"}, 1),
+        ({"Database Snapshot", "Samples: Over Time", "Time: Inferred"}, 0),
+        ({"Dated Event Log", "Samples: Over Time", "Time: Inferred"}, 1),
+        ({"Clinical Study", "Samples: Over Time", "Time: Inferred"}, 0),
         ({"Clinical Study", "Samples: Over Time", "Time: Dated"}, 1),
         ({"Experimental Results", "Samples: Over Time", "Time: Dated"}, 0),
         ({"Panel Data", "Samples: Over Time", "Time: Lost", "Time: Within Entity"}, 0),

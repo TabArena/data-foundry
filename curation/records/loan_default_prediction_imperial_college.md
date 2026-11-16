@@ -15,7 +15,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
-- Dated Event Log
+- Database Snapshot
 original_source: Kaggle
 year: '2014'
 domain: finance
