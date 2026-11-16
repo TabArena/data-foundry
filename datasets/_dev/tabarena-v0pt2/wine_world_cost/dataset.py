@@ -401,9 +401,9 @@ class WineWorldCost(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="What would a bottle of wine sell for in a UK wine shop, given its description?",
         use_case=(
-            "For example, a producer or importer offering a wine to a UK merchant estimates the shelf price it would"
-            " sell at, or a buyer judges whether a wine is good value against similar wines, from its catalogue entry"
-            " and description."
+            "For example, a UK wine merchant's buyer, offered a wine from a producer the merchant does not stock yet,"
+            " estimates the shelf price it would sell at in the merchant's range, to decide whether to list it and"
+            " what supplier price that price point allows."
         ),
         row=(
             "One wine sold by the bottle in a UK online wine shop, priced in pounds and scraped in 2023 (1,279 wines;"
@@ -426,8 +426,8 @@ class WineWorldCost(AbstractCuratedDataset):
         fit_reason=(
             "The title and description are the shop's sales copy, written for wines it had already priced: they never "
             "state the price, but their wording follows the price tier. One unnamed shop (most likely Majestic Wine) "
-            "at one time. The shop sets its prices from its costs, which the data do not hold; the model stands for "
-            "someone who does not know the price."
+            "at one time. A buyer deciding on a listing would hold the producer's tasting note, not the shop's copy, "
+            "and could look up the wine's price in other markets, which the data lack."
         ),
     )
 
@@ -478,10 +478,11 @@ class WineWorldCost(AbstractCuratedDataset):
           the price tier (value wording at a median £13-15, critic and cru wording at £31-48), but it never states
           the price and adds about 0.09 R² over the tabular columns; it stays as part of the task, with an
           approximate fit (Andrej, 2026-11-10; as coffee_rating_prediction's review text).
-        - The use case names someone who does not know the price (Andrej, 2026-11-11): a producer or importer
-          estimating the UK shelf price of a wine it offers, or a buyer judging value. The shop itself prices from its
-          costs (supplier price, duty, VAT, margin), which the data do not hold; the shop's copy stands in for the
-          producer's own tasting note.
+        - The use case is a UK merchant's buyer deciding whether to list a wine from a producer the merchant does not
+          stock yet, and at which shelf price point (Lennart, 2026-11-16; Andrej's wording of 2026-11-11 named a
+          producer, importer or buyer). The trade fixes the shelf price point first and works the supplier price back
+          from it (VAT, duty, margins), so the price a new wine can command is the buyer's question; the merchant's
+          costs set its margin, not that price. The shop's copy stands in for the producer's own tasting note.
         - Grouped by producer since 2026-11-11 (random before; Andrej, 2026-11-11): the closest real use the data can test
           is pricing a wine from a producer the shop does not list yet. The data hold no listing date, so no
           split forward in time can be built; under the random split 64% of the test wines had a wine of the same
@@ -521,7 +522,7 @@ class WineWorldCost(AbstractCuratedDataset):
         prediction_unit="row",
         context="none",
         definition="""
-            One group is a producer: the house, estate, winery or cooperative that makes and sells the wine under its name, with its brands, ranges and second wines (615 producers, 1 to 35 wines; 250 with more than one). The data have no producer column; the key is read from the title and checked by hand (curation comments). The use case is a producer, importer or buyer estimating the shelf price of a wine not on the list, often from a producer the shop does not sell yet; such a wine has no sibling in the price list to read the price level from, so the test producers are new to the model. The shop's own-label ranges (Definition, Chosen by Majestic, Selected by Majestic, Parcel Series, Winemaker Series) are one group each. Each row is one prediction, made from the wine's catalogue entry and the shop's copy.
+            One group is a producer: the house, estate, winery or cooperative that makes and sells the wine under its name, with its brands, ranges and second wines (615 producers, 1 to 35 wines; 250 with more than one). The data have no producer column; the key is read from the title and checked by hand (curation comments). The use case is a merchant's buyer estimating the shelf price of a wine from a producer the merchant does not stock yet; such a wine has no sibling in the price list to read the price level from, so the test producers are new to the model. The shop's own-label ranges (Definition, Chosen by Majestic, Selected by Majestic, Parcel Series, Winemaker Series) are one group each. Each row is one prediction, made from the wine's catalogue entry and the shop's copy.
         """,
     )
 

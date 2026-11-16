@@ -60,6 +60,8 @@ CC (2026-11-11, Andrej): split grouped by producer (review page issue 5, a, the 
 
 CC (2026-11-11, Andrej): use case reframed (review page issue 6, B): the actor is a producer or importer estimating the UK shelf price of a wine it offers, or a buyer judging whether a wine is good value, not the shop, which prices from its costs (supplier price, duty, VAT, margin) that the data do not hold. `use_case` and `question` rewritten; `fit_reason` adds that the model stands for someone who does not know the price (fit stays approximate; its price-tier numbers moved to `curation_comments`); the grouping definition and the split bullet name the new actor. Text only, data unchanged.
 
+CC (2026-11-16, Lennart): use case kept (review page issue 7, A, as drafted): the actor is a UK wine merchant's buyer who, offered a wine from a producer the merchant does not stock yet, estimates the shelf price it would sell at, to decide whether to list it and what supplier price that price point allows; the trade fixes the price point first and works the supplier price back from it. `use_case` rewritten, `fit_reason`'s last sentence names what such a buyer would hold instead (the producer's tasting note, the wine's price in other markets); fit stays approximate. Text only, data unchanged.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it after two small changes (issues 1 and 2). Reviewed on 2026-11-04
@@ -78,7 +80,7 @@ family on one side lowers R² only from 0.741 to 0.733. Weighed: methods separat
 an unnamed shop and an uploader's own licence -, one shop at one time -, better data may exist (Alko's price list,
 not screened yet) -.
 
-**Main points:** Issues 1 to 4 settled (2026-11-10): the shop's copy stays with an approximate fit (1), the two spirits stay (2), the random split is named a `Snapshot` of the 2023 scrape (3), and the sentence quoting a wine's own earlier price is removed (4). Record `original_source` set to Kaggle (2026-11-11). Split settled (2026-11-11): grouped by a hand-checked producer key, 615 producers (5). Use case reframed (2026-11-11): a producer, importer or buyer estimating the UK shelf price of a wine not on the list, not the shop, which prices from its costs (6). Open for Lennart (2026-11-13): whether any real use case exists, keep as a valuation proxy, mark like the sibling wine tables, or retire (7).
+**Main points:** Issues 1 to 4 settled (2026-11-10): the shop's copy stays with an approximate fit (1), the two spirits stay (2), the random split is named a `Snapshot` of the 2023 scrape (3), and the sentence quoting a wine's own earlier price is removed (4). Record `original_source` set to Kaggle (2026-11-11). Split settled (2026-11-11): grouped by a hand-checked producer key, 615 producers (5). Use case reframed (2026-11-11): a producer, importer or buyer estimating the UK shelf price of a wine not on the list, not the shop, which prices from its costs (6). Use case settled (2026-11-16, Lennart): kept, a UK merchant's buyer deciding whether to list a wine from a producer it does not stock yet, and at which price point (7).
 
 **Record judgment:** valid, ship after the changes. Andrej disputed Lennart's `Yes` on 2026-10-15; his strongest
 points were the licence and provenance of scraped shop copy and that the copy is written for wines already priced. The
@@ -402,3 +404,44 @@ to-do notes are done.
    [^7a]: **USE-1** (Must): a use case is an actor, a moment and a decision. **USE-9** (Should): weigh a use case
      rephrased only to excuse a gap.
    [^7b]: **USE-2** (Must): a task no decision fits is out; marker `No Good Target / Scientific Discovery`.
+
+   **Answer (AI, 2026-11-16):** the test in the problem is stricter than the rules and the precedents; keep (A),
+   with the use case restated as a UK merchant's buyer deciding on a listing.
+
+   - The trade fixes the shelf price point first and works the supplier price back from it (VAT, duty, margins): a
+     retailer's buying team put the volume lost over a key price point at 30% or more
+     ([The Drinks Business, 2005](https://www.thedrinksbusiness.com/2005/05/price-points-free-99/6/)), and producers
+     are offered a price point their costs must fit
+     ([Decanter, Jefford](https://www.decanter.com/features/supermarket-bullies-column-by-andrew-jefford-247375/)).
+     The price a new wine can command is the buyer's question; the costs set the margin.
+   - The copy written after pricing is an input gap, weighed in issue 1 (kept, fit approximate); counting it again
+     against the use case counts it twice. Most of the text signal is in the title, the wine's name, which a buyer
+     has (table).
+   - A wine from a producer the merchant does not list has no UK shelf price to look up, and the producer split tests
+     that case; its price in other markets is a better input the data lack, which makes the fit approximate, not
+     None[^7c].
+   - Precedents: diamonds ships with fit direct on the same frame (a seller pricing a newly listed stone in line with
+     its catalogue), fiat_500 and immoscout_german_house_prices on asking prices; retiring this one on issue 7's
+     ground reopens them. Against: a third wording of the use case[^7d], as nba_players_2016_2019 moved its
+     prediction point; it differs in that nba's inputs did not exist at its prediction point, while these exist at a
+     listing except the shop's copy.
+
+     | Inputs (random split, R² on log price) | R² |
+     |---|---|
+     | All columns (ridge on TF-IDF, 3 folds x 10) | 0.741 |
+     | No title or description | 0.651 |
+     | Title only | 0.629 |
+     | Description only | 0.522 |
+     | All columns (9 splits, 2026-10-14) | 0.724 |
+     | All but the description (9 splits, 2026-10-14) | 0.700 |
+
+   [^7c]: **USE-8** (Must): a stand-in with a known gap is approximate; the fit is None only when no decision fits
+     (**USE-2**).
+   [^7d]: **USE-9** (Should): weigh a use case rephrased only to excuse a gap.
+
+   **Lennart (2026-11-16, A):** A, as drafted.
+
+   **Resolved (2026-11-16, Lennart):** A: kept, fit approximate. `use_case` = "For example, a UK wine merchant's buyer, offered a wine from a producer the merchant does not stock yet, estimates the shelf price it would sell at in the merchant's range, to decide whether to list it and what supplier price that price point allows."; `fit_reason`'s last
+   sentence = "A buyer deciding on a listing would hold the producer's tasting note, not the shop's copy, and could look up the wine's price in other markets, which the data lack." (the drafted sentence shortened to stay under 70 words); the curation bullet on the use
+   case and the grouping definition name the merchant's buyer; README regenerated; record CC line. Text only, data
+   unchanged.

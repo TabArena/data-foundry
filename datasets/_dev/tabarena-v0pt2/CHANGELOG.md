@@ -1,5 +1,15 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-16, wine_world_cost: the use case kept as a merchant's listing decision (Lennart's decision, no container built)
+
+- Review issue 7 (whether any real use case exists), A: kept, fit approximate. The actor is a UK wine merchant's buyer
+  who, offered a wine from a producer the merchant does not stock yet, estimates the shelf price it would sell at, to
+  decide whether to list it and what supplier price that price point allows. The trade fixes the price point first and
+  works the supplier price back from it, so the merchant's costs set its margin, not the price.
+- `use_case`, the last sentence of `fit_reason`, the curation bullet on the use case and the grouping definition
+  rewritten; README regenerated. Text only: the data and the split are unchanged.
+- The record: the AI's answer, Lennart's turn and the resolution in issue 7, a CC line, `Main points` updated.
+
 ## 2026-11-16, regensburg_pediatric_appendicitis kept with fixes, no longer retired (no container built)
 
 - Lennart, 2026-11-16, and Andrej: the label of the children not operated is an outcome, not the surgeon's decision.

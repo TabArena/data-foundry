@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: wine_world_cost
 container_format: 2
-checksum: v2:f55d945ced3b29be317c2f8240f0c18df46118504fa6f6431521c109f6c8bc20
+checksum: v2:9b341dbacb254595edaa2470e1655fd913e31481447ff87feff033e21b0c254a
 build:
   uuid: 01a111fc-bf3e-75e4-bd32-d489275dd877
   checksum: v2:8c168087d0023ac94900336e032900e565a964201c4ad6c2a0b794fbc26f2a6a
@@ -75,13 +75,13 @@ decisions: []
 
 Regression of `Price`, scored with `rmsle` on grouped splits by `Producer`. 1,279 rows and 14 features. Source: Kaggle (2023).
 
-Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f55d945ced3b29be317c2f8240f0c18df46118504fa6f6431521c109f6c8bc20`, so the build is stale. See [Build](#build).
+Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9b341dbacb254595edaa2470e1655fd913e31481447ff87feff033e21b0c254a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
 **Question.** What would a bottle of wine sell for in a UK wine shop, given its description?
 
-**Use case.** For example, a producer or importer offering a wine to a UK merchant estimates the shelf price it would sell at, or a buyer judges whether a wine is good value against similar wines, from its catalogue entry and description.
+**Use case.** For example, a UK wine merchant's buyer, offered a wine from a producer the merchant does not stock yet, estimates the shelf price it would sell at in the merchant's range, to decide whether to list it and what supplier price that price point allows.
 
 **One row.** One wine sold by the bottle in a UK online wine shop, priced in pounds and scraped in 2023 (1,279 wines; most likely Majestic Wine, which 78 descriptions name).
 
@@ -93,7 +93,7 @@ Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We added the producer, read from the title and checked by hand, as a group column and split by it; with random wines, 64% of the test wines had a wine of their producer in training.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The title and description are the shop's sales copy, written for wines it had already priced: they never state the price, but their wording follows the price tier. One unnamed shop (most likely Majestic Wine) at one time. The shop sets its prices from its costs, which the data do not hold; the model stands for someone who does not know the price.
+> **Use case fit: approximate (a stand-in with a known gap).** The title and description are the shop's sales copy, written for wines it had already priced: they never state the price, but their wording follows the price tier. One unnamed shop (most likely Majestic Wine) at one time. A buyer deciding on a listing would hold the producer's tasting note, not the shop's copy, and could look up the wine's price in other markets, which the data lack.
 
 ## Files in this folder
 
@@ -211,10 +211,11 @@ We start with the Kaggle version. We resolve several issues from the web scrappe
   the price tier (value wording at a median £13-15, critic and cru wording at £31-48), but it never states
   the price and adds about 0.09 R² over the tabular columns; it stays as part of the task, with an
   approximate fit (Andrej, 2026-11-10; as coffee_rating_prediction's review text).
-- The use case names someone who does not know the price (Andrej, 2026-11-11): a producer or importer
-  estimating the UK shelf price of a wine it offers, or a buyer judging value. The shop itself prices from its
-  costs (supplier price, duty, VAT, margin), which the data do not hold; the shop's copy stands in for the
-  producer's own tasting note.
+- The use case is a UK merchant's buyer deciding whether to list a wine from a producer the merchant does not
+  stock yet, and at which shelf price point (Lennart, 2026-11-16; Andrej's wording of 2026-11-11 named a
+  producer, importer or buyer). The trade fixes the shelf price point first and works the supplier price back
+  from it (VAT, duty, margins), so the price a new wine can command is the buyer's question; the merchant's
+  costs set its margin, not that price. The shop's copy stands in for the producer's own tasting note.
 - Grouped by producer since 2026-11-11 (random before; Andrej, 2026-11-11): the closest real use the data can test
   is pricing a wine from a producer the shop does not list yet. The data hold no listing date, so no
   split forward in time can be built; under the random split 64% of the test wines had a wine of the same
@@ -284,7 +285,7 @@ Grouped splits on the producer: all wines of one producer stay on one side, so a
 
 ## Group structure
 
-One group is a producer: the house, estate, winery or cooperative that makes and sells the wine under its name, with its brands, ranges and second wines (615 producers, 1 to 35 wines; 250 with more than one). The data have no producer column; the key is read from the title and checked by hand (curation comments). The use case is a producer, importer or buyer estimating the shelf price of a wine not on the list, often from a producer the shop does not sell yet; such a wine has no sibling in the price list to read the price level from, so the test producers are new to the model. The shop's own-label ranges (Definition, Chosen by Majestic, Selected by Majestic, Parcel Series, Winemaker Series) are one group each. Each row is one prediction, made from the wine's catalogue entry and the shop's copy.
+One group is a producer: the house, estate, winery or cooperative that makes and sells the wine under its name, with its brands, ranges and second wines (615 producers, 1 to 35 wines; 250 with more than one). The data have no producer column; the key is read from the title and checked by hand (curation comments). The use case is a merchant's buyer estimating the shelf price of a wine from a producer the merchant does not stock yet; such a wine has no sibling in the price list to read the price level from, so the test producers are new to the model. The shop's own-label ranges (Definition, Chosen by Majestic, Selected by Majestic, Parcel Series, Winemaker Series) are one group each. Each row is one prediction, made from the wine's catalogue entry and the shop's copy.
 
 | field | value |
 |---|---|
@@ -434,4 +435,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f55d945ced3b29be317c2f8240f0c18df46118504fa6f6431521c109f6c8bc20` |
+| stale | yes: the definition now gives checksum `v2:9b341dbacb254595edaa2470e1655fd913e31481447ff87feff033e21b0c254a` |
