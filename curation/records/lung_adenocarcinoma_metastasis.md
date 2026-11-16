@@ -14,6 +14,7 @@ tags:
 - New IID
 - Many features
 - Tiny Data
+- 'Samples: No Time Dimension'
 original_source: Other
 year: '2001'
 domain: medical & healthcare
@@ -47,6 +48,8 @@ CC (2026-11-11, Andrej): new record for the metastasis task on the arrays of `lu
 CC (2026-11-11, Lennart): the second review panel's issues: 1, B (USE-1 amended on this case, with its date, curator and case; the use case names the expression tissue-of-origin test as the pathologist's second opinion when the stains leave the origin open), 2, A (kept at 15 metastases, 5 per test fold, about twice parkinsons'; the count decides, since Kendall's W does not separate musk from parkinsons), 3, B (the nine agreed fixes: age, sex and pack-years as features; the target as No / Yes; the notes on the negatives, the four positives staged as primaries and the recording mechanism; the claim corrections; PROV-7 for the new record).
 
 CC (2026-11-11, Lennart): the declared metric, ROC AUC (the binary fallback; the source scores no classifier), is checked as declared.
+
+CC (2026-11-16, Andrej): collection fact `Samples: No Time Dimension`, missing because the record was made after every record got its facts: the tumours were banked and profiled for one study (the 123 arrays scanned between 16 March and 17 April 2001), and whether a resected tumour started in the lung does not change with when it was resected. One array per tumour, so no `Entities: Recur`; the label is known with the features, so no `Target:` fact.
 
 ## Review
 

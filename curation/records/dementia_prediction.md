@@ -3,6 +3,7 @@ unique_name: dementia_prediction
 name: Dementia Prediction Dataset
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -18,6 +19,7 @@ tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Lost'
+- 'Time: Within Entity'
 - 'Entities: Recur'
 collections:
 - New (BeyondArena)
@@ -66,6 +68,8 @@ CC (2026-11-08, Lennart): issue 1, B: each person counts once. The log loss weig
 **Assessment (AI, 2026-11-08):** training with the weight changes a logistic regression's weighted log loss by -0.004 (SE 0.003, lower on 35 of 60 grouped random splits), within noise. New checksum v2:85704fee... (not built); `dataset check` 0 errors, 0 warnings.
 
 CC (2026-11-08, Lennart): the declared metric (log_loss, weighted by person_weight) is checked.
+
+CC (2026-11-16, Andrej): collection fact `Time: Within Entity` added to `Time: Lost`: the release keeps no calendar date, but it keeps the order of each person's visits (the visit number and the days since the first visit), an order within the person.
 
 ## Review
 
