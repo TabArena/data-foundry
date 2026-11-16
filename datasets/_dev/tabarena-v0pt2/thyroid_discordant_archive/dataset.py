@@ -157,7 +157,12 @@ class ThyroidDiscordantArchive(AbstractCuratedDataset):
         the archive holds only 2 requests in January 1986 and 1 in June 1986, none discordant, so the windows differ
         from option C's by those three requests (January trains the oldest window, June is tested with the summer)
         and keep its positives. An IID task of this size would get more folds; more windows would cut the 103 test
-        positives into a handful each.
+        positives into a handful each. The source split by time too: the ann-thyroid files of the same UCI zip, which
+        their readme gives as the data of Quinlan's 1987 case study, train on 3,772 requests of 1985 and test on the
+        3,428 of 1986 (every row that matches exactly one archive record by its values falls in those years). Training
+        on earlier requests only scores like random training rows of the same size (untuned LightGBM, within 0.01 ROC
+        AUC in each window), so the windows test later requests, with their changes in the tests ordered and in the
+        share of code R, rather than remove a leak.
     """
     temporal = Temporal(
         on="request_date",

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: thyroid_discordant_archive
 container_format: 2
-checksum: v2:81013ccbd6a3dac39678be50e570edd7aa7936235549705489ef13ee10ebdfa6
+checksum: v2:d57c128a71554792d886e60a81864d77f6d55742b3fc6adb19cd1b7e5bb80973
 build: null
 build_stale: false
 data:
@@ -58,7 +58,7 @@ decisions: []
 
 Binary classification of `discordant`, scored with `roc_auc` on temporal splits by `request_date`. 9,162 rows and 29 features. Source: UCI (1987).
 
-Not built yet. The current definition gives checksum `v2:81013ccbd6a3dac39678be50e570edd7aa7936235549705489ef13ee10ebdfa6`.
+Not built yet. The current definition gives checksum `v2:d57c128a71554792d886e60a81864d77f6d55742b3fc6adb19cd1b7e5bb80973`.
 
 ## In brief
 
@@ -203,7 +203,12 @@ quarter, and its fourth quarter with January 1987), as four-month windows, which
 the archive holds only 2 requests in January 1986 and 1 in June 1986, none discordant, so the windows differ
 from option C's by those three requests (January trains the oldest window, June is tested with the summer)
 and keep its positives. An IID task of this size would get more folds; more windows would cut the 103 test
-positives into a handful each.
+positives into a handful each. The source split by time too: the ann-thyroid files of the same UCI zip, which
+their readme gives as the data of Quinlan's 1987 case study, train on 3,772 requests of 1985 and test on the
+3,428 of 1986 (every row that matches exactly one archive record by its values falls in those years). Training
+on earlier requests only scores like random training rows of the same size (untuned LightGBM, within 0.01 ROC
+AUC in each window), so the windows test later requests, with their changes in the tests ordered and in the
+share of code R, rather than remove a leak.
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 5,572 to 7,947 rows, test 1,145 to 1,230 rows. Prediction horizon: 4 months.
 
@@ -226,7 +231,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 Accepted on purpose:

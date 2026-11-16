@@ -9,6 +9,10 @@
 - `thyroid_discordant` retired: `No (Retired)` with `Duplicate`. Its 3,711 rows are a subset of the same archive,
   without the request date; the archive version holds the same task with 197 discordant results instead of 58 and a
   dated split. Its folder is removed and `v2_path` cleared.
+- 2026-11-16, Lennart's review: the temporal split is kept. The splits comment adds that the source split by time
+  too (the zip's ann-thyroid files, Quinlan's 1987 case-study data, train on requests of 1985 and test on those of
+  1986) and that training on earlier requests scores like random training rows of the same size. The record gets
+  `DF: Yes`; the README is regenerated (27 bundle checks on main).
 
 ## 2026-11-12, the split count in scored units (SPLIT-33), in a PR of its own (no container built)
 
