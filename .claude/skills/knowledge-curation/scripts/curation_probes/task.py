@@ -287,6 +287,7 @@ def run(  # noqa: C901, PLR0912, PLR0913
     aggregation: str | None = None,
     group_time_on: str | None = None,
     time_on: str | None = None,
+    non_features: list[str] | tuple[str, ...] = (),
     n_splits: int | None = None,
     max_rows: int = MAX_ROWS,
     n_jobs: int = 8,
@@ -306,6 +307,8 @@ def run(  # noqa: C901, PLR0912, PLR0913
         aggregation: How a task scored per group turns row predictions into one: ``mean``, ``any`` or ``last``.
         group_time_on: The order of the rows inside a group, for ``aggregation="last"``.
         time_on: The time column of a temporal task (adds the drift baseline and a newest-rows inner hold-out).
+        non_features: Further columns of ``df`` no model reads (a time column that dates the label, which ``time_on``
+            may still name to order the rows).
         n_splits: Splits to probe (default: up to 30 for small data, else 5).
         max_rows: Rows kept of each train and test side: the newest rows of a temporal task's train side, else
             random rows (whole groups for the test side of a task scored per group).
@@ -316,7 +319,7 @@ def run(  # noqa: C901, PLR0912, PLR0913
     """
     regression = problem_type == "regression"
     group_cols = list(group_cols)
-    X, names, text_cols = features(df, [target, *group_cols])
+    X, names, text_cols = features(df, list(dict.fromkeys([target, *group_cols, *non_features])))
     if not text:
         text_cols = []
     labels_of = df[target]

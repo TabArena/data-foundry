@@ -1964,7 +1964,8 @@ def row_weight_column(spec: Any) -> str | None:
     A row weight makes each row count in proportion to it (``normalized_weighted_gini``, ``weighted_pearsonr``,
     ``rescaled_mean_tweedie_deviance``, a deviance or ``rmse`` with its ``weight`` input, ``ordered_lorenz_gini`` with
     ``per_unit``). The base premium of ``ordered_lorenz_gini`` on totals is no row weight, and neither is the key column
-    of ``weighted_pearsonr`` with ``params["weights"]``. A task's ``sample_weight`` is always this column (MET-15).
+    of ``weighted_pearsonr`` with ``params["weights"]``. A task's ``sample_weight`` is this column (MET-15) unless it is
+    declared for training alone (MET-16).
     """
     fields = _as_dict(spec)
     column = dict(fields.get("inputs") or {}).get("weight")

@@ -61,6 +61,7 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
         aggregation=grouping.aggregation if grouping is not None else None,
         group_time_on=grouping.time_on if grouping is not None else None,
         time_on=data.time_on,
+        non_features=[c for c in data.df.columns if data.feature_cols is not None and c not in data.feature_cols],
         n_splits=n_splits,
         max_rows=max_rows,
         n_jobs=n_jobs,
