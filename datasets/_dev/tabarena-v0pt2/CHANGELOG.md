@@ -1,5 +1,15 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-16, wine_world_cost: the use case kept as a merchant's listing decision (Lennart's decision, no container built)
+
+- Review issue 7 (whether any real use case exists), A: kept, fit approximate. The actor is a UK wine merchant's buyer
+  who, offered a wine from a producer the merchant does not stock yet, estimates the shelf price it would sell at, to
+  decide whether to list it and what supplier price that price point allows. The trade fixes the price point first and
+  works the supplier price back from it, so the merchant's costs set its margin, not the price.
+- `use_case`, the last sentence of `fit_reason`, the curation bullet on the use case and the grouping definition
+  rewritten; README regenerated. Text only: the data and the split are unchanged.
+- The record: the AI's answer, Lennart's turn and the resolution in issue 7, a CC line, `Main points` updated.
+
 ## 2026-11-16, regensburg_pediatric_appendicitis kept with fixes, no longer retired (no container built)
 
 - Lennart, 2026-11-16, and Andrej: the label of the children not operated is an outcome, not the surgeon's decision.
@@ -35,6 +45,19 @@
   (every prediction at or below $0.68, negatives included) 0, mailing everyone 0.111, the cup's winner 0.153 per
   donor.
 - The metric table lists `net_revenue_at_cost`; the adapter item says the spec carries no `optimum`.
+
+## 2026-11-13, wine_world_cost: split by producer, use case reframed (Andrej's decisions, no container built)
+
+Andrej's decisions of 2026-11-10 and 2026-11-11 on the dataset's review.
+
+- Split grouped by producer, random before: the data have no producer column, so a `Producer` key is read from the
+  title by a rule and two hand-made tables fix what it gets wrong; all 1,279 titles were checked by hand (615
+  producers, 1 to 35 wines). Under the random split 64% of the test wines had a wine of their producer in training.
+- Use case reframed: a producer, importer or buyer estimating the UK shelf price of a wine not on the list, not the
+  shop, which prices from its costs.
+- The shop's sales copy stays as part of the task, with an approximate fit; the whisky and the tequila stay
+  (1,279 wines, as implemented); the one sentence quoting a wine's own earlier price is removed.
+- The record: `original_source` Kaggle (was Other), `Grouped (NON-IID)`, the review in `## Review`.
 
 ## 2026-11-13, three datasets retired after review (no container built)
 
