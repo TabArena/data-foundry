@@ -1,5 +1,27 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-16: Repair custom temporal definitions and verify both builds
+
+- Rename the working-copy definitions to `duolingo_spaced_repetition_recall` and `fugaku_hpc_job_failure`, matching
+  their records and raw-input owners. Plain names support custom capped splits; the collection's `_1m` suffix
+  selects automatic sampling of full training history. Update record pointers, current outcome headers and the
+  benchmark method-check reference. Historical reports and build/source identities remain retained.
+- Keep the approved fixed training draws and test caps. Apply the current temporal sampler to the test sides after
+  explicitly drawing the training rows with the original seed and class quotas. `SplitPlan.before_sampling` retains
+  eligible history after label-availability filtering; the unchanged temporal floor is evaluated before the draw.
+  Validate matching folds, integer/unique/in-range positions and disjoint sides. Existing default behavior is unchanged.
+- Build both from clean source `a6a4ac56259a656b235696d1e74d0a8c36f68f68`:
+  - `duolingo_spaced_repetition_recall`: UUID `01a1e3a8-8cac-768b-9020-b03d7cb94769`, checksum `v2:8c78ceb1edbf5b54d0dbbe689e14fcc84fc1f0a6bea2db3f488d6135b0d192ab`, 1,429,456 rows.
+  - `fugaku_hpc_job_failure`: UUID `01a1e3af-55a4-7df0-bd28-5009e8991055`, checksum `v2:4cfcfaad3da1a6271ad90e17ac9589a303bd8573baf5fe23acdd52e508f09f8d`, 2,500,499 rows.
+- Saved reload and separate traced-input-only checks reproduce both checksums, with zero errors/warnings.
+  Fugaku retains two informational heavy-check skips. Three regenerated Fugaku prepared tables are byte-identical
+  to the archived inputs. Every final value/dtype/category/order, predictor, label, metric and ordered fold matches
+  the prior accepted containers, so their dated scientific/model evidence is reusable without new fits.
+- Full suite: 2,543 passed, 301 skipped, 44 library warnings. All three previously reported failures are fixed;
+  fixed-membership and eligibility-validation regressions are included. No check was skipped to hide those failures.
+- Only these two current builds were refreshed. The remaining five PR59 cards stay marked stale; documented
+  downstream method checks remain pending. No data or container is committed, and the draft is not merged.
+
 ## 2026-11-16: Make curation reports portable
 
 - Remove execution-system status, private run paths and collection references from the review reports and comments. Keep the scientific findings, numerical results, source/build identities, curator decisions and issue resolutions.

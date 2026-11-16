@@ -21,13 +21,15 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
-The seven packages in PR59 retain their November 5–10 build identities and checksums. Their definitions and
-reviews were migrated on November 16 for current main; the cards are marked stale until the migrated definitions
-are checked and rebuilt. No container or model was built during the rebase. Duolingo and Fugaku still need a
-decision on migrating their accepted training caps to the current full-history container protocol; Fugaku's
-custom split declaration and Duolingo's variant-name pointer are incompatible with current main. The PR remains
-a draft with these checks unresolved. SuperLender remains excluded under the November 12 redistribution decision.
-The dated changelog and each dataset's card preserve the historical build evidence.
+Duolingo and Fugaku were rebuilt on November 16 with the current APIs under their canonical record names.
+Their custom 1M/111,111 and 1M/500k train/test caps are retained. Exact comparisons preserve every accepted row,
+value, dtype, category and ordered split; reload and traced-input reproduction checks pass. Custom split plans
+retain the eligible history before sampling so the temporal training-floor check measures availability rather
+than the capped draw. No scientific requalification or new exception is implied by the compatibility repair.
+
+The other five PR59 cards retain their November 5–10 build identities and remain marked stale after the earlier
+metadata migration. The PR remains a draft pending those current-build refreshes and the documented benchmark-side
+method checks. SuperLender remains excluded under the November 12 redistribution decision.
 
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.

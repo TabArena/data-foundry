@@ -207,13 +207,15 @@ def test_custom_sampling_checks_the_eligible_history_without_waiving_the_floor()
     for sizes, expected_error in [([90, 70, 55], False), ([90, 45, 40], True)]:
         definition._before_sampling = SplitPlan(
             df=pd.DataFrame(index=range(100)),
-            splits={r: {0: (range(size), [size])} for r, size in enumerate(sizes)},
+            splits={r: {0: (range(size), [90, 91])} for r, size in enumerate(sizes)},
         )
         found = AbstractCuratedDataset._floor_findings(definition, container)
         assert any(r.slug == "splits_floor_core" for r in found) is expected_error
 
 
-@pytest.mark.parametrize("fault", ["missing_frame", "nested", "different_folds", "smaller", "negative", "outside"])
+@pytest.mark.parametrize(
+    "fault", ["missing_frame", "nested", "different_folds", "smaller", "negative", "outside", "duplicates", "overlap"]
+)
 def test_custom_sampling_refuses_invalid_eligibility(fault: str) -> None:
     """The eligibility context cannot omit folds or contain smaller/out-of-range source sides."""
     population = SplitPlan(df=pd.DataFrame(index=range(100)), splits={0: {0: (list(range(70)), [90, 91])}})
@@ -226,8 +228,15 @@ def test_custom_sampling_refuses_invalid_eligibility(fault: str) -> None:
         population.before_sampling = SplitPlan(splits={})
     elif fault == "different_folds":
         population.splits = {1: population.splits[0]}
+    elif fault == "overlap":
+        population.splits[0][0] = (list(range(70)), [60, 61])
     else:
-        train = {"smaller": [0], "negative": [-1, *range(69)], "outside": [*range(69), 100]}[fault]
+        train = {
+            "smaller": [0],
+            "negative": [-1, *range(69)],
+            "outside": [*range(69), 100],
+            "duplicates": [0] * 70,
+        }[fault]
         population.splits[0][0] = (train, [90, 91])
     with pytest.raises(DatasetDefinitionError, match="before_sampling"):
         AbstractCuratedDataset._check_before_sampling(SimpleNamespace(temporal=object()), plan)
