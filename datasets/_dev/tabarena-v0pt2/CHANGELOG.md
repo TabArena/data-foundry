@@ -1,5 +1,15 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-16, BENCHMARK_CHANGES_TODO.md: the scorer of `net_revenue_at_cost` (no container built)
+
+- New item for the TabArena side (Lennart, review of PR #100): `net_revenue_at_cost` has no fixed best value (the
+  oracle's changes per fold) and goes below 0, while TabArena's error is `optimum - score` and bencheval refuses
+  negative errors and takes ratios of them. Check whether the wrapper and the leaderboard need a refactor, or
+  normalize the metric by the oracle's revenue in Data Foundry. Its baselines are in the item: mailing nobody
+  (every prediction at or below $0.68, negatives included) 0, mailing everyone 0.111, the cup's winner 0.153 per
+  donor.
+- The metric table lists `net_revenue_at_cost`; the adapter item says the spec carries no `optimum`.
+
 ## 2026-11-13, pva_revenue_prediction_kddcup98: the cup's gift amount and net revenue (no container built)
 
 Andrej's decisions of 2026-11-11 and 2026-11-12 on the dataset's review.

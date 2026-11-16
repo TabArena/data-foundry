@@ -52,8 +52,9 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
   - **Read the spec.** Take `objective_metric.name` in format 2 (`container.format_version == 2`) and
     `objective_metric_name` in format 1.
   - **Register the custom scorers.** Wrap `data_foundry.v2.metrics.score(spec, y_true, y_pred, labels=..., **inputs)` in
-    an AutoGluon scorer (`autogluon.core.metrics.make_scorer`, with `greater_is_better` and `optimum` from the spec,
-    `needs_proba` for `prediction == "proba"`, `needs_class` for `"label"`; the module docstring has the sketch). A
+    an AutoGluon scorer (`autogluon.core.metrics.make_scorer`, with `greater_is_better` from the spec and an `optimum`
+    per metric name, which the spec does not carry (see the item on `net_revenue_at_cost` below), `needs_proba` for
+    `prediction == "proba"`, `needs_class` for `"label"`; the module docstring has the sketch). A
     metric with `inputs` (a group, an order, a weight) needs the scored rows' values of those columns: pass them by row
     index, as `data_foundry.v2.metrics.scorer(container)(y_true, y_pred, row_index)` does. A task predicted per group
     (`grouping.prediction_unit == "group"`) is aggregated first by `grouping.aggregation` (`scorer` does it; the section
@@ -95,12 +96,45 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
   | `average_precision_at_k` | custom, proba | huntprohibited_1m (`k` 12,500) |
   | `gini_top_capture` | custom, proba | amex_non_iid_1m (top 4%, negatives weighted 20), per customer (`grouping.aggregation` `last`) |
   | `rmspe` | custom, value | rossmann_store_sales |
+  | `net_revenue_at_cost` | custom, value | pva_revenue_prediction_kddcup98 (`cost` 0.68, the cup's price of a mailed piece; no fixed best value, see below) |
   | `weighted_pearsonr` | custom, value; input `weight` | g_research_crypto_forecasting_1m (scoring column `Weight`) |
   | `mean_group_pearsonr` | custom, value; input `group` | numerai_v5_2_1m (`method` `numerai_corr`, scoring column `era`) |
   | `hierarchical_balanced_accuracy` | custom, label; input `group` | micro_mass (scoring column `Strain`) |
   | `par_k` | custom, value; input `group` | sat11_hand_algo_runtime (PAR10, cutoff 5,000 s, group `instance_id`, `select_min`) |
   | `normalized_early_detection_utility` | custom, label; inputs `group`, `order` | sepsis_prediction_1m (scoring columns `Patient_ID`, `Hour`; each test patient's hours whole) |
   | `mean_poisson_deviance` | standard, value; optional input `weight` (a row weight), `min_prediction` required | fremtpl2 (scoring column `Exposure`), bemtpl97 (`expo`): claims per year insured, the weight column also the task's `sample_weight`, `min_prediction` 1e-4 (2026-11-06) |
+- [ ] **Errors of a metric without a fixed best value (`net_revenue_at_cost`).** When the scorer wrapper is built,
+  check whether it and the leaderboard need a refactor for such a metric (Lennart, 2026-11-16, review of PR #100).
+  TabArena turns each score into an error, `optimum - score` (AutoGluon's `Scorer.convert_score_to_error`), and
+  bencheval reads that error as at least 0, with 0 perfect: `verify_error` raises on a negative error (`clean_data`
+  clips only tiny ones), and improvability (`1 - best / error`), `relative_error` (`error / baseline_error`) and
+  `baseline_advantage` are ratios of errors, so they change with where the zero of the error sits. Elo, win rate,
+  rank, the rescaled loss and the normalized error (`(error - best) / (baseline - best)`) do not. Every other metric
+  of the registry has a fixed bound that no score passes (1 for the AUCs, the correlations, the normalized Ginis and
+  the normalized utility; 0 for the losses), so its error is at least 0. `net_revenue_at_cost`
+  (pva_revenue_prediction_kddcup98) has none:
+  - It is the net revenue per scored donor, in dollars, of mailing every donor whose predicted gift is above the
+    $0.68 cost. Higher is better. Its best value is the oracle's (mail exactly the donors), which changes from fold
+    to fold (0.757 over all 191,779 donors), and it falls below 0 when a model mails donors who give nothing (down to
+    -0.646).
+  - Only `p > cost` counts: any prediction at or below the cost, a negative one included, means "not mailed".
+    Mailing nobody scores 0, mailing everyone 0.111 (the cup's $10,560 on its validation file), the cup's winner
+    0.153 ($14,712). So predictions need no floor, and the score must not be clipped at 0, which would tie a model
+    that loses money with mailing nobody.
+  - The wrapper keeps `greater_is_better=True`: flipped, the model that mails only the non-donors ranks first. A
+    contract test: the oracle's error is below mailing everyone's, which is below mailing nobody's.
+
+  The options, to decide then:
+  - Normalize the metric in Data Foundry: the net revenue as a share of the oracle's on the same rows, `R / R_oracle`
+    (at most 1; mailing nobody 0, mailing everyone 0.147), as `normalized_early_detection_utility` scales the
+    PhysioNet utility between no alarm and the best and `normalized_gini` divides by the perfect model's Gini. The
+    ranking within a fold does not change, the error `1 - R / R_oracle` is at least 0 and reads as the share of the
+    attainable revenue missed, and TabArena needs no refactor. A change to the metric in Data Foundry.
+  - Keep the metric in dollars and refactor TabArena: a scorer returns its own error per scored set (the oracle's
+    score as the zero), or a task scored by such a metric enters only the aggregates that a shift of the zero leaves
+    unchanged.
+  - A fixed optimum (the largest gift less the cost) makes every error positive, but the ratio aggregates then
+    measure the distance to a value no model can reach; a clip at 0 hides the losses. Neither is a fix.
 - [ ] **Training weights.** A TODO for later: nothing changes in TabArena or AutoGluon yet. A format-2 task may declare
   a training weight, `task_metadata.sample_weight` (read it with `data_foundry.curation_container.sample_weight`): a
   scoring column that the objective metric reads as its row weight (MET-15), such as the years insured of a claims
