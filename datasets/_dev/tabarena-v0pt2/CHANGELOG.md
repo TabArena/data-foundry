@@ -25,6 +25,20 @@ Andrej's decisions of 2026-11-11 and 2026-11-12 on the dataset's review.
 - The record: `problem_type` Regression, the review in `## Review`, the decisions as CC lines.
 - The definition changes the container (target, problem type, metric, columns); it needs a rebuild.
 
+## 2026-11-13, thyroid_discordant_archive replaces thyroid_discordant (Andrej's decision, no container built)
+
+- `thyroid_discordant_archive` added: the Garvan Institute's thyroid test requests of August 1984 to January 1987
+  (UCI `thyroid0387`, 9,162 requests after 10 repeated entries), whether the laboratory commented the results as
+  discordant (report code R, 2.2%), split by the request date taken from the record id: three four-month test windows
+  from February 1986 to January 1987, each trained on every earlier request. Its review is in its record.
+- `thyroid_discordant` retired: `No (Retired)` with `Duplicate`. Its 3,711 rows are a subset of the same archive,
+  without the request date; the archive version holds the same task with 197 discordant results instead of 58 and a
+  dated split. Its folder is removed and `v2_path` cleared.
+- 2026-11-16, Lennart's review: the temporal split is kept. The splits comment adds that the source split by time
+  too (the zip's ann-thyroid files, Quinlan's 1987 case-study data, train on requests of 1985 and test on those of
+  1986) and that training on earlier requests scores like random training rows of the same size. The record gets
+  `DF: Yes`; the README is regenerated (27 bundle checks on main).
+
 ## 2026-11-12, the split count in scored units (SPLIT-33), in a PR of its own (no container built)
 
 Lennart, 2026-11-12: the count moves out of #79 (asp_potassco_classification and sat11_hand_algo_runtime under PAR10),
