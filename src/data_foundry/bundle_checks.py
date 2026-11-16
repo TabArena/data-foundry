@@ -45,7 +45,7 @@ import pandas as pd
 
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
-from data_foundry.schema import DatasetMetadata, as_column_list
+from data_foundry.schema import DatasetMetadata, as_column_list, training_only_weight
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
 
@@ -1169,13 +1169,19 @@ def _scoring_column_findings(ctx: _Ctx) -> Iterator[CheckResult]:
             f"Scoring column(s) {undocumented} lack a role, a description or the metric that uses them.",
         )
     used = {column: role for role, column in spec.inputs.items()}
-    unused = sorted(c.column for c in scoring.values() if used.get(c.column) != c.role or c.used_by != spec.name)
+    alone = training_only_weight(task)
+    unused = sorted(
+        c.column
+        for c in scoring.values()
+        if (used.get(c.column) != c.role or c.used_by != spec.name) and c.column != alone
+    )
     if unused:
         yield CheckResult(
             "task_scoring_column_unused",
             "error",
             f"Scoring column(s) {unused} are not an input of the metric {spec.name!r} in the role they declare.",
-            hint="Map the role to the column in the metric's `inputs`, or drop the column (or keep it as a feature).",
+            hint="Map the role to the column in the metric's `inputs`, or drop the column (or keep it as a feature). "
+            'A weight for training alone is the `sample_weight`, its scoring column `used_by="training"` (MET-16).',
         )
 
 
@@ -1220,10 +1226,11 @@ def _unit_weight_findings(ctx: _Ctx, unit: UnitWeight) -> Iterator[CheckResult]:
         )
 
 
-def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PLR0912 - a flat list of rules
-    """The task's training weight (``sample_weight``) is the metric's row weight (MET-15), and a row weight holds
-    finite, non-negative values with weight on every split side; a weighted Poisson target rebuilds whole counts; a
-    feature named like an amount at risk is explained when the task declares no weight (LEAK-41).
+def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:
+    """The task's training weight (``sample_weight``) is the metric's row weight (MET-15) or declared for training
+    alone (MET-16), and each weight holds finite, non-negative values with weight on every split side; a weighted
+    Poisson target rebuilds whole counts; a feature named like an amount at risk is explained when the task declares no
+    weight (LEAK-41).
     """
     from data_foundry.v2.metrics import row_weight_column  # noqa: PLC0415 - data_foundry.v2 imports this module
 
@@ -1231,64 +1238,34 @@ def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PLR0912
     spec = task.objective_metric
     sample_weight = getattr(task, "sample_weight", None)
     row_weight = row_weight_column(spec)
-    if sample_weight is not None and sample_weight != row_weight:
+    if sample_weight is not None and sample_weight != row_weight and training_only_weight(task) is None:
         yield CheckResult(
             "task_sample_weight_not_metric_weight",
             "error",
             f"`sample_weight={sample_weight!r}` is not the row weight the metric {spec.name!r} reads "
             f"({row_weight!r}): models would train on another weighting than the score uses (MET-15).",
-            hint="Map the metric's `weight` input to the same scoring column, or drop `sample_weight`.",
+            hint="Map the metric's `weight` input to the same scoring column, drop `sample_weight`, or, for a weight "
+            'meant for training alone, declare its scoring column `used_by="training"` (MET-16).',
         )
     unit = getattr(task, "unit_weight", None)
     if unit is not None:
         yield from _unit_weight_findings(ctx, unit)
-    if sample_weight is None and row_weight is not None and (unit is None or unit.column != row_weight):
+    if row_weight is not None and sample_weight != row_weight and (unit is None or unit.column != row_weight):
+        trains = "the task declares no `sample_weight`: models train unweighted"
+        if sample_weight is not None:
+            trains = f"models train with {sample_weight!r}"
         yield CheckResult(
             "task_metric_weight_without_sample_weight",
             "warning",
-            f"The metric weights rows by {row_weight!r}, but the task declares no `sample_weight`: models train "
-            "unweighted. A realized amount at risk (time insured) must also be the training weight (MET-15).",
+            f"The metric weights rows by {row_weight!r}, but {trains}. A realized amount at risk (time insured) must "
+            "also be the training weight (MET-15).",
             hint=f'Declare `sample_weight = "{row_weight}"`, or accept the warning when the weight is a function of '
             "the features (a sum insured, an asset's weight).",
         )
-    weight_column = sample_weight or row_weight
-    if weight_column is not None and ctx.df is not None and weight_column in ctx.df.columns:
-        weights = pd.to_numeric(ctx.df[weight_column], errors="coerce").to_numpy(dtype=float)
-        problems = []
-        bad = ~np.isfinite(weights)
-        if bad.any():
-            problems.append(f"{int(bad.sum())} missing or non-finite")
-        if (weights < 0).any():
-            problems.append(f"{int((weights < 0).sum())} negative")
-        if spec.name in _MEAN_DEVIANCES and (weights == 0).any():
-            problems.append(f"{int((weights == 0).sum())} zero (a rate needs a positive denominator)")
-        empty = [
-            f"r{repeat}/f{fold} {side}"
-            for repeat, fold, train_idx, test_idx in ctx.flat_splits
-            for side, idx in (("train", train_idx), ("test", test_idx))
-            if len(idx) and not np.nansum(np.clip(weights[idx], 0, None)) > 0
-        ]
-        if empty:
-            problems.append(f"no weight on {', '.join(empty[:3])}")
-        if problems:
-            yield CheckResult(
-                "task_weight_invalid",
-                "error",
-                f"The weight column {weight_column!r} has {'; '.join(problems)}: a row weight is a finite number >= 0 "
-                "with weight on every split side.",
-            )
-        if spec.name == "mean_poisson_deviance" and ctx.target in ctx.df.columns and not bad.any():
-            totals = pd.to_numeric(ctx.df[ctx.target], errors="coerce").to_numpy(dtype=float) * weights
-            off = np.abs(totals - np.round(totals)) > 1e-6 * np.maximum(1.0, np.abs(totals))
-            if off.any():
-                yield CheckResult(
-                    "task_rate_count_not_whole",
-                    "warning",
-                    f"target x {weight_column!r} is not a whole count on {int(off.sum())} row(s): a Poisson rate "
-                    "weighted by its denominator should rebuild the count it was divided from.",
-                    hint="Check that the target is the count divided by this weight, or accept with the reason.",
-                )
-    if weight_column is None and ctx.df is not None:
+    weight_columns = [c for c in dict.fromkeys((sample_weight, row_weight)) if c is not None]
+    for column in weight_columns:
+        yield from _weight_column_findings(ctx, column, scored=column == row_weight)
+    if not weight_columns and ctx.df is not None:
         excluded = {ctx.target, *ctx.columns_of(task.group_on), *(c.column for c in task.scoring_columns)}
         suspects = sorted(
             c
@@ -1303,6 +1280,51 @@ def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PLR0912
                 "by the outcome and never a feature; it is the rate's denominator and the weight (LEAK-41, MET-15).",
                 hint="Say in the notes what the column is (planned or realized) and accept the warning, or ship the "
                 "rate with the column as `sample_weight`.",
+            )
+
+
+def _weight_column_findings(ctx: _Ctx, column: str, *, scored: bool) -> Iterator[CheckResult]:
+    """One weight column (the training weight, the metric's row weight, or both) holds finite values >= 0 with weight
+    on every split side; the metric's weight of a mean deviance is positive (a rate's denominator), and under a Poisson
+    deviance target x weight rebuilds whole counts. A weight for training alone (``scored=False``) only trains.
+    """
+    if ctx.df is None or column not in ctx.df.columns:
+        return
+    spec = ctx.task.objective_metric
+    weights = pd.to_numeric(ctx.df[column], errors="coerce").to_numpy(dtype=float)
+    problems = []
+    bad = ~np.isfinite(weights)
+    if bad.any():
+        problems.append(f"{int(bad.sum())} missing or non-finite")
+    if (weights < 0).any():
+        problems.append(f"{int((weights < 0).sum())} negative")
+    if scored and spec.name in _MEAN_DEVIANCES and (weights == 0).any():
+        problems.append(f"{int((weights == 0).sum())} zero (a rate needs a positive denominator)")
+    empty = [
+        f"r{repeat}/f{fold} {side}"
+        for repeat, fold, train_idx, test_idx in ctx.flat_splits
+        for side, idx in (("train", train_idx), ("test", test_idx))
+        if len(idx) and not np.nansum(np.clip(weights[idx], 0, None)) > 0
+    ]
+    if empty:
+        problems.append(f"no weight on {', '.join(empty[:3])}")
+    if problems:
+        yield CheckResult(
+            "task_weight_invalid",
+            "error",
+            f"The weight column {column!r} has {'; '.join(problems)}: a row weight is a finite number >= 0 with "
+            "weight on every split side.",
+        )
+    if scored and spec.name == "mean_poisson_deviance" and ctx.target in ctx.df.columns and not bad.any():
+        totals = pd.to_numeric(ctx.df[ctx.target], errors="coerce").to_numpy(dtype=float) * weights
+        off = np.abs(totals - np.round(totals)) > 1e-6 * np.maximum(1.0, np.abs(totals))
+        if off.any():
+            yield CheckResult(
+                "task_rate_count_not_whole",
+                "warning",
+                f"target x {column!r} is not a whole count on {int(off.sum())} row(s): a Poisson rate weighted by "
+                "its denominator should rebuild the count it was divided from.",
+                hint="Check that the target is the count divided by this weight, or accept with the reason.",
             )
 
 

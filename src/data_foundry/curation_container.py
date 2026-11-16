@@ -85,8 +85,9 @@ def feature_columns(container: CuratedContainer) -> list[str]:
 
 def sample_weight(container: CuratedContainer) -> str | None:
     """The task's training weight column, or ``None``: fit every model with it as each row's weight, never as a
-    feature (it is a scoring column, so :func:`feature_columns` leaves it out). It is also the metric's row weight,
-    so the scorer weights the test rows alike.
+    feature (it is a scoring column, so :func:`feature_columns` leaves it out). Usually it is also the metric's row
+    weight, so the scorer weights the test rows alike; a weight for training alone (MET-16), its scoring column used
+    by ``"training"``, is read by the fit only.
 
     ``model.fit(X, y, sample_weight=container.dataset[col].iloc[train_idx])`` with
     ``col = sample_weight(container)``; a format-1 container has none.
