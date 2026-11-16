@@ -7,12 +7,9 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-- WIP (Triage)
-claimed_by: Andrej
-suggestion: No (Retired)
+suggestion: 'Yes'
 decision_markers:
 - Class-dependent Recording
-- No Good Target / Scientific Discovery
 tags:
 - Tiny Data
 collections:
@@ -30,6 +27,7 @@ source_links:
 - https://archive.ics.uci.edu/dataset/938/regensburg+pediatric+appendicitis
 - (https://www.openml.org/search?type=data&id=46603&sort=runs&status=active)
 notebook_path: datasets/beyond_iid/new_iid/regensburg_pediatric_appendicitis/regensburg_pediatric_appendicitis.ipynb
+v2_path: datasets/_dev/tabarena-v0pt2/regensburg_pediatric_appendicitis/dataset.py
 source_row: 746
 type_adapter_id: curation-record-v1
 ---
@@ -82,6 +80,23 @@ CC (2026-11-06, Andrej): retired (`No (Retired)`, `No Good Target / Scientific D
 - **Not changed:** `Selection Bias` was considered for the operated-only version and not added, since that version does not ship.
 To do: the v2 folder leaves the working copy once its Review is committed.
 
+CC (2026-11-16, Andrej): Keep, reversing the retirement of 2026-11-06, with changes to the data in `dataset.py` (not built). Lennart's reading holds: the label of the 479 children not operated is an outcome of their observation, not the surgeon's decision. ROC AUC (3-fold x 10) on the changed data: TabPFN 3.5 0.934, random forest 0.919, logistic regression 0.910 (0.939, 0.925 and 0.916 before).
+
+**Changes made:**
+1. **Problem:** the retirement rested on a model of the decision to operate that ranks the label at ROC AUC 0.904, but that fits both readings, since surgeons operate on the children who look severe. The children not operated were observed in hospital, with ultrasound and without antibiotics, and discharged once they improved (Marcinkevics et al. 2021), so their label is an outcome. **Change:** the record is `Yes` again, `No Good Target / Scientific Discovery` is removed (`Class-dependent Recording` stays), and the folder is restored with `v2_path`.
+2. **Problem:** the use case was the choice between surgery and conservative treatment, the same choice that sets the label of the children not operated. **Change (Lennart):** a surgeon flags at admission the children likely to have a complicated appendicitis, to operate on them urgently and plan their care.
+3. **Problem:** rebound tenderness on the right and the three urine tests are missing for none and 18% of the children not operated, but for 50-59% and 30-41% of the operated ones, likely not charted when a child went to surgery quickly, so their gaps mark the operation. **Change (Lennart):** dropped; their values add nothing (gradient boosting 0.908 with them, 0.905 without).
+4. **Problem:** the fix of 2026-10-27 (BMI to one decimal, the neutrophil share in whole percent) never reached the definition; and ages computed from the birth date (8 decimals, against 2 when typed) mark 2016-2018, when fewer children were complicated (12% against 18% later; the format alone gives 0.56 on the label). **Change:** age, BMI and the neutrophil share are written at the precision of the measured values.
+5. **Problem:** follow-up was incomplete (61 of 86 children with appendicitis not operated were reached in the 2021 study), so a few complicated cases may count as uncomplicated, all in one direction. A model of the Düsseldorf cohort, where every child with appendicitis but one was operated, expects at most about 9 complicated cases among the 82 Regensburg children with appendicitis not operated, where the label has none. **Change:** the fit stays approximate and its reason names the follow-up label, the 37% operated and this estimate.
+6. **Problem:** children are admitted over 2016-2021, the use case scores later admissions and the period matters (12.0% complicated against 18.8%), but the file has no dates and only two periods can be told apart, too few for a temporal split. **Change:** the random split is tagged `ForcedIIDFromTemporal`, with its cost in the split notes: trained on 2016-2018 and tested on 2019-2021, TabPFN 3.5 reaches ROC AUC 0.931 against 0.935 and log loss 0.290 against 0.221 for random splits of the same sizes.
+
+**Problems found, not changed:**
+- The psoas sign (pain on stretching the hip muscle) and dysuria (pain on urinating) have the same gap pattern, smaller (missing for none of the children not operated, 7-12% of the operated); dropping them changes nothing (missing values alone 0.748 either way on operated against not operated uncomplicated children).
+- After the drops, missing values alone still give 0.72 on the label, from the ultrasound findings, which are filled in when the report describes them: they are on the record at admission.
+- `US_Number`, already dropped, is not an admission order: within each period it was assigned in blocks by the children's group, so it would give the label away. Its reason in `dataset.py` is corrected.
+
+References: as in the CC of 2026-10-27.
+
 ## Review
 
 **Outcome:** added. All 763 children with suspected appendicitis who had an ultrasound at the Regensburg children's
@@ -99,7 +114,9 @@ ROC AUC 0.147 to 0.065), TabPFN 3.5 first. Quality: class-linked missing values 
 notes (`Class-dependent Recording`). Weighed: a documented hospital cohort with a real surgical decision against a label
 shaped by one hospital's practice.
 
-**Main points:** Retired (2026-11-06, issue 2): the label is largely the decision to operate.
+**Main points:** Kept (2026-11-16, issue 3), reversing the retirement of 2026-11-06 (issue 2): the label of the
+children not operated is read as an outcome of observation, not as the surgeon's decision; the use case, the drops
+and the precision fixes are in the definition. The split stays random, tagged as forced from temporal (issue 4).
 
 **Record judgment:** valid after repair, settled by CC 2026-10-27 (Andrej: keep, BMI and neutrophil share at
 measured precision, the label's origin in the texts); the ordinal scales of PR #37 follow Lennart's marks of
@@ -304,6 +321,106 @@ measured precision, the label's origin in the texts); the ordinal scales of PR #
    decision signs dropped, children with appendicitis only, operated children only) and what each left: the surgeon's
    decision in the label, or the practice and its period shift in the operated sample. The folder stays until this
    file is committed.
+
+3. **Keep after all, reading the label of the children not operated as an outcome?**
+
+   * **Problem:**
+     - Lennart (2026-11-16, on the retirement PR) reads "treated without surgery, improved, did not come back" as an
+       outcome rather than a decision: only children who looked simple and improved stayed without surgery, none of
+       them had an abscess on ultrasound, the 21 who came back were operated and graded (3 complicated), and a
+       gangrenous or perforated appendix rarely heals unnoticed. The surgeons decide from the same signs that mark
+       severity, which explains the 0.904 of the surgery model.
+     - That 0.904, the reason for the retirement, fits both readings. The children not operated were observed in
+       hospital, with ultrasound and without antibiotics, and discharged once they improved (2021 paper, Methods),
+       a stronger test than "sent home and did not come back". What remains is incomplete follow-up (61 of 86 children
+       with appendicitis not operated reached in 2021), which can only turn complicated cases into uncomplicated ones.
+     - The codebook dates every feature to admission or the first hours of observation, before the decision.
+   * **Experiments:**
+     - How many complicated cases the follow-up label misses. A model of the Düsseldorf cohort (same group and label
+       definition; every child with appendicitis but one operated, so nearly every label is a tissue examination),
+       calibrated there in every risk bin, applied to Regensburg's 2016-2018 children:
+
+       | Regensburg 2016-2018 | Children | Complicated in the label | Expected (TabPFN 3.5 / logistic regression) |
+       |---|---|---|---|
+       | Operated | 165 | 51 | 46.7 / 54.6 |
+       | Not operated, appendicitis | 82 | 0 | 9.0 / 8.1 |
+       | Not operated, no appendicitis | 183 | 0 | 11.7 / 8.7 |
+
+       Both counts for children not operated are upper bounds: the model cannot see who improved under observation,
+       and it overshoots for mild children (Düsseldorf's own rate among children without appendicitis, 2 of 71, gives
+       about 5 of the 183).
+     - Gaps that mark the operation (gradient boosting, 3-fold x 10; missing values as the only input, except in the
+       last column):
+
+       | Columns | Missing values: label | Missing values: operated against not operated, uncomplicated | All features: label |
+       |---|---|---|---|
+       | As defined | 0.804 | 0.849 | 0.908 |
+       | Without rebound on the right and the three urine tests | 0.720 | 0.748 | 0.905 |
+       | Also without the psoas sign and dysuria (ages rounded) | 0.710 | 0.748 | 0.905 (0.906 with them) |
+
+       What remains comes from the ultrasound findings (the other columns alone: 0.48 on operated against not
+       operated), which are filled in when the report describes them.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep (implemented) | 763 children; Lennart's use case (flag at admission) and drops; age, BMI and neutrophil share at the precision of the measured values; the fit names the follow-up label and the Düsseldorf estimate | the source's target, read as an outcome; the full cohort | a few complicated cases among mild-looking children may count as uncomplicated |
+     | B | Stay retired | as resolved on 2026-11-06 | no label set partly by follow-up | the reason given does not tell the two readings apart |
+
+   * **Recommendation:** A. **Decision:** keep (A) or stay retired (B)?
+
+   **Andrej (2026-11-16):** "I agree with keeping it, add your additional fixes as a comment" (the precision of age,
+   BMI and the neutrophil share, and the Düsseldorf estimate in the fit, posted on the PR; the psoas sign and
+   dysuria kept with a note).
+
+   **Resolved (2026-11-16, Andrej):** kept (A), reversing issue 2: the record is `Yes` with `Class-dependent
+   Recording`, and the definition carries Lennart's use case and drops, the precision fixes and the fit reason
+   (CC 2026-11-16).
+
+4. **Split: temporal, or random forced from temporal?**
+
+   * **Problem:**
+     - Children are admitted over 2016-2021 and a deployed model scores later admissions, but the file has no dates.
+     - Only two periods can be told apart: ultrasound case numbers up to 440 are 2016-2018 (every child also in the
+       2021 study of those years has one up to 440), higher ones 2019-2021. Within each period the numbers follow the
+       children's group, not the admission order (of the children numbered 739-992, 1 of 124 was operated), so they
+       give no finer order. Two periods give one test window, where a temporal split needs at least three.
+   * **Experiments:**
+     - The two periods (the features tell them apart at ROC AUC 0.86):
+
+       | | 2016-2018 | 2019-2021 |
+       |---|---|---|
+       | Children | 417 | 346 |
+       | Complicated | 12.0% | 18.8% |
+       | Operated | 37.9% | 36.4% |
+       | Complicated among operated | 31.6% | 51.6% |
+       | Loss of appetite recorded as present | 30% | 77% |
+
+     - Trained on 2016-2018 and tested on 2019-2021, against 20 random splits of the same sizes:
+
+       | Model | ROC AUC, forward (95% CI) | ROC AUC, random (5-95%) | Log loss, forward | Log loss, random |
+       |---|---|---|---|---|
+       | TabPFN 3.5 | 0.931 (0.904-0.959) | 0.935 (0.925-0.945) | 0.290 | 0.221 |
+       | Logistic regression | 0.887 (0.828-0.932) | 0.905 (0.869-0.929) | 0.377 | 0.265 |
+       | Gradient boosting | 0.871 (0.823-0.911) | 0.901 (0.879-0.926) | 0.661 | 0.359 |
+
+       Ranking changes little (the forward training side also has fewer complicated cases, 50 against about 63);
+       calibration suffers, since the later period has more complicated cases.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Random, tagged `ForcedIIDFromTemporal` (implemented) | the default 10 x 3 splits; the split notes name the two periods and the cost above | 30 splits; the tag records that the shift between periods is not tested | a random split mixes the two periods |
+     | B | One temporal window | train on 2016-2018, test on 2019-2021 | tests the shift | one window where three are the minimum; one test set of 65 complicated cases |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   **Andrej (2026-11-16):** asked whether the data needs a temporal split, then had "the temporal changes you just
+   suggested" applied.
+
+   **Resolved (2026-11-16, Andrej):** A: random splits tagged `ForcedIIDFromTemporal`, with the two periods, the
+   shift and its cost in the split notes, and the admission dates to be recovered if a later release has them
+   (CC 2026-11-16).
 
 ## Reference
 
