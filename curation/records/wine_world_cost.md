@@ -89,7 +89,7 @@ found `alko_wine_price_list` (the Finnish monopoly's catalogue, about 7,600 wine
 it is screened in its own record and does not change this verdict. The record has no `CC (...)` line yet; its undated
 to-do notes are done.
 
-**Issues for Andrej:**
+**Issues for Andrej and Lennart:**
 
 1. **Keep the shop's sales copy as part of the task, and call the fit approximate?**
 
@@ -364,8 +364,6 @@ to-do notes are done.
    [^6b]: **USE-1** (Must): a use case is an actor, a moment and a decision. **USE-9** (Should): ask whether the data mirror another well-defined use case practitioners have, weighed against a use case rephrased only to excuse a gap.
 
    **Resolved (2026-11-11, Andrej):** B: reframed. `use_case` = "For example, a producer or importer offering a wine to a UK merchant estimates the shelf price it would sell at, or a buyer judges whether a wine is good value against similar wines, from its catalogue entry and description."; `question` = "What would a bottle of wine sell for in a UK wine shop, given its description?"; `fit_reason` appends "The shop sets its prices from its costs, which the data do not hold; the model stands for someone who does not know the price." (fit stays approximate; the price-tier numbers moved to the curation bullet on the copy to keep the field under 70 words); the grouping definition and the split bullet name the new actor; a curation bullet; record CC line. Text only, data unchanged.
-
-**Issues for Lennart:**
 
 7. **Use case: is there a real one at all?**
 
