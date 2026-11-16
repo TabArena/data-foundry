@@ -81,6 +81,7 @@ from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
     FORCED_TIME_TAGS,
+    HUMAN_SET_TIME_TAGS,
     RETIRED_DATA_TAGS,
     TIME_BASIS_TAGS,
     DatasetMetadataV2,
@@ -95,6 +96,7 @@ from data_foundry.schema import (
     TrainSampling,
     UnitWeight,
     as_column_list,
+    assumed_stationary_problem,
     resolve_warehouse_dir,
     rows_text,
 )
@@ -2096,6 +2098,10 @@ def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str]
         fail(f"`{prototype}` says why a split is not temporal; this one is, so drop the tag.")
     if "Time basis:" not in (cls.curation_comments or ""):
         fail(f"`{prototype}` needs a `Time basis:` line in `curation_comments` stating the fact behind it (SPLIT-32).")
+    if prototype in HUMAN_SET_TIME_TAGS:
+        problem = assumed_stationary_problem(cls.curation_comments)
+        if problem:
+            fail(f"`{prototype}`: {problem} (SPLIT-32). Without it, keep the forced tag.")
 
 
 def _regime_tags(cls: type[AbstractCuratedDataset]) -> list[str]:

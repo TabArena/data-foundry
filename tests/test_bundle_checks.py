@@ -609,6 +609,35 @@ def test_a_forced_tag_without_its_line_gets_a_note():
     assert "meta_time_basis_line_missing" not in slugs_of(make_container(dataset_metadata=metadata))
 
 
+ASSUMED_LINE = (
+    "- Time basis: AssumedStationaryRelation (Lennart, 2026-11-20): one clinic's ultrasound diagnosis over a year, a"
+    " relation of body composition to gallstones that practice does not move; the visit dates are lost."
+)
+
+
+@pytest.mark.parametrize(
+    ("comments", "expected"),
+    [
+        (ASSUMED_LINE, 0),
+        ("- Time basis: AssumedStationaryRelation: the relation does not move.", 1),
+        (ASSUMED_LINE.replace("Lennart", "AI"), 1),
+        (ASSUMED_LINE.replace("Lennart", "Claude"), 1),
+        ("- Time basis: AssumedStationaryRelation (Lennart, 2026-11-20): flat.", 1),
+    ],
+)
+def test_an_assumed_stationary_relation_names_a_person_and_a_reason(comments: str, expected: int) -> None:
+    """Only a person sets `AssumedStationaryRelation`, with a reason; dataset check refuses it otherwise (SPLIT-32)."""
+    metadata = make_dataset_metadata(data_tags=["IID", "AssumedStationaryRelation"], curation_comments=comments)
+    assert slugs_of(make_container(dataset_metadata=metadata)).count("meta_time_basis_unattributed") == expected
+
+
+def test_the_missing_basis_hint_does_not_offer_a_human_set_tag() -> None:
+    """The hint for a split without a time basis lists the prototypes an author may set, not the human-only one."""
+    report = run_bundle_checks(make_container(dataset_metadata=make_dataset_metadata(data_tags=["IID"])), verbose=False)
+    note = next(r for r in report.results if r.slug == "meta_time_basis_missing")
+    assert "AssumedStationaryRelation" not in (note.hint or "")
+
+
 def _dated_frame() -> pd.DataFrame:
     """The IID toy frame with a date column."""
     df = make_iid_frame()

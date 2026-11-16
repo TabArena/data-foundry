@@ -100,7 +100,8 @@ K=.claude/skills/knowledge-data-foundry/scripts
   the rate times the weight is a whole count and Tweedie (power 1.5) for any other non-negative rate; L2 otherwise. Run
   the other fit too (`--objective l2`), as LEAK-41 decides on the worse. A flagged feature is judged by its timing
   (LEAK-41): one known at the quote stays (USE-6), even when its weight-mediated share is high through risk selection.
-  On a split tagged `ForcedGroupedFromTemporal` or `ForcedIIDFromTemporal` the default run ends with probe 23
+  On a split tagged `ForcedGroupedFromTemporal`, `ForcedIIDFromTemporal` or `AssumedStationaryRelation` (which replaces
+  a forced tag) the default run ends with probe 23
   (leak_checks.md, "Probe 23"; `curation_probes.leak.period_outcome` and `shared_units`), and `--forced-split` runs it
   alone: the period-outcome test on the period column it finds or `--time-on` names (it says so when there is none), and
   the shared-unit test on the group column and the exact profiles, with regularised LightGBM fits on `--forced-splits`

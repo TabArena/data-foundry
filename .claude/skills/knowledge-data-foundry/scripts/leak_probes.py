@@ -43,8 +43,9 @@ them L2 fits on the shipped scale, and any other value is passed to LightGBM as 
 the L2 and the actuarial fit and decides on the worse: when an actuarial fit exists, the output says to run the other
 one. On a rate, L2 fits are noisy under a deviance
 (bemtpl97, 20,000 rows: the weight as a feature gains +0.0005 with an SD of 0.0066 under L2, +0.0039 with an SD of
-0.0013 under the Poisson fit). A split tagged ``ForcedGroupedFromTemporal`` or ``ForcedIIDFromTemporal`` (SPLIT-8) also
-gets probe 23, the leak tests across the split, at the end of the default run; ``--forced-split`` runs it alone, on
+0.0013 under the Poisson fit). A split tagged ``ForcedGroupedFromTemporal`` or ``ForcedIIDFromTemporal`` (SPLIT-8), or
+``AssumedStationaryRelation`` in place of either, also gets probe 23, the leak tests across the split, at the end of
+the default run; ``--forced-split`` runs it alone, on
 the first ``--forced-splits`` splits (default 9) with ``--seeds`` seeds each, every side capped at ``--max-rows``, with
 regularised LightGBM fits of the objective ``--objective`` sets, scored by the declared metric. Its period-outcome
 test (``leak.period_outcome``) predicts each test period without its period's training rows and without as many random
@@ -256,8 +257,9 @@ def weight_proxy(data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict 
     return result
 
 
-FORCED_TAGS = ("ForcedGroupedFromTemporal", "ForcedIIDFromTemporal")
-"""The tags of a split forced from temporal (SPLIT-8), which gets probe 23."""
+FORCED_TAGS = ("ForcedGroupedFromTemporal", "ForcedIIDFromTemporal", "AssumedStationaryRelation")
+"""The tags of a split forced from temporal (SPLIT-8), which gets probe 23; `AssumedStationaryRelation` replaces a
+forced tag and keeps its leak test (SPLIT-32)."""
 
 
 def forced_tags(ds: object) -> list[str]:

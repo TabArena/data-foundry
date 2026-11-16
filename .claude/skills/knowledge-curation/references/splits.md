@@ -68,7 +68,9 @@ moment).
 The closest regime is IID (`ForcedIIDFromTemporal`), or grouped by the entity when the periods are stacked and the
 entities recur across them (`ForcedGroupedFromTemporal`); SPLIT-32 says when a split is forced. The definition's
 `Time basis:` line names the reason (time lost, or too few periods), says what the timestamp or a dated window would
-change and that it should be recovered if a later release has it. A forced split, grouped or
+change and that it should be recovered if a later release has it. Where a person judges the samples interchangeable
+for a reason from the dataset's domain or use case, `AssumedStationaryRelation` replaces the forced tag (SPLIT-32,
+question 4); only a person sets it. A forced split, grouped or
 IID, gets a leak test across the split and the leak probes: does a row share its outcome, its unit's outcome or its
 period's outcome with the other side, is there a hidden group, an order dependence. A leak found is weighed case by
 case like any other: removed where it can be, otherwise the task may still ship as an approximate fit with the leak
@@ -200,6 +202,22 @@ later period, at a known group or at all groups at once; where the label still m
      does not show how the data was collected (`Samples: Unknown`, or a shared moment it does not state) is forced
      too: the forced tag claims only what is known (give_me_some_credit: no scoring date stated, so not a
      `DelayedTarget`).
+   * **Unmeasured, the time lost, and a person judges the samples interchangeable:** `AssumedStationaryRelation`, in
+     place of the forced tag. It records that the split is random not only because the time is lost but because the
+     dataset's domain or use case gives a reason to take earlier and later samples as interchangeable: a mechanism
+     that the time between collection and use does not change (physiology read by a fixed reference test, a physical
+     measurement), or use within or right after the collected period. The collection span is no reason by itself; it
+     counts only against how fast the domain changes. No reason: no drift seen where nothing is dated, the random
+     split being the only option, an unchanged model ranking. Against it: opponents who adapt, prices and markets,
+     changed rules or treatments, changed coding, assays or intake, a change the source names, structure in the file
+     order. It applies only where the forced tag would stand, and only where no comparison over time is possible
+     (`Time: Lost`, or an order only within each entity); two dated periods or a rebuilt order are measured instead,
+     for `StationaryRelation` or the forced tag. Only a person sets it: an AI may offer it as an option, with the facts
+     for and against, and recommend it, but writes it only when a person asks. Its `Time basis:` line opens
+     `AssumedStationaryRelation (<person>, <YYYY-MM-DD>): <reason>` and also names why the time cannot be measured and
+     what a dated release would test; the definition and `dataset check` refuse the tag without a person and a reason
+     of eight words or more. The split stays as the forced one would be (IID, or grouped where the entities recur),
+     with SPLIT-8's leak test.
 5. **None of these prototypes fits:** the dataset and its use case go to the curator as an issue with the arrival
    facts found, rather than under the nearest tag.
 

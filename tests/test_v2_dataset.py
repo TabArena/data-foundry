@@ -1856,6 +1856,27 @@ def test_a_time_basis_is_accepted_on_an_iid_split_with_its_line(tag: str) -> Non
     assert cls.dataset_metadata.data_tags == ["IID", tag]
 
 
+def test_assumed_stationary_relation_needs_a_person_and_a_reason() -> None:
+    """Only a person sets `AssumedStationaryRelation`: its line names who, when and why (SPLIT-32)."""
+    with pytest.raises(Exception, match="only a person sets it"):
+        _define(
+            data_tags=("AssumedStationaryRelation",),
+            curation_comments=(
+                "- Time basis: AssumedStationaryRelation (AI, 2026-11-20): a reason that is long enough to count here."
+            ),
+        )
+    with pytest.raises(Exception, match="must open"):
+        _define(data_tags=("AssumedStationaryRelation",), curation_comments="- Time basis: the relation looks flat.")
+    cls = _define(
+        data_tags=("AssumedStationaryRelation",),
+        curation_comments=(
+            "- Time basis: AssumedStationaryRelation (Lennart, 2026-11-20): one clinic's ultrasound diagnosis over"
+            " a year, a relation that practice does not move; the visit dates are lost."
+        ),
+    )
+    assert cls.dataset_metadata.data_tags == ["IID", "AssumedStationaryRelation"]
+
+
 def test_snapshot_is_retired_for_retrospective() -> None:
     with pytest.raises(Exception, match="`Snapshot` is retired"):
         _define(data_tags=("Snapshot",), curation_comments="- Time basis: one scrape.")

@@ -233,7 +233,11 @@ A metric input known at the prediction point (a weight that is a function of the
   not at a later period; it needs a `grouping` on the group); or a forced tag, `"ForcedIIDFromTemporal"` when a
   forward use case has no usable time or too few periods and ships IID (a definition that declares a `grouping` or
   `temporal` refuses it), `"ForcedGroupedFromTemporal"` when such a task ships grouped (it needs a `grouping`;
-  SPLIT-8). Either way the definition carries a `Time basis:` line in `curation_comments` that states the fact behind
+  SPLIT-8). `"AssumedStationaryRelation"` replaces a forced tag where a person judged earlier and later samples
+  interchangeable for a reason from the dataset's domain or use case and no comparison over time is possible; never
+  set it yourself unless a person asks (you may offer and recommend it in a review), and open its `Time basis:` line
+  with `AssumedStationaryRelation (<person>, <YYYY-MM-DD>): <reason>`, which the definition and `dataset check` require
+  (SPLIT-32). Either way the definition carries a `Time basis:` line in `curation_comments` that states the fact behind
   it and ends with what the split cannot test; a forced tag's line names its reason (time lost, or too few periods)
   and what a dated release would change. A definition refuses two time bases, and a prototype on a temporal split or
   without its line. `dataset check` notes a split that is not temporal and says nothing about why (no time basis and

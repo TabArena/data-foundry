@@ -51,6 +51,10 @@ def contradictions(facts: set[str], basis: set[str], regime: str) -> list[str]:
         found.append("no time dimension, yet forced from temporal or split by time")
     if "StationaryRelation" in basis and "Time: Lost" in facts and not facts & {"Time: Dated", "Time: Inferred"}:
         found.append("StationaryRelation is measured on dates, and the time is lost")
+    if "AssumedStationaryRelation" in basis and facts & {"Time: Dated", "Time: Inferred"}:
+        found.append("AssumedStationaryRelation where the time can be measured: measure it instead")
+    if "AssumedStationaryRelation" in basis and "Samples: Over Time" not in facts:
+        found.append("AssumedStationaryRelation replaces a forced tag, which needs samples over time")
     return found
 
 
@@ -91,6 +95,11 @@ def test_pending_contradictions_still_hold(found: dict[str, list[str]]) -> None:
         ({"Samples: No Time Dimension"}, {"ForcedIIDFromTemporal"}, "iid", 1),
         ({"Samples: Over Time", "Time: Lost", "Target: Later"}, {"StationaryRelation"}, "iid", 1),
         ({"Samples: Over Time", "Time: Dated"}, {"StationaryRelation"}, "iid", 0),
+        ({"Samples: Over Time", "Time: Lost"}, {"AssumedStationaryRelation"}, "iid", 0),
+        ({"Samples: Over Time", "Time: Lost", "Time: Within Entity"}, {"AssumedStationaryRelation"}, "grouped", 0),
+        ({"Samples: Over Time", "Time: Dated"}, {"AssumedStationaryRelation"}, "iid", 1),
+        ({"Samples: Over Time", "Time: Inferred"}, {"AssumedStationaryRelation"}, "iid", 1),
+        ({"Samples: No Time Dimension"}, {"AssumedStationaryRelation"}, "iid", 1),
     ],
 )
 def test_contradictions(facts: set[str], basis: set[str], regime: str, expected: int) -> None:
