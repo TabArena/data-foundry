@@ -15,6 +15,7 @@ tags:
 - 'Time: Inferred'
 - 'Entities: Recur'
 - 'Features: Read Later'
+- Dated Event Log
 collections:
 - TabSTAR
 original_source: Other

@@ -14,6 +14,7 @@ decision_markers:
 tags:
 - 'Samples: One Moment'
 - 'Target: Later'
+- Database Snapshot
 year: '2009'
 required_split:
 - Random (IID)

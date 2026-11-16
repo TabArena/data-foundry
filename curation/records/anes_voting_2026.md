@@ -18,6 +18,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Later'
 - 'Entities: Recur'
+- Survey
 collections:
 - TableShift
 original_source: Website

@@ -13,6 +13,7 @@ tags:
 - Non-IID (Grouped)
 - 'Samples: One Moment'
 - 'Target: Later'
+- Database Snapshot
 year: '2017'
 domain: insurance
 required_split:

@@ -17,6 +17,7 @@ tags:
 - 'Time: Lost'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
+- Database Snapshot
 collections:
 - New (BeyondArena)
 original_source: Kaggle

@@ -12,6 +12,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Entities: Recur'
+- Clinical Study
 collections:
 - New (BeyondArena)
 original_source: Kaggle

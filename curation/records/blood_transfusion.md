@@ -12,6 +12,7 @@ suggestion: 'Yes'
 tags:
 - 'Samples: One Moment'
 - 'Target: Later'
+- Database Snapshot
 original_source: UCI
 year: '2008'
 required_split:

@@ -15,6 +15,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Later'
 - 'Entities: Recur'
+- Dated Event Log
 original_source: Other
 year: '2023'
 domain: insurance

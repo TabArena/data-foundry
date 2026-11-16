@@ -16,6 +16,7 @@ tags:
 - Spectral Data
 - 'Samples: No Time Dimension'
 - 'Entities: Recur'
+- Experimental Results
 collections:
 - FS Benchmark
 original_source: Other

@@ -14,6 +14,7 @@ decision_markers:
 tags:
 - 'Samples: No Time Dimension'
 - 'Entities: Recur'
+- Survey
 original_source: Other
 year: '2017'
 required_split:

@@ -13,6 +13,7 @@ tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- Expanding Science Catalogue
 collections:
 - New (BeyondArena)
 - ChemPile

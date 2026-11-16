@@ -17,6 +17,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Revised Later'
 - 'Features: Revised Later'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: GOV Website

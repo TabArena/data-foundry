@@ -13,6 +13,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Varying Delay'
+- Dated Event Log
 original_source: Kaggle
 year: '2020'
 required_split:

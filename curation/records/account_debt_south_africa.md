@@ -10,6 +10,7 @@ priority: 2
 tags:
 - Larger IID Data
 - 'Samples: One Moment'
+- Database Snapshot
 collections:
 - TabSTAR
 original_source: Kaggle

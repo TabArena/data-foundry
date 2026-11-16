@@ -12,6 +12,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
+- Expanding Science Catalogue
 collections:
 - New (BeyondArena)
 original_source: Other

@@ -15,6 +15,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Entities: Recur'
+- Dated Event Log
 collections:
 - TabArena Reject
 original_source: UCI

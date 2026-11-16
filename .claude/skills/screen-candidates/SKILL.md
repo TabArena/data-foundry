@@ -147,14 +147,14 @@ plain `Yes`: that is the curator's call.
 
 ## Step 6: Write the dossier
 
-Through the store API, right after reloading the record
-([records.md](../knowledge-data-foundry/references/records.md)): the verified links in `source_links`, empty metadata
-only where the source states it, `priority`, `AI (UNVERIFIED)` in `checked_by`, `AI-Filled (Verify)` and the
-collection facts (the `Samples:`, `Time:`, `Target:`, `Entities:` and `Features:` tags) in `tags` (and `Spectral Data`
-when the source's rows are measured spectra, as records.md defines the tag; such a candidate is in scope as a reading of
-the entity unless a spectrum model is clearly better, SEL-15, and
-[spectra.md](../knowledge-curation/references/spectra.md) is the guide for the next stage), and at the top of the
-comments the disclaimer followed by the screening block, every existing note kept below it:
+Through the store API, right after reloading the record ([records.md](../knowledge-data-foundry/references/records.md)):
+the verified links in `source_links`, empty metadata only where the source states it, `priority`, `AI (UNVERIFIED)` in
+`checked_by`, `AI-Filled (Verify)` and the collection facts (the `Samples:`, `Time:`, `Target:`, `Entities:` and
+`Features:` tags) and the data collection type (one of the seven tags of SPLIT-35) in `tags` (and `Spectral Data` when
+the source's rows are measured spectra, as records.md defines the tag; such a candidate is in scope as a reading of the
+entity unless a spectrum model is clearly better, SEL-15, and [spectra.md](../knowledge-curation/references/spectra.md)
+is the guide for the next stage), and at the top of the comments the disclaimer followed by the screening block, every
+existing note kept below it:
 
 ```markdown
 **Screening (AI, 2026-10-20):** `TBD -> Yes`, priority 4: <why, one line>.

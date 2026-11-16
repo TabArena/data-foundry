@@ -16,6 +16,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
+- Dated Event Log
 collections:
 - TabArena Reject
 - TabRed

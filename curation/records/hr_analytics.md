@@ -13,6 +13,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Unknown'
+- Database Snapshot
 original_source: Other
 year: '2018'
 required_split:

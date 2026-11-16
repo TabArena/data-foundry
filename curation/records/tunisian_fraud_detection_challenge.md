@@ -18,6 +18,7 @@ tags:
 - 'Target: Revised Later'
 - 'Entities: Recur'
 - 'Features: Read Later'
+- Panel Data
 collections:
 - New (BeyondArena)
 original_source: Zindi

@@ -13,6 +13,7 @@ tags:
 - Tiny Data
 - 'Samples: One Moment'
 - 'Target: Later'
+- Database Snapshot
 collections:
 - TabArena Reject
 - TabSTAR

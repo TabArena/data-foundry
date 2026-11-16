@@ -11,6 +11,7 @@ tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- Dated Event Log
 original_source: Other
 year: '2011'
 domain: business & marketing

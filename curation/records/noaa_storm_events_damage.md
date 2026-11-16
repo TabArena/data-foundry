@@ -15,6 +15,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
+- Dated Event Log
 original_source: GOV Website
 year: '2026'
 domain: environmental science & climate

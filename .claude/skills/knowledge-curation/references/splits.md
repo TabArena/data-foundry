@@ -217,6 +217,71 @@ framingham_heart_study_fhs (`DelayedTarget`), houses and 5g_energy_consumption (
 bad_customer_detection (`StationaryRelation`, measured; thyroid_discordant's one-year extract looked so too, its
 1984-1987 archive did not), musk (`Timeless`), heart_disease (`UnseenGroup`), heloc (`ForcedIIDFromTemporal`).
 
+**SPLIT-35 (Should; relates to SPLIT-32).** Every record of a definition names how its source collected
+the rows with one **data collection type**, set at screening from the source and true whatever task is built on it.
+The type is information for the split: it says which keys the data holds (an item, a family, a unit, an occasion, a
+date), not which one the use case needs. Seven types:
+
+* `Expanding Science Catalogue`: a cut of a scientific database or a testing programme that keeps growing (a
+  bioactivity database's releases, a regulator's screening programme, a materials or sequence database, the rounds of a
+  community experiment).
+* `Experimental Results`: runs of a designed experiment (wind-tunnel conditions, concrete mixes, solvers run on
+  benchmark instances, a siRNA library), or a closed set of specimens, molecules or volunteers measured by a laboratory
+  or a study protocol.
+* `Clinical Study`: patients of a clinical study, a clinic's case series or a registry, labelled by a diagnosis or a
+  follow-up outcome, with no date or order per row.
+* `Survey`: rows the survey collected itself, by its questionnaire (a clinical one too) or its sampling design
+  (vegetation quadrats, a sky survey's data releases), in one round or in waves of different units.
+* `Database Snapshot`: an organisation's records released as one extract with no date or order per row: read for one
+  date or period (a customer base, a product catalogue, one scrape of listings, a census table), or cases that arrived
+  over time with their dates dropped.
+* `Dated Event Log`: each row is one event (a trip, an order, a loan, a sale, a report, an admission) that keeps its
+  own date or an order that tracks time.
+* `Panel Data`: the same units observed at repeated periods or visits, one row per unit and occasion (station-hours,
+  store-days, account-months, policy-years, a person's study visits).
+
+Where more than one fits:
+
+1. **Panel data first,** when the release identifies the unit (an id or a link in the raw file), each occasion has a
+   recorded date or order (`Time: Dated`, `Time: Inferred` or `Time: Within Entity`; a designed factor such as a test
+   age does not count), and most rows come from units seen on two or more occasions. The rows are the unit's periods
+   or visits, not events that involve it: the storms of a county or the loans of a repeat customer are a dated event
+   log.
+2. **A dated event log needs each row's own date or an order that tracks time** (`Time: Dated` or `Time: Inferred`; a
+   value that encodes the period counts). Without one, an organisation's records are a database snapshot, whatever
+   period the source names.
+3. **Dates outrank only the clinical study:** a clinical set whose rows keep a date or an order is a dated event log.
+   Experimental results, surveys and catalogues keep their dated rows.
+4. **A catalogue is the growing database or programme itself,** not a company's own collection, a one-off deposit or a
+   closed programme; a survey's data releases are a survey.
+5. **Patient data without dates** is a clinical study when the patients arrived over time (`Samples: Over Time`), and
+   experimental results when the data has no time dimension (`Samples: No Time Dimension`: a tumour's type measured on
+   banked specimens).
+6. **A survey's rows are its own answers or samples;** a questionnaire joined with an organisation's records, or a table
+   aggregated from a census, is a database snapshot.
+
+What each type holds for the split: a catalogue its items, families and entry dates; experimental results the
+item or the run, which repeats across conditions; a clinical study patients who arrived over time with the dates lost
+(SPLIT-8), sites and patients that may recur; a survey its sampled units and its rounds; a database snapshot one read
+moment (SPLIT-32's `DelayedTarget` or `Retrospective`) or arrivals whose time is lost (SPLIT-8); a dated event log the
+row's date (SPLIT-7, SPLIT-14) and the entities its events involve (SPLIT-9); panel data both the unit (SPLIT-24) and
+the occasion. `tests/test_collection_types.py` checks that each record has one type and that the date conditions of
+rules 1 to 3 agree with its collection facts.
+
+Why: the same split question reads differently by how the rows came into the table, and the type names that before
+the split is chosen. Cases, on the 174 TabArena v0.2 definitions: catalogue 15, experimental results 17, clinical
+study 13, survey 7, database snapshot 44, dated event log 56, panel data 22. Rule 1: dementia_prediction (visits),
+sepsis_prediction_1m (stay-hours), noaa_afsc_bottom_trawl_survey_cpue (stations surveyed every year) are panel data;
+pricing_game_2016_french_fleet (most vehicles have one period), open_university_learning_analytics_dataset (few
+students register twice), allstate_claim_prediction_challenge_1m (one row per vehicle) and numerai_v5_2_1m (an id per
+stock and week) are not. Rule 2: predict_students_dropout_and_academic_success (the economic figures give the
+enrolment year); home_credit_default_risk (snapshot) against home_credit_default_stability_1m (event log), the same
+lender's applications released without and with dates. Rule 3: heart_disease, diabetes_130_us (event logs);
+infrared_thermography_temperature, wine_quality (experimental results). Rule 4: sdss_17. Rule 5: sarcoma,
+lung_adenocarcinoma_metastasis (experimental results) against indian_liver_patient_dataset (clinical study). Rule 6:
+caracas_cervical_cancer, in_vehicle_coupon_recommendation (surveys) against student_portuguese_performance and houses
+(snapshots).
+
 ### Temporal tasks
 
 Every feature has to have existed at the prediction time of its row: LEAK-10 in [leak_checks.md](leak_checks.md).

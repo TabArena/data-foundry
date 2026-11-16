@@ -15,6 +15,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
+- Dated Event Log
 original_source: Kaggle
 year: '2015'
 domain: industry & manufacturing

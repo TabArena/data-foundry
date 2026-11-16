@@ -12,6 +12,7 @@ tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Inferred'
+- Expanding Science Catalogue
 collections:
 - ChemPile
 original_source: GOV Website

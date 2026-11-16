@@ -13,6 +13,7 @@ tags:
 - Random (IID)
 - 'Samples: One Moment'
 - 'Entities: Recur'
+- Database Snapshot
 collections:
 - TabArena Reject
 - TabSTAR

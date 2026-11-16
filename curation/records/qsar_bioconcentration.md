@@ -12,6 +12,7 @@ tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- Expanding Science Catalogue
 collections:
 - TabSTAR
 original_source: UCI

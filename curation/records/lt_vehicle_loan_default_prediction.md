@@ -16,6 +16,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Later'
+- Dated Event Log
 collections:
 - TabSTAR
 original_source: Website

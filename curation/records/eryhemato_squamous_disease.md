@@ -13,6 +13,7 @@ tags:
 - Tiny Data
 - 'Samples: Over Time'
 - 'Time: Lost'
+- Clinical Study
 collections:
 - TabArena Reject
 original_source: UCI

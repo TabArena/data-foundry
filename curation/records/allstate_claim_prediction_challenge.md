@@ -15,6 +15,7 @@ tags:
 - 'Time: Lost'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
+- Database Snapshot
 original_source: Kaggle
 year: '2011'
 domain: insurance

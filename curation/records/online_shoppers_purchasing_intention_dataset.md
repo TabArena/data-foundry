@@ -13,6 +13,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Later'
+- Dated Event Log
 original_source: UCI
 year: '2018'
 required_split:

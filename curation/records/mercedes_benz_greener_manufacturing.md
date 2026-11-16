@@ -15,6 +15,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Inferred'
 - 'Target: Later'
+- Dated Event Log
 collections:
 - TabArena Reject
 - TabSTAR

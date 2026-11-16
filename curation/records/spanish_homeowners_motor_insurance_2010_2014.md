@@ -15,6 +15,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Later'
 - 'Entities: Recur'
+- Panel Data
 original_source: Other
 year: '2021'
 domain: insurance

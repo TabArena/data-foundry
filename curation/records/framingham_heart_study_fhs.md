@@ -11,6 +11,7 @@ tags:
 - New IID
 - 'Samples: One Moment'
 - 'Target: Later'
+- Clinical Study
 collections:
 - New (BeyondArena)
 original_source: GOV Website

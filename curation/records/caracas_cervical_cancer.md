@@ -10,6 +10,7 @@ tags:
 - New IID
 - 'Samples: Over Time'
 - 'Time: Lost'
+- Survey
 collections:
 - New (BeyondArena)
 - TabSTAR

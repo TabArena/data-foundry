@@ -15,6 +15,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
+- Panel Data
 collections:
 - New (BeyondArena)
 original_source: Zindi

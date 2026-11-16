@@ -17,6 +17,7 @@ tags:
 - 'Target: Varying Delay'
 - 'Entities: Recur'
 - 'Features: Revised Later'
+- Dated Event Log
 collections:
 - TexTabBench
 - STRABLE

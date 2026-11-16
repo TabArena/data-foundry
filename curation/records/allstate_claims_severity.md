@@ -14,6 +14,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Varying Delay'
+- Database Snapshot
 collections:
 - TabArena Reject
 - TabSTAR

@@ -11,6 +11,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - 'Samples: One Moment'
+- Database Snapshot
 year: '1999'
 required_split:
 - Random (IID)

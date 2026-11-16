@@ -12,6 +12,7 @@ tags:
 - New IID
 - 'Samples: One Moment'
 - 'Target: Later'
+- Database Snapshot
 collections:
 - New (BeyondArena)
 original_source: Other

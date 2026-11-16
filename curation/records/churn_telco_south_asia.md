@@ -11,6 +11,7 @@ tags:
 - New IID
 - 'Samples: One Moment'
 - 'Target: Later'
+- Database Snapshot
 collections:
 - TabSTAR
 original_source: Kaggle

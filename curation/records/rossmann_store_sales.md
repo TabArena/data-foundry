@@ -15,6 +15,7 @@ tags:
 - 'Target: Later'
 - 'Entities: Recur'
 - 'Features: Read Later'
+- Panel Data
 collections:
 - TabArena Reject
 original_source: Kaggle

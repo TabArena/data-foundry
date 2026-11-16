@@ -12,6 +12,7 @@ suggestion: 'Yes'
 tags:
 - 'Samples: One Moment'
 - 'Target: Unknown'
+- Database Snapshot
 original_source: Other
 year: '2004'
 required_split:

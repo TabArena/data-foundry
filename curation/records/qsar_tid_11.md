@@ -13,6 +13,7 @@ tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- Expanding Science Catalogue
 year: '2015'
 domain: chemistry & material science
 required_split:

@@ -13,6 +13,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Later'
 - 'Entities: Recur'
+- Panel Data
 collections:
 - TableShift
 - TabSTAR

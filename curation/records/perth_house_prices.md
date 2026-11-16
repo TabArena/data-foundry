@@ -14,6 +14,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Later'
 - 'Features: Read Later'
+- Dated Event Log
 collections:
 - TabSTAR
 original_source: Kaggle

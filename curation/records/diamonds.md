@@ -12,6 +12,7 @@ suggestion: 'Yes'
 tags:
 - 'Samples: One Moment'
 - 'Entities: Recur'
+- Database Snapshot
 year: '2007'
 required_split:
 - Random (IID)
