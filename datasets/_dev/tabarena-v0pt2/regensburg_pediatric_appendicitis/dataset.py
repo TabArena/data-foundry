@@ -27,6 +27,28 @@ MEASURED_PRECISION = {
     "Neutrophil_Percentage": 0,
 }
 
+# The free-text findings in one spelling for every child (curation comments): the lymph-node location was abbreviated
+# ("re UB") only for children not operated and spelled out ("rechter Unterbauch") only for operated ones. Applied in
+# this order to the lymph-node and abscess locations.
+LOCATION_SPELLINGS = (
+    (r"\bre\s*UB\b", "rechter Unterbauch"),
+    (r"\bre\s*MB\b", "rechter Mittelbauch"),
+    (r"\bre Mittelbauch\b", "rechter Mittelbauch"),
+    (r"\bUB\b", "Unterbauch"),
+    (r"\bMB\b", "Mittelbauch"),
+    (r"\b[Ii]leo[cz]\w*", "ileozökal"),
+    (r"\bMesenterial\b", "mesenterial"),
+)
+# "Nothing found" was written out only for operated children; the rows of the others are blank for it.
+NOTHING_FOUND = (
+    "keine",
+    "unauffällig",
+    "kein Anhalt für eine gynäkologische Ursache der Beschwerden",
+    "Ausschluss gyn. Ursache der Beschwerden",
+    "Ausschluss pathologischer Ovarialbefund",
+)
+TEXT_COLUMNS = ["Lymph_Nodes_Location", "Abscess_Location", "Gynecological_Findings"]
+
 
 class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -60,7 +82,8 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
         changes=(
             "We keep the children who had an ultrasound; drop the diagnosis, the surgeon's management decision, the "
             "length of stay, the ultrasound case number, rebound tenderness on the right and the three urine tests; "
-            "and write age, BMI and the neutrophil share at the precision of the measured values."
+            "write age, BMI and the neutrophil share at the precision of the measured values; and write two "
+            "free-text findings in one spelling."
         ),
         fit="approximate",
         fit_reason=(
@@ -176,6 +199,15 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
         - Dropped: `US_Number`, the ultrasound case number. It runs from 1 to 440 for 2016-2018 and above for
           2019-2021, but within each period it was assigned in blocks by the children's group (of the children
           numbered 739-992, 1 of 124 was operated), so it would give the label away.
+        - Free-text findings, harmonised (2026-11-16, Andrej). The lymph-node location was abbreviated ("re UB",
+          "reUB", "re MB": 47 children) only for children not operated and spelled out ("rechter Unterbauch", right
+          lower abdomen: 22) only for operated ones; the gynaecological finding "nothing found" ("keine",
+          "unauffällig", a gynaecological cause excluded: 13 children) was written out only for operated children
+          and left blank for the others. Abbreviations are written out and the spellings of ileocaecal unified, in the
+          abscess location too (`LOCATION_SPELLINGS`), and "nothing found" is missing like the others' blanks
+          (`NOTHING_FOUND`). The three text columns alone told operated from not operated uncomplicated children at
+          ROC AUC 0.572, 0.527 after (on the label 0.552, then 0.531); the full model scores the same with or without
+          them (gradient boosting 0.905 and 0.906), so no model had used the route.
     """
     splits_comment = """
         Default splits: stratified random 3-fold cross-validation with 10 repeats (seed 4267). Tests stand for other
@@ -230,6 +262,12 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
         )
         # irregular wall layers of unknown degree, off the scale (CLEAN-14)
         df = set_missing(df, {"Appendix_Wall_Layers": ["upset"]})
+        # The free-text findings in one spelling: the spelling followed the treatment (curation comments).
+        df[TEXT_COLUMNS] = df[TEXT_COLUMNS].apply(lambda s: s.str.strip())
+        for col in ("Lymph_Nodes_Location", "Abscess_Location"):
+            for pattern, spelled_out in LOCATION_SPELLINGS:
+                df[col] = df[col].str.replace(pattern, spelled_out, regex=True)
+        df = set_missing(df, {"Gynecological_Findings": list(NOTHING_FOUND)})
         # The precision of the measured values: the number format followed the class or the period (curation comments).
         return df.round(MEASURED_PRECISION)
 

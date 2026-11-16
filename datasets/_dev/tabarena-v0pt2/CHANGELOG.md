@@ -17,7 +17,10 @@
   (`MEASURED_PRECISION`): BMI's format marked surgery, the neutrophil share's the class, and 8-decimal ages the
   2016-2018 period. The fit stays approximate and names the follow-up label, the 37% operated and the Düsseldorf
   estimate. `US_Number` stays dropped, now for its real reason: a case number assigned in blocks by the children's
-  group.
+  group. Two free-text findings are written in one spelling (`LOCATION_SPELLINGS`, `NOTHING_FOUND`): the lymph-node
+  location was abbreviated only for children not operated and spelled out only for operated ones, and "nothing found"
+  in the gynaecological findings was written out only for operated children (the text alone told the two apart at ROC
+  AUC 0.572, 0.527 after; the full model scores the same).
 - Split: random, now tagged `ForcedIIDFromTemporal` with a `splits_comment`. Admissions run over 2016-2021 and the
   period matters (complicated 12.0% against 18.8%), but only two periods can be told apart, too few for three test
   windows. Training on 2016-2018 and testing on 2019-2021 costs TabPFN 3.5 0.004 ROC AUC and 0.07 log loss against

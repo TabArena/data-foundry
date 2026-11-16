@@ -89,6 +89,7 @@ CC (2026-11-16, Andrej): Keep, reversing the retirement of 2026-11-06, with chan
 4. **Problem:** the fix of 2026-10-27 (BMI to one decimal, the neutrophil share in whole percent) never reached the definition; and ages computed from the birth date (8 decimals, against 2 when typed) mark 2016-2018, when fewer children were complicated (12% against 18% later; the format alone gives 0.56 on the label). **Change:** age, BMI and the neutrophil share are written at the precision of the measured values.
 5. **Problem:** follow-up was incomplete (61 of 86 children with appendicitis not operated were reached in the 2021 study), so a few complicated cases may count as uncomplicated, all in one direction. A model of the Düsseldorf cohort, where every child with appendicitis but one was operated, expects at most about 9 complicated cases among the 82 Regensburg children with appendicitis not operated, where the label has none. **Change:** the fit stays approximate and its reason names the follow-up label, the 37% operated and this estimate.
 6. **Problem:** children are admitted over 2016-2021, the use case scores later admissions and the period matters (12.0% complicated against 18.8%), but the file has no dates and only two periods can be told apart, too few for a temporal split. **Change:** the random split is tagged `ForcedIIDFromTemporal`, with its cost in the split notes: trained on 2016-2018 and tested on 2019-2021, TabPFN 3.5 reaches ROC AUC 0.931 against 0.935 and log loss 0.290 against 0.221 for random splits of the same sizes.
+7. **Problem:** two free-text findings were spelled by the treatment: the lymph-node location was abbreviated ("re UB", 47 children) only for children not operated and spelled out ("rechter Unterbauch", right lower abdomen, 22) only for operated ones, and "nothing found" in the gynaecological findings was written out only for operated children (13), blank for the others. The text alone told operated from not operated uncomplicated children at ROC AUC 0.572; the full model scored the same without it. **Change:** abbreviations written out, the spellings of ileocaecal unified, and "nothing found" set to missing like the others' blanks (the text alone then 0.527).
 
 **Problems found, not changed:**
 - The psoas sign (pain on stretching the hip muscle) and dysuria (pain on urinating) have the same gap pattern, smaller (missing for none of the children not operated, 7-12% of the operated); dropping them changes nothing (missing values alone 0.748 either way on operated against not operated uncomplicated children).
@@ -117,6 +118,7 @@ shaped by one hospital's practice.
 **Main points:** Kept (2026-11-16, issue 3), reversing the retirement of 2026-11-06 (issue 2): the label of the
 children not operated is read as an outcome of observation, not as the surgeon's decision; the use case, the drops
 and the precision fixes are in the definition. The split stays random, tagged as forced from temporal (issue 4).
+The free-text findings are written in one spelling (issue 5).
 
 **Record judgment:** valid after repair, settled by CC 2026-10-27 (Andrej: keep, BMI and neutrophil share at
 measured precision, the label's origin in the texts); the ordinal scales of PR #37 follow Lennart's marks of
@@ -421,6 +423,40 @@ measured precision, the label's origin in the texts); the ordinal scales of PR #
    **Resolved (2026-11-16, Andrej):** A: random splits tagged `ForcedIIDFromTemporal`, with the two periods, the
    shift and its cost in the split notes, and the admission dates to be recovered if a later release has them
    (CC 2026-11-16).
+
+5. **Write the free-text findings in one spelling?**
+
+   * **Problem:**
+     - The lymph-node location, a free-text column, was abbreviated ("re UB", "reUB", "re MB") for 47 children, all
+       not operated, and spelled out ("rechter Unterbauch", right lower abdomen) for 22, all operated, in both
+       periods. "Nothing found" in the gynaecological findings ("keine", "unauffällig", a gynaecological cause
+       excluded) was written out for 13 children, all operated; the others' rows are blank for it.
+     - The spelling marks the operation, and through it the label, the way the number formats did (the rule that
+       class-specific recording conventions are harmonised).
+   * **Experiments** (gradient boosting, 3-fold x 10):
+
+     | Inputs | Label | Operated against not operated, uncomplicated |
+     |---|---|---|
+     | The three text columns alone, as written | 0.552 | 0.572 |
+     | The three text columns alone, harmonised | 0.531 | 0.527 |
+     | All features without the text | 0.906 | 0.893 |
+     | All features with the text as written | 0.905 | 0.895 |
+
+     No model had used the route: the children it marks are told apart by their values already.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Harmonise (implemented) | abbreviations written out, ileocaecal spellings unified (also in the abscess location), "nothing found" set to missing | the route is gone; the locations keep their clinical meaning (mesenteric lymph nodes point away from appendicitis) | none found |
+     | B | Drop the three text columns | no free text | simplest | loses the few real findings they hold |
+     | C | Keep as written, with a note | none | none | the spelling stays a fingerprint of the operation |
+
+   * **Recommendation:** A. **Decision:** A, B or C?
+
+   **Andrej (2026-11-16):** "Harmonize and push to the PR".
+
+   **Resolved (2026-11-16, Andrej):** A: `LOCATION_SPELLINGS` and `NOTHING_FOUND` in `dataset.py`, with a curation
+   note (CC 2026-11-16, change 7).
 
 ## Reference
 
