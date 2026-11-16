@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 from typing import Any
@@ -13,18 +14,22 @@ from data_foundry.utils.dtypes import is_str_dtype
 
 
 def omit_unset_fields(obj: Any, dumped: Any) -> Any:
-    """Drop the fields of ``obj`` listed in its ``_OMIT_WHEN_UNSET`` from ``dumped`` while they are ``None``, and
-    those in its ``_OMIT_WHEN_DEFAULT`` (field name to default) while they hold that default.
+    """Drop the fields of ``obj`` listed in its ``_OMIT_WHEN_UNSET`` from ``dumped`` while they are ``None``, and do
+    the same inside every field that is itself such an object (a task's ``grouping``).
 
     Fields added to a metadata class after containers shipped are listed there, so a container that does not set
     them keeps its checksum and its saved JSON.
     """
+    if not isinstance(dumped, dict):
+        return dumped
+    if dataclasses.is_dataclass(obj) and not isinstance(obj, type):
+        for field in dataclasses.fields(obj):
+            value = getattr(obj, field.name, None)
+            if field.name in dumped and dataclasses.is_dataclass(value) and not isinstance(value, type):
+                dumped = {**dumped, field.name: omit_unset_fields(value, dumped[field.name])}
     omit = getattr(type(obj), "_OMIT_WHEN_UNSET", ())
-    defaults = getattr(type(obj), "_OMIT_WHEN_DEFAULT", {})
-    if (omit or defaults) and isinstance(dumped, dict):
-        dumped = {
-            k: v for k, v in dumped.items() if not ((k in omit and v is None) or (k in defaults and v == defaults[k]))
-        }
+    if omit:
+        dumped = {k: v for k, v in dumped.items() if not (k in omit and v is None)}
     return dumped
 
 

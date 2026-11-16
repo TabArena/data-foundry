@@ -536,8 +536,9 @@ class AbstractCuratedDataset(ABC):
     it is held out, the use case with its source) is required and may be indented like code. Stored in the container."""
     temporal: ClassVar[Temporal | None] = None
     """A temporal task: ``Temporal(on=..., splits=TemporalSplits(...))`` (:class:`~data_foundry.v2.splits.Temporal`),
-    plus ``horizon=..., horizon_unit=...`` when the windows do not fix the horizon, and ``feature=False`` when the
-    time column arrives with the target (it then orders and splits the rows but is no model input). Neither
+    plus ``horizon=..., horizon_unit=...`` when the windows do not fix the horizon, and ``time_of="label"`` when the
+    time column dates the label rather than the prediction point (it then orders and splits the rows but is no model
+    input), with ``prediction_time=...`` naming the column of the prediction point when there is one. Neither
     ``grouping`` nor ``temporal``: an IID task."""
 
     # --- row order ----------------------------------------------------------------------------------
@@ -2246,7 +2247,8 @@ def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadataV
         stratify_on=stratify_on,
         time_on=cls.temporal.on if cls.temporal is not None else None,
         time_unit=cls.temporal.time_unit if cls.temporal is not None else None,
-        time_is_feature=cls.temporal.feature if cls.temporal is not None else True,
+        time_of="label" if cls.temporal is not None and cls.temporal.time_of == "label" else None,
+        prediction_time=cls.temporal.prediction_time if cls.temporal is not None else None,
         grouping=grouping,
         scoring_columns=[dataclasses.replace(c, description=clean_text(c.description)) for c in cls.scoring_columns],
         sample_weight=cls.sample_weight,

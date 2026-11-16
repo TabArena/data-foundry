@@ -8,7 +8,7 @@ import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import pandas as pd
 from pydantic import TypeAdapter
@@ -66,24 +66,52 @@ NoIndentMetadata = [
 ]
 
 
-def feature_columns(container: CuratedContainer) -> list[str]:
-    """The model's input columns, in frame order: every column but the target, the group column(s) and, in format 2,
-    the scoring columns (:class:`~data_foundry.schema.ScoringColumn`: metric inputs, never features), the unit of a
-    unit weight (:class:`~data_foundry.schema.UnitWeight`) and a time column declared as no model input
-    (``time_is_feature=False``: the actor does not hold it at the prediction point).
+def non_feature_columns(task: Any) -> set[str]:
+    """The columns of a task that are never model inputs: the target, the group column(s) and, in format 2, the
+    scoring columns (:class:`~data_foundry.schema.ScoringColumn`: metric inputs, the training weight among them), the
+    unit of a unit weight (:class:`~data_foundry.schema.UnitWeight`) and a time that dates the label, the task's
+    ``time_on`` or the order inside a group (``time_of="label"``: the actor does not hold it at the prediction point).
 
-    ``X = container.dataset[feature_columns(container)]``.
+    The one place that decides what a model may read: :func:`feature_columns` and the probes call it.
     """
-    task = container.task_metadata
     excluded = {task.target_column_name, *as_column_list(task.group_on)}
     excluded.update(c.column for c in getattr(task, "scoring_columns", None) or ())
     excluded.update(as_column_list(getattr(task, "sample_weight", None)))
     unit = getattr(task, "unit_weight", None)
     if unit is not None:
         excluded.add(unit.unit)
-    if task.time_on is not None and not getattr(task, "time_is_feature", True):
+    if task.time_on is not None and getattr(task, "time_of", None) == "label":
         excluded.add(task.time_on)
+    grouping = getattr(task, "grouping", None)
+    if grouping is not None and grouping.time_on is not None and getattr(grouping, "time_of", None) == "label":
+        excluded.add(grouping.time_on)
+    return excluded
+
+
+def feature_columns(container: CuratedContainer) -> list[str]:
+    """The model's input columns, in frame order: every column but the :func:`non_feature_columns` (the target, the
+    group, scoring and unit columns, and a time column that dates the label).
+
+    ``X = container.dataset[feature_columns(container)]``. A model that picks its settings on an inner validation
+    split cuts that split on the :func:`split_columns`, read from the same rows, before it fits on these.
+    """
+    excluded = non_feature_columns(container.task_metadata)
     return [c for c in container.dataset.columns if c not in excluded]
+
+
+def split_columns(container: CuratedContainer) -> list[str]:
+    """The columns an inner validation split reads, in frame order: the group column(s) of a grouped task (whole
+    groups on one side) and the time column of a temporal task (the newest training rows held out).
+
+    Read them to cut the folds, never as inputs unless :func:`feature_columns` lists them too (a time column of the
+    prediction point is both; a group column or a time column that dates the label is only this)::
+
+        X, S = container.dataset[feature_columns(container)], container.dataset[split_columns(container)]
+        # folds from S.iloc[train_idx]; the model fits on X.iloc[train_idx] only
+    """
+    task = container.task_metadata
+    wanted = {*as_column_list(task.group_on), *as_column_list(task.time_on)}
+    return [c for c in container.dataset.columns if c in wanted]
 
 
 def sample_weight(container: CuratedContainer) -> str | None:
@@ -316,8 +344,8 @@ class CuratedContainer:
     def _feature_dtype_counts(self) -> dict[str, int]:
         """Count feature-column dtypes.
 
-        Counts the :func:`feature_columns` (no target, group, scoring or non-feature time column). Binary
-        columns (exactly two distinct non-null values, regardless of dtype)
+        Counts the :func:`feature_columns` (no target, group or scoring column, no time that dates the label).
+        Binary columns (exactly two distinct non-null values, regardless of dtype)
         are counted only in the ``binary`` bucket — the ``numeric``,
         ``categorical``, ``datetime``, and ``text`` buckets all exclude
         binary columns, so the four buckets plus ``binary`` partition

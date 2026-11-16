@@ -62,7 +62,7 @@ PARTICIPANT_METRIC_KEYS = (
     "reference",
     "target_transform",
 )
-GROUPING_KEYS = ("on", "labels", "time_on", "prediction_unit", "aggregation", "context")
+GROUPING_KEYS = ("on", "labels", "time_on", "time_of", "prediction_time", "prediction_unit", "aggregation", "context")
 SCORE_PY = '''"""Score a prediction on this task as the benchmark does.
 
     from score import TARGET, features, load, score, splits
@@ -103,8 +103,13 @@ def load() -> pd.DataFrame:
 
 
 def features() -> list[str]:
-    """The model inputs: every column but the target and the group column(s)."""
+    """The model inputs: every column but the target, the group column(s) and a time that dates the label."""
     drop = {TARGET, *TASK["group_columns"]}
+    if TASK.get("time_of") == "label":
+        drop.add(TASK["time_column"])
+    grouping = TASK.get("grouping") or {}
+    if grouping.get("time_of") == "label":
+        drop.add(grouping["time_on"])
     return [c for c in load().columns if c not in drop]
 
 
@@ -176,6 +181,13 @@ def regime_line(data: dataset_io.ProbeInput) -> str:
         return f"grouped by {groups} (whole groups are held out)"
     if regime == "temporal":
         line = f"temporal on `{data.time_on}` (each test window comes after its training rows)"
+        if data.time_of == "label":
+            line += (
+                f"; `{data.time_on}` dates the label, which arrives after the prediction point, so it orders the "
+                "rows and is no model input"
+            )
+            if data.prediction_time:
+                line += f"; the prediction point is `{data.prediction_time}`, a model input"
         return line + (f"; rows grouped by {groups}" if groups else "")
     return f"{regime} (random rows)"
 
@@ -265,6 +277,8 @@ def participant_task(ds, data: dataset_io.ProbeInput, scoring: list[str]) -> dic
         "problem_type": data.problem_type,
         "regime": data.regime,
         "time_column": data.time_on,
+        "time_of": data.time_of or ("prediction" if data.time_on else None),
+        "prediction_time": data.prediction_time,
         "group_columns": data.group_cols,
         "grouping": grouping,
         "scoring_columns": scoring,

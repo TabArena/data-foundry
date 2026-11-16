@@ -6,12 +6,19 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
 
 ## Temporal tasks
 
-- [ ] **Drop a time column declared no model input.** A v2 definition can declare `Temporal(..., feature=False)` when
-  the actor does not hold the time column at the prediction point (it arrives with the target, such as the date of the
-  spectrum that sets a sky object's class). A format-2 container then records `task_metadata.time_is_feature=False`;
-  the column stays in the frame to order the rows and for the time ranges of the splits. The adapter has to drop it
-  from the features for every pipeline, as `data_foundry.curation_container.feature_columns(container)` does; the
-  field is absent (True) on every other container.
+- [ ] **Cut the inner validation on the time column, then drop it when it dates the label.** A v2 definition declares
+  `Temporal(..., time_of="label")` when its time column is the moment the label became known, after the prediction
+  point (a house's sale when the price is predicted at the listing, the year a compound entered a catalogue). A
+  format-2 container then records `task_metadata.time_of="label"` (unset on every other container). The column stays
+  in the frame: the adapter reads it, with the group column(s), from `split_columns(container)` to build the forward
+  inner hold-out (`time_on_to_groups_data` reads `X[time_on]` today), and only then fits every pipeline on
+  `feature_columns(container)`, which leaves it out. Dropping it first breaks the temporal validation; never dropping it
+  feeds the model a time it does not have when it predicts. The pinned data-foundry version has to know the field
+  before such a container ships (the task metadata refuses unknown fields). `task_metadata.prediction_time`, when
+  set, names the column of the prediction point: a model input like any other. The order inside a group takes the
+  same role (`grouping.time_of="label"`, with `grouping.prediction_time`): it orders the rows for `aggregation="last"`
+  and is dropped from the features; with `context="past_rows"` a row reads the rows of its group predicted before it
+  (by `grouping.prediction_time`) and their labels only where the label time is before its own prediction time.
 
 ## Grouped tasks
 

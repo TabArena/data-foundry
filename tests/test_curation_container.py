@@ -8,7 +8,7 @@ import pandas.testing as pdt
 import pydantic
 import pytest
 from data_foundry.bundle_checks import verify_saved_container
-from data_foundry.curation_container import CuratedContainer
+from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE, splits_from_row_table, splits_to_row_table
 from data_foundry.schema import (
     DatasetMetadata,
@@ -830,7 +830,7 @@ def test_an_unknown_metadata_type_names_a_newer_format(tmp_path):
         ),
         ("binary_classification", {"grouping": Grouping(on="y", labels="per_sample")}, "cannot be a time or group"),
         ("regression", {"stratify_on": "y"}, "cannot be stratified"),
-        ("binary_classification", {"time_is_feature": False}, "needs a temporal task"),
+        ("binary_classification", {"time_of": "label"}, "set time_on"),
     ],
 )
 def test_format_2_task_rejects_what_does_not_fit(problem_type, kwargs, match):
@@ -879,15 +879,36 @@ def test_every_field_added_after_the_release_is_omitted_while_unset():
         assert added <= omitted, f"{cls.__name__}: {sorted(added - omitted)} would change every older checksum"
 
 
-def test_time_is_feature_enters_the_checksum_only_when_false():
+def test_time_of_enters_the_checksum_only_when_set():
     def task(**kwargs):
         return PredictiveMLTaskMetadataV2(
             target_column_name="y", problem_type="regression", objective_metric=make_spec(), time_on="t", **kwargs
         )
 
-    assert b"time_is_feature" not in encode_pydantic_metadata(task())
-    assert encode_pydantic_metadata(task(time_is_feature=True)) == encode_pydantic_metadata(task())
-    assert b'"time_is_feature":false' in encode_pydantic_metadata(task(time_is_feature=False))
+    assert b"time_of" not in encode_pydantic_metadata(task())
+    assert b'"time_of":"label"' in encode_pydantic_metadata(task(time_of="label"))
+    with pytest.raises(ValueError, match="time_of"):
+        task(time_of="sale")
+
+
+def test_the_order_inside_a_group_can_date_the_label():
+    """A label-time order is no model input, needs a prediction time for past rows, and changes no older checksum."""
+    base = {"on": "g", "labels": "per_sample", "time_on": "t"}
+    assert Grouping(**base, time_of="prediction").time_of is None  # the default, stored unset
+    with pytest.raises(ValueError, match="set time_on"):
+        Grouping(on="g", labels="per_sample", time_of="label")
+    with pytest.raises(ValueError, match="prediction point beside a label time"):
+        Grouping(**base, prediction_time="p")
+    with pytest.raises(ValueError, match="needs prediction_time"):
+        Grouping(**base, time_of="label", context="past_rows")
+    labelled = Grouping(**base, time_of="label", prediction_time="p", context="past_rows")
+    task = _v2_task(labelled)
+    assert non_feature_columns(task) == {"y", "g", "t"}
+    assert "label time; never a model input" in task.describe()
+    assert b'"time_of":"label"' in encode_pydantic_metadata(task)
+    plain = encode_pydantic_metadata(_v2_task(Grouping(**base)))
+    assert b"time_of" not in plain
+    assert b"prediction_time" not in plain  # nested fields are omitted while unset too
 
 
 def test_the_packaged_toy_container_keeps_its_original_checksum():

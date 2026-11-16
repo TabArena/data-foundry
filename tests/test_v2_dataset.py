@@ -15,7 +15,13 @@ import numpy as np
 import pandas as pd
 import pytest
 from data_foundry.bundle_checks import run_bundle_checks
-from data_foundry.curation_container import CuratedContainer, feature_columns, special_features
+from data_foundry.curation_container import (
+    CuratedContainer,
+    feature_columns,
+    non_feature_columns,
+    special_features,
+    split_columns,
+)
 from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV, TrainSampling
 from data_foundry.v2 import (
     AbstractCuratedDataset,
@@ -533,9 +539,32 @@ def test_temporal_rejects_inconsistent_declarations() -> None:
         Temporal(on="")
 
 
-def temporal_body(*, feature: bool) -> str:
-    """A temporal ``toy_ds``: the 600 toy rows over 30 days (20 per day), 3 windows of 5 days."""
-    flag = "" if feature else ", feature=False"
+def temporal_body(
+    *,
+    time_of: str | None = None,
+    gap: int | None = None,
+    copy: bool = False,
+    n_windows: int = 3,
+    prediction_time: str | None = None,
+    listed: int | None = None,
+) -> str:
+    """A temporal ``toy_ds``: the 600 toy rows over 30 days (20 per day), windows of 5 days; ``copy`` adds a feature
+    ``day`` that counts the same days as the time column, ``listed`` a date feature ``listed`` that many days from it.
+    """
+    extra = "".join(
+        [
+            f", gap={gap}" if gap else "",
+            ")",
+            f', time_of="{time_of}"' if time_of else "",
+            f', prediction_time="{prediction_time}"' if prediction_time else "",
+        ],
+    )
+    clean = '        df["t"] = pd.Timestamp("2024-01-01") + pd.to_timedelta(df["row_id"] // 20, unit="D")\n'
+    if copy:
+        clean += '        df["day"] = df["row_id"] // 20\n'
+    if listed is not None:
+        clean += f'        df["listed"] = df["t"] + pd.Timedelta(days={listed})\n'
+    dates = '["t", "listed"]' if listed is not None else '["t"]'
     return (
         DEFINITION.format(name="toy_ds", comment="Toy data.")
         .replace(
@@ -544,64 +573,128 @@ def temporal_body(*, feature: bool) -> str:
             "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, "
             "TemporalSplits, drop_columns",
         )
-        .replace(
-            '        return drop_columns(df, ["row_id"])',
-            '        df["t"] = pd.Timestamp("2024-01-01") + pd.to_timedelta(df["row_id"] // 20, unit="D")\n'
-            '        return drop_columns(df, ["row_id"])',
-        )
+        .replace('        return drop_columns(df, ["row_id"])', clean + '        return drop_columns(df, ["row_id"])')
         .replace(
             '        return FeatureTypes(categorical=["colour"])',
-            '        return FeatureTypes(categorical=["colour"], datetime=["t"])',
+            f'        return FeatureTypes(categorical=["colour"], datetime={dates})',
         )
         .replace(
             '    target = "y"\n',
-            f'    temporal = Temporal(on="t", splits=TemporalSplits(window=5, unit="days", n_windows=3){flag})\n'
+            f'    temporal = Temporal(on="t", splits=TemporalSplits(window=5, unit="days", '
+            f"n_windows={n_windows}{extra})\n"
             '    target = "y"\n',
         )
     )
 
 
-def test_a_time_column_declared_no_input_orders_the_splits_but_is_no_feature(tmp_path: Path, warehouse: Path) -> None:
+def _slugs(result) -> set[str]:
+    return {r.slug for r in result.bundle_report.results}
+
+
+def test_a_time_that_dates_the_label_orders_the_splits_but_is_no_feature(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
-    folder = write_definition(tmp_path / "datasets", body=temporal_body(feature=False))
+    folder = write_definition(tmp_path / "datasets", body=temporal_body(time_of="label"))
     result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
     assert result.ok, result.bundle_report.summary()
+    assert not _slugs(result) & {"task_label_time_gap", "task_label_time_copy_is_feature"}
     container = result.container
     assert container.task_metadata.time_on == "t"
-    assert container.task_metadata.time_is_feature is False
+    assert container.task_metadata.time_of == "label"
     assert "t" in container.dataset.columns  # kept in the frame to order and split the rows
     assert feature_columns(container) == ["x1", "colour"]
+    assert split_columns(container) == ["t"]  # what an inner validation split reads
+    assert non_feature_columns(container.task_metadata) == {"y", "t"}
     assert container._feature_dtype_counts()["datetime"] == 0
-    assert "time_is_feature:       False" in container.task_metadata.describe()
+    assert "time_of:               label" in container.task_metadata.describe()
     text = (folder / "README.md").read_text()
-    assert "  time_is_feature: false\n" in text  # front matter
-    assert "| task.time_is_feature | False |" in text
-    assert "The time column `t` orders and splits the rows and is no model input" in text
+    assert "  time_of: label\n" in text  # front matter
+    assert "| task.time_of | label |" in text
+    assert "The time column `t` dates the label" in text
     assert "and 2 features" in text
     assert "2024-01" in text  # the split table still shows the windows' time ranges
     loaded = CuratedContainer.load(container.save(tmp_path / "saved"))
-    assert loaded.task_metadata.time_is_feature is False
+    assert loaded.task_metadata.time_of == "label"
     assert loaded.verify()
     assert feature_columns(loaded) == ["x1", "colour"]
 
 
-def test_a_time_column_is_a_feature_by_default_and_leaves_the_metadata_as_it_was(
+def test_a_time_of_the_prediction_point_is_a_feature_and_leaves_the_metadata_as_it_was(
     tmp_path: Path, warehouse: Path
 ) -> None:
     del warehouse
-    folder = write_definition(tmp_path / "datasets", body=temporal_body(feature=True))
+    for time_of in (None, "prediction"):  # the default and the explicit default build the same container
+        root = tmp_path / str(time_of)
+        folder = write_definition(root / "datasets", body=temporal_body(time_of=time_of))
+        result = get_dataset(root / "datasets", "toy_ds").check(verbose=False)
+        assert result.ok, result.bundle_report.summary()
+        assert result.container.task_metadata.time_of is None
+        assert feature_columns(result.container) == ["x1", "colour", "t"]
+        assert split_columns(result.container) == ["t"]  # a feature and the key of the inner hold-out
+        assert "time_of" not in (folder / "README.md").read_text()
+        saved = result.container.save(root / "saved")
+        task_json = next(saved.glob("task_metadata.*.json")).read_text()
+        assert "time_of" not in task_json  # nor in the checksum
+
+
+def test_a_label_time_warns_on_a_gap_and_on_a_feature_that_copies_it(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    write_definition(tmp_path / "datasets", body=temporal_body(time_of="label", gap=1, copy=True, n_windows=2))
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    slugs = _slugs(result)
+    assert {"task_label_time_gap", "task_label_time_copy_is_feature"} <= slugs, slugs
+    copy = next(r for r in result.bundle_report.results if r.slug == "task_label_time_copy_is_feature")
+    assert "day (+1.000)" in copy.message
+    assert feature_columns(result.container) == ["x1", "colour", "day"]  # the copy is still read: the check says so
+
+
+def test_a_prediction_time_with_a_gap_and_a_copy_is_not_flagged(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    write_definition(tmp_path / "datasets", body=temporal_body(gap=1, copy=True, n_windows=2))
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert not _slugs(result) & {"task_label_time_gap", "task_label_time_copy_is_feature"}
+
+
+def test_a_prediction_time_beside_a_label_time_is_a_named_feature(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = temporal_body(time_of="label", prediction_time="listed", listed=-1)
+    folder = write_definition(tmp_path / "datasets", body=body)
     result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
     assert result.ok, result.bundle_report.summary()
-    assert feature_columns(result.container) == ["x1", "colour", "t"]
-    assert "time_is_feature" not in (folder / "README.md").read_text()
-    saved = result.container.save(tmp_path / "saved")
-    task_json = next(saved.glob("task_metadata.*.json")).read_text()
-    assert "time_is_feature" not in task_json  # nor in the checksum
+    # the listing follows the sale day for day (rank correlation 1), but it is the declared prediction time
+    assert not _slugs(result) & {"task_label_time_copy_is_feature", "task_prediction_time_after_label"}
+    container = result.container
+    assert container.task_metadata.prediction_time == "listed"
+    assert feature_columns(container) == ["x1", "colour", "listed"]
+    assert "prediction_time:       listed" in container.task_metadata.describe()
+    text = (folder / "README.md").read_text()
+    assert "  prediction_time: listed\n" in text
+    assert "The prediction point is `listed`, a model input." in text
+    assert CuratedContainer.load(container.save(tmp_path / "saved")).task_metadata.prediction_time == "listed"
 
 
-def test_temporal_feature_must_be_a_bool() -> None:
-    with pytest.raises(ValueError, match="True or False"):
-        Temporal(on="t", feature="no")  # type: ignore[arg-type]
+def test_a_prediction_time_after_the_label_or_missing_is_flagged(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    late_body = temporal_body(time_of="label", prediction_time="listed", listed=1)
+    write_definition(tmp_path / "late" / "datasets", body=late_body)
+    late = get_dataset(tmp_path / "late" / "datasets", "toy_ds").check(verbose=False)
+    after = next(r for r in late.bundle_report.results if r.slug == "task_prediction_time_after_label")
+    assert after.message.startswith("600 row(s)")
+    write_definition(tmp_path / "gone" / "datasets", body=temporal_body(time_of="label", prediction_time="listed"))
+    gone = get_dataset(tmp_path / "gone" / "datasets", "toy_ds").check(verbose=False)
+    assert "task_prediction_time_missing" in _slugs(gone)
+    assert not gone.ok
+
+
+def test_temporal_prediction_time_needs_a_label_time() -> None:
+    with pytest.raises(ValueError, match="prediction point beside a label time"):
+        Temporal(on="t", prediction_time="listed")
+    with pytest.raises(ValueError, match="prediction point beside a label time"):
+        Temporal(on="t", time_of="label", prediction_time="t")
+
+
+def test_temporal_time_of_names_a_moment() -> None:
+    with pytest.raises(ValueError, match="'prediction' or 'label'"):
+        Temporal(on="t", time_of="sale")  # type: ignore[arg-type]
 
 
 def test_grouping_is_stored_in_a_format_2_task() -> None:
