@@ -1273,10 +1273,19 @@ class AbstractCuratedDataset(ABC):
                 raise DatasetDefinitionError("`before_sampling` must describe exactly the sampled splits.")
             for key, sides in eligible.items():
                 for positions, sampled in zip(sides, actual[key], strict=True):
-                    if len(positions) < len(sampled) or (
-                        len(positions) and (min(positions) < 0 or max(positions) >= len(population.df))
+                    values = np.asarray(positions)
+                    if len(values) < len(sampled) or (
+                        len(values)
+                        and (
+                            not np.issubdtype(values.dtype, np.integer)
+                            or values.min() < 0
+                            or values.max() >= len(population.df)
+                            or len(np.unique(values)) != len(values)
+                        )
                     ):
                         raise DatasetDefinitionError("`before_sampling` has invalid or smaller eligible split sides.")
+                if np.intersect1d(*sides, assume_unique=True).size:
+                    raise DatasetDefinitionError("`before_sampling` has overlapping training and test positions.")
 
     def make_splits(self, df: pd.DataFrame | None = None) -> SplitPlan:
         """Run :meth:`_make_splits` on ``df`` (default: :attr:`df`) and normalise it to a SplitPlan.
