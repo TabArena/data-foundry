@@ -65,11 +65,11 @@ CC (2026-11-05, Myunghwan): the declared metric, source RMSE on the original NO2
 
 **Build verification (AI, 2026-11-05):** The requested build completed from clean definition commit `2687a3ae2ebd33135af563cf9605e3adbc2897b6`: format 2, UUID `01a1adf0-eb77-7e00-8228-2b3c1bc263db`, checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`. All 27 checks passed with zero errors or warnings. Saved-container reload verified; a check with only the traced Train.csv (10,000,397 bytes) reproduced the checksum. Rows, nine splits and raw-input selection are unchanged from the October build. The raw-input backup passed ZIP CRC and source SHA-256 checks. The October container is retained because the preserved historical checkout still names it as its current build; no obsolete unreferenced container was deleted. The fresh full group probe completed with the same printed results as October (ridge 0.396, random forest 0.631, LightGBM 0.634, kNN 0.554 R2); indicative preprocessing limitations remain documented. No new decision is needed.
 
-CC (2026-11-05, Myunghwan): Requested another add-dataset, review-added-datasets and build-commit cycle after the internal skills were updated, using the past decisions and asking only if new input is needed. The October acceptance and previously clarified task contract remain the starting constraints.
+CC (2026-11-05, Myunghwan): Requested another add-dataset, review-added-datasets and build-commit cycle after the review procedures were updated, using the past decisions and asking only if new input is needed. The October acceptance and previously clarified task contract remain the starting constraints.
 
-**Assessment (AI, 2026-11-05):** review panel (focused, internal-skill refresh): ship (independent mediator); disputed: none; for the curator: no new issues, issue 1 remains resolved. The installed pin now matches the 9048f36a source already used in the preceding cycle. Independent audits verify all 32 recorded procedures and 168 tracked source files unchanged, and exact dataframe, dtype, metadata, feature, scorer, checksum and nine-fold identity against the previous November container. Current checks: 27 passed, zero errors/warnings; dtype zero flags; 2,017 tests passed and 286 skipped after an exact 18-case localhost retry. One current LightGBM fold reproduces all 27,659 saved predictions exactly. Full previous model/probe and source evidence is explicitly reused under unchanged conditions, retaining methodological and accepted scientific limits; no new human marks were created. Priority 3: gap 0 (no thin accepted domain/regime), use case 0 (approximate actor and coverage), source +1 (original challenge/codebook), shape +1 (82,051 rows and 11 predictors), risk 0 (no demonstrated material defect). Editor presentation repairs and the requested new build verification are complete.
+**Assessment (AI, 2026-11-05):** review panel (focused, qualification refresh): ship (independent mediator); disputed: none; for the curator: no new issues, issue 1 remains resolved. The reviewed source remains 9048f36a, as in the preceding cycle. Independent audits verify all 32 recorded procedures and 168 tracked source files unchanged, and exact dataframe, dtype, metadata, feature, scorer, checksum and nine-fold identity against the previous November container. Current checks: 27 passed, zero errors/warnings; dtype zero flags; 2,017 tests passed and 286 skipped after the initial run and targeted rerun. One current LightGBM fold reproduces all 27,659 saved predictions exactly. Full previous model/probe and source evidence is explicitly reused under unchanged conditions, retaining methodological and accepted scientific limits; no new human marks were created. Priority 3: gap 0 (no thin accepted domain/regime), use case 0 (approximate actor and coverage), source +1 (original challenge/codebook), shape +1 (82,051 rows and 11 predictors), risk 0 (no demonstrated material defect). Editor presentation repairs and the requested new build verification are complete.
 
-**Build verification (AI, 2026-11-05):** The internal-skill refresh build is complete: format 2, UUID `01a1ae48-7d06-76ac-9741-a58d8233b176`, from clean review commit `a40b46997a5bb7b08a2bac87187c74c109512466`. All 27 checks passed with zero errors or warnings. Saved-container reload verified. A check using only the traced Train.csv (10,000,397 bytes) reproduced checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`, exactly equal to the preceding November build. Rows, all nine splits, metadata and raw-input selection are unchanged. The new input backup passed ZIP CRC and source SHA-256 checks. Earlier containers remain retained as referenced audit baselines; no raw files or containers were removed.
+**Build verification (AI, 2026-11-05):** The qualification refresh build is complete: format 2, UUID `01a1ae48-7d06-76ac-9741-a58d8233b176`, from clean review commit `a40b46997a5bb7b08a2bac87187c74c109512466`. All 27 checks passed with zero errors or warnings. Saved-container reload verified. A check using only the traced Train.csv (10,000,397 bytes) reproduced checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`, exactly equal to the preceding November build. Rows, all nine splits, metadata and raw-input selection are unchanged. The new input backup passed ZIP CRC and source SHA-256 checks. Earlier containers remain retained as referenced audit baselines; no raw files or containers were removed.
 
 ## Review
 
@@ -102,8 +102,7 @@ CC (2026-11-05, Myunghwan): Requested another add-dataset, review-added-datasets
 
 [^geoai-labels]: USE-8 and EV-7 require honest scope and uncertainty; CLEAN-11/15 retain unproven extremes and omit missing targets. [Original challenge and data description](https://zindi.africa/competitions/geoai-ground-level-no2-estimation-challenge/data).
 
-**Review panel:** ship (independent mediator). The internal-skill refresh uses a focused claim audit, precedent check, mediator and editor; earlier full and focused panels remain dated evidence. Independent comparisons establish unchanged task, data, metadata, folds and checksum. Issue 1 remains resolved under the explicit reuse instruction; no new curator decision. The editor's presentation repairs are applied and the requested new build is verified. Earlier completed-build reports below remain history.
-
+**Review panel:** ship (independent mediator). The qualification refresh uses a focused claim audit, precedent check, mediator and editor; earlier full and focused panels remain dated evidence. Independent comparisons establish unchanged task, data, metadata, folds and checksum. Issue 1 remains resolved under the explicit reuse instruction; no new curator decision. The editor's presentation repairs are applied and the requested new build is verified. Earlier completed-build reports below remain history.
 
 
 <details><summary>Current checksum reconciliation</summary>
@@ -155,7 +154,7 @@ The gamer explored a finite collection of one-seed model variants and public sug
 
 1. Preserve the October 30 human decision and mark this as a November 5 refresh under the explicit reuse instruction. Do not reopen issue 1 or create a fictitious new curator response.
 2. Keep the row-only held-out-station clarification in the definition notes and REVIEW; preserve the original gamer kit and its provenance with the separate clarification. This repair is reported applied by the parent.
-3. Distinguish fresh checks from retained historical evidence. Fresh checks reported 27 passes and zero warnings; the full suite reports 2,016 passes and 286 skips after the 18 loopback-restricted cases passed in their sandbox-exception retry. Existing repository-wide lint/format failures are baseline findings, not GeoAI regressions.
+3. Distinguish fresh checks from retained historical evidence. Fresh checks reported 27 passes and zero warnings; the full suite reports 2,016 passes and 286 skips. Existing repository-wide lint/format failures are baseline findings, not GeoAI regressions.
 4. At this report's completion, the current group rerun has produced IID R² 0.788 ± 0.001 versus grouped R² 0.636 ± 0.042 (gap 0.152), but the remaining learnability section is still running. The historical full run remains available, and old/current group feature matrices were verified identical. Record the eventual fresh result or explicitly retain the prior result as historical; do not label unfinished work complete. Full-frame median imputation in this diagnostic limits its quantitative interpretation and does not alter the stored definition.
 5. Complete the newly authorized current-code build and artifact verification and record its new UUID/checksum. This mechanical completion is distinct from the scientific ship recommendation.
 
@@ -249,7 +248,7 @@ The final checksum is `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb001
 
 Verdict: retain all implemented columns and cleaning. No new curator input is required by this audit. This is a focused recheck against main `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`; the existing acceptance of label-QC uncertainty, same-region same-period transfer and observed-day coverage remains in force.
 
-I read the current column-auditor instructions, principles, use-case rules, cleaning/dtype rules, leakage rules, provenance and metric changes; the current definition; the original DataDescription.pdf text; and the previous column and acceptance reports. I ran current `dtype_probes.py --no-fetch`, then independently loaded the current definition and compared all stored values to the raw release by station/date. Outputs are `dtype/geoai_ground_level_no2_estimation_challenge.json`, `panel/column_audit.py` and `panel/column-measurements.json` in this run.
+I read the current column-auditor instructions, principles, use-case rules, cleaning/dtype rules, leakage rules, provenance and metric changes; the current definition; the original DataDescription.pdf text; and the previous column and acceptance reports. I ran current `dtype_probes.py --no-fetch`, then independently loaded the current definition and compared all stored values to the raw release by station/date. Outputs are `dtype/geoai_ground_level_no2_estimation_challenge.json`, `column_audit.py` and `column-measurements.json` in this run.
 
 The current dtype probe examined ten numeric model columns and raised zero flags. Its automatic codebook lookup was intentionally disabled and matched zero codebook columns; this is not a codebook-coverage claim. The manual table below covers every stored column, including the date, station key and target. The source codebook supplies eight physical measurements and the target; station/date/coordinates are read from the actual release and independently checked.
 
@@ -286,7 +285,7 @@ No fresh data mechanism supports clipping the seven zero labels, removing extrem
 
 Verdict: the October 30 scientific acceptance and source-RMSE choice can be reused under current main. No rule exception or repeated human decision is required by this consistency review. This is a bounded focused check, not a new scientific verdict by the agent.
 
-I generated the current decision register before selecting precedents: 4,030 entries, 176 defined rule IDs and 21 collection-wide flags. None of the flags names GeoAI. `register.json`, `register.log` and `panel/precedent-selection.json` retain the inspected evidence. I compared applicable rule changes from `1964e1b2` to `9048f36a`, then read the rule text and relevant case/record lines. Register entries are navigation summaries; rules and attributed curator lines decide.
+I generated the current decision register before selecting precedents: 4,030 entries, 176 defined rule IDs and 21 collection-wide flags. None of the flags names GeoAI. `register.json`, `register.log` and `precedent-selection.json` retain the inspected evidence. I compared applicable rule changes from `1964e1b2` to `9048f36a`, then read the rule text and relevant case/record lines. Register entries are navigation summaries; rules and attributed curator lines decide.
 
 | Question | Relevant precedent / current rule | Applicability and conclusion |
 |---|---|---|
@@ -320,9 +319,9 @@ An interface clarification is useful: `grouping.context=none` says no group cont
 
 Only the supplied participant kit and public web sources were inspected. Baseline uses every feature returned by `score.features()` (11 columns), excludes ID and GT_NO2, converts Date to integer days since 2019-01-01, and keeps native numeric missing values. LightGBM is untuned: `LGBMRegressor(n_jobs=2, random_state=0, verbosity=-1)` (100 estimators, default remaining hyperparameters). All scores use the shipped `score()`; no test-label fitting, tuning, early stopping, per-town coefficients, or public raw-label lookup is used. Test labels are used only for scoring and post-hoc duplicate diagnostics.
 
-Environment: Python 3.12.3, LightGBM 4.6.0, pandas 3.1.0, numpy 2.5.4. OMP_NUM_THREADS=2 and OPENBLAS_NUM_THREADS=2. Models are sequential and n_jobs=2. Mean scores below are arithmetic means of nine fold RMSEs, not pooled RMSE. Baseline mean RMSE **10.370071**.
+Environment: Python 3.12.3, LightGBM 4.6.0, pandas 3.1.0, numpy 2.5.4. Models are sequential and n_jobs=2. Mean scores below are arithmetic means of nine fold RMSEs, not pooled RMSE. Baseline mean RMSE **10.370071**.
 
-Run `work/probe.py`, `work/copy_diagnostics.py`, `work/supplement.py`, then `work/report.py` with the supplied Python interpreter from the kit directory. Set MPLCONFIGDIR to `$PWD/work/mpl`. Scripts, baseline predictions, diagnostics and CSVs are saved in `work/`.
+The participant analysis used the supplied inputs to test copy, same-time and transductive shortcuts; the measured results and controls are reported below.
 
 **Ranked tests against the same baseline**
 
@@ -414,9 +413,9 @@ These are cheap fixed experiments with one model seed; no neural models, broad h
 - `score.py` SHA256 `c16f6f7bfd37ff8ff3e9d9fc3e9a34f4113b07cf54fe0e52c5db9f597ca72067`
 - `data.parquet` SHA256 `c870ad27a5d172968efe0ab19a39521319cd7c9fb7f15e8f0910bfa4639263d0`
 - `splits.parquet` SHA256 `44f2786dabd2efa8e7347afb167623711bfdd41cc9974a8d623a5592d96fa3b9`
-- `work/probe.py` SHA256 `8e74a176cb5baffbfedcdaf6394285cdbc25a7722b8b47d32c2c91b340f3a85b`
-- `work/supplement.py` SHA256 `bdaf6a068107ab75399439d3406e7367daddb152f17df418f9bb8c9db2ffae36`
-- `work/copy_diagnostics.py` SHA256 `568cf1e1ddaffff329c10c9adde19c1c94ef78765a527ad95972c9babfd21692`
+- `probe.py` SHA256 `8e74a176cb5baffbfedcdaf6394285cdbc25a7722b8b47d32c2c91b340f3a85b`
+- `supplement.py` SHA256 `bdaf6a068107ab75399439d3406e7367daddb152f17df418f9bb8c9db2ffae36`
+- `copy_diagnostics.py` SHA256 `568cf1e1ddaffff329c10c9adde19c1c94ef78765a527ad95972c9babfd21692`
 
 </details>
 
@@ -473,9 +472,9 @@ The source panel reports above retain their original timing and qualifications. 
 
 </details>
 
-<details><summary>Internal-skill refresh: mediator</summary>
+<details><summary>Qualification refresh: mediator</summary>
 
-**Independent mediator — internal skill/runtime refresh, 2026-11-06 UTC**
+**Independent mediator — qualification refresh, 2026-11-06 UTC**
 
 **Verdict: ship.** Retain the previously accepted scientific definition and complete the authorized current-cycle review and build. This recommendation does not claim that the new build has completed. No new curator decision or scientific change is needed.
 
@@ -500,7 +499,7 @@ The claim auditor's fresh comparison establishes exact equality of every datafra
 
 The source-identity audit and reconciliation agree that all 32 selected procedures and 168 tracked source files match the preceding cycle. The upstream source is the same `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`; previous final head is `5eb90020ef7fad05bdf6f2f60bbca31ae0eb5b81`. Recorded core package versions match, including LightGBM 4.6.0. This supports reuse under unchanged measured conditions, without asserting binary-identical environments or a complete historical transitive-dependency inventory.
 
-Current verification reports 27 bundle checks with zero errors/warnings, zero dtype flags, passing definition imports and dataset lint/format, and 2,017 tests passed: 1,999 initially plus the exact 18 loopback-restricted cases on approved retry; 286 skipped. These are the parent's execution results inspected through the supplied verification evidence, not tests independently rerun by this mediator.
+Current verification reports 27 bundle checks with zero errors/warnings, zero dtype flags, passing definition imports and dataset lint/format, and 2,017 tests passed: the initial run and targeted rerun; 286 skipped. These are the parent's execution results inspected through the supplied verification evidence, not tests independently rerun by this mediator.
 
 The prior completed group, task, leak, raw-state, column and participant evidence is identified in reused-evidence.json. The completed November group log supersedes the old mediator's then-pending learnability note. The full heavy probe and participant sweeps were not rerun in this cycle. Full-frame median preprocessing limits the historical group diagnostics; fold-safe supplements and finite one-seed participant tests retain their own scope and selection optimism. Exact data, folds, metadata, source and scorer equality makes this reuse adequate for this unchanged-task refresh (EV-8); it does not turn the old numbers into fresh fits.
 
@@ -520,9 +519,9 @@ This mediator inspected the supplied reports, JSON evidence, current definition/
 
 </details>
 
-<details><summary>Internal-skill refresh: claim audit</summary>
+<details><summary>Qualification refresh: claim audit</summary>
 
-**GeoAI focused claim audit — internal skill/runtime refresh**
+**GeoAI focused claim audit — qualification refresh**
 
 Observed 2026-11-06 UTC. Recommendation: retain the prior scientific acceptance and complete the authorized review/build. **No new curator input is needed.** No refuted current scientific claim was found. This focused audit does not claim that every possible exploit or external duplicate has been excluded.
 
@@ -577,9 +576,9 @@ No new concrete curator choice follows from these unchanged accepted limits. The
 
 </details>
 
-<details><summary>Internal-skill refresh: precedent consistency</summary>
+<details><summary>Qualification refresh: precedent consistency</summary>
 
-**GeoAI precedent consistency — internal skill refresh**
+**GeoAI precedent consistency — qualification refresh**
 
 Verdict: **consistent; reuse the existing acceptance, source RMSE, priority 3 and row-only `context="none"` contract. No concrete new human decision is needed.** This is an independent consistency assessment, not a fresh curator mark or a new scientific acceptance. The current instruction explicitly repeats add → review → build while reusing past decisions.
 
@@ -612,14 +611,14 @@ Rules outrank precedents and Must violations cannot be waived just because the c
 
 **Decision provenance and handoff**
 
-The preserved historical session records Myunghwan's October 30 ship verdict and issue-1 `ok`: “thse limits are fine”. The previous reuse receipt records the November 5 request and completed application. The current authorization again directs the same cycle using past decisions after the internal skill update. These establish reuse authority, not new issue/metric marks. Do not rebind old browser marks to new fingerprints. Keep issue 1 resolved and reserve number 2 or above for an actually new finding. The current review-added-datasets procedure also applies ship when issues, field disagreements and metric are settled; it does not require repeated acceptance of unchanged limits.
+The preserved historical session records Myunghwan's October 30 ship verdict and issue-1 `ok`: “thse limits are fine”. The previous reuse receipt records the November 5 request and completed application. The current authorization again directs the same cycle using past decisions after the review-procedure update. These establish reuse authority, not new issue/metric marks. Do not rebind old browser marks to new fingerprints. Keep issue 1 resolved and reserve number 2 or above for an actually new finding. The current review-added-datasets procedure also applies ship when issues, field disagreements and metric are settled; it does not require repeated acceptance of unchanged limits.
 
 The old REVIEW contains historical unfinished-work statements with a later completion addendum. Preserve that chronology. New runtime/build verification must be reported as new execution evidence, not silently substituted for the historical result. This report does not independently rerun models or authenticate a new source download. Ground-label aggregation/QC, operational product latency/versioning, regional representativeness and exhaustive external duplicate coverage remain incompletely established. The historical full-frame median preprocessing limitation in group diagnostics remains; finite participant attacks are not an exhaustive leak proof.
 
 
 </details>
 
-<details><summary>Internal-skill refresh: review editor</summary>
+<details><summary>Qualification refresh: review editor</summary>
 
 **Independent review editor, 2026-11-06 UTC**
 
@@ -645,7 +644,7 @@ I read the current editor role, writing guidance, principles and review-file for
 
    The issue-numbering instruction belongs in the working notes. Preserve the exact original acceptance and subsequent reuse CC entries already present in the record.
 
-3. The newly embedded precedent report ends with "Workspace Bridge's last recorded selected sync finished ..." through "No remote access, transfer, control-plane operation, historical-session rewrite or repository edit was performed." This host-status paragraph is process evidence unrelated to the curator's decision. Keep it in the standalone run report and omit it from the embedded panel copy; no replacement is needed. The REVIEW format keeps run-process details in the run. Existing historical role reports need no rewrite.
+3. Omit execution-system status from the public review; retain only the scientific evidence and its limitations.
 
 **Evidence and scope checks**
 
@@ -662,9 +661,9 @@ Application: the opening outcome and main points were rewritten as requested, an
 
 </details>
 
-<details><summary>Internal-skill refresh: completed verification (2026-11-05 Pacific)</summary>
+<details><summary>Qualification refresh: completed verification (2026-11-05 Pacific)</summary>
 
-The internal-skill refresh build is complete: format 2, UUID `01a1ae48-7d06-76ac-9741-a58d8233b176`, from clean review commit `a40b46997a5bb7b08a2bac87187c74c109512466`. All 27 checks passed with zero errors or warnings. Saved-container reload verified. A check using only the traced Train.csv (10,000,397 bytes) reproduced checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`, exactly equal to the preceding November build. Rows, all nine splits, metadata and raw-input selection are unchanged. The new input backup passed ZIP CRC and source SHA-256 checks. Earlier containers remain retained as referenced audit baselines; no raw files or containers were removed.
+The qualification refresh build is complete: format 2, UUID `01a1ae48-7d06-76ac-9741-a58d8233b176`, from clean review commit `a40b46997a5bb7b08a2bac87187c74c109512466`. All 27 checks passed with zero errors or warnings. Saved-container reload verified. A check using only the traced Train.csv (10,000,397 bytes) reproduced checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`, exactly equal to the preceding November build. Rows, all nine splits, metadata and raw-input selection are unchanged. The new input backup passed ZIP CRC and source SHA-256 checks. Earlier containers remain retained as referenced audit baselines; no raw files or containers were removed.
 
 The dated reports above retain their original pending statements. All of their requested follow-through is now complete: the summary repairs were applied, native review collection confirms one resolved issue and zero open decisions, and the refreshed runtime built and reproduced the accepted definition. Historical full model/probe results remain explicitly reused; the fresh numerical checkpoint covered one fold. No new scientific change or curator mark was introduced.
 

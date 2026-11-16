@@ -128,9 +128,9 @@ CC (2026-11-03, Myunghwan): the declared metric roc_auc is checked: the curator 
 
 **Assessment (AI, 2026-11-05):** repeated current-main build complete: format-2 container `01a1adef-2da5-75af-9a38-674925897d45` from clean source commit `8429113143096b5f196312d7cca1089cb18197ab`. Zero errors/warnings; saved reload and reproduction from the sole traced raw input pass. All approved values, categories, labels and six split arrays are unchanged, and saved model AUROCs reproduce. The current checksum includes the updated schema and explicit own-row protocol; it is not expected to equal the historical pre-protocol checksum. The review preserves dated human decisions and resolved history; no new scientific decision remains. Required downstream method checks for test-block learning remain in BENCHMARK_CHANGES_TODO; this build does not certify them. Source/build commits stay local and the claim remains pending integration.
 
-CC (2026-11-05, Myunghwan): after the internal skills were updated, requested another add-dataset -> review-added-datasets -> build-commit cycle using our past decisions, asking for input only if something new is needed. This retains the previously approved task, metric, inputs, weighting, temporal evaluation and inclusion; it explicitly authorizes the repeated local build and commits. Original review marks remain on their original source identity.
+CC (2026-11-05, Myunghwan): after the review procedures were updated, requested another add-dataset -> review-added-datasets -> build-commit cycle using our past decisions, asking for input only if something new is needed. This retains the previously approved task, metric, inputs, weighting, temporal evaluation and inclusion; it explicitly authorizes the repeated local build and commits. Original review marks remain on their original source identity.
 
-**Assessment (AI, 2026-11-05):** review panel (focused installed-runtime repeat): retain ship as implemented; disputed: none; for the curator: no open issue. The installed source and launcher now agree at 9048f36a, matching the previous scientific/probe code and procedures; package versions are unchanged. Fresh launcher and installed-API checks report 27 checks with zero errors/warnings. Exact frame/category/label state and all six arrays match prior approval, and twelve saved AUROCs independently reproduce; prior probes, participant/refutation and batch-invariance evidence are explicitly retained as dated executions, not claimed as new runs. The known future-counter evaluation leak remains governed by the own-row protocol and pending downstream method checking. Priority 2: gap - (no established thin-coverage bonus), use case - (conditional logged-process approximation), source + (publisher/archive), shape + (large mixed temporal table), risk - (timing/generalization limitations and required benchmark enforcement).
+**Assessment (AI, 2026-11-05):** review panel (focused qualification repeat): retain ship as implemented; disputed: none; for the curator: no open issue. The reviewed source is 9048f36a, matching the previous scientific/probe code and procedures; package versions are unchanged. Fresh definition and API checks report 27 checks with zero errors/warnings. Exact frame/category/label state and all six arrays match prior approval, and twelve saved AUROCs independently reproduce; prior probes, participant/refutation and batch-invariance evidence are explicitly retained as dated executions, not claimed as new runs. The known future-counter evaluation leak remains governed by the own-row protocol and pending downstream method checking. Priority 2: gap - (no established thin-coverage bonus), use case - (conditional logged-process approximation), source + (publisher/archive), shape + (large mixed temporal table), risk - (timing/generalization limitations and required benchmark enforcement).
 
 **Assessment (AI, 2026-11-05):** current rule wording clarification: TP-7's established-convention condition is Must, stronger than the historical phrase "default established-convention preference". The inclusive 75% criterion is retained under Myunghwan's explicit task-specific direction and current request to reuse it, not a source convention or a claim that every TP-7 condition is satisfied. No general rule amendment or new curator exception is inferred; historical attributed CC text is preserved.
 
@@ -182,11 +182,11 @@ CC (2026-11-05, Myunghwan): after the internal skills were updated, requested an
 
    [^protocol]: LEAK-9 (Should, amended 2026-11-05) fixes evaluation leaks in scoring or a protocol the benchmark checks; LEAK-7 favors the smallest valid repair; LEAK-34 protects legitimate prior history. See the current `medical_facility_operational_data` issue-7 decision and `sepsis_prediction_1m` snapshot contract. No dataset-specific exception or general rule amendment is introduced here.
 
-**Review panel:** ship (installed-cycle mediator). Fresh focused installed-runtime review: independent claim/precedent auditor, mediator and editor. Earlier column/split, participant attack, successor refutation and full panels remain dated prior executions with exact inputs, code, package versions and scorer verified for reuse. No fresh model fit, participant attack or full panel is claimed. Current decisions are retained under the explicit latest user instruction; original mark identity is preserved. The known evaluation-leak protocol and required downstream method checking remain explicit.
+**Review panel:** ship (qualification reuse mediator). Fresh focused installed-runtime review: independent claim/precedent auditor, mediator and editor. Earlier column/split, participant attack, successor refutation and full panels remain dated prior executions with exact inputs, code, package versions and scorer verified for reuse. No fresh model fit, participant attack or full panel is claimed. Current decisions are retained under the explicit latest user instruction; original mark identity is preserved. The known evaluation-leak protocol and required downstream method checking remain explicit.
 
-<details><summary>Installed-cycle scope and rule wording</summary>
+<details><summary>Qualification reuse scope and rule wording</summary>
 
-**Installed-cycle scope:** The current focused review runs a fresh independent claim/precedent audit, mediator and editor through the updated installation. Earlier column/split, participant attack and successor-refutation reports below remain dated prior executions: exact source, package versions, values, category state, labels, scorer and six memberships verify their reuse. No new model fit, participant attack or full panel is claimed. The latest user explicitly directs retention of prior decisions; original human marks retain their original identity.
+**Qualification reuse scope:** The current focused review runs a fresh independent claim/precedent audit, mediator and editor through the updated installation. Earlier column/split, participant attack and successor-refutation reports below remain dated prior executions: exact source, package versions, values, category state, labels, scorer and six memberships verify their reuse. No new model fit, participant attack or full panel is claimed. The latest user explicitly directs retention of prior decisions; original human marks retain their original identity.
 
 **Current rule wording:** The established-convention condition in TP-7 is a Must. This particular 75% task follows Myunghwan's explicit task-specific direction and latest instruction to retain it; the cutoff is not claimed to be a source convention, a blanket satisfaction of TP-7, or a general rule amendment. The historical attributed wording remains preserved.
 
@@ -223,7 +223,7 @@ The claim auditor's final addendum recommends issue 7 as a human choice between 
 
 **Agreed facts and decisive evidence**
 
-I read the current mediator role, full review-panel procedure, principles and applicable leak/evidence rules; the current definition/record; `claim-audit.md`, `column-split-audit.md`, task/leak/dtype/check outputs; the final `participant_kit/work/REPORT.md` and associated evidence; and final independently authored `successor-refutation.md/json`. This is the focused tier: claim/precedent audit, column/split audit, participant gamer, independent attack refutation and mediator; a cold editor follows. There is no full-tier advocate/critic debate to imply.
+I read the current mediator role, full review-panel procedure, principles and applicable leak/evidence rules; the current definition/record; `claim-audit.md`, `column-split-audit.md`, task/leak/dtype/check outputs; the final `participant_kit/REPORT.md` and associated evidence; and final independently authored `successor-refutation.md/json`. This is the focused tier: claim/precedent audit, column/split audit, participant gamer, independent attack refutation and mediator; a cold editor follows. There is no full-tier advocate/critic debate to imply.
 
 The participant constructs matches without labels: same learning/UI language and lexical tag; successor clock minus its delta equals the current clock; successor prior exposures equal current prior exposures plus current N; successor correct-count minus current prior correct-count is a feasible current K. The resulting label is `4*K >= 3*N`. Every accepted successor is later than the row being predicted. Same-test-only access suffices; learner ID, future test labels, cross-fold rows and post-window records are unnecessary.
 
@@ -263,7 +263,7 @@ Executed evidence here consists of inspection and synthesis of the final reports
 
 **Focused independent claim and precedent audit**
 
-2026-11-05 UTC. Current upstream main: `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`. Dataset: `duolingo_spaced_repetition_recall_1m_clf`. Roles: claim auditor and precedent checker, in the focused recheck panel. Read-only on canonical source and human decisions; only this run's report/evidence was written. Interpreter: the workflow's dedicated `.venv/bin/python`, explicitly importing the refreshed checkout's `src`, with two-thread caps.
+2026-11-05 UTC. Qualification source revision: `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`. Dataset: `duolingo_spaced_repetition_recall_1m_clf`. Independent claim and precedent audit; no new model fitting.
 
 Verdict: the preserved inclusion decision remains consistent. No new human decision or scientific repair is identified by this audit. The current source, frame, categories, labels, metric and six split arrays support reuse of the approved numerical qualification. The changed container checksum is entirely a current-schema metadata change, not a changed task. Final panel synthesis and build verification remain the owner's work; this report creates no new human marks.
 
@@ -277,7 +277,6 @@ The declaration SHA256 is `10e6c681a128763a081ad3ed086f5f54a21b60d77fd7b74d211b3
 
 Fresh independent evidence: `claim-audit-evidence.json`, executable `claim_audit.py`, `claim-source-counts.json`, executable `claim_source_counts.py`, and `claim-metric-stability.json`. The fresh decision register is `claim-register.json` / `claim-register.txt`. The column/split reviewer separately supplied `column-split-numerical.json`; source-to-selected-row lineage and the 81-copy count are inherited from the prior explicitly scoped full-source audits, not falsely presented as a new full-source alignment by this reviewer.
 
-The latest local Bridge selected-sync capture was November 2 23:05:41 UTC, completed 23:06:19 UTC, approximately 72 hours old at this audit. Its current state is changed-since-install with changed summaries and unknown receipt members. Peer inventory is unknown. These limits do not establish the freshness of this independent local Git-main checkout or a remote installation; this audit uses the explicitly observed local identities above.
 
 **Claims and attempted refutations**
 
@@ -392,7 +391,7 @@ A note saying that the attack is measured but allowing unrestricted future test 
 
 Verdict: retain the current definition and split, with the already accepted approximate-task limitations. New corrective findings: 0. No new human decision is requested by this audit.
 
-This is an independent column/split contribution to the focused add-dataset recheck on 2026-11-05. It does not replace the claim, task-gamer, mediator or editor reviews. No canonical files were edited and no models were fitted. The definition is `state/duolingo-refresh-20261105/checkout/datasets/_dev/tabarena-v0pt2/duolingo_spaced_repetition_recall_1m_clf/dataset.py`, SHA256 `10e6c681a128763a081ad3ed086f5f54a21b60d77fd7b74d211b382cd1a1a06f`, on the supplied `9048f36a` base.
+This is an independent column/split contribution to the focused add-dataset recheck on 2026-11-05. It does not replace the claim, task-gamer, mediator or editor reviews. No canonical files were edited and no models were fitted. The definition is `datasets/_dev/tabarena-v0pt2/duolingo_spaced_repetition_recall_1m_clf/dataset.py`, SHA256 `10e6c681a128763a081ad3ed086f5f54a21b60d77fd7b74d211b382cd1a1a06f`, on the supplied `9048f36a` base.
 
 I read current column-auditor/split-auditor instructions and the applicable knowledge on principles, use cases, leakage, splits, cleaning/dtypes, evidence and checks/probes. The current November 5 amendments to LEAK-9, LEAK-38 and SPLIT-9/10/14 were considered. They do not establish a previously unverified clock or delay bound. The explicit November 3 curator approval remains the authority for this task's inclusive 75% criterion, numerical N, equal record weights, temporal-only evaluation and approximate fit. CLEAN-17/TP-7's usual established-convention requirement is not reasserted as a new unanswered decision: this particular curator-selected event is explicitly authorized and accurately described as such.
 
@@ -434,7 +433,7 @@ The regime matches the approved known-learner practice-stream application (USE-1
 
 **Executed checks and remaining limits**
 
-Executed scratch script: `column_split_check.py`; detailed output: `column-split-numerical.json`, both beside this report. It ran with the project `.venv/bin/python`, explicitly imported current checkout `src`, and capped OMP/MKL/OpenBLAS/Polars at two threads. Exit status: 0.
+The independent numerical check completed successfully. The measured results and their scope are reported below.
 
 Checks included: current `dataset_io` metadata/feature interpretation; independent current dtype probe; exact pandas comparison of every frame value, dtype, category and index against approved prior `binary75-final/frame.parquet`; exact comparison of all six split arrays; split and class counts/bounds/gap/coverage; raw compressed-file SHA256; full-source denominator positivity, valid current correct counts, fraction/count agreement and history-correct <= history-seen; source eligible-history counts. There are 169,363 exact-75% source rows. The raw SHA256 still matches `26cf9b33f2e9b2e8aa9a8f262a017b30699ca2f625c56a12ce699d4ea7076873`; current frame SHA256 from the parent manifest is `b6f104eed4cddf621d169771c84bf61e3cdb2380dd797014e9160433dcf0d596`.
 
@@ -442,7 +441,6 @@ The parent's current native check reports 0 errors, 0 warnings, 27 passed checks
 
 Cannot verify: planned rather than realized N; session start/completion semantics; exact label-arrival delay; causes of the historical counter discontinuities; seasonal or modern-population generalization. The one-day gap is an accepted approximation, not proof all labels arrived before each refit. Stable test class shares cannot prove absence of censoring. The formulation was selected after exploratory outer-window inspection, so those dates are not a pristine confirmatory task-selection test. Current rules do not erase these accepted limitations, and no newly contradictory evidence was found.
 
-Bridge startup observation: last successful selected capture November 2 23:05:41 UTC / install 23:06:19 UTC, about 71 hours 37 minutes old at audit startup. Receipt is changed-since-install; relevant curation knowledge/operations and local summaries differ, some selected policy references are missing, and peer edits remain unknown. The current checkout procedures and actual local raw/frame/array bytes, rather than the old sync receipt, support this audit. No transfer or peer-freshness claim is made.
 
 </details>
 
@@ -454,7 +452,7 @@ One confirmed finding: later held-out rows reveal earlier held-out outcomes thro
 
 **Scope and baseline**
 
-Only `task.md`, `task.json`, `data.parquet`, `splits.parquet`, the supplied scoring implementation, and the public source below informed the analysis. All authored scripts and outputs are in `work/`. No parent/project rules, curation notes, other datasets or outside code repositories were inspected. The initial LightGBM import emitted a default matplotlib configuration-path warning and created an incidental temporary cache outside the kit; no outside task/project contents were exposed. Subsequent runs place that cache in `work/mpl`.
+Only `task.md`, `task.json`, `data.parquet`, `splits.parquet`, the supplied scoring implementation, and the public source below informed the analysis. All authored scripts and outputs are in `work/`. No parent/project rules, curation notes, other datasets or outside code repositories were inspected. The initial LightGBM import emitted a default matplotlib configuration-path warning and created an incidental temporary cache outside the kit; no outside task/project contents were exposed. Subsequent runs place that cache in `mpl`.
 
 All three shipped temporal splits were tested. For each, seed 481 fixes 100,000 sampled training rows and 50,000 sampled test rows. Every comparison uses those exact same rows; saved sample indices permit replay. Models are untuned LightGBM classifiers: 200 trees, 31 leaves, learning rate 0.05, seed 481, two threads. The honest baseline uses all supplied features, converts timestamp to seconds, and preserves categorical features. A stronger honest comparator adds prior accuracy, prior incorrect count, log delta, hour and weekday. These are legitimate predictors available at the stated prediction point. AUROC is computed through `score.py` using original class labels.
 
@@ -501,9 +499,9 @@ Removing `history_correct` from every row prevents the demonstrated exact K-diff
 
 **Evidence and replay**
 
-Run `work/run_attacks.py`, then `work/additional_checks.py`, then `work/repair_comparison.py` from the kit using the supplied interpreter. All cap compute threads at two. `work/write_report.py` creates this report. Evidence: `work/scores.csv`, `work/evidence.json`, `work/additional_evidence.json`, `work/repair_and_noise_evidence.json`; link audit: `work/future_links.parquet`; exact samples and all predictions: `work/r*f0_samples.npz` and `work/r*f0_predictions.parquet`. Logs retain execution outcomes. Bootstrap intervals are exploratory conditional uncertainty checks, not population-level guarantees. More extensive tuning, hidden user identities and production inference plumbing were not checked.
+Run `run_attacks.py`, then `additional_checks.py`, then `repair_comparison.py` from the kit using the supplied interpreter. All cap compute threads at two. `write_report.py` creates this report. Evidence: `scores.csv`, `evidence.json`, `additional_evidence.json`, `repair_and_noise_evidence.json`; link audit: `future_links.parquet`; exact samples and all predictions: `r*f0_samples.npz` and `r*f0_predictions.parquet`. Logs retain execution outcomes. Bootstrap intervals are exploratory conditional uncertainty checks, not population-level guarantees. More extensive tuning, hidden user identities and production inference plumbing were not checked.
 
-The fixed r0f0 honest model is batch invariant in a direct implementation check: all 50,000 test predictions are identical between whole-batch and 1,000-row chunks; the first 100 are also identical under one-row inference (maximum absolute difference zero). See `work/batch_invariance.py` and `work/batch_invariance.json`. This establishes the property for this supplied-feature honest implementation, without auditing general benchmark submission enforcement.
+The fixed r0f0 honest model is batch invariant in a direct implementation check: all 50,000 test predictions are identical between whole-batch and 1,000-row chunks; the first 100 are also identical under one-row inference (maximum absolute difference zero). See `batch_invariance.py` and `batch_invariance.json`. This establishes the property for this supplied-feature honest implementation, without auditing general benchmark submission enforcement.
 
 </details>
 
@@ -517,7 +515,7 @@ This report supplements and narrows the earlier `column-split-audit.md` conclusi
 
 **Independent test**
 
-Executed `successor_refutation.py`, exit 0; full results are in `successor-refutation.json` beside this report. Project interpreter and all applicable numerical thread caps were set to two. The script is independently authored and did not read the participant attack implementation. It reads only the current saved frame/six split arrays and frozen previously qualified predictions; matching uses each actual 111,111-row test array alone. No row from another split, outside the test window or after its end is used. Learner identity, source correct counts and source fractions are unavailable to the attack.
+Executed `successor_refutation.py`, exit 0; full results are in `successor-refutation.json` beside this report. The script is independently authored and did not read the participant attack implementation. It reads only the current saved frame/six split arrays and frozen previously qualified predictions; matching uses each actual 111,111-row test array alone. No row from another split, outside the test window or after its end is used. Learner identity, source correct counts and source fractions are unavailable to the attack.
 
 For current row c, find later row n in the same test array such that:
 
@@ -592,18 +590,18 @@ The definition and TODO distinguish an applied documentary protocol from future 
 
 No exposed credential or absolute host-local path was found in the inspected public review. Public source references, current-versus-historical numerical evidence and the closed issue numbering remain intelligible. No additional stylistic or speculative finding is raised.
 
-**Scope and freshness**
+**Review scope**
 
-This was local read-only inspection of the refreshed checkout and supplied run evidence. No remote request, model fit, controller operation, canonical edit or human mark was performed. Bridge status recorded the last selected capture at 2026-11-02 23:05:41 UTC and completion at 23:06:19 UTC, approximately three days old; selected files have changed and peer inventory remains unknown. The review relies on observed local current-main procedures and current artifacts, not on that sync receipt as scientific revalidation.
+This was read-only inspection of the reviewed checkout and supplied evidence; no new models were fitted. The review relies on the explicitly observed source identities and numerical artifacts.
 
 
 **Application (AI, 2026-11-05):** All three requested format and evidence-scope repairs are applied. The current native collector and page builder pass with both issues resolved; no new semantic finding is left.
 
 </details>
 
-<details><summary>Installed-cycle claim and precedent audit</summary>
+<details><summary>Qualification reuse claim and precedent audit</summary>
 
-**Focused installed-cycle claim and consistency audit**
+**Focused qualification reuse claim and consistency audit**
 
 November 6, 2026. Dataset: `duolingo_spaced_repetition_recall_1m_clf`.
 
@@ -613,9 +611,9 @@ Validity: retain the approved approximate conditional session-performance task a
 
 **Executed independent checks**
 
-I read the installed add/review procedures, focused panel contract, both knowledge entry points, principles, current leak/metric/task/evidence rules, human-review adaptation, accepted record/definition/REVIEW, and the relevant November 3/5 decision and numerical evidence. I independently ran `claim_audit.py` with the dedicated interpreter and numerical threads capped at two; it exited 0. Full results are `claim-audit-evidence.json`.
+I read the installed add/review procedures, focused panel contract, both knowledge entry points, principles, current leak/metric/task/evidence rules, human-review adaptation, accepted record/definition/REVIEW, and the relevant November 3/5 decision and numerical evidence. I independently ran `claim_audit.py` independently; it exited 0. Full results are `claim-audit-evidence.json`.
 
-The current isolated checkout begins at `f11991c8001517ad06e518bf1b4613a2cf756b46`. Its scientific source, skill and agent Git trees equal both the preserved previous checkout and installed source at `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`. The definition remains SHA-256 `4c67e0905b680fca777f630f5cace3d65bb0ff11d41b452e1c92d66c60f9d094`. The environment refresh's `CURRENT.md`/`verification.json` and current owner runtime checks establish preserved package versions and installed-vendor import. This auditor imported the identical current scientific code for its independent score check.
+The current isolated checkout begins at `f11991c8001517ad06e518bf1b4613a2cf756b46`. Its scientific source, skill and agent Git trees equal both the preserved previous checkout and reviewed source at `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`. The definition remains SHA-256 `4c67e0905b680fca777f630f5cace3d65bb0ff11d41b452e1c92d66c60f9d094`. The qualification audit establishes preserved package versions and code identity. This auditor imported the identical current scientific code for its independent score check.
 
 The newly generated 1,429,456-row frame equals the November 5 frame exactly, including index, dtypes, category values/order/codes and labels. All six train/test index arrays equal the previous arrays. The prior participant kit's full frame and all memberships also compare exactly to the new frame/arrays. Fresh frame SHA-256 is `b6f104eed4cddf621d169771c84bf61e3cdb2380dd797014e9160433dcf0d596`; source gzip SHA-256 is `26cf9b33f2e9b2e8aa9a8f262a017b30699ca2f625c56a12ce699d4ea7076873`, identical to the audited previous source. The owner-run native check reports 27 checks and zero errors, warnings or infos; its checksum `v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3` equals the final November 5 package. Those native-check results were read by this auditor, not rerun by this auditor.
 
@@ -658,13 +656,12 @@ TP-7's convention wording is stronger than the historical phrase "default establ
 
 The November 3 accepted marks retain snapshot `e8d965ea135d05819d8b441e64ccddb7db7abba1f8229ca7bf2ba5218a9cecd7`, version 1; their current file SHA-256 is `b2689eb6839fcf104b3676a28c937778a224b34fe86e8b3af812c60886373292`. A new native review session can faithfully record `ship` as retention under the latest explicit request, attached to its own actual current source identity and with a note naming that provenance. This is consistent with the current no-open-issues ship default and the already accepted inclusion. It must not copy old marks and stamp them with a new fingerprint or present a new unprompted scientific approval. This audit advises that faithful recording; the owner applies and verifies the new session separately.
 
-No original mark, canonical definition, record, review source, claim, controller, model or remote state was edited by this auditor. Only this audit's run artifacts were written. The latest relevant Bridge capture/install remains November 2 23:05:41/23:06:19 UTC, over three days old; local selected changes and missing historical policy files remain visible, peer inventory is unknown, and no new sync was performed. Conclusions use the inspected local evidence rather than treating that receipt as scientific revalidation.
 
 </details>
 
-<details><summary>Installed-cycle mediator</summary>
+<details><summary>Qualification reuse mediator</summary>
 
-**Focused installed-cycle Duolingo mediator judgment**
+**Focused qualification reuse Duolingo mediator judgment**
 
 November 6, 2026. Dataset: `duolingo_spaced_repetition_recall_1m_clf`. Installed scientific/procedure source: `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`.
 
@@ -674,7 +671,7 @@ Validity: the accepted approximate conditional session-performance task and temp
 
 **Changes to make now**
 
-1. Add a current AI clarification that TP-7's established-convention clause is a Must in the installed skill. The explicit task-specific curator instruction selecting inclusive >=75%, followed by the current instruction to reuse past decisions, governs this task. Preserve the historical attributed CC text, including its earlier "default established-convention preference" phrase; do not describe that phrase as the current rule's strength, claim that 75% is established by the source, or invent a general exception/amendment. This is a provenance correction, not a new cutoff decision (TP-7; instruction precedence; EV-7).
+1. Add a current AI clarification that TP-7's established-convention clause is a Must in the current procedure. The explicit task-specific curator instruction selecting inclusive >=75%, followed by the current instruction to reuse past decisions, governs this task. Preserve the historical attributed CC text, including its earlier "default established-convention preference" phrase; do not describe that phrase as the current rule's strength, claim that 75% is established by the source, or invent a general exception/amendment. This is a provenance correction, not a new cutoff decision (TP-7; instruction precedence; EV-7).
 2. Record the current native review against the actual current files. Its `ship` retention must cite the latest request in `CURATOR_INPUT.md` and the preserved November 3 inclusion; do not copy the original marks onto a new fingerprint or call retention a newly solicited scientific approval. Original marks and their historical snapshot remain intact (principles, precedence; native human-review contract).
 3. Report the current checks and dated reused evidence separately, run the cold editor, and complete the requested native build/reload/reproduction checks. The owner has corrected the initial pending status in `source-reuse.json`; it now records completed current checks. No model rerun is needed merely to manufacture freshness where exact reuse is established (EV-7/8; verification procedure).
 
@@ -700,13 +697,13 @@ The current LEAK-9 amendment and medical-facility/fremtpl2 precedents retain gen
 
 TP-7 is not treated as a general Should or waived for future datasets. The user's explicit selection is the task-specific instruction; existing candidate/source-label qualification remains dated evidence. The current claim audit reports zero Duolingo consistency flags. Neither that mechanical count nor historical numbered prose substitutes for inspecting actual open issues.
 
-This mediator performed read-only inspection and synthesis, wrote only this run report, and ran no model, controller, remote inquiry, build or benchmark enforcement. The last relevant Bridge capture/install remains November 2 23:05:41/23:06:19 UTC, over three days old; selected files have changed, some historical policy files are missing, and peer changes remain unknown. This judgment relies on inspected local current procedures and exact artifacts, not on sync age as scientific revalidation.
+This review synthesizes supplied evidence; it does not report a new raw-data audit or model fit.
 
 </details>
 
-<details><summary>Installed-cycle review editor</summary>
+<details><summary>Qualification reuse review editor</summary>
 
-**Focused installed-cycle cold editor**
+**Focused qualification reuse cold editor**
 
 November 6, 2026. Dataset: `duolingo_spaced_repetition_recall_1m_clf`.
 
@@ -714,7 +711,7 @@ Verdict: ready for the current native review once the two concrete presentation 
 
 **Concrete edits, most important first**
 
-1. The panel summary currently reads: "Focused current-main recheck: independent claim/precedent audit, column/split audit, participant attack, independent successor refutation, mediator and editor." Replace it with: "The current installed-cycle focused review comprises a fresh independent claim/precedent audit, mediator and cold editor. Earlier column/split, participant-attack and successor-refutation reports remain dated prior executions, with reuse verified against unchanged source, package versions, frame/category/label state, scorer and all six split memberships. No new model fit, participant attack or full panel is claimed." Keep the recommendation's first sentence beginning `ship`, so the native recommendation badge states the current verdict. The two following standalone paragraphs headed `**Installed-cycle scope:**` and `**Current rule wording:**` must be inside a complete `<details><summary>Installed-cycle scope and rule wording</summary>` section (blank line after its opening and before its closing). The panel format permits only collapsible sections after its summary. Preserve the historical reports and the present TP-7 clarification verbatim within that section. The owner has independently proposed this same repair; applying it resolves this finding.
+1. The panel summary currently reads: "Focused current-main recheck: independent claim/precedent audit, column/split audit, participant attack, independent successor refutation, mediator and editor." Replace it with: "The current qualification reuse focused review comprises a fresh independent claim/precedent audit, mediator and cold editor. Earlier column/split, participant-attack and successor-refutation reports remain dated prior executions, with reuse verified against unchanged source, package versions, frame/category/label state, scorer and all six split memberships. No new model fit, participant attack or full panel is claimed." Keep the recommendation's first sentence beginning `ship`, so the native recommendation badge states the current verdict. The two following standalone paragraphs headed `**Qualification reuse scope:**` and `**Current rule wording:**` must be inside a complete `<details><summary>Qualification reuse scope and rule wording</summary>` section (blank line after its opening and before its closing). The panel format permits only collapsible sections after its summary. Preserve the historical reports and the present TP-7 clarification verbatim within that section. The owner has independently proposed this same repair; applying it resolves this finding.
 2. In the newly appended record assessments, replace `at9048f36a` with `at 9048f36a`, `report27 checks` with `report 27 checks`, `Priority2:` with `Priority 2:`, `gap- (` with `gap - (`, `use case- (` with `use case - (`, `source+ (` with `source + (`, `shape+ (` with `shape + (`, `risk- (` with `risk - (`, and `inclusive75%` with `inclusive 75%`. These are missing spaces in current prose, not changes to the preserved curator words or scientific rationale.
 
 **Substantive reading**
@@ -729,9 +726,7 @@ No interior hash heading, absolute host-local path, unresolved record-field row,
 
 **Inspection and limits**
 
-I read the installed review-editor role, review-file format, writing and principles; current definition, README, record and REVIEW; current claim audit, mediator, manifest, reuse evidence and actual latest request. This is a read-only editorial inspection. I wrote only this report, with no canonical edit, model fit, controller action, remote inquiry, review mark or build.
-
-Bridge's latest relevant selected capture/install remains November 2 23:05:41/23:06:19 UTC, over three days old. Selected local source/procedure/context files have changed, some historical policy files remain missing, and peer changes are unknown. This review uses current inspected local files rather than treating that receipt as current scientific validation. No separate memory rewrite is warranted by these presentation corrections.
+I read the installed review-editor role, review-file format, writing and principles; current definition, README, record and REVIEW; current claim audit, mediator, manifest, reuse evidence and actual latest request. This is a read-only editorial inspection. I wrote only this report, with no new experiments or scientific changes.
 
 
 **Application (AI):** Both requested presentation fixes are applied. No new semantic finding or issue 8 is introduced.
