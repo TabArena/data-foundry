@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    RowBudget,
     Source,
     SplitPlan,
     TaskSummary,
@@ -18,8 +19,11 @@ from data_foundry.v2 import (
     TemporalSplits,
 )
 
+TRAIN_CAP = 1_000_000
+TEST_CAP = 111_111
 
-class DuolingoSpacedRepetitionRecall1mClf(AbstractCuratedDataset):
+
+class DuolingoSpacedRepetitionRecall(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Given N exercises on a word and prior practice, will this session achieve at least 75% correct?",
         use_case="A language-learning application estimates session performance given an exercise count and prior practice. This version reports the chance of reaching a curator-selected 75% accuracy criterion, for example to show the likelihood of meeting a session performance goal. The source does not establish this cutoff as mastery or as its deployed decision rule.",
@@ -31,7 +35,7 @@ class DuolingoSpacedRepetitionRecall1mClf(AbstractCuratedDataset):
         fit="approximate",
         fit_reason="Session performance includes learning and feedback within practice. The count is realized rather than proven preassigned; the task conditions on it without a causal fixed-count claim. Start/completion timestamps and reporting latency remain unverified. The one-day gap is an accepted conservative approximation, not a proven delay bound.",
     )
-    unique_name = "duolingo_spaced_repetition_recall_1m_clf"
+    unique_name = "duolingo_spaced_repetition_recall"
     sources = (
         Source(
             role="publication",
@@ -85,6 +89,7 @@ class DuolingoSpacedRepetitionRecall1mClf(AbstractCuratedDataset):
         reason="Source checked: Settles and Meeder (2016), section 4.1, https://aclanthology.org/P16-1174.pdf uses MAE for quantitative strength displays and AUC/half-life correlation for ranking. Myunghwan selects probability of at least 75% session accuracy, a new binary performance summary; source MAE and rounded-proportion AUC do not score this label. Use binary roc_auc fallback (MET-2/MET-8/MET-11), equal records, with no fixed probability action threshold. This changes the target and evaluation, not merely the scale of the old regression error."
     )
     temporal = Temporal(on="timestamp", horizon=1, horizon_unit="days", gap=1, gap_unit="days")
+    # A plain name keeps this custom, curator-approved capped protocol outside automatic version sampling.
     splits_comment = "Three newest calendar-day test windows, March 12/11/10 2013, with expanding earlier history and a one-day training gap. All learners are eligible and may recur; no learner holdout. Actual timestamps are sorted, with all training clocks strictly before each test window minus the gap. Use the standard temporal windows and shared benchmark sampling order on the full source, with curator-selected caps of 1M train and 111,111 test rows per window (approximately 90/10). Keep the used-row union. A custom split wrapper only supplies the smaller test cap; no temporal eligibility or learner partition changes. Learner ID and the current correct count are excluded from predictors. The newest day is partial; daily cadence and label-delay bounds remain accepted approximations, not verified source facts. Fit on the training side only and predict each test row from its own covariates with frozen model state; no other test rows, future histories, test-block statistics or held-out labels from another split may enter a prediction."
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -118,11 +123,18 @@ class DuolingoSpacedRepetitionRecall1mClf(AbstractCuratedDataset):
         for folds in windows.values():
             for train, _test in folds.values():
                 assert len(train) >= len(df) / 2, "Full-source training history floor violated"
+        # Preserve the approved full-history training draw; the native budget now samples only test rows.
+        rank = np.random.default_rng(self.SPLIT_RANDOM_STATE).permutation(len(df))
+        for folds in windows.values():
+            for fold, (train, test) in folds.items():
+                positions = np.asarray(train)
+                if len(positions) > TRAIN_CAP:
+                    positions = np.sort(positions[np.argsort(rank[positions], kind="stable")[:TRAIN_CAP]])
+                folds[fold] = (positions, test)
         reduced, splits, _ = sample_temporal_splits(
             df,
             windows,
-            train_cap=1_000_000,
-            test_cap=111_111,
+            RowBudget(train=TRAIN_CAP, test=TEST_CAP),
             random_state=self.SPLIT_RANDOM_STATE,
         )
         return SplitPlan(df=reduced, splits=splits)

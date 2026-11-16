@@ -22,7 +22,7 @@ source_links:
 - https://doi.org/10.18653/v1/P16-1174
 - https://doi.org/10.7910/DVN/N8XJME
 - https://github.com/duolingo/halflife-regression
-v2_path: datasets/_dev/tabarena-v0pt2/duolingo_spaced_repetition_recall_1m_clf/dataset.py
+v2_path: datasets/_dev/tabarena-v0pt2/duolingo_spaced_repetition_recall/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -137,6 +137,8 @@ CC (2026-11-05, Myunghwan): after the review procedures were updated, requested 
 **Assessment (AI, 2026-11-05):** updated installed-workflow build complete: format-2 container `01a1ae4b-07ce-7d55-b885-f6b11cb52d72` from clean source `90e77a7ccbaadc25d903a32e255298f7ca31694a`. Checksum `v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3` matches the preceding accepted build exactly. Zero errors/warnings; saved reload and reproduction from the sole traced raw input pass. Approved values, category/label state, all six split arrays and saved model scores are unchanged. Native current review records the latest explicit retention instruction while preserving original approval marks. No new scientific decision remains. Benchmark-side own-row method checking remains required and unverified; local build/source commits and claim remain pending integration.
 
 **Compatibility follow-up (AI, 2026-11-16):** The accepted 1M/111111 training/test caps remain unchanged. Current main removed the legacy temporal sampler signature and resolves only budget-suffix variants; this definition still needs sampler/name/raw-folder migration and requalification before a new build. The historical review, inclusion decision and build evidence are preserved; this rebase does not grant a new scientific exception.
+
+**Assessment (AI, 2026-11-16; compatibility repair):** Use the plain definition name `duolingo_spaced_repetition_recall` for the already approved custom capped temporal protocol. The `_1m` suffix now selects automatic collection sampling, which retains full training history and is incompatible with custom splits. Preserve the accepted capped-training draw explicitly, then use the current test-sampling API. This is a compatibility repair, without changing target, inputs, metric, temporal windows, label-availability filtering or intended row membership. Historical build/source identities remain preserved; fresh build and exact data/split comparisons are recorded separately when complete.
 
 ## Review
 
