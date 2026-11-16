@@ -19,7 +19,6 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Varying Delay'
-- Expanding Science Catalogue
 original_source: Other
 year: '2021'
 required_split:
@@ -83,6 +82,8 @@ CC (2026-11-12, Andrej): 2019 and 2020 form one last test window, and DR17's ful
 
 CC (2026-11-12, Andrej): ship (Review issue 1 closed on Andrej's note, verdict ship); nothing open on the review page.
 - Split and metric marked `ok`: the eight windows by the year of the spectrum, the date no model input, and log loss stay as decided in issues 2, 6 and 7.
+
+CC (2026-11-16, Andrej): tag `Expanding Science Catalogue` removed. A sky survey's data releases are a survey, not a catalogue: the survey's targeting programmes choose which objects get a spectrum. The split by the year of the spectrum stands, as for dated samples whose selection moves with the period: quasars are 3-11% of the spectra before 2010 and 31-46% from 2014 on.
 
 ## Review
 

@@ -99,12 +99,12 @@ about time), and they do not change with the split a definition chooses. A fact 
   `Samples: Unknown`. The fact asks when each row is predicted, not how the file was pulled: one scrape of sales from
   several years, or one extract of policies each priced at its own start, is over time (perth_house_prices, bemtpl97),
   with `Features: Read Later` when the attributes come from the extract. The test: could two rows' prediction points
-  lie at different times? A catalogue whose items enter in eras, or whose features mean something different by when an
-  item was made, arose over time even when each item's value is fixed: sdss_17's quasars are 3-11% of the spectra
-  before 2010 and 31-46% from 2014 on, and phishing pages and malware change with their year. A catalogue that a
-  parent source dates is `Samples: Over Time` with `Time: Dated` even where the date turns out to carry nothing:
-  whether it does is measured for the time basis (`UnseenGroup` or the entry date; SPLIT-34), and the fact stays what
-  the source says.
+  lie at different times? A survey or a catalogue whose items enter in eras, or whose features mean something different
+  by when an item was made, arose over time even when each item's value is fixed: the quasars of sdss_17, a sky survey,
+  are 3-11% of the spectra before 2010 and 31-46% from 2014 on, and phishing pages and malware change with their
+  year. A catalogue that a parent source dates is `Samples: Over Time` with `Time: Dated` even where the date turns
+  out to carry nothing: whether it does is measured for the time basis (`UnseenGroup` or the entry date; SPLIT-34),
+  and the fact stays what the source says.
 * **Time,** for samples over time: `Time: Dated` when the release or a parent source keeps the date (a date column, a
   value that encodes the period, a date dropped from the raw file, or a parent upload that matches the rows by an id;
   the time probe, `time_probes.py`, looks for them); `Time: Inferred` when only an order that tracks time survives,
@@ -219,12 +219,13 @@ framingham_heart_study_fhs (`DelayedTarget`), houses and 5g_energy_consumption (
 
 **SPLIT-34 (Should; relates to SPLIT-4, SPLIT-31 and SPLIT-32).** A dataset drawn from an **expanding science
 catalogue** is a cut of a database or a testing programme that keeps growing: a bioactivity database's releases, a
-regulator's screening programme, a materials database, a sky survey's data releases, the rounds of a community
-experiment. Each item's target is a property of the item and does not move; what moves is **which items the catalogue
-holds**, because a programme adds them in waves - the compounds of one paper's series, one year's batch of tests, one
-targeting campaign's objects. The record carries the tag `Expanding Science Catalogue`, set at screening, so this
-rule is read before the split is chosen. Three keys can keep a test item apart from training, and each tests
-something else:
+regulator's screening programme, a materials database, a sequence database, the rounds of a community experiment.
+Each item's target is a property of the item and does not move; what moves is **which items the catalogue holds**,
+because a programme adds them in waves - the compounds of one paper's series, one year's batch of tests, one round's
+entries. The record carries the tag `Expanding Science Catalogue`, set at screening, so this rule is read before the
+split is chosen. A survey's data releases are not a catalogue (sdss_17, a sky survey): the survey chooses which
+objects it observes, and SPLIT-32 reads its split from when they were observed. Three keys can keep a test item
+apart from training, and each tests something else:
 
 * **the item:** its copies and re-measurements stay on one side (a structure, a composition, a mix; SPLIT-24,
   SPLIT-26);
@@ -246,8 +247,8 @@ Which key stands for the use case is information from the use case and the sourc
    weighed: the catalogue's later items are outside the source's question. How the catalogue arrived (new families in
    later eras, a test protocol that changed over the span) is then a fact for the notes, with its measurement, and the
    time basis is `UnseenGroup` (SPLIT-32), its line naming the source's scope and what the later items hold that it
-   leaves out. Where the source's aim reaches the items that come next (compounds not yet made, the objects a survey
-   observes next), or the source names no scope, the definition's use case goes on to step 4. Where the source aims at
+   leaves out. Where the source's aim reaches the items that come next (compounds not yet made, materials not yet
+   reported), or the source names no scope, the definition's use case goes on to step 4. Where the source aims at
    items from elsewhere (other places, other instruments) and tests on independent sets from there, the family key
    that stands for elsewhere (a survey, a site) is the one, the date is not weighed, and the time basis is
    `UnseenGroup`. The source's own split is evidence of its scope only where it was chosen for the use (a time split,
@@ -257,8 +258,8 @@ Which key stands for the use case is information from the use case and the sourc
    this catalogue (not a registration number that predates it), and the labels are final (not `Target: Revised Later`,
    where a split by date tests the delay of the label more than the items), and when either
    * **(a) arrival changes how the target or the features are recorded, or which items are selected** (SPLIT-32,
-     question 4): descriptors computed by another convention in a later round, targeting programmes that changed
-     what a survey observes; or
+     question 4): descriptors computed by another convention in a later round, a programme that changed which
+     items it takes in; or
    * **(b) the date carries the waves:** a forward split leaves the test items clearly fewer close training neighbours
      than a random draw does. A programme that adds items in series (one paper's compounds, one family of materials)
      makes waves, and a family key still trains on the siblings that arrived with the test item, which the actor
@@ -284,7 +285,6 @@ items with a close training neighbour (a score in brackets where no share was me
 | qsar_tid_11 | 4b | scaffold 58% | first ChEMBL year 6-30% | 79.7% | 71-93% of the scaffold split's close analogs were first published in the test compound's own year |
 | apistox | 4b | scaffold 14-19% | decade of first publication 10-24% | 17-30% | the literature adds compounds in series |
 | superconductivity | 3 | composition: 79-86% of test compositions with an element-set sibling in training | first report year 23-51% | | the source keeps its model to known chemistry ("We should not expect good predictions for completely new superconductors"); the later families (cuprates from 1986, iron-based from 2008) are outside its question |
-| sdss_17 | 4a | plate (log loss 0.338) | year of the spectrum (0.506) | (0.331) | quasars are 3-11% of the spectra before 2010 and 31-46% from 2014 on: the targeting programmes changed |
 | qsar_biodeg | 3 | scaffold 10.3% | MITI test year 10.3% | 11.8% | the source builds a regulatory screen and validates it on chemicals from other sources; the move from 14-day to 28-day tests is a fact about the labels |
 | qsar_oral_toxicity | 5 | scaffold 8.6% | report year 12.4% | 13.1% | an inventory the programme screens; its untested chemicals have 11.2% |
 | qsar_fish_toxicity | 5 | scaffold 5.9% | first ECOTOX test year 7.2% | 6.9% | the testing programme sets the pace, not the chemistry |
@@ -298,7 +298,7 @@ items with a close training neighbour (a score in brackets where no share was me
 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | 5 | well: 61.9% of test wells with a training well in their block | release date 62.0% | | wells are released one at a time, two years after completion, so the date carries no wave |
 
 Cases, by step. 3, the source's scope: superconductivity, qsar_biodeg, open_soil_spectral_library (items from
-elsewhere). 4a: sdss_17. 4b: qsar_tid_11, apistox. 5: qsar_oral_toxicity (an inventory), nci_aids_antiviral_screen (the
+elsewhere). 4b: qsar_tid_11, apistox. 5: qsar_oral_toxicity (an inventory), nci_aids_antiviral_screen (the
 date predates the screen), drug_induced_autoimmunity_prediction (labels not final), qsar_fish_toxicity,
 qsar_aquatic_toxicity, qsar_bioconcentration,
 force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition, splice (no wave in the date),
