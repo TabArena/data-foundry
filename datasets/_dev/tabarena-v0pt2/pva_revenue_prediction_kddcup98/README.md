@@ -275,7 +275,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 4 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 4 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_constant_column`: 22 constant column(s) (1 distinct non-null value): ['PVASTATE', 'COLLECT1', 'VETERANS', 'BIBLE', 'CATLG']. (hint: Drop them unless the constant is meaningful for the task.)
 - **warning** `dataset_missing_value_label`: 1 label column(s) contain missing-value-looking levels: OSOURCE=['NAN']. (hint: Convert proxy missing values to explicit `pd.NA` (curation guidelines).)
