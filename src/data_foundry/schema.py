@@ -111,6 +111,13 @@ GroupLabelTypes = Literal["per_group", "per_sample"]
 PredictionUnit = Literal["row", "group"]
 GroupAggregation = Literal["mean", "any", "last", "select_min", "select_max"]
 GroupContext = Literal["none", "all_rows", "past_rows"]
+TimeOf = Literal["prediction", "label"]
+"""What a time column marks: ``prediction``, the moment the actor predicts (a loan's payout, a permit's filing, a
+patient's hour), or ``label``, the moment the label became known (a house's sale when the price is predicted at its
+listing, the year a compound entered a catalogue). Declared for a temporal task's time column
+(:attr:`PredictiveMLTaskMetadataV2.time_of`) and for the order inside a group (:attr:`Grouping.time_of`). A label time
+orders the rows and is never a model input; the column of the prediction point, when there is one, is named as
+``prediction_time``."""
 
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
@@ -149,12 +156,26 @@ class Grouping:
     """How the rows' predictions become one group prediction; set exactly when ``prediction_unit`` is ``group``."""
     context: GroupContext = "none"
     """What a model may use about the group at prediction time: ``none`` (default), ``all_rows`` or ``past_rows``."""
+    time_of: TimeOf | None = None
+    """What ``time_on`` marks (:data:`TimeOf`): ``None`` or ``"prediction"`` (stored as ``None``), each row's
+    prediction point, a model input; ``"label"``, the moment each row's label became known, which orders the rows
+    (``aggregation="last"``) and is no model input. With ``context="past_rows"`` a label time needs
+    :attr:`prediction_time`: a row may read the group's rows predicted before it, and their labels only where the label
+    time is before its own prediction time."""
+    prediction_time: str | None = None
+    """The column of each row's prediction point when ``time_on`` is a label time (``time_of="label"``): a model input
+    the actor holds."""
+
+    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("time_of", "prediction_time")
+    """Fields added after grouped containers shipped: dropped from the checksum and the saved JSON while ``None``."""
 
     def __post_init__(self):
         """Validate the rules between the fields that need no other metadata.
 
         The rules that need the target type are checked by :class:`PredictiveMLTaskMetadataV2`.
         """
+        if self.time_of == "prediction":  # the default, stored unset so that no older container changes
+            self.time_of = None
         columns = as_column_list(self.on)
         if not columns or any(not str(c).strip() for c in columns):
             raise ValueError("Grouping.on must name the group column(s).")
@@ -177,12 +198,36 @@ class Grouping:
                 f"aggregation={self.aggregation!r} selects one row by its prediction and scores that row's true "
                 "value: it needs labels='per_sample'.",
             )
+        self._check_time()
+
+    def _check_time(self) -> None:
+        """The order inside a group: what needs it, what it marks and the prediction time that goes with a label
+        time.
+        """
         if self.aggregation == "last" and self.time_on is None:
             raise ValueError("aggregation='last' needs time_on: the order that defines a group's latest row.")
         if self.context == "past_rows" and self.time_on is None:
             raise ValueError("context='past_rows' needs time_on: the order that defines a row's earlier rows.")
-        if self.time_on is not None and self.time_on in columns:
-            raise ValueError(f"Grouping.time_on={self.time_on!r} is also a group column.")
+        columns = as_column_list(self.on)
+        for name, column in (("time_on", self.time_on), ("prediction_time", self.prediction_time)):
+            if column is not None and column in columns:
+                raise ValueError(f"Grouping.{name}={column!r} is also a group column.")
+        if self.time_of is not None and self.time_of not in ("prediction", "label"):
+            raise ValueError(f"Grouping.time_of must be 'prediction' or 'label', got {self.time_of!r}.")
+        if self.time_of is not None and self.time_on is None:
+            raise ValueError("Grouping.time_of says what the order inside a group marks; set time_on.")
+        if self.prediction_time is not None and self.time_of != "label":
+            raise ValueError(
+                "Grouping.prediction_time names the prediction point beside a label time; set time_of='label' "
+                "(a time_on of the prediction point is the prediction time itself).",
+            )
+        if self.prediction_time is not None and self.prediction_time == self.time_on:
+            raise ValueError("Grouping.prediction_time and time_on name the same column.")
+        if self.context == "past_rows" and self.time_of == "label" and self.prediction_time is None:
+            raise ValueError(
+                "context='past_rows' on a label time needs prediction_time: a row may read the rows predicted before "
+                "it, and their labels only where they were known by its own prediction point.",
+            )
 
 
 MetricKind = Literal["standard", "custom", "local"]
@@ -980,6 +1025,17 @@ class PredictiveMLTaskMetadataV2:
     """The unit one step of a numeric ``time_on`` counts: numerai's ``era`` counts weeks, so era 1235 is a year after
     era 1183. It gives a time column that is a number its calendar (the newest year of a train side, a horizon in
     weeks). ``None`` for a date column, whose calendar is its own, and for a time that is only an order."""
+    time_of: TimeOf | None = None
+    """What ``time_on`` dates (:data:`TimeOf`). ``None`` (every container built before the field, and every temporal
+    definition that does not declare ``Temporal(time_of=...)``) and ``"prediction"``: the prediction point, which the
+    actor knows, so the column is a model input. ``"label"``: the moment the label became known, after the prediction
+    point, so the column orders and splits the rows (every training label was known at a window's start) and is no
+    model input (:func:`~data_foundry.curation_container.feature_columns` leaves it out). Only a temporal task sets
+    it."""
+    prediction_time: str | None = None
+    """The column of the prediction point when ``time_on`` is a label time (``time_of="label"``): the time the actor
+    holds when predicting, a model input (california_house_prices_2020's ``Listed On`` beside its sale order).
+    ``None`` when the definition names none."""
     grouping: Grouping | None = None
     """How a grouped task is used (:class:`Grouping`): the group column, the labels, the order inside a group, the
     prediction unit, the aggregation and the context. The group column is metadata, never a model feature."""
@@ -1001,7 +1057,13 @@ class PredictiveMLTaskMetadataV2:
     type_adapter_id: str = "predictive-ml-task-mold-v2"
     """Identifies container format 2."""
 
-    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("time_unit", "sample_weight", "unit_weight")
+    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = (
+        "time_unit",
+        "time_of",
+        "prediction_time",
+        "sample_weight",
+        "unit_weight",
+    )
     """Fields added after containers shipped: dropped from the checksum and the saved JSON while ``None``, so a
     container saved before they existed keeps verifying."""
 
@@ -1009,13 +1071,7 @@ class PredictiveMLTaskMetadataV2:
         """Validate the regime, and the rules between the grouping and the target."""
         if not (self.target_column_name or "").strip():
             raise ValueError("target_column_name must name the target column.")
-        if self.time_unit is not None and self.time_on is None:
-            raise ValueError("time_unit says what one step of the time column counts; set time_on.")
-        if self.time_on is not None and self.grouping is not None:
-            raise ValueError(
-                "A task is temporal (time_on) or grouped (grouping), not both; record the order inside a group as "
-                "grouping.time_on.",
-            )
+        self._check_time()
         if self.target_column_name in (self.time_on, self.group_time_on, *as_column_list(self.group_on)):
             raise ValueError(f"The target column ({self.target_column_name!r}) cannot be a time or group column.")
         if self.stratify_on == self.target_column_name and not self.is_classification:
@@ -1041,6 +1097,32 @@ class PredictiveMLTaskMetadataV2:
                 f"aggregation={aggregation!r} selects the row with the lowest / highest predicted value: it needs a "
                 f"regression target, got {self.problem_type!r}.",
             )
+
+    def _check_time(self) -> None:
+        """The time column: its unit, what it dates, and temporal or grouped (not both)."""
+        if self.time_unit is not None and self.time_on is None:
+            raise ValueError("time_unit says what one step of the time column counts; set time_on.")
+        if self.time_on is not None and self.grouping is not None:
+            raise ValueError(
+                "A task is temporal (time_on) or grouped (grouping), not both; record the order inside a group as "
+                "grouping.time_on.",
+            )
+        if self.time_of is not None and self.time_on is None:
+            raise ValueError("time_of says what the time column dates; set time_on (a temporal task).")
+        if self.prediction_time is not None and self.time_of != "label":
+            raise ValueError(
+                "prediction_time names the prediction point beside a label time; set time_of='label' (a time_on of "
+                "the prediction point is the prediction time itself).",
+            )
+        if self.prediction_time is not None and self.prediction_time in (
+            self.time_on,
+            self.target_column_name,
+            *as_column_list(self.group_on),
+        ):
+            raise ValueError(f"prediction_time={self.prediction_time!r} is the time, target or group column.")
+        group_prediction = self.grouping.prediction_time if self.grouping is not None else None
+        if group_prediction is not None and group_prediction == self.target_column_name:
+            raise ValueError(f"grouping.prediction_time={group_prediction!r} is the target column.")
 
     def _check_sample_weight(self) -> None:
         """The training weight is a scoring column of role ``weight``, never a column models use."""
@@ -1135,6 +1217,10 @@ class PredictiveMLTaskMetadataV2:
             f"  stratify_on:           {self.stratify_on}",
             f"  time_on:               {self.time_on}",
         ]
+        if self.time_of == "label":
+            lines.append("  time_of:               label (orders and splits the rows; never a model input)")
+        if self.prediction_time is not None:
+            lines.append(f"  prediction_time:       {self.prediction_time} (the prediction point; a model input)")
         for scoring in self.scoring_columns:
             use = "never a feature"
             if scoring.role == "weight":
@@ -1172,7 +1258,13 @@ class PredictiveMLTaskMetadataV2:
             lines += [
                 f"  grouping.on:           {grouping.on}",
                 f"  grouping.labels:       {grouping.labels}",
-                f"  grouping.time_on:      {grouping.time_on}",
+                f"  grouping.time_on:      {grouping.time_on}"
+                + (" (label time; never a model input)" if grouping.time_of == "label" else ""),
+                *(
+                    [f"  grouping.prediction:   {grouping.prediction_time} (the prediction point; a model input)"]
+                    if grouping.prediction_time
+                    else []
+                ),
                 f"  grouping.unit:         {unit}",
                 f"  grouping.context:      {grouping.context}",
             ]

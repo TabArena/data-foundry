@@ -25,7 +25,12 @@ from data_foundry.v2 import get_dataset
 from data_foundry.v2.metrics import Metric, score
 from sklearn.metrics import mean_poisson_deviance
 
-from tests.test_v2_dataset import DEFINITION, warehouse, write_definition  # noqa: F401 - the fixture is used by name
+from tests.test_v2_dataset import (  # noqa: F401 - the fixture is used by name
+    DEFINITION,
+    temporal_body,
+    warehouse,
+    write_definition,
+)
 
 REPO = Path(__file__).resolve().parents[1]
 SCRIPTS = REPO / ".claude" / "skills" / "knowledge-data-foundry" / "scripts"
@@ -382,6 +387,37 @@ def test_participant_kit_on_hepatitis(clean_room, tmp_path):
         assert note not in (out / "task.md").read_text()
     run = subprocess.run([sys.executable, "-I", "score.py"], cwd=out, capture_output=True, text=True, check=True)
     assert run.stdout.startswith("r0f0: train ")
+
+
+def test_a_label_time_is_no_input_for_the_probes_and_the_participant(clean_room, tmp_path, warehouse):  # noqa: F811
+    """The probe kit and the participant kit read the inputs the package decides: a time that dates the label stays
+    in the frame to order the rows, and neither a probe nor a participant's ``features()`` fits on it.
+    """
+    del warehouse
+    body = temporal_body(time_of="label", prediction_time="listed", listed=-1)
+    write_definition(tmp_path / "datasets", body=body)
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    data = clean_room.dataset_io.from_definition(ds)
+    assert (data.time_of, data.prediction_time) == ("label", "listed")
+    assert "t" in data.df.columns
+    assert "t" not in data.feature_cols
+    assert "listed" in data.feature_cols
+    assert "dates the label" in clean_room.regime_line(data)
+    assert "the prediction point is `listed`" in clean_room.regime_line(data)
+    out = tmp_path / "participant_kit"
+    clean_room.write_participant(
+        "toy_ds", out, root=tmp_path / "datasets", records=tmp_path / "records", prediction_point="a row is drawn"
+    )
+    task = json.loads((out / "task.json").read_text())
+    assert (task["time_of"], task["prediction_time"]) == ("label", "listed")
+    run = subprocess.run(
+        [sys.executable, "-I", "-c", "import sys; sys.path.insert(0, '.'); import score; print(score.features())"],
+        cwd=out,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert run.stdout.strip() == "['x1', 'colour', 'listed']"
 
 
 # --------------------------------------------------------------------------- decision_register

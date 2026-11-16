@@ -43,7 +43,7 @@ from typing import TYPE_CHECKING, Literal
 import numpy as np
 import pandas as pd
 
-from data_foundry.curation_container import CuratedContainer
+from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
 from data_foundry.schema import DatasetMetadata, as_column_list, training_only_weight
 from data_foundry.utils.checksum import categorical_details
@@ -1727,6 +1727,108 @@ def _check_splits_temporal(ctx: _Ctx) -> Iterator[CheckResult]:
             f"Temporal splits use {sorted(n_folds_per_repeat)} fold(s) per repeat.",
             hint="Shipped temporal tasks put each time window in its own repeat with a single fold "
             "(`splits[window] = {0: (train_idx, test_idx)}`).",
+        )
+
+
+LABEL_TIME_COPY = 0.99
+"""A feature whose rank correlation with a time that dates the label reaches this (in size) carries that time."""
+
+
+@_check
+def _check_label_time(ctx: _Ctx) -> Iterator[CheckResult]:
+    """A time that dates the label (``time_of="label"``, the task's time column or the order inside a group): no gap
+    for the label's delay, a prediction time that is a present model input and not after the label, and no other
+    feature that copies the label time.
+    """
+    task = ctx.task
+    grouping = getattr(task, "grouping", None)
+    label_times = []  # (column, its prediction time, where it is declared)
+    if getattr(task, "time_of", None) == "label" and task.time_on is not None:
+        label_times.append((task.time_on, getattr(task, "prediction_time", None), "time_on"))
+    if grouping is not None and getattr(grouping, "time_of", None) == "label" and grouping.time_on is not None:
+        label_times.append((grouping.time_on, grouping.prediction_time, "grouping.time_on"))
+    if not label_times or ctx.df is None:
+        return
+    gap = getattr(ctx.splits_metadata, "time_gap", None)
+    if gap and getattr(task, "time_of", None) == "label":
+        yield CheckResult(
+            "task_label_time_gap",
+            "warning",
+            f"The splits leave a gap ({gap:g} {ctx.splits_metadata.time_gap_unit}) on a time that dates the label "
+            f"(`{task.time_on}`).",
+            hint="A split on when the label became known trains only on labels known at each window's start, which "
+            "is what a gap for the label's delay simulates (SPLIT-10). Drop the gap, or accept this warning with the "
+            "planning or refit delay it stands for.",
+        )
+    excluded = non_feature_columns(task)
+    rows = np.arange(ctx.n_rows)
+    if len(rows) > FEATURE_SAMPLE_ROWS:
+        rows = np.sort(np.random.default_rng(0).choice(rows, FEATURE_SAMPLE_ROWS, replace=False))
+    for column, prediction_time, field_name in label_times:
+        if not ctx.has_column(column):
+            continue
+        if prediction_time is not None:
+            yield from _check_prediction_time(ctx, column, prediction_time, field_name, excluded)
+        copies = _label_time_copies(ctx, column, {*excluded, prediction_time}, rows)
+        if copies:
+            yield CheckResult(
+                "task_label_time_copy_is_feature",
+                "warning",
+                f"Feature(s) {', '.join(copies[:5])} follow the time that dates the label (`{column}`, "
+                f"{field_name}; rank correlation at least {LABEL_TIME_COPY} in size): the model reads that time "
+                "through them.",
+                hint="Drop the copy (date parts, a row id in the same order); a time the actor holds is the "
+                "prediction time (`prediction_time=...`), or accept this warning with the reason the actor holds it.",
+            )
+
+
+def _label_time_copies(ctx: _Ctx, column: str, skip: set, rows: np.ndarray) -> list[str]:
+    """The numeric or date features whose rank correlation with the label time ``column`` reaches
+    :data:`LABEL_TIME_COPY` in size, as ``name (rho)``, read on ``rows``.
+    """
+    time = ctx.numeric_time(column)
+    if time is None:
+        return []
+    time_rank = pd.Series(time[rows]).rank()
+    copies = []
+    for other in ctx.df.columns:
+        values = None if other in skip or other == column else ctx.numeric_time(other)
+        if values is None:
+            continue
+        rho = time_rank.corr(pd.Series(values[rows]).rank())  # Pearson on ranks: Spearman, missing pairs left out
+        if np.isfinite(rho) and abs(rho) >= LABEL_TIME_COPY:
+            copies.append(f"{other} ({rho:+.3f})")
+    return copies
+
+
+def _check_prediction_time(
+    ctx: _Ctx, label_time: str, prediction_time: str, field_name: str, excluded: set[str]
+) -> Iterator[CheckResult]:
+    """The prediction time beside a label time: a column of the frame, a model input, and not after the label."""
+    if not ctx.has_column(prediction_time):
+        yield CheckResult(
+            "task_prediction_time_missing",
+            "error",
+            f"The prediction time `{prediction_time}` (beside `{field_name}={label_time!r}`) is not a column.",
+        )
+        return
+    if prediction_time in excluded:
+        yield CheckResult(
+            "task_prediction_time_not_feature",
+            "error",
+            f"The prediction time `{prediction_time}` is a target, group, scoring or label-time column: the actor "
+            "holds it, so it is a model input.",
+        )
+    series, label = ctx.df[prediction_time], ctx.df[label_time]
+    if not (pd.api.types.is_datetime64_any_dtype(series) and pd.api.types.is_datetime64_any_dtype(label)):
+        return  # an order (a row number) and a date share no scale to compare
+    after = int((series > label).sum())
+    if after:
+        yield CheckResult(
+            "task_prediction_time_after_label",
+            "warning",
+            f"{after:,} row(s) have the prediction time `{prediction_time}` after the label time `{label_time}`.",
+            hint="A prediction point comes before the label it predicts: check the two columns, or the rows.",
         )
 
 

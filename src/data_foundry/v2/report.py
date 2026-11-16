@@ -134,6 +134,9 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             "prediction_unit": task.grouping.prediction_unit,
             "aggregation": task.grouping.aggregation,
             "context": task.grouping.context,
+            # only for an order inside a group that dates the label, so every other README stays as it was
+            **({"time_of": "label"} if getattr(task.grouping, "time_of", None) == "label" else {}),
+            **({"prediction_time": pt} if (pt := getattr(task.grouping, "prediction_time", None)) else {}),
         }
         if result.group_stats is not None:
             low, high = result.group_stats.test_groups_per_fold
@@ -151,7 +154,7 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
         **_raw_files_front(getattr(container.dataset_metadata, "raw_files", None)),
         "data": {
             "n_rows": len(df),
-            # the target, the group and the scoring columns are not features
+            # the target, the group and the scoring columns (and a time that dates the label) are not features
             "n_features": len(feature_columns(container)),
             "dtypes": {str(k): int(v) for k, v in df.dtypes.astype(str).value_counts().sort_index().items()},
             "n_test_dataset_rows": None if container.test_dataset is None else len(container.test_dataset),
@@ -172,6 +175,9 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             "stratify_on": task.stratify_on,
             "time_on": task.time_on,
             **({"time_unit": task.time_unit} if getattr(task, "time_unit", None) else {}),
+            # only for a time that dates the label (no model input), so every other README stays as it was
+            **({"time_of": "label"} if getattr(task, "time_of", None) == "label" else {}),
+            **({"prediction_time": pt} if (pt := getattr(task, "prediction_time", None)) else {}),
             "group_on": task.group_on,
             "group_labels": task.group_labels,
             "group_time_on": task.group_time_on,
@@ -678,7 +684,16 @@ def _splits_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
                 f" The train sides keep every row available to them; `subsample_train` draws the {budget} rows a "
                 f"benchmark fits on from {how}, as {unit}."
             )
-    table = split_summary(container.dataset, meta.splits, time_on=container.task_metadata.time_on)
+    task = container.task_metadata
+    if task.time_on is not None and getattr(task, "time_of", None) == "label":
+        shape += (
+            f" The time column `{task.time_on}` dates the label, which arrives after the prediction point: it orders "
+            "and splits the rows, so every training label was known at its window's start, and is no model input "
+            "(`feature_columns(container)` leaves it out)."
+        )
+        if getattr(task, "prediction_time", None):
+            shape += f" The prediction point is `{task.prediction_time}`, a model input."
+    table = split_summary(container.dataset, meta.splits, time_on=task.time_on)
     out = ["## Splits", "", meta.splits_comment.strip(), "", shape, ""]
     return out + _maybe_collapsed(f"Show all {len(table)} splits", _table(table), len(table)) + _window_section(result)
 
@@ -733,6 +748,18 @@ def _window_section(result: CurationResult) -> list[str]:
     return ["", "### The test windows", "", intro, "", _table(shown), ""]
 
 
+def _group_order(grouping: Any) -> str:
+    """The order inside a group as the README states it: the column, and for a label time that it is no input."""
+    if not grouping.time_on:
+        return "none"
+    if getattr(grouping, "time_of", None) != "label":
+        return f"`{grouping.time_on}`"
+    text = f"`{grouping.time_on}`, when each label became known (no model input)"
+    if getattr(grouping, "prediction_time", None):
+        text += f"; prediction point `{grouping.prediction_time}`"
+    return text
+
+
 def _group_section(result: CurationResult) -> list[str]:
     grouping = result.container.task_metadata.grouping
     if grouping is None:
@@ -741,7 +768,7 @@ def _group_section(result: CurationResult) -> list[str]:
     fields = [
         ("group column", _names(grouping.on)),
         ("labels", grouping.labels),
-        ("order inside a group", f"`{grouping.time_on}`" if grouping.time_on else "none"),
+        ("order inside a group", _group_order(grouping)),
         ("prediction unit", unit),
         ("known about a group when predicting", grouping.context),
     ]

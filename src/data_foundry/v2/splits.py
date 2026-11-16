@@ -28,7 +28,7 @@ import numpy as np
 import pandas as pd
 
 from data_foundry.bundle_checks import CheckResult
-from data_foundry.schema import RowBudget, TimeUnit, TrainSampling, as_column_list
+from data_foundry.schema import RowBudget, TimeOf, TimeUnit, TrainSampling, as_column_list
 from data_foundry.v2._optional import import_build_dependency
 
 if TYPE_CHECKING:
@@ -422,6 +422,8 @@ class Temporal:
                  horizon_unit="years", gap=5, gap_unit="years")                               # gap: 5 cohorts
         Temporal(on="era", splits=TemporalSplits(window=52, unit="unique", n_windows=3, gap=4), horizon=52,
                  horizon_unit="weeks", gap=4, gap_unit="weeks", time_unit="weeks")             # an era is a week
+        Temporal(on="sale_order", splits=TemporalSplits(window=5000, unit="rows", n_windows=3),
+                 time_of="label", prediction_time="listed_on")   # split by sale, predicted at the listing
 
     Attributes:
         on: The time column; the frame is sorted by it and future rows never train a split.
@@ -440,9 +442,21 @@ class Temporal:
             needs (:func:`subsample_train`), so a version with a ``row_budget`` on a numeric time column declares
             it. A date column has its own calendar and declares none; a time that is only an order (a row number)
             has none.
+        time_of: What the time column dates. ``prediction`` (the default): the prediction point, the moment the
+            actor predicts (a loan's payout, a permit's filing); the actor knows it, so it is a model input, and a
+            label that arrives later needs a gap (SPLIT-10). ``label``: the moment the label became known, after the
+            prediction point (a house's sale when its price is predicted at the listing, the year a compound entered
+            a catalogue, the night of the spectrum that sets a sky object's class); the column orders and splits the
+            rows, so every training label was known at a window's start, and ``feature_columns`` leaves it out. A
+            time the actor holds at the prediction point stays a feature in its own column (the listing date).
+        prediction_time: With ``time_of="label"``, the column of the prediction point, when the data has one
+            (california_house_prices_2020's ``Listed On`` beside its sale order): a model input, named so that the
+            README and the checks know which input carries the actor's time.
 
-    The container stores the column as the task's ``time_on`` (with ``time_unit``), the horizon as the splits'
-    ``time_horizon`` / ``time_horizon_unit`` and the gap as their ``time_gap`` / ``time_gap_unit``.
+    The container stores the column as the task's ``time_on`` (with ``time_unit``), ``time_of="label"`` as its
+    ``time_of`` (a prediction time is left unset, as in every container built before the field) and
+    ``prediction_time`` as its ``prediction_time``, the horizon as the splits' ``time_horizon`` /
+    ``time_horizon_unit`` and the gap as their ``time_gap`` / ``time_gap_unit``.
     """
 
     on: str
@@ -452,6 +466,8 @@ class Temporal:
     gap: int | None = None
     gap_unit: HorizonUnit | None = None
     time_unit: TimeUnit | None = None
+    time_of: TimeOf = "prediction"
+    prediction_time: str | None = None
 
     def __post_init__(self) -> None:
         if self.time_unit is not None and self.time_unit not in STEPS_PER_YEAR:
@@ -459,6 +475,15 @@ class Temporal:
             raise ValueError(msg)
         if not isinstance(self.on, str) or not self.on.strip():
             msg = "Temporal.on must name the time column."
+            raise ValueError(msg)
+        if self.time_of not in ("prediction", "label"):
+            msg = f"Temporal.time_of must be 'prediction' or 'label', got {self.time_of!r}."
+            raise ValueError(msg)
+        if self.prediction_time is not None and (self.time_of != "label" or self.prediction_time == self.on):
+            msg = (
+                "Temporal.prediction_time names the prediction point beside a label time: set time_of='label' and a "
+                "column other than `on`."
+            )
             raise ValueError(msg)
         if self.splits is not None and not isinstance(self.splits, TemporalSplits):
             msg = f"Temporal.splits must be a TemporalSplits, got {type(self.splits).__name__}."

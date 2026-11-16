@@ -40,7 +40,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
-from data_foundry.curation_container import CuratedContainer
+from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.schema import as_column_list, resolve_warehouse_dir
 from data_foundry.v2 import discover_datasets, load_definition, read_report
 from data_foundry.v2.metrics import row_weight_column, scorer
@@ -62,6 +62,9 @@ class ProbeInput:
         splits: The shipped splits, ``{repeat: {fold: (train_idx, test_idx)}}``.
         grouping: The task's grouping, or None for an IID or temporal task.
         time_on: The time column of a temporal task.
+        time_of: What ``time_on`` dates: ``label`` for a time that is no model input (it still orders the rows),
+            else None (the prediction point).
+        prediction_time: With ``time_of="label"``, the column of the prediction point (a model input), or None.
         origin: ``built`` (the container of the README build record), ``rebuilt`` (a container rebuilt from the
             definition) or ``definition`` (the definition's frame and split plan, no container).
         scoring_cols: The scoring columns dropped from ``df`` (metric inputs, never features).
@@ -89,6 +92,8 @@ class ProbeInput:
     grouping: Grouping | None
     time_on: str | None
     origin: str
+    time_of: str | None = None
+    prediction_time: str | None = None
     scoring_cols: tuple[str, ...] = ()
     special_features: tuple[str, ...] = ()
     feature_cols: tuple[str, ...] | None = None
@@ -198,17 +203,10 @@ def _without_scoring_columns(df: pd.DataFrame, task: Any) -> tuple[pd.DataFrame,
 
 
 def _excluded_columns(task: Any) -> set[str]:
-    """The columns that are never model inputs: the target, the group column(s), the scoring columns, the
-    training weight (a scoring column too) and the unit of a unit weight, as ``feature_columns`` leaves them out.
+    """The columns that are never model inputs, from the package's ``non_feature_columns`` (the one place that
+    decides): the target, the group, scoring and unit columns, and a time column that dates the label.
     """
-    unit = getattr(task, "unit_weight", None)
-    return {
-        task.target_column_name,
-        *as_column_list(task.group_on),
-        *(c.column for c in getattr(task, "scoring_columns", None) or ()),
-        *as_column_list(getattr(task, "sample_weight", None)),
-        *((unit.unit,) if unit is not None else ()),
-    }
+    return non_feature_columns(task)
 
 
 def _weight_and_metric(frame: pd.DataFrame, task: Any) -> dict[str, Any]:
@@ -262,6 +260,8 @@ def from_definition(
         splits=plan.splits,
         grouping=task.grouping,
         time_on=task.time_on,
+        time_of=getattr(task, "time_of", None),
+        prediction_time=getattr(task, "prediction_time", None),
         origin="definition",
         scoring_cols=scoring,
         special_features=special,
@@ -319,6 +319,8 @@ def from_container(container: CuratedContainer, origin: str, *, encode_special: 
         splits=container.experiment_metadata.splits,
         grouping=container.grouping,  # raises for a format-1 container
         time_on=task.time_on,
+        time_of=getattr(task, "time_of", None),
+        prediction_time=getattr(task, "prediction_time", None),
         origin=origin,
         scoring_cols=scoring,
         special_features=special,
