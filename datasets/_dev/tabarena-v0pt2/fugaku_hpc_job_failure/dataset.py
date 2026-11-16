@@ -262,7 +262,7 @@ class FugakuHpcJobFailure(AbstractCuratedDataset):
 
     def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
         # Recompute the native budget on ALL source metadata, never on an already-reduced denominator.
-        selected, _ = _select_temporal(self.raw["metadata"], _window_spec())
+        selected, _, population = _select_temporal(self.raw["metadata"], _window_spec())
         key = pd.MultiIndex.from_arrays([df._source_file.astype("uint8"), df._source_row.astype("uint32")])
         expected = pd.MultiIndex.from_frame(selected[["_source_file", "_source_row"]])
         assert key.is_unique
@@ -282,7 +282,11 @@ class FugakuHpcJobFailure(AbstractCuratedDataset):
             }
             for i in range(3)
         }
-        return SplitPlan(splits=splits, df=df.drop(columns=["_source_file", "_source_row", "_split_roles"]))
+        return SplitPlan(
+            splits=splits,
+            df=df.drop(columns=["_source_file", "_source_row", "_split_roles"]),
+            before_sampling=population,
+        )
 
     def _decisions(self, raw: dict, df: pd.DataFrame) -> list[Decision]:
         return [
@@ -344,7 +348,7 @@ def _verified_metadata(raw_dir: Path, manifest: dict) -> tuple[pd.DataFrame, lis
     return meta, audit
 
 
-def _select_temporal(meta: pd.DataFrame, windows: TemporalSplits) -> tuple[pd.DataFrame, dict]:
+def _select_temporal(meta: pd.DataFrame, windows: TemporalSplits) -> tuple[pd.DataFrame, dict, SplitPlan]:
     assert windows.unit == "months", "This preparation's label cutoff is the start of a calendar month."
     splits = windows.splits(meta, "adt")
     report = []
@@ -365,6 +369,7 @@ def _select_temporal(meta: pd.DataFrame, windows: TemporalSplits) -> tuple[pd.Da
         )
         splits[repeat][0] = (train[known], test)
     assert min(w["train_after_maturity"] for w in report) >= len(meta) * 0.5
+    population = SplitPlan(df=meta, splits={repeat: dict(folds) for repeat, folds in splits.items()})
     # Apply the approved class-proportional train cap after maturity filtering, on the full source denominator.
     train_trimmed = False
     rank = np.random.default_rng(4267).permutation(len(meta))
@@ -406,14 +411,18 @@ def _select_temporal(meta: pd.DataFrame, windows: TemporalSplits) -> tuple[pd.Da
         assert selected.adt.iloc[train].max() < selected.adt.iloc[test].min()
     assert np.all(roles != 0)
     selected["_split_roles"] = roles
-    return selected, {
-        "source_rows": len(meta),
-        "selected_rows": len(selected),
-        "trimmed": trimmed,
-        "windows": report,
-        "sampling": "native sample_temporal_splits, default seed 4267, class-stratified 1M train / 500k test",
-        "equal_time_order": "publisher filename order, then source row offset",
-    }
+    return (
+        selected,
+        {
+            "source_rows": len(meta),
+            "selected_rows": len(selected),
+            "trimmed": trimmed,
+            "windows": report,
+            "sampling": "native sample_temporal_splits, default seed 4267, class-stratified 1M train / 500k test",
+            "equal_time_order": "publisher filename order, then source row offset",
+        },
+        population,
+    )
 
 
 def _write_selected(raw_dir: Path, manifest: dict, selected: pd.DataFrame) -> None:
@@ -468,7 +477,7 @@ def _write_selected(raw_dir: Path, manifest: dict, selected: pd.DataFrame) -> No
 def _prepare(raw_dir: Path, manifest: dict, windows: TemporalSplits) -> None:
     meta, monthly = _verified_metadata(raw_dir, manifest)
     meta.to_parquet(raw_dir / "source_metadata.parquet", index=False)
-    selected, report = _select_temporal(meta, windows)
+    selected, report, _ = _select_temporal(meta, windows)
     del meta
     _write_selected(raw_dir, manifest, selected)
     selected.to_parquet(raw_dir / "selection_membership.parquet", index=False)

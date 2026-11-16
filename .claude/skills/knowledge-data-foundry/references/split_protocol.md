@@ -135,7 +135,11 @@ The protocol is the default, not a constraint on the task (SPLIT-1 in
   (`RowBudget.suffix`: `_1m`, `_2p5m`, `_10m`).
 - **Another budget for one dataset.** Not possible today: a definition of the working copy that declares `row_budget`
   is refused, so all of TabArena v0.2 trains and tests on the same budget. A custom `_make_splits` keeps its sides
-  within the budget itself (sample there), since the build refuses a plain name whose splits go over it.
+  within the budget itself (sample there), since the build refuses a plain name whose splits go over it. When it caps
+  training rows, return the eligible frame and splits before sampling in `SplitPlan.before_sampling`. The temporal
+  training-floor check evaluates those eligible sides, after label-availability filtering, against that full
+  population; it does not mistake the capped draw for the history available at the cutoff. The stored container
+  still contains only the sampled frame and splits, and no further fit-time sampling is applied.
 
 ## Examples
 

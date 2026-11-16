@@ -64,7 +64,8 @@ def test_fugaku_custom_caps_preserve_maturity_filter_and_class_quotas(monkeypatc
         }
     )
     frame["edt"] = frame.adt + pd.to_timedelta(np.where(row % 19 == 0, 400, 2), unit="D")
-    selected, report = module._select_temporal(frame, module._window_spec())
+    selected, report, population = module._select_temporal(frame, module._window_spec())
+    assert population.df is frame
     assert report["trimmed"]
     assert any(window["excluded_late_labels"] > 0 for window in report["windows"])
     for repeat, window in enumerate(report["windows"]):
