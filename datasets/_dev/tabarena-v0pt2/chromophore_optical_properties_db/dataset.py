@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     Smiles,
+    Source,
     TaskSummary,
     canonical_smiles,
     scaffold_groups,
@@ -57,22 +58,14 @@ class ChromophoreOpticalPropertiesDb(AbstractCuratedDataset):
         ),
     )
     unique_name = "chromophore_optical_properties_db"
-    year = "2020"
-    domain = "chemistry & material science"
-    source = "Other"
-    source_url = "https://doi.org/10.6084/m9.figshare.12045567.v3"
-    license = "CC BY 4.0"
-    download_description = """
-        Download the publisher's v3 CSV (file 49887156), not the unversioned search webpage:
-
-        mkdir -p local-data-warehouse/chromophore_optical_properties_db/raw
-        curl -L --fail https://ndownloader.figshare.com/files/49887156 -o local-data-warehouse/chromophore_optical_properties_db/raw/DB_for_chromophore_v3.csv
-
-        Publisher MD5: 565dbb010480d94e8bb41af1bfb75ea8. SHA256:
-        f92a55144c46ca0a0ef063c5ea82996161d65ea5c21643796cdeb897e173994c.
-        The downloaded CSV has 20,836 rows; the 2020 paper's 20,236 rows describe v2.
-    """
-    bibtex = """
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://doi.org/10.6084/m9.figshare.12045567.v3",
+            license="CC BY 4.0",
+            year="2020",
+            bibtex="""
         @article{joung2020experimental,
           title={Experimental database of optical properties of organic compounds},
           author={Joung, Joonyoung F. and Han, Minhi and Jeong, Minseok and Park, Sungnam},
@@ -82,6 +75,19 @@ class ChromophoreOpticalPropertiesDb(AbstractCuratedDataset):
           year={2020},
           doi={10.1038/s41597-020-00634-8}
         }
+    """,
+        ),
+    )
+    domain = "chemistry & material science"
+    download_description = """
+        Download the publisher's v3 CSV (file 49887156), not the unversioned search webpage:
+
+        mkdir -p local-data-warehouse/chromophore_optical_properties_db/raw
+        curl -L --fail https://ndownloader.figshare.com/files/49887156 -o local-data-warehouse/chromophore_optical_properties_db/raw/DB_for_chromophore_v3.csv
+
+        Publisher MD5: 565dbb010480d94e8bb41af1bfb75ea8. SHA256:
+        f92a55144c46ca0a0ef063c5ea82996161d65ea5c21643796cdeb897e173994c.
+        The downloaded CSV has 20,836 rows; the 2020 paper's 20,236 rows describe v2.
     """
     curation_comments = """
         - Prediction point: before synthesizing or measuring a candidate dye in its planned solvent, host or gas

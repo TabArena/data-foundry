@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     SplitPlan,
     TaskSummary,
     Temporal,
@@ -31,21 +32,14 @@ class DuolingoSpacedRepetitionRecall1mClf(AbstractCuratedDataset):
         fit_reason="Session performance includes learning and feedback within practice. The count is realized rather than proven preassigned; the task conditions on it without a causal fixed-count claim. Start/completion timestamps and reporting latency remain unverified. The one-day gap is an accepted conservative approximation, not a proven delay bound.",
     )
     unique_name = "duolingo_spaced_repetition_recall_1m_clf"
-    version_of = "duolingo_spaced_repetition_recall"
-    version_comment = "Apply the same temporal windows to the full release, then keep 1M earlier training and 111,111 later test rows per window using the shared benchmark sampling order. This curator-selected cap gives approximately 90/10 after sampling; it does not reproduce the paper's single file-order cutoff. Keep the used-row union. All learners are eligible; learner IDs are excluded from features."
-    year = "2016"
-    domain = "education"
-    source = "Other"
-    source_url = "https://doi.org/10.18653/v1/P16-1174"
-    license = "CC BY-NC 4.0"
-    download_description = """
-        Obtain settles.acl16.learning_traces.13m.csv.gz, file 3091087, from version 1.0 of
-        https://doi.org/10.7910/DVN/N8XJME and place it in local-data-warehouse/duolingo_spaced_repetition_recall/.
-        Official data API: https://dataverse.harvard.edu/api/access/datafile/3091087.
-        Use the X-Dataverse-key header if authentication is needed, without saving a token in URLs or source code.
-        Verify MD5 0a1cae5eb7ad4b0bd9c0de91d74fcced and 379004009 bytes.
-    """
-    bibtex = r"""
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://doi.org/10.18653/v1/P16-1174",
+            license="CC BY-NC 4.0",
+            year="2016",
+            bibtex=r"""
         @inproceedings{settles-meeder-2016-trainable,
           title = {A Trainable Spaced Repetition Model for Language Learning},
           author = {Settles, Burr and Meeder, Brendan},
@@ -53,8 +47,19 @@ class DuolingoSpacedRepetitionRecall1mClf(AbstractCuratedDataset):
           pages = {1848--1858}, year = {2016}, doi = {10.18653/v1/P16-1174},
           url = {https://aclanthology.org/P16-1174/}
         }
+    """,
+        ),
+    )
+    domain = "education"
+    download_description = """
+        Obtain settles.acl16.learning_traces.13m.csv.gz, file 3091087, from version 1.0 of
+        https://doi.org/10.7910/DVN/N8XJME and place it in local-data-warehouse/duolingo_spaced_repetition_recall/.
+        Official data API: https://dataverse.harvard.edu/api/access/datafile/3091087.
+        Use the X-Dataverse-key header if authentication is needed, without saving a token in URLs or source code.
+        Verify MD5 0a1cae5eb7ad4b0bd9c0de91d74fcced and 379004009 bytes.
     """
-    curation_comments = """
+    curation_comments = (
+        """
         We start with settles.acl16.learning_traces.13m.csv.gz, Harvard Dataverse version 1.0, file 3091087.
 
         - Prediction contract: estimate session performance conditional on supplied session_seen N and prior/context inputs. The archive records realized N, not a verified preassigned count. This is an approximate conditional logged-process task, not a causal test of assigning N. Source clock start/completion semantics and label arrival remain unverified under the curator-accepted recorded-clock approximation.
@@ -71,6 +76,9 @@ class DuolingoSpacedRepetitionRecall1mClf(AbstractCuratedDataset):
         - Potential leak, kept on purpose (LEAK-9, an evaluation leak): fit preprocessing and the model on this split's training rows only, freeze learned state, and predict each test session from its own eight supplied covariates. No feature, model step or update may use other test rows, test-block statistics, future histories or held-out labels from another split. Batching is allowed only when each prediction is invariant to adding, removing, reordering or changing unrelated test rows; equal timestamps grant no ordering access. A later test row's history_correct can reveal an earlier session's correct count: a feature-only same-test successor attack recovers 3.32-5.18% of test labels at 99.97-100% precision, increasing the frozen honest model's AUROC by 0.0210-0.0349 across three windows. These are evaluation leaks; each row's own prior histories remain legitimate. The benchmark must check methods against this protocol and exclude test-block learning. Downstream enforcement is required, not established by a dataset check or this build.
         - Final scientific review (2026-11-03, Myunghwan): approved inclusion as implemented with the documented conditional realized-N, clock/label-arrival, source-history, short-period and exploratory-selection limitations. The practical purpose is session-performance estimation via probability of achieving at least 75%, not expected fraction correct or source-defined mastery. Issue 6 is closed; there are no check warnings to accept. Build, commit and publication require a separate request.
     """
+        + "\n"
+        + "Apply the same temporal windows to the full release, then keep 1M earlier training and 111,111 later test rows per window using the shared benchmark sampling order. This curator-selected cap gives approximately 90/10 after sampling; it does not reproduce the paper's single file-order cutoff. Keep the used-row union. All learners are eligible; learner IDs are excluded from features."
+    )
     target = "session_accuracy_at_least_75"
     problem_type = "binary_classification"
     metric = Metric.fallback(

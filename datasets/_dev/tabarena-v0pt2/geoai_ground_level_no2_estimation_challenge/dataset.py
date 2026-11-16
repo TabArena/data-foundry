@@ -6,7 +6,7 @@ import hashlib
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
 
 
 class GeoaiGroundLevelNo2EstimationChallenge(AbstractCuratedDataset):
@@ -22,11 +22,25 @@ class GeoaiGroundLevelNo2EstimationChallenge(AbstractCuratedDataset):
         fit_reason="The challenge explicitly estimates surface pollution at withheld stations. Monitoring-site coverage approximates unmonitored locations; the release does not establish operational product latency or the ground-truth daily quality-control procedure.",
     )
     unique_name = "geoai_ground_level_no2_estimation_challenge"
-    year = "2024"
+    sources = (
+        Source(
+            role="publication",
+            platform="Zindi",
+            url="https://zindi.world/competitions/geoai-ground-level-no2-estimation-challenge",
+            license="CC BY-SA 4.0",
+            year="2024",
+            bibtex="""
+        @misc{zindi2024geoaino2,
+          title={GeoAI Ground-level NO2 Estimation Challenge},
+          author={{ITU AI for Good}},
+          year={2024},
+          howpublished={Zindi},
+          url={https://zindi.world/competitions/geoai-ground-level-no2-estimation-challenge}
+        }
+    """,
+        ),
+    )
     domain = "environmental science & climate"
-    source = "Zindi"
-    source_url = "https://zindi.world/competitions/geoai-ground-level-no2-estimation-challenge"
-    license = "CC BY-SA 4.0"
     data_tags = ("Spatial",)
     download_description = """
         Download the original challenge archive from the Zindi Data page after accepting its access terms:
@@ -36,15 +50,6 @@ class GeoaiGroundLevelNo2EstimationChallenge(AbstractCuratedDataset):
         Extract its files into local-data-warehouse/geoai_ground_level_no2_estimation_challenge/original-zindi-20261030/.
         This definition uses Train.csv, SHA256 fdee673ab76a4589cf118e10bcb6250ac6c58f132cec76d52ffc6f8b7d104446.
         The archive was supplied directly by the curator; an unauthenticated download command is not available.
-    """
-    bibtex = """
-        @misc{zindi2024geoaino2,
-          title={GeoAI Ground-level NO2 Estimation Challenge},
-          author={{ITU AI for Good}},
-          year={2024},
-          howpublished={Zindi},
-          url={https://zindi.world/competitions/geoai-ground-level-no2-estimation-challenge}
-        }
     """
     curation_comments = """
         Start from the original challenge archive's Train.csv and its DataDescription.pdf.
@@ -62,7 +67,7 @@ class GeoaiGroundLevelNo2EstimationChallenge(AbstractCuratedDataset):
     """
     target = "GT_NO2"
     problem_type = "regression"
-    metric = Metric.source("rmse", original="Root Mean Squared Error (RMSE)", reference=source_url)
+    metric = Metric.source("rmse", original="Root Mean Squared Error (RMSE)", reference=sources[0].url)
     grouping = Grouping(
         on="ID",
         labels="per_sample",

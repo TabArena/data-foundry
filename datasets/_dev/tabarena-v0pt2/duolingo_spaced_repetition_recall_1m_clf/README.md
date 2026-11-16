@@ -17,7 +17,7 @@ build:
     pyarrow: 26.0.0
     scikit-learn: 1.7.2
     polars: 2.0.0
-build_stale: false
+build_stale: true
 data:
   n_rows: 1429456
   n_features: 8
