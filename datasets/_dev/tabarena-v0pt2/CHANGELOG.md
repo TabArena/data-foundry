@@ -1,5 +1,13 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-16, bioresponse and covertype: `ForcedIIDFromGrouped` beside the time basis (Andrej; no container built)
+
+- New tag (SPLIT-36): the use case holds out a group of distinct items the data cannot key, so the split stays random.
+  bioresponse: no structure or compound id, so no chemical series (keeps `Timeless`). covertype: no stand id or
+  coordinates, four wilderness areas too few groups (keeps `Retrospective`). Each definition gains a `Group basis:`
+  line naming the group, why it cannot be keyed and the overlap left. Splits unchanged; the metadata changes, so both
+  need a rebuild.
+
 ## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)
 
 - Retired because no testing decision is made from a symptom questionnaire (USE-2; the fit None, USE-8). Its hospital

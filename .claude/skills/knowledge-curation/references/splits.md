@@ -308,6 +308,19 @@ lung_adenocarcinoma_metastasis (experimental results) against indian_liver_patie
 caracas_cervical_cancer, in_vehicle_coupon_recommendation (surveys) against student_portuguese_performance and houses
 (snapshots).
 
+**SPLIT-36 (Should; relates to SPLIT-8, SPLIT-24, SPLIT-25 and SPLIT-31).** When the use case holds out a group of
+distinct items, a family (a chemical series, an element set, a protein target), a site, an area or an instrument, and
+the data cannot key that group (no structure to compute a scaffold, no stand id or coordinates, a single site), the
+split is random and the definition carries `ForcedIIDFromGrouped`. Its `Group basis:` line names the group the use
+case holds out, why the data cannot key it, and the overlap the random split leaves (the share of test items with a
+close training neighbour, or rows of one unkeyed group on both sides). The tag sits beside the time basis (SPLIT-32),
+which still says why the split is not temporal. It is not for repeats of one entity the data does not identify, whose
+rows share one outcome: SPLIT-24 groups those where the entity can be rebuilt exactly, and SPLIT-25 retires the
+dataset where it cannot. Like a forced tag from temporal, it stays whatever a leak test finds, as the use case asks
+for another split. Why: a random score stands for items of groups already seen, and the tag tells a reader that the
+use case asks for more. Cases: bioresponse (`Timeless`; no structure or compound id, so no chemical series),
+covertype (`Retrospective`; no stand id or coordinates, and four wilderness areas are too few groups).
+
 ### Temporal tasks
 
 Every feature has to have existed at the prediction time of its row: LEAK-10 in [leak_checks.md](leak_checks.md).

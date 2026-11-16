@@ -56,7 +56,7 @@ class Bioresponse(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Anonymized", "Timeless")
+    data_tags = ("Anonymized", "Timeless", "ForcedIIDFromGrouped")
     download_description = """
         We download the data from Kaggle and uzip it to a predefined folder.
 
@@ -73,6 +73,11 @@ class Bioresponse(AbstractCuratedDataset):
           Spearman -0.04) and the order is not known to follow the assays. Not tested: a new chemical series, as close
           analogues cannot be grouped (nearest-neighbour label agreement 92% in the closest tenth of distances against
           64% in the farthest).
+        - Group basis: ForcedIIDFromGrouped (Andrej, 2026-11-16): the use case screens molecules a chemist has not made
+          yet, which whole chemical series held out would stand for (scaffold groups, SPLIT-31), but no structure or
+          compound id is published, so no series can be computed and the split is random. Overlap left: close
+          analogues of a test molecule sit in training (the label agreement above), so the score is optimistic for a
+          new series.
     """
 
     # Task

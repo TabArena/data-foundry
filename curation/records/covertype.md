@@ -3,6 +3,7 @@ unique_name: covertype
 name: covertype
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -64,6 +65,11 @@ CC (2026-10-21, Lennart): Fallback log loss, not the paper's accuracy.
 CC (2026-11-01, Lennart): marks on the review board of PR #37: Soil_ClimaticZone stays unordered (a second dimension within the altitude belts), noted in the definition.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `fia_forest_type` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-16, Andrej): `ForcedIIDFromGrouped` beside `Retrospective` (SPLIT-36):
+- The use case maps land with no inventory, which comes as whole stands of 20 to 900 cells.
+- No stand id or coordinates, and four wilderness areas are too few groups: the split stays random, and a test cell usually has cells of its stand in training.
+- Not measured: how much of the score comes from recognising stands (SPLIT-25).
 
 ## Reference
 

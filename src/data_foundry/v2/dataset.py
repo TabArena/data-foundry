@@ -81,6 +81,7 @@ from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
     FORCED_TIME_TAGS,
+    GROUP_BASIS_TAGS,
     HUMAN_SET_TIME_TAGS,
     RETIRED_DATA_TAGS,
     TIME_BASIS_TAGS,
@@ -2378,7 +2379,12 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             f"`data_tags` {retired}: retired, kept only so that old containers load. Write the dataset's doubts as a "
             "finding and its fit as `approximate` instead."
         )
-    if not task and set(cls.data_tags) & {*REGIME_TAGS, "ForcedGroupedFromTemporal", "ForcedIIDFromTemporal"}:
+    if not task and set(cls.data_tags) & {
+        *REGIME_TAGS,
+        "ForcedGroupedFromTemporal",
+        "ForcedIIDFromTemporal",
+        *GROUP_BASIS_TAGS,
+    }:
         fail("a parent (no `target`) has no split, so no regime tag; its children get theirs from their task.")
     if task and "ForcedGroupedFromTemporal" in cls.data_tags and cls.grouping is None:
         fail("`ForcedGroupedFromTemporal` marks a grouped split; declare `grouping = Grouping(...)` or drop the tag.")
@@ -2386,6 +2392,13 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         fail("`UnseenGroup` holds out whole groups; declare `grouping = Grouping(...)` on the group or drop the tag.")
     if task and "ForcedIIDFromTemporal" in cls.data_tags and (cls.grouping is not None or cls.temporal is not None):
         fail("`ForcedIIDFromTemporal` marks an IID split; drop the tag or the `grouping`/`temporal` declaration.")
+    if task and "ForcedIIDFromGrouped" in cls.data_tags and (cls.grouping is not None or cls.temporal is not None):
+        fail("`ForcedIIDFromGrouped` marks an IID split; drop the tag or the `grouping`/`temporal` declaration.")
+    if "ForcedIIDFromGrouped" in cls.data_tags and "Group basis:" not in (cls.curation_comments or ""):
+        fail(
+            "`ForcedIIDFromGrouped` needs a `Group basis:` line in `curation_comments`: the group the use case holds "
+            "out, why the data cannot key it, and the overlap the random split leaves (SPLIT-36)."
+        )
     _validate_time_basis(cls, fail)
     moved = [
         a for a in ("drop_columns", "categorical_features", "string_features", "datetime_features") if a in vars(cls)

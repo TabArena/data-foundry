@@ -1856,6 +1856,21 @@ def test_a_time_basis_is_accepted_on_an_iid_split_with_its_line(tag: str) -> Non
     assert cls.dataset_metadata.data_tags == ["IID", tag]
 
 
+def test_forced_iid_from_grouped_sits_beside_the_time_basis() -> None:
+    """`ForcedIIDFromGrouped` needs its `Group basis:` line, marks an IID split, stands beside a time basis."""
+    line = "- Time basis: a property of the molecule.\n- Group basis: no structure, so no series can be held out."
+    with pytest.raises(Exception, match="needs a `Group basis:` line"):
+        _define(data_tags=("Timeless", "ForcedIIDFromGrouped"), curation_comments="- Time basis: a property.")
+    with pytest.raises(Exception, match="`ForcedIIDFromGrouped` marks an IID split"):
+        _define(
+            data_tags=("ForcedIIDFromGrouped",),
+            curation_comments=line,
+            grouping=Grouping(on="g", labels="per_sample", definition="x"),
+        )
+    cls = _define(data_tags=("Timeless", "ForcedIIDFromGrouped"), curation_comments=line)
+    assert cls.dataset_metadata.data_tags == ["IID", "Timeless", "ForcedIIDFromGrouped"]
+
+
 def test_assumed_stationary_relation_needs_a_person_and_a_reason() -> None:
     """Only a person sets `AssumedStationaryRelation`: its line names who, when and why (SPLIT-32)."""
     with pytest.raises(Exception, match="only a person sets it"):

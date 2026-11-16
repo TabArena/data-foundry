@@ -58,6 +58,10 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the 1,776 descriptors D1 to D1776 come with hidden names (Kaggle: calculated properties such as size, shape or elemental constitution, normalized), and the response and its assay are not named, so which descriptor measures what cannot be checked. Data tag Anonymized added to the definition.
 
+CC (2026-11-16, Andrej): `ForcedIIDFromGrouped` beside `Timeless` (SPLIT-36):
+- The use case screens molecules not made yet, which whole chemical series held out would stand for (SPLIT-31).
+- No structure or compound id is published, so no series can be computed: the split stays random, and close analogues of a test molecule sit in training.
+
 ## Reference
 
 https://www.kaggle.com/c/bioresponse
