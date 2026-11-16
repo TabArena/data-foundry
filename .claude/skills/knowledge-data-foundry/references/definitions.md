@@ -269,12 +269,13 @@ A metric input known at the prediction point (a weight that is a function of the
   the frame, is never a feature, and is declared as
   `scoring_columns = (ScoringColumn(column="era", role="group", used_by="mean_group_pearsonr", description="the week a
   row belongs to; the metric is the mean of the per-era correlations"),)`. `feature_columns(container)` returns the
-  model's inputs without the target, the group column and the scoring columns, and `scorer(container)` takes the
-  scoring columns' values by row index: `scorer(container)(y_test, y_pred, test_idx)`. It reads class probabilities
-  in the sorted order of the classes (scikit-learn's `classes_`), also for an ordered target, whose declared order
-  stays type information; a DataFrame whose columns are the class names is matched by name, and a missing or unknown
-  class name is an error (Lennart, 2026-11-05). Before declaring a metric with inputs, check on the data that every
-  test fold holds what it needs (MET-2).
+  model's inputs without the target, the group column, the scoring columns and a time column that dates the label
+  (`Temporal(..., time_of="label")`); all of them come from `non_feature_columns(task)`, which the probes call too.
+  `scorer(container)` takes the scoring columns' values by row index: `scorer(container)(y_test, y_pred, test_idx)`. It
+  reads class probabilities in the sorted order of the classes (scikit-learn's `classes_`), also for an ordered target,
+  whose declared order stays type information; a DataFrame whose columns are the class names is matched by name, and a
+  missing or unknown class name is an error (Lennart, 2026-11-05). Before declaring a metric with inputs, check on the
+  data that every test fold holds what it needs (MET-2).
 
   A row weight makes each row count in proportion to it: `normalized_weighted_gini`, `weighted_pearsonr` (without
   `weights`), `rescaled_mean_tweedie_deviance` (its required `weight`; since 2026-11-08: each scored set's predictions
@@ -535,6 +536,12 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
     feature.
 * `context`: `all_rows` when all rows of a new group are known when predicting, `past_rows` when only its earlier rows
   are (needs `time_on`), `none` when each row stands alone.
+* `time_on` and `time_of`: the order inside a group marks each row's prediction point by default (sepsis's hour,
+  amex's statement date), a model input. `time_of="label"` says it marks when each row's label became known: it
+  orders the rows (`aggregation="last"`) and is no model input, like a label time of a temporal task (below).
+  `prediction_time="..."` then names the column of each row's prediction point. `context="past_rows"` on a label time
+  needs it: a row may read the rows of its group predicted before it, and their labels only where they were known by
+  its own prediction point (SPLIT-9; Lennart, 2026-11-16). No dataset declares a label-time order yet.
 * `definition` is required: what one group is, why groups are held out (the use case), and the source with a quote.
   Say when the grouped split is stricter than the source's protocol. It is rendered in the README's "Group structure"
   section with the group statistics, which give four findings (few test groups per fold, one group over 20% of the
@@ -561,6 +568,29 @@ gap and no declared unit does not import, nor does a declared gap the windows al
 (`"minutes"`, `"hours"` or a calendar unit): `TemporalSplits(window=91, unit="days", n_windows=3, gap=15,
 gap_unit="minutes")` leaves 15 minutes for a label known 16 minutes after its row (g_research_crypto_forecasting_1m;
 Lennart, 2026-10-22), stored as `time_gap=15, time_gap_unit="minutes"`.
+
+**What the time column dates: `Temporal(..., time_of=...)`.** A temporal task can carry two times: the prediction point,
+when the actor predicts (a loan's payout, a permit's filing, a house's listing), and the moment the label became known
+(the sale, the year a compound entered a catalogue, the night of the spectrum that sets a sky object's class).
+`time_of="prediction"`, the default, says the column is the prediction point: the actor knows it, so it is a model
+input, and a label that arrives later may need a gap (SPLIT-10). `time_of="label"` says the column is the label's
+moment: it orders and splits the rows, so every training label was known at its window's start, it fills the README's
+split table, and it is no model input. The container then records `task_metadata.time_of="label"` (left unset for a
+prediction time, so no older container changes), `feature_columns(container)` leaves the column out and the README says
+so under Splits. Only a temporal task sets it. What decides is which moment the column dates against the use case's
+prediction point ([use_case.md](../../knowledge-curation/references/use_case.md)); the score with or without the column
+does not. A time the actor holds stays a feature in its own column, named with `prediction_time="..."`
+(california_house_prices_2020's `Listed On` beside its sale order): the container records it as
+`task_metadata.prediction_time`, the README names it, and the bundle checks require it to be a column and a model input
+(`task_prediction_time_missing`, `task_prediction_time_not_feature`, errors) and, when both are dates, not after the
+label time (`task_prediction_time_after_label`, a warning). The copy check below leaves it out. The order inside a group
+takes the same `time_of` and `prediction_time` (`Grouping`, above). Two bundle checks guard a label time:
+`task_label_time_gap` (a warning: the split already trains only on known labels, so a gap stands for a planning or refit
+delay and is accepted with that reason) and `task_label_time_copy_is_feature` (a warning: a feature whose rank
+correlation with the label time is at least 0.99 in size, such as date parts or a row id in the same order, hands the
+model the time it may not read). A scoring column is no way to hide the time column (`task_scoring_column_is_feature`,
+and the metric does not read it), nor is dropping it in `_make_splits`, which takes it from the inner validation and the
+split table.
 
 The data arrives sorted by the time column, and `TemporalSplits` builds the convention the bundle checks verify: one
 repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is the newest window, the rest walk back
@@ -1026,6 +1056,9 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
   pkdd_15_taxi_trip_time_prediction_ii_1m, whose only time feature is a datetime, show what is at stake (LightGBM RMSE
   0.357-0.381 with the hour against 0.414-0.441 with AutoGluon's date parts; R^2 0.482-0.503 against 0.452-0.483), and
   checks and probes may use them to test an encoding.
+* A time column that dates the label (`task_metadata.time_of == "label"`) is split metadata, never a feature, like a
+  group column. The harness cuts its inner validation folds on `split_columns(container)` (the group and time columns)
+  and fits on `feature_columns(container)`, in that order (an entry of `BENCHMARK_CHANGES_TODO.md`).
 * A group column is split and scoring metadata, never a feature; the harness drops it before fitting
   (`datasets/_dev/tabarena-v0pt2/BENCHMARK_CHANGES_TODO.md` lists what the harness still needs, such as per-group
   scoring and custom metrics).

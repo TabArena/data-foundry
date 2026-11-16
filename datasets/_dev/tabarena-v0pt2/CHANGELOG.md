@@ -26,6 +26,16 @@
   windows. Training on 2016-2018 and testing on 2019-2021 costs TabPFN 3.5 0.004 ROC AUC and 0.07 log loss against
   random splits of the same sizes.
 
+## 2026-11-16, BENCHMARK_CHANGES_TODO.md: the scorer of `net_revenue_at_cost` (no container built)
+
+- New item for the TabArena side (Lennart, review of PR #100): `net_revenue_at_cost` has no fixed best value (the
+  oracle's changes per fold) and goes below 0, while TabArena's error is `optimum - score` and bencheval refuses
+  negative errors and takes ratios of them. Check whether the wrapper and the leaderboard need a refactor, or
+  normalize the metric by the oracle's revenue in Data Foundry. Its baselines are in the item: mailing nobody
+  (every prediction at or below $0.68, negatives included) 0, mailing everyone 0.111, the cup's winner 0.153 per
+  donor.
+- The metric table lists `net_revenue_at_cost`; the adapter item says the spec carries no `optimum`.
+
 ## 2026-11-13, three datasets retired after review (no container built)
 
 - Each record is `No (Retired)` with its reason marker and a CC line giving the evidence; its review moves into the
@@ -48,6 +58,49 @@
 - Guidelines: provenance.md names tour_travels_churn as a PROV-3 case and notes it under PROV-2, where it had been kept
   on the untraced-upload rule; selection.md says the same. splits.md names naticusdroid_android_permissions_dataset
   as a SPLIT-25 case, and selection.md as a second dataset retired for another reason that keeps its `Selection Bias`.
+
+## 2026-11-13, pva_revenue_prediction_kddcup98: the cup's gift amount and net revenue (no container built)
+
+Andrej's decisions of 2026-11-11 and 2026-11-12 on the dataset's review.
+
+- Target `TARGET_D`, the gift in dollars (0 for the 94.9% who did not give), regression, scored by the new custom
+  metric `net_revenue_at_cost` with cost $0.68: the KDD Cup 1998's rule, the sum of (gift - $0.68) over the donors
+  predicted to give more than $0.68, divided by the number of test donors. Before, the definition shipped the
+  response flag `TARGET_B` with ROC AUC as a stand-in; `TARGET_B` is now dropped as a copy of gift > 0.
+- `RDATE_k` and `RAMNT_k` (k = 3 to 24) blanked where the receipt is dated June 1997 or later, after the mailing the
+  target is about: 61 cells of 60 donors.
+- The random split stays: a `Time basis:` line says every row is about the one June 1997 mailing and why a split on
+  the donor dates would test new kinds of donors, not a later mailing.
+- The record: `problem_type` Regression, the review in `## Review`, the decisions as CC lines.
+- The definition changes the container (target, problem type, metric, columns); it needs a rebuild.
+
+## 2026-11-13, thyroid_discordant_archive replaces thyroid_discordant (Andrej's decision, no container built)
+
+- `thyroid_discordant_archive` added: the Garvan Institute's thyroid test requests of August 1984 to January 1987
+  (UCI `thyroid0387`, 9,162 requests after 10 repeated entries), whether the laboratory commented the results as
+  discordant (report code R, 2.2%), split by the request date taken from the record id: three four-month test windows
+  from February 1986 to January 1987, each trained on every earlier request. Its review is in its record.
+- `thyroid_discordant` retired: `No (Retired)` with `Duplicate`. Its 3,711 rows are a subset of the same archive,
+  without the request date; the archive version holds the same task with 197 discordant results instead of 58 and a
+  dated split. Its folder is removed and `v2_path` cleared.
+- 2026-11-16, Lennart's review: the temporal split is kept. The splits comment adds that the source split by time
+  too (the zip's ann-thyroid files, Quinlan's 1987 case-study data, train on requests of 1985 and test on those of
+  1986) and that training on earlier requests scores like random training rows of the same size. The record gets
+  `DF: Yes`; the README is regenerated (27 bundle checks on main).
+
+## 2026-11-13, kdd_cup_09_appetency: the cup's large set, cleaned (Andrej's decisions, no container built)
+
+- The definition reads the cup's large training set: the same 50,000 customers and appetency labels (890 buyers)
+  with all 15,000 features Orange released instead of the small set's 230. On the same customers LightGBM scores
+  ROC AUC 0.877 on the large set's columns against 0.820 on the small set's (5-fold CV x 3).
+- Dropped (CLEAN-5): 109 empty and 1,422 constant columns, and 580 exact or scaled copies of an earlier column (the
+  first of each group kept; the seven copies found in the small set fall into these groups). Presence flags stay.
+- Dropped as generated: `Var5963` (the variable of the cup's artificial toy target) and `Var11750`, both uniform and
+  without signal. 12,887 features remain (12,729 numeric, 158 categorical).
+- The random split stays, with a `Time basis:` line: one extract of Orange's customer datamart, the purchase read
+  after it in a window the source does not state.
+- The record: the review in `## Review`, the decisions as CC lines. The container changes (columns, size); it needs a
+  rebuild.
 
 ## 2026-11-12, the split count in scored units (SPLIT-33), in a PR of its own (no container built)
 
@@ -149,6 +202,17 @@ caps the sides after the split.
   comparing them with the v1 helpers.
 - The shipped `_1m` containers still predate the 2026-11-10 entry (frames cut to 1.5M rows before the split); their
   READMEs change at the next build.
+
+## 2026-11-11, gossis_icu_hospital_mortality replaces wids_diabetes_mellitus (Andrej's decision, no container built)
+
+- `gossis_icu_hospital_mortality` added: the WiDS Datathon 2020 training file (MIT's GOSSIS initiative), 91,713 ICU
+  stays at 147 US hospitals, in-hospital death (8.6%) predicted at the end of the first ICU day, split by hospital
+  (`ForcedGroupedFromTemporal`: one undated year), ROC AUC as in the competition. APACHE IVa's two death probabilities
+  are dropped as another model's prediction of the target; BMI at the clipping bounds and the negative
+  `pre_icu_los_days` ship as published, with notes. Its review is in its record.
+- `wids_diabetes_mellitus` retired: `No (Retired)` with `Duplicate`, since 130,127 of its 130,157 rows are rows of the
+  WiDS 2020 files and the same cohort now ships with a target nobody knows at 24 hours. Its folder is removed and
+  `v2_path` cleared; `DF: Yes`, the collection tag and the pinned BeyondArena container stay.
 
 ## 2026-11-11, no local paths in committed text (no container built)
 
