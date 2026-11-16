@@ -43,9 +43,9 @@ from typing import TYPE_CHECKING, Literal
 import numpy as np
 import pandas as pd
 
-from data_foundry.curation_container import CuratedContainer
+from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
-from data_foundry.schema import DatasetMetadata, as_column_list
+from data_foundry.schema import DatasetMetadata, as_column_list, training_only_weight
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
 
@@ -1169,13 +1169,19 @@ def _scoring_column_findings(ctx: _Ctx) -> Iterator[CheckResult]:
             f"Scoring column(s) {undocumented} lack a role, a description or the metric that uses them.",
         )
     used = {column: role for role, column in spec.inputs.items()}
-    unused = sorted(c.column for c in scoring.values() if used.get(c.column) != c.role or c.used_by != spec.name)
+    alone = training_only_weight(task)
+    unused = sorted(
+        c.column
+        for c in scoring.values()
+        if (used.get(c.column) != c.role or c.used_by != spec.name) and c.column != alone
+    )
     if unused:
         yield CheckResult(
             "task_scoring_column_unused",
             "error",
             f"Scoring column(s) {unused} are not an input of the metric {spec.name!r} in the role they declare.",
-            hint="Map the role to the column in the metric's `inputs`, or drop the column (or keep it as a feature).",
+            hint="Map the role to the column in the metric's `inputs`, or drop the column (or keep it as a feature). "
+            'A weight for training alone is the `sample_weight`, its scoring column `used_by="training"` (MET-16).',
         )
 
 
@@ -1220,10 +1226,11 @@ def _unit_weight_findings(ctx: _Ctx, unit: UnitWeight) -> Iterator[CheckResult]:
         )
 
 
-def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PLR0912 - a flat list of rules
-    """The task's training weight (``sample_weight``) is the metric's row weight (MET-15), and a row weight holds
-    finite, non-negative values with weight on every split side; a weighted Poisson target rebuilds whole counts; a
-    feature named like an amount at risk is explained when the task declares no weight (LEAK-41).
+def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:
+    """The task's training weight (``sample_weight``) is the metric's row weight (MET-15) or declared for training
+    alone (MET-16), and each weight holds finite, non-negative values with weight on every split side; a weighted
+    Poisson target rebuilds whole counts; a feature named like an amount at risk is explained when the task declares no
+    weight (LEAK-41).
     """
     from data_foundry.v2.metrics import row_weight_column  # noqa: PLC0415 - data_foundry.v2 imports this module
 
@@ -1231,64 +1238,34 @@ def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PLR0912
     spec = task.objective_metric
     sample_weight = getattr(task, "sample_weight", None)
     row_weight = row_weight_column(spec)
-    if sample_weight is not None and sample_weight != row_weight:
+    if sample_weight is not None and sample_weight != row_weight and training_only_weight(task) is None:
         yield CheckResult(
             "task_sample_weight_not_metric_weight",
             "error",
             f"`sample_weight={sample_weight!r}` is not the row weight the metric {spec.name!r} reads "
             f"({row_weight!r}): models would train on another weighting than the score uses (MET-15).",
-            hint="Map the metric's `weight` input to the same scoring column, or drop `sample_weight`.",
+            hint="Map the metric's `weight` input to the same scoring column, drop `sample_weight`, or, for a weight "
+            'meant for training alone, declare its scoring column `used_by="training"` (MET-16).',
         )
     unit = getattr(task, "unit_weight", None)
     if unit is not None:
         yield from _unit_weight_findings(ctx, unit)
-    if sample_weight is None and row_weight is not None and (unit is None or unit.column != row_weight):
+    if row_weight is not None and sample_weight != row_weight and (unit is None or unit.column != row_weight):
+        trains = "the task declares no `sample_weight`: models train unweighted"
+        if sample_weight is not None:
+            trains = f"models train with {sample_weight!r}"
         yield CheckResult(
             "task_metric_weight_without_sample_weight",
             "warning",
-            f"The metric weights rows by {row_weight!r}, but the task declares no `sample_weight`: models train "
-            "unweighted. A realized amount at risk (time insured) must also be the training weight (MET-15).",
+            f"The metric weights rows by {row_weight!r}, but {trains}. A realized amount at risk (time insured) must "
+            "also be the training weight (MET-15).",
             hint=f'Declare `sample_weight = "{row_weight}"`, or accept the warning when the weight is a function of '
             "the features (a sum insured, an asset's weight).",
         )
-    weight_column = sample_weight or row_weight
-    if weight_column is not None and ctx.df is not None and weight_column in ctx.df.columns:
-        weights = pd.to_numeric(ctx.df[weight_column], errors="coerce").to_numpy(dtype=float)
-        problems = []
-        bad = ~np.isfinite(weights)
-        if bad.any():
-            problems.append(f"{int(bad.sum())} missing or non-finite")
-        if (weights < 0).any():
-            problems.append(f"{int((weights < 0).sum())} negative")
-        if spec.name in _MEAN_DEVIANCES and (weights == 0).any():
-            problems.append(f"{int((weights == 0).sum())} zero (a rate needs a positive denominator)")
-        empty = [
-            f"r{repeat}/f{fold} {side}"
-            for repeat, fold, train_idx, test_idx in ctx.flat_splits
-            for side, idx in (("train", train_idx), ("test", test_idx))
-            if len(idx) and not np.nansum(np.clip(weights[idx], 0, None)) > 0
-        ]
-        if empty:
-            problems.append(f"no weight on {', '.join(empty[:3])}")
-        if problems:
-            yield CheckResult(
-                "task_weight_invalid",
-                "error",
-                f"The weight column {weight_column!r} has {'; '.join(problems)}: a row weight is a finite number >= 0 "
-                "with weight on every split side.",
-            )
-        if spec.name == "mean_poisson_deviance" and ctx.target in ctx.df.columns and not bad.any():
-            totals = pd.to_numeric(ctx.df[ctx.target], errors="coerce").to_numpy(dtype=float) * weights
-            off = np.abs(totals - np.round(totals)) > 1e-6 * np.maximum(1.0, np.abs(totals))
-            if off.any():
-                yield CheckResult(
-                    "task_rate_count_not_whole",
-                    "warning",
-                    f"target x {weight_column!r} is not a whole count on {int(off.sum())} row(s): a Poisson rate "
-                    "weighted by its denominator should rebuild the count it was divided from.",
-                    hint="Check that the target is the count divided by this weight, or accept with the reason.",
-                )
-    if weight_column is None and ctx.df is not None:
+    weight_columns = [c for c in dict.fromkeys((sample_weight, row_weight)) if c is not None]
+    for column in weight_columns:
+        yield from _weight_column_findings(ctx, column, scored=column == row_weight)
+    if not weight_columns and ctx.df is not None:
         excluded = {ctx.target, *ctx.columns_of(task.group_on), *(c.column for c in task.scoring_columns)}
         suspects = sorted(
             c
@@ -1303,6 +1280,51 @@ def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PLR0912
                 "by the outcome and never a feature; it is the rate's denominator and the weight (LEAK-41, MET-15).",
                 hint="Say in the notes what the column is (planned or realized) and accept the warning, or ship the "
                 "rate with the column as `sample_weight`.",
+            )
+
+
+def _weight_column_findings(ctx: _Ctx, column: str, *, scored: bool) -> Iterator[CheckResult]:
+    """One weight column (the training weight, the metric's row weight, or both) holds finite values >= 0 with weight
+    on every split side; the metric's weight of a mean deviance is positive (a rate's denominator), and under a Poisson
+    deviance target x weight rebuilds whole counts. A weight for training alone (``scored=False``) only trains.
+    """
+    if ctx.df is None or column not in ctx.df.columns:
+        return
+    spec = ctx.task.objective_metric
+    weights = pd.to_numeric(ctx.df[column], errors="coerce").to_numpy(dtype=float)
+    problems = []
+    bad = ~np.isfinite(weights)
+    if bad.any():
+        problems.append(f"{int(bad.sum())} missing or non-finite")
+    if (weights < 0).any():
+        problems.append(f"{int((weights < 0).sum())} negative")
+    if scored and spec.name in _MEAN_DEVIANCES and (weights == 0).any():
+        problems.append(f"{int((weights == 0).sum())} zero (a rate needs a positive denominator)")
+    empty = [
+        f"r{repeat}/f{fold} {side}"
+        for repeat, fold, train_idx, test_idx in ctx.flat_splits
+        for side, idx in (("train", train_idx), ("test", test_idx))
+        if len(idx) and not np.nansum(np.clip(weights[idx], 0, None)) > 0
+    ]
+    if empty:
+        problems.append(f"no weight on {', '.join(empty[:3])}")
+    if problems:
+        yield CheckResult(
+            "task_weight_invalid",
+            "error",
+            f"The weight column {column!r} has {'; '.join(problems)}: a row weight is a finite number >= 0 with "
+            "weight on every split side.",
+        )
+    if scored and spec.name == "mean_poisson_deviance" and ctx.target in ctx.df.columns and not bad.any():
+        totals = pd.to_numeric(ctx.df[ctx.target], errors="coerce").to_numpy(dtype=float) * weights
+        off = np.abs(totals - np.round(totals)) > 1e-6 * np.maximum(1.0, np.abs(totals))
+        if off.any():
+            yield CheckResult(
+                "task_rate_count_not_whole",
+                "warning",
+                f"target x {column!r} is not a whole count on {int(off.sum())} row(s): a Poisson rate weighted by "
+                "its denominator should rebuild the count it was divided from.",
+                hint="Check that the target is the count divided by this weight, or accept with the reason.",
             )
 
 
@@ -1705,6 +1727,108 @@ def _check_splits_temporal(ctx: _Ctx) -> Iterator[CheckResult]:
             f"Temporal splits use {sorted(n_folds_per_repeat)} fold(s) per repeat.",
             hint="Shipped temporal tasks put each time window in its own repeat with a single fold "
             "(`splits[window] = {0: (train_idx, test_idx)}`).",
+        )
+
+
+LABEL_TIME_COPY = 0.99
+"""A feature whose rank correlation with a time that dates the label reaches this (in size) carries that time."""
+
+
+@_check
+def _check_label_time(ctx: _Ctx) -> Iterator[CheckResult]:
+    """A time that dates the label (``time_of="label"``, the task's time column or the order inside a group): no gap
+    for the label's delay, a prediction time that is a present model input and not after the label, and no other
+    feature that copies the label time.
+    """
+    task = ctx.task
+    grouping = getattr(task, "grouping", None)
+    label_times = []  # (column, its prediction time, where it is declared)
+    if getattr(task, "time_of", None) == "label" and task.time_on is not None:
+        label_times.append((task.time_on, getattr(task, "prediction_time", None), "time_on"))
+    if grouping is not None and getattr(grouping, "time_of", None) == "label" and grouping.time_on is not None:
+        label_times.append((grouping.time_on, grouping.prediction_time, "grouping.time_on"))
+    if not label_times or ctx.df is None:
+        return
+    gap = getattr(ctx.splits_metadata, "time_gap", None)
+    if gap and getattr(task, "time_of", None) == "label":
+        yield CheckResult(
+            "task_label_time_gap",
+            "warning",
+            f"The splits leave a gap ({gap:g} {ctx.splits_metadata.time_gap_unit}) on a time that dates the label "
+            f"(`{task.time_on}`).",
+            hint="A split on when the label became known trains only on labels known at each window's start, which "
+            "is what a gap for the label's delay simulates (SPLIT-10). Drop the gap, or accept this warning with the "
+            "planning or refit delay it stands for.",
+        )
+    excluded = non_feature_columns(task)
+    rows = np.arange(ctx.n_rows)
+    if len(rows) > FEATURE_SAMPLE_ROWS:
+        rows = np.sort(np.random.default_rng(0).choice(rows, FEATURE_SAMPLE_ROWS, replace=False))
+    for column, prediction_time, field_name in label_times:
+        if not ctx.has_column(column):
+            continue
+        if prediction_time is not None:
+            yield from _check_prediction_time(ctx, column, prediction_time, field_name, excluded)
+        copies = _label_time_copies(ctx, column, {*excluded, prediction_time}, rows)
+        if copies:
+            yield CheckResult(
+                "task_label_time_copy_is_feature",
+                "warning",
+                f"Feature(s) {', '.join(copies[:5])} follow the time that dates the label (`{column}`, "
+                f"{field_name}; rank correlation at least {LABEL_TIME_COPY} in size): the model reads that time "
+                "through them.",
+                hint="Drop the copy (date parts, a row id in the same order); a time the actor holds is the "
+                "prediction time (`prediction_time=...`), or accept this warning with the reason the actor holds it.",
+            )
+
+
+def _label_time_copies(ctx: _Ctx, column: str, skip: set, rows: np.ndarray) -> list[str]:
+    """The numeric or date features whose rank correlation with the label time ``column`` reaches
+    :data:`LABEL_TIME_COPY` in size, as ``name (rho)``, read on ``rows``.
+    """
+    time = ctx.numeric_time(column)
+    if time is None:
+        return []
+    time_rank = pd.Series(time[rows]).rank()
+    copies = []
+    for other in ctx.df.columns:
+        values = None if other in skip or other == column else ctx.numeric_time(other)
+        if values is None:
+            continue
+        rho = time_rank.corr(pd.Series(values[rows]).rank())  # Pearson on ranks: Spearman, missing pairs left out
+        if np.isfinite(rho) and abs(rho) >= LABEL_TIME_COPY:
+            copies.append(f"{other} ({rho:+.3f})")
+    return copies
+
+
+def _check_prediction_time(
+    ctx: _Ctx, label_time: str, prediction_time: str, field_name: str, excluded: set[str]
+) -> Iterator[CheckResult]:
+    """The prediction time beside a label time: a column of the frame, a model input, and not after the label."""
+    if not ctx.has_column(prediction_time):
+        yield CheckResult(
+            "task_prediction_time_missing",
+            "error",
+            f"The prediction time `{prediction_time}` (beside `{field_name}={label_time!r}`) is not a column.",
+        )
+        return
+    if prediction_time in excluded:
+        yield CheckResult(
+            "task_prediction_time_not_feature",
+            "error",
+            f"The prediction time `{prediction_time}` is a target, group, scoring or label-time column: the actor "
+            "holds it, so it is a model input.",
+        )
+    series, label = ctx.df[prediction_time], ctx.df[label_time]
+    if not (pd.api.types.is_datetime64_any_dtype(series) and pd.api.types.is_datetime64_any_dtype(label)):
+        return  # an order (a row number) and a date share no scale to compare
+    after = int((series > label).sum())
+    if after:
+        yield CheckResult(
+            "task_prediction_time_after_label",
+            "warning",
+            f"{after:,} row(s) have the prediction time `{prediction_time}` after the label time `{label_time}`.",
+            hint="A prediction point comes before the label it predicts: check the two columns, or the rows.",
         )
 
 
