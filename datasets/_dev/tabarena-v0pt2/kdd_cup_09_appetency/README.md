@@ -242,7 +242,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 3 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 3 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 644,400,000 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 644,400,000 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
