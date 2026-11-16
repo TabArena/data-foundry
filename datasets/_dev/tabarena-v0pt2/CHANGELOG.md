@@ -39,6 +39,19 @@ Andrej's decisions of 2026-11-11 and 2026-11-12 on the dataset's review.
   1986) and that training on earlier requests scores like random training rows of the same size. The record gets
   `DF: Yes`; the README is regenerated (27 bundle checks on main).
 
+## 2026-11-13, kdd_cup_09_appetency: the cup's large set, cleaned (Andrej's decisions, no container built)
+
+- The definition reads the cup's large training set: the same 50,000 customers and appetency labels (890 buyers)
+  with all 15,000 features Orange released instead of the small set's 230. On the same customers LightGBM scores
+  ROC AUC 0.877 on the large set's columns against 0.820 on the small set's (5-fold CV x 3).
+- Dropped (CLEAN-5): 109 empty and 1,422 constant columns, and 580 exact or scaled copies of an earlier column (the
+  first of each group kept; the seven copies found in the small set fall into these groups). Presence flags stay.
+- Dropped as generated: `Var5963` (the variable of the cup's artificial toy target) and `Var11750`, both uniform and
+  without signal. 12,887 features remain (12,729 numeric, 158 categorical).
+- The random split stays, with a `Time basis:` line: one extract of Orange's customer datamart, the purchase read
+  after it in a window the source does not state.
+- The record: the review in `## Review`, the decisions as CC lines. The container changes (columns, size); it needs a
+  rebuild.
 ## 2026-11-12, the split count in scored units (SPLIT-33), in a PR of its own (no container built)
 
 Lennart, 2026-11-12: the count moves out of #79 (asp_potassco_classification and sat11_hand_algo_runtime under PAR10),
