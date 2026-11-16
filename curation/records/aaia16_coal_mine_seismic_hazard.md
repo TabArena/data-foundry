@@ -2,8 +2,11 @@
 unique_name: aaia16_coal_mine_seismic_hazard
 name: 'AAIA''16 Data Mining Challenge: Predicting Dangerous Seismic Events in Active Coal Mines'
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 4
 tags:
 - Non-IID (Temporal)
@@ -20,8 +23,6 @@ source_links:
 - https://knowledgepit.ai/aaia16-data-mining-challenge/
 - https://annals-csis.org/Volume_8/pliks/560.pdf
 - https://doi.org/10.15439/2016F21
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -43,3 +44,16 @@ type_adapter_id: curation-record-v1
 - as published: Rows = 24-hour windows of hourly aggregated geophone/seismic and mining-activity readings at one longwall working site: 133,151 training rows (overlapping windows, 2010-05-05 to 2014-03-06; main ...; target: Warning: total seismic energy released at the site in the next 8 hours exceeds 5*10^4 J (binary; 2.3% positive in training, 5.1% in test); scored by ROC AUC; access: registration.
 - Why: Same target as seismic_bumps (a bump above an energy threshold in the next 8-hour shift at a longwall), same use case and the same kind of features (aggregated seismic energy and pulse counts, mining activity, hazard assessments known at the prediction point); from the same research group (Sikora, Wrobel) as the UCI ...
 - Adds: About 50x more rows, 24 working sites instead of 2 longwalls, five years, a published time-based train/test split with a fixed metric (AUC); the test spans 16 months with about 196 positives against 49 in the retired record's newest half, so a temporal evaluation becomes possible. Risks: training windows overlap ...
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: 133,151 overlapping training windows and 3,860 non-overlapping test windows x 547 columns, which hold 12 period values, 22 hourly measures over 24 hours (528 columns) and 6 site fields, about 40 distinct measures; the test labels were published after the challenge, so the organisers' temporal split can be built; the call stands, priority 4.
+- As published: Knowledge Pit page (https://knowledgepit.ai/aaia16-data-mining-challenge/, read 2026-11-08): "There is a total number of 541 columns in the data (including the main working site id)"; "The first part consists of an identifier of the main working site and 12 other characteristics" for the whole 24 hours; "The second part is composed of hourly aggregated measurements", 24 values per characteristic. So 541 - 13 = 528 = 22 measures x 24 hours (computed; no source states the 22). Files: trainingData.csv with trainingLabels.csv (trainingData.7z, "79,893 records"), additional_training_data_1 to 4 (released 2015-10-26 to 2016-01-18 to active teams; 53,258 rows together, computed from 133,151), testData.7z, working_site_metadata.csv and a file of column names. Boullé (FedCSIS 2016, Fig. 3, https://annals-csis.org/Volume_8/pliks/21.pdf) gives the schema: a root table (main_working_id, total_bumps_energy, total_tremors_energy, ..., latest_maximum_yield, latest_maximum_meter), an hourly table (hour, count_e2, count_e3, ..., avg_difference_in_gactivity, avg_difference_in_genergy) and the site table (main_working_name, region_name, bed_name, main_working_type, main_working_height, geological_assessment); the summary paper (Sec. III) names latest_seismic_assessment and latest_comprehensive_assessment among the 12. The page also says: "All competition data were made available in the Data files folder (including the labels for the test set".
+- The task's table: one row per 24-hour window at a working site, labelled by the seismic energy of the next 8 hours. Training 133,151 windows (2010-05-05 to 2014-03-06), test 3,860 (2014-03-07 to 2015-06-24), stated. The training windows overlap: site 373 alone has 31,236 windows in a period of 1,402 days (33,648 hours, 4,206 eight-hour shifts), so consecutive windows lie about one hour apart (computed; the step is not stated). One window per 8-hour shift would leave about 16,644 training rows (133,151 / 8, an estimate). Inputs: 547 columns; 545 after the site id (the group) and the site name, 528 of them the hourly values of 22 measures; as distinct measures, 12 period values, 22 hourly series and 5 site fields. The second-placed team reduced each series to sums over 24 hours, the last 5 hours and the last hour, 133 features in all (deepsense.ai write-up).
+- Access: Knowledge Pit login and enrolment in the challenge; 7z archives of CSV, sizes not stated; "The data set is free to use for non-commercial purposes", with a citation of the papers and a link to the platform (a note, EV-4).
+- Changes the call: the published test labels settle the record's open risk: the organisers' split (SPLIT-19) is usable, with 3,860 labelled non-overlapping test windows from 21 sites, 8 of them absent from training (Table I). For the wide-table list: the 547 columns are an unrolled series of 22 measures, not 547 variables, and the screening's SEL-12 and SEL-11/TP-10 questions stay. Priority 4 stands.
+- Not checked: the files (login); the names of the 22 hourly measures and of all 12 period values; the window step; whether the four additional training files repeat rows of the first.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** not built in the large-datasets run of 2026-11-08: the data sits on Knowledge Pit behind a login, which this machine cannot pass. A person has to download the raw files; the build follows in a later round.
+
+CC (2026-11-09, Lennart): later; make this its own task with a human in the loop (the data needs a person to fetch it).

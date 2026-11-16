@@ -2,9 +2,12 @@
 unique_name: turkcell_radio_link_failure_prediction
 name: Turkcell Radio Link Failure Prediction (ITU AI/ML in 5G Challenge 2021, ITU-ML5G-PS-012)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
-priority: 3
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
+priority: 4
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -21,8 +24,7 @@ source_links:
 - https://github.com/ITU-AI-ML-in-5G-Challenge/Challenge_Archive/tree/main/2021
 - https://doi.org/10.1016/j.compeleceng.2022.107742
 - https://arxiv.org/abs/2407.05197
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/turkcell_radio_link_failure_prediction_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -45,3 +47,14 @@ type_adapter_id: curation-record-v1
 - as published: Anonymised region-wise live-network data: rl-kpis.tsv (daily radio link KPIs and configuration), rl-sites.tsv, met-forecast.tsv (5-day weather forecasts), met-real.tsv, met-stations.tsv, ...; target: Whether a radio link has at least one failure in the next day (and in the following 5 days); scored with F1; access: open.
 - Why: row_1040 is the ITU archive, not a dataset; its screening names Radio Link Failure Prediction as the first challenge worth a record of its own. Real operator data, a binary target acted on, ex-ante inputs (weather forecasts), traceable to a paper
 - Adds: A telecom reliability task with real network data, temporal and grouped by link; no record yet. Risks: joins across six tables and region alignment (wrangling), the F1 threshold, and the forecasting question (event per link-day from forecasts, not a series)
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: the task's table has one row per link and day with "failure the next day" as target: 1,964,000 link-days (2018-12-31 to 2020-12-24) with 1,204 positives (0.061%). It has about 25 inputs before our own lags and weather aggregates, 53 with the 5-day forecasts. The call stands at priority 3.
+- As published: the training archive of https://github.com/Turkcell/ITU-AIMLin5GChallenge-2021 (RLF_Prediction_ITU_AIML_Challenge_Data.7z, 22,740,563 bytes) holds RegionA.zip (326,045,565 bytes) with six TSVs, read on 2026-11-08. rl-kpis.tsv: 1,992,986 rows by 18 columns plus a row index, one row per microwave link (mlid) per day, 2018-12-31 to 2020-12-25 (726 days, 3,465 links at 1,674 sites). Its columns: type, datetime, tip, mlid, mw_connection_no, site_id, card_type, adaptive_modulation, freq_band, severaly_error_second, error_second, unavail_second, avail_time, bbe, rxlevmax, capacity, modulation, rlf. rl-sites.tsv: 1,674 sites (groundheight, clutter_class). met-forecast.tsv: 20,323 rows for 20 stations, 2018-01-02 to 2020-12-23, a morning and an evening report with 7 variables for each of 5 days ahead. met-real.tsv: 479,241 hourly rows with 12 measurements. met-stations.tsv: 20 stations. distances.tsv: a 1,694 by 1,694 matrix over the sites and stations. The test archive (RLF_Prediction_ITU_AIML_Challenge_Test.7z, 19,567,101 bytes) holds four 20-day windows of the same tables in 2021: 2021-04-26 to 05-15, 05-25 to 06-13, 06-14 to 07-03 and 08-17 to 09-05, with 48,930, 48,388, 47,138 and 39,797 link-days and 9, 18, 81 and 17 failure days. Each window comes with a query file for its last day whose labels are not shipped. The 2021-01-25 window that the example notebook and the ITU archive link was deleted from the repository on 2021-10-08. The 2021 problem statement is ITU-ML5G-PS-012 (https://github.com/ITU-AI-ML-in-5G-Challenge/Challenge_Archive/tree/main/2021): "F1-scores of identifying at least one radio link failure in the next day and the following 5 days will be used to evaluate solution proposals". Compared with 2020 (ITU-ML5G-PS-036), "this problem statement offers a new data set (comprehensive and with very few missing values) and the data belongs to a new region".
+- The task's table: the label is rlf on the next day of the same link, as Turkcell's notebook builds it (1,992,986 rows; 1,204 positives for "1-day-predict" and 5,159 for "5-day-predict"). The rows whose link has a next-day row number 1,964,000 (computed). 702 links fail at least once. rlf is a rule on the same day's KPIs: it equals unavail_second >= 120 and bbe >= 100 on all 1,992,986 rows. It persists little: 2.6% of the failures are followed by another the next day. Inputs per link-day: 13 from rl-kpis (type, tip, card_type, adaptive_modulation, freq_band, modulation, severaly_error_second, error_second, unavail_second, avail_time, bbe, rxlevmax, capacity), 2 site attributes, the 7 day-1 forecast values of the nearest station (35 for the 5-day label), 2 station attributes and the distance. That makes about 25 inputs for the 1-day label and 53 for the 5-day label, plus any lags and met-real aggregates we build. mlid and mw_connection_no are ids; site_id is the group.
+- Access: open on GitHub, no login, 42 MB of 7z, 326 MB unpacked for training. The repository has no licence file. Its README asks users to cite Aktaş, Alemdar and Ergüt 2022 (Computers & Electrical Engineering 99:107742) and says the data "gives the opportunity for researchers to use live network data to define new problems or improve their works".
+- Changes the call: none that moves the priority. Facts for the curator: the 2021 metric is now confirmed from the ITU archive as the F1 of the failure class for each horizon (MET-4, on hard labels, MET-6). The label is Turkcell's threshold rule applied to the next day's KPIs, which are not inputs, so SEL-5 does not apply; today's unavail_second and bbe carry the lagged label, so the naive-profile test stays (TP-10). With 0.061% positives a month holds about 50, so test windows of a month or more, or the 5-day label (0.26%), need weighing (TP-5, CLEAN-18). The four 2021 windows add 184,253 labelled link-days four months after the training period. The record's name is right: PS-012 is the 2021 Turkcell problem.
+- Not checked: the paper's text (paywalled); whether the 2020 data of the other region can still be downloaded from ITU; the 2021 leaderboard scores.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: the counters written in thousands repaired and the failure flag recomputed by Turkcell's rule, PROV-13/USE-5, 2,011 positives instead of 1,204; the day's observed weather from met-real read, CLEAN-22; TP-10 leg 1 re-run on the repaired label over three seeds, ahead of the link's rate in the two newer windows and a tie in January to April, so the scope stays; the LEAK-9 protocol line extended; the forecast dated d backed by the 2021 test archive and MLGrads, LEAK-10; within-day ROC AUC reported, TP-9; the `Anonymized` tag dropped, year 2021, small factual fixes; rebuttal round skipped, briefs converged); disputed: MET-4 (ROC AUC against the challenge's F1); for the curator: issue 1. Priority 4: gap 0, use case +, source +, shape +, risk - (gap: no thin domain, problem type or regime; use case: an operator's daily risk review of its own links, fit direct; source: Turkcell's own release with a data paper and the winner's code; shape: 1.96M link-days, mixed types, temporal; risk: the source's metric overruled, storm-dominated windows and a tree model unstable over seeds on 0.10% positives).

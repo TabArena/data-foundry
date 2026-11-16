@@ -2,8 +2,11 @@
 unique_name: gse40279_methylation_age
 name: GEO-GSE40279-Methylation-Age (Blood DNA Methylation Age)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -21,8 +24,7 @@ source_links:
 - https://doi.org/10.1016/j.molcel.2012.10.016
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40279
 - https://arxiv.org/abs/2609.07441
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/gse40279_methylation_age/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -44,3 +46,16 @@ type_adapter_id: curation-record-v1
 - as published: 656 x 30,000 (of 473,034 probes); target: age (y).
 - Why: Chronological age from whole-blood 450K methylation (Hannum epigenetic clock cohort)
 - Notes: CV grouped by 9 assay plates (plate-age imbalance).
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: 656 people x 473,034 CpG probes plus sex and ethnicity, age in years; the task stands, but a larger blood cohort with age (GEO GSE55763, 2,664 people) is better data for the same task, so priority 2 is proposed.
+- As published: GEO GSE40279 (public 2012-11-21, https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40279): 656 whole-blood samples, one per person (the abstract: "the whole blood of 656 human individuals"), each with 473,034 probes (`Sample_data_row_count`) of average beta from "BeadStudio software v3.2". Files (https://ftp.ncbi.nlm.nih.gov/geo/series/GSE40nnn/GSE40279/): series matrix 1.2 GB gz; `GSE40279_average_beta.txt.gz` 1.1 GB (also split into four files of about 300 MB); `GSE40279_signal_intensities.txt.gz` 5.0 GB; `GSE40279_sample_key.txt.gz` 4.5 KB; `GSE40279_RAW.tar` 183 MB, which by its `filelist.txt` holds only the 450K manifest and BPM files. There are no IDATs, so the screening block's "IDATs ship too" is wrong. Per-sample characteristics: `age (y)`, `source`, `plate`, `gender`, `ethnicity`, `tissue`. One table and no join. The 473,034 rows are the paper's QC subset: 485,577 manifest probes, less the 11,648 on X and Y (11,232 + 416, counted in the GPL13534 v1.1 manifest), less the 65 SNP (rs) probes, less the "830 markers ... removed as they had greater than 5% missing values" (Experimental Procedures), is exactly 473,034 (computed). The paper set values with "a detection p-value greater than 0.01" to missing and imputed them "with the KNN approach (10 nearest markers)". The first 4,447 probes of the series matrix (a streamed preview) have no missing cell, so the deposit probably holds the imputed values. The paper also removed one sample for missing values and 24 PCA outliers; GEO's 656 equals the paper's analysed count.
+- The task's table: 656 rows (one per person, so no grouping by person) x 473,034 probes + `gender` + `ethnicity` = 473,036 inputs, with `plate` or `source` as the group and never as a feature (stated: GEO row and sample counts). The source names no narrower QC subset. TabBench-Bio's 30,000 probes picked by hash is that benchmark's cut, not a QC.
+- Access: open on GEO, no login; the series states no licence. 1.2 GB for the series matrix. Without IDATs, the only per-sample rebuild is from the 5.0 GB signal-intensity file.
+- Changes the call: (1) Better data for the same task: GEO GSE55763 (Lehne et al., Genome Biology 2015, Imperial College London; public 2015-01-22; https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE55763): "2,664 individuals, and 36 samples measured in duplicate", 2,711 peripheral-blood 450K arrays with `age` (23.7 to 75.0, counted in the series matrix) and `gender`. Normalised betas 9.7 GB (normalised over the cohort, LEAK-30); signal intensities 5.7 GB; `RAW.tar` 183 MB, the same size as here, so probably manifests only (not opened). It has 4 times the people and is newer, but its ages are narrower (no one over 75, against 19 to 101 here). It has no record. By the screening factors, better data found takes one point off, so priority 2 is proposed (from 3), and the curator weighs the age range. (2) The rebuild route for LEAK-30 is the signal-intensity file, not IDATs (PROV-13). The KNN imputation drew on all samples for the imputed cells, a weak transductive leak (LEAK-30): keep it with a note or rebuild. The grouping by plate stands.
+- Not checked: the missing cells over all 473,034 probes (the 1.2 GB matrix was only previewed), so whether the deposit holds imputed values is an inference; the column layout of the signal-intensity file; GSE55763's paper and its characteristics beyond age, sex and the duplicate flags.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-08):** better data for the same task was found by the size check, GSE55763 (Lehne et al. 2015, Imperial College London: 2,664 people, blood 450K arrays, ages 23.7-75.0); per screen-candidates "Better data" it is screened as its own record, and the curator picks which one enters once both are known. This record keeps its verdict.
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: notes on the plate-constant ethnicity, the use case led by the aging study with forensic estimation second and approximate, the rmse reason citing Fig. 7A, the 18 distinct partitions, the ultra-wide label); the build waits on the library's parquet read limits; rebuttal round skipped (briefs converged); disputed: keep `ethnicity` (USE-6, USE-3); for the curator: issues 1-3. Priority 3: gap 0, use case +, source +, shape 0, risk − (a larger sibling cohort, gse55763, 9 plates only, an ultra-wide table that needs a library change to build).

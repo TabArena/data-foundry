@@ -2,8 +2,11 @@
 unique_name: cook_county_residential_sales
 name: Cook County Assessor's Office residential model (model-res-avm) training data
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -20,8 +23,6 @@ source_links:
 - https://www.cookcountyassessoril.gov/news/cook-county-assessors-office-publicly-releases-residential-assessment-code-and-models
 - https://datacatalog.cookcountyil.gov/
 - https://datacatalog.cookcountyil.gov/d/wvhk-k5uv
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -43,3 +44,14 @@ type_adapter_id: curation-record-v1
 - as published: about 405,195 arm's-length sales (2026 run; 'approximate size is 400K rows with 100 features'), residential sales of the 9 years before the assessment date (about 2017-2025 for the 2026 run), class ...; target: sale price (model trained on sales > $10k, single-parcel, single-building, non-related-party deeds); access: open, open (public S3 download links in the repository README).
 - Why: same task and actor as ames_housing (De Cock's codebook names the Ames assessor's valuation of sold homes): sale price from the assessor's building characteristics (square footage, bedrooms, baths, year built, garage, basement, roof), location and time of sale | Same hedonic sale-price task as ...
 - Adds: about 140x the sales (405k against 2,837), years 2017-2025 against 2006-2010, the assessor's own published training data and sale-validation filters instead of a teaching extract, temporal by sale date; also bears on house_sales (King County 2014-2015). Risks: the file is the assessor's engineered model input (ACS ...
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: 373,058 sales (the CCAO's own training filter) x the 95 predictors the CCAO names, 88 once the 8 date encodings count as the sale date; the 203 published columns add 15 assessor values, the sale-validation flags and personal names that the CCAO's model does not use; a priority of 4 is proposed.
+- As published: the 2026 final run (https://ccao-data-public-us-east-1.s3.amazonaws.com/models/inputs/res/2026/run_id=2026-07-30-ecstatic-carly/training_data.parquet, 200,667,891 bytes, Last-Modified 2026-08-04), read in full on 2026-11-08: 405,195 rows x 203 columns, sales from 2017-01-01 to 2025-12-31 (36,627 to 50,368 per year), 400,935 sale documents, 318,541 PINs. Column groups: `meta_` 39, `prox_` 41, `char_` 32, `loc_` 30, `acs5_` 22, `time_` 8, `sv_` 7, `other_` 7, `ind_` 6, `shp_` 6, `ccao_` 3, `hie_` 1, `year` 1. `meta_year` equals the sale year in every row. Each yearly file repeats 9 years of sales, so one run is the dataset.
+- The task's table: `pipeline/01-train.R` keeps `filter(!ind_pin_is_multicard, !sv_is_outlier)` and sorts by sale date: 373,058 rows, one per sale (computed on the file); its `initial_time_split` with `split_prop: 0.9` puts the 37,306 sales from 2024-11-23 on in the test (computed). `params.yaml` (https://github.com/ccao-data/model-res-avm/blob/master/params.yaml) lists 95 predictors (23 categorical): 26 `char_`, 26 `prox_`, 16 `acs5_`, 9 `loc_`, 8 `time_`, 6 `shp_`, 3 `meta_` (township, neighbourhood, `meta_sale_count_past_n_years`) and `other_tax_bill_rate`. The 8 `time_` columns (year, day, quarter, month, day of year, day of month, day of week, post-COVID flag) restate the sale date (copies, CLEAN-22), so 88 distinct inputs. Assessor outputs among the rest: `meta_mailed_*`, `meta_certified_*` and `meta_board_*` (building, land, total) are the values of the sale's own year, set after 1 January of that year through the assessor's and the Board of Review's appeal stages, and the Board takes a purchase of the past 3 years as evidence ("If you purchased your home in the past 3 years in an arms length transaction for less than the Current Market Value ... you can use your Closing Documents as Evidence", https://www.cookcountyboardofreview.com/how-present-case): after the prediction point and possibly set from the sale (LEAK-10). `meta_1yr_pri_board_*` and `meta_2yr_pri_board_*` are the final values of the two years before; the two-year values are fixed before the sale, the one-year values for most sales, though a sale early in a year can still reach the previous year's appeal (the Board's calendar not checked). `other_tax_bill_amount_total` follows the assessed values. The `sv_*` flags are computed from the price; `meta_sale_seller_name` and `meta_sale_buyer_name` are personal data; `ccao_is_active_exe_homeowner`, `ccao_n_years_exe_homeowner` and `hie_num_active` record exemptions whose timing against the sale is not documented. The CCAO's model uses none of these.
+- Access: public S3, no login, Parquet; the README's only licence is the repository's ("Distributed under the AGPL-3 License"), with no separate terms for the S3 data.
+- Changes the call: the source names its own feature set, filter and split, which turns the record's leak risk into a known drop list. By the screening factors (gap 0, use case +, source +, shape +, no remaining known risk) the priority would be 4 instead of 3. Sibling: `king_county_home_sales_1999_2025` (another county, priority 2); no duplicate.
+- Not checked: when the exemption fields are recorded; whether `meta_sale_count_past_n_years` counts earlier sales only; the Board of Review calendar for the prior-year values.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-08):** open: it names itself better data for the shipped ames_housing and house_sales (keep both, or the older ones to 2nd Tier); priority stays 3 unless the curator takes the size check's 4.

@@ -2,9 +2,12 @@
 unique_name: bacteria_id_raman
 name: Pathogenic Bacteria
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
-priority: 4
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
+priority: 3
 decision_markers:
 - TBD
 tags:
@@ -27,8 +30,7 @@ source_links:
 - https://github.com/csho33/bacteria-ID
 - https://arxiv.org/abs/2605.02003
 - https://pypi.org/project/raman-data/
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/bacteria_id_raman/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -51,3 +53,14 @@ type_adapter_id: curation-record-v1
 - Why: Identify the bacterial/yeast isolate from low-SNR Raman spectra for culture-free pathogen identification | large, cleanly published real measurement set with a clinical target and a held-out clinical-isolate set (a natural grouped test)
 - Adds: | a spectroscopy classification task beyond micro_mass (MALDI-TOF); risks: raw spectral bins (SEL-15 weighs them out), and in RamanBench the Raman-specific RamanNet beats the TFMs on it (F1 0.947 vs about 0.89), a SEL-12 sign; many spectra per isolate
 - Notes: Raw Raman spectral bins (1,000 wavenumber points, 382-1792 cm-1) as features; SEL-15 judges such signals case by case. Licence MIT. 2,000 spectra per isolate plus clinical test sets; spectra of one isolate share a culture (grouped). HF mirror: ...
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: the 30-isolate task is 66,000 spectra x 1,000 bins on a split the files fix (63,000 reference and fine-tuning spectra to train, the 3,000 separately cultured test spectra to test); the clinical task is 12,500 spectra of 50 patients x 1,000 bins with 5 treatment groups. The verdict stands; a priority of 3 is proposed, because the large framing fits the use case only approximately.
+- As published: one zip from the Dropbox link in the GitHub README with float64 .npy arrays, counted from the array headers and label files on 2026-11-08: `X_reference` 60,000 x 1,000 (2,000 per isolate), `X_finetune` and `X_test` 3,000 x 1,000 each (100 per isolate), `X_2018clinical` 10,000 x 1,000, `X_2019clinical` 2,500 x 1,000, and `wavenumbers.npy` (1,000 positions, 1792.4 down to 381.98 cm-1). That is 78,500 spectra, the number RamanBench gives. The reference files are labelled with the isolate codes 0-29 (names in `config.py`). The clinical files are labelled with codes 0, 2, 3, 5 and 6, which are empiric-treatment groups (meropenem, piperacillin-tazobactam, vancomycin, penicillin, daptomycin in `config.py`; `3_clinical_finetuning.ipynb` loads them with `n_classes = 8`), with 2,000 spectra per group in 2018 and 500 in 2019. The 2018 file holds 25 patients x 400 spectra, as the Results and the notebook say (the Methods say 30). The spectra were processed at the source: "individually background corrected using a polynomial fit of order 5" and "individually normalized to run from a minimum intensity of 0 and maximum intensity of 1" (Methods). No value is missing in the five files, and every value lies between 0 and 1.
+- The task's table: the files are a fixed split, not one table to re-split, and no column records the culture, day or map. The test file was "gathered from separately cultured samples" (Results). The paper describes "reference datasets of 60,000 spectra from 30 bacterial and yeast isolates for 3 measurement times", and one 60,000-spectrum reference file ships. 2,000 spectra per isolate equals one 45 x 45 map less the 25 brightest spectra, which suggests one map per isolate, but the paper does not say so. So the 30-class task trains on the reference and fine-tuning files and tests on the one test file (100 spectra per class). A grouped split by isolate is impossible because the class is the isolate, and a random split over the 66,000 rewards recognising the map (SPLIT-29). In the clinical files the patient follows exactly from row order (the notebook uses the block `5 * 400 * group_idx + 400 * patient`; 100-row blocks in 2019; SPLIT-24): 50 patients, 10 per treatment group over both years (TP-5 to check in the patient unit). A third framing, the 8 treatment groups over the 30 reference isolates grouped by isolate, leaves two groups with a single isolate (S. enterica, E. faecium). All counts above were computed from the files.
+- Access: `data.zip`, 628,639,018 bytes, with no login. The repository is MIT, and the README states no separate licence for the data.
+- Changes the call: the use-case point needs a direct fit (selection.md, "Priority"). The 66,000-spectrum task recognises 30 known reference strains, an approximate fit (as the screening says). The direct framing, the treatment group for a new patient's isolate, has 50 patients. Without that point the priority is 1 + gap + source + shape - risk = 3. Two facts for /add-dataset: the single test file allows only one evaluation split unless repeats resample the training side; pooling all five files (as RamanBench's 78,500 suggests) mixes the isolate codes and the treatment-group codes, which share the integers 0, 2, 3, 5 and 6.
+- Not checked: which of the three measurement times the reference file holds; how many cultures or maps the reference and test spectra come from; how RamanBench labels the pooled clinical spectra.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (made: four fit gaps named in fit_reason and the notes, the Gram stain, MALDI-TOF or PCR at the culture stage, a fixed drug per species and the pooled years, USE-8; the 74.0% against 93.1% sentence put down to the measurement session, the patients' map size, the source's 2019 protocol, the block order, the crop guess and the 25-spectra filter, writing.md; a near-copy note on 2018-24/21 (piperacillin-tazobactam), SPLIT-30; the patients numbered at random, LEAK-33; a LEAK-9 protocol line, no rows of other test patients and no fold make-up from outside; the early-stopping note, MET-1; the library note; and, implemented as recommended for the curator's mark, one prediction per patient from all its spectra (mean, all_rows, no weight), SPLIT-23, and 2 folds x 30 repeats, 5 patients per group per test fold, TP-5); disputed: SPLIT-23 (the unit, settled by the rule), TP-5 (2 folds or an amendment), TP-6 against LEAK-14 (the 5 library-only reference isolates); for the curator: issues 1-4 (4: three check warnings to accept). Priority 3: gap +, use case 0, source +, shape 0, risk 0 (use case: the source names the physician's empiric choice, but the fit is approximate, cultured colonies, five species, MALDI-TOF the routine comparator; shape: 50 scored patients, the spectrum the only input; risk: the exploits found are closed by the unit and the protocol line).

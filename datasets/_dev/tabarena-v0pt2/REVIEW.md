@@ -219,6 +219,83 @@
   **Resolved (2026-11-08, Lennart):** go ahead, applied: the `row` text, the notes, the splits comment and decision
   table 4 now say one row per loan; README regenerated, checksum changed (not built).
 
+### Rules, from the large add run (2026-11-09)
+
+- **SPLIT-10 exceptions that serve SPLIT-14 (fifth case)?** A temporal split without the gap SPLIT-10 asks for, taken so that every window keeps half its rows for training (SPLIT-14), is now an exception in five datasets: alfa_battle_2_0_task_2, lending_club, spanish_homeowners, wisconsin and, from this run, alfa_bank_credit_history_default_1m. Three exceptions for the same reason make an amendment due.
+  Implemented: alfa_bank_credit_history_default_1m ships without the gap, as the four before it.
+  Proposal: write the case into SPLIT-10: when a gap would break the 50% floor, the floor wins and the gap is dropped, with a note on the size of the label lag.
+  Decision needed: amend SPLIT-10, or keep deciding each case as an exception.
+- **Clustering-defined classes?** sarcoma_methylation_classification (issue 1) and cns_tumor_methylation_classification (issue 1) predict classes that the source defined by clustering the same methylation profiles. Both need one test of when such classes are a fair target (variant title in sarcoma's notes: "Clustering-defined classes (SEL-4)").
+  Implemented: both ship the source's classes; each issue recommends option a, with the test written into the curation notes.
+  Proposal: keep a clustering-defined class when experts use it in practice (a published classifier types new cases by it) and the class family is stated; merge or drop it otherwise.
+  Decision needed: adopt this test for both, or another one.
+- **Route/array classes kept?** In tcga_pancancer_tumor_type (issue 1) and sarcoma_methylation_classification (issue 3) some classes were recorded with their own route or array type, so the recording marks the class. Both keep the rows; these are two exceptions to LEAK-15 and LEAK-39, and a third would make an amendment due.
+  Implemented: both keep the classes, with a note.
+  Proposal: state the line now: a class-tied recording is kept when a route test on the mixed classes measures a small shortcut, and named in the notes.
+  Decision needed: write the line, or decide each case on its own.
+- **Scoring within groups?** smartshark_release_defect_prediction (issue 4) and github_pull_request_acceptance_1m (issue 1) rank units inside groups (files within a release, pull requests within a project), and fmcsa_roadside_inspection_out_of_service_1m has a note on ranking within sites. protein_model_quality_rf_pcp and huesken_sirna_efficacy were the first two exceptions to MET-5 that scored within groups, so a third makes the amendment due. uniform_soybean_tests_yield (issue 1) and genomic_prediction_soy_yield (issue 1) need the same wording.
+  Implemented: nothing in the rule files; each dataset ships its pooled default for now.
+  Proposal: amend MET-5 / MET-11: "when the use case ranks units within groups and the pooled score orders models unlike the within-group score on the shipped splits, score within the groups from context, also in place of a research-run competition's metric". The measure is the mean, over the shipped splits, of Kendall's tau between the pooled and the within-group ranking of models: uniform_soybean 0.38 (switch), genomic_soy 0.78 per split (lowest 0.64; it keeps pooled r, tau 0.96 on the mean), huesken 0.64. A threshold still has to be set (for example 0.8).
+  Decision needed: amend the rule and set the threshold, or keep the pooled score.
+- **log_loss-from-context for binary tasks whose use sums probabilities?** In sivep_gripe_sari_outcome (issue 4), nyc_motor_vehicle_collisions (issue 2), nchs_linked_birth_infant_death_1m (issue 4) and uk_mot_test_results_1m the actor adds up the predicted probabilities (expected counts per site, tester or cohort), so calibration matters; fmcsa_roadside_inspection_out_of_service_1m has a note. african_credit_scoring_challenge and heart_disease kept the fallback ROC AUC. Variant titles in the files: "log_loss-from-context item", "item on log_loss from context for binary tasks".
+  Implemented: all ship the fallback ROC AUC.
+  Proposal: amend MET-8 / MET-11: when the use case sums or thresholds the probabilities themselves, log loss comes from context; otherwise ROC AUC stays.
+  Decision needed: amend and switch these datasets, or keep ROC AUC for all.
+- **Protected grounds: the factor the actor may no longer use?** The stance that a model may not use a factor the actor may no longer use is extended to any decision where the actor's own law bars the factor (rais_employment_separation_1m issue 1). sivep_gripe_sari_outcome (issue 3), nchs_linked_birth_infant_death_1m, gse40279_methylation_age (issue on the cohort label) and acs_food_stamps_2014_2024_1m (the SEL-7 amendment) point here; wioa_employment_after_exit and ny_wcb_assembled_claims_1m have their own issues. Variant titles: "protected-grounds item", "item on protected grounds".
+  Implemented: each dataset keeps its columns until this is decided.
+  Proposal (drafted by the AI from rais's stance, not yet argued by a panel): a protected ground is dropped when the actor's own law bars it for this decision; elsewhere it stays with a note.
+  Alternative: also drop a protected ground where no law bars it, when it adds little and its use would be hard to defend (nchs's reviewers all recommend dropping race on these grounds).
+  Decision needed: the stance, or the alternative; each dataset's own issue then follows it.
+- **Late-filled values?** A field the source fills or corrects after the prediction point (nfip_redacted_flood_claims, with ny_wcb_assembled_claims_1m issue 1; nchs_linked_birth_infant_death_1m; smartshark_release_defect_prediction; nyc_motor_vehicle_collisions's blank vehicle type and backfill; turkcell_radio_link_failure_prediction_1m). mic and 2_month_survival dropped such fields; onlinenewspopularity and medical_facility_operational_data kept them with a note. Variant title: "late-values item".
+  Implemented: each dataset keeps the field with a note giving the measured gain.
+  Proposal: keep a late-filled field with a note when the measured gain is small; drop it otherwise.
+  Decision needed: adopt the line, or decide each case on its own.
+- **Grade LEAK-24 by the measured effect of a label revision?** LEAK-24 (a Must, no grade) cuts or re-sources a newest period whose labels a later download revises. In wioa_employment_after_exit the first report of a quarter rises in later ones (Title I +0.01 to +0.72 points; all programmes +0.7 to +1.1 points by the third). That costs 0.0027 to 0.0029 ROC AUC (bootstrap SD 0.0004), reorders none of four models, and the second report scores within 0.0002 of the third. fmcsa_roadside_inspection_out_of_service_1m has the same question. Precedents: tunisian_fraud_detection_challenge (2018 cut), sf_permit_time (cut), consumer_complaints (re-sourced).
+  Implemented: wioa follows the rule as written (windows moved back one quarter).
+  Proposal: keep a measured revision that reorders no model and moves the score by less than the run-to-run spread, with a note on each window's report stage; cut or re-source the rest.
+  Decision needed: grade the rule, or keep it as written.
+- **A Tensions row for a known entity's history against label-based counts?** azure_vm_lifetime_resource_central_1m ships the subscription's lifetime-class shares, label-based counts that CLEAN-6 (Must) bars; USE-10 and LEAK-34 keep them as a known entity's dated history, but no rule says so. Cases: tunisian_fraud_detection_challenge (2026-11-05) and azure_vm.
+  Implemented: azure_vm keeps the shares, each as of the time its label is known.
+  Proposal: add the row: the history wins, as of the time each label is known; it stops where the shares cover sibling entities of a group (the subscription's other VMs), not only the row's own earlier labels.
+  Decision needed: add the row, or not.
+- **Keep nominal money (CLEAN-21)?** acs_food_stamps_2014_2024_1m (issue 3) keeps nominal dollar amounts; noaa_storm_events_damage, kickstarter, lending_club and ames do too, with no recorded exception.
+  Implemented: nothing in the rules.
+  Proposal: either record an exception for money compared within one year or by ratio, or deflate in all five.
+  Decision needed: which one; needed whichever way acs issue 1 goes.
+- **Spectrum guide: two lines?** From milk_nir_composition: axes given only as a range and a step are enough, and white-and-dark referencing counts as raw. From bacteria_id_raman: MET-6's case list still names covertype as a kept paper accuracy, though it moved to log loss on 2026-10-21; and a TP-5 amendment (bacteria issue 2, option B): a class at 3 or more units per test fold is not a handful when no class is short, a fold holds 15 or more units and scores are stable.
+  Implemented: nothing in the rule files.
+  Proposal: add the two spectrum lines and mark covertype as overruled; the TP-5 line goes with bacteria issue 2.
+  Decision needed: go ahead for each line, or leave as is.
+- **A fixed hash sample of a temporal frame before the windows?** The guide says a temporal frame is not sampled: the windows are built on the full data, and only then are rows drawn per side (`definitions.md`, "Temporal data"). Three definitions of this run sample first, each with a seeded hash that does not look at the label, because the full frame does not fit in memory. cesnet_quic22_service_classification_1m keeps 1 flow in 20 by a hash of its id; the class shares hold (chi-square p 0.35-0.99). uk_mot_test_results_1m keeps a quarter of the tests by a hash of the test id. sorel_20m_malicious_pe_1m keeps the 1 file in 16 whose SHA-256 begins with 0. Each records it as a departure in its notes. cesnet's mediator counts this as the 4th case in the batch, so the guide is due an amendment.
+  Implemented: the three departures, as notes.
+  Proposal: amend the guide. A fixed, label-free hash sample taken before the windows is allowed when the full frame does not fit in memory. The definition names the hash and the share, and shows that the class shares or the target's distribution hold.
+  Decision needed: amend the guide, or keep each case as a recorded departure.
+
+### Framework and library, from the large add run (2026-11-09)
+
+- **Keep the two library fixes made in this run?** bundle_checks.py lets unit weights sum to at most 1 under a row budget (with a test). The probe input (dataset_io.py) drops a unit weight's weight and unit columns from the frame, so no probe reads the unit as a feature, as tls_os_fingerprinting_masaryk_1m's did (test test_probe_input_drops_the_unit_weight_columns).
+  Implemented: both, with tests, not yet merged.
+  Decision needed: keep or revert.
+- **Record row_budget when a definition has its own _make_splits?** alfa_bank_credit_history_default_1m samples inside its own `_make_splits`, so the container records no row budget; `row_budget` cannot be declared next to a custom `_make_splits`.
+  Implemented: nothing.
+  Proposal: let a definition with its own `_make_splits` declare its row budget, which the container records.
+  Decision needed: go ahead or leave as is.
+- **Other library fixes found in the run?** The leak probes crash at the nearest-neighbour step on missing features (nfip_redacted_flood_claims); a 473,038-column frame cannot be read back with pyarrow's default limits, so a build would delete the container (gse40279_methylation_age, 473k columns; cns_tumor_methylation_classification 429k; sarcoma_methylation_classification 406k); a packet-sequence special feature for cesnet_quic22_service_classification_1m.
+  Implemented: nothing.
+  Proposal: impute before the neighbour step; raise the reader's size limits before any build; add the packet-sequence kind.
+  Decision needed: go ahead for each.
+
+### Records and vocabulary, from the large add run (2026-11-09)
+
+- **Codes vs words?** rais_employment_separation_1m and sinan_dengue_case_screening_1m ship occupation codes (CBO) as codes, wioa_employment_after_exit ships occupation, industry and programme codes, whose words sit only in an external table; sivep_gripe_sari_outcome and nyc_motor_vehicle_collisions (issue 2) ship words. CLEAN-12 does not say which. Each dataset has its own issue.
+  Proposal: amend CLEAN-12 once: map codes to words when the source publishes the table, otherwise keep codes.
+  Decision needed: amend, or decide per dataset.
+- **One source label for GEO datasets?** gse40279_methylation_age has `Other`, lung_cancer_epithelial_genexp `GOV Website`.
+  Proposal: `GOV Website` for all GEO datasets.
+  Decision needed: which label.
+- **Add `HuggingFace` to the original_source vocabulary?** ember2024_malware_detection_1m comes from Hugging Face, which the vocabulary lacks.
+  Decision needed: add it, or keep `Other`.
+
 ### From the information audit of 2026-11-09 (what the actor knows when it fits, predicts and scores)
 
 - **Give format 2 a training-only column role?**

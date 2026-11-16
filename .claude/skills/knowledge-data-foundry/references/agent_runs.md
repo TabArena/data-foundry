@@ -31,6 +31,10 @@ When the curator names several records or a dashboard filter (for example "every
 * The root filesystem holding `/tmp` and the session scratchpad has 48 GB; large intermediates go under the run folder
   in `local-data-warehouse/_runs/` (on `/home`, with 1.7 TB free). `/home` is slow for many small files.
 * Agents leave stray work (a `find /` ran 3.5 hours): check `ps` for long-running children before finishing.
+* A loop that waits for a run checks the run's process id: `while kill -0 <pid> 2>/dev/null; do sleep 30; done`.
+  Never `until ! pgrep -f <pattern>`: the loop's own command line holds the pattern, so pgrep finds the loop itself and
+  it never ends (the large add run of 2026-11-09 left 55 such loops, some 7 hours old). Stop every wait loop you
+  started before you hand back.
 * Builds need memory more than cores: [rebuild.md](rebuild.md) lists the peaks.
 
 ## Files agents share

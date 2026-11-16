@@ -1,25 +1,28 @@
 ---
 unique_name: fpa_fod_wildfire_cause
-name: 'Spatial wildfire occurrence data for the United States, 1992-2020 (FPA FOD, 6th edition): wildfire cause'
+name: 'Spatial wildfire occurrence data for the United States, 1992-2024 (FPA FOD, 7th edition): wildfire cause'
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
 original_source: GOV Website
-year: '2014'
+year: '2026'
 domain: environmental science & climate
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
+- https://doi.org/10.2737/RDS-2013-0009.7
 - https://doi.org/10.2737/RDS-2013-0009.6
 - https://doi.org/10.5194/essd-6-1-2014
 - https://doi.org/10.5281/zenodo.8381129
 - https://doi.org/10.5194/essd-16-3045-2024
 - https://www.kaggle.com/datasets/rtatman/188-million-us-wildfires
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/fpa_fod_wildfire_cause_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -41,3 +44,16 @@ type_adapter_id: curation-record-v1
 - as published: about 2.3 million wildfire records (Zenodo: >2.2 million in CONUS), 1992-2020; one record per fire with discovery date and time, lat/lon, state/county, reporting agency, unit and land owner, cause ...; target: NWCG_GENERAL_CAUSE (12 named causes such as debris and open burning, arson, equipment and vehicle use, lightning/natural, power lines, railroad, smoking, ...; access: open.
 - Why: Federal compiled record of every reported US wildfire with an expert-determined cause; the 2017 Kaggle mirror already posed cause prediction as the task, and the FPA FOD-Attributes paper offers the data for predictive ML models. Rows to exclude: undetermined causes as the unlabeled pool; drop final size and ...
 - Adds: A large, open multiclass task with a temporal (29 years) and grouped (agency, state, unit) structure and mixed types (high-cardinality categoricals, dates, coordinates, numerics); a first environmental hazard multiclass task
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: the task's table holds the 1,972,001 fires with a named cause in the 7th edition (1992-2024, 12 classes), with 12 inputs known at discovery. The call stands at priority 3. Build from the 7th edition: it came out in 2026 and replaces the 6th edition the record links.
+- As published: the 7th edition, "Spatial wildfire occurrence data for the United States, 1992-2024 [FPA_FOD_20260615]" (Short 2026, https://doi.org/10.2737/RDS-2013-0009.7; metadata published 2026-09-09), "includes 2.66 million geo-referenced wildfire records". The USFS map service that serves it (https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_FireOccurrenceCurrentEdition_01/MapServer/0, layer Fire_FPA_FOD_7th_Fires) counts 2,661,383 records ("Point and Vector Object Count: 2661383" in its FGDC metadata) with 37 attribute columns besides OBJECTID, GLOBALID and the shape. It is one table with one row per fire. The 6th edition the record links (RDS-2013-0009.6, 1992-2020) holds "2.3 million" records by its abstract. Its exact count was not obtained: the RDS archive answered 403 to every request on 2026-11-08, and its map service EDW_FireOccurrence6thEdition_01 is "not started". The target NWCG_GENERAL_CAUSE has 13 values (group-by on the layer): Missing data/not specified/undetermined 689,382 (25.9%), Debris and open burning 611,386, Natural 356,409, Arson/incendiarism 339,463, Equipment and vehicle use 216,803, Recreation and ceremony 112,151, Other causes 91,803, Misuse of fire by a minor 69,469, Smoking 67,658, Power generation/transmission/distribution 42,075, Railroad operations and maintenance 38,968, Fireworks 21,350, Firearms and explosives use 4,466.
+- The task's table: the 1,972,001 fires with a named cause, counted on the layer (41,233 to 88,150 a year; 62,505 in 2024). That leaves 12 classes, of which "Other causes" (91,803) is a residual class to keep or merge. The 689,382 undetermined fires are the pool the use case would score. Their share differs by source system type: 28.5% of the 1,714,018 nonfederal records, 13.1% of the 539,344 federal ones and 31.9% of the 408,021 interagency ones. Known at discovery, 12 inputs: SOURCE_SYSTEM_TYPE, SOURCE_SYSTEM, NWCG_REPORTING_AGENCY, NWCG_REPORTING_UNIT_ID, SOURCE_REPORTING_UNIT, DISCOVERY_DATE, DISCOVERY_TIME, LATITUDE, LONGITUDE, OWNER_DESCR, STATE and FIPS_CODE. FIRE_YEAR and DISCOVERY_DOY repeat the date, COUNTY and FIPS_NAME repeat FIPS_CODE, and the two unit names repeat their codes. DISCOVERY_TIME is null for 575,442 of the labelled fires (29.2%). Known only later: FIRE_SIZE and FIRE_SIZE_CLASS (the final perimeter), CONT_DATE, CONT_DOY, CONT_TIME, FIRE_NAME, FIRE_CODE, COMPLEX_NAME, and the ICS-209 and MTBS ids and MTBS name. Ids: FOD_ID, FPA_ID, LOCAL_FIRE_REPORT_ID, LOCAL_INCIDENT_ID. If the prediction point is the closed report rather than discovery, the final size and the containment date and time add three inputs. Two columns come from the target and must go (LEAK-10). NWCG_CAUSE_CLASSIFICATION (Human 2,034,178, Natural 356,409, Missing 270,796) equals "Natural" exactly where the target does. NWCG_CAUSE_AGE_CATEGORY ("If cause attributed to children (ages 0-12) or adolescents (13-17), the value for this data element is set to Minor; otherwise null") is "Minor" for all 69,469 fires of "Misuse of fire by a minor" and for 9,543 others (6,187 of them Fireworks). Fire names sometimes spell the cause: 2,287 of the 2,512 names with "LIGHTNING" are Natural, and 1,040 of the 2,576 with "RAILROAD" or "TRAIN" are Railroad. FIRE_NAME goes anyway. The FPA FOD-Attributes covariates (Zenodo 8381129, CONUS 1992-2020, 6th edition ids) could join by FOD_ID for the years they cover. Whether the 7th edition keeps the 6th edition's FOD_IDs was not checked.
+- Access: open. The metadata says "These data were collected using funding from the U.S. Government and can be used without additional permissions or fees" and asks for a citation; "Access Constraints: None". The RDS archive ships accdb, gdb, gpkg and sqlite downloads; their sizes were not read because of the 403. The ArcGIS REST layer answers queries and statistics without login, at most 2,000 records per page (about 1,331 pages for all records). Kaggle mirrors of the 6th edition exist (behroozsohrabi/us-wildfire-records-6th-edition: data.csv 1,066,385,139 bytes, data.sqlite 1,123,016,704 bytes, CC0). The record's Kaggle link is the 3rd update (1.88 million fires, 1992-2015).
+- Changes the call: the edition. The 7th edition (2026, 1992-2024, 2,661,383 records) supersedes the 6th edition the record names. The build should use it (PROV-6, a newer version of the same source), and the record's year and links should follow. With it the labelled table has 1,972,001 fires, just under 2 million. With the 6th edition it would be smaller (count not obtained). The undetermined share (25.9%) depends on the reporting system, which supports the `Class-dependent Recording` probe the screening named (LEAK-13). It also bears on the fit: a model trained on fires whose cause was determined is applied to fires whose cause was not, and those come more often from nonfederal and interagency systems (USE-8, approximate). None of this moves the priority: 3 stands. The sibling `fpa_fod_attributes_wildfire_size` (`TBD -> Yes`, priority 2) is the same fires with the final size as target (PROV-7, a distinct task); its covariates cover only the 6th edition's years (1992-2020, CONUS). `wildfireia_initial_attack_failure` is a cut of the natural fires with a size label, another task.
+- Not checked: the exact row count and the file sizes of the 6th and 7th edition downloads (the RDS archive answered 403); whether the 7th edition re-coded the causes of earlier years; the fill of DISCOVERY_TIME and OWNER_DESCR by year.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
+
+**Assessment (AI, 2026-11-08):** the build uses the 7th edition (Short 2026, 1992-2024), which supersedes the 6th the record links (PROV-6); the link and year follow at /add-dataset.
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (the eight documentation changes applied; issues 1-3 stay at option (a) unless the curator chooses otherwise); disputed: SPLIT-20 against SPLIT-14 (start of the training history), LEAK-13/USE-6 (the reporting fields, settled by a linear fit on 2022: 1.4151 with all fields, 1.4501 without the five), LEAK-25 citation (fixed); for the curator: issues 1-4. Priority 3: gap +, use case 0, source +, shape +, risk - (multiclass is thin; the use case is ours, not the source's; USFS archive with Short's ESSD papers; 1.14M fires, mixed types, temporal; the labelled population is about half of each test year and the training history spans the 2020-2021 reporting break).

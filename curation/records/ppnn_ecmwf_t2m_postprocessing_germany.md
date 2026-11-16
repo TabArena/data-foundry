@@ -2,8 +2,11 @@
 unique_name: ppnn_ecmwf_t2m_postprocessing_germany
 name: 'PPNN full data: ECMWF ensemble 2 m temperature forecasts and DWD station observations (Rasp and Lerch 2018)'
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 4
 tags:
 - AI-Filled (Verify)
@@ -23,8 +26,7 @@ source_links:
 - https://doi.org/10.6084/m9.figshare.19453580.v2
 - '# Chen and Lerch (2022), Full data for wind speed post-processing: another target (10 m wind speed), related data'
 - https://doi.org/10.6084/m9.figshare.19453622.v2
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/ppnn_ecmwf_t2m_postprocessing_germany_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -46,3 +48,14 @@ type_adapter_id: curation-record-v1
 - as published: station x forecast day: 537 DWD stations in Germany, forecasts 2007-01-03 to 2016-12-31; 1,626,724 training samples (2007-2015) and 182,218 samples (2016); 42 predictors (ensemble mean and sd of 2 m ...; target: observed 2 m temperature at the station, 48 h lead (also 36 h in the data); access: open, open (figshare deposit; licence not read: the figshare page returned 403).
 - Why: same task as bias_correction (correct an NWP temperature forecast at a station with the model's own outputs and station features known at forecast time); target is the observed 2 m temperature rather than next-day Tmin/Tmax, the same quantity | Same task as bias_correction_r_bias_correction_r_2 (correcting an NWP ...
 - Adds: 537 stations instead of 25, ten full years instead of five summers, 1.8M rows instead of 7.6k; a standard ML post-processing benchmark with published baselines (EMOS, QRF, NN) | 537 stations and 10 years (1.8M rows) against 25 stations and 5 summers (7.6k rows). Newer alternative: Jobst et al. (Zenodo 8127734 and ...
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: 1,808,942 station-days x 40 numeric inputs (mean and spread of 18 ensemble variables, plus station latitude, longitude, altitude and model orography), with the station id and the date beside them; the call stands (priority 4). The screening's "21 forecast variables" and the 46 features of the large-datasets list do not match the paper or the file.
+- As published: Rasp (2021), "PPNN full data (feather format)", figshare 10.6084/m9.figshare.13516301.v1, published 2021-01-04, CC BY 4.0 (figshare API), one file `data_RL18.feather` of 615,496,032 bytes (Feather V1). Its metadata, read from the file's last 3,512 bytes with no full download: 1,808,942 rows x 43 columns, namely `date`, `station` (integer), `obs` (the target), `*_mean` and `*_var` of 18 variables (t2m, cape, sp, tcc, u, v and q at 850 hPa, u, v and gh at 500 hPa, sshf, slhf, u10, v10, ssr, str, d2m, sm), and `lat`, `lon`, `alt`, `orog`. The rows equal the paper's 1,626,724 (2007-2015) plus 182,218 (2016) samples "After removing missing observations" (arXiv 1805.09091, Sect. 2.2). The paper's Table 1 lists the same 18 variables and 4 station features; its text gives "p = 42" predictors, two more than the table and the file. The lead time is 48 h (Sect. 2.1); the file has one target column, so the README's "36h and 48h" describes the data retrieval.
+- The task's table: the release as it is, 1,808,942 rows x 40 inputs (rows stated by the paper and read from the file; inputs counted from the file's schema), with the station (537 stations, 499 in 2016) as a group or a categorical input and the date for the split (the paper's test year 2016: 182,218 rows). The replication notebook (github.com/slerch/ppnn, RL18_replication.ipynb) drops `sm_mean` and `sm_var` for missing values and splits by row position (training rows up to 1,626,723, test from row 1,626,724), so the rows are ordered by date.
+- Access: open, no login; one 615 MB Feather file that pandas and pyarrow read; CC BY 4.0; the code is MIT.
+- Changes the call: the Chen and Lerch (2022) temperature deposit (figshare 10.6084/m9.figshare.19453580.v2, CC BY 4.0, `temperature_data_cgm_std.feather`, 1,360,331,336 bytes, schema read the same way) holds the same 1,808,942 rows x 94 columns: 50 columns X1 to X50 (by the description, likely the raw ensemble members of 2 m temperature), mean and standard deviation of 17 variables (no soil moisture), the 4 station features and three day-of-year columns. It is a version of this dataset (PROV-6) with no distinct task, which settles the open question in the links; the curator picks one copy (this one is the first publication, the 2022 one adds the raw members and names the spread `_std`). This file names its spread columns `_var` while the paper says standard deviation; the build should check which one the values hold. Priority kept at 4.
+- Not checked: the values (missing values per column, variance or standard deviation in `_var`); the rows of the wind-speed deposit; Jobst et al. (Zenodo 8127734).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-08):** review panel (full): ship after changes (made: a protocol line barring the later forecasts of the same station in other test rows, the measured MAE-CRPS closeness in the metric's reason, the year's evidence from the 2020 deposit, two impossible observations set missing and their 13 rows dropped, the soil-moisture, interpolation, unit and citation notes); disputed: LEAK-9 (a note or a protocol line; settled: the line), PROV-9 (2020 or 2021; settled: 2021), SPLIT-18 against SPLIT-19 with SPLIT-15 (the test windows); for the curator: issue 1. Priority 4: gap 0, use case +, source +, shape +, risk 0 (no thin domain, problem type or regime; the open issue is a weighing call between two valid split designs, not a leak or damage).

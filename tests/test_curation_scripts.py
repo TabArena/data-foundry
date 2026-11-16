@@ -271,6 +271,23 @@ def test_probe_input_drops_the_scoring_columns(clean_room):
     assert clean_room.dataset_io._without_scoring_columns(df, plain)[0] is df
 
 
+def test_probe_input_drops_the_unit_weight_columns(clean_room):
+    """A unit that is not the group (an opaque session id) and its weight are never features of the probes."""
+    df = pd.DataFrame({"y": [0, 1], "x": [0.5, 1.5], "w": [0.5, 0.5], "unit": ["s1", "s1"]})
+    scoring = [ScoringColumn(column="w", role="weight", used_by="log_loss", description="one vote per unit")]
+    task = SimpleNamespace(
+        target_column_name="y",
+        group_on=None,
+        time_on=None,
+        scoring_columns=scoring,
+        unit_weight=SimpleNamespace(column="w", unit="unit"),
+    )
+    out, dropped = clean_room.dataset_io._without_scoring_columns(df, task)
+    assert list(out.columns) == ["y", "x"]
+    assert dropped == ("w", "unit")
+    assert {"w", "unit"} <= clean_room.dataset_io._excluded_columns(task)
+
+
 def test_source_links_drop_the_notes(clean_room, tmp_path):
     """The record's ``#`` note lines are our notes, so the clean room leaves them out."""
     _record(tmp_path, "ds", suggestion="Yes", source_links=["# canonical: the curator's note", "https://a.org/x"])

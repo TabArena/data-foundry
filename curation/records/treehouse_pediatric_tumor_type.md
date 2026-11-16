@@ -2,8 +2,11 @@
 unique_name: treehouse_pediatric_tumor_type
 name: 'Treehouse Tumor Compendium v25.01 PolyA: consistently processed RNA-seq from 13,359 tumours, GEO GSE294351'
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -16,8 +19,7 @@ source_links:
 - https://doi.org/10.1038/s41597-025-05376-z
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE294351
 - https://treehousegenomics.soe.ucsc.edu/public-data
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/treehouse_pediatric_tumor_type/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -39,3 +41,16 @@ type_adapter_id: curation-record-v1
 - as published: 13,359 tumour RNA-seq datasets from 42 studies (TARGET, TCGA, Treehouse clinical sites, others), 58,581 genes as log2(TPM+1); metadata per sample: harmonized disease (192 values), ICD-O code, age at ...; target: tumour diagnosis (disease); for the SRBCT task, the subset neuroblastoma / Ewing sarcoma / rhabdomyosarcoma (embryonal, alveolar) / Burkitt lymphoma, or all ...; access: open (GEO, no access restrictions).
 - Why: same task as srbct_prediction (diagnostic category of a pediatric tumour from its gene-expression profile), same feature kind (per-gene expression per sample), uniformly processed and traceable to a data descriptor
 - Adds: RNA-seq instead of a 2001 cDNA array, open GEO deposit instead of an OpenML copy without original deposition, and far more tumours (counts per SRBCT class not verified: they are in the 169 KB clinical TSV, not downloaded); risks: study and site batch effects (group by study_id), TPM per sample so no cohort-wide scaling
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: the paediatric and young-adult cut, 3,477 RNA-seq datasets of 3,229 donors x 58,581 genes (log2 TPM+1) plus age and sex, with 111 diagnoses, 27 of them with 10 or more donors; the call stands at priority 3. 366 of the cut's datasets are TCGA tumours.
+- As published: GEO GSE294351 (public 2025-04-18; https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE294351): "13359 consistently processed gene expression datasets from 42 studies", quantified with TOIL (RSEM 1.2.25, STAR 2.4.2a, GRCh38, GENCODE 23; overall design). The files are `GSE294351_Tumor-25.01-Polya_hugo_log2tpm_58581genes_2025-02-27.tsv.gz` (1.3 GB; 58,581 HUGO genes, log2(TPM+1)), `GSE294351_Tumor-25.01-Polya_ensembl_counts_60498genes_2025-03-03.tsv.gz` (1.2 GB; 60,498 Ensembl genes, RSEM expected counts) and the clinical TSV (169 KB, read in full): 13,359 rows x 12 columns (`th_dataset_id`, `age_at_dx`, `disease`, `icd_disease`, `organism`, `pedaya`, `sex`, `study_accession`, `study_dataset_id`, `study_donor_id`, `study_id`, `source_name`). The sources are TCGA 9,806, TARGET 1,340, Sequence Read Archive 713, St. Jude Cloud 708, EGA 202 and unavailable 452. `pedaya` is yes for 3,477, no for 9,621 and unknown for 261. The join is the expression columns to `th_dataset_id`. No QC subset of genes is named.
+- The task's table: the `pedaya` cut has 3,477 rows (datasets) from 3,229 donors. The donor is `study_id` + `study_donor_id`, or the TH prefix where the donor id is unavailable (computed). 220 donors have more than one dataset (up to 7), so group by donor. Inputs: 58,581 genes + `age_at_dx` + `sex` (sex unavailable for 326) = 58,583. Classes: 111 diagnoses. 16 have 30 or more donors (3,060 datasets) and 27 have 10 or more (3,264 datasets; the smallest of these are hepatocellular carcinoma 17, dysembryoplastic neuroepithelial tumour 13, hepatoblastoma 12, synovial sarcoma 11 and breast invasive carcinoma 10). 71 diagnoses have fewer than 5 datasets. The largest are acute lymphoblastic leukaemia 880, acute myeloid leukaemia 452, glioma 348, osteosarcoma 220 and neuroblastoma 217 (all computed from the clinical table).
+- Access: open on GEO, no login. GEO says the authors "released the expression values and metadata without access restrictions"; no licence is named. 1.3 GB for the TPM matrix of all 13,359 datasets; the paediatric columns are cut after the download.
+- Changes the call: (1) Overlap with TCGA: 9,806 of the 13,359 datasets are TCGA (9,733 patients), the same tumours as `tcga_pancancer_tumor_type`. The paediatric cut holds 366 TCGA datasets (among them glioma 88, thyroid carcinoma 67, testicular germ cell tumour 61, cervical 22, pheochromocytoma and paraganglioma 22, melanoma 21) and 1,337 TARGET datasets; TARGET is also the source of `target_pediatric_relapse_transcriptome`, another target. These are distinct tasks (PROV-7). A tumour-type task over the whole compendium would be a version of the TCGA one (PROV-6). (2) Study confounding: of the 16 diagnoses with 30 or more donors, 5 come 90% or more from one study (Wilms tumour 0.91, thyroid carcinoma 0.94, rhabdoid tumour 0.96, testicular germ cell tumour 0.98, acute megakaryoblastic leukaemia 0.99). A split by study would remove these classes from training. Grouping by donor is the minimum (SPLIT-3), and the study grouping is the curator's call, as the screening said. The priority stays 3.
+- Not checked: the TPM matrix itself (1.3 GB, not downloaded; the gene count comes from its file name); whether the 9,806 TCGA datasets are de-duplicated against TCGA aliquots as the descriptor says; the harmonised disease merges (USE-5).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-08):** distinct from tcga_pancancer_tumor_type (PROV-7): only the paediatric cut ships (3,477 datasets, 366 of them TCGA tumours); the whole compendium would be a version of the TCGA task (PROV-6).
+
+**Assessment (AI, 2026-11-09):** review panel (full): ship after changes (every TPM rounded alike, LEAK-13; the five THR49 second deposits dropped, SPLIT-24; both applied); disputed: SPLIT-1/SPLIT-23/LEAK-39 (patient vs study split), LEAK-15/USE-6 (age and sex missing by study), USE-5/TP-7 (AMKL beside AML), TP-3/CLEAN-22 (width); for the curator: issues 1-4. Priority 3: gap +, use case 0, source +, shape +, risk - (multiclass is thin; a tumour board's diagnosis, fit approximate; a Scientific Data descriptor with a GEO deposit; 3,256 rows x 54,573 features, grouped; diagnosis entangled with the study).

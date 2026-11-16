@@ -2,8 +2,11 @@
 unique_name: census_pdb_self_response
 name: 'Census Planning Database: 2020 Census self-response rate by block group (Low Response Score task)'
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 4
 tags:
 - AI-Filled (Verify)
@@ -18,8 +21,6 @@ source_links:
 - https://www.census.gov/newsroom/blogs/random-samplings/2026/03/updating-the-planning-database.html
 - https://api.census.gov/data/2026/pdb/blockgroup/variables.json
 - https://www.census.gov/topics/research/guidance/planning-databases.2012.html
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -41,3 +42,12 @@ type_adapter_id: curation-record-v1
 - as published: 2026 PDB: 242,336 block groups x 385 columns (tract file 85,396 x 531), 50 states, DC and Puerto Rico; 2010 Census mail return rate in the older vintages on 2010 geographies; target: self_response_rate_cen_2020: percentage of housing units providing a sufficient internet, paper or phone self-response in the 2020 Census (regression; the ...; access: open.
 - Why: An agency's own predictive task with a named decision and a public competition behind it; documented variables; areas, not people, so no SEL-1 question.
 - Adds: Public services; a large regression on aggregate area features; grouped regime (state, county) and two census rounds (2010, 2020). Risks for /add-dataset: drop Low_Response_Score (a model fit on the target, LEAK-27) and all mode-specific *_cen_2020 response and return rates; choose a vintage whose ACS inputs precede ...
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: up to 242,336 block groups x 385 published columns; after the identifiers, the ten 2020 response and return rates, the Low Response Score and four enumeration counts, 360 columns remain, and 280 of them (ACS 2020-2024 estimates and margins of error) were collected after Census Day 2020, so a 2020 target keeps 80 inputs from the 2026 file alone, 68 of them counts from the census being predicted; the call stands, priority 4, with the vintage and a join as the build's main decision.
+- As published: 2026 PDB block group file (https://www2.census.gov/adrm/PDB/2026/pdb2026bg.csv, 416,481,884 bytes, Last-Modified 2026-09-17, the reissue with the corrected LRS), "242,336 rows, 385 columns" (PDB page); header read by range request on 2026-11-08. The documentation (https://www2.census.gov/adrm/PDB/2026/2026_PDB_Documentation.pdf, p. 3): "The first 11 variables relate to geography" (8 identifiers, `Flag`, `LAND_AREA`, `AIAN_LAND`); "Variables 12 through 291" are ACS 5-year 2020-2024 values (140 estimates, 63 of them percentages, and 140 margins of error); "Variables 292 through 359" come from the 2020 Census P.L. 94-171 and DHC data (68, 32 of them percentages); "Variables 360 through 385 consist of the census response and return rates, and census counts from the 2020 Census operational data", the eligibility flags and the LRS. The tract file (85,396 x 531) adds two ACS self-response rates at tract level.
+- The task's table: one row per 2020 block group with `opstat_univ_cen_2020` = 1 ("Block groups and tracts with zero housing units eligible for self-response will have missing values for the operational statistics variables"); their number is not stated (at most 242,336). Of the 26 operational columns: the target `self_response_rate_cen_2020` and 9 other rates of the same census (internet, paper, phone and bilingual response rates; the return rate and its four modes) leave as outcomes; `Low_Response_Score` (an OLS model fit on the 2020 return rate, Appendix F; LEAK-27) and `lrs_model_univ` leave; `valid_hu_count_cen_2020`, `vacants_sre_cen_2020`, `deletes_sre_cen_2020` and `census_uaa_cen_2020` count units "later identified as vacant, deleted, or undeliverable-as-addressed (UAA) prior to the NRFU operation" (Appendix B), during the count (LEAK-10); 10 contact-strategy fields set before the mailing stay (`tea_self_response_cen_2020`, `tea_update_leave_cen_2020`, `HU_TEA1_IF`, `HU_TEA1_IC`, `HU_TEA6`, `pct_TEA1_IF`, `pct_TEA1_IC`, `bilq_hu_count_cen_2020`, `sr_hu_count_cen_2020`, `opstat_univ_cen_2020`). `sr_hu_count_cen_2020` is the rate's denominator ("the number of housing units in the Self Response (SR) and Update Leave (UL) enumeration areas"), a weight candidate under MET-15. Inputs from the 2026 file for a 2020 target: 2 area fields + 10 contact-strategy fields + 68 counts of the 2020 Census itself (published 2021-2023; the 2012 challenge allowed the 2010 counts, a LEAK-10 question for the curator) = 80. The 140 ACS 2020-2024 estimates come after the outcome (LEAK-10). The 2022 PDB (API vintage 2022: ACS 2016-2020 on 2020 geographies, 2020 Census counts, no response rates) uses the 2020 block groups too, so its ACS estimates, collected mostly before Census Day, can be joined to the 2020 rate by `GIDBG`; the 2020 and 2021 PDBs (ACS 2014-2018 and 2015-2019) are on 2010 block groups with the 2010 mail return rate. The Kaggle task (2012 PDB, 220,354 x 179, the 2010 mail return rate) remains the other option.
+- Access: open download, CSV, no login; the Census API now needs a key for data queries (HTTP 302 to missing_key.html on 2026-11-08); public federal data.
+- Changes the call: none for the priority (4). For the wide-table list: 385 published, 80 inputs from one file for a 2020 target (12 if the 2020 counts are ruled concurrent), plus the 2022 PDB's ACS 2016-2020 estimates when joined; 360 only if the curator accepts the ACS 2020-2024 period. That choice is the record's risk point.
+- Not checked: the number of block groups with `opstat_univ_cen_2020` = 1 (it needs the 416 MB file); the 2022 PDB's columns and whether its `GIDBG` values match the 2026 file one to one; whether the margins of error count as features.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates, round 2 (wide tables outside biology and medicine, tables with 2M+ rows).
