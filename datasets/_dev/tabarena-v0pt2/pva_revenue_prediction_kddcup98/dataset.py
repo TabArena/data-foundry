@@ -186,7 +186,7 @@ SCORES = ["INCOME", "WEALTH1", "WEALTH2"]
 
 class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
     task_summary = TaskSummary(
-        question="Will a lapsed donor give to a veterans' charity in response to its renewal mailing?",
+        question="How much will a lapsed donor give to a veterans' charity in response to its renewal mailing?",
         use_case=(
             "Before a renewal mailing, the Paralyzed Veterans of America decides which lapsed donors to mail, where "
             "each piece costs $0.68 (KDD Cup 1998)."
@@ -195,7 +195,11 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
             "One lapsed donor (last gift 13 to 24 months earlier) who received the June 1997 renewal mailing, from "
             "the KDD Cup's learning and validation files."
         ),
-        predicted="Whether the donor responded with a gift (5.1% of the whole mailing did).",
+        predicted=(
+            "The gift the donor sent in response, in dollars, 0 for the 94.9% who did not give; scored by the "
+            "mailing's net revenue: every donor predicted to give more than $0.68 is mailed, and the score is the "
+            "sum of their gifts minus $0.68 each, per test donor."
+        ),
         known=(
             "The donor's age, sex, household and neighbourhood data bought from outside sources, interests, how the "
             "donor was acquired, and up to 24 months of mailing and giving history (dates, amounts, recency, "
@@ -203,8 +207,8 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         ),
         split="Random donors of the same mailing, as in the KDD Cup's learning and validation files.",
         changes=(
-            "We predict whether a donor gives instead of the amount given (the KDD Cup scored the mailing's net "
-            "revenue) and drop the amount."
+            "We drop the response flag (`TARGET_B`, a copy of gift > 0) and blank 61 gift receipts of earlier "
+            "promotions dated after the mailing."
         ),
         fit="approximate",
         fit_reason=(
@@ -244,7 +248,15 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
 
         - The description of the task and data for the KDD Cup (https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98doc.txt) is among the best real-world dataset and task descriptions I have ever seen.
         - The task was made IID through feature engineering and would usually used to predict the next year. We only predict from the training data from the current year, other samples from the current year (as to see who else to contact in the same year). Features contain information from the previous year.
-        - The task is revenue generation and the score function is profit-based with a cost of $0.68 per prediction. The higher the revenue generated, the better. We use the binary classification target (TARGET_B) to predict if a person would donate.
+        - The task is revenue generation and the score function is profit-based with a cost of $0.68 per prediction. The higher the revenue generated, the better.
+        - The target (2026-11-11, Andrej, MET-4, MET-7): the gift amount `TARGET_D` in dollars, 0 for the donors who did
+          not give (no missing value in the cup's files), scored by the cup's net revenue (`net_revenue_at_cost`,
+          cost $0.68): every donor predicted to give more than $0.68 is mailed, and the score is the sum of their
+          gifts minus $0.68, divided by the number of test donors. The cup's documentation says the chance to respond
+          and the gift size run against each other, so the response flag `TARGET_B` (gift > 0) does not score the
+          mailing decision; it is dropped as a copy of the target. Before 2026-11-11 the definition shipped
+          `TARGET_B` with ROC AUC as a stand-in. The target is zero-inflated: 94.9% of the donors gave nothing, and
+          the 0 is that outcome, not a cap or a placeholder for missing, so the rows stay.
         - The TCODE contains titles now in the data dictionary. We map large amount of missing values to placeholder titles and the smaller ones to a new "other" title.
         - We treat data as string or category based on the data dictionary suggestions. In cases where the column is from a predefined set of choices, it becomes categorical. We treat various free-text categorical as string columns (they are also high-cardinality otherwise).
         - We transform the date columns to pandas datetime.
@@ -275,19 +287,41 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
           dictionary lists the first byte of `DOMAIN` as U=Urban, C=City, S=Suburban, T=Town, R=Rural and calls the
           field "A nominal or symbolic field" (cup98dic.txt); it does not say whether a city neighbourhood is denser
           than a suburb, so no order is imposed.
-        - The target (2026-11-01, CLEAN-25): `TARGET_B` ships its classes as words (1 is the event). Binary: "Yes" is
-          the event, the class that sorts second, so it is the metrics' positive class.
+        - Late gift receipts blanked (2026-11-11, Andrej, LEAK-10, LEAK-6, LEAK-7): `RDATE_k` and `RAMNT_k` (k = 3 to
+          24) are set to missing where the receipt is dated June 1997 or later, after the mailing the target is about
+          (the cup's documentation: every field reflects the donor before June 1997 "except the gift receipt dates,
+          which will follow the promotion dates"); 61 cells of 60 donors in the cup's files, dated up to June 1998.
+        - Time basis: DelayedTarget: one renewal mailing (97NK, June 1997) to lapsed donors; every field is the donor
+          before June 1997 (the gift receipts of earlier promotions dated after it are blanked); the target is the
+          response to that mailing, recorded for every donor by the cup's release in 1998. Every donor got the same
+          mailing and its response was recorded over the same window, so no test row is later than a training row and
+          the random split is IID. The date columns are the donors' shared past, not a time to split on (random split
+          kept, 2026-11-12, Andrej): every row is about the one promotion date (191,758 of the cup's 191,779 donors
+          mailed in June 1997, 21 in April 1997; all of them lapsed). The 23 earlier promotions, June 1994 to June
+          1996, are columns, not rows: each reached 60,000 to 188,000 of these donors, in changing mail types, with
+          responses of 0.02% to 36%, and of 0.02% to 0.9% from March 1996 on, because the cup selected donors who had
+          stopped giving; their responses are a selected past, not training mailings. Within the target mailing the
+          response falls from 6.1% (recruited 1986) to 3.3% (recruited 1996) while the gift of those who gave rises
+          from $12.95 to $19.80, and it rises from 3.6% (last gift early 1995) to 9.9% (1997). A split on these donor
+          dates tests new kinds of donors, not a later mailing: on the donors recruited from 1995 on, a model trained
+          on the earlier recruits earns $0.046 per test donor, against $0.083 for the same donors under random folds
+          and $0.041 for mailing everyone (untuned LightGBM). The cup's learning and validation files agree (5.08% and
+          5.06% gave). Not tested: the next mailing.
     """
 
     # Task
-    target = "TARGET_B"
-    problem_type = "binary_classification"
-    metric = Metric.stand_in(
-        "roc_auc",
-        original="Net revenue of the mailing: sum over mailed donors of (TARGET_D - 0.68)",
-        reason="The original scores the donation amount (TARGET_D) and a mail/no-mail decision; our task is changed to the binary response and TARGET_D is dropped. Closest computable stand-in is roc_auc on response.",
+    target = "TARGET_D"
+    problem_type = "regression"
+    metric = Metric.source(
+        "net_revenue_at_cost",
+        original="Net revenue of the mailing: sum over the donors whose predicted gift is over $0.68 of (TARGET_D - 0.68)",
         reference="https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98doc.txt",
-        definition="Original: total net profit = sum_{i mailed}(donation_i - $0.68), mailing decided by the model; stand-in: ROC AUC of TARGET_B (responded).",
+        params={"cost": 0.68},
+        definition=(
+            "The KDD Cup 1998's evaluation rule ('Sum (the actual donation amount - $0.68) over all records for which "
+            "the expected revenue (or predicted value of the donation) is over $0.68'), divided by the number of test "
+            "donors so that folds of different sizes compare (MET-7)."
+        ),
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -299,6 +333,10 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
     def _clean(self, raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
         df, val_df, val_targets = raw["df"], raw["val_df"], raw["val_targets"]
         df = pd.concat([df, val_df.merge(val_targets, on="CONTROLN")], axis=0).reset_index(drop=True)
+        # gift receipts dated after the June 1997 mailing (YYMM numbers): blanked with their amounts (LEAK-10)
+        for k in range(3, 25):
+            late = df[f"RDATE_{k}"] >= 9706
+            df.loc[late, [f"RDATE_{k}", f"RAMNT_{k}"]] = np.nan
         title_code_map = {
             0: "No Title",
             1: "MR.",
@@ -565,8 +603,8 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
                 "MDMAUD_R",
                 "MDMAUD_A",
                 "MDMAUD_F",
-                # Other target
-                "TARGET_D",
+                # the response flag, a copy of TARGET_D > 0
+                "TARGET_B",
             ]
         )
         for c in STRING_COLUMNS:
@@ -587,8 +625,6 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         df = decode(df, CODE_LABELS)
         # scores with no words per level are numbers (CLEAN-14)
         df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
-        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
-        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
