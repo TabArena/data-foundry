@@ -91,9 +91,9 @@ columns (`Removed_Nogoods-1`, `Removed_Nogoods-2`, 0 or missing) and 5 rows that
 another label. Weighed: a documented algorithm-selection benchmark and a strict split (+), a modest signal over the
 class shares (-), a label that scores a pick 0.05 s slower as wrong as a timeout (-), which issue 1 can fix.
 
-**Main points:** All resolved: runtime regression scored by PAR10 (1), timeouts at the recorded 600 s (3), the log
+**Main points:** Resolved: runtime regression scored by PAR10 (1), timeouts at the recorded 600 s (3), the log
 scale (4); scored per instance, with a note on the large problem classes (5, Lennart, 2026-11-08). The split count
-(2) is deferred to its own PR. The rename (no longer `_classification`) waits until the page is done.
+(2) is open again, settled with rule SPLIT-33. The rename (no longer `_classification`) waits until the page is done.
 
 **Record judgment:** valid. An algorithm-selection scenario of the ASlib library, built from claspfolio 2's Potassco
 set; the runs and features are the library's own files, so the source is strong. The curator kept it twice after the
@@ -232,9 +232,24 @@ call, and its reason ("the 11 runtimes are not shipped") describes our choice, n
 
 2. **Keep 3 x 3 splits now that the table has one row per run, or go back to 10 x 3?**
 
-   **Deferred (2026-11-12):** Lennart moved the split count in scored units (rule SPLIT-33) out of this PR into
-   its own, to be decided with the other grouped datasets; this issue is reopened there. Until then the protocol
-   counts the 13,332 rows: 3 x 3 splits.
+   Deferred on 2026-11-12, when Lennart moved the split count in scored units (rule SPLIT-33) out of #79; open again
+   in the PR on that rule, and settled with it.
+
+   * **Problem:**
+     - The table has one row per instance and configuration (13,332 rows for 1,212 instances), and the protocol on
+       main counts rows: 3 x 3 splits. PAR10 scores one value per instance, so the noise of the score follows the
+       instances; counted in instances the task gets 10 x 3, the splits it would get with one row per instance.
+     - Untuned LightGBM on the 9 splits: PAR10 from 124 to 1,281 s; it beats the configuration most often fastest in
+       training on 6 of 9.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 3 x 3 (on main) | the protocol counts the runs | no rule change | 9 noisy splits; the count depends on the table's layout |
+     | B | 10 x 3 under SPLIT-33 | the protocol counts the instances PAR10 scores | the same splits in either layout | a rule change that moves four more datasets |
+
+   * **Recommendation:** B, with the rule; Andrej chose it on 2026-11-06, before the count left #79. **Decision:** A
+     or B?
 
 3. **Count a timed-out run as the 600 s limit in the target, or as the 6,000 s that PAR10 charges for it?**
 
