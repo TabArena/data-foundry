@@ -5,11 +5,14 @@
 - Each record is `No (Retired)` with its reason marker and a CC line giving the evidence; its review moves into the
   record's `## Review`, its folder is removed and `v2_path` cleared. `DF: Yes`, the other tags and the pinned
   BeyondArena containers stay.
-  - `naticusdroid_android_permissions_dataset` (TabArena v0.1; `Selection Bias`, Andrej, 2026-11-13): benign apps from
-    AndroZoo and malware from AMD (families of 2010-2016) differ by period, which the permissions show (ROC AUC 0.970
-    to 0.991 without the store, library and benign-only permissions), and test malware has family siblings in
-    training; the UCI file has no per-app dates or ids to separate either. `kronodroid_android_malware` (dated apps of
-    2008-2020) is the replacement candidate.
+  - `naticusdroid_android_permissions_dataset` (TabArena v0.1; `Data Quality Issue` beside `Selection Bias`, Andrej,
+    2026-11-13; reason restated by Lennart, 2026-11-16): the malware families are the real groups and the release
+    cannot recover them (SPLIT-25). A few AMD families make up most of the malware and their variants request nearly
+    the same permissions, so test malware has family siblings in training; the UCI file has no hash, package name or
+    family to hold them out, and grouping on the permission set is barred (SPLIT-24). The two collections of different
+    periods (benign from AndroZoo, malware from AMD, families of 2010-2016) keep `Selection Bias` as a concern flag,
+    and the exact lookup is fixable; neither is the reason. `kronodroid_android_malware` (dated apps of 2008-2020, 240
+    families) is the replacement candidate.
   - `obesity_estimation` (`No Good Target / Scientific Discovery`, Andrej, 2026-11-11): the source's own label is the
     body mass index class computed from weight and height, so the published task is circular; without them, nobody
     predicts a body mass index from habit answers where a scale is at hand.
@@ -22,7 +25,8 @@
     every column but age, the label included, is one of 22 rules of the row number; the generator used as a
     classifier beats all 40 benchmark methods on every split (1 - ROC AUC 0.0210 against 0.0317 for the best).
 - Guidelines: provenance.md names tour_travels_churn as a PROV-3 case and notes it under PROV-2, where it had been kept
-  on the untraced-upload rule; selection.md says the same.
+  on the untraced-upload rule; selection.md says the same. splits.md names naticusdroid_android_permissions_dataset
+  as a SPLIT-25 case, and selection.md as a second dataset retired for another reason that keeps its `Selection Bias`.
 
 ## 2026-11-12, the split count in scored units (SPLIT-33), in a PR of its own (no container built)
 

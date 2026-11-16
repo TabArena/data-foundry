@@ -12,6 +12,7 @@ data_foundry_status:
 claimed_by: Andrej
 suggestion: No (Retired)
 decision_markers:
+- Data Quality Issue
 - Selection Bias
 original_source: UCI
 year: '2022'
@@ -65,6 +66,11 @@ CC (2026-11-13, Andrej): retired (`No (Retired)`, reason `Selection Bias`; Beyon
 - The folder stays until the retirement PR removes it and clears `v2_path`; the claim stays. Priority removed.
 - Sources: Mathur A, Podila LM, Kulkarni K, Niyaz Q, Javaid AY. NATICUSdroid: A malware detection framework for Android using native and custom permissions. Journal of Information Security and Applications 2021;58:102696, https://doi.org/10.1016/j.jisa.2020.102696. UCI, https://doi.org/10.24432/C5FS64. Wei F, Li Y, Roy S, Ou X, Zhou W. Deep Ground Truth Analysis of Current Android Malware. DIMVA 2017, LNCS 10327:252-276, https://doi.org/10.1007/978-3-319-60876-1_12.
 
+CC (2026-11-16, Lennart): **Retired: the malware families are the real groups, and the release cannot recover them (SPLIT-25).** Marker `Data Quality Issue`, as for maternal_health_risk and hazelnut_spread_contaminant_detection; `Selection Bias` stays as a concern flag, since a selection does not retire a dataset by itself (selection.md).
+- A few AMD families make up most of the malware (Airpush alone is 32% of AMD's samples, 23 families hold 95.5%), and the variants of one family request nearly the same permissions, so a random split puts siblings of almost every test malware app in training. A model then scores by recognising a family it has seen, and a detector's value lies in the families it has not seen.
+- The UCI file has no hash, package name or family, and grouping on the permission set is barred (SPLIT-24), so no split holds families out.
+- The two collections of different periods (`Selection Bias`) and the exact lookup (fixable by dropping the repeated sets, issue 1 b) are not the reason.
+
 ## Review
 
 **Outcome:** added. UCI's NATICUSdroid data (Mathur et al. 2021): Android apps of 2010-2019 described by 85 declared
@@ -82,8 +88,9 @@ to 0.979 (random forest), logistic regression 0.981; close to the ceiling, but t
 of the best (2026-10-06). Quality: nothing beyond the issues. Weighed: a documented malware set with permissions a
 store sees before install (+), a leak we made and can undo (-), classes that look collected apart (-).
 
-**Main points:** Retired on 2026-11-13 (issue 1, e): `No (Retired)` with `Selection Bias`, because the two
-collections of different periods and the family siblings cannot be separated without app ids or dates;
+**Main points:** Retired on 2026-11-13 (issue 1, e), the reason restated on 2026-11-16 (Lennart): the malware
+families are the real groups, test malware has family siblings in training, and the release cannot recover the
+families (SPLIT-25, marker `Data Quality Issue`); `Selection Bias` stays as a concern flag;
 `kronodroid_android_malware` is the dated replacement candidate. The folder leaves in a retirement PR. Issues 2-4
 settled: `Selection Bias` with an approximate fit (2), a `Snapshot` of 2010-2019 (3), `Samples: Over Time` with
 `Time: Lost` (4). Not rebuilt.
@@ -427,6 +434,12 @@ or `domain`; the definition's values can be filled in without a mark.
    CC line names `kronodroid_android_malware` (78,137 apps of 2008-2020 with per-app dates and 240 families) as the
    dated replacement candidate. The folder and `v2_path` stay until a retirement PR removes them; the claim stays.
    Split and metric marked ok. Not rebuilt.
+
+   **Restated (2026-11-16, Lennart):** retired under SPLIT-25: the malware families are the real groups (test malware
+   has family siblings in training, so a model scores by recognising families it has seen), and the release cannot
+   recover them. Marker `Data Quality Issue` added, as for maternal_health_risk and
+   hazelnut_spread_contaminant_detection; `Selection Bias` stays as a concern flag, since a selection does not retire
+   a dataset by itself (selection.md).
 
 2. **Mark the classes as collected apart, or retire the dataset for data with dates?**
 

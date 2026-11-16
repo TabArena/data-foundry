@@ -304,7 +304,9 @@ data (Lennart, 2026-10-27). `eryhemato_squamous_disease` is the example: 93% of 
 lesions and no other patient does, against 19% to 63% in clinic series; kept, with an approximate fit. A selection does
 not retire a dataset by itself: early_stage_diabetes_risk_prediction (patients of a diabetes hospital, 69% diabetic) was
 retired because no testing decision is made from its symptoms (USE-2, USE-8), and its `Selection Bias` marker stays
-(Lennart, 2026-11-11).
+(Lennart, 2026-11-11). naticusdroid_android_permissions_dataset (benign and malware apps from two collections of
+different periods) was retired because the release cannot recover its malware families (SPLIT-25), and keeps its
+`Selection Bias` marker too (Lennart, 2026-11-16).
 
 No marker when:
 
