@@ -23,7 +23,7 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.1038/s41597-025-05633-1
 - https://doi.org/10.5281/zenodo.11467483
-v2_path: datasets/_dev/tabarena-v0pt2/fugaku_hpc_job_failure_1m/dataset.py
+v2_path: datasets/_dev/tabarena-v0pt2/fugaku_hpc_job_failure/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -84,6 +84,8 @@ CC (2026-11-05, Myunghwan): the declared metric roc_auc is checked as the unchan
 **Assessment (AI, 2026-11-06):** review panel (focused): retain the accepted task and decisions under the reviewed source; disputed: none; for the curator: no new issues (IDs1–3 remain resolved). Current claim/precedent audits, mediator and cold editor confirm that source9048f36a matches the actual upstream source used in the completed November5 cycle. Full data/category/membership/spec/version identity and all six scorer comparisons pass under the reviewed runtime; checksum remainsb655fe6b…. Prior actual-data/model/column/split audits are explicitly reused, not relabelled as fresh scans. Source-defined class words, predictor scope, formal SPLIT-10 exception, approximate fit/Selection Bias and the required first-tuned-benchmark recheck remain unchanged. Original source-bound human stores are preserved; no new metric/ship mark or source binding is invented. Priority 3 retained: gap0, use case+1, source+1, shape+1, risk−1, with the same measured support and accepted qualifications.
 
 **Compatibility follow-up (AI, 2026-11-16):** The accepted 1M/500k caps remain unchanged. Current main rejects a custom `_make_splits` on a collection-budgeted `_1m` definition, and its temporal sampler now requires a budget and retains full training history. Migration, selected-vector preparation and requalification remain open before a new build. The historical review, inclusion decision and build evidence are preserved; this rebase does not grant a new scientific exception.
+
+**Assessment (AI, 2026-11-16; compatibility repair):** Use the plain definition name `fugaku_hpc_job_failure` for the already approved custom capped temporal protocol. The `_1m` suffix now selects automatic collection sampling, which retains full training history and is incompatible with custom splits. Preserve the accepted capped-training draw explicitly, then use the current test-sampling API. This is a compatibility repair, without changing target, inputs, metric, temporal windows, label-availability filtering or intended row membership. Historical build/source identities remain preserved; fresh build and exact data/split comparisons are recorded separately when complete.
 
 ## Review
 

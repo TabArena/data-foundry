@@ -15,6 +15,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    RowBudget,
     Source,
     SplitPlan,
     TaskSummary,
@@ -22,6 +23,9 @@ from data_foundry.v2 import (
     TemporalSplits,
 )
 from data_foundry.v2.splits import sample_temporal_splits
+
+TRAIN_CAP = 1_000_000
+TEST_CAP = 500_000
 
 RAW_FILES = {
     "21_03.parquet": (458006207, "012dd8d987585d898e5083416e563988"),
@@ -65,7 +69,7 @@ RAW_FILES = {
 }
 
 
-class FugakuHpcJobFailure1m(AbstractCuratedDataset):
+class FugakuHpcJobFailure(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a submitted Fugaku job terminate with a nonzero exit code?",
         use_case=(
@@ -101,7 +105,7 @@ class FugakuHpcJobFailure1m(AbstractCuratedDataset):
         ),
     )
 
-    unique_name = "fugaku_hpc_job_failure_1m"
+    unique_name = "fugaku_hpc_job_failure"
     sources = (
         Source(
             role="publication",
@@ -224,6 +228,7 @@ class FugakuHpcJobFailure1m(AbstractCuratedDataset):
         "source_metadata.parquet",
         "selection_membership.parquet",
     )
+    # A plain name keeps this custom, curator-approved capped protocol outside automatic version sampling.
     splits_comment = """
         Three four-month test windows walk backward from the latest source month; training is the earlier history,
         with at least 50% of full-source rows before the oldest window. End time must precede each window's start
@@ -360,7 +365,29 @@ def _select_temporal(meta: pd.DataFrame, windows: TemporalSplits) -> tuple[pd.Da
         )
         splits[repeat][0] = (train[known], test)
     assert min(w["train_after_maturity"] for w in report) >= len(meta) * 0.5
-    selected, splits, trimmed = sample_temporal_splits(meta, splits, stratify_on="exit state")
+    # Apply the approved class-proportional train cap after maturity filtering, on the full source denominator.
+    train_trimmed = False
+    rank = np.random.default_rng(4267).permutation(len(meta))
+    labels = pd.factorize(meta["exit state"].to_numpy())[0]
+    for folds in splits.values():
+        for fold, (train, test) in folds.items():
+            positions = np.asarray(train)
+            if len(positions) > TRAIN_CAP:
+                train_trimmed = True
+                classes, counts = np.unique(labels[positions], return_counts=True)
+                exact = counts * TRAIN_CAP / len(positions)
+                quotas = np.floor(exact).astype(int)
+                quotas[np.argsort(quotas - exact, kind="stable")[: TRAIN_CAP - quotas.sum()]] += 1
+                kept = []
+                for label, quota in zip(classes, quotas, strict=True):
+                    members = positions[labels[positions] == label]
+                    kept.append(members[np.argsort(rank[members], kind="stable")[:quota]])
+                positions = np.sort(np.concatenate(kept))
+            folds[fold] = (positions, test)
+    selected, splits, trimmed = sample_temporal_splits(
+        meta, splits, RowBudget(train=TRAIN_CAP, test=TEST_CAP), stratify_on="exit state"
+    )
+    trimmed |= train_trimmed
     roles = np.zeros(len(selected), dtype=np.uint8)
     for repeat, folds in splits.items():
         train, test = folds[0]
