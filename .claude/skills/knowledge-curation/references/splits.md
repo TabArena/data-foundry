@@ -182,10 +182,15 @@ later period, at a known group or at all groups at once; where the label still m
    probe and the target by period answer it.
    * **No:** the use case scores units later than the data, and the target and its relation to the features are flat
      across periods, measured on a dated source, so a temporal split costs nothing. That is a `StationaryRelation`,
-     and its line gives the measurement (thyroid_discordant: requests dated through the parent archive, a flat
-     discordant share over 1985, monthly windows scoring like random folds). It holds whether the target is measured
-     with the features (a diagnosis at the visit) or later; when the target arrives is a collection fact, not a
-     prototype. It is always measured; where time is lost it cannot be, and the next branch applies.
+     and its line gives the measurement (bad_customer_detection: twelve months of loans in file order, a flat bad
+     rate, chi-squared p = 0.35, and monthly windows scoring like random splits of the same sizes). It holds whether
+     the target is measured with the features (a diagnosis at the visit) or later; when the target arrives is a
+     collection fact, not a prototype. It is always measured, over the longest span the source or a parent source
+     covers: one year can look flat where a longer span moves. thyroid_discordant's 1985 extract had a flat
+     discordant share and monthly windows scoring like random folds, but its parent archive of 1984 to 1987 shows the
+     share at 4.4% in 1986Q3 against 1.3% to 2.8% in the other quarters, and fewer tests ordered from late 1985, so
+     thyroid_discordant_archive ships temporal (Lennart, 2026-11-16). Where time is lost it cannot be measured, and
+     the next branch applies.
    * **Yes, and the time is dated or inferred:** the split is temporal (SPLIT-7, SPLIT-14).
    * **Yes or unmeasured, and the time is lost or too short for three windows:** the split is forced (SPLIT-8):
      `ForcedIIDFromTemporal`, or `ForcedGroupedFromTemporal` when the entities recur. It ships after SPLIT-8's leak
@@ -208,8 +213,9 @@ split.
 Why: the same split can stand for the use case or flatter it, depending on how the data arrived; recording the
 collection facts and the prototype makes that visible. Cases: the arrival study of the 177 v0.2 definitions
 (2026-11-04) and the review of 98 of them (2026-11-06) are the evidence; examples are credit_card_clients_default and
-framingham_heart_study_fhs (`DelayedTarget`), houses and 5g_energy_consumption (`Retrospective`), thyroid_discordant
-(`StationaryRelation`, measured), musk (`Timeless`), heart_disease (`UnseenGroup`), heloc (`ForcedIIDFromTemporal`).
+framingham_heart_study_fhs (`DelayedTarget`), houses and 5g_energy_consumption (`Retrospective`),
+bad_customer_detection (`StationaryRelation`, measured; thyroid_discordant's one-year extract looked so too, its
+1984-1987 archive did not), musk (`Timeless`), heart_disease (`UnseenGroup`), heloc (`ForcedIIDFromTemporal`).
 
 ### Temporal tasks
 
