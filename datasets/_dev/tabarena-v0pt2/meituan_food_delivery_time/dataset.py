@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     SplitPlan,
     TaskSummary,
     Temporal,
@@ -40,25 +41,30 @@ class MeituanFoodDeliveryTime(AbstractCuratedDataset):
         fit_reason="The challenge names delivery timing prediction. Inputs describe the order by acceptance without the platform's blackbox forecasts. Only delivered orders have labels. Eight days in one city limit generalization; prebooked orders can have long known waits. The recorded promise is an external reference with unverified snapshot timing, not a predictor.",
     )
     unique_name = "meituan_food_delivery_time"
-    year = "2024"
-    domain = "business & marketing"
-    source = "GitHub"
-    source_url = "https://github.com/meituan/Meituan-INFORMS-TSL-Research-Challenge"
-    license = "CC BY-NC 4.0; source additionally requests permission before redistribution"
-    data_tags = ("Spatial",)
-    download_description = """
-        mkdir -p local-data-warehouse/meituan_food_delivery_time/raw
-        curl -L https://raw.githubusercontent.com/meituan/Meituan-INFORMS-TSL-Research-Challenge/1f9b4288cee5a78d1e5da007fc306bbaa662fc6d/all_waybill_info_meituan_0322.csv.zip -o local-data-warehouse/meituan_food_delivery_time/raw/all_waybill_info_meituan_0322.csv.zip
-        # ZIP SHA256: 38b51431a12dd7e73deb4fc750b1275067fbc29cfce2c4b4492339738c988ce2
-        unzip -n local-data-warehouse/meituan_food_delivery_time/raw/all_waybill_info_meituan_0322.csv.zip -d local-data-warehouse/meituan_food_delivery_time/raw
-    """
-    bibtex = r"""
+    sources = (
+        Source(
+            role="publication",
+            platform="GitHub",
+            url="https://github.com/meituan/Meituan-INFORMS-TSL-Research-Challenge",
+            license="CC BY-NC 4.0; source additionally requests permission before redistribution",
+            year="2024",
+            bibtex=r"""
         @misc{meituan2024,
           author = {Zhao, Lei and Wang, Hai and Liang, Yile and Li, Donghui and Zhao, Jiuxia and Ding, Xuetao and Hao, Jinghua and He, Renqing},
           title = {The First INFORMS TSL Data-Driven Research Challenge: Background and Data Description},
           year = {2024},
           howpublished = {\url{https://github.com/meituan/Meituan-INFORMS-TSL-Research-Challenge}}
         }
+    """,
+        ),
+    )
+    domain = "business & marketing"
+    data_tags = ("Spatial",)
+    download_description = """
+        mkdir -p local-data-warehouse/meituan_food_delivery_time/raw
+        curl -L https://raw.githubusercontent.com/meituan/Meituan-INFORMS-TSL-Research-Challenge/1f9b4288cee5a78d1e5da007fc306bbaa662fc6d/all_waybill_info_meituan_0322.csv.zip -o local-data-warehouse/meituan_food_delivery_time/raw/all_waybill_info_meituan_0322.csv.zip
+        # ZIP SHA256: 38b51431a12dd7e73deb4fc750b1275067fbc29cfce2c4b4492339738c988ce2
+        unzip -n local-data-warehouse/meituan_food_delivery_time/raw/all_waybill_info_meituan_0322.csv.zip -d local-data-warehouse/meituan_food_delivery_time/raw
     """
     curation_comments = """
         - Prediction point: immediately after courier acceptance. This is an ETA update, not pre-assignment prediction.

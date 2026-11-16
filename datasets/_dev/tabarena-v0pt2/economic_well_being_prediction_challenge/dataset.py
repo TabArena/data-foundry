@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     SplitPlan,
     TaskSummary,
     Temporal,
@@ -71,11 +72,25 @@ class EconomicWellBeingPredictionChallenge(AbstractCuratedDataset):
     )
 
     unique_name = "economic_well_being_prediction_challenge"
-    year = "2021"
+    sources = (
+        Source(
+            role="publication",
+            platform="Zindi",
+            url="https://zindi.world/competitions/aims-data-science-hackathon",
+            license="CC BY-SA 4.0",
+            year="2021",
+            bibtex=r"""
+        @misc{Zindi2021EconomicWellBeing,
+          author = {{Zindi} and {AIMS} and {Microsoft}},
+          title = {AIMS Data Science Hackathon and Economic Well-Being Prediction Challenge},
+          year = {2021},
+          howpublished = {\url{https://zindi.world/competitions/aims-data-science-hackathon}},
+          note = {Public Economic Well-Being challenge rerun on Zindi}
+        }
+    """,
+        ),
+    )
     domain = "social science"
-    source = "Zindi"
-    source_url = "https://zindi.world/competitions/aims-data-science-hackathon"
-    license = "CC BY-SA 4.0"
     data_tags = ("Spatial",)
     download_description = """
         Obtain Train.csv from the Economic Well-Being Prediction Challenge data page:
@@ -86,15 +101,6 @@ class EconomicWellBeingPredictionChallenge(AbstractCuratedDataset):
         Login or acceptance of the source terms may be needed. An independent publisher checksum is unavailable.
         No other competition files are read. The original AIMS task and the public rerun describe the same task;
         no byte-for-byte comparison against the original AIMS download has been made.
-    """
-    bibtex = r"""
-        @misc{Zindi2021EconomicWellBeing,
-          author = {{Zindi} and {AIMS} and {Microsoft}},
-          title = {AIMS Data Science Hackathon and Economic Well-Being Prediction Challenge},
-          year = {2021},
-          howpublished = {\url{https://zindi.world/competitions/aims-data-science-hackathon}},
-          note = {Public Economic Well-Being challenge rerun on Zindi}
-        }
     """
     curation_comments = """
         We start with the curator-provided Train.csv from Zindi's Economic Well-Being Prediction Challenge.

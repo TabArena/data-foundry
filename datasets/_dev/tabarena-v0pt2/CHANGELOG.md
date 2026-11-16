@@ -1,5 +1,21 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-16: PR59 rebased onto current main (Myunghwan)
+
+- Rebase the existing draft onto `aaf96ffbb`, retaining the seven accepted datasets, six deferrals, QoS rejection
+  and November 12 SuperLender redistribution exclusion. Preserve both sides of shared documentation conflicts.
+- Move the seven full reviews into their curation records with the maintained migration script. Preserve every
+  issue, curator turn and panel response; remove the folder copies. Move legacy provenance fields into `Source`
+  declarations, retaining their literal values. Clear the rejected SuperLender record's priority and keep its
+  historical metric exception in the current Cases-table vocabulary.
+- Keep the historical build UUIDs/checksums and original source/build commits. Mark the generated cards stale;
+  no data build, model fit or claim change is performed. Raw inputs removed by the November 12 retention cleanup
+  are not claimed to have been rechecked.
+- The accepted Duolingo and Fugaku training caps remain unchanged. Current main's full-history budget protocol
+  needs separate migration/requalification: Fugaku's custom `_1m` declaration is rejected, Duolingo's legacy
+  sampler call and variant pointer require repair. These are open compatibility gates, not new curator decisions
+  or accepted exceptions. Keep the PR draft until they are resolved.
+
 ## 2026-11-12 (SuperLender excluded from redistributable contribution)
 
 - Myunghwan rejected `loan_default_prediction_challenge` for this release: the original DSN/Zindi challenge Rules / Datasets and packages prohibit redistribution to nonparticipants, including public GitHub/Kaggle uploads. Source: https://zindi.world/competitions/data-science-nigeria-challenge-1-loan-default-prediction (checked 2026-11-12). No applicable source-owner permission is established; a participant copy does not grant it.

@@ -4,7 +4,7 @@ name: loan-default-prediction-challenge
 checked_by:
 - Myunghwan
 suggestion: 'No'
-priority: 2
+priority: null
 collections:
 - New (BeyondArena)
 original_source: Zindi

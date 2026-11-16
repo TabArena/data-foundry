@@ -15,6 +15,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    Source,
     SplitPlan,
     TaskSummary,
     Temporal,
@@ -101,17 +102,27 @@ class FugakuHpcJobFailure1m(AbstractCuratedDataset):
     )
 
     unique_name = "fugaku_hpc_job_failure_1m"
-    version_of = "fugaku_hpc_job_failure"
-    version_comment = (
-        "The native class-stratified temporal budget keeps up to 1M training and 500k test rows per window, "
-        "using the default seed 4267 over the full eligible history. Only the selected union's embeddings are "
-        "materialized to bound memory; _make_splits redoes selection on full-source metadata and verifies membership."
+    sources = (
+        Source(
+            role="publication",
+            platform="Other",
+            url="https://doi.org/10.5281/zenodo.11467483",
+            license="CC BY 4.0",
+            year="2024",
+            bibtex=r"""
+        @dataset{Antici2024FData,
+          author = {Antici, Francesco and Bartolini, Andrea and Domke, Jens and Kiziltan, Zeynep and Yamamoto, Keiji},
+          title = {F-DATA: A Fugaku Workload Dataset for Job-centric Predictive Modelling in HPC Systems},
+          year = {2024},
+          version = {1.0},
+          publisher = {Zenodo},
+          doi = {10.5281/zenodo.11467483},
+          url = {https://doi.org/10.5281/zenodo.11467483}
+        }
+    """,
+        ),
     )
-    year = "2024"
     domain = "technology & internet"
-    source = "Other"
-    source_url = "https://doi.org/10.5281/zenodo.11467483"
-    license = "CC BY 4.0"
     data_tags = ("Anonymized",)
     download_description = """
         F-DATA v1.0 (2024-06-05), DOI 10.5281/zenodo.11467483. Download the 38 monthly Parquets from
@@ -168,18 +179,8 @@ class FugakuHpcJobFailure1m(AbstractCuratedDataset):
         framework's prepared-input cache hash. _make_splits repeats native selection against full-source metadata and
         checks exact source positions before removing lineage columns. No container is built by dataset check.
     """
-    bibtex = r"""
-        @dataset{Antici2024FData,
-          author = {Antici, Francesco and Bartolini, Andrea and Domke, Jens and Kiziltan, Zeynep and Yamamoto, Keiji},
-          title = {F-DATA: A Fugaku Workload Dataset for Job-centric Predictive Modelling in HPC Systems},
-          year = {2024},
-          version = {1.0},
-          publisher = {Zenodo},
-          doi = {10.5281/zenodo.11467483},
-          url = {https://doi.org/10.5281/zenodo.11467483}
-        }
-    """
-    curation_comments = """
+    curation_comments = (
+        """
         We start with all 38 publisher Parquets from F-DATA v1.0 (Zenodo 11467483), checked against the pinned sizes and MD5s.
 
         - Prediction point: job submission, before queue insertion, scheduling or execution.
@@ -197,6 +198,11 @@ class FugakuHpcJobFailure1m(AbstractCuratedDataset):
         - Maturity qualification (2026-11-03): the full 25,866,900-row interval audit and all three exact 1M training sides pass recorded completion strictly before refit; 10,387/48,375/28,118 source outcomes are excluded at May/Sep/Jan cutoffs. Completion is a proxy for label arrival, not a verified ingestion timestamp. Near-cutoff class selection is real: before September, late-ending last-day jobs fail at 18.53% versus 0.292% among already completed jobs. A hypothetical 24h reporting delay removes 0.1049–0.1111% of each capped training side. Fixed-parameter paired diagnostics change AUC by about -0.010 for that lag and -0.0166/+0.0044/-0.0458 for a seven-day submission embargo, newest first. No gap was chosen from these held-out scores; these are bounded single-family checks, not full-budget resampling or full HPO. Keep reporting-latency and maturity sensitivity in the first-tuned-benchmark recheck. Test labels are eventual exit states; completion after a four-month submission window is legitimate, and all recorded source ends precede release publication.
         - Sampling: native class-proportional sampling is applied on the full-source metadata after each cutoff's training-label availability filter, never on the reduced union. It keeps at most 1M training and 500k test records per window, without balancing classes. Metadata source positions map the selected vectors exactly; _make_splits recomputes membership and removes all lineage columns before models.
     """
+        + "\n"
+        + "The native class-stratified temporal budget keeps up to 1M training and 500k test rows per window, "
+        "using the default seed 4267 over the full eligible history. Only the selected union's embeddings are "
+        "materialized to bound memory; _make_splits redoes selection on full-source metadata and verifies membership."
+    )
 
     target = "exit state"
     problem_type = "binary_classification"
