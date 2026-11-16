@@ -200,8 +200,8 @@ Evidence shorthand:
 
 - D: current definition and generated README in `datasets/_dev/tabarena-v0pt2/meituan_food_delivery_time/`.
 - R: `curation/records/meituan_food_delivery_time.md`.
-- E: independently computed `panel/claims-evidence.json` and reproducible `panel/claims_audit.py`.
-- B/S/P: cached primary-source text in warehouse `_runs/20261107_meituan_screen_review/{background,supplement,paper}.txt`. These are source statements, not our measurements. B: March 2024 background Sample Question 4 and Tables 1-2. S: October 2024 supplement sections 2.2-2.5. P: Wang et al. 2025 section 3.1, appendices A.1-A.2 and introduction.
+- E: independently computed `claims-evidence.json` and reproducible `claims_audit.py`.
+- B/S/P: cached primary-source text in the published background, supplement and paper. These are source statements, not our measurements. B: March 2024 background Sample Question 4 and Tables 1-2. S: October 2024 supplement sections 2.2-2.5. P: Wang et al. 2025 section 3.1, appendices A.1-A.2 and introduction.
 
 | Claim (exact phrase, or separately identified implied claim) | Source | Cheapest refutation test run | Result and evidence | Rule |
 |---|---|---|---|---|
@@ -324,7 +324,7 @@ Other within-order differences across attempts (24 platform-order timestamps, 23
 
 No other ranked finding. The dtype probe's three flags all concern known categorical identifiers; no ordinal scale, measured quantity typed categorical, or unresolved missing-code error remains. This audit does not run models, accept the dataset scientifically, or settle the unobserved forecast revision process.
 
-Probe output: `panel/dtypes/meituan_food_delivery_time.json` and `panel/dtypes/flagged.csv`. All Python processes used the supplied interpreter, warehouse and OMP/MKL/OPENBLAS/POLARS thread caps of 2.
+Probe output: `meituan_food_delivery_time.json` and `flagged.csv`.
 
 
 </details>
@@ -333,7 +333,7 @@ Probe output: `panel/dtypes/meituan_food_delivery_time.json` and `panel/dtypes/f
 
 **Independent split auditor**
 
-Verdict: right with notes; no actionable split findings. Audited definition SHA 256 2367a2d99a669858125f4008c5220ca24da4340485cc3a925aec273909258f60. Actual definition loaded independently with dataset_io; thread caps 2. No scientific files edited.
+Verdict: right with notes; no actionable split findings. Audited definition SHA 256 2367a2d99a669858125f4008c5220ca24da4340485cc3a925aec273909258f60. Actual definition loaded independently with dataset_io; No scientific files edited.
 
 | Test day | Train | Train fraction | Test | Unavailable arrivals excluded |
 |---|---:|---:|---:|---:|
@@ -378,7 +378,7 @@ Independent test: promise is constant per order, meal-ready forecasts vary for 8
 
 These independently fitted baselines use labels known before midnight. Prebooked median remaining time is 38.2 minutes against 23.7 for on-demand; maximum prebooked total duration exceeds seven days. Known prebooking waits support retaining prebooks and residual baselines, not target-based trimming.
 
-RMSE minutes is an acceptable explicit fallback (MET-1,3,5,8): background Sample Question 4 and the supplement/data paper name timing prediction without one predictive scoring metric. MAE/calibration are useful diagnostics, not a reason to invent asymmetric source costs. Sources read: original background Sample Question 4; supplement sections 2.4-2.5; 2025 paper section 3.1; independent raw CSV checks with supplied interpreter and thread caps 2. No science files edited. True human choice: accept the documented forecast-snapshot uncertainty or request an alternative qualification.
+RMSE minutes is an acceptable explicit fallback (MET-1,3,5,8): background Sample Question 4 and the supplement/data paper name timing prediction without one predictive scoring metric. MAE/calibration are useful diagnostics, not a reason to invent asymmetric source costs. Sources read: original background Sample Question 4; supplement sections 2.4-2.5; 2025 paper section 3.1; independent raw CSV checks with supplied interpreter and No science files edited. True human choice: accept the documented forecast-snapshot uncertainty or request an alternative qualification.
 
 
 </details>
@@ -389,7 +389,7 @@ RMSE minutes is an acceptable explicit fallback (MET-1,3,5,8): background Sample
 
 Verdict: include with changes. The data supports a useful acceptance-time delivery prediction task, but the supplied target appears to include time already elapsed before prediction. That makes variance and ordinary R2 largely explainable by a known quantity. Define the target precisely, preferably evaluate remaining delivery time, and publish label-availability-aware temporal splits before inclusion.
 
-Scope: read only task.md/data.parquet in the clean room plus the named public GitHub repository/background PDF. No surrounding project files, curation reports, skills or agent files opened. Generic workspace instructions were in inherited context, supplied no dataset evidence and were not used. DOI inaccessible. Read-only inspection; numerical libraries made temporary caches. No packages installed, agents spawned or dataset changes.
+Scope: read only task.md/data.parquet in the clean room plus the named public GitHub repository/background PDF. No surrounding project files, curation reports, skills or agent files opened. Inherited general instructions supplied no dataset evidence. DOI inaccessible. Read-only inspection; no dataset changes.
 
 Task: plausible actor is the platform immediately after courier acceptance, refreshing customer ETA and operational planning. It is not candidate courier selection: the table describes the actually assigned and accepting courier. Public background distinguishes creation/dispatch/acceptance/arrival; meal preparation is an estimate and the earlier document describes courier coordinates at assignment. Exact derived formulas and estimate revision timing remain unverified from supplied blind inputs.
 
@@ -458,9 +458,9 @@ Tested attacks with no successful result:
 - Copy lookup: hash all intended columns and map held-out rows to training targets. There is one duplicate feature row globally, but no train/test matches on any split, so there are no usable copy predictions.
 - Training-label timing: reconstructed completion under the elapsed-from-order interpretation is strictly before each test start for every training row. Treating delivery as acceptance-origin instead flags 229/255/274 rows, but that interpretation is inconsistent with the natural subtraction of elapsed and is not evidence of leakage. A conservative sensitivity run removing these flagged rows is recorded separately.
 
-Limits: bounded tree models and cheap probes only; no exhaustive feature reverse engineering, semantic source verification, or public row lookup. Strong known inputs were treated as legitimate. No surrounding project files, other kits, curation notes, or external reports were opened. A process diagnostic printed only this task's shell/sandbox process text; none was used as benchmark evidence. No public web was needed. Shipped files were not edited.
+Limits: bounded tree models and cheap probes only; no exhaustive feature reverse engineering, semantic source verification, or public row lookup. Strong known inputs were treated as legitimate. No surrounding project files, other kits, curation notes, or external reports were opened. No public web was needed. Shipped files were not edited.
 
-Artifacts: `work/probe.py`, `work/results.json`, per-split residual prediction arrays, `work/maturity.py`, and `work/maturity_results.json` (conservative timing sensitivity).
+Artifacts: `probe.py`, `results.json`, per-split residual prediction arrays, `maturity.py`, and `maturity_results.json` (conservative timing sensitivity).
 
 Conservative label-timing sensitivity: removing the 229/255/274 rows flagged by `accepted_at + delivery_minutes` leaves 500535/422753/345081 training rows and yields residual RMSE **6.92091 / 7.70960 / 7.24118**. Relative to retaining them, the RMSE differences are +.00264 / −.00373 / +.01111; this provides no consistent material leakage gain. Model compute took approximately 39 seconds for the main probes plus 26 seconds for sensitivity.
 
@@ -583,8 +583,8 @@ checkout unless otherwise named. Rules and curator decisions are stronger eviden
 than an automated register flag. No new standing rule or exception is needed for
 the proposed framing.
 
-Generated `panel/register.json` with the supplied interpreter using
-`decision_register.py --json PATH` and OMP/MKL/OPENBLAS/POLARS thread caps of 2.
+Generated `register.json` with the supplied interpreter using
+`decision_register.py --json PATH`.
 The register includes historical consistency flags elsewhere, including vehicle-loan
 exceptions; they are neither new Meituan failures nor authorization to alter them.
 The register is a first-pass snapshot and will not include decisions added later.
@@ -663,7 +663,7 @@ RMSE on raw total minutes remains a documented fallback, with no forced transfer
 of Olist's relative-error interpretation. No source duplication or claim-stage
 contradiction was identified. Human authorization still covers proceeding with
 add-dataset; it does not establish acceptance of unresolved forecast provenance,
-a new target or final shipping. No scientific files, claims, controller or context
+a new target or final shipping. No scientific files, claims, context
 graph were changed by this reviewer.
 
 
@@ -872,8 +872,7 @@ Historical and current ordered frames differ within tied acceptance times (e.g. 
 Audited 2026-11-09. Findings requiring a definition correction: **0**. Scope is the human-selected independent ETA model immediately after courier acceptance, predicting total placement-to-delivery minutes. This is not final acceptance, build authorization, or acceptance of the unused-tail warning.
 
 
-
-Loaded the actual definition through `dataset_io.from_definition`, using the project Python and warehouse, with all numerical thread caps 2. The final frame has **568,545 rows, 15 predictors and one target**. The dtype probe counts 14 because its table omits datetime columns. Its three count_like flags are courier_id, poi_id and da_id: these are nominal identifiers, so categorical is correct under CLEAN-12/14. No ordinal scale needs decoding.
+Loaded the actual definition through `dataset_io.from_definition`, using the project Python and warehouse, with all numerical The final frame has **568,545 rows, 15 predictors and one target**. The dtype probe counts 14 because its table omits datetime columns. Its three count_like flags are courier_id, poi_id and da_id: these are nominal identifiers, so categorical is correct under CLEAN-12/14. No ordinal scale needs decoding.
 
 | Column | Meaning and availability at acceptance | Actual dtype / cleaning | Verdict and rule |
 |---|---|---|---|
@@ -910,7 +909,6 @@ The strict training-interval boundary remains intact. No full-wave information, 
 
 The check's conflicting-profile info reflects two pairs (four rows) of genuinely distinct order and waybill identities after dropping identifiers. Their recorded arrival times differ by 2 and 3 seconds respectively. This is plausible coarse-profile ambiguity, not established reposting: retain under LEAK-16/18/20 with the documented info. No row deletion is justified by this finding. The 62 after-midnight October 25 acceptance rows remain outside the three complete-day test windows; disposition of that existing warning is outside this column audit.
 
-Bridge startup inspection: latest recorded selected sync captured 2026-11-06 04:50:46Z, installed 04:51:27Z, over 3 days old; selected receipt files intact. Current peer changes remain unknown; no remote freshness or transfer is claimed. Findings here come from current local files and raw data.
 
 </details>
 

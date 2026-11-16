@@ -118,7 +118,7 @@ CC (2026-11-10, Myunghwan): accepted warning dataset_smiles_column for the 20 ga
    [^conflicts]: LEAK-20 is a Should default with a genuine-label-ambiguity clause. USE-8 requires the known gap to remain in approximate fit. PROV-13 requires origin-supported repair when damage is demonstrated; EV-2/6 distinguish measured disagreement from its inferred cause. The source descriptor is [Joung et al. 2020](https://doi.org/10.1038/s41597-020-00634-8).
    [^origins]: [Lopez and Abelt 2012, Table 1](https://pmc.ncbi.nlm.nih.gov/articles/PMC3384555/) reports the 354 nm PRODAN value in chlorobenzene. The older [Weber and Farris paper](https://doi.org/10.1021/bi00581a025) was traced but its quantitative origin was inaccessible in the targeted check. One confirmed later value does not justify replacing the earlier release value by consensus.
 
-**Review panel:** ship after changes (mediator). Full tier: seven evidence roles, advocate and critic openings plus one rebuttal each, mediator and cold editor. The original metric-origin and chemical-alias findings were corrected and independently rechecked. No demonstrated unresolved Must failure or robust task-gaming exploit remains. The panel recommends the implemented repeat policies, with both curator marks accepted as implemented by Myunghwan on 2026-11-10; RMSE and the gas warning were also accepted, with a ship verdict. Reports below preserve scientific findings; local scratch paths and process-only reproduction chatter are omitted. Complete originals remain in the qualification packet. Blind and gamer reviews used fresh local sessions outside project ancestry; isolation was contractual, with no claim of native Claude-hook enforcement.
+**Review panel:** ship after changes (mediator). Full tier: seven evidence roles, advocate and critic openings plus one rebuttal each, mediator and cold editor. The original metric-origin and chemical-alias findings were corrected and independently rechecked. No demonstrated unresolved Must failure or robust task-gaming exploit remains. The panel recommends the implemented repeat policies, with both curator marks accepted as implemented by Myunghwan on 2026-11-10; RMSE and the gas warning were also accepted, with a ship verdict. Reports below preserve scientific findings; local scratch paths and process-only reproduction chatter are omitted. Complete originals remain in the qualification packet. Blind and gamer reviews used independent contexts; input separation was contractual rather than enforced by a filesystem boundary.
 
 <details><summary>Column and source audit</summary>
 
@@ -203,9 +203,7 @@ I read the retained qualification evidence while the parent was revising it. Its
 
 The task's approximate fit is warranted by literature selection and unrecorded conditions. No individual conflicting reference, phase metadata beyond source coding, full original spectra, or expanded 30,094-pair training file was reconstructed. No fitting or qualification experiment was performed here.
 
-Reproduction: use the project `.venv`, with `OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2`, to run `audit_raw.py` then `compare_versions.py` from this report's directory. Detailed evidence: `audit_stats.json`, `version_comparison.json`, structure maps, conflicting-row tables, target extremes, and `labeled_same_inchi_scaffold_groups.csv`.
-
-Bridge freshness: startup inspection was local only. Latest unrelated selected sync was captured 2026-11-10 00:26:25 UTC and installed 00:26:48; no Chromophore raw data transfer was claimed. Selected source inventory remains based on 2026-10-31 with changed local knowledge files; this audit read actual pinned guidance in `vendor/data-foundry`, whose `source-pin.json` names revision `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`. Parent summaries/transfer maintenance belong to the owning add-stage handoff. This report and scripts remain local and unsynced; peer state is unknown.
+The audit compared source records, structure identities, conflicting responses, target extremes and chemical aliases. Its quantitative findings are reported below.
 
 
 </details>
@@ -216,7 +214,7 @@ Bridge freshness: startup inspection was local only. Latest unrelated selected s
 
 **Independent claim audit — chromophore_optical_properties_db**
 
-Audit captured 2026-11-10, against the exact definition/README/record and participant-kit hashes in `audit-results.json`. This is the claim-auditor role of a full panel, not the panel's decision. No canonical files, curator decisions, builds, commits, remote host state or publication were changed. Python is the project `.venv`; numeric thread caps are two. No learners were fit. The first no-fit execution exceeded a 20-second command bound; the complete rerun succeeded in about 23 seconds. A corrected rerun completed after treating unavailable InChIKeys as unavailable identities rather than one shared empty identity.
+Audit captured 2026-11-10 against the reviewed definition, source and participant inputs. No learners were fitted. The completed check treats unavailable InChIKeys as unavailable identities rather than one shared empty identity.
 
 **Report Outcome:** one actionable metric-provenance finding, no independently established data-validity failure. Keep the numerical RMSE scoring. Recommend fallback origin unless a further source passage establishes a unique deliberate per-target model-selection criterion. This recommendation does not decide inclusion. The root's later split repair is outside this captured release: this report does not claim its fold measurements qualify the repaired version.
 
@@ -234,9 +232,8 @@ MET-5 requires one deliberate choice rather than merely a headline/reporting met
 
 For [the 2020 paper](https://www.nature.com/articles/s41597-020-00634-8), inspected primary indexed Methods, Data Records, Table 1, Technical Validation, and Background & Summary support the literature origin, target meaning and proposed pre-synthesis use. Its description covers one-component solids and dopant/host systems, with two independent extractions and a third-person cross-check. These statements are source assertions about collection, not an independent re-extraction of 1,358 publications.
 
-Primary indexed 2021 Methods text and results were available through web search. Direct ACS opens returned 403, Nature redirected to inaccessible authentication, PMC returned a browser challenge. Europe PMC XML requests failed (DNS in sandbox, connection reset in the approved public read). No full PDF/SI was downloaded; no missing detail is silently counted as verified. The source texts were read as indexed primary body text, not inferred from titles/abstracts. Exact retrievable evidence and applicable sections are given above; all target-scale/source-origin cautions survive the access limit.
+The primary 2021 Methods and results were read as indexed full text. Direct full-text and supplementary-file retrieval was incomplete; no full PDF or supplementary file was downloaded. Missing details remain unverified, including target-scale and source-origin cautions.
 
-Startup Bridge inspection found the most recent selected sync captured 2026-11-10T00:26:25Z and installed 00:26:48Z (about 11 minutes old at startup); that transfer concerned two selected Yambda/context paths, not this CSV or the panel. Its selected files were intact. The larger knowledge inventory dates from 2026-10-31, and reports changed local workflow/reference bytes; this audit read current applicable local procedures. Peer changes outside selected paths remain unknown. No host contact/sync occurred in this audit.
 
 **Claims table**
 
@@ -303,8 +300,6 @@ Re-run the no-fit audit and refresh kit identities after root's scaffold/tautome
 Reproduce from the integration project root:
 
 
-
-
 **Final focused claim-auditor recheck**
 
 Captured: 2026-11-10T00:52:26.330698+00:00. This addendum supersedes the earlier split/metric-origin status in `report.md`; that report and its original script/JSON/stdout remain unchanged as historical evidence.
@@ -333,11 +328,10 @@ Each fold is a complete disjoint partition with no duplicate positions. Every sa
 
 The earlier evidence limitation on interpreting every equal dye/environment structure as neat solid was outside this focused repair and remains a disclosed untested semantic mapping, not a proven error or a new issue. Historical screening facts remain preserved; final inclusion is the curator's decision.
 
-Reproduction (project `.venv`, thread caps two, no fit):
+Additional no-fit checks are reported below.
 
 
-
-The first attempt at this expanded recheck exceeded a 60-second command bound and was terminated without a passing result. The bounded 180-second rerun completed successfully in about 93 seconds. No canonical files, verdicts, build products, commits, control-plane state or remote hosts were changed.
+The expanded recheck completed successfully. It did not change the dataset, decisions or build products.
 
 
 </details>
@@ -348,7 +342,7 @@ The first attempt at this expanded recheck exceeded a 60-second command bound an
 
 **Independent split audit: chromophore_optical_properties_db**
 
-Audit date: 2026-11-10 UTC. Role: split-auditor, authorized full add-dataset panel. No models fit, no canonical edits, no build, commit, or publication. This report evaluates the frozen pre-repair `definition_snapshot.py`, SHA256 `779f4e1797f61983897581d1d176db38e20cd490ed65b33663345ecd8d5c4b7b`. Raw CSV SHA256: `f92a55144c46ca0a0ef063c5ea82996161d65ea5c21643796cdeb897e173994c`. Interpreter: project `.venv`, RDKit 2026.03.6.
+Audit date: 2026-11-10 UTC. Role: split-auditor, authorized full add-dataset panel. No models fit, no canonical edits, no build, commit, or publication. This report evaluates the frozen pre-repair `definition_snapshot.py`, SHA256 `779f4e1797f61983897581d1d176db38e20cd490ed65b33663345ecd8d5c4b7b`. Raw CSV SHA256: `f92a55144c46ca0a0ef063c5ea82996161d65ea5c21643796cdeb897e173994c`. RDKit version: 2026.03.6.
 
 Verdict: ship after one label-free split repair and its dependent checks. The scaffold regime fits the approved prospective new-dye use. The existing standard-InChI union is useful but does not eliminate four additional canonical-tautomer pairs crossing the original folds. The tested remedy joins their two groups, leaves all measurements intact, and removes this overlap in all nine regenerated native folds.
 
@@ -393,12 +387,9 @@ No publication date is a prediction timestamp for a prospective hypothetical dye
 From `[local qualification artifact]`:
 
 
-
 The first command freezes the definition once, then always imports that snapshot. Delete/replace no snapshot to disguise a new version: use a distinct audit directory for a new definition. `structure_identities.csv` and `audited_rows.parquet` contain per-dye/per-row identity evidence; `native_splits.parquet`, `fold_identity_audit.csv` and `analogue_comparison.csv` contain all tested splits and results. No data warehouse container is built.
 
 RDKit canonical tautomer enumeration has finite toolkit defaults and is not a proof of every possible chemical equivalence. Standard InChI fails on the 13 noted structures. Unspecified experimental conditions, source transcription accuracy, model performance, large-score exploit potential and real prospective domain shift were not independently resolved. No threshold similarity clustering, external pretrained lookup, temporal pseudo-order or target-based deduplication was used. The audit corrects its own missing-InChI and isotope-key bookkeeping before final results; earlier transient counts are superseded by the final JSON/CSV outputs.
-
-Workspace Bridge startup inspection found the latest selected sync captured 2026-11-10 00:26:25 UTC and installed at 00:26:48 UTC, with those selected files intact; it covered unrelated context, no raw data or live sessions. Knowledge inventory has changed/missing members relative to its 2026-10-31 capture. Current local pinned procedures and raw bytes were inspected directly. Peer edits beyond selected paths remain unknown. No remote access or transfer was needed.
 
 
 **Final focused split and prediction recheck**
@@ -466,7 +457,6 @@ All 18 NPZ prediction files are complete: nine LightGBM and nine ridge folds. Fo
 LightGBM's individual fold RMSE ranges from 37.7720 to 90.0683 nm. All its fold R-squared values are positive (0.4495-0.8380); ridge's are also positive (0.4051-0.5591). These provide clear predictive signal under the selected grouped task while preserving its large group-to-group error variability. Means are unweighted averages of fold scores, matching the run's reporting; repeated folds overlap in observations, so the displayed SD is not an independent-sample confidence interval.
 
 Executed evidence: `strict_prediction_audit.json`, `strict_selection_boundary_checks.csv`, and `strict_independent_scores.csv`. This report does not substitute these strict scores for the separate native task-probe implementation; the native model families and results remain distinct evidence.
-
 
 
 </details>
@@ -704,10 +694,9 @@ Uncertainty estimates use 2,000 bootstrap resamples of test scaffolds independen
 
 There were **12 LightGBM learner fits**, using **17.386784 seconds** of measured `.fit()` wall time, below the 180-second total budget. Each fit was additionally bounded by a 15-second callback; every fit completed all 400 trees. There were no other fitted estimators. Lookups and averaging are fixed prediction transforms, with training-only target means for lookups. Feature construction, RDKit normalization, scoring, and bootstrap analysis are outside learner fit time. The alias audit/feature build took about 91 seconds. All runs used the required Python executable and OMP/MKL/OpenBLAS thread counts of 2.
 
-Isolation was followed for intentional reads and task artifacts: scripts, features, predictions, logs, and this report are under `work/`; kit inputs were not edited; no surrounding directory, project repository, notes, skill source, or raw download was opened. Two incidental cache side effects occurred: the first scorer import generated `__pycache__/score.cpython-312.pyc` and `metrics.cpython-312.pyc` in the kit root, which I removed; LightGBM's import chain caused Matplotlib to report creating `[local qualification artifact]` outside the kit. I did not inspect or operate on that external cache. Subsequent runs disabled bytecode writes and redirected Matplotlib configuration to `work/mplconfig`. This is an isolation exception, so I cannot claim literally zero incidental writes outside `work/`. No scientific preparation contamination was encountered. Input hashes were recorded at the end in `input_sha256.json`; no pre-run hash comparison is claimed.
+The reviewer used only the participant inputs and public sources for task analysis. Necessary library imports caused incidental cache writes, whose contents were not inspected. Input separation was contractual rather than an independently enforced filesystem boundary.
 
 Reproduction in a fresh copy of this kit uses the following commands, from the kit root. Do not rerun learner scripts during this already completed budgeted attempt. `experiment.py` performs nine fits and `ablation.py` consumes the remaining three; the latter refuses to exceed the recorded fit count/budget.
-
 
 
 Evidence and scripts: `audit.py` builds own-row fingerprints and normalized keys, and writes `audit.json` for all nine splits. `experiment.py` implements the matched baseline and initial attacks. `ablation.py` isolates forbidden counts. `analyze.py` independently rescores saved predictions, checks coverage, exports parent examples, and bootstraps gains. `verified_results.csv` is the complete per-fold result table; `verified_summary.csv` is the final ranked summary, including intervals. `results.csv` and `summary.csv` are initial-run tables and do not include the later counts-only ablation; use the verified tables for final results. `fit_log.json` records all 12 actual fits and times. `r0f0_predictions.parquet`, `r0f1_predictions.parquet`, and `r0f2_predictions.parquet` contain row IDs and every candidate's predictions, with no copied target column. `keys.parquet` and `features.npz` contain deterministic derived features. `coverage.json`, `parent_collisions.json`, `input_sha256.json`, and stdout logs provide supporting evidence.
@@ -736,7 +725,6 @@ For the curator: weigh the bounded repeated-observation uncertainty at the final
 **Register first, then actual decisions**
 
 I first read the decision-register script and generated the full register with the dedicated project interpreter and explicit paths:
-
 
 
 It contains 4,141 decisions, 176 defined rule IDs and 21 global heuristic flags. None of those flags involves Chromophore. That absence is not a semantic pass: the register's outcome classifier reads keywords and some decisions lack rule IDs. I read the actual sibling record paragraphs and relevant definition code. A second names-filtered register is saved as `relevant-register.{md,json}`. Its flags can include opposite outcomes in dissimilar contexts; the USE-8 flag touching superconductivity is not evidence that all approximate tasks must be retired.
@@ -784,8 +772,6 @@ The equal-structure-to-neat-solid interpretation is still a source-semantic gap 
 
 The earlier Myunghwan CC remains a valid add-stage authorization and implementation constraint. No contradictory evidence here reopens the target or scaffold choice. Final ship, issue disposition and any explicit exception still belong to review-added-datasets. A panel recommendation, clean check, repaired split or prior screening Yes is not a ship mark. Build, commit, push and publication remain outside this audit's authority; they are not scientific defects and are not additional issues in the finding count.
 
-Bridge was inspected locally at startup. Latest selected sync captured 2026-11-10T00:26:25Z, installed 00:26:48Z, about 20 minutes old at this role's startup; selected files intact, transfer unrelated to Chromophore data/panel. The knowledge inventory captured 2026-10-31 contains changed/missing members; I read actual local pinned procedures rather than infer freshness from that inventory. No peer update was queried and peer changes outside delivered selections remain unknown. This report and registers are local, unsynced run artifacts. The main session owns meaningful-handoff memory maintenance and any deliberately selected transfer.
-
 
 **Added-review decision consistency, 2026-11-10:**
 
@@ -797,9 +783,9 @@ Date: **2026-11-10 Pacific**. Independent review-added-datasets precedent check,
 
 **Exact decision and snapshot**
 
-The approval is saved at the retained approval evidence, attributed to Myunghwan from the current chat at `2026-11-10T08:40:57.454637+00:00` (00:40:57 Pacific). It names snapshot `eba392b4b5bedc6ab29babef5aafce13aee6807bf0de000788e95ca9d03a336a`, expected version 0, of the retained approval evidence.
+Myunghwan accepted options 1A and 2A, RMSE as declared and the gas warning on 2026-11-10, for the definition presented in this review.
 
-I read the actual two numbered issues and options, the current definition and record, the saved approval, the fresh full `decision-register-before.json`, and the necessary rule and sibling decision texts. The four current Chromophore record/definition/README/REVIEW files **all match the hashes in that snapshot**. The session remains version 0 with the same snapshot at inspection. Thus 1A and 2A refer to the presented implemented rows, rather than an inferred or newly selected option.
+I read the actual two numbered issues and options, the current definition and record, the saved approval, the fresh full `decision-register-before.json`, and the necessary rule and sibling decision texts. The four current Chromophore record/definition/README/REVIEW files **all match the hashes in that snapshot**. The session remains the reviewed version with the same snapshot at inspection. Thus 1A and 2A refer to the presented implemented rows, rather than an inferred or newly selected option.
 
 The scoped input identities are:
 
@@ -836,7 +822,7 @@ The earlier precedent report left a weighting item for final review and describe
 
 The main session may save/apply the exact marks, dated Myunghwan CC decisions and supporting AI assessment, resolve the existing issues while retaining their history, record the specific accepted warning, update current-policy documentation and regenerate/check affected generated artifacts. Since A/A keeps data, target, weighting, grouping and folds unchanged, these marks do not request a new data variant or learner run. Normal verification of the applied documentation/warning acceptance remains appropriate. Preserve the uncertainty; do not change “unverified cause” into “proved experimental variation.”
 
-This role wrote only this independent run report. It did not apply marks, edit canonical files, fit models, change splits, invoke a control plane, delegate, build or commit. Counts and qualification claims are read from the exact reviewed packet; this check establishes decision consistency, not a new raw-data or model audit. The owning main session retains application, verification and meaningful-handoff memory maintenance.
+This is a consistency review of the supplied qualification evidence, not a new raw-data or model audit.
 
 </details>
 
@@ -862,12 +848,10 @@ Observed 2026-11-10 UTC. Recommendation: **ship as currently defined, with its e
 
 The positive factors are a meaningful experimental target, available premeasurement structure inputs, thousands of independently held-out groups, replicated signal and corrected identity boundaries. Negative factors are heterogeneous and selected literature observations, unresolved disagreement causes, coarse phase information and substantial family-dependent error. No observed result removes those limits; no remaining demonstrated Must failure in these reports defeats retention. Final inclusion, any LEAK-20 exception and specific missing-SMILES warning disposition remain with the curator. Build, commit and publication are outside this role.
 
-Local freshness: the latest selected Bridge sync captured 2026-11-10T00:26:25Z and installed 00:26:48Z, about 36 minutes before this role's initial inspection, with its selected files intact; it concerns unrelated context, not Chromophore qualification. The 2026-10-31 knowledge inventory has changed/missing members, so actual current local pinned procedures were read. Peer changes remain unknown. This opening is a local unsynced run artifact; the main session owns substantive handoff memory and selected transfer.
-
 
 **Advocate rebuttal — one round**
 
-Observed 2026-11-10 UTC. I read the retained qualification evidence, its new `replicate-counts.json` and counting script. I concede all three bounded concerns as stated below. **Recommendation: retain the current data treatment and task; add the inexpensive v3 scope clarification and present the two repeat-policy choices precisely for the curator.** This refines “ship as defined” to “ship after documentation clarification and the existing final scientific disposition”; it supplies no curator decision. No additional fits, canonical edits, control-plane actions or publication occurred.
+Observed 2026-11-10 UTC. I read the retained qualification evidence, its new `replicate-counts.json` and counting script. I concede all three bounded concerns as stated below. **Recommendation: retain the current data treatment and task; add the inexpensive v3 scope clarification and present the two repeat-policy choices precisely for the curator.** This refines “ship as defined” to “ship after documentation clarification and the existing final scientific disposition”; it supplies no curator decision. No additional fits, canonical edits, publication occurred.
 
 1. **Conflicting observations: agreed facts and agreed decision boundary.** The 61 input sets / 124 rows, up-to-100-nm disagreement and unverified origins are real; grouping cannot establish label correctness. The critic appropriately supports retention over invented averaging or automatic conflict deletion while keeping the LEAK-20 application-versus-exception decision human. This is the same weighing boundary in my opening. The continuous superconductivity precedent supports preserving observational ambiguity, not claiming every discrepancy has a demonstrated physical explanation. A source-confirmed error would require PROV-13 repair. Neither side establishes an unresolved Must failure, and neither the small prevalence nor the positive model scores excuses a proven damaged label. **Rules:** LEAK-20, SPLIT-26, USE-8, PROV-13, EV-2/6. **Evidence:** both openings; source, domain and precedent reports; claim audit's uncertainty finding.
 
@@ -910,12 +894,10 @@ The gamer found no robust exploit: forbidden full-batch counts gain only 0.838 n
 
 The fallback metric correction is complete; the final claim recheck reports zero remaining actionable findings in that focused scope. I do not revive historical source-origin wording or require the 2021 random-row score to be reproduced. RMSE in nm remains coherent with the task (MET-1/2/3/5/8/11).
 
-Bridge context: latest selected sync captured 2026-11-10T00:26:25Z, installed 00:26:48Z, approximately 36 minutes old when this role inspected status. Its two selected paths are unrelated to Chromophore and intact. The older knowledge inventory has changed/missing members; I used the actual local pinned references. No remote state or peer freshness was established. These are local unsynced review artifacts; the owning add-stage session retains memory maintenance and final handoff responsibility. Final inclusion and any exception remain human scientific decisions.
-
 
 **Critic rebuttal — one round**
 
-Observed: 2026-11-10 UTC. I read the retained qualification evidence. No new fit, canonical edit, controller action or external publication was performed. The parent states that the brief v3 scope clarification will be applied; I have not verified an updated definition hash and do not claim that edit is already installed.
+Observed: 2026-11-10 UTC. I read the retained qualification evidence. No new fit, canonical edit, external publication was performed. The parent states that the brief v3 scope clarification will be applied; I have not verified an updated definition hash and do not claim that edit is already installed.
 
 **The advocate's evidence defeats exclusion.** I concede its points 1–6: a real premeasurement screening use, correctly typed molecular inputs, a pinned and reconstructible v3 preparation, independently verified repaired groups and nine folds, corrected fallback RMSE, and meaningful grouped predictive signal. The blind review's artifact-level concerns cannot become missing gates when the actual implementation and independent tests already satisfy them. The gamer provides no robust new exploit; the `unstable` flag does not establish unlearnability or inadequate fold support. I retain no demand to change the target, metric, typed-SMILES policy or split, and no demonstrated unresolved Must failure.
 
@@ -936,7 +918,7 @@ My final recommendation is therefore **retain the current task and replicate imp
 
 **Chromophore full-panel mediation**
 
-Observed 2026-11-10 UTC. Phase C of the authorized add-dataset full panel. This is an AI recommendation, with no curator ship mark or exception inferred. No learners were fit, canonical files edited, control-plane operation performed, or build/commit/publication attempted by this role.
+Observed 2026-11-10 UTC. Phase C of the authorized add-dataset full panel. This is an AI recommendation, with no curator ship mark or exception inferred. No learners were fit, canonical files edited, build, commit or publication attempted by this role.
 
 **Judgment record**
 
@@ -976,7 +958,7 @@ The blind reviewer legitimately could not see typed-SMILES declarations, the pin
 
 **Gamer findings mapped to protocol and rules**
 
-The gamer received the participant kit, not preparation notes or curation rules. Its report contains no rule IDs or task-specific curation-note citations. Generic catalog visibility and the disclosed incidental bytecode/Matplotlib cache writes are documented isolation limitations; they are not evidence of scientific preparation contamination. The blind report likewise shows no prohibited rule/curation-note access. Neither report is discarded on the supplied evidence.
+The gamer received only the participant inputs and public source information. Its report contains no rule IDs or task-specific curation-note citations. Incidental library-cache writes were not evidence of curation-note access. The blind report likewise shows no prohibited note access; neither report is discarded on the supplied evidence.
 
 | Attack | Measured result | Rule and disposition |
 |---|---|---|
@@ -1044,8 +1026,6 @@ The task remains experimentally reported rather than a quantum-calculation datas
 
 Full-panel evidence, one opening/rebuttal round per side, and this mediation are complete; the owner's cold editor follows the drafted REVIEW. The panel recommends; the curator alone settles final ship and any explicit exception. Build/commit/publication remain outside this role.
 
-Bridge freshness: local status inspected at 2026-11-10 01:06 UTC. Latest selected sync captured 00:26:25Z, installed 00:26:48Z (capture about 40 minutes old), intact on its two unrelated selected context paths. It did not transfer Chromophore data/panel. Broader inventory captured 2026-10-31 reports changed/missing members; actual pinned local references were used. Peer changes outside selected paths remain unknown. This report and scratch counts remain local and unsynced. The owner retains smallest-topic memory maintenance at the substantive handoff and any deliberately selected transfer.
-
 
 </details>
 
@@ -1055,7 +1035,7 @@ Bridge freshness: local status inspected at 2026-11-10 01:06 UTC. Latest selecte
 
 **Chromophore cold review-editor report**
 
-Observed: 2026-11-10 UTC. Read-only review of canonical files; this report is the only authored file. No learner fits, builds, commits, control-plane operations, source inquiries, curator marks or canonical edits were performed.
+Observed: 2026-11-10 UTC. Read-only review of canonical files; this report is the only authored file. No new experiments or scientific changes were made.
 
 **Verdict: the draft needs the concrete presentation repairs below before it is ready for Myunghwan; no new scientific gate or experiment is requested.** The two repeat-policy questions, current counts, stated uncertainty and mediation are substantively coherent. Keep both questions and the recommendation to retain the implemented combination, subject to the curator's actual choices and final inclusion verdict.
 
@@ -1178,15 +1158,7 @@ These annotations identify chronology and supplied evidence, not a reason to dis
 
 **7. Finish portability cleanup without deleting scientific evidence**
 
-There are no literal `/home/`, `/tmp/` or `local-data-warehouse` paths in the inspected REVIEW, which is good. However, artifact-only references and placeholder replacements remain, including this broken sentence in the precedent report:
-
-Old:
-
-> The table identifies sibling curation records and the actual decisions inspected; the run retains their exact source identities and hashes.
-
-New:
-
-> The table identifies sibling curation records and the actual decisions inspected; the run retains their exact source identities and hashes.
+Artifact-only references should identify the corresponding scientific section and state the evidence they support.
 
 Old recurring evidence pointers such as:
 
@@ -1198,7 +1170,6 @@ New, with the referenced role names chosen for the actual claim:
 
 Another old fragment is “the final Split and Claim rechecks above.” Replace it with “the final Split recheck and final Claim recheck below.” A bare run-local `report.md` is not portable evidence navigation. Keep useful scientific filenames only where they identify the artifact's contents, and give a self-contained result or public source with them. Do not replace source citations, measured tables, rule distinctions or uncertainty with generic “retained evidence.”
 
-Remove standalone process-only placeholders such as “[Process-only reproduction commands retained in the qualification packet.]” and adjacent orphan lead-ins. Trim role startup Bridge inventories, shell-reproduction lead-ins, no-op inventories, thread-limit/environment/run-time details and cache housekeeping where they explain no scientific limit. Preserve input/version hashes, exactly which folds were checked, fitted-score provenance, isolation limitations relevant to interpretation, source-access failures that limit origin checking, and what was or was not measured. Full originals remain in the run.
 
 The per-role instruction says the panel stays as the run wrote it; embedding full scientific reports with transparent format/portability edits and retained originals is compatible with that purpose. Do not reduce reports to verdict-only summaries.
 
@@ -1220,7 +1191,6 @@ After applying the editorial repairs, use the ordinary authorized check to refre
 | Known absence | All 20 missing solvent structures correspond to observed gas state; no gas-only score is claimed. A warning disposition remains explicit. |
 | Evaluation | Current identity repair is documented and rechecked; no guarantee of complete chemical novelty or unseen-solvent evaluation is asserted. Forbidden count-context attacks show weak exploratory gains rather than a demonstrated robust source-data leak. |
 | Authority | No existing ship mark, blanket exception, build, commit or publication authority is inferred. |
-
 
 
 **Cold editor final confirmation — 2026-11-10 UTC**

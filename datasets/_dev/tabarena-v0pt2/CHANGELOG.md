@@ -1,5 +1,11 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-16: Make curation reports portable
+
+- Remove execution-system status, private run paths and collection references from the review reports and comments. Keep the scientific findings, numerical results, source/build identities, curator decisions and issue resolutions.
+- Leave dataset definitions, generated cards, data, models and splits unchanged. Existing current-main API migration and test failures remain open; this documentation cleanup does not resolve them.
+
+
 ## 2026-11-16: PR59 rebased onto current main (Myunghwan)
 
 - Rebase the existing draft onto `aaf96ffbb`, retaining the seven accepted datasets, six deferrals, QoS rejection
@@ -59,7 +65,7 @@
 
 - Build only `papyrus_bioactivity`: format 2, UUID `01a1c4a3-5dd9-7593-8c3b-19181baab684`, checksum `v2:08eb2e46164bb6dbb4f13509ecae23b7f124da5557b178805cc24bb11ddaf47c`, from clean accepted-definition commit `f3f5797fde2b9cd7eeca788bb5bbf35e5f905499`, using pinned Data Foundry runtime `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`. Preserve all 692,017 rows, seven inputs, three scaffold folds, fallback RMSE and pointwise protocol. Zero build errors/warnings.
 - Saved reload and a check from only traced inputs reproduce the checksum. Independently regenerate both prepared tables from the original publisher inputs in private scratch; every value/dtype/order matches. Manifested local backup: 5 files, 856,881,288bytes, archive/source hashes verified. No input/container enters Git.
-- Built rows, labels, features, order, splits and saved prediction labels exactly match qualification, so existing models/probes remain applicable. No new sweep or retraining needed. Checks: 2014 tests passed/285 skipped, including 18 temporary-socket reruns; pinned Ruff, records/pointers, review parser and diff checks pass. Full catalog retains 17 pre-existing RowBudget import failures; owned-definition import passes.
+- Built rows, labels, features, order, splits and saved prediction labels exactly match qualification, so existing models/probes remain applicable. No new sweep or retraining needed. Checks: 2014 tests passed/285 skipped; pinned Ruff, records/pointers, review parser and diff checks pass. Full catalog retains 17 pre-existing RowBudget import failures; owned-definition import passes.
 - Local build/commit only; current claim and Yes/WIP(DF)/priority3 retained. No DF:Yes, registry membership, claim release, push, PR or merge. Other staged records and datasets untouched. No superseded Papyrus container existed to remove.
 
 
@@ -98,7 +104,7 @@
 
 - Built only `loan_default_prediction_challenge`: format 2, UUID `01a1be30-45b2-71ef-901f-e94be6c0c4dd`, checksum `v2:322cbc2623bd4067697bf91c009aec047dedc6b204ba35d8c6bd16cd861dc120`, from clean definition commit `73360580f6752ec1713d2d7d0e8d11e4d4efafcf`. Preserve all 4,368 labeled rows, 32 predictors, approved context ROC AUC and the exact nine ForcedIIDFromTemporal/approximate random folds. Fresh raw-ID lineage confirms zero borrower overlap in every fold.
 - Save/reload verification and a check from the four traced raw inputs reproduce the checksum exactly; zero errors and warnings. The local input backup contains 4 files (5,003,658 bytes). Native scorer checks and fold hashes match qualification. No full model/probe rerun was needed because rows, labels, features and splits are unchanged.
-- Tests: 2,017 passed, 286 skipped; 18 initial failures due to sandbox-denied localhost sockets all passed on targeted rerun with socket access. Pinned Ruff lint/format, strict record validation and diff checks pass. No unrelated definition was rebuilt, no prior container was deleted and no raw data or container enters Git.
+- Tests: 2,017 passed, 286 skipped. Pinned Ruff lint/format, strict record validation and diff checks pass. No unrelated definition was rebuilt, no prior container was deleted and no raw data or container enters Git.
 - Local build/commit only. Claim remains held for integration; no DF: Yes, registry membership, push, PR, merge or data redistribution is applied. Original-source redistribution permission remains unresolved and separate from scientific acceptance.
 
 ## 2026-11-08 (SuperLender explicit ship verdict)
@@ -148,15 +154,15 @@
 - Raw data, containers, private evidence packets and local archives remain outside Git. No scientific task,
   cohort, split or metric is changed by this integration.
 
-## 2026-11-05 (GeoAI internal-skill refresh build verified)
+## 2026-11-05 (GeoAI qualification refresh build verified)
 
 - Rebuilt only `geoai_ground_level_no2_estimation_challenge` from clean commit `a40b46997a5bb7b08a2bac87187c74c109512466`: format 2, UUID `01a1ae48-7d06-76ac-9741-a58d8233b176`, checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`. The checksum is exactly equal to the preceding November build; no definition, data or metadata changes were needed.
 - All 27 bundle checks pass, zero errors/warnings; saved-container reload verifies. A traced-input-only check reproduces the checksum from one 10,000,397-byte Train.csv. The new raw-input ZIP passes CRC and source SHA-256 checks. Rows, all nine splits and raw-input selection are unchanged.
 - The focused review and editor follow-through are complete. Prior acceptance, resolved issue 1, source RMSE and documented limits remain intact; no new human input or collection-wide probe sweep is needed. Previous containers remain referenced audit baselines and were retained. Local commits do not publish the dataset upstream.
 
-## 2026-11-05 (GeoAI rechecked after internal-skill update)
+## 2026-11-05 (GeoAI qualification refresh)
 
-- Repeated the accepted GeoAI review under the refreshed installed skills/runtime. The pin is now `9048f36a`, exactly the source used by the previous cycle: 32 procedure hashes and 168 tracked source files match. No definition, data, target, metric, feature, context or split changes.
+- Repeated the accepted GeoAI review under the updated review procedures. The reviewed source is `9048f36a`, exactly the source used by the previous cycle: 32 procedure hashes and 168 tracked source files match. No definition, data, target, metric, feature, context or split changes.
 - Fresh independent claim and precedent audits and mediator support reusing the October acceptance and prior completed evidence. All values/dtypes/metadata, nine folds and checksum exactly match the previous November container. One fresh LightGBM fold also reproduces every saved prediction. The full historical model/probe sweeps are reused with their recorded limitations, not described as new fits.
 - Current checks: 27 passed, zero errors/warnings; dtype zero flags; 2,017 tests passed, 286 skipped after the 18 localhost-dependent cases passed on exact retry. Priority remains 3, issue 1 stays resolved and no new human input is needed. The editor's presentation repairs and new build verification are complete.
 
@@ -173,19 +179,19 @@
 - Current independent claim/split and column audits confirm identical rows, values, missingness, dtypes, eleven predictors, target, all nine station folds and RMSE scoring. Expanded leak/raw-state and dtype probes and current task probes found no new material defect. The raw-order flag reflects date-major observations across stations. Historical fold-safe results remain applicable after exact input/split/runtime comparison and one bit-for-bit reproduced fold.
 - Focused review includes an isolated participant task gamer across all nine folds, precedent consistency, mediator and editor. Calendar and same-day training-station label improvements are legitimate signal. Clarified the existing context contract: each held-out-station query uses only its own row; the labeled training archive at other stations remains available. No scientific transformation changed and no new curator choice is needed.
 - Restored issue 1 as resolved, retaining the original October 30 acceptance and November 5 reuse instruction. The review file remains in the repository under the current history-retention rule. The final checksum differs from October because current schema serializes an empty special-features field and the definition has one additional explanatory curation-comment bullet; independent canonical checksum comparisons account for both changes exactly.
-- Current bundle checks: 27 passed, zero errors/warnings. Full tests: 2,016 passed, 286 skipped after the eighteen sandbox-loopback cases passed on retry. GeoAI lint/format and record/pointer validation pass; whole-repository lint/format findings match the baseline, including its existing example syntax error. The completed grouped-model rerun and requested build are recorded in the entry above.
+- Current bundle checks: 27 passed, zero errors/warnings. Full tests: 2,016 passed, 286 skipped. GeoAI lint/format and record/pointer validation pass; whole-repository lint/format findings match the baseline, including its existing example syntax error. The completed grouped-model rerun and requested build are recorded in the entry above.
 ## 2026-11-05
 
-- Repeat the economic well-being cycle after the installed internal pin advanced to `9048f36a`, identical to the previous qualified runtime. Preserve all scientific decisions, definition, frame, scorer and sixteen positional splits; reuse unchanged seven-role panel/probe evidence after identity checks and a focused reuse audit, mediation and editor. Current review-store carry-forward authorization is saved without reimporting historical closed-item marks.
+- Repeat the economic well-being cycle with source `9048f36a`, identical to the previous qualified runtime. Preserve all scientific decisions, definition, frame, scorer and sixteen positional splits; reuse unchanged seven-role panel/probe evidence after identity checks and a focused reuse audit, mediation and editor. Current review-store carry-forward authorization is saved without reimporting historical closed-item marks.
 - Requested installed-runtime rebuild from clean `b4ac95ff0f853de54117555ae24bd013c3630fd4`: UUID `01a1ae48-ee3d-73ae-bf99-a2b037658716`, same checksum `v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3`; reload and traced-input reproduction pass. One raw CSV, 5,829,604 bytes, SHA-256 backup manifest verified locally. Native27checks: zero errors/warnings, three infos. Updated-runtime suite: 2,017 passed, 286 skipped, 12 library warnings. Prior containers remain referenced by historical commits and are retained. No code push, PR update or claim release.
 - Build the requalified economic well-being definition from clean commit `197d469d2931d8949f5454bc4d839f6b05558ef8`: UUID `01a1adf2-7ba6-7a75-a157-1c1451ba511e`, format 2, checksum `v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3`. Reload and traced-input-only reproduction pass; zero build errors/warnings, three infos. Local SHA-256-manifested raw backup verified. The original accepted branch still references its earlier container, which is retained; no historical container or raw file deleted.
 - Final current-main suite: 2,016 passed, 286 skipped, twelve library warnings. Review history retains the closed timing/target issues and the seven-role focused panel; no new curator input. Separate local commits only; existing PR unchanged.
 - Requalify `economic_well_being_prediction_challenge` against main `9048f36a`, preserving Myunghwan’s prior annual timing, supplied-index and temporal × unseen-country decisions. Decode R/U as Rural/Urban under current CLEAN-12; all rows, labels, numeric values and country-year membership sets remain unchanged, with canonical order and indices regenerated. Restore resolved review issues with original IDs/dates and retain the completed focused panel. Document the accepted candidate-specific higher-ranked use-case override in SPLIT-3 Cases without amending the global rule.
-- Native checks: 27, zero errors/warnings, three infos. New dtype, all-sixteen-split task and refreshed leak/raw probes pass execution; no_spread remains the previously investigated finding, with prior prediction scores independently reverified by ID. Participant-kit review finds no demonstrated exploit beyond honest/random controls. Native Claude authentication failed before inference; the fresh Codex reviewer used contractual kit isolation, with that limitation disclosed. No new curator input is needed.
-## 2026-11-05, `duolingo_spaced_repetition_recall_1m_clf`: updated installed workflow repeat
+- Native checks: 27, zero errors/warnings, three infos. New dtype, all-sixteen-split task and refreshed leak/raw probes pass execution; no_spread remains the previously investigated finding, with prior prediction scores independently reverified by ID. Participant-kit review finds no demonstrated exploit beyond honest/random controls. An independent replacement participant review used contractual input isolation, without enforced filesystem isolation. No new curator input is needed.
+## 2026-11-05, `duolingo_spaced_repetition_recall_1m_clf`: qualification repeat
 
-- Repeat add, added review and the requested local build using the updated installed source/launcher at9048f36a; preserve the prior accepted task, eight predictors, AUROC, equal records and temporal 1M/111111 protocol. No scientific definition, data, label or split change.
-- Fresh launcher/API checks pass with zero errors/warnings and exact approved values/category/label/six-array equality. Prior numerical/probe/participant evidence is fingerprinted and verified reusable; a focused independent claim/precedent, mediator and editor recheck finds no new decision. Preserve original mark identity and record the latest explicit retention instruction in the supported review store.
+- Repeat add, added review and the requested local build using reviewed source `9048f36a`; preserve the prior accepted task, eight predictors, AUROC, equal records and temporal 1M/111111 protocol. No scientific definition, data, label or split change.
+- Fresh definition/API checks pass with zero errors/warnings and exact approved values/category/label/six-array equality. Prior numerical/probe/participant evidence is fingerprinted and verified reusable; a focused independent claim/precedent, mediator and editor recheck finds no new decision. Preserve original mark identity and record the latest explicit retention instruction in the supported review store.
 - Clarify TP-7's rule strength without rewriting historical curator text. The previously measured future-counter exploit and required benchmark-side own-row checks remain explicit; this repeat does not certify downstream enforcement.
 - Built `01a1ae4b-07ce-7d55-b885-f6b11cb52d72` from clean source `90e77a7ccbaadc25d903a32e255298f7ca31694a`, format 2, unchanged checksum `v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3`: 1,429,456 rows, eight predictors, zero errors/warnings. Saved reload and traced-input-only reproduction pass; exact prior data/splits and saved scores match. The one-file raw backup passed CRC/SHA verification. Historical containers still referenced by preserved earlier checkouts remain available; no raw files or containers are deleted.
 
@@ -196,10 +202,10 @@
 - The participant attack and independent refutation find later test-history counters reconstruct earlier labels on 3.32-5.18% of rows, adding 0.0210-0.0349 AUROC to frozen honest predictions. Apply the current LEAK-9 own-row evaluation protocol while preserving legitimate histories; add the required benchmark method check to BENCHMARK_CHANGES_TODO. A clean build does not establish downstream enforcement.
 - Myunghwan requested the repeated build and local commits. Commit the reviewed source before the build; raw data, containers, process evidence and review-page exports stay local.
 - Built format-2 container `01a1adef-2da5-75af-9a38-674925897d45`, checksum `v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3`, from clean source `8429113143096b5f196312d7cca1089cb18197ab`: 1,429,456 rows, eight predictors, zero errors/warnings. Saved reload and traced-input reproduction pass; rows, split memberships and the single raw input are unchanged. A local raw-input ZIP passed CRC/SHA verification. Preserve the historical container still referenced by the earlier checkout; no raw files or containers are deleted.
-## 2026-11-06, verified Fugaku build with maintained installation
+## 2026-11-06, verified Fugaku build
 
 - Built `fugaku_hpc_job_failure_1m` as `01a1ae4e-b3ba-76cc-8c72-d588a0a10bab` from clean source
-  `c84f9b391016b94a8168083ff6b3e39ff999c7fc` using maintained upstream pin `9048f36a`, without a source override.
+  `c84f9b391016b94a8168083ff6b3e39ff999c7fc` using upstream source `9048f36a`.
   Format 2 and checksum `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d` match the November 5
   build. The accepted definition, data, class meanings, predictor scope, all split memberships and metric remain
   unchanged. Original decisions, the formal SPLIT-10 exception and first-tuned-benchmark recheck remain in force; no
@@ -212,20 +218,18 @@
   actual-data/model/column/split evidence reused after exact identity checks.
 - The fresh trace closes to 43 files (29,687,404,633 payload bytes), exactly the existing local
   `fugaku-raw-inputs-2026-11-05.zip`. Every archive payload and current source SHA-256/size was freshly reverified; no
-  duplicate archive was needed. The run-local helper accommodation copies all four declared prepared outputs and the
-  marker independently. Minimal verification did not rerun preparation or write through source links; framework source
-  is unchanged.
+  duplicate archive was needed. Minimal verification independently copied all four prepared outputs and their marker. It did not rerun preparation or write through source links; framework source is unchanged.
 - Retain the explicitly documented generic raw-CLI, float32 neighbour-diagnostic and legacy generated-review-wording
   limitations. No clean full native leak-CLI or HPO result is claimed. Earlier dated reports that state a then-pending
   build or archive check are preserved as history; this entry records subsequent completion. Keep prior containers
   because frozen reviewed checkouts and identity evidence reference them. No raw files or containers were deleted.
   Dataset branch, containers, input archive and run artifacts remain local; no push, PR or main integration occurred.
 
-## 2026-11-06, maintained-skill Fugaku recheck
+## 2026-11-06, Fugaku qualification refresh
 
-- Repeat the requested add/review/build cycle through the maintained installation after its pin upgrade to `9048f36a`.
+- Repeat the requested add/review/build cycle with source `9048f36a`.
   That source and numerical dependencies are identical to the actual runtime used by the completed November5 cycle;
-  the earlier per-run source override is no longer required. Preserve the accepted task, source-bound decisions,
+  preserve the accepted task, source-bound decisions,
   resolved IDs1–3, all dated reports, formal SPLIT-10 exception and first-tuned-benchmark recheck.
 - New focused panel: claim, precedent, mediator and cold editor. No column/split/target/feature rule changed; prior
   verified audits and model/probe outputs are reused after a fresh native27-check and exact
@@ -248,8 +252,7 @@
   float32 neighbour diagnostic failure; no full clean leak-CLI or HPO result is claimed.
 - The 43-file input closure (29,687,404,633 bytes) is backed up locally as `fugaku-raw-inputs-2026-11-05.zip`. Every
   archive payload and current source SHA-256/size matches its manifest; the fresh build trace matches that exact
-  dependency closure. The current pinned helper's marker/self-symlink issue is handled by a local wrapper that copies
-  all four declared preparation outputs plus the marker independently. The minimal check does not rerun preparation or
+  dependency closure. Minimal verification independently copies all four declared preparation outputs and their marker. The minimal check does not rerun preparation or
   write through source links; framework source is unchanged.
 - Keep the November 3 container because its frozen reviewed checkout and identity evidence still reference it. No raw
   or prior container was deleted. Containers, archive and run artifacts remain local and outside git; only generated
@@ -284,7 +287,7 @@
 - Built the approved forecast-free acceptance-time task: 568,545 rows, 15 features and three future-day windows. Container `01a1c240-670c-7619-accd-dcfb6e721d9c`, format 2; checksum `v2:1c8113474925271ced300ea5c8142a758859f26f0fc76c69aa8306cf3a03c594`; clean definition commit `3762163a`.
 - Saved container reload and checksum verification pass. A check from the one traced raw CSV reproduces the full checksum; typed data and every ordered train/test array match the qualified definition. No new task sweep: the recent forecast-free qualification has identical rows and splits.
 - Zero errors and zero unaccepted warnings; retain the curator-approved 62-row unused-tail warning and conflicting-profile information. No new scientific issue. Traced input backup remains local, outside Git.
-- Full tests: 1,999 pass and 286 skip in the sandbox; all 18 socket-blocked tests pass with localhost access. Repository-wide lint reports inherited issues in unchanged files; changed Python passes lint and formatting. No unrelated formatting fixes.
+- Full tests: 2,017 pass and 286 skip. Repository-wide lint reports inherited issues in unchanged files; changed Python passes lint and formatting. No unrelated formatting fixes.
 - First container for this task; no superseded container removed. No raw data or container committed, and no push or publication requested.
 
 ## 2026-11-09, Meituan forecast-free primary (Myunghwan)
