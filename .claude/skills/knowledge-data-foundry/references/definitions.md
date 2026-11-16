@@ -105,6 +105,10 @@ leaves each period in the order of the finer values (chicago_traffic_crashes, 20
 (`definition_time_changed_in_split`).
 
 Other hooks: `_make_splits(df)` for splits the declarations cannot express (return a `SplitPlan`);
+when it samples training rows, set `before_sampling=SplitPlan(df=eligible_frame, splits=eligible_splits)` so the
+training-floor check uses eligible history after label-availability filtering, before the sample. The custom plan
+still keeps both stored sides within the collection budget. See [the example](../../../../examples/custom_temporal_sample.py).
+
 `_prepare_raw_files(raw_dir)` with `prepared_raw_files = (...)` for a heavy one-off step that writes intermediate
 files into the raw directory (it runs again when a file is missing or when the method, a helper of `dataset.py` it
 calls, or a module constant it reads changed; the hash sits in `.prepared_raw_files.json` next to the files);

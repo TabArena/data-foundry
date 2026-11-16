@@ -123,6 +123,7 @@ class DuolingoSpacedRepetitionRecall(AbstractCuratedDataset):
         for folds in windows.values():
             for train, _test in folds.values():
                 assert len(train) >= len(df) / 2, "Full-source training history floor violated"
+        population = SplitPlan(df=df, splits={repeat: dict(folds) for repeat, folds in windows.items()})
         # Preserve the approved full-history training draw; the native budget now samples only test rows.
         rank = np.random.default_rng(self.SPLIT_RANDOM_STATE).permutation(len(df))
         for folds in windows.values():
@@ -137,7 +138,7 @@ class DuolingoSpacedRepetitionRecall(AbstractCuratedDataset):
             RowBudget(train=TRAIN_CAP, test=TEST_CAP),
             random_state=self.SPLIT_RANDOM_STATE,
         )
-        return SplitPlan(df=reduced, splits=splits)
+        return SplitPlan(df=reduced, splits=splits, before_sampling=population)
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         del df
