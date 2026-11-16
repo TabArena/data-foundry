@@ -220,7 +220,7 @@ concrete_compressive_strength, airfoil_self_noise, maternal_health_risk, frempl_
 
 **SPLIT-25 (Must).** When the real groups matter and cannot be recovered, retire the dataset rather than group on a
 guess, and note that the authors could be asked for the group labels. Cases: maternal_health_risk,
-hazelnut_spread_contaminant_detection.
+hazelnut_spread_contaminant_detection, naticusdroid_android_permissions_dataset (malware families).
 
 **SPLIT-26 (Should).** Take the group key from the source's own data, at the resolution the features see. Keep the
 source's rows: deduplicating with averaged targets is a different dataset. Cases: superconductivity.
@@ -338,6 +338,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-24 | pricing_game_2016_french_fleet | the group is the contract with the contracts that share a vehicle's registration joined (connected components of the source's contract and registration ids, an exact key): registration 32348 has one period under each of contracts 6168, 6169 and 6170, the only registration under more than one contract, so 18,035 groups of 18,037 contracts; a client guessed from neighbouring contract numbers and equal fleet classes was not used, a guess with no shared claim or outcome behind it (Lennart, 2026-11-08, issue 9 (B)) | applied |
 | SPLIT-24, SPLIT-25 | maternal_health_risk | the first suggestion, a hash of the feature vector standing in for the unknown entity, was barred; the six collection sites are not in the file: retired | applied |
 | SPLIT-25 | hazelnut_spread_contaminant_detection | re-scans of about ten set-ups, not recoverable: retired | applied |
+| SPLIT-25 | naticusdroid_android_permissions_dataset | test malware has siblings of its AMD family in training; the UCI file has no hash, package name or family, and the permission set may not stand in (SPLIT-24): retired; its `Selection Bias` was not the reason (Lennart, 2026-11-16) | applied |
 | SPLIT-26 | superconductivity | key: element shares from `unique_m.csv`, which the features are computed from; a formula string would split one composition written two ways | applied |
 | SPLIT-27 | mice_protein | LightGBM log loss 2.53 against a baseline of 2.07, while a random forest reached 1.12 | applied |
 | SPLIT-28 | telemonitoring_parkinsons | R^2 -0.17 to -0.31 grouped against 0.75 IID; as warm start 6.33 against 6.48 for the carried-forward value; retired (2026-10-02) | applied |

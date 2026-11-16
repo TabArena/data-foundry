@@ -1,5 +1,31 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-16, regensburg_pediatric_appendicitis kept with fixes, no longer retired (no container built)
+
+- Lennart, 2026-11-16, and Andrej: the label of the children not operated is an outcome, not the surgeon's decision.
+  They were observed in hospital, with ultrasound and without antibiotics, and discharged once they improved; a model
+  of the decision to operate ranks the label at ROC AUC 0.904 because surgeons operate on the children who look
+  severe. A model of the Düsseldorf cohort, where nearly every child with appendicitis is operated, expects at most
+  about 9 complicated cases among the 82 children with appendicitis not operated (the label has none), so the
+  follow-up label misses a few, all in one direction. The record is `Yes` again with `Class-dependent Recording`;
+  `No Good Target / Scientific Discovery` is removed and the folder restored.
+- `dataset.py`: the use case flags children likely to have a complicated appendicitis at admission, for urgent
+  surgery and planning (it was the choice between surgery and conservative treatment, the choice that sets the label
+  of the children not operated). Rebound tenderness on the right and the three urine tests are dropped: their gaps
+  mark the operation (missing for none and 18% of the children not operated, 50-59% and 30-41% of the operated) and
+  their values add nothing. Age, BMI and the neutrophil share are written at the precision of the measured values
+  (`MEASURED_PRECISION`): BMI's format marked surgery, the neutrophil share's the class, and 8-decimal ages the
+  2016-2018 period. The fit stays approximate and names the follow-up label, the 37% operated and the Düsseldorf
+  estimate. `US_Number` stays dropped, now for its real reason: a case number assigned in blocks by the children's
+  group. Two free-text findings are written in one spelling (`LOCATION_SPELLINGS`, `NOTHING_FOUND`): the lymph-node
+  location was abbreviated only for children not operated and spelled out only for operated ones, and "nothing found"
+  in the gynaecological findings was written out only for operated children (the text alone told the two apart at ROC
+  AUC 0.572, 0.527 after; the full model scores the same).
+- Split: random, now tagged `ForcedIIDFromTemporal` with a `splits_comment`. Admissions run over 2016-2021 and the
+  period matters (complicated 12.0% against 18.8%), but only two periods can be told apart, too few for three test
+  windows. Training on 2016-2018 and testing on 2019-2021 costs TabPFN 3.5 0.004 ROC AUC and 0.07 log loss against
+  random splits of the same sizes.
+
 ## 2026-11-16, BENCHMARK_CHANGES_TODO.md: the scorer of `net_revenue_at_cost` (no container built)
 
 - New item for the TabArena side (Lennart, review of PR #100): `net_revenue_at_cost` has no fixed best value (the
@@ -9,6 +35,29 @@
   (every prediction at or below $0.68, negatives included) 0, mailing everyone 0.111, the cup's winner 0.153 per
   donor.
 - The metric table lists `net_revenue_at_cost`; the adapter item says the spec carries no `optimum`.
+
+## 2026-11-13, three datasets retired after review (no container built)
+
+- Each record is `No (Retired)` with its reason marker and a CC line giving the evidence; its review moves into the
+  record's `## Review`, its folder is removed and `v2_path` cleared. `DF: Yes`, the other tags and the pinned
+  BeyondArena containers stay.
+  - `naticusdroid_android_permissions_dataset` (TabArena v0.1; `Data Quality Issue` beside `Selection Bias`, Andrej,
+    2026-11-13; reason restated by Lennart, 2026-11-16): the malware families are the real groups and the release
+    cannot recover them (SPLIT-25). A few AMD families make up most of the malware and their variants request nearly
+    the same permissions, so test malware has family siblings in training; the UCI file has no hash, package name or
+    family to hold them out, and grouping on the permission set is barred (SPLIT-24). The two collections of different
+    periods (benign from AndroZoo, malware from AMD, families of 2010-2016) keep `Selection Bias` as a concern flag,
+    and the exact lookup is fixable; neither is the reason. `kronodroid_android_malware` (dated apps of 2008-2020, 240
+    families) is the replacement candidate.
+  - `obesity_estimation` (`No Good Target / Scientific Discovery`, Andrej, 2026-11-11): the source's own label is the
+    body mass index class computed from weight and height, so the published task is circular; without them, nobody
+    predicts a body mass index from habit answers where a scale is at hand.
+  - `tour_travels_churn` (`AHDS`, `Missing source information`, Andrej, 2026-11-06): in the Kaggle file's row order
+    every column but age, the label included, is one of 22 rules of the row number; the generator used as a
+    classifier beats all 40 benchmark methods on every split (1 - ROC AUC 0.0210 against 0.0317 for the best).
+- Guidelines: provenance.md names tour_travels_churn as a PROV-3 case and notes it under PROV-2, where it had been kept
+  on the untraced-upload rule; selection.md says the same. splits.md names naticusdroid_android_permissions_dataset
+  as a SPLIT-25 case, and selection.md as a second dataset retired for another reason that keeps its `Selection Bias`.
 
 ## 2026-11-13, pva_revenue_prediction_kddcup98: the cup's gift amount and net revenue (no container built)
 
@@ -52,6 +101,7 @@ Andrej's decisions of 2026-11-11 and 2026-11-12 on the dataset's review.
   after it in a window the source does not state.
 - The record: the review in `## Review`, the decisions as CC lines. The container changes (columns, size); it needs a
   rebuild.
+
 ## 2026-11-12, the split count in scored units (SPLIT-33), in a PR of its own (no container built)
 
 Lennart, 2026-11-12: the count moves out of #79 (asp_potassco_classification and sat11_hand_algo_runtime under PAR10),

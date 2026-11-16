@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: regensburg_pediatric_appendicitis
 container_format: 2
-checksum: v2:b3fd10f7ca06993581e67fa3ba2f648a137eda10c489148f948b2eda1f530912
+checksum: v2:180dc3e7335c9c0bac62d1b06bfbdc1b53f225ec09924811b6d292fcca53d9f5
 build:
   uuid: 01a111fc-ee89-74ad-b25b-309464691fe6
   checksum: v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3
@@ -20,9 +20,9 @@ build:
 build_stale: true
 data:
   n_rows: 763
-  n_features: 51
+  n_features: 47
   dtypes:
-    category: 33
+    category: 29
     float64: 16
     string: 3
   n_test_dataset_rows: null
@@ -66,27 +66,27 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Severity`, scored with `roc_auc` on IID splits. 763 rows and 51 features. Source: Other (2023).
+Binary classification of `Severity`, scored with `roc_auc` on IID splits. 763 rows and 47 features. Source: Other (2023).
 
-Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b3fd10f7ca06993581e67fa3ba2f648a137eda10c489148f948b2eda1f530912`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:180dc3e7335c9c0bac62d1b06bfbdc1b53f225ec09924811b6d292fcca53d9f5`, so the build is stale. See [Build](#build).
 
 ## In brief
 
-**Question.** Is a child's appendicitis complicated (gangrenous, perforated or abscessed)?
+**Question.** Does a child admitted with suspected appendicitis have a complicated appendicitis (gangrenous, perforated or abscessed)?
 
-**Use case.** For example, a paediatric surgeon, after the examination, blood tests and ultrasound of a child with suspected appendicitis, judges how severe it is, to choose between surgery and conservative treatment.
+**Use case.** For example, a paediatric surgeon, at the admission of a child with suspected appendicitis and after the examination, blood tests and ultrasound, flags the children likely to have a complicated appendicitis, to operate on them urgently and plan their care.
 
 **One row.** One child admitted with abdominal pain and suspected appendicitis to the Children's Hospital St. Hedwig in Regensburg, Germany, 2016-2021, who had an ultrasound (763 children).
 
-**Predicted.** Whether the appendicitis was complicated (15.07%); the rest, among them children without appendicitis, count as uncomplicated.
+**Predicted.** Whether the appendicitis was complicated (15.07%), as found in the tissue examination after surgery. Children treated without surgery count as uncomplicated (observed in hospital without antibiotics, they improved and did not come back), as do children without appendicitis.
 
-**Known at prediction time.** Age, sex, height and weight, symptoms and examination signs, body temperature, blood and urine tests, two clinical appendicitis scores, and the ultrasound findings (appendix diameter, free fluid, wall layers, perfusion, signs of perforation or abscess, and others).
+**Known at prediction time.** Age, sex, height and weight, symptoms and examination signs, body temperature, blood tests, two clinical appendicitis scores, and the ultrasound findings (appendix diameter, free fluid, wall layers, perfusion, signs of perforation or abscess, and others).
 
-**What the test data stands for.** Random children, so the test data stands for other children of the same hospital and years.
+**What the test data stands for.** Random children, so the test data stands for other children of the same hospital and years, not for later years: the file has no dates.
 
-**Our changes to the source.** We keep the children who had an ultrasound and drop the diagnosis, the surgeon's management decision and the length of stay.
+**Our changes to the source.** We keep the children who had an ultrasound; drop the diagnosis, the surgeon's management decision, the length of stay, the ultrasound case number, rebound tenderness on the right and the three urine tests; write age, BMI and the neutrophil share at the precision of the measured values; and write two free-text findings in one spelling.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The features are known at the decision, but the curators suspect some of them leak the severity and could not rule it out; ultrasound signs of perforation or abscess come close to the label's own definition. How severity was set for children not operated on is not stated.
+> **Use case fit: approximate (a stand-in with a known gap).** The features are known at admission, but a complicated appendicitis is only confirmed in the tissue after surgery. This hospital operates 37% of these children; the others count as uncomplicated on follow-up, which can miss a few complicated cases among mild-looking children (at most 9 of the 82 with appendicitis, by a Düsseldorf model). At Düsseldorf, which operates 81%, the authors' models reach ROC AUC 0.75 against 0.90 here.
 
 ## Files in this folder
 
@@ -95,7 +95,7 @@ Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/regensburg_pediatric_appendicitis.md`](../../../../curation/records/regensburg_pediatric_appendicitis.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/regensburg_pediatric_appendicitis.md`](../../../../curation/records/regensburg_pediatric_appendicitis.md)
 - The original source: <https://doi.org/10.5281/zenodo.7711412>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -128,9 +128,9 @@ Only curators run `build`, when the dataset ships.
 | year | 2023 |
 | domain | medical & healthcare |
 | license | CC-BY-NC-4.0 |
-| data_tags | IID |
+| data_tags | IID, ForcedIIDFromTemporal |
 | reference | marcinkevivcs2024interpretable |
-| rows x columns | 763 x 52 |
+| rows x columns | 763 x 48 |
 | task.target | Severity |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -147,10 +147,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Marcinkevics et al. 2024 report AUROC and AUPR side by side per target; neither is named as the criterion. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 24 categorical, 9 ordinal, 3 string, 0 datetime</summary>
+<summary>Feature types: 23 categorical, 6 ordinal, 3 string, 0 datetime</summary>
 
-- categorical (24): `Sex`, `Migratory_Pain`, `Lower_Right_Abd_Pain`, `Contralateral_Rebound_Tenderness`, `Ipsilateral_Rebound_Tenderness`, `Coughing_Pain`, `Psoas_Sign`, `Nausea`, `Loss_of_Appetite`, `Dysuria`, `Stool`, `Neutrophilia`, `Appendix_on_US`, `Free_Fluids`, `Target_Sign`, `Surrounding_Tissue_Reaction`, `Pathological_Lymph_Nodes`, `Bowel_Wall_Thickening`, `Ileus`, `Coprostasis`, `Meteorism`, `Enteritis`, `Conglomerate_of_Bowel_Loops`, `Severity`
-- ordinal (9): `Ketones_in_Urine (no < + < ++ < +++)`, `RBC_in_Urine (no < + < ++ < +++)`, `WBC_in_Urine (no < + < ++ < +++)`, `Peritonitis (no < local < generalized)`, `Appendicolith (no < suspected < yes)`, `Perforation (no < not excluded < suspected < yes)`, `Appendicular_Abscess (no < suspected < yes)`, `Appendix_Wall_Layers (intact < partially raised < raised)`, `Perfusion (no < hypoperfused < present < hyperperfused)`
+- categorical (23): `Sex`, `Migratory_Pain`, `Lower_Right_Abd_Pain`, `Contralateral_Rebound_Tenderness`, `Coughing_Pain`, `Psoas_Sign`, `Nausea`, `Loss_of_Appetite`, `Dysuria`, `Stool`, `Neutrophilia`, `Appendix_on_US`, `Free_Fluids`, `Target_Sign`, `Surrounding_Tissue_Reaction`, `Pathological_Lymph_Nodes`, `Bowel_Wall_Thickening`, `Ileus`, `Coprostasis`, `Meteorism`, `Enteritis`, `Conglomerate_of_Bowel_Loops`, `Severity`
+- ordinal (6): `Peritonitis (no < local < generalized)`, `Appendicolith (no < suspected < yes)`, `Perforation (no < not excluded < suspected < yes)`, `Appendicular_Abscess (no < suspected < yes)`, `Appendix_Wall_Layers (intact < partially raised < raised)`, `Perfusion (no < hypoperfused < present < hyperperfused)`
 - string (3): `Lymph_Nodes_Location`, `Abscess_Location`, `Gynecological_Findings`
 - datetime (0): none
 
@@ -175,15 +175,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 763 rows of the final frame (random rows: the frame is shuffled); 12 of 52 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 763 rows of the final frame (random rows: the frame is shuffled); 12 of 48 columns, the target first. Cells are cut at 40 characters.
 
 | Severity | Age | BMI | Sex | Height | Weight | Alvarado_Score | Paedriatic_Appendicitis_Score | Appendix_on_US | Appendix_Diameter | Migratory_Pain | Lower_Right_Abd_Pain |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| uncomplicated | 8.09 | 16.1 | male | 127 | 25.5 | 7 | 6 | yes | 7 | yes | yes |
-| uncomplicated | 15.3265 | 20.6174 | male | 167 | 57.5 | 9 | 8 | yes | 7 | no | yes |
-| complicated | 5.07871 | 17.6978 | female | 114 | 23 | 6 | 6 | no | nan | no | yes |
-| uncomplicated | 3.27 | 15.75 | female | 87.7 | 12.2 | 8 | 7 | yes | 10 | no | yes |
-| uncomplicated | 16.12 | 22.5 | female | 166 | 62 | 4 | 4 | no | nan | yes | yes |
+| uncomplicated | 12.8 | 15.6 | male | 152 | 35.8 | 5 | 6 | yes | 6 | no | yes |
+| uncomplicated | 13.89 | 26.8 | female | 158 | 67 | 4 | 6 | yes | 8.3 | no | yes |
+| uncomplicated | 11.33 | 19 | female | 151.5 | 43.7 | 3 | 3 | no | nan | no | yes |
+| uncomplicated | 9.58 | 15.2 | male | 146 | 32.4 | 4 | 6 | yes | 4.6 | no | yes |
+| uncomplicated | 11.21 | 13.3 | female | 138 | 25.4 | 8 | 5 | yes | 4 | no | yes |
 
 ## Curation notes
 
@@ -192,7 +192,25 @@ We start with the tabular meta-data used in the paper. We create only one task o
 - The data first appeared on Zenodo (v1.0, 2023-02-23, five days before the paper's preprint), hence source
   Other; UCI 938 is a copy that names the Zenodo DOI as its source.
 - Note, for this dataset is was hard to choose the label given the tabular data. We picked "Severity" in the end. "Diagnosis" is a noisy ground truth for all cases but the ones that had surgery. It was either deterministically determined by the AS score, or during surgery. "Management" reflects the decision and opinion of senior pediatric surgeon. Only "Severity" represents a ground truth as all cases that were server, were either clearly servery or did not even have appendicitis.
- - Warning: We tried to clean the data as good as possible but we suspect it might still contain some features leaking the severity, but we lack the medical expertise to identify them. Thus, I would not be surprised if we had to remove this dataset later again.
+- How `Severity` is set: by the tissue examination after surgery for the 284 operated children (115
+  complicated; 21 of them were operated after first being treated without surgery, 3 complicated). The 479
+  children not operated were observed in hospital, with ultrasound and without antibiotics, and discharged once
+  they improved (Marcinkevics et al. 2021, Front Pediatr 9:662183); they count as uncomplicated when they did
+  not come back, as do children without appendicitis. We read this as an outcome, not as the surgeon's
+  decision: a model of the decision to operate ranks the label at ROC AUC 0.904 because surgeons operate on
+  the children who look severe. Follow-up was incomplete (61 of 86 such children with appendicitis reached in
+  the 2021 study), so a few complicated cases may count as uncomplicated, all in one direction. A model
+  trained on the Düsseldorf cohort of the same group (Marcinkevičs, Sokol et al. 2025, Front Pediatr
+  13:1587488; every child with appendicitis but one operated, so nearly every label is a tissue examination)
+  is calibrated there and on Regensburg's 2016-2018 operated children (46.7 complicated expected, 51 found),
+  and expects 9.0 complicated among the 82 children with appendicitis not operated, 11.7 among the 183
+  without appendicitis (TabPFN 3.5; logistic regression 8.1 and 8.7). Both are upper bounds: the model cannot
+  see who improved under observation, and it overshoots for mild children (Düsseldorf's own rate among
+  children without appendicitis, 2 of 71, gives about 5 of the 183).
+- Leak check of the ultrasound signs closest to the label's definition (perforation, abscess and its location,
+  conglomerate of bowel loops, ileus): TabPFN 3.5 reaches ROC AUC 0.935 without them and 0.939 with them
+  (3-fold x 10), so they do not carry the score. This answers the earlier warning that some features might
+  leak the severity.
 - The data contains string data, but only for a very small number of patients and the text is often seemingly very useless. The features add most likely no value, but we keep them in for the pipeline/model to ignore if needed.
 - We drop the few patients that did not have an ultrasound to avoid them being leaking due to missing features.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
@@ -207,10 +225,65 @@ We start with the tabular meta-data used in the paper. We create only one task o
   and `present` (flow without a grade, 1) are not in the codebook; ordered by flow as no < hypoperfused <
   present < hyperperfused, `present`'s place is our reading (the authors' code groups `no` with hypoperfused
   and `present` with hyperperfused).
+- Dropped (2026-11-16, Lennart): rebound tenderness on the right (`Ipsilateral_Rebound_Tenderness`) and the
+  three urine tests (ketones, red and white cells). They are missing for none (rebound) and 18% (urine) of the
+  children not operated, but for 50-59% and 30-41% of the operated ones, likely not charted when a child went
+  to surgery quickly, so their gaps mark the operation. Their values add nothing: gradient boosting reaches
+  ROC AUC 0.908 with them and 0.905 without (3-fold x 10). Missing values alone go from 0.804 to 0.720 on the
+  label.
+- Kept: the psoas sign and dysuria (pain on urinating) follow the same pattern, smaller (missing for none of
+  the children not operated, 7-12% of the operated), but dropping them changes nothing: missing values alone
+  tell operated from not operated uncomplicated children at 0.748 with or without them, and gradient boosting
+  reaches 0.905 without them against 0.906 with them.
+- Class-dependent recording (record marker `Class-dependent Recording`), harmonised. BMI was computed from
+  weight and height (8 decimals) for most children of 2016-2018 and typed by hand later. From 2019 on it was
+  typed with two decimals for 108 of 136 operated children but for 6 of 234 children treated without surgery
+  (mostly one decimal), so the format marked surgery, and through it the label: BMI alone gives ROC AUC 0.56,
+  with its format 0.76. The neutrophil share (neutrophils as % of white blood cells) is a whole number for 30%
+  of the measured complicated cases and 15% of the others. Ages computed from the birth date (8 decimals)
+  mark 2016-2018, when 12% of the children were complicated against 18% later, and the format alone gives
+  0.56 on the label. All three are written at the precision every row has (`MEASURED_PRECISION`: age two
+  decimals, BMI one, the neutrophil share whole percent). The number format of the float columns alone then
+  gives ROC AUC 0.58 (0.77 before); the models score the same.
+- Kept: appendix diameters in half millimetres are more common in children not operated, but they come with
+  smaller diameters (the diameter alone gives 0.66, with its format 0.66).
+- Kept: findings missing more often for one class. After the drops above, missing values alone give ROC AUC
+  0.72 on the label and 0.75 on operated against not operated uncomplicated children. The second comes from
+  the ultrasound findings (perforation, abscess, ileus, wall layers and others; the other columns alone give
+  0.48), which are filled in mostly when the report describes them. The two appendicitis scores are missing
+  for 12% of complicated cases against 4% of the others. Both are on the record at admission, so a model may
+  use them.
+- Kept, data-entry errors in single cells: an age of 0 at 164 cm, a body temperature of 26.9 °C, a red cell
+  count of 14, a haemoglobin of 36 g/dL, three RDW values of 79-87% (red cell size spread, usually 11-15%),
+  and 23.7 kg at 174 cm (BMI 7.8).
+- Dropped: `US_Number`, the ultrasound case number. It runs from 1 to 440 for 2016-2018 and above for
+  2019-2021, but within each period it was assigned in blocks by the children's group (of the children
+  numbered 739-992, 1 of 124 was operated), so it would give the label away.
+- Free-text findings, harmonised (2026-11-16, Andrej). The lymph-node location was abbreviated ("re UB",
+  "reUB", "re MB": 47 children) only for children not operated and spelled out ("rechter Unterbauch", right
+  lower abdomen: 22) only for operated ones; the gynaecological finding "nothing found" ("keine",
+  "unauffällig", a gynaecological cause excluded: 13 children) was written out only for operated children
+  and left blank for the others. Abbreviations are written out and the spellings of ileocaecal unified, in the
+  abscess location too (`LOCATION_SPELLINGS`), and "nothing found" is missing like the others' blanks
+  (`NOTHING_FOUND`). The three text columns alone told operated from not operated uncomplicated children at
+  ROC AUC 0.572, 0.527 after (on the label 0.552, then 0.531); the full model scores the same with or without
+  them (gradient boosting 0.905 and 0.906), so no model had used the route.
 
 ## Splits
 
-Default splits.
+Default splits: stratified random 3-fold cross-validation with 10 repeats (seed 4267). Tests stand for other
+children of the same hospital and years.
+The split is forced (ForcedIIDFromTemporal): children are admitted over 2016-2021 and a deployed model scores
+later admissions, but the file has no dates. Only two periods can be told apart: ultrasound case numbers up to
+440 are 2016-2018 (every child also in the authors' 2021 study of those years has a number up to 440), higher
+ones 2019-2021; within each period the numbers follow the children's group, not the admission order (curation
+comments). Two periods give one test window, too few for a temporal split. The period matters: the complicated
+share rises from 12.0% to 18.8% (among operated children from 32% to 52%, with the share operated at 38% and
+36%), loss of appetite is recorded for 30% of the children in 2016-2018 and 77% later, and the features tell
+the two periods apart at ROC AUC 0.86. Against random splits of the same sizes, training on 2016-2018 and
+testing on 2019-2021 costs little in ranking and more in calibration: TabPFN 3.5 ROC AUC 0.931 against 0.935
+and log loss 0.290 against 0.221; logistic regression 0.887 against 0.905 and 0.377 against 0.265. Recover
+the admission dates if a later release has them.
 
 10 repeat(s) x 3 fold(s) with seed 4267; train 508 to 509 rows, test 254 to 255 rows.
 
@@ -254,7 +327,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -262,7 +335,7 @@ Default splits.
 ### Feature summary
 
 <details>
-<summary>Show the table (52 rows)</summary>
+<summary>Show the table (48 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -280,10 +353,6 @@ Default splits.
 | Pathological_Lymph_Nodes | category | 560 | 73.39 | 2 | yes, no |
 | Appendix_Wall_Layers | category | 547 | 71.69 | 3 | intact, raised, partially raised |
 | Surrounding_Tissue_Reaction | category | 512 | 67.1 | 2 | yes, no |
-| RBC_in_Urine | category | 191 | 25.03 | 4 | no, +, +++, ++ |
-| Ketones_in_Urine | category | 185 | 24.25 | 4 | no, +++, +, ++ |
-| WBC_in_Urine | category | 184 | 24.12 | 4 | no, +, ++, +++ |
-| Ipsilateral_Rebound_Tenderness | category | 153 | 20.05 | 2 | no, yes |
 | Free_Fluids | category | 45 | 5.9 | 2 | no, yes |
 | Neutrophilia | category | 44 | 5.77 | 2 | no, yes |
 | Psoas_Sign | category | 31 | 4.06 | 2 | no, yes |
@@ -299,25 +368,25 @@ Default splits.
 | Appendix_on_US | category | 1 | 0.13 | 2 | yes, no |
 | Nausea | category | 1 | 0.13 | 2 | yes, no |
 | Severity | category | 0 | 0 | 2 | uncomplicated, complicated |
-| Segmented_Neutrophils | float64 | 710 | 93.05 | 39 | 63.0, 72.0, 82.0, 59.0, 73.0, 61.0, 83.0, 62.0, 46.0, 54.0 |
-| Appendix_Diameter | float64 | 267 | 34.99 | 78 | 8.0, 9.0, 7.0, 6.0, 10.0, 5.0, 11.0, 12.0, 4.0, 7.5 |
-| Neutrophil_Percentage | float64 | 96 | 12.58 | 351 | 79.0, 80.0, 84.5, 68.4, 84.0, 88.0, 75.5, 83.8, 81.0, 81.8 |
-| Alvarado_Score | float64 | 43 | 5.64 | 11 | 5.0, 8.0, 7.0, 6.0, 4.0, 9.0, 3.0, 2.0, 10.0, 0.0 |
+| Segmented_Neutrophils | float64 | 710 | 93.05 | 39 | 63.0, 72.0, 82.0, 46.0, 74.0, 39.0, 83.0, 68.0, 62.0, 61.0 |
+| Appendix_Diameter | float64 | 267 | 34.99 | 78 | 8.0, 9.0, 7.0, 6.0, 10.0, 5.0, 12.0, 11.0, 4.0, 7.5 |
+| Neutrophil_Percentage | float64 | 96 | 12.58 | 63 | 84.0, 80.0, 86.0, 78.0, 81.0, 77.0, 88.0, 68.0, 83.0, 79.0 |
+| Alvarado_Score | float64 | 43 | 5.64 | 11 | 5.0, 7.0, 8.0, 6.0, 4.0, 9.0, 3.0, 2.0, 10.0, 0.0 |
 | Paedriatic_Appendicitis_Score | float64 | 43 | 5.64 | 11 | 6.0, 4.0, 5.0, 7.0, 3.0, 8.0, 2.0, 9.0, 10.0, 1.0 |
-| BMI | float64 | 25 | 3.28 | 624 | 16.0, 19.6, 16.6, 15.3, 18.6, 17.3, 17.6, 15.9, 16.7, 17.4 |
-| Height | float64 | 24 | 3.15 | 187 | 140.0, 158.0, 165.0, 160.0, 164.0, 152.0, 143.0, 146.0, 163.0, 166.0 |
-| RDW | float64 | 23 | 3.01 | 53 | 12.6, 12.7, 12.5, 12.9, 12.8, 12.4, 12.2, 12.1, 12.3, 13.1 |
-| RBC_Count | float64 | 15 | 1.97 | 171 | 4.93, 4.74, 4.73, 4.54, 4.56, 4.59, 4.61, 4.98, 4.75, 4.92 |
-| Hemoglobin | float64 | 15 | 1.97 | 65 | 13.5, 12.9, 13.2, 13.1, 14.0, 12.8, 13.6, 13.9, 13.8, 13.3 |
-| Thrombocyte_Count | float64 | 15 | 1.97 | 259 | 221.0, 267.0, 275.0, 245.0, 305.0, 234.0, 250.0, 277.0, 223.0, 233.0 |
-| CRP | float64 | 8 | 1.05 | 148 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 5.0, 8.0, 7.0, 15.0 |
-| WBC_Count | float64 | 4 | 0.52 | 209 | 8.1, 8.7, 6.9, 7.0, 8.6, 16.1, 10.9, 15.9, 11.0, 8.4 |
-| Weight | float64 | 2 | 0.26 | 268 | 50.0, 33.0, 45.0, 40.0, 56.0, 39.0, 52.0, 53.0, 25.0, 54.0 |
-| Body_Temperature | float64 | 2 | 0.26 | 46 | 37.0, 36.8, 37.2, 37.8, 37.4, 37.5, 37.3, 38.0, 36.9, 38.2 |
-| Age | float64 | 0 | 0 | 699 | 11.05, 9.25, 6.64, 12.7, 13.83, 14.1985, 15.8138, 16.783, 8.8624, 10.76 |
-| Abscess_Location | string | 750 | 98.3 | 7 | Douglas, rechter Unterbauch, an den M. psoas rechts, rechter Mittelbauch, perit… |
-| Gynecological_Findings | string | 737 | 96.59 | 14 | keine, Ovarialzyste, Ovarialzysten, Ovarialzyste re., unauffällig, V. a. Ovaria… |
-| Lymph_Nodes_Location | string | 642 | 84.14 | 26 | mesenterial, re UB, rechter Unterbauch, reUB, re MB, ileocoecal, ileocöcal, rec… |
+| BMI | float64 | 25 | 3.28 | 174 | 16.0, 15.4, 14.9, 16.9, 17.7, 18.8, 16.2, 16.8, 15.3, 15.7 |
+| Height | float64 | 24 | 3.15 | 187 | 158.0, 140.0, 165.0, 160.0, 143.0, 164.0, 152.0, 146.0, 163.0, 161.0 |
+| RDW | float64 | 23 | 3.01 | 53 | 12.6, 12.7, 12.9, 12.5, 12.8, 12.4, 12.2, 12.1, 12.3, 13.1 |
+| RBC_Count | float64 | 15 | 1.97 | 171 | 4.93, 4.74, 4.54, 4.73, 4.56, 4.59, 4.61, 4.92, 4.75, 4.9 |
+| Hemoglobin | float64 | 15 | 1.97 | 65 | 13.5, 12.9, 13.2, 13.1, 13.6, 14.0, 13.9, 12.8, 13.8, 13.3 |
+| Thrombocyte_Count | float64 | 15 | 1.97 | 259 | 267.0, 221.0, 275.0, 245.0, 305.0, 233.0, 223.0, 234.0, 250.0, 277.0 |
+| CRP | float64 | 8 | 1.05 | 148 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 5.0, 8.0, 15.0, 7.0 |
+| WBC_Count | float64 | 4 | 0.52 | 209 | 8.7, 8.1, 6.9, 7.0, 8.6, 16.1, 10.9, 8.0, 11.0, 8.4 |
+| Weight | float64 | 2 | 0.26 | 268 | 50.0, 33.0, 45.0, 40.0, 39.0, 53.0, 52.0, 56.0, 47.0, 25.0 |
+| Body_Temperature | float64 | 2 | 0.26 | 46 | 37.0, 36.8, 37.2, 37.8, 37.4, 37.5, 36.9, 38.0, 37.3, 36.6 |
+| Age | float64 | 0 | 0 | 570 | 11.05, 10.9, 13.83, 11.96, 14.2, 11.27, 11.38, 11.48, 11.37, 12.41 |
+| Abscess_Location | string | 750 | 98.3 | 6 | Douglas, rechter Unterbauch, rechter Mittelbauch, an den M. psoas rechts, retro… |
+| Gynecological_Findings | string | 750 | 98.3 | 8 | Ovarialzyste, Ovarialzysten, Zyste Uterus, V. a. Ovarialtorsion, ja, In beiden … |
+| Lymph_Nodes_Location | string | 642 | 84.14 | 19 | rechter Unterbauch, mesenterial, ileozökal, rechter Mittelbauch, Mittelbauch, r… |
 
 </details>
 
@@ -335,8 +404,8 @@ Default splits.
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| Age | 763 | 11.3131 | 3.54457 | 0 | 18.36 |
-| BMI | 738 | 18.8669 | 4.38221 | 7.82798 | 38.1562 |
+| Age | 763 | 11.3131 | 3.5445 | 0 | 18.36 |
+| BMI | 738 | 18.866 | 4.3833 | 7.8 | 38.2 |
 | Height | 739 | 147.865 | 19.8044 | 53 | 192 |
 | Weight | 761 | 43.0038 | 17.3933 | 3.96 | 103 |
 | Alvarado_Score | 720 | 5.92222 | 2.15325 | 0 | 10 |
@@ -344,7 +413,7 @@ Default splits.
 | Appendix_Diameter | 496 | 7.75565 | 2.53918 | 2.7 | 17 |
 | Body_Temperature | 761 | 37.4059 | 0.907442 | 26.9 | 40.2 |
 | WBC_Count | 759 | 12.6803 | 5.3541 | 2.6 | 37.7 |
-| Neutrophil_Percentage | 667 | 71.8417 | 14.4472 | 27.2 | 97.7 |
+| Neutrophil_Percentage | 667 | 71.8441 | 14.4631 | 27 | 98 |
 | Segmented_Neutrophils | 53 | 65.1358 | 15.1523 | 32 | 91 |
 | RBC_Count | 748 | 4.79767 | 0.501884 | 3.62 | 14 |
 | Hemoglobin | 748 | 13.3731 | 1.39947 | 8.2 | 36 |
@@ -357,15 +426,15 @@ Default splits.
 ### Categorical features
 
 <details>
-<summary>Show the table (129 rows)</summary>
+<summary>Show the table (111 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | Abscess_Location | 1 | &lt;NA> | 750 | 98.3 |
 | Abscess_Location | 2 | Douglas | 6 | 0.79 |
 | Abscess_Location | 3 | rechter Unterbauch | 2 | 0.26 |
-| Abscess_Location | 4 | an den M. psoas rechts | 1 | 0.13 |
-| Abscess_Location | 5 | rechter Mittelbauch | 1 | 0.13 |
+| Abscess_Location | 4 | rechter Mittelbauch | 2 | 0.26 |
+| Abscess_Location | 5 | an den M. psoas rechts | 1 | 0.13 |
 | Appendicolith | 1 | &lt;NA> | 694 | 90.96 |
 | Appendicolith | 2 | no | 33 | 4.33 |
 | Appendicolith | 3 | yes | 33 | 4.33 |
@@ -405,24 +474,24 @@ Default splits.
 | Free_Fluids | 1 | no | 409 | 53.6 |
 | Free_Fluids | 2 | yes | 309 | 40.5 |
 | Free_Fluids | 3 | &lt;NA> | 45 | 5.9 |
-| Gynecological_Findings | 1 | &lt;NA> | 737 | 96.59 |
-| Gynecological_Findings | 2 | keine | 9 | 1.18 |
-| Gynecological_Findings | 3 | Ovarialzyste | 4 | 0.52 |
-| Gynecological_Findings | 4 | Ovarialzysten | 2 | 0.26 |
-| Gynecological_Findings | 5 | Ovarialzyste re. | 1 | 0.13 |
+| Gynecological_Findings | 1 | &lt;NA> | 750 | 98.3 |
+| Gynecological_Findings | 2 | Ovarialzyste | 5 | 0.66 |
+| Gynecological_Findings | 3 | Ovarialzysten | 2 | 0.26 |
+| Gynecological_Findings | 4 | Zyste Uterus | 1 | 0.13 |
+| Gynecological_Findings | 5 | V. a. Ovarialtorsion | 1 | 0.13 |
 | Ileus | 1 | &lt;NA> | 703 | 92.14 |
 | Ileus | 2 | no | 37 | 4.85 |
 | Ileus | 3 | yes | 23 | 3.01 |
-| Ipsilateral_Rebound_Tenderness | 1 | no | 572 | 74.97 |
-| Ipsilateral_Rebound_Tenderness | 2 | &lt;NA> | 153 | 20.05 |
-| Ipsilateral_Rebound_Tenderness | 3 | yes | 38 | 4.98 |
-| Ketones_in_Urine | 1 | no | 328 | 42.99 |
-| Ketones_in_Urine | 2 | &lt;NA> | 185 | 24.25 |
-| Ketones_in_Urine | 3 | +++ | 124 | 16.25 |
-| Ketones_in_Urine | 4 | + | 77 | 10.09 |
-| Ketones_in_Urine | 5 | ++ | 49 | 6.42 |
+| Loss_of_Appetite | 1 | yes | 389 | 50.98 |
+| Loss_of_Appetite | 2 | no | 372 | 48.75 |
+| Loss_of_Appetite | 3 | &lt;NA> | 2 | 0.26 |
+| Lower_Right_Abd_Pain | 1 | yes | 721 | 94.5 |
+| Lower_Right_Abd_Pain | 2 | no | 40 | 5.24 |
+| Lower_Right_Abd_Pain | 3 | &lt;NA> | 2 | 0.26 |
+| Lymph_Nodes_Location | 1 | &lt;NA> | 642 | 84.14 |
+| Lymph_Nodes_Location | 2 | rechter Unterbauch | 57 | 7.47 |
 
-(69 more rows not shown)
+(51 more rows not shown)
 
 </details>
 
@@ -437,4 +506,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b3fd10f7ca06993581e67fa3ba2f648a137eda10c489148f948b2eda1f530912` |
+| stale | yes: the definition now gives checksum `v2:180dc3e7335c9c0bac62d1b06bfbdc1b53f225ec09924811b6d292fcca53d9f5` |
