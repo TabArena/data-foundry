@@ -1,5 +1,13 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-17, gossis_icu_hospital_mortality and regensburg_pediatric_appendicitis (Andrej's decisions, no container built)
+
+- gossis_icu_hospital_mortality: `UnseenGroup` instead of `ForcedGroupedFromTemporal`. It holds out hospitals because a
+  severity score is used at hospitals its developers never saw; the stays carry no date, so a later period at a known
+  hospital stays untested. Split unchanged; needs a rebuild for the metadata.
+- regensburg_pediatric_appendicitis: record facts `Time: Inferred` instead of `Time: Dated`, and `Clinical Study`
+  instead of `Dated Event Log`: the release has no dates, only two periods told apart by the ultrasound case numbers.
+
 ## 2026-11-17, the split decision tree from the collection type, final (no container built)
 
 - `split_tree.md` (SPLIT-37) is regenerated from the final tree: use-case questions first under every collection type;

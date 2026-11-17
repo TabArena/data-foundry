@@ -64,6 +64,10 @@ CC (2026-11-11, Andrej): built as the v2 dataset that replaces wids_diabetes_mel
 
 CC (2026-11-11, Andrej): BeyondArena v0.2 review page: issue 1 "Option B: ForcedGroupedFromTemporal." — the hospital split is tagged `ForcedGroupedFromTemporal` (SPLIT-8; one undated year, a later period untested) with a `Time basis:` line in `curation_comments`. Issues 2 and 3 `ok`: BMI at GOSSIS's clipping bounds and the 778 negative `pre_icu_los_days` (a registration lag) ship as published, with notes.
 
+CC (2026-11-17, Andrej): time basis `UnseenGroup` instead of `ForcedGroupedFromTemporal`:
+- The split holds out hospitals because the use case is a hospital the score was not developed at (the definition's group text); that is `UnseenGroup` (SPLIT-32), not a split forced by lost time.
+- The stays carry no date or order, so a later period at a known hospital stays untested; the split is unchanged.
+
 ## Review
 
 **Outcome:** added. The WiDS Datathon 2020 training table (https://www.kaggle.com/competitions/widsdatathon2020), MIT's

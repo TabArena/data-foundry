@@ -101,7 +101,7 @@ class GossisIcuHospitalMortality(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedGroupedFromTemporal",)
+    data_tags = ("UnseenGroup",)
     download_description = """
         We download the data from Kaggle (the competition's rules must be accepted first). The same files are on
         PhysioNet (credentialed access, https://doi.org/10.13026/vc0e-th79).
@@ -136,9 +136,10 @@ class GossisIcuHospitalMortality(AbstractCuratedDataset):
           bound, so the BMI is not impossible and is not set missing (unlike wids_diabetes_mellitus): those rows die at
           12.9% against 8.6%, and missing values would mark them (kept on Andrej's mark, 2026-11-11). No age 0 occurs
           here.
-        - Time basis: ForcedGroupedFromTemporal: ICU stays of one year (eICU, 2014-2015), released without a date or an
-          order (no signal in the file order, encounter_id or patient_id); the split holds out hospitals, and a later
-          period of stays, which a dated release would allow, is not tested.
+        - Time basis: UnseenGroup (Andrej, 2026-11-17; `ForcedGroupedFromTemporal` before): a severity score is used to
+          compare and adjust for risk across hospitals, including ones its developers never saw, so whole hospitals are
+          held out (147 hospitals). The stays cover one year (eICU, 2014-2015) and come without a date or an order (no
+          signal in the file order, encounter_id or patient_id). Not tested: a later period at a known hospital.
         - Anomaly: `pre_icu_los_days` is negative in 778 rows (median -0.30 days, 647 above -1 day): a registration lag
           in eICU (hospital admission recorded after the ICU admission); kept, as missing values would mark the same
           rows (2026-11-11, Andrej).
