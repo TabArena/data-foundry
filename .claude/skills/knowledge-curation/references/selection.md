@@ -304,7 +304,9 @@ data (Lennart, 2026-10-27). `eryhemato_squamous_disease` is the example: 93% of 
 lesions and no other patient does, against 19% to 63% in clinic series; kept, with an approximate fit. A selection does
 not retire a dataset by itself: early_stage_diabetes_risk_prediction (patients of a diabetes hospital, 69% diabetic) was
 retired because no testing decision is made from its symptoms (USE-2, USE-8), and its `Selection Bias` marker stays
-(Lennart, 2026-11-11).
+(Lennart, 2026-11-11). naticusdroid_android_permissions_dataset (benign and malware apps from two collections of
+different periods) was retired because the release cannot recover its malware families (SPLIT-25), and keeps its
+`Selection Bias` marker too (Lennart, 2026-11-16).
 
 No marker when:
 
@@ -378,7 +380,8 @@ competition, institution, an identifiable first uploader), we cannot tell what t
 source that is plausible but unclear in a detail stays, with a note of what to clarify (PROV-2;
 bad_customer_detection; Lennart, 2026-10-14). An upload whose first platform cannot be traced stays for now, case by
 case, when the data passes PROV-3 and there is a source to point to; the gap goes into an approximate fit with a note
-(PROV-2 as amended, Lennart, 2026-10-21; tour_travels_churn, mobile_churn).
+(PROV-2 as amended, Lennart, 2026-10-21; mobile_churn; tour_travels_churn, kept on it, was later retired under
+PROV-3).
 
 A record with too little information while the dataset's origin is known (a bare link, no description) is not
 rejected for that (PROV-2): use `TBD -> Yes` or `TBD -> 2nd Tier` and write down what to inspect (the size after
@@ -412,8 +415,9 @@ Records are sparse on purpose; a missing field is usually fine.
   no problem to flag. Only the verdict is required.
 * `problem_type` can be a choice of task. A table can support a regression target or a classification one where
   taking one means dropping the other: `pva_revenue_prediction_kddcup98` has the donation amount and the donated-at-all
-  flag, two framings of one signal. Then the field records the task we ship, and the other framing goes into the
-  comments (or its own `_clf` dataset).
+  flag, two framings of one signal (it ships the amount, the KDD Cup's own target and net-revenue metric, since the
+  source says response and gift size run against each other). Then the field records the task we ship, and the other
+  framing goes into the comments (or its own `_clf` dataset).
 * `Multi-target` is for several distinct targets predicted at once (next-day minimum and maximum temperature, several
   soil nutrients). Remove it when the dataset has one target or when the targets are framings of one signal
   (CLEAN-18 in [cleaning_features.md](cleaning_features.md); caracas_cervical_cancer: four results from one work-up,

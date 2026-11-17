@@ -43,6 +43,15 @@ a manager, a soil type or a fund category is known for every new row. Cases: sup
 fact. Authors often pick a random split on data that is really temporal. Check a claim about a split against the data
 as well. A benchmark's non-IID label can also be wrong for our framing, in either direction. Cases:
 appliances_energy_prediction, kick.
+**SPLIT-33 (Should).** An IID or grouped task gets repeated 3-fold cross-validation, with 20, 10, 3 or 1 repeats as its
+train side holds fewer than 500, 2,500 or 250,000 units, or more, at any size of the frame. The unit: the group
+when each has one label; else the scored unit (the rows the metric combines into one term of its score, set by its
+`group` input; one row by default) when all rows of each are in one group (a PAR10 per instance over one row per
+instance and solver, the instances held out or inside held-out classes); else the row. A scored unit the split cuts
+across folds (a survey year over held-out stations, any scored unit under an IID split) is scored on part of its rows
+in every fold, so the rows count. Why: the noise
+of a score follows the number of units scored, so a task gets the same splits whatever the layout of its table.
+Cases: sat11_hand_algo_runtime, protein_model_quality_rf_pcp, wadden_sea_sibes_macoma_abundance.
 
 ### Forecasting and a missing time axis
 
@@ -351,7 +360,7 @@ concrete_compressive_strength, airfoil_self_noise, maternal_health_risk, frempl_
 
 **SPLIT-25 (Must).** When the real groups matter and cannot be recovered, retire the dataset rather than group on a
 guess, and note that the authors could be asked for the group labels. Cases: maternal_health_risk,
-hazelnut_spread_contaminant_detection.
+hazelnut_spread_contaminant_detection, naticusdroid_android_permissions_dataset (malware families).
 
 **SPLIT-26 (Should).** Take the group key from the source's own data, at the resolution the features see. Keep the
 source's rows: deduplicating with averaged targets is a different dataset. Cases: superconductivity.
@@ -469,6 +478,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-24 | pricing_game_2016_french_fleet | the group is the contract with the contracts that share a vehicle's registration joined (connected components of the source's contract and registration ids, an exact key): registration 32348 has one period under each of contracts 6168, 6169 and 6170, the only registration under more than one contract, so 18,035 groups of 18,037 contracts; a client guessed from neighbouring contract numbers and equal fleet classes was not used, a guess with no shared claim or outcome behind it (Lennart, 2026-11-08, issue 9 (B)) | applied |
 | SPLIT-24, SPLIT-25 | maternal_health_risk | the first suggestion, a hash of the feature vector standing in for the unknown entity, was barred; the six collection sites are not in the file: retired | applied |
 | SPLIT-25 | hazelnut_spread_contaminant_detection | re-scans of about ten set-ups, not recoverable: retired | applied |
+| SPLIT-25 | naticusdroid_android_permissions_dataset | test malware has siblings of its AMD family in training; the UCI file has no hash, package name or family, and the permission set may not stand in (SPLIT-24): retired; its `Selection Bias` was not the reason (Lennart, 2026-11-16) | applied |
 | SPLIT-26 | superconductivity | key: element shares from `unique_m.csv`, which the features are computed from; a formula string would split one composition written two ways | applied |
 | SPLIT-27 | mice_protein | LightGBM log loss 2.53 against a baseline of 2.07, while a random forest reached 1.12 | applied |
 | SPLIT-28 | telemonitoring_parkinsons | R^2 -0.17 to -0.31 grouped against 0.75 IID; as warm start 6.33 against 6.48 for the carried-forward value; retired (2026-10-02) | applied |
@@ -485,10 +495,15 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-31 | qsar_oral_toxicity | reopened under the amendment: every row has its own QSAR-ready structure since 2026-10-21, so the scaffold is exact; ring-less chemicals (23%) and the bare benzene ring (18%) alone; close training analogs fall from 24.7% to 16.3%, against 11.0% for the untested chemicals, so the fit stays approximate (2026-10-26, Lennart) | applied |
 | SPLIT-31 | qsar_tid_11 | scaffold groups in place of IID: the file carries ChEMBL compound ids, and ChEMBL 17 (the release the data was drawn from) gives every one its structure; 21 ring-less compounds alone, the bare benzene ring 2%; close training analogs fall from 79.7% to 59.2%, untuned LightGBM RMSE 0.794 to 0.920; the features stay the source's fingerprint (2026-11-01, Lennart) | applied |
 | SPLIT-24, SPLIT-26, SPLIT-4 | boreal_postfire_lichen_biomass | one group per Saskatchewan plot kept (the names carry no burn key), with the measured effect in the notes, over a burn key joined from an outside source (Canada's NFDB and NBAC fire polygons, point in polygon on the plot's fire year): tried on 2026-11-09 and taken back on 2026-11-10 (Andrej: "Back to A, with the note"). 94 of 190 SK plots lay inside a mapped burn of their year (none of the 66 dated before 1945); burn-mates in training flattered the SK RMSE by about 5 kg/ha against a fold-draw SE of about 40, and no model changed rank; the join cost 2 GB of maps, a shapefile reader and a build tied to NFDB's current version only | applied |
+| SPLIT-33 | sat11_hand_algo_runtime | one row per instance and solver, scored by PAR10 per instance, the instances held out: the repeats follow the 184 instances (20 x 3), not the 1,840 runs (10 x 3) | proposed |
+| SPLIT-33 | protein_model_quality_rf_pcp, huesken_sirna_efficacy, sepsis_prediction_1m | scored per protein, per gene and per patient, each held out whole: 445 proteins and 30 genes give 20 x 3 (the rows 3 x 3 and 10 x 3), 40,336 patients 3 x 3 (the 1.55M rows 1 x 3) | proposed |
+| SPLIT-33 | wadden_sea_sibes_macoma_abundance | scored per survey year (15) over a split by station: every test fold holds part of every year, about 1,300 stations a year, so the years do not set the repeats; the rows do (59,044: 3 x 3, not 20 x 3) | proposed |
 
 ## In Data Foundry
 
 The declarations (`Grouping`, `Temporal`, `TemporalSplits`, the gap and horizon fields), the default 3-fold protocol,
 the row budget and the `_1m` versions: [definitions.md](../../knowledge-data-foundry/references/definitions.md),
-"Splits". The probes that test grouping and hidden groups:
+"Splits". The units SPLIT-33 counts, with a figure of the same, nested and crossing cases and the counting tree:
+[split_protocol.md](../../knowledge-data-foundry/references/split_protocol.md), "The units counted". The probes that
+test grouping and hidden groups:
 [checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md).

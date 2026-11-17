@@ -513,7 +513,9 @@ class AbstractCuratedDataset(ABC):
     """The training weight, a scoring column every model is fitted with as each row's weight, never a feature: the
     metric's row weight (``inputs={"weight": col}``). Declare it when the weight is a realized amount at risk, the
     denominator of a rate target (the years insured of a claims-per-year target, MET-15); a weight that is a function
-    of the features (a sum insured) needs none. ``None``: models train unweighted."""
+    of the features (a sum insured) needs none. A weight for training alone, which the metric does not read (a label's
+    precision, a design weight when sampling depends on the outcome), is declared here too, its scoring column
+    ``used_by="training"`` (MET-16). ``None``: models train unweighted."""
     unit_weight: ClassVar[UnitWeight | None] = None
     """A score that counts each unit once (MET-17): ``UnitWeight(column="plot_weight", unit="plot")``, the metric's
     weight scoring column (1 over the unit's rows, ``inputs={"weight": column}``) and the column naming the unit, kept
@@ -540,8 +542,10 @@ class AbstractCuratedDataset(ABC):
     it is held out, the use case with its source) is required and may be indented like code. Stored in the container."""
     temporal: ClassVar[Temporal | None] = None
     """A temporal task: ``Temporal(on=..., splits=TemporalSplits(...))`` (:class:`~data_foundry.v2.splits.Temporal`),
-    plus ``horizon=..., horizon_unit=...`` when the windows do not fix the horizon. Neither ``grouping`` nor
-    ``temporal``: an IID task."""
+    plus ``horizon=..., horizon_unit=...`` when the windows do not fix the horizon, and ``time_of="label"`` when the
+    time column dates the label rather than the prediction point (it then orders and splits the rows but is no model
+    input), with ``prediction_time=...`` naming the column of the prediction point when there is one. Neither
+    ``grouping`` nor ``temporal``: an IID task."""
 
     # --- row order ----------------------------------------------------------------------------------
     shuffle: ClassVar[bool] = True
@@ -1177,7 +1181,12 @@ class AbstractCuratedDataset(ABC):
     def _cross_validation(self, df: pd.DataFrame) -> Splits:
         """The recommended IID or grouped 3-fold cross-validation on ``df``."""
         task = self.task_metadata
-        n_repeats, n_folds = protocol.recommended_dimensions(df, group_on=task.group_on, group_labels=task.group_labels)
+        n_repeats, n_folds = protocol.recommended_dimensions(
+            df,
+            group_on=task.group_on,
+            group_labels=task.group_labels,
+            scored_unit_on=protocol.scored_unit_column(task),
+        )
         if task.group_on is None:
             return protocol.iid_splits(
                 df,
@@ -2266,6 +2275,8 @@ def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadataV
         stratify_on=stratify_on,
         time_on=cls.temporal.on if cls.temporal is not None else None,
         time_unit=cls.temporal.time_unit if cls.temporal is not None else None,
+        time_of="label" if cls.temporal is not None and cls.temporal.time_of == "label" else None,
+        prediction_time=cls.temporal.prediction_time if cls.temporal is not None else None,
         grouping=grouping,
         scoring_columns=[dataclasses.replace(c, description=clean_text(c.description)) for c in cls.scoring_columns],
         sample_weight=cls.sample_weight,
