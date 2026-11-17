@@ -324,12 +324,14 @@ first, then what the data and its documentation allow, then a measurement where 
 the split and the tag that justifies it (a time basis, a forced tag or `ForcedIIDFromGrouped`), and for a temporal
 split the date the windows are cut on and the gap. Answer each question from what it reads; a collection fact only
 points to where to look. A forced leaf, a leaf no definition has reached yet, and a question no answer fits go to a
-human reviewer with the split suggested and the facts behind it; only a reviewer adds a branch. A definition that ships
-another split than its leaf names the leaf and the reason in its `splits_comment`, and the departure goes to a
-reviewer. The rules above still decide each step (the windows, the gap, the groups, the leak tests); the tree orders
-them. Why: the same questions asked in the same order make splits of similar data agree, and show where a dataset is
-new. Cases: the 174 v0.2 definitions placed when the tree was adopted (2026-11-17); ten shipped another split and
-are listed in split_tree.md.
+human reviewer with the split suggested and the facts behind it; only a reviewer adds a branch. A split the source
+prescribes answers a question only where the source chose it for the use case: matching the leaf, it fills in the
+leaf's periods, gap and training history (SPLIT-19); differing, the leaf decides (SPLIT-5). A definition that ships
+another split than its leaf names the leaf, what the source prescribed and the reason in its `splits_comment`, and the
+departure goes to a reviewer. The rules above still decide each step (the windows, the gap, the groups, the leak
+tests); the tree orders them. Why: the same questions asked in the same order make splits of similar data agree, and
+show where a dataset is new. Cases: the 174 v0.2 definitions placed when the tree was adopted (2026-11-17); ten
+shipped another split and are listed in split_tree.md.
 
 ### Temporal tasks
 
@@ -431,7 +433,8 @@ Cases: climate_model_weather_forecasting.
 ### The training history
 
 **SPLIT-19 (Should).** When the source defines the split (a competition's or a paper's official periods), follow it.
-A prescribed split is still a claim to check (SPLIT-5).
+A prescribed split is still a claim to check (SPLIT-5): it fills in the leaf SPLIT-37 reaches, and where it differs
+from that leaf the leaf decides.
 
 **SPLIT-20 (Should).** Otherwise decide what the train side holds from the use case: the history a model refit at each
 window would train on. Read what the source's authors trained on, check the history for breaks (COVID-19, a change of

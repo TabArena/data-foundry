@@ -21,6 +21,11 @@ windows are cut on and the gap.
     split is a compromise the use case does not ask for;
   - you reach a leaf no v0.2 definition reaches yet: the reviewer decides the split and how the tree changes;
   - no answer fits a question: the tree needs a new branch, which only a reviewer adds.
+* A use case the source states (a paper, a competition, a data card) answers the use-case questions (USE-1). A split
+  the source prescribes is evidence, not an answer: it answers a question only where the source chose it for that use
+  case. Where it matches the leaf, its official periods, gap and training history fill in the leaf (SPLIT-19); where
+  it differs, the leaf decides, and the `splits_comment` says what the source prescribed and why it does not fit the
+  use case (SPLIT-5), as a departure for a reviewer.
 * `AssumedStationaryRelation` is only ever reached through a person's answer (SPLIT-32): offer it with the facts for
   and against and recommend it if you like, but answer "no" yourself unless a person has given the reason.
 * Where a definition ships another split than its leaf, its `splits_comment` says which leaf the tree gives and why
