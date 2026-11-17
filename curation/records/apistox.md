@@ -5,6 +5,8 @@ checked_by:
 - Andrej
 data_foundry_status:
 - 'DF: Yes'
+- WIP (DF)
+claimed_by: Andrej
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
@@ -12,6 +14,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
+- Expanding Science Catalogue
 collections:
 - New (BeyondArena)
 original_source: Other
@@ -56,9 +59,119 @@ CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encod
 
 **Assessment (AI, 2026-11-01):** the definition now ships `SMILES` (RDKit's canonical form; 17 strings change) in `smiles_columns` and no longer RDKit's 199 descriptors. The 141 salts and complexes stay as published: the largest fragment would make 86 rows copies of another, among them triclopyr and picloram triethylammonium, which both reduce to triethylamine. MACCS keys next to the descriptors: -0.006 (LightGBM) / +0.004 (random forest) ROC AUC over the 4 windows. The decade windows already keep series apart about as a scaffold split would (test compounds with a training analog at Tanimoto >= 0.7: 10-24%, against 14-19% for scaffold groups and 17-30% at random), so the temporal split stays.
 
+CC (2026-11-11, Andrej): collection facts corrected to `Samples: Over Time`, `Time: Dated` and `Target: Varying Delay` (review issue 1, C), so that the record says what the definition's split already does.
+- The definition splits the compounds into four ten-year windows by `first_publication_year`, the year the compound first appears in the literature, as the authors' own time split; the record still carried `Samples: No Time Dimension`.
+- The collection facts describe the source whatever task is built on it, and a catalogue whose items enter in eras arose over time even where each item's own property is fixed.
+- `Target: Varying Delay`: the curation notes record that bee tests of old compounds were often published decades later, so a label is not always known at its window's cutoff.
+- The definition is unchanged: a temporal split carries no time-basis tag.
+
+CC (2026-11-12, Andrej): `first_publication_year` orders the split but is no model input (review issue 2, B).
+- It is the year of the first article PubChem links to the compound; a candidate screened before its bee test is not yet in the literature, so the actor does not hold the year at the prediction point.
+- `Temporal(..., feature=False)`: the four ten-year windows and their counts stay; the inputs lose one column.
+
+## Review
+
+**Outcome:** added. ApisTox (Zenodo 13350981): whether an agrochemical is acutely toxic to honey bees, from its
+structure and its pesticide-type flags; 1,035 compounds, four ten-year windows on `first_publication_year` (the year
+it enters the literature, no model input), as the authors' own time split. Opened on 2026-11-11 from the review of how catalogues of
+fixed properties split: the definition splits by year while the record says the compounds have no time dimension.
+
+**Main points:** Nothing open. Settled: `first_publication_year` orders and splits the rows but is no model input
+(issue 2, B, resolved 2026-11-12); the record's collection facts corrected to `Samples: Over Time`, `Time: Dated` and
+`Target: Varying Delay` (issue 1, C, resolved 2026-11-11).
+
+**Issues for Andrej:**
+
+1. **Correct the record's collection facts to `Samples: Over Time`, `Time: Dated` and `Target: Varying Delay`?**
+
+   * **Problem:**
+     - The record carries `Samples: No Time Dimension` and no time or target fact, while the definition splits the
+       compounds into ten-year windows by the year each first appears in the literature.
+     - The collection facts describe the source whatever split a definition chooses, so a catalogue whose items enter
+       in eras arose over time even where each item's own value is fixed[^1a].
+     - The definition's notes say bee tests of old compounds were often published decades later, so a training label
+       is not always known at its window's cutoff.
+   * **Background:** `first_publication_year` is the year of the earliest article PubChem links to the compound's
+     CID, else the PubChem record's creation date; the four windows hold 54, 106, 118 and 173 compounds, and their
+     training sides 95%, 85%, 73% and 56% of the set.
+   * **Effect on the task:** none on the split, which already follows the year; the facts are what a reader checks a
+     split against, and here they say the opposite of what the definition does.
+   * **Consistency:** qsar_tid_11 and superconductivity were both found to be catalogues that drift and had the same
+     facts questioned; this one already ships the forward split, so only the record is behind.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the facts (implemented) | no change | nothing to write | the record contradicts the definition's split |
+     | B | `Samples: Over Time`, `Time: Dated` | the two facts the year column supports | matches the definition and the source's own column | the label's delay stays unrecorded |
+     | C | B and `Target: Varying Delay` | also records that a bee test can follow its compound by decades | records what the notes already measured; asks for the usual check of every feature against the prediction point | a reader may read it as a censoring problem, which the windows do not show |
+
+   * **Recommendation:** C: all three are facts of the source, and the delay is one the definition already writes
+     about. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B or C, edit `curation/records/apistox.md`: replace the `Samples: No Time Dimension` tag
+   under `tags:` with `Samples: Over Time` and `Time: Dated` (and `Target: Varying Delay` on C), add a CC line with
+   the reason and `Andrej` in `checked_by`. The definition needs no change: a temporal split carries no time-basis
+   tag. Then `dataset check` and a CHANGELOG entry.
+
+   [^1a]: **SPLIT-32** (Should): the curation record describes the source by collection facts, true whatever task is
+     built on it; `Samples: Over Time` when the samples arose over a period, `Time: Dated` when the release or a
+     parent source keeps the date, `Target: Varying Delay` when the target arrives after a delay that differs
+     between samples. A catalogue whose items enter in eras arose over time even when each item's value is fixed.
+
+   **Andrej (2026-11-11, change):** Option C: B and Target: Varying Delay.
+
+   **Resolved (2026-11-11, Andrej):** C ("Option C: B and Target: Varying Delay"): the record's
+   `Samples: No Time Dimension` replaced by `Samples: Over Time`, `Time: Dated` and `Target: Varying Delay`, with a CC
+   line and `Andrej` in `checked_by`, mirrored in the PR #50 worktree's copy; the definition is unchanged (a temporal
+   split carries no time-basis tag), so no `dataset check`.
+
+2. **Should the time column be a model input?**
+
+   * **Problem:**
+     - `first_publication_year` is the year of the earliest article PubChem links to the compound (else its record's creation year), which arrives with the target: a candidate compound is screened before its bee test, when it is not yet in the literature[^2a].
+     - A declared time column is a model input unless the definition says otherwise, so the task hands models a column the actor does not hold at the prediction point.
+     - Keep it an input, or keep it only to order and split the rows?
+   * **Background:**
+     - The task summary lists the year among what is known, and the four decade windows split by it.
+     - For a compound already in the literature for other reasons the year can precede the bee test, so the column is not strictly the label's date; for the candidate of the use case it does not exist yet.
+     - Since 2026-11-12 `Temporal(..., feature=False)` keeps the time column in the frame for the split and the README's split table and leaves it out of `feature_columns`; sdss_17 (date of the spectrum) is the first user.
+   * **Effect on the task:** under B the windows and every split number stay; only the inputs lose the column. Inside a test window every value lies after every training row's, so a model gains from it mainly the order within the window; the size is not measured.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep it an input (implemented) | `first_publication_year` orders the split and is a feature | nothing to change | a model reads a column the actor does not hold |
+     | B | Time column only | `Temporal(..., feature=False)`: same windows, `first_publication_year` no model input | the model's inputs are the actor's; the split unchanged | one input fewer; a rebuild |
+
+   * **Recommendation:** B, since the actor does not hold `first_publication_year` when predicting[^2b]. **Decision:** A or B?
+
+   **Notes for the AI:** on B, add `feature=False` to the `Temporal(...)` declaration in `dataset.py`; in `task_summary.known` replace "and the year the compound first appears in the literature." with "the year the compound first appears in the literature orders the split but is no model input." (adjust the sentence around it); add a curation bullet: "`first_publication_year` orders and splits the rows and is no model input (`Temporal(..., feature=False)`): it arrives with the target (2026-11-12, Andrej)."; remove any bullet that calls it a feature; re-run `dataset check` (expect one feature fewer and `time_is_feature: false` in the README). Update the record's `features` count if it names one.
+
+   [^2a]: **USE-3** (Must): name the prediction point, when the model is used and what is known then; a value that
+     did not exist at that point is a leak. **LEAK-10** (Must): a feature holds only what existed at the prediction
+     point.
+   [^2b]: **USE-6** (Must): anything known at the prediction point is a legitimate input, so the question is the
+     actor's knowledge, not the score. **SPLIT-7** (Must): a missing or hidden timestamp does not make a task IID, so
+     B keeps the split as it is.
+
+   **Andrej (2026-11-12, change):** Option B: Time column only.
+
+   **Resolved (2026-11-12, Andrej):** B. `feature=False` on the `Temporal(...)` declaration; `task_summary.known` says
+   the year orders the split but is no model input; a curation bullet gives the reason (it arrives with the target),
+   and the prediction-point bullet no longer lists the year as known. Record CC line. `dataset check` 0 errors,
+   0 warnings, 1 info (horizon unit of an integer year); README: 5 features (was 6), `time_is_feature: false`, the
+   four windows unchanged (train 584 to 981 rows, test 54 to 173).
+
 ## Reference
 
 ApisTox: a new benchmark dataset for the classification of small molecules toxicity on honey bees
 By Jakub Adamczyk, Jakub Poziemski, Paweł Siedlecki. 2024
 
 Published in Scientific Data 12:5 (2025), doi 10.1038/s41597-024-04232-w; preprint on arXiv (2024).
+
+CC (2026-11-11, Andrej): collection facts corrected to `Samples: Over Time`, `Time: Dated` and `Target: Varying Delay` (review issue 1, C), so that the record says what the definition's split already does.
+- The definition splits the compounds into four ten-year windows by `first_publication_year`, the year the compound first appears in the literature, as the authors' own time split; the record still carried `Samples: No Time Dimension`.
+- The collection facts describe the source whatever task is built on it, and a catalogue whose items enter in eras arose over time even where each item's own property is fixed.
+- `Target: Varying Delay`: the curation notes record that bee tests of old compounds were often published decades later, so a label is not always known at its window's cutoff.
+- The definition is unchanged: a temporal split carries no time-basis tag.

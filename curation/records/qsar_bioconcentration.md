@@ -6,12 +6,15 @@ checked_by:
 - Andrej
 data_foundry_status:
 - 'DF: Yes'
+- WIP (DF)
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 2
 tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- Expanding Science Catalogue
 collections:
 - TabSTAR
 original_source: UCI
@@ -127,9 +130,134 @@ task probes raise no flag (random forest macro ROC AUC 0.678, LightGBM 0.689, be
 test class 9 rows) and the leak probes none (all features 0.705, shallow tree 0.581, no test row with an exact
 feature copy in training, 1-NN label agreement 0.621 against a chance of 0.462).
 
+CC (2026-11-11, Andrej): the chemicals are dated before the time basis is named (review issue 1, B). NITE's workbook of the CSCL carp bioconcentration tests dates 347 of 776 by CAS, 1975 to 2007, and its BCF matches the shipped logBCF (correlation 0.965).
+- A forward split by test year (three windows, Slurm 1378135) leaves 3.8% of test chemicals a close training analog against 4.6% scaffold-disjoint, and scores within noise of it; whether to keep the scaffold split and name it Timeless is review issue 2. The definition is unchanged.
+
+CC (2026-11-12, Andrej): review page mark (issue 2, b): the scaffold split stays, with time basis `Timeless`. NITE's carp tests date 347 of 776 chemicals (1975-2007), and a split by test year held out no more than the scaffold groups on the same chemicals (random forest log loss 0.798 against 0.768; close analogs 3.8% against 4.6%). The `Time basis:` line is in the definition's notes; the tag enters `data_tags` once PR #50 is in the working copy.
+
+CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension` (Review issue 3): NITE's CSCL carp bioconcentration tests date 347 of 776 chemicals (44.7%), 1975 to 2007. The facts describe the source and do not change with the split, which stays as it is.
+
 CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case predicts for items the catalogue does not hold, which the held-out scaffolds stand for; that the entry date carries no wave is a measurement for the `Time basis:` line, not a different use case.
 - `Timeless` now means a fixed target in data with no time dimension. The split does not change.
+
+## Review
+
+**Outcome:** added. The bioconcentration class of 776 organic chemicals in fish (Grisoni et al. 2016, UCI 510), from
+the structure and the measured logKOW, grouped on the Bemis-Murcko scaffold (558 groups). Opened on 2026-11-11 from
+the review of how catalogues of fixed properties split: the definition names no time basis for its scaffold split.
+
+**Main points:** the chemicals dated through NITE's carp tests (issue 1, B, resolved 2026-11-11): 347 of 776, and a
+split by test year holds out no more than the scaffold split. Settled: the scaffold split stays, named `Timeless` (issue
+2, b, 2026-11-12). Settled 2026-11-12: collection facts `Samples: Over Time`, `Time: Dated` (issue 3).
+
+**Issues for Andrej:**
+
+1. **Time basis: date the chemicals first, or name the scaffold split `Timeless`?**
+
+   * **Problem:**
+     - The definition splits on the scaffold and names no time basis, while the record carries
+       `Samples: No Time Dimension`.
+     - A chemical's bioconcentration factor is a fixed property of the chemical, the case the `Timeless` prototype
+       names[^1a].
+     - The chemicals carry CAS numbers, and a catalogue whose items enter in eras counts as arising over time even
+       where each item's own value is fixed, so the identifier is worth checking before the tag is set.
+   * **Background:** the use case is an assessor judging an untested chemical before a fish test, holding its
+     structure and its logKOW; the measured BCF values were compiled from the authors' 2015 table, drawn in turn from
+     VEGA and the EURAS BCF collection, neither of which ships a test date in this release.
+   * **Experiments:** the share of test chemicals with a close training analog (Tanimoto 0.7 or more, Morgan radius 2)
+     fell from 12.6% under a random split to 6.4% under the scaffold groups when the split was adopted; no split by
+     year has been measured, because no year is in the release.
+   * **Consistency:** on 2026-11-11 qsar_biodeg was sent to be dated through NITE, and qsar_fish_toxicity and
+     qsar_aquatic_toxicity through ECOTOX, before their time basis is named; this dataset is the fourth of that
+     family and its chemicals carry the same kind of key.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Scaffold split, no time basis (implemented) | no change | nothing to write | the definition does not say why a split that is not temporal is safe in time |
+     | B | Date through the source tables, then decide | look for a measurement year per CAS number in the EURAS BCF collection and the authors' 2015 table, then measure a split by year as the siblings will | decides on a measurement; the same route as the three siblings | the compilations may carry no year, and then the answer is C anyway |
+     | C | Scaffold split, `Timeless` | the tag and a `Time basis:` line naming the fixed property, the undated compilation and the measured analog shares | nothing to measure; as the other molecule sets | assumes the catalogue does not drift, which the siblings are being asked to check |
+
+   * **Recommendation:** B, for the same reason you gave the three siblings: the key is in the release, so the
+     question can be settled by measurement rather than assumed. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, join the CAS numbers to the EURAS BCF collection and the authors' 2015 supporting
+   table, report the share dated and the year range, and if dated measure as qsar_tid_11 did (expanding windows by
+   first year against scaffold folds on the same test chemicals, close-analog shares for both). On C,
+   `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`) and a `curation_comments` bullet naming the
+   property, the undated compilation and the fall from 12.6% to 6.4% close analogs; then `dataset check`, a CHANGELOG
+   entry and a record CC line with `Andrej` in `checked_by`.
+
+   [^1a]: **SPLIT-32** (Should): a definition can name the use-case prototype it follows; `Timeless` when the target
+     is a fixed property of the item. Question 1 also asks which identifier a parent source could date the items by,
+     and "none published" is an answer; a catalogue whose items enter in eras arose over time even when each item's
+     value is fixed.
+
+   **Andrej (2026-11-11, change):** Option B: Date through the source tables, then decide.
+
+   **Resolved (2026-11-11, Andrej):** B ("Option B: Date through the source tables, then decide"): dated, and the split
+   by year measured; the result and the decision it leaves are issue 2. No change to the definition.
+
+2. **Time basis after the dating: keep the scaffold split and name it `Timeless`?**
+
+   * **Problem:** a forward split by test year leaves as few close training analogs as the scaffold split
+     (3.8% against 4.6%) and scores within noise of it, while it can use only the 347 dated chemicals.
+   * **The dating:** NITE's workbook of the Japanese CSCL carp bioconcentration tests (`000064113.xlsx`, OECD QSAR
+     Toolbox format, with the test `Year`) dates 347 of 776 chemicals by CAS (44.7%), 1975 to 2007. Its BCF agrees
+     with the shipped logBCF (correlation 0.965, median difference 0.19 log units), so these are the same tests.
+   * ECOTOX's earliest fish BCF record dates 170 more, but its values agree less (correlation 0.744), so its year is
+     not the year of the compiled value; the run with it gave the same picture.
+   * **The split, three expanding windows by NITE test year** (test 65, 60, 42 chemicals; training sides 52% to 88%
+     of the dated), on the same test chemicals, untuned LightGBM / random forest on the shipped encoding, means over
+     the windows (Slurm 1378135):
+
+     | Scheme | Log loss, LightGBM / RF | Macro ROC AUC, LightGBM / RF | Close training analog | Test scaffold in training |
+     |---|---|---|---|---|
+     | T, forward by test year | 2.158 / 0.798 | 0.666 / 0.726 | 3.8% | 23.4% |
+     | S, scaffold-disjoint | 2.254 / 0.768 | 0.662 / 0.759 | 4.6% | 0 |
+     | R, random | 2.231 / 0.751 | 0.667 / 0.765 | 3.8% | 23.4% |
+     | Shipped scaffold folds, all 776 | 2.255 / 0.913 | 0.672 / 0.675 | 7.1% | 0 |
+
+   * The class mix moves a little: class 1 is 73.7% of the 1975-79 tests and 55% to 64% later; the undated half holds
+     twice the rare class 2 (10.5% against 5.5%), so a split on the dated half alone would also thin that class.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Temporal split by NITE test year | a `test_year` column, windows by year, 429 undated chemicals dropped | follows the one dated order | drops 55% of the rows and half the rare class; windows of 42-65 chemicals; holds out no more |
+     | b | Scaffold split (implemented), `Timeless` | a `Time basis:` line: fixed property, the NITE dating and the table above | states what was measured; nothing dropped | the 1970s class mix is not modelled |
+     | c | Scaffold split, the measurement written down, no prototype tag | the table in the notes only | claims nothing beyond the numbers | leaves the time basis unnamed |
+
+   * **Recommendation:** b. **Decision:** a, b or c?
+
+   **Notes for the AI:** on b, a `curation_comments` bullet `- Time basis: Timeless: ...` naming the fixed property,
+   the NITE dating (347 of 776, 1975-2007) and the forward-against-scaffold numbers, ending with what the split cannot
+   test (the order of the undated half); the tag enters `data_tags` once PR #50 is in the working copy; then
+   `dataset check`, a CHANGELOG entry and a record CC line.
+
+   **Resolved (2026-11-12, Andrej):** b: the scaffold split stays. A `Time basis: Timeless:` bullet in
+   `curation_comments` names the fixed property, the NITE dating (347 of 776, 1975-2007) and the forward against
+   scaffold numbers, ending with what the split cannot test (the order of the undated half); record CC line. The tag
+   `Timeless` enters `data_tags` once PR #50 is in the working copy. Data, split and score unchanged; `dataset check`
+   re-run.
+
+3. **Collection facts: `Samples: Over Time` and `Time: Dated`, since a source dates the items?**
+
+   * **Problem:** the record carries `Samples: No Time Dimension`, while NITE's CSCL carp bioconcentration tests date
+     347 of 776 chemicals (44.7%), 1975 to 2007. The facts describe the source and do not change with the split; whether
+     the date carries anything belongs to the time basis `Timeless` (issue 2)[^3a].
+   * **Change:** `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension`; the data, the split
+     and the score are unchanged.
+
+   [^3a]: **SPLIT-32** (Should): the collection facts are read from the source and do not change with the split; a
+     catalogue that a parent source dates is `Samples: Over Time` with `Time: Dated` even where the date turns out to
+     carry nothing, and whether it does is measured for the time basis.
+
+   **Resolved (2026-11-12, Andrej):** applied on approval of the plan that settled the split keys of growing catalogues
+   (one decision for the eighteen datasets of that review): the record's facts changed, with a CC line and `Andrej` in
+   `checked_by`. No definition change.
+
 
 ## Reference
 

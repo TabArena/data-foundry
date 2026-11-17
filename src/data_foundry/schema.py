@@ -1091,6 +1091,10 @@ class PredictiveMLTaskMetadataV2:
     """Fields added after containers shipped: dropped from the checksum and the saved JSON while ``None``, so a
     container saved before they existed keeps verifying."""
 
+    _OMIT_WHEN_DEFAULT: ClassVar[dict[str, Any]] = {"time_is_feature": True}
+    """Fields added after format-2 containers were built: dropped from the checksum and the saved JSON while they hold
+    their default, so a container built before they existed keeps verifying."""
+
     def __post_init__(self):
         """Validate the regime, and the rules between the grouping and the target."""
         if not (self.target_column_name or "").strip():

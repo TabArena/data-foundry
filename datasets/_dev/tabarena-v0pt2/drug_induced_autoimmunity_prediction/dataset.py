@@ -42,10 +42,12 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
             "entered twice as two stereoisomers is kept once, and the descriptors the source computed from the "
             "structure give way to the structure itself."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
-            "The features come from the structure alone, which is all a screen has before testing, and the test drugs"
-            " come from scaffolds the model has not seen, as new candidates do. The set is small."
+            "The features come from the structure alone, all a screen has, and the test drugs come from scaffolds the"
+            " model has not seen. The source does not say how the negative drugs were chosen (likely no autoimmune"
+            " reaction reported, as in Wu et al. 2021), an unverified label definition, and the label is what had"
+            " been reported by 2025: 49 of 52 drugs approved since 2010 are negative."
         ),
     )
 
@@ -86,6 +88,7 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
         - Duplicates dropped: 9 pairs of rows are one structure once the stereo marks are set aside (the same 18 rows that share every one of the source's descriptors), stereoisomers a 2D encoding does not tell apart (PubChem): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
         - The target (2026-11-01, CLEAN-25): `Label` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
+<<<<<<< HEAD
         - Time basis: UnseenGroup (Andrej, 2026-11-13; no prototype before): the scaffold split holds out chemistry the
           training drugs do not hold, as decided on 2026-11-11, and the label still moves with time. Whether a drug can
           cause an autoimmune reaction is a property of its structure, but the label is what had been reported by the
@@ -105,6 +108,44 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
           | 2000 | 351 | 145 | 0.617 / 0.692 / 0.765 | 0.740 / 0.794 / 0.803 |
           | 2005 | 399 | 97 | 0.692 / 0.828 / 0.810 | 0.752 / 0.812 / 0.825 |
 
+=======
+        - The fit is `approximate` (2026-11-11, Andrej): neither the InterDIA paper nor its repository says how the
+          drugs were picked as positive or negative, so a negative most likely means that no autoimmune reaction had
+          been reported, as in the nearest documented set (Wu et al. 2021, Int J Environ Res Public Health
+          18(13):7139), not that the drug was shown safe; a few negatives read as reporting gaps (venlafaxine is
+          positive, its active metabolite desvenlafaxine negative). The positives' meaning is clear and the classic
+          drug-induced lupus drugs are all positive (2026-10-19), so the label definition is unverified rather than
+          wrong.
+>>>>>>> 92aa0b49 (Splitting an expanding science catalogue (SPLIT-34), replayed onto #50 and #98)
+
+          | Test from | Training drugs | Test drugs | Forward: LR / RF / boosting | Random folds: LR / RF / boosting |
+          |---|---|---|---|---|
+          | 1990 | 219 | 277 | 0.606 / 0.642 / 0.607 | 0.716 / 0.740 / 0.721 |
+          | 1995 | 267 | 229 | 0.582 / 0.698 / 0.714 | 0.716 / 0.777 / 0.754 |
+          | 2000 | 351 | 145 | 0.617 / 0.692 / 0.765 | 0.740 / 0.794 / 0.803 |
+          | 2005 | 399 | 97 | 0.692 / 0.828 / 0.810 | 0.752 / 0.812 / 0.825 |
+
+        - Label and time on the market (2026-11-11, Andrej): the drugs ChEMBL dates to a first approval from 2010 on
+          are almost all negative, a share no chemistry explains (binomial p 0.0002 against the drugs approved
+          earlier), and the structure shows the era (molecular weight alone separates the approvals from 2010 at ROC
+          AUC 0.693), so a model can learn "modern drug, so negative". Positive share by approval era, on the shipped
+          587 drugs (2026-11-06):
+
+          | First approval | Drugs | Positive share |
+          |---|---|---|
+          | before 1960 | 41 | 0.415 |
+          | 1960-1979 | 88 | 0.227 |
+          | 1980-1999 | 222 | 0.270 |
+          | 2000-2004 | 48 | 0.208 |
+          | 2005-2009 | 45 | 0.178 |
+          | 2010-2020 | 52 | 0.058 |
+          | no ChEMBL year | 91 | 0.242 |
+
+          All 587 drugs are kept on purpose: the label is what had been reported by 2025, the recent drugs (3 of them
+          positive: teriflunomide, elvitegravir, rilpivirine) are the ones the use case screens for, and dropping
+          them would take a tenth of a small dataset out on an inferred approval year. The 91 drugs without a ChEMBL
+          year are no second recent block; their positive share is that of the older drugs. The record carries the
+          collection facts `Samples: Over Time`, `Time: Dated` and `Target: Revised Later` (2026-11-11, Andrej).
     """
 
     # Task
@@ -113,7 +154,7 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
     special_features = (Smiles(column="SMILES"),)
     metric = Metric.fallback(
         reason=(
-            "Huang, Liu & Huang 2024 (InterDIA) report AUC, accuracy, sensitivity, specificity, F1 and MCC side by side; "
+            "Huang, Liu & Huang 2025 (InterDIA) report AUC, accuracy, sensitivity, specificity, F1 and MCC side by side; "
             "no unique metric. roc_auc is the binary fallback."
         ),
     )
@@ -129,7 +170,7 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Grouped splits on the Bemis-Murcko scaffold: all drugs with one ring skeleton stay on one side, so a model predicts drugs of a series it has not seen. Drugs with similar but not identical scaffolds can be on both sides.
+        Grouped splits on the Bemis-Murcko scaffold: all drugs with one ring skeleton stay on one side, so a model predicts drugs of a series it has not seen. Drugs with similar but not identical scaffolds can be on both sides. A split by first approval year was weighed and the scaffold split kept (2026-11-11, Andrej): the label's reporting window is still open for the newest drugs, 49 of the 52 approved from 2010 on being negative, so a forward split would test how long a reaction takes to be reported rather than the chemistry (curation comments).
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
