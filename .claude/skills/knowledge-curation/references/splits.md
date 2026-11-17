@@ -318,6 +318,19 @@ for another split. Why: a random score stands for items of groups already seen, 
 use case asks for more. Cases: bioresponse (`Timeless`; no structure or compound id, so no chemical series),
 covertype (`Retrospective`; no stand id or coordinates, and four wilderness areas are too few groups).
 
+**SPLIT-37 (Should; applies SPLIT-8, SPLIT-10, SPLIT-32, SPLIT-35 and SPLIT-36).** A definition's split is decided by
+walking the decision tree in [split_tree.md](split_tree.md) from its record's data collection type: the use case
+first, then what the data and its documentation allow, then a measurement where one decides. The leaf reached gives
+the split and the tag that justifies it (a time basis, a forced tag or `ForcedIIDFromGrouped`), and for a temporal
+split the date the windows are cut on and the gap. Answer each question from what it reads; a collection fact only
+points to where to look. A forced leaf, a leaf no definition has reached yet, and a question no answer fits go to a
+human reviewer with the split suggested and the facts behind it; only a reviewer adds a branch. A definition that ships
+another split than its leaf names the leaf and the reason in its `splits_comment`, and the departure goes to a
+reviewer. The rules above still decide each step (the windows, the gap, the groups, the leak tests); the tree orders
+them. Why: the same questions asked in the same order make splits of similar data agree, and show where a dataset is
+new. Cases: the 174 v0.2 definitions placed when the tree was adopted (2026-11-17); ten shipped another split and
+are listed in split_tree.md.
+
 ### Temporal tasks
 
 Every feature has to have existed at the prediction time of its row: LEAK-10 in [leak_checks.md](leak_checks.md).

@@ -12,11 +12,15 @@ The main session gives you the folder, the record, the probe outputs (group and 
 run folder. Read first: `dataset.py` (`task_summary`, the prediction point, `grouping` / `temporal`, the
 `splits_comment`), the source's description of how the data was collected, and in
 `.claude/skills/knowledge-curation/references/`: `principles.md`, `use_case.md` (recurring entities and the cold
-start), `splits.md`, `evidence.md` (reading a probe).
+start), `splits.md`, `split_tree.md` (the decision tree from the collection type), `evidence.md` (reading a probe).
 
 Check, with numbers (load through `.claude/skills/knowledge-data-foundry/scripts/dataset_io.py`; thread caps on every
 Python run):
 
+* the tree (`split_tree.md`, SPLIT-37): walk it yourself from the record's data collection type, answering each
+  question from what it reads, and say which leaf you reach. Compare it with the leaf the `splits_comment` names and
+  with the split and tag the definition ships; a different leaf, a forced leaf, a leaf no definition reaches yet, or
+  a question no answer fits is a finding for the main session to raise with the curator;
 * how the data was collected: the record's collection facts and, if the definition names one, its use-case prototype
   and `Time basis:` line (`splits.md`, SPLIT-32), against the source; for a split that is not temporal, what the time
   probe (`.claude/skills/knowledge-data-foundry/scripts/time_probes.py <name> --out <run folder>`) finds; the checks

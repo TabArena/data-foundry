@@ -16,7 +16,8 @@ Follow `.claude/skills/screen-candidates/SKILL.md`, steps 3 to 6, for each recor
    features and target arrive, where time lives, whether all samples share one moment, whether entities recur, and for a
    catalogue which identifier a parent source could date its items by; `Unknown` where the page is silent), the data
    collection type (SPLIT-35: catalogue, experimental results, clinical study, survey, database snapshot, dated event
-   log or panel data), the likely regime, the metric the source scored and where it is defined (or "none found" with
+   log or panel data), the likely regime (the leaf the decision tree in `split_tree.md` reaches from that type,
+   SPLIT-37; name the leaf and any question the page leaves open), the metric the source scored and where it is defined (or "none found" with
    where you looked; any extra inputs it needs; MET-1, MET-5, MET-6 in
    `.claude/skills/knowledge-curation/references/metrics.md`), papers, siblings and duplicates among
    `curation/records/`, external collections, better data for the same task (a quick look, step 3, "Better data for the

@@ -125,10 +125,14 @@ domain and source from the record.
    ships as the source publishes it and is declared in `special_features` as a `Spectrum(...)`, its columns left out
    of `_feature_types` (CLEAN-26); [spectra.md](../knowledge-curation/references/spectra.md) has what ships, the
    encodings, grouping the spectra of one sample (SPLIT-23) and the pitfalls.
-4. The regime: nothing for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)` with a `splits_comment` saying
-   why this window (and any gap, sub-sampling or trimming). The record's collection facts and the use-case prototypes of
-   SPLIT-32 ([splits.md](../knowledge-curation/references/splits.md)) are information for it; a definition that follows
-   a prototype carries its tag and a `Time basis:` line. For a temporal task, run `dataset windows <name>` and choose
+4. The regime: walk the decision tree from the record's data collection type
+   ([split_tree.md](../knowledge-curation/references/split_tree.md), SPLIT-37) and implement the leaf you reach:
+   nothing for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)` with a `splits_comment` saying which leaf
+   and why this window (and any gap, sub-sampling or trimming). The leaf's tag goes into `data_tags` with its
+   `Time basis:` (or `Group basis:`) line. A forced leaf, a leaf no definition reaches yet, or a question no answer
+   fits goes to the curator as an issue with the split you suggest. The record's collection facts and the use-case
+   prototypes of SPLIT-32 ([splits.md](../knowledge-curation/references/splits.md)) are information for the answers.
+   For a temporal task, run `dataset windows <name>` and choose
    the windows from the use case and those statistics, never a model's score (SPLIT-15: the newest always, the others
    argued; definitions.md, "Choosing the test windows"); the choice goes into the record's review as the curator's
    decision, with the alternatives you weighed. Before the windows, three checks the reviews of 2026-11-10 and 11 found
