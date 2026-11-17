@@ -14,6 +14,7 @@ tags:
 - AI-Filled (Verify)
 - 'Samples: Over Time'
 - 'Time: Lost'
+- Clinical Study
 - Non-IID (Grouped)
 original_source: Kaggle
 year: '2020'

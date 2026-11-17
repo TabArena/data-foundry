@@ -10,6 +10,9 @@ claimed_by: Andrej
 suggestion: 'Yes'
 priority: 2
 tags:
+- 'Samples: Over Time'
+- 'Time: Dated'
+- Dated Event Log
 - Non-IID (Temporal)
 original_source: UCI
 year: '1987'
