@@ -638,6 +638,14 @@ text and a script worth keeping into the repository (knowledge-data-foundry, hou
 - `dataset check` 0 errors, 0 warnings; task probe no flag (random forest 0.878, selected linear 0.865, logistic
   regression 0.849, LightGBM 0.819); leak probe: no copies across the split, the missing pack-years indicator 0.50.
 
+## 2026-11-11, body_density_prediction: time basis and review, parked (no container built)
+
+- The definition's notes gain a `Time basis: Timeless` line (Andrej, 2026-11-06): each man was measured once, in one
+  study session, so the density and the features describe the same body at one time; the random split is unchanged.
+- The dataset's review is in its record. Its two open questions, whether `nhanes_dxa_body_fat` replaces this dataset
+  and whether the impossible 29.5-inch height is set to missing, are parked (Andrej, 2026-11-11) until better suited
+  datasets for the task are checked; the data are unchanged.
+
 ## 2026-11-11, each dataset's review moves into its curation record (no container built)
 
 Lennart, 2026-11-11: "We want the curation record to be the single source of information, not spread across multiple
