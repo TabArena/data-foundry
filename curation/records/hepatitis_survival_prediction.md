@@ -14,6 +14,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Unknown'
+- Clinical Study
 collections:
 - TabArena Reject
 original_source: UCI

@@ -15,6 +15,7 @@ priority: 2
 tags:
 - 'Samples: One Moment'
 - 'Target: Unknown'
+- Database Snapshot
 original_source: Other
 year: '2004'
 domain: technology & internet

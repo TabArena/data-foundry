@@ -18,6 +18,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
+- Dated Event Log
 original_source: UCI
 year: '2012'
 required_split:

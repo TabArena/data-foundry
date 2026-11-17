@@ -17,6 +17,7 @@ tags:
 - Larger IID Data
 - 'Samples: One Moment'
 - 'Target: Unknown'
+- Database Snapshot
 collections:
 - TabArena Reject
 original_source: Kaggle

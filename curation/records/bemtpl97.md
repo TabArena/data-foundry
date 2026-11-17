@@ -15,6 +15,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Later'
+- Database Snapshot
 original_source: Github
 year: '2019'
 domain: insurance

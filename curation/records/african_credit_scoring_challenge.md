@@ -16,6 +16,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Revised Later'
 - 'Entities: Recur'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: Zindi

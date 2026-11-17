@@ -15,6 +15,7 @@ priority: 3
 tags:
 - 'Samples: One Moment'
 - 'Target: Later'
+- Database Snapshot
 original_source: UCI
 year: '2016'
 required_split:
@@ -281,6 +282,10 @@ for this dataset; it is not part of this review.
    training row) and ends with what the split cannot test (a later month). The split and `data_tags` are unchanged; the
    tag `DelayedTarget` enters `data_tags` once PR #50 is in the working copy. Issue 2 (the split) stays open for its own
    mark.
+
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.
 
 ## Reference
 

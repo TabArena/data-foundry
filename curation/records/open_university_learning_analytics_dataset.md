@@ -14,6 +14,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Later'
 - 'Entities: Recur'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: Website

@@ -17,6 +17,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Varying Delay'
 - 'Features: Read Later'
+- Dated Event Log
 collections:
 - TabArena Reject
 - TabSTAR

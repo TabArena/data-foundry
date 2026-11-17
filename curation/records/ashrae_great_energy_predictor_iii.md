@@ -14,6 +14,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Entities: Recur'
+- Panel Data
 collections:
 - New (BeyondArena)
 original_source: Kaggle

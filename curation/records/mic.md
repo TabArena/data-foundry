@@ -13,6 +13,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Varying Delay'
+- Clinical Study
 original_source: Other
 year: '2020'
 required_split:

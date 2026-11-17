@@ -19,6 +19,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Varying Delay'
+- Survey
 original_source: Other
 year: '2021'
 required_split:

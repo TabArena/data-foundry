@@ -15,6 +15,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Varying Delay'
+- Database Snapshot
 collections:
 - TexTabBench
 - TabSTAR

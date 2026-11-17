@@ -12,6 +12,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Varying Delay'
+- Clinical Study
 collections:
 - TabSTAR
 original_source: UCI

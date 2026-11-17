@@ -238,7 +238,7 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("DelayedTarget",)
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         wget https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98lrn.zip && unzip cup98lrn && rm cup98lrn.zip
         wget https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98val.zip && unzip cup98val && rm cup98val.zip && wget https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/valtargt.txt
@@ -292,22 +292,21 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
           24) are set to missing where the receipt is dated June 1997 or later, after the mailing the target is about
           (the cup's documentation: every field reflects the donor before June 1997 "except the gift receipt dates,
           which will follow the promotion dates"); 61 cells of 60 donors in the cup's files, dated up to June 1998.
-        - Time basis: DelayedTarget: one renewal mailing (97NK, June 1997) to lapsed donors; every field is the donor
-          before June 1997 (the gift receipts of earlier promotions dated after it are blanked); the target is the
-          response to that mailing, recorded for every donor by the cup's release in 1998. Every donor got the same
-          mailing and its response was recorded over the same window, so no test row is later than a training row and
-          the random split is IID. The date columns are the donors' shared past, not a time to split on (random split
-          kept, 2026-11-12, Andrej): every row is about the one promotion date (191,758 of the cup's 191,779 donors
-          mailed in June 1997, 21 in April 1997; all of them lapsed). The 23 earlier promotions, June 1994 to June
-          1996, are columns, not rows: each reached 60,000 to 188,000 of these donors, in changing mail types, with
-          responses of 0.02% to 36%, and of 0.02% to 0.9% from March 1996 on, because the cup selected donors who had
-          stopped giving; their responses are a selected past, not training mailings. Within the target mailing the
-          response falls from 6.1% (recruited 1986) to 3.3% (recruited 1996) while the gift of those who gave rises
-          from $12.95 to $19.80, and it rises from 3.6% (last gift early 1995) to 9.9% (1997). A split on these donor
-          dates tests new kinds of donors, not a later mailing: on the donors recruited from 1995 on, a model trained
-          on the earlier recruits earns $0.046 per test donor, against $0.083 for the same donors under random folds
-          and $0.041 for mailing everyone (untuned LightGBM). The cup's learning and validation files agree (5.08% and
-          5.06% gave). Not tested: the next mailing.
+        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): one renewal mailing
+          (97NK, June 1997) to lapsed donors; every field is the donor before June 1997 (the gift receipts of earlier
+          promotions dated after it are blanked); the target is the response to that mailing, recorded for every donor
+          by the cup's release in 1998. One mailing is one period, too few for three windows (SPLIT-8). The date columns
+          are the donors' shared past, not a time to split on (random split kept, 2026-11-12, Andrej): every row is
+          about the one promotion date (191,758 of the cup's 191,779 donors mailed in June 1997, 21 in April 1997; all
+          of them lapsed). The 23 earlier promotions, June 1994 to June 1996, are columns, not rows: each reached 60,000
+          to 188,000 of these donors, in changing mail types, with responses of 0.02% to 36%, and of 0.02% to 0.9% from
+          March 1996 on, because the cup selected donors who had stopped giving; their responses are a selected past,
+          not training mailings. Within the target mailing the response falls from 6.1% (recruited 1986) to 3.3%
+          (recruited 1996) while the gift of those who gave rises from $12.95 to $19.80, and it rises from 3.6% (last
+          gift early 1995) to 9.9% (1997). A split on these donor dates tests new kinds of donors, not a later mailing:
+          on the donors recruited from 1995 on, a model trained on the earlier recruits earns $0.046 per test donor,
+          against $0.083 for the same donors under random folds and $0.041 for mailing everyone (untuned LightGBM). The
+          cup's learning and validation files agree (5.08% and 5.06% gave). Not tested: the next mailing.
     """
 
     # Task

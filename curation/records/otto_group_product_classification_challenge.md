@@ -16,6 +16,7 @@ decision_markers:
 tags:
 - Larger IID Data
 - 'Samples: One Moment'
+- Database Snapshot
 collections:
 - TabArena Reject
 original_source: Kaggle

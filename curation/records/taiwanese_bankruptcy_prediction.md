@@ -17,6 +17,7 @@ tags:
 - 'Time: Lost'
 - 'Target: Later'
 - 'Entities: Recur'
+- Database Snapshot
 original_source: UCI
 year: '2020'
 required_split:

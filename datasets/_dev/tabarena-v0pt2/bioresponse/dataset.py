@@ -55,7 +55,7 @@ class Bioresponse(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Anonymized", "Timeless")
+    data_tags = ("Anonymized", "Timeless", "ForcedIIDFromGrouped")
     download_description = """
         We download the data from Kaggle and uzip it to a predefined folder.
 
@@ -79,6 +79,11 @@ class Bioresponse(AbstractCuratedDataset):
           own test set looks like a random draw (a model tells its 2,501 molecules from the 3,751 training molecules at
           ROC AUC 0.485, against 0.484-0.497 for a random third of train; nearest-training distances match), and
           scoring new analogues of series already in testing is the lead-optimisation use case the competition framed.
+        - Group basis: ForcedIIDFromGrouped (Andrej, 2026-11-16): the use case screens molecules a chemist has not made
+          yet, which whole chemical series held out would stand for (scaffold groups, SPLIT-31), but no structure or
+          compound id is published, so no series can be computed and the split is random. Overlap left: close
+          analogues of a test molecule sit in training (the label agreement above), so the score is optimistic for a
+          new series.
     """
 
     # Task

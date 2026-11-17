@@ -12,6 +12,7 @@ tags:
 - New IID
 - 'Samples: One Moment'
 - 'Target: Later'
+- Database Snapshot
 collections:
 - New (BeyondArena)
 original_source: Other
@@ -60,6 +61,10 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: client_type stays
 
 CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedIIDFromTemporal` (Review issue 1, B):
 - One inventory ranked at the start of 2020, the year's burns after it: one shared moment and a closed window, which the sharpened one-moment rule names a `DelayedTarget`.
+- The random split stays.
+
+CC (2026-11-16, Andrej): time basis `StationaryRelation` instead of `DelayedTarget`, which is retired:
+- Trained on the 2019 burns and tested on 2020, LightGBM scores ROC AUC 0.648 against 0.639 on the random folds: the one forward window of the source's two years costs nothing.
 - The random split stays.
 
 ## Review

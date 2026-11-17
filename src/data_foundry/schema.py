@@ -97,9 +97,12 @@ DataTags = Literal[
     # the samples arise over time in the use case, but the data is one snapshot of a moment or period, and the use case
     #   looks back: it fills in what is missing for the time the snapshot covers, not a later time
     "Retrospective",
-    "DelayedTarget",  # one shared prediction moment; the target arrives after it, in a window closed for every row
     # the use case scores later units, and a measurement on dated data shows the relation does not move with time
     "StationaryRelation",
+    # the use case scores later units, no date survives to measure the relation on, and a person judged earlier and
+    #   later samples interchangeable for a reason from the domain or the use case; replaces a forced tag, never set by
+    #   an AI on its own (HUMAN_SET_TIME_TAGS)
+    "AssumedStationaryRelation",
     # the use case aims at groups the data does not hold (a hospital, a well, a protein, a chemical family), not at a
     #   later period: whole groups held out
     "UnseenGroup",
@@ -107,6 +110,9 @@ DataTags = Literal[
     #   periods; the closest split, IID or grouped, with a `Time basis:` line that names the reason.
     "ForcedIIDFromTemporal",
     "ForcedGroupedFromTemporal",
+    # Forced from grouped (SPLIT-36): the use case holds out a group of distinct items (a family, a site, an area) the
+    #   data cannot key; an IID split beside the time basis, with a `Group basis:` line
+    "ForcedIIDFromGrouped",
     # Retired (2026-10-21): kept readable for containers that carry it; new definitions refuse it (RETIRED_DATA_TAGS).
     "2ndTierData",
     "Snapshot",  # retired 2026-11-13 for `Retrospective`: it described the data, not a use case
@@ -118,14 +124,47 @@ RETIRED_DATA_TAGS = ("2ndTierData", "Snapshot")
 TIME_BASIS_TAGS = (
     "Timeless",
     "Retrospective",
-    "DelayedTarget",
     "StationaryRelation",
+    "AssumedStationaryRelation",
     "UnseenGroup",
 )
 """The use-case prototypes that justify a split that is not temporal (SPLIT-32)."""
 
+HUMAN_SET_TIME_TAGS = ("AssumedStationaryRelation",)
+"""Prototypes only a person sets (SPLIT-32): an AI may offer one with the facts for and against, and recommend it, but
+writes it only when a person asks; its `Time basis:` line names the person, the date and the reason."""
+
+_ASSUMED_LINE = re.compile(
+    r"Time basis:\s*AssumedStationaryRelation\s*"
+    r"\((?P<who>[^,()]+),\s*(?P<date>\d{4}-\d{2}-\d{2})[^)]*\):(?P<rest>.*)",
+    re.S,
+)
+_NOT_A_PERSON = re.compile(r"\b(?:ai|claude|agent|model|llm|bot|assistant)\b", re.I)
+
+
+def assumed_stationary_problem(curation_comments: str | None) -> str | None:
+    """What keeps a definition's `Time basis:` line from carrying `AssumedStationaryRelation`, or None if nothing does.
+
+    The line opens ``AssumedStationaryRelation (<person>, <YYYY-MM-DD>): <reason>``: a person set the tag, on that date,
+    for a reason from the dataset's domain or use case of eight words at least (SPLIT-32).
+    """
+    m = _ASSUMED_LINE.search(curation_comments or "")
+    if m is None:
+        return "its `Time basis:` line must open `AssumedStationaryRelation (<person>, <YYYY-MM-DD>): <reason>`"
+    who = m["who"].strip()
+    if _NOT_A_PERSON.search(who) or not who[:1].isupper():
+        return f"`{who}` is not a person; only a person sets it"
+    reason = re.split(r"\n\s*[-*]\s", m["rest"], maxsplit=1)[0]
+    if len(reason.split()) < 8:
+        return "the reason from the domain or the use case is missing or shorter than eight words"
+    return None
+
+
 FORCED_TIME_TAGS = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
 """The forced splits of a forward use case without usable time (SPLIT-8)."""
+
+GROUP_BASIS_TAGS = ("ForcedIIDFromGrouped",)
+"""Why a split is not grouped although the use case holds out a group (SPLIT-36); beside the time basis, not one."""
 ProblemType = Literal["binary_classification", "multiclass_classification", "regression"]
 ProblemTypeClassification = [
     "binary_classification",

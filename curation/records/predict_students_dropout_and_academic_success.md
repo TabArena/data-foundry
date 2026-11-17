@@ -17,6 +17,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Later'
+- Dated Event Log
 original_source: UCI
 year: '2021'
 required_split:

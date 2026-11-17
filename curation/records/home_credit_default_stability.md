@@ -12,6 +12,7 @@ tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- Dated Event Log
 collections:
 - TabArena Reject
 - TabRed

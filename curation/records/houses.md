@@ -14,6 +14,7 @@ suggestion: 'Yes'
 priority: 2
 tags:
 - 'Samples: One Moment'
+- Database Snapshot
 original_source: Other
 year: '1999'
 domain: business & marketing

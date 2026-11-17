@@ -247,6 +247,30 @@ Repeats of a unit the data does not record (LEAK-42 to LEAK-44, SPLIT-24's calib
 
 Each dataset's review is in its record's `## Review`.
 
+## 2026-11-16, 13 definitions: `DelayedTarget` retired for a forced tag or a measurement (Andrej; no container built)
+
+- `DelayedTarget` said that a random split is IID when every row shares one scoring moment and a target window closed
+  for all of them. That holds within the moment only: one moment is one period, too few for three windows, and the
+  next moment, which the use case asks for, stays untested, as for any forced split (SPLIT-8). No container carried
+  the tag, so it is dropped, not kept readable; a new definition that sets it is refused with the replacement.
+- `ForcedIIDFromTemporal`: blood_transfusion, churn_telco_south_asia, credit_card_clients_default,
+  expresso_churn_prediction_1m, framingham_heart_study_fhs, kdd_cup_09_appetency, mobile_churn, porto_seguro,
+  pva_revenue_prediction_kddcup98, student_portuguese_performance. `ForcedGroupedFromTemporal` (they ship grouped):
+  amex_non_iid_1m, pricing_game_2017_french_mtpl. `StationaryRelation`: distribution_transformers_at_cauca_department,
+  whose two label years give one forward window (trained on 2019, tested on 2020: LightGBM ROC AUC 0.648 against
+  0.639 on the random folds).
+- Each `Time basis:` line keeps its facts (the scoring date, the target window) and now names the reason, one period,
+  and what later scoring dates would allow. Splits unchanged; the metadata changes, so the 13 need a rebuild. Each
+  record gets a CC line. SPLIT-8 and SPLIT-32 lose the prototype (SPLIT-32's questions renumbered, 4 to 3 and 5 to 4).
+
+## 2026-11-16, bioresponse and covertype: `ForcedIIDFromGrouped` beside the time basis (Andrej; no container built)
+
+- New tag (SPLIT-36): the use case holds out a group of distinct items the data cannot key, so the split stays random.
+  bioresponse: no structure or compound id, so no chemical series (keeps `Timeless`). covertype: no stand id or
+  coordinates, four wilderness areas too few groups (keeps `Retrospective`). Each definition gains a `Group basis:`
+  line naming the group, why it cannot be keyed and the overlap left. Splits unchanged; the metadata changes, so both
+  need a rebuild.
+
 ## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)
 
 - Retired because no testing decision is made from a symptom questionnaire (USE-2; the fit None, USE-8). Its hospital

@@ -20,6 +20,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
+- Dated Event Log
 collections:
 - CARTE/TARTE
 original_source: Kaggle

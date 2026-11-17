@@ -17,6 +17,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Entities: Recur'
+- Survey
 collections:
 - New (BeyondArena)
 original_source: Website

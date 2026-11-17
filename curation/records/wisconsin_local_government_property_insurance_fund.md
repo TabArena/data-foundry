@@ -15,6 +15,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Later'
 - 'Entities: Recur'
+- Panel Data
 original_source: Github
 year: '2017'
 domain: insurance

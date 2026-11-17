@@ -14,6 +14,7 @@ tags:
 - 'Target: Varying Delay'
 - 'Entities: Recur'
 - 'Features: Read Later'
+- Database Snapshot
 collections:
 - New (BeyondArena)
 original_source: Zindi

@@ -100,7 +100,8 @@ K=.claude/skills/knowledge-data-foundry/scripts
   the rate times the weight is a whole count and Tweedie (power 1.5) for any other non-negative rate; L2 otherwise. Run
   the other fit too (`--objective l2`), as LEAK-41 decides on the worse. A flagged feature is judged by its timing
   (LEAK-41): one known at the quote stays (USE-6), even when its weight-mediated share is high through risk selection.
-  On a split tagged `ForcedGroupedFromTemporal` or `ForcedIIDFromTemporal` the default run ends with probe 23
+  On a split tagged `ForcedGroupedFromTemporal`, `ForcedIIDFromTemporal` or `AssumedStationaryRelation` (which replaces
+  a forced tag) the default run ends with probe 23
   (leak_checks.md, "Probe 23"; `curation_probes.leak.period_outcome` and `shared_units`), and `--forced-split` runs it
   alone: the period-outcome test on the period column it finds or `--time-on` names (it says so when there is none), and
   the shared-unit test on the group column and the exact profiles, with regularised LightGBM fits on `--forced-splits`
@@ -136,7 +137,7 @@ K=.claude/skills/knowledge-data-foundry/scripts
   no number in a column of numbers are listed: often proxy missing codes (`.b`, `-3`) that made a count categorical
   (CLEAN-10). UCI types coded answers as `Integer` too, and names often differ from the codebook's (the output says how
   many matched): read the codebook where they do. A flag is a question; the meaning decides.
-* `time_probes.py`, for a split that is not temporal (SPLIT-32, question 4): does the data still carry a time order?
+* `time_probes.py`, for a split that is not temporal (SPLIT-32, question 3): does the data still carry a time order?
   It is model-free and fast. It lists the columns that look like time (a date dtype, a time word in the name such as
   date, year, month, week, season, period, wave or cohort, or whole numbers between 1900 and 2100 only; names that say
   a duration or an age are left out, and so are fractional numbers outside 1900-2100 and numbers named with `dt`, a

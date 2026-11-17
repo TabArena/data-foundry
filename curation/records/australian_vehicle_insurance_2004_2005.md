@@ -13,6 +13,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Later'
+- Database Snapshot
 original_source: Website
 year: '2008'
 domain: insurance

@@ -20,6 +20,7 @@ tags:
 - 'Time: Lost'
 - 'Target: Later'
 - 'Entities: Recur'
+- Database Snapshot
 collections:
 - TabArena Reject
 - TabSTAR

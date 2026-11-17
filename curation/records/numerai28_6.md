@@ -15,6 +15,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Later'
+- Database Snapshot
 collections:
 - TabArena Reject
 - TabSTAR

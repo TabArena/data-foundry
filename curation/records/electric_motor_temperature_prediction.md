@@ -17,6 +17,7 @@ tags:
 - 'Samples: No Time Dimension'
 - 'Time: Within Entity'
 - 'Entities: Recur'
+- Panel Data
 collections:
 - New (BeyondArena)
 original_source: Kaggle

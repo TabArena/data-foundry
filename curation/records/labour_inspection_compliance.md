@@ -19,6 +19,7 @@ tags:
 - 'Time: Inferred'
 - 'Entities: Recur'
 - 'Features: Read Later'
+- Database Snapshot
 - Non-IID (Temporal)
 collections:
 - TabSTAR

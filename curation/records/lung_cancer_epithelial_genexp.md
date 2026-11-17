@@ -19,6 +19,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Inferred'
 - 'Target: Varying Delay'
+- Clinical Study
 collections:
 - FS Benchmark
 original_source: GOV Website

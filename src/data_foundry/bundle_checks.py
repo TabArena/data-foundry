@@ -45,7 +45,15 @@ import pandas as pd
 
 from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
-from data_foundry.schema import FORCED_TIME_TAGS, TIME_BASIS_TAGS, DatasetMetadata, as_column_list, training_only_weight
+from data_foundry.schema import (
+    FORCED_TIME_TAGS,
+    HUMAN_SET_TIME_TAGS,
+    TIME_BASIS_TAGS,
+    DatasetMetadata,
+    as_column_list,
+    assumed_stationary_problem,
+    training_only_weight,
+)
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
 
@@ -2078,14 +2086,25 @@ def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
             )
         return
     if not basis and not forced and not has_line:
+        offered = ", ".join(t for t in TIME_BASIS_TAGS if t not in HUMAN_SET_TIME_TAGS)
         yield CheckResult(
             "meta_time_basis_missing",
             "info",
             "The split is not temporal and the definition does not say why.",
-            hint=f"Add the use-case prototype ({', '.join(TIME_BASIS_TAGS)}) with a `Time basis:` line in "
+            hint=f"Add the use-case prototype ({offered}) with a `Time basis:` line in "
             "`curation_comments`, a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`) with its line, "
             "or the line alone with the reason, SPLIT-32.",
         )
+    for tag in sorted(set(basis) & set(HUMAN_SET_TIME_TAGS)):
+        problem = assumed_stationary_problem(ctx.dataset_metadata.curation_comments)
+        if problem:
+            yield CheckResult(
+                "meta_time_basis_unattributed",
+                "error",
+                f"`{tag}`: {problem}.",
+                hint="Only a person sets it, with a reason from the dataset's domain or use case (SPLIT-32); "
+                "otherwise keep the forced tag.",
+            )
     if forced and not has_line:
         yield CheckResult(
             "meta_time_basis_line_missing",
@@ -2096,7 +2115,7 @@ def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
         )
     target = ctx.target
     dated = [c for c in ctx.df.columns if c != target and pd.api.types.is_datetime64_any_dtype(ctx.df[c])]
-    explained = bool(set(basis) & {"Retrospective", "DelayedTarget"}) or (has_line and not basis)
+    explained = "Retrospective" in basis or (has_line and not basis)
     if dated and not explained:
         yield CheckResult(
             "meta_time_present_unused",

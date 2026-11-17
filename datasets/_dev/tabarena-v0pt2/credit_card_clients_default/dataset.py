@@ -50,7 +50,7 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
     # Dataset
     unique_name = "credit_card_clients_default"
     domain = "finance"
-    data_tags = ("DelayedTarget",)
+    data_tags = ("ForcedIIDFromTemporal",)
     sources = (
         Source(
             role="publication",
@@ -99,12 +99,13 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
           late 34%, 2 months 69%). The code 1 (one month late) occurs in 12.3% of the rows for September but in at
           most 0.1% for the five earlier months, where 2 is 9-13%: the earlier months record a short delay
           differently, alike in both classes.
-        - Time basis: DelayedTarget: one extract of 30,000 card holders of one Taiwanese bank, scored after the
-          September 2005 statement with the same six months of history for every client (April to September 2005); the
-          target is default on the next month's payment, one month closed for every client. Every client was scored at
-          the same statement and its outcome is the same month's payment, so no test row is later than a training row
-          and the random split is IID. The client ID is not a time order (the first two quarters of IDs cannot be told
-          apart, ROC AUC 0.504). The credit limit and the demographics carry no date. Not tested: a later month.
+        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): one extract of
+          30,000 card holders of one Taiwanese bank, scored after the September 2005 statement with the same six
+          months of history for every client (April to September 2005); the target is default on the next month's
+          payment. One statement month is one period, too few for three windows (SPLIT-8), so the random split tests
+          other clients of the same month. The client ID is not a time order (the first two quarters of IDs cannot
+          be told apart, ROC AUC 0.504). The credit limit and the demographics carry no date. Extracts of later
+          statements would allow a temporal split. Not tested: a later month.
     """
 
     # Task

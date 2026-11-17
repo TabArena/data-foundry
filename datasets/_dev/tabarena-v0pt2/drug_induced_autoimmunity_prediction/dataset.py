@@ -88,7 +88,6 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
         - Duplicates dropped: 9 pairs of rows are one structure once the stereo marks are set aside (the same 18 rows that share every one of the source's descriptors), stereoisomers a 2D encoding does not tell apart (PubChem): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
         - The target (2026-11-01, CLEAN-25): `Label` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
-<<<<<<< HEAD
         - Time basis: UnseenGroup (Andrej, 2026-11-13; no prototype before): the scaffold split holds out chemistry the
           training drugs do not hold, as decided on 2026-11-11, and the label still moves with time. Whether a drug can
           cause an autoimmune reaction is a property of its structure, but the label is what had been reported by the
@@ -108,7 +107,6 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
           | 2000 | 351 | 145 | 0.617 / 0.692 / 0.765 | 0.740 / 0.794 / 0.803 |
           | 2005 | 399 | 97 | 0.692 / 0.828 / 0.810 | 0.752 / 0.812 / 0.825 |
 
-=======
         - The fit is `approximate` (2026-11-11, Andrej): neither the InterDIA paper nor its repository says how the
           drugs were picked as positive or negative, so a negative most likely means that no autoimmune reaction had
           been reported, as in the nearest documented set (Wu et al. 2021, Int J Environ Res Public Health
@@ -116,7 +114,6 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
           positive, its active metabolite desvenlafaxine negative). The positives' meaning is clear and the classic
           drug-induced lupus drugs are all positive (2026-10-19), so the label definition is unverified rather than
           wrong.
->>>>>>> 92aa0b49 (Splitting an expanding science catalogue (SPLIT-34), replayed onto #50 and #98)
 
           | Test from | Training drugs | Test drugs | Forward: LR / RF / boosting | Random folds: LR / RF / boosting |
           |---|---|---|---|---|

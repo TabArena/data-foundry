@@ -16,6 +16,7 @@ decision_markers:
 - Anonymized
 tags:
 - 'Samples: No Time Dimension'
+- Experimental Results
 original_source: Kaggle
 year: '2012'
 domain: chemistry & material science
@@ -406,6 +407,10 @@ settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `An
    **Resolved (2026-11-11, Andrej):** a: the random split stays; a curation bullet names the analogue overlap (no copy,
    nearest pair 16 descriptors apart), Kaggle's random-looking test draw (ROC AUC 0.485) and the lead-optimisation use
    case; no data change. The bullet cites no rule ID until PR #62 (LEAK-42) is in the working copy.
+
+CC (2026-11-16, Andrej): `ForcedIIDFromGrouped` beside `Timeless` (SPLIT-36):
+- The use case screens molecules not made yet, which whole chemical series held out would stand for (SPLIT-31).
+- No structure or compound id is published, so no series can be computed: the split stays random, and close analogues of a test molecule sit in training.
 
 ## Reference
 

@@ -17,6 +17,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Entities: Recur'
+- Dated Event Log
 original_source: OpenML
 year: '2021'
 domain: business & marketing

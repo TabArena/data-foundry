@@ -70,14 +70,17 @@ release cannot give the windows SPLIT-14 asks for, it ships in the closest regim
 forced from temporal, with the cost measured against the valid windows where the data has any. This covers a release
 whose rows arose over a period and lost their dates, a few cohort months of one customer base (a split by those months
 tests a change of cohort, not of time), and a release with too few periods for three windows. A release that is one
-moment (every row predicted at the same point) is forced only when its use case looks forward from a target of that
-moment or of unknown timing: one moment is one period, too few for windows (coil_2000, mobile_churn). Otherwise
-SPLIT-32 gives it `Retrospective` (the use case looks back) or `DelayedTarget` (the target arrives after the shared
-moment).
+moment (every row predicted at the same point) is one period, too few for windows, so a use case that looks forward
+from it is forced, whether its target is of that moment, of unknown timing or arrives after it in a window closed for
+every row (coil_2000, mobile_churn, credit_card_clients_default): a random split then draws train and test from that
+one moment and tests other rows of it, not the next moment. Where the use case looks back, SPLIT-32 gives it
+`Retrospective`.
 The closest regime is IID (`ForcedIIDFromTemporal`), or grouped by the entity when the periods are stacked and the
 entities recur across them (`ForcedGroupedFromTemporal`); SPLIT-32 says when a split is forced. The definition's
 `Time basis:` line names the reason (time lost, or too few periods), says what the timestamp or a dated window would
-change and that it should be recovered if a later release has it. A forced split, grouped or
+change and that it should be recovered if a later release has it. Where a person judges the samples interchangeable
+for a reason from the dataset's domain or use case, `AssumedStationaryRelation` replaces the forced tag (SPLIT-32,
+question 3); only a person sets it. A forced split, grouped or
 IID, gets a leak test across the split and the leak probes: does a row share its outcome, its unit's outcome or its
 period's outcome with the other side, is there a hidden group, an order dependence. A leak found is weighed case by
 case like any other: removed where it can be, otherwise the task may still ship as an approximate fit with the leak
@@ -86,9 +89,11 @@ the test finds, since its source's regime was another. (Lennart, 2026-10-12; ame
 month, from mobile_churn and the churn snapshots; too few periods, from nba_players_2016_2019,
 open_university_learning_analytics_dataset and distribution_transformers_at_cauca_department; amended 2026-11-02,
 Andrej, on the insurance tables of the zero-inflated batch: a leak test across a forced split; reworded 2026-11-05,
-Lennart: the test informs a case-by-case call and the forced tag stays; one-moment releases moved to SPLIT-32.) Cases:
-open_university_learning_analytics_dataset (nba_players_2016_2019 was retired on 2026-10-26 on its use case, not its
-split); account_debt_south_africa and mobile_churn, first cases here, are one-moment releases under SPLIT-32.
+Lennart: the test informs a case-by-case call and the forced tag stays; one-moment releases moved to SPLIT-32; amended
+2026-11-16, Andrej: a one-moment release with a forward use case is forced whatever its target's timing, and the
+`DelayedTarget` prototype is retired.) Cases: open_university_learning_analytics_dataset (nba_players_2016_2019 was
+retired on 2026-10-26 on its use case, not its split); account_debt_south_africa, mobile_churn and the twelve
+definitions tagged `DelayedTarget` from 2026-11-13 to 2026-11-16 are one-moment releases forced here.
 
 ### When information arrives
 
@@ -160,7 +165,7 @@ later period, at a known group or at all groups at once; where the label still m
    item where it repeats (musk's conformations, sat11_hand_algo_runtime's instances). Which identifier a parent source
    could date the items by (a structure in ChEMBL, an observation date) tells whether a catalogue has a time
    dimension; "none published" is an answer too. A dated catalogue's use case decides between `UnseenGroup` (above)
-   and the entry date (question 4), and whether the date carries a wave is measured for the line: qsar_tid_11's ChEMBL
+   and the entry date (question 3), and whether the date carries a wave is measured for the line: qsar_tid_11's ChEMBL
    years show close training analogs first published in the test compound's own year for 71-93% of its scaffold folds,
    and predicting each period from the earlier ones raises RMSE from 0.80-1.04 to 0.89-1.50, which is why it ships
    split by first publication year.
@@ -170,21 +175,15 @@ later period, at a known group or at all groups at once; where the label still m
    survey, the hours a logged week lacks, the clients a campaign did not inspect. That is `Retrospective` (houses,
    wadden_sea_sibes_macoma_abundance, 5g_energy_consumption, fraud_detection_in_electricity_and_gas_consumption_1m).
    It needs that backward need: a one-moment release whose use case looks forward (prospects for a mailing, customers
-   who will leave) is not retrospective: it is a `DelayedTarget` when its target arrives after one shared moment, and
-   forced (SPLIT-8) when its target is of that moment or of unknown timing. The line names the time covered and the
-   need, and ends with what the split cannot test: a later time. Time can then affect a target only through samples of
-   the same time: check that no sample of a test sample's time carries its target (one day's weather across stations);
-   if one does, group by that time unit. `Snapshot`, which named the data rather than a use case, is retired for it
-   (2026-11-13).
-3. **Do all samples share one prediction moment, with the target arriving after it?** A default in the next month, a
-   donation at the next drive, an event within a fixed follow-up: a `DelayedTarget`. Every row was observed at the same
-   moment and its outcome over the same window, so a random split draws train and test from that one moment and that
-   one window: no test row is later than a training row, and no training label was still unknown at a test row's
-   moment. That is why a random split is IID here (blood_transfusion, credit_card_clients_default,
-   kdd_cup_09_appetency, pva_revenue_prediction_kddcup98, student_portuguese_performance). What it cannot test is the
-   next moment. The line names the moment and the target's window, which has closed for every sample (no censored
-   samples).
-4. **The samples arrive over time: does that affect the target?** It does when the target or its relation to the
+   who will leave) is not retrospective: it is forced (SPLIT-8), whether its target is of that moment or arrives after
+   it. A shared moment and a target window closed for every row make the random split valid within that moment only:
+   one moment is one period, and what the use case asks, the next moment, stays untested (blood_transfusion,
+   credit_card_clients_default; the `DelayedTarget` prototype that named such releases is retired, 2026-11-16). The
+   line names the time covered and the need, and ends with what the split cannot test: a later time. Time can then
+   affect a target only through samples of the same time: check that no sample of a test sample's time carries its
+   target (one day's weather across stations); if one does, group by that time unit. `Snapshot`, which named the data
+   rather than a use case, is retired for it (2026-11-13).
+3. **The samples arrive over time: does that affect the target?** It does when the target or its relation to the
    features moves with the period (prices, a credit climate, an adversary), when how the target or the features are
    recorded changes (a new grading, a new instrument, a new selection of cases), or when a sample's target depends on
    samples before it (a shared shock, a label propagated along an entity, a row that exists only because an earlier
@@ -213,24 +212,141 @@ later period, at a known group or at all groups at once; where the label still m
      change, with the measured cost of the forced split where the rows are dated (eryhemato_squamous_disease's two
      file parts: training on the other part raises log loss from 0.318 to 0.381). A forward use case whose source
      does not show how the data was collected (`Samples: Unknown`, or a shared moment it does not state) is forced
-     too: the forced tag claims only what is known (give_me_some_credit: no scoring date stated, so not a
-     `DelayedTarget`).
-5. **None of these prototypes fits:** the dataset and its use case go to the curator as an issue with the arrival
+     too: the forced tag claims only what is known (give_me_some_credit: no scoring date stated).
+   * **Unmeasured, the time lost, and a person judges the samples interchangeable:** `AssumedStationaryRelation`, in
+     place of the forced tag. It records that the split is random not only because the time is lost but because the
+     dataset's domain or use case gives a reason to take earlier and later samples as interchangeable: a mechanism
+     that the time between collection and use does not change (physiology read by a fixed reference test, a physical
+     measurement), or use within or right after the collected period. The collection span is no reason by itself; it
+     counts only against how fast the domain changes. No reason: no drift seen where nothing is dated, the random
+     split being the only option, an unchanged model ranking. Against it: opponents who adapt, prices and markets,
+     changed rules or treatments, changed coding, assays or intake, a change the source names, structure in the file
+     order. It applies only where the forced tag would stand, and only where no comparison over time is possible
+     (`Time: Lost`, or an order only within each entity); two dated periods or a rebuilt order are measured instead,
+     for `StationaryRelation` or the forced tag. Only a person sets it: an AI may offer it as an option, with the facts
+     for and against, and recommend it, but writes it only when a person asks. Its `Time basis:` line opens
+     `AssumedStationaryRelation (<person>, <YYYY-MM-DD>): <reason>` and also names why the time cannot be measured and
+     what a dated release would test; the definition and `dataset check` refuse the tag without a person and a reason
+     of eight words or more. The split stays as the forced one would be (IID, or grouped where the entities recur),
+     with SPLIT-8's leak test.
+4. **None of these prototypes fits:** the dataset and its use case go to the curator as an issue with the arrival
    facts found, rather than under the nearest tag.
 
-IID data is data whose order of arrival does not vary: `Samples: No Time Dimension`, and `Samples: One Moment` with
-the target at that moment or at one shared later date (the March 2007 drive of blood_transfusion, the October 2005
-payment of credit_card_clients_default). A definition names one time basis. Whatever it is, a record with a `Target:`
+IID data is data whose order of arrival does not vary: `Samples: No Time Dimension`. `Samples: One Moment`, with the
+target at that moment or at one shared later date (the March 2007 drive of blood_transfusion, the October 2005 payment
+of credit_card_clients_default), is IID within that moment only; a forward use case on it is forced (SPLIT-8). A
+definition names one time basis. Whatever it is, a record with a `Target:`
 fact asks that every feature be checked against the prediction point (LEAK-1, LEAK-10), including fields the outcome
 cuts short, such as time on risk: a column that comes into existence after the prediction point is a leak whatever the
 split.
 
 Why: the same split can stand for the use case or flatter it, depending on how the data arrived; recording the
 collection facts and the prototype makes that visible. Cases: the arrival study of the 177 v0.2 definitions
-(2026-11-04) and the review of 98 of them (2026-11-06) are the evidence; examples are credit_card_clients_default and
-framingham_heart_study_fhs (`DelayedTarget`), houses and 5g_energy_consumption (`Retrospective`),
-bad_customer_detection (`StationaryRelation`, measured; thyroid_discordant's one-year extract looked so too, its
-1984-1987 archive did not), musk (`Timeless`), heart_disease (`UnseenGroup`), heloc (`ForcedIIDFromTemporal`).
+(2026-11-04) and the review of 98 of them (2026-11-06) are the evidence; examples are houses and 5g_energy_consumption
+(`Retrospective`), bad_customer_detection (`StationaryRelation`, measured; thyroid_discordant's one-year extract looked
+so too, its 1984-1987 archive did not), musk (`Timeless`), heart_disease (`UnseenGroup`), heloc and
+credit_card_clients_default (`ForcedIIDFromTemporal`, the second one shared moment).
+
+**SPLIT-35 (Should; relates to SPLIT-32).** Every record of a definition names how its source collected
+the rows with one **data collection type**, set at screening from the source and true whatever task is built on it.
+The type is information for the split: it says which keys the data holds (an item, a family, a unit, an occasion, a
+date), not which one the use case needs. Seven types:
+
+* `Expanding Science Catalogue`: a cut of a scientific database or a testing programme that keeps growing (a
+  bioactivity database's releases, a regulator's screening programme, a materials or sequence database, the rounds of a
+  community experiment).
+* `Experimental Results`: runs of a designed experiment (wind-tunnel conditions, concrete mixes, solvers run on
+  benchmark instances, a siRNA library), or a closed set of specimens, molecules or volunteers measured by a laboratory
+  or a study protocol.
+* `Clinical Study`: patients of a clinical study, a clinic's case series or a registry, labelled by a diagnosis or a
+  follow-up outcome, with no date recorded per row.
+* `Survey`: rows the survey collected itself, by its questionnaire (a clinical one too) or its sampling design
+  (vegetation quadrats, a sky survey's data releases), in one round or in waves of different units.
+* `Database Snapshot`: an organisation's records released as one extract with no date recorded per row: read for one
+  date or period (a customer base, a product catalogue, one scrape of listings, a census table), or cases that arrived
+  over time with their dates dropped.
+* `Dated Event Log`: each row is one event (a trip, an order, a loan, a sale, a report, an admission) whose raw row
+  records its date.
+* `Panel Data`: the same units observed at repeated periods or visits, one row per unit and occasion (station-hours,
+  store-days, account-months, policy-years, a person's study visits).
+
+Where more than one fits:
+
+1. **Panel data first,** when the release identifies the unit (an id or a link in the raw file), each occasion has a
+   recorded date or order (`Time: Dated`, `Time: Inferred` or `Time: Within Entity`; a designed factor such as a test
+   age does not count), and most rows come from units seen on two or more occasions. The rows are the unit's periods
+   or visits, not events that involve it: the storms of a county or the loans of a repeat customer are a dated event
+   log.
+2. **A dated event log needs a date its raw rows record** (`Time: Dated`: a date column, or a value that encodes the
+   period). An order rebuilt from the data (`Time: Inferred`: an id issued in sequence, a case number, the file's row
+   order) does not count: it is what the data allows, not what the source recorded, and the split takes it up within
+   the type (a window on the rebuilt order, SPLIT-8). Without a recorded date, an organisation's records are a database
+   snapshot, whatever period the source names.
+3. **Dates outrank only the clinical study:** a clinical set whose rows record a date is a dated event log.
+   Experimental results, surveys and catalogues keep their dated rows.
+4. **A catalogue is the growing database or programme itself,** not a company's own collection, a one-off deposit or a
+   closed programme; a survey's data releases are a survey.
+5. **Patient data without dates** is a clinical study when the patients arrived over time (`Samples: Over Time`), and
+   experimental results when the data has no time dimension (`Samples: No Time Dimension`: a tumour's type measured on
+   banked specimens).
+6. **A survey's rows are its own answers or samples;** a questionnaire joined with an organisation's records, or a table
+   aggregated from a census, is a database snapshot.
+
+What each type holds for the split: a catalogue its items, families and entry dates; experimental results the
+item or the run, which repeats across conditions; a clinical study patients who arrived over time with the dates lost
+or only an order rebuilt (SPLIT-8), sites and patients that may recur; a survey its sampled units and its rounds; a
+database snapshot one read moment (SPLIT-32's `Retrospective` where the use case looks back, otherwise forced by
+SPLIT-8) or arrivals whose time is lost or survives only as a rebuilt order (SPLIT-8); a dated event log the
+row's date (SPLIT-7, SPLIT-14) and the entities its events involve (SPLIT-9); panel data both the unit (SPLIT-24) and
+the occasion. `tests/test_collection_types.py` checks that each record has one type and that the date conditions of
+rules 1 to 3 agree with its collection facts.
+
+Why: the same split question reads differently by how the rows came into the table, and the type names that before
+the split is chosen. Cases, on the 174 TabArena v0.2 definitions: catalogue 15, experimental results 17, clinical
+study 16, survey 7, database snapshot 48, dated event log 49, panel data 22. Rule 1: dementia_prediction (visits),
+sepsis_prediction_1m (stay-hours), noaa_afsc_bottom_trawl_survey_cpue (stations surveyed every year) are panel data;
+pricing_game_2016_french_fleet (most vehicles have one period), open_university_learning_analytics_dataset (few
+students register twice), allstate_claim_prediction_challenge_1m (one row per vehicle) and numerai_v5_2_1m (an id per
+stock and week) are not. Rule 2: predict_students_dropout_and_academic_success (the economic figures give the
+enrolment year) and california_house_prices_2020 (each row records its listing date, though the split runs on the id's
+sale order) are event logs; fremtpl2, labour_inspection_compliance, loan_default_prediction_imperial_college and
+mercedes_benz_greener_manufacturing (orders rebuilt from an id or the file's row order) are snapshots;
+home_credit_default_risk (snapshot) against home_credit_default_stability_1m (event log), the same lender's
+applications released without and with dates. Rule 3: heart_disease (UCI's raw files date each exercise test and
+angiogram) is an event log; diabetes_130_us, horse_colic_survival and lung_cancer_epithelial_genexp (orders rebuilt
+from encounter numbers, case numbers and deposit batches) are clinical studies; infrared_thermography_temperature,
+wine_quality (experimental results). Rule 4: sdss_17. Rule 5: sarcoma,
+lung_adenocarcinoma_metastasis (experimental results) against indian_liver_patient_dataset (clinical study). Rule 6:
+caracas_cervical_cancer, in_vehicle_coupon_recommendation (surveys) against student_portuguese_performance and houses
+(snapshots).
+
+**SPLIT-36 (Should; relates to SPLIT-8, SPLIT-24, SPLIT-25 and SPLIT-31).** When the use case holds out a group of
+distinct items, a family (a chemical series, an element set, a protein target), a site, an area or an instrument, and
+the data cannot key that group (no structure to compute a scaffold, no stand id or coordinates, a single site), the
+split is random and the definition carries `ForcedIIDFromGrouped`. Its `Group basis:` line names the group the use
+case holds out, why the data cannot key it, and the overlap the random split leaves (the share of test items with a
+close training neighbour, or rows of one unkeyed group on both sides). The tag sits beside the time basis (SPLIT-32),
+which still says why the split is not temporal. It is not for repeats of one entity the data does not identify, whose
+rows share one outcome: SPLIT-24 groups those where the entity can be rebuilt exactly, and SPLIT-25 retires the
+dataset where it cannot. Like a forced tag from temporal, it stays whatever a leak test finds, as the use case asks
+for another split. Why: a random score stands for items of groups already seen, and the tag tells a reader that the
+use case asks for more. Cases: bioresponse (`Timeless`; no structure or compound id, so no chemical series),
+covertype (`Retrospective`; no stand id or coordinates, and four wilderness areas are too few groups).
+
+**SPLIT-37 (Should; applies SPLIT-8, SPLIT-10, SPLIT-32, SPLIT-35 and SPLIT-36).** A definition's split is decided by
+walking the decision tree in [split_tree.md](split_tree.md) from its record's data collection type: the use case
+first, then what the data and its documentation allow, then a measurement where one decides. The leaf reached gives
+the split and the tag that justifies it (a time basis, a forced tag or `ForcedIIDFromGrouped`), and for a temporal
+split the date the windows are cut on and the gap. Answer each question from what it reads; a collection fact only
+points to where to look. A forced leaf, a leaf no definition has reached yet, and a question no answer fits go to a
+human reviewer with the split suggested and the facts behind it; only a reviewer adds a branch. A split the source
+prescribes answers a question only where the source chose it for the use case: matching the leaf, it fills in the
+leaf's periods, gap and training history (SPLIT-19); differing, the leaf decides (SPLIT-5). A definition that ships
+another split than its leaf names the leaf, what the source prescribed and the reason in its `splits_comment`, and the
+departure goes to a reviewer. The rules above still decide each step (the windows, the gap, the groups, the leak
+tests); the tree orders them. Why: the same questions asked in the same order make splits of similar data agree, and
+show where a dataset is new. Cases: the 174 v0.2 definitions placed when the tree was adopted (2026-11-17); ten
+shipped another split and are listed in split_tree.md.
 
 **SPLIT-34 (Should; relates to SPLIT-4, SPLIT-31 and SPLIT-32).** A dataset drawn from an **expanding science
 catalogue** is a cut of a database or a testing programme that keeps growing: a bioactivity database's releases, a
@@ -421,7 +537,8 @@ Cases: climate_model_weather_forecasting.
 ### The training history
 
 **SPLIT-19 (Should).** When the source defines the split (a competition's or a paper's official periods), follow it.
-A prescribed split is still a claim to check (SPLIT-5).
+A prescribed split is still a claim to check (SPLIT-5): it fills in the leaf SPLIT-37 reaches, and where it differs
+from that leaf the leaf decides.
 
 **SPLIT-20 (Should).** Otherwise decide what the train side holds from the use case: the history a model refit at each
 window would train on. Read what the source's authors trained on, check the history for breaks (COVID-19, a change of

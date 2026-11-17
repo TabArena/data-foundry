@@ -14,6 +14,7 @@ tags:
 - 'Target: Varying Delay'
 - 'Entities: Recur'
 - 'Features: Read Later'
+- Dated Event Log
 collections:
 - TabArena Reject
 - TabSTAR

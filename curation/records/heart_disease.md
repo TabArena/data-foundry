@@ -15,6 +15,7 @@ tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Dated'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: UCI

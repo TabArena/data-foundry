@@ -60,7 +60,7 @@ class KddCup09Appetency(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Anonymized", "DelayedTarget")
+    data_tags = ("Anonymized", "ForcedIIDFromTemporal")
     download_description = """
         We download the large training data (five zipped chunks, kept zipped) and its appetency labels from the KDD
         challenge website:
@@ -93,13 +93,12 @@ class KddCup09Appetency(AbstractCuratedDataset):
         - Anomaly: this dataset has many missing values.
         - The target (2026-11-01, CLEAN-25): `Appetency` ships its classes as words (1 is the event). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
-        - Time basis: DelayedTarget: one extract of Orange's customer datamart (date not stated, before mid-2009),
-          100,000 customers resampled toward the labels and split at random by the host; the target, appetency, is read
-          as a purchase of a new product or service after the scoring date, as the marketing use case needs. Every
-          customer was taken in the same extract and labelled over the same window, so no test row is later than a
-          training row and the random split is IID. The label window and the features' windows are not stated and the
-          features are masked, so neither the closed window nor the features' timing can be checked. Not tested: the
-          next campaign.
+        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): one extract of
+          Orange's customer datamart (date not stated, before mid-2009), 100,000 customers resampled toward the labels
+          and split at random by the host; the target, appetency, is read as a purchase of a new product or service
+          after the scoring date, as the marketing use case needs. One extract is one period, too few for three windows
+          (SPLIT-8). The label window and the features' windows are not stated and the features are masked, so neither
+          can be checked. Extracts of later campaigns would allow a temporal split. Not tested: the next campaign.
     """
 
     accepted_check_warnings = {

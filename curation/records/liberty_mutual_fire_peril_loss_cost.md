@@ -15,6 +15,7 @@ tags:
 - 'Time: Lost'
 - 'Target: Later'
 - 'Entities: Recur'
+- Database Snapshot
 original_source: Kaggle
 year: '2014'
 domain: insurance

@@ -17,6 +17,7 @@ tags:
 - Tiny Data
 - 'Samples: Over Time'
 - 'Time: Lost'
+- Clinical Study
 collections:
 - New (BeyondArena)
 original_source: UCI

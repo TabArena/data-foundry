@@ -16,6 +16,7 @@ tags:
 - Tiny Data
 - 'Samples: Over Time'
 - 'Time: Lost'
+- Database Snapshot
 collections:
 - New (BeyondArena)
 original_source: UCI

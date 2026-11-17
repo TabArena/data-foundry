@@ -16,6 +16,7 @@ tags:
 - Free Text (Short)
 - 'Samples: One Moment'
 - 'Entities: Recur'
+- Database Snapshot
 collections:
 - TabSTAR
 original_source: Kaggle

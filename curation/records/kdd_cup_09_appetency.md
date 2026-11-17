@@ -17,6 +17,7 @@ decision_markers:
 tags:
 - 'Samples: One Moment'
 - 'Target: Later'
+- Database Snapshot
 original_source: Other
 year: '2009'
 domain: business & marketing
@@ -419,3 +420,7 @@ temporal (a note across datasets).
    target) and `Var11750` (uniform on 0-9) are dropped in the large definition (`GENERATED_COLUMNS`), with a
    `curation_comments` bullet. `Var57` belongs to the small set only and has no match in the large set, so it leaves
    with the switch.
+
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.

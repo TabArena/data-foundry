@@ -11,6 +11,7 @@ tags:
 - New IID
 - 'Samples: One Moment'
 - 'Target: Later'
+- Clinical Study
 collections:
 - New (BeyondArena)
 original_source: GOV Website
@@ -66,6 +67,10 @@ CC (2026-10-26, Lennart): verdict ship.
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `education` (the README lists their levels).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_cvd_mortality` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.
 
 ## Reference
 

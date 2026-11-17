@@ -20,6 +20,7 @@ tags:
 - 'Time: Lost'
 - 'Target: Revised Later'
 - 'Entities: Recur'
+- Database Snapshot
 collections:
 - TexTabBench
 - TabSTAR

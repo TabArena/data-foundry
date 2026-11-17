@@ -13,6 +13,7 @@ priority: 4
 tags:
 - 'Samples: Over Time'
 - 'Time: Inferred'
+- Survey
 collections:
 - New (BeyondArena)
 original_source: Zindi

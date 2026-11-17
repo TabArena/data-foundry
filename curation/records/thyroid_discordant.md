@@ -17,6 +17,7 @@ tags:
 - New IID
 - 'Samples: Over Time'
 - 'Time: Dated'
+- Dated Event Log
 collections:
 - TabArena Reject
 - TabSTAR

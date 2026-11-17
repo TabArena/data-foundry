@@ -17,6 +17,7 @@ tags:
 - Larger IID Data
 - 'Samples: One Moment'
 - 'Target: Later'
+- Database Snapshot
 collections:
 - TabArena Reject
 - TabSTAR
@@ -395,6 +396,10 @@ random draws after measuring it, and the notes could say the same once measured 
    **Resolved (2026-11-09, Andrej):** A, keep: "There is no evidence that this is a leak and not a real pattern. The
    difference in the target distributions is not too crazy, so this is not sufficient to drop." The definition is
    unchanged.
+
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.
 
 ## Reference
 

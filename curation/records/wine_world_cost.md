@@ -17,6 +17,7 @@ tags:
 - New IID
 - Free Text (Sentences)
 - 'Samples: One Moment'
+- Database Snapshot
 collections:
 - TexTabBench
 - STRABLE

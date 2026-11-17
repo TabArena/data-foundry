@@ -81,6 +81,8 @@ from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
     FORCED_TIME_TAGS,
+    GROUP_BASIS_TAGS,
+    HUMAN_SET_TIME_TAGS,
     RETIRED_DATA_TAGS,
     TIME_BASIS_TAGS,
     DatasetMetadataV2,
@@ -95,6 +97,7 @@ from data_foundry.schema import (
     TrainSampling,
     UnitWeight,
     as_column_list,
+    assumed_stationary_problem,
     resolve_warehouse_dir,
     rows_text,
 )
@@ -2105,6 +2108,10 @@ def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str]
         fail(f"`{prototype}` says why a split is not temporal; this one is, so drop the tag.")
     if "Time basis:" not in (cls.curation_comments or ""):
         fail(f"`{prototype}` needs a `Time basis:` line in `curation_comments` stating the fact behind it (SPLIT-32).")
+    if prototype in HUMAN_SET_TIME_TAGS:
+        problem = assumed_stationary_problem(cls.curation_comments)
+        if problem:
+            fail(f"`{prototype}`: {problem} (SPLIT-32). Without it, keep the forced tag.")
 
 
 def _regime_tags(cls: type[AbstractCuratedDataset]) -> list[str]:
@@ -2374,8 +2381,13 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         fail("`data_tags` must be a tuple of tags, not one string.")
     if "Snapshot" in cls.data_tags:
         fail(
-            "`Snapshot` is retired: tag a use case that fills in the time the data covers `Retrospective`, one that "
-            "looks forward from one shared moment `DelayedTarget` (SPLIT-32)."
+            "`Snapshot` is retired: tag a use case that fills in the time the data covers `Retrospective`; one that "
+            "looks forward from one shared moment is forced (SPLIT-8, SPLIT-32)."
+        )
+    if "DelayedTarget" in cls.data_tags:
+        fail(
+            "`DelayedTarget` is retired: one shared scoring moment is one period, too few for windows, so a use case "
+            "that looks forward from it is forced, `ForcedIIDFromTemporal` or `ForcedGroupedFromTemporal` (SPLIT-8)."
         )
     retired = [tag for tag in cls.data_tags if tag in RETIRED_DATA_TAGS]
     if retired:
@@ -2383,7 +2395,12 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             f"`data_tags` {retired}: retired, kept only so that old containers load. Write the dataset's doubts as a "
             "finding and its fit as `approximate` instead."
         )
-    if not task and set(cls.data_tags) & {*REGIME_TAGS, "ForcedGroupedFromTemporal", "ForcedIIDFromTemporal"}:
+    if not task and set(cls.data_tags) & {
+        *REGIME_TAGS,
+        "ForcedGroupedFromTemporal",
+        "ForcedIIDFromTemporal",
+        *GROUP_BASIS_TAGS,
+    }:
         fail("a parent (no `target`) has no split, so no regime tag; its children get theirs from their task.")
     if task and "ForcedGroupedFromTemporal" in cls.data_tags and cls.grouping is None:
         fail("`ForcedGroupedFromTemporal` marks a grouped split; declare `grouping = Grouping(...)` or drop the tag.")
@@ -2391,6 +2408,13 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         fail("`UnseenGroup` holds out whole groups; declare `grouping = Grouping(...)` on the group or drop the tag.")
     if task and "ForcedIIDFromTemporal" in cls.data_tags and (cls.grouping is not None or cls.temporal is not None):
         fail("`ForcedIIDFromTemporal` marks an IID split; drop the tag or the `grouping`/`temporal` declaration.")
+    if task and "ForcedIIDFromGrouped" in cls.data_tags and (cls.grouping is not None or cls.temporal is not None):
+        fail("`ForcedIIDFromGrouped` marks an IID split; drop the tag or the `grouping`/`temporal` declaration.")
+    if "ForcedIIDFromGrouped" in cls.data_tags and "Group basis:" not in (cls.curation_comments or ""):
+        fail(
+            "`ForcedIIDFromGrouped` needs a `Group basis:` line in `curation_comments`: the group the use case holds "
+            "out, why the data cannot key it, and the overlap the random split leaves (SPLIT-36)."
+        )
     _validate_time_basis(cls, fail)
     moved = [
         a for a in ("drop_columns", "categorical_features", "string_features", "datetime_features") if a in vars(cls)

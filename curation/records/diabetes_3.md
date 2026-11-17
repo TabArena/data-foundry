@@ -12,6 +12,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Later'
+- Clinical Study
 collections:
 - TabSTAR
 original_source: Website

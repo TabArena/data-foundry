@@ -14,6 +14,7 @@ tags:
 - 'Time: Lost'
 - 'Target: Later'
 - 'Entities: Recur'
+- Panel Data
 collections:
 - New (BeyondArena)
 - TabSTAR

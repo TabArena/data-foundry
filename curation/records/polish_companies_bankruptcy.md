@@ -15,6 +15,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Later'
+- Database Snapshot
 original_source: UCI
 year: '2016'
 required_split:

@@ -18,6 +18,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Later'
 - 'Entities: Recur'
+- Panel Data
 collections:
 - New (BeyondArena)
 original_source: Kaggle

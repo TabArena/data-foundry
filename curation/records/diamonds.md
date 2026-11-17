@@ -15,6 +15,7 @@ priority: 2
 tags:
 - 'Samples: One Moment'
 - 'Entities: Recur'
+- Database Snapshot
 - Non-IID (Grouped)
 original_source: Other
 year: '2007'

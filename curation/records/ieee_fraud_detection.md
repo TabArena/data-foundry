@@ -19,6 +19,7 @@ tags:
 - 'Target: Varying Delay'
 - 'Target: Revised Later'
 - 'Entities: Recur'
+- Dated Event Log
 collections:
 - TabArena Reject
 original_source: Kaggle

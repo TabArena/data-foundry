@@ -17,6 +17,7 @@ decision_markers:
 tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
+- Database Snapshot
 original_source: UCI
 year: '2022'
 required_split:

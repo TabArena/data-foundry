@@ -21,6 +21,7 @@ tags:
 - 'Time: Lost'
 - 'Time: Within Entity'
 - 'Entities: Recur'
+- Panel Data
 collections:
 - New (BeyondArena)
 original_source: Other

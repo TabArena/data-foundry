@@ -17,8 +17,6 @@ tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Dated'
-- 'Samples: Over Time'
-- 'Time: Dated'
 - Expanding Science Catalogue
 original_source: Other
 year: '2014'

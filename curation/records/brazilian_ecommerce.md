@@ -14,6 +14,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: Kaggle

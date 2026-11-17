@@ -20,6 +20,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Varying Delay'
+- Dated Event Log
 collections:
 - AutoML_MM
 - TabSTAR

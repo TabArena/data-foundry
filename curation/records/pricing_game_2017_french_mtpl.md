@@ -13,6 +13,7 @@ tags:
 - Non-IID (Grouped)
 - 'Samples: One Moment'
 - 'Target: Later'
+- Database Snapshot
 year: '2017'
 domain: insurance
 required_split:
@@ -152,6 +153,10 @@ CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
 CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedGroupedFromTemporal` (Review issue 8, B):
 - Every Year-0 premium is set at the start of the policy year and the year's claims follow: one shared moment and a closed window, which the sharpened one-moment rule names a `DelayedTarget`.
 - The split by client stays.
+
+CC (2026-11-16, Andrej): time basis `ForcedGroupedFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The grouped split stays.
 
 ## Review
 

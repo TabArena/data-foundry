@@ -64,7 +64,7 @@ class Covertype(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Spatial", "Retrospective")
+    data_tags = ("Spatial", "Retrospective", "ForcedIIDFromGrouped")
     download_description = """
         We download the data from UCI.
 
@@ -106,6 +106,11 @@ class Covertype(AbstractCuratedDataset):
           road and fire-point layers (date not documented, before the August 1998 donation); the task fills in cells
           of the same areas at that moment, and cells of one stand share its label (see the look-up above). Not
           tested: a later map of the same areas, or land outside the four areas.
+        - Group basis: ForcedIIDFromGrouped (Andrej, 2026-11-16): the use case maps land with no inventory, which comes
+          as whole stands of 20 to 900 cells; the data has no stand id or coordinates, and its four wilderness areas
+          are too few groups (see above), so the split is random. Overlap left: a random test cell usually has cells
+          of its own stand in training, so the score is optimistic for unmapped tracts. Not measured: how much of the
+          score comes from recognising stands through the terrain and distance features (SPLIT-25).
     """
 
     # Task

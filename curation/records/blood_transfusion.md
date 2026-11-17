@@ -12,6 +12,7 @@ suggestion: 'Yes'
 tags:
 - 'Samples: One Moment'
 - 'Target: Later'
+- Database Snapshot
 original_source: UCI
 year: '2008'
 required_split:
@@ -40,6 +41,10 @@ Lennart: no objection
 Andrej: Matches criteria
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — The paper fits an RFMTC (Bernoulli sequence) model and compares predicted with actual response across donor groups and against plain RFM; no per-donor metric is named in what is accessible (full text paywalled). The ranking of donors to contact fits ROC AUC.
+
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.
 
 ## Reference
 

@@ -18,6 +18,7 @@ tags:
 - Spectral Data
 - 'Samples: No Time Dimension'
 - 'Entities: Recur'
+- Experimental Results
 collections:
 - TabArena Reject
 - TabSTAR

@@ -14,6 +14,7 @@ tags:
 - 'Time: Dated'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
+- Panel Data
 collections:
 - TabArena Reject
 - TabRed

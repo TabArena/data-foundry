@@ -18,6 +18,7 @@ tags:
 - 'Time: Inferred'
 - 'Target: Varying Delay'
 - 'Entities: Recur'
+- Clinical Study
 collections:
 - TabArena Reject
 - TabSTAR

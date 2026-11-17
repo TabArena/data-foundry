@@ -14,6 +14,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Entities: Recur'
+- Panel Data
 original_source: GOV Website
 year: '2026'
 domain: biology & life sciences

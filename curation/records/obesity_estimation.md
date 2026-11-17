@@ -17,6 +17,7 @@ decision_markers:
 tags:
 - Tiny Data
 - 'Samples: One Moment'
+- Survey
 collections:
 - New (BeyondArena)
 - TabSTAR

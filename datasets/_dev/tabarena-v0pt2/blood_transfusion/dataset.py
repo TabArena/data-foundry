@@ -57,7 +57,7 @@ class BloodTransfusion(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("DelayedTarget",)
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
 
@@ -67,12 +67,13 @@ class BloodTransfusion(AbstractCuratedDataset):
         - We made feature names more descriptive.
         - We renamed the target and mapped binary values to "Yes"/"No".
         - Anomaly: the data has a lot of duplicates (29%) and several duplicates with different target values.
-        - Time basis: DelayedTarget: one random draw of 748 donors from the donor database before the March 2007 drive,
-          with months since the last and the first donation and the number of donations counted to one shared reference
-          date; the target is whether the donor gave at the March 2007 drive, one date closed for every donor, and no
-          history count includes it (donors with recency 0 give at 40%, as at 2 to 4 months). Every donor was counted at
-          the same moment and its outcome is the same drive, so no test row is later than a training row and the random
-          split is IID. Not tested: the next drive.
+        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): one random draw of
+          748 donors from the donor database before the March 2007 drive, with months since the last and the first
+          donation and the number of donations counted to one shared reference date; the target is whether the donor
+          gave at the March 2007 drive, and no history count includes it (donors with recency 0 give at 40%, as at 2
+          to 4 months). One drive is one period, too few for three windows (SPLIT-8), so the random split tests other
+          donors of the same drive. Draws before later drives would allow a temporal split. Not tested: the next
+          drive.
     """
 
     # Task
