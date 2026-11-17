@@ -153,7 +153,7 @@ CC (2026-11-13, Andrej): collection facts `Samples: Over Time` and `Time: Inferr
 
 Sources: the NBS / Bank of Tanzania International Visitors' Exit Survey reports for 2013-2020 (bot.go.tz,
 nbs.go.tz; sample size and fieldwork in each report's methodology appendix). The 2014 report's purpose table
-(14,996 visitors) and its Chart 2.1 give the first column. Evidence: `~/claude_jobs/tz_time` (link.py, blocks.py).
+(14,996 visitors) and its Chart 2.1 give the first column; the rows were linked to the waves by these shares.
 
 ## Review
 

@@ -491,8 +491,7 @@ proposes log loss for this dataset; that question stays there.
    a CC line, `dataset check`. On A or B, the clause of issue 5 is reworded or withdrawn. On F, LEAK-38 drops the
    "person's later decision" qualifier. On G, the retirement steps. On H, D's drops plus a row filter in `load` (the
    non-buyer and buyer conditions of `core.py`, applied before the dropped fields go), the filter stated in `changes`
-   and a curation bullet, the record's row count, `dataset check`. Evidence: `~/claude_jobs/homesite_drop/`
-   (`sweep.py`, `followup.py`, `round2.py`, `round3.py`, `core.py` and their `.out` files).
+   and a curation bullet, the record's row count, `dataset check`.
 
    [^6a]: **LEAK-38** (Should; amended 2026-11-11): anonymised fields of a host's own release whose timing cannot be
      tested stay with a note; a field that fixes a person's later decision at near-certainty inside a large group is
@@ -555,7 +554,6 @@ proposes log loss for this dataset; that question stays there.
    32.5%, the same in 2013 to 2015); it may record the channel (known at the quote) or a sales stage (partly after
    it), which the anonymisation hides; kept under the rule for untestable anonymised fields", `dataset check`. On B,
    add it to the drop list with a comment, extend the curation bullet and `fit_reason`, a CC line, `dataset check`.
-   Evidence: `~/claude_jobs/homesite_drop/sf5.py`, `sf5.out`.
 
    [^7a]: **LEAK-38** (Should; amended 2026-11-11): anonymised fields of a host's own release whose timing cannot be
      tested stay with a note; a field that fixes a person's later decision at near-certainty inside a large group is

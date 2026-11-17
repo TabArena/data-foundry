@@ -1,5 +1,19 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-17, the split decision tree from the collection type, final (no container built)
+
+- `split_tree.md` (SPLIT-37) is regenerated from the final tree: use-case questions first under every collection type;
+  shared steps written once (the catalogue's family-key step; the ForcedFromTemporal step, which first asks whether the
+  arrival order can be reconstructed, then whether too few positives make the task `Too Small`, then for a measured or
+  a person's reason, then periods, new units and rows); windows questions that follow SPLIT-14, SPLIT-15 and SPLIT-17;
+  the pricing period folded into the scoring date; ten definitions listed that ship another split than their leaf.
+- SPLIT-8: whole periods held out before the entity, the entity only where the use case meets new entities, a
+  measured flat relation or a person's reason in place of the forced tag. SPLIT-32: `StationaryRelation` only where
+  the windows cannot be built; `Timeless` also for a catalogue whose time changes only which items are held;
+  `AssumedStationaryRelation` also at one moment. SPLIT-34: a catalogue without a family key is `Timeless`, random or
+  grouped by the item, without `ForcedIIDFromGrouped` (SPLIT-36 names catalogues as outside it). definitions.md follows.
+- No definition changes; the departures are for a reviewer.
+
 ## 2026-11-16, wine_world_cost: the use case kept as a merchant's listing decision (Lennart's decision, no container built)
 
 - Review issue 7 (whether any real use case exists), A: kept, fit approximate. The actor is a UK wine merchant's buyer
