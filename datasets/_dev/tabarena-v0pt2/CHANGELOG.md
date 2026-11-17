@@ -170,6 +170,39 @@ temporal, with the arrival facts in their notes.
 - The reviews move into the records' `## Review`; the records take the decisions as CC lines and `priority`.
 - The checksums change (tags and notes); every one of these containers needs a rebuild.
 
+## 2026-11-17, lung_cancer_epithelial_genexp: grouped by scan period on the recovered sample number (Andrej's decisions, no container built)
+
+- Split: the GEO titles' sample number is the scan order (scan dates of 31 arrays, April 2003 to January 2006,
+  Spearman 0.997). Three forward windows of 27 arrays cannot be scored, so six scan periods (sixths of the number's
+  rank, `scan_period`, never an input; the number itself not shipped) are held out whole, `ForcedGroupedFromTemporal`
+  with its `Time basis:` line. Random folds let a model read a period's scan signature and cancer share: held-out
+  periods score 0.05 to 0.14 ROC AUC lower (2026-11-12).
+- Rows: the 24 arrays without GEO clinical characteristics, most likely the 23 the authors filtered for quality, are
+  dropped (163 arrays; 19 of the 24 were cancer, all from one submission) (2026-11-13).
+- Features: the 8 clinical findings known at the bronchoscopy (Beane et al. 2008's clinical model) join the
+  expression; the bronchoscopy's own result and the study's later risk rating stay out. Logistic regression on the
+  grouped splits: clinical 0.819, expression 0.744, both 0.834 ROC AUC (2026-11-13).
+- Record: the split markers, year 2006 and the GEO source, and a CC line per decision. Needs a rebuild.
+
+## 2026-11-13, temporal windows on a recovered order: five datasets (Andrej's decisions, no container built)
+
+The release has no usable date, so the split runs on an order rebuilt from the data; where that order arrives with
+the target, it orders and splits the rows but is no model input (`Temporal(..., time_of="label")`).
+
+- `california_house_prices_2020`: three windows in sale order (`time_index`, no model input), no planning gap; 14
+  sales of one price booked on several homes, the descriptions that state the price and the sales scraped twice
+  dropped (38,986 sales).
+- `coffee_rating_prediction`: the two-month review windows keep the review month out of the inputs; the reviewer's
+  blind assessment and bottom line dropped (written with the score, LEAK-35 exception); the New Taiwan dollar prices
+  converted.
+- `diabetes_130_us`: every stay of a patient, not only the first, in nine windows of encounter order (`time_index`,
+  a calendar over 1999-2008); readmission within 30 days against the rest, `problem_type` Binary Classification.
+- `labour_inspection_compliance`: three windows of the export's row order (`file_row`, no model input) in place of
+  the forced random split; the 497 exact copies and the organisation's account figures kept with notes.
+- `wine_quality`: nine windows by position in each colour's file (`file_position`, no model input), taken as the
+  order of entry; 49 near-copies dropped (5,271 wines); density's two precisions and the pairs analysed twice kept.
+- `leak_checks.md`: the LEAK-35 case and its exception row for coffee's review text.
+
 ## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)
 
 - Retired because no testing decision is made from a symptom questionnaire (USE-2; the fit None, USE-8). Its hospital
