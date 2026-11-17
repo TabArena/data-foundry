@@ -1,5 +1,19 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-17, lung_cancer_epithelial_genexp: grouped by scan period on the recovered sample number (Andrej's decisions, no container built)
+
+- Split: the GEO titles' sample number is the scan order (scan dates of 31 arrays, April 2003 to January 2006,
+  Spearman 0.997). Three forward windows of 27 arrays cannot be scored, so six scan periods (sixths of the number's
+  rank, `scan_period`, never an input; the number itself not shipped) are held out whole, `ForcedGroupedFromTemporal`
+  with its `Time basis:` line. Random folds let a model read a period's scan signature and cancer share: held-out
+  periods score 0.05 to 0.14 ROC AUC lower (2026-11-12).
+- Rows: the 24 arrays without GEO clinical characteristics, most likely the 23 the authors filtered for quality, are
+  dropped (163 arrays; 19 of the 24 were cancer, all from one submission) (2026-11-13).
+- Features: the 8 clinical findings known at the bronchoscopy (Beane et al. 2008's clinical model) join the
+  expression; the bronchoscopy's own result and the study's later risk rating stay out. Logistic regression on the
+  grouped splits: clinical 0.819, expression 0.744, both 0.834 ROC AUC (2026-11-13).
+- Record: the split markers, year 2006 and the GEO source, and a CC line per decision. Needs a rebuild.
+
 ## 2026-11-13, temporal windows on a recovered order: five datasets (Andrej's decisions, no container built)
 
 The release has no usable date, so the split runs on an order rebuilt from the data; where that order arrives with
