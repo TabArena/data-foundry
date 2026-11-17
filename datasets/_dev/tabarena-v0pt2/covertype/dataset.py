@@ -34,8 +34,9 @@ class Covertype(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "Land without an inventory comes in whole stands and areas rather than scattered cells, so random cells "
-            "give an optimistic estimate; the data has no coordinates to hold out regions."
+            "Cover types were mapped per stand (20 to 900 cells), so random cells give a look-up: four location "
+            "columns alone predict 93% of the test cells, and without them LightGBM falls from 97% to 70% accuracy; "
+            "land far from mapped cells would score far lower."
         ),
     )
 
@@ -86,6 +87,21 @@ class Covertype(AbstractCuratedDataset):
         - Partial order, left unordered (2026-11-01, CLEAN-14): `Soil_ClimaticZone`: the altitude belts are ordered
           (lower montane < montane < subalpine < alpine), but the dry and the mixed zones within a belt are a second
           dimension.
+        - Look-up measured (2026-11-06; random cells kept with the measurement, Andrej, 2026-11-10). First shipped fold,
+          387,341 training and 193,671 test cells; the location columns are elevation and the distances to water,
+          road and fire ignition point:
+
+          | Model | Inputs | Log loss | Accuracy |
+          |---|---|---|---|
+          | class shares | none | 1.205 | |
+          | nearest neighbours (log loss: 10, distance-weighted; accuracy: 1) | 4 location columns, within the area | 0.165 | 0.934 |
+          | logistic regression (100,000 training cells) | all 14 | 0.630 | 0.724 |
+          | LightGBM, untuned | all 14 | 0.096 | 0.971 |
+          | LightGBM, untuned | the 10 without the location columns | 0.698 | 0.702 |
+
+          59.6% of the test cells have a training cell within one cell's distance on the four location columns, and
+          LightGBM is as accurate on the others (0.972 against 0.969): a stand is recognised from location values
+          within a few cells. The score mostly measures interpolation between mapped cells inside the four areas.
         - Time basis: Retrospective: one extract of the Forest Service's stand map of four wilderness areas and of terrain,
           road and fire-point layers (date not documented, before the August 1998 donation); the task fills in cells
           of the same areas at that moment, and cells of one stand share its label (see the look-up above). Not

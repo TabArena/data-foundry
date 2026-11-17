@@ -51,6 +51,7 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
     # Dataset
     unique_name = "5g_energy_consumption"
     domain = "technology & internet"
+    data_tags = ("Retrospective",)
     sources = (
         Source(
             role="publication",
@@ -85,7 +86,6 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
             name="netop/5G-Network-Energy-Consumption",
         ),
     )
-    data_tags = ("Retrospective",)
     download_description = r"""
         We use the dataset version uploaded by a top solution from the Zindi challenge.
 

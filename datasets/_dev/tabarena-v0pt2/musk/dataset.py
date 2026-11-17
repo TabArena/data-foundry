@@ -44,6 +44,7 @@ class Musk(AbstractCuratedDataset):
     # Dataset
     unique_name = "musk"
     domain = "chemistry & material science"
+    data_tags = ("Timeless",)
     sources = (
         Source(
             role="publication",
@@ -62,7 +63,6 @@ class Musk(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Timeless",)
     download_description = """
         wget https://archive.ics.uci.edu/static/public/75/musk+version+2.zip && unzip musk+version+2.zip clean2.data.Z && uncompress clean2.data.Z && rm musk+version+2.zip && mkdir -p local-data-warehouse/musk && mv clean2.data local-data-warehouse/musk/
     """

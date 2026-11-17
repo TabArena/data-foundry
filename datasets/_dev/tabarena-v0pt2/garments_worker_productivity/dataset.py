@@ -111,6 +111,10 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
     # Splits
     splits_comment = """
         We define 30 splits with one day for testing each, resulting in small test sizes of 17-24 samples per split. The split with the smallest train sizes uses exactly half of the available samples.
+        A day's productivity and its other end-of-day values are in the efficiency report written after the shift; the
+        prediction is made at the start of the next day, so every training label is known and no gap is needed. The
+        end-of-day values enter lagged to the team's previous recorded day (no team has two rows on one day), and each
+        window is a whole factory day.
     """
     temporal = Temporal(
         on="date",
