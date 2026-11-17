@@ -219,7 +219,7 @@ the record's `Time: Dated` corrected to `Time: Inferred` (issue 2, B); both reso
    column and the grouping removed, and the windows checked against the floor that every training side holds at
    least half the rows.
 
-   [^1a]: **SPLIT-34** (Should, proposed): in a catalogue of items with a fixed property, the item, its family and
+   [^1a]: **SPLIT-37** (Should, proposed): in a catalogue of items with a fixed property, the item, its family and
      when it entered the catalogue hold out different things; where the actor predicts for items found later and the
      source dates them, a family key still trains on later families and on siblings of the same batch. The key
      follows the application, never the size of the gap.
@@ -277,7 +277,7 @@ the record's `Time: Dated` corrected to `Time: Inferred` (issue 2, B); both reso
      scaffold-disjoint, so the order carries no wave of arrivals the scaffold split misses; what the split cannot test
      is a chemical class the screen received only later[^3a].
 
-   [^3a]: **SPLIT-34** (Should), its fifth step: where the entry date does not replace the family key, the family key
+   [^3a]: **SPLIT-37** (Should), its fifth step: where the entry date does not replace the family key, the family key
      stands and the time basis says why, `Timeless` with the forward split's share against a random draw's.
 
    **Resolved (2026-11-12, Andrej):** applied on approval of the plan that settled the split keys of growing catalogues

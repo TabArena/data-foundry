@@ -54,7 +54,7 @@ CC (2026-11-11, Andrej): record field set from the definition (review page field
 
 CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension` (BeyondArena v0.2 review page, issue 4, B): the earliest reference year of each window's GenBank entry, looked up at NCBI by locus name or through the record that holds the entry's windows at the named position, dates 1,388 of 1,475 entries (94.1%; 2,879 of 3,017 windows once issue 1's option D drops the copies), 1974 to 1990. Junction share and difficulty show no trend with the year, and a split by year leaves as many close training relatives as a random one. The facts describe the source and do not change with the split, which stays as it is (issue 3 open).
 
-CC (2026-11-12, Andrej): split by GenBank entry component (BeyondArena v0.2 review page, issue 3, reply b, after the dating of issue 4; SPLIT-24, SPLIT-34): the entry is the instance name before the site type, and entries that share an identical 60-base window are joined, one gene in overlapping entries: 1,440 components over the 3,190 windows (the largest 82), grouped 10 x 3. No exact copy crosses the split (7.4% of the test windows at random), and 1.6% of the test windows keep a training window within 3 of 60 bases (10.2% at random). A split by entry year leaves as many close relatives as a random draw (4.1% against 4.0% within 3 bases), so the family key stands and the time basis stays `Timeless`, its line rewritten for the grouped split; the tag enters `data_tags` once PR #50 is in the working copy. `required_split` Grouped (NON-IID). The duplicate windows (issue 1) are still open.
+CC (2026-11-12, Andrej): split by GenBank entry component (BeyondArena v0.2 review page, issue 3, reply b, after the dating of issue 4; SPLIT-24, SPLIT-37): the entry is the instance name before the site type, and entries that share an identical 60-base window are joined, one gene in overlapping entries: 1,440 components over the 3,190 windows (the largest 82), grouped 10 x 3. No exact copy crosses the split (7.4% of the test windows at random), and 1.6% of the test windows keep a training window within 3 of 60 bases (10.2% at random). A split by entry year leaves as many close relatives as a random draw (4.1% against 4.0% within 3 bases), so the family key stands and the time basis stays `Timeless`, its line rewritten for the grouped split; the tag enters `data_tags` once PR #50 is in the working copy. `required_split` Grouped (NON-IID). The duplicate windows (issue 1) are still open.
 
 CC (2026-11-12, Andrej): the copies of one record dropped (BeyondArena v0.2 review page, issue 1, D, agreeing with the answer of 2026-11-10; LEAK-19, LEAK-20): 125 windows of 60 bases repeat (310 rows), most the same gene in overlapping GenBank entries. One row per window and label stays, both rows of `HUMCYPIIE`'s window labelled a junction and no junction go, and the 13 windows that one entry holds at two places (duplicated genes) keep one row per place: 173 rows go, 3,017 remain (exon-to-intron 685, intron-to-exon 679, neither 1,653). The entry-component groups are joined on the whole file before the drop: 1,440 over the 3,017 windows (the largest 65). On the shipped 10 x 3 folds no test window has an identical window in training and 1.6% have one within 3 of 60 bases (0.6% and 3.7% under random folds of the same rows). The marker `Duplicate` goes, as the issue's notes say: it described OpenML's StatLog copy `dna` (each base coded as binary columns), not UCI's file, which this definition reads.
 
@@ -392,7 +392,7 @@ place and "acceptors" in another; the definition avoids both words.
      test windows clearly fewer close training relatives than a random draw does.
    * Issue 2's `Timeless` was decided for the random split; under B it carries over only if the dating finds no wave.
 
-   [^3b]: **SPLIT-34** (Should): a dataset drawn from a database that keeps growing can be split by the item, its family
+   [^3b]: **SPLIT-37** (Should): a dataset drawn from a database that keeps growing can be split by the item, its family
      or the date it entered; the family key is the default, the source's stated aim and scope decide which items the
      test set stands for, and the date replaces the family key only where it carries waves.
 
@@ -439,7 +439,7 @@ place and "acceptors" in another; the definition avoids both words.
    copied into the folder, `Temporal(..., feature=False)` with windows 1988, 1989, 1990, the undated windows in
    training; `dataset check`.
 
-   [^3c]: **SPLIT-34** (Should): within the source's scope the entry date replaces the family key only when it carries
+   [^3c]: **SPLIT-37** (Should): within the source's scope the entry date replaces the family key only when it carries
      waves, or a forward split leaves the test items clearly fewer close training neighbours than a random draw;
      otherwise the family key stands and the time basis says why. Here the forward split leaves 4.1% within 3 bases
      against 4.0% for a random draw.
@@ -505,7 +505,7 @@ place and "acceptors" in another; the definition avoids both words.
    issue and in issue 3. If the entries are dated, the record's facts become `Samples: Over Time` and `Time: Dated`
    whichever split wins. On A, issue 3's decision stands alone.
 
-   [^4a]: **SPLIT-34** (Should): the family key is the default; the source's stated aim and scope decide which items the
+   [^4a]: **SPLIT-37** (Should): the family key is the default; the source's stated aim and scope decide which items the
      test set stands for; within that scope the entry date replaces the family key when the use case predicts for items
      the catalogue does not hold yet, the date is when the item entered, the labels are final, and a forward split
      leaves the test items clearly fewer close training neighbours than a random draw.

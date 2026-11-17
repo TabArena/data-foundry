@@ -313,7 +313,7 @@ redistributed. The build is stale against the current definition, so the dataset
    split or score changes, `dataset check`, no rebuild. On B or C, the sample identifier would have to be carried
    into the frame as a scoring column, and the class counts of each side checked before anything is declared.
 
-   [^4a]: **SPLIT-34** (Should): a dataset drawn from an expanding science catalogue, a cut of a database or testing
+   [^4a]: **SPLIT-37** (Should): a dataset drawn from an expanding science catalogue, a cut of a database or testing
      programme that keeps growing, can be split by the item, by its family or by when it entered the catalogue, and
      where the actor predicts for items the catalogue does not hold yet the entry date holds out what a family key
      leaves in. A catalogue that is not growing, a recoverable date that is not the date items entered, and labels

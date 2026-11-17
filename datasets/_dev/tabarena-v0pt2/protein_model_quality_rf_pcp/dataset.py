@@ -173,7 +173,7 @@ class RfPcp(AbstractCuratedDataset):
           output for unminimized models whose atoms overlap, continuous with the rest and carrying signal (mean GDT_TS
           0.339 against 0.398), so unusual rather than impossible (CLEAN-11). `SS` has no bound the source gives.
         - CC (2026-11-12, Andrej): the split stays by protein ("I go back to by split by protein", issue 11, which
-          answers issue 10; SPLIT-34): a split by CASP round was weighed and is not built. Windows by round score
+          answers issue 10; SPLIT-37): a split by CASP round was weighed and is not built. Windows by round score
           within 0.03 of a same-size protein split on CASP8 and CASP9 and 0.03 to 0.07 lower on CASP7; CASP10 scores
           about 0 under any split that trains on the earlier rounds, a change of descriptor convention rather than
           time (splits_comment).

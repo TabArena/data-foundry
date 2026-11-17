@@ -10,7 +10,7 @@
 
 ## 2026-11-17, the split decision tree from the collection type, final (no container built)
 
-- `split_tree.md` (SPLIT-37) is regenerated from the final tree: use-case questions first under every collection type;
+- `split_tree.md` (SPLIT-36) is regenerated from the final tree: use-case questions first under every collection type;
   shared steps written once (the catalogue's family-key step; the ForcedFromTemporal step, which first asks whether the
   arrival order can be reconstructed, then whether too few positives make the task `Too Small`, then for a measured or
   a person's reason, then periods, new units and rows); windows questions that follow SPLIT-14, SPLIT-15 and SPLIT-17;
@@ -18,8 +18,8 @@
 - SPLIT-8: whole periods held out before the entity, the entity only where the use case meets new entities, a
   measured flat relation or a person's reason in place of the forced tag. SPLIT-32: `StationaryRelation` only where
   the windows cannot be built; `Timeless` also for a catalogue whose time changes only which items are held;
-  `AssumedStationaryRelation` also at one moment. SPLIT-34: a catalogue without a family key is `Timeless`, random or
-  grouped by the item, without `ForcedIIDFromGrouped` (SPLIT-36 names catalogues as outside it). definitions.md follows.
+  `AssumedStationaryRelation` also at one moment. SPLIT-37: a catalogue without a family key is `Timeless`, random or
+  grouped by the item, without `ForcedIIDFromGrouped` (SPLIT-35 names catalogues as outside it). definitions.md follows.
 - No definition changes; the departures are for a reviewer.
 
 ## 2026-11-16, wine_world_cost: the use case kept as a merchant's listing decision (Lennart's decision, no container built)
@@ -287,7 +287,7 @@ Each dataset's review is in its record's `## Review`.
 
 ## 2026-11-16, bioresponse and covertype: `ForcedIIDFromGrouped` beside the time basis (Andrej; no container built)
 
-- New tag (SPLIT-36): the use case holds out a group of distinct items the data cannot key, so the split stays random.
+- New tag (SPLIT-35): the use case holds out a group of distinct items the data cannot key, so the split stays random.
   bioresponse: no structure or compound id, so no chemical series (keeps `Timeless`). covertype: no stand id or
   coordinates, four wilderness areas too few groups (keeps `Retrospective`). Each definition gains a `Group basis:`
   line naming the group, why it cannot be keyed and the overlap left. Splits unchanged; the metadata changes, so both

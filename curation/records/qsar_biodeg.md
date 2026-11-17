@@ -367,7 +367,7 @@ Andrej's dispute of 2026-10-15 is not on the record.
      from 14-day to 28-day tests and the measurement move into a `Time basis:` line with no prototype tag, as a fact
      about the labels; there is no time column, so issue 3 is moot.
 
-   [^4a]: **SPLIT-34** (Should), its step on the source's purpose: the use case is the source's, cited; where the source
+   [^4a]: **SPLIT-37** (Should), its step on the source's purpose: the use case is the source's, cited; where the source
      keeps its model to items like those it was built from, the family key stands and the entry date is not weighed, and
      how the catalogue arrived is a fact for the notes. **SPLIT-23** (Must): the source's use case, cited, decides what
      one prediction is.

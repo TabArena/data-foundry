@@ -2413,7 +2413,7 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
     if "ForcedIIDFromGrouped" in cls.data_tags and "Group basis:" not in (cls.curation_comments or ""):
         fail(
             "`ForcedIIDFromGrouped` needs a `Group basis:` line in `curation_comments`: the group the use case holds "
-            "out, why the data cannot key it, and the overlap the random split leaves (SPLIT-36)."
+            "out, why the data cannot key it, and the overlap the random split leaves (SPLIT-35)."
         )
     _validate_time_basis(cls, fail)
     moved = [

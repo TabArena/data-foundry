@@ -104,7 +104,7 @@ References: as in the CC of 2026-10-27.
 
 CC (2026-11-17, Andrej): collection facts `Time: Inferred` instead of `Time: Dated`, and the type `Clinical Study` instead of `Dated Event Log`:
 - The release has no dates: only two periods (2016-2018 and 2019-2021) can be told apart, from the ultrasound case numbers (the definition's time basis), an order recovered from the data, not a recorded date.
-- A dated event log needs a date its raw rows record (SPLIT-35, rule 2); undated patients of one clinic are a clinical study. The split is unchanged.
+- A dated event log needs a date its raw rows record (SPLIT-34, rule 2); undated patients of one clinic are a clinical study. The split is unchanged.
 
 ## Review
 

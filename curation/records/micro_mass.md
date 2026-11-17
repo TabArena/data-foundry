@@ -290,7 +290,7 @@ et al. as "submitted"; it is arXiv:1506.07251 (2015). No record field disagrees 
    and a temporal declaration on it would be needed, and the windows checked against the floor that every training
    side holds at least half the rows.
 
-   [^4a]: **SPLIT-34** (Should): a dataset drawn from an expanding science catalogue, a cut of a database or testing
+   [^4a]: **SPLIT-37** (Should): a dataset drawn from an expanding science catalogue, a cut of a database or testing
      programme that keeps growing, can be split by the item, by its family or by when it entered the catalogue, and
      where the actor predicts for items the catalogue does not hold yet the entry date holds out what a family key
      leaves in. A catalogue that is not growing, a recoverable date that is not the date items entered, and labels

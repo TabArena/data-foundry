@@ -217,7 +217,7 @@ priority 3), forest inventory plots with locations.
    extract before August 1998, the fill-in use), ending with what the split cannot test (a later map, land outside the
    four areas). `data_tags` stays `("Spatial",)`; `Snapshot` enters it once PR #50 is in the working copy.
 
-CC (2026-11-16, Andrej): `ForcedIIDFromGrouped` beside `Retrospective` (SPLIT-36):
+CC (2026-11-16, Andrej): `ForcedIIDFromGrouped` beside `Retrospective` (SPLIT-35):
 - The use case maps land with no inventory, which comes as whole stands of 20 to 900 cells.
 - No stand id or coordinates, and four wilderness areas are too few groups: the split stays random, and a test cell usually has cells of its stand in training.
 - Not measured: how much of the score comes from recognising stands (SPLIT-25).

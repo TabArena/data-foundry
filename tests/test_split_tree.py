@@ -1,6 +1,6 @@
-"""The decision tree of SPLIT-37 names only splits, tags and definitions that exist.
+"""The decision tree of SPLIT-36 names only splits, tags and definitions that exist.
 
-`split_tree.md` is walked from a record's data collection type (SPLIT-35) to a leaf whose title is
+`split_tree.md` is walked from a record's data collection type (SPLIT-34) to a leaf whose title is
 "Split · justification". This test reads the file and checks that it has one section per collection type, that every
 leaf's split is random, grouped or temporal with a tag that fits it, and that every definition it names as an example
 or a departure has a v0.2 folder or, for one added on main after this branch, a record.
@@ -34,7 +34,7 @@ def text() -> str:
 
 
 def test_one_section_per_collection_type(text: str) -> None:
-    """The tree's sections are SPLIT-35's seven types, in its order."""
+    """The tree's sections are SPLIT-34's seven types, in its order."""
     sections = [
         h.strip()
         for h in re.findall(r"^## (.+)$", text, re.M)

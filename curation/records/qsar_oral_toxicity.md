@@ -154,7 +154,7 @@ facts `Samples: Over Time`, `Time: Dated` (issue 3).
 
    [^1a]: **SPLIT-32** (Should): a definition can name the use-case prototype it follows; `Timeless` when the target
      is a fixed property of the item, the same whenever it is measured, and the use case meets items drawn like the
-     catalogue's. **SPLIT-34** (Should, proposed): where the actor fills in an inventory that already exists, nothing
+     catalogue's. **SPLIT-37** (Should, proposed): where the actor fills in an inventory that already exists, nothing
      comes later and the family key stands for the less similar items of that inventory; the inventory itself, where
      the source has it, is the reference for how close the test items should be to training.
 

@@ -1,7 +1,7 @@
-"""Every record of a definition names one data collection type, which agrees with its collection facts (SPLIT-35).
+"""Every record of a definition names one data collection type, which agrees with its collection facts (SPLIT-34).
 
 The type says how the source collected its rows; the collection facts (SPLIT-32) say when the samples arrive and where
-time lives. Three of SPLIT-35's rules tie the two: panel data needs a recorded occasion, a dated event log needs a date
+time lives. Three of SPLIT-34's rules tie the two: panel data needs a recorded occasion, a dated event log needs a date
 its raw rows record (an order rebuilt from the data does not count), and a database snapshot or a clinical study whose
 rows record one is a dated event log. A known contradiction is listed in ``PENDING`` with where it is decided; an entry
 that no longer contradicts leaves the list.
@@ -37,7 +37,7 @@ PENDING: dict[str, str] = {
 
 
 def contradictions(tags: set[str]) -> list[str]:
-    """The ways a record's collection type disagrees with SPLIT-35 or with its collection facts."""
+    """The ways a record's collection type disagrees with SPLIT-34 or with its collection facts."""
     types = tags & set(COLLECTION_TYPES)
     if len(types) != 1:
         return [f"{len(types)} collection types, one expected"]

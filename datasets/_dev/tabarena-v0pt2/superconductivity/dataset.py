@@ -100,7 +100,7 @@ class Superconductivity(AbstractCuratedDataset):
           keeps its model to known chemistry: Hamidieh (2018) offers it to researchers "interested in finding high
           temperature superconductors" to "narrow their search", warns "We should not expect good predictions for
           completely new superconductors" and says it "only gives predictions for superconductors"; it scored random
-          splits of 2/3 train and 1/3 test, 25 times. Holding out whole compositions stands for that question (SPLIT-34,
+          splits of 2/3 train and 1/3 test, 25 times. Holding out whole compositions stands for that question (SPLIT-37,
           the source's scope), and the catalogue's later families lie outside it. The catalogue does move with time,
           measured and recorded here: dated through the MDR SuperCon Datasheet Ver.240322 (NIMS, doi:10.48505/nims.4487,
           CC BY 4.0; 21,163 of the 21,263 rows, 99.5%), it grew in waves of families (the cuprates from 1986, MgB2 in

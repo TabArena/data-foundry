@@ -484,7 +484,7 @@ file in the folder; an AI note saying so is still to be added to the record. The
    write the table above into `splits_comment` beside the existing note on later scans and new projects. Any option
    takes a CC line in the record and a rebuild.
 
-   [^11a]: **SPLIT-34** (Should): the family key is the default, and the source's stated aim and scope decide which
+   [^11a]: **SPLIT-37** (Should): the family key is the default, and the source's stated aim and scope decide which
      items the test set stands for; within that scope the entry date replaces it when the use case predicts for items
      the catalogue does not hold yet, the date is when the item entered, the labels are final, and either arrival
      changes how the target or the features are recorded, or which items are selected (as SPLIT-32's question 4 asks),
@@ -492,7 +492,7 @@ file in the folder; an AI note saying so is still to be added to the record. The
      family key stands and the time basis says why.
    [^11b]: **SPLIT-1** (Must): the split is the one that most closely mirrors the real-world application. **SPLIT-4**
      (Must): the split follows what the task does in reality, not the size of the gap.
-   [^11c]: **SPLIT-34** (Should), its step on the source's purpose: the use case is the source's, cited; where the
+   [^11c]: **SPLIT-37** (Should), its step on the source's purpose: the use case is the source's, cited; where the
      source's question does not reach the catalogue's later items, the date is not weighed and how the catalogue arrived
      is a fact for the notes. A sentence for a source that aims at items from elsewhere and validates on independent
      sets from there (the family key that stands for "elsewhere" is then the one) is proposed for the rule, not yet in

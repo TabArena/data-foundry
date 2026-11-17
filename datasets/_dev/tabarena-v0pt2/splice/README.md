@@ -208,7 +208,7 @@ The first 5 of 3,017 rows of the final frame (random rows: the frame is shuffled
   1,653 (54.8%, from 51.9%). Nearly all copies are junctions, as overlapping entries repeat the same annotated
   junction; the label means the same after the drop. The two windows of a duplicated gene lie in one entry and
   so in one group; under random folds 0.6% of the test windows would meet such a twin in training.
-- Split (2026-11-12, Andrej; SPLIT-24, SPLIT-34): grouped by GenBank entry component (`gene_group`), built in
+- Split (2026-11-12, Andrej; SPLIT-24, SPLIT-37): grouped by GenBank entry component (`gene_group`), built in
   `_clean` from the instance name before it is dropped: the entry is the name before the site type
   (`HUMHBA4-DONOR-7090`), and entries that share an identical 60-base window are joined, one gene in
   overlapping entries (`HUMIL2`, `HUMIL2A`, `HUMIL2B`), through the identical windows of the whole file, the

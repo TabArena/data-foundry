@@ -1,9 +1,9 @@
 # Deciding a split from the data collection type
 
-This is the decision tree SPLIT-37 in [splits.md](splits.md) asks you to walk for every definition's split. Its root
-is the record's data collection type (SPLIT-35); under each type the use case is asked first, then what the data and
+This is the decision tree SPLIT-36 in [splits.md](splits.md) asks you to walk for every definition's split. Its root
+is the record's data collection type (SPLIT-34); under each type the use case is asked first, then what the data and
 its documentation allow, then a measurement where one decides. A leaf names the split and what justifies it: the time
-basis of SPLIT-32, a forced tag of SPLIT-8, `ForcedIIDFromGrouped` of SPLIT-36, or for a temporal split the date the
+basis of SPLIT-32, a forced tag of SPLIT-8, `ForcedIIDFromGrouped` of SPLIT-35, or for a temporal split the date the
 windows are cut on and the gap.
 
 ## How to walk it
@@ -15,7 +15,7 @@ windows are cut on and the gap.
   "orientation": it points to where to look, it never answers a question by itself.
 * Answer as if no split had been decided. The leaf you reach is the split to implement, with the tag in its title.
   `Random · ...` is an IID split, `Grouped · ...` a `grouping`, `Temporal · ...` a `temporal` declaration. A
-  `ForcedIIDFromGrouped` leaf sits beside a time basis (SPLIT-36): the questions of the type's other branches give it.
+  `ForcedIIDFromGrouped` leaf sits beside a time basis (SPLIT-35): the questions of the type's other branches give it.
 * Ask a reviewer, with the split you suggest and the facts behind it, when:
   - you reach a forced leaf (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`, `ForcedIIDFromGrouped`): a forced
     split is a compromise the use case does not ask for;
@@ -40,7 +40,7 @@ windows are cut on and the gap.
 * **Family-key step (①).** Under the expanding science catalogue, every answer that does not split by entry date
   continues at "Can the data compute a family key?", written once below: the family key is a catalogue's default split;
   without one the split is `Timeless`, grouped by the item where items repeat, else random, and a catalogue does not
-  carry `ForcedIIDFromGrouped` (SPLIT-34 step 2).
+  carry `ForcedIIDFromGrouped` (SPLIT-37 step 2).
 * **ForcedFromTemporal step.** Every forced point of the tree (too few periods or snapshots, an order lost, one
   prediction point) continues at the same step, written once below. It first asks whether the arrival order can be
   reconstructed from the data (SPLIT-22): if so, rebuild it, record it as recovered time (`Time: Inferred`) and walk
@@ -57,14 +57,14 @@ windows are cut on and the gap.
   gap where the delay is within the time step or a written exception holds.
 ## Expanding science catalogue
 
-**Does the use case predict for the items the catalogue adds next?** _(use case; reads SPLIT-34 step 3: the source's
+**Does the use case predict for the items the catalogue adds next?** _(use case; reads SPLIT-37 step 3: the source's
 stated aim and scope (abstract, methods, caveats); its own split counts only where chosen for the use. Items like those
 it was built from, or items from elsewhere (other sites or instruments) → no; compounds not yet made, materials not yet
 reported, or no scope stated → yes. In every leaf an item's copies stay on one side (step 1))_
 - no: items like those it holds, or from elsewhere → **① family-key step** (here: open_soil_spectral_library,
   qsar_biodeg, superconductivity)
 - yes, or no scope stated →
-  **Does each item carry a final date of entry into this catalogue?** _(data and documentation; reads SPLIT-34 step 4: a
+  **Does each item carry a final date of entry into this catalogue?** _(data and documentation; reads SPLIT-37 step 4: a
   date of entry into this catalogue in the release or a parent source, not a registration that predates it; items still
   to come, not an inventory already collected, a closed study or a designed experiment; labels final (orientation: the
   Time tag, Target: Revised Later))_
@@ -84,7 +84,7 @@ reported, or no scope stated → yes. In every leaf an item's copies stay on one
       floor, no (a curator may still accept an exception, SPLIT-10))_
       - yes → **Temporal · entry date**. Items the catalogue adds next, each with a final entry date, and arrival
         changes how items are recorded or which are taken in, or a forward split leaves clearly fewer close training
-        neighbours than a random draw (SPLIT-34 step 4): each era tested on the earlier ones; an item keys on its first
+        neighbours than a random draw (SPLIT-37 step 4): each era tested on the earlier ones; an item keys on its first
         date, which orders the split and is no input; the gap as SPLIT-10 sets it (a label delay or a planning lead).
         Examples: apistox, ecoli_proteins, qsar_tid_11.
       - no → **① family-key step**
@@ -452,24 +452,24 @@ after the data → predict after it)_
 The catalogue's family-key questions, reached from its scope answer and from the next-items branch.
 
 **① Can the data compute a family key: a scaffold, an element set, a protein target, a site, a survey or an
-instrument?** _(data and documentation; reads SPLIT-34 step 2: a key computed from the data, with several groups to hold
+instrument?** _(data and documentation; reads SPLIT-37 step 2: a key computed from the data, with several groups to hold
 out, not the label; the scaffold for molecules (SPLIT-31), the survey or site that stands for elsewhere (step 3).
 Reached when the entry date does not decide: a use case that stays with items like those held or aims elsewhere, no
 final entry date, arrival that changes nothing, or too few windows on the entry date)_
 - yes → **Grouped · `UnseenGroup` (the family key)**. The entry date does not decide, and the data computes a family key
   (a scaffold, an element set, a protein target, a site, a survey or an instrument), a catalogue's default split
-  (SPLIT-34): whole families held out, each item's copies with them; how the catalogue grew goes in the notes with its
+  (SPLIT-37): whole families held out, each item's copies with them; how the catalogue grew goes in the notes with its
   measurement. Examples: drug_induced_autoimmunity_prediction, nci_aids_antiviral_screen, qsar_oral_toxicity.
 - no →
-  **Does an item have several rows (re-measurements)?** _(data and documentation; reads SPLIT-34 step 1: an item id or a
+  **Does an item have several rows (re-measurements)?** _(data and documentation; reads SPLIT-37 step 1: an item id or a
   structure that repeats in the raw file (a compound tested twice, a composition reported in several papers); exact
   copies are dropped, not grouped (LEAK-19) (orientation: Entities: Recur))_
   - yes → **Grouped · `Timeless` (the item)**. The entry date does not decide, no family key can be computed, and an
-    item has several rows: whole items held out with their re-measurements (SPLIT-34 step 1); the family the use case
+    item has several rows: whole items held out with their re-measurements (SPLIT-37 step 1); the family the use case
     would hold out goes in the notes. No v0.2 definition reaches it yet.
   - no → **Random · `Timeless` (no family key)**. The entry date does not decide, no family key can be computed apart
     from the label, and one row per item: random; the target is a property of the item. The family the use case would
-    hold out goes in the notes with the overlap the split leaves (SPLIT-34 step 2). No v0.2 definition reaches it yet.
+    hold out goes in the notes with the overlap the split leaves (SPLIT-37 step 2). No v0.2 definition reaches it yet.
 
 ## The ForcedFromTemporal step
 

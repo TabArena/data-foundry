@@ -105,7 +105,7 @@ and the cell location; the five locations with 10 or more proteins are kept (327
    on B, look up a UniRef50 cluster per accession and group on it, time basis `UnseenGroup`; on A, rewrite the
    `Time basis:` line. `dataset check` after each; rebuild only on ask.
 
-   [^1a]: The expanding-catalogue split rule (SPLIT-34, Should): the item key always holds; the family key is the
+   [^1a]: The expanding-catalogue split rule (SPLIT-37, Should): the item key always holds; the family key is the
      default; the source's purpose sets which items the test set stands for; the entry date replaces the family key
      when the use case predicts for items the catalogue does not hold yet and arrival changes which items are selected
      or the date carries waves.

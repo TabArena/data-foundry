@@ -398,7 +398,7 @@ settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `An
 
    * **Recommendation:** a, and nothing in the definition changes but the notes. **Decision:** a, b or c?
 
-   [^3f]: **SPLIT-34** (Should): in a catalogue of items whose target is a fixed property, the item, its family and
+   [^3f]: **SPLIT-37** (Should): in a catalogue of items whose target is a fixed property, the item, its family and
      when it entered the catalogue are three keys, each testing something else; which one stands for the use case is
      information from the use case and the source, and where the actor fills in an inventory that already exists,
      nothing comes later and the family key stands for the less similar items of that inventory. The key follows the
@@ -408,7 +408,7 @@ settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `An
    nearest pair 16 descriptors apart), Kaggle's random-looking test draw (ROC AUC 0.485) and the lead-optimisation use
    case; no data change. The bullet cites no rule ID until PR #62 (LEAK-42) is in the working copy.
 
-CC (2026-11-16, Andrej): `ForcedIIDFromGrouped` beside `Timeless` (SPLIT-36):
+CC (2026-11-16, Andrej): `ForcedIIDFromGrouped` beside `Timeless` (SPLIT-35):
 - The use case screens molecules not made yet, which whole chemical series held out would stand for (SPLIT-31).
 - No structure or compound id is published, so no series can be computed: the split stays random, and close analogues of a test molecule sit in training.
 

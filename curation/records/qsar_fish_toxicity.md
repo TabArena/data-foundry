@@ -331,7 +331,7 @@ before shipping outside the group.
 
    [^3t]: **SPLIT-32** (Should): `Timeless` when the target is a fixed property of the item and the use case meets items
      drawn like the catalogue's; which identifier a parent source could date the items by tells whether the catalogue
-     drifts, and a catalogue that drifts goes on to the question whether arrival affects the target. **SPLIT-34**
+     drifts, and a catalogue that drifts goes on to the question whether arrival affects the target. **SPLIT-37**
      (Should): the family key is the default, and the source's stated aim and scope decide which items the test set
      stands for; within that scope the entry date replaces it when the use case predicts for items the catalogue does
      not hold yet, the date is when the item entered, the labels are final, and either arrival changes how the target or

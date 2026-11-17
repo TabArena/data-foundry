@@ -110,7 +110,7 @@ DataTags = Literal[
     #   periods; the closest split, IID or grouped, with a `Time basis:` line that names the reason.
     "ForcedIIDFromTemporal",
     "ForcedGroupedFromTemporal",
-    # Forced from grouped (SPLIT-36): the use case holds out a group of distinct items (a family, a site, an area) the
+    # Forced from grouped (SPLIT-35): the use case holds out a group of distinct items (a family, a site, an area) the
     #   data cannot key; an IID split beside the time basis, with a `Group basis:` line
     "ForcedIIDFromGrouped",
     # Retired (2026-10-21): kept readable for containers that carry it; new definitions refuse it (RETIRED_DATA_TAGS).
@@ -164,7 +164,7 @@ FORCED_TIME_TAGS = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
 """The forced splits of a forward use case without usable time (SPLIT-8)."""
 
 GROUP_BASIS_TAGS = ("ForcedIIDFromGrouped",)
-"""Why a split is not grouped although the use case holds out a group (SPLIT-36); beside the time basis, not one."""
+"""Why a split is not grouped although the use case holds out a group (SPLIT-35); beside the time basis, not one."""
 ProblemType = Literal["binary_classification", "multiclass_classification", "regression"]
 ProblemTypeClassification = [
     "binary_classification",

@@ -127,7 +127,7 @@ class Splice(AbstractCuratedDataset):
           1,653 (54.8%, from 51.9%). Nearly all copies are junctions, as overlapping entries repeat the same annotated
           junction; the label means the same after the drop. The two windows of a duplicated gene lie in one entry and
           so in one group; under random folds 0.6% of the test windows would meet such a twin in training.
-        - Split (2026-11-12, Andrej; SPLIT-24, SPLIT-34): grouped by GenBank entry component (`gene_group`), built in
+        - Split (2026-11-12, Andrej; SPLIT-24, SPLIT-37): grouped by GenBank entry component (`gene_group`), built in
           `_clean` from the instance name before it is dropped: the entry is the name before the site type
           (`HUMHBA4-DONOR-7090`), and entries that share an identical 60-base window are joined, one gene in
           overlapping entries (`HUMIL2`, `HUMIL2A`, `HUMIL2B`), through the identical windows of the whole file, the
@@ -189,7 +189,7 @@ class Splice(AbstractCuratedDataset):
         df = raw
         # Strip tab-like whitespaces from original data
         df = df.map(lambda x: x.strip())
-        # the split's group, from the instance ID before it goes: the GenBank entry component (SPLIT-24, SPLIT-34),
+        # the split's group, from the instance ID before it goes: the GenBank entry component (SPLIT-24, SPLIT-37),
         # joined through identical windows of the whole file
         name = df[1].str.rsplit("-", n=2)
         gene_group = _entry_components(entries=name.str[0], windows=df[2])

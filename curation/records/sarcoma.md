@@ -125,7 +125,7 @@ as arrival keys and are in the notes (issue 5, A, 2026-11-12).
    changes, and no rebuild. On B, the plate codes have to be fetched per aliquot from the GDC and joined on the
    patient barcode before any grouping is declared.
 
-   [^5a]: **SPLIT-34** (Should): a dataset drawn from an expanding science catalogue, a cut of a database or testing
+   [^5a]: **SPLIT-37** (Should): a dataset drawn from an expanding science catalogue, a cut of a database or testing
      programme that keeps growing, can be split by the item, by its family or by when it entered the catalogue, and
      where the actor predicts for items the catalogue does not hold yet the entry date holds out what a family key
      leaves in. A catalogue that is not growing, a recoverable date that is not the date items entered, and labels

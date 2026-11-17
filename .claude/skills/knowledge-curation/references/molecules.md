@@ -122,7 +122,7 @@ The task is going from the structure to a prediction (Lennart, 2026-11-01). So:
   Scores drop by design: drug_induced_autoimmunity_prediction's TabPFN fell from 0.854 to 0.768 ROC AUC, and
   qsar_tid_11's LightGBM from 0.747 to 0.657 R^2. Under random splits a nearest-neighbour lookup with no model reached
   0.822 on drug_induced.
-* **Where the set comes from a growing catalogue, the date a molecule entered it can replace the scaffold (SPLIT-34,
+* **Where the set comes from a growing catalogue, the date a molecule entered it can replace the scaffold (SPLIT-37,
   steps 3 and 4).** First the source: a regulatory screen for chemicals from outside its collection does not ask
   about the next chemicals of one testing programme, and the scaffold stands whatever the dates show.
   * It does where the literature adds compounds in series, so a forward split leaves test compounds clearly fewer close

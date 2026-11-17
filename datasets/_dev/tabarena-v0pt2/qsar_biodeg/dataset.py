@@ -125,7 +125,7 @@ class QsarBiodeg(AbstractCuratedDataset):
           builds a regulatory screen: Mansouri et al. (2013) open with REACH, which "requires information on ready
           biodegradation" and encourages QSAR predictions in place of tests, and they validate on 670 chemicals from
           other sources (the external set above). Its question is a chemical from outside the collection, so the
-          scaffold split stands (SPLIT-34, the source's scope), and the order in which Japan's programme tested its
+          scaffold split stands (SPLIT-37, the source's scope), and the order in which Japan's programme tested its
           existing chemicals lies outside it. That order was measured and is recorded here: NITE's workbook of the CSCL
           biodegradation results of existing chemicals (https://www.nite.go.jp/data/000064112.xlsx) dates 1,006
           chemicals by CAS-RN and J-CHECK's bulletin year 44 more (1,050 of 1,055, 1971 to 2008); the test moved from 14

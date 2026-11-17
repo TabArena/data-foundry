@@ -126,7 +126,7 @@ domain and source from the record.
    of `_feature_types` (CLEAN-26); [spectra.md](../knowledge-curation/references/spectra.md) has what ships, the
    encodings, grouping the spectra of one sample (SPLIT-23) and the pitfalls.
 4. The regime: walk the decision tree from the record's data collection type
-   ([split_tree.md](../knowledge-curation/references/split_tree.md), SPLIT-37) and implement the leaf you reach:
+   ([split_tree.md](../knowledge-curation/references/split_tree.md), SPLIT-36) and implement the leaf you reach:
    nothing for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)` with a `splits_comment` saying which leaf
    and why this window (and any gap, sub-sampling or trimming). The leaf's tag goes into `data_tags` with its
    `Time basis:` (or `Group basis:`) line. A forced leaf, a leaf no definition reaches yet, or a question no answer
