@@ -195,6 +195,10 @@ class SpanishMotorInsuranceCoverageLevel20222024(AbstractCuratedDataset):
         - CC (2026-11-09, Andrej): the metric stays the normalized Gini of the cost per year weighted by the time on risk (Review issue 11, A, as implemented), not the Gini against the premium charged (Frees, Meyers and Cummings' form, `ordered_lorenz_gini` with the earned premium as the base); the call of 2026-11-02 (issue 3) stands.
         - CC (2026-11-09, Andrej): the renewals get no claims or cost of the year before, and the notes carry the LEAK-9 protocol line against reading other test rows (Review issue 9 (a), "No history, a protocol line").
         - CC (2026-11-09, Andrej): the forced split by policy stays, with that protocol line; the one 2024 window is not adopted (Review issue 10 (a), "Split by policy"). The release has no date finer than the year.
+        - Time basis: ForcedGroupedFromTemporal (SPLIT-8): a pricing model refit each year scores the next year's book,
+          but the release has three calendar years and no finer date, too few for three yearly windows; whole policies
+          are held out with all their years (review issue 10 (a), 2026-11-09, Andrej). More years would allow yearly
+          windows.
     """
 
     # Task

@@ -12,9 +12,7 @@ import re
 
 import pytest
 from data_foundry.curation._paths import resolve_curation_root
-from data_foundry.schema import FORCED_TIME_TAGS, GROUP_BASIS_TAGS, TIME_BASIS_TAGS
-
-from tests.test_collection_types import COLLECTION_TYPES
+from data_foundry.schema import COLLECTION_TYPES, FORCED_TIME_TAGS, GROUP_BASIS_TAGS, TIME_BASIS_TAGS
 
 REPO = resolve_curation_root().parent
 TREE = REPO / ".claude/skills/knowledge-curation/references/split_tree.md"

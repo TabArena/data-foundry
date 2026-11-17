@@ -160,7 +160,9 @@ existing note kept below it:
 **Screening (AI, 2026-10-20):** `TBD -> Yes`, priority 4: <why, one line>.
 - Source: <first publication, who, year>; as published: <rows x columns, target, tables>.
 - Use case: <actor, moment, decision>; fit <direct | approximate>; collection <the Samples, Time and Target facts>:
-  <where time lives>; regime <IID | grouped | temporal> because <...>.
+  <where time lives>; type <the data collection type, SPLIT-34>.
+- Split: leaf <the leaf of split_tree.md the type and the page reach, SPLIT-36: split · tag> because <the answers>;
+  open <the questions the page leaves open, or none>.
 - Siblings and duplicates: <records checked, and what they decided>; external collections: <...>.
 - Better data: <the hit: link, units and years against this one's, its record `<name>`> | none found (<where we
   looked>). On a hit's own record: found as better data for `<record>`.

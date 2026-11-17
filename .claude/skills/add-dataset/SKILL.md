@@ -71,8 +71,10 @@ when, the decision it informs, what one row is, what is predicted and what is kn
 the first `curation_comments` bullet; every later choice is checked against it. Then note how the data was collected
 for the use case: when each row, each feature and the target come into existence compared with that point (SPLIT-32 in
 [splits.md](../knowledge-curation/references/splits.md)); it is information for the split and for which features are
-available. The facts also point to checks; in the review of 98 v0.2 definitions they found more leaks than they
-changed splits:
+available. Where the source or the data contradicts a collection fact or the collection type screening set (a date in
+a raw file behind `Time: Lost`, recurring entities behind none), correct the record's tags through the store API with
+the evidence in a comment, and run `tests/test_collection_types.py` and `tests/test_time_basis_facts.py`. The facts
+also point to checks; in the review of 98 v0.2 definitions they found more leaks than they changed splits:
 
 * `Target: Varying Delay` with a prediction point per row: a count or a length that the outcome stops
   (bank_marketing's `campaign`), the gap, the residual at the release end, what the newest labels add at equal
@@ -231,14 +233,17 @@ and the editor) for a re-check after a small change. Say which tier ran.
    leave nothing for the curator to decide (the outcome says so, and the curator only sets the verdict). Never raise an
    issue to have one; an issue is something whose answer would change the dataset.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
-4. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
+4. Keep the decision tree current ([split_tree.md](../knowledge-curation/references/split_tree.md)): a definition
+   that reaches a leaf with few examples is added to them, and one that ships another split than its leaf, with the
+   curator's agreement, gets a row in "Definitions that ship another split" (the leaf, the shipped split, the reason).
+5. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
    `**Assessment (AI, <date>):** review panel (<tier>): <the mediator's recommendation>; disputed: <the points, by
    rule ID>; for the curator: issues <n>-<m>.` The panel's reports stay in the record's review, also once its issues
    are settled; this line is their short form among the comments, where the decision register reads it (Lennart,
    2026-11-04: "we want all our history of curation be documented and readable going forward (in a good format and in
    short, but not lost!)"). Never build: a build is the curator's call
    ([rebuild.md](../knowledge-data-foundry/references/rebuild.md)).
-5. Set the record's `priority` again from what was measured, so the review page puts the most important datasets
+6. Set the record's `priority` again from what was measured, so the review page puts the most important datasets
    first ([selection.md](../knowledge-curation/references/selection.md), "Priority"): `priority_factors.py <name>`
    (in `knowledge-data-foundry/scripts/`) gives the gap and the shape; judge the use case, the source and the risk
    from the source and the open issues (the recommendation not to ship is a risk). End the assessment line with

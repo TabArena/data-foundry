@@ -208,6 +208,10 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
           (`NOTHING_FOUND`). The three text columns alone told operated from not operated uncomplicated children at
           ROC AUC 0.572, 0.527 after (on the label 0.552, then 0.531); the full model scores the same with or without
           them (gradient boosting 0.905 and 0.906), so no model had used the route.
+        - Time basis: ForcedIIDFromTemporal (SPLIT-8): children are admitted over 2016-2021 and a deployed model scores
+          later admissions, but the file has no dates; the ultrasound case numbers tell only two periods apart
+          (2016-2018 and 2019-2021), too few for windows, so children are split at random (review issue 4, resolved
+          2026-11-16, Andrej). Admission dates would allow a split by period.
     """
     splits_comment = """
         Default splits: stratified random 3-fold cross-validation with 10 repeats (seed 4267). Tests stand for other

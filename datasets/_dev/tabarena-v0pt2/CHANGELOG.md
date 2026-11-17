@@ -1,5 +1,21 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-17, the split workflow in the agent processes, and missing time basis lines (no container built)
+
+- Screening: the screening block gets a `Split:` line (the leaf of the decision tree, the answers, the open
+  questions) next to the collection type; `/review-screened-candidates` shows the curator the type and the leaf.
+- `/add-dataset`: a collection fact or type the data contradicts is corrected on the record, with the evidence; Step 8
+  keeps the tree's examples and its table of departures current. `/review-added-datasets`: a `change` mark on a split
+  walks the tree and keeps the tree current. The precedent checker reads the definitions under the same leaf. The
+  review page shows the record's collection type and takes its tag lists from `data_foundry.schema`, which now holds
+  the seven collection types.
+- `Time basis:` lines for eleven forced definitions that had none (`dataset check` warned): account_debt_south_africa,
+  allstate_claim_prediction_challenge_1m, australian_vehicle_insurance_2004_2005, frempl_french_motor_personal_line,
+  huntprohibited_1m, liberty_mutual_fire_peril_loss_cost, numerai28_6, open_university_learning_analytics_dataset,
+  pricing_game_2016_french_fleet, regensburg_pediatric_appendicitis and
+  spanish_motor_insurance_coverage_level_2022_2024. Four existing split bullets became the line; the others restate
+  the reason their notes give. Splits unchanged; metadata only.
+
 ## 2026-11-17, gossis_icu_hospital_mortality and regensburg_pediatric_appendicitis (Andrej's decisions, no container built)
 
 - gossis_icu_hospital_mortality: `UnseenGroup` instead of `ForcedGroupedFromTemporal`. It holds out hospitals because a

@@ -226,6 +226,10 @@ class PricingGame2016FrenchFleet(AbstractCuratedDataset):
         - CC (2026-11-09, Andrej): no record of the fleet's earlier periods, a recorded and provisional decision (Review issue 13, A with the split as its reason: "I go with your recommendation"): under the split by contract the record would carry test periods' claims into test periods' features, and the one test found no gain; revisited when issue 14 settles the split (the Note above; an exception to CLEAN-19). Issue 14 kept the split by contract on 2026-11-10, so the exception stands.
         - CC (2026-11-09, Andrej): the metric stays `rescaled_mean_tweedie_deviance` (Review issue 15 (a): "Keep the rescaled deviance"): measured on the 9 shipped folds, it orders 8 models at Kendall's W 0.85 against 0.87 for the weighted Gini, so issue 8's reason stands (the metric bullet).
         - CC (2026-11-10, Andrej): the split by contract stays, 3 x 3 folds by `fleet_group` over 2011-2013 with every year tested (Review issue 14, A: "Disagree: We go with A over E because it provides the larger test size."). The hold-out of the last year (2013 trained on 2011-2012) is the reference design but allows no repeated splits, so the shipped split is its approximation, measured against it (splits_comment). A over E, the same folds scored on their 2013 periods only, for the larger test size: about 1,240 positive charges per fold against 437 to 477. A ranks 7 models as the hold-out does (Kendall's tau 1.00, and 1.00 for the 5 sound ones); its mean distance from the hold-out's margins over the constant is 0.20 against E's 0.14, within the hold-out's own noise (SE of a margin 0.33 to 0.54).
+        - Time basis: ForcedGroupedFromTemporal (SPLIT-8): a tariff is fit on the closed years and applied to the next,
+          but rows are cut at 31 December and the claims carry no dates, so 2011-2013 give one valid yearly window where
+          three are needed; whole fleet contracts are held out (Lennart, 2026-11-08; Andrej, 2026-11-10). Published 2014
+          claims would add a window.
     """
 
     # Task

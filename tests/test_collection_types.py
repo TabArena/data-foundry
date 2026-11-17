@@ -13,17 +13,9 @@ import pytest
 import yaml
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation.store import load_all
+from data_foundry.schema import COLLECTION_TYPES
 
 REPO = resolve_curation_root().parent
-COLLECTION_TYPES = (
-    "Expanding Science Catalogue",
-    "Experimental Results",
-    "Clinical Study",
-    "Survey",
-    "Database Snapshot",
-    "Dated Event Log",
-    "Panel Data",
-)
 DATED = {"Time: Dated"}
 OCCASION = DATED | {"Time: Inferred", "Time: Within Entity"}
 

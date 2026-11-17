@@ -39,7 +39,10 @@ give the link to that view instead (the dashboard's 🔗 copy-link hash syntax).
 
 For each record the curator opens: the screening block's one-line reason, the decisive fact and the rule it rests on,
 the priority factors, the record's collection facts with the evidence behind them (the `collection` part of the
-use-case line; SPLIT-32; a fact the source leaves open is `Unknown`), and what the AI could not check. Their choices:
+use-case line; SPLIT-32; a fact the source leaves open is `Unknown`), the data collection type (SPLIT-34) and the
+leaf of the split decision tree the screener reached with the questions it left open (the `Split:` line; SPLIT-36, a
+forced leaf or a leaf no definition reaches yet is for the curator to look at now), and what the AI could not check.
+Their choices:
 
 | The curator wants to | In the dashboard |
 |---|---|

@@ -165,6 +165,17 @@ FORCED_TIME_TAGS = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
 
 GROUP_BASIS_TAGS = ("ForcedIIDFromGrouped",)
 """Why a split is not grouped although the use case holds out a group (SPLIT-35); beside the time basis, not one."""
+
+COLLECTION_TYPES = (
+    "Expanding Science Catalogue",
+    "Experimental Results",
+    "Clinical Study",
+    "Survey",
+    "Database Snapshot",
+    "Dated Event Log",
+    "Panel Data",
+)
+"""How a source collected its rows, one per record tag (SPLIT-34); the split decision tree starts from it (SPLIT-36)."""
 ProblemType = Literal["binary_classification", "multiclass_classification", "regression"]
 ProblemTypeClassification = [
     "binary_classification",

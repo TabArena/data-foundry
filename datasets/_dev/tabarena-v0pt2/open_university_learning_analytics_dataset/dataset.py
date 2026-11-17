@@ -212,6 +212,10 @@ class OpenUniversityLearningAnalyticsDataset(AbstractCuratedDataset):
         - Spread (TP-3): untuned model families score alike on the 9 splits (log-loss skill 0.173 random forest, 0.170 LightGBM, 0.162 logistic regression; the lead of 0.011 is within twice its paired standard error of 0.009). Kept pending tuned results (Lennart, 2026-10-22): re-check with the first tuned run.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Time basis: ForcedGroupedFromTemporal (SPLIT-8; Lennart, 2026-10-21): deployment trains on earlier
+          presentations, but four start dates cannot give three temporal windows with half of the rows before each, so
+          whole presentations are held out (the split bullet above). More presentations would allow a split by start
+          date.
     """
 
     # Task

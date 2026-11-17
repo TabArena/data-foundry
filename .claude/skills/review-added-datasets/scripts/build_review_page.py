@@ -58,6 +58,7 @@ except ImportError:  # pragma: no cover - depends on the environment
         "    uv pip install --python .venv/bin/python markdown-it-py",
     )
 
+from data_foundry.schema import COLLECTION_TYPES, FORCED_TIME_TAGS, GROUP_BASIS_TAGS, TIME_BASIS_TAGS
 from data_foundry.v2.dataset import DEFAULT_SPLITS_COMMENT, TaskSummary, definition_files
 from data_foundry.v2.metrics import Metric
 from data_foundry.v2.registry import load_definition
@@ -1313,17 +1314,10 @@ def _split_notes(comments: str | None) -> list[str]:
     return [MD.renderInline(b) for b in bullets if SPLIT_WORD.search(b)]
 
 
-TIME_BASIS = (
-    "Timeless",
-    "Retrospective",
-    "Snapshot",
-    "StationaryRelation",
-    "AssumedStationaryRelation",
-    "UnseenGroup",
-)
-"""The definition's use-case prototypes (SPLIT-32), as in ``data_foundry.schema.TIME_BASIS_TAGS``."""
-FORCED = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
-"""The definition's forced tags (SPLIT-8), as in ``data_foundry.schema.FORCED_TIME_TAGS``."""
+TIME_BASIS = (*TIME_BASIS_TAGS, *GROUP_BASIS_TAGS)
+"""The definition's use-case prototypes (SPLIT-32) and its group basis (SPLIT-35)."""
+FORCED = FORCED_TIME_TAGS
+"""The definition's forced tags (SPLIT-8)."""
 TIME_LINE = re.compile(r"Time basis:\s*(.+?)(?:\n\s*[-*]\s|\n\s*\n|$)", re.S)
 
 
@@ -1337,11 +1331,12 @@ def _time_basis(tags: list[str], comments: str | None) -> dict:
 
 
 def _time_facts(split: dict, record_path: Path) -> None:
-    """Add the record's collection facts (SPLIT-32) to ``split["time"]``, next to the definition's time basis."""
+    """Add the record's collection type (SPLIT-34) and facts (SPLIT-32) to ``split["time"]``, by the time basis."""
     meta, _ = _frontmatter(record_path.read_text()) if record_path.is_file() else ({}, "")
     tags = [str(t) for t in meta.get("tags") or []]
     time = split.setdefault("time", _time_basis([], None))
     time["facts"] = [t for t in tags if t.split(":")[0] in ("Samples", "Time", "Target", "Entities", "Features")]
+    time["collection"] = next((t for t in tags if t in COLLECTION_TYPES), None)
 
 
 def _split(readme: str | None, tags: list[str], comments: str | None) -> dict | None:

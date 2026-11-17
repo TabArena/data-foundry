@@ -29,8 +29,10 @@ windows are cut on and the gap.
 * `AssumedStationaryRelation` is only ever reached through a person's answer (SPLIT-32): offer it with the facts for
   and against and recommend it if you like, but answer "no" yourself unless a person has given the reason.
 * Where a definition ships another split than its leaf, its `splits_comment` says which leaf the tree gives and why
-  the definition departs; the departure goes to a reviewer like a forced leaf. The departures known when the tree was
-  adopted are at the end.
+  the definition departs; the departure goes to a reviewer like a forced leaf. The departures a reviewer has not
+  settled are at the end; a confirmed departure stays there with its reason, a resolved one leaves.
+* The tree is kept current with the definitions: adding a dataset or changing a split adds the definition to its
+  leaf's examples where they are few, and a departure to the table at the end.
 * The examples under each leaf are v0.2 definitions that reach it; read one before writing yours.
 * A temporal leaf gives the date the windows are cut on and the gap; the windows and the horizon are signed off by
   the curator (SPLIT-12, SPLIT-14), as is every window that trains on less than half of the rows.
