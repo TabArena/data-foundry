@@ -444,6 +444,23 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
             },
             "marks an IID split",
         ),
+        (
+            {"data_tags": ("Retrospective", "StationaryRelation"), "curation_comments": "- Time basis: x"},
+            "one time basis",
+        ),
+        (
+            {
+                "data_tags": ("Retrospective",),
+                "curation_comments": "- Time basis: x",
+                "temporal": Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=2)),
+            },
+            "this one is, so drop the tag",
+        ),
+        (
+            {"data_tags": ("Retrospective", "ForcedIIDFromTemporal"), "curation_comments": "- Time basis: x"},
+            "one time basis",
+        ),
+        ({"data_tags": ("StationaryRelation",)}, "`Time basis:` line"),
     ],
 )
 def test_class_validation_rejects_bad_definitions(attrs: dict, match: str) -> None:
@@ -2016,3 +2033,76 @@ def test_a_spectrum_with_missing_intensities_is_flagged(tmp_path: Path, warehous
     warnings = [r for r in result.bundle_report.results if r.slug == "dataset_spectrum" and r.severity == "warning"]
     assert warnings, result.bundle_report.summary()
     assert "1 row(s)" in warnings[0].message
+
+
+@pytest.mark.parametrize("tag", ["Timeless", "Retrospective", "StationaryRelation"])
+def test_a_time_basis_is_accepted_on_an_iid_split_with_its_line(tag: str) -> None:
+    cls = _define(data_tags=(tag,), curation_comments="- Time basis: one census on 1 April 1990.")
+    assert cls.dataset_metadata.data_tags == ["IID", tag]
+
+
+def test_forced_iid_from_grouped_sits_beside_the_time_basis() -> None:
+    """`ForcedIIDFromGrouped` needs its `Group basis:` line, marks an IID split, stands beside a time basis."""
+    line = "- Time basis: a property of the molecule.\n- Group basis: no structure, so no series can be held out."
+    with pytest.raises(Exception, match="needs a `Group basis:` line"):
+        _define(data_tags=("Timeless", "ForcedIIDFromGrouped"), curation_comments="- Time basis: a property.")
+    with pytest.raises(Exception, match="`ForcedIIDFromGrouped` marks an IID split"):
+        _define(
+            data_tags=("ForcedIIDFromGrouped",),
+            curation_comments=line,
+            grouping=Grouping(on="g", labels="per_sample", definition="x"),
+        )
+    cls = _define(data_tags=("Timeless", "ForcedIIDFromGrouped"), curation_comments=line)
+    assert cls.dataset_metadata.data_tags == ["IID", "Timeless", "ForcedIIDFromGrouped"]
+
+
+def test_assumed_stationary_relation_needs_a_person_and_a_reason() -> None:
+    """Only a person sets `AssumedStationaryRelation`: its line names who, when and why (SPLIT-32)."""
+    with pytest.raises(Exception, match="only a person sets it"):
+        _define(
+            data_tags=("AssumedStationaryRelation",),
+            curation_comments=(
+                "- Time basis: AssumedStationaryRelation (AI, 2026-11-20): a reason that is long enough to count here."
+            ),
+        )
+    with pytest.raises(Exception, match="must open"):
+        _define(data_tags=("AssumedStationaryRelation",), curation_comments="- Time basis: the relation looks flat.")
+    cls = _define(
+        data_tags=("AssumedStationaryRelation",),
+        curation_comments=(
+            "- Time basis: AssumedStationaryRelation (Lennart, 2026-11-20): one clinic's ultrasound diagnosis over"
+            " a year, a relation that practice does not move; the visit dates are lost."
+        ),
+    )
+    assert cls.dataset_metadata.data_tags == ["IID", "AssumedStationaryRelation"]
+
+
+def test_snapshot_is_retired_for_retrospective() -> None:
+    with pytest.raises(Exception, match="`Snapshot` is retired"):
+        _define(data_tags=("Snapshot",), curation_comments="- Time basis: one scrape.")
+
+
+def test_delayed_target_is_retired_for_the_forced_tag() -> None:
+    """One shared scoring moment is one period, so a forward use case from it is forced (SPLIT-8)."""
+    with pytest.raises(Exception, match="`DelayedTarget` is retired"):
+        _define(data_tags=("DelayedTarget",), curation_comments="- Time basis: one scoring date.")
+
+
+def test_unseen_group_needs_a_grouping() -> None:
+    with pytest.raises(Exception, match="`UnseenGroup` holds out whole groups"):
+        _define(data_tags=("UnseenGroup",), curation_comments="- Time basis: a new hospital.")
+    cls = _define(
+        data_tags=("UnseenGroup",),
+        curation_comments="- Time basis: a new hospital.",
+        grouping=Grouping(on="g", labels="per_sample", definition="x"),
+    )
+    assert "UnseenGroup" in cls.dataset_metadata.data_tags
+
+
+def test_grouped_split_takes_a_time_basis() -> None:
+    cls = _define(
+        data_tags=("StationaryRelation",),
+        curation_comments="- Time basis: claims flat across the two policy years.",
+        grouping=Grouping(on="g", labels="per_group", definition="x"),
+    )
+    assert "StationaryRelation" in cls.dataset_metadata.data_tags

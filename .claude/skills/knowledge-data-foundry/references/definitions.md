@@ -221,14 +221,37 @@ A metric input known at the prediction point (a weight that is a function of the
 * `data_tags`: context tags only, since listing a regime tag yourself switches the automatic ones off. `"Anonymized"`
   when the source hid what the features are, by replacing their names or values on purpose (common for competition
   data; the record gets the `Anonymized` marker, and the cases without it are in
-  [selection.md](../../knowledge-curation/references/selection.md), "Anonymized data"); `"Spatial"` when the
-  data holds geographic information (ZIP, latitude and longitude, region, store location); `"ForcedIIDFromTemporal"`
-  when the task is temporal in nature but the release has no time index, or has too few periods and ships IID
-  (SPLIT-8 in [splits.md](../../knowledge-curation/references/splits.md); a definition that declares a `grouping` or
-  `temporal` refuses it, Lennart 2026-10-21); `"ForcedGroupedFromTemporal"` when such a
-  task ships grouped instead (SPLIT-8; the definition must declare a `grouping`). `"2ndTierData"` is retired
-  (2026-10-21): old containers that carry it still load, but a new definition refuses it; write the doubts as a
-  finding and the fit as `approximate`.
+  [selection.md](../../knowledge-curation/references/selection.md), "Anonymized data"); `"Spatial"` when the data
+  holds geographic information (ZIP, latitude and longitude, region, store location). An IID or grouped split carries
+  one time basis that says why it is not temporal (SPLIT-32 in
+  [splits.md](../../knowledge-curation/references/splits.md)): a use-case prototype, `"Timeless"` (the target is a
+  fixed property of the item, and the data has no time dimension, or its time changes only which items are held, as
+  in a catalogue whose entry date does not decide the split), `"Retrospective"` (the data is one snapshot of a
+  moment or period, and the use case fills in what is missing for that time, not a later one), `"StationaryRelation"`
+  (the use case scores later units, too few periods give the windows SPLIT-14 asks for, and a measurement over the
+  periods held, dated or a rebuilt order, shows the relation does not move; it replaces a forced tag) or
+  `"UnseenGroup"` (the use case aims at groups the data does not hold, a site, a well, a protein or a chemical family,
+  not at a later period; it needs a `grouping` on the group); or a forced tag, `"ForcedIIDFromTemporal"` when a
+  forward use case has no usable time or too few periods and ships IID (a definition that declares a `grouping` or
+  `temporal` refuses it), `"ForcedGroupedFromTemporal"` when such a task ships grouped (it needs a `grouping`;
+  SPLIT-8). `"ForcedIIDFromGrouped"` sits beside the time basis when the use case holds out a group of distinct items
+  the data cannot key (no structure for a scaffold, no stand id or coordinates, a single site): an IID split (a
+  definition that declares a `grouping` or `temporal` refuses it) with a `Group basis:` line naming the group, why it
+  cannot be keyed and the overlap left (SPLIT-35). `"AssumedStationaryRelation"` replaces a forced tag where a person
+  judged earlier and later samples
+  interchangeable for a reason from the dataset's domain or use case and no comparison over time is possible; never
+  set it yourself unless a person asks (you may offer and recommend it in a review), and open its `Time basis:` line
+  with `AssumedStationaryRelation (<person>, <YYYY-MM-DD>): <reason>`, which the definition and `dataset check` require
+  (SPLIT-32). Either way the definition carries a `Time basis:` line in `curation_comments` that states the fact behind
+  it and ends with what the split cannot test; a forced tag's line names its reason (time lost, or too few periods)
+  and what a dated release would change. A definition refuses two time bases, and a prototype on a temporal split or
+  without its line. `dataset check` notes a split that is not temporal and says nothing about why (no time basis and
+  no `Time basis:` line), a forced tag without its line, and date columns in the data of such a split unless the basis
+  is `Retrospective` or a `Time basis:` line gives the reason. `"Snapshot"` is retired (2026-11-13) for
+  `"Retrospective"`, which names the use case rather than the data, and `"DelayedTarget"` (2026-11-16) for a forced
+  tag, since one shared moment is one period; a new definition refuses both.
+  `"2ndTierData"` is retired (2026-10-21): old containers that carry it still load, but a new definition refuses it;
+  write the doubts as a finding and the fit as `approximate`.
 * `problem_type`: "Regression" to `"regression"`, "Binary Classification" to `"binary_classification"`,
   "Multiclass Classification" or "Classification" to `"multiclass_classification"`. A table that supports a regression
   or a classification target, where taking one means dropping the other, gets one folder per framing: the second is
@@ -530,10 +553,10 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
   break a tie by the order of the rows (a constant prediction on sat11_hand_algo_runtime scores 19,140 s, always the
   first solver in the file, against 18,539 s under `par_k`'s rule; trained models did not tie). What the split holds
   out decides where the instance comes from:
-  * instances (sat11_hand_algo_runtime): the grouping is on the instance, and the metric reads that column (MET-2);
-  * something larger (asp_potassco_classification: problem classes): the grouping is on the class, and the
-    anonymised instance ships as `ScoringColumn(column="instance_id", role="group", used_by="par_k")`, never a
-    feature.
+  * instances: the grouping is on the instance, and the metric reads that column (MET-2);
+  * something larger (sat11_hand_algo_runtime and asp_potassco_classification: problem families, the instances of one
+    generator, read off the instance path before it is hashed): the grouping is on the family, and the anonymised
+    instance ships as `ScoringColumn(column="instance_id", role="group", used_by="par_k")`, never a feature.
 * `context`: `all_rows` when all rows of a new group are known when predicting, `past_rows` when only its earlier rows
   are (needs `time_on`), `none` when each row stands alone.
 * `time_on` and `time_of`: the order inside a group marks each row's prediction point by default (sepsis's hour,
@@ -547,7 +570,12 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
   section with the group statistics, which give four findings (few test groups per fold, one group over 20% of the
   rows, `per_sample` labels nearly one per group, groups not clustered). For the model-based questions run
   `group_probes.py` ([checks_and_probes.md](checks_and_probes.md)); accept `groups_test_groups_few` only with that
-  evidence. A group id built from the data: `df.groupby(columns).ngroup()` over the defining columns.
+  evidence. A group id built from the data: `df.groupby(columns).ngroup()` over the defining columns; a calibrated
+  link (SPLIT-24): the connected components of the linked pairs (`scipy.sparse.csgraph.connected_components`). Build
+  it in `_clean` from the columns that define the entity before any step replaces them (santander_transaction_value's
+  customers come from the raw lag columns, before the summaries), carry it as a column, and leave it out of the
+  `drop_duplicates` subset: with it, copies that fall in different groups survive (all 4,459 rows stay there instead
+  of 4,447). The curation notes give the match rule, the chance rate and the verdict (LEAK-42 to LEAK-44).
 
 ### Temporal: `Temporal` and `TemporalSplits`
 
@@ -610,9 +638,12 @@ repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is t
 | A gap in a smaller unit than the window (g_research_crypto_forecasting_1m: 3 x 91 days, 15-minute gap, whole minutes sampled) | `TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes", sample_by="time")` |
 | Overlapping windows (ghana, now retired: 3 days moving by 2) | `TemporalSplits(window=3, unit="days", step=2, min_train_fraction=0.5)` |
 
-The number of windows follows `recommended_dimensions` (20, 10, 3 or 1 times 3), never fewer than 3 (`splits_too_few`)
-and never a train side below half the data (`min_train_fraction=0.5`); then widen windows of fewer than about 50 test
-rows (SPLIT-17 in [splits.md](../../knowledge-curation/references/splits.md)). Calendar windows end on unit boundaries;
+The number of windows aims at the splits an IID split of the data would get (`split_count`: 60, 30, 9 or 3 for two
+thirds of the scored units), never fewer than 3 (`splits_too_few`) and never a train side below half the data
+(`min_train_fraction=0.5`) unless the curator makes an exception down to 30%; every test window holds at least 33 scored
+units (SPLIT-14, SPLIT-15 and SPLIT-17 in [splits.md](../../knowledge-curation/references/splits.md)). The window
+length, the step and the gap come from the use case first (SPLIT-12, SPLIT-10); fewer windows than the target are
+accepted with the reason in the splits comment (`splits_below_target`). Calendar windows end on unit boundaries;
 `min_train_fraction` stops before a window whose train side is smaller than that share (of the distinct values for
 `"unique"`, of the rows otherwise) and, with `window=None` and `unit="unique"`, sizes the windows so they cover the
 newest `1 - min_train_fraction` of the values.
@@ -629,18 +660,18 @@ is statistics of the data, never a model's score:
 
 It lists the candidate windows of the declared length and gap (`window_stats` of the definition,
 `src/data_foundry/v2/windows.py`), walking back from the newest data while a train side keeps 30% of the rows
-(SPLIT-14's lower bound; the core windows keep 50%, which the train share shows), the definition's own marked `*`: the
-dates and the months covered, the weekdays of a window shorter than a week, the test rows and the train share, the
-target on each side (a binary target's event share and count, a regression target's mean and quantiles), and the drift
-of the features from the train side (the population stability index of each feature, its largest value and the features
-behind it, and the share of test rows with a category the whole train side never shows; free text and dates are left
-out). A feature that counts time (epoch seconds, a year, a running index) drifts in every window: read past it to the
-next features. Read it against the use case: which periods must a deployed model handle, which windows show them, and
-which are near copies of the newest (the same season, little drift). Declare the choice with `cutoffs` (the newest
-window's start among them; a choice without it is refused), and write the reasons into `splits_comment` with the numbers
-they rest on. A numeric time column (numerai's eras) states what one step counts with `Temporal(time_unit=...)`; the
-table then shows its values with the unit. The README's splits section shows the same statistics for the chosen windows
-("The test windows").
+(SPLIT-14's lower bound for a curator's exception; every other window keeps 50%, which the train share shows), the
+definition's own marked `*`: the dates and the months covered, the weekdays of a window shorter than a week, the test
+rows and the train share, the target on each side (a binary target's event share and count, a regression target's mean
+and quantiles), and the drift of the features from the train side (the population stability index of each feature, its
+largest value and the features behind it, and the share of test rows with a category the whole train side never shows;
+free text and dates are left out). A feature that counts time (epoch seconds, a year, a running index) drifts in every
+window: read past it to the next features. Read it against the use case: which periods must a deployed model handle,
+which windows show them, and which are near copies of the newest (the same season, little drift). Declare the choice
+with `cutoffs` (the newest window's start among them; a choice without it is refused), and write the reasons into
+`splits_comment` with the numbers they rest on. A numeric time column (numerai's eras) states what one step counts with
+`Temporal(time_unit=...)`; the table then shows its values with the unit. The README's splits section shows the same
+statistics for the chosen windows ("The test windows").
 
 Labels that arrive late and training rows whose label is not yet known need `_make_splits`: train on the rows whose
 outcome is known by each window's start, with the gap declared on `Temporal` (brazilian_ecommerce, sf_permit_time,
@@ -891,7 +922,9 @@ changed, appeared or went; `raw_files_missing` (error) a pattern that matches no
 | `groups_not_clustered` (info) | rows no closer to their group than chance: compare IID and grouped scores before keeping the grouping |
 | `splits_test_single_class`, `splits_test_target_constant` | a test fold whose metric is undefined: fewer, larger folds or windows, or the task is too small |
 | `splits_test_minority_few`, `splits_test_class_missing` | test folds with under 10 rows of the rarer class, or without some class: widen the windows, merge by convention, or accept with the counts |
-| `splits_train_under_half`, `splits_train_under_floor`, `splits_floor_core` (error) | a window trains on less than half the curated frame's rows (under 30%; or the core of SPLIT-14 breaks): raise an issue for the curator's sign-off with the windows and their shares and an option without them; accept the warning only with the curator's CC date, never on the AI's word |
+| `splits_train_under_half`, `splits_train_under_floor` (error) | a window trains on less than half the curated frame's rows (under 30%, which no exception allows): raise an issue for the curator's exception with the windows and their shares and an option without them; accept the warning only with the curator's CC date, never on the AI's word |
+| `splits_test_too_small` (error) | a test window holds fewer than 33 scored units (SPLIT-14): widen the windows, or fewer of them |
+| `splits_below_target` | fewer windows than an IID split of the data would get (SPLIT-15): the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); accept with that reason, and offer overlapping windows to the curator where the use case might admit them |
 | `splits_feature_missing_in_test` | a feature 95% or more missing on one side of a window and at most half missing on the other (read on up to 100k rows a side): a column that stops or starts being recorded within the history. Name it in `curation_comments` and raise it for the curator (drop it, keep it as the deployed model met it, or start the data at the change); accept only with the curator's decision |
 | `time_newest_period_short` | the newest 30 days of a date column hold under 60% of the median rows a day of the 30-day spans before: compare the newest period's target rate with earlier ones; a download or scrape cut before the outcomes were complete is cut off (LEAK-24), a seasonal low or a real decline is accepted with the numbers |
 | `task_target_value_dominant` | one value holds half of a regression target: name the cap, timeout, placeholder or zero inflation in `curation_comments`; keep or drop censored rows case by case (sat11_hand_algo_runtime keeps its timeouts at the recorded limit), or accept with the reason |
