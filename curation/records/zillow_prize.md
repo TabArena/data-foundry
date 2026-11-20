@@ -12,9 +12,15 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 - Review Prio 1 (Atlas)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: Kaggle
+collection_period: Jan 2016 - Sep 2017
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression
@@ -68,3 +74,5 @@ CC (2026-10-26, Lennart): verdict ship.
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `buildingqualitytypeid` (a partial order).
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 7 coded columns carry their words.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `transaction_month`, windows of 1 month, 9 windows, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).

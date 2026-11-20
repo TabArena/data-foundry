@@ -14,10 +14,15 @@ decision_markers:
 tags:
 - Larger IID Data
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 original_source: Other
 year: '2017'
+collection_period: 2011-2012
 domain: medical & healthcare
 required_split:
 - Random (IID)

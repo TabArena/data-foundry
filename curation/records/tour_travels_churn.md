@@ -15,11 +15,14 @@ decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
 - Tiny Data
+- 'Samples: One Moment'
+- Database Snapshot
 collections:
 - New (BeyondArena)
 - TabSTAR
 original_source: Kaggle
 year: '2021'
+collection_period: Not applicable (generated)
 domain: business & marketing
 required_split:
 - Random (IID)

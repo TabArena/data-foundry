@@ -9,10 +9,16 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
+- Panel Data
 collections:
 - TabArena Reject
 original_source: GOV Website
 year: '2026'
+collection_period: Nov 2007 - Jan 2026
 domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)
@@ -78,6 +84,8 @@ CC (2026-11-11, Lennart): the declared horizon (14 days, no gap, 26 windows star
 CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note naming the columns (cross-dataset item "Accept splits_feature_missing_in_test where a column starts or stops being recorded within the history?", A: the data as the deployed model met it).
 
 **Assessment (AI, 2026-11-11):** 12 station readings are missing in at least one test fortnight and recorded for 50% to 93% of its train side.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 14 days, 26 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Review
 

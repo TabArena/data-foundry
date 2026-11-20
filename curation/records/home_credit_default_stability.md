@@ -10,11 +10,15 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- Dated Event Log
 collections:
 - TabArena Reject
 - TabRed
 original_source: Kaggle
 year: '2024'
+collection_period: Jan 2019 - Oct 2020
 domain: finance
 required_split:
 - Temporal (NON-IID)

@@ -10,10 +10,17 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
+- 'Features: Read Later'
+- Panel Data
 collections:
 - TabArena Reject
 original_source: Kaggle
 year: '2015'
+collection_period: Jan 2013 - Jul 2015
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)
@@ -50,6 +57,8 @@ CC (2026-11-11, Lennart): Review issue 1, B ("Option B: Spread over the eligible
 CC (2026-11-11, Lennart): the declared horizon (42 days, a one-day gap, windows starting 2015-06-20, 2014-11-22 and 2014-04-26) is checked, as Kaggle states the store managers' horizon as six weeks and the competition's own test period, 48 days, is about as long (Review horizon, ok).
 
 **Assessment (AI, 2026-11-11):** applied issue 1 (B): test 40,282, 31,203 and 38,107 store-days, train 802,996, 617,355 and 443,771 (95.1%, 73.1% and 52.6%); the Christmas window sells 8,478 per open store-day against 6,837 on its train side and tests 935 stores until 31 December. The 1,114 store-days of 19 June 2015, the newest window's gap day, lie in no split (an accepted warning). `dataset check`: 0 errors, 0 warnings.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 42 days, 3 windows at fixed cutoffs, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Review
 

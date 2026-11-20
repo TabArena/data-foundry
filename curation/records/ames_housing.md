@@ -9,8 +9,12 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- Dated Event Log
 original_source: Other
 year: '2011'
+collection_period: Jan 2006 - Jul 2010
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)
@@ -75,6 +79,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 2 coded columns carry their words.
 
 CC (2026-11-04, Lennart): SPLIT-10 is amended (on lt_vehicle_loan_default_prediction): no gap is needed where the collection covers the label's delay and the measurements show no shortcut and no selection at the release end. The no-gap call here is now an application of the rule, not an exception; the line above stays as its history.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `Month Sold`, windows of 2 months, windows while training keeps 50% of the rows (13 in the build), no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Reference
 

@@ -13,10 +13,15 @@ decision_markers:
 - Selection Bias
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- Dated Event Log
 collections:
 - TabSTAR
 original_source: Website
 year: '2019'
+collection_period: Aug 2018 - Oct 2018
 domain: finance
 required_split:
 - Temporal (NON-IID)
@@ -92,6 +97,8 @@ CC (2026-11-05, Lennart): what sets lt apart from lending_club, home_credit_defa
 CC (2026-11-05, Lennart): `Current_pincode_ID` ships as a number (Review issue 7, B, answered (a)): the masking kept the geographic order; +0.0049 ROC AUC over the category on 9 of 9 windows.
 
 CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `DisbursalDate`, windows of 4 days, up to 9 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Review
 

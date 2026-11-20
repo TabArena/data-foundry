@@ -9,10 +9,16 @@ suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
 - '?'
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
+- Panel Data
 collections:
 - TableShift
 - TabSTAR
 original_source: GOV Website
+collection_period: 2001-2018
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression
@@ -44,3 +50,5 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note naming the columns (cross-dataset item "Accept splits_feature_missing_in_test where a column starts or stops being recorded within the history?", A: the data as the deployed model met it).
 
 **Assessment (AI, 2026-11-11):** `DISTANCEONLY` is missing in every cohort before 2011; the 2015 and 2016 windows train on 2001-2009 and 2001-2010.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `cohort_year`, windows of 1 value, up to 9 windows while training keeps 50% of the rows (4 in the build), gap 5 values) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).

@@ -16,11 +16,13 @@ decision_markers:
 - Trivial
 tags:
 - Tiny Data
+- 'Samples: No Time Dimension'
 collections:
 - New (BeyondArena)
 - TabSTAR
 original_source: UCI
 year: '1987'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Random (IID)

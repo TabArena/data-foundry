@@ -9,10 +9,16 @@ data_foundry_status:
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 2
+tags:
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2024'
+collection_period: 1 Jan 2023 - 1 Feb 2023
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
@@ -76,6 +82,8 @@ CC (2026-11-05, Lennart): the declared metric (RMSE on minutes, the source's) is
 **Assessment (AI, 2026-11-05):** after the two cuts the windows from 2023-01-29, 2023-01-25 and 2023-01-21 hold 94,897/11,138, 79,897/16,055 and 65,876/13,630 train/test trips, and the longest trip is 175 minutes. The RMSE tail shrank: trips over 120 minutes hold 12.0%, 6.3% and 7.9% of the windows' squared deviation (15.7%, 28.8% and 16.9% before), the largest 1% of an untuned LightGBM's errors hold 43 to 53% of its squared error (54 to 66% before), and no trip holds over 2% of a window's constant-prediction squared error (the 788-minute trip held 21% before). Leak probes as before (the weather columns alone score -0.025 to -0.001, no copies, the partial 1 February in probe 13); the task probe now raises `no_spread` (LightGBM +0.328 against the random forest's +0.278, paired SE 0.036 over 3 windows), the noise of three windows, kept (TP-3). `dataset check`: 0 errors, 0 warnings.
 
 CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `trip_start`, windows of 4 days, 3 windows at fixed cutoffs, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Review
 

@@ -13,8 +13,13 @@ decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
 - Random (IID)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
 original_source: Other
 year: '2022'
+collection_period: Not applicable (generated)
 domain: business & marketing
 required_split:
 - Random (IID)

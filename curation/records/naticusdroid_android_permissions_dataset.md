@@ -14,8 +14,13 @@ suggestion: No (Retired)
 decision_markers:
 - Data Quality Issue
 - Selection Bias
+tags:
+- 'Samples: Over Time'
+- 'Time: Lost'
+- Database Snapshot
 original_source: UCI
 year: '2022'
+collection_period: 2010-2019
 required_split:
 - Random (IID)
 source_links:

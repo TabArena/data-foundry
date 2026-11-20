@@ -16,11 +16,14 @@ decision_markers:
 - No Good Target / Scientific Discovery
 tags:
 - Tiny Data
+- 'Samples: One Moment'
+- Survey
 collections:
 - New (BeyondArena)
 - TabSTAR
 original_source: UCI
 year: '2019'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Random (IID)

@@ -11,8 +11,14 @@ priority: 2
 tags:
 - Two-Regime Zeros
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Dated Event Log
 original_source: GOV Website
 year: '2026'
+collection_period: 2007-2025
 domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)
@@ -156,6 +162,8 @@ CC (2026-11-11, Lennart): Review issue 16, B ("Option B: Spread evenly over nine
 CC (2026-11-11, Lennart): the declared horizon (one calendar year, a 3-month gap, windows starting 2025, 2021 and 2017) is checked, as the score counts each county or zone, hazard and year once, a year matches the planner's expected annual loss, and the gap is the measured publication lag (Review horizon, ok).
 
 **Assessment (AI, 2026-11-11):** applied issue 16 (B): `temporal` declares `cutoffs=(2025, 2021, 2017)` with the 3-month gap; test 45,870, 39,249 and 41,367 entries, train 793,017, 622,584 and 451,520 (94.1%, 73.8% and 53.6%); 12,636, 12,599 and 12,931 test cells of 3.1 to 3.6 entries; 4.2-5.1% of the test rows are types entered only with damage; 99.3-99.6% of the test rows are in a county or zone seen in training. The 4,257 entries of October to December 2024 lie in no split (an accepted warning). The signal, span-worth and cell-weight results of the notes are dated as measured on 2023-2025, not re-run on the new years. `dataset check`: 0 errors, 0 warnings.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `begin_time`, windows of 1 year, 3 windows at fixed cutoffs, gap 3 months) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Review
 

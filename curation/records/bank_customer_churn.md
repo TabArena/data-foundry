@@ -12,8 +12,11 @@ suggestion: No (Retired)
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 - Missing source information
+tags:
+- 'Samples: No Time Dimension'
 original_source: Kaggle
 year: '2022'
+collection_period: Not applicable (generated)
 required_split:
 - Random (IID)
 source_links:

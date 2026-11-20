@@ -8,10 +8,16 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
+- Panel Data
 collections:
 - TabArena Reject
 original_source: UCI
 year: '2020'
+collection_period: 2013-2017
 domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)
@@ -44,6 +50,8 @@ CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run).
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Cho et al. 2020 report R^2, bias and RMSE side by side (Sec. 3.3) without naming one as the criterion; rmse is the regression fallback (and one of the reported metrics).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ppnn_ecmwf_t2m_postprocessing_germany` (TBD -> Yes, priority 4), `euppbench_t2m_station_postprocessing` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 7 days, 9 windows, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Reference
 

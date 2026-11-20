@@ -3,6 +3,7 @@ unique_name: ready_biodegradability_huang_zhang
 name: Aerobic ready and inherent biodegradation of organic chemicals (Huang & Zhang 2022)
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 suggestion: TBD -> Yes
 priority: 2
 tags:
@@ -42,3 +43,5 @@ type_adapter_id: curation-record-v1
 - as published: classification: 6,139 substances (ready biodegradable yes/no); regression: 12,750 test records on 6,032 substances (percent degradation with test guideline and duration); compiled from ECHA REACH ...; target: ready biodegradable (yes/no) from OECD 301-type screening tests; access: open (copies in Koerner et al.'s repository, datasets/external_data/class_original.csv and Huang_Zhang_RegressionDataset.xlsx, GPL-3.0; the ES&T supporting information as the original was not opened).
 - Why: Same target (ready vs not ready biodegradable) and unit (the chemical) as qsar_biodeg, with structure-derived features known before the test
 - Adds: About 6 times more chemicals (6,139 against 1,055), a newer and regulatory source (REACH dossiers), structures given (RDKit descriptors and a scaffold split as for the other SMILES datasets); Koerner et al. 2024 publish a curated version with a label-noise analysis
+
+**Assessment (AI, 2026-11-12):** pair with `qsar_biodeg` open (Andrej's decision on its review, 2026-11-12): when this set is added, match its chemicals to qsar_biodeg's 1,050 on canonical SMILES and CAS-RN, report the share of qsar_biodeg's chemicals found here and their class agreement, and put the pair to the curator; qsar_biodeg is retired if this set holds most of its chemicals with the same class.

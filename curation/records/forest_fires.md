@@ -12,11 +12,15 @@ decision_markers:
 - No Signal
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - TabArena Reject
 - TabSTAR
 original_source: UCI
 year: '2008'
+collection_period: Jan 2000 - Dec 2003
 domain: environmental science & climate
 required_split:
 - Grouped (NON-IID)

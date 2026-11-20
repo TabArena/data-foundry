@@ -9,10 +9,16 @@ suggestion: 'Yes'
 priority: 4
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
+- Panel Data
 collections:
 - New (BeyondArena)
 original_source: Website
 year: '2016'
+collection_period: Apr 2000 - Mar 2015
 domain: finance
 required_split:
 - Temporal (NON-IID)
@@ -60,6 +66,8 @@ CC (2026-11-11, Lennart): Review issue 16, B ("Option B: Three years, three seas
 CC (2026-11-11, Lennart): the declared horizon (one quarter, no gap, windows starting at periods 60, 49 and 38) is checked, as a quarter is the book's own backtest window and the label's own horizon, and the use case scores the book at every quarter's start (Review horizon, ok).
 
 **Assessment (AI, 2026-11-11):** applied issue 16 (B): `temporal` declares `cutoffs=(60, 49, 38)`; test 8,004, 9,431 and 15,921 loan-quarters, train 613,649, 513,686 and 376,900 (98.7%, 82.6% and 60.6%); default / payoff 0.5% / 1.8%, 2.1% / 1.9% and 4.4% / 2.4% in the windows; 99.4%, 99.7% and 99.98% of the test rows' loans have earlier quarters in train; 37 rows of joining loans and 8 of the 501 dropped last rows fall in the new windows. The decision tables follow the cutoffs, and the LightGBM figures of the notes are marked as measured on periods 58 to 60. `dataset check`: 0 errors, 0 warnings.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `time`, windows of 1 value, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Review
 

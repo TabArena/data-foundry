@@ -12,10 +12,15 @@ decision_markers:
 - Duplicate
 tags:
 - Larger IID Data
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Entities: Recur'
+- Clinical Study
 collections:
 - New (BeyondArena)
 original_source: Kaggle
 year: '2021'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Random (IID)

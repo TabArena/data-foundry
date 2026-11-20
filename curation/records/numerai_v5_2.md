@@ -13,10 +13,15 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 - Review Prio 1 (Atlas)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: Company
 year: '2025'
+collection_period: 2003-2026
 domain: finance
 required_split:
 - Temporal (NON-IID)
@@ -64,6 +69,8 @@ CC (2026-11-10, Lennart): test windows (`numerai_v5_2_1m`, issue 12), marked dis
 CC (2026-11-10, Lennart): the declared horizon (52 weekly eras, a 4-era gap, windows starting at eras 1184, 1132 and 1080) is checked, as Numerai ranks a model by its one-year average score and advises retraining at major data releases, so a model fit before the window predicts 52 weekly eras.
 
 **Assessment (AI, 2026-11-10):** applied: `temporal` unchanged; `splits_comment` now gives Numerai's ranking as the reason for one year per window in place of the example notebooks' long validation period (eras 575 on), and the reason for walking back from the newest: the 2,376 features are v5.0's set of July 2024 (about era 1125), so the three newest years lie as close to that date as three one-year windows allow, though not after it (45 of the 52 eras of the oldest window, 1080-1131, come before it); windows above the floor reach back to era 716 (51.4%). Horizon audit (model-free): "Your model's reputation is just its 1 year average score", which "directly determines the rank of models on the model leaderboard" (https://docs.numer.ai/numerai-tournament/scoring); "it's usually best to re-train your models when major versions are released" (https://docs.numer.ai/numerai-tournament/data; v5.0 in July 2024, v6.0 on 2026-10-16); participants refit from weekly to once per release (https://forum.numer.ai/t/how-often-do-you-re-train-your-model/8164). A target resolves about five weeks later, so the 4-era gap holds. 13-era windows give 41 candidates, 26-era 20, 104-era 5.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `era`, windows of 52 values, 3 windows, gap 4 values) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Review
 

@@ -15,10 +15,12 @@ tags:
 - New IID
 - Many features
 - Tiny Data
+- 'Samples: No Time Dimension'
 collections:
 - FS Benchmark
 original_source: Other
 year: '2001'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)
