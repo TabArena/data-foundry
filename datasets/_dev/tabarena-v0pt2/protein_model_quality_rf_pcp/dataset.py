@@ -88,6 +88,7 @@ class RfPcp(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("UnseenGroup",)
     download_description = """
         Download the author's RF-PCP-DataSet.zip from
         https://downloads.sourceforge.net/project/rf-pcp/RF-PCP-DataSet.zip and extract its three CSVs under
@@ -171,10 +172,20 @@ class RfPcp(AbstractCuratedDataset):
         - `Energy` stays as supplied (Lennart, 2026-11-04): the extreme positive values (up to 7e11) are ProSEE's
           output for unminimized models whose atoms overlap, continuous with the rest and carrying signal (mean GDT_TS
           0.339 against 0.398), so unusual rather than impossible (CLEAN-11). `SS` has no bound the source gives.
+        - CC (2026-11-12, Andrej): the split stays by protein ("I go back to by split by protein", issue 11, which
+          answers issue 10; SPLIT-37): a split by CASP round was weighed and is not built. Windows by round score
+          within 0.03 of a same-size protein split on CASP8 and CASP9 and 0.03 to 0.07 lower on CASP7; CASP10 scores
+          about 0 under any split that trains on the earlier rounds, a change of descriptor convention rather than
+          time (splits_comment).
         - Outdated (Lennart, 2026-11-04): six global descriptors of 2002-2012 server models; since CASP15 the
           standard is the predictor's own confidence (pLDDT). Kept as a small grouped biology task, with no new features.
         - First release is the August 2014 source archive; the paper appeared online in December 2014 and in 2015.
           The year denotes the first release, not the paper's issue year. No source metadata is overwritten silently.
+        - Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case ranks the candidates of a
+          protein whose structure is not known, so the split holds out whole proteins. A candidate's GDT against its
+          reference is fixed once both exist; windows by CASP round score within 0.03 of the protein split on CASP8 and
+          CASP9. It cannot test candidates from later prediction methods (the descriptors come from 2002-2012 server
+          models).
     """
     target = "GDT"
     problem_type = "regression"
@@ -215,7 +226,7 @@ class RfPcp(AbstractCuratedDataset):
         and CASP10 0.009; through CASP9 they match the grouped folds within 0.04 (2026-11-05, without the relaxed
         natives; 0.340, 0.483, 0.016 and 0.03 with them), so the rounds show no drift, and
         CASP10's low score comes from its other descriptor convention (the SL note), not from time. The grouped
-        split is kept.
+        split is kept (Andrej, 2026-11-12: "I go back to by split by protein").
     """
     accepted_check_warnings = {}
 

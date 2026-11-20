@@ -24,7 +24,10 @@ class EcoliProteins(AbstractCuratedDataset):
             "Six scores computed from the sequence: two signal-sequence recognition methods, a lipoprotein signal "
             "score, an amino-acid content score and two membrane-spanning region predictions."
         ),
-        split="Random proteins, so the test data stands for proteins of unknown location.",
+        split=(
+            "Random proteins, so the test data stands for proteins of unknown location; over the SWISS-PROT entry "
+            "years the relation of the scores to the location measures stable."
+        ),
         changes=(
             "We drop the three rarest locations (inner- and outer-membrane lipoproteins, and inner membrane with a "
             "cleavable signal sequence), each with fewer than 10 proteins."
@@ -59,6 +62,7 @@ class EcoliProteins(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("StationaryRelation",)
     download_description = """
         wget https://archive.ics.uci.edu/static/public/39/ecoli.zip && unzip ecoli.zip && rm ecoli.zip ecoli.names
         mkdir -p local-data-warehouse/ecoli_proteins && mv ecoli.data local-data-warehouse/ecoli_proteins/
@@ -69,6 +73,18 @@ class EcoliProteins(AbstractCuratedDataset):
         - We drop the sequence name column, which is a unique identifier.
         - We drop three classes with less than 10 samples each: omL (5), imL (2), and imS (2).
         - We drop "chg", which becomes constant after our preprocessing steps.
+        - Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-20, review issue "Windows on the entry year", D):
+          the proteins are dated by their SWISS-PROT entry years (1986-1995; 309 of 336 entries dated, UniProt and
+          UniSave lookup of 2026-11-16), and the random folds stand for later entries because the relation reads flat.
+          The stationary-relation test (2026-11-19, log loss, 5 seeds, 297 dated proteins, periods up to 1988, 1989-90,
+          1991-92 and 1993-96) pooled over the three tested periods gives LightGBM +0.012 ± 0.047 and Kumo-Tabular
+          +0.034 ± 0.033; over the two periods trained on half the data or more Kumo-Tabular gives +0.050 ± 0.047
+          (2 SD 9.8 floors of 10), flat, narrowly. The location mix moves (cytoplasm 54% of entries up to 1989 against
+          34% from 1990) but under twofold, so it changes which proteins arrive, not how the scores map to a location.
+          Three windows on the entry year would need the 1989-90 window, trained on 37%, as an exception and would
+          test 46 to 76 proteins each; the 20 x 3 random folds stay. Not tested: a protein of a family the 1996
+          database did not hold, and homologous proteins on both sides of the split, which the dropped accessions
+          would be needed to find.
     """
 
     # Task

@@ -4,6 +4,7 @@ name: Huesken siRNA efficacy
 checked_by:
 - Myunghwan
 - Lennart
+- Andrej
 suggestion: 'Yes'
 priority: 4
 decision_markers:
@@ -11,9 +12,12 @@ decision_markers:
 tags:
 - Non-IID (Grouped)
 - Revisit later
+- 'Samples: No Time Dimension'
+- Experimental Results
 collections:
 - New (BeyondArena)
 year: '2005'
+collection_period: Unknown
 domain: biology & life sciences
 required_split:
 - Grouped (NON-IID)
@@ -97,6 +101,10 @@ CC (2026-11-05, Lennart): reopened with `grouping.context="all_rows"` like prote
 CC (2026-11-05, Lennart): `grouping.context="all_rows"` now, panel after (Review issue 9, B). Per-gene context adds nothing on the 30 splits (LightGBM 0.6708 rows alone against 0.6699 with context, paired SE 0.0025).
 
 CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
+CC (2026-11-17, Andrej): time basis `UnseenGroup` in place of `Timeless` (Review issue 11, B): the use case is a gene without previous efficacy measurements, so the split holds out whole target genes. The split is unchanged (grouped on `target_gene`).
+
+CC (2026-11-17, Andrej): the declared split (grouped on `target_gene`, 10x3 folds, `UnseenGroup`) is checked: split mark on the blind split review page.
 
 ## Review
 
@@ -311,6 +319,39 @@ Left for you: issues 4, 6, 5, 8.
 
    **Notes for the AI:** on B, `dataset check` (the definition is unchanged; the protocol gives 20 x 3), a CC line in
    the record, CHANGELOG.
+
+11. **Time basis: `UnseenGroup` instead of `Timeless`?**
+
+   * **Problem:**
+     - The tree's leaf reaches the same split the definition ships, but the basis it names is `UnseenGroup`, where the definition's tag is `Timeless`.
+     - The split stays as it is: grouped on `target_gene`, the same groups and the same folds.
+     - The leaf that gives it: Grouped · UnseenGroup (the kind).
+   * **Background:** A designed screen with no order and one row per siRNA; the use is a gene never measured. The gene is computed from the sequences, so whole genes are held out. Confidence of the blind walk: high.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Is there an order to how samples arrive in the use case? (use case): no. Evidence: One reporter-assay screen of a designed siRNA library (collection_period: assay dates not stated); efficacy is a property of a guide-target pair measured once.
+     - Was the experiment repeated, producing several rows for the same measurement? (data): no. Evidence: 2,431 rows = 2,431 distinct siRNAs with one measured activity each (dossier: all original guide sequences retained, one activity each). Guides of one gene share a target, but they are different molecules, not replicates.
+     - What does the model meet that the data does not hold? (use case): a kind the data does not hold (a new target gene). Evidence: Use case: 'selects siRNAs ... for a gene without previous efficacy measurements'. 17.1% of the target variance lies between genes (dossier).
+     - Can the data compute that kind? (data): yes. Evidence: The target gene is recovered by reverse-complement matching each guide to the published inserts (Table 2): 30 gene groups in 34 inserts; computed from the sequences, not the label.
+   * **What changes:** only the tag and its `Time basis:` line. `data_tags` in `dataset.py` (`Timeless` → `UnseenGroup`), the opening of the `Time basis:` bullet in `curation_comments`. The rows, features, grouping key, folds and metric are untouched; the container is rebuilt only because `data_tags` ship in it.
+   * **What the blind dossier lacked, and what it changes:** none. The definition holds out whole target genes (30 groups, both Mmp7 inserts in one group), with time basis Timeless; it discards the source's random train/test flags in favour of gene-held-out evaluation.
+   * **Source split:** yes, Huesken et al. 2005, Nat. Biotechnol. 23:995: one random holdout of siRNAs: 2,182 training, 249 test, across the same 34 target inserts ("trained on 2,182 randomly selected siRNAs ... independent test set of 249 siRNAs") https://www.nature.com/articles/nbt1118. Credible: no, Random siRNAs of the same genes; the stated use, designing guides for a new gene of a genome-wide library, would hold out genes.. Against the tree's leaf: no, Huesken 2005 draws siRNAs at random across the same genes (2,182 / 249); the blind leaf holds out whole genes, as the stated use (a gene without measurements) asks.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: split_tree.md lists huesken_sirna_efficacy as the example of 'Grouped · UnseenGroup (the kind)'; ignored as evidence. The dossier also keeps a curation note 'Group on the exact source species and gene symbol', which reveals the grouping.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `Timeless` (implemented) | no change to the definition | the tag already decided | the tree's leaf names the split differently |
+     | B | Tag `UnseenGroup` | `data_tags` and the `Time basis:` line say `UnseenGroup` | the name the tree's leaf gives this split | a rebuild; the earlier decision is revisited |
+
+   * **Recommendation:** B, `UnseenGroup`. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: set `data_tags` to `UnseenGroup` in `dataset.py`, change the opening of the `Time basis:` bullet and add a CC line; rebuild. No change to the split declaration.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-17, change):** Option B: Tag UnseenGroup.
+
+   **Resolved (2026-11-17, Andrej):** B. `data_tags` names `UnseenGroup` in place of `Timeless`, and the `Time basis:` line opens with `UnseenGroup (Andrej, 2026-11-17; Timeless before)`: the use case is a gene without previous efficacy measurements, so the split holds out whole target genes. The split itself (grouped on `target_gene`, the same folds) is unchanged.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after your PR #33 review of 2026-11-04. Claim audit: 21 claims, 15 hold, 3 partly hold (constant prediction scores NaN, the RMSE gene-mean figure reproduced only in size, stale record text), 1 refuted and fixed (a metric-reason figure, not the data: the "97% and 80% of folds" figure; the reproduced values are 30 of 30 by RMSE and 29 of 30 by the metric), 2 untested (Kendall tau 0.64 and the sequence-model test). Blind review: include with changes; main concern `target_gene` as a feature, refuted because the kit's `features()` excludes it (266 features). Task gamer: nothing games the task; best exploit overlap-graph features of the target windows, +0.0015 per-gene correlation on 30 splits (noise), and the honest gain of a gene-centred training target without the window columns, 0.6461 to 0.6686 (single seed, about one split SD). Agreed: no exclusion, the data, splits, hashes and control scale verified, no leak, the exception to MET-5 stands, and the edit list (applied). Disputed: whether the unrun CNN gates shipping (SEL-12, issue 4), whether the NaN on a constant prediction is a defect or a note (MET-2, issue 6), and whether the redundant guide columns are dropped or noted (CLEAN-8, issue 5).
 
