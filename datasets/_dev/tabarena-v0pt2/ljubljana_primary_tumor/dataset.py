@@ -90,7 +90,9 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - Time basis: ForcedIIDFromTemporal: cancer patients of the Institute of Oncology, Ljubljana, seen before 1986
           over an unstated period; the UCI file is sorted by site and keeps no date, so whether the site shares or the
-          diagnostic work-up drifted cannot be measured. Years of diagnosis would allow a split by period.
+          diagnostic work-up drifted cannot be measured. Years of diagnosis would allow a split by period. Not taken as
+          stationary (Andrej, 2026-11-18): An old one-time study used today with a changed work-up is a long span in a
+          changing domain.
     """
 
     # Task

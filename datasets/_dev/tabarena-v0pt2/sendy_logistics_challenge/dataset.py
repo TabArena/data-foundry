@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, Source, TaskSummary
 
 # The order's events up to the prediction point (pickup), in order; each clock ships as seconds after midnight.
 KNOWN_EVENTS = ["Placement", "Confirmation", "Arrival at Pickup", "Pickup"]
@@ -47,14 +47,16 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
         known="The customer, their platform and type, the rider, the day, weekday and time of the order's placement "
         "and of the rider's confirmation, the times of the rider's arrival at the pickup and of the pickup, the pickup "
         "and destination coordinates, the source's distance and the weather at placement.",
-        split="Three repeats of three random folds over the same release; customers and riders recur. The release "
-        "has the day of the month and the weekday but no month order or year, so later periods cannot be held out.",
+        split="Three repeats of three folds over whole month classes, the months that started on the same weekday: "
+        "the test orders come from months the model has not seen. The release has the day of the month and the "
+        "weekday but no month or year, so the classes cannot be put in time order and later periods cannot be held "
+        "out; customers and riders recur.",
         changes="The rider table the competition offered is left out, since its order counts, tenure and ratings "
         "were taken after these orders. The 740 legs of 60 seconds or less leave: the rider marked the pickup at the "
         "destination, so the customer already had the parcel and no one acts on that arrival time.",
         fit="approximate",
         fit_reason="The source's own task at its moment. The label is the riders' marks; a few late pickup marks "
-        "above 60 seconds may remain. Random folds over one release stand in for future orders. Kept: a weak leak "
+        "above 60 seconds may remain. Held-out month classes of one release stand in for future months. Kept: a weak leak "
         "across rows (features from the same rider's later orders that day) and the source distance, not measured "
         "between the rider's taps but possibly a GPS total recorded after delivery.",
     )
@@ -78,7 +80,7 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal", "Anonymized", "Spatial")
+    data_tags = ("ForcedGroupedFromTemporal", "Anonymized", "Spatial")
     download_description = """
         Sign in to Zindi, obtain the Sendy Logistics Challenge files from
         https://zindi.world/competitions/sendy-logistics-challenge/data and extract the official archive into
@@ -145,13 +147,21 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
         - Potential leak, kept on purpose (weak, across rows): features a participant builds from the same rider's
           later orders that day (their clocks minus this pickup, the day's order count), which do not exist at
           pickup, gain 4.2 RMSE against a noise spread of 0.2, positive on all 9 splits (3.4, 0.3 and 8 of 9 before
-          the drop above). Our inputs hold no such feature; a rider-day split cannot be built cleanly, since day and
-          weekday merge months.
+          the drop above, on random folds). Our inputs hold no such feature. The month-class folds (2026-11-19) keep
+          every calendar day, and so every rider-day, on one side.
         - Weather is matched to placement by the source, "measured every three hours"; the anonymised values vary
           within an hour. Missing values stay missing. No recorded precipitation is 0 (541 values, 0.1-99.1 mm),
           so a blank where a temperature exists most likely means no rain; every row without a temperature also
           lacks precipitation.
         - Metric: the source's RMSE in seconds, with no target transform.
+        - Time basis: ForcedGroupedFromTemporal (SPLIT-8; Andrej, 2026-11-19, decision B; `ForcedIIDFromTemporal`
+          before): the use case predicts orders of later months from a model fit on earlier ones, but the release
+          has the day of the month and the weekday and no month or year. The stationary-relation test reads not flat
+          (v3 pooled +4.6 ± 1.1 s RMSE for LightGBM and +4.0 ± 0.8 s for Kumo-Tabular against floors of 2.2-2.5 s);
+          whole month classes are held out; the classes are not in time order (a class mixes months from across the
+          year). `month_class` = (placement weekday - placement day of month) mod 7, the weekday the month started
+          on (0 = Monday), built in `_clean` as the group key only (no input): seven classes of 1,109 to 4,632
+          orders.
         - Test.csv's 7,068 orders (per the 2026-10-29 audit) have no labels and are not used.
     """
     target = "Time from Pickup to Arrival"
@@ -161,19 +171,43 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
         original="Root Mean Squared Error on Time from Pickup to Arrival, in seconds",
         reference="https://zindi.world/competitions/sendy-logistics-challenge",
     )
+    grouping = Grouping(
+        on="month_class",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a month class: the orders placed in calendar months that started on the same weekday, (placement weekday - placement day of month) mod 7. The release has the day of the month and the weekday but no month or year, so the class is the finest period the data gives. Sendy predicts the arrival time of each order at pickup from a model trained on earlier months; whole month classes are held out so that the test orders come from months the model has not seen. Each order is one prediction, made from that order alone.
+        """,
+    )
     splits_comment = """
-        Default repeated random folds over the labelled orders; customers and riders recur, as both are known at
-        pickup. A temporal split is not possible: the release has the day of the month and the weekday but no month
-        order or year. CC (2026-10-29, Myunghwan): a supported order sequence would permit a cutoff; otherwise accept
-        random evaluation with limited value. Sorting by the number in `Order No` gives day/weekday adjacency of
-        0.669% against 0.693% at random over all 28,269 Train/Test orders (the 2026-10-29 audit; 0.627% against
-        0.731% on Train alone), so it holds no chronology. Weekday minus day of month (mod 7) gives the weekday each
-        month started on: 7 month classes, which no run of calendar months puts in a unique order. Holding out one
-        class gives RMSE 734.1 against 733.0 for random folds of the same size, and holding out calendar days 737.0
-        against 734.9 on these folds (LightGBM; 750.1 against 748.8 and 755.1 against 752.5 before the 2026-11-05
-        drop of the short legs), so same-period orders on both sides barely help. The split is
-        forced from temporal (SPLIT-8) and does not test future periods. If a later release supplies full dates,
-        build chronological windows.
+        Grouped 3-fold cross-validation over the seven month classes with 3 repeats: a class is the months that
+        started on the same weekday, (placement weekday - placement day of month) mod 7, as the release has the day of
+        the month and the weekday but no month or year. Each test fold holds two or three whole classes, 3,775 to
+        8,394 orders (18% to 41% of the 20,461), so the test orders come from calendar months the model has not seen
+        (Andrej, 2026-11-19, decision B; random folds before):
+
+        | repeat | test classes (orders)                  | test orders | train share |
+        |--------|----------------------------------------|-------------|-------------|
+        | 1      | 1, 3, 6 (2,666; 1,785; 1,109)          | 5,560       | 72.8%       |
+        | 1      | 0, 2 (3,660; 3,300)                    | 6,960       | 66.0%       |
+        | 1      | 4, 5 (4,632; 3,309)                    | 7,941       | 61.2%       |
+        | 2      | 3, 4, 6                                | 7,526       | 63.2%       |
+        | 2      | 0, 1                                   | 6,326       | 69.1%       |
+        | 2      | 2, 5                                   | 6,609       | 67.7%       |
+        | 3      | 2, 3, 5                                | 8,394       | 59.0%       |
+        | 3      | 0, 4                                   | 8,292       | 59.5%       |
+        | 3      | 1, 6                                   | 3,775       | 81.6%       |
+
+        Why grouped: the stationary-relation test reads not flat (v3 pooled +4.6 ± 1.1 s RMSE for LightGBM and
+        +4.0 ± 0.8 s for Kumo-Tabular from training on other periods, against noise floors of 2.2-2.5 s), so orders of
+        the same months on both sides would flatter the score. The classes are not in time order (a class mixes months
+        from across the year), so no window can test later months: the split is forced from temporal (SPLIT-8) to
+        grouped. Customers and riders recur across classes, as both are known at pickup. CC (2026-10-29, Myunghwan):
+        a supported order sequence would permit a cutoff. Sorting by the number in `Order No` gives day/weekday
+        adjacency of 0.669% against 0.693% at random over all 28,269 Train/Test orders (the 2026-10-29 audit; 0.627%
+        against 0.731% on Train alone), so it holds no chronology. If a later release supplies full dates, build
+        chronological windows.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -220,6 +254,8 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
         df = raw[columns].copy()
         for event in KNOWN_EVENTS:
             df[f"{event} - Seconds after midnight"] = _seconds_after_midnight(raw[f"{event} - Time"])
+        # The month class of the placement date, the weekday its month started on: the group key, no input.
+        df["month_class"] = (raw["Placement - Weekday (Mo = 1)"] - raw["Placement - Day of Month"]) % 7
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

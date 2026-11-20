@@ -113,6 +113,10 @@ CC (2026-11-13, Andrej): collection facts `Samples: Over Time` and `Time: Lost` 
 - No start date survives, so the time is lost.
 - The forced split (`ForcedIIDFromTemporal`) now agrees with the facts.
 
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A one-year 1997 study used today, with a rating rule (the legal bonus-malus scale) that the source country abolished in 2004; the span and the rule change both stand against ASR.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it. The re-review of 2026-11-06 under the exposure rules (LEAK-41,
@@ -341,6 +345,47 @@ weighted rate deviance the same comparison gives +0.0048. A dated AI line next t
    of the skill). `use_case`, `known` and `fit_reason` are rewritten; a Tensions row in principles.md (the actor's legal
    constraint today wins when the use case is today's pricing; home_credit_default_risk and credit_card_clients_default
    keep sex, not reviewed yet).
+
+4. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: One policy year 1997, undated, the raw order sorted by postcode; the CASdatasets and author releases hold the same single year (SPLIT-8 cases row: cost cannot be measured).
+     - Use: An EU motor insurer prices a third-party liability policy today, learning from a Belgian 1997 portfolio: a span of nearly 30 years.
+     - Mechanism: Age, bonus-malus level, power, fuel, use, fleet and location to claim frequency; the bonus-malus feature itself belongs to a legal scale that no longer exists, and claim frequency in Belgian MTPL has fallen and changed with road safety and vehicles since 1997.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | pricing_game_2016_french_fleet | stationary-relation test v3, policy years 2011-2013, rescaled Tweedie deviance | inconclusive (gaps within noise; mean cost per row 171.6, 199.6, 201.8, +16% then +1%) | French motor pricing game, tariff fit on closed years and applied to the next |
+     | frempl_french_motor_personal_line | stationary-relation test v3 over start quarters Q1-Q4 2004, Tweedie LightGBM + Kumo, weighted Gini | inconclusive (forward not worse, e.g. Q4 gap -0.012 +- 0.019, but SD above ten floors; mean cost per quarter 578 to 1,164) | French motor portfolio, one-year claim cost priced from rating factors |
+     | spanish_motor_insurance_coverage_level_2022_2024 | earlier matched protocol (v2), calendar years 2022-2024, weighted Gini | flat by the rule, near the line in 2023 (2024 window gap 0.008 +- 0.016 LightGBM); mean cost 292.8, 285.1, 302.4 | motor pricing of next year's book from rating factors |
+
+   * **For a stationary use case:**
+     - Claim frequency by age and location has a behavioural core that persists across decades in many motor studies.
+   * **Against:**
+     - Changed rules: Belgium's uniform compulsory bonus-malus scale (the `bm` feature) ended on 1 January 2004 (Royal Decree of 16 January 2002; FPS Economy, https://economie.fgov.be/en/themes/financial-services/insurance/car/civil-liability/bonus-malus-and-certificate); each insurer has its own scale since.
+     - Changed rules: sex barred as a rating factor since 21 December 2012 (CJEU C-236/09), already reflected in the features.
+     - Long span: 1997 data, today's use; vehicles, road safety and the market all changed.
+     - Structure in the file order (sorted by postcode) means no order check is possible.
+   * **Earlier views:**
+     - CC (2026-11-04, Lennart): beMTPL97 and freMTPL2 treated alike, shipped IID with ForcedIIDFromTemporal: 'do (a) and ship both'.
+     - CC (2026-11-04, Lennart): fit stays approximate under the ForcedIIDFromTemporal tag.
+     - CC (2026-11-17, Andrej): blind split walk reaches the shipped random ForcedIIDFromTemporal split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Changed rules: Belgium's uniform compulsory bonus-malus scale (the `bm` feature) ended on 1 January 2004 (Royal Decree of 16 January 2002; FPS Economy, https://economie.fgov.be/en/themes/financial-services/insurance/car/civil-liability/bonus-malus-and-certificate); each insurer has its own scale since.; Changed rules: sex barred as a rating factor since 21 December 2012 (CJEU C-236/09), already reflected in the features. |
+
+   * **Recommendation:** A, a one-year 1997 study used today, with a rating rule (the legal bonus-malus scale) that the source country abolished in 2004; the span and the rule change both stand against ASR. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (A one-year 1997 study used today, with a rating rule (the legal bonus-malus scale) that the source country abolished in 2004; the span and the rule change both stand against ASR.)
+
 
 **Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
 after issue 1 was resolved as the rate weighted by `expo`. Claim audit: 31 claims, 20 hold (2 with a caveat), 2 refuted

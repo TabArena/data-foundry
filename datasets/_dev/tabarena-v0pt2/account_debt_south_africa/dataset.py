@@ -140,7 +140,10 @@ class AccountDebtSouthAfrica(AbstractCuratedDataset):
         - We keep the 6,355 exact duplicate rows (6.2%), plausibly distinct accounts with the same property record or flat charge; without the copied test rows, ROC AUC falls from 0.874 to 0.867.
         - Anomaly: the file ends with a run of category Unknown (rows 134,192-138,276; 2,396 curated rows), mostly billed 1-3 times in two years; its never-payers with 1-3 bills are bad debts at 53% (86% elsewhere). Debt is recorded there, so it stays.
         - Time basis: ForcedIIDFromTemporal: the file is one extract without dates, so the task (status at the extract)
-          stands in for the data card's forecast, a model trained on one snapshot scoring the next.
+          stands in for the data card's forecast, a model trained on one snapshot scoring the next. Not taken as
+          stationary (Andrej, 2026-11-18): Arrears depend on tariffs, collection policy and the economy, which change
+          between extracts, and the file order already shows structure the random split hides; nothing measured supports
+          ASR.
         - A municipality scores its own accounts, so its level is known information, but the eight municipalities have no column. Held out by file position, ROC AUC falls from 0.877 (random) to 0.849 (blocks of 2,500 rows) and 0.787 (thirds of the file); file position added as a feature raises the random split to 0.892, the cost of the missing key. We build no key from file blocks (a guess); the municipality key from DMS Technologies would be a feature.
     """
 

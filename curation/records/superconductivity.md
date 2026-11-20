@@ -94,6 +94,10 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of no prototype tag (2
 - The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
 - The split does not change; the definition's `Time basis:` line keeps the measured evidence.
 
+CC (2026-11-18, Andrej): split stays whole compositions held out (Review issue 7, A as implemented; full-information split check). Supersedes the windows mark of 2026-11-17 (issue 6):
+- the catalogue rule takes the use case from the source's stated scope, and Hamidieh keeps the model to known families;
+- windows on the first report year would have been the third change of this split.
+
 ## Review
 
 **Outcome:** added. Hamidieh's superconductor data (UCI 464, 2018): 21,263 entries of the SuperCon database, each a
@@ -474,6 +478,98 @@ added yet. The record has no `problem_type` or `domain`; the definition's values
    weight; `first_year` and its 100 undated rows' removal go; the `Time basis:` line names Hamidieh's scope, the dating
    and the drift measured between eras. Record: `Non-IID (Grouped)` and required split `Grouped (NON-IID)`, CC line.
    `dataset check` rerun.
+
+6. **Split: three expanding windows on the composition's first report year instead of 3-fold CV over whole compositions?**
+
+   * **Problem:**
+     - Hamidieh (2018) keeps the model to known superconductor families ("We should not expect good predictions for completely new superconductors"), which leads the tree to the family key, whole compositions held out, as shipped.
+     - The blind walk, without that sentence, read the use case as materials not yet reported and reached windows on the first report year.
+     - Families arrive in waves (cuprates are 4,885 of 5,431 dated rows in 1987-1995), so the two splits test different things.
+   * **Background:** The use case screens compositions nobody has made yet and every entry carries its publication year, 99.5% of rows dated 1913-2023. The catalogue arrives in family waves (cuprates 1987-95, MgB2 2001, iron-based from 2008, median Tc 4.4 K / 58 K / 10.5 K), which is exactly the condition that replaces the family key with the entry date, and the years give several windows above the 50% floor, so the split is temporal on the composition's first year with no gap. Confidence of the blind walk: high.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Does the use case predict for the items the catalogue adds next? (use case): yes - materials not yet reported. Evidence: Use case: a materials scientist screens candidate compositions and decides which to synthesize and measure - compositions SuperCon does not hold, which is the rule[^split-37]'s 'materials not yet reported'. Hamidieh 2018 (Comput. Mater. Sci. 154:346-354) presents the model as an aid in the search for new superconductors and states no narrower scope, so step 3 does not stop here.
+     - Does each item carry a final date of entry into this catalogue? (data): yes - first_year, the earliest reference year of the composition's entries. Evidence: The parent database's own export (MDR SuperCon Datasheet Ver.240322, NIMS, doi:10.48505/nims.4487) gives every entry the publication year of its reference. Matching on elements and shares (tolerance 0.003 L1, oxygen variants read both ways) dates 21,163 of 21,263 rows (99.5%) and 15,065 of 15,164 compositions; 99.9% of dated rows match an entry whose critical temperature is within 0.01 K of…
+     - Does arrival change what is recorded or selected, or does the date carry waves? (measurement): yes - the catalogue arrives in family waves. Evidence: The families enter in blocks: cuprates make 4,885 of 5,431 dated rows in 1987-1995, iron-based superconductors 1,574 of 3,018 after 2008, MgB2 arrives in 2001. The target level moves with them: median Tc 4.4 K up to 1986, 58 K in 1987-95, 10.5 K in 2009-19. A forward split therefore puts a whole new family on the test side with no close training neighbours, which a random draw never does -…
+     - Does the order give the windows the rule[^split-14] and the rule[^split-15] ask for? (data): yes. Evidence: With 99.5% of rows dated and the mass of the data between 1985 and 2015, several windows clear the rule[^split-14]: a window on 1996-2001 trains on 13,180 rows (62%), one on 2002-2008 on 16,488 (78%), and a window after 2009 trains on about 90%; each holds thousands of test rows, far above the rule[^split-17]'s floor, and they cover the cuprate, the MgB2 and the iron-based eras, which is the drift the rule[^split-15] asks a…
+   * **What the blind dossier lacked, and what it changes:** yes - the use-case answer changes, and with it the leaf. Hamidieh (2018) states a scope the dossier's use-case line left out: 'We should not expect good predictions for completely new superconductors', the model 'only gives predictions for superconductors', and researchers may use it 'to narrow their search'. Under the rule[^split-37] step 3 that keeps the model to known chemistry, so question 1 is 'no' and the entry date is not weighed; the family waves stay a fact for the notes with their measurement. At the family-key step, the element set is not the key the actor misses - a new composition is…
+   * **Missing from the blind dossier:** Hamidieh's scope sentences - the decisive fact; that a random split gave 35% of the test rows an identical row in training; the window measurement above; the argument against grouping by element set.
+   * **Source split:** yes, paper (Hamidieh 2018): repeated random splits of the entries: 2/3 train, 1/3 test, 25 times ("'At random, divide the data into 2/3 train data and 1/3 test data.' ... 'Repeat steps 1 through 4, 25 times to collect 25 out-of-sample mse's.'") https://ar5iv.labs.arxiv.org/html/1803.10260. Credible: no, A random draw of SuperCon entries with no reason given, and the paper's own scope sentences are not reflected in it: because a composition has up to 110 entries with identical features, 35% of the test rows have an identical row in training, so the reported out-of-sample RMSE partly scores…. Against the tree's leaf: no, The source splits rows at random, which both my blind leaf (temporal by first report year) and my revised leaf (whole compositions held out) reject; its scope statements are, however, what moved my revised leaf away from the entry date.
+   * **Key to split on:** first_year = the earliest reference year among the composition's matched SuperCon entries; the composition keys on its first date, so its repeated entries stay together. Order column, not an input (the order is not a column yet: the build computes it).
+   * **What changes:** On B: the 2026-11-11 declaration comes back (`temporal = Temporal(on="first_year", horizon=7, horizon_unit="years")`, its splits_comment), the use case says materials not yet reported, and the record gets a CC line with the reason against the source's scope.
+   * **Blindness:** what the walker saw of the shipped split before deciding: Type fits: a 2018 cut of NIMS SuperCon, a materials database compiled from the literature that keeps growing (the 2024 datasheet holds 33,458 entries against the release's 21,263 rows). saw: two contradictory hints survived the redaction - the tree's catalogue section names this dataset in the example list of its 'no' branch (ignored, as BRIEF2 asks), while the dossier keeps two rows of a window table ('2002-2008 | 16,488 | 78% ...', '1996-2001 | 13,180 | 62% ...'). I answered from the use…
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 3 x 3-fold CV over whole compositions (`composition`, 15,164 groups; train 14,016-14,333 rows, test 6,930-7,247), `UnseenGroup` (implemented) | No change. | Tests new compositions of the families the source scoped its model to; your call of 2026-11-12. | Never tests a family reported after the training data, such as the iron-based superconductors after 2008. |
+     | B | Three expanding windows on `first_year`: test 2009-2019, 2002-2008, 1996-2001, each trained on all earlier entries (18,654 / 16,488 / 13,180 of 21,163 rows: 88/78/62%), a composition on one side, no gap | `Temporal(on="first_year")` replaces the grouping, as declared on 2026-11-11; the first report year is joined from the NIMS SuperCon datasheet and is no input. | Tests the materials reported after the model was trained, including new families. | Goes past the source's stated scope; needs the use case rewritten and a written reason; the third change of this split. |
+
+   * **Recommendation:** A, because the source scopes its model to known families and you returned to whole compositions on 2026-11-12 for that reason. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). Applying a change: the definition's split declaration, its time basis tag and line, the record's CC line; if A is kept, the tree's departure table with the reason.
+
+   [^split-37]: **SPLIT-37** (Should): A dataset drawn from an **expanding science catalogue** is a cut of a database or a testing programme that keeps growing: a bioactivity database's releases, a regulator's screening programme, a materials database, a sequence database, the rounds of a community experiment.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   [^split-15]: **SPLIT-15** (Must): The newest window is always a test window: it is the deployment period.
+
+   [^split-17]: **SPLIT-17** (Should): Widen windows that get too small: below about 50 test rows per window, use wider windows and fewer splits.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-17, change):** Option B: Temporal · entry date (tree, blind).
+
+   **Answer (AI, 2026-11-17):** This would be the third change of this split: go back to the first report year, against the
+   source's stated scope?
+
+   * **Problem:**
+     - The catalogue's first question asks whether the use case predicts the items the catalogue adds next, read from
+       the source's stated aim and scope[^sc1].
+     - Hamidieh (2018) states the scope: "We should not expect good predictions for completely new superconductors";
+       the model "only gives predictions for superconductors". That answers no, which leads to the family key (whole
+       compositions, as shipped).
+     - The blind dossier lacked that sentence; the walk answered from the use-case line ("decides which to
+       synthesize") and reached the entry date.
+   * **Background:** you chose the first report year on 2026-11-11 (review issue 2, a) and went back to whole
+     compositions on 2026-11-12 (review issue 5) because of this sentence. The walk's measurement stands: families
+     arrive in waves (cuprates 4,885 of 5,431 dated rows in 1987-1995), so windows by first report year test later
+     families.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Whole compositions held out (implemented) | no change | the source's stated scope, your call of 2026-11-12 | does not test families found later |
+     | b | Windows by first report year | `Temporal` on the composition's first report year, as on 2026-11-11 | tests materials not yet reported, the harder use | goes past the source's stated scope; needs the use case rewritten and a written reason |
+
+   * **Recommendation:** a, unless the use case is meant to go past what Hamidieh claims; then b with that reason
+     written into the use case. **Decision:** a or b?
+
+   [^sc1]: **SPLIT-37** (Should), step 3: the source's stated aim and scope decide whether the use case predicts
+     the items a catalogue adds next; its own split counts only where chosen for the use.
+
+   **Resolved (2026-11-18, Andrej):** superseded by issue 7, where whole compositions stay held out as implemented (A).
+
+7. **Composition groups, as the source's scope gives, or the windows of your mark?**
+
+   * **Problem:**
+     - You marked windows on the first report year (2026-11-17); the catalogue rule binds the use case to the source's stated scope, and a source that keeps its model to known chemistry keeps the family key[^s37s].
+     - Hamidieh writes "We should not expect good predictions for completely new superconductors", and the rule's own table and cases list superconductivity at that step; windows need the use case rewritten to reach materials outside known families.
+     - Windows would be the third change of this split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 3-fold CV over whole compositions, `UnseenGroup` (implemented) | No change | The source's own scope | The later families (cuprates, iron-based) are tested only as unseen compositions |
+     | B | Three expanding windows on the first report year | The use case is rewritten past the source's scope; the rule's table, cases and the tree's example change | Tests materials reported later | Departs from the cited source; third change of the split |
+
+   * **Recommendation:** A, because the rule takes the scope from the source and the source states it. **Decision:** A or B?
+
+   [^s37s]: **SPLIT-37** step 3 (Should): "Where the source keeps its model to items like those it was built from (a screen within known chemistry ...), the family key stands and the entry date is not weighed."
+
+   **Andrej (2026-11-18, ok):** As implemented (A).
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: 3 x 3-fold CV over whole compositions, `UnseenGroup`, on the source's stated scope (Hamidieh 2018: "We should not expect good predictions for completely new superconductors"). Nothing changes.
 
 ## Reference
 

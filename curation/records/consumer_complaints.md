@@ -4,6 +4,7 @@ name: Consumer Complaint Database
 checked_by:
 - Lennart
 - Mustafa
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -69,6 +70,8 @@ CC (2026-11-10, Lennart): the declared horizon (3 months, no gap, windows starti
 CC (2026-11-11, Lennart): accepted `time_newest_period_short` with its reason (cross-dataset item "What to do with a newest period that holds far fewer rows than the periods before it?", A).
 
 **Assessment (AI, 2026-11-11):** December 2025 holds 54,655 complaints against 73,058 to 77,970 from September to November; the share closed with monetary relief rises from 1.5% to 2.2% over those four months.
+
+CC (2026-11-19, Andrej): a one-month gap before each test quarter (Review issue 3, B): the 30 days before a quarter improve log loss by 0.004 to 0.017 at equal training size, a shortcut a refit at the quarter's start would not have.
 
 ## Review
 
@@ -169,6 +172,48 @@ needed.
    a company responds within 15 days and gives its final response within up to 60), and the notes say that each train
    side holds one to two months of closures a refit would not yet know, accepted as the archive's closures are final.
    The record has the decision and the horizon sign-off as CC lines. `dataset check`: 0 errors, 0 warnings.
+
+3. **Measure what recent closures add before keeping no gap?**
+
+   * **Problem:**
+     - No gap was accepted on 2026-11-10 partly because a quarter is longer than the 15 to 60 days a complaint takes to close; your time-step decision compares the delay with the date's one-day step instead[^gap].
+     - The remaining reason, that the archive's closures are final, rules out a selection at the release end but not a shortcut through complaints closed after a window starts[^s10].
+     - Company waves (January 2025: Cash App and Zelle, 165,305 complaints) are where such a shortcut would show.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Three quarters, no gap (implemented) | No change; the splits comment states the measured effect | | Rests on an unmeasured reason now |
+     | B | Three quarters, a one-month gap | Train shares 91.8%, 63.9%, 51.5% | Covers most closures | Loses the month before each window |
+
+   * **Recommendation:** measure first: what the complaints of the 60 days before each window add at equal training size; A if nothing, B if they carry a shortcut. **Decision:** A or B, after the measurement?
+
+   **Notes for the AI:** measure per window, split by whether the test company had a wave in those 60 days, as was done for acquire_valued_shoppers_challenge; Slurm, not the login node.
+
+   [^gap]: The gap question compares the label's delay with the time column's smallest recorded step, not the window length (Andrej, 2026-11-17, option B on the time step).
+   [^s10]: **SPLIT-10** (Should, amended 2026-11-05): "No gap is needed where the collection covers what the gap guards against and the measurements show neither: the time column's smallest step is longer than the delay ..., the newest period is as complete as a later read of it, or a fixed outcome horizon ..."
+
+   **Andrej (2026-11-18, discuss):** Yes, measure it.
+
+   **Answer (AI, 2026-11-18):** measured: the newest month before each test quarter helps every model in every window, broadly rather than through company waves, so the shortcut a gap guards against is there: B.
+
+   - Leaving out the 30 days before each quarter, at equal training size, worsens log loss by 0.004 to 0.017; that is 2.5 to 7 seed SDs everywhere except logistic regression in January-March 2025.
+   - Companies with a complaint wave in the 60 days before a window hold under 0.6% of its test rows; the Cash App / Zelle wave of January 2025 falls inside its test quarter, not before it.
+   - At the 2026-01-23 download about 70% of December's complaints were still in progress, so a quarterly refit would not hold most of the last month: one month, not 60 days, is the realistic gap (60 days would put July-September 2024 at 49.6% train, below half).
+
+   | Test quarter | Test rows | Δ log loss, LightGBM (30 d) | Δ log loss, logistic (30 d) | Δ LightGBM (60 d) | Train share, no gap / 1-month gap |
+   |---|---|---|---|---|---|
+   | Jul-Sep 2024 | 213,655 | +0.0056 ± 0.0005 | +0.0050 ± 0.0017 | +0.0087 ± 0.0012 | 53.4% / 51.5% |
+   | Jan-Mar 2025 | 350,790 | +0.0058 ± 0.0008 | +0.0037 ± 0.0053 | +0.0138 ± 0.0029 | 66.2% / 63.9% |
+   | Oct-Dec 2025 | 203,139 | +0.0171 ± 0.0023 | +0.0114 ± 0.0035 | +0.0722 ± 0.0021 | 94.1% / 91.8% |
+
+   Δ = log loss without the recent days minus with them (positive: the recent days help), mean ± SD over 3 seeds; each arm 200,000 rows sampled from the year before the cutoff; features as the definition (text TF-IDF, categoricals, company).
+
+   **Recommendation:** B, three quarters with a one-month gap. **Decision:** A or B?
+
+   **Andrej (2026-11-19, discuss):** Agree.
+
+   **Resolved (2026-11-19, Andrej):** B. `TemporalSplits(window=3, unit="months", gap=1, ...)`: the three quarters train on 91.8%, 63.9% and 51.5% after a one-month gap; the splits comment gives the measurement. Not rebuilt.
 
 ## Reference
 

@@ -201,6 +201,8 @@ CC (2026-11-10, Andrej): Review issue 14, A: "Disagree: We go with A over E beca
 
 CC (2026-11-10, Andrej): ship after changes (review page of 2026-11-10).
 
+CC (2026-11-18, Andrej): the split stays as shipped under SPLIT-8 as amended today (cross-dataset decision on the period count, full-information split check): the data holds three policy years for a task of 3 repeats, which needs four, too few to hold out whole periods; the forced step goes on to the unit question: contracts recur and the use case meets new fleets, so whole contracts, as shipped.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it. Shipped on Andrej's verdict of 2026-11-02, changed on 2026-11-06

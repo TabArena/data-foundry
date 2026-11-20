@@ -108,7 +108,9 @@ class WebsitePhishing(AbstractCuratedDataset):
           directories, at times the source does not give; a filter rates sites made later, and phishing pages change
           with the period. The file has no date or URL, and its order interleaves the classes (Time: Lost). Leak test
           across the split: 47% of the rows repeat another row's codes (kept, about 0.01 ROC AUC); the dates of the
-          domain-age and traffic look-ups are unknown. Collection dates would allow a split by time.
+          domain-age and traffic look-ups are unknown. Collection dates would allow a split by time. Not taken as
+          stationary (Andrej, 2026-11-18): An adversarial domain whose central feature (HTTPS) is known to have reversed
+          its meaning; nothing supports interchangeable later samples.
     """
 
     accepted_check_warnings = {

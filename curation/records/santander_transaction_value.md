@@ -69,6 +69,10 @@ CC (2026-11-06, Andrej): the declared metric (the competition's RMSLE on the raw
 
 CC (2026-11-10, Andrej): review page marks: a `Time basis: ForcedGroupedFromTemporal:` bullet in `curation_comments` says what dated snapshots would change (issue 2, option B; tag and split unchanged). The record's facts are `Time: Lost` in place of `Time: Dated`, plus `Time: Within Entity` (issue 3, "Agree" with the 2026-11-09 Answer): the shifted columns order each customer's own snapshots, nothing orders customers against each other.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `customer`, 3x3 folds, `ForcedGroupedFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Andrej's own earlier review already ruled out a stationary relation because transaction values move with the period; an order within each entity alone does not argue for interchangeable later samples.
+
 ## Review
 
 **Outcome:** added. The training file of Santander's Value Prediction Challenge (Kaggle, 2018): 4,459 customers with
@@ -380,6 +384,44 @@ the review let a later snapshot give the target away, and the split holds out wh
 
    **Resolved (2026-11-10, Andrej):** B plus `Time: Within Entity`: the record's `tags` have `Time: Lost` in place of
    `Time: Dated` and gain `Time: Within Entity`, in the working copy and in the PR #50 worktree's copy of the record.
+
+4. **Keep `ForcedGroupedFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: No calendar date; only each customer's own snapshots are ordered (shifted lag columns), steps of different customers cannot be aligned (Time: Within Entity, Time: Lost).
+     - Use: Santander estimates the transaction value of potential customers it has not seen, later than the data.
+     - Mechanism: Transaction values follow the customer's past values, but also the bank's products, prices and the economy, shocks that customers of one month share; country, period and units are undisclosed.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | santander_transaction_value itself | order within customer only; customers' steps not alignable | unmeasurable across time | same data |
+     | Kelly, Hand & Adams, 'The impact of changing populations on classifier performance', KDD 1999 (doi 10.1145/312129.312285); Hand, 'Classifier technology and the illusion of progress', Statistical Science 2006 (arXiv math/0606452) (literature, cited from memory: check) | scorecard performance on UK bank unsecured personal loans 1993-1998 as the applicant population drifts | not flat: population drift degrades scorecards; Hand names drift as a particular concern in credit scoring because defaults arrive long after the grant | application scoring of consumer credit |
+
+   * **For a stationary use case:**
+     - Strong autoregressive mechanism: a customer's own lag values carry most of the signal.
+   * **Against:**
+     - Transaction values move with prices and the period (record issue 2: 'transaction values move with the period, so not a StationaryRelation').
+     - Shared monthly shocks are left on both sides of the customer split (Time basis line).
+     - Anonymized, units and period undisclosed: no domain fact to argue from.
+   * **Earlier views:**
+     - CC (2026-11-06, Andrej): kept, split by whole customers, ForcedGroupedFromTemporal (option D)
+     - CC (2026-11-10, Andrej): Time basis line on what dated snapshots would change; facts Time: Lost + Time: Within Entity; review answer: 'transaction values move with the period, so not a StationaryRelation'.
+     - CC (2026-11-17, Andrej): blind split review: the decision tree, walked without the current split, reaches the forced split it ships.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedGroupedFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Transaction values move with prices and the period (record issue 2: 'transaction values move with the period, so not a StationaryRelation').; Shared monthly shocks are left on both sides of the customer split (Time basis line). |
+
+   * **Recommendation:** A, andrej's own earlier review already ruled out a stationary relation because transaction values move with the period; an order within each entity alone does not argue for interchangeable later samples. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Andrej's own earlier review already ruled out a stationary relation because transaction values move with the period; an order within each entity alone does not argue for interchangeable later samples.)
 
 ## Reference
 

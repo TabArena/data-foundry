@@ -3,6 +3,7 @@ unique_name: sendy_logistics_challenge
 name: sendy-logistics-challenge
 checked_by:
 - Myunghwan
+- Andrej
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
@@ -21,7 +22,7 @@ original_source: Zindi
 year: '2019'
 domain: business & marketing
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
@@ -91,6 +92,8 @@ CC (2026-11-05, Lennart): `Distance (KM)` is labelled "tested: not measured betw
 **Assessment (AI, 2026-11-05):** after the drop of issue 4: 20,461 orders and 922 riders on random 3x3 folds (6,820-6,821 test rows; 99.1-99.4% of test orders have a rider seen in training); `dataset check` 0 errors, 0 warnings; leak probes: all features R² 0.392 (Distance alone 0.348), no exact copies across the split, and probe 19 flags the removed rows as the cut on the label. LightGBM on the shipped folds: RMSE 742.8 s on the first repeat (766.6 without Distance); over the nine splits the wait feature gains 3.2 (8.5 before), training only on legs of 100 s or more costs 0.2 (11.5 before), the rider's later orders that day gain 4.2 (3.4 before), and holding out calendar days or month classes costs 2.1 and 1.1 s. The same scripts on the rows before the drop give 764.2 and 787.2 s on the first repeat, not the 761.3 and 789.6 the notes quoted, so those two old figures do not reproduce exactly.
 
 CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
+CC (2026-11-19, Andrej): 3-fold CV over whole month classes, `ForcedGroupedFromTemporal` (Review issue 11, B): the stationary-relation test reads not flat across the classes (pooled +4.6 ± 1.1 s RMSE for LightGBM, +4.0 ± 0.8 s for Kumo-Tabular), so whole months are held out, never random orders.
 
 ## Review
 
@@ -313,6 +316,42 @@ arrival at pickup" where it means "at destination"; it is yours, so it is left f
    [^missing]: **CLEAN-10** (Should).
 
    **Resolved (2026-11-05, Lennart):** A. The blanks stay missing, with the note on their likely meaning.
+
+11. **Hold out whole month classes instead of random orders?**
+
+   * **Problem:**
+     - The orders carry day of month and weekday but no month; weekday minus day of month (mod 7) sorts them into seven classes of whole calendar months, 1,109 to 4,632 orders each.
+     - The stationary-relation test found the relation not flat across these classes for Kumo-Tabular, so the forced step holds out whole classes before random[^s8]; the splits comment keeps random because holding a class out "barely helps" (RMSE 734.1 against 733.0), a gap-size reason the rules do not take[^s4].
+     - Myunghwan holds this dataset's time basis line, so the answer should reach him too.
+   * **Experiments:** stationary-relation test of 2026-11-18 (v2; the v3 re-run confirms not flat: pooled +4.6 ± 1.1 s for LightGBM and +4.0 ± 0.8 s for Kumo-Tabular against floors of 2.2-2.5 s), RMSE gap in seconds of the forward model ± one SD, floor about 2.4 s.
+
+     | Classes | LightGBM | Kumo-Tabular | Verdict |
+     |---|---|---|---|
+     | 0, 2, 4, 6 | flat | not flat (+3.5 to +5.8 s, SD 0.8 to 2.3) | not flat |
+     | 1, 3, 5 | flat | flat | flat |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 3 x 3 random folds over orders, `ForcedIIDFromTemporal` (implemented) | No change | No rebuild | Same-month orders on both sides; skips the forced step's first remedy |
+     | B | 3-fold CV over whole month classes, `ForcedGroupedFromTemporal` | The month class (built in `_clean`, no input) is the group | Holds out whole months, the closest this release comes to later data | The classes are not in time order: a class mixes months from across the year |
+
+   * **Recommendation:** B, if the v3 re-run confirms "not flat"; A with `StationaryRelation` in its place if v3 finds the relation flat. **Decision:** A or B?
+
+   **Notes for the AI:** class = (weekday − day of month) mod 7 on the placement date, as the splits comment computes it; group key only; the line goes to Myunghwan with the decision.
+
+   [^s8]: **SPLIT-8** (Must, amended 2026-11-17): "The closest regime holds out whole periods where the data has an order with at least two periods to hold out ... Without such periods it is grouped by the entity when an entity has several rows and the use case meets new entities ..., and IID otherwise."
+   [^s4]: **SPLIT-4** (Must): "The split follows what the task does in reality, not the size of the gap."
+
+   **Answer (AI, 2026-11-18):** reassessed with the new forced step (the interchangeable question first; measured not flat leads to whole periods or Too Small) and the pooled flat verdict.
+
+   - The v3 test confirms not flat for both models, pooled and in single classes, so the branch is "measured not flat": whole periods or Too Small, never random.
+   - Seven month classes give enough groupings for 3 repeats. Recommendation now B without condition.
+
+   **Andrej (2026-11-19, change):** Option B: 3-fold CV over whole month classes, ForcedGroupedFromTemporal.
+
+   **Resolved (2026-11-19, Andrej):** B. `month_class` = (weekday − day of month) mod 7 of the placement date, built in `_clean` and no input, is the group; 3 x 3 folds over the seven classes (1,109 to 4,632 orders each), train 59.0% to 81.6%; `data_tags` `ForcedGroupedFromTemporal`, with a `Time basis:` line giving the not-flat test. `dataset check`: 0 errors; `task_group_count_low`, `groups_test_groups_few` and `groups_largest_share_high` (7 classes) to accept with this decision. Not rebuilt. Myunghwan's CC of 2026-10-29 (random unless an order turns up) is superseded on the split; its Order No finding stays.
 
 **Review panel:** ship after changes, then a rebuild on your ask (mediator). Tier full, second pass after your PR #33
 review: twelve reports (claim, column and split auditors, domain practitioner, blind reviewer, task gamer, precedent

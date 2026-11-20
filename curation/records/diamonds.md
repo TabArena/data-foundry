@@ -71,6 +71,8 @@ CC (2026-11-12, Andrej): split by stone (Review issue 1, B).
 - 40% of the rows are one stone listed twice (a few up to six times) in two price lists of the February 2007 scrape; the dearer price is the cheaper one times a fixed factor of the price band, so under random folds a stone's other listing in training gave its price.
 - `stone_id` (the group number of carat, colour, clarity, depth, table and z: 43,000 stones) is the group and no model input; grouped 3 x 3 folds; all 53,940 rows stay, both price lists with them. `required_split` Grouped (NON-IID), tag `Non-IID (Grouped)`.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `stone_id`, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The diamonds table of the ggplot2 R package: 53,940 round diamonds with their grading (carat,

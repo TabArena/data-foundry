@@ -72,13 +72,14 @@ class PortoSeguro(AbstractCuratedDataset):
         - There exist only 6 duplicates in the training data. We drop them as the portion is too small to be meaningful.
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
-        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): policy holders
-          priced at one moment, the target a claim within the following year (the host's framing; record: Samples: One
-          Moment, Target: Later). One pricing moment is one period, too few for three windows (SPLIT-8). The id is a
-          random shuffle and no date survives, so neither the moment nor a later pricing round can be checked. Leak
-          test across the
-          split: no repeated policy holder, no order along the id, the region code in ps_reg_03 held out scores the same
-          (ROC AUC 0.639). Not tested: a later pricing round.
+        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): policy holders priced
+          at one moment, the target a claim within the following year (the host's framing; record: Samples: One Moment,
+          Target: Later). One pricing moment is one period, too few for three windows (SPLIT-8). The id is a random
+          shuffle and no date survives, so neither the moment nor a later pricing round can be checked. Leak test across
+          the split: no repeated policy holder, no order along the id, the region code in ps_reg_03 held out scores the
+          same (ROC AUC 0.639). Not tested: a later pricing round. Not taken as stationary (Andrej, 2026-11-18): A
+          consumer pricing task with market and selection drift, an unstated period and anonymised features; the
+          measured insurance neighbours are mostly inconclusive, so the evidence is mixed at best.
     """
 
     # Task

@@ -96,8 +96,8 @@ class QsarTid11(AbstractCuratedDataset):
             "literature orders the split but is no model input."
         ),
         split=(
-            "The compounds are held out by the year they first appear in the literature: five windows of two years "
-            "from 2004 to 2013, each predicted from the compounds published before it, so the test data stands for "
+            "The compounds are held out by the year they first appear in the literature: nine windows of one year "
+            "from 2005 to 2013, each predicted from the compounds published before it, so the test data stands for "
             "the candidates that come next."
         ),
         changes=(
@@ -168,8 +168,9 @@ class QsarTid11(AbstractCuratedDataset):
           Why the split changed: under the scaffold split 58% of the test compounds keep a close training analog
           (Tanimoto >= 0.7, Morgan radius 2), and 71% to 93% of those analogs were first published in the same year as
           the test compound, so the folds hold ring skeletons out but not the series of a paper, which a chemist
-          screening a new candidate does not have either. Measured on the shipped windows and all 5,704 compounds,
-          with the recommended SMILES encoding, untuned LightGBM and random forest, RMSE (Slurm jobs 1378119 and
+          screening a new candidate does not have either. Measured on all 5,704 compounds,
+          on the two-year windows shipped from 2026-11-11 to 2026-11-19 (the test-windows bullet below gives today's
+          one-year windows), with the recommended SMILES encoding, untuned LightGBM and random forest, RMSE (Slurm jobs 1378119 and
           1378141, 2026-11-11); the scaffold columns are the 3 x 3 scaffold-grouped out-of-fold scores on the same
           compounds:
 
@@ -185,7 +186,7 @@ class QsarTid11(AbstractCuratedDataset):
           Where the difference comes from, at the same number of training compounds where the pool allows (LightGBM
           RMSE, the drawn sets averaged over 3 seeds):
 
-          | Test window | Earlier years only (shipped) | Any year, no test scaffold | Any year, at random | Compounds published later |
+          | Test window | Earlier years only (split by year) | Any year, no test scaffold | Any year, at random | Compounds published later |
           |---|---|---|---|---|
           | 2004-05 | 1.502 | 1.281 | 1.305 | 1,791 |
           | 2006-07 | 1.049 | 1.083 | 1.038 | 1,193 |
@@ -199,7 +200,7 @@ class QsarTid11(AbstractCuratedDataset):
           keeps rather than the later papers. An earlier run on four hand-chosen windows (2004, 2005-06, 2007-08,
           2009-13), dated from today's web service with the deposit left out, pointed the same way: LightGBM 0.68 to
           0.90 by scaffold against 1.11 to 1.31 by year (Slurm jobs 1366166 and 1366180, 2026-11-06).
-          Checked on the shipped windows (2026-11-11): the task probes raise no flag (LightGBM R^2 0.350, skill
+          Checked on the two-year windows (2026-11-11): the task probes raise no flag (LightGBM R^2 0.350, skill
           +0.419 over the dummy and ahead of it on all five windows, random forest 0.313, selected linear 0.138,
           plain linear -0.409; spread LightGBM - linear +0.659, paired standard error 0.177). The leak probes find no
           test row with an exact feature copy in training (0.0% over the five windows) and no single feature near the
@@ -228,6 +229,10 @@ class QsarTid11(AbstractCuratedDataset):
           ChEMBL dates them, so the record carries `Samples: Over Time` and `Time: Dated` in place of `Samples: No
           Time Dimension`. No `Target: Revised Later`: only 5.1% of the compounds have a thrombin record from a year
           later than their first, so a median label seldom moves after the compound's first publication.
+        - Test windows (Andrej, 2026-11-19, review issue 5, B): one publication year each, nine windows from 2013 back
+          to 2005, in place of five windows of two years (2004-05 to 2012-13): the two years came from cutting the
+          newest half of the 22 years into five windows, and nothing in the use case asks for them; whole years reach
+          the target of nine windows at half the data or more (splits comment).
         - The file lists the compounds roughly in ChEMBL ID order, and the mean activity drifts along it (6.8 in the
           first tenth, 5.6 in the ninth), mostly the PubChem deposit at positions 70% to 90%; the file position
           follows the first year only loosely (Spearman 0.48). The frame ships sorted by `first_year` (the time
@@ -292,17 +297,17 @@ class QsarTid11(AbstractCuratedDataset):
         definition="RMSE of MEDIAN_PXC50 (pXC50, already a -log10 scale).",
     )
 
-    # Splits: five windows of two publication years. Every year from 1992 to 2013 is in the data, so two distinct
-    # years are two calendar years, and the newest half of the 22 years is cut into five windows (window=None).
+    # Splits: nine windows of one publication year, 2013 back to 2005 (Andrej, 2026-11-19, review issue 5, B). Every
+    # year from 1992 to 2013 is in the data, so one distinct year is one calendar year.
     temporal = Temporal(
         on="first_year",
-        splits=TemporalSplits(window=None, unit="unique", n_windows=5, min_train_fraction=0.5),
-        horizon=2,
+        splits=TemporalSplits(window=1, unit="unique", n_windows=9),
+        horizon=1,
         horizon_unit="years",
         time_of="label",  # the publication year arrives with the target: no model input (2026-11-12, Andrej)
     )
     splits_comment = """
-        Expanding-window temporal splits on the year a compound first appears in ChEMBL 17's human thrombin records: 5 test windows of two years (2012-13, 2010-11, 2008-09, 2006-07, 2004-05), newest first; train is every compound first published before the window. The windows hold 159, 744, 290, 598 and 633 compounds, and their train sides 5,545, 4,801, 4,511, 3,913 and 3,280 compounds (97%, 84%, 79%, 69% and 57% of all 5,704). A model trained on the compounds known up to a year predicts the potency of the compounds that appear in the next two. Two years is the window the protocol derives from five windows over the newest half of the 22 publication years, and the smallest window (2012-13) still holds 159 compounds. The 518 compounds of the undated PubChem BioAssay deposit take 2011, the year ChEMBL 9 loaded it, which puts them in the 2010-11 window. The scaffold-grouped split this replaces trained on same-year siblings of the test compounds (curation notes).
+        Expanding-window temporal splits on the year a compound first appears in ChEMBL 17's human thrombin records: 9 test windows of one year (2013 back to 2005), newest first; train is every compound first published before the window (Andrej, 2026-11-19, review issue 5, B). The windows hold 49, 110, 638, 106, 105, 185, 308, 290 and 253 compounds (2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005), and their train sides 5,655, 5,545, 4,907, 4,801, 4,696, 4,511, 4,203, 3,913 and 3,660 compounds (99.1%, 97.2%, 86.0%, 84.2%, 82.3%, 79.1%, 73.7%, 68.6% and 64.2% of all 5,704). A model trained on the compounds known up to a year predicts the potency of the compounds that appear in the next. The use case sets no refit cadence, and the date gives whole years only: one year is the finest step, and nine whole-year windows reach the count an IID split of 5,704 compounds would get, all training on more than half the data; 2004 (57.5%) would be a tenth. The windows of 2013 (49), 2010 (106) and 2009 (105) are small and noisier. Until 2026-11-19 five two-year windows (2004-05 to 2012-13) shipped, a length cut from the newest half of the 22 years. The 518 compounds of the undated PubChem BioAssay deposit take 2011, the year ChEMBL 9 loaded it, which puts them in the 2010-11 window. The scaffold-grouped split this replaces trained on same-year siblings of the test compounds (curation notes).
     """
 
     prepared_raw_files = (PREPARED_FILE,)

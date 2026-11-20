@@ -4,6 +4,7 @@ name: Tunisian Fraud Detection Challenge
 checked_by:
 - Myunghwan
 - Lennart
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Myunghwan
@@ -95,6 +96,10 @@ CC (2026-11-05, Lennart): the taxpayer's earlier adjustments are held history (R
 CC (2026-11-05, Lennart): the refund and regularisation fields stay under LEAK-38 as amended the same day (Review issue 5, B), named in `fit_reason` as kept. The 22 registry fields that stay were looked up at extraction, so LEAK-10 decides: they stay because no mechanism ties a registry change to the adjustment, unlike `CTR_CESSAT` (choice a; a LEAK-10 Cases row).
 
 CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
+CC (2026-11-20, Andrej): the three cohort-year windows stay, below the target of nine (split check, windows item, A as implemented): a 2014 window would train on 29.0%, under the 30% floor; the reason is in the splits comment.
+
+CC (2026-11-20, Andrej): the three cohort-year windows are the tree's leaf Temporal · labels arrive later (the labels-arrive-later step added to the fill-in branches today; tunisian its example); gap 0 kept under it, as an audit's delay of years would leave fewer than three windows (Lennart's call of 2026-11-05 confirmed).
 
 ## Review
 

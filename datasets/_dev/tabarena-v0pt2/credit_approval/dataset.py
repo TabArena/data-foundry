@@ -69,7 +69,11 @@ class CreditApproval(AbstractCuratedDataset):
 
         - Provenance: `crx.data` of UCI Credit Approval (id 27, Quinlan 1987; the source is confidential, so lender and country are unknown). The same 690 applications are UCI's Statlog (Australian Credit Approval) (id 143) with recoded values and filled-in missing values; the Japanese Credit Screening data (id 28, 125 rows) in the same zip is a different dataset we do not use.
         - We encode A14 as numeric, following the description of it being a continuous feature.
-        - Time basis: ForcedIIDFromTemporal: credit card applications decided by a bank over a period Quinlan does not state; `crx.data` has no date or id and is ordered in blocks of one class (assembly, not time), so random applications stand in for the applications to come. A dated release would allow a split by application date.
+        - Time basis: ForcedIIDFromTemporal: credit card applications decided by a bank over a period Quinlan does not
+          state; `crx.data` has no date or id and is ordered in blocks of one class (assembly, not time), so random
+          applications stand in for the applications to come. A dated release would allow a split by application date.
+          Not taken as stationary (Andrej, 2026-11-18): A lender's approval decision follows credit policy and markets,
+          the data is decades old and anonymized; there is no domain reason for interchangeability.
     """
 
     # Task

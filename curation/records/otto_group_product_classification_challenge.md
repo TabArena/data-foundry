@@ -52,6 +52,8 @@ CC (2026-11-09, Andrej): the record's collection fact is `Samples: One Moment` (
 
 CC (2026-11-13, Andrej): time basis `Retrospective` instead of `Timeless`: the release is one 2015 extract (`Samples: One Moment`), which `Timeless` does not take, and the use case cleans up the existing catalogue, filling in the categories of the products it covers. The random split stays.
 
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The Otto Group's Kaggle competition of 2015: 61,878 products with 93 anonymised counts of events,

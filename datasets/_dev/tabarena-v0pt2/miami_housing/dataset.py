@@ -127,12 +127,19 @@ class MiamiHousing(AbstractCuratedDataset):
         split (3 x 3 folds) read the task as an appraiser valuing the year's homes from the same year's sales; it was
         replaced so that this dated house-sale table follows the regime of the others (2026-11-11, Andrej). At equal
         training size, training on earlier months only cost +0.001 RMSLE against sales from all other months
-        (untuned LightGBM 0.147 against 0.146; ridge 0.268 against 0.267; 2026-11-06).
+        (untuned LightGBM 0.147 against 0.146; ridge 0.268 against 0.267; 2026-11-06). Five of the nine windows an
+        IID split of this size would get: sales are dated by month and the data hold one year, so July 2016 and
+        earlier would train on under half the sales (49.2% for July; Andrej, 2026-11-19, review issue 3, A).
     """
     accepted_check_warnings = {
         "meta_time_horizon_mismatch": "`sale_month` holds the first day of the sale month (the source gives no day), "
         "so each one-month test window holds a single date and its span reads as 1 day; the windows are calendar "
         "months (as perth_house_prices and zillow_prize).",
+        "splits_below_target": (
+            "Five of the nine windows an IID split of this size would get: sales are dated by month and the data hold "
+            "one year, so July 2016 and earlier would train on under half the sales (49.2% for July; Andrej, "
+            "2026-11-19, review issue 3, A)."
+        ),
     }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

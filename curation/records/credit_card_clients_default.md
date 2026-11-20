@@ -64,6 +64,10 @@ CC (2026-11-06, Andrej): time basis `DelayedTarget` accepted on the BeyondArena 
 
 CC (2026-11-09, Andrej): random clients (review page issue 2, reply a), with issue 3's time basis `DelayedTarget`: one snapshot, the same six months and the same outcome month for every client.
 
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Although use is the next month, the data were collected at the onset of a documented card-debt crisis after which rules and limits changed; the strongest candidate in the group fails on its own period.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it as defined, with the undocumented repayment codes kept as numbers
@@ -286,6 +290,47 @@ for this dataset; it is not part of this review.
 CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
 - A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
 - The random split stays.
+
+4. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: One extract of 30,000 clients with the same six months (April-September 2005) and one outcome month (October 2005): a single period; client ID is no time order (ROC AUC 0.504).
+     - Use: A bank scores next month's payments with a model built on earlier months, i.e. right after the collected period, then month after month.
+     - Mechanism: Default on the next payment follows repayment history, limit and balance; in Taiwan these months were the onset of the 2005-2006 card-debt crisis, when delinquency rose sharply and banks then tightened limits and issuing rules, so the relation in later months differs.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | Seven Pillars Institute, 'Taiwan's Credit Card Crisis' (sevenpillarsinstitute.org/case-studies/taiwans-credit-card-crisis); Central Bank of the ROC report (cbc.gov.tw/en/public/Attachment/931716251371.pdf) | card delinquency and charge-offs 2005-2006 | not flat: delinquency rose from Q3 2005, charge-off rates of cash/credit cards ~14-17% in Jan 2006 against ~6% before; issuing standards and limits tightened afterwards | the very bank population and months of this dataset (April-October 2005) |
+     | lending_club (this collection, matched-v2 stationary-relation test) | 36-month LendingClub loans, issue years 2013-2015 each tested forward vs contemporaneous on the same test half (LightGBM, whole half) | not flat: forward worse by 0.0043-0.0059 ROC AUC (2.4-4.2 floors, beyond 2 SD) in all three years; default rate 10.0-15.2% by year | consumer credit default from application/bureau data, outcome over months after the grant |
+     | Kelly, Hand & Adams, 'The impact of changing populations on classifier performance', KDD 1999 (doi 10.1145/312129.312285); Hand, 'Classifier technology and the illusion of progress', Statistical Science 2006 (arXiv math/0606452) (literature, cited from memory: check) | scorecard performance on UK bank unsecured personal loans 1993-1998 as the applicant population drifts | not flat: population drift degrades scorecards; Hand names drift as a particular concern in credit scoring because defaults arrive long after the grant | application scoring of consumer credit |
+
+   * **For a stationary use case:**
+     - Use right after the collected period (the next statement month) is the nearest a use case gets to the data.
+     - Repayment history predicting the next payment is a behavioural mechanism shared across banks and decades.
+   * **Against:**
+     - The collected months sit at the onset of Taiwan's 2005-2006 card-debt crisis: charge-offs jumped from ~6% to 14-17% by January 2006.
+     - Rules changed afterwards: issuing standards, borrowing limits and interest caps tightened, a debt-negotiation scheme was created.
+     - One period only, so not even one forward month can be checked.
+     - Similar measured credit data (lending_club) is not flat.
+   * **Earlier views:**
+     - CC (2026-11-06, Andrej): time basis DelayedTarget accepted (one moment, shared outcome window)
+     - CC (2026-11-09, Andrej): random clients (issue 2, a)
+     - Time basis line (Andrej, 2026-11-16): ForcedIIDFromTemporal, DelayedTarget retired; 'Not tested: a later month'.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | The collected months sit at the onset of Taiwan's 2005-2006 card-debt crisis: charge-offs jumped from ~6% to 14-17% by January 2006.; Rules changed afterwards: issuing standards, borrowing limits and interest caps tightened, a debt-negotiation scheme was created. |
+
+   * **Recommendation:** A, although use is the next month, the data were collected at the onset of a documented card-debt crisis after which rules and limits changed; the strongest candidate in the group fails on its own period. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Although use is the next month, the data were collected at the onset of a documented card-debt crisis after which rules and limits changed; the strongest candidate in the group fails on its own period.)
 
 ## Reference
 

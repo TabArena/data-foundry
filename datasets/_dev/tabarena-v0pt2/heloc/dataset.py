@@ -131,7 +131,9 @@ class Heloc(AbstractCuratedDataset):
           each account followed for 24 months; the release keeps no date and its order is the assembly of a balanced
           sample (training on the first 80% of the file scores the last 20% at ROC AUC 0.819 against 0.794 to 0.815 on
           random splits), so random applications stand in for the applications to come. A dated release would allow a
-          split by application date.
+          split by application date. Not taken as stationary (Andrej, 2026-11-18): HELOC default is tied to house prices
+          and rates, the period is unknown, and the sample is constructed; the file-order check is not a time
+          measurement and 'no drift seen' is no reason.
     """
     accepted_check_warnings = {
         "meta_license_unknown": ("The Kaggle copy we download gives its licence as 'Unknown' (checked 2026-11-10)."),

@@ -57,6 +57,10 @@ CC (2026-11-11, Andrej): review page marks: the second copy of the 13 records en
 
 CC (2026-11-11, Andrej): review page marks, afternoon: kept with a note (issue 1, option a): the values are real hand-transcribed lab reports, labelled by a physician on a criterion not stated, the others are other patients, and the 583 records are a subset of the 751 of Ramana et al. (2011); `fit_reason` and a `curation_comments` bullet say so. Random split tagged `ForcedIIDFromTemporal` with a `Time basis:` line (issue 4, option a): held out by file position the scores stay within the spread of random splits.
 
+CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 7, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The physiology is stable but the label and the group collection are undocumented, and a flat file order is not a dated measurement; mixed.
+
 ## Review
 
 **Outcome:** added. The ILPD file (UCI, 2012): 583 records from north-east Andhra Pradesh, India, with age, sex and
@@ -472,6 +476,46 @@ basis of the label is not known. The data-scouting run of 2026-10-31 screened `n
    [^fo-6]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
 
    **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
+
+7. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: Lost: no date, period unstated (Ramana et al. 2011/2012); file order has feature autocorrelation (lag-1 0.10-0.26) but no label structure and is not shown to be time.
+     - Use: A doctor in Andhra Pradesh decides liver work-up referral from liver tests, an unknown number of years after collection.
+     - Mechanism: Bilirubin, ALP, ALT/AST, proteins reflect liver injury, physiology read by routine assays; but the label's criterion is unstated, contradicts the labs for part of the rows, and the two groups were collected apart.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | indian_liver_patient_dataset's own file order | contiguous 5-fold and last-third hold-outs vs random (LR, RF, TabPFN 3.5) | within random spread (order not shown to be time) | same data |
+     | cirrhosis_patient_survival_prediction (Mayo PBC) | v3 test over rebuilt two-year registration periods 1974-81 | inconclusive (counts as unmeasured) | liver-disease prognosis from lab values, small single-centre cohort |
+     | Davis SE et al., 'Calibration drift in regression and machine learning models for acute kidney injury', JAMIA 2017;24(6):1052-1061 (literature, cited from memory: check) | VA hospital models over 9 years | discrimination stable, calibration drifted | routine-lab clinical risk model used years after fitting |
+
+   * **For a stationary use case:**
+     - liver function tests are a fixed-reference physiology.
+     - file-order hold-outs cost nothing (but no dated drift is no reason)
+   * **Against:**
+     - label criterion undocumented and partly inconsistent with the labs.
+     - patients and non-patients collected as two groups: intake may change.
+     - feature structure in the file order (lag-1 up to 0.26)
+     - period unknown, so the span cannot be weighed.
+   * **Earlier views:**
+     - CC/Resolved 2026-11-11 (Andrej): ForcedIIDFromTemporal with Time basis line; file-position hold-outs within random spread.
+     - Resolved 2026-11-13 (Andrej): CrossSectional withdrawn, tag stays.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | label criterion undocumented and partly inconsistent with the labs; patients and non-patients collected as two groups: intake may change |
+
+   * **Recommendation:** A, the physiology is stable but the label and the group collection are undocumented, and a flat file order is not a dated measurement; mixed. Confidence: medium. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (The physiology is stable but the label and the group collection are undocumented, and a flat file order is not a dated measurement; mixed.)
 
 ## Reference
 

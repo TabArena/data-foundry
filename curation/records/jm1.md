@@ -59,6 +59,8 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 CC (2026-11-12, Andrej): ship as defined (BeyondArena v0.2 review page, issues 1 and 2, A). The random split is read as a `Snapshot` of one code version, its `Time basis:` line in the curation notes (the tag enters the definition with PR #50); the Halstead tool's zero block (893 rows, all 16 Halstead and line-count measures 0) is noted there as kept, since it marks no class. `domain` filled from the definition (technology & internet). The declared split and metric checked and kept.
 
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. NASA's JM1 software-defect data from the PROMISE repository (Menzies and Di Stefano 2004): one row

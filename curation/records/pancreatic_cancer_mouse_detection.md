@@ -74,6 +74,8 @@ CC (2026-11-11, Andrej): `Selection Bias` marker; the controls were bled about a
 
 CC (2026-11-12, Andrej): the age gap is `Selection Bias` only, neither a leak nor `Class-dependent Recording` (BeyondArena v0.2 review page, issue 4, A): both classes went through the same instrument, m/z grid, chips and number format, and no feature holds the age or the class. Revisit if the authors say the `t` marker is a separate recording route.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `mouse_id`, 20x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The NCI-FDA Clinical Proteomics Program's serum mass spectra of the PanIN mouse study (Hingorani

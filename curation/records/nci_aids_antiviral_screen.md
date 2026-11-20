@@ -160,6 +160,8 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case predicts for items the catalogue does not hold, which the held-out scaffolds stand for; that the entry date carries no wave is a measurement for the `Time basis:` line, not a different use case.
 - `Timeless` now means a fixed target in data with no time dimension. The split does not change.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `scaffold`, 3x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The NCI Developmental Therapeutics Program's AIDS antiviral screen: the screen's conclusion for
@@ -284,4 +286,3 @@ the record's `Time: Dated` corrected to `Time: Inferred` (issue 2, B); both reso
    (one decision for the eighteen datasets of that review): the `Time basis: Timeless:` bullet in `curation_comments`,
    and the tag `Timeless` in `data_tags` where the time-basis rule is in the working copy (PR #50); record CC line.
    Data, split and score unchanged.
-

@@ -82,6 +82,8 @@ CC (2026-11-05, Lennart): the declared metric (RMSE on minutes, the source's) is
 
 CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `trip_start`, windows of 4 days, 3 windows at fixed cutoffs, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. A second-pass review panel (full) after Lennart's review of PR #33 on 2026-11-04 recommends

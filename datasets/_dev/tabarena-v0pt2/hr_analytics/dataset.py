@@ -153,7 +153,9 @@ class HrAnalytics(AbstractCuratedDataset):
         - Time basis: ForcedIIDFromTemporal: enrollees signed up over a period the hackathon does not state, and the
           release has no date; `enrollee_id` numbers the train and test files together and is not shown to follow
           sign-up time (training hours flat along it), and windows in its order score as random folds do (ROC AUC 0.645
-          against 0.646, untuned LightGBM). A dated release would allow a split by sign-up date.
+          against 0.646, untuned LightGBM). A dated release would allow a split by sign-up date. Not taken as stationary
+          (Andrej, 2026-11-18): A labour-market behaviour with an undocumented target and not-flat similar intent sets;
+          a low ceiling is no stationarity reason.
     """
 
     # Task

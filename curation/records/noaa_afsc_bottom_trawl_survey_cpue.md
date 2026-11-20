@@ -160,6 +160,8 @@ CC (2026-11-09, Andrej): review issue 10, "Go ahead" on the consistency check's 
 
 CC (2026-11-09, Andrej): ship (review page of 2026-11-09).
 
+CC (2026-11-17, Andrej): the declared split (temporal on `date`, windows of 2 years, 9 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it: the re-review of 2026-11-06 under the exposure rules corrected the

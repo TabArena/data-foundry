@@ -67,7 +67,9 @@ class GiveMeSomeCredit(AbstractCuratedDataset):
           state (before about September 2009, as the two-year windows closed before the release of September 2011), each
           followed for two years; the release keeps no date and the row id is no time order (a model tells low from high
           ids at ROC AUC 0.502), so random borrowers stand in for the borrowers to come. A dated release would allow a
-          split by scoring date.
+          split by scoring date. Not taken as stationary (Andrej, 2026-11-18): A two-year delinquency outcome in an
+          unknown, likely crisis-era period moves with the credit climate; the rule itself cites this dataset as forced
+          for lack of known collection facts.
     """
 
     # Task

@@ -97,6 +97,8 @@ CC (2026-11-05, Lennart): `Current_pincode_ID` ships as a number (Review issue 7
 
 CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `DisbursalDate`, windows of 4 days, up to 9 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. Second-pass panel after Lennart's PR #33 review of 2026-11-04: ship after changes, with the data,

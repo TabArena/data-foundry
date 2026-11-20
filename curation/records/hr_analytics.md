@@ -56,6 +56,55 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 CC (2026-11-01, Lennart): counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14): the lossless form, chosen from the context rather than by model runs; the same day's numbers with censoring flags are reverted.
 
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A labour-market behaviour with an undocumented target and not-flat similar intent sets; a low ceiling is no stationarity reason.
+
+## Review
+
+**Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below.
+
+**Main points:** Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?
+
+**Issues for Andrej:**
+
+1. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: Enrollees signed up over an unstated period; no date in the release and enrollee_id is not shown to follow sign-up time (training hours flat along it), so its windows (0.645 vs 0.646 random ROC AUC) are not a time test.
+     - Use: A training institute screens new enrollees for job-seeking intent before passing them to hiring clients, after the July 2018 hackathon data.
+     - Mechanism: Whether a data-science trainee looks for a new job depends on the labour market (demand, layoffs, salaries) and the institute's intake; both move between years, the 2018 data-science hiring boom especially.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | mobile_churn (splits.md Cases) | train on June, test later joiners: ROC AUC 0.661 vs 0.690 IID | not flat | a person's intent to leave read from profile attributes |
+     | online_shoppers_purchasing_intention_dataset | stationary-relation test (v3) | not flat | a behavioural intent target |
+
+   * **For a stationary use case:**
+     - Low-signal task (ROC AUC 0.62-0.63 for every family), so drift has little to shift in absolute terms.
+   * **Against:**
+     - Markets: job-change intent follows the labour market, which changed sharply after 2018.
+     - Intake changes: who enrolls depends on the institute's marketing and course mix.
+     - Target: Unknown (how and when 'looking for a job' was recorded is not stated).
+     - Similar intent targets measured in the collection are not flat.
+   * **Earlier views:**
+     - CC (2026-11-17, Andrej): blind walk reaches the shipped random split with ForcedIIDFromTemporal.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Markets: job-change intent follows the labour market, which changed sharply after 2018.; Intake changes: who enrolls depends on the institute's marketing and course mix. |
+
+   * **Recommendation:** A, a labour-market behaviour with an undocumented target and not-flat similar intent sets; a low ceiling is no stationarity reason. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (A labour-market behaviour with an undocumented target and not-flat similar intent sets; a low ceiling is no stationarity reason.)
+
 ## Reference
 
 https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists

@@ -3,6 +3,7 @@ unique_name: sberbank_housing_market_forecasting
 name: Sberbank Housing
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -83,6 +84,10 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 CC (2026-11-11, Lennart): accepted `time_newest_period_short` with its reason (cross-dataset item "What to do with a newest period that holds far fewer rows than the periods before it?", A).
 
 **Assessment (AI, 2026-11-11):** the lag of `provision_retail_space_sqm` is recorded from 2012 Q1 to 2013 Q4, the two education lags from 2014 Q1; 2015 holds 394 to 724 sales a month, 1,044 to 1,583 from September to December 2014, with a flat log price (11.80 to 11.87).
+
+CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 7 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-19, Andrej): nine one-month windows, all training on half the sales or more (the seven months were a benchmark's test period, not a refit cadence) (Review issue 2).
 
 ## Review
 
@@ -271,6 +276,91 @@ errors, 0 warnings; the `splits_floor_core` error of the five half-years is gone
    from January 2013; the oldest trains on 35.4%, signed off with the horizon's mark, beside 83.6% and 59.1%. Moving the
    older windows back would only lower their train sides (from September 2013 the oldest would train on 33.3%). The same
    edits as the horizon's; the record has the CC line. `dataset check`: 0 errors, 0 warnings.
+
+2. **Train floor: keep the window under half the data as the curator's exception, or drop it?**
+
+   * **Problem:**
+     - October 2013 to April 2014 trains on 35.4% of the sales, beside December 2014 to June 2015 and May to November 2014 on 83.6% and 59.1%.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue H, a) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - The definition has 3 windows; the target an IID split would get[^split33] for 28,321 rows is 9; without the window under half it keeps 2.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the window as the curator's exception (implemented) | The accepted warning is reworded to the new rule; split unchanged | Keeps the periods it tests, as signed off; more windows toward the target | It trains on less than half the data |
+     | B | Drop the window under half | The windows under half leave the declaration; a rebuild | Every window trains on half the data or more | 1 fewer window and the period it tests |
+
+   * **Recommendation:** A, the sign-off's reason (periods or test rows the newest windows lack) still holds, and no window is under 30%. **Decision:** A or B?
+
+   **Notes for the AI:** on A, reword the `splits_train_under_half` acceptance (drop "SPLIT-14's two tiers admit it", name the curator's exception and this decision) and add a CC line; on B, remove the windows from the declaration, rebuild, and update the splits comment.
+
+   **Andrej (2026-11-19, discuss):** How exactly are the splits done? Could we reduce the window sizes while staying compliant with the use case and get to more than 50% on each train split?
+
+   **Answer (AI, 2026-11-19):** Yes: the seven months are not fixed by the use case (they are TabReD's test period for one frozen model; no source gives Sberbank's refit cadence), so shorter windows are open, and one-month windows give nine windows that all train on more than half the sales.
+
+   * **How the split is done today:** test windows of 7 calendar months, adjacent (step 7 months), no gap, at fixed starts walking back from the newest sale; each window trains on every sale before its first day. The scored unit is the sale (one row, 28,321 sales; no grouping). The target count for this size is 9 windows; the definition has 3.
+
+     | Window (first and last sale) | Test sales | Train sales | Train share |
+     |---|---|---|---|
+     | 1 Dec 2014 to 30 Jun 2015 | 4,647 | 23,674 | 83.6% |
+     | 3 May to 29 Nov 2014 | 6,936 | 16,738 | 59.1% |
+     | 1 Oct 2013 to 30 Apr 2014 | 6,704 | 10,034 | 35.4% |
+
+   * **What the use case and the sources fix, and what is ours:**
+     - The sources fix only benchmark test periods: the competition tests the 11 months after its training data (July 2015 to May 2016), TabReD tests 7 months (December 2014 to June 2015) and cuts its analysis splits into windows of 4,500 sales ("roughly 5-7 month time-frame"). Each is how long one frozen model is scored, not how long a lender uses one.
+     - The use case (a lender values a flat at its sale) gives no refit cadence, and no source states one. The 7 months is our pick, the shortest source period (Lennart, 2026-11-11).
+     - No gap: a sale's price is known when it is signed, and the economic statistics are already read one period back.
+     - The data fixes the floor: half the sales lie before 21 February 2014, so a window trains on half or more only from March 2014; March 2014 to June 2015 holds 16 months and 13,914 sales.
+
+   * **Layouts by goal** (counted on the definition's frame; all no gap, every earlier sale in training):
+
+     | Goal | Layout | Windows | Test sales per window | Train share | Overlap |
+     |---|---|---|---|---|---|
+     | Today | 7 months, adjacent | 3 | 4,647 to 6,936 | 35.4% to 83.6% | none |
+     | The use case's length | 7 months, one every 3 months (Dec 2014, Sep 2014, Jun 2014, Mar 2014) | 4 | 4,647 to 7,467 | 50.9% to 83.6% | a sale of Sep to Dec 2014 is tested up to 3 times |
+     | The use case's length, to the target | 7 months, one every month (Dec 2014 back to Mar 2014) | 10 | 4,647 to 7,467 | 50.9% to 83.6% | a sale is tested up to 7 times |
+     | Stable test sizes, a source's length | TabReD's windows of 4,500 sales | 3 | 4,500 | 52.3% to 84.1% | none |
+     | Stable test sizes, to the target | nine windows of 1,573 sales (4 weeks to 3 months each) | 9 | 1,573 | 50.0% to 94.4% | none |
+     | Maximal number | one calendar month each, Mar 2014 to Jun 2015 | 16 | 394 to 1,583 | 50.9% to 98.6% | none |
+     | Maximal number, at the target | one calendar month, every other month from Jun 2015 to Apr 2014, and Mar 2014 | 9 | 394 to 1,583 | 50.9% to 98.6% | none |
+     | (between) | two calendar months, adjacent | 8 | 845 to 2,747 | 50.9% to 96.8% | none |
+
+     The nine one-month windows, newest first:
+
+     | Month | Test sales | Train sales | Train share |
+     |---|---|---|---|
+     | Jun 2015 | 394 | 27,927 | 98.6% |
+     | Apr 2015 | 724 | 26,687 | 94.2% |
+     | Feb 2015 | 451 | 25,651 | 90.6% |
+     | Dec 2014 | 1,583 | 23,674 | 83.6% |
+     | Oct 2014 | 1,044 | 21,466 | 75.8% |
+     | Aug 2014 | 771 | 19,646 | 69.4% |
+     | Jun 2014 | 1,179 | 17,790 | 62.8% |
+     | Apr 2014 | 1,214 | 15,524 | 54.8% |
+     | Mar 2014 | 1,117 | 14,407 | 50.9% |
+
+     The nine windows of 1,573 sales start on 2 Apr 2015, 26 Dec 2014, 28 Nov 2014, 21 Oct 2014, 1 Sep 2014, 30 Jun 2014, 21 May 2014, 4 Apr 2014 and 22 Feb 2014; windows counted in sales cut through a day, so sales of one day can sit on both sides of a cut (harmless here: a price is known when it is signed). TabReD's windows of 4,500 sales run 2 Dec 2014 to 30 Jun 2015, 15 Jul to 2 Dec 2014 and 14 Mar to 15 Jul 2014.
+
+   * **Options** (new, after A and B of the issue):
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | C | TabReD's 4,500-sale windows | three windows of 4,500 sales from 14 Mar 2014 | a source's own analysis windows; every window on 52.3% or more; equal test sizes | 3 windows, a third of the target |
+     | D | One-month windows, nine | the nine months in the table above | reaches the target of 9; every window on 50.9% or more; holds 2015, the December 2014 rush and spring 2014 | test sizes vary fourfold (394 to 1,583); a monthly refit is our assumption |
+     | E | Nine windows of 1,573 sales | equal-count windows over March 2014 to June 2015 | reaches the target; equal test sizes; every month open tested | windows of 4 weeks to 3 months, no fixed horizon; the oldest at 50.0%, on the edge |
+     | F | Seven months, one every three months | overlapping 7-month windows from Dec, Sep, Jun and Mar | keeps today's length; every window on 50.9% or more | overlapping windows; 4 of 9 |
+
+   * **Recommendation:** D: the use case ties no length, so the windows can follow the count; one calendar month is the simplest horizon that reaches nine windows above half, and even the smallest month (394 sales) is far above the least test window. C if you want to stay on a length a source uses. **Decision:** A, B, C, D, E or F?
+
+   **Notes for the AI:** on C, `TemporalSplits(window=4500, unit="rows", n_windows=3)`; on D, `TemporalSplits(window=1, unit="months", cutoffs=("2015-06-01", "2015-04-01", "2015-02-01", "2014-12-01", "2014-10-01", "2014-08-01", "2014-06-01", "2014-04-01", "2014-03-01"))`; on E, `TemporalSplits(window=None, unit="rows", n_windows=9, min_train_fraction=0.5)`; on F, `TemporalSplits(window=7, unit="months", cutoffs=("2014-12-01", "2014-09-01", "2014-06-01", "2014-03-01"))`. Each drops `splits_train_under_half` from `accepted_check_warnings`; rewrite `task_summary.split`, the seven-month sentences of `fit_reason` and `splits_comment` (the length is ours, the use case ties none), add a CC line and a CHANGELOG entry, rebuild and run `dataset check`.
+
+   **Andrej (2026-11-19, discuss):** Reply (D): One-month windows, nine
+
+   **Resolved (2026-11-19, Andrej):** D. Nine one-month windows (June, April and February 2015; December, October, August, June, April and March 2014), 394 to 1,583 test sales, training on 50.9% to 98.6%; the under-half acceptance is gone; `fit_reason` and the splits comment say the use case ties no length. `dataset check`: 0 errors, 0 warnings. Not rebuilt.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
 
 ## Reference
 

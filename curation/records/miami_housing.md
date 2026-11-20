@@ -72,6 +72,10 @@ CC (2026-11-11, Andrej): BeyondArena v0.2 review page, miami_housing:
 - Issue 1 (split), reply (c): five monthly test windows, August to December 2016, each trained on all earlier months (58% to 92% of the sales), no gap; `sale_month` (2016-MM-01) from `month_sold` is the time column. Repeat sales of a home stay (13,932 rows, was 13,776); there are no exact copies. `required_split` Temporal (NON-IID), tag `Non-IID (Temporal)`. Measured cost of the change at equal training size: +0.001 RMSLE (2026-11-06).
 - Issue 2 (domain), B: `business & marketing`, as the other house prices, in the definition and here.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `sale_month`, windows of 1 month, up to 5 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-19, Andrej): windows below the target count kept (Review issue 3, A as implemented): five monthly windows; July 2016 would train on 49.2%; the reason is in the splits comment.
+
 ## Review
 
 **Outcome:** added. Single-family homes sold in Miami in 2016, released on OpenML by the data's creator, Steven
@@ -88,7 +92,7 @@ open point. Weighed: the creator's own release with distances he built, real sal
 one year and one county, and better data under screening (florida_dor_property_sales) -.
 
 **Main points:** No open issue. Split by month into five monthly windows (issue 1, resolved 2026-11-11); domain
-`business & marketing` (issue 2, resolved 2026-11-11).
+`business & marketing` (issue 2, resolved 2026-11-11). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 3).
 
 **Record judgment:** valid. The source is settled (OpenML 43093, uploaded by Bourassa on 2021-09-24, citing Mayer,
 Bourassa, Hoesli and Scognamiglio 2021, https://doi.org/10.2139/ssrn.3924412). The definition's domain is finance;
@@ -226,6 +230,53 @@ record with a temporal split.
    (Regression). On B: `domain = "business & marketing"` in `dataset.py` and the record, `dataset check`.
 
    **Resolved (2026-11-11, Andrej):** B: `domain = "business & marketing"` in `dataset.py` and the record.
+
+3. **Windows: 5 of the target's 9; which layout?**
+
+   * **Problem:**
+     - Five monthly windows ship where an IID split of 13,932 sales would get nine[^split15]; the splits comment does not say why there are fewer.
+     - Today's windows (each trained on all earlier months, no gap):
+
+       | Test month | Train side | Train share | Test sales |
+       |---|---|---|---|
+       | Dec 2016 | 12,771 | 91.7% | 1,161 |
+       | Nov 2016 | 11,612 | 83.3% | 1,159 |
+       | Oct 2016 | 10,555 | 75.8% | 1,057 |
+       | Sep 2016 | 9,337 | 67.0% | 1,218 |
+       | Aug 2016 | 8,062 | 57.9% | 1,275 |
+
+     - Fixed: sales are dated by month only, and the data hold one year (2016). The monthly refit is the use case's example (decided 2026-11-11, issue 1, c), not a cadence any source states; it is also the finest step the dates allow, so no shorter or overlapping one-month window exists.
+     - What stops more windows: the half-data floor[^split14]. July trains on 49.2% (6,852 sales), 0.8 points under half; June on 39.2%, May on 30.3%, April on 21.4%.
+     - The earlier months are another part of the year: the median price rises from $290,000 in January to $320,000 by June (issue 1), and the five windows test August to December only.
+     - Test sizes are already steady (1,057 to 1,387 a month in every layout below).
+   * **Window counts:** counted on the built frame.
+
+     | Layout | Windows | Train share | Test sales | Window length |
+     |---|---|---|---|---|
+     | A, shipped | 5 | 57.9-91.7% | 1,057-1,275 | 1 month |
+     | B, May to July added as the curator's exception | 8 | 30.3-91.7% | 1,057-1,387 | 1 month |
+     | C, July added as the curator's exception | 6 | 49.2-91.7% | 1,057-1,275 | 1 month |
+     | D, two-month windows, a new one every month | 4 | 57.9-83.3% | 2,216-2,493 | 2 months |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Five months (implemented) | adds the reason to the splits comment | every train side above half | 5 of 9; autumn only |
+     | B | Eight months, May to December | `min_train_fraction=0.3`, n_windows 8 | the most windows the dates allow; adds early summer, when prices were still rising | three windows under half (49.2%, 39.2%, 30.3%); May trains on four months |
+     | C | Six months, July to December | n_windows 6, July accepted | one more month, 0.8 points under half | one exception for one window; 6 of 9 |
+     | D | Overlapping two-month windows | `window=2, step=1` | none for the count | fewer windows (4) at a length the use case does not have; listed only to show overlaps do not help here |
+
+   * **Recommendation:** B: the dates cannot give windows of less than a month, so the only route toward the target is the exception, and the months it adds are a part of the year the five autumn windows lack. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Five of the nine windows an IID split of this size would get: sales are dated by month and the data hold one year, so July 2016 and earlier would train on under half the sales (49.2% for July)." On B: `TemporalSplits(window=1, unit="months", n_windows=8, min_train_fraction=0.3)`, accept `splits_train_under_half` naming May, June and July and this decision, CC line, `split` and `splits_comment`. On C: `n_windows=6, min_train_fraction=0.45`, the same acceptance for July. D is not drafted.
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: five monthly windows; July 2016 would train on 49.2%. The splits comment names the target count and what stops more windows; `splits_below_target` is accepted with that reason. The split is unchanged.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get, 9 here; the window length, step and gap follow the use case and are not shortened to reach it; fewer are accepted, never under 3, with the target, the count and what stops more in the splits comment; overlapping windows only as an offered option.
 
 ## Reference
 

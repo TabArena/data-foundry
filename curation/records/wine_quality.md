@@ -76,6 +76,10 @@ CC (2026-11-13, Andrej): the 49 near-copies dropped, keeping the first row of ea
 - Change: 5,320 -> 5,271 wines (41 white, 8 red rows leave); grade shares move by at most 0.04 points (mean 5.796 -> 5.794). `file_position` is computed before the drop, so positions stay those of the raw file; the nine windows keep 295 test wines each, trained on 2,616 to 4,976 wines.
 - Not changed: features, target, split definition, metric.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `file_position`, windows of 295 rows, 9 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): nine windows of 292 wines in place of 295 (Review issue 5, B; full-information split check): the oldest window trained on 49.6% after the 49 near-copies were dropped; at 292 every train side holds 50.1% or more.
+
 ## Review
 
 **Outcome:** added. Red and white Vinho Verde wines certified by the CVRVV between May 2004 and February 2007 (Cortez
@@ -556,6 +560,26 @@ dates could overturn.
    **Resolved (2026-11-13, Andrej):** A: kept; no `wine_group` key. The nine windows by file position (issue 3, B)
    hold the pairs analysed twice on one side (2 of 2,655 test rows keep a partner in training). No change to
    dataset.py; record CC line.
+
+5. **Sign off the oldest window at 49.6%, or narrow the windows to 292 wines?**
+
+   * **Problem:**
+     - The oldest of the nine windows trains on 2,616 of 5,271 wines (49.6%), under the 50% that needs your sign-off[^s14].
+     - It trained on 50.1% until 49 near-copies were dropped on 2026-11-13; the warning was not accepted and the splits comment rounds the share to 50%.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Nine windows of 295 wines as shipped, the oldest signed off at 49.6% (implemented) | A CC line and the accepted warning; the comment names the window | No change to the split | |
+     | B | Nine windows of 292 wines | Every train side at 50.1% or more | No sign-off needed | 27 fewer test wines |
+
+   * **Recommendation:** A, because 0.4 points under the floor came from a cleaning step, not from the window design. **Decision:** A or B?
+
+   [^s14]: **SPLIT-14** (Must): "A temporal task has at least 3 windows. The newest window and at least one other train on at least 50% of the data; further windows may train on less, down to 30% ... Every window under 50% needs the curator's sign-off."
+
+   **Andrej (2026-11-18, change):** Option B: Nine windows of 292 wines.
+
+   **Resolved (2026-11-18, Andrej):** B. `TemporalSplits(window=292, unit="rows", n_windows=9)`: every train side holds 2,643 to 4,979 wines (50.1% to 94.5%), so no window needs a sign-off; 2,628 test wines instead of 2,655. Not rebuilt.
 
 ## Reference
 

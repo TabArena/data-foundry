@@ -67,6 +67,10 @@ CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedT
 - A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
 - The random split stays.
 
+CC (2026-11-17, Andrej): the declared split (random, 10x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Telecom churn is driven by a competitive market and the data already show a network-mix shift; the closest measured churn set is not flat.
+
 ## Review
 
 **Outcome:** added. The record gained `Target: Later` on 2026-11-13.
@@ -95,6 +99,46 @@ CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedT
    **Andrej (2026-11-13, change):** Option B: Record Target: Later.
 
    **Resolved (2026-11-13, Andrej):** B. The record has `Target: Later`; the forced tag and the split stay.
+
+2. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: One scoring of 2,000 subscribers after August-September 2015 usage; the two months are feature columns of every row, not periods, and the authors released no other window.
+     - Use: The operator scores subscribers after a usage window to target retention, i.e. on later windows than the one collected.
+     - Mechanism: Usage, revenue and complaints relate to leaving through prices, competitor offers and network mix; these change month to month (the release itself shows a September move to ufone as the most-called other network).
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | mobile_churn (SPLIT-8 Cases) | train on June base, test the 1,533 July/August joiners: ROC AUC 0.661 vs 0.690 IID (gap 0.028, 95% CI 0.004-0.056, LightGBM), cohort and time mixed | shift of 0.028 ROC AUC | prepaid telecom churn scored at month end |
+     | Gama et al. 2014, 'A survey on concept drift adaptation', ACM Computing Surveys 46(4) | review of drift in deployed predictors; customer profiling, marketing and telecom are named application areas with changing populations and behaviour | not flat (domain-level) | same use: scoring customers of a later period |
+     | account_debt_south_africa (SPLIT-8 Cases) | held out by file block: ROC AUC 0.877 -> 0.843 / 0.786 | not flat | customer-behaviour outcome of one firm's book |
+
+   * **For a stationary use case:**
+     - Low usage and complaints preceding churn is a general behavioural pattern.
+   * **Against:**
+     - Competing operators' offers and prices drive churn (opponents who adapt, markets).
+     - The data show a shift in network mix within the two months (September move to ufone).
+     - 1,000/1,000 design-balanced sample; churn timing undocumented.
+     - mobile_churn, the nearest measured telecom churn set, loses 0.028 ROC AUC forward (CI excludes 0).
+   * **Earlier views:**
+     - CC (2026-10-21, Lennart): tagged ForcedIIDFromTemporal for one-snapshot churn sets (SPLIT-8).
+     - CC (2026-11-16, Andrej): back to ForcedIIDFromTemporal from DelayedTarget: one date is one period.
+     - CC (2026-11-17, Andrej): blind split walk reaches the shipped split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Competing operators' offers and prices drive churn (opponents who adapt, markets).; The data show a shift in network mix within the two months (September move to ufone). |
+
+   * **Recommendation:** A, telecom churn is driven by a competitive market and the data already show a network-mix shift; the closest measured churn set is not flat. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Telecom churn is driven by a competitive market and the data already show a network-mix shift; the closest measured churn set is not flat.)
 
 ## Reference
 

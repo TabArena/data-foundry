@@ -62,6 +62,9 @@ CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the d
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
 CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 1, C): an undisclosed outcome of the stock's later return, so it arrives after the features; the forced tag and the split stay.
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 3, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Financial markets with adaptive participants are the clearest case against ASR, and the same source's dated data is measured not flat.
+
 ## Review
 
 **Outcome:** added. The record gained `Target: Later` on 2026-11-13.
@@ -94,6 +97,43 @@ CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 1, C): an
    **Andrej (2026-11-13, change):** Option C: Stay forced, record Target: Later.
 
    **Resolved (2026-11-13, Andrej):** C. The record has `Target: Later`; the forced tag and the split stay (`CrossSectional`, option B, was dropped the same day).
+
+3. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: Numerai's 2016 Kaggle sample has no era, date or id; file order shuffled (block target means 0.494-0.521, lag-1 autocorrelation <= 0.007); no dated 2016 release found.
+     - Use: Numerai trains on past weeks and scores the next week's stocks.
+     - Mechanism: Stock-return signal is weak and regime-dependent; markets are adversarial (alpha decays as it is traded), so the feature-target relation moves week to week.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | numerai_v5_2_1m (this collection, dated weekly eras) | dated yearly windows of Numerai's newer data | not flat: out-of-time signal can fall to about 0; example LightGBM per-era correlation 0.009-0.013 | same source and target type (stock return rank), same weekly market regime |
+
+   * **For a stationary use case:**
+     - None: a 1-NN check removes the same-stock leak, but that is no stationarity reason.
+   * **Against:**
+     - Prices and markets, with adaptive opponents: the textbook non-stationary domain.
+     - The same source's dated data (numerai_v5_2) shows out-of-time signal falling to about 0.
+     - Signal is tiny (ROC AUC 0.524-0.531); any drift dominates it.
+   * **Earlier views:**
+     - CC (2026-10-22, Lennart): 'add as forced IID' (record note: 'need to find a version with a timestamp (or treat it as forced IID)')
+     - Resolved (2026-11-13, Andrej): C, Target: Later recorded, forced tag and split stay.
+     - CC (2026-11-17, Andrej): blind split review: the decision tree, walked without the current split, reaches the forced split it ships.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Prices and markets, with adaptive opponents: the textbook non-stationary domain.; The same source's dated data (numerai_v5_2) shows out-of-time signal falling to about 0. |
+
+   * **Recommendation:** A, financial markets with adaptive participants are the clearest case against ASR, and the same source's dated data is measured not flat. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Financial markets with adaptive participants are the clearest case against ASR, and the same source's dated data is measured not flat.)
 
 ## Reference
 

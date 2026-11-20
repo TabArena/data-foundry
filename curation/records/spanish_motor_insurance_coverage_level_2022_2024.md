@@ -157,6 +157,10 @@ CC (2026-11-10, Andrej): the cost per year stays on the log1p scale (Review issu
 
 CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
 
+CC (2026-11-18, Andrej): the split stays as shipped under SPLIT-8 as amended today (cross-dataset decision on the period count, full-information split check): the data holds three calendar years for a task of 3 repeats, which needs four, too few to hold out whole periods; the forced step goes on to the unit question: policies recur and the use case meets new ones, so whole policies, as shipped.
+
+CC (2026-11-19, Andrej): split tagged `StationaryRelation` instead of `ForcedGroupedFromTemporal` (Review issue 13, B): the pooled stationary-relation test reads flat for LightGBM; whole policies stay held out.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it: the annualised premiums are now rounded to the cent (issue 7,
@@ -1016,6 +1020,33 @@ year on risk, weighted by `actual_exposure`). The dataset joins the accepted set
      kept"; squared error on log1p scored 0.156 with the length and 0.185 without.
    [^12d]: Andrej, 2026-11-02, while reviewing pricing_game_2016_french_fleet: "It is case by case and when in doubt
      we go for diversity" (quoted in issue 3's answer).
+
+13. **`StationaryRelation` in place of `ForcedGroupedFromTemporal`, as the pooled test reads flat?**
+
+   * **Problem:**
+     - The v3 test reads flat under the pooled rule you chose on 2026-11-18 (LightGBM: two SD 0.021 within ten floors 0.030, no year not flat).
+     - A relation measured flat replaces the forced tag (SPLIT-8, SPLIT-32); the CC of 2026-11-18 kept `ForcedGroupedFromTemporal` via the period count, before the flat verdict was applied.
+     - Kumo-Tabular's 2023 gap is large but noisy (+0.076 ± 0.059, inconclusive), so it does not count by the rule, and it is the one sign against.
+   * **Numbers:** ROC AUC gap of the forward model, mean ± SD.
+
+     | Year tested | LightGBM | Kumo-Tabular |
+     |---|---|---|
+     | 2024 | +0.004 ± 0.014, flat | +0.004 ± 0.013, flat |
+     | 2023 | -0.001 ± 0.015, flat | +0.076 ± 0.059, inconclusive |
+     | pooled | +0.001 ± 0.010 (floor 0.003), flat | +0.040 ± 0.030, inconclusive |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | `ForcedGroupedFromTemporal` (implemented) | No change; the CC names Kumo-Tabular's 2023 gap as the reason not to take it as stationary | Cautious where one model sees a large gap | Departs from the rule's verdict |
+     | B | `StationaryRelation` | The same folds over whole policies; the `Time basis:` line gives the test | What the rule's pooled verdict gives | Rests on LightGBM alone |
+
+   * **Recommendation:** B, because the rule counts the model that resolves the gap and both models' 2024 and LightGBM's 2023 read flat. **Decision:** A or B?
+
+   **Andrej (2026-11-19, change):** Option B: StationaryRelation.
+
+   **Resolved (2026-11-19, Andrej):** B. `data_tags` reads `StationaryRelation`; the `Time basis:` line gives the pooled test (LightGBM +0.001 ± 0.010, floor 0.003; Kumo-Tabular's 2023 gap inconclusive, not counted). The folds over whole policies are unchanged; not rebuilt.
 
 **Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
 after decision D10 (issue 6): 12 reports. Claims: 16 audited, 10 hold (one a tautology the rules ask for, one except the

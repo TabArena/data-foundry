@@ -69,7 +69,10 @@ class AmazonEmployeeAccess(AbstractCuratedDataset):
         - Time basis: ForcedIIDFromTemporal: access requests made one by one over 2010 and 2011 (the competition's
           text); the release keeps no request date and Kaggle's training file is shuffled (denial rate flat over its
           tenths, chi-squared p = 0.45), so random requests stand in for the requests to come. UCI 216's dated access
-          history uses other ids and cannot date them; a dated release would allow a split by request date.
+          history uses other ids and cannot date them; a dated release would allow a split by request date. Not taken as
+          stationary (Andrej, 2026-11-18): A use right after the period would support ASR, but the benchmark stands for
+          later requests under a policy and role structure that change; Lennart's earlier view was a question, not
+          evidence.
     """
 
     # Task

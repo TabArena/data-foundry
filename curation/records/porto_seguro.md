@@ -57,6 +57,10 @@ CC (2026-11-04, Andrej): ship as defined (issue 1); metric checked and kept. Spl
 
 CC (2026-11-09, Andrej): time basis `DelayedTarget` alone (review page issue 3, B): policy holders priced at one moment, a claim within the following year; the tag enters `data_tags` once PR #50 is in the working copy, and the feature check follows the record's `Target: Later`. The blanks in `ps_car_01_cat`, `ps_ind_04_cat` and `ps_ind_02_cat` stay (issue 4, A): "There is no evidence that this is a leak and not a real pattern. The difference in the target distributions is not too crazy, so this is not sufficient to drop."
 
+CC (2026-11-17, Andrej): the declared split (random, 1x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 5, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A consumer pricing task with market and selection drift, an unstated period and anonymised features; the measured insurance neighbours are mostly inconclusive, so the evidence is mixed at best.
+
 ## Review
 
 **Outcome:** added. Porto Seguro's Kaggle competition of 2017 ("Safe Driver Prediction"): 595,206 policy holders with
@@ -400,6 +404,49 @@ random draws after measuring it, and the notes could say the same once measured 
 CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
 - A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
 - The random split stays.
+
+5. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: None: one pricing moment (Samples: One Moment), the id is a random shuffle (low vs high id ROC AUC 0.500) and Kaggle states no period; no parent release with dates.
+     - Use: Porto Seguro prices the next year's policies with a model fit on this cohort's claims, i.e. one year or more after the features were taken.
+     - Mechanism: Anonymised driver, car and region factors rank the chance of a claim within the next year; the ranking rests on driving behaviour and car/regional risk but also on the insurer's book, prices and Brazilian market conditions, which move between pricing rounds.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | pricing_game_2017_french_mtpl (AIcrowd copy, splits_comment) | Gini of Tweedie LightGBM: same-year held-out clients against next year's policies | forward not worse (0.268 same-year design, 0.277 next year); claim level drifts 0-6% a year (119.3, 119.0, 112.3, 106.2 EUR, possibly organiser-built) | French MTPL pricing, next-year use |
+     | frempl_french_motor_personal_line | stationary-relation test v3 over start quarters Q1-Q4 2004, Tweedie LightGBM + Kumo, weighted Gini | inconclusive (forward not worse, e.g. Q4 gap -0.012 +- 0.019, but SD above ten floors; mean cost per quarter 578 to 1,164) | French motor portfolio, one-year claim cost priced from rating factors |
+     | pricing_game_2016_french_fleet | stationary-relation test v3, policy years 2011-2013, rescaled Tweedie deviance | inconclusive (gaps within noise; mean cost per row 171.6, 199.6, 201.8, +16% then +1%) | French motor pricing game, tariff fit on closed years and applied to the next |
+     | spanish_motor_insurance_coverage_level_2022_2024 | earlier matched protocol (v2), calendar years 2022-2024, weighted Gini | flat by the rule, near the line in 2023 (2024 window gap 0.008 +- 0.016 LightGBM); mean cost 292.8, 285.1, 302.4 | motor pricing of next year's book from rating factors |
+
+   * **For a stationary use case:**
+     - The use is the next pricing round, right after the collected moment (a one-year step).
+     - On the AIcrowd copy of a French MTPL book, next year's policies scored no worse than same-year held-out clients (Gini 0.277 vs 0.268).
+     - Similar motor sets measured over 1-3 years were inconclusive or flat, none measured not flat.
+   * **Against:**
+     - Prices and the market: an insurer's book changes with its own repricing and competitors (selection of who buys), the classic adverse-selection drift of pricing.
+     - The features are anonymised, so no one can tell whether any is a calendar- or price-dependent quantity.
+     - The period is not stated, so even the one-year step is an assumption; Brazil had high inflation around 2015-2017.
+     - Claim levels move by year in the measured motor sets (pricing_game_2016 +16% 2011-2012; AIcrowd 0-6% a year).
+   * **Earlier views:**
+     - CC (2026-11-04, Andrej): split random, tagged forced from temporal (issue 2); 'I go with a random split, but want to work on a new tag.'.
+     - Time basis line: ForcedIIDFromTemporal (Andrej, 2026-11-16; DelayedTarget before, retired).
+     - CC (2026-11-17, Andrej): blind split walk reaches the shipped random ForcedIIDFromTemporal split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Prices and the market: an insurer's book changes with its own repricing and competitors (selection of who buys), the classic adverse-selection drift of pricing.; The features are anonymised, so no one can tell whether any is a calendar- or price-dependent quantity. |
+
+   * **Recommendation:** A, a consumer pricing task with market and selection drift, an unstated period and anonymised features; the measured insurance neighbours are mostly inconclusive, so the evidence is mixed at best. Confidence: medium. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (A consumer pricing task with market and selection drift, an unstated period and anonymised features; the measured insurance neighbours are mostly inconclusive, so the evidence is mixed at best.)
 
 ## Reference
 

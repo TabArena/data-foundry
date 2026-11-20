@@ -26,7 +26,7 @@ class WineQuality(AbstractCuratedDataset):
             "total sulphur dioxide, density, pH, sulphates, alcohol) and the wine's colour."
         ),
         split=(
-            "Nine windows of 295 wines over the newest half of the file order, each trained on all earlier wines, so "
+            "Nine windows of 292 wines over the newest half of the file order, each trained on all earlier wines, so "
             "the test data stands for wines graded later. The release has no dates: the file order is taken as the "
             "order of entry, a judgement call from the data, not documented by the source."
         ),
@@ -119,8 +119,9 @@ class WineQuality(AbstractCuratedDataset):
     )
     # Splits
     splits_comment = """
-        Nine test windows of 295 wines over the newest half by file position, each trained on every earlier wine (2,616
-        to 4,976 wines, 50% to 94% of the rows); a window stands for the next wines the certification body grades. The release has no
+        Nine test windows of 292 wines over the newest half by file position, each trained on every earlier wine (2,643
+        to 4,979 wines, 50.1% to 94.5% of the rows; 292 rather than 295 keeps the oldest window above half, Andrej,
+        2026-11-18); a window stands for the next wines the certification body grades. The release has no
         date: the file order is taken as the order of entry, inferred from the data and not documented, so the split
         is a judgement call (the curation notes give the readings weighed and the evidence). `file_position` is a
         row's share of its colour file, no date, and assumes both files were entered at a steady pace. No gap: the
@@ -128,7 +129,7 @@ class WineQuality(AbstractCuratedDataset):
     """
     temporal = Temporal(
         on="file_position",
-        splits=TemporalSplits(window=295, unit="rows", n_windows=9),
+        splits=TemporalSplits(window=292, unit="rows", n_windows=9),
         time_of="label",  # a row's place in an exported file, not held by the grader (2026-11-13, Andrej)
     )
     accepted_check_warnings = {

@@ -88,6 +88,10 @@ CC (2026-11-11, Andrej): field set decided afresh (review page issue 6, D) and `
 - `SalesField5` kept with a `Potential leak, kept on purpose:` note: the strongest field (level 5 6.7% against 30.5% to 32.5% on those quotes, stable 2013 to 2015), which may be the sales channel or a sales stage; graded, so the untestable-field rule keeps it (0.879 without it).
 - LEAK-38's near-certainty clause now states the stopping point (no large group near-certain, the fewest fields, a field graded alone stays) and that rows the decision cannot reach stay; homesite's case and the LEAK-10 mechanisms row extended.
 
+CC (2026-11-17, Andrej): Review issue 8, B: the label completeness at the release end was measured; it gives the shipped split (no gap).
+
+**Assessment (AI, 2026-11-17):** conversion by issue date at the release end, on the definition's frame: the last 7 days 18.5% (2,394 quotes) against 17.4% the week before, the last 28 days 19.0% against 18.6%, the last 56 days 18.8% against 17.0%; every month of January 2014 to April 2015 between 15.3% and 20.3%. No fall at the end, so no label-delay gap is needed.
+
 ## Review
 
 **Outcome:** added. Homesite's Kaggle competition (launched November 2015): 260,753 home-insurance quotes from
@@ -562,6 +566,60 @@ proposes log loss for this dataset; that question stays there.
    **Resolved (2026-11-11, Andrej):** A: `SalesField5` stays, with a `Potential leak, kept on purpose:` curation note
    (the channel or a sales stage, hidden by the anonymisation; level 5 6.7% against 30.5% to 32.5% on the quotes no
    marker settles; 0.879 without it; revisit if Homesite's field descriptions surface).
+
+8. **Split: measure conversion rate of the last weeks before 2015-05-18 against earlier weeks?**
+
+   * **Problem:**
+     - Walked without the current split, the tree stops at a question nobody has measured: Conversion rate of the last weeks before 2015-05-18 against earlier weeks.
+     - The definition ships Temporal on `Original_Quote_Date`.
+     - The record already holds a measurement for it, which gives Temporal · arrival date, no gap.
+   * **Background:** Quotes arrive daily for 29 months at one insurer, ample for windows. The buy decision comes after the quote, so a gap of about the decision delay unless the release end shows no unmatured tail. Confidence of the blind walk: medium.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Used at a place or group the data does not hold? (use case): no. Evidence: Homesite estimates conversion of its own quotes (competition aim, dossier).
+     - Fill in the covered period or predict forward? (use case): forward. Evidence: Judging the effect of price changes on future quotes.
+     - Do the dates give the windows the rule[^split-14]/15 ask for? (data): yes. Evidence: Original_Quote_Date 2013-01-01 to 2015-05-18 (~29 months), 260,753 quotes (~9k a month), 19% bought. Month or quarter windows in 2014-2015 train on >60% and hold thousands of positives.
+     - What sets off a prediction? (use case): a case arrives. Evidence: A quote issued.
+     - Target known only after a delay longer than the time step? (data): yes, late labels (delay undocumented). Evidence: The flag is the customer's later decision to buy; the source gives no decision date or quote validity. Step used: one day (Original_Quote_Date). A purchase decision days to weeks after the quote exceeds a day. If a measurement shows the newest weeks convert no less than earlier ones (no unmatured tail), the rule[^split-10]'s measurement clause drops the gap and the leaf becomes 'Temporal · arrival date'.
+   * **The measurement:** Conversion rate of the last weeks before 2015-05-18 against earlier weeks (a fall at the release end means unmatured labels).
+   * **What each outcome gives:** fall at release end → Temporal · arrival date, label-delay gap; no fall → Temporal · arrival date.
+   * **What the blind dossier lacked, and what it changes:** The gap answer changes, by the measurement Phase A named: the last weekdays convert as before (18 May 2015: 19.3%), and a 7-day gap moves mean ROC AUC 0.9043 -> 0.9040, 30 days -> 0.9025. So no gap: 'Temporal · arrival date'. Shipped: nine monthly windows Sep 2014 - May 2015, every earlier quote in training (>=70.7%).
+   * **What changes:** nothing in the definition until the measurement is run; then the leaf it gives decides, and only a split that differs from the shipped one needs a rebuild.
+   * **Source split:** yes, competition (Kaggle Homesite Quote Conversion, 2015); benchmark TabReD re-splits by time: Kaggle: predefined train/test files over the same quote period (test quotes interleaved in time, apparently random by QuoteNumber), public/private LB a random partition of test; TabReD: time-based… ("Kaggle: test.csv holds quotes from the same 2013-2015 dates as train (record: 'the test data contains timestamps from the same period as the train'); TabReD: 'By default, each dataset is temporally split into train, validation and test sets.'") https://www.kaggle.com/competitions/homesite-quote-conversion/data ; https://arxiv.org/abs/2406.19380. Credible: partly, The Kaggle split is a random split of one period with no stated reason (a convention, against the stated use of scoring new quotes); TabReD's time split is motivated by drift and deployment on later data.. Against the tree's leaf: partly, The leaf agrees with TabReD's time split and disagrees with the Kaggle test file, which covers the same dates as train.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: my standing session notes (not the repo) mention that monthly windows with no gap were settled for this dataset on 2026-11-11; I did not use it as evidence below. Type fits: dated quotes.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Temporal on `Original_Quote_Date` (implemented) | keeps the declared split, the question unanswered | no work | the split rests on an assumption the walk could not check |
+     | B | Measure, then take the leaf it gives | Conversion rate of the last weeks before 2015-05-18 against earlier weeks | settles the question on this dataset's own numbers | a Slurm job before the split can be fixed |
+
+   * **Recommendation:** A: the full record already holds this measurement, and it gives the shipped split. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: run the named check (CPU job), write the number into the `Time basis:` line, then apply the leaf it gives.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   [^split-10]: **SPLIT-10** (Should): When a label is known only some time after its row (a delivery time, a permit's processing time, an outcome after a follow-up), a model refit at a window's start knows only the rows whose label had arrived.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-17, change):** Option B: Measure, then take the leaf it gives.
+
+   **Answer (AI, 2026-11-17):** measured on the definition's 260,753 quotes: no fall in conversion toward the end of the data.
+
+   | Quotes issued in | Quotes | Converted | The same span just before |
+   |---|---|---|---|
+   | the last 7 days (to 18 May 2015) | 2,394 | 18.5% | 17.4% |
+   | the last 28 days | 9,764 | 19.0% | 18.6% |
+   | the last 56 days | 19,623 | 18.8% | 17.0% |
+
+   * Every month from January 2014 to April 2015 converts between 15.3% and 20.3%; the last ten weeks between 16.0%
+     and 20.5%, inside that range.
+   * So the newest quotes' labels are complete: the tree's leaf is Temporal · arrival date with no gap, the split the
+     definition ships.
+
+   **Resolved (2026-11-17, Andrej):** B, measured: the newest labels are complete, the leaf is the shipped split
+   (monthly windows on `Original_Quote_Date`, no gap); nothing changes.
 
 ## Reference
 

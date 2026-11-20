@@ -157,6 +157,8 @@ CC (2026-11-10, Andrej): f615 and f617 stay, with a LEAK-9 protocol line in the 
 
 CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
 
+CC (2026-11-20, Andrej): `time_index` (the source's id, loans from old to new) stays a model input (Review issue 7, A): the lender holds the time of the grant at the prediction point (LEAK-10); unlike california_house_prices_2020, labour_inspection_compliance and wine_quality, whose reconstructed order the actor does not hold.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it; the panels' changes are made (second and third paragraphs). Kaggle's
@@ -687,6 +689,8 @@ Issues 1 to 3 are settled (Andrej, 2026-11-03).
    **Notes for the AI:** on B, declare `Temporal(..., feature=False)` (the time-column-as-split-metadata change of #98) and add a CC line.
 
    [^lk-7]: **LEAK-10** (Must): every feature has to have existed, and be held by the actor, at the prediction time of its row; a time column that only orders the split is declared no input.
+
+   **Resolved (2026-11-20, Andrej):** A (ok), as implemented: `time_index` stays a model input, as the lender knows when it grants a loan and the index stands for that time. No definition change.
 
 **Review panel:** ship after changes (mediator), wording and one accepted warning, now made. Tier focused, a re-review
 of 2026-11-08 under LEAK-41, MET-14 to MET-16, after the raw data arrived: the claim auditor, the column auditor and the

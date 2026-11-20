@@ -87,7 +87,9 @@ class AllstateClaimsSeverity(AbstractCuratedDataset):
           known after a settlement time that differs by claim; the release keeps no claim date and the id is a random
           draw (a model tells low from high ids at ROC AUC 0.501; training on the first 80% of ids scores RMSE 0.535
           against 0.538 to 0.541 on random splits), so random claims stand in for the claims to come. A dated release
-          would allow a split by filing date and show whether `loss` is final.
+          would allow a split by filing date and show whether `loss` is final. Not taken as stationary (Andrej,
+          2026-11-18): Claim severity is driven by prices, litigation and settlement practice, all documented to drift;
+          no domain reason makes later claims interchangeable.
     """
 
     # Task

@@ -1123,7 +1123,10 @@ class Coil2000(AbstractCuratedDataset):
         - Time basis: ForcedIIDFromTemporal: one undated extract of a Dutch insurer's customer book (before March 2000);
           the label is whether the customer holds a caravan policy at the extract, and the use case looks forward, to
           purchases after a mailing, which one extract cannot test, so the split is forced until a dated release or the
-          target's timing is known. The challenge's evaluation customers are another part of the same extract.
+          target's timing is known. The challenge's evaluation customers are another part of the same extract. Not taken
+          as stationary (Andrej, 2026-11-18): A priced insurance product sold through mailings to a later population,
+          with a holding standing in for a purchase; nothing in the mechanism makes earlier and later customers
+          interchangeable.
     """
 
     accepted_check_warnings = {

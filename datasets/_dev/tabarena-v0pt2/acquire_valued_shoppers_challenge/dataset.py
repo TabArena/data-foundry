@@ -120,12 +120,21 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
         state, final for every row of the release. A repeat purchase is not known within days of the offer, so a refit
         at a window's start does not know the outcomes of the wave it scores; without the gap the five newest days add
         ROC AUC 0.061 where a window continues a wave (LightGBM, equal training size). The repeat period is not
-        published: the gap removes the same-wave outcomes, not every open label.
+        published: the gap removes the same-wave outcomes, not every open label. Four of the nine windows an IID split
+        of this size would get: the data hold 61 days, and with five-day windows and the five-day gap the next window
+        (6-10 April) would train on 41.4% of the offers (Andrej, 2026-11-19, review issue 6, A).
     """
     temporal = Temporal(
         on="offerdate",
         splits=TemporalSplits(window=5, unit="days", n_windows=4, gap=5),
     )
+    accepted_check_warnings = {
+        "splits_below_target": (
+            "Four of the nine windows an IID split of this size would get: the data hold 61 days, and with five-day "
+            "windows and the five-day gap the next window (6-10 April) would train on 41.4% of the offers (Andrej, "
+            "2026-11-19, review issue 6, A)."
+        ),
+    }
 
     # The raw tables are too large for pandas: `_prepare_raw_files` joins them with polars once and
     # aggregates the purchase history per offer (the TabRed features); `_load_raw` starts from its output.

@@ -11,9 +11,9 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     Source,
+    Splits,
     TaskSummary,
     Temporal,
-    TemporalSplits,
     set_missing,
 )
 
@@ -24,6 +24,22 @@ ORDINAL_LEVELS = {
 }
 # The file's month names, for the date of the last contact rebuilt in `_clean`.
 MONTHS = ("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
+# The test windows, newest first: the date each starts on and the file position (`time_index`) of its first record.
+# Four campaign periods (each from its burst's first day or the gap before it) and six calendar quarters of the
+# trickle from June 2009; each runs to the next start (Andrej, 2026-11-20, review issue 5, E plus the day's call
+# count). `_clean` checks that each position is the first record of its date.
+WINDOW_STARTS = (
+    ("2010-09-01", 44_619),
+    ("2010-06-01", 43_838),
+    ("2010-03-01", 43_171),
+    ("2009-12-02", 42_390),
+    ("2009-09-01", 41_373),
+    ("2009-06-01", 39_752),
+    ("2009-05-04", 34_177),
+    ("2009-04-16", 32_193),
+    ("2009-01-28", 27_729),
+    ("2008-10-17", 24_038),
+)
 
 
 class BankMarketing(AbstractCuratedDataset):
@@ -41,23 +57,26 @@ class BankMarketing(AbstractCuratedDataset):
         known=(
             "Before the campaign's first call: age, job, marital status, education, whether the client has defaulted "
             "on credit, the account balance, housing and personal loans, the phone type, the contacts with and "
-            "outcome of earlier campaigns, and the record's place in the file's date order."
+            "outcome of earlier campaigns, the number of clients the bank calls that day, and the record's place in "
+            "the file's date order."
         ),
         split=(
-            "Five stretches of the file's date order, 4,521 records each from August 2008 to November 2010, each "
-            "trained on every earlier record, so the test data stands for the clients the bank calls next."
+            "Ten periods of the date of the last contact from October 2008 to November 2010, each trained on every "
+            "earlier record: the four calling campaigns after the summer 2008 wave, one window each, then six "
+            "calendar quarters of the one-by-one calls from June 2009, so the test data stands for the clients the "
+            "bank calls next."
         ),
         changes=(
-            "We drop what the campaign's calls set: the duration of the last call (which the source says is unknown "
-            "before the call), the number of calls in this campaign and the day and month of the last contact. We "
-            "split by time on the file's date order instead of at random."
+            "We drop what the campaign's calls set: the last call's duration, this campaign's number of calls and "
+            "the day and month of the last contact. We add the day's calling volume (records on the same date), which "
+            "the subscription rate follows, and split by time on the rebuilt date instead of at random."
         ),
         fit="approximate",
         fit_reason=(
-            "The windows follow the file's date order, as the source's own evaluation does, but count records, not "
-            "campaigns: the file names no campaign and dates each record by its last call, so a window can start "
-            "inside a campaign. In the newest window a recurring client's later record gives an earlier one's label "
-            "away to a model that reads other test records, which the protocol forbids."
+            "The windows cut at the calling campaigns the dates show, but the file names no campaign, so the calls "
+            "from June 2009 are cut by calendar quarter; the day's call count, built from the file's own records, "
+            "approximates the campaign's planned size. Inside a window a client's later record can give an earlier "
+            "one's label away to a model that reads other test records, which the protocol forbids."
         ),
     )
 
@@ -92,16 +111,17 @@ class BankMarketing(AbstractCuratedDataset):
     curation_comments = """
         - Prediction point (USE-3; CC 2026-11-08, Lennart, Review issue 2): before the campaign's first call to the client, when the team picks whom to call. Known then: the client's profile and the earlier campaigns, nothing of this campaign's calls; so `duration`, `campaign`, `day` and `month` leave (below).
         - We removed the "duration" feature following its original description to obtain a "realistic predictive model".
-        - The file has the day (`day`, the day of the month) and the month (`month`) of the last contact, but not the year. `_clean` rebuilds the year where the month wraps from December to January (2008: 27,729 records, 2009: 14,862, 2010: 2,620), checks that the dates never fall in the file's order (UCI: "ordered by date"; May 2008 to November 2010, with no record in September 2008), keeps the file position as the time key `time_index` (SPLIT-22), and drops `day` and `month` (`day_of_week` is a column of the authors' 2014 release only): the campaign's end sets the last contact's date, since the calls stop at a subscription or when the bank stops calling (LEAK-10). The source keeps the month of each call as an input (Moro et al. 2014, Table 2, "month in which the call is made"); this file has only the last call's, and whether it comes back is Review issue 4.
-        - Split by time (CC 2026-11-08, Lennart, Review issue 1; SPLIT-1, SPLIT-19, SPLIT-22, LEAK-17), in place of the random split shipped until 2026-11-08; `splits_comment` gives the windows. Clients recur across campaigns: 995 pairs of records in two different years share the profile and the balance to the euro, the later record has more earlier contacts in 95% of them, and where the earlier record subscribed, the later one's `poutcome` says "success" in 562 of 581 pairs. Under the random split about 3.7% of the test records had the same client's later record in training (a lookup of it: +0.020 ROC AUC to LightGBM, higher on 9 of 9 splits), and models learnt each period's rate (5.1% subscribed in 2008, 17.1% in 2009, 51.6% in 2010) from records of the same months: most of that split's 0.76 ROC AUC came from telling the periods apart. Under the windows a client's earlier records train as its history (LEAK-34), and its later ones never do. On the five windows, newest first, LightGBM scores ROC AUC 0.570, 0.679, 0.605, 0.552 and 0.522 (mean 0.586; 3 seeds, early stopping on the newest tenth of the training side, seed SD 0.029 per window) and logistic regression 0.633, 0.701, 0.640, 0.603 and 0.490 (mean 0.614). The time key as an input is worth +0.018 to LightGBM (lower without it in 3 of 5 windows) and +0.004 to logistic regression.
-        - Protocol (LEAK-9, an evaluation leak): in the newest window (August 2009 to November 2010) 703 test records (15.6%) have a later record of the same client in the same window, and its `poutcome` gives the label away: 419 say "success", all of them subscribers (19.7% of the window's positives; 7 to 18 records in each older window). Each test record is predicted from the training records and its own inputs only; no feature or model step may use other test records.
-        - `campaign` is dropped (LEAK-10; CC 2026-11-08, Lennart, Review issue 2, in place of the keep with a note of 2026-11-06): it counts this campaign's contacts including the last (UCI: "number of contacts performed during this campaign and for this client (numeric, includes last contact)"), none of which exists at the prediction point, and the calls stop at a subscription or when the bank stops calling. It is the shape of heart_failure_followup_survival's `time`, a span from the prediction point to the outcome or a criterion without it. Under the random split it was worth 0.0060 ROC AUC to LightGBM (9 splits x 5 seeds, lower without it in 9 of 9) and 0.0079 to logistic regression, 0.0013 and 0.0016 once the year was known; on the five windows it adds +0.0065 to logistic regression (higher in 5 of 5) and -0.014 to LightGBM (higher in 1 of 5).
+        - The file has the day (`day`, the day of the month) and the month (`month`) of the last contact, but not the year. `_clean` rebuilds the year where the month wraps from December to January (2008: 27,729 records, 2009: 14,862, 2010: 2,620), checks that the dates never fall in the file's order (UCI: "ordered by date"; May 2008 to November 2010, with no record in September 2008), keeps the file position as the time key `time_index` (SPLIT-22), counts the records of each date as `calls_that_day` (below), and drops `day` and `month` (`day_of_week` is a column of the authors' 2014 release only); the rebuilt date sets the test windows (`WINDOW_STARTS`, `splits_comment`) and is not shipped: the campaign's end sets the last contact's date, since the calls stop at a subscription or when the bank stops calling (LEAK-10). The source keeps the month of each call as an input (Moro et al. 2014, Table 2, "month in which the call is made"); this file has only the last call's, and whether it comes back is Review issue 4.
+        - Split by time (CC 2026-11-08, Lennart, Review issue 1; SPLIT-1, SPLIT-19, SPLIT-22, LEAK-17), in place of the random split shipped until 2026-11-08; `splits_comment` gives the ten windows on the rebuilt date (Andrej, 2026-11-20, review issue 5, E plus the day's call count), which replace five windows of 4,521 records on the file order. Clients recur across campaigns: 995 pairs of records in two different years share the profile and the balance to the euro, the later record has more earlier contacts in 95% of them, and where the earlier record subscribed, the later one's `poutcome` says "success" in 562 of 581 pairs. Under the random split about 3.7% of the test records had the same client's later record in training (a lookup of it: +0.020 ROC AUC to LightGBM, higher on 9 of 9 splits), and models learnt each period's rate (5.1% subscribed in 2008, 17.1% in 2009, 51.6% in 2010) from records of the same months: most of that split's 0.76 ROC AUC came from telling the periods apart. Under the windows a client's earlier records train as its history (LEAK-34), and its later ones never do. On the earlier five windows of 4,521 records (August 2008 to November 2010; not yet re-measured on the ten), newest first, LightGBM scores ROC AUC 0.570, 0.679, 0.605, 0.552 and 0.522 (mean 0.586; 3 seeds, early stopping on the newest tenth of the training side, seed SD 0.029 per window) and logistic regression 0.633, 0.701, 0.640, 0.603 and 0.490 (mean 0.614). The time key as an input is worth +0.018 to LightGBM (lower without it in 3 of 5 windows) and +0.004 to logistic regression.
+        - Protocol (LEAK-9, an evaluation leak): inside a test window a client's later record can give an earlier test record's label away in its `poutcome`. Linked on the profile, housing and personal loan, the balance to the euro (non-zero), age +0 or +1 and the contacts adding up (a link that finds about 73% of repeat records), 3 to 18 test records per window have a later record of the same client in the same window (99 in all, 0.1% to 2.1% of a window; 5 of 592 in the newest), and in 40 of them it says "success", all of them subscribers (0 to 9 per window). Each test record is predicted from the training records and its own inputs only; no feature or model step may use other test records.
+        - `campaign` is dropped (LEAK-10; CC 2026-11-08, Lennart, Review issue 2, in place of the keep with a note of 2026-11-06): it counts this campaign's contacts including the last (UCI: "number of contacts performed during this campaign and for this client (numeric, includes last contact)"), none of which exists at the prediction point, and the calls stop at a subscription or when the bank stops calling. It is the shape of heart_failure_followup_survival's `time`, a span from the prediction point to the outcome or a criterion without it. Under the random split it was worth 0.0060 ROC AUC to LightGBM (9 splits x 5 seeds, lower without it in 9 of 9) and 0.0079 to logistic regression, 0.0013 and 0.0016 once the year was known; on the earlier five windows it adds +0.0065 to logistic regression (higher in 5 of 5) and -0.014 to LightGBM (higher in 1 of 5).
         - `previous` is a count of contacts (UCI: "number of contacts performed before this campaign and for this client"), so it stays numeric. The BeyondArena notebook typed it and `campaign` categorical (41 and 48 levels), which lost the order and left the high counts as rare levels (issue #34).
-        - `contact` (cellular, telephone, unknown) belongs to the last contact in the codebook, but it is no span: its "unknown" covers all 12,443 rows of May-June 2008 (3.7% subscribed), so it marks the period (the authors' 2014 release codes these rows "telephone"). Under the random split it was worth 0.021 ROC AUC in both models, nearly all of it the period: replaced by an unknown-or-not flag, it lost 0.0005 (LightGBM, 9 splits x 3 seeds), although the raw rates of cellular and telephone differ within a period (2009: 17.4% against 13.6%; 2010: 57.1% against 45.5%). On the five windows, where the period it marks lies wholly in training, dropping it lowers LightGBM by 0.006 (lower in 3 of 5) and raises logistic regression by 0.014 (higher in 4 of 5). Kept, with "unknown" as a level.
-        - `pdays` (days since the client was last contacted in an earlier campaign): the data lean to counting to this campaign's start, not its end, but do not settle it. At a fixed date of the last contact it falls by 2.2 days per extra call, and by 1.0 with `previous` and `poutcome` also held fixed, so about half of the slope is who gets called more. It was worth 0.0048 ROC AUC with LightGBM and nothing with logistic regression on the random split (9 splits), and 0.002 with both on the five windows; kept. Its -1 means "client was not previously contacted" (UCI) and matches `previous` == 0 row for row (36,954 rows), so it stays as the source's code (CLEAN-10), and the bundle's sentinel warning is accepted for it.
-        - Note: `balance` is the "average yearly balance, in euros" (UCI); the source does not say which year. 995 pairs of rows in two different years share the profile and the balance to the euro, mostly one client seen twice (the later row has more earlier contacts in 95%), and in 71% of them the age moves by one year while the balance stays: it may be one reading of unknown date. A subscription could move money, but nothing shows the reading falls after the calls, so it stays, as the registry fields of tunisian_fraud_detection_challenge did (LEAK-10, 2026-11-05). Revisit if the source dates it.
+        - `contact` (cellular, telephone, unknown) belongs to the last contact in the codebook, but it is no span: its "unknown" covers all 12,443 rows of May-June 2008 (3.7% subscribed), so it marks the period (the authors' 2014 release codes these rows "telephone"). Under the random split it was worth 0.021 ROC AUC in both models, nearly all of it the period: replaced by an unknown-or-not flag, it lost 0.0005 (LightGBM, 9 splits x 3 seeds), although the raw rates of cellular and telephone differ within a period (2009: 17.4% against 13.6%; 2010: 57.1% against 45.5%). On the earlier five windows, where the period it marks lies wholly in training (as in all ten windows now), dropping it lowers LightGBM by 0.006 (lower in 3 of 5) and raises logistic regression by 0.014 (higher in 4 of 5). Kept, with "unknown" as a level.
+        - `pdays` (days since the client was last contacted in an earlier campaign): the data lean to counting to this campaign's start, not its end, but do not settle it. At a fixed date of the last contact it falls by 2.2 days per extra call, and by 1.0 with `previous` and `poutcome` also held fixed, so about half of the slope is who gets called more. It was worth 0.0048 ROC AUC with LightGBM and nothing with logistic regression on the random split (9 splits), and 0.002 with both on the earlier five windows; kept. Its -1 means "client was not previously contacted" (UCI) and matches `previous` == 0 row for row (36,954 rows), so it stays as the source's code (CLEAN-10), and the bundle's sentinel warning is accepted for it.
+        - Note: `balance` is the "average yearly balance, in euros" (UCI), one value per client: linked without it (profile, age +0/+1, contacts adding up), the same client's records share it to the euro in 17.1% of pairs against 1.2% for different clients, with no excess of slightly changed balances, while age moves. The source does not date it. A reading after the calls could carry a subscription, but on the five windows logistic regression loses 0.002 to 0.003 ROC AUC without it whether or not the client has a later record, so it stays (LEAK-10; as tunisian_fraud_detection_challenge's registry fields). These numbers were measured on the earlier five windows of 4,521 records, before the ten windows of 2026-11-20; re-measuring them on the ten needs a model run. Revisit if the source dates it.
         - `job`'s "unknown" (288 rows) is missing, as `education`'s (1,857 rows): the authors' 2014 codebook says "There are several missing values in some categorical attributes, all coded with the 'unknown' label" (CLEAN-10; ROC AUC unchanged on 9 of 9 random splits). `contact`'s "unknown" stays a level, as it marks the period (above).
-        - Duplicates (LEAK-16, LEAK-18): on the twelve inputs without the time key, 811 records (1.8%) copy another, label included, and 82 more copy another's inputs with the other label (274 and 32 while `campaign` was an input); 89% of the copy rows have a balance of 0, plausible repeats of common profiles, so they stay. The time key makes every record distinct, so the bundle check counts none. On the five windows 0.8% to 4.3% of the test records (the oldest window the most) have a copy of every input but the time key in training, 0.6% to 4.0% with the same label: an earlier record, the client's history when it is one client (LEAK-34). Kept with this note (CC 2026-11-08, Lennart; Review issue 3).
+        - Duplicates (LEAK-16, LEAK-18): on the thirteen inputs without the time key, 55 records (0.1%) copy another, label included, and 1 more copies another's inputs with the other label; 96% of the copy rows have a balance of 0, plausible repeats of common profiles called the same day, so they stay. Before `calls_that_day` was an input (twelve inputs) the counts were 811 and 82 (274 and 32 while `campaign` was an input). The time key makes every record distinct, so the bundle check counts none. In the ten windows one test record (in the window from 2 Dec 2009) has a copy of every input but the time key in training, with the other label; on the twelve inputs it was 0.4% to 1.9% (0.1% to 1.7% with the same label): an earlier record, the client's history when it is one client (LEAK-34). Kept with this note (CC 2026-11-08, Lennart; Review issue 3).
+        - `calls_that_day` (Andrej, 2026-11-20, review issue 5, E plus the day's call count): the number of records in the file with the same rebuilt date of the last contact, counted in `_clean` over the whole file (1 to 825; the definition filters no rows). The subscription rate follows the day's calling volume: 5.8% on the 95 days with 200 calls or more (36,656 records), 12.3% at 101-200, 25.0% at 51-100, 41.0% at 21-50 and 48.5% on days with 20 or fewer (3,224 records), and 44.2% there even for first-time clients (`previous` = 0), so returning clients do not explain it; UCI's second release (`bank-additional-full.csv`, with Banco de Portugal's indicators) shows the same rise, with the bank's monthly calls falling after 2008 and the share subscribing rising. The bank knows how many clients it calls that day when it draws the list, so it is known at the prediction point. Caveat: it is built from the file's own records, dated by each client's last call, so it approximates the campaign's planned size and the day's calls rather than recording them.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
           (CLEAN-10).
@@ -121,27 +141,47 @@ class BankMarketing(AbstractCuratedDataset):
         "(UCI codebook), not a missing value: it matches previous == 0 row for row (36,954 rows), so it stays as a "
         "code with a meaning (CLEAN-10).",
     }
-    temporal = Temporal(
-        on="time_index",
-        splits=TemporalSplits(window=None, unit="rows", n_windows=5, min_train_fraction=0.5),
-        horizon=4521,
-        horizon_unit="steps",
-    )
+    # Splits: ten windows of unequal length from `WINDOW_STARTS` (`_make_splits`); declared windows have one length
+    temporal = Temporal(on="time_index", horizon=3, horizon_unit="months")
     splits_comment = """
-        Five expanding windows on the file's date order (UCI: "ordered by date"), newest first: the newest half of the
-        45,211 records cut into five stretches of 4,521, each trained on every earlier record (90%, 80%, 70%, 60% and
-        50% of the records; SPLIT-14). By the date of the last contact, rebuilt in `_clean` and not shipped, the test
-        windows run from 2009-08-07 to 2010-11-17 (2,129 subscribers, 47.1%), 2009-05-11 to 2009-08-07 (727, 16.1%),
-        2009-04-06 to 2009-05-11 (593, 13.1%), 2008-11-21 to 2009-04-06 (473, 10.5%) and 2008-08-22 to 2008-11-21
-        (279, 6.2%). The time key `time_index` is the record's position in the file. Each cut falls inside a day, whose
-        earlier records in the file train (8 to 295 records); the order inside a day carries no signal (the position
-        in the day alone: ROC AUC 0.501 over the days with 20 records or more). The source scores its model on
-        time-ordered windows too: a random split does "not reflect the temporal dimension that a real prediction
-        system would have to follow" (Moro et al. 2014, p. 5). The windows count records, not campaigns, as the file
-        names no campaign. No gap (SPLIT-10): a record is dated by its last call, which ends the client's calls in that
-        campaign, so its outcome is known by the date that orders it. Each test record is predicted from the training
-        records and its own inputs only; no feature or model step may use other test records (curation notes,
-        Protocol).
+        Ten expanding windows on the date of the last contact, rebuilt in `_clean` (the year from where the months
+        wrap) and not shipped, newest first; each test window runs from its start to the next one and trains on every
+        earlier record, no gap (Andrej, 2026-11-20, review issue 5, E plus the day's call count):
+
+        | Test window | Kind | Train share | Test records | Subscribers |
+        |---|---|---|---|---|
+        | 1 Sep-17 Nov 2010 | trickle, quarter | 98.7% | 592 | 272 (45.9%) |
+        | 1 Jun-31 Aug 2010 | trickle, quarter | 97.0% | 781 | 407 (52.1%) |
+        | 1 Mar-31 May 2010 | trickle, quarter | 95.5% | 667 | 383 (57.4%) |
+        | 2 Dec 2009-26 Feb 2010 | trickle, quarter | 93.8% | 781 | 389 (49.8%) |
+        | 1 Sep-30 Nov 2009 | trickle, quarter | 91.5% | 1,017 | 454 (44.6%) |
+        | 1 Jun-31 Aug 2009 | trickle, quarter | 87.9% | 1,621 | 581 (35.8%) |
+        | 4-28 May 2009 | May campaign | 75.6% | 5,575 | 533 (9.6%) |
+        | 16-30 Apr 2009 | April campaign | 71.2% | 1,984 | 332 (16.7%) |
+        | 28 Jan-15 Apr 2009 | Jan-Feb campaign + trickle | 61.3% | 4,464 | 537 (12.0%) |
+        | 17 Oct-27 Dec 2008 | November campaign + trickle | 53.2% | 3,691 | 270 (7.3%) |
+
+        The windows follow the bank's calling. The source names "17 campaigns that occurred between May 2008 and
+        November 2010" (Moro, Laureano, Cortez 2011) without dates, and the file has no campaign id, so the campaigns
+        are read from the dates: five bursts of mass calling (days of 150 records or more: 5 May-29 Aug 2008, 17-21 Nov
+        2008, 28 Jan-9 Feb 2009, 16-30 Apr 2009, 4-18 May 2009; 5-14% subscribed), and from June 2009 a trickle of
+        one-by-one calls, at most 115 a day (36-57% subscribed). Each campaign window starts at its burst's first day
+        or in the calling gap before it (no record from 30 Aug to 16 Oct 2008, nor from 28 Dec 2008 to 27 Jan 2009) and
+        holds the burst and the trickle after it, so no cut splits a campaign; the trickle has no campaign to cut at,
+        so it is cut by calendar quarter. The summer 2008 wave is 53.2% of the records, so it trains every window and
+        is never tested. The subscription rate follows the day's calling volume (5.8% on days with 200 calls or more,
+        48.5% on days with 20 or fewer), which the input `calls_that_day` carries; the burst windows test mass calling,
+        the trickle windows selected calls, and a mean over the windows gives the trickle six of ten votes for 12% of
+        the records.
+
+        Ten windows against the nine an IID split of 45,211 records would get (SPLIT-15): the target is reached, every
+        window trains on more than half the records (SPLIT-14), and the smallest holds 272 subscribers. The source
+        scores its model on time-ordered windows too: a random split does "not reflect the temporal dimension that a
+        real prediction system would have to follow" (Moro et al. 2014, p. 5). The time key `time_index` is the
+        record's position in the file, which is in date order, and every window starts at the first record of its date.
+        No gap (SPLIT-10): a record is dated by its last call, which ends the client's calls in that campaign, so its
+        outcome is known by the date that orders it. Each test record is predicted from the training records and its
+        own inputs only; no feature or model step may use other test records (curation notes, Protocol).
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -185,7 +225,13 @@ class BankMarketing(AbstractCuratedDataset):
             raise ValueError("Expected the file in date order")
         if (date.iloc[0].strftime("%Y-%m"), date.iloc[-1].strftime("%Y-%m")) != ("2008-05", "2010-11"):
             raise ValueError("Expected the calls of May 2008 to November 2010")
+        for start, position in WINDOW_STARTS:
+            if not (date.iloc[position] == pd.Timestamp(start) and date.iloc[position - 1] < pd.Timestamp(start)):
+                raise ValueError(f"Expected the first record of {start} at file position {position}")
         df["time_index"] = np.arange(len(df))
+        # The day's calling volume: the records in the file with the same date of the last contact, counted over the
+        # whole file (curation notes).
+        df["calls_that_day"] = date.map(date.value_counts()).astype("int64").to_numpy()
         df = df.drop(columns=["day", "month", "duration", "campaign"])
         # "unknown" codes a missing value (the authors' 2014 codebook; CLEAN-10, CLEAN-14). `contact`'s
         # "unknown" stays a level: it marks May-June 2008 (curation notes).
@@ -197,6 +243,18 @@ class BankMarketing(AbstractCuratedDataset):
             },
         )
         return df
+
+    def _make_splits(self, df: pd.DataFrame) -> Splits:
+        """The windows of `WINDOW_STARTS`, newest first, each up to the next start and trained on every earlier record."""
+        time_index = df["time_index"].to_numpy()  # the frame arrives sorted by `time_index` with a RangeIndex
+        positions = np.arange(len(df))
+        splits: Splits = {}
+        end = None
+        for _, start in WINDOW_STARTS:
+            test = (time_index >= start) & (time_index < end) if end is not None else time_index >= start
+            splits[len(splits)] = {0: (positions[time_index < start].tolist(), positions[test].tolist())}
+            end = start
+        return splits
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(

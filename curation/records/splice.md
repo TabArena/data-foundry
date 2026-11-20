@@ -62,6 +62,8 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case predicts the junctions of genes the training windows do not hold, which the held-out entry components stand for; that the entry year carries no wave is a measurement for the `Time basis:` line, not a different use case.
 - The split does not change.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `gene_group`, 10x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The primate splice-junction windows of Towell, Noordewier and Shavlik (UCI, 1992,

@@ -68,6 +68,10 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 CC (2026-11-10, Andrej): review page marks: ship as defined (issue 1, ok, option A). Time basis forced from temporal, grouped (issue 2, option B): `ForcedGroupedFromTemporal` in `data_tags` next to `Spatial`, its `Time basis:` bullet in place of the note on the missing dates. The CC of 2026-10-14 refused the IID forced tag for a grouped split; the grouped tag now names the lost time. Grouping by poster unchanged.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `poster_group`, 3x3 folds, `ForcedGroupedFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 3, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Fraud against an adapting review is the textbook case against ASR, and the source itself says the scams change.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it as defined. Reviewed on 2026-11-04 without a panel, from the
@@ -189,6 +193,45 @@ record disagrees with the definition (source Other, 2017, business & marketing, 
    **Resolved (2026-11-10, Andrej):** B: `data_tags = ("Spatial", "ForcedGroupedFromTemporal")` and the drafted `Time
    basis: ForcedGroupedFromTemporal:` bullet in place of the note on the missing dates; the grouping by poster stays.
    The record's CC line says the grouped tag now names the lost time.
+
+3. **Keep `ForcedGroupedFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: Ads posted 2012-2014 with no date column; job_id does not follow posting time (a low id describes a 2014 job), only some free texts name a year.
+     - Use: A job platform screens new ads before publication, after 2014 (years later in any use today).
+     - Mechanism: Fraudulent ads are written by scammers who reword and repost to pass the platform's review, and the label is set per client by a review that also adapts; the relation moves with that contest.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | huntprohibited_1m | used-car form change Dec-Mar: old form to new form costs about 0.002 ROC AUC, 0.02 AP | small shift over 4 months on one marker | ad moderation against adapting sellers |
+     | Vidros et al. 2017, Future Internet 9(1):6, Sec. 5 (literature, cited from memory: check) | source statement: fraudsters adapt (repost, false company info) | not flat (stated) | the source of this dataset |
+
+   * **For a stationary use case:**
+     - Content cues of a scam (no company profile, salary bait) are partly stable.
+   * **Against:**
+     - Opponents who adapt: scammers vs. the platform's review (Vidros et al. 2017).
+     - The definition notes scams change over time.
+     - Target: Revised Later; a client's verdict is set after periodic review.
+     - 2012-2014 collection used today is a decade-long span in a fast-moving domain.
+   * **Earlier views:**
+     - CC (2026-10-14, Lennart): no ForcedIIDFromTemporal tag, the grouped split already marks Non-IID.
+     - CC (2026-11-10, Andrej): issue 2 B, ForcedGroupedFromTemporal.
+     - CC (2026-11-17, Andrej): blind walk reaches the shipped split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedGroupedFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Opponents who adapt: scammers vs. the platform's review (Vidros et al. 2017).; The definition notes scams change over time. |
+
+   * **Recommendation:** A, fraud against an adapting review is the textbook case against ASR, and the source itself says the scams change. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Fraud against an adapting review is the textbook case against ASR, and the source itself says the scams change.)
 
 ## Reference
 

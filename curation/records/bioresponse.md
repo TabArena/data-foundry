@@ -78,6 +78,12 @@ CC (2026-11-11, Andrej): record field set from the definition (review page field
 
 CC (2026-11-11, Andrej): BeyondArena v0.2 review page, issue 3 "Reply (a): Random, overlap named": the random split stays. The notes name the analogue overlap (no two molecules share all descriptors, the nearest pair differs in 16; close analogues share the label and cross the split, as no structure or compound id is published), Kaggle's own test set as a random-looking draw (a model tells it from train at ROC AUC 0.485) and the lead-optimisation use case. No data change.
 
+CC (2026-11-17, Andrej): Review issue 4, A, as implemented: Random 3-fold CV, 3 repeats (2,500-2,501 train / 1,250-1,251 test molecules of 3,751), `Timeless` and `ForcedIIDFromGrouped`.
+
+CC (2026-11-17, Andrej): verdict ship (blind split review page).
+
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Timeless`, `ForcedIIDFromGrouped`) is checked: split mark on the blind split review page.
+
 ## Review
 
 **Outcome:** added. Boehringer Ingelheim's Kaggle competition "Predicting a Biological Response" (2012,
@@ -411,6 +417,41 @@ settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `An
 CC (2026-11-16, Andrej): `ForcedIIDFromGrouped` beside `Timeless` (SPLIT-35):
 - The use case screens molecules not made yet, which whole chemical series held out would stand for (SPLIT-31).
 - No structure or compound id is published, so no series can be computed: the split stays random, and close analogues of a test molecule sit in training.
+
+4. **Group basis: drop `ForcedIIDFromGrouped` and tag the random folds `Timeless` only?**
+
+   * **Problem:**
+     - The definition reads the use case as molecules a chemist has not made yet, which whole chemical series would stand for (Andrej, 2026-11-16), and no structure or compound id is published to compute a series, so the tree gives random folds tagged `ForcedIIDFromGrouped` beside `Timeless`, as shipped.
+     - The blind walk, without that reading (its dossier kept only the competition's lead-optimisation framing of new analogues of series in testing), reached Random · `Timeless` alone.
+     - Close analogues share the label and cross the random folds: nearest-neighbour label agreement 92% in the closest tenth of distances against 64% in the farthest.
+   * **Background:** One row per molecule, no arrival order, no structure to compute a series. Read as lead optimisation (new analogues of held series) it is Random · Timeless; read as a new series it is the forced no-kind-key random leaf, so the split is random in both readings. Confidence of the blind walk: medium.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Is there an order to how samples arrive in the use case? (use case): no. Evidence: The target is a property of a molecule measured in one assay; assay dates are not stated anywhere (dossier collection_period). The file order drifts weakly (positive share 0.57-0.59 in the first deciles vs 0.50-0.51 in the last, Spearman -0.04) but is not known to follow the assays, so it is no arrival order.
+     - Was the experiment repeated, producing several rows for the same measurement? (data): no. Evidence: Dossier: no two molecules share all 1,776 descriptors; the nearest pair differs in 16. One row per molecule.
+     - What does the model meet that the data does not hold? (use case): a new item of the kinds held. Evidence: Use case: a medicinal chemist screens candidate molecules before synthesis. The dossier states that scoring new analogues of series already in testing is the lead-optimisation use the competition framed. A new chemical series would be the stricter reading; no scaffold can be computed (anonymised, pre-scaled descriptors, no structures), so that reading would end at Random · ForcedIIDFromGrouped…
+   * **What changes:** only the tag and its `Group basis:` line. `data_tags` in `dataset.py` (`ForcedIIDFromGrouped`, `Timeless` → `Timeless`), the opening of the `Group basis:` bullet in `curation_comments`. The rows, features, grouping key, folds and metric are untouched; the container is rebuilt only because `data_tags` ship in it.
+   * **Decided before:** Andrej, 2026-11-16: `ForcedIIDFromGrouped` beside `Timeless`[^split-35]:
+   * **What the blind dossier lacked, and what it changes:** The use-case answer changes: the definition's Group basis (Andrej, 2026-11-16) reads the use case as molecules a chemist has not made yet, which whole chemical series would stand for, so 'What does the model meet?' = a kind not held; no series can be computed → Random · ForcedIIDFromGrouped (no kind key). The split stays random; only the tag moves. Round 1 also reached the forced no-kind-key leaf.
+   * **Source split:** yes, Kaggle competition 'Predicting a Biological Response' (Boehringer Ingelheim, 2012): predefined train (3,751) / test (2,501) files of undocumented construction; public/private share not stated; measured as random-like https://www.kaggle.com/c/bioresponse. Credible: no, Construction not documented and not motivated by the screening use; a random draw from one pool.. Against the tree's leaf: yes, Kaggle's train/test files behave like a random draw from one pool, and the blind leaf is random as well; the tag differs only in name.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: split_tree.md lists bioresponse as an example under 'Random · ForcedIIDFromGrouped (no kind key)'; ignored as evidence. The dossier notes also keep a fragment about the shipped split's overlap ('cross the ...', random-third comparison), which hints at a random split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Random 3-fold CV, 3 repeats (2,500-2,501 train / 1,250-1,251 test molecules of 3,751), `Timeless` and `ForcedIIDFromGrouped` (implemented) | No change. | The `Group basis:` line names the optimism the folds leave for a new series (analogues of a test molecule in training). | Under the competition's lead-optimisation framing the overlap is the use, not a forced compromise. |
+     | B | The same random 3-fold CV, 3 repeats, tagged `Timeless` only | `data_tags` drops ForcedIIDFromGrouped; the `Group basis:` bullet goes; the folds do not change. | Matches the competition's framing of new analogues of series already in testing. | Drops the record that a new chemical series is untested and the score optimistic for it; reverses the curator's tag of 2026-11-16. |
+
+   * **Recommendation:** A, because the definition's use case screens molecules not yet made, a new series the data cannot hold out, which `ForcedIIDFromGrouped` records.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: set `data_tags` to `Timeless` in `dataset.py`, change the opening of the `Group basis:` bullet and add a CC line; rebuild. No change to the split declaration.
+
+   [^split-35]: **SPLIT-35** (Should): When the use case holds out a group of distinct items, a family (a chemical series, an element set, a protein target), a site, an area or an instrument, and the data cannot key that group (no structure to compute a scaffold, no stand id or coordinates, a single site), the split is random and the definition carries `ForcedIIDFromGrouped`.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-17, ok):** as implemented.
+
+   **Resolved (2026-11-17, Andrej):** A, as implemented: Random 3-fold CV, 3 repeats (2,500-2,501 train / 1,250-1,251 test molecules of 3,751), `Timeless` and `ForcedIIDFromGrouped`.
 
 ## Reference
 

@@ -127,6 +127,8 @@ CC (2026-11-10, Andrej): issue 8 (a) in boreal_postfire_lichen_biomass, "Reply (
 
 CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
 
+CC (2026-11-17, Andrej): the declared split (grouped on `burn_area`, 10x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it as implemented: the re-review of 2026-11-06 under the exposure

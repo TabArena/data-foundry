@@ -98,7 +98,9 @@ class KddCup09Appetency(AbstractCuratedDataset):
           and split at random by the host; the target, appetency, is read as a purchase of a new product or service
           after the scoring date, as the marketing use case needs. One extract is one period, too few for three windows
           (SPLIT-8). The label window and the features' windows are not stated and the features are masked, so neither
-          can be checked. Extracts of later campaigns would allow a temporal split. Not tested: the next campaign.
+          can be checked. Extracts of later campaigns would allow a temporal split. Not tested: the next campaign. Not
+          taken as stationary (Andrej, 2026-11-18): The target is uptake of a campaign's new offer, which changes by
+          campaign; nothing makes later campaigns interchangeable.
     """
 
     accepted_check_warnings = {

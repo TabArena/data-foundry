@@ -68,6 +68,8 @@ CC (2026-11-17, Andrej): time basis `UnseenGroup` instead of `ForcedGroupedFromT
 - The split holds out hospitals because the use case is a hospital the score was not developed at (the definition's group text); that is `UnseenGroup` (SPLIT-32), not a split forced by lost time.
 - The stays carry no date or order, so a later period at a known hospital stays untested; the split is unchanged.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `hospital_id`, 3x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The WiDS Datathon 2020 training table (https://www.kaggle.com/competitions/widsdatathon2020), MIT's

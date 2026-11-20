@@ -115,9 +115,10 @@ LINK_FIELDS = (  # field and bits: two transactions are the same when the day, t
     ("ecommerce_flag", 2),
 )
 
-# Test windows: the pairs of issue months 22-23, 20-21 and 14-15 (CC 2026-11-11); train is every earlier month
+# Test windows: the pairs of issue months 22-23, 20-21 and 18-19 (Andrej, 2026-11-20, review issue 6, E); train is
+# every earlier month
 # (see `_make_splits`).
-SPLIT_WINDOWS = TemporalSplits(window=2, unit="unique", cutoffs=(22, 20, 14))
+SPLIT_WINDOWS = TemporalSplits(window=2, unit="unique", cutoffs=(22, 20, 18))
 
 
 def pivot_values(paths: list[Path]) -> dict[str, list[int]]:
@@ -499,9 +500,9 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
             " and out, recent activity)."
         ),
         split=(
-            "Each test window is two of the 24 issue months: the newest, months 22-23, then months 20-21 and months "
-            "14-15, the last in the other half of the second year; training is every earlier issue, without the "
-            "products of clients who also have one in the test window."
+            "Each test window is two of the 24 issue months, walking back from the newest: months 22-23, 20-21 and "
+            "18-19; training is every earlier issue, without the products of clients who also have one in the test "
+            "window."
         ),
         changes=(
             "We reconstruct the issue month from the transactions, as the data has no dates, and summarise the "
@@ -578,20 +579,15 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        A scoring model is refit on all products issued so far and used for the next two months. No source gives a horizon or a refit cadence, so the two months are a convention (CC 2026-11-11): the competition trained on the issues of a period and tested on the issues of the following period (Alfa-Bank, habr.com/ru/companies/alfa/articles/551130) without naming either length. We use 3 test windows of two issue months each, newest first: months 22-23, the newest; months 20-21, the months of the highest default rate (3.36%); and months 14-15, in the other half of the second year (months 12 to 17), which the newest pairs leave out (CC 2026-11-11, in place of months 18-19). Each trains on all earlier months. From each training side we remove the products of clients that also have a product in the test window (curation_comments, "Repeat clients"): their default flags were most likely not known when the test products were issued. The windows hold 120,428, 107,844 and 90,937 products and train on 804,162, 702,678 and 396,171 after the filter removes 39,221, 32,861 and 21,497 (83.4%, 72.9% and 41.1% of the 963,811 rows; 87.5%, 76.3% and 43.3% before it). Months 14-15 train on less than half the rows (41.1%), beside 83.4% and 72.9%. The default rate is 3.02%, 3.36% and 2.70% in the windows (2.78%, 2.67% and 2.45% on the train sides). The competition's test labels are not public, so we split the 24 labelled months, and 3 windows of 7 months would leave 58%, 27% and 6% of the data for training. The flag of any product issued in the 12 months before a window may still change after the window starts, so the other training products of those months hold labels a deployed model would not have had yet; a 12-month gap would leave 3-27% of the rows for training, a 6-month gap 20-53% (before the filter). At equal training size, a 6-month gap lowers untuned LightGBM by 0.014-0.015 ROC AUC on the newest and the oldest window of 2026-10-26 (months 22-23 and 18-19), an upper bound on that optimism (it mixes in the cost of older training data).
+        A scoring model is refit on all products issued so far and used for the next two months. No source gives a horizon or a refit cadence, so the two months are a convention (CC 2026-11-11): the competition trained on the issues of a period and tested on the issues of the following period (Alfa-Bank, habr.com/ru/companies/alfa/articles/551130) without naming either length. We use 3 test windows of two issue months each, walking back from the newest: months 22-23, 20-21 and 18-19 (Andrej, 2026-11-20, review issue 6, E; months 14-15 of 2026-11-11 trained on 41.1% of the rows). Reaching further back for diversity was tested and found nothing to gain: the adversarial ROC AUC between two months climbs steadily with the months between them, and neighbouring months differ about equally wherever they lie (0.65-0.72 without the payment-system features), so no period justifies an older window. Each trains on all earlier months. From each training side we remove the products of clients that also have a product in the test window (curation_comments, "Repeat clients"): their default flags were most likely not known when the test products were issued. The windows hold 120,428, 107,844 and 121,390 products and train on 804,162, 702,678 and 581,221 after the filter removes 39,221, 32,861 and 32,928 (83.4%, 72.9% and 60.3% of the 963,811 rows; 87.5%, 76.3% and 63.7% before it). The default rate is 3.02%, 3.36% and 3.12% in the windows (2.78%, 2.67% and 2.58% on the train sides). The competition's test labels are not public, so we split the 24 labelled months, and 3 windows of 7 months would leave 58%, 27% and 6% of the data for training. The flag of any product issued in the 12 months before a window may still change after the window starts, so the other training products of those months hold labels a deployed model would not have had yet; a 12-month gap would leave 13-27% of the rows for training, a 6-month gap 35-53% (before the filter). At equal training size, a 6-month gap lowers untuned LightGBM by 0.014-0.015 ROC AUC on the newest and the oldest window (months 22-23 and 18-19, measured 2026-10-26), an upper bound on that optimism (it mixes in the cost of older training data).
 
-        Exception to SPLIT-10 (2026-10-21, Lennart): the data has no label dates and a default can be flagged up to a year after the issue, so a gap of the label delay leaves 3-27% (12 months) or 20-53% (6 months) of the rows for training in the windows of 2026-11-11 (13-27% and 35-53% in those of 2026-10-21), below the floor. Serves SPLIT-14 (Must). SPLIT-9 is met by removing the measurable shortcut, the products of the test window's clients; the diffuse rest of unmatured labels falls under SPLIT-10 (principles.md, Tensions). No gap (gap 0; Lennart, 2026-10-26).
+        Exception to SPLIT-10 (2026-10-21, Lennart): the data has no label dates and a default can be flagged up to a year after the issue, so a gap of the label delay leaves 13-27% (12 months) or 35-53% (6 months) of the rows for training in the windows of 2026-11-20, below the floor. Serves SPLIT-14 (Must). SPLIT-9 is met by removing the measurable shortcut, the products of the test window's clients; the diffuse rest of unmatured labels falls under SPLIT-10 (principles.md, Tensions). No gap (gap 0; Lennart, 2026-10-26).
     """
     temporal = Temporal(on="issue_month", horizon=2, horizon_unit="months", time_unit="months")
     accepted_check_warnings = {
-        "splits_rows_unused": "By design: these 1,121 products belong to clients with a product in every test window "
-        "whose training side holds them (181 of months 0-13, on all three training sides; 940 of months 16-19, on the "
-        "training sides of months 22-23 and 20-21 only), so the repeat-client filter removes them from every training "
-        "side (curation_comments, 'Repeat clients').",
-        "splits_train_under_half": (
-            "Signed off (Lennart, 2026-11-11, review issue 5, b): months 14-15 train on 41.1% of the rows after the "
-            "repeat-client filter, beside months 22-23 and 20-21 on 83.4% and 72.9%; SPLIT-14's two tiers admit it."
-        ),
+        "splits_rows_unused": "By design: these 219 products, all of months 0-17 and so on all three training sides, "
+        "belong to clients with a product in every test window, so the repeat-client filter removes them from every "
+        "training side (curation_comments, 'Repeat clients').",
     }
 
     # The raw transactions (270M rows) are aggregated and linked once; `_load_raw` starts from the result.

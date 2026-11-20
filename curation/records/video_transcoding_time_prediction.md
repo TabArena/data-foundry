@@ -69,6 +69,10 @@ CC (2026-11-11, Andrej): BeyondArena v0.2 review page, video_transcoding_time_pr
 - No leak: no column is measured during or after a job, and the video split raises LightGBM's RMSLE from 0.081 (row split) to 0.181.
 - The task summary now says the time does not grow with the video's duration (likely a fixed-length piece) and that 81 large videos carry the score; the check's table is in the definition's notes. Rows, split and metric unchanged.
 
+CC (2026-11-17, Andrej): Review issue 5, A: the declared split stays; the dissertation's evaluation on unseen video streams agrees with holding out whole videos.
+
+CC (2026-11-17, Andrej): the declared split (grouped on `video_id`, 3x3 folds, `Timeless`) is checked: split mark on the blind split review page.
+
 ## Review
 
 **Outcome:** added. UCI's online video transcoding data (Deneke et al. 2014): 68,784 ffmpeg transcoding jobs of 1,099
@@ -295,6 +299,32 @@ sweep, not of this definition.
    says that each job is a decision of the scheduler, that 80 full-grid videos hold 97.8% of the jobs, that one vote
    per video would give the 1,018 single-job videos 93% of the weight, and that it ranks 8 untuned models at Kendall
    tau 0.90 per split.
+
+5. **Split: follow the source's split (not documented in what could be read; the dissertation evaluates on 'unseen video…)?**
+
+   * **Problem:**
+     - The source prescribes not documented in what could be read; the dissertation evaluates on 'unseen video streams', and the round judges that choice partly made for the use.
+     - The definition ships Grouped · Timeless by `video_id`; the tree's leaf is Grouped · Timeless (the measurement).
+     - Against the leaf: The dissertation evaluates on 'unseen video streams', which matches holding out whole videos, but how the split was built is not documented.
+   * **Source split:** unclear. The ICME paper is paywalled; the dissertation's 'unseen video streams' points to holding out videos, motivated by the scheduler meeting new uploads, but the construction is not documented.
+   * **Why it counts as chosen, not conventional:** The ICME paper is paywalled; the dissertation's 'unseen video streams' points to holding out videos, motivated by the scheduler meeting new uploads, but the construction is not documented.
+   * **Background:** Each video is transcoded to up to 841 settings with no arrival order; the use is a new video. Whole videos are held out with all their jobs. Confidence of the blind walk: high.
+   * **What changes on B:** the definition's split declaration is replaced by the source's own construction (its files, periods or groups), and the `splits_comment` records that the tree's leaf was not followed. The rows, features, target and metric do not change; the folds do, so the container is rebuilt.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Grouped · Timeless by `video_id` (implemented) | keeps `Grouping(on="video_id")` | the split the tree's leaf and the definition agree on | differs from the source's own evaluation (not documented in what could be read; the dissertation evaluates on 'unseen video…) |
+     | B | The source's split: not documented in what could be read; the dissertation evaluates on 'unseen video… | rebuilds the split as the source constructed it | The ICME paper is paywalled; the dissertation's 'unseen video streams' points to holding out videos, motivated by the scheduler meeting new uploads,… | the tree gives Grouped · Timeless (the measurement); the source's construction may not fit our use case |
+
+   * **Recommendation:** A: the tree's leaf decides where a source split differs; the source's choice goes in the split notes. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: replace the split declaration with the source's construction (name the files or periods it uses) and say in `splits_comment` why the tree's leaf is not followed; on A: name the source's split in `splits_comment` as a departure.
+
+   **Andrej (2026-11-17, ok):** as implemented.
+
+   **Resolved (2026-11-17, Andrej):** A, as implemented: whole videos stay held out; the source's evaluation on "unseen video
+   streams" agrees, though how it was built is not documented.
 
 ## Reference
 

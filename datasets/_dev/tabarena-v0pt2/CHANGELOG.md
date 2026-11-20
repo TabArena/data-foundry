@@ -1,5 +1,175 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-19, split check marks of the evening (no container built)
+
+Andrej's decisions on the split check page, applied in the definitions (each with its record's Resolved turn and CC line):
+- Windows under half the data kept as the curator's exception: airqo, anes_voting_2026, ashrae (1m), cooking_time (1m),
+  wisconsin, g_research (1m, the crash window); hotel_booking_demand cut to nine dates (1 September 2016 dropped,
+  1 October 2016 at 48.3% the exception). garments_worker_productivity keeps its one-day windows under 33 rows as the
+  curator's exception (SPLIT-14 now allows one where the use case's own period holds fewer units).
+- New windows: ieee_fraud_detection three-week windows with the one-month gap; sberbank nine one-month windows;
+  mercedes nine windows of 233 cars; qsar_tid_11 nine one-year windows; california nine windows of 2,165 sales;
+  consumer_complaints (1m) a one-month gap; 2_month_survival_rate_prediction three half-year windows on the rebuilt
+  entry date with a 60-day gap.
+- Grouped forced splits: sendy_logistics_challenge 3 x 3 folds over month classes; online_shoppers leave one month out
+  (`ForcedGroupedFromTemporal`, `Month` no input).
+- Tags: regensburg and spanish_motor_insurance_coverage_level_2022_2024 `StationaryRelation` (measured flat);
+  cirrhosis `ForcedIIDFromTemporal` (the curator's call over three windows, listed as a departure).
+- Fewer windows than the target, kept with the reason in the splits comment and `splits_below_target` accepted:
+  wisconsin, airqo, predict_students, sdss_17, spanish_homeowners, spanish_motor_2015_2018, african_credit (its reason
+  corrected to the 37-day settlement), miami_housing, acquire_valued_shoppers_challenge.
+- seismic_bumps (added today): the review panel's changes without a decision (the test-row protocol line,
+  `shift_order` no input, the notes' numbers, the proxy target in `fit_reason`).
+Opened or answered for a decision: the window layouts of 17 definitions below the target, bank_marketing's campaign
+windows, open_university (one presentation held out with its start date), infrared, ecoli and framingham (tests run),
+tanzania (the waves are 2012, 2013 and 2014; forward test not flat), cardiotocography (not flat), seismic_bumps
+(metric, signal, window length).
+
+## 2026-11-19, split check v2: documentation that no decision needs (no container built)
+
+A second full-information check of the 175 definitions against the tree and rules of 2026-11-19 (163 consistent,
+the rest already open or listed on the split check page). Applied here, as facts:
+- split_tree.md: acquire_valued_shoppers_challenge listed under the label-delay-gap leaf (it ships a 5-day gap),
+  in_vehicle_coupon_recommendation under the forced grouped leaf (`ForcedGroupedFromTemporal` since 2026-11-18),
+  distribution_transformers_at_cauca_department under Random · `AssumedStationaryRelation` (since 2026-11-18); the
+  measured-not-flat question asks for a positive per period only under a ranking metric (SPLIT-16).
+- `Time basis:` lines: frempl_french_motor_personal_line and pricing_game_2016_french_fleet give their inconclusive
+  stationary-relation test; bemtpl97 gets the line its issue 4 decision (2026-11-18) names.
+- splits comments: thyroid_discordant_archive no longer gives few positives as the reason for three windows;
+  noaa_afsc_bottom_trawl_survey_cpue's nine windows are more than the target of three, not "as many".
+- distribution_transformers_at_cauca_department's prediction-point note and SPLIT-8 case row name
+  `AssumedStationaryRelation`.
+- split_tree.md: ai4d_lab_tanzania_tourism_classification_challenge moves from the `Temporal · round` examples to
+  the survey branch's ForcedFromTemporal step (two rebuilt batches give no three windows).
+Opened for a decision (review issues, no definition changed): open_university_learning_analytics_dataset issue 1
+(whole start dates instead of module-presentations: the relation is measured not flat), regensburg_pediatric_appendicitis
+issue 6 (`StationaryRelation`: measured flat), ai4d_lab_tanzania_tourism_classification_challenge issue 11 (`Too Small`
+or a kept exception: measured not flat over two batches), and one cross-dataset item on 17 temporal splits below
+SPLIT-15's window count without a stated reason.
+
+## 2026-11-19, temporal splits: train floor, least test window and the target number of windows (no container built)
+
+- SPLIT-14: every window trains on at least half the data; a window under half is the curator's exception down to 30%,
+  never below (`splits_train_under_floor` is now an error; the core rule of two windows at half and the error
+  `splits_floor_core` are gone). The windows under half signed off before stand as recorded exceptions. Every test
+  window holds at least 33 scored units, counted as SPLIT-33 counts them (new error `splits_test_too_small`).
+- SPLIT-15: the number of windows aims at the splits an IID split of the data would get (SPLIT-33's count for two thirds
+  of all scored units), after the use case's window length, step and gap and SPLIT-14's limits; fewer are accepted,
+  never under three (new warning `splits_below_target`, answered in the splits comment). Windows do not overlap by
+  default; where the target cannot be reached otherwise, overlapping windows are offered to the curator.
+- SPLIT-12 lists what the definition derives from the use case and the source (horizon, refit cadence, planning gap
+  and label delay, time unit) and asks the splits comment to name each; SPLIT-17 widens noisy windows, never under 33.
+- `split_count` in `data_foundry.v2.splits`; the tree's windows questions, definitions.md, the add-dataset and review
+  skills and the split auditor follow.
+- split_tree.md: the temporal-leaf bullet names what the use case sets (time unit, window length, step, gap); a shared
+  answer "The windows" gives the target, the floor and the overlap option; each windows question ends with when it
+  answers no. The Split Decisions Atlas follows (v123).
+- split_tree.md: a shared windows step (③): each temporal branch asks "Can the <time key> hold at least three test
+  windows of the use case's size?"; a no first asks whether a person allows an exception (windows down to 30% training,
+  wider windows, or no gap), and only that no reaches the forced step. Too few positives in a window is part of the
+  task. The Atlas follows (v124: nine empty leaves "Temporal · with a person's exception").
+- SPLIT-16 and TP-9: few positives in a test window are part of the task; only a window without a positive under a
+  ranking metric (ROC AUC, average precision, a Gini) is widened or its cut moved. `splits_test_single_class` is an
+  error only under a ranking metric (`RANKING_METRICS`), a warning otherwise. seismic_bumps' `Too Small` (2026-09-30)
+  rested on the earlier TP-9 wording.
+
+## 2026-11-18, the blind split review: the cross-dataset decisions (no container built)
+
+- sat11_hand_algo_runtime and asp_potassco_classification are both split by problem family (Andrej: "Do both by
+  family"). A family is the generator an instance comes from, read off the instance path before it is hashed into
+  `instance_id`, which stays the scoring column for PAR10 and is never a feature. Folders that split one generator are
+  merged.
+  - sat11_hand_algo_runtime: grouped on the new `problem_family` (48 folders, 32 families; Anton's 2003 SAT/UNSAT,
+    rbsat's forced/unforced folders, QG6/7/7a/8, two Van der Waerden folders and six more merged) instead of on
+    `instance_id`; `UnseenGroup` instead of `Timeless`; 20 x 3 folds, 22-100 of the 184 instances per test fold. The 88
+    instances new in 2011 all came from generators no earlier competition used; the instance folds put 91% of the test
+    instances' families in training. A split by competition gives one window with half of the rows in training.
+  - asp_potassco_classification: grouped on `problem_family` (75 families), which replaces `task_id` (96 class
+    folders: the 15 problems of the 2007 competition were stored twice, partly as the same files; HamiltonClumpy's
+    five folders, RLP-150/200 and plain/verbose searchTest merged); 25 families per test fold, 10 x 3. On the class
+    folders 19% of the test instances (4-45% per fold) had their generator in training. This replaces the split line
+    "grouped 3-fold CV over `task_id`" of the next section.
+  - `definitions.md` (algorithm selection) and `splits.md` (a `Timeless` example, a SPLIT-33 case) no longer cite
+    sat11_hand_algo_runtime as grouped by instance.
+- The split tree's gap questions name the step (B): "the time column's smallest recorded step (a date: one day; a
+  timestamp: its resolution)" in the event-log and panel questions and in the shared gap answer, "the time column's
+  smallest recorded step" in their notes and leaves (`split_tree.md`; the atlas tree, v115, the same). No definition
+  changes; cooking_time (issue 3) and medical_facility_operational_data (issue 15) keep their gaps, as implemented.
+- The ten catalogue definitions the tree agrees with are confirmed: drug_induced_autoimmunity_prediction,
+  nci_aids_antiviral_screen, protein_model_quality_rf_pcp, qsar_aquatic_toxicity, qsar_bioconcentration, qsar_biodeg,
+  qsar_fish_toxicity, qsar_oral_toxicity, qsar_tid_11 and splice each carry a "declared split ... is checked" CC line.
+
+## 2026-11-18, stationarity reasoning: framingham and pricing_game_2017 (no container built)
+
+- framingham_heart_study_fhs: `ForcedIIDFromTemporal` stays, now measured: the stationary-relation test on the parent
+  teaching file's three exams (the cohort rebuilt at each exam) reads not flat; the `Time basis:` line gives it.
+- pricing_game_2017_french_mtpl: `ForcedGroupedFromTemporal` stays as implemented; the multi-year AIcrowd copy needs an
+  account, so it is not measured.
+
+## 2026-11-18, the blind split review: further marks (no container built)
+
+- dementia_prediction: time basis `UnseenGroup` instead of `ForcedGroupedFromTemporal` (`WrongDomain` stays): the use
+  case is a person's first visit at a memory clinic, so whole people are held out. Split unchanged (stratified 3-fold
+  CV over `Subject ID`, 20 repeats).
+- asp_potassco_classification: time basis `UnseenGroup` instead of `Timeless`: the use case is a kind of problem not
+  seen before, so whole problem classes are held out. Split unchanged (grouped 3-fold CV over `task_id`);
+  ASlib's instance folds not followed (as implemented).
+- As implemented, with the declared split checked and verdict ship: acquire_valued_shoppers_challenge (the 5-day gap
+  and the four windows on `offerdate`; Kaggle's files not followed), lung_adenocarcinoma_metastasis (collection type
+  `Experimental Results` kept), bioresponse (`ForcedIIDFromGrouped` kept).
+- force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition: the two split issues (windows on
+  the completion year; the competition's wells) merged into one, left open.
+- coffee_rating_prediction: a one-month gap before each two-month window (`gap=1`): the roaster predicts at
+  submission, before Coffee Review publishes the score in its review month; the delay is not stated, one month is the
+  smallest gap the monthly dates allow. Window count and train shares to be re-checked by `dataset check`.
+- As implemented, with the declared split checked and verdict ship: bad_customer_detection (random folds,
+  `StationaryRelation`), california_house_prices_2020 (three windows in sale order, no gap).
+
+## 2026-11-18, the stationary-relation test as a probe (no container built)
+
+- SPLIT-32 says what a relation measured flat is: on each of the newest three periods, a forward model (trained
+  before the period) against a contemporaneous one of the same size that holds the period's other half, both scored on
+  the same random half of the period over five seeds, with LightGBM and a tabular foundation model. A period is not
+  flat when the forward model's loss exceeds two SDs and a floor (1% of the distance from the contemporaneous model
+  to a constant), flat when two SDs stay within ten floors and the model has skill, inconclusive otherwise; a class
+  share that moves by a factor of two (p < 0.01) is not flat. The relation is flat when, for a model with skill in
+  every period, the gap averaged over the periods has two SDs within ten mean floors and no period is not flat
+  (pooled, so a small set gets the evidence of all its periods; Andrej). Inconclusive counts as unmeasured: the forced tag stays
+  unless a person gives `AssumedStationaryRelation` a reason.
+- `leak_probes.py --stationary-relation` runs it (`curation_probes/stationarity.py`; Kumo-Tabular with
+  `--foundation kumo`, from the optional package `structured-data-models`); `checks_and_probes.md` describes the
+  procedure ("The stationary-relation test"); `tests/test_stationary_relation.py` covers flat, drifting, recording
+  change, no signal, unordered periods and units.
+
+## 2026-11-17, the blind split review: Andrej's first marks (no container built)
+
+Every v0.2 definition was walked through the split decision tree without its current split; the review page asks
+where the leaf differs from what ships or from a credible source split.
+
+- airfoil_self_noise, electric_motor_temperature_prediction, huesken_sirna_efficacy: time basis `UnseenGroup`
+  instead of `Timeless`. Each use case meets a group the data does not hold (an untested airfoil size and angle; a
+  driving session not yet run; a gene without efficacy measurements), and each split already holds that group out.
+  Splits unchanged; the `Time basis:` lines say so; the READMEs and containers need a rebuild for the metadata.
+  `split_tree.md`: electric_motor_temperature_prediction moves to the panel's "new units" leaf.
+- 5g_energy_consumption and video_transcoding_time_prediction: the declared split stays; the source's split is not
+  followed.
+- homesite_quote_conversion: label completeness at the release end measured (the last 7, 28 and 56 days convert at
+  18.5%, 19.0% and 18.8%, against 15.3-20.3% per month since 2014); it gives the shipped split, no gap.
+- The declared split is checked on 97 records: the 93 where the tree, walked blind, reaches the split that ships,
+  and 5g_energy_consumption, electric_motor_temperature_prediction, huesken_sirna_efficacy and
+  video_transcoding_time_prediction (split marks).
+- infrared_thermography_temperature: collection type `Dated Event Log` instead of `Experimental Results` (subjects
+  screened one by one at a health centre, each visit dated); SPLIT-34's case list (rule 3 and the counts) and
+  `split_tree.md` (its example and departure row) follow. Its split stays open (windows on the visit date).
+- As implemented, with the declared split checked: aeolus_rebuilt,
+  airqo_low_cost_air_quality_monitor_calibration_challenge, anes_voting_2026, apistox, caracas_cervical_cancer, maps_router_eta, onlinenewspopularity (the source's split or
+  the record's type not followed). Verdict ship: 5g_energy_consumption, airfoil_self_noise, airqo, anes_voting_2026,
+  apistox, caracas_cervical_cancer, maps_router_eta.
+- Review issues written and left open, nothing changed in the definitions: body_density_prediction and sarcoma (their
+  collection type against the rule on undated people data), superconductivity (windows by first report year against
+  the source's stated scope), ai4d_lab_tanzania_tourism_classification_challenge (what the two folds group on) and
+  horse_colic_survival (how many windows its 344 admissions allow).
+
 ## 2026-11-17, the split workflow in the agent processes, and missing time basis lines (no container built)
 
 - Screening: the screening block gets a `Split:` line (the leaf of the decision tree, the answers, the open

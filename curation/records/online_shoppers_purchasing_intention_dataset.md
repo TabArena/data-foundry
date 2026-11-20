@@ -70,6 +70,10 @@ CC (2026-11-11, Andrej): the 40 repeated one-page visits stay as natural repeats
 
 CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 4, B): whether the visit ends in a purchase, which closes the session the features describe, so it arrives after the features; the forced tag and the split stay.
 
+CC (2026-11-19, Andrej): leave one month out, `ForcedGroupedFromTemporal` (Review issue 6, C): the relation is measured not flat (November), so whole months are held out, each once; `Month` is the group, no input.
+
+CC (2026-11-20, Andrej): the finished-visit rows stay as an approximate stand-in for the in-visit decision (Review issue 3, A). This answers the first triage note ("it is meaningless to predict a purchase after it already happened"): on the kept months no count, duration, bounce or exit rate marks the buyers (ROC AUC 0.55 to 0.68 each; LightGBM 0.739 without `PageValues`), and `fit_reason` names the gap: each row summarises the finished visit, while the shop acts during it.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it as defined; one small point is open (issue 1, the 40 repeated
@@ -246,7 +250,9 @@ a mark.
    [^3a]: **USE-3** (Must): name the prediction point; a value that did not exist then is a leak, including a feature computed over a window that ends at the outcome. **LEAK-10** (Must): a feature holds only what existed at the prediction point; when the features summarise a window that ends at the outcome and no common prediction point can be rebuilt, retire.
    [^3b]: **USE-8** (Must): an approximate fit is a stand-in with a known gap, named as such in `fit_reason`. **LEAK-11** (Should): a value measured after the outcome that weakens the signal stays, with a note.
 
-   **Deferred (2026-11-11):** parked on Andrej's mark ("We will get back to that.").
+   Parked on 2026-11-11 on Andrej's mark ("We will get back to that."); reopened on 2026-11-20 (Andrej). **Decision:** keep (A) or retire for in-visit data (B)?
+
+   **Resolved (2026-11-20, Andrej):** A (ok), as implemented: the finished-visit rows stay as an approximate stand-in, with the gap named in `fit_reason`. No definition change.
 
 4. **Record `Target: Later`?**
 
@@ -268,6 +274,68 @@ a mark.
    **Andrej (2026-11-13, change):** Option B: Record Target: Later.
 
    **Resolved (2026-11-13, Andrej):** B. The record has `Target: Later`; the forced tag and the split stay.
+
+6. **Hold out whole months instead of random visits?**
+
+   * **Problem:**
+     - The visits carry their month (June to December), and the stationary-relation test found the relation not flat: a model trained on earlier months does clearly worse on November than one trained on November itself, and the purchase share moves from 10% in June to 25% in November.
+     - Since 2026-11-17 the forced step holds out whole periods before it falls back to random[^s8]; your call of 2026-11-11 kept random when only random or windows were on the table.
+     - Seven months are enough periods under either option of the cross-dataset item on the period count.
+   * **Experiments:** stationary-relation test of 2026-11-18 (v2; the v3 re-run with the stronger comparison model confirms it: not flat), ROC AUC gap of the forward model ± one SD.
+
+     | Month tested | LightGBM | Kumo-Tabular | Floor | Verdict |
+     |---|---|---|---|---|
+     | November | +0.054 ± 0.007 | +0.039 ± 0.004 | 0.003-0.004 | not flat |
+     | October | -0.003 ± 0.006 | +0.001 ± 0.006 | 0.004 | flat |
+     | December | -0.012 ± 0.004 | +0.003 ± 0.001 | 0.004 | flat |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 3 x 3 random folds over visits, `ForcedIIDFromTemporal` (implemented) | No change | No rebuild | Hides the November shift; skips the forced step's first remedy |
+     | B | 3-fold CV over whole months, `ForcedGroupedFromTemporal` | The month is the group; the Time basis line gives the test | Tests a change between months, the shift a temporal split would test | Folds of unequal size (November holds 44% of the visits); trains on later months too |
+
+   * **Recommendation:** B, because the relation is measured not flat and the data holds seven months to hold out. **Decision:** A or B?
+
+   **Notes for the AI:** `Grouping(on="Month")`; decide with the curator whether `Month` stays an input (a held-out month is a level the model has not seen); one session per user, so no unit constraint; add a splits_comment; tree: online_shoppers leaves the departures.
+
+   [^s8]: **SPLIT-8** (Must, amended 2026-11-17): "The closest regime holds out whole periods where the data has an order with at least two periods to hold out ... Without such periods it is grouped by the entity when an entity has several rows and the use case meets new entities ..., and IID otherwise."
+
+   **Answer (AI, 2026-11-18):** reassessed with the new forced step (the interchangeable question first; measured not flat leads to whole periods or Too Small) and the pooled flat verdict.
+
+   - The v3 test confirms not flat (November, and the purchase share moves 2.5-fold), so the branch is "measured not flat", whose only splits are whole periods or Too Small: A (random) is now outside every leaf.
+   - Seven months give enough groupings for 3 repeats, so the leaf is `ForcedGroupedFromTemporal` (periods, measured not flat). Recommendation unchanged: B.
+
+   **Andrej (2026-11-19, discuss):** Why do you suggest three fold CV although the target would rather be 9 folds and we could do CV over all months?
+
+   **Answer (AI, 2026-11-19):** B is 9 splits, the target: three repeats of 3-fold CV over the seven months, each repeat grouping the months differently. CV over all months is a new option C: each month held out once, 7 splits.
+
+   | Month | Visits | Train share when held out alone |
+   |---|---|---|
+   | June | 288 | 96% |
+   | July | 432 | 94% |
+   | August | 433 | 94% |
+   | September | 448 | 93% |
+   | October | 549 | 92% |
+   | November | 2,998 | 56% |
+   | December | 1,727 | 75% |
+
+   (6,875 visits; February, March and May are left out by the definition.)
+
+   * **B (3 x 3 over months):** 9 splits; each fold holds two or three months. November is 44% of the visits, so a fold holding November with December tests 69% of the data and trains on 31%; folds are of very unequal size, and the months in a fold change by repeat.
+   * **C (leave one month out):** 7 splits, two under the target; each month is tested exactly once on all other months, train 56% to 96%, test 288 to 2,998 visits; no random grouping. The November shift the test found shows in one split of its own.
+
+   | | Option | Splits | Train share | Test visits |
+   |---|---|---|---|---|
+   | B | 3 x 3-fold CV over whole months | 9 | about 31% to 96%, by grouping | 288 to 4,725 |
+   | C | Leave one month out | 7 | 56% to 96% | 288 to 2,998 |
+
+   **Recommendation:** C: every month tested once on all others, no fold under half the data; 7 is the most whole months allow. **Decision:** A, B or C?
+
+   **Andrej (2026-11-19, discuss):** Reply (C): Leave one month out, but this would still be ForcedGrouped
+
+   **Resolved (2026-11-19, Andrej):** C, tagged `ForcedGroupedFromTemporal`: seven folds, each month held out once and trained on all others (June 95.8% ... November 56.4%, December 74.9%); `Month` is the group and no input (a held-out month would be an unseen level); a `Time basis:` line gives the not-flat test. `dataset check`: 0 errors; `task_group_count_low`, `splits_dimensions_off_protocol` and `groups_test_groups_few` accepted with this decision, and `groups_largest_share_high` (November 44% of the visits) accepted as a real month: for you to confirm. Not rebuilt.
 
 ## Reference
 

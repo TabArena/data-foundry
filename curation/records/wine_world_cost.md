@@ -64,6 +64,8 @@ CC (2026-11-11, Andrej): use case reframed (review page issue 6, B): the actor i
 
 CC (2026-11-16, Lennart): use case kept (review page issue 7, A, as drafted): the actor is a UK wine merchant's buyer who, offered a wine from a producer the merchant does not stock yet, estimates the shelf price it would sell at, to decide whether to list it and what supplier price that price point allows; the trade fixes the price point first and works the supplier price back from it. `use_case` rewritten, `fit_reason`'s last sentence names what such a buyer would hold instead (the producer's tasting note, the wine's price in other markets); fit stays approximate. Text only, data unchanged.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `Producer`, 10x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it after two small changes (issues 1 and 2). Reviewed on 2026-11-04

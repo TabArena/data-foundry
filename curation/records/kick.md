@@ -85,6 +85,8 @@ CC (2026-11-10, Andrej): decided on the BeyondArena v0.2 review page; nothing is
 1. **Problem:** the four MMR guide prices "as of current day" (the Manheim Market Report's auction and retail values) were looked up when the data was pulled, after every purchase and its outcome. The current auction price equals the purchase-time price for 23.0% of bad buys against 10.4% of good ones. **Change:** the four dropped; the four purchase-time prices stay; `Andrej` added to `checked_by`.
 2. **Problem:** the split had no gap, although a kick (a car returned to the auction) is known only after the auction's return window, 10 calendar days in Manheim's arbitration guide. Its oldest window also trained on 48.7% of the cars. **Change:** 9 test windows of 35 days, each trained on the purchases made more than 14 days before it starts (the 10 days plus a margin). Every training side holds 52.6% or more; the test windows hold 3,028 to 4,515 cars, 33,054 in all.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `PurchDate`, windows of 35 days, up to 9 windows while training keeps 50% of the rows, gap 14 days) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it; both issues were resolved on 2026-11-10. Reviewed on 2026-11-04 without a

@@ -52,6 +52,10 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 CC (2026-11-10, Andrej): review page marks: ship as defined (issue 1, decided 2026-11-04); the split stays random over claims, natural in effect, with the twins (7,654 claims sharing all 14 numbers, a link 56% to 75% real, residual correlation 0.07, grouping costs 0.0002 RMSE) noted in `curation_comments` (issue 2, option a: "We go with Random, tagged forced from temporal."); time basis forced from temporal (issue 3, option B): `ForcedIIDFromTemporal` added to `data_tags` with its `Time basis:` bullet (claims over an unstated period, the id a random draw).
 
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Claim severity is driven by prices, litigation and settlement practice, all documented to drift; no domain reason makes later claims interchangeable.
+
 ## Review
 
 **Outcome:** added. Allstate's Kaggle competition of 2016, "How severe is an insurance claim?": 188,317 claims with
@@ -332,6 +336,45 @@ across datasets, not an issue here). The metric review page keeps the competitio
    **Resolved (2026-11-10, Andrej):** B: `data_tags = ("ForcedIIDFromTemporal", "Anonymized")` and the drafted `Time
    basis: ForcedIIDFromTemporal:` bullet in `curation_comments` (claims over an unstated period, the id a random draw,
    the 80/20 id test, what a dated release would change). Rows and split unchanged; record facts unchanged.
+
+4. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: No claim date; the id is a random draw (low vs high id ROC AUC 0.501; first 80% of ids RMSE 0.535 vs 0.538-0.541 random), and Kaggle releases no dated parent.
+     - Use: Allstate estimates each new claim's cost at filing, to route costly claims; the claims to come are filed after the collected period (unstated, around 2016).
+     - Mechanism: Anonymised claim attributes to the final settled cost; the cost follows medical, repair and legal prices and settlement practice, which change over years, and the loss may not be final for recent claims.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | Swiss Re Institute, sigma 4/2024 'Social inflation: litigation costs drive claims inflation' (https://www.swissre.com/institute/research/sigma-research/sigma-2024-04-social-inflation.html) (literature, cited from memory: check) | US liability claim severity beyond economic inflation | not flat: about 5.4% a year 2017-2022, ~7% in 2023, index above zero since 2014 | claim costs of a US insurer depend on the litigation and price environment of the year |
+     | pricing_game_2016_french_fleet | stationary-relation test v3, policy years 2011-2013, rescaled Tweedie deviance | inconclusive (gaps within noise; mean cost per row 171.6, 199.6, 201.8, +16% then +1%) | French motor pricing game, tariff fit on closed years and applied to the next |
+     | pricing_game_2017_french_mtpl (AIcrowd copy, splits_comment) | Gini of Tweedie LightGBM: same-year held-out clients against next year's policies | forward not worse (0.268 same-year design, 0.277 next year); claim level drifts 0-6% a year (119.3, 119.0, 112.3, 106.2 EUR, possibly organiser-built) | French MTPL pricing, next-year use |
+
+   * **For a stationary use case:**
+     - The routing use could run right after the collected period, and the cost ranking among claim types may be stable over a short step.
+   * **Against:**
+     - Claims inflation: US liability severity grew ~5.4% a year beyond economic inflation 2017-2022 (Swiss Re sigma 4/2024), and repair/medical prices on top.
+     - Varying settlement delay (Target: Varying Delay): the final cost of late-filed claims is unknown at release, and practice (handling, litigation) changes.
+     - Anonymised features and unstated period: no check possible.
+     - MAE on the raw scale is directly sensitive to the cost level.
+   * **Earlier views:**
+     - CC (2026-11-10, Andrej): ship as defined; split stays random over claims, natural in effect, tagged forced from temporal (issue 3, B).
+     - CC (2026-11-17, Andrej): blind split walk reaches the shipped random ForcedIIDFromTemporal split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Claims inflation: US liability severity grew ~5.4% a year beyond economic inflation 2017-2022 (Swiss Re sigma 4/2024), and repair/medical prices on top.; Varying settlement delay (Target: Varying Delay): the final cost of late-filed claims is unknown at release, and practice (handling, litigation) changes. |
+
+   * **Recommendation:** A, claim severity is driven by prices, litigation and settlement practice, all documented to drift; no domain reason makes later claims interchangeable. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Claim severity is driven by prices, litigation and settlement practice, all documented to drift; no domain reason makes later claims interchangeable.)
 
 ## Reference
 

@@ -383,20 +383,20 @@ class NoaaAfscBottomTrawlSurveyCpue(AbstractCuratedDataset):
         2009-2010; the 2019-2020 window holds only 2019, as no survey ran in 2020), newest first, each trained on every
         earlier survey, without a gap (Andrej, 2026-11-02: "no need to do five years. Also no planning gap is
         required"). Two years is the survey cycle: since 2005 the Gulf of Alaska is surveyed in odd years and the
-        Aleutians in even years, beside the yearly eastern Bering Sea shelf, so each window holds the EBS shelf, the
-        GOA and, except 2019, the AI; the slope survey ended in 2016, and the northern Bering Sea runs in some years
-        (2010, 2017, 2019, 2021-2023, 2025). Nine windows, as many as an IID task of this size would get folds
-        (SPLIT-15); the oldest trains on 54% of the rows, and a tenth (2007-2008) would train on 49%. No gap, an
-        exception to SPLIT-10: the 2022 review states no delay between a survey and its use, only the surveys it used
-        (1982-2019, TM-459, p. 3), and FOSS held the hauls of the 2026 summer by 30 October 2026, so a model refit
-        after each two-year survey cycle has every earlier survey when the next cycle starts; the cycle's second year
-        is predicted a season after the model's newest data (42.6% of the test hauls).
-        All rows of a haul share its date, so a haul's taxa stay on one side. The source scored its models on hauls
-        held out at random (Laman et al. 2017, p. 16; TM-459, p. 20); the windows ask how a model holds up on the
-        next survey cycle instead, as the same team tests its models by retrospective forecasts (Barnes, Essington,
-        Pirtle et al. 2022, Ecography e06189), and the 2022 review "assessed the forecasting accuracy of the 2017 SDM
-        approach" (TM-459, p. 3). Most test hauls are at a station seen in training (all of the eastern Bering Sea
-        grid; Gulf of Alaska stations are drawn anew for each survey).
+        Aleutians in even years, beside the yearly eastern Bering Sea shelf, so each window holds the EBS shelf, the GOA
+        and, except 2019, the AI; the slope survey ended in 2016, and the northern Bering Sea runs in some years (2010,
+        2017, 2019, 2021-2023, 2025). Nine windows, more than the three an IID split of this size would get (SPLIT-15);
+        the oldest trains on 54% of the rows, and a tenth (2007-2008) would train on 49%. No gap, an exception to
+        SPLIT-10: the 2022 review states no delay between a survey and its use, only the surveys it used (1982-2019,
+        TM-459, p. 3), and FOSS held the hauls of the 2026 summer by 30 October 2026, so a model refit after each
+        two-year survey cycle has every earlier survey when the next cycle starts; the cycle's second year is predicted
+        a season after the model's newest data (42.6% of the test hauls). All rows of a haul share its date, so a haul's
+        taxa stay on one side. The source scored its models on hauls held out at random (Laman et al. 2017, p. 16;
+        TM-459, p. 20); the windows ask how a model holds up on the next survey cycle instead, as the same team tests
+        its models by retrospective forecasts (Barnes, Essington, Pirtle et al. 2022, Ecography e06189), and the 2022
+        review "assessed the forecasting accuracy of the 2017 SDM approach" (TM-459, p. 3). Most test hauls are at a
+        station seen in training (all of the eastern Bering Sea grid; Gulf of Alaska stations are drawn anew for each
+        survey).
     """
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:

@@ -111,7 +111,9 @@ class GallstoneDisease(AbstractCuratedDataset):
           other scores 0.06-0.07 ROC AUC below random halves for every model, mostly because AST and ALT of those
           without gallstones step up mid-file; that order is not shown to be time (vitamin D has no seasonal wave along
           it). A dated release would test later outpatients and whether the two groups were recruited in different
-          months (vitamin D follows the season).
+          months (vitamin D follows the season). Not taken as stationary (Andrej, 2026-11-18): The mechanism and
+          one-year span would support ASR, but the measured drift along the file order is an explicit fact against;
+          mixed, so forced.
     """
 
     # Task

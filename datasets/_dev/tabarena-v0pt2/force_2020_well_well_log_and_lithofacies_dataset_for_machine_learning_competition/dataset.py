@@ -246,6 +246,11 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
         - Partial order, left unordered (2026-11-01, CLEAN-14): `GROUP`: the groups stack by geological age, but
           regional equivalents that never occur in the same well (Viking, Tyne and Boknfjord in the Upper Jurassic, for
           example) have no order between them.
+        - The curves a well carries change with its completion year (Sodir register): shear sonic in 0% of the
+          wells completed before 1990, 35% in the 1990s, 82% in the 2000s, 92% in the 2010s; SP and mud weight gone after
+          2000. A change in how features are recorded, kept as a note (SPLIT-37 step 4(a), Andrej, 2026-11-18): the newest
+          wells, which the use case meets, are logged like the newest training wells. Windows on the release date cost
+          little against random wells of the same size (mean penalty 0.698 against 0.674).
         - Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case interprets a well not yet
           drilled, from its logs, so the split holds out whole wells. The lithology at a depth is a property of the
           rock, and the wells reach the public one by one, not in waves: a split by release date holds out no more than

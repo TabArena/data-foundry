@@ -113,6 +113,8 @@ CC (2026-11-11, Lennart): the declared horizon (1 month, a one-month gap, window
 
 **Assessment (AI, 2026-11-11):** applied the horizon (b) and issue 12 (B) at one month: `_make_splits` builds `TemporalSplits(window=1, unit="months", gap=1, cutoffs=TEST_MONTHS)` and filters each training side by notification before the window's month start; `temporal` declares a one-month horizon with the one-month gap. Test crashes 9,641, 8,961, 9,031, 10,079, 8,924, 10,120, 9,095, 9,499 and 8,091 (83,441), fatal 6, 10, 7, 6, 9, 10, 12, 8 and 15 (83); train after the notification filter 978,937, 931,711, 879,272, 830,229, 777,987, 727,880, 675,888, 627,408 and 574,344 (98.1%, 93.3%, 88.1%, 83.2%, 77.9%, 72.9%, 67.7%, 62.9% and 57.5% of 998,117), so no window trains on less than half; 53 monthly windows keep half (May 2022 to September 2026). "Reported, not evident" is 4.0% and 4.8% of January and July 2023, 5.2% of December 2023 and 6.0-6.8% of the six newer windows. The gap month is 0.9-1.6% of a training side. 9,539 crashes are in no split (the 9,529 of August 2026, the newest window's gap month; 9 notified after 1 September 2026; 1 notified before its event), the accepted `splits_rows_unused` now says so. `dataset check`: 0 errors, 0 warnings.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `crash_date`, horizon 1 month, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The second review panel (2026-11-04) recommended shipping after changes, and issues 7-11 were

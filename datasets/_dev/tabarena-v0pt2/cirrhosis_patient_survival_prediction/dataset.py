@@ -90,7 +90,7 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
     # Dataset
     unique_name = "cirrhosis_patient_survival_prediction"
     domain = "medical & healthcare"
-    data_tags = ("StationaryRelation",)
+    data_tags = ("ForcedIIDFromTemporal",)
     sources = (
         Source(
             role="publication",
@@ -141,7 +141,11 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
           numbers (`SCORES`): `Stage`.
         - The target (2026-11-01, CLEAN-25): `death_or_transplant_within_5y` ships its classes as words (1 is the
           event). Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
-        - Time basis: StationaryRelation: the IDs follow registration within the trial and within the other patients,
+        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-19, review issue 6 C): three windows of 50 referrals
+          could be built on the registration order, but the curator keeps the 60 random folds. The stationary-relation
+          test (2026-11-18, two-year periods) is inconclusive for 1976-77 (LightGBM -0.011 ± 0.021 ROC AUC, Kumo-Tabular
+          -0.006 ± 0.022) and flat for 1978-79 and 1980-81 (Kumo-Tabular); pooled, Kumo-Tabular reads flat (-0.007 ±
+          0.011, floor 0.004). Earlier reading (2026-11-12, review issue 2 A): the IDs follow registration within the trial and within the other patients,
           and the censored patients' follow-up dates them (1974 to mid-1981). Measured along that order (2026-11-12):
           the event rate shows no trend (34%, 40%, 34% and 35% by two-year period); the outcome is not autocorrelated
           (lag-1 -0.05, permutation p 0.39; in the trial's exact ID order -0.11, p 0.08), nor is what the findings

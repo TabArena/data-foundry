@@ -63,6 +63,10 @@ CC (2026-11-12, Andrej): reviewed under the rule for cuts of growing scientific 
 
 CC (2026-11-12, Andrej): review page mark (issue 5, A): the random split over patients stays. TCGA is closed, so no later wave exists; the aliquot plate is recoverable only from the GDC and stands for the source site, and the year of diagnosis (169 of 261 cases) dates the patient, not the entry into TCGA; recorded in a curation note.
 
+CC (2026-11-18, Andrej): collection type stays `Experimental Results` (Review issue 7, A as implemented; full-information split check). Supersedes the Clinical Study mark of 2026-11-17 (issue 6):
+- the type rule for undated patient data names this dataset as experimental results;
+- as a clinical study the split would reopen on the GDC year of diagnosis, with no new fact for it.
+
 ## Review
 
 **Outcome:** added. The TCGA sarcoma cut of the Rappoport & Shamir multi-omic benchmark: 201 patients whose
@@ -136,6 +140,79 @@ as arrival keys and are in the notes (issue 5, A, 2026-11-12).
    split bullet records that TCGA is closed, that the plate code is recoverable only from the GDC, and the dating
    numbers (year of diagnosis for 169 of 261 cases, 1996 to 2013); record CC line. Data, split and score unchanged;
    `dataset check` re-run.
+
+6. **Collection type: `Clinical Study` instead of `Experimental Results` for TCGA's profiled sarcoma specimens?**
+
+   * **Problem:**
+     - the rule[^split-34]'s tie rule names this case: patient data without dates is experimental results when it has no time dimension ('a tumour's type measured on banked specimens'), and the record carries `Samples: No Time Dimension`.
+     - TCGA is closed and its one date, the year of diagnosis (169 of 261 cases), dates the patient, not the case's entry, so no arrival order exists under either type.
+     - Re-walked as a clinical study for later patients at the same lab, the folds stay random over patients and only the tag becomes `ForcedIIDFromTemporal`; the other-site branch gives site folds, measured (random forest log loss 0.46 to 0.58) and declined on 2026-10-22.
+   * **The doubt:** A multi-site patient cohort (TCGA, 32 tissue source sites) is closer to a clinical study than to designed runs.
+   * **What changes:** Nothing.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `Experimental Results` with `Samples: No Time Dimension`: stratified random 3-fold CV × 20 repeats (seed 4267) over the 201 patients, test 67, train 134, `Timeless` (implemented) | No change. | Matches the rule[^split-34] rule 5 word for word; `Timeless` says what holds: a primary tumour's type does not change once assigned. | TCGA's patients did arrive over years from 32 tissue source sites, which the type does not show; site optimism (one site holds 101 of 201 rows) is left to the split note. |
+     | B | Tag `Clinical Study` with `Samples: Over Time`: the same random 3-fold CV × 20 over the 201 patients, tagged `ForcedIIDFromTemporal` (later patients, order lost, one row per patient) | The record's type tag and `Samples:` fact change; `data_tags` `Timeless` → `ForcedIIDFromTemporal` and the `Time basis:` line rewritten; folds unchanged, container rebuilt for the tag. | Names the patients' arrival over time and the untested later period. | Breaks the rule[^split-34] rule 5, which puts banked tumour specimens without a time dimension under experimental results; the folds do not change, so nothing measured changes. |
+
+   * **Recommendation:** A, because the rule[^split-34] rule 5 gives this exact case ('a tumour's type measured on banked specimens') to experimental results, and the folds are the same under both.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: change the record's type tag to `Clinical Study`, re-walk the tree from it and check whether the leaf changes; update the type rules' examples.
+
+   [^split-34]: **SPLIT-34** (Should): Every record of a definition names how its source collected the rows with one **data collection type**, set at screening from the source and true whatever task is built on it.
+
+   **Andrej (2026-11-17, change):** Option B: Tag Clinical Study. Then rewalk
+
+   **Answer (AI, 2026-11-17):** The type rules give this very case as their example of experimental results: change the
+   type against them?
+
+   * **Problem:**
+     - The type rules sort undated patient data by how it arrived: experimental results when the data has no time
+       dimension, "a tumour's type measured on banked specimens", which is the rules' own wording for this dataset[^sa1].
+     - TCGA's specimens were banked by 32 tissue source sites and profiled later; nothing dates a patient's arrival.
+     - The walk again as a clinical study depends on where the model is used: at another site, the 32 sites are
+       enough to hold out (whole sites, `UnseenGroup`); at the same lab for later patients, the order is lost
+       (random folds, `ForcedIIDFromTemporal`). As experimental results it is random folds, `Timeless`, as shipped.
+   * **Background:** the definition measured holding out sites: log loss 0.46 rises to 0.58, and kept random folds for
+     a lab typing new patients.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | `Clinical Study`, the model used at another site | type tag changes; folds hold out whole tissue source sites (32), `UnseenGroup` | tests the transfer to a new site, which costs 0.12 log loss | breaks the rule's own case; needs a written exception |
+     | b | `Clinical Study`, the model used at the same lab | type tag changes; random folds, `ForcedIIDFromTemporal` | the reading you marked | breaks the rule's own case; the folds do not change |
+     | c | Keep `Experimental Results` (implemented) | no change | the rule and its case agree | the specimens stay read as designed measurements |
+
+   * **Recommendation:** c, unless the use case is another site; then the question is the split (a), not the type.
+     **Decision:** a, b or c?
+
+   [^sa1]: **SPLIT-34** (Should), rule 5: patient data without dates is a clinical study when the patients arrived
+     over time, and experimental results when the data has no time dimension (a tumour's type measured on banked
+     specimens).
+
+   **Resolved (2026-11-18, Andrej):** superseded by issue 7, where `Experimental Results` is kept as implemented (A); the type tag and the folds do not change.
+
+7. **Keep the type `Experimental Results`, as the type rules name sarcoma?**
+
+   * **Problem:**
+     - You marked `Clinical Study` (2026-11-17); the type rule for undated patient data names sarcoma itself as experimental results (tumour types measured on banked specimens)[^s34r5].
+     - lung_adenocarcinoma_metastasis, the rule's other example, keeps `Experimental Results` by your ok of the same day.
+     - As a clinical study it would be walked as later patients at one lab, with the GDC's year of diagnosis (169 of 261 cases) as an arrival date: a new split question, not only a tag.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | `Experimental Results` (implemented) | No change | What the type rule says | |
+     | B | `Clinical Study` | The type rule and its cases are amended; the split is re-walked on the years of diagnosis | Your mark | The two TCGA sets differ for no stated reason; the split reopens |
+
+   * **Recommendation:** A, because the type rule names this dataset and the split would reopen for no new fact. **Decision:** A or B?
+
+   [^s34r5]: **SPLIT-34** rule 5 (Should): "Patient data without dates is a clinical study when the patients arrived over time (`Samples: Over Time`), and experimental results when the data has no time dimension (`Samples: No Time Dimension`: a tumour's type measured on banked specimens)." Its cases: "sarcoma, lung_adenocarcinoma_metastasis (experimental results)".
+
+   **Andrej (2026-11-18, ok):** As implemented (A).
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: `Experimental Results` with `Samples: No Time Dimension`, as the type rule's own example (a tumour's type measured on banked specimens); random folds over patients, `Timeless`. Nothing changes.
 
 ## Reference
 

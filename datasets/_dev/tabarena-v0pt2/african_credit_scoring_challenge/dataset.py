@@ -22,7 +22,9 @@ LABEL_SETTLED_DAYS = 30
 """A loan's label counts as known this many days after its due date (curation comments, "Unsettled labels")."""
 
 N_WINDOWS = 6
-"""Test windows at the end of the Type_1 lending: more would leave some with 8 default rows (splits comment)."""
+"""Test windows at the end of the Type_1 lending: six of the nine an IID split of this size would get, as only the loans
+from 15 October 2022 have half the rows settled before them, and those 48 days hold six windows of about a week
+(splits comment)."""
 
 WINDOW_DAYS = 7
 """The declared horizon: the test windows hold about a week of loans each (6-11 days; splits comment)."""
@@ -88,7 +90,7 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
             "due dates, the lender's funded amount and share."
         ),
         split=(
-            "Six test windows of 5-10 days at the end of the product's lending, October to December 2022. Each trains "
+            "Six test windows of 6-11 days at the end of the product's lending, October to December 2022. Each trains "
             "on the loans whose label had settled before the window starts."
         ),
         changes=(
@@ -181,9 +183,16 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
 
     # Splits: six windows at the end of the Type_1 lending (`_make_splits`)
     splits_comment = """
-        A lender scores each loan when it is disbursed and refits on the loans whose outcome it knows, at least once a month; the six windows hold about a week of loans each (6-11 days, the declared horizon 7 days). A loan's label counts as known 30 days after its due date, so each training side holds the loans whose due date lies more than 30 days before the window starts; the loans of the five weeks before a window are not in its training side. Six windows of about equal numbers of rows cover the end of the product's lending, newest first, from the first day by which half of the rows have a settled label to the last Type_1 loan on 2022-12-01; they hold 18-22 default rows each, and more windows would leave some with 8. The 2022 windows leave out the 8-18% of the rows of their dates whose lender funds less than one unit (curation comments).
+        A lender scores each loan when it is disbursed and refits on the loans whose outcome it knows, at least once a month; the six windows hold about a week of loans each (6-11 days, the declared horizon 7 days). A loan's label counts as known 30 days after its due date, so each training side holds the loans whose due date lies more than 30 days before the window starts; the loans of the five weeks before a window are not in its training side. Six windows of about equal numbers of rows cover the end of the product's lending, newest first, from the first day by which half of the rows have a settled label to the last Type_1 loan on 2022-12-01; they hold 18-22 default rows each. Six of the nine windows an IID split of this size would get: a label settles 37 days after disbursement, so only the loans from 15 October 2022 have half the rows settled before them, and those 48 days hold six windows of about a week (Andrej, 2026-11-19, review issue 1, A). The 2022 windows leave out the 8-18% of the rows of their dates whose lender funds less than one unit (curation comments).
     """
     temporal = Temporal(on="disbursement_date", horizon=WINDOW_DAYS, horizon_unit="days")
+    accepted_check_warnings = {
+        "splits_below_target": (
+            "Six of the nine windows an IID split of this size would get: a label settles 37 days after disbursement, "
+            "so only the loans from 15 October 2022 have half the rows settled before them, and those 48 days hold "
+            "six windows of about a week (Andrej, 2026-11-19, review issue 1, A)."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         return {"train": pd.read_csv(raw_dir / "Train.csv"), "test": pd.read_csv(raw_dir / "Test.csv")}

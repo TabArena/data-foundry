@@ -50,6 +50,8 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `jd_com_msom_2020_delivery_time` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `order_purchase_timestamp`, horizon 1 month, 5 windows, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Reference
 
 ?

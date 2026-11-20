@@ -111,7 +111,9 @@ class LibertyMutualFirePerilLossCost(AbstractCuratedDataset):
         - Anomaly: the location blocks are coarse: 2,588 distinct geodemographic vectors, 327 crime and 24,531 weather vectors.
         - Time basis: ForcedIIDFromTemporal (SPLIT-8): an underwriter prices next term's policies, but the release has
           no dates and no risk id, so policies are split at random as the competition split them; a risk's other terms
-          in training carry nothing of its outcome (`splits_comment`). A dated release would allow a split by term.
+          in training carry nothing of its outcome (`splits_comment`). A dated release would allow a split by term. Not
+          taken as stationary (Andrej, 2026-11-18): A partly physical peril, but a commercial market product with an
+          undisclosed transformed loss ratio, an unknown period and a volatile neighbour; mixed at best.
     """
 
     accepted_check_warnings = {

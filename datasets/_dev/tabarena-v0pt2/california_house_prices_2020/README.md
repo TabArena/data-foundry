@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: california_house_prices_2020
 container_format: 2
-checksum: v2:15920219ebc9b73b33ec560c5b0d2cf53e648db7b9e4456f675b550baab7a484
+checksum: v2:74ea551986219b5cd209487c025cd881a4663e8b3038bde262e0ba50226c55cd
 build:
   uuid: 01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a
   checksum: v2:c703f2c88510fa9def52e7c79051dd9dd5f9e711d25ea0914082fd131606d0eb
@@ -37,25 +37,25 @@ task:
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: time_index
-  time_is_feature: false
+  time_of: label
   group_on: null
   group_labels: null
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 3
+  n_repeats: 9
   n_folds: 1
   random_state: 4267
-  time_horizon: 6497
+  time_horizon: 2165
   time_horizon_unit: steps
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 19495
-    max: 32489
+    min: 19501
+    max: 36821
   n_test:
-    min: 6497
-    max: 6497
+    min: 2165
+    max: 2165
 bundle_checks:
   ok: true
   errors: []
@@ -72,7 +72,7 @@ decisions: []
 
 Regression of `Sold Price`, scored with `rmsle` on temporal splits by `time_index`. 38,986 rows and 40 features. Source: Kaggle (2021).
 
-Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:15920219ebc9b73b33ec560c5b0d2cf53e648db7b9e4456f675b550baab7a484`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:74ea551986219b5cd209487c025cd881a4663e8b3038bde262e0ba50226c55cd`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -86,7 +86,7 @@ Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14, but `dataset.py` 
 
 **Known at prediction time.** The listing (list price, listing date, description), the home's facts (type, year built, size, lot, rooms, heating, cooling, parking, appliances), its previous sale, tax assessment, address, region, and nearby schools with ratings and distances. The sale order (`time_index`) orders the split but is no model input.
 
-**What the test data stands for.** Three test sets, each a sixth of the sales in sale order (the newest half of the sales), with all earlier sales for training. The order comes from the Kaggle row ID, as the data has no sale dates.
+**What the test data stands for.** Nine test sets of 2,165 sales each in sale order (the newest half of the sales), with all earlier sales for training (50% to 94% of the sales). The order comes from the Kaggle row ID, as the data has no sale dates.
 
 **Our changes to the source.** We drop 5,413 listings whose description states the sold price, one written after the sale ("closed escrow"), 2,480 whose listing describes an earlier sale, 111 second copies of a sale scraped twice (57 under one address, 54 under another spelling), and 14 sales that carry one price booked on several homes, and order and split the sales by the Kaggle ID, which follows the sale order.
 
@@ -139,7 +139,7 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmsle |
 | task.split_regime | temporal_non_iid |
 | task.time_on | time_index |
-| task.time_is_feature | False |
+| task.time_of | label |
 
 **Metric**
 
@@ -196,7 +196,7 @@ We found out that the data was web scraped from a real-estate website and that t
 
 - We log scale the target variable (log1p); the metric is the competition's RMSLE on the price, computed after the inverse (`target_transform="log1p"`).
 - We do not have the exact dates but we know a higher ID means a later sale. We name the ID column accordingly to "time_index" and use it to order and split the rows. The data agree: sorted by ID, the latest listing date per ID decile rises from 2020-03-02 to 2020-12-30. We split on this sale order, not on "Listed On": a house is listed before it is sold, so a listing-date split could train on a house that sells after the test period starts.
-- `time_index` orders and splits the rows and is no model input (`Temporal(..., feature=False)`): it arrives with the target (2026-11-12, Andrej). A home is predicted at its listing, and the sale's place in the sale order is the listing plus the time on market, known only once the home sells; the listing date (`Listed On`) stays a feature.
+- `time_index` orders and splits the rows and is no model input (`Temporal(..., time_of="label")`): it arrives with the target (2026-11-12, Andrej). A home is predicted at its listing, and the sale's place in the sale order is the listing plus the time on market, known only once the home sells; the listing date (`Listed On`) stays a feature.
 - The descriptions did contain the last sold price with a standard phrase such as "This home last sold for $X in January 2020. The Zestimate for this house is $Y The Rent Zestimate for this home is $Z/mo.". In these cases $X is identical to the target variable. Given such a drastic data leakage, we remove all rows (5413) that contain this phrase in the description to ensure they are not different in other ways too.
 - The website is Zillow, not Redfin as first assumed (2026-11-11): 5,314 descriptions carry Zillow's generated text for off-market homes ("The Zestimate for this house is $Y"), some "Note: This property is not currently for sale or for rent on Zillow.", and the column names are Zillow's fact labels ("Total interior livable area", "Appliances included", "Laundry features"); Redfin appears only in agents' own words (6 descriptions). The Kaggle host does not name the website. The sale order was checked on redfin.com, which shows the same sale histories.
 - The one description written after the sale (Andrej, 2026-11-10 and 2026-11-11; LEAK-10): we drop the sale whose description says "Property has closed escrow for $1,500,000". Twelve more descriptions give a dollar amount within 0.5% of the sold price that is not the list price, but they are asking prices a buyer reads at the listing (a price cut, "buy it now", a probate auction's minimum overbid) or loose bounds ("under $500K"), and stay: a price known before the sale is a feature, and dropping a row because its text is close to its own label selects rows by the label. "sold for" is no rule: its 39 other descriptions speak of neighbours, earlier sales or "sold for land value".
@@ -220,20 +220,27 @@ We found out that the data was web scraped from a real-estate website and that t
 
 ## Splits
 
-Three test windows in sale order, each a sixth of the sales (6,497 rows), cut from the newest half; each trains on all earlier sales (50%, 67% and 83% of the rows), so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods. The earlier layout (each window a quarter of the rows) trained the oldest window on 25% of the rows, below SPLIT-14's floor (2026-10-21).
+Nine test windows in sale order, each a ninth of the newest half of the sales (2,165 rows), each trained on all earlier sales (Andrej, 2026-11-19, review issue 10, B): 50.0%, 55.6%, 61.1%, 66.7%, 72.2%, 77.8%, 83.3%, 88.9% and 94.4% of the 38,986 rows, so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods; 2,165 sales span about two to three weeks of listings. The use case (a price estimate at listing) sets no window length and no source gives a refit cadence, so the windows follow the nine an IID split of this size would get; until 2026-11-19 three windows of a sixth of the sales (6,497 rows) shipped, and before 2026-10-21 quarters, whose oldest trained on 25% of the rows.
 The windows are cut in sale order, the time the label arrives, while a home is predicted at its listing: a test
-home listed before its window began meets training sales that closed after its listing (80-96% of each
-window's test homes; a gap of a third or a whole window at equal training size changes the RMSLE by -0.001 to
-+0.005, in no consistent direction, 2026-11-11). A home enters the data only once sold, so a cut on the listing
-date would make the newest listings the fast sellers.
+home listed before its window began meets training sales that closed after its listing (97-100% of each
+window's test homes listed before the latest training listing, 2026-11-19; on the sixths a gap of a third or a
+whole window at equal training size changed the RMSLE by -0.001 to +0.005, in no consistent direction,
+2026-11-11). A home enters the data only once sold, so a cut on the listing date would make the newest listings
+the fast sellers.
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 19,495 to 32,489 rows, test 6,497 rows. Prediction horizon: 6497 steps. The time column `time_index` orders and splits the rows and is no model input: `feature_columns(container)` leaves it out.
+9 repeat(s) x 1 fold(s) with seed 4267; train 19,501 to 36,821 rows, test 2,165 rows. Prediction horizon: 2165 steps. The time column `time_index` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 32489 | 6497 | 0 | 34596 | 34597 | 41536 |
-| 1 | 0 | 25992 | 6497 | 0 | 27679 | 27680 | 34596 |
-| 2 | 0 | 19495 | 6497 | 0 | 20794 | 20795 | 27679 |
+| 0 | 0 | 36821 | 2165 | 0 | 39206 | 39207 | 41536 |
+| 1 | 0 | 34656 | 2165 | 0 | 36902 | 36903 | 39206 |
+| 2 | 0 | 32491 | 2165 | 0 | 34598 | 34599 | 36902 |
+| 3 | 0 | 30326 | 2165 | 0 | 32279 | 32280 | 34598 |
+| 4 | 0 | 28161 | 2165 | 0 | 29979 | 29980 | 32279 |
+| 5 | 0 | 25996 | 2165 | 0 | 27684 | 27685 | 29979 |
+| 6 | 0 | 23831 | 2165 | 0 | 25389 | 25390 | 27684 |
+| 7 | 0 | 21666 | 2165 | 0 | 23085 | 23086 | 25389 |
+| 8 | 0 | 19501 | 2165 | 0 | 20800 | 20801 | 23085 |
 
 
 ### The test windows
@@ -242,13 +249,19 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
 |---|---|---|---|---|---|---|---|---|
-| 0 | 34597 - 41536 | 6497 | 0.833 | mean 13.62, median 13.61, p10 12.62, p90 14.56 | mean 13.83, median 13.86, p10 12.9, p90 14.71 | 0.291 | Zip Region (0.29), Listed Price (0.10), Tax assessed value (0.06) | 0 |
-| 1 | 27680 - 34596 | 6497 | 0.667 | mean 13.76, median 13.79, p10 12.75, p90 14.68 | mean 13.85, median 13.88, p10 12.95, p90 14.73 | 0.098 | Zip Region (0.10), Elementary School Distance (0.02), Annual tax amount (0.02) | 0 |
-| 2 | 20795 - 27679 | 6497 | 0.5 | mean 13.83, median 13.86, p10 12.86, p90 14.71 | mean 13.85, median 13.88, p10 12.96, p90 14.73 | 0.039 | Zip Region (0.04), High School Score (0.01), Lot (0.01) | 0 |
+| 0 | 39207 - 41536 | 2165 | 0.944 | mean 13.56, median 13.53, p10 12.57, p90 14.54 | mean 13.81, median 13.84, p10 12.85, p90 14.7 | 0.397 | Zip Region (0.40), Listed Price (0.16), Annual tax amount (0.09) | 0 |
+| 1 | 36903 - 39206 | 2165 | 0.889 | mean 13.62, median 13.61, p10 12.64, p90 14.56 | mean 13.82, median 13.86, p10 12.9, p90 14.71 | 0.251 | Zip Region (0.25), Listed Price (0.09), Annual tax amount (0.07) | 0 |
+| 2 | 34599 - 36902 | 2165 | 0.833 | mean 13.68, median 13.7, p10 12.68, p90 14.57 | mean 13.83, median 13.86, p10 12.9, p90 14.72 | 0.161 | Zip Region (0.16), Listed Price (0.05), Tax assessed value (0.03) | 0 |
+| 3 | 32280 - 34598 | 2165 | 0.778 | mean 13.73, median 13.75, p10 12.73, p90 14.65 | mean 13.83, median 13.86, p10 12.91, p90 14.71 | 0.121 | Zip Region (0.12), Listed Price (0.03), Elementary School Distance (0.02) | 0 |
+| 4 | 29980 - 32279 | 2165 | 0.722 | mean 13.79, median 13.83, p10 12.77, p90 14.72 | mean 13.84, median 13.87, p10 12.93, p90 14.72 | 0.075 | Zip Region (0.08), Elementary School Distance (0.02), Annual tax amount (0.02) | 0 |
+| 5 | 27685 - 29979 | 2165 | 0.667 | mean 13.76, median 13.8, p10 12.77, p90 14.68 | mean 13.84, median 13.87, p10 12.94, p90 14.71 | 0.063 | Zip Region (0.06), Elementary School Distance (0.02), Annual tax amount (0.02) | 0 |
+| 6 | 25390 - 27684 | 2165 | 0.611 | mean 13.82, median 13.86, p10 12.81, p90 14.69 | mean 13.86, median 13.88, p10 12.96, p90 14.73 | 0.062 | Zip Region (0.06), Lot (0.02), High School Distance (0.02) | 0 |
+| 7 | 23086 - 25389 | 2165 | 0.556 | mean 13.85, median 13.88, p10 12.9, p90 14.73 | mean 13.85, median 13.88, p10 12.96, p90 14.73 | 0.03 | Zip Region (0.03), Lot (0.02), High School Score (0.01) | 0 |
+| 8 | 20801 - 23085 | 2165 | 0.5 | mean 13.82, median 13.85, p10 12.87, p90 14.71 | mean 13.85, median 13.88, p10 12.96, p90 14.73 | 0.017 | High School Score (0.02), Zip Region (0.02), Elementary School Distance (0.01) | 0 |
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_sequential_id_column`: 1 integer column(s) hold one value per row, densely numbered like a running id: ['time_index']. (hint: A running id often encodes the order of collection (time) or the origin (a prefix per source), which a model then learns. Drop it, or declare it `NonFeature(column, 'identifier')` in the parent.)
 
@@ -424,4 +437,4 @@ Each test window against its train side, by statistics of the data, never of a m
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:15920219ebc9b73b33ec560c5b0d2cf53e648db7b9e4456f675b550baab7a484` |
+| stale | yes: the definition now gives checksum `v2:74ea551986219b5cd209487c025cd881a4663e8b3038bde262e0ba50226c55cd` |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_tid_11
 container_format: 2
-checksum: v2:6b1533b3a84b7ce35e0b322dfa4274fd1675b49f98b269ba07f6a8bc73d4db29
+checksum: v2:5b53b40e99f8ff41c7667e31936e41249b43c158c96025a2aa17118d8edaa784
 build:
   uuid: 01a111fc-77d3-7128-8497-210288cab270
   checksum: v2:6aced922d7a0d199fe8637391bf863bc500c5c50733d7ca006d3a0643874bde3
@@ -35,7 +35,7 @@ task:
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: first_year
-  time_is_feature: false
+  time_of: label
   group_on: null
   group_labels: null
   group_time_on: null
@@ -43,19 +43,19 @@ task:
   special_features:
     SMILES: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 splits:
-  n_repeats: 5
+  n_repeats: 9
   n_folds: 1
   random_state: 4267
-  time_horizon: 2
+  time_horizon: 1
   time_horizon_unit: years
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 3280
-    max: 5545
+    min: 3660
+    max: 5655
   n_test:
-    min: 159
-    max: 744
+    min: 49
+    max: 638
 bundle_checks:
   ok: true
   errors: []
@@ -72,7 +72,7 @@ decisions: []
 
 Regression of `MEDIAN_PXC50`, scored with `rmse` on temporal splits by `first_year`. 5,704 rows and 1 features. Source: OpenML (2015).
 
-Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6b1533b3a84b7ce35e0b322dfa4274fd1675b49f98b269ba07f6a8bc73d4db29`, so the build is stale. See [Build](#build).
+Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5b53b40e99f8ff41c7667e31936e41249b43c158c96025a2aa17118d8edaa784`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -86,7 +86,7 @@ Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` 
 
 **Known at prediction time.** The compound's chemical structure, as a SMILES string; the year it first appears in the thrombin literature orders the split but is no model input.
 
-**What the test data stands for.** The compounds are held out by the year they first appear in the literature: five windows of two years from 2004 to 2013, each predicted from the compounds published before it, so the test data stands for the candidates that come next.
+**What the test data stands for.** The compounds are held out by the year they first appear in the literature: nine windows of one year from 2005 to 2013, each predicted from the compounds published before it, so the test data stands for the candidates that come next.
 
 **Our changes to the source.** We drop one row with a negative activity value, judged a data error, and 37 rows that are salt forms of a compound already in the data, replace the authors' fingerprint with the compound's structure from ChEMBL 17, add the year the compound first appears in ChEMBL 17's thrombin records, and split by that year instead of at random.
 
@@ -147,7 +147,7 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
 | task.time_on | first_year |
-| task.time_is_feature | False |
+| task.time_of | label |
 
 **Metric**
 
@@ -219,8 +219,9 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
   Why the split changed: under the scaffold split 58% of the test compounds keep a close training analog
   (Tanimoto >= 0.7, Morgan radius 2), and 71% to 93% of those analogs were first published in the same year as
   the test compound, so the folds hold ring skeletons out but not the series of a paper, which a chemist
-  screening a new candidate does not have either. Measured on the shipped windows and all 5,704 compounds,
-  with the recommended SMILES encoding, untuned LightGBM and random forest, RMSE (Slurm jobs 1378119 and
+  screening a new candidate does not have either. Measured on all 5,704 compounds,
+  on the two-year windows shipped from 2026-11-11 to 2026-11-19 (the test-windows bullet below gives today's
+  one-year windows), with the recommended SMILES encoding, untuned LightGBM and random forest, RMSE (Slurm jobs 1378119 and
   1378141, 2026-11-11); the scaffold columns are the 3 x 3 scaffold-grouped out-of-fold scores on the same
   compounds:
 
@@ -236,7 +237,7 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
   Where the difference comes from, at the same number of training compounds where the pool allows (LightGBM
   RMSE, the drawn sets averaged over 3 seeds):
 
-  | Test window | Earlier years only (shipped) | Any year, no test scaffold | Any year, at random | Compounds published later |
+  | Test window | Earlier years only (split by year) | Any year, no test scaffold | Any year, at random | Compounds published later |
   |---|---|---|---|---|
   | 2004-05 | 1.502 | 1.281 | 1.305 | 1,791 |
   | 2006-07 | 1.049 | 1.083 | 1.038 | 1,193 |
@@ -250,7 +251,7 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
   keeps rather than the later papers. An earlier run on four hand-chosen windows (2004, 2005-06, 2007-08,
   2009-13), dated from today's web service with the deposit left out, pointed the same way: LightGBM 0.68 to
   0.90 by scaffold against 1.11 to 1.31 by year (Slurm jobs 1366166 and 1366180, 2026-11-06).
-  Checked on the shipped windows (2026-11-11): the task probes raise no flag (LightGBM R^2 0.350, skill
+  Checked on the two-year windows (2026-11-11): the task probes raise no flag (LightGBM R^2 0.350, skill
   +0.419 over the dummy and ahead of it on all five windows, random forest 0.313, selected linear 0.138,
   plain linear -0.409; spread LightGBM - linear +0.659, paired standard error 0.177). The leak probes find no
   test row with an exact feature copy in training (0.0% over the five windows) and no single feature near the
@@ -261,7 +262,7 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
   The potency itself is a fixed property of the compound; what moves with the year is which compounds exist,
   and with them the level of the targets (mean pXC50 6.43 up to 2003, 6.42 in 2004-05, 6.00 in 2006-07, 6.37
   in 2008-09, 5.44 in 2010-11, 5.77 in 2012-13; Spearman year against target -0.24).
-- `first_year` orders and splits the rows and is no model input (`Temporal(..., feature=False)`): it arrives
+- `first_year` orders and splits the rows and is no model input (`Temporal(..., time_of="label")`): it arrives
   with the target, the paper that reports the compound's potency, while a chemist screens a molecule before
   making and testing it (2026-11-12, Andrej, review issue 4 B). From 2026-11-11 to 2026-11-12 it was a feature
   as well; the probes above ran with it.
@@ -279,6 +280,10 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
   ChEMBL dates them, so the record carries `Samples: Over Time` and `Time: Dated` in place of `Samples: No
   Time Dimension`. No `Target: Revised Later`: only 5.1% of the compounds have a thrombin record from a year
   later than their first, so a median label seldom moves after the compound's first publication.
+- Test windows (Andrej, 2026-11-19, review issue 5, B): one publication year each, nine windows from 2013 back
+  to 2005, in place of five windows of two years (2004-05 to 2012-13): the two years came from cutting the
+  newest half of the 22 years into five windows, and nothing in the use case asks for them; whole years reach
+  the target of nine windows at half the data or more (splits comment).
 - The file lists the compounds roughly in ChEMBL ID order, and the mean activity drifts along it (6.8 in the
   first tenth, 5.6 in the ninth), mostly the PubChem deposit at positions 70% to 90%; the file position
   follows the first year only loosely (Spearman 0.48). The frame ships sorted by `first_year` (the time
@@ -330,17 +335,21 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
 
 ## Splits
 
-Expanding-window temporal splits on the year a compound first appears in ChEMBL 17's human thrombin records: 5 test windows of two years (2012-13, 2010-11, 2008-09, 2006-07, 2004-05), newest first; train is every compound first published before the window. The windows hold 159, 744, 290, 598 and 633 compounds, and their train sides 5,545, 4,801, 4,511, 3,913 and 3,280 compounds (97%, 84%, 79%, 69% and 57% of all 5,704). A model trained on the compounds known up to a year predicts the potency of the compounds that appear in the next two. Two years is the window the protocol derives from five windows over the newest half of the 22 publication years, and the smallest window (2012-13) still holds 159 compounds. The 518 compounds of the undated PubChem BioAssay deposit take 2011, the year ChEMBL 9 loaded it, which puts them in the 2010-11 window. The scaffold-grouped split this replaces trained on same-year siblings of the test compounds (curation notes).
+Expanding-window temporal splits on the year a compound first appears in ChEMBL 17's human thrombin records: 9 test windows of one year (2013 back to 2005), newest first; train is every compound first published before the window (Andrej, 2026-11-19, review issue 5, B). The windows hold 49, 110, 638, 106, 105, 185, 308, 290 and 253 compounds (2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005), and their train sides 5,655, 5,545, 4,907, 4,801, 4,696, 4,511, 4,203, 3,913 and 3,660 compounds (99.1%, 97.2%, 86.0%, 84.2%, 82.3%, 79.1%, 73.7%, 68.6% and 64.2% of all 5,704). A model trained on the compounds known up to a year predicts the potency of the compounds that appear in the next. The use case sets no refit cadence, and the date gives whole years only: one year is the finest step, and nine whole-year windows reach the count an IID split of 5,704 compounds would get, all training on more than half the data; 2004 (57.5%) would be a tenth. The windows of 2013 (49), 2010 (106) and 2009 (105) are small and noisier. Until 2026-11-19 five two-year windows (2004-05 to 2012-13) shipped, a length cut from the newest half of the 22 years. The 518 compounds of the undated PubChem BioAssay deposit take 2011, the year ChEMBL 9 loaded it, which puts them in the 2010-11 window. The scaffold-grouped split this replaces trained on same-year siblings of the test compounds (curation notes).
 
-5 repeat(s) x 1 fold(s) with seed 4267; train 3,280 to 5,545 rows, test 159 to 744 rows. Prediction horizon: 2 years. The time column `first_year` orders and splits the rows and is no model input: `feature_columns(container)` leaves it out.
+9 repeat(s) x 1 fold(s) with seed 4267; train 3,660 to 5,655 rows, test 49 to 638 rows. Prediction horizon: 1 years. The time column `first_year` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 5545 | 159 | 1992 | 2011 | 2012 | 2013 |
-| 1 | 0 | 4801 | 744 | 1992 | 2009 | 2010 | 2011 |
-| 2 | 0 | 4511 | 290 | 1992 | 2007 | 2008 | 2009 |
-| 3 | 0 | 3913 | 598 | 1992 | 2005 | 2006 | 2007 |
-| 4 | 0 | 3280 | 633 | 1992 | 2003 | 2004 | 2005 |
+| 0 | 0 | 5655 | 49 | 1992 | 2012 | 2013 | 2013 |
+| 1 | 0 | 5545 | 110 | 1992 | 2011 | 2012 | 2012 |
+| 2 | 0 | 4907 | 638 | 1992 | 2010 | 2011 | 2011 |
+| 3 | 0 | 4801 | 106 | 1992 | 2009 | 2010 | 2010 |
+| 4 | 0 | 4696 | 105 | 1992 | 2008 | 2009 | 2009 |
+| 5 | 0 | 4511 | 185 | 1992 | 2007 | 2008 | 2008 |
+| 6 | 0 | 4203 | 308 | 1992 | 2006 | 2007 | 2007 |
+| 7 | 0 | 3913 | 290 | 1992 | 2005 | 2006 | 2006 |
+| 8 | 0 | 3660 | 253 | 1992 | 2004 | 2005 | 2005 |
 
 
 ### The test windows
@@ -349,15 +358,19 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
 |---|---|---|---|---|---|---|---|---|
-| 0 | 2012 - 2013 | 159 | 0.972 | mean 5.77, median 5.488, p10 4.191, p90 7.585 | mean 6.249, median 5.903, p10 4.353, p90 8.538 | nan |  | nan |
-| 1 | 2010 - 2011 | 744 | 0.842 | mean 5.44, median 4.615, p10 4.301, p90 7.868 | mean 6.374, median 6.036, p10 4.678, p90 8.602 | nan |  | nan |
-| 2 | 2008 - 2009 | 290 | 0.791 | mean 6.373, median 6.076, p10 4.353, p90 8.889 | mean 6.374, median 6.027, p10 4.678, p90 8.58 | nan |  | nan |
-| 3 | 2006 - 2007 | 598 | 0.686 | mean 5.999, median 5.849, p10 4.523, p90 7.73 | mean 6.431, median 6.097, p10 4.699, p90 8.699 | nan |  | nan |
-| 4 | 2004 - 2005 | 633 | 0.575 | mean 6.423, median 6, p10 4.959, p90 8.813 | mean 6.433, median 6.129, p10 4.678, p90 8.665 | nan |  | nan |
+| 0 | 2013 - 2013 | 49 | 0.991 | mean 6.074, median 6.219, p10 4.844, p90 7.108 | mean 6.237, median 5.886, p10 4.319, p90 8.523 | nan |  | nan |
+| 1 | 2012 - 2012 | 110 | 0.972 | mean 5.634, median 5.128, p10 4.08, p90 7.785 | mean 6.249, median 5.903, p10 4.353, p90 8.538 | nan |  | nan |
+| 2 | 2011 - 2011 | 638 | 0.86 | mean 5.369, median 4.398, p10 4.301, p90 7.567 | mean 6.363, median 6.017, p10 4.678, p90 8.602 | nan |  | nan |
+| 3 | 2010 - 2010 | 106 | 0.842 | mean 5.868, median 5.222, p10 4.504, p90 8.604 | mean 6.374, median 6.036, p10 4.678, p90 8.602 | nan |  | nan |
+| 4 | 2009 - 2009 | 105 | 0.823 | mean 5.91, median 5.721, p10 4.481, p90 7.524 | mean 6.384, median 6.046, p10 4.678, p90 8.62 | nan |  | nan |
+| 5 | 2008 - 2008 | 185 | 0.791 | mean 6.635, median 6.444, p10 4.346, p90 9.067 | mean 6.374, median 6.027, p10 4.678, p90 8.58 | nan |  | nan |
+| 6 | 2007 - 2007 | 308 | 0.737 | mean 5.849, median 5.624, p10 4.534, p90 7.37 | mean 6.412, median 6.092, p10 4.692, p90 8.638 | nan |  | nan |
+| 7 | 2006 - 2006 | 290 | 0.686 | mean 6.159, median 6, p10 4.511, p90 7.796 | mean 6.431, median 6.097, p10 4.699, p90 8.699 | nan |  | nan |
+| 8 | 2005 - 2005 | 253 | 0.642 | mean 6.79, median 6.501, p10 5, p90 9.178 | mean 6.406, median 6.056, p10 4.678, p90 8.638 | nan |  | nan |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
 - **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='first_year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
 
@@ -405,4 +418,4 @@ Each test window against its train side, by statistics of the data, never of a m
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6b1533b3a84b7ce35e0b322dfa4274fd1675b49f98b269ba07f6a8bc73d4db29` |
+| stale | yes: the definition now gives checksum `v2:5b53b40e99f8ff41c7667e31936e41249b43c158c96025a2aa17118d8edaa784` |

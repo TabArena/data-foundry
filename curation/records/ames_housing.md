@@ -79,6 +79,8 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-04, Lennart): SPLIT-10 is amended (on lt_vehicle_loan_default_prediction): no gap is needed where the collection covers the label's delay and the measurements show no shortcut and no selection at the release end. The no-gap call here is now an application of the rule, not an exception; the line above stays as its history.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `Month Sold`, windows of 2 months, windows while training keeps 50% of the rows (13 in the build), no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Reference
 
 @article{de2011ames,

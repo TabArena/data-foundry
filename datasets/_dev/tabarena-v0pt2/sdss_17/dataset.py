@@ -178,7 +178,17 @@ class Sdss17(AbstractCuratedDataset):
 
         The year also holds out the test object's plate, which the random split did not: 0 to 5 plates per window
         were also observed before it, at most 90 test rows (0.9% of the 2013 window).
+
+        Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window
+        (2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19, review issue 9, A).
     """
+    accepted_check_warnings = {
+        "splits_below_target": (
+            "Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window "
+            "(2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19, review issue 9, "
+            "A)."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/star_classification.csv")

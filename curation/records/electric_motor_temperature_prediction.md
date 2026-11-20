@@ -62,6 +62,10 @@ CC (2026-11-09, Andrej): ship as defined (review page issue 1, A); the declared 
 
 CC (2026-11-09, Andrej): the record's facts are `Samples: No Time Dimension`, `Entities: Recur` and the new `Time: Within Entity` (review page issue 3, b): the 69 sessions are designed bench runs, each recorded as a 2 Hz series, so time runs inside a session and not across sessions.
 
+CC (2026-11-17, Andrej): time basis `UnseenGroup` in place of `Timeless` (Review issue 4, B): the use case is the magnet temperature of driving sessions not yet run, so the split holds out whole sessions. The split is unchanged (grouped on `profile_id`).
+
+CC (2026-11-17, Andrej): the declared split (grouped on `profile_id`, 1x3 folds, `UnseenGroup`) is checked: split mark on the blind split review page.
+
 ## Review
 
 **Outcome:** added. Half-second samples (1,296,316) of 69 test-bench sessions of a prototype permanent magnet
@@ -236,6 +240,38 @@ prediction from the session's past; one motor, so the task tests new driving cyc
 
    **Resolved (2026-11-09, Andrej):** b: the new fact `Time: Within Entity` is in the vocabulary and in SPLIT-32 (PR
    #50); the record's `tags` carry `Samples: No Time Dimension`, `Entities: Recur` and `Time: Within Entity`.
+
+4. **Time basis: `UnseenGroup` instead of `Timeless`?**
+
+   * **Problem:**
+     - The tree's leaf reaches the same split the definition ships, but the basis it names is `UnseenGroup`, where the definition's tag is `Timeless`.
+     - The split stays as it is: grouped on `profile_id`, the same groups and the same folds.
+     - The leaf that gives it: Grouped · UnseenGroup (new units).
+   * **Background:** The deployed estimator runs on new driving sessions, so whole sessions are held out (profile_id, 69 groups). Samples within a session are strongly autocorrelated, so a random split would leak; the calendar across sessions is unknown and untested. Confidence of the blind walk: medium.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Does the model fill in the period the panel covers, or predict after it? (use case): predict after it. Evidence: Use case: 'The motor control of an electric vehicle estimates the rotor magnet temperature in real time' - driving sessions that happen after the bench data, not gaps in the recorded sessions.
+     - Which units does the model predict for? (use case): only new units. Evidence: The unit is a session (profile_id, 69 sessions, 2,176-43,971 samples each, counted on measures_v2.csv). A vehicle meets new drive cycles; no recorded session continues. Within a session the model reads only the session so far (running averages are features).
+   * **What changes:** only the tag and its `Time basis:` line. `data_tags` in `dataset.py` (`Timeless` → `UnseenGroup`), the opening of the `Time basis:` bullet in `curation_comments`. The rows, features, grouping key, folds and metric are untouched; the container is rebuilt only because `data_tags` ship in it.
+   * **Decided before:** Andrej, 2026-11-06: time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): 69 undated bench sessions of designed driving cycles of one motor, each held out whole. The `Time basis:` line is in…
+   * **What the blind dossier lacked, and what it changes:** Partition unchanged (grouped 3-fold over the 69 profile_id sessions). The definition's time basis is Timeless (designed bench sessions, no time across sessions, Andrej 2026-11-09), where my Panel walk read 'predict after it, only new units' -> UnseenGroup (new units). Under Experimental results (repeated measurement, new items) it would be Grouped · Timeless (the measurement): my type doubt. Tag differs, split the same.
+   * **Source split:** yes, paper (Kirchgässner, Wallscheid, Böcker 2021, Engineering Applications of AI / arXiv:2001.06246): grouped: a fixed set of whole profiles held out as generalization test set (a few profiles), others for training/validation ("'The authors hold out whole profiles' (definition grouping text); the study evaluates on a generalization set of held-out test-bench profiles.") https://arxiv.org/abs/2001.06246. Credible: yes, Holding out whole drive cycles tests the real-time estimate on unseen operation, the stated use; the choice of the few test profiles is the authors' (designed to cover the operating range), not a random draw.. Against the tree's leaf: yes, Both hold out whole sessions; the paper uses one fixed set of test profiles, my leaf rotates all sessions through folds.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: the tree's example lists name this dataset under 'Grouped · Retrospective (whole units)'; ignored as instructed.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `Timeless` (implemented) | no change to the definition | the tag already decided | the tree's leaf names the split differently |
+     | B | Tag `UnseenGroup` | `data_tags` and the `Time basis:` line say `UnseenGroup` | the name the tree's leaf gives this split | a rebuild; the earlier decision is revisited |
+
+   * **Recommendation:** B, `UnseenGroup`. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: set `data_tags` to `UnseenGroup` in `dataset.py`, change the opening of the `Time basis:` bullet and add a CC line; rebuild. No change to the split declaration.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-17, change):** Option B: Tag UnseenGroup.
+
+   **Resolved (2026-11-17, Andrej):** B. `data_tags` names `UnseenGroup` in place of `Timeless`, and the `Time basis:` line opens with `UnseenGroup (Andrej, 2026-11-17; Timeless before)`: the use case is the magnet temperature of driving sessions not yet run, so the split holds out whole sessions. The split itself (grouped on `profile_id`, the same folds) is unchanged.
 
 ## Reference
 

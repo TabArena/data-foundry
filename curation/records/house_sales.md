@@ -83,6 +83,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 2 coded columns carry their words; 1 scores are numbers (view).
 
+CC (2026-11-17, Andrej): the declared split (temporal on `date`, windows of 3 weeks, up to 9 windows while training keeps 50% of the rows (9 in the build), gap 1 week) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Reference
 
 https://www.kaggle.com/datasets/harlfoxem/housesalesprediction

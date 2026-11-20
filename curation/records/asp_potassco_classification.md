@@ -76,6 +76,12 @@ CC (2026-11-08, Lennart): issue 5, B: scored per instance, with a note. Each ins
 
 CC (2026-11-08, Lennart): the declared metric (log_loss) is checked.
 
+CC (2026-11-18, Andrej): time basis `UnseenGroup` in place of `Timeless` (Review issue 6, B): the use case picks a configuration for a kind of problem not seen before, so whole problem classes (`task_id`, 96 classes) are held out and each instance's 11 runs stay together. The split is unchanged (grouped 3-fold CV over `task_id`).
+
+CC (2026-11-18, Andrej): Review issue 7, A, as implemented: Grouped 3-fold CV, over whole problem classes (`task_id`, 96 classes of 1 to 134 instances; 7,634-9,658 train / 3,674-5,698 test runs).
+
+CC (2026-11-18, Andrej): "Do both by family" (blind split review, cross-dataset item on the two algorithm-selection sets, b): the split holds out whole problem families instead of class folders: `problem_family` replaces `task_id`, the class folder with the folders of one generator merged (the 15 problems of the 2007 competition stored twice, HamiltonClumpy's five folders, RLP-150/200, plain and verbose searchTest): 96 folders, 75 families, 25 per test fold, 10 x 3. Why: grouped on the folders, 19% of the test instances (4-45% per fold) had their generator in training. The `UnseenGroup` tag and the grouped 3-fold CV of review issues 6 and 7 stay, now over families. Not built yet.
+
 ## Review
 
 **Outcome:** added. ASlib's ASP-POTASSCO scenario (Hoos, Lindauer and Schaub 2014; Bischl et al. 2016): 1,212
@@ -598,6 +604,64 @@ call, and its reason ("the 11 runtimes are not shipped") describes our choice, n
    **Resolved (2026-11-08, Lennart):** B, per instance with a note. The score is unchanged; a dated bullet in the
    notes says that each instance is a decision of the selector, that the largest 10% of the problem classes hold 51%
    of the instances, and that counting each class once ranks 8 untuned models at Kendall tau 0.86 per split.
+
+6. **Time basis: tag the class-grouped folds `UnseenGroup` instead of `Timeless`?**
+
+   * **Problem:**
+     - The tree's leaf for repeated measurements says that where the use case holds out a wider group (a problem class), the split groups on it and is tagged `UnseenGroup`; the definition groups on the problem class `task_id` but is tagged `Timeless`.
+     - The use case asks for a configuration 'for a kind of problem not seen before', and the folds hold out whole classes (96 classes of 1 to 134 instances).
+     - Only the tag and the opening of the `Time basis:` line differ; the grouping and the folds stay.
+   * **Background:** Runs of a designed benchmark, 11 per instance, with no arrival order. The stated use is a kind of problem not seen before, so whole problem classes (task_id) are held out with all their instances and runs. Confidence of the blind walk: high.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Is there an order to how samples arrive in the use case? (use case): no. Evidence: Benchmark runs of 11 clasp configurations on fixed instances; no run dates (dossier collection_period: 'no run dates are given'). Algorithm selection treats each instance as a property-of-item query.
+     - Was the experiment repeated, producing several rows for the same measurement? (data): yes. Evidence: Each instance has 11 rows, one per configuration (13,332 = 1,212 x 11; instance_id is a scoring column used by the metric to pick per instance).
+     - Does the model meet new items, or further measurements of items it has measured? (use case): new items, and a wider group: a new problem class. Evidence: Use case: 'predicts the runtime of each configuration on a new problem instance ... here for a kind of problem not seen before'. The problem class (task_id, 96 classes from the instance path) is computed from the data, so group on it and tag UnseenGroup; instances nest in classes, so each instance's 11 runs stay together.
+   * **What the blind dossier lacked, and what it changes:** none. The definition ships whole problem classes held out (task_id, 96 classes of 1 to 134 instances, 32 per test fold), the same leaf. The definition also notes that only ASP-Comp-2007/-2009/-2011 class paths name a year, so no time split is possible, which confirms the 'no order' answer.
+   * **Source split:** yes, ASlib scenario ASP-POTASSCO (cv.arff); claspfolio 2 paper (random halves): 10-fold CV over instances, random; all 11 configuration runs of an instance in one fold; 90 of 96 problem classes span several folds (counted on cv.arff) ("cv.arff: instance_id, repetition, fold (10 folds, 1 repetition)") https://github.com/coseal/aslib_data/tree/master/ASP-POTASSCO. Credible: partly, Keeping an instance's runs together follows the selector's use (a new instance); the random draw over instances is a benchmark convention for comparability, with no stated reason to let classes cross folds.. Against the tree's leaf: partly, ASlib's 10-fold CV keeps an instance's 11 runs together (the measurement level of the leaf) but draws instances at random so classes cross folds; the blind leaf holds out whole classes because the use case names a kind of problem not seen before.
+   * **What changes:** `data_tags = ("UnseenGroup",)` in `dataset.py`; the `Time basis:` bullet in `curation_comments` opens with `UnseenGroup` (whole problem classes held out) and keeps that no split by time is possible; a CC line in the record.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: split_tree.md lists asp_potassco_classification as an example under 'Grouped · Timeless (the measurement)'; ignored as evidence.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Grouped 3-fold CV, 3 repeats, over whole problem classes (`task_id`, about 32 classes per test fold; 7,634-9,658 train / 3,674-5,698 test runs of 13,332), `Timeless` (implemented) | No change. | The tag says the runs have no time dimension: one campaign on one machine, only three class paths name a year. | The tag does not name what the folds test, a problem class not seen in training, which the tree's rule asks the tag to say. |
+     | B | The same class-grouped folds, tagged `UnseenGroup` | `data_tags` Timeless becomes UnseenGroup; the `Time basis:` line opens with the held-out classes and keeps that no time split is possible; the folds do not change. | Names the transfer to a new problem class, the use case and the tree's rule for a wider group. | A tag-only change still rebuilds the container, as `data_tags` ship in it. |
+
+   * **Recommendation:** B, because the tree's leaf tags a split on a wider group the use case names (a problem class) `UnseenGroup`.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: set `data_tags` to `UnseenGroup` in `dataset.py`, change the opening of the `Time basis:` bullet and add a CC line; rebuild. No change to the split declaration.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-18, change):** Option B: The same class-grouped folds, tagged UnseenGroup.
+
+   **Resolved (2026-11-18, Andrej):** B. `data_tags` names `UnseenGroup` in place of `Timeless`, and the `Time basis:` line opens with `UnseenGroup (Andrej, 2026-11-18; Timeless before)`: the use case picks a configuration for a kind of problem not seen before, so whole problem classes (`task_id`, 96 classes) are held out and each instance's 11 runs stay together; it keeps that no split by time is possible. The folds (grouped 3-fold CV over `task_id`) are unchanged.
+
+7. **Split: ASlib's 10-fold CV over random instances (cv.arff) instead of 3-fold CV over whole problem classes?**
+
+   * **Problem:**
+     - ASlib's cv.arff draws instances at random into 10 folds (one repetition), keeping an instance's 11 configuration runs together, so 90 of the 96 problem classes have instances on both sides.
+     - The use case asks for a kind of problem not seen before, which only folds over whole classes test.
+     - The source split can be rebuilt: cv.arff in the same ASlib folder gives each instance's fold (not in our download yet).
+   * **Source split:** yes, ASlib scenario ASP-POTASSCO (cv.arff); claspfolio 2 paper (random halves): 10-fold CV over instances, random; all 11 configuration runs of an instance in one fold; 90 of 96 problem classes span several folds (counted on cv.arff) ("cv.arff: instance_id, repetition, fold (10 folds, 1 repetition)") https://github.com/coseal/aslib_data/tree/master/ASP-POTASSCO. Credible: partly, Keeping an instance's runs together follows the selector's use (a new instance); the random draw over instances is a benchmark convention for comparability, with no stated reason to let classes cross folds.. Against the tree's leaf: partly, ASlib's 10-fold CV keeps an instance's 11 runs together (the measurement level of the leaf) but draws instances at random so classes cross folds; the blind leaf holds out whole classes because the use case names a kind of problem not seen before.
+   * **Why it counts as chosen, not conventional:** Keeping an instance's runs together follows the selector's use (a new instance); the random draw over instances is a benchmark convention for comparability, with no stated reason to let classes cross folds.
+   * **Background:** Runs of a designed benchmark, 11 per instance, with no arrival order. The stated use is a kind of problem not seen before, so whole problem classes (task_id) are held out with all their instances and runs. Confidence of the blind walk: high.
+   * **What changes on B:** the definition's split declaration is replaced by the source's own construction (its files, periods or groups), and the `splits_comment` records that the tree's leaf was not followed. The rows, features, target and metric do not change; the folds do, so the container is rebuilt.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: split_tree.md lists asp_potassco_classification as an example under 'Grouped · Timeless (the measurement)'; ignored as evidence.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Grouped 3-fold CV, 3 repeats, over whole problem classes (`task_id`, 96 classes of 1 to 134 instances; 7,634-9,658 train / 3,674-5,698 test runs) (implemented) | No change; `splits_comment` names ASlib's instance folds as the source's split. | Tests a configuration on a problem class absent from training, the stated use. | Not comparable to ASlib or claspfolio 2 results; fold sizes vary with class size (3,674 to 5,698 test runs). |
+     | B | ASlib's split: 10 folds over instances from cv.arff (about 121 instances, 1,333 runs per test fold), one repetition, each instance's 11 runs in one fold | `download_description` adds cv.arff; `grouping` on `instance_id` with ASlib's fold ids replaces the class grouping. | Comparable to ASlib's published results; tests a new instance of a known class. | 90 of 96 classes sit on both sides, so a new kind of problem is not tested; one repetition. |
+
+   * **Recommendation:** A, because the use case is a problem class not seen before, and ASlib's random instance folds let 90 of 96 classes into training.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: replace the split declaration with the source's construction (name the files or periods it uses) and say in `splits_comment` why the tree's leaf is not followed; on A: name the source's split in `splits_comment` as a departure.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: Grouped 3-fold CV, over whole problem classes (`task_id`, 96 classes of 1 to 134 instances; 7,634-9,658 train / 3,674-5,698 test runs).
 
 ## Reference
 

@@ -72,6 +72,8 @@ CC (2026-11-10, Andrej): review page issue 1, option C: the half-year windows, t
 
 CC (2026-11-11, Andrej): record field set from the definition (review page field mark): `domain` business & marketing (was industry & manufacturing).
 
+CC (2026-11-17, Andrej): the declared split (temporal on `Filed Date`, horizon 6 months, gap 6 months) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The 99,847 building permits filed in San Francisco from 2015 to 2023 and issued by the download of

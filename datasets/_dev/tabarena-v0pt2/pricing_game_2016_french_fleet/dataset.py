@@ -229,7 +229,9 @@ class PricingGame2016FrenchFleet(AbstractCuratedDataset):
         - Time basis: ForcedGroupedFromTemporal (SPLIT-8): a tariff is fit on the closed years and applied to the next,
           but rows are cut at 31 December and the claims carry no dates, so 2011-2013 give one valid yearly window where
           three are needed; whole fleet contracts are held out (Lennart, 2026-11-08; Andrej, 2026-11-10). Published 2014
-          claims would add a window.
+          claims would add a window. The stationary-relation test over the policy years (2026-11-18, 2012 and 2013
+          tested forward) is inconclusive: LightGBM does not beat the constant, and Kumo-Tabular's deviance gap (-0.31 ±
+          0.28) spans 113 floors, so the forced tag stays.
     """
 
     # Task

@@ -64,6 +64,10 @@ CC (2026-11-12, Andrej):
 
 CC (2026-11-12, Andrej): `Tuition_fees_up_to_date` and `Debtor` dropped (BeyondArena v0.2 review page, issue 1, B); the input data changed: 37 to 35 features. The source gives no recording date for either, arrears cannot exist at enrolment, and the pattern fits one status read at the file's extract: 86.6% of the students behind on fees dropped out (24.7% of the others), and still-enrolled students are behind at 0.8% in the 2008-2011 cohorts against 15% in 2015-2017. A previous degree does not explain the debt (debtors 10% to 11% among holders of another degree, 8% among first-time students). `Scholarship_holder` stays (issue 3).
 
+CC (2026-11-17, Andrej): the declared split (temporal on `enrolment_year`, horizon 1 year, gap 1 year) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-19, Andrej): windows below the target count kept (Review issue 4, A as implemented): four cohort windows; the 2013 cohort would train on 43.9%; the reason is in the splits comment.
+
 ## Review
 
 **Outcome:** added. UCI's "Predict Students' Dropout and Academic Success" (UCI 697, https://doi.org/10.24432/C5MC89;
@@ -85,7 +89,7 @@ three-way outcome and a spread +, a fee status of unknown date and a split that 
 
 **Main points:** Nothing open. Settled 2026-11-12: `Tuition_fees_up_to_date` and `Debtor` dropped, their recording
 date unknown and their pattern that of one late extract (issue 1, B); four cohort windows 2014-2017 with a gap per
-course length (2); `Scholarship_holder` kept with a note (3).
+course length (2); `Scholarship_holder` kept with a note (3). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 4).
 
 **Record judgment:** valid. The record has no `problem_type` (Multiclass Classification) and no `domain` (education);
 Claude fills them, as no value disagrees. The TabArena note "the features were collected after 2nd semestre" matches
@@ -368,6 +372,50 @@ it is screened in its own record and does not change this task's validity.
    **Resolved (2026-11-12, Andrej):** C: `Scholarship_holder` stays; a curation note names its unknown date with the
    numbers (holders drop out at 12% against 39%; +0.004 log loss without it, untuned LightGBM), and `fit_reason` names
    the unknown date of the fee, debt and scholarship status. Record `CC` line. No change to the frame.
+
+4. **Windows: 4 of the target's 9; which layout?**
+
+   * **Problem:**
+     - Four cohort windows ship where an IID split of 4,424 students would get nine[^split15]; the splits comment does not say why there are fewer.
+     - Today's windows (each trained on the students whose course's normal end came before the cohort's first year ended):
+
+       | Test cohort | Train side | Train share | Test students | Dropout | Graduate | Enrolled |
+       |---|---|---|---|---|---|---|
+       | 2017 | 3,560 | 80.5% | 368 | 102 | 189 | 77 |
+       | 2016 | 3,113 | 70.4% | 414 | 117 | 230 | 67 |
+       | 2015 | 2,739 | 61.9% | 445 | 107 | 248 | 90 |
+       | 2014 | 2,379 | 53.8% | 390 | 118 | 208 | 64 |
+
+     - Fixed: one window is one enrolment cohort, predicted at the end of its first year; the gap follows the label, the status at the end of the course's normal length (three years, four for Nursing; issue 2, b2, 2026-11-12, which declined windows without the gap, its option d). The data hold ten cohorts, 2008 to 2017.
+     - What stops more windows: the gap and the half-data floor[^split14]. The 2013 cohort trains on 43.9% (1,942 students), 2012 on 34.8%, 2011 on 22.9%.
+     - The cohorts the exception would add are other years: 2012 and 2013 were the peak of Portugal's crisis (unemployment 15.5% and 16.2%, against 8.9% in 2017, the economic features of each cohort), which the four windows lack.
+     - Test sizes are already steady (362 to 445 a cohort); a cohort cannot be cut, and overlapping cohort windows would score a cohort a year late, so neither is offered.
+   * **Window counts:** counted on the built frame with the definition's train rule.
+
+     | Layout | Windows | Train share | Test students | Dropout | Smallest class |
+     |---|---|---|---|---|---|
+     | A, shipped | 4 | 53.8-80.5% | 368-445 | 102-118 | 64-90 |
+     | B, 2012 and 2013 added as the curator's exception | 6 | 34.8-80.5% | 362-445 | 102-139 | 46-90 |
+     | C, 2013 added as the curator's exception | 5 | 43.9-80.5% | 362-445 | 102-139 | 46-90 |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Four cohorts, 2014 to 2017 (implemented) | adds the reason to the splits comment | every train side above half | 4 of 9; only the recovery years |
+     | B | Six cohorts, 2012 to 2017 | `TEST_COHORTS` gains 2013 and 2012; the half-data assert becomes 30% | the most windows the cohorts allow; tests the crisis years | two windows under half (43.9%, 34.8%); 2012 trains on 1,539 students of three cohorts |
+     | C | Five cohorts, 2013 to 2017 | `TEST_COHORTS` gains 2013 | one crisis year, trained on 43.9% | one exception; 5 of 9 |
+
+   * **Recommendation:** B: one cohort a year and a gap set by the label leave no other route toward the target, and the two cohorts it adds are the crisis years the four windows lack. **Decision:** A, B or C?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Four of the nine windows an IID split of this size would get: one window is one cohort, and with the gap the label needs, the 2013 cohort would train on 43.9% of the students." On B or C: extend `TEST_COHORTS`, lower the assert in `_make_splits` to 30% of the students, accept `splits_train_under_half` naming the cohorts and this decision, CC line, `split` and `splits_comment` (cohorts, shares, class counts).
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: four cohort windows; the 2013 cohort would train on 43.9%. The splits comment names the target count and what stops more windows; `splits_below_target` is accepted with that reason. The split is unchanged.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get, 9 here; the window length, step and gap follow the use case and are not shortened to reach it; fewer are accepted, never under 3, with the target, the count and what stops more in the splits comment; overlapping windows only as an offered option.
 
 ## Reference
 

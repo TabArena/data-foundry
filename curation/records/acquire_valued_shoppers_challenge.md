@@ -61,6 +61,16 @@ CC (2026-11-12, Andrej): decided on the BeyondArena v0.2 review page (issues 1 a
 - `Target: Later` (issue 3, B): the repeat purchase comes after the offer, counted over a window the source does not state.
 - The definition's check pipeline on the shipped frame (the Kaggle download is refused, rules not accepted): 0 errors, 0 warnings; `dataset check` itself not run, README not regenerated; not rebuilt.
 
+CC (2026-11-17, Andrej): Review issue 4, A, as implemented: Four expanding windows on `offerdate`, test 11-15, 16-20, 21-25 and 26-30 April 2013 (2,758 / 5,344 / 30,305 / 19,356 offers), each trained on offers up to 5 days before it (train shares 56.5 / 63.9 / 65.6 / 69.0%), 5-day gap, temporal.
+
+CC (2026-11-17, Andrej): Review issue 5, A, as implemented: Four expanding windows on `offerdate`, test 11-15, 16-20, 21-25 and 26-30 April 2013 (2,758 / 5,344 / 30,305 / 19,356 offers), train shares 56.5 / 63.9 / 65.6 / 69.0%, 5-day gap.
+
+CC (2026-11-17, Andrej): verdict ship (blind split review page).
+
+CC (2026-11-17, Andrej): the declared split (temporal on `offerdate`, windows of 5 days, 4 windows, gap 5 days) is checked: split mark on the blind split review page.
+
+CC (2026-11-19, Andrej): windows below the target count kept (Review issue 6, A as implemented): four five-day windows; the next (6-10 April) would train on 41.4%; the reason is in the splits comment.
+
 ## Review
 
 **Outcome:** added. Kaggle's Acquire Valued Shoppers Challenge (2014): 160,057 shoppers who got a discount offer on
@@ -80,7 +90,7 @@ period and better data found for the same task -.
 
 **Main points:** Nothing open. Decided 2026-11-12: a five-day gap with four windows, since the five days before a
 window carry its offer wave's outcome (issue 1, b); `Target: Later` in the record (issue 3, B). The arrival facts are
-in the split comment (issue 2, resolved 2026-11-06).
+in the split comment (issue 2, resolved 2026-11-06). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 6).
 
 **Record judgment:** valid, and the record's fields match the definition. The use case is the competition's: a brand
 aims its offers at shoppers who stay. The offer's product, chain and brand are not features (only the offer value and
@@ -292,6 +302,120 @@ record keeps the verdict its own data earns until that one is added.
 
    **Resolved (2026-11-12, Andrej):** B ("Target: Later"): `Target: Later` added to the record's `tags`, also in the
    PR #50 worktree's copy of the record; `Andrej` in `checked_by`; record CC line.
+
+4. **Split: measure the repeat rate by offer day, then keep the 5-day gap, drop it, or lengthen it?**
+
+   * **Problem:**
+     - The record already holds the measurement: shoppers offered in the last week of April repeat at 36.8%, and $1 offers at 35% to 43% through April, highest in the newest weeks (42.8%, 40.4%), so no open repeat period shows.
+     - The repeat period is not published, so the gap cannot be set from a stated delay.
+     - Where a test window continues an offer wave, the five days before it add ROC AUC 0.061 (LightGBM, equal training size); the shipped 5-day gap removes them.
+   * **Background:** Each shopper is scored on the offer day and two months of dated offers give the windows. The repeat purchase is known only after a period longer than a day, so the leaf has a label-delay gap whose length the data must show. Confidence of the blind walk: medium.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Will the model be used at a place or group the data does not hold? (use case): no. Evidence: Use case: a consumer brand aims its offers at shoppers likely to repeat; same shops and brands. Chains and markets exist in the source, but no new chain is named as the use.
+     - Fill in the covered period, or predict forward? (use case): forward. Evidence: 'when it offers a shopper a discount ... wants to know whether the shopper will become a repeat buyer': offers after the data.
+     - Do the dates give the rule[^split-14]/15 windows? (data): yes. Evidence: 160,057 shoppers, offerdate on 56 days from 2013-03-01 to 2013-04-30 (dossier feature table): three windows of about a week or more, each with thousands of rows and ~27% positives, the newest two training on >= 50%.
+     - What sets off a prediction? (use case): a case arrives. Evidence: Each shopper is scored when given an offer (one offer per shopper).
+     - Is the target known only after a delay longer than the time step? (data): yes, late labels. Evidence: The label is a repeat purchase of the product after the offer; a repeat takes at least days, longer than offerdate's one-day step. The repeat period is not stated by the source (dossier: 'the period in which a repeat purchase counts is not stated').
+   * **The measurement:** Size of the delay: repeat rate by offerdate across the two months (a drop in the last weeks shows an open repeat period and its length); if every label is final at release with a fixed horizon per offer, the rule[^split-10] still keeps the delay, unless the curator writes an exception.
+   * **What each outcome gives:** measured: newest weeks as complete as older ones and a written the rule[^split-10] exception → Temporal · arrival date (no gap); otherwise → Temporal · arrival date, label-delay gap.
+   * **What the blind dossier lacked, and what it changes:** none on the leaf. The definition ships four 5-day windows (11-30 April 2013) with a 5-day gap; it measured that without the gap the five newest days add ROC AUC 0.061 where a window continues an offer wave, the measurement I asked for. The repeat period stays unpublished, so the gap removes same-wave outcomes, not every open label.
+   * **What changes:** nothing in the definition until the measurement is run; then the leaf it gives decides, and only a split that differs from the shipped one needs a rebuild.
+   * **Source split:** yes, competition (Kaggle 2014); TabRed benchmark re-splits the train file by time: predefined files: trainHistory (offers 1 Mar-30 Apr 2013, labelled) and testHistory (unlabelled; from memory a later offer period, May-Jul 2013, with largely different offers; not verified here, the… https://www.kaggle.com/competitions/acquire-valued-shoppers-challenge/data. Credible: partly, A test file of later offers fits the brand's use (score the next offers), but the construction is not documented on a page I could read and the test labels are not public, so only the train period can be used.. Against the tree's leaf: partly, Kaggle's test file is (from memory, unverified) a later offer period, the same direction as my leaf; the construction is not documented and its labels are not public.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: split_tree.md lists this dataset as an example of 'Temporal · arrival date' (no gap).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Four expanding windows on `offerdate`, test 11-15, 16-20, 21-25 and 26-30 April 2013 (2,758 / 5,344 / 30,305 / 19,356 offers), each trained on offers up to 5 days before it (train shares 56.5 / 63.9 / 65.6 / 69.0%), 5-day gap, temporal (implemented) | No change. | Training holds no offer of the test window's own wave, worth 0.061 ROC AUC where a window continues a wave; every train side above half of the rows. | Labels of older waves are final in training although in use some may still be open (the period is unpublished). |
+     | B | If the newest days are as complete as older ones and the curator writes a the rule[^split-10] exception: five 5-day windows, test 6-30 April 2013, no gap (train shares 56.5 / 63.9 / 65.6 / 69.0 / 87.9%) | `TemporalSplits` gap 5 becomes 0 and n_windows 4 becomes 5 (6-10 April tested again); `splits_comment` records the exception. | One window more and the newest trains on 87.9% of the rows (140,701); the README's current table already shows this split. | Training then holds the outcomes of the test window's own offer wave (+0.061 ROC AUC); the curator chose the gap over this on 2026-11-12. |
+     | C | If the repeat rate drops in the newest days: the four windows with a gap as long as the drop (a 10-day gap trains on 41 / 56.5 / 63.9 / 65.6%) | `TemporalSplits` gap becomes the measured length in days; `splits_comment` gives the measured drop. | Training would hold only offers whose repeat period has closed, as at a refit in use. | The record's rates show no drop to size it; a 10-day gap leaves the oldest window 41% of the rows, under half. |
+
+   * **Recommendation:** A, because the record's rates show no drop in the newest weeks and the 5-day gap already removes the same-wave outcomes.. **Decision:** A or B or C?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: run the named check (CPU job), write the number into the `Time basis:` line, then apply the leaf it gives.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   [^split-10]: **SPLIT-10** (Should): When a label is known only some time after its row (a delivery time, a permit's processing time, an outcome after a follow-up), a model refit at a window's start knows only the rows whose label had arrived.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-17, ok):** as implemented.
+
+   **Resolved (2026-11-17, Andrej):** A, as implemented: Four expanding windows on `offerdate`, test 11-15, 16-20, 21-25 and 26-30 April 2013 (2,758 / 5,344 / 30,305 / 19,356 offers), each trained on offers up to 5 days before it (train shares 56.5 / 63.9 / 65.6 / 69.0%), 5-day gap, temporal.
+
+5. **Split: Kaggle's trainHistory/testHistory files instead of four 5-day windows on offerdate?**
+
+   * **Problem:**
+     - Kaggle's testHistory file has no public labels, so the competition's own split cannot be scored from our data.
+     - trainHistory holds the 160,057 labelled offers of 1 March to 30 April 2013; testHistory's offer period was not verified (the walk recalled May-July 2013 from memory).
+     - The shipped windows follow TabReD, which re-splits trainHistory by offer date with a 5-day test window.
+   * **Source split:** yes, competition (Kaggle 2014); TabRed benchmark re-splits the train file by time: predefined files: trainHistory (offers 1 Mar-30 Apr 2013, labelled) and testHistory (unlabelled; from memory a later offer period, May-Jul 2013, with largely different offers; not verified here, the… https://www.kaggle.com/competitions/acquire-valued-shoppers-challenge/data. Credible: partly, A test file of later offers fits the brand's use (score the next offers), but the construction is not documented on a page I could read and the test labels are not public, so only the train period can be used.. Against the tree's leaf: partly, Kaggle's test file is (from memory, unverified) a later offer period, the same direction as my leaf; the construction is not documented and its labels are not public.
+   * **Why it counts as chosen, not conventional:** A test file of later offers fits the brand's use (score the next offers), but the construction is not documented on a page I could read and the test labels are not public, so only the train period can be used.
+   * **Background:** Each shopper is scored on the offer day and two months of dated offers give the windows. The repeat purchase is known only after a period longer than a day, so the leaf has a label-delay gap whose length the data must show. Confidence of the blind walk: medium.
+   * **What changes on B:** the definition's split declaration is replaced by the source's own construction (its files, periods or groups), and the `splits_comment` records that the tree's leaf was not followed. The rows, features, target and metric do not change; the folds do, so the container is rebuilt.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: split_tree.md lists this dataset as an example of 'Temporal · arrival date' (no gap).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Four expanding windows on `offerdate`, test 11-15, 16-20, 21-25 and 26-30 April 2013 (2,758 / 5,344 / 30,305 / 19,356 offers), train shares 56.5 / 63.9 / 65.6 / 69.0%, 5-day gap (implemented) | No change; `splits_comment` names Kaggle's file split as the source's and why it is not used. | Tests later offers of the labelled period, the brand's use and TabReD's construction; four test windows. | Tests only within March-April 2013, not the later offers Kaggle's test file may hold. |
+     | B | Kaggle's files: train on all 160,057 trainHistory offers, test on testHistory | Not buildable: testHistory has no public labels, and the download command deletes it. | Would test a separate offer file, possibly later offers. | No labels, so nothing can be scored; its period and construction are undocumented. |
+
+   * **Recommendation:** A, because the source's test file carries no labels and cannot be rebuilt as a scored split.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: replace the split declaration with the source's construction (name the files or periods it uses) and say in `splits_comment` why the tree's leaf is not followed; on A: name the source's split in `splits_comment` as a departure.
+
+   **Andrej (2026-11-17, ok):** as implemented.
+
+   **Resolved (2026-11-17, Andrej):** A, as implemented: Four expanding windows on `offerdate`, test 11-15, 16-20, 21-25 and 26-30 April 2013 (2,758 / 5,344 / 30,305 / 19,356 offers), train shares 56.5 / 63.9 / 65.6 / 69.0%, 5-day gap.
+
+6. **Windows: 4 of the target's 9; which layout?**
+
+   * **Problem:**
+     - Four five-day windows ship where an IID split of 160,057 offers would get nine[^split15]; the splits comment does not say why there are fewer.
+     - Today's windows (5-day gap before each):
+
+       | Test window | Train side | Train share | Test offers | Repeat buyers |
+       |---|---|---|---|---|
+       | 26-30 Apr 2013 | 110,396 | 69.0% | 19,356 | 6,986 |
+       | 21-25 Apr 2013 | 105,052 | 65.6% | 30,305 | 11,046 |
+       | 16-20 Apr 2013 | 102,294 | 63.9% | 5,344 | 1,150 |
+       | 11-15 Apr 2013 | 90,387 | 56.5% | 2,758 | 819 |
+
+     - Fixed by the use case and earlier decisions: the five-day window is TabReD's test window (the competition gives no refit cadence, so the length is assumed), and the five-day gap keeps a test window's own offer wave out of training (issue 1, b, 2026-11-12). The data hold 61 days, 1 March to 30 April 2013.
+     - What stops more windows: the next window back, 6-10 April, trains on 41.4% (66,292 offers), under half[^split14]; 1-5 April would train on 25.6%, under 30%. Issue 1 dropped 6-10 April with the gap; keeping it as the curator's exception was not offered then.
+     - Stable test sizes are far off: the offers come in waves, and a five-day window holds 2,758 to 30,305 offers.
+   * **Window counts:** counted on the shipped frame, the declared gap kept in every layout.
+
+     | Layout | Windows | Train share | Test offers | Repeat buyers | Window length |
+     |---|---|---|---|---|---|
+     | A, shipped | 4 | 56.5-69.0% | 2,758-30,305 | 819-11,046 | 5 days |
+     | B, 6-10 April added | 5 | 41.4-69.0% | 2,758-30,305 | 819-11,046 | 5 days |
+     | C, equal offers, half the data or more | 8 | 51.0-73.1% | 5,170-9,044 | 1,932-3,215 | 1-11 days |
+     | D, equal offers, down to 30% | 9 | 30.5-73.1% | 7,099-12,906 | 2,547-4,039 | 1-11 days |
+     | E, overlapping five-day windows, a new one every 2 days | 9 | 53.9-69.0% | 3,134-35,193 | 857-12,941 | 5 days |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Four five-day windows (implemented) | adds the reason to the splits comment | the declared length and gap; every train side above half | 4 of 9 |
+     | B | Five windows, 6-10 April as the curator's exception | `n_windows=5`; the under-half warning accepted with a CC line | adds the tail of the 1 April wave (11,907 offers, 3,257 repeat buyers) | trains on 41.4%; 5 of 9 |
+     | C | Eight windows of about equal offers | day ranges cut so each window holds about the same offers | test sizes within a factor of 2; no exception | windows of 1 to 11 days, not the five-day horizon; five are single days of the 22-28 April wave |
+     | D | Nine windows of about equal offers, down to 30% | C, reaching back to 2 April | reaches the target | three windows under half (45.3%, 36.8%, 30.5%); windows of 1 to 11 days |
+     | E | Nine overlapping five-day windows | `step=2` | keeps the length, the gap and the floor; reaches the target | an offer is scored in up to three windows, so the windows are not independent; offered only because the target cannot be reached otherwise at five days[^split15] |
+
+   * **Recommendation:** A: the window length and the gap come from the use case and a decision, and 61 days of data cannot hold nine such windows; 6-10 April adds no period the four windows lack (another wave's tail, the same April). **Decision:** A, B, C, D or E?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Four of the nine windows an IID split of this size would get: the data hold 61 days, and with five-day windows and the five-day gap the next window (6-10 April) would train on 41.4% of the offers." On B: `TemporalSplits(window=5, unit="days", n_windows=5, gap=5)`, accept `splits_train_under_half` naming this decision, CC line, `split` and `splits_comment`. On C or D: `_make_splits` with explicit day ranges, each trained on offers before its start minus 5 days; C: 28-30, 27, 26, 25, 24, 23, 20-22 and 9-19 April; D: 28-30, 26-27, 25, 24, 23, 18-22, 7-17, 4-6 and 2-3 April. On E: `TemporalSplits(window=5, unit="days", step=2, gap=5, min_train_fraction=0.5)`.
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: four five-day windows; the next (6-10 April) would train on 41.4%. The splits comment names the target count and what stops more windows; `splits_below_target` is accepted with that reason. The split is unchanged.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get, 9 here; the window length, step and gap follow the use case and are not shortened to reach it; fewer are accepted, never under 3, with the target, the count and what stops more in the splits comment; overlapping windows only as an offered option.
 
 ## Reference
 

@@ -62,6 +62,8 @@ CC (2026-11-01, Lennart): keep this dataset as fixed in PR #37 (ImmoScout24's co
 
 CC (2026-11-11, Andrej): one listing per house (review page, issue 1 B, agreeing with the answer of 2026-11-06): 105 houses listed twice (same living space, lot, year built, state, city and place) keep their first listing; 114 rows go (10,317 to 10,203), the price distribution does not move (LEAK-17, LEAK-42). Random split named a `Snapshot` of the 14 July 2020 scrape (issue 2 B): a `Time basis:` line in the definition; the tag enters `data_tags` once PR #50 is in the working copy.
 
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. Houses for sale on the German portal ImmoScout24, one scrape of 14 July 2020 (a deleted Kaggle

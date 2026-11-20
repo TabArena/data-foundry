@@ -73,6 +73,8 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: Soil_ClimaticZone
 
 CC (2026-11-10, Andrej): review page marks: random cells kept, with the look-up measured (issue 1, option B): `fit_reason` and `curation_comments` give it (four location columns alone predict 93.4% of test cells; without them LightGBM falls from 97.1% to 70.2%). Time basis (issue 2, option B): random cells, `Snapshot` of one map extract; the `Time basis: Snapshot:` bullet is in `curation_comments`, the tag enters `data_tags` once PR #50 is in the working copy. Split unchanged.
 
+CC (2026-11-17, Andrej): the declared split (random, 1x3 folds, `Retrospective`, `ForcedIIDFromGrouped`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. Blackard and Dean's forest cover types (UCI, 1998, https://doi.org/10.24432/C50K5N; Computers and

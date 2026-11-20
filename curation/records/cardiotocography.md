@@ -68,6 +68,10 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 CC (2026-11-11, Andrej): split by exam date (issue 2 (b), "Reply (b): Windows by exam date"; issue 1 settled by it): `Date` kept as `exam_date`, the 56 segments dated 1980-01-04 (an unset clock) dropped, three nine-month windows from October 1996, July 1997 and April 1998, each trained on all earlier exams (60%, 74%, 89% of 2,070 segments); the inferred patient key leaves the frame; `DR` (constant) dropped. `required_split` Temporal (NON-IID), tag Non-IID (Temporal). The labels shift between 1996 and 1997 (suspect 14% to 1%, pathologic 4% to 13%); on the two newest windows untuned LightGBM's log loss is 1.825 and 1.608 against 0.498 and 0.444 trained on all years (Slurm job 1365902).
 
+CC (2026-11-17, Andrej): the declared split (temporal on `exam_date`, windows of 9 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-20, Andrej): split kept (Review issue 4, A as implemented): the three nine-month windows; the splits comment gives the reason they stay temporal (models trained on earlier exams lose 0.30-0.78 log loss on the two newest windows; suspect 35.5% of segments in early 1995 against 2.2% in 1998) and why there are not more (47 exam dates).
+
 ## Review
 
 **Outcome:** added. The UCI Cardiotocography table (UCI 193, https://doi.org/10.24432/C51S4N), measured by the SisPorto
@@ -87,7 +91,7 @@ of 0.236 to 0.341 (default logistic regression), so the methods separate. Qualit
 a heuristic the notes describe. Weighed: an established clinical program's measures with an expert label +, a grouped
 split +, a clear spread +, an inferred patient key and a 1990s Portuguese hospital -.
 
-**Main points:** all settled: shipped (issue 1), split by exam date in three nine-month windows (issues 2 and 3).
+**Main points:** all settled: shipped (issue 1), split by exam date in three nine-month windows (issues 2 and 3). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 4).
 
 **Record judgment:** valid. The record keeps the TabArena rejection markers `Wrong Domain / Source Modality` and
 `Time-series (Classification)` next to Lennart's `Yes`; the raw traces are not in the release, and the program's measures
@@ -314,6 +318,82 @@ does not change this task's validity. The metric review proposes an ordinal scor
 
    **Resolved (2026-11-11, Andrej):** A: the three nine-month windows by exam date stay as implemented; nothing
    changed in the definition.
+
+4. **Windows: 3 of the target's 30; which layout?**
+
+   * **Problem:**
+     - Three nine-month windows ship where an IID split of 2,070 segments would get thirty[^split15]; the splits comment does not say why there are fewer.
+     - Today's windows (by exam date, no gap):
+
+       | Test window | Train side | Train share | Test segments | Normal | Suspect | Pathologic |
+       |---|---|---|---|---|---|---|
+       | Apr-Jun 1998 | 1,846 | 89.2% | 224 | 182 | 5 | 37 |
+       | Jul 1997-Mar 1998 | 1,541 | 74.4% | 305 | 255 | 0 | 50 |
+       | Oct 1996-Jun 1997 | 1,234 | 59.6% | 307 | 252 | 46 | 9 |
+
+     - Fixed: the exams fall on 47 dates, and an exam's segments stay on one side. Settled: more windows over the same test exams (issue 3, 2026-11-11, A over B, five windows, and C, 8 to 12 finer ones), measured to steady nothing: same ranking, relative error 0.19 to 0.24 in every layout[^split17].
+     - What stops more windows: the dates. Thirty windows of at least 33 segments are out of reach: above half the data[^split14], windows of a single exam date or a few give at most 17 (33 to 101 segments each), and down to 30% at most 23; those are issue 3's finer windows taken further, and the target gives no reason the measurement did not already weigh.
+     - What the exception could add: the months before October 1996, which a nine-month window cannot reach, as January 1996 trains on 15.1%. The part above 30%, 6 May to 30 September 1996, trains on 32.0% and tests 571 segments of the 1996 labelling (37 suspect).
+   * **Window counts:** counted on the built frame.
+
+     | Layout | Windows | Train share | Test segments | Smallest class per window | Window length |
+     |---|---|---|---|---|---|
+     | A, shipped | 3 | 59.6-89.2% | 224-307 | 0-9 | 9 months |
+     | B, a fourth window, 6 May-30 Sep 1996 | 4 | 32.0-89.2% | 224-571 | 0-9 | 9 months, the oldest under 5 |
+     | single dates, half the data or more (issue 3's C taken further) | 17 | 51.2-96.3% | 33-101 | many 0 | 1 day to a few weeks |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Three nine-month windows (implemented) | adds the reason to the splits comment | as decided on issue 3 | 3 of 30 |
+     | B | A fourth window, 6 May to 30 September 1996, as the curator's exception | explicit cutoffs; the under-half warning accepted with a CC line | 571 more test segments, the most per window, from before the 1996-1997 label shift | trains on 32.0% (663 segments of 1995 and spring 1996); a shorter window; 4 pathologic segments |
+
+     Overlapping windows are not offered: issue 3 found that windows reusing the same exams steady nothing.
+   * **Recommendation:** A: the target is out of reach on 47 exam dates, and the oldest window already tests the 1996 labelling (46 suspect segments). **Decision:** A or B?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Three of the thirty windows an IID split of this size would get: the exams fall on 47 dates, so finer windows would test single days, and these reuse the same exams without steadying the score (issue 3, 2026-11-11)." On B: `TemporalSplits(window=9, unit="months", cutoffs=("1996-05-06", "1996-10-01", "1997-07-01", "1998-04-01"))` cannot end the oldest window at October; use `_make_splits` with the explicit ranges, accept `splits_train_under_half`, CC line, class counts in `splits_comment`.
+
+   **Andrej (2026-11-19, discuss):** Test for stationarity
+
+   **Answer (AI, 2026-11-19):** tested: clearly not flat. Models trained on earlier exams lose 0.30 to 0.78 in log loss on the two newest windows, and the label mix moves sixteenfold, so the three windows stand and no random or grouped folds could replace them.
+
+   * **The test:** the definition's frame without the exam date (2,070 segments, 21 features, log loss), its nine-month windows extended back; each period's forward model (trained on all earlier exams) against one trained on as many rows of the period itself, 5 seeds; exams kept whole (335 files).
+
+     | Test period | Train share | LightGBM gap | Kumo-Tabular gap | Floor | Verdict |
+     |---|---|---|---|---|---|
+     | Apr-Jun 1998 | 89.2% | +0.777 ± 0.148 | +0.759 ± 0.181 | 0.001 | not flat |
+     | Jul 1997-Mar 1998 | 74.4% | +0.305 ± 0.123 | +0.201 ± 0.129 | 0.002-0.003 | not flat |
+     | Oct 1996-Jun 1997 | 59.6% | -0.004 ± 0.033 | +0.004 ± 0.022 | 0.003-0.004 | inconclusive |
+
+   * **The label mix:** suspect is 35.5% of the segments in January-March 1995 and 2.2% in April-June 1998 (sixteenfold, p 7.5e-20); between the two newest windows suspect falls from 15.0% to 0% and pathologic rises from 2.9% to 16.4%: the recording-change rule counts it.
+   * In the newest window Kumo-Tabular trained on the window itself does not beat the constant (0.664 against 0.540), so that window's verdict rests on LightGBM.
+   * **What it means:** the windows test what a deployed model meets, a moving case mix; the fourth window (B, 32% training) would add an older period with the same kind of shift.
+
+   **Recommendation:** A, unchanged: the three windows, with this measurement in the splits comment as the reason the split must stay temporal. **Decision:** A or B?
+
+   **Andrej (2026-11-20, discuss):** Can we somehow get more than three windows?
+
+   **Answer (AI, 2026-11-20):** yes, in two ways: a fourth, older window as your exception (B), or shorter windows over the same test exams (C); the 47 exam dates cap everything else.
+
+   | | Layout | Windows | Train share | Test segments | Note |
+   |---|---|---|---|---|---|
+   | A | three nine-month windows (implemented) | 3 | 59.6-89.2% | 224-307 | |
+   | B | A plus 6 May-30 September 1996, your exception | 4 | 32.0-89.2% | 224-571 | the 1996 labelling, before the label shift the test measured (35.5% suspect in early 1995, 2.2% in 1998) |
+   | C | windows of one or a few exam dates, half the data or more | up to 17 | 51.2-96.3% | 33-101 | many windows without a suspect or pathologic segment; issue 3 found finer windows over the same exams steady nothing |
+
+   * The stationary-relation test reads the relation clearly not flat (+0.30 to +0.78 log loss on the newest windows, the label mix moving sixteenfold), so each window tests a different labelling period: B adds a real one (the oldest the floor's exception reaches), C cuts the same three periods finer.
+   * A middle length (for example four or five months) would give about five or six windows above half the data; it is not counted yet and can be, on your word.
+
+   **Recommendation:** B if you want more than three: it adds a period with its own labelling, the one thing the measurement says matters, at the cost of training on 32%. **Decision:** A, B or C?
+
+   **Andrej (2026-11-20, ok):** As implemented (A).
+
+   **Resolved (2026-11-20, Andrej):** A, as implemented: the three nine-month windows; the splits comment gives the reason they stay temporal (models trained on earlier exams lose 0.30-0.78 log loss on the two newest windows; suspect 35.5% of segments in early 1995 against 2.2% in 1998) and why there are not more (47 exam dates). Not rebuilt.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get, 30 here (two thirds of the rows under 2,500); fewer are accepted, never under 3, with the target, the count and what stops more in the splits comment; overlapping windows only as an offered option.
+   [^split17]: **SPLIT-17** (Should): finer windows add no test rows, because the floor fixes the test pool; they cut it into smaller, noisier pieces.
 
 ## Reference
 

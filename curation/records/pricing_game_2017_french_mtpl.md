@@ -158,6 +158,8 @@ CC (2026-11-16, Andrej): time basis `ForcedGroupedFromTemporal` instead of `Dela
 - A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
 - The grouped split stays.
 
+CC (2026-11-18, Andrej): Review issue 10, A, as implemented: `ForcedGroupedFromTemporal` stays (folds by client on Year 0); not taken as stationary, and not measured, since the multi-year AIcrowd copy needs an account.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it; the metric's floor was lowered to 0.1 EUR on 2026-11-08 (issue 5,
@@ -724,6 +726,63 @@ that sex is no rating factor of any insurance pricing task (australian_vehicle_i
    **Andrej (2026-11-13, change):** Option B: DelayedTarget.
 
    **Resolved (2026-11-13, Andrej):** B. The tag is `DelayedTarget`, with its `Time basis:` line in the definition; the split does not change.
+
+10. **Measure the relation on the dated periods a parent source holds, before deciding the tag?**
+
+   * **Problem:**
+     - Time: Time exists in a parent source: the AIcrowd release of the same portfolio holds claim years 1-4 (AIcrowd year k = pg17 Year k-1, linked via 6,280 equal amounts), on noised features; CASdatasets holds Year 0 only; that multi-year copy (AIcrowd, claim years 1-4, noised features) is not in the warehouse, so measuring needs a download first.
+     - Use: A motor insurer fits its tariff on Year 0 and prices Year 1, the year right after the collected one.
+     - Mechanism: Rating factors (driver, vehicle, policy) to a year's claim cost; the ranking is fairly stable in motor, but the claim level drifts by year (AIcrowd 119.3 to 106.2 EUR over years 1-4).
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | pricing_game_2017_french_mtpl (AIcrowd copy, splits_comment) | Gini of Tweedie LightGBM: same-year held-out clients against next year's policies | forward not worse (0.268 same-year design, 0.277 next year); claim level drifts 0-6% a year (119.3, 119.0, 112.3, 106.2 EUR, possibly organiser-built) | French MTPL pricing, next-year use |
+     | pricing_game_2016_french_fleet | stationary-relation test v3, policy years 2011-2013, rescaled Tweedie deviance | inconclusive (gaps within noise; mean cost per row 171.6, 199.6, 201.8, +16% then +1%) | French motor pricing game, tariff fit on closed years and applied to the next |
+     | frempl_french_motor_personal_line | stationary-relation test v3 over start quarters Q1-Q4 2004, Tweedie LightGBM + Kumo, weighted Gini | inconclusive (forward not worse, e.g. Q4 gap -0.012 +- 0.019, but SD above ten floors; mean cost per quarter 578 to 1,164) | French motor portfolio, one-year claim cost priced from rating factors |
+     | spanish_motor_insurance_coverage_level_2022_2024 | earlier matched protocol (v2), calendar years 2022-2024, weighted Gini | flat by the rule, near the line in 2023 (2024 window gap 0.008 +- 0.016 LightGBM); mean cost 292.8, 285.1, 302.4 | motor pricing of next year's book from rating factors |
+
+   * **For a stationary use case:**
+     - Use right after the collected year (Year 0 -> Year 1).
+     - The one partial measurement on the AIcrowd copy shows next year not harder than the forced design (Gini 0.277 vs 0.268).
+   * **Against:**
+     - Claim level drifts 0-6% a year on the AIcrowd copy, which a random split hands to every model.
+     - The AIcrowd later years may be organiser-built (splits_comment), so the measurement needs care.
+   * **Earlier views:**
+     - CC (2026-11-02, Andrej): 'Forced group splits should be fine.'.
+     - CC (2026-11-10, Andrej): stays on Year 0 split by client, drift sentence in splits_comment, no rebuild on the AIcrowd years (issue 6 (a)).
+     - Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-16; DelayedTarget from 2026-11-13, retired).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedGroupedFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Claim level drifts 0-6% a year on the AIcrowd copy, which a random split hands to every model.; The AIcrowd later years may be organiser-built (splits_comment), so the measurement needs care. |
+     | C | Measure first | Time exists in a parent source: the AIcrowd release of the same portfolio holds claim years 1-4 (AIcrowd year k = pg17 Year k-1, linked via 6,280 equal amounts), on noised features; CASdatasets holds Year 0 only; that multi-year copy (AIcrowd, claim years 1-4, noised features) is not in the warehouse, so measuring needs a download first. | The rule asks for a measurement where time exists | Takes a Slurm run |
+
+   * **Recommendation:** C, the rule asks for the stationary-relation test where a parent source holds periods: run v3 on the AIcrowd years 1-4 (periods = claim years, units = policies, Tweedie deviance and Gini), and put its verdict in the Time basis line instead of assuming. Confidence: high. **Decision:** A, B or C?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, change):** Option C: Measure first.
+
+   **Answer (AI, 2026-11-18):** measurement requested; the tag stays until its verdict. The multi-year AIcrowd copy (claim years 1-4) is not in the warehouse: it needs a download first.
+
+   **Andrej (2026-11-18, change):** Option C: Measure first.
+
+   **Answer (AI, 2026-11-18):** cannot be measured from here yet; the tag stays until the data is in.
+
+   - The multi-year copy (AIcrowd's insurance pricing game, `training.csv`, claim years 1-4) is downloaded only through
+     an AIcrowd account after accepting the challenge rules; it is in no local warehouse or job folder.
+   - The public mirror of a French pricing game on freakonometrics (100,021 policies, calendar years 2009 and 2010) is
+     a different portfolio, with other columns (`PolNum`, `CalYear`, `Numtppd`), so it cannot stand in.
+   - Once `training.csv` is in the warehouse, the run is ready: periods = claim years 1-4, units = policies, the
+     definition's Tweedie deviance, the same probe as the other 16 datasets.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: `ForcedGroupedFromTemporal` stays, the folds by client on
+   Year 0 unchanged; the multi-year AIcrowd copy is not downloaded, so no measurement.
 
 **Review panel:** ship after changes (mediator). A focused re-review of 2026-11-06 under LEAK-41 and MET-14 to MET-16,
 by a claim auditor and a mediator. Claims: 13; 9 hold (one with an off citation, now fixed), 1 holds only as a

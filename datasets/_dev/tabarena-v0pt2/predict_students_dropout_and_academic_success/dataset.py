@@ -152,8 +152,17 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
         (a gap of one cohort), for Nursing up to three years older (a gap of two). The training sides hold 54% to 80%
         of the 4,424 students. Measured 2026-11-11 (untuned LightGBM, log loss): 0.740 (2017), 0.791, 0.694, 0.706
         (2014), +0.02 to +0.14 above training on as many students drawn from all cohorts; the random split this
-        replaces flattered log loss by that much.
+        replaces flattered log loss by that much. Four of the nine windows an IID split of this size would get: one
+        window is one cohort, and with the gap the label needs, the 2013 cohort would train on 43.9% of the students
+        (Andrej, 2026-11-19, review issue 4, A).
     """
+    accepted_check_warnings = {
+        "splits_below_target": (
+            "Four of the nine windows an IID split of this size would get: one window is one cohort, and with the gap "
+            "the label needs, the 2013 cohort would train on 43.9% of the students (Andrej, 2026-11-19, review issue "
+            "4, A)."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         data = pd.read_csv(raw_dir / "data.csv", sep=";")

@@ -90,6 +90,11 @@ class TunisianFraudDetectionChallenge(AbstractCuratedDataset):
         - The score: 56-60% of the squared error (HistGradientBoosting, test years 2015-2017) comes from the true zeros, 25% of rows, so RMSE on the log label mostly rewards telling whether an inspection finds anything, not the size of the adjustment.
     """
     accepted_check_warnings = {
+        "splits_below_target": (
+            "Three windows, against the 9 an IID split of 20,930 taxpayer-years would get: the release has five "
+            "fiscal years after the 2018 cut, and a 2014 window would train on 2013 alone, 29.0% of the rows, under "
+            'the 30% floor (Andrej, 2026-11-20, review item "Windows: 3 of the target\'s 9", A).'
+        ),
         "task_time_on_few_unique": "Only five genuine fiscal-year cohorts exist (2018 is cut); three outer windows meet the training floor. Validation must respect the available annual support; finer timestamps are unavailable.",
         "meta_time_horizon_mismatch": "Every row is an annual cohort represented at January 1; the one-year horizon denotes the calendar cohort, while observed timestamp span is one point. No daily sampling or audit-duration claim is made.",
     }
@@ -105,7 +110,11 @@ class TunisianFraudDetectionChallenge(AbstractCuratedDataset):
         splits=TemporalSplits(window=1, unit="years", cutoffs=(2015, 2016, 2017)),
     )
     splits_comment = """
-        Three one-calendar-year cohort windows, newest first: 2017, 2016, 2015 (fiscal year 2018 is cut, LEAK-24). Each
+        Leaf (SPLIT-36): Panel data -> fill in the covered period -> the rows that lack the target lie later in time
+        (audits close years after the fiscal year; the newest years' adjustments are still open) -> Temporal · labels
+        arrive later (the labels-arrive-later step, Andrej, 2026-11-20). No gap: an audit's delay runs to years, and a
+        gap that long would leave fewer than three windows in five fiscal years (gap 0, Lennart, 2026-11-05; confirmed
+        under the new leaf, Andrej, 2026-11-20). Three one-calendar-year cohort windows, newest first: 2017, 2016, 2015 (fiscal year 2018 is cut, LEAK-24). Each
         model trains on every earlier fiscal cohort with its labels, which the retrospective analyst holds, and the
         scored cohort's labels are withheld. The previous adjustment reads only strictly earlier years of the same
         taxpayer, so for every test row that has one (1,216, 2,210 and 2,776 rows) it comes from a training row, never
@@ -114,7 +123,10 @@ class TunisianFraudDetectionChallenge(AbstractCuratedDataset):
         are unavailable, and the 2018 cut shows that labels arrive late, so when a previous label became known is not
         established. One year is the evaluation-window duration, not a promised one-year inspection or adjustment
         horizon. The source's own test file spans every fiscal year 2013-2018 and its labels were never released, so
-        its split cannot be followed (SPLIT-19); these windows are our own.
+        its split cannot be followed (SPLIT-19); these windows are our own. Three windows, against the 9 an IID split
+        of 20,930 taxpayer-years would get: the release has five fiscal years after the 2018 cut, and a 2014 window
+        would train on 2013 alone, 29.0% of the rows, under the 30% floor (Andrej, 2026-11-20, review item "Windows: 3
+        of the target's 9", A).
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

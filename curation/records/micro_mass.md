@@ -66,6 +66,8 @@ CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 
 
 CC (2026-11-12, Andrej): review page mark (issue 4, A): the strain-grouped split stays. The panel is a single 2013 deposit; the strain identifier is an integer with no accession or date, so no split by entry date can be built; noted in the `Time basis:` line.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `Strain`, 20x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it as defined; the one open question is Andrej's dispute of Lennart's

@@ -70,6 +70,10 @@ CC (2026-11-09, Andrej): columns held only for training rows stay out for now, n
 
 CC (2026-11-09, Andrej): the training labels' maturity is stated in the notes (cross-dataset item of 2026-11-09, option B).
 
+CC (2026-11-17, Andrej): the declared split (temporal on `policy_year`, windows of 1 value, 3 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-19, Andrej): windows below the target count kept (Review issue 6, A as implemented): three yearly windows; a 2011 window would train on 2010 alone (32.8%); the reason is in the splits comment.
+
 ## Review
 
 **Outcome:** added; shipped on Andrej's verdict of 2026-11-02. The re-review of 2026-11-06 under the exposure rules
@@ -117,7 +121,7 @@ kept after a nine-test leak check (1), no gap (2), the Gini (3), the frozen ages
 exposure re-review of 2026-11-06 adds none: no column is a weight or a time on risk, and the notes now bound the lapse
 years that could be cut short. On 2026-11-08 (Lennart): `gender` dropped, as sex leaves every insurance pricing task
 (the stance of australian_vehicle_insurance_2004_2005's issue 7; for `gender` it supersedes the keep of issue 1); it
-carried little.
+carried little. Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 6).
 
 **Issues for Andrej:**
 
@@ -238,6 +242,40 @@ carried little.
 
    **Resolved (2026-11-02, Andrej):** both accepted; `accepted_check_warnings` now holds them with these reasons
    (dataset check: 0 errors, 0 warnings).
+
+6. **Windows: 3 of the target's 9; which layout?**
+
+   * **Problem:**
+     - The release has five policy years, so yearly windows give three at half the data or more: a fourth, 2011, would train on 2010 alone, 32.8% of the rows[^split14]. The target an IID split of 122,935 customer-years would get is 9[^split33][^split15].
+
+       | Test window | Customer-years | With a home claim | Train | Train share |
+       |---|---|---|---|---|
+       | 2014 | 13,284 | 240 | 109,651 | 89.2% |
+       | 2013 | 17,044 | 310 | 92,607 | 75.3% |
+       | 2012 | 22,505 | 448 | 70,102 | 57.0% |
+
+     - What the source fixes: the policy year is the only time the release has, and the insurer prices at the yearly renewal, so a window is one year and no shorter or overlapping window exists. No gap before each test year is your exception of 2026-11-02 (issue 2); a one-year gap would leave only two windows.
+     - The test years shrink as customers leave the panel (29,818 in 2011 to 13,284 in 2014); equal sizes only by sampling rows out of the larger years, which drops test rows and adds no period, so it is not offered.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Three yearly windows (implemented), the reason in `splits_comment` | 3 windows, train 57.0% to 89.2%, test 13,284 to 22,505 customer-years, 240 to 448 with a home claim | the yearly renewal; every window trains on half or more | 6 short of the target, the most the five years allow at half the data |
+     | B | Add 2011 as the curator's exception | 4 windows; 2011 trains on 2010 alone (32.8%) and tests 29,818 customer-years, 531 with a home claim; train 32.8% to 89.2% | the most windows the data allows; the largest test year | trains on one year, near the 30% floor, whose rows carry no claim history (none ships for 2010) while the test rows carry one year of it; 5 short of the target anyway |
+
+   * **Recommendation:** A: three is what five yearly values give at half the data, and B adds a window trained on one year for a period the other three already cover. **Decision:** A or B?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Three windows, against the 9 an IID split of 122,935 customer-years would get: the release has five policy years, and a 2011 window would train on 2010 alone, 32.8% of the rows (the date of your decision, Andrej)." On B: `TemporalSplits(window=1, unit="unique", n_windows=4)`, `splits_train_under_half` accepted for 2011 with the reason, the window table in `splits_comment`, `task_summary.split`, `dataset check` on Slurm, a CHANGELOG entry and a CC line.
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: three yearly windows; a 2011 window would train on 2010 alone (32.8%). The splits comment names the target count and what stops more windows; `splits_below_target` is accepted with that reason. The split is unchanged.
+
+   [^split14]: **SPLIT-14** (Must): at least 3 windows; every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get; the use case sets the window length, step and gap, which are never shortened to reach the count; fewer are accepted, never under 3, with the target, the count reached and what stops more windows in the splits comment; overlapping windows are only offered.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count, here 9.
 
 **Review panel:** ship after changes (mediator). Focused re-review of 2026-11-06 under LEAK-41 and MET-14 to MET-16,
 after the notes gained an Exposure bullet: the claim auditor and the mediator ran, with no blind reviewer, task gamer,

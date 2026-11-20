@@ -3,6 +3,7 @@ unique_name: alfa_battle_2_0_task_2
 name: Alfa Battle 2.0 (Task 2)
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -79,6 +80,8 @@ CC (2026-11-11, Lennart): REVIEW issue 5 (which issue months), ok with "Reply (b
 CC (2026-11-11, Lennart): the declared horizon (2 issue months, no gap, windows starting at months 22, 20 and 14) is checked, as no source gives a horizon or a refit cadence (the competition names its periods only as N and K days), so the two months are a convention.
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `SPLIT_WINDOWS = TemporalSplits(window=2, unit="unique", cutoffs=(22, 20, 14))`, `_make_splits` unchanged; test 120,428, 107,844 and 90,937 products, train after the repeat-client filter 804,162, 702,678 and 396,171 (83.4%, 72.9%, 41.1% of 963,811; the filter removes 39,221, 32,861 and 21,497); default rate 3.02%, 3.36% and 2.70% in the windows, 2.78%, 2.67% and 2.45% on the train sides. For these windows a 12-month gap would leave 3-27% of the rows for training and a 6-month gap 20-53% (before the filter), so the exception's reason holds. `splits_rows_unused` recounted: 1,121 products in no split (181 of months 0-13, on all three training sides, and 940 of months 16-19, on the training sides of the two newest windows only, all of clients with a product in those windows). `task_summary.split`, `splits_comment` (the windows and why, the counts, the shares, the length as a convention, the gap figures) and the comment above `SPLIT_WINDOWS` are rewritten; the LightGBM ROC AUC of `curation_comments` and the 6-month-gap cost are dated to the windows of 2026-10-26; `accepted_check_warnings` accepts `splits_train_under_half` with the sign-off. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
+CC (2026-11-20, Andrej): Review issue 6, E: the test windows walk back from the newest at two months (22-23, 20-21, 18-19; 60.3% to 83.4% training), replacing 14-15 (41.1%); the diversity that motivated an older window measured only the months between windows, as neighbouring months differ about equally throughout.
 
 ## Review
 
@@ -240,6 +243,157 @@ convention, not a stated cadence; the windows are issue 5's (b). The record has 
    holds. `task_summary.split`, `splits_comment` and the comment above `SPLIT_WINDOWS` are rewritten; the LightGBM
    figures measured on the windows of 2026-10-26 are dated as such. The record has the decision and the horizon CC
    lines. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
+6. **Train floor: keep the window under half the data as the curator's exception, or drop it?**
+
+   * **Problem:**
+     - Months 14-15 train on 41.1% of the rows after the repeat-client filter, beside months 22-23 and 20-21 on 83.4% and 72.9%.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 5, b) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - The definition has 3 windows; the target an IID split would get[^split33] for 963,811 rows is 3; without the window under half it keeps 2.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the window as the curator's exception (implemented) | The accepted warning is reworded to the new rule; split unchanged | Keeps the periods it tests, as signed off; more windows toward the target | It trains on less than half the data |
+     | B | Drop the window under half | The windows under half leave the declaration; a rebuild | Every window trains on half the data or more | 1 fewer window and the period it tests |
+
+   * **Recommendation:** A, the sign-off's reason (periods or test rows the newest windows lack) still holds, and no window is under 30%. **Decision:** A or B?
+
+   **Notes for the AI:** on A, reword the `splits_train_under_half` acceptance (drop "SPLIT-14's two tiers admit it", name the curator's exception and this decision) and add a CC line; on B, remove the windows from the declaration, rebuild, and update the splits comment.
+
+   **Andrej (2026-11-19, discuss):** How exactly are the splits done? Could we reduce the window sizes while staying compliant with the use case and get to more than 50% on each train split?
+
+   **Answer (AI, 2026-11-19):** Shortening the windows does not lift the old window: a window's train share is set by its first month, not its length, and months 14-15 start at 41.1% whatever their length; but one-month windows (C) or a later two-month pair (D) give three windows all above half, and C still tests a month from the other half of the second year.
+
+   * **How the split is done today:** `TemporalSplits(window=2, unit="unique", cutoffs=(22, 20, 14))` on `issue_month` (24 reconstructed issue months, 0-23), step set by the cutoffs, no gap (the recorded exception), each train side everything before the window minus the products of clients that have a product in the test window (the repeat-client filter of `_make_splits`). The scored unit is the product (963,811; 26,577 defaults).
+
+     | Window (issue months) | Test products | Defaults | Train before filter | Train after filter | Train share after filter |
+     |---|---|---|---|---|---|
+     | 22-23 | 120,428 | 3,637 | 843,383 | 804,162 | 83.4% |
+     | 20-21 | 107,844 | 3,628 | 735,539 | 702,678 | 72.9% |
+     | 14-15 | 90,937 | 2,459 | 417,668 | 396,171 | 41.1% |
+
+   * **What the use case and the source fix:** nothing about the length. The competition names its periods only as "N days" and "the following K days", Alfa-Bank's post gives no refit cadence, so the two months are our convention (signed off 2026-11-11 as such). The time unit is the issue month (the data has no finer date). The gap is fixed: 0 by the recorded exception (a 6-month gap leaves 20-53%), and the repeat-client filter stays. Our assumption: a model refit on all products issued so far serves the next window.
+   * **The floor:** after the filter, the first month that keeps half the rows is month 16 (51.3% for a one-month window, 49.9% for the pair 16-17); months 12-15, the first half of the second year, cannot be tested above half at any length.
+   * **Shorter layouts above half,** same gap and filter (target 3 windows):
+
+     | Layout | Windows | Test products | Defaults | Train share after filter |
+     |---|---|---|---|---|
+     | C: one month | 23, 20, 16 | 62,051 / 49,299 / 53,410 | 1,843 / 1,658 / 1,538 | 91.1% / 74.7% / 51.3% |
+     | D: two months, oldest moved | 22-23, 20-21, 17-18 | 120,428 / 107,844 / 114,390 | 3,637 / 3,628 / 3,428 | 83.4% / 72.9% / 55.0% |
+
+     - C tests 164,760 products (today 319,209) and month 16, the first whole month of the year's other half above the floor; D keeps the length and the default peak of 20-21 but its oldest window reaches into the other half only with month 17.
+     - Other one-month choices are open (any three of months 16 to 23); 21 for 20 changes little (58,545 products, 3.36% defaults in both months).
+
+   **Recommendation:** C: no source ties the length, and one-month windows keep every train side above half while still testing a month of the other half of the year, the reason months 14-15 were chosen. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-20, discuss):** Why is the oldest window 14-15 and not 18-19?
+
+   **Answer (AI, 2026-11-20):** Lennart chose it on 2026-11-11 (issue 5, b): months 14-15 replaced 18-19 "so the windows also test the other half of the second year" (months 12-17) and keep the default peak of months 20-21; under the floor of the time a window under half was admitted beside two above.
+
+   | Oldest window | Train share after the filter | Test products | Covers |
+   |---|---|---|---|
+   | 18-19 (the original, issue 5 a) | 60.3% | 121,390 | the newest six months only, with 22-23 and 20-21 |
+   | 14-15 (shipped, issue 5 b) | 41.1% | 90,937 | the other half of the second year |
+   | 16 (option C, one-month windows 23, 20, 16) | 51.3% | 53,410 | the first whole month of the other half above the floor |
+   | 17-18 (option D, two-month windows) | 55.0% | 114,390 | month 17 of the other half, with 18 |
+
+   * Under today's floor (half the data, exceptions down to 30% your call), 14-15 is under half; 18-19 is above it but drops the other half of the year; C and D are the layouts that keep a month of the other half above the floor.
+   * A new option E restores 18-19: windows 22-23, 20-21, 18-19, all above half (60.3% to 83.4%), as before 2026-11-11.
+
+   **Recommendation:** C, unchanged: it keeps every window above half and still tests a month of the other half of the year, the reason 14-15 was chosen; E if the other half of the year matters less than the two-month length. **Decision:** A, B, C, D or E?
+
+   **Andrej (2026-11-20, discuss):** The main reason to choose an earlier month than just the next one when rolling back was to increase diversity. Did we even measure if the splits are more shifty or diverse? If not do so, then we can decide.
+
+   **Answer (AI, 2026-11-20):** it was not measured before (issue 5 had only PSI per window); measured now: an older window does make the test windows more diverse, and 16 (C) keeps nearly all of 14-15's diversity above the floor, while the windows where the model loses most are 17-18 and 18-19.
+
+   * **Setup:** the definition's frame (963,811 products); each window trained on all earlier months minus the window's repeat clients. Covariate shift: an adversarial LightGBM (ROC AUC, 3 folds grouped by client) between a window and its training side, and between the test windows of a layout; PSI per feature. Performance: an untuned LightGBM scored on held-out clients of its last training months and on the window (gap = held-out minus window, bootstrap SE).
+   * **Per window:**
+
+     | Window | Train share | Default rate (window / train) | Adversarial AUC vs training side | ROC AUC held-out / window | Gap ± SE |
+     |---|---|---|---|---|---|
+     | 14-15 (A) | 41.1% | 2.70% / 2.45% | 0.962 | 0.773 / 0.763 | +0.010 ± 0.011 |
+     | 16 (C) | 51.3% | 2.88% / 2.48% | 0.966 | 0.767 / 0.762 | +0.005 ± 0.011 |
+     | 16-17 | 49.9% | 2.88% / 2.51% | 0.968 | 0.751 / 0.758 | -0.007 ± 0.011 |
+     | 17-18 (D) | 55.0% | 3.00% / 2.55% | 0.969 | 0.779 / 0.743 | **+0.036 ± 0.009** |
+     | 18-19 (E) | 60.3% | 3.12% / 2.58% | 0.969 | 0.780 / 0.761 | **+0.020 ± 0.009** |
+     | 20-21 | 72.9% | 3.36% / 2.67% | 0.974 | 0.754 / 0.761 | -0.007 ± 0.008 |
+     | 22-23 | 83.4% | 3.02% / 2.78% | 0.980 | 0.768 / 0.777 | -0.008 ± 0.008 |
+
+     Every window is easy to tell from its training side (0.96-0.98): the payment mix keeps moving (`share_payment_system_3` leads every comparison), so "shifted from training" does not tell the candidates apart; the model loses clearly only on 17-18 and 18-19.
+   * **Diversity between the test windows of each layout** (adversarial AUC between two test windows; features with PSI over 0.25):
+
+     | Layout | Oldest vs 22-23 (or 23) | Oldest vs 20-21 (or 20) | Newer two | Features PSI > 0.25 (oldest vs newest) |
+     |---|---|---|---|---|
+     | A: 22-23, 20-21, 14-15 | 0.999 | 0.998 | 0.929 | 11 |
+     | C: 23, 20, 16 | 0.999 | 0.994 | 0.979 | 8 |
+     | D: 22-23, 20-21, 17-18 | 0.994 | 0.977 | 0.929 | 5 |
+     | E: 22-23, 20-21, 18-19 | 0.986 | 0.937 | 0.929 | 4 |
+
+   * **What it shows:** going back adds diversity, A most, then C, D, E; C keeps nearly A's (0.999/0.994 against the newer windows) with every window above half the data, whereas E's oldest window resembles 20-21 (0.937). The performance drop points the other way: D and E test the months where a model trained on the past loses most.
+
+   * **Caveat:** the diversity rests mostly on one feature: `share_payment_system_3` (the share of a client's transactions through one payment system) rises steadily toward the newest months and leads every comparison; the median feature hardly moves (PSI at most 0.007 in every window). So a higher diversity mostly means windows further apart along that one trend; whether anything else separates them is not measured (a run without the payment-system features would show it).
+
+   **Recommendation:** C, if diversity across the year is the aim (your stated reason): nearly the diversity of 14-15, all windows above the floor; D, if the aim is the window where models lose most. **Decision:** A, B, C, D or E?
+
+   **Andrej (2026-11-20, discuss):** What is the best trade off if we want to have more than 50% of the data on the train side of all splits and also diversity?
+
+   **Answer (AI, 2026-11-20):** C (one-month windows 23, 20 and 16): of the layouts with every window above half, it keeps the most diversity, nearly that of today's 14-15.
+
+   | Layout | Windows | Lowest train share | Oldest vs newest / vs middle (adversarial AUC) | Features PSI > 0.25 | Test products |
+   |---|---|---|---|---|---|
+   | A (shipped) | 22-23, 20-21, 14-15 | 41.1% | 0.999 / 0.998 | 11 | 319,209 |
+   | **C** | 23, 20, 16 | 51.3% | 0.999 / 0.994 | 8 | 164,760 |
+   | D | 22-23, 20-21, 17-18 | 55.0% | 0.994 / 0.977 | 5 | 342,662 |
+   | E | 22-23, 20-21, 18-19 | 60.3% | 0.986 / 0.937 | 4 | 349,662 |
+
+   * Month 16 is the oldest month that trains on half or more after the repeat-client filter; the two-month pair 16-17 trains on 49.9%, so with two-month windows the oldest window above half is 17-18 (D). C is therefore the most diverse layout above the floor.
+   * What C gives up: half the test products of A or D (every window still holds 1,538 or more defaults) and the two-month length, which no source sets.
+   * D is the trade-off the other way: the two-month length and the window where models lose most (+0.036 ± 0.009), with less diversity (0.977 against the middle window).
+   * The caveat stands: the diversity is mostly one trend, `share_payment_system_3`.
+
+   **Recommendation:** C. **Decision:** A, B, C, D or E?
+
+   **Andrej (2026-11-20, discuss):** Is your diversity score just measuring that splits with less train data are mroe diverse? This is not what we need if its the case
+
+   **Answer (AI, 2026-11-20):** yes: the score measures how many months lie between two windows, and an older window is both further away and trained on less data. It finds no month that differs from its neighbours, so diversity gives no reason to reach back; the default walk-back from the newest window, E (22-23, 20-21, 18-19), is the layout to ship.
+
+   * **Test:** one-month windows, every month 12-22 against month 23 and every month against the next; adversarial ROC AUC (LightGBM, 3 folds grouped by client, 60,000 rows a side) with all features, without the 19 payment-system features, and also without the 4 `days_before` history-length features.
+
+     | Months apart | Pair | All features | Without payment-system | Without both |
+     |---|---|---|---|---|
+     | 11 | 12 vs 23 | 1.000 | 0.954 | 0.952 |
+     | 9 | 14 vs 23 | 1.000 | 0.924 | 0.921 |
+     | 7 | 16 vs 23 | 0.999 | 0.895 | 0.889 |
+     | 5 | 18 vs 23 | 0.995 | 0.844 | 0.837 |
+     | 3 | 20 vs 23 | 0.981 | 0.735 | 0.731 |
+     | 1 | 22 vs 23 | 0.901 | 0.659 | 0.647 |
+     | 1 | 12 vs 13 | 0.983 | 0.715 | 0.695 |
+     | 1 | 13 vs 14 | 0.953 | 0.662 | 0.659 |
+     | 1 | 14 vs 15 | 0.943 | 0.689 | 0.678 |
+     | 1 | 15 vs 16 | 0.930 | 0.694 | 0.679 |
+
+   * **Reading:** the score climbs steadily with the months between two windows, with every feature set; neighbouring months differ about equally wherever they lie (0.65-0.72 without the payment shares, all 11 neighbouring pairs from 12-13 to 22-23). The features drift slowly and evenly; no month or quarter stands out. So a "more diverse" layout is only one whose oldest window lies further back, which is also the one with the least training data, as you suspected.
+   * **What follows for the layouts above half:** with no distinct period to test, the windows walk back from the newest at the declared two-month length, the rules' default: E, 22-23, 20-21 and 18-19 (83.4%, 72.9% and 60.3% training; 349,662 test products). C and D only gave up length (C) or moved one month back (D) for a diversity that is distance.
+   * The model's loss is largest in 17-18 and 18-19 (+0.036 and +0.020 against held-out clients of the same months); E tests 18-19.
+
+   **Recommendation:** E. **Decision:** A, B, C, D or E?
+
+   **Andrej (2026-11-20, discuss):** Agree.
+
+   **Resolved (2026-11-20, Andrej):** E: `TemporalSplits(window=2, unit="unique", cutoffs=(22, 20, 18))`, no gap (the recorded exception), the repeat-client filter unchanged; the `splits_train_under_half` acceptance removed, as every window now trains on more than half.
+
+   | Window | Test products | Defaults | Train after the filter | Train share |
+   |---|---|---|---|---|
+   | 22-23 | 120,428 | 3,637 (3.02%) | 804,162 | 83.4% |
+   | 20-21 | 107,844 | 3,628 (3.36%) | 702,678 | 72.9% |
+   | 18-19 | 121,390 | 3,792 (3.12%) | 581,221 | 60.3% |
+
+   The splits comment gives the reason (the window diversity was only the months between windows). `dataset check`: 0 errors, 0 warnings. Not rebuilt.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
 
 ## Reference
 

@@ -145,6 +145,10 @@ CC (2026-11-13, Andrej): collection facts `Samples: Over Time` and `Time: Lost` 
 - No date or policy id survives, and exposure does not tell the start, so the time is lost.
 - The forced split (`ForcedIIDFromTemporal`) now agrees with the facts.
 
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 11, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Insurance prices and claim costs drift, the use is decades after collection, and the file order holds unexplained structure; nothing gives a domain reason to take later policies as interchangeable.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it: the re-review panel of 2026-11-06 under the exposure rules found no
@@ -901,6 +905,48 @@ the age bands as ordered categories (9). Issues 1 to 6 are resolved (6 supersede
    [^i10-law]: Sex Discrimination Act 1984 (Cth), s41(1)(a) to (e),
      https://www.legislation.gov.au/C2004A02868/2025-11-01/2025-11-01/text/original/epub/OEBPS/document_1/document_1.html.
      The EU ban: CJEU C-236/09 (Test-Achats), in force for new contracts from 21 December 2012.
+
+
+11. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: No date or policy id; one observation window of about a year (exposure 1-365 days); the raw file order is not random (12.2% adjacent rows share a day count vs 0.3% permuted) but is not shown to be time; insuranceData/the book hold no dated parent.
+     - Use: An Australian insurer prices next year's one-year policies; the data are of 2004-2005, so any use today is about 20 years later.
+     - Mechanism: Six rating factors (vehicle value, body, age band, driver age band, gender, area) to claim cost per year insured; relativities are partly behavioural and physical, but claim costs follow repair prices, medical costs and the insurer's book, which change over years.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | pricing_game_2016_french_fleet | stationary-relation test v3, policy years 2011-2013, rescaled Tweedie deviance | inconclusive (gaps within noise; mean cost per row 171.6, 199.6, 201.8, +16% then +1%) | French motor pricing game, tariff fit on closed years and applied to the next |
+     | frempl_french_motor_personal_line | stationary-relation test v3 over start quarters Q1-Q4 2004, Tweedie LightGBM + Kumo, weighted Gini | inconclusive (forward not worse, e.g. Q4 gap -0.012 +- 0.019, but SD above ten floors; mean cost per quarter 578 to 1,164) | French motor portfolio, one-year claim cost priced from rating factors |
+     | spanish_motor_insurance_coverage_level_2022_2024 | earlier matched protocol (v2), calendar years 2022-2024, weighted Gini | flat by the rule, near the line in 2023 (2024 window gap 0.008 +- 0.016 LightGBM); mean cost 292.8, 285.1, 302.4 | motor pricing of next year's book from rating factors |
+     | Swiss Re Institute, sigma 4/2024 'Social inflation: litigation costs drive claims inflation' (https://www.swissre.com/institute/research/sigma-research/sigma-2024-04-social-inflation.html) (literature, cited from memory: check) | US liability claim severity beyond economic inflation | not flat: about 5.4% a year 2017-2022, ~7% in 2023, index above zero since 2014 | claim costs of a US insurer depend on the litigation and price environment of the year |
+
+   * **For a stationary use case:**
+     - Within-file check: training on earlier file quarters to test the next shows no drop (Tweedie LightGBM 0.086, GLM 0.129 vs 0.066 and 0.117 random; 2026-11-09), though the order is not known to be time.
+     - The pricing use case, if read as the next year, is right after the collected window.
+   * **Against:**
+     - Structure in the file order (exposure mean per tenth 0.42 to 0.53 vs chance SD 0.0035) of unknown meaning.
+     - Long span: a 2004-2005 book used for pricing today, with 20 years of repair cost, vehicle fleet and market change.
+     - Claim levels move year to year in every dated motor set of the collection (pricing_game_2016 +16% in one year).
+     - Australia: Swiss Re estimates social inflation added ~7 ppts to liability claims growth in 2022.
+   * **Earlier views:**
+     - CC (2026-11-02, Andrej): the forced IID split ships after the leak test: 'Whenever there are no leaks we can ship.'.
+     - CC (2026-11-17, Andrej): blind split walk reaches the shipped random ForcedIIDFromTemporal split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Structure in the file order (exposure mean per tenth 0.42 to 0.53 vs chance SD 0.0035) of unknown meaning.; Long span: a 2004-2005 book used for pricing today, with 20 years of repair cost, vehicle fleet and market change. |
+
+   * **Recommendation:** A, insurance prices and claim costs drift, the use is decades after collection, and the file order holds unexplained structure; nothing gives a domain reason to take later policies as interchangeable. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Insurance prices and claim costs drift, the use is decades after collection, and the file order holds unexplained structure; nothing gives a domain reason to take later policies as interchangeable.)
 
 
 **Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,

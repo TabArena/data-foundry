@@ -69,6 +69,12 @@ CC (2026-11-12, Andrej): `first_publication_year` orders the split but is no mod
 - It is the year of the first article PubChem links to the compound; a candidate screened before its bee test is not yet in the literature, so the actor does not hold the year at the prediction point.
 - `Temporal(..., feature=False)`: the four ten-year windows and their counts stay; the inputs lose one column.
 
+CC (2026-11-17, Andrej): Review issue 3, A, as implemented: Four ten-year windows on `first_publication_year` (test 1984-1993, 1994-2003, 2004-2013, 2014-2023: 173 / 118 / 106 / 54 compounds), each trained on every earlier compound (56 / 73 / 85 / 95% of 1,035), no gap, the year no model input.
+
+CC (2026-11-17, Andrej): verdict ship (blind split review page).
+
+CC (2026-11-17, Andrej): the declared split (temporal on `first_publication_year`, windows of 10 values, 4 windows at fixed cutoffs, no gap) is checked: split mark on the blind split review page.
+
 ## Review
 
 **Outcome:** added. ApisTox (Zenodo 13350981): whether an agrochemical is acutely toxic to honey bees, from its
@@ -162,6 +168,37 @@ fixed properties split: the definition splits by year while the record says the 
    and the prediction-point bullet no longer lists the year as known. Record CC line. `dataset check` 0 errors,
    0 warnings, 1 info (horizon unit of an integer year); README: 5 features (was 6), `time_is_feature: false`, the
    four windows unchanged (train 584 to 981 rows, test 54 to 173).
+
+3. **Split: the authors' 80/20 MaxMin diversity split, or their single 80/20 time split, instead of four ten-year windows on first publication year?**
+
+   * **Problem:**
+     - The authors offer two 80/20 splits: a MaxMin diversity split, which they recommend for benchmarking because it covers chemical space, and a time split holding out the 207 newest compounds 'to simulate the actual discovery'.
+     - The use case screens a candidate not yet in the literature, so the tree gives windows on the entry date; arrival changes the intake (toxic share 44% in the 1960s, 16% in the 2000s) and a forward split leaves fewer close training analogs than a random draw.
+     - The shipped windows follow the authors' time split in key and direction, cut into four windows; the MaxMin split tests interpolation in one fold.
+   * **Source split:** yes, paper (Adamczyk et al., Scientific Data 2025 / arXiv 2404.16196): two predefined splits, 80/20: MaxMin diversity split (recommended for benchmarking) and a time split on PubChem first-publication year (newest 207 compounds as test) ("Time split puts the newest molecules in the testing set, in order to simulate the actual discovery ... We recommend using MaxMin split for this purpose, since it covers the chemical space of the dataset more uniformly.") https://arxiv.org/html/2404.16196v3. Credible: partly, The time split is documented and motivated by the use (simulating discovery of new agrochemicals); the recommended MaxMin split is motivated by chemical-space coverage, an interpolation test that does not match screening future candidates. One fixed 80/20 cut, no windows.. Against the tree's leaf: partly, The paper's time split uses my key and direction (newest compounds by PubChem first publication year held out), so the source supports the leaf; but it is one fixed 80/20 cut, and the authors recommend the MaxMin diversity split instead, which is an interpolation test and does not match their own….
+   * **Why it counts as chosen, not conventional:** The time split is documented and motivated by the use (simulating discovery of new agrochemicals); the recommended MaxMin split is motivated by chemical-space coverage, an interpolation test that does not match screening future candidates. One fixed 80/20 cut, no windows.
+   * **Background:** The authors' use case is screening a compound that is not yet in the literature, each compound carries a first publication year, and arrival moves both the intake (toxic share 44% in the 1960s against 16% in the 2000s) and the neighbourhood (a forward split leaves 20-28% of test compounds a close analog against 31-38% for a random draw of the same sizes). The year gives four expanding windows that all train on at least half the rows with 100-200 test rows each, so the split is temporal on the entry date. Confidence of the blind walk: medium.
+   * **What changes on B:** the definition's split declaration is replaced by the source's own construction (its files, periods or groups), and the `splits_comment` records that the tree's leaf was not followed. The rows, features, target and metric do not change; the folds do, so the container is rebuilt.
+   * **Blindness:** what the walker saw of the shipped split before deciding: Type fits: ApisTox is a cut of public pesticide-toxicity databases (ECOTOX, PPDB, BPDB) that keep growing. Leak seen: the tree's example list under 'Temporal · entry date' names apistox, and a grep of splits.md for the rule[^split-37] returned a Cases row naming apistox's split (saw: split_tree.md examples; splits.md Cases row). I walked the questions on my own evidence and the measurement below; the leak did not supply any of the numbers.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Four ten-year windows on `first_publication_year` (test 1984-1993, 1994-2003, 2004-2013, 2014-2023: 173 / 118 / 106 / 54 compounds), each trained on every earlier compound (56 / 73 / 85 / 95% of 1,035), no gap, the year no model input (implemented) | No change; `splits_comment` names both of the authors' splits. | Tests compounds that appear after training, the screening use; four windows, each above 50 test compounds. | Not comparable to the paper's benchmark numbers on the MaxMin split; the newest window has 12 toxic compounds. |
+     | B | The authors' MaxMin split: one 80/20 cut, 207 test compounds picked for diversity on molecular fingerprints, the rest for training | `temporal` is replaced by one fixed split, rebuilt from `SMILES` with a MaxMin picker or read from the authors' split files (not checked here). | The paper's recommended benchmark, so scores compare with its tables. | One test set spread over chemical space tests interpolation, not the next compounds; one fold where the v2 protocol needs repeated splits. |
+     | C | The authors' time split: one 80/20 cut, test the 207 newest compounds by first publication year (about 2000-2023), train the rest | `TemporalSplits` becomes one window cut at the 207th newest compound (201 compounds are newer than 2000, 213 from 2000 on). | The source's own forward test of the screening use. | One window where the rule[^split-14] asks for three; the shipped windows already contain this direction. |
+
+   * **Recommendation:** A, because the screening use meets compounds after the training literature, which the four windows test, and the MaxMin split tests interpolation in one fold.. **Decision:** A or B or C?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: replace the split declaration with the source's construction (name the files or periods it uses) and say in `splits_comment` why the tree's leaf is not followed; on A: name the source's split in `splits_comment` as a departure.
+
+   [^split-37]: **SPLIT-37** (Should): A dataset drawn from an **expanding science catalogue** is a cut of a database or a testing programme that keeps growing: a bioactivity database's releases, a regulator's screening programme, a materials database, a sequence database, the rounds of a community experiment.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   **Andrej (2026-11-17, ok):** as implemented.
+
+   **Resolved (2026-11-17, Andrej):** A, as implemented: Four ten-year windows on `first_publication_year` (test 1984-1993, 1994-2003, 2004-2013, 2014-2023: 173 / 118 / 106 / 54 compounds), each trained on every earlier compound (56 / 73 / 85 / 95% of 1,035), no gap, the year no model input.
 
 ## Reference
 

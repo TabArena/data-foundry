@@ -129,8 +129,15 @@ class Cardiotocography(AbstractCuratedDataset):
     )
     splits_comment = """
         Monitoring software trained on past exams meets later ones: three test windows of nine months by exam date, newest first, April to June 1998 (224 segments of 14 files; normal 182, suspect 5, pathologic 37), July 1997 to March 1998 (305 segments of 26 files; normal 255, suspect 0, pathologic 50) and October 1996 to June 1997 (307 segments of 27 files; normal 252, suspect 46, pathologic 9). Each trains on all earlier dated exams, 89%, 74% and 60% of the 2,070 segments, without a gap: the label is the experts' reading of the stored trace, available when the exam is classified. The exams fall on 47 dates; the windows hold 9, 9 and 4 of them, and the newest ends early, because the data ends on 1998-06-06. The labels shift between 1996 and 1997 (suspect 14% to 1%, pathologic 4% to 13%), so the newest windows hold few or no suspect segments and largely test the shift: untuned LightGBM's log loss is 1.825 and 1.608 on the two newest windows, against 0.498 and 0.444 trained on as many segments of all years (Slurm job 1365902). An exam's segments overlap and share its date, so they stay on one side.
+
+        Three of the thirty windows an IID split of this size would get: the exams fall on 47 dates, so finer windows would test single days, and these reuse the same exams without steadying the score (issue 3, 2026-11-11). The split stays temporal because the relation is measured not flat: in the stationary-relation test (2026-11-19, log loss, 5 seeds, exams kept whole), models trained on earlier exams lose 0.30 to 0.78 log loss on the two newest windows against models trained on as many segments of the window itself (LightGBM +0.777 ± 0.148 and +0.305 ± 0.123, Kumo-Tabular +0.759 ± 0.181 and +0.201 ± 0.129, floors 0.001-0.003), and the label mix moves sixteenfold (suspect 35.5% of the segments in January to March 1995 against 2.2% in April to June 1998), so no random or grouped folds could stand for the windows (Andrej, 2026-11-20, review issue 4, A).
     """
     accepted_check_warnings = {
+        "splits_below_target": (
+            "Three of the thirty windows an IID split of this size would get: the exams fall on 47 dates, so finer "
+            "windows would test single days, and these reuse the same exams without steadying the score (issue 3, "
+            "2026-11-11; Andrej, 2026-11-20, review issue 4, A)."
+        ),
         "meta_time_horizon_mismatch": "The exams fall on 47 dates and the data ends on 1998-06-06, so the newest "
         "nine-month window (from 1998-04-01) holds exams of 6 April to 6 June 1998 only; the windows are nine "
         "calendar months.",

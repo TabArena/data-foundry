@@ -145,7 +145,7 @@ class SpanishMotorInsuranceCoverageLevel20222024(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedGroupedFromTemporal",)
+    data_tags = ("StationaryRelation",)
     download_description = """
         Version 1 of the Mendeley Data record (DOI 10.17632/sw4jmdb2sm.1, published 2026-02-16, CC BY 4.0) holds two
         files: the portfolio (semicolon-separated CSV, 354,140 rows x 47 columns) and the variable descriptions. The
@@ -195,10 +195,12 @@ class SpanishMotorInsuranceCoverageLevel20222024(AbstractCuratedDataset):
         - CC (2026-11-09, Andrej): the metric stays the normalized Gini of the cost per year weighted by the time on risk (Review issue 11, A, as implemented), not the Gini against the premium charged (Frees, Meyers and Cummings' form, `ordered_lorenz_gini` with the earned premium as the base); the call of 2026-11-02 (issue 3) stands.
         - CC (2026-11-09, Andrej): the renewals get no claims or cost of the year before, and the notes carry the LEAK-9 protocol line against reading other test rows (Review issue 9 (a), "No history, a protocol line").
         - CC (2026-11-09, Andrej): the forced split by policy stays, with that protocol line; the one 2024 window is not adopted (Review issue 10 (a), "Split by policy"). The release has no date finer than the year.
-        - Time basis: ForcedGroupedFromTemporal (SPLIT-8): a pricing model refit each year scores the next year's book,
-          but the release has three calendar years and no finer date, too few for three yearly windows; whole policies
-          are held out with all their years (review issue 10 (a), 2026-11-09, Andrej). More years would allow yearly
-          windows.
+        - Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-19, review issue 13 B): a pricing model refit each
+          year scores the next year's book, but the release has three calendar years and no finer date, too few for
+          three yearly windows; whole policies are held out with all their years (review issue 10 (a), 2026-11-09).
+          The stationary-relation test (2026-11-18) reads flat when pooled over 2023 and 2024: LightGBM +0.001 ±
+          0.010 normalized weighted Gini (floor 0.003; 2024 +0.004 ± 0.014, 2023 -0.001 ± 0.015); Kumo-Tabular's 2023
+          gap (+0.076 ± 0.059) is inconclusive and not counted. More years would allow yearly windows.
     """
 
     # Task
@@ -258,7 +260,8 @@ class SpanishMotorInsuranceCoverageLevel20222024(AbstractCuratedDataset):
         """,
     )
     splits_comment = """
-        Grouped 3-fold splits by policy (`insured_id`), forced from temporal (SPLIT-8): every year of a policy stays on
+        Grouped 3-fold splits by policy (`insured_id`), on a relation measured stationary (StationaryRelation, review
+        issue 13): every year of a policy stays on
         one side. A pricing model is refit each year and applied to the next year's policies, but the release holds
         three calendar years and no finer date, so a split by year gives one window that keeps half the rows for
         training (2024, 47.5% of the rows, against 2022-2023), where SPLIT-14 asks for three; no finer date exists

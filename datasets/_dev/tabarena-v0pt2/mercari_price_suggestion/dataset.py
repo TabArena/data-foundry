@@ -96,7 +96,8 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
           (Galaxy S8 729 listings, fidget spinners 2,637, the iPhone 8 10 against 9,281 for the iPhone 7), but no
           listing has a date and train_id is a shuffle (every dated product flat across its tenths) (Time: Lost). Leak
           test across the split: 280 listings (0.02%) repeat another's fields and text, 0.01% of test rows have such a
-          twin in training. Listing dates would allow a split by time.
+          twin in training. Listing dates would allow a split by time. Not taken as stationary (Andrej, 2026-11-18): A
+          price target in a consumer marketplace is the plainest case against ASR.
     """
 
     # Task

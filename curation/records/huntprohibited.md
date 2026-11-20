@@ -3,6 +3,7 @@ unique_name: huntprohibited
 name: huntprohibited
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -61,6 +62,55 @@ CC (2026-10-22, Lennart): issue 10: keep the random split (no date recoverable).
 **Assessment (AI, 2026-10-22):** all issues settled; REVIEW.md removed. Not built yet.
 
 CC (2026-10-26, Lennart): verdict ship.
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Adversarial moderation with drift sources the definition names; a 0.002 AUC marker over four months bounds one change, not later use.
+
+## Review
+
+**Outcome:** added as `huntprohibited_1m`. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below.
+
+**Main points:** Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?
+
+**Issues for Andrej:**
+
+2. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: The file has no date and the admin states ids were randomly assigned (Kaggle discussion 9554; April ids spread evenly over train, KS p = 0.17); the April labels were never published.
+     - Use: Avito scores submitted ads to route moderation, for ads after March 2014.
+     - Mechanism: Blocked ads are illicit content judged by moderators; sellers reword ads to evade blocks, moderation rules change, and seasonal items and category mix shift.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | huntprohibited_1m itself (2026-10-22 marker) | used-car form change: train old form, test new form, TF-IDF LR | shift of about 0.002 ROC AUC and 0.02 AP within Dec-Mar | same data, one partial marker of time |
+     | emscad | source states scammers adapt | not flat (stated) | ad moderation against adapting posters |
+
+   * **For a stationary use case:**
+     - The one dated marker costs little (0.002 ROC AUC) within four months.
+     - Competition validated at random and local scores tracked the leaderboard (same period only).
+   * **Against:**
+     - Opponents who adapt: sellers word ads to avoid blocks (the definition's own note).
+     - Changed rules: moderation policy and Russian law on prohibited goods change.
+     - Seasonal items (New Year, 8 March) and category-mix shifts named in the definition.
+     - The small marker covers four months only; later use spans years.
+   * **Earlier views:**
+     - CC (2026-10-22, Lennart): issue 10, keep the random split (no date recoverable).
+     - CC (2026-11-17, Andrej): blind walk reaches the shipped random split with ForcedIIDFromTemporal.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Opponents who adapt: sellers word ads to avoid blocks (the definition's own note).; Changed rules: moderation policy and Russian law on prohibited goods change. |
+
+   * **Recommendation:** A, adversarial moderation with drift sources the definition names; a 0.002 AUC marker over four months bounds one change, not later use. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Adversarial moderation with drift sources the definition names; a 0.002 AUC marker over four months bounds one change, not later use.)
 
 ## Reference
 

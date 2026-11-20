@@ -115,6 +115,8 @@ class DifferentiatedThyroidCancerRecurrence(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - Time basis: ForcedIIDFromTemporal: the clinic's patients were treated over many years, and the file carries no
           diagnosis date, so the time is lost. A dated release would test patients treated later, under later practice.
+          Not taken as stationary (Andrej, 2026-11-18): Changed rules and staging inside and after the collection span
+          are named facts against.
     """
 
     # Task

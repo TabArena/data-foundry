@@ -86,6 +86,10 @@ CC (2026-11-12, Andrej): ship (Review issue 1 closed on Andrej's note, verdict s
 
 CC (2026-11-16, Andrej): tag `Expanding Science Catalogue` removed. A sky survey's data releases are a survey, not a catalogue: the survey's targeting programmes choose which objects get a spectrum. The split by the year of the spectrum stands, as for dated samples whose selection moves with the period: quasars are 3-11% of the spectra before 2010 and 31-46% from 2014 on.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `date`, horizon 1 year, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-19, Andrej): windows below the target count kept (Review issue 9, A as implemented): eight windows (2019 and 2020 as one); a 2011 window would train on 40.4%; the reason is in the splits comment.
+
 ## Review
 
 **Outcome:** added. A 100,000-object sample of the Sloan Digital Sky Survey's Data Release 17 (shared on Kaggle):
@@ -105,7 +109,7 @@ it does not carry over. Quality: non-detections are stored as the asinh magnitud
 22.8269), which are real values of the survey's magnitude system and stay; the one -9999 sentinel is set to missing.
 Weighed: a public survey with documented classes and a real cataloguing use (+), the spectroscopic selection (-).
 
-**Main points:** Nothing open: ship (issue 1, A, resolved 2026-11-12; split and metric `ok`). Settled 2026-11-12: the date of the spectrum orders the split but is no model input (issue 6, A; new framework capability); 2019 and 2020 form one last window, eight windows (issue 7, B); the Kaggle cut stays for now, and DR17's full set (4.6M objects) has its own record, `sdss_dr17_star_galaxy_quasar`, to be considered (issue 8). Settled 2026-11-11: split by the year of the spectrum (issue 2), the photometric task kept, not spectra (issue 3), no time-basis tag (issue 4), the record's facts corrected (issue 5).
+**Main points:** Nothing open: ship (issue 1, A, resolved 2026-11-12; split and metric `ok`). Settled 2026-11-12: the date of the spectrum orders the split but is no model input (issue 6, A; new framework capability); 2019 and 2020 form one last window, eight windows (issue 7, B); the Kaggle cut stays for now, and DR17's full set (4.6M objects) has its own record, `sdss_dr17_star_galaxy_quasar`, to be considered (issue 8). Settled 2026-11-11: split by the year of the spectrum (issue 2), the photometric task kept, not spectra (issue 3), no time-basis tag (issue 4), the record's facts corrected (issue 5). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 9).
 
 **Record judgment:** valid. Andrej's early question on the licence is answered by the survey: "All SDSS data released
 in our public data releases are considered in the public domain" ([SDSS image and data use
@@ -889,6 +893,48 @@ carries the footprint of the targeting programmes, part of the selection the mar
    (`SpecObj`, `sciencePrimary`, joined to `PhotoObj`), the 11 SkyServer queries, public domain, a `_1m` version as
    it exceeds the row budget; `TBD -> Yes`, priority 3, `Selection Bias`, claimed by Andrej (triage). Its CC line
    holds this issue's evidence; `sdss_17`'s record links it in a `CC (2026-11-12, Andrej)` line.
+
+9. **Windows: 8 of the target's 9; which layout?**
+
+   * **Problem:**
+     - The ninth yearly window would be 2011, which trains on 40.4% of the spectra, under half[^split14]; the nine calendar years with 2020 apart reach the target, but you merged 2019 and 2020 on 2026-11-12 (issue 7, B) because 2020 holds 141 spectra on 8 plates, so that layout is not offered again. The target an IID split of 99,999 spectra would get is 9[^split33][^split15].
+
+       | Test window | Spectra | Smallest class | Train | Train share |
+       |---|---|---|---|---|
+       | 2019 to 24 March 2020 | 1,076 | 161 | 98,923 | 98.9% |
+       | 2018 | 6,705 | 980 | 92,218 | 92.2% |
+       | 2017 | 5,989 | 585 | 86,229 | 86.2% |
+       | 2016 | 4,873 | 633 | 81,356 | 81.4% |
+       | 2015 | 3,364 | 658 | 77,992 | 78.0% |
+       | 2014 | 5,849 | 1,236 | 72,143 | 72.1% |
+       | 2013 | 9,843 | 1,382 | 62,300 | 62.3% |
+       | 2012 | 11,044 | 1,479 | 51,256 | 51.3% |
+
+     - What the source fixes: the date of each spectrum; the survey's programmes change by year (BOSS, then eBOSS, then eFEDS), and the sizes follow DR17 (issue 7). What is assumed: the one-year horizon, set with the yearly windows (issue 2, D, 2026-11-11).
+     - Sizes are uneven (1,076 to 11,044) because the survey took fewer spectra after 2013; equal sizes need windows of 5 months to 2 years cut inside years and programmes.
+     - Overlapping windows are not needed: C and B reach the target without them.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Eight windows (implemented), the reason in `splits_comment` | 8 windows, train 51.3% to 98.9%, test 1,076 to 11,044 spectra, smallest class 161 to 1,479 | the yearly horizon; the merge you chose; nothing to rebuild | 1 short of the target |
+     | B | Add 2011 as the curator's exception | 9 windows, 2011 trains on 40.4% (10,813 test spectra, smallest class 1,516); train 40.4% to 98.9% | reaches the target with yearly windows | a window under half for a BOSS year like 2012 and 2013, a survey phase the shipped windows already test |
+     | C | Nine windows of equal size, at half the data or more | about 5,550 spectra each by date, 16 November 2011 to 24 March 2020; train 50.0% to 94.4%, test 5,443 to 5,632, smallest class 482 to 1,194 | reaches the target with no window under half; equal test sizes | windows of 5 months to 2 years, cut inside years and programmes; the oldest trains on 50.0%, at the floor; a custom `_make_splits` |
+     | D | Yearly windows down to 30% | 11 windows: 2011, 2010 and 2009 added at 40.4%, 32.3% and 30.2%; test 1,076 to 11,044, smallest class 69 to 1,516 | the most windows with the yearly horizon | three windows under half; 2009 holds 2,068 spectra and 69 of its rarest class, on 30.2%, at the floor |
+
+   * **Recommendation:** A: one short of the target, with the yearly horizon and the merge you decided; B or C buy the ninth window with a window under half or with windows that cut through the survey's programmes. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window (2026-11-12), and a 2011 window would train on 40.4% of the spectra (the date of your decision, Andrej)." On B, `WINDOW_STARTS` gains 2011-01-01 and `splits_train_under_half` is accepted with the reason; on D, also 2010 and 2009. C needs `_make_splits` cut at the dates that split the rows from 16 November 2011 on into nine equal parts. Then `splits_comment`, `task_summary.split`, the curation split bullet, `dataset check` on Slurm, a CHANGELOG entry and a CC line.
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: eight windows (2019 and 2020 as one); a 2011 window would train on 40.4%. The splits comment names the target count and what stops more windows; `splits_below_target` is accepted with that reason. The split is unchanged.
+
+   [^split14]: **SPLIT-14** (Must): at least 3 windows; every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get; the use case sets the window length, step and gap, which are never shortened to reach the count; fewer are accepted, never under 3, with the target, the count reached and what stops more windows in the splits comment; overlapping windows are only offered.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count, here 9.
 
 ## Reference
 

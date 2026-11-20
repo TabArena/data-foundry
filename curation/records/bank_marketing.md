@@ -74,6 +74,12 @@ CC (2026-11-08, Lennart): issue 4, A (as implemented): the month of the last cal
 
 CC (2026-11-08, Lennart, in chat): the protocol line for the newest window's recurring clients (703 test records whose later record in the same window gives the label away; no use of other test rows) is enough ("that sounds valid to me"); the five windows stay as they are.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `time_index`, up to 5 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-20, Andrej): Review issue 6, B: `balance` is one reading per client (linked records share it to the euro in 17.1% of pairs against 1.2% for different clients; no excess of slightly changed values); its date is unknown, but logistic regression loses only 0.002 to 0.003 ROC AUC without it whether or not the client has a later record, so it stays with that note (LEAK-10).
+
+CC (2026-11-20, Andrej): Review issue 5, B: windows follow the calling (four campaign periods, then calendar quarters of the trickle; ten windows, 53.2% to 98.7% training), and the day's call count becomes an input, because the subscription rate follows the calling volume (5.8% on days with 200 or more calls, 48.5% on days with 20 or fewer, also for first-time clients) and the bank knows how many clients it calls that day.
+
 ## Review
 
 **Outcome:** added. UCI's bank-full file (45,211 records of a Portuguese bank's term-deposit phone campaigns, May 2008 to November 2010, one per client and campaign), predicting a subscription before the campaign's first call, scored by ROC AUC on five time windows of the file's date order. A focused re-review of 2026-11-06 recommended shipping after changes; those that needed no decision are made in `dataset.py`, and the README is regenerated; the build stays stale until you ask. Settled on 2026-11-08: the split, by time on the file's date order, in place of the random split kept under your earlier call (issue 1); the prediction point, before the campaign, so `campaign` is dropped (issue 2); the duplicates, kept with a note (issue 3), now 811 exact copies on the twelve inputs since `campaign` left (274 before); and the record's `year`, set to 2012. Open: whether the month of the last call comes back as an input (issue 4). New on the windows: the newest one holds both records of 703 recurring clients, and the later record gives 419 subscribers away to a model that reads other test records; a protocol line covers it. Not checked on this tier: whether the authors' 2014 release of the same campaigns (with the month and weekday of each call, economic context and the true phone type of May-June 2008) is the better version; no provenance reviewer ran.
@@ -88,7 +94,7 @@ Weighed: source + (a paper with a stated metric), use case + (a real decision), 
 
 Left for you: nothing. Settled on 2026-11-08: issues 1, 2, 3 and 4 and the `year` field (the record now takes the definition's 2012, UCI's release, in place of 2011, the ESM paper, which only analysed the data).
 
-**Main points:** Open: none. Settled on 2026-11-08: the month of the last call stays out of the inputs (issue 4); split by time on the file's date order, reversing your call that kept the random split (issue 1); before the campaign, so `campaign` is dropped (issue 2); the exact copies kept with a note (issue 3); the record's `year` set to 2012.
+**Main points:** Open: none. Settled on 2026-11-08: the month of the last call stays out of the inputs (issue 4); split by time on the file's date order, reversing your call that kept the random split (issue 1); before the campaign, so `campaign` is dropped (issue 2); the exact copies kept with a note (issue 3); the record's `year` set to 2012. Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 5).
 
 **Record judgment:** valid, keep (`Yes`), after changes. The record's `year` (2011, the ESM paper, which only analysed the data) disagreed with the definition's 2012 (UCI's release, donated 2012-02-13); it was set to 2012 on 2026-11-08 (Lennart, `update`). Its `required_split` is `Temporal (NON-IID)`, with the tag `Non-IID (Temporal)`, since 2026-11-08 (issue 1). Its comment that the features "seem to be time-invariant" is superseded by an Assessment line of 2026-11-06 giving the measured shift by year; a second line of that date records this panel.
 
@@ -322,6 +328,388 @@ Left for you: nothing. Settled on 2026-11-08: issues 1, 2, 3 and 4 and the `year
      away.
    [^m4c]: Issue 2 of this file (2026-11-08, Lennart): before the campaign, `campaign` dropped. **USE-3** (Must): name
      the prediction point, when the model is used and what is known then.
+
+5. **Windows: 5 of the target's 9; which layout?**
+
+   * **Problem:**
+     - Five windows of 4,521 records ship where an IID split of 45,211 records would get nine[^split15]; the splits comment does not say why there are fewer.
+     - Today's windows (dates of the last contact, rebuilt in `_clean`, not shipped):
+
+       | Test window | Train side | Train share | Test records | Subscribers |
+       |---|---|---|---|---|
+       | 7 Aug 2009-17 Nov 2010 | 40,690 | 90% | 4,521 | 2,129 |
+       | 11 May-7 Aug 2009 | 36,169 | 80% | 4,521 | 727 |
+       | 6 Apr-11 May 2009 | 31,648 | 70% | 4,521 | 593 |
+       | 21 Nov 2008-6 Apr 2009 | 27,127 | 60% | 4,521 | 473 |
+       | 22 Aug-21 Nov 2008 | 22,606 | 50% | 4,521 | 279 |
+
+     - Fixed: the time key is the record's place in the file, no gap (decided 2026-11-08, issue 1, A). The window length is not: 4,521 is the newest half cut into five, and the use case (the bank's next campaign) names no cadence, nor does the file name its campaigns.
+     - What stops more windows: only the length. At 4,521 records the half-data floor[^split14] allows exactly five.
+     - The rebuilt date gives calendar periods: from October 2008 on, every month trains on half the records or more (2008 alone holds 27,729 of the 45,211), so the nine quarters from October 2008 to November 2010 all clear the floor, and their cuts fall between days, where today's cuts fall inside a day.
+   * **Window counts:** counted on the built frame and the rebuilt dates.
+
+     | Layout | Windows | Train share | Test records | Subscribers | Window length |
+     |---|---|---|---|---|---|
+     | A, shipped | 5 | 50-90% | 4,521 | 279-2,129 | 4,521 records (5 weeks to 15 months) |
+     | B, nine windows of 2,511 records | 9 | 50.0-94.4% | 2,511 | 133-1,296 | 2,511 records (3 days to 10 months) |
+     | C, nine calendar quarters, Q4 2008 to Q4 2010 | 9 | 53.2-99.3% | 295-8,935 | 126-1,225 | a quarter |
+     | D, windows of 4,521 down to 30% | 7 | 30.0-90.0% | 4,521 | 276-2,129 | 4,521 records |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Five windows of 4,521 records (implemented) | adds the reason to the splits comment | as decided; equal test sizes | 5 of 9, for a length nothing in the use case sets |
+     | B | Nine windows of 2,511 records | `n_windows=9` | reaches the target with no exception; equal test sizes | six of the nine windows fall between November 2008 and June 2009, two of them under two weeks; most of 2010 is one window |
+     | C | Nine calendar quarters | windows cut at quarter starts on the file order | reaches the target with no exception; spread over two years and every season, as the rules prefer; cuts between days | test sizes 295 to 8,935 (Q2 2009 holds the big May campaign); a quarter is a stand-in for a campaign, not the source's unit |
+     | D | Seven windows of 4,521 records, two as the curator's exception | `min_train_fraction=0.3` | keeps today's length | two windows under half (40%, 30%); 7 of 9 |
+
+     Overlapping windows are not offered: B and C reach the target without them.
+   * **Recommendation:** C: nine windows with every train side above half, spread over the years and seasons the data hold, where B bunches its windows into the first half of 2009 and A's length has no source. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Five of the nine windows an IID split of this size would get: the newest half of the records cut into five, a length the use case does not fix." On B: `TemporalSplits(window=None, unit="rows", n_windows=9, min_train_fraction=0.5)`, horizon 2,511. On C: `_make_splits` with test windows starting at file positions 24,038, 27,729, 31,459, 40,394, 41,655, 42,591, 43,390, 44,051 and 44,916 (the first record of each quarter, from the rebuilt date) and each ending at the next, trained on all earlier records; the horizon becomes 3 months. On D: `TemporalSplits(window=4521, unit="rows", min_train_fraction=0.3)`, accept `splits_train_under_half`, CC line. Each: rewrite `split` and `splits_comment` (window dates and subscribers), and recheck the protocol line on the newest window's recurring clients.
+
+   **Andrej (2026-11-19, discuss):** For this dataset, we should also orient on campaigns, otherwise the splits are too arbitrary sicne there is a clear distribution to when more samples are dated
+
+   **Answer (AI, 2026-11-19):** The file shows four calling bursts after the half-data line and then a steady trickle with no bursts; one window per burst period plus calendar quarters for the trickle gives 10 windows, all trained on more than half, with every cut in a gap or at a burst's first day.
+
+   * **What the source says:** "17 campaigns that occurred between May 2008 and November 2010, corresponding to a total of 79354 contacts" (Moro, Laureano, Cortez 2011, abstract). It gives no campaign dates, and the file has no campaign id, so the campaigns below are read from the dates of the last contact (rebuilt as in `_clean`).
+   * **What the data show:** burst days (150 or more records in a day) come in five runs; between them, and from June 2009 on, a trickle of 0 to 115 records a day with a far higher subscription rate.
+
+     | Period | Burst days | Burst records | Subscribed | Trickle records | Subscribed | Gap before |
+     |---|---|---|---|---|---|---|
+     | May-Aug 2008 | 70 (5 May-29 Aug) | 23,606 | 4.7% | 432 | 4.2% | - |
+     | Oct-Dec 2008 | 5 (17-21 Nov) | 3,530 | 5.4% | 161 | 49.1% | 49 days, no record in September |
+     | Jan-mid Apr 2009 | 9 (28 Jan-9 Feb) | 3,275 | 5.6% | 1,189 | 29.6% | 32 days |
+     | mid Apr-early May 2009 | 4 (16 Apr-30 Apr) | 1,812 | 14.2% | 172 | 43.6% | - |
+     | May 2009 | 11 (4-18 May) | 5,185 | 8.5% | 390 | 24.1% | - |
+     | Jun 2009-Nov 2010 | 0 | 0 | - | 5,459 | 45.5% | - |
+
+     - The summer 2008 wave alone holds 53.2% of the records, so it trains every window and is never tested.
+     - From June 2009 the calls run at 30 to 150 a week for 18 months; the file shows no campaign inside it, so any cut there is a calendar cut.
+     - Today's windows cut inside bursts: on 21 Nov 2008 (the November burst's last day), on 11 May 2009 (the middle of the May burst), and on 22 Aug 2008 inside the summer wave (the oldest window's training side).
+   * **Layouts that follow the campaigns:** each test window starts at a burst period's first record (17 Oct 2008 after the 49-day gap, 28 Jan 2009 after the 32-day gap, 16 Apr 2009, 4 May 2009) and holds the burst and the trickle after it, up to the next period; each trains on every earlier record, no gap, as today. They differ only in how the trickle is cut.
+
+     | Layout | Windows | Train share | Test records | Subscribers |
+     |---|---|---|---|---|
+     | E, four campaign periods + six calendar quarters of the trickle (Jun-Aug 2009 to Sep-Nov 2010) | 10 | 53.2-98.7% | 592-5,575 | 270-581 |
+     | F, four campaign periods + the trickle in five equal stretches (about 1,100 records) | 9 | 53.2-97.6% | 1,030-5,575 | 270-604 |
+     | G, four campaign periods + three half-years of the trickle | 7 | 53.2-97.0% | 1,373-5,575 | 270-1,035 |
+
+   * **E window by window,** newest first:
+
+     | Test window | Kind | Train share | Test records | Subscribers |
+     |---|---|---|---|---|
+     | 1 Sep-17 Nov 2010 | trickle, quarter | 98.7% | 592 | 272 (45.9%) |
+     | 1 Jun-31 Aug 2010 | trickle, quarter | 97.0% | 781 | 407 (52.1%) |
+     | 1 Mar-31 May 2010 | trickle, quarter | 95.5% | 667 | 383 (57.4%) |
+     | 2 Dec 2009-26 Feb 2010 | trickle, quarter | 93.8% | 781 | 389 (49.8%) |
+     | 1 Sep-30 Nov 2009 | trickle, quarter | 91.5% | 1,017 | 454 (44.6%) |
+     | 1 Jun-31 Aug 2009 | trickle, quarter | 87.9% | 1,621 | 581 (35.8%) |
+     | 4-28 May 2009 | May campaign | 75.6% | 5,575 | 533 (9.6%) |
+     | 16-30 Apr 2009 | April campaign | 71.2% | 1,984 | 332 (16.7%) |
+     | 28 Jan-15 Apr 2009 | Jan-Feb campaign + trickle | 61.3% | 4,464 | 537 (12.0%) |
+     | 17 Oct-27 Dec 2008 | November campaign + trickle | 53.2% | 3,691 | 270 (7.3%) |
+
+   * **Trade-offs:**
+     - Unequal sizes: the campaign windows hold 1,984 to 5,575 records, the trickle quarters 592 to 1,621; every window has 270 subscribers or more, far above what the score needs.
+     - Two kinds of window: the campaign windows score outbound bursts with 7-17% subscribed, the trickle windows a stream with 36-57% subscribed. A mean over windows weights them equally; E gives the trickle six of ten windows for 12% of the records, F five of nine, G three of seven.
+     - The half-data line: no layout can test the summer 2008 wave, which is over half the file; the first test campaign is November 2008 at 53.2%, so the line costs nothing here.
+     - Inferred campaigns: the source counts 17, the file shows five bursts; the trickle may hold small campaigns the dates cannot separate, and a record is dated by its last call, so a campaign's slow records fall in the trickle after its burst, inside the same window.
+     - Count: E gives 10 against the target of 9, F exactly 9 with cuts on dates nothing in the data marks (11 Aug, 22 Oct 2009, 12 Feb, 9 Jul 2010), G 7.
+     - Against C (calendar quarters, the earlier recommendation): C puts the April and May campaigns in one window (8,935 records) and cuts the January campaign's trickle at 1 April; E separates them and cuts only at gaps or burst starts.
+   * **Recommendation:** E: every cut falls in a calling gap or on a burst's first day, so no campaign is split; the trickle, which has no campaigns to follow, is cut by calendar quarter, one window over the target. F if exactly nine matters more than calendar cuts. **Decision:** A, B, C, D, E, F or G?
+
+   **Notes for the AI:** on E: explicit expanding windows on `time_index` (no `TemporalSplits` length), test windows starting at file positions 24,038, 27,729, 32,193, 34,177, 39,752, 41,373, 42,390, 43,171, 43,838 and 44,619 (first record of 17 Oct 2008, 28 Jan 2009, 16 Apr 2009, 4 May 2009, 1 Jun, 1 Sep, 2 Dec 2009, 1 Mar, 1 Jun, 1 Sep 2010), each ending at the next start, trained on all earlier records, no gap; on F the last five starts are 39,752, 40,782, 41,930, 43,012 and 44,114; on G 39,752, 42,390 and 43,838. Rewrite `split`, `fit_reason` ("count records, not campaigns" no longer holds), `splits_comment` (campaign table, the source's 17 campaigns, why the summer 2008 wave is never tested, the target and the count) and the horizon; recount the protocol line's recurring clients in the new newest window (592 records under E).
+
+   **Andrej (2026-11-20, discuss):** Give me the options again in a panel as usually
+
+   **Answer (AI, 2026-11-20):** all seven layouts in one panel; every one trains each window on everything before it, no gap, and none needs a window under half except D.
+
+   * **What the dates show** (rebuilt as in `_clean`): five bursts of calling (May-August 2008, 17-21 November 2008, 28 January-9 February 2009, 16-30 April 2009, 4-18 May 2009), then from June 2009 a steady trickle of at most 115 calls a day with a much higher subscription rate (36-57% against 5-14% in the bursts). The summer 2008 wave is 53.2% of the records and always trains. Two of today's cuts fall inside a burst (21 November 2008, 11 May 2009).
+   * **Options:**
+
+     | | Option | Windows | Train share | Test records | What it does | Pro | Con |
+     |---|---|---|---|---|---|---|---|
+     | A | Five windows of 4,521 records (implemented) | 5 | 50.0-90.0% | 4,521 each | the reason added to the splits comment | as decided; equal test sizes | 5 of 9; cuts fall inside two campaigns; a length nothing sets |
+     | B | Nine windows of 2,511 records | 9 | 50.0-94.4% | 2,511 each | `n_windows=9` | the target, no exception; equal sizes | six windows between November 2008 and June 2009, two under two weeks; most of 2010 in one window |
+     | C | Nine calendar quarters | 9 | 53.2-99.3% | 295-8,935 | cuts at quarter starts | the target; every season, two years | the April and May 2009 campaigns in one window of 8,935; a quarter stands in for a campaign |
+     | D | Seven windows of 4,521, two as your exception | 7 | 30.0-90.0% | 4,521 each | `min_train_fraction=0.3` | today's length | two windows under half (40%, 30%) |
+     | E | Four campaign periods + six quarters of the trickle | 10 | 53.2-98.7% | 592-5,575 | each campaign window starts at the burst's first record and holds the trickle after it | no campaign split; every cut in a gap or on a burst's first day; one over the target | very unequal windows; campaign windows (7-17% subscribed) and trickle windows (36-57%) test different things; the trickle gets 6 of 10 windows for 12% of the records |
+     | F | Four campaign periods + the trickle in five equal stretches | 9 | 53.2-97.6% | 1,030-5,575 | as E, the trickle cut by count | exactly the target | the trickle cuts fall on dates nothing marks |
+     | G | Four campaign periods + three half-years of the trickle | 7 | 53.2-97.0% | 1,373-5,575 | as E, coarser trickle | fewer, larger trickle windows | 7 of 9 |
+
+   * The source names 17 campaigns but gives no dates or campaign id; the file shows five bursts, so the campaign windows rest on the data, not on the source's list.
+
+   **Recommendation:** E: no campaign is cut, every window trains on half or more, and the target is reached; C if equal calendar units matter more than campaigns. **Decision:** A, B, C, D, E, F or G?
+
+   **Andrej (2026-11-20, discuss):** Please show me a plot of the time on the x axis and sample counts or density on the y axis, so I can see the bursts and assess this better
+
+   **Answer (AI, 2026-11-20):** the plot is on its own page: [Bank Marketing Contacts](https://claude.ai/artifact/GZG1dqqW3dKGUDJrxRnbir): records per day of last contact (linear or log scale), the share subscribed by month below it, and the test-window starts of option E (campaigns + quarters) or A (shipped) as dashed lines; hover a day for its count and share.
+
+   * **What it shows:** the summer 2008 wave (up to 825 records a day, May-August), four short bursts (17-21 November 2008, 28 January-9 February 2009, 16-30 April 2009, 4-18 May 2009), and from June 2009 a steady trickle of at most 115 a day; the share subscribed rises from about 5% in the bursts to 36-57% in the trickle months.
+   * **The cuts:** under A, the starts of 21 November 2008 and 11 May 2009 fall inside bursts; under E every start falls on a burst's first day or in a gap.
+
+   The options panel above stands; recommendation E. **Decision:** A, B, C, D, E, F or G?
+
+   **Andrej (2026-11-20, in chat):** For the bank-marketing, also add more details about the panel structure of the dataset, e.g. about reappearing entities
+
+   **Answer (AI, 2026-11-20):** the data is a panel of clients called in up to 17 campaigns, without a client id: one record per client and campaign, and a client's history arrives in `previous` (contacts in earlier campaigns), `pdays` (days since the last one) and `poutcome` (the earlier campaign's outcome). The plot page has a third chart for it.
+
+   * **Who recurs, period by period** (on the dates rebuilt from the file order):
+
+     | Period | Records | Contacted in an earlier campaign | Earlier campaign a success | Subscribed | Subscribed, never contacted before | Subscribed, after an earlier success |
+     |---|---|---|---|---|---|---|
+     | summer 2008 wave | 24,038 | 0% | 0% | 4.7% | 4.7% | |
+     | Nov 2008 burst + trickle | 3,691 | 24.9% | 1.1% | 7.3% | 8.3% | 11.9% |
+     | Feb 2009 burst + trickle | 4,464 | 29.6% | 1.0% | 12.0% | 14.6% | 24.4% |
+     | Apr 2009 burst | 1,984 | 36.5% | 3.3% | 16.7% | 19.2% | 54.5% |
+     | May 2009 burst | 5,575 | 42.1% | 2.8% | 9.6% | 10.1% | 34.0% |
+     | Jun 2009-Nov 2010 trickle | 5,459 | 53.9% | 22.0% | 45.5% | 39.6% | 72.6% |
+
+     Over the whole file 18.3% of the records are clients called before; 1,511 follow an earlier success.
+   * **What it explains:** the first campaign reaches only new clients, so it has no history; later campaigns return to earlier clients, and the trickle from June 2009 calls mostly clients with a history, a fifth after a success, which carries much of its high subscription share (72.6% after a success, 39.6% for clients never called).
+   * **Recurring rows in the file:** 995 pairs of rows in two different years share the profile and the balance to the euro (95% with more earlier contacts in the later row), most likely the same client; 274 rows are exact copies (kept with a note, issue 3).
+   * **What it means for the windows:**
+     - A client's earlier record can sit in training while a later one is tested: that is history the bank holds, and `previous` / `poutcome` carry it as features.
+     - A client's later record inside the same test window carries the earlier record's label in `poutcome`: an evaluation leak a method could read from other test rows (703 such records in the newest window of A, measured 2026-11-08), covered by the protocol line (no use of other test rows).
+     - Under E the trickle windows are small (592-1,621 records) and mostly returning clients; the campaign windows mostly new ones; so E's windows differ in who is called as well as when, which the decision between E and C weighs.
+   * **Not available:** a client id, so the windows cannot hold whole clients out; the source's 17 campaigns cannot be told apart beyond the five bursts.
+
+   **Andrej (2026-11-20, discuss):** I am having troubles to understand the flow of information arriving here. The time that we reconstructed, is it the time of a call or of a subscription or something else?
+
+   **Answer (AI, 2026-11-20):** the time is the date of the **last call** to the client in that campaign; the subscription (the label) is the outcome of the campaign, known at or right after that last call.
+
+   * **One record = one client in one campaign.** The bank calls a client one or more times during a campaign (`campaign` counts them; dropped, as it is not known before the first call); the record keeps the date of the last of those calls (`day`, `month`; the year rebuilt from where the months wrap) and whether the client subscribed a term deposit (`y`).
+   * **The flow, for one record:**
+
+     | Moment | What happens | What the record holds |
+     |---|---|---|
+     | earlier campaigns | the client may have been called before | `previous` (how many contacts), `pdays` (days since the last), `poutcome` (that campaign's outcome) |
+     | before the first call of this campaign (the prediction point) | the team picks whom to call | the profile (age, job, balance, loans ...) and the earlier campaigns: the model's inputs |
+     | the calls of this campaign | one or more calls | `campaign` (dropped), the contact type |
+     | the last call | the date the time axis uses | `day`, `month` (no input) |
+     | at or after the last call | subscribed or not | the label `y` |
+
+   * **So** the rebuilt time orders the records by when each client's campaign contact ended; a window of these dates holds the clients whose calls ended in that period, and training holds the clients whose calls ended before. A label arrives at the last call, so no gap is needed between training and a window.
+   * **The bursts** in the plot are days on which many clients' last calls fell (a campaign's call days); the trickle from June 2009 is clients called one by one.
+
+   The options panel and the plot above stand; recommendation E. **Decision:** A, B, C, D, E, F or G?
+
+   **Andrej (2026-11-20, in chat):** For bank marketing in its specific html analyze the recurrence of entities. Once they subscribed, they shouldn't be called again, right?
+
+   **Answer (AI, 2026-11-20):** no, subscribers are called again: 1,511 records follow a campaign the client subscribed in, and 64.7% of those clients subscribe again. A term deposit runs for a fixed term, so the bank offers a new one when it matures. The plot page has the analysis: [Bank Marketing Contacts](https://claude.ai/artifact/GZG1dqqW3dKGUDJrxRnbir), section "Are subscribers called again?".
+
+   * **Matching clients without an id:** records with an earlier contact were matched to an earlier record with the same job, marital status, education, credit default and balance to the euro, the age at most two years higher. 6,371 of the 8,257 records with an earlier contact find one, and the match agrees with the data's own history column almost always:
+
+     | Earlier record | later `poutcome` success | failure | other | unknown |
+     |---|---|---|---|---|
+     | subscribed | 1,441 | 5 | 83 | 0 |
+     | did not subscribe | 4 | 4,618 | 219 | 1 |
+
+   * **Subscribers called again:** 1,529 matched clients who subscribed were called in a later campaign, a median 176 days later (non-subscribers 246 days); 986 of them (64%) subscribed again. `pdays` agrees: a median 165 days since the last contact for records after a success.
+   * **What it means:**
+     - A client key can be rebuilt almost exactly from the columns (99% agreement with `poutcome`), which the definition does not use yet.
+     - Under any time split a subscriber's earlier record can train and a later one be tested; the later record's `poutcome` (success) then repeats the earlier label, history the bank holds, so not a leak across windows.
+     - Inside one test window a client's later record gives an earlier test record's label away; the protocol line covers it; with the rebuilt key, the later records of a test window's clients could also be left out of that window (a filter, as alfa_battle uses for repeat clients), which would be a new option.
+
+   **Decision:** unchanged for the layout (A-G, recommendation E); say if the rebuilt client key should become an option (a within-window filter of repeat clients).
+
+   **Andrej (2026-11-20, in chat):** In chat: (1) records were matched on the balance to the euro, so does `balance` hold one reading for a client's records at different times? (2) Earlier subscribers show "success" later: is that a leak? (3) Can we ship it? (4) How many entities can we trace in history, how many not? (5) Run the balance check. (6) Are the reconstructed dates exact? (7) Which splits would you ship?
+
+   **Answer (AI, 2026-11-20):** ship once the windows are decided: the carry-over of a label is history under the split by time, the dates are exact to the day, every client is counted, and `balance` is one reading per client with no sign that it falls after the calls (issue 6 words the note).
+
+   - **(1) `balance` is one value per client.** Matching on the exact balance makes equal balances true by construction, so the records were linked again without it: same job, marital status, education, credit default, housing and personal loan, age +0 or +1, and the later record's `previous` equal to the earlier one's `previous` plus its calls. Control: the same profile and age, the contact count not adding up (mostly different clients).
+
+     | Linked pairs, non-zero balance | Balance identical | Within 10%, not identical |
+     |---|---|---|
+     | next-campaign links (23,288) | 17.1% (18.5% across years) | 2.5% |
+     | control (32,600) | 1.2% (2.2% across years) | 3.2% |
+
+     Same-client pairs carry an excess of identical balances and no excess of slightly changed ones, while age moves +1 in 71% of the cross-year pairs: the "average yearly balance" is one reading per client (possibly one extraction date for the file), copied onto each of the client's records. Its date is unknown.
+
+   - **(2) The carry-over is a leak only backwards in time.** On the 6,013 exact-balance links:
+
+     | Earlier record | Later `poutcome` = success | Later label = yes |
+     |---|---|---|
+     | subscribed | 1,431 of 1,431 | 65% |
+     | did not | 2 of 4,582 | 12% |
+
+     - The later `poutcome` is the earlier label recorded again. Read forwards (the earlier outcome predicts the next campaign) it is history the bank holds before calling; read backwards it gives a past label away. The random split did the latter (+0.020 ROC AUC to LightGBM); the split by time (issue 1) stops it across windows. Inside a test window it remains for a model that reads other test records (the protocol line).
+
+     - 65% against 12% is clients who keep subscribing (the whole file: 64.7% after `poutcome` = success): real signal, not a leak.
+
+   - **(4) Entities:** the bank's history starts inside the file: all 22,606 records of the first half have `previous` = 0. So `previous` = 0 marks a client's first record and the clients can be counted without any matching:
+
+     |  | Records |
+     |---|---|
+     | all records | 45,211 |
+     | first record of a client (`previous` = 0) = distinct clients | 36,954 |
+     | repeat records (`previous` > 0) | 8,257 |
+     | earlier record traced (exact non-zero balance, profile, housing and loan, age +0/+1, contacts add up) | 5,994 (73%) |
+     | not traced | 2,263 (27%): 449 with balance 0 (cannot be keyed), about 1,814 with a changed profile or counts that do not add up |
+
+     The traced repeats form 5,006 clients with two or more records (2: 4,286; 3: 521; 4: 145; 5: 43; 6-8: 11); shuffling balances within the other six columns links about 120 records instead of 6,013. Turn 11 matched without housing, loan and the contact count and with age up to +2, hence 6,371. Repeat records per window of A: 767, 1,291, 1,760, 1,777 and 2,662 (oldest to newest), of which 584 to 1,984 traced.
+
+   - **(5) The balance check.** If the reading were taken after the calls, a record whose client has a later record is surely read after its own outcome, so `balance` should be worth more there. Retrained with and without it on A's five windows (LightGBM 3 seeds with early stopping on the newest tenth of the training side, logistic regression):
+
+     | ROC AUC lost without `balance`, mean of 5 windows | LightGBM | Logistic regression |
+     |---|---|---|
+     | all test records | 0.049 | 0.002 |
+     | client has a traced later record (2,826) | 0.068 | 0.002 |
+     | client has only an earlier record (5,006) | -0.007 | 0.003 |
+     | rest (14,773) | 0.031 | 0.003 |
+
+     No clean sign of a late reading: logistic regression gets the same 0.002 to 0.003 in every group, and the LightGBM gap comes from the oldest window (0.239 against 0.094 on 56 subscribers, bootstrap SD 0.05; reversed in the third window), where the groups' subscription rates also differ (12% against 6%). Without `balance` LightGBM falls to 0.45 and 0.51 on the two oldest windows: its swings between feature sets are the larger weakness of the windows, not `balance`.
+
+   - **(6) The dates are exact to the day.** Telemarketing calls fall on weekdays; a wrong year would move every weekday:
+
+     | Year | Records on a Saturday or Sunday |
+     |---|---|
+     | rebuilt | 50 of 45,211 (0.11%): 20 in 2008, 0 in 2009, 30 in 2010 |
+     | every year -1 | 34.1% |
+     | every year +1 | 19.3% |
+
+     The dates never fall in file order, run from 5 May 2008 to 17 November 2010, and the longest gap is 49 days (no record in September 2008), too short to hide a missing year. The date is the client's last call in the campaign, not the campaign's start.
+
+   - **(7) The windows:** E, as recommended above. In chat I first suggested C (nine calendar quarters, every window over half); C meets the window rules too, but it joins the April and May campaigns into one window of 8,935 records and cuts the January campaign's trickle on 1 April, where E cuts only at gaps or at a burst's first day, as your note of 2026-11-19 asks.
+
+   - **(3) Ship?** Yes, after issue 5: the use case is real, the prediction point drops this campaign's calls, the client carry-over is history under the split by time, and the copies are explained. What stays: the date of the `balance` reading (issue 6) and a weak, noisy signal on the windows (LightGBM mean 0.586, logistic regression 0.614), which is the task, above chance, not a defect.
+
+   **Andrej (2026-11-20, discuss):** Reconsider all given information and make a recommendion on which split to ship if any, if the goal is to respect our rules while keeping the use case realistic.
+
+   **Answer (AI, 2026-11-20):** ship it, with E (four campaign windows and six calendar quarters of the trickle): it is the only layout that meets every window rule without an exception and cuts the file where the bank's own calling changes; G is the alternative if the campaigns should weigh as much as the trickle in the mean score.
+
+   * **The use case fixes:** the team picks whom to call before a campaign's first call (issue 2), from the profile and the earlier campaigns; the label arrives at the last call, so a model refit on everything known before a campaign serves that campaign, with no gap. A realistic test window is therefore one campaign, and the realistic cuts are a campaign's first day.
+   * **The data fixes:** five bursts are the campaigns the file shows (the source's 17 have no dates or id); the summer 2008 wave (53.2%) always trains; from June 2009 calls come one by one, at most 115 a day, mostly to returning clients, with no campaign to cut at. There a refit cadence has to be assumed; a quarter is the plainest.
+   * **The layouts against the rules and the use case:**
+
+     | Layout | Windows | Lowest train share | Floor (half the data) | Count (9) | Cuts | Use case |
+     |---|---|---|---|---|---|---|
+     | A (shipped) | 5 | 50.0% | met | 5, reason needed | two inside bursts (21 Nov 2008, 11 May 2009) | a length nothing sets |
+     | B | 9 | 50.0% | met | met | six windows between Nov 2008 and Jun 2009, two under two weeks | cuts campaigns |
+     | C | 9 | 53.2% | met | met | quarter starts | April and May 2009 campaigns in one window; the January trickle cut on 1 April |
+     | D | 7 | 30.0% | two exceptions | 7 | inside bursts | as A |
+     | **E** | 10 | 53.2% | met | met (one over) | every cut a gap or a burst's first day | each campaign its own window; quarters in the stream |
+     | F | 9 | 53.2% | met | met | the trickle cut by count | as E, the trickle cuts fall on dates nothing marks |
+     | G | 7 | 53.2% | met | 7, reason needed | as E | as E, half-years in the stream |
+
+   * **What E leaves, and how it is handled:**
+     - Two kinds of window: campaign windows (7-17% subscribed, mostly new clients) and trickle quarters (36-57%, mostly returning clients). Both are how the bank called; the mean over E's ten windows gives the trickle 6 of 10 votes for 12% of the records. The splits comment should name the two kinds; G halves the trickle's weight if that matters more than the count.
+     - Within a window a client's later record repeats an earlier test record's label in `poutcome`: the protocol line stays (no use of other test rows). A within-window filter on the rebuilt client key is possible but traces 73% of repeats, so it would not close it.
+     - The signal on time windows is weak (LightGBM mean 0.586, logistic regression 0.614 on A): the task, above chance, not a defect.
+     - `balance`'s note (issue 6, B) rests on A's windows; its numbers are recomputed on E's.
+   * **Not shipping** has no rule behind it: the target is real, the inputs exist before the first call, the dates are exact, the carry-over is history across windows.
+
+   **Recommendation:** E. **Decision:** A, B, C, D, E, F or G?
+
+   **Andrej (2026-11-20, discuss):** Show how the splits would look like with E
+
+   **Answer (AI, 2026-11-20):** E's ten splits, each training on every record before its test window (no gap); the plot page [Bank Marketing Contacts](https://claude.ai/artifact/GZG1dqqW3dKGUDJrxRnbir) now draws them as rows on the time axis (section "The splits, window by window", with E or A).
+
+   | Split | Test window | Kind | Train records | Train share | Test records | Subscribed | Called before |
+   |---|---|---|---|---|---|---|---|
+   | 1 | 17 Oct-27 Dec 2008 | November 2008 campaign + trickle | 24,038 | 53.2% | 3,691 | 270 (7.3%) | 25% |
+   | 2 | 28 Jan-15 Apr 2009 | Jan-Feb 2009 campaign + trickle | 27,729 | 61.3% | 4,464 | 537 (12.0%) | 30% |
+   | 3 | 16-30 Apr 2009 | April 2009 campaign | 32,193 | 71.2% | 1,984 | 332 (16.7%) | 36% |
+   | 4 | 4-28 May 2009 | May 2009 campaign | 34,177 | 75.6% | 5,575 | 533 (9.6%) | 42% |
+   | 5 | 1 Jun-31 Aug 2009 | trickle, quarter | 39,752 | 87.9% | 1,621 | 581 (35.8%) | 37% |
+   | 6 | 1 Sep-30 Nov 2009 | trickle, quarter | 41,373 | 91.5% | 1,017 | 454 (44.6%) | 49% |
+   | 7 | 2 Dec 2009-26 Feb 2010 | trickle, quarter | 42,390 | 93.8% | 781 | 389 (49.8%) | 64% |
+   | 8 | 1 Mar-31 May 2010 | trickle, quarter | 43,171 | 95.5% | 667 | 383 (57.4%) | 67% |
+   | 9 | 1 Jun-31 Aug 2010 | trickle, quarter | 43,838 | 97.0% | 781 | 407 (52.1%) | 65% |
+   | 10 | 1 Sep-17 Nov 2010 | trickle, quarter | 44,619 | 98.7% | 592 | 272 (45.9%) | 65% |
+
+   * The summer 2008 wave (5 May-29 August 2008, 24,038 records) trains every split and is never tested.
+   * Splits 1-4 test the campaigns on 53-76% of the records; splits 5-10 test the trickle on 88-99%, small windows (592-1,621 records) of mostly returning clients with high subscription rates.
+
+   **Recommendation:** E. **Decision:** A, B, C, D, E, F or G?
+
+   **Andrej (2026-11-20, discuss):** This looks super wrong. The subscriprion rates as well as the test sizes seem to be very different for the splits and there is nothing else to explain that than that the data is somehow flawed
+
+   **Answer (AI, 2026-11-20):** the differences are real, not a flaw of the file: the subscription rate follows how many clients the bank called that day. On mass-calling days about 6% subscribe, on days with a handful of calls about 48%, for first-time clients as well. UCI's second release of the calls, built separately with national indicators from Banco de Portugal, shows the same rise. The test sizes differ because E follows the calling, which came in five bursts and then a trickle.
+
+   * **Rate by the day's calling volume** (the shipped file, dates rebuilt as in `_clean`):
+
+     | Calls that day | Days | Records | Subscribed | Subscribed, first-time clients | Called before |
+     |---|---|---|---|---|---|
+     | 200 or more | 95 | 36,656 | 5.8% | 5.7% | 13% |
+     | 101-200 | 7 | 1,097 | 12.3% | 11.4% | 14% |
+     | 51-100 | 23 | 1,743 | 25.0% | 23.7% | 32% |
+     | 21-50 | 88 | 2,491 | 41.0% | 34.0% | 43% |
+     | 20 or fewer | 348 | 3,224 | 48.5% | 44.2% | 52% |
+
+     The pattern holds for clients never called before, so returning clients do not explain it: on mass days the bank calls whole lists, on quiet days a few chosen clients.
+   * **The second release** (`bank-additional-full.csv`, 41,188 calls, "ordered by date (from May 2008 to November 2010)", with national context indicators from Banco de Portugal, among them the 3-month Euribor and the number of employees per quarter):
+
+     | Month | Calls | Subscribed | First-time clients | 3-month Euribor | Employees (national, thousands) |
+     |---|---|---|---|---|---|
+     | 2008-05 to 08 | 4,374-7,763 a month | 3.1-6.1% | 3.1-6.1% | 4.86-4.97 | 5,191-5,228 |
+     | 2008-11 | 3,616 | 5.3% | 5.7% | 4.12 | 5,196 |
+     | 2009-05 | 5,794 | 9.0% | 9.3% | 1.29 | 5,099 |
+     | 2009-06 to 12 | 172-770 | 34-51% | 30-51% | 1.26-0.71 | 5,076-5,018 |
+     | 2010-03 to 11 | 128-311 | 45-57% | 34-59% | 0.65-1.04 | 5,009-4,964 |
+
+     Over the 26 months the rate moves against the employment indicator (correlation -0.77) and against the month's calls (-0.68): as rates fell after the 2008 crisis, the bank called far fewer clients and a larger share of them subscribed. The release's notes say the context indicators "lead to substantial improvement in the prediction of a success".
+   * **Why the windows differ:**
+     - Sizes: E cuts at the calling: four bursts (1,984-5,575 records) and six quarters of the trickle (592-1,621). The equal-size layout A cuts inside bursts instead; the rates differ under any layout, because the calling mode changes in time.
+     - Rates: burst windows test mass calling (7-17% subscribed), trickle windows selected calls (36-57%).
+   * **What it means for the task:** the shipped inputs hold no calling volume or context indicator, so a model trained mostly on mass-calling days scores later selective calling without knowing the mode changed. That is a real shift the bank lived through, but it makes the windows test two different calling modes.
+
+   | | Option | What it does | Pro | Con |
+   |---|---|---|---|---|
+   | A | E as recommended, the two calling modes stated | splits comment and notes give the rate by calling volume and the second release's check | the bank's real history; every window above half | windows mix two calling modes; a model cannot see the mode |
+   | B | E, plus the day's call count as an input | the number of records on the same date, known when the list is drawn | a model can tell mass from selective calling | an input built from the file's own rows; a campaign's size is known before calling, but a day's count only approximately |
+   | C | Only the mass-calling bursts | drop the trickle from June 2009 (5,459 records, 12%); windows on the four campaigns | one calling mode, rates 7-17% throughout | 4 windows; drops the period of selective calling |
+   | D | Switch to the second release | `bank-additional-full.csv` with the Euribor and employee indicators as inputs | the context the source used to explain the rate | a different file (41,188 calls, no `balance`); a new definition |
+
+   **Recommendation:** B: the rate rise is real and follows the calling volume, which the bank knows when it draws the list; with the count as an input the windows stay realistic. A if no input should be built from the file's own rows. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-20, discuss):** Reply (B): E, plus the day's call count as an input
+
+   **Resolved (2026-11-20, Andrej):** B: layout E (ten windows: four campaign periods and six calendar quarters of the trickle, cut at gaps or a burst's first day, each trained on every earlier record, no gap) and a new input `calls_that_day`, the number of records with the same rebuilt date (1 to 825). The rebuilt date ships no input; `time_index` stays one, as before. `splits_below_target` no longer fires (10 of 9). `dataset check`: 0 errors; one open warning (`time_index` numbered like an id, as before).
+
+   | Start | End | Train share | Test records | Subscribed |
+   |---|---|---|---|---|
+   | 2008-10-17 | 2008-12-27 | 53.2% | 3,691 | 270 (7.3%) |
+   | 2009-01-28 | 2009-04-15 | 61.3% | 4,464 | 537 (12.0%) |
+   | 2009-04-16 | 2009-04-30 | 71.2% | 1,984 | 332 (16.7%) |
+   | 2009-05-04 | 2009-05-28 | 75.6% | 5,575 | 533 (9.6%) |
+   | 2009-06-01 | 2009-08-31 | 87.9% | 1,621 | 581 (35.8%) |
+   | 2009-09-01 | 2009-11-30 | 91.5% | 1,017 | 454 (44.6%) |
+   | 2009-12-02 | 2010-02-26 | 93.8% | 781 | 389 (49.8%) |
+   | 2010-03-01 | 2010-05-31 | 95.5% | 667 | 383 (57.4%) |
+   | 2010-06-01 | 2010-08-31 | 97.0% | 781 | 407 (52.1%) |
+   | 2010-09-01 | 2010-11-17 | 98.7% | 592 | 272 (45.9%) |
+
+   * `calls_that_day` is the most-shifted input in 9 of 10 windows (PSI 7.3-8.4 in the trickle windows): the training sides are mostly mass-calling days, so in the trickle a model meets call counts it has seen only on the earlier quiet days. This is the calling-mode change the input is meant to expose.
+   * Counted without a model: inside a window, 3 to 18 test records (99 in all, 0.1-2.1%) have a later record of the same client in the same window, 40 of them with `poutcome` "success": the protocol line stays. With `calls_that_day` among the inputs, 55 records copy another with the label (was 811).
+   * The window scores and the `balance`, `contact`, `pdays` and `campaign` measurements in the notes are labelled as measured on the earlier five windows; re-measuring them on E needs a model run. Not rebuilt.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get, 9 here; the window length, step and gap follow the use case and are not shortened to reach it; fewer are accepted, never under 3, with the target, the count and what stops more in the splits comment; overlapping windows only as an offered option.
+
+6. **Say in the note that `balance` is one reading per client, with the measurement?**
+
+   * **Problem:**
+     - The note on `balance` says it "may be one reading of unknown date". A link without the balance now shows it is one value per client: same-client pairs share the balance to the euro 17.1% of the time against 1.2% for different clients, with no excess of slightly changed balances (2.5% against 3.2%), while age moves +1 in 71% of the cross-year pairs (turn of 2026-11-20 on issue 5).
+     - Its date stays unknown. If it were read after the calls, a subscription could move it, which is why the worth was measured: on the five windows logistic regression loses 0.002 to 0.003 ROC AUC without it whether or not the client has a later record; LightGBM's larger and uneven loss (0.068 against 0.031, almost all from the oldest window) does not hold up across windows.
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the note as it is (implemented) | "it may be one reading of unknown date" | no change | leaves as a guess what the data show; gives no measurement for the keep |
+     | B | State it and give the measurements | rewrites the note (text below) | says what is shown and what is not; the keep rests on a measurement | a longer note |
+     | C | Drop `balance` | removes the column | no input of unknown date | nothing shows a reading after the calls; a main client feature of the source |
+
+   * **Recommendation:** B: keep the column with a note that states it is one reading per client and gives the measurement. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, replace the `balance` note in `dataset.py` with: "Note: `balance` is the "average yearly balance, in euros" (UCI), one value per client: linked without it (profile, age +0/+1, contacts adding up), the same client's records share it to the euro in 17.1% of pairs against 1.2% for different clients, with no excess of slightly changed balances, while age moves. The source does not date it. A reading after the calls could carry a subscription, but on the five windows logistic regression loses 0.002 to 0.003 ROC AUC without it whether or not the client has a later record, so it stays (LEAK-10; as tunisian_fraud_detection_challenge's registry fields). Revisit if the source dates it." Recompute the numbers on the windows issue 5 settles. On C, drop it in `_clean` and rerun the window scores. CC line, CHANGELOG entry.
+
+   **Andrej (2026-11-20, change):** Option B: State it and give the measurements.
+
+   **Resolved (2026-11-20, Andrej):** B: the `balance` note in the definition now says it is one value per client (17.1% identical for linked records against 1.2% for different clients, no excess of slightly changed balances) and that logistic regression loses 0.002 to 0.003 ROC AUC without it whether or not the client has a later record, so it stays. The numbers are on today's five windows; they are recomputed when issue 5 settles the windows.
 
 **Review panel:** ship after changes (mediator). Tier focused (claim auditor, column auditor, mediator), a re-review of 2026-11-06 under LEAK-41 and MET-14 to MET-16, which do not apply here (no weight, no rate target). Claims: 33; 22 hold (6 of them with a caveat), 8 refuted or partly refuted (5 fixed in wording; the use case's moment and the split go to issues 1 and 2, the record's year to the field row), 1 not established (when `pdays` is counted) and 1 untested (the date of `balance`), both reworded as notes, 1 not applicable. Blind review: not run on this tier. Agreed: `contact` and `pdays` stay; the measured worth of `campaign`; the recurring-client leak (raised by the claim auditor, not contested); the mediator's changes a to h, applied (change i waits for issue 2). Disputed: keep or drop `campaign`, which turns on the prediction point (issue 2); settled in wording: whether cellular and telephone differ within a period (change a) and when `pdays` is counted (change c).
 

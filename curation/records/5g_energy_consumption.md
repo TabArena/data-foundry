@@ -64,6 +64,12 @@ CC (2026-11-10, Andrej): time basis (review page issue 1): option B, grouped by 
 
 CC (2026-11-11, Andrej): record fields set from the definition (review page field mark): `year` 2023; `domain` technology & internet.
 
+CC (2026-11-17, Andrej): Review issue 2, A: the declared split stays; the competition's test file, part new stations and part further hours of known stations of undocumented construction, is not followed.
+
+CC (2026-11-17, Andrej): the declared split (grouped on `BS`, 3x3 folds, `Retrospective`) is checked: split mark on the blind split review page.
+
+CC (2026-11-17, Andrej): verdict ship (blind split review page).
+
 ## Review
 
 **Outcome:** added. Hourly energy use of 923 Huawei 5G base stations over one week of January 2023 (92,629
@@ -136,3 +142,29 @@ source, so it is a sibling task, not a replacement: a valid task stays when a be
    **Resolved (2026-11-10, Andrej):** B, grouped by station, named `Snapshot`: the `Time basis: Snapshot:` bullet is in
    `curation_comments` (the logged week, the fill-in, and what the split cannot test: a later week or a new station
    product). Split and rows unchanged. The tag `Snapshot` enters `data_tags` once PR #50 is in the working copy.
+
+2. **Split: follow the source's split (predefined test file of unknown exact construction: 10,076 rows, of which 3,067…)?**
+
+   * **Problem:**
+     - The source prescribes predefined test file of unknown exact construction, and the round judges that choice partly made for the use.
+     - The definition ships Grouped · Retrospective by `BS`; the tree's leaf is Grouped · Retrospective (whole units).
+     - Against the leaf: Both hold out unseen stations, which the source weights highest; the source also scores further hours of known stations, which a whole-station split does not.
+   * **Source split:** yes, Zindi / ITU AI/ML in 5G Challenge (Huawei): predefined test file of unknown exact construction: 10,076 rows, of which 3,067 from base stations not in training, the rest further hours of known stations; weighted relative error giving new… ("Zindi: the test set is scored with 'a weighted relative error evaluation method to reward cross-equipment and cross-configuration generalization'; samples from new devices or configurations get larger weights (weights supplied in the test file). Chen et al. 2024: training 92,629 samples, test…") https://zindi.africa/competitions/aiml-for-5g-energy-consumption-modelling ; https://arxiv.org/abs/2406.16929. Credible: partly, The new-station part and its higher weight are motivated by the stated use (new products); the mix with further hours of known stations and the time range of the test file are not documented, and the test file is not public.. Against the tree's leaf: partly, Both hold out unseen stations, which the source weights highest; the source also scores further hours of known stations, which a whole-station split does not.
+   * **Why it counts as chosen, not conventional:** The new-station part and its higher weight are motivated by the stated use (new products); the mix with further hours of known stations and the time range of the test file are not documented, and the test file is not public.
+   * **Background:** The stated use estimates a week's hourly energy for stations without measurements in that same week, i.e. whole missing units inside the covered period. Whole stations are held out with all their hours. Confidence of the blind walk: high.
+   * **What changes on B:** the definition's split declaration is replaced by the source's own construction (its files, periods or groups), and the `splits_comment` records that the tree's leaf was not followed. The rows, features, target and metric do not change; the folds do, so the container is rebuilt.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: the tree names 5g_energy_consumption among the examples of 'Grouped · Retrospective (whole units)'; ignored as evidence.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Grouped · Retrospective by `BS` (implemented) | keeps `Grouping(on="BS")` | the split the tree's leaf and the definition agree on | differs from the source's own evaluation (predefined test file of unknown exact construction: 10,076 rows, of which 3,067…) |
+     | B | The source's split: predefined test file of unknown exact construction: 10,076 rows, of which 3,067… | rebuilds the split as the source constructed it | The new-station part and its higher weight are motivated by the stated use (new products); the mix with further hours of known stations and the time… | the tree gives Grouped · Retrospective (whole units); the source's construction may not fit our use case |
+
+   * **Recommendation:** A: the tree's leaf decides where a source split differs; the source's choice goes in the split notes. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: replace the split declaration with the source's construction (name the files or periods it uses) and say in `splits_comment` why the tree's leaf is not followed; on A: name the source's split in `splits_comment` as a departure.
+
+   **Andrej (2026-11-17, ok):** as implemented.
+
+   **Resolved (2026-11-17, Andrej):** A, as implemented: the declared split stays (whole base stations held out, `Retrospective`). The competition's test file (new stations plus further hours of known ones, its construction undocumented) is not followed.

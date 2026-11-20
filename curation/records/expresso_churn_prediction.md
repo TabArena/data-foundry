@@ -73,6 +73,10 @@ CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedT
 - A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
 - The random split stays.
 
+CC (2026-11-17, Andrej): the declared split (random, 1x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The dormancy signal is partly mechanical, but packages, prices and competition shape churn and the nearest measured churn set shifts; mixed at best.
+
 ## Review
 
 **Outcome:** added as `expresso_churn_prediction_1m`. The AI asks to retag the time basis after the one-moment rule was sharpened (2026-11-13).
@@ -105,6 +109,46 @@ CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedT
    **Andrej (2026-11-13, change):** Option B: DelayedTarget.
 
    **Resolved (2026-11-13, Andrej):** B. The tag is `DelayedTarget`, with its `Time basis:` line in the definition; the split does not change.
+
+2. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: One undated Zindi snapshot of one ~3-month window; user_id is a SHA-1 of the row number and the extract order is a customer sort (thirds 0.9026 vs random 0.9028), not time.
+     - Use: Expresso scores customers at the end of each observation window for 90-day churn, so the model is used on later windows.
+     - Mechanism: Window activity (top-ups, revenue, active days) predicts 90 days of inactivity; 80.9% of churners already had no revenue, so much of the signal is dormancy, but tariffs, packages and competition (Orange, Free in Senegal) move the rest.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | mobile_churn (SPLIT-8 Cases) | train on June base, test the 1,533 July/August joiners: ROC AUC 0.661 vs 0.690 IID (gap 0.028, 95% CI 0.004-0.056, LightGBM), cohort and time mixed | shift of 0.028 ROC AUC | prepaid telecom churn scored at month end |
+     | Gama et al. 2014, 'A survey on concept drift adaptation', ACM Computing Surveys 46(4) | review of drift in deployed predictors; customer profiling, marketing and telecom are named application areas with changing populations and behaviour | not flat (domain-level) | same use: scoring customers of a later period |
+
+   * **For a stationary use case:**
+     - Most churners are already dormant SIMs in the window; 'dormant stays dormant' is a mechanical relation unlikely to change quickly.
+     - Use is right after a window, and the release is one window of a large base (2.15M).
+   * **Against:**
+     - Prepaid telecom in a competitive market: packages and prices change (markets, opponents).
+     - The 90-day start is inferred, not published.
+     - The most-used package is a feature whose categories are the operator's offers, which change by window.
+     - mobile_churn forward gap 0.028 ROC AUC (CI excludes 0).
+   * **Earlier views:**
+     - Assessment (AI, 2026-10-20): ForcedIIDFromTemporal applied, cost not measurable.
+     - CC (2026-11-16, Andrej): ForcedIIDFromTemporal in place of DelayedTarget (one window is one period).
+     - CC (2026-11-17, Andrej): blind split walk reaches the shipped split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Prepaid telecom in a competitive market: packages and prices change (markets, opponents).; The 90-day start is inferred, not published. |
+
+   * **Recommendation:** A, the dormancy signal is partly mechanical, but packages, prices and competition shape churn and the nearest measured churn set shifts; mixed at best. Confidence: medium. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (The dormancy signal is partly mechanical, but packages, prices and competition shape churn and the nearest measured churn set shifts; mixed at best.)
 
 ## Reference
 

@@ -76,6 +76,10 @@ CC (2026-11-11, Andrej): **Split: a returning client's latest application is tes
 
 CC (2026-11-11, Andrej): ship as now defined (issue 1, closed as A: "Close as A, ship as now defined"). The task summary no longer says "504 features" and "keep the features it selected": the definition ships 709 features and does not apply the notebook's feature selection (since 2026-10-19).
 
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The same lender documents score decay and recording changes in its dated data; no mechanism makes later applicants interchangeable. A stationary-relation test on home_credit_default_stability_1m would add a measured similar case but cannot set ASR here.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it as defined. Reviewed on 2026-11-04 without a panel, from the
@@ -381,6 +385,46 @@ flags) was settled by the curator on 2026-10-21: they stay numbers.
    the `Time basis:` leak-test sentence, a curation note with the table and a `splits_comment` are updated;
    `splits_rows_never_tested` is an accepted check warning with the reason. CC line in the record. Dataset check
    (Slurm job 1378120): 0 errors, 0 warnings (2 accepted); folds train 207,621 to 207,663, test 99,844 to 99,886 rows.
+
+4. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: Every date is relative to the application; default rate flat along SK_ID_CURR (7.9-8.3% per tenth) and earlier applications' ids do not follow their decision day (Spearman 0.02), so no date can be rebuilt.
+     - Use: Home Credit scores later applicants (unbanked/thin-file consumers) with a model built on earlier ones.
+     - Mechanism: Payment difficulties on first instalments depend on the applicant, product and the lender's acceptance policy in its markets; Home Credit's own later competition targeted the decay of exactly this score over time.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | home_credit_default_stability_1m (this collection, same lender, dated 2019-2020) | not run through the stationary-relation test; the definition records 12 bureau/payment columns that stop being recorded in Sept-Oct 2019, and the source competition ('Credit Risk Model Stability', Kaggle 2024) was set up because scores decay week by week | change in recording named; relation unmeasured | same lender (Home Credit), same consumer-loan default task |
+     | lending_club (this collection, matched-v2 stationary-relation test) | 36-month LendingClub loans, issue years 2013-2015 each tested forward vs contemporaneous on the same test half (LightGBM, whole half) | not flat: forward worse by 0.0043-0.0059 ROC AUC (2.4-4.2 floors, beyond 2 SD) in all three years; default rate 10.0-15.2% by year | consumer credit default from application/bureau data, outcome over months after the grant |
+     | Kelly, Hand & Adams, 'The impact of changing populations on classifier performance', KDD 1999 (doi 10.1145/312129.312285); Hand, 'Classifier technology and the illusion of progress', Statistical Science 2006 (arXiv math/0606452) (literature, cited from memory: check) | scorecard performance on UK bank unsecured personal loans 1993-1998 as the applicant population drifts | not flat: population drift degrades scorecards; Hand names drift as a particular concern in credit scoring because defaults arrive long after the grant | application scoring of consumer credit |
+
+   * **For a stationary use case:**
+     - Large, multi-table bureau data with features dated before the decision (leak audit clean).
+   * **Against:**
+     - The same lender's dated data (home_credit_default_stability_1m) records columns that stop being recorded in Sept-Oct 2019: changed intake/coding.
+     - Home Credit's 2024 Kaggle competition exists because score stability over time is a problem for this lender.
+     - Acceptance policy and markets shape who gets a loan and who defaults.
+     - Similar measured credit data (lending_club) is not flat.
+   * **Earlier views:**
+     - CC (2026-11-11, Andrej): time basis stays forced from temporal (issue 2, B); no temporal split possible.
+     - CC (2026-11-11, Andrej): latest application tested; 'still ForcedIIDFromTemporal, as there are no application dates' (0.7862 vs 0.7865)
+     - CC (2026-11-17, Andrej): blind split review: the decision tree, walked without the current split, reaches the forced split it ships.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | The same lender's dated data (home_credit_default_stability_1m) records columns that stop being recorded in Sept-Oct 2019: changed intake/coding.; Home Credit's 2024 Kaggle competition exists because score stability over time is a problem for this lender. |
+
+   * **Recommendation:** A, the same lender documents score decay and recording changes in its dated data; no mechanism makes later applicants interchangeable. A stationary-relation test on home_credit_default_stability_1m would add a measured similar case but cannot set ASR here. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (The same lender documents score decay and recording changes in its dated data; no mechanism makes later applicants interchangeable. A stationary-relation test on home_credit_default_stability_1m would add a measured similar case but cannot set ASR here.)
 
 ## Reference
 

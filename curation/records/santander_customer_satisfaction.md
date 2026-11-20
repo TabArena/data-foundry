@@ -64,6 +64,8 @@ CC (2026-11-06, Andrej): column names kept as Santander shipped them (option D o
 
 CC (2026-11-10, Andrej): review page issue 3, option B: random, named `Snapshot` of one extract, the label read as dissatisfaction at the extract (its date unstated); the `Time basis: Snapshot:` bullet is in `curation_comments`, the tag enters `data_tags` once PR #50 is in the working copy. Split and record facts unchanged.
 
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The training file of Santander's Customer Satisfaction competition (Kaggle, 2016): 71,080

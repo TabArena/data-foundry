@@ -145,11 +145,12 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - The row budget (1M train, 500k test rows): We keep the whole frame (2,154,048 customers) and use 3-fold cross-validation over it (v2 split protocol). Each fold tests on 500k customers of its third, drawn stratified on the target, and trains on the other 1,654,048. The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M customers with `subsample_train`, whose default draws random rows stratified on the target.
-        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): Expresso scores
-          every customer active in one observation window of about three months at its end; churn is 90 days without
-          activity after it. One window is one period, too few for three (SPLIT-8). The release holds no earlier or
-          later window; with them, a temporal split with a 90-day gap would test the next one. It cannot test the
-          next window.
+        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): Expresso scores every
+          customer active in one observation window of about three months at its end; churn is 90 days without activity
+          after it. One window is one period, too few for three (SPLIT-8). The release holds no earlier or later window;
+          with them, a temporal split with a 90-day gap would test the next one. It cannot test the next window. Not
+          taken as stationary (Andrej, 2026-11-18): The dormancy signal is partly mechanical, but packages, prices and
+          competition shape churn and the nearest measured churn set shifts; mixed at best.
     """
 
     # Task

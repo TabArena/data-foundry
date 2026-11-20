@@ -72,6 +72,8 @@ CC (2026-11-08, Lennart): the declared metric (log_loss, weighted by person_weig
 
 CC (2026-11-16, Andrej): collection fact `Time: Within Entity` added to `Time: Lost`: the release keeps no calendar date, but it keeps the order of each person's visits (the visit number and the days since the first visit), an order within the person.
 
+CC (2026-11-17, Andrej): time basis `UnseenGroup` in place of `ForcedGroupedFromTemporal` (Review issue 3, B; replaces the tag of the CC of 2026-11-11): the use case is a person's first visit at a memory clinic, a person the data does not hold, so whole people are held out and each person's course stays on one side. The split is unchanged (stratified 3-fold CV over `Subject ID`, 20 repeats); the calendar stays lost and untested.
+
 ## Review
 
 **Outcome:** added. In the working copy since the migration; a scan of 2026-11-08 for units with unequal numbers of
@@ -189,6 +191,37 @@ person's visits (issue 1).
    [^fo-2]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
 
    **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
+
+3. **Time basis: tag the 3-fold CV over whole subjects `UnseenGroup` instead of `ForcedGroupedFromTemporal`?**
+
+   * **Problem:**
+     - The use case is a person's first visit at a memory clinic, a person the data does not hold, and for that the tree gives whole subjects held out with the tag `UnseenGroup`; the tree already lists dementia_prediction under that leaf.
+     - `ForcedGroupedFromTemporal` is the forced step's tag for a use later in time with no periods to hold out; the definition took it on 2026-11-11 because the release keeps no calendar date.
+     - Either tag gives the same folds: whole subjects held out on `Subject ID`.
+   * **Background:** The use case is a first visit of a new person at a memory clinic, so the model only meets people the panel does not hold. Whole subjects (Subject ID, 150 people, 1-5 visits) are held out; the calendar is lost and stays untested. Confidence of the blind walk: high.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Does the model fill in the period the panel covers, or predict after it? (use case): predict after it. Evidence: Use case: 'at a first visit a memory clinic estimates a person's clinical dementia rating from a short cognitive test and a brain MRI' - people coming to a clinic after the study.
+     - Which units does the model predict for? (use case): only new units. Evidence: A first visit is a person the clinic has not seen; no known person's later visit is the use. 150 subjects with 1-5 visits each (Subject ID repeats; 91 have two visits). The visit number and MR delay are dropped, so no within-person history is read.
+   * **What the blind dossier lacked, and what it changes:** Partition unchanged (grouped by Subject ID); the definition tags it ForcedGroupedFromTemporal (Andrej, 2026-11-11: calendar lost, people seen later untested) where my Panel walk ('only new units') gives UnseenGroup (new units). The tag differs, not the split. Round 1 reached UnseenGroup too.
+   * **Source split:** no. No split prescribed.
+   * **What changes:** `data_tags` swaps `ForcedGroupedFromTemporal` for `UnseenGroup`, the `Time basis:` bullet in `curation_comments` opens with `UnseenGroup` and keeps the untested later calendar; a CC line in the record; rebuild for the tags only.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: the tree's example lists name this dataset under a leaf; ignored as instructed.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Stratified 3-fold CV over whole subjects (`Subject ID`, 150 people with 1-5 visits, about 50 per test fold, 112-138 test and 232-258 train visits), 20 repeats, tagged `ForcedGroupedFromTemporal` (implemented) | No change. | The tag says the use is later in time and the calendar is lost; the `Time basis:` line names what stays untested (people seen later, scanner or protocol changes). | The split follows from the first-visit use case, not from a forced step, so the tag gives the wrong reason for holding people out. |
+     | B | The same 3-fold CV over whole subjects, tagged `UnseenGroup` | `data_tags` `("WrongDomain", "ForcedGroupedFromTemporal")` becomes `("WrongDomain", "UnseenGroup")`; the `Time basis:` bullet opens with `UnseenGroup` and keeps what is untested; folds unchanged, the container rebuilt because tags ship in it. | Names why whole people are held out: the clinic meets people the data does not hold, as the grouping's first-visit framing says. | Reverses the tag set on 2026-11-11 and kept on 2026-11-13; the tag no longer shows that the calendar is lost (the line must say it). |
+
+   * **Recommendation:** B, because the definition frames each visit as a first visit of a person not seen in training, a use that aims at new units.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: set `data_tags` to `UnseenGroup` in `dataset.py`, change the opening of the `Time basis:` bullet and add a CC line; rebuild. No change to the split declaration.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-17, change):** Option B: The same 3-fold CV over whole subjects, tagged UnseenGroup.
+
+   **Resolved (2026-11-17, Andrej):** B. `data_tags` names `UnseenGroup` in place of `ForcedGroupedFromTemporal` (`WrongDomain` stays), and the `Time basis:` line opens with `UnseenGroup (Andrej, 2026-11-17; ForcedGroupedFromTemporal before)`: the use case is a person's first visit at a memory clinic, a person the data does not hold, so whole people are held out and each person's course stays on one side; it keeps what stays untested (people seen later, scanner or protocol changes). The split itself (stratified 3-fold CV over whole subjects, 20 repeats) is unchanged.
 
 ## Reference
 

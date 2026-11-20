@@ -74,6 +74,8 @@ CC (2026-11-12, Andrej): re-entered tests dropped (BeyondArena v0.2 review page,
 - 48 row pairs at one age with all amounts within 1 kg carry another strength (a median 2.9 MPa apart): separate tests, kept; they can sit on both sides of the split.
 - The record fields `domain` and `problem_type`, marked for update, already match the definition (filled on 2026-11-11).
 
+CC (2026-11-17, Andrej): the declared split (grouped on `mix`, 10x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. Laboratory tests of high-performance concrete compiled by I-Cheng Yeh from 17 published studies (UCI, donated 2007,

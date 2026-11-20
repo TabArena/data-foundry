@@ -51,6 +51,8 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: model stays unord
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `autoscout24_car_listings_2025` (TBD -> Yes, priority 1). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-17, Andrej): the declared split (random, 10x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Reference
 
 https://www.kaggle.com/datasets/paolocons/another-fiat-500-dataset-1538-rows

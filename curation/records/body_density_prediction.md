@@ -64,6 +64,10 @@ CC (2026-10-15, Andrej): Replacement candidate: `nhanes_dxa_body_fat` (NHANES DX
 
 CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on routine `Timeless` issues): each man was measured once in one study session, so density and features describe the same body at one time. It holds if issue 1 keeps the dataset. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
 
+CC (2026-11-18, Andrej): collection type stays `Experimental Results` (Review issue 5, A as implemented; full-information split check). Supersedes the Clinical Study mark of 2026-11-17 (issue 4):
+- the type rules call volunteers measured by a study protocol experimental results;
+- the split is random under either type.
+
 ## Review
 
 **Outcome:** added. Johnson's StatLib bodyfat file of the 252 men of Penrose et al. 1985: body density measured by
@@ -211,6 +215,75 @@ more data could be collected; Andrej's CC of 2026-10-15 names the replacement, a
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
    cannot test (bodies measured in another study, such as women); the split and `data_tags` are unchanged. It holds if
    issue 1 keeps the dataset. The tag `Timeless` enters `data_tags` once PR #50 is in the working copy.
+
+4. **Collection type: `Clinical Study` instead of `Experimental Results`?**
+
+   * **Problem:**
+     - The record's collection type is `Experimental Results`, the root the walk started from.
+     - The walk reads the data as `Clinical Study`: The men were measured in one study at one lab, closer to a clinical study at one site than to designed experimental runs; walked under Experimental Results as recorded..
+     - The walk followed the recorded type and reached Random · Timeless.
+   * **The doubt:** The men were measured in one study at one lab, closer to a clinical study at one site than to designed experimental runs; walked under Experimental Results as recorded.
+   * **What changes:** the record's collection-type tag only. The split follows from it, so the tree must be re-walked under the new type; where that gives the same leaf, nothing else changes.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: split_tree.md lists body_density_prediction as an example under 'Random · Timeless'; ignored as evidence.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `Experimental Results` (implemented) | no change to the record | the type as the taxonomy assigned it | the doubt stays on the record |
+     | B | Tag `Clinical Study` | changes the record's type tag and re-walks the tree from it | The men were measured in one study at one lab, closer to a clinical study at one site than to designed experimental runs; walked under Experimental… | the type rules must agree; the leaf may change |
+
+   * **Recommendation:** discuss: the collection-type rules decide this, the walk only raises it. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: change the record's type tag to `Clinical Study`, re-walk the tree from it and check whether the leaf changes; update the type rules' examples.
+
+   **Andrej (2026-11-17, change):** Option B: Tag Clinical Study.
+
+   **Answer (AI, 2026-11-17):** Clinical Study needs the men to have arrived over time, and the record says they did not:
+   change that fact as well?
+
+   * **Problem:**
+     - The type rules sort undated data on people by how it arrived: a clinical study when the people arrived over
+       time, experimental results when the data has no time dimension[^bd1].
+     - The record's fact is `Samples: No Time Dimension`, and the source (Penrose, Nelson and Fisher 1985) dates no
+       measurement; nothing shows the 252 men were measured over a period that matters to the use case.
+     - The split stays random under either type; as a clinical study its tag becomes `ForcedIIDFromTemporal` in place
+       of `Timeless` (accepted 2026-11-06).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | `Clinical Study` and `Samples: Over Time` | both record tags change; the tag becomes `ForcedIIDFromTemporal` | the walk's reading: men measured one after another for one study | no source says when or over how long |
+     | b | `Clinical Study` only | the type changes, the fact stays | as marked | breaks the rule on undated people data; needs a written exception |
+     | c | Keep `Experimental Results` (implemented) | no change | the rule and the record's fact agree | the walk's reading is not taken up |
+
+   * **Recommendation:** c: the rule rests on arrival over time, which nothing documents here, and the split is
+     random under every option. **Decision:** a, b or c?
+
+   [^bd1]: **SPLIT-34** (Should), rule 5: patient data without dates is a clinical study when the patients arrived
+     over time, and experimental results when the data has no time dimension.
+
+   **Resolved (2026-11-18, Andrej):** superseded by issue 5, where `Experimental Results` is kept as implemented (A).
+
+5. **Keep the type `Experimental Results`?**
+
+   * **Problem:**
+     - You marked `Clinical Study` (2026-11-17); the type rules call a closed set of volunteers measured by a study protocol experimental results, and a clinical study patients labelled by a diagnosis or a follow-up outcome[^s34t].
+     - The 252 men were measured once by underwater weighing; body density is neither a diagnosis nor an outcome, and the record dates no arrival.
+     - The split stays random under either type; only the tag and the type rules' examples change.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | `Experimental Results` (implemented) | No change | What the type rules say | |
+     | B | `Clinical Study` | The type definitions are amended so measured volunteers count as clinical | Your mark | The tree's clinical branch then asks for a site or an arrival order the data does not hold |
+
+   * **Recommendation:** A, because the type rules describe this case and the split does not change. **Decision:** A or B?
+
+   [^s34t]: **SPLIT-34** (Should): "`Experimental Results`: ... a closed set of specimens, molecules or volunteers measured by a laboratory or a study protocol. `Clinical Study`: patients of a clinical study, a clinic's case series or a registry, labelled by a diagnosis or a follow-up outcome."
+
+   **Andrej (2026-11-18, ok):** As implemented (A).
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: `Experimental Results` (252 volunteers measured once by a study protocol; body density is neither a diagnosis nor a follow-up outcome). The split stays random, `Timeless`. Nothing changes.
 
 ## Reference
 

@@ -63,6 +63,8 @@ CC (2026-11-11, Andrej): kept with the source gap noted (review page, issue 1 A)
 
 CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 5, C): whether the company goes bankrupt after the statements, so it arrives after the features; the forced tag and the split stay.
 
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 7, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The record already names crises within the span and the file holds undatable time structure; bankruptcy relations are documented as period-dependent.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it as defined, with the unknown time between ratios and bankruptcy
@@ -302,6 +304,44 @@ target" is answered in issue 1: the paper does not state it. The scaling over al
    **Andrej (2026-11-13, change):** Option C: Stay forced, record Target: Later.
 
    **Resolved (2026-11-13, Andrej):** C. The record has `Target: Later`; the forced tag and the split stay (`CrossSectional`, option B, was dropped the same day).
+
+7. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: Taiwan Economic Journal 1999-2009, no year or company per row; the file repeats at a period of 26-~200 rows (company-years ordered by industry and year), but no block can be dated, so only an inferred within-chain order exists.
+     - Use: A lender or investor screens later statements of listed Taiwanese companies.
+     - Mechanism: Ratio-based failure depends on the business cycle and listing/accounting rules; the span holds the 2001 dot-com bust and the 2008 crisis, and the lag between ratios and failure is unstated.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | Mensah, 'An examination of the stationarity of multivariate bankruptcy prediction models', Journal of Accounting Research 22(1):380-395, 1984 (literature, cited from memory: check) | accuracy and structure of ratio-based bankruptcy models across economic periods | not flat: the ratio-failure relation shifts with the economic environment; models need re-estimation | financial-ratio bankruptcy prediction |
+     | polish_companies_bankruptcy (this collection) | nothing over time; classes from different periods | unmeasured | ratio-based bankruptcy |
+
+   * **For a stationary use case:**
+     - Ratios carry an accounting link to solvency; grouping on rebuilt chains costs little (0.941 -> 0.939/0.934), so company leakage is small.
+   * **Against:**
+     - Climate moved within the span (2001, 2008), named in the record's own reasoning.
+     - Structure in the file order (company-years by industry and year), undatable.
+     - Ratio-failure relations shift with the economy (Mensah 1984); Taiwan adopted IFRS from 2013, a coding change for later use.
+   * **Earlier views:**
+     - Resolved (2026-11-11, Andrej): issue 2 B, forced tag kept with full Time basis line ('a lender scores later statements in a climate that moved (2001, 2008)')
+     - CC (2026-11-13, Andrej): Target: Later recorded; forced tag and split stay.
+     - CC (2026-11-17, Andrej): blind split review: the decision tree, walked without the current split, reaches the forced split it ships.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Climate moved within the span (2001, 2008), named in the record's own reasoning.; Structure in the file order (company-years by industry and year), undatable. |
+
+   * **Recommendation:** A, the record already names crises within the span and the file holds undatable time structure; bankruptcy relations are documented as period-dependent. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (The record already names crises within the span and the file holds undatable time structure; bankruptcy relations are documented as period-dependent.)
 
 ## Reference
 

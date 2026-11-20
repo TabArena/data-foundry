@@ -53,6 +53,8 @@ CC (2026-11-16, Andrej): collection facts `Samples: Over Time` and `Time: Dated`
 
 CC (2026-11-16, Andrej): tag `Expanding Science Catalogue`: the rows are a cut of SWISS-PROT, a sequence database that keeps growing, as splice's windows are a cut of GenBank. The time basis is open in the Review (issue 1).
 
+CC (2026-11-20, Andrej): random folds tagged `StationaryRelation` on the entry years (Review issue 3, D): the relation measures flat across the entry-year periods; the `Timeless` line, false since the entries are dated, is replaced.
+
 ## Review
 
 **Outcome:** added. UCI's E. coli protein localization data (Horton and Nakai 1996; UCI 39,
@@ -109,6 +111,57 @@ and the cell location; the five locations with 10 or more proteins are kept (327
      default; the source's purpose sets which items the test set stands for; the entry date replaces the family key
      when the use case predicts for items the catalogue does not hold yet and arrival changes which items are selected
      or the date carries waves.
+
+   **Resolved (2026-11-20, Andrej):** settled by issue 3 (D): the 20 x 3 random folds stay, tagged `StationaryRelation`, as the stationary-relation test on the entry years reads flat (narrowly).
+
+3. **Windows on the entry year, now that the proteins are dated?**
+
+   * **Problem:**
+     - Since 2026-11-16, 309 of 336 entries carry their SWISS-PROT entry year (1986-1995), and the mix of locations moves with it (cytoplasm 54% of entries up to 1989 against 34% from 1990, p = 0.005), which the catalogue rule counts as arrival changing which items are taken in[^s37a].
+     - Three windows (test 1989-90, 1991-92, 1993-96) train on 37%, 60% and 77% with 76, 56 and 46 test proteins: enough for the three-window floor with your sign-off on the 37% window, not for the 60 splits of your window-count reading.
+     - The definition still ships random folds tagged `Timeless` on the line "the release holds no date"; the record's issue 1 asked this and has no mark.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 20 x 3 random folds, `Timeless`, the present line (implemented) | No change | 60 splits | Its line is false; no leaf gives it with dated entries |
+     | B | Three windows on the entry year | The 27 undated entries train only; the year no input; the 37% window signed off | Tests proteins entered later, as the use case meets them | 46-76 test proteins per window |
+     | C | The same random folds, `Timeless` (no family key), line rewritten | The line names the dating, the shifted intake and the family the use case would hold out | 60 splits | Only open with option B of the window-count item |
+
+   * **Recommendation:** B with option A of the window-count item, C with its option B. **Decision:** A, B or C?
+
+   **Notes for the AI:** this replaces the record's issue 1; tree: ecoli leaves the departures on B or C.
+
+   [^s37a]: **SPLIT-37** step 4 (Should): the entry date replaces the family key when "(a) arrival changes how the target or the features are recorded, or which items are selected ...: descriptors computed by another convention in a later round, a programme that changed which items it takes in".
+
+   **Andrej (2026-11-19, discuss):** Can we measure stationarity?
+
+   **Answer (AI, 2026-11-19):** measured: flat, narrowly. On the entry-year periods, a model trained on earlier entries predicts the location about as well as one trained on the period's own entries; the location mix moves, but the six sequence scores predict it the same way.
+
+   * **The test:** 297 dated proteins (30 left out: 26 renamed and unresolved, 4 dated after the UCI donation), six features, log loss, 5 seeds; periods up to 1988, 1989-90, 1991-92, 1993-96.
+
+     | Test period | Train share | LightGBM gap | Kumo-Tabular gap | Floor | Verdict |
+     |---|---|---|---|---|---|
+     | 1993-96 (46) | 77% | -0.072 ± 0.033 | +0.004 ± 0.021 | 0.009 | flat |
+     | 1991-92 (56) | 60% | +0.095 ± 0.098 | +0.096 ± 0.092 | 0.010 | inconclusive |
+     | 1989-90 (76) | 37% | +0.012 ± 0.094 | +0.003 ± 0.033 | 0.011 | flat (Kumo-Tabular) |
+     | pooled, all three | | +0.012 ± 0.047 | +0.034 ± 0.033 | | flat |
+     | pooled, the two at half or more | | +0.011 ± 0.052 (2 SD 10.8 floors) | +0.050 ± 0.047 (9.8 floors) | | flat (Kumo-Tabular) |
+
+   * The location mix moves (outer membrane 8.4% against 3.6%, factor 2.4, p 0.39; cytoplasm 54% against 34%, under twofold): not a recording change by the rule.
+   * **What it means:** three windows exist only with the 1989-90 window at 37% as your exception (B). Without it, two windows are too few, the forced step reads the test, and it reads flat: the random folds tagged `StationaryRelation` on this test (new option D), replacing the false `Timeless` line. The evidence is thin (297 proteins; the two-period pooling passes at 9.8 floors).
+
+   | | Option | Splits | Tag |
+   |---|---|---|---|
+   | A | 20 x 3 random folds (implemented) | 60 | `Timeless`, line "the release holds no date" (false) |
+   | B | Three windows on the entry year, 1989-90 at 37% as your exception | 3 | none (temporal) |
+   | D | 20 x 3 random folds | 60 | `StationaryRelation` on this test, the dating in the line |
+
+   **Recommendation:** D: the windows would need a 37% exception and hold 46-76 proteins each, while the relation measures flat. **Decision:** A, B or D?
+
+   **Andrej (2026-11-20, discuss):** Reply (D): 20 x 3 random folds
+
+   **Resolved (2026-11-20, Andrej):** D. The 20 x 3 random folds stay; `data_tags` reads `StationaryRelation` instead of `Timeless`, and the `Time basis:` line gives the SWISS-PROT entry years and the stationary-relation test (flat, narrowly). `dataset check`: 0 errors, 0 warnings. Not rebuilt.
 
 ## Reference
 

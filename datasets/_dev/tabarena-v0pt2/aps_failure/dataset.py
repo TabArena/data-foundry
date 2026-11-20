@@ -164,9 +164,11 @@ class ApsFailure(AbstractCuratedDataset):
           has no date, and the challenge's two files are not shown to be two periods (near copies across them have the
           larger counters in the test file in 2,237 pairs, the smaller in 2,220), and the one counter that changes
           between copies, `bx_000`, is a cumulative usage counter that moves by a small step in either direction, no
-          clock. Which component fails can move with season and fleet, so whole trucks held out stand in for the
-          trucks to come. Not tested: trucks read out later than the training trucks, which a dated release (as
-          `scania_component_x`) would allow.
+          clock. Which component fails can move with season and fleet, so whole trucks held out stand in for the trucks
+          to come. Not tested: trucks read out later than the training trucks, which a dated release (as
+          `scania_component_x`) would allow. Not taken as stationary (Andrej, 2026-11-18): A physical-measurement
+          argument exists, but the label depends on fleet and workshop practice that the definition itself says moves
+          with season and fleet, and no comparable dated set tested flat.
     """
 
     # Task

@@ -240,9 +240,10 @@ class Mic(AbstractCuratedDataset):
           rebuilt (Time: Lost). Care drifts inside each block (Trental in the ICU 15% to 35% over the first; a model
           tells a block's first from its second half at ROC AUC 0.82, 0.58 and 0.72), but the drifts run in opposite
           directions across blocks, so the blocks share no calendar; the last fifth of each block scores death ROC AUC
-          0.77 against 0.84 for a random fifth (logistic regression, SD 0.02 over 30 draws). Leak test across the
-          split: no duplicates, no recurring patients, no same-day clusters (neighbouring rows differ in 21.5% of
-          coded fields, rows 100 apart in 22.2%). Admission dates would allow a split by time.
+          0.77 against 0.84 for a random fifth (logistic regression, SD 0.02 over 30 draws). Leak test across the split:
+          no duplicates, no recurring patients, no same-day clusters (neighbouring rows differ in 21.5% of coded fields,
+          rows 100 apart in 22.2%). Admission dates would allow a split by time. Not taken as stationary (Andrej,
+          2026-11-18): Care drifts measurably within the file and has changed since; both are facts against.
     """
 
     # Task

@@ -112,6 +112,10 @@ CC (2026-11-11, Andrej): `original_source` set to the definition's `OpenML` (rev
 
 CC (2026-11-12, Andrej): `first_year` orders and splits the rows but is no model input (BeyondArena v0.2 review page, issue 4, B): it arrives with the target, the paper that reports the compound's potency. The five two-year windows are unchanged; the SMILES is the one feature. The 2026-11-11 CC above, which calls the year a feature as well, is superseded on that point.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `first_year`, up to 5 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-19, Andrej): nine one-year windows (2005-2013), the target count (Review issue 5).
+
 ## Review
 
 **Outcome:** added. The Meta-QSAR dataset for human thrombin (ChEMBL target CHEMBL204; OpenML 3050, 2015; Olier et
@@ -133,7 +137,7 @@ methods +, bounds stored as exact potencies -, a larger later release screened (
 
 **Main points:** Nothing open. Settled: `first_year` orders and splits the rows but is no model input (issue 4, B,
 2026-11-12); bound potencies kept as exact values with a note (issue 1), split by first publication year (issue 2),
-record facts corrected (issue 3), all 2026-11-11; `original_source` set to `OpenML`.
+record facts corrected (issue 3), all 2026-11-11; `original_source` set to `OpenML`. Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 5).
 
 **Record judgment:** valid. The record carries the v0.2 changes (CC and Assessment of 2026-11-01); its workbook notes
 ("unsure what that is", "not in TabRepo, need to clarify") are answered by them.
@@ -422,3 +426,44 @@ record facts corrected (issue 3), all 2026-11-11; `original_source` set to `Open
    SMILES remains), `time_is_feature: false`, the five windows unchanged (train 3,280 to 5,545 rows, test 159 to 744).
    Depends on the uncommitted `Temporal(..., feature=False)` framework change in `src/data_foundry/v2/splits.py`.
    Edited in the working copy only, not in PR #81's branch. Not rebuilt.
+
+5. **Windows: 5 of the target's 9; which layout?**
+
+   * **Problem:**
+     - The data gives one-year windows for the target count at half the data or more[^split14]: the two-year length is the protocol's choice, not the data's limit. Ten one-year windows (2004 to 2013) train on 57.5% to 99.1% of the compounds, and each holds at least 49.
+     - Today 5 two-year windows ship; the target an IID split of 5,704 compounds would get is 9[^split33][^split15]:
+
+       | Test window | Compounds | Train | Train share |
+       |---|---|---|---|
+       | 2012-13 | 159 | 5,545 | 97.2% |
+       | 2010-11 | 744 | 4,801 | 84.2% |
+       | 2008-09 | 290 | 4,511 | 79.1% |
+       | 2006-07 | 598 | 3,913 | 68.6% |
+       | 2004-05 | 633 | 3,280 | 57.5% |
+
+     - What the source fixes: the year a compound first appears in ChEMBL 17's thrombin records, the only date there is, so a window is one or more whole years. What is assumed: how often the chemist's model is refit. The source says nothing about it; the two years come from cutting the newest half of the 22 years into five windows (issue 2, C, 2026-11-11), and that decision named windows of one to five years as possible.
+     - The year sizes are uneven: 2011 holds 638 compounds (518 of them the undated PubChem deposit, dated 2011), 2013 only 49. No layout of whole years gives even test sizes. Even sizes need cuts inside a year, which puts compounds of one year (often one paper) on both sides, the same-year siblings that carried most of the scaffold split's advantage (issue 2).
+     - Overlapping windows are not needed: whole-year windows reach the target without them.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Five two-year windows (implemented), the reason in `splits_comment` | 5 windows, train 57.5% to 97.2%, test 159 to 744 compounds; `splits_comment` names the target (9), the count (5) and why: two-year windows, the protocol's length | nothing to rebuild; every window holds at least 159 compounds | 4 short of the target, for a length the use case does not set |
+     | B | One-year windows up to the target | 9 windows, 2013 back to 2005, train 64.2% to 99.1%, test 49 to 638 compounds | reaches the target at half the data or more; a yearly refit, the finest step the date allows | 2013 (49), 2010 (106) and 2009 (105) are small, noisier windows; horizon 1 year instead of 2; a rebuild |
+     | C | One-year windows, as many as half the data allows | 10 windows, 2013 back to 2004, train 57.5% to 99.1%, test 49 to 638 | the most windows at half the data or more; keeps 2004, tested today | one window beyond the target; as B otherwise |
+     | D | One-year windows down to 30% (the curator's exception) | 13 windows, 2013 back to 2001; 2003, 2002 and 2001 train on 44.7%, 36.9% and 33.1%; test 49 to 731 | adds the 1,392 compounds of 2001-03, 2003 the largest year of the series (731) | three windows under half need a curator's reason; the count is past the target anyway |
+     | E | Equal test sizes | 9 windows of 316 compounds each over the newest half in year order, cut inside years; train 50.1% to 94.5% | every window weighs the same | a year's compounds on both sides of a cut, the sibling shortcut issue 2 removed; the order inside a year is arbitrary |
+
+   * **Recommendation:** B: it reaches the target at half the data or more with whole years, and nothing in the use case asks for two. **Decision:** A, B, C, D or E?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Five windows, against the 9 an IID split of 5,704 compounds would get: the windows are two years long, the length the protocol cut from the newest half of the 22 years; one-year windows would give 9 (the date of your decision, Andrej)." On B: `TemporalSplits(window=1, unit="unique", n_windows=9)` (no `min_train_fraction`; 2005 trains on 64.2% of the rows), `horizon=1`; on C `n_windows=10`; on D `n_windows=13` with `splits_train_under_half` accepted for 2001-2003 once the CC line is in; then the window table in `splits_comment` and `curation_comments`, `task_summary.split`, `dataset check` on Slurm, a CHANGELOG entry and a CC line. E needs a custom `_make_splits` (rows in a fixed random order inside each year).
+
+   **Andrej (2026-11-19, change):** Option B: One-year windows up to the target.
+
+   **Resolved (2026-11-19, Andrej):** B. `TemporalSplits(window=1, unit="unique", n_windows=9)`: one-year windows 2005 to 2013, 49 to 638 compounds, training on 64.2% to 99.1%. The measurements in the notes were made on the two-year windows and are labelled so. `dataset check`: 0 errors, 0 warnings. Not rebuilt.
+
+   [^split14]: **SPLIT-14** (Must): at least 3 windows; every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get; the use case sets the window length, step and gap, which are never shortened to reach the count; fewer are accepted, never under 3, with the target, the count reached and what stops more windows in the splits comment; overlapping windows are only offered.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count, here 9.

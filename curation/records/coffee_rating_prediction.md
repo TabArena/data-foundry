@@ -87,6 +87,8 @@ CC (2026-11-11, Andrej): kept without the reviewer's text (BeyondArena v0.2 revi
 
 CC (2026-11-12, Andrej): the review month `review_date` orders and splits the rows but is no model input (BeyondArena v0.2 review page, issue 6, B; `Temporal(..., feature=False)`): it is the month Coffee Review published the score, while the roaster decides which coffees to submit before any review. 8 features (was 9), the 13 windows unchanged.
 
+CC (2026-11-18, Andrej): a one-month gap before each two-month window (Review issue 7, B; replaces the no-gap decision of 2026-11-06): the roaster predicts at submission, weeks or months before Coffee Review publishes the score in its review month, so training holds only scores published at least a month before the window. The delay is not stated; one month is the smallest gap the monthly dates allow.
+
 ## Review
 
 **Outcome:** added. Kept after the changes of 2026-11-10 (issue 5, 2026-11-11). The data are a 2023 Kaggle
@@ -330,6 +332,46 @@ defined. The licence is `None`: the review text is coffeereview.com's, scraped b
    feature. Record CC line. `dataset check` (Slurm 1380078): 0 errors, 0 warnings, 0 info; README: 8 features (was 9),
    `time_is_feature: false`, the 13 windows unchanged (train 1,211 to 2,315 rows, test 54 to 115). Not rebuilt. It
    needs the `Temporal(..., feature=False)` framework change, uncommitted in the working copy (committed in PR #81).
+
+7. **Gap: train each two-month window only on reviews published at least one month before it, instead of no gap?**
+
+   * **Problem:**
+     - The roaster predicts when it submits a coffee, but `review_date` is the month Coffee Review published the score, weeks or months later by the dossier; the source states no delay.
+     - With no gap, a window's training side holds the reviews of the month just before it, many published after the window's coffees were submitted.
+     - The curator kept no gap on 2026-11-06 because every training score is published by the window's start; the gap answers the prediction point (submission), not the label's arrival.
+   * **Background:** A roaster predicts the score of coffees it will submit to the same service, and five years of monthly review dates give enough windows. The score is published weeks or months after submission, so a gap of about a month, flagged as undocumented. Confidence of the blind walk: medium.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Used at a place or group the data does not hold? (use case): no. Evidence: A roaster or importer predicts Coffee Review's score; one service, roasters recur (493 roasters, 2,440 raw reviews).
+     - Fill in the covered period or predict forward? (use case): forward. Evidence: Coffees not yet submitted.
+     - Do the dates give the windows the rule[^split-14]/15 ask for? (data): yes. Evidence: review_date (month) Oct 2018 - Sep 2023 after dropping the partial Oct 2023; raw per year 89/328/457/583/580/403. Windows of a quarter hold ~100-170 reviews; three windows in 2022-2023 train on >=60%.
+     - What sets off a prediction? (use case): a case arrives. Evidence: A coffee the roaster considers submitting.
+     - Target known only after a delay longer than the time step? (data): yes, late labels (delay size undocumented). Evidence: review_date is the month Coffee Review published the score; the roaster decides at submission, weeks or months earlier (dossier). Step used: one month. The delay is not documented; if it is under a month, the leaf becomes 'Temporal · arrival date' (no gap).
+   * **The delay the walk measured:** step used: one month (review_date). Delay: submission to publication, 'weeks or months' per the dossier, undocumented by the source; gap of one month proposed.
+   * **What the blind dossier lacked, and what it changes:** Possibly the gap. The definition ships 2-month windows (12, Aug-Sep 2023 back to Oct-Nov 2021) with no gap, arguing the review month is when the label arrives (time_of=label), so every training label is known at a window start; the submission-to-review delay is unstated and was not measured. That covers the rule[^split-10]'s 'train on rows whose outcome is known' but not the prediction point at submission; unlike california there is no measurement of the gap's effect, so I keep my leaf and flag the departure.
+   * **What changes:** `TemporalSplits(window=2, unit="months", min_train_fraction=0.5)` gains `gap=1, gap_unit="months"`; the `splits_comment` sentence 'no gap is needed' is replaced by the submission delay and the gap; the container is rebuilt and each window's train share re-checked against the 50% floor.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: splits.md the rule[^split-17] (widen small windows) ends with 'Cases: coffee_rating_prediction', which hints at a temporal split with widened windows; ignored as evidence.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Twelve two-month windows on `review_date` (test Aug-Sep 2023 back to Oct-Nov 2021, 62-137 reviews each), train every earlier review (1,256-2,263 rows, 53-96%), no gap, `review_date` no input (implemented) | No change. | Every training score is published by the window's start, so the rule[^split-10]'s label condition holds; a refit uses the newest month too. | A coffee submitted before its window is scored by a model that saw reviews published after the submission. |
+     | B | The same twelve windows with a one-month gap: train only on reviews published at least one month before the window | `gap=1, gap_unit="months"` in `TemporalSplits`; each training side loses the month before its window (29-72 reviews on the raw counts); windows and test rows stay. | Training holds only scores a roaster could have had at submission, if the delay is about a month. | The delay is undocumented, so one month is a guess; on the raw counts (2,438 reviews before cleaning drops) the oldest window's training share falls from 53.4% to 51.5%, near the 50% floor (built count not counted). |
+
+   * **Recommendation:** B, because the use case predicts at submission, before the review month, and a month is the smallest gap the monthly dates allow.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: change `gap=` in `TemporalSplits` and re-check each window's train share against the floors; nothing else in the definition changes.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   [^split-10]: **SPLIT-10** (Should): When a label is known only some time after its row (a delivery time, a permit's processing time, an outcome after a follow-up), a model refit at a window's start knows only the rows whose label had arrived.
+
+   [^split-17]: **SPLIT-17** (Should): Widen windows that get too small: below about 50 test rows per window, use wider windows and fewer splits.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-18, change):** Option B: The same twelve windows with a one-month gap: train only on reviews published at least one month before the window.
+
+   **Resolved (2026-11-18, Andrej):** B. `TemporalSplits(window=2, unit="months", gap=1, min_train_fraction=0.5)`: each two-month window trains only on reviews published at least one month before it; the `splits_comment` names the submission delay and the gap. Windows and test rows stay; each training side loses the month before its window. Not rebuilt: the window count and train shares are re-checked by `dataset check`.
 
 ## Reference
 

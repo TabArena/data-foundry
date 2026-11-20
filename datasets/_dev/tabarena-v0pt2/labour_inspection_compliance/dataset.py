@@ -137,8 +137,17 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
         is later on average, not row by row. The windows follow the file's own order: the checklists of one visit lie
         a median 1,211 rows apart, so a window's start cuts some visits (0.3% to 1.0% of test rows have another row of
         their visit in training, against 4.0% on random folds). An inspection's result is known when it ends, so there
-        is no gap (2026-11-11, Andrej, review issue 2 b).
+        is no gap (2026-11-11, Andrej, review issue 2 b). Three of the nine windows an IID split of this size would
+        get: the order resolves time to about 10,000 rows, so windows are a sixth of the rows, and the half-data floor
+        leaves room for three (Andrej, 2026-11-20, review issue 5, A).
     """
+    accepted_check_warnings = {
+        "splits_below_target": (
+            "Three of the nine windows an IID split of this size would get: the order resolves time to about 10,000 "
+            "rows, so windows are a sixth of the rows, and the half-data floor leaves room for three (Andrej, "
+            "2026-11-20, review issue 5, A)."
+        ),
+    }
     temporal = Temporal(
         on="file_row",
         splits=TemporalSplits(window=10605, unit="rows", n_windows=3, min_train_fraction=0.5),

@@ -150,15 +150,17 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         - Potential leak, kept on purpose: the 43 building columns (`*_AVG`, `*_MODE`, `*_MEDI`, `TOTALAREA_MODE`) are "normalized information about building where the client lives" (HomeCredit_columns_description.csv) and each spans exactly 0 to 1, so Home Credit likely scaled them over all applications, ours included; the method is not documented and no raw values exist. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak; revisit if Home Credit documents it.
         - We replace values that became inf after aggregation with NaN. This occurred across several aggregated columns.
         - Time basis: ForcedIIDFromTemporal: loan applications over a period Home Credit does not state, the label
-          payment difficulties on the first instalments; a lender scores later applicants. Every date is relative to
-          the application ("time only relative to the application", HomeCredit_columns_description.csv), the default
-          rate is flat along SK_ID_CURR (7.9% to 8.3% per tenth), and the earlier applications' ids do not follow
-          their decision day (Spearman 0.02), so no date can be rebuilt (Time: Lost). Leak test across the split:
-          5.4% of the applications share a client with another (same sex and the same days between birth and ID
-          issue and between birth and registration); the split tests each client's latest application and keeps the
-          client's earlier ones in training only (below), so no test row has its client's later application in
-          training. The random split cannot test how the score holds for later applicants; application dates would
-          allow a split by time.
+          payment difficulties on the first instalments; a lender scores later applicants. Every date is relative to the
+          application ("time only relative to the application", HomeCredit_columns_description.csv), the default rate is
+          flat along SK_ID_CURR (7.9% to 8.3% per tenth), and the earlier applications' ids do not follow their decision
+          day (Spearman 0.02), so no date can be rebuilt (Time: Lost). Leak test across the split: 5.4% of the
+          applications share a client with another (same sex and the same days between birth and ID issue and between
+          birth and registration); the split tests each client's latest application and keeps the client's earlier ones
+          in training only (below), so no test row has its client's later application in training. The random split
+          cannot test how the score holds for later applicants; application dates would allow a split by time. Not taken
+          as stationary (Andrej, 2026-11-18): The same lender documents score decay and recording changes in its dated
+          data; no mechanism makes later applicants interchangeable. A stationary-relation test on
+          home_credit_default_stability_1m would add a measured similar case but cannot set ASR here.
         - Returning clients (Andrej, 2026-11-11): 16,489 applications (5.4%) share a client key with another
           (8,004 clients); inside a client the order is exact, as `DAYS_BIRTH` counts back from each application, so
           the older (more negative) row is the later application, and in 61% of the pairs the later one lists the

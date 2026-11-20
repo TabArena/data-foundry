@@ -79,6 +79,10 @@ CC (2026-11-12, Andrej): copies of one read-out dropped and the same truck held 
 - No time order hides in the copies: the one counter that changes between them, `bx_000`, is a usage counter that moves by a small step either way, so a split by time cannot be rebuilt (issue 2 stands).
 - 368 rows with 100 or more blank counters agree with each other on blanks only: look-alikes, not copies, kept.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `truck`, 3x3 folds, `ForcedGroupedFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A physical-measurement argument exists, but the label depends on fleet and workshop practice that the definition itself says moves with season and fleet, and no comparable dated set tested flat.
+
 ## Review
 
 **Outcome:** added. The IDA 2016 Industrial Challenge (Scania, via UCI): 76,000 heavy trucks with a component failure,
@@ -483,6 +487,46 @@ Scania CV AB, while the definition states CC BY 4.0, UCI's licence for the page;
    **Andrej (2026-11-13, ok):** As implemented.
 
    **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
+
+4. **Keep `ForcedGroupedFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: The release has no date, the challenge's two files are not shown to be two periods (2,237 vs 2,220 near-copy pairs either direction), and the only changing counter between copies, bx_000, is a usage counter without a clock.
+     - Use: A Scania workshop checks a truck's air pressure system read-out to decide whether a failure is APS-related, for trucks read out after the (unstated) collection period.
+     - Mechanism: Anonymised operational counters and histograms of the APS reflect physical wear and use, but the label is the workshop's attribution of a failure to the APS, and the definition itself says which component fails moves with season and fleet; truck models, software and service practice change over years.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | distribution_transformers_at_cauca_department | stationary-relation test (v3) | inconclusive | equipment failure from operating condition data |
+     | scania_component_x (newer Scania release, own record) | not measured; dated time steps but another component and other anonymised counters | none | same manufacturer and fleet type; cannot test this relation |
+
+   * **For a stationary use case:**
+     - The counters are physical measurements of the APS; the wear physics does not change with calendar time.
+     - Rows are failed/healthy trucks with no adversary and no price.
+   * **Against:**
+     - The definition names a change: which component fails moves with season and fleet.
+     - Fleet model mix, control software and workshop diagnosis practice change; the label is a workshop attribution, not a fixed reference test.
+     - The collection period is unknown, so its span cannot be weighed against how fast fleets change.
+     - No similar dated equipment-failure set in the collection tested flat.
+   * **Earlier views:**
+     - CC (2026-11-10, Andrej): review issue 2 A, random split keeps ForcedIIDFromTemporal with its Time basis line.
+     - CC (2026-11-12, Andrej): split by truck after dropping copied read-outs, now ForcedGroupedFromTemporal.
+     - CC (2026-11-17, Andrej): blind walk reaches the shipped grouped split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedGroupedFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | The definition names a change: which component fails moves with season and fleet.; Fleet model mix, control software and workshop diagnosis practice change; the label is a workshop attribution, not a fixed reference test. |
+
+   * **Recommendation:** A, a physical-measurement argument exists, but the label depends on fleet and workshop practice that the definition itself says moves with season and fleet, and no comparable dated set tested flat. Confidence: medium. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (A physical-measurement argument exists, but the label depends on fleet and workshop practice that the definition itself says moves with season and fleet, and no comparable dated set tested flat.)
 
 ## Reference
 

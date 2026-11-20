@@ -70,6 +70,12 @@ CC (2026-11-12, Lennart): the split count in scored units (the review's issue 2,
 PR into its own, to be decided with the other grouped datasets and reopened there; it is removed from this record
 for now. Until then the protocol counts the 1,840 rows: 10 x 3 splits.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `instance_id`, 10x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): "Do both by family" (blind split review, cross-dataset item on the two algorithm-selection sets, b): the split holds out whole problem families instead of instances: `problem_family`, the generator an instance comes from, read off its path before the id is hashed, with the folders that split one generator by satisfiability or a parameter merged (48 folders, 32 families, 11 of one instance, the largest 21); grouped 3-fold CV, 20 x 3; `instance_id` becomes a scoring column for PAR10, never a feature; `UnseenGroup` instead of `Timeless`. Why: the instances new in 2011 (88) all came from generators no earlier competition used, while the instance folds put 91% of the test instances' families in training. Supersedes the split of the CC of 2026-10-06 and the check of 2026-11-17. Not built yet.
+
+**Assessment (AI, 2026-11-18):** the family split (32 families, 10-11 per test fold) raises `groups_test_groups_few`; `dataset check` has 0 errors otherwise (the three constant columns as before). The group probe (`group_probes.py`, 3 x 3 family folds, R^2 on the log runtime) finds signal across families with three model families: random forest 0.345, LightGBM 0.291, kNN 0.242 against a baseline of 0 (ridge -5.58, it extrapolates). It also shows what the instance split rewarded: LightGBM per fold scores 0.875 +- 0.031 on IID folds and 0.041 +- 0.269 on family folds. Accepting the warning with this evidence is the curator's call; the definition does not accept it yet.
+
 ## Review
 
 **Outcome:** added. ASlib's SAT11-HAND scenario (Xu, Hutter, Hoos and Leyton-Brown 2012; Bischl et al. 2016): the

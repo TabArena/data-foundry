@@ -53,6 +53,8 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 CC (2026-11-11, Andrej): kept as a valuation stand-in (review page, issue 1 A): the census publishes the value, the gap is named in the approximate fit. Random split named a `Snapshot` of the 1990 census (issue 2 B): a `Time basis:` line in the definition; the tag enters `data_tags` once PR #50 is in the working copy. Record fields set from the definition (field marks): `domain` business & marketing, `original_source` Other.
 
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. California's 1990 census by block group (a census area of a few hundred homes), as Pace and Barry

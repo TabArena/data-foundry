@@ -59,6 +59,12 @@ CC (2026-11-04, Andrej): ship as defined (issue 3, A). The declared split (whole
 
 CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 4, B, through the cross-dataset item on routine `Timeless` issues): the rows are designed wind-tunnel runs, with no run date or order recorded. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
 
+CC (2026-11-17, Andrej): time basis `UnseenGroup` in place of `Timeless` (Review issue 11, B; replaces the tag of the CC of 2026-11-06): the use case is an airfoil size and angle of attack not yet tested, at any wind speed, so the split holds out whole setups (chord x angle), a group wider than one run. The split is unchanged (grouped on `setup`, 33 setups).
+
+CC (2026-11-17, Andrej): verdict ship (blind split review page).
+
+CC (2026-11-17, Andrej): the declared split (grouped on `setup`, 10x3 folds, `UnseenGroup`) is checked: split mark on the blind split review page.
+
 ## Review
 
 **Outcome:** added. NASA's airfoil self-noise measurements (Brooks, Pope and Marcolini 1989, NASA RP-1218): 1,503
@@ -212,6 +218,39 @@ restored here unchanged, with the decisions as closing turns.
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
    cannot test (another airfoil profile or tunnel); the split and `data_tags` are unchanged. The tag `Timeless` enters
    `data_tags` once PR #50 is in the working copy.
+
+11. **Time basis: `UnseenGroup` instead of `Timeless`?**
+
+   * **Problem:**
+     - The tree's leaf reaches the same split the definition ships, but the basis it names is `UnseenGroup`, where the definition's tag is `Timeless`.
+     - The split stays as it is: grouped on `setup`, the same groups and the same folds.
+     - The leaf that gives it: Grouped · Timeless (the measurement).
+   * **Background:** A designed experiment with no arrival order, and each run yields 8-19 band rows. The use case is an untested size and angle at any speed, so whole setups (33) are held out, which also keeps every run's bands together. Confidence of the blind walk: high.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Is there an order to how samples arrive in the use case? (use case): no. Evidence: Use case: an engineer estimates the spectrum of an airfoil at an untested size and angle; each row is the outcome of a designed wind-tunnel run. Dossier: 'no run date or order is recorded'.
+     - Was the experiment repeated, producing several rows for the same measurement? (data): yes. Evidence: Raw file: 1,503 rows = 106 runs (chord x angle x speed) of 8-19 frequency bands; 33 setups (chord x angle) each run at 2 or 4 speeds (computed from airfoil_self_noise.dat).
+     - Does the model meet new items, or further measurements of items it has measured? (use case): new items. Evidence: Use case: 'an airfoil size and angle of attack not yet tested, at any wind speed'. The new item is a setup (chord x angle), wider than one run, so the leaf's wider-group clause applies: group on the setup and tag UnseenGroup.
+   * **What changes:** only the tag and its `Time basis:` line. `data_tags` in `dataset.py` (`Timeless` → `UnseenGroup`), the opening of the `Time basis:` bullet in `curation_comments`. The rows, features, grouping key, folds and metric are untouched; the container is rebuilt only because `data_tags` ship in it.
+   * **Decided before:** Andrej, 2026-11-06: time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 4, B, through the cross-dataset item on routine `Timeless` issues): the rows are designed wind-tunnel runs, with no run date or order recorded. The `Time basis:` line is in the…
+   * **What the blind dossier lacked, and what it changes:** none. The definition ships the same split (grouped by setup = chord x angle, 33 groups); the record's measurements (91.5% of test runs had their setup in training under a run split; chord-only grouping too few groups) support it. Round 1 also reached a setup grouping.
+   * **Source split:** no. No split prescribed.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: split_tree.md lists airfoil_self_noise as an example under 'Grouped · Timeless (the measurement)'; ignored as evidence.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `Timeless` (implemented) | no change to the definition | the tag already decided | the tree's leaf names the split differently |
+     | B | Tag `UnseenGroup` | `data_tags` and the `Time basis:` line say `UnseenGroup` | the name the tree's leaf gives this split | a rebuild; the earlier decision is revisited |
+
+   * **Recommendation:** B, `UnseenGroup`. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: set `data_tags` to `UnseenGroup` in `dataset.py`, change the opening of the `Time basis:` bullet and add a CC line; rebuild. No change to the split declaration.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-17, change):** Option B: Tag UnseenGroup.
+
+   **Resolved (2026-11-17, Andrej):** B. `data_tags` names `UnseenGroup` in place of `Timeless`, and the `Time basis:` line opens with `UnseenGroup (Andrej, 2026-11-17; Timeless before)`: the use case is an airfoil size and angle of attack not yet tested, at any wind speed, so the split holds out whole setups (chord x angle), a group wider than one run. The split itself (grouped on `setup`, 33 setups, the same folds) is unchanged.
 
 **Review panel:** ship after changes (mediator). Claim audit: 9 claims hold, 5 are refuted (the target wording, the 62% figure, the reason for not grouping by chord, the angle typing, the probe lesson), 3 hold in part (the grouped R², taken from a numeric-angle version; the fit; the inclusion) and 2 are open (the use case, the split). Blind review: include; its one change (keep `run` out of the features) already holds, and it found the scaled target and the setup question on its own. Agreed: no leak, faithful NASA data, worth benchmarking, the angle numeric, the text fixes. Disputed: run or setup split (issue 1). Open: re-targeting, which nobody demands but TP-6 could require (issue 2). The year was settled after the panel: two theses that used the rows were read, and neither lists them (record judgment above).
 

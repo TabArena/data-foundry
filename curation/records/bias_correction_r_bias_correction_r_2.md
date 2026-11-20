@@ -50,6 +50,8 @@ CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ppnn_ecmwf_t2m_postprocessing_germany` (TBD -> Yes, priority 4), `euppbench_t2m_station_postprocessing` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 7 days, 9 windows, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Reference
 
 Cho, D., Yoo, C., & Im, J. (2020). Comparative Assessment of Various Machine Learning-Based Bias Correction Methods for Numerical Weather Prediction Model Forecasts of Extreme Air Temperatures in Urban Areas. Earth and Space Science, 7(4), e2019EA000740. DOI: 10.1029/2019EA000740.

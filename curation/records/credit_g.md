@@ -49,6 +49,55 @@ CC (2026-10-21, Lennart): Unsure whether the cost matrix should score probabilit
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 3 ordinal scales shipped as numbers are ordered categories (point 3); 3 columns with a state outside the scale ordered, the state placed by the rule; the source is UCI 573 (South German Credit, the corrected Statlog data): every code labelled by its code table, 57 coded values and 10 typos in amount or age corrected; 9 ordinal scales, the account and property states missing by the state rule.
 
+CC (2026-11-17, Andrej): the declared split (random, 10x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A 1973-1975 bank sample scored for later applicants spans decades of changed currency, products and rules; no domain reason holds.
+
+## Review
+
+**Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below.
+
+**Main points:** Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?
+
+**Issues for Andrej:**
+
+1. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: Consumer credits granted 1973-1975 (South German Credit, Groemping 2019); neither UCI 573's file (sorted by class) nor Statlog's keeps a grant date.
+     - Use: A bank decides on later applications; any use today is about 50 years after collection.
+     - Mechanism: Good/bad repayment follows the applicant's finances, the bank's grant policy and the economy; Deutsche Mark amounts, 1970s products and a stratified (oversampled bad) sample tie it to its time and selection.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | lending_club (this collection, matched-v2 stationary-relation test) | 36-month LendingClub loans, issue years 2013-2015 each tested forward vs contemporaneous on the same test half (LightGBM, whole half) | not flat: forward worse by 0.0043-0.0059 ROC AUC (2.4-4.2 floors, beyond 2 SD) in all three years; default rate 10.0-15.2% by year | consumer credit default from application/bureau data, outcome over months after the grant |
+     | Kelly, Hand & Adams, 'The impact of changing populations on classifier performance', KDD 1999 (doi 10.1145/312129.312285); Hand, 'Classifier technology and the illusion of progress', Statistical Science 2006 (arXiv math/0606452) (literature, cited from memory: check) | scorecard performance on UK bank unsecured personal loans 1993-1998 as the applicant population drifts | not flat: population drift degrades scorecards; Hand names drift as a particular concern in credit scoring because defaults arrive long after the grant | application scoring of consumer credit |
+
+   * **For a stationary use case:**
+     - Basic credit risk factors (checking account status, duration, history) keep their direction.
+   * **Against:**
+     - Old one-time study used today: a 50-year span in a market domain (currency, products, rules changed).
+     - Bank grant policy decides who is in the data (only granted loans observed) and changes over time.
+     - The original Statlog coding had errors corrected only in 2019: coding changes.
+     - Credit-scoring literature and lending_club show drift over far shorter spans.
+   * **Earlier views:**
+     - CC (2026-11-17, Andrej): blind split review: the decision tree, walked without the current split, reaches the forced split it ships.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Old one-time study used today: a 50-year span in a market domain (currency, products, rules changed).; Bank grant policy decides who is in the data (only granted loans observed) and changes over time. |
+
+   * **Recommendation:** A, a 1973-1975 bank sample scored for later applicants spans decades of changed currency, products and rules; no domain reason holds. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (A 1973-1975 bank sample scored for later applicants spans decades of changed currency, products and rules; no domain reason holds.)
+
 ## Reference
 
 10.24432/C5NC77

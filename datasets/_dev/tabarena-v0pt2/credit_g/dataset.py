@@ -180,8 +180,9 @@ class CreditG(AbstractCuratedDataset):
           outside their scales: missing, by the curator's rule, as the data has no other missing value.
         - Time basis: ForcedIIDFromTemporal: consumer credits granted from 1973 to 1975, each judged good or bad over
           its own term (4 to 72 months, no stated horizon); neither UCI 573's file (sorted by class) nor Statlog's (no
-          order) keeps a grant date, so random loans stand in for later applicants. A dated release would allow a
-          split by grant year.
+          order) keeps a grant date, so random loans stand in for later applicants. A dated release would allow a split
+          by grant year. Not taken as stationary (Andrej, 2026-11-18): A 1973-1975 bank sample scored for later
+          applicants spans decades of changed currency, products and rules; no domain reason holds.
     """
 
     # Task

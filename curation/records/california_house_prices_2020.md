@@ -143,6 +143,14 @@ CC (2026-11-12, Andrej): decided on the BeyondArena v0.2 review page; the input 
 
 CC (2026-11-12, Andrej): the sale order `time_index` orders and splits the rows but is no model input (BeyondArena v0.2 review page, issue 8, reply b; `Temporal(..., feature=False)`): a home is predicted at its listing, and its place in the sale order is the listing plus the time on market, known only once it sells; the listing date stays a feature. 40 features (was 41), the three windows unchanged.
 
+CC (2026-11-18, Andrej): Review issue 9, A, as implemented: Three windows of 6,497 sales each in sale order (`time_index`, rebuilt from the Kaggle Id, no model input), each trained on all earlier sales (50 / 67 / 83% of 38,986), no gap.
+
+CC (2026-11-18, Andrej): verdict ship (blind split review page).
+
+CC (2026-11-18, Andrej): the declared split (temporal on `time_index`, up to 3 windows while training keeps 50% of the rows, no gap) is checked: split mark on the blind split review page.
+
+CC (2026-11-19, Andrej): nine windows of 2,165 sales, all on half the sales or more (Review issue 10).
+
 ## Review
 
 **Outcome:** added. The Kaggle competition "California House Prices" of the Dive into Deep Learning course (2021):
@@ -163,7 +171,7 @@ sales with a rich listing and a real time order +; an undocumented scrape and a 
 
 **Main points:** Nothing open. Settled: the sale order `time_index` orders and splits the rows but is no model input
 (issue 8, b, 2026-11-12); issues 6 and 7 were resolved on 2026-11-12 (38,986 sales; no planning gap), 1, 4 and 5 on
-2026-11-11, 2 on 2026-11-10, 3 on 2026-11-06.
+2026-11-11, 2 on 2026-11-10, 3 on 2026-11-06. Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 10).
 
 **Record judgment:** valid, with two small row fixes. The record's open points are settled: the sale order from the
 Kaggle id (Lennart, 2026-09-30), the listings that describe an earlier sale (2026-10-14), real resales kept
@@ -604,6 +612,88 @@ of the 2020 price for 0.7%; so it is the value before the sale, and dropping the
    0 errors, 0 warnings, 0 info; README: 40 features (was 41), `time_is_feature: false`, the three windows unchanged
    (train 19,495 to 32,489 rows, test 6,497). Not rebuilt. It needs the `Temporal(..., feature=False)` framework
    change, uncommitted in the working copy (committed in PR #81).
+
+9. **Gap: leave a third of a window (about 2,166 sales, roughly two to three weeks) between training and each test window in sale order?**
+
+   * **Problem:**
+     - The definition has measured it: a gap of a third or a whole window at equal training size moves RMSLE by -0.001 to +0.005 in no consistent direction, so the rule[^split-10] asks for no gap, and the tree gives windows on the sale order without one, as shipped.
+     - The blind walk, without that measurement, read the time on market (about one to two months from listing to sale) as a label delay and asked for a gap.
+     - A home is predicted at listing but the windows are cut in sale order, so 80-96% of each window's test homes were listed before it began; a cut on the listing date would make the newest listings the fast sellers.
+   * **Background:** A home is priced at listing and sells after a time on market, in an order the Kaggle Id records (checked against listing dates), with ample rows for windows. The label arrives about one to two months after the prediction point, so a label-delay gap of about a month sits between train and test. Confidence of the blind walk: medium.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Used at a place or group the data does not hold? (use case): no. Evidence: Dossier use case: a buyer, agent or valuation site prices a California home at its listing; same market.
+     - Fill in the covered period or predict forward? (use case): forward. Evidence: A newly listed home sells after the data.
+     - Do the dates give the windows the rule[^split-14]/15 ask for? (data): yes. Evidence: No sale date, but the Kaggle Id is the sale order (dossier: checked on redfin.com sale histories). In train.csv (47,439 rows before curation) the median Listed On per Id twentile rises monotonically 2019-10-31 -> 2020-10-27 and the max 2020-02-03 -> 2020-12-30: each twentile is about 2-3 weeks of sales. 38,986 rows give three or more windows of a few thousand rows above 50% train even after a…
+     - What sets off a prediction? (use case): a case arrives. Evidence: A home is listed and its price estimated then.
+     - Target known only after a delay longer than the time step? (data): yes, late labels. Evidence: Predicted at the listing, the price is known at the sale. Per Id twentile, the 90th percentile listing date lags the twentile's last listing by ~1 month and the median by ~1-2 months: time on market of about 1-2 months, longer than the order's step (one sale; a twentile is ~2-3 weeks). A home listed before a window start but sold after it would, at its listing, not have seen the sales in between.
+   * **The delay the walk measured:** step used: one position of the sale order (a 5% block is ~2-3 weeks). Delay: listing to sale, ~1-2 months judged from the lag of Listed On behind the order; gap of ~5-10% of the order (about one month), or train only on sales before each test home's listing date.
+   * **What changes:** only `gap=` in the definition's `TemporalSplits`. The time column, the window length, the number of windows, the cutoffs, the tag and its basis line stay; fewer rows train in each window, so the container is rebuilt.
+   * **What the blind dossier lacked, and what it changes:** the gap answer changes. The definition measured it: a gap of a third or a whole window at equal training size moves RMSLE by -0.001 to +0.005 in no consistent direction, and a listing-date cut would make the newest listings the fast sellers. By the rule[^split-10]'s measurement clause no gap is needed, so the leaf becomes 'Temporal · arrival date' on the sale order (time_index, time_of=label, no input). Shipped: three windows of 6,497 sales (50/67/83% train), no gap.
+   * **Blindness:** what the walker saw of the shipped split before deciding: The sale has no date; 'Dated' rests on the Kaggle Id as sale order (rebuilt, checked against Listed On).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Three windows of 6,497 sales each in sale order (`time_index`, rebuilt from the Kaggle Id, no model input), each trained on all earlier sales (50 / 67 / 83% of 38,986), no gap (implemented) | No change. | Every training sale closed before the window; the measured gap effect is within -0.001 to +0.005 RMSLE with no direction, so no shortcut shows. | Test homes listed before the window meet training sales that closed after their listing. |
+     | B | The same three windows with a gap of a third of a window (about 2,166 sales) before each (train about 44 / 61 / 78%) | `TemporalSplits` gets gap = 2,166 sale positions; `splits_comment` gives the reason. | Fewer training sales that closed after a test home's listing. | The definition measured no consistent gain from such a gap; most test homes are still listed before the gap starts; the oldest window drops below half of the rows. |
+
+   * **Recommendation:** A, because the definition's measurement shows no shortcut through recent sales, the case where the rule[^split-10] needs no gap.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: change `gap=` in `TemporalSplits` and re-check each window's train share against the floors; nothing else in the definition changes.
+
+   [^split-10]: **SPLIT-10** (Should): When a label is known only some time after its row (a delivery time, a permit's processing time, an outcome after a follow-up), a model refit at a window's start knows only the rows whose label had arrived.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: Three windows of 6,497 sales each in sale order (`time_index`, rebuilt from the Kaggle Id, no model input), each trained on all earlier sales (50 / 67 / 83% of 38,986), no gap.
+
+10. **Windows: 3 of the target's 9; which layout?**
+
+   * **Problem:**
+     - Three windows of 6,497 sales ship where an IID split of 38,986 sales would get nine[^split15]; the splits comment does not say why there are fewer.
+     - Today's windows (sale order, no gap):
+
+       | Test window (sale order) | Train side | Train share | Test sales |
+       |---|---|---|---|
+       | positions 32,489-38,985 | 32,489 | 83.3% | 6,497 |
+       | positions 25,992-32,488 | 25,992 | 66.7% | 6,497 |
+       | positions 19,495-25,991 | 19,495 | 50.0% | 6,497 |
+
+     - Fixed: the sale order is the only time (no sale date), and no gap (issue 9, A, 2026-11-18). The window length is not: a sixth of the sales, which the use case (a price estimate at listing) does not set and no source gives as a refit cadence. In the Kaggle order, about 1,950 sales span two to three weeks of listings (issue 9).
+     - What stops more windows: only the length. At 6,497 sales the half-data floor[^split14] allows exactly three.
+     - Test sizes are equal in every layout below, so stable test sizes need no option of their own.
+   * **Window counts:** counted on the built frame.
+
+     | Layout | Windows | Train share | Test sales | Window length |
+     |---|---|---|---|---|
+     | A, shipped | 3 | 50.0-83.3% | 6,497 | a sixth of the sales (about 2 months) |
+     | B, nine windows of 2,165 sales | 9 | 50.0-94.4% | 2,165 | about 2-3 weeks of sales |
+     | C, windows of 6,497 down to 30% | 4 | 33.3-83.3% | 6,497 | a sixth of the sales |
+     | D, overlapping windows of 6,497, a new one every 1,624 sales | 9 | 50.0-83.3% | 6,497 | a sixth of the sales |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Three windows of 6,497 sales (implemented) | adds the reason to the splits comment | as decided; the most test sales per window | 3 of 9, for a length nothing in the use case sets |
+     | B | Nine windows of 2,165 sales | `n_windows=9` | reaches the target with no exception; a window of a few weeks of sales is as close to a valuation site's refit as any | smaller test windows (2,165, far above the 33 needed); the issue 9 gap measurement was made on the sixths |
+     | C | Four windows, the oldest as the curator's exception | `min_train_fraction=0.3` | keeps today's length | trains the oldest on 33.3%; 4 of 9 |
+     | D | Nine overlapping windows of 6,497 | `step=1624` | keeps today's length and the floor | a sale is scored in up to four windows; offered only, and not needed, as B reaches the target[^split15] |
+
+   * **Recommendation:** B: nine windows above half the data, and the length it gives up was never set by the use case. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Three of the nine windows an IID split of this size would get: the newest half cut into sixths, a length the use case does not fix." On B: `TemporalSplits(window=None, unit="rows", n_windows=9, min_train_fraction=0.5)`, `horizon=2165`; recount the share of test homes listed before their window (80-96% on the sixths) for the splits comment; `split` text. On C: `min_train_fraction=0.3`, n_windows 4, accept `splits_train_under_half`, CC line. On D: `TemporalSplits(window=6497, unit="rows", step=1624, min_train_fraction=0.5)`.
+
+   **Andrej (2026-11-19, change):** Option B: Nine windows of 2,165 sales.
+
+   **Resolved (2026-11-19, Andrej):** B. Nine windows of 2,165 sales, training on 50.0% to 94.4%; 96.9% to 99.6% of each window's homes were listed before the latest training listing. `dataset check`: 0 errors. Not rebuilt.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get, 9 here; the window length, step and gap follow the use case and are not shortened to reach it; fewer are accepted, never under 3, with the target, the count and what stops more in the splits comment; overlapping windows only as an offered option.
 
 ## Reference
 

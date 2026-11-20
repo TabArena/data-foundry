@@ -232,6 +232,11 @@ class SpanishMotorInsurance20152018(AbstractCuratedDataset):
             "The 12-month gap of every window: a year's claims are known only when it ends, so the 5,685 first years "
             "that start from December 2016 to July 2017 are in no window (splits_comment)."
         ),
+        "splits_below_target": (
+            "Five windows, against the 9 an IID split of 37,090 first years would get: with one-month windows and the "
+            "twelve-month gap, July 2017 would train on 45.4% of the rows (Andrej, 2026-11-03, review issue 2, and "
+            "2026-11-19, review issue 11, A)."
+        ),
     }
     temporal = Temporal(
         on="period_start", splits=TemporalSplits(window=1, unit="months", gap=12, min_train_fraction=0.5)
@@ -251,6 +256,10 @@ class SpanishMotorInsurance20152018(AbstractCuratedDataset):
         windows where they were and about doubles each window's claims against the earlier one-policy design (117 to
         195). On that earlier design one window's Gini had a bootstrap standard error of 0.08 to 0.11, and without the
         gap untuned LightGBM ranked the windows at a mean Gini of 0.141, against 0.116 with it.
+
+        Five windows, against the 9 an IID split of 37,090 first years would get: with one-month windows and the
+        twelve-month gap, July 2017 would train on 45.4% of the rows (Andrej, 2026-11-03, review issue 2, and
+        2026-11-19, review issue 11, A).
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

@@ -74,6 +74,10 @@ CC (2026-11-05, Lennart): GitHub issue #48 review: the 10 clinical scores 0-3 sh
 
 **Assessment (AI, 2026-11-05):** the 2026-11-01 decoding made the scores numbers in `_clean`, but a blanket `_feature_types` (every column but age categorical) cast them back to unordered categories; found by GitHub issue #48. A test now checks that every `SCORES` column ships numeric.
 
+CC (2026-11-18, Andrej): the split stays as shipped under SPLIT-8 as amended today (cross-dataset decision on the period count, full-information split check): the data holds two file parts, if they are periods at all, for a task of 20 repeats, which needs five, too few to hold out whole periods; the forced step goes on to the unit question: one row per patient, so random, as shipped.
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 7, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The rule lists structure in the file order as a fact against, and here it is measured as a sizeable cost.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it after one type fix: the ten graded clinical findings ship as
@@ -418,6 +422,44 @@ counts one pair because age breaks the other ties).
    [^fo-5]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
 
    **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
+
+7. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: No date, but two file parts (rows 1-169 mixed, 170-366 in diagnosis runs) that the findings tell apart (RF ROC AUC 0.70); already measured as a cost, not as time.
+     - Use: A dermatologist makes a pre-biopsy differential diagnosis for new patients, decades after the 1998 Ankara data.
+     - Mechanism: Graded clinical findings (erythema, scaling, Koebner etc.) to the diagnosis: disease morphology is stable, but the grades are an examiner's reading, which differs between examiners and eras.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | eryhemato_squamous_disease's own file parts | LR log loss on one part trained on a mix vs the other part (Slurm 1373758) | not flat: 0.536 -> 0.688 and 0.345 -> 0.425 | same data |
+     | cardiotocography | class share by exam year | not flat by recording: suspect share 36% -> 1% | clinician-read diagnostic label; shows labelling practice drifting |
+
+   * **For a stationary use case:**
+     - disease morphology of psoriasis, lichen planus etc. does not change.
+   * **Against:**
+     - structure in the file order: the two parts score apart (0.536 vs 0.688 log loss)
+     - features are subjective grades 0-3 by examiners (changed coding)
+     - unstated period, used ~30 years later.
+   * **Earlier views:**
+     - Resolved 2026-11-10 (Andrej): random split tagged ForcedIIDFromTemporal with the parts' measured cost.
+     - Resolved 2026-11-13 (Andrej): CrossSectional withdrawn, tag stays.
+     - CC 2026-11-18 (Andrej): split stays under amended SPLIT-8, two parts too few for whole-period folds.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | structure in the file order: the two parts score apart (0.536 vs 0.688 log loss); features are subjective grades 0-3 by examiners (changed coding) |
+
+   * **Recommendation:** A, the rule lists structure in the file order as a fact against, and here it is measured as a sizeable cost. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (The rule lists structure in the file order as a fact against, and here it is measured as a sizeable cost.)
 
 ## Reference
 

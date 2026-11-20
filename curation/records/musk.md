@@ -58,6 +58,8 @@ CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 
 
 CC (2026-11-09, Andrej): ship as defined (review page issue 1, A), scored per molecule; the declared split and metric checked and kept.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `molecule_name`, 20x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it as defined; nothing is open beyond the verdict (issue 1). Reviewed

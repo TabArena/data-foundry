@@ -72,8 +72,8 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
             "input."
         ),
         split=(
-            "Three test sets, each a sixth of the sales in sale order (the newest half of the sales), with all "
-            "earlier sales for training. The order comes from the Kaggle row ID, as the data has no sale dates."
+            "Nine test sets of 2,165 sales each in sale order (the newest half of the sales), with all earlier "
+            "sales for training (50% to 94% of the sales). The order comes from the Kaggle row ID, as the data has no sale dates."
         ),
         changes=(
             'We drop 5,413 listings whose description states the sold price, one written after the sale ("closed '
@@ -160,17 +160,18 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Three test windows in sale order, each a sixth of the sales (6,497 rows), cut from the newest half; each trains on all earlier sales (50%, 67% and 83% of the rows), so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods. The earlier layout (each window a quarter of the rows) trained the oldest window on 25% of the rows, below SPLIT-14's floor (2026-10-21).
+        Nine test windows in sale order, each a ninth of the newest half of the sales (2,165 rows), each trained on all earlier sales (Andrej, 2026-11-19, review issue 10, B): 50.0%, 55.6%, 61.1%, 66.7%, 72.2%, 77.8%, 83.3%, 88.9% and 94.4% of the 38,986 rows, so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods; 2,165 sales span about two to three weeks of listings. The use case (a price estimate at listing) sets no window length and no source gives a refit cadence, so the windows follow the nine an IID split of this size would get; until 2026-11-19 three windows of a sixth of the sales (6,497 rows) shipped, and before 2026-10-21 quarters, whose oldest trained on 25% of the rows.
         The windows are cut in sale order, the time the label arrives, while a home is predicted at its listing: a test
-        home listed before its window began meets training sales that closed after its listing (80-96% of each
-        window's test homes; a gap of a third or a whole window at equal training size changes the RMSLE by -0.001 to
-        +0.005, in no consistent direction, 2026-11-11). A home enters the data only once sold, so a cut on the listing
-        date would make the newest listings the fast sellers.
+        home listed before its window began meets training sales that closed after its listing (97-100% of each
+        window's test homes listed before the latest training listing, 2026-11-19; on the sixths a gap of a third or a
+        whole window at equal training size changed the RMSLE by -0.001 to +0.005, in no consistent direction,
+        2026-11-11). A home enters the data only once sold, so a cut on the listing date would make the newest listings
+        the fast sellers.
     """
     temporal = Temporal(
         on="time_index",
-        splits=TemporalSplits(window=None, unit="rows", n_windows=3, min_train_fraction=0.5),
-        horizon=6497,
+        splits=TemporalSplits(window=None, unit="rows", n_windows=9, min_train_fraction=0.5),
+        horizon=2165,
         horizon_unit="steps",
         time_of="label",  # the sale order arrives with the target: no model input (2026-11-12, Andrej)
     )

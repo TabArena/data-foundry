@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sdss_17
 container_format: 2
-checksum: v2:8be985a5a5aab6a0271b4ad836f0d89ad52e10c5ecdb8b8344fbec91e36b7a35
+checksum: v2:f9f733caa82d9ee3d979d1e2b01880ff66c9b0ddb61e2b750c7acac5c70b6d3b
 build:
   uuid: 01a111fc-9499-7f77-abbe-45c6b8ec8291
   checksum: v2:23581aaf9a00d579de3f759616f9da199f4b250322ed730303150c7cfbc18d0d
@@ -35,7 +35,7 @@ task:
   split_regime: temporal_non_iid
   stratify_on: ObjectType
   time_on: date
-  time_is_feature: false
+  time_of: label
   group_on: null
   group_labels: null
   group_time_on: null
@@ -59,7 +59,10 @@ bundle_checks:
   errors: []
   warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    splits_below_target: 'Eight windows, against the 9 an IID split of 99,999 spectra
+      would get: 2019 and 2020 form one window (2026-11-12), and a 2011 window would
+      train on 40.4% of the spectra (Andrej, 2026-11-19, review issue 9, A).'
 decisions: []
 ---
 
@@ -69,7 +72,7 @@ decisions: []
 
 Multiclass classification of `ObjectType`, scored with `log_loss` on temporal splits by `date`. 99,999 rows and 8 features. Source: Other (2021).
 
-Built as `01a111fc-9499-7f77-abbe-45c6b8ec8291` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8be985a5a5aab6a0271b4ad836f0d89ad52e10c5ecdb8b8344fbec91e36b7a35`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9499-7f77-abbe-45c6b8ec8291` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f9f733caa82d9ee3d979d1e2b01880ff66c9b0ddb61e2b750c7acac5c70b6d3b`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -138,7 +141,7 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | ObjectType |
 | task.time_on | date |
-| task.time_is_feature | False |
+| task.time_of | label |
 
 **Metric**
 
@@ -229,7 +232,7 @@ The first 5 of 99,999 rows of the final frame (the oldest rows: the frame is sor
   and the cell size sets the score (0.345 at 5 degrees, 0.373 at 20).
 - We keep "MJD" out of the features and bring it back only as the time column "date": a pointing id or an
   observation date encodes the pre-selection, not what the object is. The date orders and splits the rows
-  and is no model input (`Temporal(..., feature=False)`, `feature_columns` leaves it out): the prediction
+  and is no model input (`Temporal(..., time_of="label")`, `feature_columns` leaves it out): the prediction
   point is an object imaged but not yet observed spectroscopically, and the date of its spectrum arrives
   with its class (2026-11-12, Andrej).
 
@@ -253,7 +256,10 @@ the eFEDS ones included, and the newest window spans 15 months (2026-11-12, Andr
 The year also holds out the test object's plate, which the random split did not: 0 to 5 plates per window
 were also observed before it, at most 90 test rows (0.9% of the 2013 window).
 
-8 repeat(s) x 1 fold(s) with seed 4267; train 51,256 to 98,923 rows, test 1,076 to 11,044 rows. Prediction horizon: 1 years. The time column `date` orders and splits the rows and is no model input: `feature_columns(container)` leaves it out.
+Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window
+(2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19, review issue 9, A).
+
+8 repeat(s) x 1 fold(s) with seed 4267; train 51,256 to 98,923 rows, test 1,076 to 11,044 rows. Prediction horizon: 1 years. The time column `date` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -284,8 +290,12 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
+
+Accepted on purpose:
+
+- `splits_below_target`: Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window (2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19, review issue 9, A).
 
 ## Data checks
 
@@ -358,4 +368,4 @@ Each test window against its train side, by statistics of the data, never of a m
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8be985a5a5aab6a0271b4ad836f0d89ad52e10c5ecdb8b8344fbec91e36b7a35` |
+| stale | yes: the definition now gives checksum `v2:f9f733caa82d9ee3d979d1e2b01880ff66c9b0ddb61e2b750c7acac5c70b6d3b` |

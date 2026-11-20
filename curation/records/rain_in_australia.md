@@ -84,6 +84,8 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 
 **Assessment (AI, 2026-11-11):** 12 station readings are missing in at least one test fortnight and recorded for 50% to 93% of its train side.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 14 days, 26 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. Shipped on your verdict of 2026-10-26; on 2026-11-11 you kept the 14-day windows without a gap

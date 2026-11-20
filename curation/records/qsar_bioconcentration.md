@@ -141,6 +141,8 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case predicts for items the catalogue does not hold, which the held-out scaffolds stand for; that the entry date carries no wave is a measurement for the `Time basis:` line, not a different use case.
 - `Timeless` now means a fixed target in data with no time dimension. The split does not change.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `scaffold`, 10x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The bioconcentration class of 776 organic chemicals in fish (Grisoni et al. 2016, UCI 510), from
@@ -257,7 +259,6 @@ split by test year holds out no more than the scaffold split. Settled: the scaff
    **Resolved (2026-11-12, Andrej):** applied on approval of the plan that settled the split keys of growing catalogues
    (one decision for the eighteen datasets of that review): the record's facts changed, with a CC line and `Andrej` in
    `checked_by`. No definition change.
-
 
 ## Reference
 

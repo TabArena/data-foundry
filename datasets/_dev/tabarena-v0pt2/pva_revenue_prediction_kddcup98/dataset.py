@@ -306,7 +306,9 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
           gift early 1995) to 9.9% (1997). A split on these donor dates tests new kinds of donors, not a later mailing:
           on the donors recruited from 1995 on, a model trained on the earlier recruits earns $0.046 per test donor,
           against $0.083 for the same donors under random folds and $0.041 for mailing everyone (untuned LightGBM). The
-          cup's learning and validation files agree (5.08% and 5.06% gave). Not tested: the next mailing.
+          cup's learning and validation files agree (5.08% and 5.06% gave). Not tested: the next mailing. Not taken as
+          stationary (Andrej, 2026-11-18): The charity's own mailings vary in response by orders of magnitude and the
+          donor-cohort split halves net revenue; the next mailing cannot be taken as interchangeable.
     """
 
     # Task

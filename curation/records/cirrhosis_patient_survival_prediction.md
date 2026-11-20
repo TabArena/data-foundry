@@ -83,6 +83,8 @@ CC (2026-11-05, Andrej): ship as defined (issue 1, B); the `Outdated` bullet of 
 
 CC (2026-11-12, Andrej): random patients kept, as a stationary relation (BeyondArena v0.2 review page, issue 2, A). The measurement behind it is in the curation notes (`Time basis: StationaryRelation`): along the registration order the event rate is flat (34%, 40%, 34%, 35% by two-year period), the outcome is not autocorrelated (lag-1 -0.05, p 0.39; trial -0.11, p 0.08), the 10 nearest patients' event rate adds nothing (logistic regression ROC AUC 0.895 against 0.892), and the newest of three windows of 50 patients scores as high as random folds (0.921 against 0.861, untuned LightGBM). The tag enters the definition with PR #50. The declared split and metric checked and kept.
 
+CC (2026-11-19, Andrej): random folds tagged `ForcedIIDFromTemporal` (Review issue 6, C): three windows of 50 referrals could be built, but the 60 random folds stay on the curator's call; the stationary-relation test is inconclusive in 1976-77 and flat when pooled (Kumo-Tabular).
+
 ## Review
 
 **Outcome:** added. The Mayo Clinic cohort of primary biliary cirrhosis, a slowly progressing autoimmune liver
@@ -256,6 +258,35 @@ treatment-era reason restated (issue 1, 2026-11-05).
    LightGBM); it ends with what the split cannot test. The tag `StationaryRelation` enters `data_tags` once PR #50 is
    in the working copy. The record already carries `Samples: Over Time` and `Time: Dated`; record CC line. `dataset
    check`: 0 errors, 0 warnings, 0 info; README regenerated (curation notes only); not rebuilt.
+
+6. **Windows on the registration order, or a forced tag, now that the relation tests inconclusive?**
+
+   * **Problem:**
+     - The random folds ship as `StationaryRelation` (your call of 2026-11-12); since 2026-11-17 a split whose windows can be built is temporal however flat[^s32w], and the record's three windows of 50 referrals train on 51%, 67% and 84%.
+     - The stationary-relation test, run on 2026-11-18, is inconclusive (1976-77 for both models), so `StationaryRelation` has no measurement behind it under the threshold item's option A.
+     - Under your window-count reading (60 for 304 patients) the forced step applies: four two-year periods, too few for the period item's option B, so random folds tagged `ForcedIIDFromTemporal`.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 20 x 3 random folds, `StationaryRelation` (implemented) | No change | 60 splits | Supported by neither reading |
+     | B | Three windows of 50 referrals on the rebuilt registration order | The order orders the split, no input; the measurement in the notes | Tests later referrals | Three noisy windows |
+     | C | The same random folds, `ForcedIIDFromTemporal` | The Time basis line names the inconclusive test | 60 splits, honestly tagged | Only open with option B of the window-count item |
+
+   * **Recommendation:** B with option A of the window-count item, C with its option B. **Decision:** A, B or C?
+
+   **Notes for the AI:** B is option B of the record's issue 2 (its notes give the code); the outcome has a fixed horizon, so no gap, and the notes give what the unmatured labels add, per the gap rule's fixed-horizon clause.
+
+   [^s32w]: **SPLIT-32** (Should, amended 2026-11-17): "Where the windows can be built, the split is temporal however flat the relation, and the measurement goes in the notes as what the windows cost."
+
+   **Answer (AI, 2026-11-18):** reassessed with the new forced step (the interchangeable question first; measured not flat leads to whole periods or Too Small) and the pooled flat verdict.
+
+   - Pooled, the v3 test reads flat (Kumo-Tabular), so the forced option is no longer C (`ForcedIIDFromTemporal`) but the shipped random folds with `StationaryRelation` resting on the v3 test.
+   - B (windows) if three windows suffice; else A with a new line.
+
+   **Andrej (2026-11-19, change):** Option C: The same random folds, ForcedIIDFromTemporal.
+
+   **Resolved (2026-11-19, Andrej):** C. `data_tags` reads `ForcedIIDFromTemporal`; the `Time basis:` line names the three windows that could be built and the test (inconclusive for 1976-77, flat pooled for Kumo-Tabular). The 20 x 3 random folds are unchanged; not rebuilt. This departs from the tree's leaf (three windows on the registration order) on your call; the departure is listed in split_tree.md.
 
 ## Reference
 

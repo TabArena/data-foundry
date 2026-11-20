@@ -343,6 +343,11 @@ class Rosbank1(AbstractCuratedDataset):
         splits=TemporalSplits(window=1, unit="months", gap=LABEL_MONTHS, min_train_fraction=0.5),
     )
     accepted_check_warnings = {
+        "splits_below_target": (
+            "Three windows, against the 9 an IID split of 4,791 clients would get: with one-month windows and the "
+            "three-month label gap, September 2017 would train on 44.5% of the clients (Andrej, 2026-11-20, review "
+            "issue 1, A)."
+        ),
         "splits_rows_unused": "The 524 clients whose period ends in September 2017 fall in the three-month label gap "
         "of every window: the newest window (December 2017) trains on the periods that ended by 31 August 2017, the "
         "last whose outcome is known when it starts.",
@@ -353,7 +358,7 @@ class Rosbank1(AbstractCuratedDataset):
         ),
     }
     splits_comment = """
-        A churn model is refit, for example every month, and scores the clients whose grace period ends in that month. A client's label covers the three months after its period, so it is known three months after period_end: each window trains on the clients whose period ended at least three months before the window starts. Windows of one calendar month of period_end, newest first: December 2017 (63 clients, 23 churned), November 2017 (123, 49) and October 2017 (515, 179), training on 3,566, 3,078 and 2,559 clients. A fourth window (September 2017) would train on 44% of the clients, below the 50% floor, and two-month windows would leave one window above it. The periods ending from January 2018 on are not in the dataset (curation_comments, "Cohort"). The client intake drops after July 2017 (first transactions 400 to 800 a month, then about 50 to 110), so November and December are a thin tail of late or irregular clients; the period end is estimated from the last transaction for 11%, 29% and 38% of the October, November and December clients. Every test label window spans the New Year and no training label window does. The competition split its clients at random (its unlabelled test file covers the same months); this split mirrors the refit, and on the same test windows a random training side scores about 0.01 AUC higher, while 3 x 3 random folds score lower (0.817 against 0.860) as the later clients are easier to score.
+        A churn model is refit, for example every month, and scores the clients whose grace period ends in that month. A client's label covers the three months after its period, so it is known three months after period_end: each window trains on the clients whose period ended at least three months before the window starts. Windows of one calendar month of period_end, newest first: December 2017 (63 clients, 23 churned), November 2017 (123, 49) and October 2017 (515, 179), training on 3,566, 3,078 and 2,559 clients. Three windows, against the 9 an IID split of 4,791 clients would get: with one-month windows and the three-month label gap, September 2017 would train on 44.5% of the clients (Andrej, 2026-11-20, review issue 1, A); two-month windows would leave one window above the half-data floor. The periods ending from January 2018 on are not in the dataset (curation_comments, "Cohort"). The client intake drops after July 2017 (first transactions 400 to 800 a month, then about 50 to 110), so November and December are a thin tail of late or irregular clients; the period end is estimated from the last transaction for 11%, 29% and 38% of the October, November and December clients. Every test label window spans the New Year and no training label window does. The competition split its clients at random (its unlabelled test file covers the same months); this split mirrors the refit, and on the same test windows a random training side scores about 0.01 AUC higher, while 3 x 3 random folds score lower (0.817 against 0.860) as the later clients are easier to score.
     """
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:

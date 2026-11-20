@@ -93,6 +93,8 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
 - The split does not change; the definition's `Time basis:` line keeps the measured evidence.
 
+CC (2026-11-18, Andrej): the split stays 3-fold CV over whole wells, `UnseenGroup` (Review issue 11, A; cross-dataset decision on recording changes, full-information split check): the curves a well carries change with its year (shear sonic in 0% of wells completed before 1990, 92% in the 2010s; SP and mud weight gone after 2000), a change in how features are recorded, which SPLIT-37 step 4(a) as amended today records in the notes; the newest wells are logged like the newest training wells.
+
 ## Review
 
 **Outcome:** added. The FORCE 2020 lithology competition's 118 Norwegian North Sea wells pooled into one frame,
@@ -209,6 +211,70 @@ well entered it was never asked. The AI recommends keeping the well-grouped spli
    (one decision for the eighteen datasets of that review): the record's facts changed, with a CC line and `Andrej` in
    `checked_by`. No definition change.
 
+11. **Split: whole wells (as now), four windows on the well's completion year, or the competition's wells?**
+
+   * **Problem:**
+     - Which curves a well carries moves with its completion year (shear sonic in 0% of wells before 1990 and 92% in the 2010s, SP and mud weight gone after 2000), which the tree's rule for catalogues counts as arrival changing what is recorded, so the tree gives windows on the entry date (B).
+     - Issue 9 kept whole wells (A, 2026-11-12) on the other half of that rule, close neighbours: a forward split by release date leaves test wells as many training wells in their licence block as random wells do (62% each), and the changed curve sets were then named only as a cost of the windows, before the tree made them a reason of their own.
+     - The competition's own split (C) also holds out whole wells, but ten per test set, which its organisers called too small, and no later than the training wells.
+   * **Background:** Every well is dated in the national register (1968-2016) and what the loggers recorded moves with that date: shear sonic rises from 0% of wells before 1990 to 92% in the 2010s, while SP and mud weight disappear after 2000. Four expanding windows on the well year clear the rule[^split-14] with one window at 42%, so the split is temporal on the date the well entered the register, each well whole. Confidence of the blind walk: medium.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Does the use case predict for the items the catalogue adds next? (use case): yes. Evidence: The dossier's use case: after a well has been drilled and logged, or once it is released, a geologist interprets the rock type along the whole well. The well being interpreted is the one the register has just gained — the dossier's own note says the database adds wells one by one, so a new well's released neighbours are already public. The competition's framing is the same: interpret wells whose…
+     - Does each item carry a final date of entry into this catalogue? (data): yes. Evidence: The file carries no date, but every well is dated in the national register. I downloaded the Sodir (NPD) FactPages wellbore table on 2026-11-17 and joined it on the well name: 116 of the 118 wells matched (the sidetracks 16/11-1 ST3 and 25/2-13 T4 did not), 1,393,694 of 1,429,694 rows dated, completion dates 1968 to 2016 (median 1991). Wells are released two years after completion, so the…
+     - Does arrival change what is recorded or selected, or does the date carry waves? (measurement): yes — arrival changes what is recorded. Evidence: Which curves a well carries moves sharply with its completion year. Share of wells with a usable curve (present on more than 5% of the well's rows), by decade of completion, computed on the 98 training wells joined to their register dates: shear sonic DTS 0% in the 1960s-80s, 35% in the 1990s, 82% in the 2000s, 92% in the 2010s; ROPA 0%, 0%, 0%, 16%, 82%, 85%; PEF 0% before 1980, 68% in the…
+     - Does the order give the windows the rule[^split-14] and the rule[^split-15] ask for? (data): yes. Evidence: Four expanding windows on the completion year over all 118 wells (1,429,694 rows): train <=1986 (42% of rows, 40 wells) test 1987-1992 (299,696 rows, 23 wells); train <=1992 (63%, 63 wells) test 1993-1998 (189,836 rows, 15 wells); train <=1998 (77%, 78 wells) test 1999-2008 (77,327 rows, 14 wells); train <=2008 (82%, 92 wells) test 2009-2016 (221,860 rows, 24 wells). Three of four windows train…
+   * **What the blind dossier lacked, and what it changes:** My leaf disagrees with the shipped split, and the record holds a measurement I did not have. The definition ships grouped 3-fold cross-validation by `WELL` (37-41 whole wells per test fold) with time basis `UnseenGroup`, and its splits comment reports the date test I could not run: four expanding windows on the public release date against training sides of the same size on the same test wells give mean penalty 0.698 and log loss 0.811, against 0.674 and 0.802 for random wells and 0.768 and 0.924 for wells from other quadrants; 62% of the forward test wells still have a training well in their…
+   * **Missing from the blind dossier:** (1) the shipped split and the release-date measurement above; (2) that the competition itself held out whole wells (98 train, 10 open test, 10 blind) and that the organisers called the blind set too small; (3) the geography numbers that make the well the right unit (median 8 km from a test well to the nearest training well, 55-76% sharing a licence block; random forest log loss 0.763 by well,…
+   * **Source split:** yes, competition (FORCE 2020 machine learning contest, Bormann et al.; the repository's files and blog post): predefined files, grouped by well: 98 training wells, 10 open-test wells (logs given, labels withheld) and 10 blind wells withheld entirely; whole wells, not depth intervals. The held-out wells are… (""We held out 10 wells where we only provided the logs (test dataset) and 10 wells that were not provided at all to the contestants"; the organisers add "With hindsight we should have chosen a larger blind dataset" (blog post in the competition repository, p. 3).") https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition. Credible: yes, The unit is chosen for the use: a contestant must interpret a well it has never seen, which is what a geologist does with a newly drilled or newly released well, so whole wells are withheld rather than depth intervals sampled at random. The organisers also say what they got wrong about its size,…. Against the tree's leaf: partly, The competition holds out exactly the unit my leaf keys on, the whole well, so neither split can split a well; it does not order the held-out wells in time, so the logging-convention change I measured (shear sonic, SP, mud weight) is never tested forward, and a model may train on wells logged….
+   * **Key to split on:** the well's completion year from the Sodir register (equivalently its release year, two years later), keyed on the well so that all depth samples of one well stay on one side (the order is not a column yet: the build computes it).
+   * **What changes:** `dataset.py` gains the register's completion years as a helper file, a `Temporal(..., feature=False)` declaration with cutoffs 1987, 1993, 1999 and 2009 and no gap in place of `Grouping(on="WELL")`, a new `splits_comment` and `Time basis:` line; the record gets a CC line and the tree's example moves from the catalogue's 'arrival changes nothing' branch to 'Temporal · entry date'. On C instead: `dataset.py` keeps the file key from `_load_raw` (train, open test, blind) as the split key, no input, in place of `Grouping(on="WELL")`, 2 splits on one training side.
+   * **Blindness:** what the walker saw of the shipped split before deciding: The type is arguable: the labels were made once, for one 2020 competition, but the wells themselves are a cut of the Norwegian offshore register, which adds released wells one by one, so I walk under the recorded type. Leaks seen: the tree's catalogue section names this dataset under its 'arrival changes nothing' branch, and an evidence table in the rules names force_2020 beside `splits_test_class_missing`, which implies a grouped or windowed split; I ignored both and measured the arrival…
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 3-fold CV over whole wells (`WELL`, 118 wells, 37-41 per test fold), 1 repeat (train 931,093-973,462 rows, test 456,129-498,498), `UnseenGroup` (implemented) | No change. | Every well is tested once; test wells have drilled neighbours (median 8 km, 55-76% share a licence block), as the competition's held-out wells had. | Trains on wells completed after the test wells, so the change in which curves are logged (shear sonic, SP, mud weight) is never tested forward; a forward split by release date scored worse than random wells of the same size (mean penalty 0.698 against 0.674). |
+     | B | Four expanding windows on the well's completion year, each well whole (test wells completed 1987-92: 23 wells, 299,696 rows; 1993-98: 15, 189,836; 1999-2008: 14, 77,327; 2009-16: 24, 221,860), train shares 42/63/77/82%, no gap, the year no input | `dataset.py` joins each well's completion year from the Sodir wellbore table (a raw helper file), replaces `Grouping(on="WELL")` with `Temporal(..., feature=False)` on it, puts the two undated sidetracks (16/11-1 ST3, 25/2-13 T4) in training, and replaces `UnseenGroup`; 4 splits instead of 3. | Tests later wells on earlier ones, as a model meets a newly released well logged with the tools of its time. | The measured cost over random wells is small (0.024 mean penalty); the oldest window trains on 42% (curator sign-off, the rule[^split-14]); Halite, Anhydrite and Chalk drop out of some test windows. |
+     | C | The competition's files: train on the 98 training wells (1,170,511 rows), test on the 10 open-test wells (136,786 rows) and on the 10 blind wells (122,397 rows), 2 splits on one training side | `dataset.py` keeps a file key from `_load_raw` (train, open test, blind) as the split key, no input, in place of `Grouping(on="WELL")`; 2 splits instead of 3. | Matches the contest, whose unit (the whole well) was chosen for the use; scores compare with its published results. | Ten-well test sets the organisers judged too small (the open test holds no Halite); one fixed draw of wells, no later than the training wells (completion 1982-2013 and 1968-2014 against 1968-2016), so the change in logged curves is not tested either. |
+
+   * **Recommendation:** B, because the tree's rule now counts a change in what is recorded as reason enough for windows, the curve sets change sharply with the year, and a forward split did cost something on the record's own test (0.698 against 0.674 mean penalty); this reverses issue 9, which weighed neighbours only. A stays the choice if the curator holds that a model meets new wells alongside recent wells with the same curves, as issue 9 found. **Decision:** A or B or C?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). Applying a change: the definition's split declaration, its time basis tag and line, the record's CC line; if A is kept, the tree's departure table with the reason.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   [^split-15]: **SPLIT-15** (Must): The newest window is always a test window: it is the deployment period.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-18, discuss):** You give two decision issues for splits with different recommendations. Unify them
+   and reassess.
+
+   **Answer (AI, 2026-11-18):** one issue now, the three splits as A, B and C (the former issue 12, the competition's
+   wells, is C). Reassessed, the recommendation is B.
+
+   - The two issues answered different questions: issue 12 set only the shipped split against the competition's
+     files and left wells against windows to issue 11. Side by side they read as two answers to one decision, so
+     they are one issue now.
+   - B is the tree's leaf: the rule for catalogues gives windows on the entry date when arrival changes what is
+     recorded, and the curves a well carries change sharply with its year.
+   - Against B stands issue 9 (A, 2026-11-12), decided on close neighbours alone. The changed curve sets were named
+     there only as a cost of the windows; the tree has made them a reason of their own since. The release-date
+     windows of issue 9 did score worse than random wells of the same size, as a change in recording would.
+   - C is weaker than both: ten wells per test set, which its organisers called too small, and no later period.
+
+     | Evidence | Value |
+     |---|---|
+     | Wells with shear sonic (DTS), by completion decade | 0% 1960s-80s, 35% 1990s, 82% 2000s, 92% 2010s |
+     | Release-date windows against random wells, same test wells and sizes (random forest) | mean penalty 0.698 against 0.674, log loss 0.811 against 0.802 |
+     | Test wells with a training well in their licence block | 62% forward, 62% random, 0% other quadrants |
+     | B's windows: train share of rows | 42%, 63%, 77%, 82% (the 42% window needs your sign-off) |
+     | C's test sets | 10 open-test wells (136,786 rows, no Halite), 10 blind wells (122,397 rows) |
+
+   A stays the right choice if you hold, as issue 9 did, that a new well meets recent wells with the same curves in
+   training, so the year's curve set is no shift the model faces.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: 3-fold CV over whole wells, `UnseenGroup`, by the cross-dataset decision on recording changes of 2026-11-18 (full-information split check, A): a change in how the features are recorded (the curves a well carries) is a fact for the notes, not a reason for windows on the entry date, as for protein_model_quality_rf_pcp; SPLIT-37 step 4(a) amended. C (the competition's wells) holds out the same unit with ten-well test sets.
 
 ## Reference
 

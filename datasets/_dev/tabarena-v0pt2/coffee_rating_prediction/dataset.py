@@ -120,14 +120,15 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         August-September 2023 back to October-November 2021, 62 to 137 test reviews each). Monthly windows
         (25) would follow the split-count convention, but some months hold only 2-10 reviews, which makes per-window
         RMSE noise; 2-month windows keep at least ~50 test rows each.
-        A score is published with its review month, so every training label is known when a window starts and no gap
-        is needed; the time from a roaster's submission to the review is not stated. Reviews of one month share their
-        scoring (the month explains 8% of the score's variance; some months are themed tastings), and whole two-month
-        windows keep each month on one side.
+        A score is published with its review month, weeks or months after the roaster submitted the coffee (the delay is
+        not stated). The roaster predicts at submission, so each window trains only on reviews published at least one
+        month before it starts: a one-month gap, the smallest the monthly dates allow (Andrej, 2026-11-18). Reviews of
+        one month share their scoring (the month explains 8% of the score's variance; some months are themed tastings),
+        and whole two-month windows keep each month on one side.
     """
     temporal = Temporal(
         on="review_date",
-        splits=TemporalSplits(window=2, unit="months", min_train_fraction=0.5),
+        splits=TemporalSplits(window=2, unit="months", gap=1, min_train_fraction=0.5),
         time_of="label",  # the review month arrives with the score: no model input (2026-11-12, Andrej)
     )
 

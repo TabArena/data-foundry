@@ -69,6 +69,8 @@ CC (2026-11-11, Lennart): the declared horizon (three weekly sheets, no gap, win
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` unchanged (`window=3, unit="unique", n_windows=9, min_train_fraction=0.5`); test 1,119, 1,069, 93, 1,526, 1,033, 1,550, 868, 1,140 and 1,115 sales, train 20,147, 19,078, 18,985, 17,459, 16,426, 14,876, 14,008, 12,868 and 11,753 (94.7% to 55.3% of 21,266). The sales before 27 May 2017 (8,616, 40.5% of the rows) make up 79.2% of the train side of the tenth window (15-29 July 2017, 51.2%) and all of it from the window of 27 May to 17 June 2017 on (40.5%); the windows from 6-20 May 2017 back test the inner suburbs only, and three-sheet windows reach 30% of the rows back to 4-18 March 2017 (31.1%). `splits_comment` gives the campaign (Nelson Alexander) as the length's reason and these two reasons for walking back, without the "eight months of eligible history" of the issue's notes; `task_summary.split` and the decision table on the window length name the campaign. The issue's sentence that no dataset tests more windows than the IID folds is false: rain_in_australia tests 26 windows against 9 IID folds. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
+CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 3 values, up to 9 windows while training keeps 50% of the rows (9 in the build), no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. On 2026-11-11 you kept the nine windows of three weekly result sheets, 12 August 2017 to

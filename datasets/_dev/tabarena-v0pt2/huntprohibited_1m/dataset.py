@@ -96,7 +96,9 @@ class Huntprohibited1m(AbstractCuratedDataset):
           двигателя"; 6.1% of train ads in the old form, 0.18% of April's), and training on the old form and testing on
           the new costs about 0.002 ROC AUC and 0.02 average precision against a mix of the same size (TF-IDF logistic
           regression, 4 seeds). The competition's own validation was random too (the winners and the forum describe
-          random holdouts and K-fold, and local scores tracked the leaderboard).
+          random holdouts and K-fold, and local scores tracked the leaderboard). Not taken as stationary (Andrej,
+          2026-11-18): Adversarial moderation with drift sources the definition names; a 0.002 AUC marker over four
+          months bounds one change, not later use.
         - We drop exact copies of an ad (reposts with the same features and label) and every ad whose features occur with both labels (decision table).
         - Note: edited reposts stay and sellers are not grouped, because the label is per ad: the data page speaks of ads "blocked for illicit content". This is the source's wording; it cannot be checked against a seller key, as the file has none. By exact description keys, 1.4-4.9% of the test ads have a near copy in train, and 99.5% of those share its label; grouping on such a key (GroupKFold, fold 0, a logistic regression on word n-grams) gives ROC AUC 0.99384 and 0.99386 against 0.99390 for the random split, and AP within 0.002. In the 2026-10-07 run, 0.50% of the April test ads shared a 30+ character description with a training ad (not re-measured: the test file is not in the warehouse). A seller who rewrites every ad is not covered by any of these measurements.
         - `title`, `description` and `attrs` are Russian free text (string columns). `category` and `subcategory` are categorical; `price` and the counts of phone numbers, e-mails and URLs that Avito masked are numeric. The counts are Avito's own and mostly match the masks in the description: `phones_cnt` is higher on 0.92% of ads, which are blocked less often than the rest.

@@ -78,9 +78,11 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
         - Time basis: ForcedIIDFromTemporal: patients seen over a period the sources do not state; the file keeps no
           date, so random patients stand in for the patients to come. The file order carries some structure (lag-1
           correlation of 0.10 to 0.26 for age and the lab values, none for the label: 0.03) but no cost: held out by
-          file position (contiguous 5-fold, or the last third after the first two) ROC AUC stays within the spread
-          of random splits for logistic regression, random forest and TabPFN 3.5. A dated release would test later
-          patients and whether the two groups were collected in different periods, which this split cannot.
+          file position (contiguous 5-fold, or the last third after the first two) ROC AUC stays within the spread of
+          random splits for logistic regression, random forest and TabPFN 3.5. A dated release would test later patients
+          and whether the two groups were collected in different periods, which this split cannot. Not taken as
+          stationary (Andrej, 2026-11-18): The physiology is stable but the label and the group collection are
+          undocumented, and a flat file order is not a dated measurement; mixed.
         - Repeated records (2026-11-11, LEAK-18, LEAK-19): 13 records appear twice, equal in age, sex and all eight
           blood tests and with the same label; each pair sits on adjacent rows of the UCI file (rows 19/20 to 201/202),
           and none of 500 tables with each column shuffled on its own held a repeated row. They are one record

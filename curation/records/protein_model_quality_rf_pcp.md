@@ -108,6 +108,10 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
 - The split does not change; the definition's `Time basis:` line keeps the measured evidence.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `protein_id`, 3x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the split by protein stands as SPLIT-37 now reads it (cross-dataset decision on recording changes, full-information split check, A): CASP10's descriptor convention is a change in how features are recorded, a fact for the notes, not a reason for windows by CASP round; step 4(a) amended so its example no longer contradicts the decision of 2026-11-12.
+
 ## Review
 
 **Outcome:** added. Verdict: ship after changes (review panel, second pass after the PR #33 review), once the metric

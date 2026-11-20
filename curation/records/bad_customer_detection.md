@@ -55,6 +55,12 @@ CC (2026-11-10, Andrej): review page marks: time basis (issue 2, option B): rand
 
 CC (2026-11-11, Andrej): kept, with a note on `family_status` (BeyondArena v0.2 review page, issue 1, b): no mark of generated data was found, and the gap in source and label stays in the approximate fit. `family_status` is independent of every other column, age included, and is kept as recorded with a curation note.
 
+CC (2026-11-18, Andrej): Review issue 4, A, as implemented: Random 3-fold CV, 10 repeats (1,148-1,149 train / 574-575 test loans), `StationaryRelation`.
+
+CC (2026-11-18, Andrej): verdict ship (blind split review page).
+
+CC (2026-11-18, Andrej): the declared split (random, 10x3 folds, `StationaryRelation`) is checked: split mark on the blind split review page.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it as defined, with the gap in its source kept as the curator decided
@@ -268,6 +274,66 @@ already says.
 
    **Resolved (2026-11-10, Andrej):** B: the record's `tags` have `Time: Dated` in place of `Time: Lost` and gain
    `Target: Varying Delay`, in the working copy and in the PR #50 worktree's copy of the record.
+
+4. **Split: measure the relation across the twelve months, then keep the random folds (StationaryRelation) or hold out whole months?**
+
+   * **Problem:**
+     - The definition has measured it: five monthly windows, each trained on all earlier months, score as random splits of the same sizes (ROC AUC 0.737 against 0.728 untuned LightGBM, 0.739 against 0.731 logistic regression), so the relation is flat and the tree gives random folds tagged `StationaryRelation`, as shipped.
+     - No windows survive a label-delay gap: the only date is `month` 1-12 with no year, and the bad mark comes about a loan term later (credit_term median 12 months).
+     - One row per loan and no customer id, so a flat relation gives random rather than grouped folds.
+   * **Background:** A forward-scored loan task whose only date is a month 1-12 and whose label needs the loan term (median 12 months) to mature, so no temporal windows survive the gap. The forced step leaves random if the relation is measured flat across months (the bad rate already is, p=0.35), else whole-month periods held out. Confidence of the blind walk: medium.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Used at a place or group the data does not hold? (use case): no. Evidence: Dossier use case: a lender decides on each arriving application; no new region or lender named. region has 3 codes only.
+     - Fill in the covered period or predict forward? (use case): forward. Evidence: A loan application after the data is scored.
+     - Do the dates give the windows the rule[^split-14]/15 ask for (after the gap)? (data): no. Evidence: Only `month` 1-12, no year (OpenML 43442 arff, 1,723 rows, 116-174 rows and 9-25 positives per month). 'Bad customer' is known only after the loan runs: credit_term median 12 months (25% 6, max 36). A gap of about the delay (months, above the 1-month step, the rule[^split-10]) leaves no window above the 50% floor in a 12-month span. Also the 12 months are 'consecutive' but month 1 is not shown to be the…
+     - ForcedFromTemporal: can the arrival order be reconstructed from the data? (data): no. Evidence: No id or date beyond month; the file is near-sorted by month (26 drops in 1,723 rows), nothing finer to check against.
+     - Windows failed only for too few positives in a non-stationary sequence? (data): no. Evidence: They fail for the gap/too short span, not positives (each month holds 9-25 positives). Bad rate by month: chi2=12.2, df=11, p=0.35, flat.
+     - Reason to treat later samples as interchangeable? (measurement): measurement needed. Evidence: Measure whether the target and its relation to the features are flat across the 12 months (e.g. train on months 1-6 vs 7-12, compare with in-period CV; the label rate alone is already flat, p=0.35). No person's reason is given; I answer no for Assumed.
+     - Unit with several rows and new units in use? (data): no. Evidence: No customer id; no exact duplicate rows (0). One row per loan.
+   * **The measurement:** Relation of bad_customer to the features flat across months (12 months, two halves or month blocks), measured on the 12-month span.
+   * **What each outcome gives:** flat → Random · StationaryRelation; not flat → Grouped · ForcedGroupedFromTemporal (periods): whole month blocks held out (month is an order with >=2 periods).
+   * **What the blind dossier lacked, and what it changes:** none: the definition already holds the measurement my Phase A asked for: five monthly windows score as random splits of the same sizes (ROC AUC 0.737 vs 0.728 LightGBM, 0.739 vs 0.731 LR) and the bad rate is flat (p=0.35), so the 'flat' branch holds. Shipped split: random, tag StationaryRelation. Round 1's blind leaf was a temporal label-delay leaf.
+   * **What changes:** nothing in the definition until the measurement is run; then the leaf it gives decides, and only a split that differs from the shipped one needs a rebuild.
+   * **Source split:** no. No split prescribed.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: split_tree.md lists bad_customer_detection as an example under the forward/'dates give windows: no' ForcedFromTemporal pointer and under 'Random · StationaryRelation'; ignored. Type itself is plausible (loans with a month number), though the 'date' is only a month 1-12 with no year.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Random 3-fold CV, 10 repeats (1,148-1,149 train / 574-575 test loans), `StationaryRelation` (implemented) | No change; the measurement is already in the `Time basis:` line. | Rests on a measured flat relation over the twelve months; 30 test folds of 574 loans. | Loans of a later year or another credit climate stay untested; the file covers twelve months of one lender. |
+     | B | If the relation is not flat: grouped CV over whole months of `month` (12 months of 116-174 loans and 9-25 bad customers each; fold layout not set), `ForcedGroupedFromTemporal` | `dataset.py` declares a `grouping` on `month`; `data_tags` becomes ForcedGroupedFromTemporal; the `Time basis:` line gives the measured shift. | Holds whole months out where a shift between months would show. | The definition's windows score as random splits, so the measurement does not point here; folds train on later months to test earlier ones. |
+
+   * **Recommendation:** A, because the definition's window-against-random measurement shows the relation flat across the months.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: run the named check (CPU job), write the number into the `Time basis:` line, then apply the leaf it gives.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   [^split-10]: **SPLIT-10** (Should): When a label is known only some time after its row (a delivery time, a permit's processing time, an outcome after a follow-up), a model refit at a window's start knows only the rows whose label had arrived.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Answer (AI, 2026-11-18):** Scored on the same test loans, models trained on the earlier months match models trained on a sample that includes the test month, in each of the three newest months: the relation is flat, which reverses the earlier "not flat".
+
+   - Twelve months of loans, in file order and without a year. The bad rate moves between 6.2% and 15.4% (p = 0.35 over all months). The largest pairwise change, month 7 against month 12 (factor 2.5), has p = 0.017, short of the 0.01 that a recording change needs. `month` is left out of the features.
+   - In each window the test set is a random half of the month (80 to 87 loans, 5 to 15 of them bad). No window is not-flat for either model. Kumo-Tabular's gaps are at most +0.005 ± 0.007; LightGBM's are noise (SD 0.02 to 0.08).
+   - The earlier "not flat" (forward 0.06 to 0.11 below random) scored the forward and random models on different loans, and it kept `month`, which takes an unseen value in every forward test. On the same loans the gap is gone.
+   - Thin: the comparison models differ from the forward ones by only about 80 loans of the test month (5% to 6% of their rows), so only a strong change in that month would show.
+
+   | Test period | Model | Train / test rows | Forward | Contemporaneous | Gap ± SD | Floor | Flat? |
+   |---|---|---|---|---|---|---|---|
+   | 12 | LightGBM | 1,561 / 81 | 0.675 | 0.675 | -0.0008 ± 0.0174 | 0.0017 | yes |
+   | 12 | Kumo-Tabular | 1,561 / 81 | 0.723 | 0.729 | +0.0054 ± 0.0072 | 0.0023 | yes |
+   | 11 | LightGBM | 1,387 / 87 | 0.661 | 0.641 | -0.0196 ± 0.0468 | 0.0014 | yes |
+   | 11 | Kumo-Tabular | 1,387 / 87 | 0.717 | 0.721 | +0.0043 ± 0.0140 | 0.0022 | yes |
+   | 10 | LightGBM | 1,227 / 80 | 0.745 | 0.679 | -0.0661 ± 0.0781 | 0.0018 | yes |
+   | 10 | Kumo-Tabular | 1,227 / 80 | 0.821 | 0.814 | -0.0071 ± 0.0099 | 0.0031 | yes |
+
+   **Verdict: flat.** Leaf: random loans as a stationary relation (`StationaryRelation`), as recorded on 2026-11-10.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: Random 3-fold CV, 10 repeats (1,148-1,149 train / 574-575 test loans), `StationaryRelation`.
 
 ## Reference
 

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: labour_inspection_compliance
 container_format: 2
-checksum: v2:de62ec2638b5ad9d8d3114f3b460a42c84322815a8cfd435a54899b3195c380f
+checksum: v2:c54a251eaa0dfb01959d06d4cee923c40ad316a3274dcce6e6f7ce8d6b6442c3
 build:
   uuid: 01a111fb-c91d-7b12-beaf-b56406cfc014
   checksum: v2:f6e38a18770cdade76cba8a95794eee525dba553b2d59acab9aed90e3261cf63
@@ -36,7 +36,7 @@ task:
   split_regime: temporal_non_iid
   stratify_on: NonCompliance
   time_on: file_row
-  time_is_feature: false
+  time_of: label
   group_on: null
   group_labels: null
   group_time_on: null
@@ -62,7 +62,11 @@ bundle_checks:
   - dataset_constant_column
   - dataset_sequential_id_column
   infos: []
-  accepted: {}
+  accepted:
+    splits_below_target: 'Three of the nine windows an IID split of this size would
+      get: the order resolves time to about 10,000 rows, so windows are a sixth of
+      the rows, and the half-data floor leaves room for three (Andrej, 2026-11-20,
+      review issue 5, A).'
 decisions: []
 ---
 
@@ -72,7 +76,7 @@ decisions: []
 
 Binary classification of `NonCompliance`, scored with `precision_at_k` on temporal splits by `file_row`. 63,634 rows and 376 features. Source: Other (2022).
 
-Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:de62ec2638b5ad9d8d3114f3b460a42c84322815a8cfd435a54899b3195c380f`, so the build is stale. See [Build](#build).
+Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c54a251eaa0dfb01959d06d4cee923c40ad316a3274dcce6e6f7ce8d6b6442c3`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -100,7 +104,6 @@ Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` 
 
 - The curation record, with the triage decision, its sources and the review: [`curation/records/labour_inspection_compliance.md`](../../../../curation/records/labour_inspection_compliance.md)
 - The original source: <https://doi.org/10.18710/7U6TZP>
-- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
 
@@ -139,7 +142,7 @@ Only curators run `build`, when the dataset ships.
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | NonCompliance |
 | task.time_on | file_row |
-| task.time_is_feature | False |
+| task.time_of | label |
 
 **Metric**
 
@@ -202,7 +205,7 @@ We start with the data from dataverse. We create a task for the Non-compliance C
   rows apart; 67 of the 228 checklists used 30 times or more stop before the last four tenths of the file and
   50 first appear after its first three tenths. We keep the raw row number as `file_row` and split by it
   (2026-11-11, Andrej, review issue 2 b).
-- `file_row` orders and splits the rows and is no model input (`Temporal(..., feature=False)`): it arrives
+- `file_row` orders and splits the rows and is no model input (`Temporal(..., time_of="label")`): it arrives
   with the target (2026-11-12, Andrej, review issue 4 B).
 - Account figures: one set per organisation, attached to all its inspections (8,888 organisations inspected
   at two or more business ages carry identical figures, 33,168 rows; first and last inspection a median 35
@@ -230,9 +233,11 @@ of the 7.5 years), so the windows are a sixth of the rows each, wider than that 
 is later on average, not row by row. The windows follow the file's own order: the checklists of one visit lie
 a median 1,211 rows apart, so a window's start cuts some visits (0.3% to 1.0% of test rows have another row of
 their visit in training, against 4.0% on random folds). An inspection's result is known when it ends, so there
-is no gap (2026-11-11, Andrej, review issue 2 b).
+is no gap (2026-11-11, Andrej, review issue 2 b). Three of the nine windows an IID split of this size would
+get: the order resolves time to about 10,000 rows, so windows are a sixth of the rows, and the half-data floor
+leaves room for three (Andrej, 2026-11-20, review issue 5, A).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 31,819 to 53,029 rows, test 10,605 rows. Prediction horizon: 10605 steps. The time column `file_row` orders and splits the rows and is no model input: `feature_columns(container)` leaves it out.
+3 repeat(s) x 1 fold(s) with seed 4267; train 31,819 to 53,029 rows, test 10,605 rows. Prediction horizon: 10605 steps. The time column `file_row` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -253,10 +258,14 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 2 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 2 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_constant_column`: 3 constant column(s) (1 distinct non-null value): ['Credit losses on certificates, bonds and other interest-bearing securities', 'Holdings of own shares/equity certificates', 'Extraordinary costs']. (hint: Drop them unless the constant is meaningful for the task.)
 - **warning** `dataset_sequential_id_column`: 1 integer column(s) hold one value per row, densely numbered like a running id: ['file_row']. (hint: A running id often encodes the order of collection (time) or the origin (a prefix per source), which a model then learns. Drop it, or declare it `NonFeature(column, 'identifier')` in the parent.)
+
+Accepted on purpose:
+
+- `splits_below_target`: Three of the nine windows an IID split of this size would get: the order resolves time to about 10,000 rows, so windows are a sixth of the rows, and the half-data floor leaves room for three (Andrej, 2026-11-20, review issue 5, A).
 
 ## Data checks
 
@@ -475,4 +484,4 @@ Each test window against its train side, by statistics of the data, never of a m
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:de62ec2638b5ad9d8d3114f3b460a42c84322815a8cfd435a54899b3195c380f` |
+| stale | yes: the definition now gives checksum `v2:c54a251eaa0dfb01959d06d4cee923c40ad316a3274dcce6e6f7ce8d6b6442c3` |

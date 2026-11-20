@@ -62,6 +62,10 @@ CC (2026-11-11, Andrej): still kept after lung_cancer's retirement (review page 
 
 CC (2026-11-11, Andrej): the 61 blank tissue types stay (review page issue 2, A: drop only a leak that cannot be resolved otherwise). The blank is no leak: 44 of the 61 are poorly differentiated (34 lung), a "type not determined" result a work-up also gives; the 15 rows with neither type nor grade are 27% lung, the base rate. The curation notes say so.
 
+CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 7, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. An old one-time study used today with a changed work-up is a long span in a changing domain.
+
 ## Review
 
 **Outcome:** added. The site of the primary tumour (11 sites) for 302 cancer patients of the Institute of Oncology in
@@ -481,6 +485,44 @@ needs no mark. Since 2026-10-31 the record notes better data for the same task, 
    [^fo-6]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
 
    **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
+
+7. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: Lost: patients before 1986 over an unstated period; the UCI file is sorted by site, so no order is usable.
+     - Use: An oncologist estimates the primary site of metastases today, about 40 years after the data.
+     - Mechanism: Metastasis pattern and histology to primary site: tumour biology is stable, but the work-up that finds metastases and primaries (CT/PET, immunohistochemistry) and the site shares (smoking, screening) changed greatly.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | Pavlidis N, Pentheroudakis G, 'Cancer of unknown primary site', Lancet 2012;379:1428-1435 (literature, cited from memory: check) | diagnostic yield of IHC, CT and PET-CT for occult primaries | work-up changed since the 1980s | same diagnostic question |
+     | Finlayson SG et al., 'The Clinician and Dataset Shift in Artificial Intelligence', NEJM 2021;385:283-286 (literature, cited from memory: check) | review of clinical model failures under practice, population and coding change | not flat (shift common) | clinical prediction deployed after collection |
+
+   * **For a stationary use case:**
+     - spread routes of cancers are biological.
+   * **Against:**
+     - ~40-year span from collection to use.
+     - changed diagnostic work-up (imaging, immunohistochemistry): which metastases are found changes.
+     - site shares move with smoking and screening.
+     - file sorted by site, no time check possible.
+   * **Earlier views:**
+     - CC/Resolved 2026-11-09 (Andrej): random split tagged ForcedIIDFromTemporal; a StationaryRelation must be measured.
+     - Resolved 2026-11-13 (Andrej): CrossSectional withdrawn, tag stays.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | ~40-year span from collection to use; changed diagnostic work-up (imaging, immunohistochemistry): which metastases are found changes |
+
+   * **Recommendation:** A, an old one-time study used today with a changed work-up is a long span in a changing domain. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (An old one-time study used today with a changed work-up is a long span in a changing domain.)
 
 ## Reference
 

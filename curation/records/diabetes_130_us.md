@@ -67,6 +67,10 @@ CC (2026-11-11, Andrej): **Temporal split kept; tags `Time: Inferred` and `Entit
 - Returning patients (22% to 37% of the test stays) are a fact of the data, recorded as `Entities: Recur`; SPLIT-13 makes them part of the task, since a hospital scores every next discharge. No new split type: the cut is in time either way.
 - `Time: Dated` corrected to `Time: Inferred`: the stays carry no dates, only the running encounter number.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `time_index`, windows of 5,519 rows, up to 9 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-20, Andrej): `time_index` (the running encounter number) stays a model input (Review issue 4, A): the hospital holds it from admission, so it exists at the prediction point at discharge (LEAK-10); unlike california_house_prices_2020, labour_inspection_compliance and wine_quality, whose reconstructed order the actor does not hold.
+
 ## Review
 
 **Outcome:** added. The Diabetes 130-US hospitals table (UCI 296, https://doi.org/10.24432/C5230J; Strack et al.,
@@ -501,6 +505,7 @@ Nothing open.
 
    [^lk-4]: **LEAK-10** (Must): every feature has to have existed, and be held by the actor, at the prediction time of its row; a time column that only orders the split is declared no input.
 
+   **Resolved (2026-11-20, Andrej):** A (ok), as implemented: `time_index` stays a model input, as the hospital holds the encounter number from the start of the stay, before readmission is predicted at discharge. No definition change.
 
 ## Reference
 

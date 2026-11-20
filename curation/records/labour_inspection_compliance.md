@@ -83,6 +83,10 @@ CC (2026-11-12, Andrej): `file_row` orders the split but is no model input (revi
 - It is the inspection's place in the export's order, which stands in for the inspection's date; the authority picks whom to inspect before the inspection, so it does not hold that place when predicting.
 - `Temporal(..., feature=False)`: the three windows of 10,605 rows and their training sides stay; the inputs lose one column (376 features).
 
+CC (2026-11-17, Andrej): the declared split (temporal on `file_row`, windows of 10,605 rows, up to 3 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-20, Andrej): split kept (Review issue 5, A as implemented): the three windows; the order resolves time only to about 10,000 rows.
+
 ## Review
 
 **Outcome:** added. The 63,634 inspections of Norwegian organisations by the Norwegian Labour Inspection Authority,
@@ -108,7 +112,7 @@ own record.
 
 **Main points:** Nothing open. `file_row`, the inspection's place in the file order, orders the split but is no model
 input (issue 4 B, resolved 2026-11-12). Issues 1-3 resolved 2026-11-11: the 497 exact copies stay with a note (issue 1
-A), windows of file order (issue 2 b), account figures kept with a note (issue 3 B).
+A), windows of file order (issue 2 b), account figures kept with a note (issue 3 B). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 5).
 
 **Record judgment:** valid. The authority's targeting task on its own records; windows of the file's coarse time order stand
 in for the dates the release lacks (issue 2). The three constant columns (`Credit losses on certificates, bonds and other
@@ -422,6 +426,50 @@ definition's five-value threshold with one distinct value; dropping them needs n
    features (was 377), `time_is_feature: false`, the three windows unchanged (test 10,605 rows, training 31,819 to
    53,029). Depends on the uncommitted `Temporal(..., feature=False)` change in `src/data_foundry/v2/splits.py`; not
    rebuilt.
+
+5. **Windows: 3 of the target's 9; which layout?**
+
+   * **Problem:**
+     - Three windows of 10,605 inspections ship where an IID split of 63,634 inspections would get nine[^split15]; the splits comment explains the length but does not name the target or the count.
+     - Today's windows (file order, no gap):
+
+       | Test window (file rows) | Train side | Train share | Test inspections | Breaches found |
+       |---|---|---|---|---|
+       | 53,029-63,633 | 53,029 | 83.3% | 10,605 | 7,676 |
+       | 42,424-53,028 | 42,424 | 66.7% | 10,605 | 7,733 |
+       | 31,819-42,423 | 31,819 | 50.0% | 10,605 | 7,668 |
+
+     - Fixed: the release has no dates; the export's row order is a coarse time order that resolves time only to about 10,000 rows (some 14 months of the 7.5 years), so the windows are a sixth of the rows, each wider than that resolution (issue 2, b, 2026-11-11, whose background chose sixths over nine narrower windows). No gap.
+     - What stops more windows: the length, set by the order's resolution, and the half-data floor[^split14]: at 10,605 rows it allows three.
+     - Test sizes are equal in every layout below, so stable test sizes need no option of their own.
+   * **Window counts:** counted on the built frame; breaches are the positive class.
+
+     | Layout | Windows | Train share | Test inspections | Breaches | Window length |
+     |---|---|---|---|---|---|
+     | A, shipped | 3 | 50.0-83.3% | 10,605 | 7,668-7,733 | 10,605 rows |
+     | B, nine windows of 3,535 rows | 9 | 50.0-94.4% | 3,535 | 2,489-2,660 | 3,535 rows |
+     | C, windows of 10,605 down to 30% | 4 | 33.3-83.3% | 10,605 | 7,668-7,847 | 10,605 rows |
+     | D, overlapping windows of 10,605, a new one every 2,651 rows | 9 | 50.0-83.3% | 10,605 | 7,582-7,784 | 10,605 rows |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Three windows of 10,605 rows (implemented) | adds the target and the count to the splits comment | each window wider than the order's resolution, as decided | 3 of 9 |
+     | B | Nine windows of 3,535 rows | `window=None, n_windows=9` | reaches the target with no exception | each window a third of the order's resolution: neighbouring windows are not later than each other on average |
+     | C | Four windows, the oldest as the curator's exception | `min_train_fraction=0.3` | keeps the length | trains the oldest on 33.3%; adds no period the order can tell apart from the others |
+     | D | Nine overlapping windows of 10,605 rows | `step=2651` | keeps the length and the floor; reaches the target | a row is scored in up to four windows; offered only, as the target is not reached otherwise at this length[^split15] |
+
+   * **Recommendation:** A: the order cannot tell windows narrower than about 10,000 rows apart in time, so the three sixths are what the data can give; the reason goes into the splits comment. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Three of the nine windows an IID split of this size would get: the order resolves time to about 10,000 rows, so windows are a sixth of the rows, and the half-data floor leaves room for three." On B: `TemporalSplits(window=None, unit="rows", n_windows=9, min_train_fraction=0.5)`, rewrite the resolution sentence. On C: `min_train_fraction=0.3`, n_windows 4, accept `splits_train_under_half`, CC line. On D: `TemporalSplits(window=10605, unit="rows", step=2651, min_train_fraction=0.5)`, CC line.
+
+   **Andrej (2026-11-20, ok):** As implemented (A).
+
+   **Resolved (2026-11-20, Andrej):** A, as implemented: the three windows; the order resolves time only to about 10,000 rows. Not rebuilt.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get, 9 here; the window length, step and gap follow the use case and are not shortened to reach it; fewer are accepted, never under 3, with the target, the count and what stops more in the splits comment; overlapping windows only as an offered option.
 
 ## Reference
 

@@ -191,7 +191,9 @@ class BreastCancerPrediction(AbstractCuratedDataset):
           each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order.
         - Time basis: ForcedIIDFromTemporal: the screening exams were collected over time, and the file carries no exam
-          date, so the time is lost. A dated release would test exams later than those used for training.
+          date, so the time is lost. A dated release would test exams later than those used for training. Not taken as
+          stationary (Andrej, 2026-11-18): The main feature is a reading that technology and BI-RADS coding changed;
+          changed coding is a fact against.
     """
 
     accepted_check_warnings = {

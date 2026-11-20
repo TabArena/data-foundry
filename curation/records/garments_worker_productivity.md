@@ -65,6 +65,12 @@ CC (2026-11-05, Andrej): ship as defined. The declared split (30 one-day windows
 
 CC (2026-11-06, Andrej): the arrival facts of the temporal split accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on arrival notes of temporal splits) and written into `splits_comment`; the split is unchanged. A day's productivity is in the efficiency report after the shift, before the next day's prediction, so no gap is needed.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `date`, windows of 1 value, 30 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-19, Andrej): least test window (Review issue 3, A as implemented): the 30 one-day windows of 17-24 team records stay; a factory day is the task's natural test unit, so the 33-unit minimum of SPLIT-14 is waived as the curator's exception. Reopened on 2026-11-20 and settled the same day as A (see the CC line below).
+
+CC (2026-11-20, Andrej): the 30 one-day windows stay as the curator's exception to the 33-unit test-window minimum (Review issue 3, A, after the two-day test): a factory day is the natural test unit, and two-day windows would score each second day with a day-old model, which costs Kumo-Tabular 6.5% MAE (12 of 15 windows, p 0.012).
+
 ## Review
 
 **Outcome:** added. The 1,197 team-days of the sewing and finishing departments of a garment factory, January to March
@@ -154,6 +160,67 @@ of the rows (2020); the paper is 2021.
    splits with one mark?" The arrival text (the end-of-day report, the lags to the team's previous recorded day,
    whole-day windows) is appended to `splits_comment`. The split, its gap and `data_tags` are unchanged; a temporal
    split takes no time-basis tag.
+
+3. **Least test window: widen garments' one-day windows to two days?**
+
+   * **Problem:**
+     - The 30 one-day windows hold 17 to 24 test rows, under the least test window of 33 scored units since 2026-11-19[^split14] (`splits_test_too_small` is an error).
+     - Two-day windows give 14 windows of 36 to 47 rows (train 53% to 96%); three-day windows 9 of 55 to 69; the target an IID split would get[^split33] for 1,197 rows is 30 splits.
+     - Only overlapping windows reach more: two-day windows moved by one day give about twice as many, each test day in two windows.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 30 one-day windows (implemented) | No change | 30 splits, the target | Breaks the least test window (17-24 rows); `dataset check` fails |
+     | B | 14 two-day windows, not overlapping | `TemporalSplits(window=2, unit="unique", min_train_fraction=0.5)` | Every window 36-47 rows, train 53-96% | 14 of the target's 30 |
+     | C | Two-day windows moved by one day (overlapping) | `step=1` | About 28 splits, near the target | Each test day is scored twice; only if the use case (a daily productivity forecast) admits it |
+
+   * **Recommendation:** B, the smallest windows the minimum admits, not overlapping. **Decision:** A, B or C?
+
+   **Andrej (2026-11-19, ok):** I go with A because this is the natural task. Document it as an exception because the small test sizes are natural to the task at hand.
+
+   **Answer (AI, 2026-11-19):** applied as A (reopened on 2026-11-20): 30 one-day windows of 17-24 rows. The splits comment names the exception, and `splits_test_too_small` is accepted with this reason: the factory plans and is judged by the day.
+
+   **Andrej (2026-11-20, ok):** Unresolve this issue and test whether if we do option B, the second of the two days is consistently predicted worse than the first of the two day window.
+
+   **Answer (AI, 2026-11-20):** reopened and tested: no. Under two-day windows the second day is predicted about as well as the first (better in most windows), and a model one day older loses nothing measurable.
+
+   * **The test:** the two-day windows walking back from the newest (15 at half the data or more, the oldest at 50.0%); in each, a model trained before day 1 predicts both days (option B); day 2 is also predicted by a model trained before day 2 (the one-day windows of A), which separates a harder day from an older model. LightGBM (5 seeds) and ridge regression; the metric's RMSE and MAE.
+
+     | Model | Day 1, RMSE | Day 2, same model (B) | Day 2, refit (A) | Day 2 worse than day 1 | p | Day 2 worse for the older model | p |
+     |---|---|---|---|---|---|---|---|
+     | LightGBM | 0.146 | 0.134 | 0.135 | 6 of 15 windows | 0.21 | 8 of 15 (+0.0007 MAE) | 0.89 |
+     | ridge | 0.292 (0.124 median) | 0.144 | 0.144 | 2 of 15 | 0.02 (day 2 better) | 9 of 15 (+0.001 MAE) | 0.39 |
+
+     p: Wilcoxon signed-rank over the windows. Ridge's day-1 mean carries one extrapolation in the newest window (RMSE 2.05 on 10 March 2015); its median is 0.124.
+   * **What it means:** the second day of a window is no harder for the model and the one-day-older model scores the same as a refit one, so B tests the same task as A, without the exception to the 33-unit minimum: 14 to 15 windows of 36 to 47 team records.
+
+   **Recommendation:** B, since the test shows the second day costs nothing and B meets the minimum test size without an exception. **Decision:** A or B?
+
+   **Andrej (2026-11-20, discuss):** Also test using Kumo-Tabular
+
+   **Answer (AI, 2026-11-20):** tested: for Kumo-Tabular too the second day is no harder, but a model one day older is measurably worse: it gains from the newest day where LightGBM and ridge do not. That changes the recommendation to A.
+
+   | Model | Day 1, MAE | Day 2, same model (B) | Day 2, refit (A) | Day 2 worse than day 1 | p | Day 2 worse for the older model | p |
+   |---|---|---|---|---|---|---|---|
+   | Kumo-Tabular (3 seeds) | 0.102 | 0.098 | 0.092 | 8 of 15 | 0.72 | 12 of 15, +0.006 (6.5%) | 0.012 |
+   | LightGBM (5 seeds) | 0.106 | 0.099 | 0.098 | 5 of 15 | 0.33 | 8 of 15, +0.0007 | 0.89 |
+   | ridge | 0.193 (0.124 median) | 0.107 | 0.106 | 4 of 15 | 0.12 | 8 of 15, +0.001 | 0.42 |
+
+   In RMSE, Kumo-Tabular's older model is worse in 10 of 15 windows (+0.004, p 0.19); the same 15 two-day windows, Wilcoxon over windows.
+
+   * **What it means:** two-day windows score day 2 with a model that has not seen day 1, and a method that learns from the newest day (here Kumo-Tabular, in context) loses about 6% MAE there; the factory plans and is judged by the day, so a daily refit is the use case, and A tests that.
+   * B would meet the 33-unit minimum without an exception, but at the price of scoring every second day with a day-old model, which penalises the methods that use recent days.
+
+   **Recommendation:** A, the one-day windows as your exception (as you chose on 2026-11-19), now with this measurement as the reason: the natural daily refit matters measurably for one model family. **Decision:** A or B?
+
+   **Andrej (2026-11-20, discuss):** Agree. We keep the one day windows, document the exception, and also the experiment that decided this.
+
+   **Resolved (2026-11-20, Andrej):** A: 30 one-day windows of 17-24 team records, the curator's exception to the 33-unit minimum. The splits comment and the accepted `splits_test_too_small` warning name the exception and the experiment: against two-day windows the second day is no harder, but a model one day older costs Kumo-Tabular 6.5% MAE (12 of 15 windows, p 0.012), so the daily refit stays. Not rebuilt.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
 
 ## Reference
 
