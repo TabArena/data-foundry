@@ -12304,8 +12304,7 @@ class AnesVoting2026(AbstractCuratedDataset):
     accepted_check_warnings = {
         "splits_train_under_half": (
             "Signed off (Lennart, 2026-11-11, review issue 1, A): the four oldest elections train on 49.2%, "
-            "46.4%, 43.2% and 40.0% of the respondents, beside five on 51.4% to 89.8%; SPLIT-14's two tiers admit "
-            "them."
+            "46.4%, 43.2% and 40.0% of the respondents, beside five on 51.4% to 89.8%; kept as the curator's exception to SPLIT-14's half-data floor (Andrej, 2026-11-19, review issue 4, A)."
         ),
         "splits_feature_missing_in_test": (
             "Decided (Lennart, 2026-11-11, cross-dataset item): 95 questions asked in some election years only, missing "

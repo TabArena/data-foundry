@@ -10,8 +10,11 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Two-Regime Zeros
+- 'Samples: One Moment'
+- Survey
 original_source: Other
 year: '2021'
+collection_period: 2015-2018
 domain: biology & life sciences
 required_split:
 - Grouped (NON-IID)
@@ -124,6 +127,8 @@ CC (2026-11-10, Andrej): issue 8 (a) in boreal_postfire_lichen_biomass, "Reply (
 **Assessment (AI, 2026-11-10):** issue 8 (a) applied; the probes give the numbers of before 2026-11-09 again: task probe random forest 1,164.3 kg/ha against the training mean's 1,250.0 (better on 77% of the 30 splits), no flag; group probe LightGBM R^2 0.408 on random folds against -0.035 on the burn-area folds; leak probes no flag; an SK test quadrat lies a median 3.4 km from the nearest training plot (SD 0.6 over the splits), NT 22 km. `dataset check`: 0 errors, 0 warnings. Verdict mark of 2026-11-10 (Andrej): changes, now made.
 
 CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
+
+CC (2026-11-17, Andrej): the declared split (grouped on `burn_area`, 10x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Review
 

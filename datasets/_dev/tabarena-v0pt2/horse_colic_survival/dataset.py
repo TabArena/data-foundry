@@ -89,7 +89,7 @@ class HorseColicSurvival(AbstractCuratedDataset):
         ),
         split=(
             "Random horses, 20 times 3 folds, with all visits of one horse on the same side: along the case-number "
-            "order, the only time order the data has, survival and its relation to the examination stay flat."
+            "order, the only time order the data has, the relation of survival to the examination measures stable."
         ),
         changes=(
             "We merge died and euthanized into did not survive, drop whether the horse had surgery and the lesion "
@@ -124,6 +124,7 @@ class HorseColicSurvival(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("StationaryRelation",)
     download_description = """
         Get the train and test data from UCI.
 
@@ -182,16 +183,19 @@ class HorseColicSurvival(AbstractCuratedDataset):
           time column of three windows of 57 horses and a feature; on those windows' test rows, training on as many
           random horses instead of the earlier ones scored 0.045 log loss better for LightGBM, 0.009 for TabPFN 3.5
           and 0.003 for logistic regression (harmonised recording).
-        - Time basis: StationaryRelation: admissions to one hospital, in the order of their case numbers, which stand
-          in for the missing admission dates (`Time: Inferred`; an inferred order serves the measurement as it would a
-          temporal split). Along it survival is flat (62.2% in the first half, 62.8% in the second, Fisher p = 1.0),
-          and its relation to the examination does not move measurably: each of the 60 horses at positions 200 to 259,
-          trained once on its history and once on as many random horses, scores +0.020 log loss from its history for
-          TabPFN 3.5 (95% interval -0.034 to +0.080), -0.008 for logistic regression and +0.016 for LightGBM, no
-          interval excluding zero (2026-11-12). The recording change is harmonised (above); what remains of it, 55
-          missing cells, is unrelated to survival. The measurement rules out a drift above about 0.08 log loss for
-          TabPFN 3.5 and about 0.2 for LightGBM and logistic regression; the random split cannot test a later change
-          of recording or of practice (2026-11-12, Andrej, review issue 6 D).
+        - Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-20, review issue "Back to three windows in
+          case-number order", C): admissions to one hospital, in the order of their case numbers, which stand in for
+          the missing admission dates (`Time: Inferred`; an inferred order serves the measurement as it would a
+          temporal split). The stationary-relation test (v3, 2026-11-18, ROC AUC, 5 seeds) on six runs of 57 cases in
+          case-number order, the newest three tested, reads flat pooled: Kumo-Tabular -0.001 ± 0.012, floor 0.003;
+          LightGBM +0.010 ± 0.014; each run alone is inconclusive, and in none does the forward model do clearly worse.
+          The relation is measured stationary for cases held out whole (grouped by case: a horse's return visits stay
+          on one side); random folds over visits would not be covered by it. Earlier evidence: survival is flat along
+          the order (62.2% in the first half, 62.8% in the second, Fisher p = 1.0), and for the 60 horses at positions
+          200 to 259 training on their history instead of as many random horses moved log loss by no interval excluding
+          zero (2026-11-12). The recording change is harmonised (above); what
+          remains of it, 55 missing cells, is unrelated to survival. Not tested: a later change of recording or of
+          practice.
         - Return visits kept (2026-11-10, Andrej, review issue 4 A): nine cases appear two or three times under one
           six-digit case number with a suffix (10 later rows; the codebook: "may not be unique if the horse is treated >
           1 time"), all first visits survived. A return visit is an admission to score; the split groups by case, so no
@@ -220,9 +224,10 @@ class HorseColicSurvival(AbstractCuratedDataset):
     splits_comment = """
         Stratified grouped 20-repeated 3-fold split on `case_number`: the 334 horses (about 111 per test fold), a
         horse's return visits on the side of its first visit. The case number is the only time order (no dates);
-        along it survival and its relation to the examination stay flat (`Time basis: StationaryRelation` in the
-        curation notes), so random horses stand for later admissions. Not tested: a later change of recording or of
-        practice. From 2026-11-10 to 2026-11-12 the split was three windows of 57 horses in case-number order
+        along it the relation of survival to the examination measures stationary for horses held out whole (v3 test,
+        2026-11-18; `Time basis: StationaryRelation` in the curation notes), so random horses stand for later
+        admissions; the grouping by case is part of that basis (Andrej, 2026-11-20, review issue "Back to three
+        windows in case-number order", C). Not tested: a later change of recording or of practice. From 2026-11-10 to 2026-11-12 the split was three windows of 57 horses in case-number order
         (2026-11-12, Andrej, review issue 6 D, on Lennart's question).
     """
 

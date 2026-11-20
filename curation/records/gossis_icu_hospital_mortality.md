@@ -12,9 +12,13 @@ suggestion: 'Yes'
 priority: 2
 tags:
 - AI-Filled (Verify)
+- 'Samples: Over Time'
+- 'Time: Lost'
+- Clinical Study
 - Non-IID (Grouped)
 original_source: Kaggle
 year: '2020'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)
@@ -60,6 +64,12 @@ CC (2026-11-11, Andrej): built as the v2 dataset that replaces wids_diabetes_mel
 **Assessment (AI, 2026-11-11):** review panel (small: claim auditor, split auditor, critic; no mediator): ship after changes (the critic; the repeat-patient note reworded and one wording fix applied); disputed: none; for the curator: issues 1-3 (time-basis tag `ForcedGroupedFromTemporal` per SPLIT-8, BMI at clipping bounds kept per CLEAN-11, negative pre-ICU days kept). Checks 0 errors, 0 warnings; probes flag nothing; LightGBM 0.898-0.902 against linear 0.881-0.884, APACHE IVa 0.861; grouped 0.901 vs random 0.903. Priority 2: gap 0, use case + (the source states the prediction point; the APACHE use is established), source + (PhysioNet page with authors, data dictionary), shape + (91,713 rows, 147 hospitals), risk - (licence terms unread on Kaggle; a duplicate record and the eICU parent to settle).
 
 CC (2026-11-11, Andrej): BeyondArena v0.2 review page: issue 1 "Option B: ForcedGroupedFromTemporal." — the hospital split is tagged `ForcedGroupedFromTemporal` (SPLIT-8; one undated year, a later period untested) with a `Time basis:` line in `curation_comments`. Issues 2 and 3 `ok`: BMI at GOSSIS's clipping bounds and the 778 negative `pre_icu_los_days` (a registration lag) ship as published, with notes.
+
+CC (2026-11-17, Andrej): time basis `UnseenGroup` instead of `ForcedGroupedFromTemporal`:
+- The split holds out hospitals because the use case is a hospital the score was not developed at (the definition's group text); that is `UnseenGroup` (SPLIT-32), not a split forced by lost time.
+- The stays carry no date or order, so a later period at a known hospital stays untested; the split is unchanged.
+
+CC (2026-11-17, Andrej): the declared split (grouped on `hospital_id`, 3x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Review
 

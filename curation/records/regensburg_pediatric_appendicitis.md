@@ -12,11 +12,16 @@ decision_markers:
 - Class-dependent Recording
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Inferred'
+- 'Target: Varying Delay'
+- Clinical Study
 collections:
 - New (BeyondArena)
 - TabSTAR
 original_source: Other
 year: '2023'
+collection_period: 2016-2021
 domain: medical & healthcare
 required_split:
 - Random (IID)
@@ -98,6 +103,14 @@ CC (2026-11-16, Andrej): Keep, reversing the retirement of 2026-11-06, with chan
 
 References: as in the CC of 2026-10-27.
 
+CC (2026-11-17, Andrej): collection facts `Time: Inferred` instead of `Time: Dated`, and the type `Clinical Study` instead of `Dated Event Log`:
+- The release has no dates: only two periods (2016-2018 and 2019-2021) can be told apart, from the ultrasound case numbers (the definition's time basis), an order recovered from the data, not a recorded date.
+- A dated event log needs a date its raw rows record (SPLIT-34, rule 2); undated patients of one clinic are a clinical study. The split is unchanged.
+
+CC (2026-11-18, Andrej): the split stays as shipped under SPLIT-8 as amended today (cross-dataset decision on the period count, full-information split check): the data holds two admission periods (2016-2018 and 2019-2021) for a task of 10 repeats, which needs five, too few to hold out whole periods; the forced step goes on to the unit question: one row per child, so random, as shipped.
+
+CC (2026-11-19, Andrej): split tagged `StationaryRelation` (Review issue 6, B): the stationary-relation test on the two admission periods reads flat; the random folds stay.
+
 ## Review
 
 **Outcome:** added. All 763 children with suspected appendicitis who had an ultrasound at the Regensburg children's
@@ -118,7 +131,7 @@ shaped by one hospital's practice.
 **Main points:** Kept (2026-11-16, issue 3), reversing the retirement of 2026-11-06 (issue 2): the label of the
 children not operated is read as an outcome of observation, not as the surgeon's decision; the use case, the drops
 and the precision fixes are in the definition. The split stays random, tagged as forced from temporal (issue 4).
-The free-text findings are written in one spelling (issue 5).
+The free-text findings are written in one spelling (issue 5). Open since 2026-11-19: the stationary-relation test reads the relation flat, so `StationaryRelation` could replace the forced tag (issue 6).
 
 **Record judgment:** valid after repair, settled by CC 2026-10-27 (Andrej: keep, BMI and neutrophil share at
 measured precision, the label's origin in the texts); the ordinal scales of PR #37 follow Lennart's marks of
@@ -457,6 +470,43 @@ measured precision, the label's origin in the texts); the ordinal scales of PR #
 
    **Resolved (2026-11-16, Andrej):** A: `LOCATION_SPELLINGS` and `NOTHING_FOUND` in `dataset.py`, with a curation
    note (CC 2026-11-16, change 7).
+
+6. **Tag: `StationaryRelation` instead of `ForcedIIDFromTemporal`, now that the relation is measured flat?**
+
+   * **Problem:**
+     - The stationary-relation test (2026-11-19) on the two admission periods (2016-2018: 414 children, 2019-2021:
+       331, cut at US_Number 440) reads the relation flat: tested on 2019-2021, training on 2016-2018 scores about
+       as well as training on as many 2019-2021 children.
+
+       | Model | Gap (ROC AUC) | SD over 5 seeds | Floor | Verdict |
+       |---|---|---|---|---|
+       | LightGBM | +0.016 | 0.016 | 0.0042 | flat |
+       | Kumo-Tabular | +0.004 | 0.010 | 0.0044 | flat |
+
+     - The complicated share moves from 11.8% to 19.3% (1.63 times, p = 0.006), under the twofold move that would
+       count as a recording change.
+     - Since 2026-11-18 the test is run wherever two periods exist, and a flat verdict keeps the split random, tagged
+       `StationaryRelation`[^split32]. Issue 4 (2026-11-16) chose the forced tag before the test ran.
+     - The record's earlier measurement (issue 6 of the fixes) found TabPFN 3.5 at ROC AUC 0.931 trained on
+       2016-2018 against 0.935 on random splits, but log loss 0.290 against 0.221: the moving class share costs
+       probability calibration, which the declared ROC AUC does not score.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | No change; the `Time basis:` line adds the verdict | Names that a deployed model meets later admissions it was not tested on | Says forced where the test found the relation flat |
+     | B | Tag `StationaryRelation` | `data_tags` and the `Time basis:` line give the verdict; the split stays random 10 x 3 | The tag says what was measured | The class share still moves, which a log-loss reading would not call flat |
+
+   * **Recommendation:** B, the tag follows the measured verdict on the declared metric. **Decision:** A or B?
+
+   **Notes for the AI:** on either, the `Time basis:` line gives the verdict and the class share; on B, `data_tags`
+   and a CC line.
+
+   **Andrej (2026-11-19, change):** Option B: Tag StationaryRelation.
+
+   **Resolved (2026-11-19, Andrej):** B. `data_tags` reads `StationaryRelation`; the `Time basis:` line and the splits comment give the test (flat: LightGBM +0.016 ± 0.016, Kumo-Tabular +0.004 ± 0.010 ROC AUC) and the class share. The random 10 x 3 folds are unchanged; not rebuilt.
+
+   [^split32]: **SPLIT-32** (Should): where the data holds two or more periods, the stationary-relation test is run and its verdict goes into the `Time basis:` line; a relation measured flat keeps the split random, tagged `StationaryRelation`.
 
 ## Reference
 

@@ -224,6 +224,7 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = r"""
         The Framingham Heart Study teaching dataset of NHLBI BioLINCC (https://biolincc.nhlbi.nih.gov/teaching/) is sent
         on request. The R package riskCommunicator redistributes it with NHLBI's permission as its data set
@@ -309,6 +310,18 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
           the use case is a patient's first assessment (USE-11), and the later exams are older, selected survivors.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): the baseline exam
+          (period 1) is the cohort's one prediction point, and ASCVD within 10 years follows it (follow-up runs 24
+          years). One cohort at one exam is one period, too few for three windows (SPLIT-8). A later cohort scored the
+          same way would allow a temporal test. It cannot test a later cohort. Not taken as stationary (Andrej,
+          2026-11-18): the stationary-relation test on the parent teaching file's three exams (about 1956, 1962, 1968;
+          the cohort rebuilt at each exam, a participant held out across exams) reads not flat: trained on earlier exams
+          only, ROC AUC falls by 0.032 +- 0.008 on exam 3 (LightGBM) and 0.015 +- 0.005 on exam 2 (Kumo-Tabular), floors
+          0.002; the exams are also the cohort's age. Weighted to the tested exam's age mix (2026-11-19), LightGBM still
+          loses 0.040 +- 0.009 on exam 3, while Kumo-Tabular reads flat (+0.007 +- 0.004 on exam 3, +0.013 +- 0.011 on
+          exam 2). A departure from the rule that a relation measured not flat is never split at random (SPLIT-16), kept
+          on the curator's call (Andrej, 2026-11-20, review issue 3, A): the shipped task holds one exam, so no later
+          period exists to hold out, and the remaining shift is one model family's.
     """
 
     # Task

@@ -118,7 +118,7 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
+    data_tags = ("StationaryRelation",)
     download_description = """
         We get the newest version of the tabular data from Zenodo.
 
@@ -208,11 +208,18 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
           (`NOTHING_FOUND`). The three text columns alone told operated from not operated uncomplicated children at
           ROC AUC 0.572, 0.527 after (on the label 0.552, then 0.531); the full model scores the same with or without
           them (gradient boosting 0.905 and 0.906), so no model had used the route.
+        - Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-19, review issue 6 B): children are admitted over
+          2016-2021 and a deployed model scores later admissions, but the file has no dates; the ultrasound case
+          numbers tell only two periods apart (2016-2018 and 2019-2021), too few for windows. The stationary-relation
+          test (2026-11-19) on these two periods reads flat: tested on 2019-2021, training on 2016-2018 instead of as
+          many 2019-2021 children costs LightGBM +0.016 ± 0.016 ROC AUC (floor 0.004) and Kumo-Tabular +0.004 ±
+          0.010 (floor 0.004); the complicated share moves 1.63-fold (p 0.006), under the twofold move that counts as
+          a recording change. So children are split at random. Admission dates would allow a split by period.
     """
     splits_comment = """
         Default splits: stratified random 3-fold cross-validation with 10 repeats (seed 4267). Tests stand for other
         children of the same hospital and years.
-        The split is forced (ForcedIIDFromTemporal): children are admitted over 2016-2021 and a deployed model scores
+        The relation is measured stationary (StationaryRelation, review issue 6): children are admitted over 2016-2021 and a deployed model scores
         later admissions, but the file has no dates. Only two periods can be told apart: ultrasound case numbers up to
         440 are 2016-2018 (every child also in the authors' 2021 study of those years has a number up to 440), higher
         ones 2019-2021; within each period the numbers follow the children's group, not the admission order (curation
@@ -221,8 +228,9 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
         36%), loss of appetite is recorded for 30% of the children in 2016-2018 and 77% later, and the features tell
         the two periods apart at ROC AUC 0.86. Against random splits of the same sizes, training on 2016-2018 and
         testing on 2019-2021 costs little in ranking and more in calibration: TabPFN 3.5 ROC AUC 0.931 against 0.935
-        and log loss 0.290 against 0.221; logistic regression 0.887 against 0.905 and 0.377 against 0.265. Recover
-        the admission dates if a later release has them.
+        and log loss 0.290 against 0.221; logistic regression 0.887 against 0.905 and 0.377 against 0.265. The
+        stationary-relation test on the two periods reads flat (Time basis line). Recover the admission dates if a later
+        release has them.
     """
 
     # Task
