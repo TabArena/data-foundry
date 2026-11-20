@@ -23,7 +23,7 @@ FACT_PREFIXES = ("Samples:", "Time:", "Target:", "Entities:", "Features:")
 PENDING: dict[str, str] = {
     "loan_default_prediction_imperial_college": (
         "a snapshot whose record says `Time: Dated`, though no date is given and the loans' order is read from the file"
-        " (`Time: Inferred` under SPLIT-32); the fact is corrected on the PR that owns the collection facts (#50)"
+        " (`Time: Inferred` under SPLIT-32); the fact is corrected with the record (#125)"
     ),
 }
 """Records whose contradiction is known, with where it is decided."""
