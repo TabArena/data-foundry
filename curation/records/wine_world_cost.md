@@ -16,11 +16,14 @@ priority: 1
 tags:
 - New IID
 - Free Text (Sentences)
+- 'Samples: One Moment'
+- Database Snapshot
 collections:
 - TexTabBench
 - STRABLE
 original_source: Kaggle
 year: '2023'
+collection_period: '2023'
 domain: business & marketing
 required_split:
 - Grouped (NON-IID)
@@ -61,6 +64,8 @@ CC (2026-11-11, Andrej): split grouped by producer (review page issue 5, a, the 
 CC (2026-11-11, Andrej): use case reframed (review page issue 6, B): the actor is a producer or importer estimating the UK shelf price of a wine it offers, or a buyer judging whether a wine is good value, not the shop, which prices from its costs (supplier price, duty, VAT, margin) that the data do not hold. `use_case` and `question` rewritten; `fit_reason` adds that the model stands for someone who does not know the price (fit stays approximate; its price-tier numbers moved to `curation_comments`); the grouping definition and the split bullet name the new actor. Text only, data unchanged.
 
 CC (2026-11-16, Lennart): use case kept (review page issue 7, A, as drafted): the actor is a UK wine merchant's buyer who, offered a wine from a producer the merchant does not stock yet, estimates the shelf price it would sell at, to decide whether to list it and what supplier price that price point allows; the trade fixes the price point first and works the supplier price back from it. `use_case` rewritten, `fit_reason`'s last sentence names what such a buyer would hold instead (the producer's tasting note, the wine's price in other markets); fit stays approximate. Text only, data unchanged.
+
+CC (2026-11-17, Andrej): the declared split (grouped on `Producer`, 10x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Review
 

@@ -14,8 +14,13 @@ suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Anonymized
+tags:
+- 'Samples: One Moment'
+- 'Target: Later'
+- Database Snapshot
 original_source: Other
 year: '2009'
+collection_period: Unknown
 domain: business & marketing
 required_split:
 - Random (IID)
@@ -61,6 +66,10 @@ CC (2026-11-11, Andrej): BeyondArena v0.2 review page, issue 4 (B) and issue 5 (
 - Dropped (CLEAN-5): 109 empty and 1,422 constant columns; 580 exact or scaled copies of an earlier column, the first of each group kept (the seven small-set copies of issue 1 fall in these groups); presence flags stay.
 - Dropped as generated: `Var5963` (the variable of the cup's artificial toy target) and `Var11750`, both uniform without signal.
 - 12,887 features remain (12,729 numeric, 158 categorical); the download takes the five large-set chunks and their labels from kdd.org.
+
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 6, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The target is uptake of a campaign's new offer, which changes by campaign; nothing makes later campaigns interchangeable.
 
 ## Review
 
@@ -416,3 +425,46 @@ temporal (a note across datasets).
    target) and `Var11750` (uniform on 0-9) are dropped in the large definition (`GENERATED_COLUMNS`), with a
    `curation_comments` bullet. `Var57` belongs to the small set only and has no match in the large set, so it leaves
    with the switch.
+
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.
+
+6. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: One undated extract of Orange's customer datamart (before mid-2009), 100,000 customers resampled toward the labels and split at random by the host; features masked, no date or order survives (Guyon et al. 2009).
+     - Use: Orange marketing picks customers for an offer of a new product or service in a later campaign.
+     - Mechanism: Masked usage and contract features relate to buying a new product; what is on offer, its price and the campaign targeting change from campaign to campaign.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | Gama et al. 2014, 'A survey on concept drift adaptation', ACM Computing Surveys 46(4) | review of drift in deployed predictors; customer profiling, marketing and telecom are named application areas with changing populations and behaviour | not flat (domain-level) | same use: scoring customers of a later period |
+     | online_shoppers_purchasing_intention_dataset | v3 stationary-relation test over the visit months; December trained on June-November costs 0.009 ROC AUC; purchase share 10% (June) to 25% (November) | not flat | consumer purchase behaviour scored for a later period |
+
+   * **For a stationary use case:**
+     - The datamart features are the platform's fixed format for every marketing task (stable schema).
+   * **Against:**
+     - 'New product or service' changes with each campaign: the target itself is campaign-specific (changed offers, prices).
+     - Label window and feature windows not stated and features masked: no check possible.
+     - Sample resampled toward the labels by the host.
+     - Consumer purchase propensity measured not flat elsewhere in the collection (online_shoppers).
+   * **Earlier views:**
+     - CC (2026-11-06, Andrej): DelayedTarget accepted (issue 2, B), later retired.
+     - CC (2026-11-16, Andrej): ForcedIIDFromTemporal in place of DelayedTarget.
+     - CC (2026-11-17, Andrej): blind split walk reaches the shipped split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | 'New product or service' changes with each campaign: the target itself is campaign-specific (changed offers, prices).; Label window and feature windows not stated and features masked: no check possible. |
+
+   * **Recommendation:** A, the target is uptake of a campaign's new offer, which changes by campaign; nothing makes later campaigns interchangeable. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (The target is uptake of a campaign's new offer, which changes by campaign; nothing makes later campaigns interchangeable.)

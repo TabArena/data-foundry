@@ -164,6 +164,10 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
         - CC (2026-11-09, Andrej): the folds test on all rows of the renewal book, the gaps kept as missing (review issue 8, A, as implemented); the missing-values bullet names the mismatch with the competition's complete test rows.
         - CC (2026-11-09, Andrej): the split stays by household over the 2006 book (review issue 9, A, as implemented); the splits comment gives the 2005-to-2006 score as above the household folds of that build and names the training side's year and the maturity of its amounts.
         - The row budget (1M train, 500k test rows): We keep the whole 2006 renewal book (2.75M rows) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole households drawn from its third, and trains on every other row (about 2.25M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole households. Both draws take households at random, not stratified (a regression target), so the claim rate stays that of the book. The 2005 history is built on the full file before the filter.
+        - Time basis: ForcedGroupedFromTemporal (SPLIT-8): the use case scores later years (the competition trained on
+          2005-2007 and scored 2008 and 2009, whose claims were never published), but with 2007 dropped and 2005 the
+          history of 2006 one labelled year is left, too few periods for windows; whole households are held out instead
+          (`splits_comment`). Released claims of later years would allow a split by year.
     """
 
     # Task

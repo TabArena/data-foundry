@@ -109,6 +109,11 @@ class LibertyMutualFirePerilLossCost(AbstractCuratedDataset):
         - Note: `var13` alone ranks the shipped test folds at a weighted Gini of 0.221-0.260 (ties averaged), the regularised LightGBM on the log1p target at 0.306-0.320, higher on every fold (TP-4: not trivial); the forum knew it ("target = -var13", thread 9706). Its loss rate falls from 0.41% to 0.04% over its range, like an underwriting grade, so it stays (LEAK-38).
         - Note: a test fold holds about 400 losses, so the weighted Gini of one model moves by a fold standard deviation of 0.042-0.045 (9 random or grouped folds; 0.035-0.072 within one repeat of 3 folds); differences between methods below that are fold noise (EV-8).
         - Anomaly: the location blocks are coarse: 2,588 distinct geodemographic vectors, 327 crime and 24,531 weather vectors.
+        - Time basis: ForcedIIDFromTemporal (SPLIT-8): an underwriter prices next term's policies, but the release has
+          no dates and no risk id, so policies are split at random as the competition split them; a risk's other terms
+          in training carry nothing of its outcome (`splits_comment`). A dated release would allow a split by term. Not
+          taken as stationary (Andrej, 2026-11-18): A partly physical peril, but a commercial market product with an
+          undisclosed transformed loss ratio, an unknown period and a volatile neighbour; mixed at best.
     """
 
     accepted_check_warnings = {
