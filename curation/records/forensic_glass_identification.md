@@ -21,6 +21,7 @@ collections:
 - TabArena Reject
 original_source: UCI
 year: '1987'
+collection_period: Unknown
 domain: chemistry & material science
 required_split:
 - Random (IID)

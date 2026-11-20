@@ -19,6 +19,7 @@ collections:
 - New (BeyondArena)
 original_source: Kaggle
 year: '2018'
+collection_period: Sep 2016 - Oct 2018
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)

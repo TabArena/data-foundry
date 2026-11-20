@@ -21,6 +21,7 @@ collections:
 - TabSTAR
 original_source: Kaggle
 year: '2020'
+collection_period: 14 Jul 2020
 domain: business & marketing
 required_split:
 - Random (IID)

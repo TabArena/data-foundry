@@ -19,6 +19,7 @@ tags:
 - Non-IID (Temporal)
 original_source: UCI
 year: '2009'
+collection_period: May 2004 - Feb 2007
 domain: chemistry & material science
 required_split:
 - Temporal (NON-IID)

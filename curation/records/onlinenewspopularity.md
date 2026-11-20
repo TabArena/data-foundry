@@ -24,6 +24,7 @@ collections:
 - MulTaBench
 original_source: UCI
 year: '2015'
+collection_period: Jan 2013 - Dec 2014
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression

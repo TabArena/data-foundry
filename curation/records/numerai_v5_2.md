@@ -21,6 +21,7 @@ collections:
 - New (BeyondArena)
 original_source: Company
 year: '2025'
+collection_period: 2003-2026
 domain: finance
 required_split:
 - Temporal (NON-IID)

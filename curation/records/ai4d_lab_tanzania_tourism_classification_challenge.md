@@ -19,6 +19,7 @@ collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2022'
+collection_period: 2014-2021
 domain: business & marketing
 required_split:
 - Random (IID)

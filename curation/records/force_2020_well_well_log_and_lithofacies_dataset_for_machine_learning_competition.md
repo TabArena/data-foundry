@@ -20,6 +20,7 @@ collections:
 - TabArena Submission
 original_source: Github
 year: '2020'
+collection_period: 1968-2016
 domain: environmental science & climate
 required_split:
 - Grouped (NON-IID)

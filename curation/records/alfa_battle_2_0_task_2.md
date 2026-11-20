@@ -23,6 +23,7 @@ collections:
 - New (BeyondArena)
 original_source: Other
 year: '2020'
+collection_period: Unknown
 domain: finance
 required_split:
 - Temporal (NON-IID)

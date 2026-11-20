@@ -23,6 +23,7 @@ collections:
 - TabSTAR
 original_source: UCI
 year: '1998'
+collection_period: Unknown
 domain: environmental science & climate
 required_split:
 - Random (IID)

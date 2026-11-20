@@ -20,6 +20,7 @@ collections:
 - TabSTAR
 original_source: GOV Website
 year: '2015'
+collection_period: May 2014 - May 2015
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)

@@ -27,6 +27,7 @@ collections:
 - STRABLE
 original_source: GOV Website
 year: '2026'
+collection_period: 2015-2025
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)

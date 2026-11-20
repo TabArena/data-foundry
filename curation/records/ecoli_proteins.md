@@ -17,6 +17,7 @@ collections:
 - TabArena Reject
 original_source: UCI
 year: '1996'
+collection_period: Unknown
 domain: biology & life sciences
 required_split:
 - Random (IID)

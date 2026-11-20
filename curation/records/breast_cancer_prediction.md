@@ -17,6 +17,7 @@ collections:
 - TabSTAR
 original_source: GOV Website
 year: '2014'
+collection_period: Jan 2005 - Dec 2008
 domain: medical & healthcare
 required_split:
 - Random (IID)

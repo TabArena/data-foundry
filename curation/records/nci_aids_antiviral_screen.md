@@ -19,6 +19,7 @@ collections:
 - ChemPile
 original_source: GOV Website
 year: '2004'
+collection_period: 1987-1997
 domain: chemistry & material science
 required_split:
 - Grouped (NON-IID)

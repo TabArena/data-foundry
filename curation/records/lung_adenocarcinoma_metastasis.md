@@ -18,6 +18,7 @@ tags:
 - Experimental Results
 original_source: Other
 year: '2001'
+collection_period: 16 Mar 2001 - 17 Apr 2001
 domain: medical & healthcare
 required_split:
 - Random (IID)

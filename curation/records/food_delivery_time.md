@@ -19,6 +19,7 @@ tags:
 - 'Entities: Recur'
 original_source: Other
 year: '2022'
+collection_period: Not applicable (generated)
 domain: business & marketing
 required_split:
 - Random (IID)

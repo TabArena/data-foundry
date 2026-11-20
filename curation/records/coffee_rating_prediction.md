@@ -25,6 +25,7 @@ collections:
 - CARTE/TARTE
 original_source: Kaggle
 year: '2023'
+collection_period: Oct 2018 - Oct 2023
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)

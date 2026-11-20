@@ -20,6 +20,7 @@ collections:
 - New (BeyondArena)
 original_source: UCI
 year: '2020'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Random (IID)

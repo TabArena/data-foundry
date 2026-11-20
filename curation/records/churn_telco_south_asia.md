@@ -16,6 +16,7 @@ collections:
 - TabSTAR
 original_source: Kaggle
 year: '2017'
+collection_period: Aug 2015 - Sep 2015
 domain: business & marketing
 required_split:
 - Random (IID)

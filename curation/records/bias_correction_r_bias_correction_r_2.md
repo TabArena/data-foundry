@@ -17,6 +17,7 @@ collections:
 - TabArena Reject
 original_source: UCI
 year: '2020'
+collection_period: 2013-2017
 domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)

@@ -24,6 +24,7 @@ collections:
 - TabArena Reject
 original_source: UCI
 year: '2010'
+collection_period: 1995-1998
 domain: medical & healthcare
 required_split:
 - Temporal (NON-IID)

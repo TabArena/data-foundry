@@ -21,6 +21,7 @@ collections:
 - TabArena Reject
 original_source: UCI
 year: '2020'
+collection_period: Jan 2015 - Mar 2015
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)

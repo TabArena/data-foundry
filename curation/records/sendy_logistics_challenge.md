@@ -20,6 +20,7 @@ collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2019'
+collection_period: Unknown
 domain: business & marketing
 required_split:
 - Grouped (NON-IID)

@@ -24,6 +24,7 @@ collections:
 - New (BeyondArena)
 original_source: Kaggle
 year: '2021'
+collection_period: Jan 2018 - Jan 2022
 domain: finance
 required_split:
 - Temporal (NON-IID)

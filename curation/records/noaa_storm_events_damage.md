@@ -18,6 +18,7 @@ tags:
 - Dated Event Log
 original_source: GOV Website
 year: '2026'
+collection_period: 2007-2025
 domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)

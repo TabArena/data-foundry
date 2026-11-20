@@ -18,6 +18,7 @@ tags:
 - Database Snapshot
 original_source: Kaggle
 year: '2011'
+collection_period: 2005-2007
 domain: insurance
 required_split:
 - Grouped (NON-IID)

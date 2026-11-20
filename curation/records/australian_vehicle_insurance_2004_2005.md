@@ -16,6 +16,7 @@ tags:
 - Database Snapshot
 original_source: Website
 year: '2008'
+collection_period: 2004-2005
 domain: insurance
 required_split:
 - Random (IID)

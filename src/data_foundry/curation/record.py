@@ -103,6 +103,15 @@ FIELDS: tuple[FieldSpec, ...] = (
     FieldSpec("collections", "Source (Benchmark / Collection)", "multiselect", help="Source benchmarks/collections."),
     FieldSpec("original_source", "Original Source (Website)", "select", help="Where the data was first shared."),
     FieldSpec("year", "Year", "text", help="Publication / collection year."),
+    FieldSpec(
+        "collection_period",
+        "Collection Period",
+        "text",
+        help=(
+            "When the rows were collected, read from the source: `2010-2015`, `Jan 2015 - Jun 2015`, `2014`, "
+            "`before 1988`, `Not applicable (generated)`, or `Unknown` when neither the source nor anything else says."
+        ),
+    ),
     FieldSpec("domain", "Context Domain", "select", help="Real-world application domain."),
     FieldSpec("required_split", "Required split", "multiselect", help="Evaluation split regime."),
     FieldSpec("problem_type", "Problem Type", "select", help="Predictive ML problem type."),
@@ -202,6 +211,10 @@ class CurationRecord:
     collections: list[str] = pydantic.Field(default_factory=list)
     original_source: str | None = None
     year: str | None = None
+    collection_period: str | None = None
+    """When the source's rows were collected (a collection fact, SPLIT-32), free text: ``2010-2015``,
+    ``Jan 2015 - Jun 2015``, ``2014``, ``before 1988``, ``Not applicable (generated)`` or ``Unknown``. Unlike
+    ``year`` (first publication), it is the span the samples were measured in."""
     domain: str | None = None
     required_split: list[str] = pydantic.Field(default_factory=list)
     problem_type: str | None = None

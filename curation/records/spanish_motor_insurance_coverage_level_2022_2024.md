@@ -18,6 +18,7 @@ tags:
 - Panel Data
 original_source: Other
 year: '2026'
+collection_period: 2022-2024
 domain: insurance
 required_split:
 - Grouped (NON-IID)

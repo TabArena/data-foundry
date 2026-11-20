@@ -24,6 +24,7 @@ collections:
 - STRABLE
 original_source: Kaggle
 year: '2017'
+collection_period: Unknown
 domain: business & marketing
 required_split:
 - Random (IID)

@@ -18,6 +18,7 @@ collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2024'
+collection_period: 1 Jan 2023 - 1 Feb 2023
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)

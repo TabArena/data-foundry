@@ -21,6 +21,7 @@ collections:
 - TabSTAR
 original_source: Website
 year: '1998'
+collection_period: Apr 1997 - Jun 1997
 domain: business & marketing
 required_split:
 - Random (IID)

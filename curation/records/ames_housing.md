@@ -14,6 +14,7 @@ tags:
 - Dated Event Log
 original_source: Other
 year: '2011'
+collection_period: Jan 2006 - Jul 2010
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)

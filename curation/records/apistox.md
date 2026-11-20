@@ -19,6 +19,7 @@ collections:
 - New (BeyondArena)
 original_source: Other
 year: '2024'
+collection_period: Unknown
 domain: chemistry & material science
 required_split:
 - Temporal (NON-IID)

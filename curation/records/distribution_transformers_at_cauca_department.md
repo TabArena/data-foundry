@@ -16,6 +16,7 @@ tags:
 collections:
 - New (BeyondArena)
 original_source: Other
+collection_period: '2020'
 required_split:
 - Random (IID)
 problem_type: Binary Classification

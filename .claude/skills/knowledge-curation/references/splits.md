@@ -166,6 +166,10 @@ about time), and they do not change with the split a definition chooses. A fact 
   (one read of a store or district table at release, a price "as of current day"), `Features: Revised Later` when
   rows were rewritten after their date (sf_permit_time's `data_as_of` stamps). Both ask for an as-of check whatever
   the split (LEAK-10).
+* **Collection period:** the record's `collection_period` field, free text because a span is no vocabulary value:
+  when the rows were collected (`2010-2015`, `Jan 2015 - Jun 2015`, `before 1988`, `Not applicable (generated)`,
+  `Unknown`, also when only the release date bounds it). It tells how much time a temporal split has to work with
+  and how old the relation is that a model learns; the span of a release, not of the years a definition keeps.
 
 A definition can name the use-case prototype it follows; the same source can carry different use cases (SPLIT-1's two
 applications). A definition that names one carries its tag and a `Time basis:` line in the curation notes with the

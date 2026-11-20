@@ -18,6 +18,7 @@ collections:
 - New (BeyondArena)
 original_source: Website
 year: '2016'
+collection_period: Apr 2000 - Mar 2015
 domain: finance
 required_split:
 - Temporal (NON-IID)

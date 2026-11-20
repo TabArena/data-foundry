@@ -18,6 +18,7 @@ collections:
 - TabArena Reject
 original_source: GOV Website
 year: '2026'
+collection_period: Nov 2007 - Jan 2026
 domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)

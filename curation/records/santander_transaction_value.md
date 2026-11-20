@@ -26,6 +26,7 @@ collections:
 - TabSTAR
 original_source: Kaggle
 year: '2018'
+collection_period: Unknown
 domain: finance
 required_split:
 - Grouped (NON-IID)

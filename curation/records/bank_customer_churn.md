@@ -16,6 +16,7 @@ tags:
 - 'Samples: No Time Dimension'
 original_source: Kaggle
 year: '2022'
+collection_period: Not applicable (generated)
 required_split:
 - Random (IID)
 source_links:

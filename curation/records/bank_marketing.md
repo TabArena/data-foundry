@@ -21,6 +21,7 @@ tags:
 - Dated Event Log
 original_source: UCI
 year: '2012'
+collection_period: May 2008 - Nov 2010
 required_split:
 - Temporal (NON-IID)
 problem_type: Binary Classification

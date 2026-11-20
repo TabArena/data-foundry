@@ -21,6 +21,7 @@ collections:
 - New (BeyondArena)
 original_source: Other
 year: '2020'
+collection_period: Nov 2017 - Jul 2019
 domain: medical & healthcare
 required_split:
 - Temporal (NON-IID)

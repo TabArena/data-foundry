@@ -15,6 +15,7 @@ tags:
 - Database Snapshot
 original_source: Kaggle
 year: '2020'
+collection_period: Unknown
 required_split:
 - Random (IID)
 source_links:

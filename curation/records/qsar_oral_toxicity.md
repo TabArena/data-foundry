@@ -21,6 +21,7 @@ collections:
 - ChemPile
 original_source: Other
 year: '2019'
+collection_period: Unknown
 domain: chemistry & material science
 required_split:
 - Grouped (NON-IID)

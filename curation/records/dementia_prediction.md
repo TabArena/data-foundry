@@ -26,6 +26,7 @@ collections:
 - New (BeyondArena)
 original_source: Other
 year: '2010'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)

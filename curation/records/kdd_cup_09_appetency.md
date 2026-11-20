@@ -20,6 +20,7 @@ tags:
 - Database Snapshot
 original_source: Other
 year: '2009'
+collection_period: Unknown
 domain: business & marketing
 required_split:
 - Random (IID)

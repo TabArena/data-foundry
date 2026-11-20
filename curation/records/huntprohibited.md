@@ -23,6 +23,7 @@ collections:
 - New (BeyondArena)
 original_source: Kaggle
 year: '2014'
+collection_period: Dec 2013 - Mar 2014
 domain: business & marketing
 required_split:
 - Random (IID)

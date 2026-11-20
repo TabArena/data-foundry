@@ -21,6 +21,7 @@ collections:
 - TabArena Reject
 original_source: Kaggle
 year: '2015'
+collection_period: Unknown
 domain: business & marketing
 required_split:
 - Random (IID)

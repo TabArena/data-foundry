@@ -20,6 +20,7 @@ collections:
 - TabSTAR
 original_source: UCI
 year: '2014'
+collection_period: 2005-2006
 domain: education
 required_split:
 - Random (IID)

@@ -18,6 +18,7 @@ tags:
 - Database Snapshot
 original_source: UCI
 year: '2016'
+collection_period: 2000-2013
 required_split:
 - Random (IID)
 source_links:

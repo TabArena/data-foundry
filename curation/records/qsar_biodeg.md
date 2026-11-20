@@ -19,6 +19,7 @@ tags:
 - Expanding Science Catalogue
 original_source: UCI
 year: '2013'
+collection_period: 1971-2008
 domain: chemistry & material science
 required_split:
 - Grouped (NON-IID)

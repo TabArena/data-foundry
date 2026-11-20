@@ -20,6 +20,7 @@ collections:
 - New (BeyondArena)
 original_source: Website
 year: '2015'
+collection_period: 2013-2014
 domain: education
 required_split:
 - Grouped (NON-IID)

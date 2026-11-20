@@ -24,6 +24,7 @@ collections:
 - AutoML_MM
 original_source: Company
 year: '2026'
+collection_period: Apr 2009 - Jan 2026
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)

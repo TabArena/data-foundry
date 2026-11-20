@@ -16,6 +16,7 @@ collections:
 - TabSTAR
 original_source: Kaggle
 year: '2020'
+collection_period: Unknown
 domain: finance
 required_split:
 - Random (IID)

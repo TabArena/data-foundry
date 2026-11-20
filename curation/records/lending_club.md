@@ -24,6 +24,7 @@ collections:
 - STRABLE
 original_source: Company
 year: '2020'
+collection_period: 2007-2018
 domain: finance
 required_split:
 - Temporal (NON-IID)

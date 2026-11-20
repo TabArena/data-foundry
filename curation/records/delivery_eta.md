@@ -22,6 +22,7 @@ collections:
 - tabular-dl-more-data
 original_source: Kaggle
 year: '2024'
+collection_period: Oct 2023 - Jan 2024
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)

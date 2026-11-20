@@ -19,6 +19,7 @@ collections:
 - FS Benchmark
 original_source: UCI
 year: '2022'
+collection_period: Unknown
 domain: chemistry & material science
 required_split:
 - Random (IID)

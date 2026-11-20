@@ -19,6 +19,7 @@ collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2021'
+collection_period: Jul 2019 - Feb 2021
 domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)

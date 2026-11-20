@@ -22,6 +22,7 @@ collections:
 - New (BeyondArena)
 original_source: Other
 year: '2017'
+collection_period: 2011-2012
 domain: medical & healthcare
 required_split:
 - Random (IID)

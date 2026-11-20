@@ -18,6 +18,7 @@ collections:
 - New (BeyondArena)
 original_source: Other
 year: '2017'
+collection_period: Apr 2015 - Dec 2015
 domain: medical & healthcare
 required_split:
 - Random (IID)

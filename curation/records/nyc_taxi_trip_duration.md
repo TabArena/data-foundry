@@ -17,6 +17,7 @@ collections:
 - New (BeyondArena)
 original_source: GOV Website
 year: '2016'
+collection_period: Jan 2016 - Jun 2016
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)

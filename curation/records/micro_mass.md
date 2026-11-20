@@ -24,6 +24,7 @@ collections:
 - TabSTAR
 original_source: UCI
 year: '2013'
+collection_period: Unknown
 domain: biology & life sciences
 required_split:
 - Grouped (NON-IID)

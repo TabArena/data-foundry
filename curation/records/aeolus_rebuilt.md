@@ -19,6 +19,7 @@ tags:
 - Dated Event Log
 original_source: GOV Website
 year: '2026'
+collection_period: Jan 2023 - Dec 2024
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)

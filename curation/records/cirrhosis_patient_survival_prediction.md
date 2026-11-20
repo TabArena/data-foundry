@@ -23,6 +23,7 @@ collections:
 - New (BeyondArena)
 original_source: Other
 year: '1991'
+collection_period: 1974-1986
 domain: medical & healthcare
 required_split:
 - Random (IID)

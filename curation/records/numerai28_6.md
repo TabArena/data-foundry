@@ -20,6 +20,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 year: '2016'
+collection_period: Unknown
 source_links:
 - https://www.kaggle.com/datasets/numerai/encrypted-stock-market-data-from-numerai
 - https://www.openml.org/search?type=data&id=23517

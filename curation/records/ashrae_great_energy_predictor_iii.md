@@ -20,6 +20,7 @@ collections:
 - New (BeyondArena)
 original_source: Kaggle
 year: '2019'
+collection_period: 2016-2017
 domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)

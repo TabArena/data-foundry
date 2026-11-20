@@ -23,6 +23,7 @@ collections:
 - TabSTAR
 original_source: UCI
 year: '1987'
+collection_period: '1985'
 domain: medical & healthcare
 required_split:
 - Random (IID)

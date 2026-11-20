@@ -24,6 +24,7 @@ collections:
 - TabArena Reject
 original_source: Kaggle
 year: '2019'
+collection_period: Dec 2017 - May 2018
 domain: technology & internet
 required_split:
 - Temporal (NON-IID)

@@ -22,6 +22,7 @@ collections:
 - TabSTAR
 original_source: Kaggle
 year: '2017'
+collection_period: Unknown
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)

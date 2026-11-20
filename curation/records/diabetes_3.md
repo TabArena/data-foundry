@@ -18,6 +18,7 @@ collections:
 - TabSTAR
 original_source: Website
 year: '2002'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Random (IID)

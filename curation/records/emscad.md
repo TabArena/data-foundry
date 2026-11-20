@@ -27,6 +27,7 @@ collections:
 - MulTaBench
 original_source: Other
 year: '2017'
+collection_period: 2012-2014
 domain: business & marketing
 required_split:
 - Grouped (NON-IID)

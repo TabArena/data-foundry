@@ -16,6 +16,7 @@ tags:
 - Database Snapshot
 original_source: Other
 year: '2018'
+collection_period: Unknown
 required_split:
 - Random (IID)
 source_links:

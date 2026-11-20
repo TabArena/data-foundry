@@ -18,6 +18,7 @@ collections:
 - TabArena Reject
 original_source: Kaggle
 year: '2019'
+collection_period: Unknown
 domain: finance
 required_split:
 - Random (IID)

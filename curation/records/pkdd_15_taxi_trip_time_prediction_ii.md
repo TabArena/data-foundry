@@ -18,6 +18,7 @@ tags:
 - Dated Event Log
 original_source: Kaggle
 year: '2015'
+collection_period: Jul 2013 - Jun 2014
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)

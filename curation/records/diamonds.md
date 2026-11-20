@@ -19,6 +19,7 @@ tags:
 - Non-IID (Grouped)
 original_source: Other
 year: '2007'
+collection_period: Feb 2007
 domain: business & marketing
 required_split:
 - Grouped (NON-IID)

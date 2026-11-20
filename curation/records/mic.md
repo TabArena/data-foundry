@@ -16,6 +16,7 @@ tags:
 - Clinical Study
 original_source: Other
 year: '2020'
+collection_period: 1992-1995
 required_split:
 - Random (IID)
 source_links:

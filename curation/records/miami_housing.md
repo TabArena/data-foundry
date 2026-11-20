@@ -20,6 +20,7 @@ tags:
 - Dated Event Log
 original_source: OpenML
 year: '2021'
+collection_period: '2016'
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)

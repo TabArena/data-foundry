@@ -20,6 +20,7 @@ collections:
 - New (BeyondArena)
 original_source: Kaggle
 year: '2017'
+collection_period: Jan 2016 - Mar 2018
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression

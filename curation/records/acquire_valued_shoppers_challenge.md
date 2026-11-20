@@ -24,6 +24,7 @@ collections:
 - TabRed
 original_source: Kaggle
 year: '2014'
+collection_period: Mar 2013 - Apr 2013
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)

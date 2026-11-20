@@ -22,6 +22,7 @@ collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2023'
+collection_period: 1 Jan 2023 - 8 Jan 2023
 domain: technology & internet
 required_split:
 - Grouped (NON-IID)

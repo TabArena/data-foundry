@@ -23,6 +23,7 @@ collections:
 - TabSTAR
 original_source: UCI
 year: '2015'
+collection_period: Unknown
 domain: technology & internet
 required_split:
 - Grouped (NON-IID)

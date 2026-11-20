@@ -21,6 +21,7 @@ tags:
 - Clinical Study
 original_source: UCI
 year: '2014'
+collection_period: 1999-2008
 required_split:
 - Temporal (NON-IID)
 problem_type: Binary Classification

@@ -19,6 +19,7 @@ tags:
 - Dated Event Log
 original_source: UCI
 year: '2018'
+collection_period: Unknown
 required_split:
 - Random (IID)
 source_links:

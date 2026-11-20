@@ -18,6 +18,7 @@ tags:
 collections:
 - TabSTAR
 original_source: Kaggle
+collection_period: Apr 1988 - Dec 2020
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression

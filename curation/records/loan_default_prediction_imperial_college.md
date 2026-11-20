@@ -18,6 +18,7 @@ tags:
 - Database Snapshot
 original_source: Kaggle
 year: '2014'
+collection_period: Unknown
 domain: finance
 required_split:
 - Temporal (NON-IID)

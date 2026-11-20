@@ -17,6 +17,7 @@ tags:
 - Database Snapshot
 original_source: Other
 year: '1999'
+collection_period: '1990'
 domain: business & marketing
 required_split:
 - Random (IID)

@@ -18,6 +18,7 @@ tags:
 - Database Snapshot
 original_source: Github
 year: '2019'
+collection_period: '1997'
 domain: insurance
 required_split:
 - Random (IID)

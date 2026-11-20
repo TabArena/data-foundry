@@ -21,6 +21,7 @@ collections:
 - TabSTAR
 original_source: Other
 year: '2023'
+collection_period: 2016-2021
 domain: medical & healthcare
 required_split:
 - Random (IID)

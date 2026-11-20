@@ -21,6 +21,7 @@ collections:
 - New (BeyondArena)
 original_source: Website
 year: '2023'
+collection_period: 2011-2022
 domain: environmental science & climate
 required_split:
 - Grouped (NON-IID)

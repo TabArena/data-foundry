@@ -18,6 +18,7 @@ tags:
 - Panel Data
 original_source: Other
 year: '2021'
+collection_period: 2010-2014
 domain: insurance
 required_split:
 - Temporal (NON-IID)

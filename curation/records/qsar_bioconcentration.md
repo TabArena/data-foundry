@@ -19,6 +19,7 @@ collections:
 - TabSTAR
 original_source: UCI
 year: '2016'
+collection_period: Unknown
 domain: chemistry & material science
 required_split:
 - Grouped (NON-IID)

@@ -19,6 +19,7 @@ tags:
 - Expanding Science Catalogue
 original_source: OpenML
 year: '2015'
+collection_period: Unknown
 domain: chemistry & material science
 required_split:
 - Temporal (NON-IID)

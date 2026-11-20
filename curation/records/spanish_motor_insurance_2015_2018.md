@@ -18,6 +18,7 @@ tags:
 - Dated Event Log
 original_source: Other
 year: '2023'
+collection_period: Nov 2015 - Nov 2018
 domain: insurance
 required_split:
 - Temporal (NON-IID)

@@ -18,6 +18,7 @@ collections:
 - TabSTAR
 original_source: UCI
 year: '2023'
+collection_period: 2008-2023
 domain: medical & healthcare
 required_split:
 - Random (IID)

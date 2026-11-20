@@ -25,6 +25,7 @@ collections:
 - TabSTAR
 original_source: Other
 year: '2022'
+collection_period: Jan 2012 - Jun 2019
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)

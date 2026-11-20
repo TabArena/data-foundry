@@ -21,6 +21,7 @@ collections:
 - TabSTAR
 original_source: Website
 year: '2019'
+collection_period: Aug 2018 - Oct 2018
 domain: finance
 required_split:
 - Temporal (NON-IID)

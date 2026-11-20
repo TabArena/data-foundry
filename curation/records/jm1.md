@@ -18,6 +18,7 @@ tags:
 - Database Snapshot
 original_source: Other
 year: '2004'
+collection_period: Unknown
 domain: technology & internet
 required_split:
 - Random (IID)

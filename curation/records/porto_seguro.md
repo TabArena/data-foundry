@@ -23,6 +23,7 @@ collections:
 - TabSTAR
 original_source: Kaggle
 year: '2017'
+collection_period: Unknown
 domain: insurance
 required_split:
 - Random (IID)

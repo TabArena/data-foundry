@@ -20,6 +20,7 @@ collections:
 - TabSTAR
 original_source: UCI
 year: '2008'
+collection_period: Jan 2000 - Dec 2003
 domain: environmental science & climate
 required_split:
 - Grouped (NON-IID)

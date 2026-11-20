@@ -19,6 +19,7 @@ collections:
 - New
 original_source: Zindi
 year: '2020'
+collection_period: Unknown
 domain: business & marketing
 required_split:
 - Random (IID)

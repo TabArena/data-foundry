@@ -21,6 +21,7 @@ collections:
 - TabSTAR
 original_source: Kaggle
 year: '2019'
+collection_period: 2010s
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)

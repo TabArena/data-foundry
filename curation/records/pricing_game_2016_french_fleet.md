@@ -17,6 +17,7 @@ tags:
 - 'Entities: Recur'
 - Dated Event Log
 year: '2016'
+collection_period: 2011-2013
 domain: insurance
 required_split:
 - Grouped (NON-IID)

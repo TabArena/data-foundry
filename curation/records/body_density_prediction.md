@@ -23,6 +23,7 @@ collections:
 - TabArena Reject
 original_source: Other
 year: '1995'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Random (IID)

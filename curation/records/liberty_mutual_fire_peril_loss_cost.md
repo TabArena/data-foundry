@@ -18,6 +18,7 @@ tags:
 - Database Snapshot
 original_source: Kaggle
 year: '2014'
+collection_period: Unknown
 domain: insurance
 required_split:
 - Random (IID)

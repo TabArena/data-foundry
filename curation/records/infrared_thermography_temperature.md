@@ -18,6 +18,7 @@ collections:
 - New (BeyondArena)
 original_source: Website
 year: '2023'
+collection_period: Nov 2016 - May 2018
 domain: medical & healthcare
 required_split:
 - Random (IID)

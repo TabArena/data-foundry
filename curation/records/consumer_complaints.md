@@ -23,6 +23,7 @@ collections:
 - STRABLE
 original_source: GOV Website
 year: '2026'
+collection_period: Dec 2011 - Dec 2025
 domain: finance
 required_split:
 - Temporal (NON-IID)

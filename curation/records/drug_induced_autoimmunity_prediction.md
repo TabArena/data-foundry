@@ -22,6 +22,7 @@ collections:
 - New (BeyondArena)
 original_source: UCI
 year: '2025'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)

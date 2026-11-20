@@ -15,6 +15,7 @@ tags:
 - 'Target: Later'
 - Database Snapshot
 year: '2017'
+collection_period: Unknown
 domain: insurance
 required_split:
 - Grouped (NON-IID)

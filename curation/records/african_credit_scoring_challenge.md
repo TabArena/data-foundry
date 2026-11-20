@@ -20,6 +20,7 @@ tags:
 collections:
 - New (BeyondArena)
 original_source: Zindi
+collection_period: 2021-2024
 domain: finance
 required_split:
 - Temporal (NON-IID)

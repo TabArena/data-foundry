@@ -23,6 +23,7 @@ collections:
 - STRABLE
 original_source: Kaggle
 year: '2023'
+collection_period: '2023'
 domain: business & marketing
 required_split:
 - Grouped (NON-IID)

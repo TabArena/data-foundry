@@ -20,6 +20,7 @@ collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2019'
+collection_period: 2005-2019
 domain: industry & manufacturing
 required_split:
 - Grouped (NON-IID)

@@ -22,6 +22,7 @@ tags:
 - Database Snapshot
 original_source: Other
 year: '2016'
+collection_period: Unknown
 domain: industry & manufacturing
 required_split:
 - Grouped (NON-IID)

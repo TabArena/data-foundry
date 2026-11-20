@@ -19,6 +19,7 @@ tags:
 - Experimental Results
 original_source: Kaggle
 year: '2012'
+collection_period: Unknown
 domain: chemistry & material science
 required_split:
 - Random (IID)

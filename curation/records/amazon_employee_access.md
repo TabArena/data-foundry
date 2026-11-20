@@ -17,6 +17,7 @@ tags:
 - Database Snapshot
 original_source: Kaggle
 year: '2013'
+collection_period: 2010-2011
 required_split:
 - Random (IID)
 problem_type: Binary Classification

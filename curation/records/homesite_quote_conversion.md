@@ -22,6 +22,7 @@ collections:
 - TabRed
 original_source: Kaggle
 year: '2015'
+collection_period: Jan 2013 - May 2015
 domain: insurance
 required_split:
 - Temporal (NON-IID)

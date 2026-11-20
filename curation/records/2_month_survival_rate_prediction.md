@@ -20,6 +20,7 @@ collections:
 - New (BeyondArena)
 original_source: Other
 year: '2003'
+collection_period: 1989-1994
 domain: medical & healthcare
 required_split:
 - Temporal (NON-IID)

@@ -28,6 +28,7 @@ collections:
 - STRABLE
 original_source: Kaggle
 year: '2021'
+collection_period: '2020'
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)

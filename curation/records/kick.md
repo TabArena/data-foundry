@@ -23,6 +23,7 @@ collections:
 - TabSTAR
 original_source: Kaggle
 year: '2011'
+collection_period: Jan 2009 - Dec 2010
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)

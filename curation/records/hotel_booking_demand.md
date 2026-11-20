@@ -20,6 +20,7 @@ collections:
 - New (BeyondArena)
 original_source: Other
 year: '2018'
+collection_period: Jul 2015 - Aug 2017
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)

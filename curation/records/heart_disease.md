@@ -20,6 +20,7 @@ collections:
 - New (BeyondArena)
 original_source: UCI
 year: '1988'
+collection_period: 1981-1987
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)

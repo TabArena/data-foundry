@@ -22,6 +22,7 @@ collections:
 - TabArena Reject
 original_source: UCI
 year: '1998'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Random (IID)

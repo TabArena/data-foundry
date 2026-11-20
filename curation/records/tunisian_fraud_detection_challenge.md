@@ -24,6 +24,7 @@ collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2019'
+collection_period: 2013-2018
 domain: finance
 required_split:
 - Temporal (NON-IID)

@@ -19,6 +19,7 @@ collections:
 - New (BeyondArena)
 original_source: UCI
 year: '2025'
+collection_period: Jun 2022 - Jun 2023
 domain: medical & healthcare
 required_split:
 - Random (IID)

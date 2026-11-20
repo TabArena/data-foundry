@@ -17,6 +17,7 @@ tags:
 - Panel Data
 original_source: GOV Website
 year: '2026'
+collection_period: 1982-2026
 domain: biology & life sciences
 required_split:
 - Temporal (NON-IID)

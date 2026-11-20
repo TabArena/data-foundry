@@ -18,6 +18,7 @@ tags:
 - Dated Event Log
 original_source: Other
 year: '2014'
+collection_period: '2004'
 domain: insurance
 required_split:
 - Grouped (NON-IID)

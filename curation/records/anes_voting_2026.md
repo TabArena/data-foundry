@@ -23,6 +23,7 @@ collections:
 - TableShift
 original_source: Website
 year: '2026'
+collection_period: 1948-2024
 domain: social science
 required_split:
 - Temporal (NON-IID)

@@ -16,6 +16,7 @@ tags:
 - Database Snapshot
 original_source: UCI
 year: '1994'
+collection_period: 1973-1975
 required_split:
 - Random (IID)
 problem_type: Binary Classification

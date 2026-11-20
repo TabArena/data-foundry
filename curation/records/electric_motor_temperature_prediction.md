@@ -22,6 +22,7 @@ collections:
 - New (BeyondArena)
 original_source: Kaggle
 year: '2021'
+collection_period: Unknown
 domain: industry & manufacturing
 required_split:
 - Grouped (NON-IID)

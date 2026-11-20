@@ -18,6 +18,7 @@ tags:
 - Non-IID (Grouped)
 original_source: Kaggle
 year: '2020'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)

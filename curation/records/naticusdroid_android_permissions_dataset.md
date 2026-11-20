@@ -20,6 +20,7 @@ tags:
 - Database Snapshot
 original_source: UCI
 year: '2022'
+collection_period: 2010-2019
 required_split:
 - Random (IID)
 source_links:

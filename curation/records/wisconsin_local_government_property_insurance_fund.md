@@ -18,6 +18,7 @@ tags:
 - Panel Data
 original_source: Github
 year: '2017'
+collection_period: 2006-2010
 domain: insurance
 required_split:
 - Temporal (NON-IID)

@@ -20,6 +20,7 @@ collections:
 - TabSTAR
 original_source: ASlib
 year: '2011'
+collection_period: '2011'
 domain: technology & internet
 required_split:
 - Grouped (NON-IID)

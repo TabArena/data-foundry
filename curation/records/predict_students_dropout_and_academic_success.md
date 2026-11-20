@@ -20,6 +20,7 @@ tags:
 - Dated Event Log
 original_source: UCI
 year: '2021'
+collection_period: 2008-2019
 required_split:
 - Temporal (NON-IID)
 source_links:
