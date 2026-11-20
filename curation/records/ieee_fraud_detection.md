@@ -14,10 +14,17 @@ decision_markers:
 - Anonymized
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Target: Revised Later'
+- 'Entities: Recur'
+- Dated Event Log
 collections:
 - TabArena Reject
 original_source: Kaggle
 year: '2019'
+collection_period: Dec 2017 - May 2018
 domain: technology & internet
 required_split:
 - Temporal (NON-IID)
@@ -64,6 +71,10 @@ CC (2026-11-11, Lennart): REVIEW issue 1 (which test windows), as implemented (A
 CC (2026-11-11, Lennart): the declared horizon (one month, a one-month gap, windows starting 2018-05-01, 2018-04-01 and 2018-03-01) is checked, as the month comes from the first-place team's month groups and the gap from the competition (labelled payments end on 31 May 2018, its test starts on 1 July 2018).
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` unchanged (`window=1, unit="months", n_windows=3, gap=1`); test 89,326, 83,655 and 101,632 payments (May, April, March 2018), train 417,559, 315,927 and 229,906 (70.7%, 53.5%, 38.9% of 590,540); a February window would train on the 137,321 payments of December (23.3%). `task_summary.split`, `splits_comment` and the two `curation_comments` bullets that called the month a forecasting horizon and the gap a planning window now say the month is the winners' validation group, not a refit cadence (Vesta states none; the competition scores one model on six months), and give the gap's source and the Visa chargeback limit of 120 days. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
+CC (2026-11-17, Andrej): the declared split (temporal on `Transaction_date`, windows of 1 month, 3 windows, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-19, Andrej): three-week test windows with the competition's one-month gap, all training on half the payments or more (the month was the winners' validation scheme, not the use case) (Review issue 2).
 
 ## Review
 
@@ -224,6 +235,73 @@ warnings (README not regenerated).
    March window under half with its share, the month's source (the winners' month groups) and the gap's (the
    competition); the two `curation_comments` bullets on the horizon and the gap say the same. The record has the
    decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
+2. **Train floor: keep the window under half the data as the curator's exception, or drop it?**
+
+   * **Problem:**
+     - March 2018 trains on 38.9% of the payments, beside May and April on 70.7% and 53.5%.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 1, A) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - The definition has 3 windows; the target an IID split would get[^split33] for 590,540 rows is 3; without the window under half it keeps 2.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the window as the curator's exception (implemented) | The accepted warning is reworded to the new rule; split unchanged | Keeps the periods it tests, as signed off; more windows toward the target | It trains on less than half the data |
+     | B | Drop the window under half | The windows under half leave the declaration; a rebuild | Every window trains on half the data or more | 1 fewer window and the period it tests |
+
+   * **Recommendation:** A, the sign-off's reason (periods or test rows the newest windows lack) still holds, and no window is under 30%. **Decision:** A or B?
+
+   **Notes for the AI:** on A, reword the `splits_train_under_half` acceptance (drop "SPLIT-14's two tiers admit it", name the curator's exception and this decision) and add a CC line; on B, remove the windows from the declaration, rebuild, and update the splits comment.
+
+   **Andrej (2026-11-19, discuss):** Why is the difference so big? Explain the train/test windows better
+
+   **Answer (AI, 2026-11-19):** The train shares jump by 15 to 17 points from window to window because each step back removes one whole month from training, and the release holds only six months: March trains on December and January alone (38.9%), April adds February (53.5%), May adds March (70.7%).
+
+   * **How the split is done today:** test windows of one calendar month, adjacent, walking back from the newest (May, April, March 2018), with a gap of one month between the train side and the window; the train side is every payment before the gap. The scored unit is the payment (one row; 590,540 payments, 1 December 2017 to 31 May 2018); the target count for this size is 3 windows, which the definition has.
+
+     | Test window | Gap (not used) | Train side | Test payments | Fraud, test | Train payments | Train share |
+     |---|---|---|---|---|---|---|
+     | May 2018 | April | Dec 2017 to Mar 2018 | 89,326 | 3.5% | 417,559 | 70.7% |
+     | Apr 2018 | March | Dec 2017 to Feb 2018 | 83,655 | 3.4% | 315,927 | 53.5% |
+     | Mar 2018 | February | Dec 2017 to Jan 2018 | 101,632 | 4.0% | 229,906 | 38.9% |
+
+   * **Why the difference is so big:** the shares are of all 590,540 payments, and each month is a large slice of them: December 137,321 (23.3%), January 92,585 (15.7%), February 86,021 (14.6%), March 101,632 (17.2%), April 83,655 (14.2%), May 89,326 (15.1%). Moving a window back a month moves its train side back a month, so the share drops by that month's slice; the gap month and the window itself never count as training. Half the payments lie before 22 February 2018, so with the one-month gap only windows from about 22 March on train on half.
+   * **What the use case and the source fix, and what is ours:**
+     - Fixed by the source: the gap of one month (the competition's labelled payments end on 31 May 2018 and its test starts on 1 July 2018).
+     - Not fixed: the window length. The month is the first-place team's validation group ("ordered months as non-overlapping groups"), not a refit cadence; Vesta decides on each payment as it arrives and states none, and the competition scores one model on six months.
+     - So shorter windows with the same gap are open; they move all three windows into the ten weeks from 22 March.
+
+   * **Layouts at the same one-month gap** (counted on the definition's frame):
+
+     | Layout | Windows | Test windows | Test payments | Train share |
+     |---|---|---|---|---|
+     | One month (today) | 3 | May, Apr, Mar 2018 | 83,655 to 101,632 | 38.9% to 70.7% |
+     | Three weeks | 3 | 11-31 May, 20 Apr-10 May, 30 Mar-19 Apr 2018 | 58,731 to 61,405 | 52.9% to 75.9% |
+     | Two weeks | 5 | from 23 Mar to 31 May 2018 | 37,693 to 44,653 | 50.4% to 79.0% |
+     | One week | 10 | from 23 Mar to 31 May 2018 | 17,752 to 23,575 | 50.4% to 82.1% |
+     | One month, overlapping | 3 | May, 16 Apr-15 May, Apr 2018 | 83,655 to 89,326 | 53.5% to 70.7% |
+
+     The three-week windows, newest first: 11-31 May (58,731 payments, 3.8% fraud, train to 10 April: 447,995, 75.9%), 20 April-10 May (59,803, 3.1%, train to 19 March: 380,100, 64.4%), 30 March-19 April (61,405, 3.5%, train to 27 February: 312,574, 52.9%).
+
+   * **Options** (new, after A and B of the issue):
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | C | Three-week windows, one-month gap | the three windows above, back to back from 30 March | keeps the competition's gap; three separate windows, all on 52.9% or more; the target count | three weeks has no source either; 179,939 test payments instead of 274,613 |
+     | D | Two-week windows, one-month gap | five windows from 23 March | keeps the gap; every window on 50.4% or more | more windows than the target; the oldest on the edge of half |
+     | E | One month, overlapping | May, 16 April-15 May, April | keeps the month and the gap; every window on 53.5% or more | 16 April-15 May tested twice: the windows are not separate evaluations |
+
+   * **Recommendation:** C: the month was the winners' validation scheme, not part of the use case, so three weeks keep the one thing the source fixes (the gap) and put three separate windows on half the payments or more. **Decision:** A, B, C, D or E?
+
+   **Notes for the AI:** on C, `TemporalSplits(window=21, unit="days", gap=1, gap_unit="months", cutoffs=("2018-05-11", "2018-04-20", "2018-03-30"))`; on D, `TemporalSplits(window=14, unit="days", gap=1, gap_unit="months", n_windows=5)`; on E, `TemporalSplits(window=1, unit="months", gap=1, cutoffs=("2018-05-01", "2018-04-16", "2018-04-01"))`. Each drops `splits_train_under_half`; rewrite `task_summary.split`, the horizon and gap bullets of `curation_comments` and `splits_comment` (the windows, the length's reason, the numbers above), add a CC line and a CHANGELOG entry, rebuild and run `dataset check`.
+
+   **Andrej (2026-11-19, discuss):** Reply (C): Three-week windows, one-month gap
+
+   **Resolved (2026-11-19, Andrej):** C. `TemporalSplits(window=21, unit="days", gap=1, gap_unit="months", cutoffs=("2018-05-11", "2018-04-20", "2018-03-30"))`: 11-31 May, 20 April-10 May and 30 March-19 April 2018 (58,731 to 61,405 payments, 3.1% to 3.8% fraud), training on 75.9%, 64.4% and 52.9%; the under-half acceptance is gone. `dataset check`: 0 errors, 0 warnings. Not rebuilt.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
 
 ## Reference
 

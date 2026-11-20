@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: kickstarter
 container_format: 2
-checksum: v2:b64f3c5804add74e59c9a585647b96f38ed404e426dcaa748bc2dd0397f2716e
+checksum: v2:687f9ba08ba2d6ccd9b2386054f91c04905f27fd47b11c4fb83ba1ecde8f7ec0
 build:
   uuid: 01a111fc-1005-78e7-8906-36e684a9081e
   checksum: v2:14ca3c730bd58606c1e3c421c4b49c63f30ea000f16bd69347e8e479c2ff3978
@@ -19,7 +19,7 @@ build:
     polars: 1.41.1
 build_stale: true
 data:
-  n_rows: 187117
+  n_rows: 185444
   n_features: 12
   dtypes:
     category: 5
@@ -35,31 +35,34 @@ task:
   scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: state
-  time_on: created_at
+  time_on: launched_at
   group_on: null
   group_labels: null
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 3
+  n_repeats: 9
   n_folds: 1
   random_state: 4267
-  time_horizon: 1
-  time_horizon_unit: years
-  time_gap: null
-  time_gap_unit: null
+  time_horizon: 6
+  time_horizon_unit: months
+  time_gap: 60
+  time_gap_unit: days
   n_train:
-    min: 131836
-    max: 166292
+    min: 98615
+    max: 170517
   n_test:
-    min: 13056
-    max: 21400
+    min: 4495
+    max: 12530
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    meta_license_unknown: Web Robots publishes its Kickstarter scrapes without a licence;
+      its terms and conditions cover its scraping service, not the datasets (checked
+      2026-11-10).
 decisions: []
 ---
 
@@ -67,9 +70,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `state`, scored with `roc_auc` on temporal splits by `created_at`. 187,117 rows and 12 features. Source: Other (2026).
+Binary classification of `state`, scored with `roc_auc` on temporal splits by `launched_at`. 185,444 rows and 12 features. Source: Other (2026).
 
-Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b64f3c5804add74e59c9a585647b96f38ed404e426dcaa748bc2dd0397f2716e`, so the build is stale. See [Build](#build).
+Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:687f9ba08ba2d6ccd9b2386054f91c04905f27fd47b11c4fb83ba1ecde8f7ec0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -77,17 +80,17 @@ Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06, but `dataset.py` 
 
 **Use case.** For example, Kickstarter, when a campaign launches, estimates whether it will reach its goal, to decide which projects to feature.
 
-**One row.** One Kickstarter project that ended funded or failed, created from 2009 to 2025, from Web Robots' monthly scrapes (pinned January 2026; 187,117 projects).
+**One row.** One Kickstarter project that ended funded or failed, launched from April 2009 to 13 November 2025, from Web Robots' monthly scrapes (pinned January 2026; 185,444 projects).
 
-**Predicted.** Whether it reached its funding goal by its deadline (62.61% did).
+**Predicted.** Whether it reached its funding goal by its deadline (62.50% did).
 
 **Known at prediction time.** The goal in US dollars, the creation, launch and deadline dates, the category and subcategory, the location, the project's name and short description, the creator's name, and whether it had a pre-launch page.
 
-**What the test data stands for.** Each test window is one year of projects by creation date (2023, 2024, 2025); training is every project created before, as for a model refit every year.
+**What the test data stands for.** Each test window is half a year of projects by launch date, nine half-years from 2020 to 2025; training is every project launched more than 60 days (the longest campaign) before the window starts, as for a model refit every half-year on the campaigns that had ended.
 
-**Our changes to the source.** We drop everything recorded after launch (pledges, backers, staff pick, the creator's project profile, which only funded projects have), convert goals to US dollars at each project's own rate, and remove projects repeated across scrapes (20%).
+**Our changes to the source.** We drop everything recorded after launch (pledges, backers, staff pick, the creator's project profile, which only funded projects have), convert goals to US dollars at each project's own rate, remove projects repeated across scrapes (20%), and drop the projects launched in the last 60 days before the scrape, whose outcomes it holds only for the campaigns that had already ended.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known at launch, and later years are tested. Projects created shortly before a test year can end in it, so a few training labels would not yet be known at the refit; how fully the scrapes cover all projects is not stated.
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known at launch, and later half-years are tested; with the 60-day gap at most one training project per window, a campaign longer than 60 days, had not ended when the window starts. How fully the scrapes cover all projects is not stated.
 
 ## Files in this folder
 
@@ -96,9 +99,8 @@ Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/kickstarter.md`](../../../../curation/records/kickstarter.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/kickstarter.md`](../../../../curation/records/kickstarter.md)
 - The original source: <https://webrobots.io/kickstarter-datasets/>
-- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
 
@@ -128,16 +130,16 @@ Only curators run `build`, when the dataset ships.
 | source | Other: https://webrobots.io/kickstarter-datasets/ |
 | year | 2026 |
 | domain | business & marketing |
-| license | None |
+| license |  |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | webrobots2026kickstarter |
-| rows x columns | 187,117 x 13 |
+| rows x columns | 185,444 x 13 |
 | task.target | state |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
 | task.split_regime | temporal_non_iid |
 | task.stratify_on | state |
-| task.time_on | created_at |
+| task.time_on | launched_at |
 
 **Metric**
 
@@ -175,21 +177,22 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 187,117 rows of the final frame (the oldest rows: the frame is sorted by `created_at`); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 185,444 rows of the final frame (the oldest rows: the frame is sorted by `launched_at`); 12 of 13 columns, the target first. Cells are cut at 40 characters.
 
 | state | blurb | country | created_at | deadline | goal | launched_at | name | prelaunch_activated | main_category | sub_category | creator_name |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| successful | UPDATE: Shannon Powell, Walter Payton, … | the United States | 2009-04-22 02:11:10 | 2009-06-05 06:59:00 | 4000 | 2009-05-01 15:44:25 | Electronola - An electronic gumbo of Ne… | False | Electronic Music | Music | Earl Scioneaux |
-| successful | Using a framework that ensures for resi… | the United States | 2009-04-23 03:06:59 | 2010-01-18 07:59:00 | 3000 | 2009-11-19 21:43:15 | How to Build a City in 200 Days: Mahaba… | False | Journalism | nan | Enthusiastic Grad Students |
 | successful | Let's make the world's first crowd-fund… | the United States | 2009-04-27 04:44:17 | 2009-05-16 09:59:00 | 3000 | 2009-04-28 11:55:41 | New York Makes a Book!! | False | Journalism | nan | We Make a Book |
 | successful | I make cool icons for iPhone developers… | the United States | 2009-04-29 19:52:44 | 2009-06-15 19:00:00 | 500 | 2009-04-29 21:11:15 | Icons for your iPhone apps | False | Software | Technology | Joseph Wain |
+| successful | UPDATE: Shannon Powell, Walter Payton, … | the United States | 2009-04-22 02:11:10 | 2009-06-05 06:59:00 | 4000 | 2009-05-01 15:44:25 | Electronola - An electronic gumbo of Ne… | False | Electronic Music | Music | Earl Scioneaux |
 | successful | Opening Friday, June 5 2009, on view th… | the United States | 2009-05-04 05:32:44 | 2009-06-06 05:00:00 | 5000 | 2009-05-04 23:48:21 | "LostLES" at Tiny's Giant | False | Painting | Art | Mike Brown |
+| successful | I'm a food and travel writer who fell i… | the United States | 2009-05-05 20:06:43 | 2009-07-14 14:00:00 | 950 | 2009-05-09 00:48:42 | Fruit Slinger: From farm to market | False | Journalism | nan | Daniel Shumski |
 
 ## Curation notes
 
 Similar to the Kaggle task, we aim to predict whether a Kickstarter project will be funded successfully. We simulate predicting at launch: only information known when the campaign starts is used.
 
 - The data we used only had 2 samples for 2026, so we stick to data until 2025.
+- The scrape's cut (Lennart, 2026-11-11; Review issue 2, B): the scrape of 12 January 2026 holds only projects that had ended (its newest deadline is 12 January 2026 11:00), so the newest launches are missing those still running then, and the missing ones succeed more often (cut the same way a year earlier, 20% of the projects created in 2024 would be missing, 73.9% successful against 66.9% for the rest). A campaign runs at most 60 days by Kickstarter's rule (https://help.kickstarter.com/hc/en-us/articles/115005128434-What-is-the-maximum-project-duration; a few thousand in the data run longer, up to 121 days), so we drop the projects launched from 13 November 2025 11:00 on, 60 days before that deadline: 1,673 projects, 74.2% successful. 185,444 projects remain, 62.50% successful.
 - The original data comes in .csv files per scrape data. We first combine all files into one file.
 - We remove all columns that are known only after the outcome and thus could leak information.
 - The fx_rate seems to show the conversion rate at the time of crawling the data and not at the time of the project. Thus, if it is used as on Kaggle, the numbers are wrong. We use the "usd_exchange_rate" to transform the goal into USD currency.
@@ -206,24 +209,53 @@ Similar to the Kaggle task, we aim to predict whether a Kickstarter project will
 
 ## Splits
 
-We try to create splits that simulate a model deployed to solve the task.
+We simulate a model refit every half-year and used at each campaign's launch. The windows are dated by launch (`launched_at`), the prediction point, not by creation (Lennart, 2026-11-11; Review issue 2, B): a project is created a median of 52 days before its deadline (154 days at the 90th percentile), so dated by creation 1.9% to 3.2% of each train side was still running when its window started.
 
-The official data is updated monthly but has not enough data per month to create large enough test splits. We opt for simulating a model that is refit every year to obtain a robust test set.
+The length, half a calendar year, is a convention, not a sourced horizon (Andrej, 2026-11-20, review issue 3, C): Web Robots publishes monthly scrapes without a task and the Kaggle copy is a dataset, not a competition, so no source gives a horizon or a refit cadence. The year signed off on 2026-11-11 (Lennart, review issue 1, C with reply b) held every season, but its windows 2017 to 2019 trained on 47.0%, 40.2% and 32.4% of the projects; half the projects were launched by mid-2019, so with the gap any window starting before 1 October 2019 trains on under half, at any length. Half-years from 2020 on keep nine windows, every one training on half the projects or more, and across the nine windows both halves of the year are tested. A month would not be too small: 1,500 to 2,200 projects were created in every month of 2024 and of January to September 2025.
 
- We could simulate a model that is refitted every month, but this would need many splits. Moreover, data from just one month is not enough to create a robust test set. We instead simulate a model that is refit every year. This introduces the unrealistic downside of data shift across a month that would not exist in a real-world model. We create 3 test splits by 2023, 2024, and 2025 as test year. For each test split, we use all data before the test month as training data.
+The gap is 60 days, Kickstarter's longest campaign: a refit at a window's start knows the outcome of a campaign only once it has ended, so each train side holds the projects launched more than 60 days before its window. At most one training project per window, a campaign longer than 60 days (up to 121 in the data), had not ended when its window starts. The scrape of 12 January 2026 holds only ended projects, so we drop the launches of its last 60 days (from 13 November 2025 11:00, 1,673 projects) and the newest window, 1 July to 13 November 2025, is complete but for such long campaigns.
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 131,836 to 166,292 rows, test 13,056 to 21,400 rows. Prediction horizon: 1 years.
+The nine test windows are half-years of launches, every fourth of the twelve from 2020 H1 to 2025 H2 left out (Andrej, 2026-11-20, review issue 3, C): 2025 H2, 2025 H1, 2024 H1, 2023 H2, 2023 H1, 2022 H1, 2021 H2, 2021 H1 and 2020 H1. Nine is the number of splits a random split of 185,444 projects gets (three repeats of three folds). They cover the pandemic year 2020, the spread of pre-launch pages (from about 41% of the projects created in 2020 to 61% in 2025) and success rates from 60.5% (2020 H1) to 72.5% (2025 H2). Newest first, they test 10,566, 12,530, 9,834, 5,872, 6,224, 5,386, 4,495, 5,028 and 4,554 projects (64,489 in all) and train on 91.9%, 85.9%, 75.6%, 72.3%, 69.2%, 63.5%, 60.9%, 58.3% and 53.2% of the projects. The launch years 2017 to 2019, tested until 2026-11-20, are not tested: no window over them trains on half the projects.
+
+9 repeat(s) x 1 fold(s) with seed 4267; train 98,615 to 170,517 rows, test 4,495 to 12,530 rows. Prediction horizon: 6 months. Gap between train and test: 60 days.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 166292 | 20825 | 2009-04-22 02:11:10 | 2024-12-31 23:22:47 | 2025-01-01 00:28:55 | 2025-12-31 18:54:23 |
-| 1 | 0 | 144892 | 21400 | 2009-04-22 02:11:10 | 2023-12-31 22:55:59 | 2024-01-01 01:03:06 | 2024-12-31 23:22:47 |
-| 2 | 0 | 131836 | 13056 | 2009-04-22 02:11:10 | 2022-12-31 21:14:25 | 2023-01-01 00:04:15 | 2023-12-31 22:55:59 |
+| 0 | 0 | 170517 | 10566 | 2009-04-28 11:55:41 | 2025-05-01 23:25:05 | 2025-07-01 00:00:02 | 2025-11-13 10:45:44 |
+| 1 | 0 | 159342 | 12530 | 2009-04-28 11:55:41 | 2024-11-01 23:29:11 | 2025-01-01 00:24:17 | 2025-06-30 23:43:53 |
+| 2 | 0 | 140261 | 9834 | 2009-04-28 11:55:41 | 2023-11-01 23:39:13 | 2024-01-01 00:24:55 | 2024-06-30 23:54:42 |
+| 3 | 0 | 133988 | 5872 | 2009-04-28 11:55:41 | 2023-05-01 23:54:13 | 2023-07-01 00:09:16 | 2023-12-31 23:13:31 |
+| 4 | 0 | 128277 | 6224 | 2009-04-28 11:55:41 | 2022-11-01 23:57:25 | 2023-01-01 00:02:19 | 2023-06-30 23:10:32 |
+| 5 | 0 | 117767 | 5386 | 2009-04-28 11:55:41 | 2021-11-01 23:56:41 | 2022-01-01 03:14:39 | 2022-06-30 22:20:52 |
+| 6 | 0 | 112841 | 4495 | 2009-04-28 11:55:41 | 2021-05-01 23:37:18 | 2021-07-01 01:07:52 | 2021-12-31 23:38:05 |
+| 7 | 0 | 108032 | 5028 | 2009-04-28 11:55:41 | 2020-11-01 21:51:55 | 2021-01-01 01:50:03 | 2021-06-30 23:57:21 |
+| 8 | 0 | 98615 | 4554 | 2009-04-28 11:55:41 | 2019-11-01 22:51:18 | 2020-01-01 00:03:53 | 2020-06-30 22:56:12 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows kickstarter`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | Jul 2025 - Nov 2025 | 10566 | 0.92 | successful 72.5% (about 7,662) | successful 61.7% (about 105,175) | 0.892 | prelaunch_activated (0.89), sub_category (0.76), main_category (0.71) | 0 |
+| 1 | Jan 2025 - Jun 2025 | 12530 | 0.859 | successful 70.0% (about 8,767) | successful 61.1% (about 97,414) | 0.799 | prelaunch_activated (0.80), sub_category (0.73), main_category (0.72) | 0 |
+| 2 | Jan 2024 - Jun 2024 | 9834 | 0.756 | successful 67.0% (about 6,593) | successful 60.7% (about 85,082) | 0.888 | prelaunch_activated (0.89), sub_category (0.70), main_category (0.50) | 0.0002 |
+| 3 | Jul 2023 - Dec 2023 | 5872 | 0.723 | successful 62.7% (about 3,680) | successful 60.9% (about 81,599) | 0.784 | prelaunch_activated (0.78), main_category (0.30), sub_category (0.19) | 0.0002 |
+| 4 | Jan 2023 - Jun 2023 | 6224 | 0.692 | successful 65.2% (about 4,058) | successful 60.3% (about 77,325) | 0.845 | prelaunch_activated (0.85), main_category (0.30), sub_category (0.17) | 0 |
+| 5 | Jan 2022 - Jun 2022 | 5386 | 0.635 | successful 65.3% (about 3,517) | successful 59.6% (about 70,136) | 0.952 | prelaunch_activated (0.95), main_category (0.29), sub_category (0.14) | 0.0646 |
+| 6 | Jul 2021 - Dec 2021 | 4495 | 0.608 | successful 66.3% (about 2,979) | successful 59.5% (about 67,146) | 1.063 | prelaunch_activated (1.06), main_category (0.31), sub_category (0.20) | 0 |
+| 7 | Jan 2021 - Jun 2021 | 5028 | 0.583 | successful 69.0% (about 3,468) | successful 59.3% (about 64,014) | 1.214 | prelaunch_activated (1.21), main_category (0.32), sub_category (0.18) | 0.0483 |
+| 8 | Jan 2020 - Jun 2020 | 4554 | 0.532 | successful 60.5% (about 2,756) | successful 58.6% (about 57,754) | 1.733 | prelaunch_activated (1.73), main_category (0.30), country (0.20) | 0.0108 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
+
+Accepted on purpose:
+
+- `meta_license_unknown`: Web Robots publishes its Kickstarter scrapes without a licence; its terms and conditions cover its scraping service, not the datasets (checked 2026-11-10).
 
 ## Data checks
 
@@ -234,19 +266,19 @@ The official data is updated monthly but has not enough data per month to create
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| sub_category | category | 4238 | 2.26 | 15 | Film & Video, Music, Publishing, Technology, Art, Food, Games, Fashion, Design,… |
+| sub_category | category | 4211 | 2.27 | 15 | Film & Video, Music, Publishing, Technology, Art, Food, Games, Fashion, Design,… |
 | country | category | 0 | 0 | 25 | the United States, the United Kingdom, Canada, Australia, Germany, Mexico, Fran… |
 | prelaunch_activated | category | 0 | 0 | 2 | False, True |
 | state | category | 0 | 0 | 2 | successful, failed |
 | main_category | category | 0 | 0 | 161 | Tabletop Games, Web, Product Design, Anthologies, Comedy, Documentary, Apparel,… |
-| created_at | datetime64\[ns\] | 0 | 0 | 187058 | 2016-12-24 12:00:20, 2014-07-23 21:38:45, 2024-03-15 11:25:19, 2025-09-10 01:40… |
-| deadline | datetime64\[ns\] | 0 | 0 | 177545 | 2025-11-01 03:59:00, 2024-11-01 03:59:00, 2024-09-01 03:59:00, 2025-11-01 06:59… |
-| launched_at | datetime64\[ns\] | 0 | 0 | 186897 | 2025-07-01 14:00:01, 2024-09-17 15:00:08, 2024-03-07 16:36:02, 2025-10-07 14:00… |
-| goal | float64 | 0 | 0 | 66156 | 5000.0, 10000.0, 1000.0, 3000.0, 2000.0, 500.0, 15000.0, 2500.0, 20000.0, 1500.0 |
-| blurb | string | 3 | 0 | 184716 | 3D Printable STL Files, Terrain for Tabletop, Miniature, Role Playing Games, Wa… |
-| name | string | 0 | 0 | 186546 | Debut Album, Home, A Midsummer Night's Dream, Reflections, Romeo & Juliet, Bloo… |
-| creator_name | string | 0 | 0 | 147744 | Microcosm Publishing, Juan, Mike Hoffman, David, Daniel, James, Sarah, Michael,… |
-| location_displayable_name | string | 0 | 0 | 15146 | Los Angeles, CA, London, UK, New York, NY, Chicago, IL, Brooklyn, NY, San Franc… |
+| created_at | datetime64\[ns\] | 0 | 0 | 185385 | 2025-10-11 16:58:20, 2022-05-06 14:13:59, 2025-08-23 15:32:40, 2024-07-01 08:58… |
+| deadline | datetime64\[ns\] | 0 | 0 | 176021 | 2025-11-01 03:59:00, 2024-11-01 03:59:00, 2025-11-01 06:59:00, 2024-09-01 03:59… |
+| launched_at | datetime64\[ns\] | 0 | 0 | 185224 | 2025-07-01 14:00:01, 2024-03-07 16:36:02, 2024-09-17 15:00:08, 2025-10-07 14:00… |
+| goal | float64 | 0 | 0 | 65393 | 5000.0, 10000.0, 1000.0, 3000.0, 2000.0, 500.0, 15000.0, 2500.0, 20000.0, 1500.0 |
+| blurb | string | 3 | 0 | 183139 | 3D Printable STL Files, Terrain for Tabletop, Miniature, Role Playing Games, Wa… |
+| name | string | 0 | 0 | 184878 | Debut Album, Home, A Midsummer Night's Dream, Romeo & Juliet, Reflections, Bloo… |
+| creator_name | string | 0 | 0 | 146857 | Microcosm Publishing, Juan, Mike Hoffman, David, Daniel, James, Sarah, Alex, Mi… |
+| location_displayable_name | string | 0 | 0 | 15086 | Los Angeles, CA, London, UK, New York, NY, Chicago, IL, Brooklyn, NY, San Franc… |
 
 </details>
 
@@ -254,14 +286,14 @@ The official data is updated monthly but has not enough data per month to create
 
 | state | count | pct |
 |---|---|---|
-| successful | 117147 | 62.61 |
-| failed | 69970 | 37.39 |
+| successful | 115905 | 62.5 |
+| failed | 69539 | 37.5 |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| goal | 187117 | 34317.5 | 1.00579e+06 | 0.01 | 1.35735e+08 |
+| goal | 185444 | 34547.7 | 1.0103e+06 | 0.01 | 1.35735e+08 |
 
 ### Categorical features
 
@@ -270,60 +302,60 @@ The official data is updated monthly but has not enough data per month to create
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| blurb | 1 | 3D Printable STL Files, Terrain for Tabletop, Miniature, Role Pl... | 40 | 0.02 |
-| blurb | 2 | High-quality STL Files, 3D Pin-Up Printable Figures for Miniatur... | 38 | 0.02 |
-| blurb | 3 | A high-quality Figurines, STL file, 3D printable Presupported Minis | 28 | 0.01 |
-| blurb | 4 | Pre-Supported High Quality 3D Printable Figures (STL Files). | 24 | 0.01 |
-| blurb | 5 | 3D printable miniatures of female characters 75 mm and 32 mm for... | 20 | 0.01 |
-| country | 1 | the United States | 120843 | 64.58 |
-| country | 2 | the United Kingdom | 21557 | 11.52 |
-| country | 3 | Canada | 8706 | 4.65 |
-| country | 4 | Australia | 4425 | 2.36 |
-| country | 5 | Germany | 4264 | 2.28 |
-| created_at | 1 | 2016-12-24 12:00:20 | 2 | 0 |
-| created_at | 2 | 2014-07-23 21:38:45 | 2 | 0 |
-| created_at | 3 | 2024-03-15 11:25:19 | 2 | 0 |
-| created_at | 4 | 2025-09-10 01:40:23 | 2 | 0 |
-| created_at | 5 | 2025-01-07 15:07:45 | 2 | 0 |
+| blurb | 1 | 3D Printable STL Files, Terrain for Tabletop, Miniature, Role Pl... | 38 | 0.02 |
+| blurb | 2 | High-quality STL Files, 3D Pin-Up Printable Figures for Miniatur... | 37 | 0.02 |
+| blurb | 3 | A high-quality Figurines, STL file, 3D printable Presupported Minis | 27 | 0.01 |
+| blurb | 4 | Pre-Supported High Quality 3D Printable Figures (STL Files). | 21 | 0.01 |
+| blurb | 5 | 3D Printable Miniatures for RPG & Tabletop Wargames (Pre-support... | 19 | 0.01 |
+| country | 1 | the United States | 120033 | 64.73 |
+| country | 2 | the United Kingdom | 21372 | 11.52 |
+| country | 3 | Canada | 8613 | 4.64 |
+| country | 4 | Australia | 4382 | 2.36 |
+| country | 5 | Germany | 4202 | 2.27 |
+| created_at | 1 | 2025-10-11 16:58:20 | 2 | 0 |
+| created_at | 2 | 2022-05-06 14:13:59 | 2 | 0 |
+| created_at | 3 | 2025-08-23 15:32:40 | 2 | 0 |
+| created_at | 4 | 2024-07-01 08:58:22 | 2 | 0 |
+| created_at | 5 | 2021-12-13 02:23:35 | 2 | 0 |
 | creator_name | 1 | Microcosm Publishing | 78 | 0.04 |
-| creator_name | 2 | Juan | 75 | 0.04 |
-| creator_name | 3 | Mike Hoffman | 72 | 0.04 |
-| creator_name | 4 | David | 65 | 0.03 |
-| creator_name | 5 | Daniel | 63 | 0.03 |
+| creator_name | 2 | Juan | 72 | 0.04 |
+| creator_name | 3 | Mike Hoffman | 66 | 0.04 |
+| creator_name | 4 | David | 64 | 0.03 |
+| creator_name | 5 | Daniel | 61 | 0.03 |
 | deadline | 1 | 2025-11-01 03:59:00 | 26 | 0.01 |
 | deadline | 2 | 2024-11-01 03:59:00 | 21 | 0.01 |
-| deadline | 3 | 2024-09-01 03:59:00 | 15 | 0.01 |
-| deadline | 4 | 2025-11-01 06:59:00 | 15 | 0.01 |
+| deadline | 3 | 2025-11-01 06:59:00 | 15 | 0.01 |
+| deadline | 4 | 2024-09-01 03:59:00 | 15 | 0.01 |
 | deadline | 5 | 2015-01-01 04:59:00 | 14 | 0.01 |
 | launched_at | 1 | 2025-07-01 14:00:01 | 4 | 0 |
-| launched_at | 2 | 2024-09-17 15:00:08 | 3 | 0 |
-| launched_at | 3 | 2024-03-07 16:36:02 | 3 | 0 |
+| launched_at | 2 | 2024-03-07 16:36:02 | 3 | 0 |
+| launched_at | 3 | 2024-09-17 15:00:08 | 3 | 0 |
 | launched_at | 4 | 2025-10-07 14:00:01 | 3 | 0 |
-| launched_at | 5 | 2025-05-13 15:00:02 | 2 | 0 |
-| location_displayable_name | 1 | Los Angeles, CA | 7868 | 4.2 |
-| location_displayable_name | 2 | London, UK | 7689 | 4.11 |
-| location_displayable_name | 3 | New York, NY | 7146 | 3.82 |
-| location_displayable_name | 4 | Chicago, IL | 3102 | 1.66 |
-| location_displayable_name | 5 | Brooklyn, NY | 2483 | 1.33 |
-| main_category | 1 | Tabletop Games | 7180 | 3.84 |
-| main_category | 2 | Web | 3359 | 1.8 |
-| main_category | 3 | Product Design | 3178 | 1.7 |
-| main_category | 4 | Anthologies | 2788 | 1.49 |
-| main_category | 5 | Comedy | 2720 | 1.45 |
+| launched_at | 5 | 2024-10-02 12:00:04 | 2 | 0 |
+| location_displayable_name | 1 | Los Angeles, CA | 7822 | 4.22 |
+| location_displayable_name | 2 | London, UK | 7617 | 4.11 |
+| location_displayable_name | 3 | New York, NY | 7078 | 3.82 |
+| location_displayable_name | 4 | Chicago, IL | 3077 | 1.66 |
+| location_displayable_name | 5 | Brooklyn, NY | 2474 | 1.33 |
+| main_category | 1 | Tabletop Games | 6831 | 3.68 |
+| main_category | 2 | Web | 3352 | 1.81 |
+| main_category | 3 | Product Design | 3038 | 1.64 |
+| main_category | 4 | Anthologies | 2774 | 1.5 |
+| main_category | 5 | Comedy | 2708 | 1.46 |
 | name | 1 | Debut Album | 8 | 0 |
 | name | 2 | Home | 7 | 0 |
 | name | 3 | A Midsummer Night's Dream | 6 | 0 |
-| name | 4 | Reflections | 5 | 0 |
-| name | 5 | Romeo & Juliet | 5 | 0 |
-| prelaunch_activated | 1 | False | 139044 | 74.31 |
-| prelaunch_activated | 2 | True | 48073 | 25.69 |
-| state | 1 | successful | 117147 | 62.61 |
-| state | 2 | failed | 69970 | 37.39 |
-| sub_category | 1 | Film & Video | 26285 | 14.05 |
-| sub_category | 2 | Music | 25422 | 13.59 |
-| sub_category | 3 | Publishing | 20712 | 11.07 |
-| sub_category | 4 | Technology | 16706 | 8.93 |
-| sub_category | 5 | Art | 16030 | 8.57 |
+| name | 4 | Romeo & Juliet | 5 | 0 |
+| name | 5 | Reflections | 5 | 0 |
+| prelaunch_activated | 1 | False | 138386 | 74.62 |
+| prelaunch_activated | 2 | True | 47058 | 25.38 |
+| state | 1 | successful | 115905 | 62.5 |
+| state | 2 | failed | 69539 | 37.5 |
+| sub_category | 1 | Film & Video | 26141 | 14.1 |
+| sub_category | 2 | Music | 25355 | 13.67 |
+| sub_category | 3 | Publishing | 20517 | 11.06 |
+| sub_category | 4 | Technology | 16546 | 8.92 |
+| sub_category | 5 | Art | 15926 | 8.59 |
 
 </details>
 
@@ -338,4 +370,4 @@ The official data is updated monthly but has not enough data per month to create
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b64f3c5804add74e59c9a585647b96f38ed404e426dcaa748bc2dd0397f2716e` |
+| stale | yes: the definition now gives checksum `v2:687f9ba08ba2d6ccd9b2386054f91c04905f27fd47b11c4fb83ba1ecde8f7ec0` |

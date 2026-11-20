@@ -5,6 +5,7 @@ checked_by:
 - Lennart
 - Alex
 - Mustafa
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -13,12 +14,17 @@ priority: 2
 tags:
 - Non-IID (Temporal)
 - Free Text (Sentences)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- Dated Event Log
 collections:
 - TexTabBench
 - TabSTAR
 - AutoML_MM
 original_source: Company
 year: '2026'
+collection_period: Apr 2009 - Jan 2026
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)
@@ -59,6 +65,10 @@ CC (2026-11-11, Lennart): Review issue 1, C ("Option C: All six years.") with re
 CC (2026-11-11, Lennart): the declared horizon (one calendar year of launches, a 60-day gap, windows starting 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018 and 2017) is checked, as no source gives a horizon or a refit cadence, and a year holds every season and loses the least of its newest window to the scrape (Review horizon, ok).
 
 **Assessment (AI, 2026-11-11):** applied issue 2 (B) and issue 1 (C, reply b): `_clean` drops the 1,673 projects launched from 2025-11-13 11:00 on (74.2% successful; 60 days before the scrape's newest deadline, 2026-01-12 11:00), leaving 185,444 projects (62.50% successful); `temporal` declares one-year windows by `launched_at` from 2025 back to 2017 with a 60-day gap. Test 23,096 (1 January to 13 November 2025), 20,466, 12,096, 10,790, 9,523, 9,432, 11,187, 12,312 and 14,286 projects; train 159,342, 140,261, 128,277, 117,767, 108,032, 98,615, 87,250, 74,581 and 60,168 (85.9%, 75.6%, 69.2%, 63.5%, 58.3%, 53.2%, 47.0%, 40.2% and 32.4% of the projects). Success in the test years runs from 55.0% (2017) to 71.1% (2025), on the train sides from 58.3% to 61.3% (`dataset windows`); at most one training project per window (3 over the nine train sides, campaigns longer than 60 days) had not ended when its window starts. `task_summary`, the notes and `splits_comment` give the windows, the gap and the dating by launch, and drop the reason "not enough data per month" (1,500 to 2,200 projects a month). `dataset check`: 0 errors, 0 warnings, with `splits_train_under_half` accepted on the CC line above.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `launched_at`, windows of 1 year, 9 windows at fixed cutoffs, gap 60 days) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-20, Andrej): nine half-year windows from 2020 to 2025, all training on half the projects or more (Review issue 3, C); the one-year length was our convention.
 
 ## Review
 
@@ -280,6 +290,63 @@ projects a month). The record has the horizon CC line. `dataset check`: 0 errors
    changes, fit reason) and `splits_comment` the dating by launch and the gap; the record has the CC line.
    `dataset windows kickstarter` recomputed: success in the test years 55.0% (2017) to 71.1% (2025), on the train
    sides 58.3% to 61.3%. `dataset check`: 0 errors, 0 warnings.
+
+3. **Train floor: keep the windows under half the data as the curator's exception, or drop them?**
+
+   * **Problem:**
+     - 2019, 2018 and 2017 train on 47.0%, 40.2% and 32.4% of the projects, beside six windows on 53.2% to 85.9%.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 1, C with reply b) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - The definition has 9 windows; the target an IID split would get[^split33] for 185,444 rows is 9; without the windows under half it keeps 6.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the windows as the curator's exception (implemented) | The accepted warning is reworded to the new rule; split unchanged | Keeps the periods they test, as signed off; more windows toward the target | They train on less than half the data |
+     | B | Drop the windows under half | The windows under half leave the declaration; a rebuild | Every window trains on half the data or more | 3 fewer windows and the periods they test |
+
+   * **Recommendation:** A, the sign-off's reason (periods or test rows the newest windows lack) still holds, and no window is under 30%. **Decision:** A or B?
+
+   **Notes for the AI:** on A, reword the `splits_train_under_half` acceptance (drop "SPLIT-14's two tiers admit it", name the curator's exception and this decision) and add a CC line; on B, remove the windows from the declaration, rebuild, and update the splits comment.
+
+   **Andrej (2026-11-19, discuss):** How exactly are the splits done? Could we reduce the window sizes while staying compliant with the use case and get to more than 50% on each train split?
+
+   **Answer (AI, 2026-11-19):** Yes: shorter windows cannot lift 2017-2019 (a window's train share is set by its start, and every start before 1 October 2019 trains on under half), but nine half-year windows from 2020 on (C) reach the target of nine with every train side at 53% or more.
+
+   * **How the split is done today:** `TemporalSplits(window=1, unit="years", cutoffs=(2025, ..., 2017), gap=60, gap_unit="days")` on `launched_at`: nine calendar years, one per step, newest first, each trained on the projects launched more than 60 days before 1 January. Scored unit: the project (185,444; 115,905 successful).
+
+     | Test year | Test projects | Successful | Train (launched before) | Train share |
+     |---|---|---|---|---|
+     | 2025 (to 13 Nov) | 23,096 | 16,429 | 159,342 (2 Nov 2024) | 85.9% |
+     | 2024 | 20,466 | 13,717 | 140,261 | 75.6% |
+     | 2023 | 12,096 | 7,738 | 128,277 | 69.2% |
+     | 2022 | 10,790 | 7,033 | 117,767 | 63.5% |
+     | 2021 | 9,523 | 6,447 | 108,032 | 58.3% |
+     | 2020 | 9,432 | 5,913 | 98,615 | 53.2% |
+     | 2019 | 11,187 | 6,799 | 87,250 | 47.0% |
+     | 2018 | 12,312 | 7,315 | 74,581 | 40.2% |
+     | 2017 | 14,286 | 7,854 | 60,168 | 32.4% |
+
+   * **What the use case and the source fix:** the gap is fixed, 60 days, Kickstarter's longest campaign, so every training outcome is known at the window's start (issue 2, B), and the time unit is the launch date, the prediction point. The length is not: Web Robots and Kaggle give no horizon or refit cadence; the year is our convention (signed off 2026-11-11 because a year holds every season).
+   * **The floor:** half the projects were launched by mid-2019; with the gap, a window starting 1 July 2019 trains on 49.98%, one starting 1 October 2019 on 51.6%, 1 January 2020 on 53.2%. So 2017-2019 can only be tested under half, at any length.
+   * **Shorter layouts above half,** 60-day gap, target 9 windows:
+
+     | Layout | Windows (newest first) | Test projects | Successful | Train shares |
+     |---|---|---|---|---|
+     | B: one year, drop the three (the issue's B) | 2025 to 2020 | 9,432 to 23,096 (85,403) | 5,913 to 16,429 | 53.2% to 85.9% |
+     | C: half-years, every fourth of the twelve left out | 2025 H2, 2025 H1, 2024 H1, 2023 H2, 2023 H1, 2022 H1, 2021 H2, 2021 H1, 2020 H1 | 10,566 / 12,530 / 9,834 / 5,872 / 6,224 / 5,386 / 4,495 / 5,028 / 4,554 (64,489) | 7,662 / 8,767 / 6,593 / 3,680 / 4,058 / 3,517 / 2,979 / 3,468 / 2,756 | 91.9 / 85.9 / 75.6 / 72.3 / 69.2 / 63.5 / 60.9 / 58.3 / 53.2% |
+
+     - 2025 H2 runs 1 July to 13 November (the scrape's cut). Quarters would also work (25 candidates from 2019 Q4, 1,918 to 6,700 projects each) but split each year into four smaller windows without a further gain.
+     - C covers six years and both halves of the year where B covers six whole years; neither tests 2017-2019.
+
+   **Recommendation:** C: the length is a convention and a half-year still spans the seasons across the nine windows, so it meets the target of nine with every train side above half; the price is 2017-2019 (no layout above half can test them) and smaller windows. **Decision:** A, B or C?
+
+   **Andrej (2026-11-20, discuss):** Agree.
+
+   **Resolved (2026-11-20, Andrej):** C. Nine half-year windows, 2020 H1 to 2025 H2 (without 2022 H2 and 2024 H2), each with the 60-day gap, training on 53.2% to 91.9%, 4,495 to 12,530 test projects; the under-half acceptance is gone. 2017-2019 cannot be tested above half. `dataset check`: 0 errors, 0 warnings. Not rebuilt.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
 
 ## Reference
 

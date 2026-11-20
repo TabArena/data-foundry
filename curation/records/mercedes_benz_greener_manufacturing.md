@@ -3,6 +3,7 @@ unique_name: mercedes_benz_greener_manufacturing
 name: Mercedes_Benz_Greener_Manufacturing
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -12,11 +13,16 @@ decision_markers:
 - Anonymized
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Inferred'
+- 'Target: Later'
+- Database Snapshot
 collections:
 - TabArena Reject
 - TabSTAR
 original_source: Kaggle
 year: '2017'
+collection_period: Unknown
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
@@ -59,12 +65,18 @@ CC (2026-11-11, Lennart): the declared horizon (320 cars, no gap, windows starti
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` unchanged (`window=320, unit="rows", n_windows=9`); test 320 cars each, train 3,884, 3,564, 3,244, 2,924, 2,604, 2,284, 1,964, 1,644 and 1,324 (92.4%, 84.8%, 77.2%, 69.6%, 61.9%, 54.3%, 46.7%, 39.1%, 31.5% of 4,204). `task_summary.split` no longer says the first 1,000 cars are always in training (the oldest window trains on 1,324); `splits_comment` replaces the `TimeSeriesSplit` description with the windows by car ID, the train sides, the three under half with their shares, the length's origin (the first curation's `TimeSeriesSplit` arithmetic) and the reason it is kept, and the absent gap; the outlier bullet no longer names the first 1,000 cars. `dataset check`: 0 errors, 2 warnings that predate this change (11 constant and 45 duplicated option columns; README not regenerated).
 
+CC (2026-11-17, Andrej): the declared split (temporal on `time_index`, windows of 320 rows, 9 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-19, Andrej): `time_index` stays a model input (Review issue 2, A as implemented): the car's ID exists before its bench test, so the planner holds it at prediction time.
+
+CC (2026-11-19, Andrej): nine windows of 233 cars, all training on half the cars or more (320 rows was leftover arithmetic) (Review issue 3).
+
 ## Review
 
 **Outcome:** added. On 2026-11-11 you kept the nine windows of 320 cars from ID 2,628 on (issue 1 and the horizon,
 A), which the amended floor admits with the three oldest training on 46.7%, 39.1% and 31.5% of the cars.
 
-**Main points:** Settled on 2026-11-11: the nine windows of 320 cars stay (issue 1, A), and the declared length of
+**Main points:** Issue 2: Keep `time_index` as a model input? Settled on 2026-11-11: the nine windows of 320 cars stay (issue 1, A), and the declared length of
 320 cars without a gap is checked: no source gives a length, and 320 tests 2,880 cars where 233 would test 2,097.
 
 **Horizon:**
@@ -204,6 +216,85 @@ duplicated option columns) are about the data, not the windows, and are not sett
    outlier bullet of `curation_comments` no longer speaks of the first 1,000 cars. The record has the decision and the
    horizon CC lines. `dataset check`: 0 errors; its 2 warnings (constant and duplicated option columns) are about the
    data and not settled here (README not regenerated).
+
+2. **Keep `time_index`, a reconstructed order, as a model input?**
+
+   * **Problem:**
+     - `time_index` is the car's ID read as its place in the testing sequence; it orders the temporal split and is a model input by default.
+     - california_house_prices_2020, labour_inspection_compliance and wine_quality keep their reconstructed order out of the inputs (`feature=False`), because the actor does not hold it when predicting[^lk-2].
+     - Here the actor does: a car's ID exists before its bench test, so the planner who estimates the test time holds it.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep as input (implemented) | `time_index` stays a feature | the actor holds it; a model can use a trend over time | the test windows lie beyond the training range of the index, where a trend extrapolates poorly |
+     | B | Split order only (`feature=False`) | `time_index` orders the windows and is dropped from the inputs | no model leans on an artificial index | drops what the actor holds at prediction |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   **Notes for the AI:** on B, declare `Temporal(..., feature=False)` (the time-column-as-split-metadata change of #98) and add a CC line.
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: `time_index` stays a model input, as the planner holds a car's ID before its bench test.
+
+   [^lk-2]: **LEAK-10** (Must): every feature has to have existed, and be held by the actor, at the prediction time of its row; a time column that only orders the split is declared no input.
+
+3. **Train floor: keep the windows under half the data as the curator's exception, or drop them?**
+
+   * **Problem:**
+     - The three oldest windows train on 46.7%, 39.1% and 31.5% of the cars, beside six on 54.3% to 92.4%.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 1, A) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - The definition has 9 windows; the target an IID split would get[^split33] for 4,204 rows is 9; without the windows under half it keeps 6.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the windows as the curator's exception (implemented) | The accepted warning is reworded to the new rule; split unchanged | Keeps the periods they test, as signed off; more windows toward the target | They train on less than half the data |
+     | B | Drop the windows under half | The windows under half leave the declaration; a rebuild | Every window trains on half the data or more | 3 fewer windows and the periods they test |
+
+   * **Recommendation:** A, the sign-off's reason (periods or test rows the newest windows lack) still holds, and no window is under 30%. **Decision:** A or B?
+
+   **Notes for the AI:** on A, reword the `splits_train_under_half` acceptance (drop "SPLIT-14's two tiers admit it", name the curator's exception and this decision) and add a CC line; on B, remove the windows from the declaration, rebuild, and update the splits comment.
+
+   **Andrej (2026-11-19, discuss):** How exactly are the splits done? Could we reduce the window sizes while staying compliant with the use case and get to more than 50% on each train split?
+
+   **Answer (AI, 2026-11-19):** Yes: nine windows of 233 cars fill the newest half exactly, every train side keeps 50.1% or more, and nothing in the use case ties the length.
+
+   * **How the split is done today:** `TemporalSplits(window=320, unit="rows", n_windows=9)` on `time_index` (the car ID, the only order): nine runs of 320 cars walking back from the newest, step 320, no gap, each train side every earlier car. Scored unit: the car (4,204).
+
+     | Window (car IDs) | Test cars | Train | Train share |
+     |---|---|---|---|
+     | 7,801-8,417 | 320 | 3,884 | 92.4% |
+     | 7,140-7,798 | 320 | 3,564 | 84.8% |
+     | 6,487-7,139 | 320 | 3,244 | 77.2% |
+     | 5,875-6,486 | 320 | 2,924 | 69.6% |
+     | 5,223-5,873 | 320 | 2,604 | 61.9% |
+     | 4,581-5,221 | 320 | 2,284 | 54.3% |
+     | 3,920-4,579 | 320 | 1,964 | 46.7% |
+     | 3,308-3,919 | 320 | 1,644 | 39.1% |
+     | 2,628-3,306 | 320 | 1,324 | 31.5% |
+
+   * **What the use case and the source fix:** nothing. The competition ships no dates and held its test cars out at random; 320 is the arithmetic of the first curation's `TimeSeriesSplit`, not a horizon (signed off 2026-11-11 as such). No gap is needed (a car's time is known when it leaves the bench). Our assumption: the car ID is the order of testing.
+   * **The floor:** half the cars come before ID 4,230 (the 2,108th car), so nine windows above half can hold at most 233 cars each (2,102 open cars / 9).
+   * **Shorter layouts above half,** no gap, target 9 windows:
+
+     | Layout | Windows (car IDs) | Test cars | Train shares |
+     |---|---|---|---|
+     | B: 320 cars, drop the three (the issue's B) | 4,581-8,417 in six runs | 6 x 320 = 1,920 | 54.3% to 92.4% |
+     | C: 233 cars | 4,230-8,417 in nine runs (oldest 4,230-4,699) | 9 x 233 = 2,097 | 50.1%, 55.7%, 61.2%, 66.8%, 72.3%, 77.8%, 83.4%, 88.9%, 94.5% |
+
+     - C is issue 1's B of 2026-11-11, recounted on today's definition (same windows). 280 cars would give seven windows above half (53.4% to 93.3%).
+
+   **Recommendation:** C: no source ties the length, and 233 cars give the nine windows a task of this size aims at, all above half, at 783 fewer test cars than today. **Decision:** A, B or C?
+
+   **Andrej (2026-11-19, discuss):** Agree.
+
+   **Resolved (2026-11-19, Andrej):** C. `TemporalSplits(window=233, unit="rows", n_windows=9)`: nine windows of 233 cars by car ID, training on 50.1% to 94.5% (2,097 test cars); the under-half acceptance is gone. `dataset check`: 0 errors (two column warnings, unrelated). Not rebuilt.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
 
 ## Reference
 

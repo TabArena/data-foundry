@@ -73,12 +73,11 @@ class IeeeFraudDetection(AbstractCuratedDataset):
             "competition's winners."
         ),
         split=(
-            "Each of the three newest months, May, April and March 2018, is a test window, trained on all payments up "
-            "to one month before it, the competition's gap; a month is the group the winning team validated on. The "
-            "March window trains on December and January only, 39% of the payments."
+            "Three back-to-back test windows of three weeks, 30 March to 31 May 2018, each trained on all payments up "
+            "to one month before it, the competition's gap; every window trains on 53% to 76% of the payments."
         ),
         changes=(
-            "We split by month with a one-month gap and add the client key of the first-place solution, which links "
+            "We split into three-week windows with a one-month gap and add the client key of the first-place solution, which links "
             "the payments of one client."
         ),
         fit="direct",
@@ -127,7 +126,7 @@ class IeeeFraudDetection(AbstractCuratedDataset):
         - The Kaggle competition also provides test_transaction.csv and test_identity.csv, but they are unlabeled and are therefore excluded from df for curation checks.
         - We normalize the D-columns, since they correspond to days since a certain event, we can normalize them by the transaction date to get the actual day of the event. This is also what the first place solution on Kaggle did.
         - We add a uid feature used by the first place solution on Kaggle to identify unique users. Note that this feature is not perfect and just an approximation by the Kaggle users. Moreover, due to missing values, for ~15% of the samples no uid could be reconstructed.
-        - Test windows of one calendar month, the group of the first-place solution's validation ("GroupKFold training validation data splitting, with ordered months as non-overlapping groups"); a validation scheme, not a refit cadence, which neither Vesta nor the competition states (CC 2026-11-11; splits comment).
+        - Test windows of three weeks (Andrej, 2026-11-19, review issue 2, C): neither Vesta nor the competition states a refit cadence, and the month of the first-place solution's validation ("GroupKFold training validation data splitting, with ordered months as non-overlapping groups") is a validation scheme; with the one-month gap only about ten weeks of windows train on half the payments, room for three windows of three weeks but not of a month (splits comment).
         - A gap of one month, the competition's: its labelled payments end on 31 May 2018 and its unlabelled test payments start on 1 July 2018.
         - Anomaly: Missing values.
         - Anomaly: Several features might allow to approximate to the uid and can lead to overfitting.
@@ -151,18 +150,18 @@ class IeeeFraudDetection(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Each test window is one calendar month, the group the first-place team validated on ("GroupKFold training validation data splitting, with ordered months as non-overlapping groups", https://developer.nvidia.com/blog/leveraging-machine-learning-to-detect-fraud-tips-to-developing-a-winning-kaggle-solution). It is a validation scheme, not a refit cadence: Vesta decides on each payment as it arrives and states no cadence, and the competition scores one model on six months (July to December 2018), so the length says how long one fitted model serves. The gap is one month, the competition's: its labelled payments end on 31 May 2018 and its test payments start on 1 July 2018. A fraud label waits for the cardholder's chargeback, which Visa accepts up to 120 days after a card-absent payment, so the gap is shorter than the longest delay. The payments run from 1 December 2017 to 31 May 2018 (dated from the assumed start day of 30 November 2017), and the test windows are the three newest months (CC 2026-11-11), newest first: May, April and March 2018, with 89,326, 83,655 and 101,632 payments (fraud 3.5%, 3.4% and 4.0%). Train is every payment before the gap, up to 31 March, 28 February and 31 January: 417,559, 315,927 and 229,906 payments (70.7%, 53.5% and 38.9%). The March window trains on less than half the payments (38.9%, December and January); the two newest train on more. The windows walk back from the newest because six months of payments leave no other choice: with the one-month gap a February window would train on December only (about 23%).
+        Each test window is three weeks (Andrej, 2026-11-19, review issue 2, C). No source fixes the length: Vesta decides on each payment as it arrives and states no refit cadence, the competition scores one model on six months (July to December 2018), and the month the first-place team validated on ("GroupKFold training validation data splitting, with ordered months as non-overlapping groups", https://developer.nvidia.com/blog/leveraging-machine-learning-to-detect-fraud-tips-to-developing-a-winning-kaggle-solution) is a validation scheme. The gap is one month, the competition's: its labelled payments end on 31 May 2018 and its test payments start on 1 July 2018. A fraud label waits for the cardholder's chargeback, which Visa accepts up to 120 days after a card-absent payment, so the gap is shorter than the longest delay. The payments run from 1 December 2017 to 31 May 2018 (dated from the assumed start day of 30 November 2017); half of them lie before 22 February 2018, so with the gap only windows from about 22 March on train on half the payments, about ten weeks, which hold three windows of three weeks but only two of a month (one-month windows put March on 38.9%). The test windows are back to back, newest first: 11-31 May, 20 April-10 May and 30 March-19 April 2018, with 58,731, 59,803 and 61,405 payments (fraud 3.8%, 3.1% and 3.5%). Train is every payment before the gap, up to 10 April, 19 March and 27 February: 447,995, 380,100 and 312,574 payments (75.9%, 64.4% and 52.9%).
     """
     temporal = Temporal(
         on="Transaction_date",
-        splits=TemporalSplits(window=1, unit="months", n_windows=3, gap=1),
-    )
-    accepted_check_warnings = {
-        "splits_train_under_half": (
-            "Signed off (Lennart, 2026-11-11, review issue 1, A): March 2018 trains on 38.9% of the payments, "
-            "beside May and April on 70.7% and 53.5%; SPLIT-14's two tiers admit it."
+        splits=TemporalSplits(
+            window=21,
+            unit="days",
+            gap=1,
+            gap_unit="months",
+            cutoffs=("2018-05-11", "2018-04-20", "2018-03-30"),
         ),
-    }
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # LOAD TRAIN
