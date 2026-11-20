@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: coffee_rating_prediction
 container_format: 2
-checksum: v2:1e26bf7279d93d6acf897b0a11099b6b7ceb8b1c918f01c04f2207dc21b8b394
+checksum: v2:f0ee18e7efb7d97756f19d95180d3254945bf444bf59c1dc80cf7ed16f61ef80
 build:
   uuid: 01a111fc-f020-7625-b0b4-3e15565c2a7b
   checksum: v2:42fdd069b327bcb3840eb99b3ce9ae083ec892a2618bfe1dc6753c7687dc5694
@@ -19,14 +19,14 @@ build:
     polars: 1.41.1
 build_stale: true
 data:
-  n_rows: 2369
-  n_features: 12
+  n_rows: 2367
+  n_features: 8
   dtypes:
-    category: 2
+    category: 1
     datetime64[ns]: 1
     float64: 3
     int64: 1
-    string: 6
+    string: 4
   n_test_dataset_rows: null
 task:
   target: rating
@@ -37,12 +37,13 @@ task:
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: review_date
+  time_is_feature: false
   group_on: null
   group_labels: null
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 13
+  n_repeats: 12
   n_folds: 1
   random_state: 4267
   time_horizon: 2
@@ -50,18 +51,19 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 1211
-    max: 2315
+    min: 1256
+    max: 2263
   n_test:
-    min: 54
-    max: 115
+    min: 62
+    max: 137
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - dataset_constant_column
+  warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    meta_license_unknown: Kaggle gives the licence as 'Other (specified in description)',
+      but the description names none (checked 2026-11-10).
 decisions: []
 ---
 
@@ -69,9 +71,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `rating`, scored with `rmse` on temporal splits by `review_date`. 2,369 rows and 12 features. Source: Kaggle (2023).
+Regression of `rating`, scored with `rmse` on temporal splits by `review_date`. 2,367 rows and 8 features. Source: Kaggle (2023).
 
-Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1e26bf7279d93d6acf897b0a11099b6b7ceb8b1c918f01c04f2207dc21b8b394`, so the build is stale. See [Build](#build).
+Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f0ee18e7efb7d97756f19d95180d3254945bf444bf59c1dc80cf7ed16f61ef80`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -79,17 +81,17 @@ Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06, but `dataset.py` 
 
 **Use case.** For example, a roaster or importer predicts the overall score one specific rating service, here Coffee Review, would give a coffee, to decide which coffees to submit for review, stock or feature; the model learns that service's scoring, not a general measure of quality.
 
-**One row.** One coffee reviewed by Coffee Review (coffeereview.com), October 2018 to October 2023.
+**One row.** One coffee reviewed by Coffee Review (coffeereview.com), October 2018 to September 2023.
 
 **Predicted.** The review's overall score on a 100-point scale (82 to 98 here, mean 93).
 
-**Known at prediction time.** The roaster and its location, the coffee's name and origin, the roast level and roast colour readings, the price per gram in US dollars, the review month, and two passages of the review that describe the coffee's taste and sum it up.
+**Known at prediction time.** The roaster and its location, the coffee's name and origin, the roast level and roast colour readings, the price per gram in US dollars; the review month orders the split but is no model input.
 
 **What the test data stands for.** Thirteen test periods of two months, walking back from the newest review, each with every earlier review for training, as for a model refit every two months.
 
-**Our changes to the source.** We drop the scores for aroma, acidity, body, flavour, aftertaste and with milk, which make up the overall score, and the review notes, which can mention awards.
+**Our changes to the source.** We drop the scores for aroma, acidity, body, flavour, aftertaste and with milk, which make up the overall score, the review notes, which can mention awards, and the two passages of the review that describe the coffee's taste and sum it up, which the reviewer writes with the score. We convert the prices in New Taiwan dollars to US dollars.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The two text passages are written by the reviewer together with the score and carry the reviewer's judgement, whereas a roaster predicting the score before the review would have only its own description of the coffee.
+> **Use case fit: approximate (a stand-in with a known gap).** The features are what a roaster knows before the review, but one rating service stands for the quality a buyer meets, and the time from a roaster's submission to the review is not stated.
 
 ## Files in this folder
 
@@ -98,7 +100,7 @@ Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/coffee_rating_prediction.md`](../../../../curation/records/coffee_rating_prediction.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/coffee_rating_prediction.md`](../../../../curation/records/coffee_rating_prediction.md)
 - The original source: <https://www.kaggle.com/datasets/hanifalirsyad/coffee-scrap-coffeereview>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -129,15 +131,16 @@ Only curators run `build`, when the dataset ships.
 | source | Kaggle: https://www.kaggle.com/datasets/hanifalirsyad/coffee-scrap-coffeereview |
 | year | 2023 |
 | domain | business & marketing |
-| license | None |
+| license |  |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | AlIrsyad2023CoffeeDataCoffeeReview |
-| rows x columns | 2,369 x 13 |
+| rows x columns | 2,367 x 10 |
 | task.target | rating |
 | task.problem_type | regression |
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
 | task.time_on | review_date |
+| task.time_is_feature | False |
 
 **Metric**
 
@@ -149,11 +152,11 @@ Only curators run `build`, when the dataset ships.
 | reason | Scraped Kaggle dataset with no task, competition or paper; no metric defined. |
 
 <details>
-<summary>Feature types: 1 categorical, 1 ordinal, 6 string, 1 datetime</summary>
+<summary>Feature types: 0 categorical, 1 ordinal, 4 string, 1 datetime</summary>
 
-- categorical (1): `NT_price`
+- categorical (0): none
 - ordinal (1): `roast (Light < Medium-Light < Medium < Medium-Dark < Dark)`
-- string (6): `roaster`, `name`, `location`, `origin`, `desc_1`, `desc_3`
+- string (4): `roaster`, `name`, `location`, `origin`
 - datetime (1): `review_date (%B %Y)`
 
 </details>
@@ -175,152 +178,171 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 2,369 rows of the final frame (the oldest rows: the frame is sorted by `review_date`); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 2,367 rows of the final frame (the oldest rows: the frame is sorted by `review_date`). Cells are cut at 40 characters.
 
-| rating | roaster | name | location | origin | roast | review_date | desc_1 | desc_3 | agtron_lower | agtron_upper | NT_price |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 93 | Big Creek Coffee Roasters | Kenya Gatuya | Hamilton, Montana | South-central Kenya | Medium | 2018-10-01 00:00:00 | Crisply sweet, richly cocoa-toned. Dark… | A complex, chocolaty and floral Kenya c… | 50 | 70 | nan |
-| 94 | JBC Coffee Roasters | Karimikui Kenya | Madison, Wisconsin | Kirinyaga District, south-central Kenya | Medium-Light | 2018-10-01 00:00:00 | Boldy sweet-tart, savory-edged. Dark ch… | A big, juicy Kenya with sweet-tart frui… | 55 | 75 | nan |
-| 93 | Caffeic | Ethiopia | Helena, Montana | Bench-Maji Zone, southern Ethiopia | Medium-Light | 2018-10-01 00:00:00 | Crisply sweet, fruit-toned. Raspberry, … | A sweetly fruit-forward natural-process… | 56 | 82 | nan |
-| 96 | Dragonfly Coffee Roasters | Esmeralda Estate Porton Geisha Natural | Boulder, Colorado | Boquete growing region, western Panama | Medium-Light | 2018-10-01 00:00:00 | Rich-toned, cleanly fruit-forward, intr… | A harmonious, refined, exquisitely clea… | 56 | 84 | nan |
-| 92 | Magnolia Coffee | Guatemala Finca San Gerardo | Charlotte, North Carolina | Lake Amatitlán area, south-central Guat… | Medium-Light | 2018-10-01 00:00:00 | Crisp, richly sweet. Magnolia, dried pe… | A friendly, floral-toned Guatemala cup … | 52 | 72 | nan |
+| rating | roaster | name | location | origin | roast | review_date | agtron_lower | agtron_upper | price_per_gram_in_usd |
+|---|---|---|---|---|---|---|---|---|---|
+| 93 | Big Creek Coffee Roasters | Kenya Gatuya | Hamilton, Montana | South-central Kenya | Medium | 2018-10-01 00:00:00 | 50 | 70 | 0.0499714 |
+| 94 | Revel Coffee | Kenya Kiambu | Billings, Montana | Kiambu County, south-central Kenya | Medium-Light | 2018-10-01 00:00:00 | 53 | 81 | 0.0492366 |
+| 96 | Dragonfly Coffee Roasters | Finca La Aurora Camilina Geisha | Boulder, Colorado | Piedra Candela, Chiriqui Province, far … | Medium-Light | 2018-10-01 00:00:00 | 56 | 76 | 0.198416 |
+| 94 | JBC Coffee Roasters | Karimikui Kenya | Madison, Wisconsin | Kirinyaga District, south-central Kenya | Medium-Light | 2018-10-01 00:00:00 | 55 | 75 | 0.0573202 |
+| 92 | Oceana Coffee | Costa Rica Microlot Series San Cristoba… | Tequesta, Florida | Llano Bonito, Naranjo, Costa Rica | Medium-Light | 2018-10-01 00:00:00 | 54 | 75 | 0.0646689 |
 
 ## Curation notes
 
 We start with the Kaggle version. Note, we acknowledge that the dataset is not of the highest quality and likely does not represent a real-world prediction task. Nevertheless, it can be used to test models.
 
 - We drop slug as it is a unique identifier that does not have predictive power.
-- We drop desc_2 as it in general includes notes that may or may not be related to the coffee quality. Moreover, it sometimes leaks the rating (e.g. through award notes). We only keep desc_1 and desc_3, which are mostly descriptions of the coffee.
+- We drop desc_2 as it in general includes notes that may or may not be related to the coffee quality. Moreover, it sometimes leaks the rating (e.g. through award notes).
+- Dropped (Andrej, 2026-11-10; LEAK-10): desc_1 (the blind assessment) and desc_3 (the bottom line), the
+  reviewer's passages written together with the score, one clause per sensory sub-score. A roaster has neither
+  before the review; ridge on their TF-IDF alone reached skill 0.71 (RMSE 0.861 against the training mean's
+  1.598 on the 13 windows) and beat every benchmark method. Exception to LEAK-35 (2026-11-10, Andrej): the
+  passages alone explain most of the score (skill 0.71 against the rule's case of 0.25 to 0.67), and the use
+  case's roaster predicts before the review; the roaster's own information keeps skill 0.34 to 0.36.
+- `review_date` orders and splits the rows and is no model input (`Temporal(..., feature=False)`): it arrives with the target (2026-11-12, Andrej). The roaster decides which coffees to submit before any review, and the month is the month Coffee Review published the score.
 - We drop all_text as it is a concatenation of desc_1, desc_2, and desc_3. And desc_2 includes data leakage (such as if the coffee won an award or not). Thus, we drop all_test.
 - We drop aroma, acid, body, flavor, aftertaste, and with_milk as they are all features of the rating and thus leaking the target. Any of them could be used as a target, we focus on the overall rating.
 - We parse agtron into a lower and upper value as float.
 - Note, the data contains several spatial features about locations. We do not resolve these.
+- The prices in New Taiwan dollars (606 coffees, all from Taiwanese roasters, written "NT $") were read as US
+  dollars, as the parser split "NT" off the currency; they are converted at the table's NTD rate (0.031) and the
+  `NT_price` flag is dropped (Andrej, 2026-11-10; CLEAN-21): the Taiwanese median price per gram falls from
+  1.98 to 0.06, the others' range.
 - The price feature is extremely messy as a result of web scrapping. We resolve this feature as real tabular data (not from a web scrapper but from the database source), would have these information stored in a more structured way. We drop coffees that are measured in "capsules" units as they exist only 8 times and seem to be strong outliers. We normalizes the price to be per grams. Moreover, we convert all currencies to USD (with a fixed rate); we ignore the temporal incorrectness this may introduce as it is most likely minimal.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+- We drop the 2 reviews of October 2023, the scrape's partial last month (24 to 65 reviews a month in the rest of 2023; cross-dataset item of 2026-11-11, Lennart). The windows walk back from September 2023.
 
 ## Splits
 
 We simulate a setting where we refit the model every 2 months and only test on the next 2 months, walking back
-from the newest review until the training data would fall below 50% of the rows (13 windows). Monthly windows
-(26) would follow the split-count convention, but some months hold only 2-10 reviews, which makes per-window
+from the newest review until the training data would fall below 50% of the rows (12 windows,
+August-September 2023 back to October-November 2021, 62 to 137 test reviews each). Monthly windows
+(25) would follow the split-count convention, but some months hold only 2-10 reviews, which makes per-window
 RMSE noise; 2-month windows keep at least ~50 test rows each.
+A score is published with its review month, so every training label is known when a window starts and no gap
+is needed; the time from a roaster's submission to the review is not stated. Reviews of one month share their
+scoring (the month explains 8% of the score's variance; some months are themed tastings), and whole two-month
+windows keep each month on one side.
 
-13 repeat(s) x 1 fold(s) with seed 4267; train 1,211 to 2,315 rows, test 54 to 115 rows. Prediction horizon: 2 months.
+12 repeat(s) x 1 fold(s) with seed 4267; train 1,256 to 2,263 rows, test 62 to 137 rows. Prediction horizon: 2 months. The time column `review_date` orders and splits the rows and is no model input: `feature_columns(container)` leaves it out.
 
 <details>
-<summary>Show all 13 splits</summary>
+<summary>Show all 12 splits</summary>
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 2315 | 54 | 2018-10-01 00:00:00 | 2023-08-01 00:00:00 | 2023-09-01 00:00:00 | 2023-10-01 00:00:00 |
-| 1 | 0 | 2212 | 103 | 2018-10-01 00:00:00 | 2023-06-01 00:00:00 | 2023-07-01 00:00:00 | 2023-08-01 00:00:00 |
-| 2 | 0 | 2137 | 75 | 2018-10-01 00:00:00 | 2023-04-01 00:00:00 | 2023-05-01 00:00:00 | 2023-06-01 00:00:00 |
-| 3 | 0 | 2048 | 89 | 2018-10-01 00:00:00 | 2023-02-01 00:00:00 | 2023-03-01 00:00:00 | 2023-04-01 00:00:00 |
-| 4 | 0 | 1983 | 65 | 2018-10-01 00:00:00 | 2022-12-01 00:00:00 | 2023-01-01 00:00:00 | 2023-02-01 00:00:00 |
-| 5 | 0 | 1868 | 115 | 2018-10-01 00:00:00 | 2022-10-01 00:00:00 | 2022-11-01 00:00:00 | 2022-12-01 00:00:00 |
-| 6 | 0 | 1755 | 113 | 2018-10-01 00:00:00 | 2022-08-01 00:00:00 | 2022-09-01 00:00:00 | 2022-10-01 00:00:00 |
-| 7 | 0 | 1679 | 76 | 2018-10-01 00:00:00 | 2022-06-01 00:00:00 | 2022-07-01 00:00:00 | 2022-08-01 00:00:00 |
-| 8 | 0 | 1581 | 98 | 2018-10-01 00:00:00 | 2022-04-01 00:00:00 | 2022-05-01 00:00:00 | 2022-06-01 00:00:00 |
-| 9 | 0 | 1504 | 77 | 2018-10-01 00:00:00 | 2022-02-01 00:00:00 | 2022-03-01 00:00:00 | 2022-04-01 00:00:00 |
-| 10 | 0 | 1406 | 98 | 2018-10-01 00:00:00 | 2021-12-01 00:00:00 | 2022-01-01 00:00:00 | 2022-02-01 00:00:00 |
-| 11 | 0 | 1302 | 104 | 2018-10-01 00:00:00 | 2021-10-01 00:00:00 | 2021-11-01 00:00:00 | 2021-12-01 00:00:00 |
-| 12 | 0 | 1211 | 91 | 2018-10-01 00:00:00 | 2021-08-01 00:00:00 | 2021-09-01 00:00:00 | 2021-10-01 00:00:00 |
+| 0 | 0 | 2263 | 104 | 2018-10-01 00:00:00 | 2023-07-01 00:00:00 | 2023-08-01 00:00:00 | 2023-09-01 00:00:00 |
+| 1 | 0 | 2175 | 88 | 2018-10-01 00:00:00 | 2023-05-01 00:00:00 | 2023-06-01 00:00:00 | 2023-07-01 00:00:00 |
+| 2 | 0 | 2113 | 62 | 2018-10-01 00:00:00 | 2023-03-01 00:00:00 | 2023-04-01 00:00:00 | 2023-05-01 00:00:00 |
+| 3 | 0 | 2021 | 92 | 2018-10-01 00:00:00 | 2023-01-01 00:00:00 | 2023-02-01 00:00:00 | 2023-03-01 00:00:00 |
+| 4 | 0 | 1940 | 81 | 2018-10-01 00:00:00 | 2022-11-01 00:00:00 | 2022-12-01 00:00:00 | 2023-01-01 00:00:00 |
+| 5 | 0 | 1803 | 137 | 2018-10-01 00:00:00 | 2022-09-01 00:00:00 | 2022-10-01 00:00:00 | 2022-11-01 00:00:00 |
+| 6 | 0 | 1726 | 77 | 2018-10-01 00:00:00 | 2022-07-01 00:00:00 | 2022-08-01 00:00:00 | 2022-09-01 00:00:00 |
+| 7 | 0 | 1625 | 101 | 2018-10-01 00:00:00 | 2022-05-01 00:00:00 | 2022-06-01 00:00:00 | 2022-07-01 00:00:00 |
+| 8 | 0 | 1533 | 92 | 2018-10-01 00:00:00 | 2022-03-01 00:00:00 | 2022-04-01 00:00:00 | 2022-05-01 00:00:00 |
+| 9 | 0 | 1446 | 87 | 2018-10-01 00:00:00 | 2022-01-01 00:00:00 | 2022-02-01 00:00:00 | 2022-03-01 00:00:00 |
+| 10 | 0 | 1367 | 79 | 2018-10-01 00:00:00 | 2021-11-01 00:00:00 | 2021-12-01 00:00:00 | 2022-01-01 00:00:00 |
+| 11 | 0 | 1256 | 111 | 2018-10-01 00:00:00 | 2021-09-01 00:00:00 | 2021-10-01 00:00:00 | 2021-11-01 00:00:00 |
 
 </details>
 
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows coffee_rating_prediction`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | Aug 2023 - Sep 2023 | 104 | 0.956 | mean 92.52, median 93, p10 90, p90 95 | mean 93.1, median 93, p10 91, p90 95 | 0.204 | roast (0.20), agtron_lower (0.18), price_per_gram_in_usd (0.18) | 0 |
+| 1 | Jun 2023 - Jul 2023 | 88 | 0.919 | mean 92.95, median 93, p10 90.7, p90 95 | mean 93.1, median 93, p10 91, p90 95 | 0.519 | agtron_lower (0.52), agtron_upper (0.32), roast (0.26) | 0 |
+| 2 | Apr 2023 - May 2023 | 62 | 0.893 | mean 93.23, median 93, p10 92, p90 95 | mean 93.1, median 93, p10 91, p90 95 | 1.477 | agtron_lower (1.48), agtron_upper (1.06), roast (0.59) | 0 |
+| 3 | Feb 2023 - Mar 2023 | 92 | 0.854 | mean 93.07, median 93, p10 91, p90 95 | mean 93.1, median 93, p10 91, p90 95 | 1.4 | agtron_lower (1.40), agtron_upper (0.95), roast (0.63) | 0 |
+| 4 | Dec 2022 - Jan 2023 | 81 | 0.82 | mean 93.3, median 93, p10 92, p90 95 | mean 93.09, median 93, p10 91, p90 95 | 1.374 | agtron_lower (1.37), agtron_upper (0.75), roast (0.53) | 0 |
+| 5 | Oct 2022 - Nov 2022 | 137 | 0.762 | mean 93.32, median 93, p10 92, p90 95 | mean 93.07, median 93, p10 91, p90 95 | 0.675 | agtron_lower (0.67), agtron_upper (0.45), roast (0.40) | 0 |
+| 6 | Aug 2022 - Sep 2022 | 77 | 0.729 | mean 93.35, median 93, p10 92, p90 95 | mean 93.06, median 93, p10 91, p90 95 | 0.904 | agtron_upper (0.90), agtron_lower (0.52), roast (0.38) | 0 |
+| 7 | Jun 2022 - Jul 2022 | 101 | 0.687 | mean 93.42, median 94, p10 92, p90 95 | mean 93.04, median 93, p10 91, p90 95 | 0.905 | agtron_lower (0.90), agtron_upper (0.48), roast (0.30) | 0 |
+| 8 | Apr 2022 - May 2022 | 92 | 0.648 | mean 93.39, median 93, p10 92, p90 95 | mean 93.02, median 93, p10 91, p90 95 | 0.601 | agtron_upper (0.60), agtron_lower (0.48), roast (0.15) | 0 |
+| 9 | Feb 2022 - Mar 2022 | 87 | 0.611 | mean 93.23, median 93, p10 92, p90 95 | mean 93, median 93, p10 91, p90 95 | 0.236 | agtron_upper (0.24), roast (0.18), agtron_lower (0.15) | 0 |
+| 10 | Dec 2021 - Jan 2022 | 79 | 0.578 | mean 92.59, median 93, p10 88, p90 95 | mean 93.03, median 93, p10 91, p90 95 | 0.354 | agtron_lower (0.35), agtron_upper (0.15), price_per_gram_in_usd (0.12) | 0 |
+| 11 | Oct 2021 - Nov 2021 | 111 | 0.531 | mean 93.57, median 94, p10 92, p90 95 | mean 92.98, median 93, p10 91, p90 95 | 0.496 | agtron_lower (0.50), roast (0.37), agtron_upper (0.34) | 0 |
+
 ## Bundle checks
 
-0 error(s), 1 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_constant_column`: 1 constant column(s) (1 distinct non-null value): ['NT_price']. (hint: Drop them unless the constant is meaningful for the task.)
+
+Accepted on purpose:
+
+- `meta_license_unknown`: Kaggle gives the licence as 'Other (specified in description)', but the description names none (checked 2026-11-10).
 
 ## Data checks
 
 ### Feature summary
 
-<details>
-<summary>Show the table (13 rows)</summary>
-
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| NT_price | category | 1763 | 74.42 | 1 | NT |
 | roast | category | 11 | 0.46 | 5 | Medium-Light, Light, Medium, Medium-Dark, Dark |
-| review_date | datetime64\[ns\] | 0 | 0 | 61 | 2022-11-01 00:00:00, 2023-03-01 00:00:00, 2022-10-01 00:00:00, 2021-11-01 00:00… |
+| review_date | datetime64\[ns\] | 0 | 0 | 60 | 2022-11-01 00:00:00, 2023-03-01 00:00:00, 2021-11-01 00:00:00, 2022-10-01 00:00… |
 | agtron_lower | float64 | 7 | 0.3 | 49 | 58.0, 60.0, 56.0, 62.0, 54.0, 52.0, 64.0, 57.0, 59.0, 50.0 |
 | agtron_upper | float64 | 7 | 0.3 | 54 | 78.0, 76.0, 80.0, 74.0, 77.0, 72.0, 70.0, 82.0, 84.0, 68.0 |
-| price_per_gram_in_usd | float64 | 0 | 0 | 656 | 0.0529, 0.0588, 0.0559, 0.0647, 0.047, 0.0617, 0.05, 0.0735, 0.0676, 0.0705 |
+| price_per_gram_in_usd | float64 | 0 | 0 | 654 | 0.0529, 0.0588, 0.0559, 0.0647, 0.0617, 0.047, 0.05, 0.0676, 0.0735, 0.0705 |
 | rating | int64 | 0 | 0 | 17 | 93, 94, 92, 95, 91, 90, 96, 88, 97, 87 |
-| desc_1 | string | 1 | 0.04 | 2367 | Richly chocolaty, deeply sweet. Dark chocolate, freesia-like flowers, crisp pea… |
-| desc_3 | string | 1 | 0.04 | 2368 | An excitingly original espresso blend that foregrounds sweet florals and tropic… |
-| roaster | string | 0 | 0 | 472 | JBC Coffee Roasters, Paradise Roasters, Kakalove Cafe, RamsHead Coffee Roasters… |
-| name | string | 0 | 0 | 2166 | Espresso Blend, Ethiopia Kayon Mountain, Bella Carmona Guatemala, Holiday Blend… |
+| roaster | string | 0 | 0 | 471 | JBC Coffee Roasters, Paradise Roasters, Kakalove Cafe, RamsHead Coffee Roasters… |
+| name | string | 0 | 0 | 2164 | Espresso Blend, Holiday Blend, Ethiopia Kayon Mountain, Colombia Pink Bourbon, … |
 | location | string | 0 | 0 | 301 | Madison, Wisconsin, Chia-Yi, Taiwan, Taipei, Taiwan, San Diego, California, Min… |
-| origin | string | 0 | 0 | 1040 | Yirgacheffe growing region, southern Ethiopia, Guji Zone, Oromia Region, southe… |
-
-</details>
+| origin | string | 0 | 0 | 1039 | Yirgacheffe growing region, southern Ethiopia, Guji Zone, Oromia Region, southe… |
 
 ### Target distribution
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -1.145 | -1.279 | 2.751 | 0 | log | 51223.9 | 8.24459e+16 | exponential |
+| 0 | 0 | 0 | -1.147 | -1.281 | 2.75 | 0 | log | 51184 | 2.04284e+16 | exponential |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| rating | 2369 | 93.0713 | 1.65869 | 82 | 98 |
-| agtron_lower | 2362 | 56.5254 | 5.94814 | 0 | 85 |
-| agtron_upper | 2362 | 74.7269 | 7.32696 | 0 | 105 |
-| price_per_gram_in_usd | 2369 | 0.910395 | 5.53076 | 0.00115214 | 250 |
+| rating | 2367 | 93.0701 | 1.65829 | 82 | 98 |
+| agtron_lower | 2360 | 56.5233 | 5.95015 | 0 | 85 |
+| agtron_upper | 2360 | 74.7258 | 7.32974 | 0 | 105 |
+| price_per_gram_in_usd | 2367 | 0.103437 | 0.253834 | 0.00115214 | 7.75 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (42 rows)</summary>
+<summary>Show the table (30 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| NT_price | 1 | &lt;NA> | 1763 | 74.42 |
-| NT_price | 2 | NT | 606 | 25.58 |
-| desc_1 | 1 | Richly chocolaty, deeply sweet. Dark chocolate, freesia-like flo... | 2 | 0.08 |
-| desc_1 | 2 | Confidently fruit-forward, sweetly tart. Pomegranate, cherry blo... | 1 | 0.04 |
-| desc_1 | 3 | Bright, balanced, energetic, tropical. Star jasmine, passion fru... | 1 | 0.04 |
-| desc_1 | 4 | Balanced, deep, chocolaty. Lavender, red currant, gently scorche... | 1 | 0.04 |
-| desc_1 | 5 | Bright, balanced, citrusy. Tangerine, almond butter, apple bloss... | 1 | 0.04 |
-| desc_3 | 1 | A deep-toned, sweetly savory Kenya cup with inviting floral note... | 1 | 0.04 |
-| desc_3 | 2 | An excitingly original espresso blend that foregrounds sweet flo... | 1 | 0.04 |
-| desc_3 | 3 | A classic Yirgacheffe cup, balanced and bright, with notes of st... | 1 | 0.04 |
-| desc_3 | 4 | A balanced, nuanced washed Ethiopia cup with pretty citrus and s... | 1 | 0.04 |
-| desc_3 | 5 | A darker-roasted blend for those who like full-bodied, slightly ... | 1 | 0.04 |
-| location | 1 | Madison, Wisconsin | 187 | 7.89 |
+| location | 1 | Madison, Wisconsin | 186 | 7.86 |
 | location | 2 | Chia-Yi, Taiwan | 152 | 6.42 |
 | location | 3 | Taipei, Taiwan | 149 | 6.29 |
-| location | 4 | San Diego, California | 124 | 5.23 |
+| location | 4 | San Diego, California | 124 | 5.24 |
 | location | 5 | Minneapolis, Minnesota | 120 | 5.07 |
 | name | 1 | Espresso Blend | 8 | 0.34 |
-| name | 2 | Ethiopia Kayon Mountain | 5 | 0.21 |
-| name | 3 | Bella Carmona Guatemala | 5 | 0.21 |
-| name | 4 | Holiday Blend | 5 | 0.21 |
-| name | 5 | Colombia Pink Bourbon | 5 | 0.21 |
-| origin | 1 | Yirgacheffe growing region, southern Ethiopia | 79 | 3.33 |
-| origin | 2 | Guji Zone, Oromia Region, southern Ethiopia | 70 | 2.95 |
-| origin | 3 | Nyeri growing region, south-central Kenya | 62 | 2.62 |
+| name | 2 | Holiday Blend | 5 | 0.21 |
+| name | 3 | Ethiopia Kayon Mountain | 5 | 0.21 |
+| name | 4 | Colombia Pink Bourbon | 5 | 0.21 |
+| name | 5 | Bella Carmona Guatemala | 5 | 0.21 |
+| origin | 1 | Yirgacheffe growing region, southern Ethiopia | 79 | 3.34 |
+| origin | 2 | Guji Zone, Oromia Region, southern Ethiopia | 70 | 2.96 |
+| origin | 3 | Nyeri growing region, south-central Kenya | 61 | 2.58 |
 | origin | 4 | Boquete growing region, western Panama | 34 | 1.44 |
-| origin | 5 | Sidamo (also Sidama) growing region, south-central Ethiopia | 30 | 1.27 |
+| origin | 5 | Yirgacheffe growing region, south-central Ethiopia | 30 | 1.27 |
 | review_date | 1 | 2022-11-01 00:00:00 | 72 | 3.04 |
-| review_date | 2 | 2023-03-01 00:00:00 | 65 | 2.74 |
-| review_date | 3 | 2022-10-01 00:00:00 | 65 | 2.74 |
-| review_date | 4 | 2021-11-01 00:00:00 | 65 | 2.74 |
+| review_date | 2 | 2023-03-01 00:00:00 | 65 | 2.75 |
+| review_date | 3 | 2021-11-01 00:00:00 | 65 | 2.75 |
+| review_date | 4 | 2022-10-01 00:00:00 | 65 | 2.75 |
 | review_date | 5 | 2021-03-01 00:00:00 | 63 | 2.66 |
-| roast | 1 | Medium-Light | 1624 | 68.55 |
-| roast | 2 | Light | 392 | 16.55 |
-| roast | 3 | Medium | 286 | 12.07 |
+| roast | 1 | Medium-Light | 1622 | 68.53 |
+| roast | 2 | Light | 392 | 16.56 |
+| roast | 3 | Medium | 286 | 12.08 |
 | roast | 4 | Medium-Dark | 48 | 2.03 |
 | roast | 5 | &lt;NA> | 11 | 0.46 |
-| roaster | 1 | JBC Coffee Roasters | 182 | 7.68 |
-| roaster | 2 | Paradise Roasters | 150 | 6.33 |
+| roaster | 1 | JBC Coffee Roasters | 181 | 7.65 |
+| roaster | 2 | Paradise Roasters | 150 | 6.34 |
 | roaster | 3 | Kakalove Cafe | 144 | 6.08 |
 | roaster | 4 | RamsHead Coffee Roasters | 44 | 1.86 |
 | roaster | 5 | Temple Coffee Roasters | 41 | 1.73 |
@@ -338,4 +360,4 @@ RMSE noise; 2-month windows keep at least ~50 test rows each.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:1e26bf7279d93d6acf897b0a11099b6b7ceb8b1c918f01c04f2207dc21b8b394` |
+| stale | yes: the definition now gives checksum `v2:f0ee18e7efb7d97756f19d95180d3254945bf444bf59c1dc80cf7ed16f61ef80` |
