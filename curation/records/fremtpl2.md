@@ -12,11 +12,18 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Two-Regime Zeros
+- 'Samples: Over Time'
+- 'Time: Inferred'
+- 'Target: Later'
+- 'Entities: Recur'
+- 'Features: Read Later'
+- Database Snapshot
 original_source: Other
 year: '2014'
+collection_period: Unknown
 domain: insurance
 required_split:
-- Random (IID)
+- Temporal (NON-IID)
 problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
@@ -148,6 +155,10 @@ CC (2026-11-08, Lennart): on D12 of 2026-11-06 (the claim-amount task kept out "
 **Assessment (AI, 2026-11-08):** the two tasks measured on 9 random splits (the 3 shipped folds and two more partitions of the same rows), five honest models fitted with `Exposure` as the weight and never a feature. The join of freMTPL2sev is clean in the pinned release (26,444 claims on 24,944 policies, each count equal to its policy's claims with an amount, no amount without a claim); the amounts run from 1 to 4,075,401 EUR, the tail is real (French motor liability covers bodily injury without a limit, Code des assurances R211-7; CLEAN-11), and the largest claim is 6.8% of all amounts and 19% of the test fold it falls in. Claims per year, weighted Poisson deviance: the best LightGBM removes 2.26% of the constant's deviance (SD 0.18%, 9 of 9), the GLM 1.79%; a regularised LightGBM beats the GLM on 9 of 9 (split SD of the gap 0.03%, bootstrap SE within a fold 0.08%); Kendall's W of the five models 0.89. Claim cost per year: weighted Gini 0.23 to 0.27 with a split SD of 0.07 to 0.09 (0.34 to 0.40 on the three test folds that hold the 4.08M claim, 0.13 to 0.27 on the others), the GLM ahead of the regularised LightGBM by +0.011 on 7 of 9 (bootstrap SE 0.021), W 0.43; weighted Tweedie deviance at power 1.5 (floor 0.1 EUR) 5.4% of the constant's for the GLM (SD 4.4%). The rating factors predict no claim size beyond the tail (gamma GLM -0.8% with claims capped at 200,000 EUR, 3 of 9 above 0), and the frequency LightGBM times the mean claim ranks the cost per year better (Gini 0.29) than any model fitted on it. The insurer prices the cost per year from a frequency and a severity model (USE-5); here the rating part of the price is the frequency's, which the source scores (MET-1, MET-11). Same tail in bemtpl97's release (its largest policy amount 1.99M EUR, 6.1% of all amounts), so the same reasoning keeps its claims per year; bemtpl97 not edited.
 
 CC (2026-11-08, Lennart): issue 12, A (as implemented): one task, the claims per year insured; the claim cost per year insured is not created.
+
+CC (2026-11-20, Andrej): windows on the IDpol blocks (Review issue 13, B): blocks 6, 5 and 4 tested on all earlier blocks (82-94% training), the block no input, no gap; the stationary-relation test reads not flat across blocks, and the random split's renewal leak (16% of test rows with the next-year record in training) no longer arises.
+
+CC (2026-11-20, Andrej): `BonusMalus` stays in the windows on the IDpol blocks (Review issue 14, A): the block-5 window trains without it (blanked in blocks 0-4) and tests with it; a pricing model meets a factor once it starts being recorded, and block 6's window learns it from block 5. Measured: most of block 5's stationarity gap is this column (+0.0014 with it, +0.0005 without).
 
 ## Review
 
@@ -788,6 +799,127 @@ split grouped on identical rating factors (issue 11).
    [^f12-bem]: Henckaerts, Côté, Antonio and Verbelen, [arXiv:1904.10890](https://arxiv.org/abs/1904.10890), Sec. 2:
      "P&C insurers usually opt for a so-called frequency-severity strategy to price a contract"; Sec. 5.1: loss ratio
      lift, double lift and the Gini index of Frees et al. (2013).
+
+13. **Windows on the rebuilt policy order, or random as shipped? (Lennart's)**
+
+   * **Problem:**
+     - The tree reaches Temporal · rebuilt order: the 677,991 IDpol numbers fall in 7 blocks, 2-3 inferred years per sub-portfolio, each of usable size.
+     - The definition ships random 3-fold CV with `ForcedIIDFromTemporal` and no `Time basis:` line; it is listed under "Definitions that ship another split", unresolved.
+     - The dataset is Lennart's; this issue records the inconsistency for him and you.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Random 3-fold CV, `ForcedIIDFromTemporal` (implemented) | A `splits_comment` reason for not using the rebuilt order, and the `Time basis:` line | No rebuild | Departs from the tree's leaf |
+     | B | Windows on the rebuilt order | The order rebuilt from IDpol blocks, checked against something dated (SPLIT-22), then the windows question | The tree's leaf | The years are inferred, not dated; Lennart's call |
+
+   * **Recommendation:** B only if the inferred years can be checked against a date; otherwise A with the reason written. **Decision:** Lennart's, A or B?
+
+   **Andrej (2026-11-19, discuss):** Explain how exactly the rebuilding of the years is done.
+
+   **Answer (AI, 2026-11-19):** the years are read from the policy number and checked by linking each record to its likely renewal; no date is in the release.
+
+   * **Blocks:** `IDpol` runs in seven blocks of a million (1-179,639 up to 6,000,016-6,114,330); block = `IDpol` // 1,000,000, numbered 0 to 6. The source says only "The period is approximately 2011-2013".
+   * **The link** (`next_year_rows` in `dataset.py`): a record in block k+1 is taken as the same policy a year later when its `IDpol` is the earlier one's plus 1,000,000 plus 1 to 9, brand, fuel, region, density and power are equal, the driver is one year older and the car as old or one year older; the smallest offset wins.
+   * **What the links show** (record, 2026-10-22 and 2026-11-04):
+
+     | Block pair | One-to-one links |
+     |---|---|
+     | 0→1, 1→2, 2→3, 3→4 | 46,445 to 57,212 each |
+     | 4→5 | 7,907 |
+     | 5→6 | 10,470 |
+     | any other pair | under 300 |
+     | controls (shuffled or shifted) | 16 to 75 |
+
+   * **The reading:** consecutive blocks are consecutive renewal years of the same book; with ages +2, block i also links to i+2. Seven yearly steps do not fit "2011-2013", so the calendar years are unknown and only the order is used.
+   * **What does not fit a plain yearly order:**
+     - from block 0 to 1 and 2 to 3, `BonusMalus` barely moves (94.5% unchanged), though the French system lowers it after every claim-free year;
+     - in blocks 4-6, 0.2% of linked rows cover a full year and 63-66% of linked pairs sum to at most 1.01 years: one contract year cut across accounting periods, not two years;
+     - so the definition reads blocks 0-1, 2-3 and 4-6 as three sub-portfolios over two or three periods each, and the blocks may be accounting periods rather than years.
+   * **For the split:** windows would order the rows by block (0 oldest), and the newest blocks 5-6 hold 79,993 rows (12%); the tree's check "against something dated" (SPLIT-22) cannot be made, as nothing in the release is dated. That is why the issue recommends B only if a date can be found, else A with the reason written.
+
+   **Decision:** Lennart's, A or B?
+
+   **Andrej (2026-11-20, discuss):** Measure the performance differences for random vs the temporal splits
+
+   **Answer (AI, 2026-11-20):** measured: a window that tests an IDpol block on all earlier blocks scores 0.0009 to 0.0038 worse in the declared metric than the shipped random folds on the same rows at the same training size; a window inside one sub-portfolio scores no worse.
+
+   * **Setup:** the definition's frame, metric and folds (CASdatasets files, checksums checked); each test row scored by a model trained on the window's earlier blocks and, on the same row, by the shipped fold's model with its training side cut to the window's size; LightGBM (Poisson, weighted, 5 seeds), a Poisson GLM and the constant rate. Shipped 3-fold CV: LightGBM 0.46800, GLM 0.47023, constant 0.47929.
+   * **Window minus random, same rows** (positive: the window scores worse):
+
+     | Window (test block) | Train share | LightGBM | without the 19 high-count rows | GLM | Constant rate |
+     |---|---|---|---|---|---|
+     | block 1 on 0 (inside 0-1) | 44% | -0.0007 ± 0.0004 | -0.0007 | +0.0004 | +0.0001 |
+     | block 2 on 0-1 | 56% | +0.0038 ± 0.0014 | +0.0007 | +0.0011 | +0.0010 |
+     | block 3 on 0-2 | 73% | +0.0027 ± 0.0006 | +0.0009 | +0.0010 | +0.0006 |
+     | block 4 on 0-3 | 82% | +0.0009 ± 0.0002 | +0.0009 | +0.0005 | +0.0010 |
+     | block 5 on 0-4 | 93% | +0.0022 ± 0.0004 | +0.0022 | +0.0012 | +0.0002 |
+     | block 6 on 0-5 | 94% | +0.0012 ± 0.0004 | +0.0012 | +0.0005 | +0.0003 |
+     | block 3 on 2 (inside 2-3) | 54% | +0.0003 ± 0.0008 | +0.0005 | +0.0006 | -0.0000 |
+     | block 6 on 4-5 (inside 4-6) | 80% | -0.0021 ± 0.0014 | -0.0021 | -0.0008 | -0.0026 |
+
+   * **Where the gap comes from:** the claim rate falls block by block (0.086 to 0.059), so a window over-prices its test block by 9-17% (block 4's gap is as large for the constant rate: a level shift); training blocks 0-4 carry no BonusMalus (blanked there), which block 5 meets; the 19 high-count rows in blocks 2-3 make the large gaps of blocks 2 and 3.
+   * **Model order:** LightGBM leads the GLM by 0.0022 under the shipped folds; the order changes on 2 of 8 windows (blocks 1 and 4), each by under 0.001; on blocks 5 and 6 the GLM leads under every split.
+   * The earlier measurement in the record (+0.0009, train blocks 0, 2, 4, 5, test 1, 3, 6) reproduces.
+
+   **Recommendation:** A, random as shipped, with these numbers in `splits_comment`: inside each sub-portfolio, the closest reading of the same book a year later, later blocks score no worse; the cost appears only across sub-portfolios or the BonusMalus boundary, mostly as a level shift, and the block order cannot be checked against a date. B would make the task 0.001-0.002 harder for LightGBM. **Decision:** Lennart's, A or B?
+
+   **Andrej (2026-11-20, discuss):** Two questions: Does that suffice to argue that we have a stationary relation? So we clearly know that we have the same policies repeating over years. Should we do a grouped split then?
+
+   **Answer (AI, 2026-11-20):** no on the first: the stationary-relation test, now run on the IDpol blocks, reads not flat (small but consistent for LightGBM); on the second, grouping on the repeating policies removes the renewal leak but not the time shift, so windows on the blocks answer both.
+
+   * **The test** (forward model on all earlier blocks against one trained on the tested block itself, weighted Poisson deviance, 5 seeds):
+
+     | Block tested | LightGBM gap | Floor | Verdict | without BonusMalus |
+     |---|---|---|---|---|
+     | 6 | +0.0002 ± 0.0006 | 0.0001 | inconclusive | +0.0003 ± 0.0002, inconclusive |
+     | 5 | +0.0014 ± 0.0006 | 0.0001 | not flat | +0.0005 ± 0.0003, flat |
+     | 4 | +0.0003 ± 0.0001 | 0.0001 | not flat | +0.0003 ± 0.0001, not flat |
+     | inside sub-portfolios (1 on 0, 3 on 2, 6 on 4-5) | +0.0004, +0.0011, -0.0000 | 0.0001 | flat, inconclusive, inconclusive | |
+
+     Kumo-Tabular does not beat the constant on these rows (capped at 20,000), so it does not count. The gaps are small next to the deviance (about 0.42-0.47), but block 4 is not flat with or without BonusMalus.
+   * **So the earlier comparison does not suffice:** windows scored about as well as random inside a sub-portfolio, but the rule's own test reads not flat across blocks, so a random split is not covered by a measured stationary relation.
+   * **Grouping on the repeating policies:** the renewal links (161,883 pairs) show the same policies recur; under random folds 16% of test rows have the policy's next-year record in training (issue 7). Grouping on the inferred chains removes that, but keeps every block on both sides, so it does not test a later block; Lennart kept random on 2026-11-05 because the chains are inferred, not a recorded key.
+   * **Windows on the blocks** test a later block on earlier ones, and a policy's later record can never train; its earlier record does, which is history the insurer holds.
+
+   | | Option | What it does |
+   |---|---|---|
+   | A | Random (implemented) | `ForcedIIDFromTemporal`, the not-flat test and the renewal leak written as a departure |
+   | B | Windows on the IDpol blocks | the tree's leaf; blocks 4, 5, 6 tested on earlier ones (82-94% training) |
+   | C | Grouped on the inferred policy chains | removes the renewal leak, not the time shift |
+
+   **Recommendation:** B, Lennart's call. **Decision:** Lennart's, A, B or C?
+
+   **Andrej (2026-11-20, discuss):** Reply (B): Windows on the IDpol blocks
+
+   **Resolved (2026-11-20, Andrej):** B. Three windows on the IDpol blocks: block 6 tested on blocks 0-5 (640,557 rows, 94.5% training; 37,434 test), block 5 on 0-4 (597,998, 93.4%; 42,559), block 4 on 0-3 (488,801, 81.7%; 109,197); the block orders the split and is no input; no gap; `ForcedIIDFromTemporal` removed; the texts give the stationarity test, the window-vs-random comparison and the renewal leak the windows remove. `dataset check`: 0 errors. Not rebuilt.
+
+   **Answer (AI, 2026-11-20):** one consequence needs your call: the block-5 window trains only on blocks 0-4, where `BonusMalus` is blanked (it looks recorded after the year's own claims there), and tests on block 5, where it is recorded, so in that window models learn without the tariff's main factor and meet it in the test (`splits_feature_missing_in_test`); blocks 4 and 6 are not affected that way (block 4 trains and tests without it; block 6 trains on blocks 0-5, with block 5's values).
+
+   | | Option | What it does | Pro | Con |
+   |---|---|---|---|---|
+   | A | Keep, and accept the warning | the blanking stays; the block-5 window tests a model that never saw `BonusMalus` | the column stays where it is a start-of-year value | one window scores models on a feature they could not learn |
+   | B | Drop `BonusMalus` | the column leaves the task | every window has the same inputs | loses the tariff's main factor where it is valid (blocks 5-6) |
+   | C | Drop the block-5 window | windows on blocks 6 and 4 only | no window meets the feature for the first time | two windows, under the three the rules ask for |
+
+   **Recommendation:** A: in practice a pricing model meets a factor once it starts being recorded, and block 6's window learns it; the warning is accepted with this reason. **Decision:** A, B or C? The warning on seven time points (`task_time_on_few_unique`) follows from the seven blocks and is accepted with decision B.
+
+   **Andrej (2026-11-20, in chat):** Wait, why do the test sizes get lower systematically?
+
+   **Answer (AI, 2026-11-20):** each window tests one whole IDpol block, and the blocks differ in size: they do not shrink steadily, but the two newest, 5 and 6, are small and made of partial-year records.
+
+   | Block | Records | Years insured (exposure) | Mean exposure | Records of a full year |
+   |---|---|---|---|---|
+   | 0 | 87,025 | 52,894 | 0.61 | 35% |
+   | 1 | 111,964 | 70,099 | 0.63 | 35% |
+   | 2 | 157,665 | 77,971 | 0.50 | 23% |
+   | 3 | 132,147 | 65,360 | 0.50 | 24% |
+   | 4 (test) | 109,197 | 62,723 | 0.57 | 30% |
+   | 5 (test) | 42,559 | 16,079 | 0.38 | 0.3% |
+   | 6 (test) | 37,434 | 13,357 | 0.36 | 0% |
+
+   * Blocks 5 and 6 look cut at a calendar date: almost no record covers a full year, so the release most likely ends inside the contract periods of the 4-6 sub-portfolio. The two newest windows are therefore smaller (16,079 and 13,357 years insured against 62,723 for block 4) and made of short records, a different mix from block 4.
+   * The metric weights records by exposure, so short records count less; the windows still test a later block each, and every train side holds 82-94% of the rows.
 
 **Review panel:** ship after changes (mediator). Tier full, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
 MET-16, after option A of #51 (issue 6): 12 reports. Claims: 32 audited; 20 hold, 3 hold in part (`Exposure`'s share of

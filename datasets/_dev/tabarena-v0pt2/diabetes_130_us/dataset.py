@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, set_missing
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    set_missing,
+)
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -44,7 +53,7 @@ ORDINAL_LEVELS = {
     "glyburide": ["Down", "Steady", "Up"],
     "pioglitazone": ["Down", "Steady", "Up"],
     "rosiglitazone": ["Down", "Steady", "Up"],
-    "acarbose": ["Steady", "Up"],
+    "acarbose": ["Down", "Steady", "Up"],  # Down only in 3 later stays, not in the first stays
     "miglitol": ["Down", "Steady", "Up"],
     "insulin": ["Down", "Steady", "Up"],
     "glyburide-metformin": ["Down", "Steady", "Up"],
@@ -59,7 +68,8 @@ class Diabetes130Us(AbstractCuratedDataset):
             " or an early visit, to prevent an early readmission."
         ),
         row=(
-            "The first hospital stay of one diabetic patient at one of 130 US hospitals, 1999-2008 (69,973 patients)."
+            "One hospital stay of a diabetic patient at one of 130 US hospitals, 1999-2008: every stay in the file "
+            "(99,343 stays of 69,990 patients), in the order of the hospitals' encounter numbers."
         ),
         predicted=(
             "Whether the patient is readmitted within 30 days of discharge (9% are); a later readmission counts as no."
@@ -70,16 +80,19 @@ class Diabetes130Us(AbstractCuratedDataset):
             "the year before, glucose and HbA1c results, and the diabetes drugs and their changes."
         ),
         split=(
-            "Random patients, one stay each, so the test data stands for new patients of the same hospitals and years."
+            "Nine windows of later stays in encounter order, each trained on every earlier stay, so the test data "
+            "stands for the next discharges, as when a hospital scores them; a returning patient's earlier stays can "
+            "be in training."
         ),
         changes=(
-            "We keep each patient's first stay and drop stays that ended in death or discharge to a hospice, as the "
-            "paper does."
+            "We keep every stay, where the paper keeps each patient's first, and drop stays that ended in death or "
+            "discharge to a hospice, as the paper does; the encounter number becomes a time index."
         ),
         fit="direct",
         fit_reason=(
             "Everything the model sees is recorded by discharge and the outcome follows within 30 days, as when the "
-            "model is used. The stays carry no dates, so the test data mixes care from all of 1999-2008."
+            "model is used. The stays carry no dates, but the encounter number runs as a calendar over 1999-2008 across all "
+            "hospitals, so the windows test on later care; a window counts stays, not days."
         ),
     )
 
@@ -113,15 +126,17 @@ class Diabetes130Us(AbstractCuratedDataset):
         mkdir -p local-data-warehouse/diabetes_130_us/ && wget -P local-data-warehouse/diabetes_130_us/ https://archive.ics.uci.edu/static/public/296/diabetes+130-us+hospitals+for+years+1999-2008.zip && unzip local-data-warehouse/diabetes_130_us/diabetes+130-us+hospitals+for+years+1999-2008.zip -d local-data-warehouse/diabetes_130_us/
     """
     curation_comments = """
-        - We keep one encounter per patient, the first one by encounter_id, following the paper ("we considered only the first encounter for each patient as the primary admission", Strack et al. 2014, Sec. 2.3); we sort by encounter_id to make this explicit (each patient's encounters already appear in that order in the raw file, so the kept encounter is the same as before).
+        - Every stay (2026-11-11, Andrej, review issue 1 d): we keep all encounters of a patient, 99,343 stays of 69,990 patients after the filter below. The paper kept "only the first encounter for each patient as the primary admission" (Strack et al. 2014, Sec. 2.3) for the independence its logistic regression assumes; a hospital scores every discharge and knows a returning patient's earlier stays (USE-10, LEAK-34). In windows of encounter order the first stays are a group that narrows over the years (30-day rate 9.9% in the oldest half, 9.3%, 8.3% and 6.4% in three windows from the newest half), while over every stay it holds at 10.8% to 11.3%. TabArena v0.1 and BeyondArena kept the first stay (`drop_duplicates(subset="patient_nbr")`) with random folds; v0.2 did the same until 2026-11-11 (69,973 rows).
         - We remove encounters that ended in death or discharge to a hospice, as the paper does ("we removed all encounters that resulted in either discharge to a hospice or patient death, to avoid biasing our analysis", Sec. 2.3): a patient who died cannot be readmitted (the 1,084 "Expired" encounters were all "No"), so these rows are not part of the readmission task.
         - We set "?" (race, weight, payer code, specialty, diagnoses) and the "NULL" code of the three ID columns to missing values; pandas also reads the "None" (test not taken) of max_glu_serum and A1Cresult as missing.
         - We reversed the original ordinal encoding for three ID-based features (admission_type_id, discharge_disposition_id, admission_source_id).
         - We created the target from the "readmitted" column following the original task description: "<30" becomes "Yes", everything else "No".
-        - We dropped "encounter_id" and "patient_nbr", which are both unique identifiers for each row.
+        - We drop "patient_nbr", the patient id. "encounter_id" becomes `time_index` (encounter_id // 6, below) and is dropped otherwise. A patient's earlier stays as features of their own (their count in the file, the last stay's label) would be allowed under the temporal split (USE-10) and are a step to measure separately; the stay already carries the visits of the year before.
         - The other codes for an unknown value ("Not Available" and "Not Mapped" in the ID columns, "Unknown/Invalid" in gender) stay as categories, as IDS_mapping.csv lists them as codes of their own next to "NULL".
-        - We drop examide, citoglipton and glimepiride-pioglitazone, which are constant ("No") after the filters above.
-        - Anomaly: There is a distribution shift based on the original order. The reason for this might be that the encounters are ordered in some way such that later parts of the data contain different sub-groups than earlier parts. This is also indicated by the fact that the "payer_code" feature is responsible for the shift. This distribution shift vanishes after randomly shuffling the data (as done by default for this and all other datasets used in TabArena).
+        - We drop examide and citoglipton, which are constant ("No") after the filters above, and glimepiride-pioglitazone, "Steady" in a single stay and "No" in all others.
+        - Time order (2026-11-06 analysis, review issue 1): `encounter_id` is the Health Facts warehouse's running number of encounters (6 times a running number, 6n + 2 for the newest 11% of stays after a change of the id scheme; it ends at 73,977,870, close to the paper's 74,036,643 encounters), and it runs as a calendar across all hospitals: the distance in that number to the same patient's next stay tells a `<30` label from a `>30` one (ROC AUC 0.89), and summed over the file the 30-day scale gives 9.3 years from the first stay to the last, for the source's 1999-2008. Had the hospitals been loaded one after another, 30 days at one hospital would span far fewer numbers. We keep `time_index` = encounter_id // 6 (monotone in encounter_id across the scheme change) as the time column (SPLIT-22). The shift along the order that the earlier notes saw (payer code missing in the oldest fifth, up to 16 diagnoses only in the newest fifth) is time: a change of the warehouse's recording, which the windows now test. The drugs date the order without the label or a returning patient (2026-11-11 check, tenths of the stays in encounter order): troglitazone, withdrawn in March 2000, is in 3 stays, all in the first 0.1%; glipizide-metformin (approved 2002) first appears at 40%, metformin-rosiglitazone (2002) at 85%, metformin-pioglitazone (2005) at 97%; rosiglitazone falls from about 770 stays a tenth to 319 and 222 in the newest two (the 2007 safety warning); and among first stays alone payer code is missing in all of the oldest two tenths and 9% to 19% of the newest four.
+        - Hospitals: the 130 hospitals are not recoverable; no copy (UCI, OpenML 4541 and 43874, the R package `readmission`) has a hospital id, both ids interleave the hospitals, and recording habits mark only 14.6% of the stays (SPLIT-24, SPLIT-25). A hospital scores its own next discharges, so the hospital would be a feature, not a reason for another split.
+        - Target (2026-11-11, Andrej, review issue 2 A): the source's three-way `readmitted` (`<30`, `>30`, `NO`) stays binary, 30 days against the rest. Only `<30` has one horizon for every stay and is complete to the end of the file (10.5% to 12% in each estimated year); `>30` counts a readmission at any later time, so the oldest stays were followed about nine years longer than the newest. On the first stays the three classes rank `<30` as the binary model does (P(`<30`) ROC AUC 0.644 against 0.643, LightGBM), the order of the levels adds nothing, and any readmission (ROC AUC 0.668) loses its skill in the newest window (log-loss skill 0.006 against 0.059 at random).
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 17 columns are
           ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 13 hold a state outside the
           scale, placed by the curator's rule (missing when the column has no other missing value, else the lowest
@@ -139,14 +154,36 @@ class Diabetes130Us(AbstractCuratedDataset):
         )
     )
 
+    # Splits
+    splits_comment = """
+        Nine test windows of 5,519 stays in encounter order (`time_index`), walking back from the newest; each trains on
+        every earlier stay (50.0% to 94.4% of the rows), so no window trains on less than half of the data (SPLIT-14),
+        and nine windows match the 3 x 3 folds a random split of this size gets (SPLIT-15). Each window holds 573 to 645
+        readmissions within 30 days (10.4% to 11.7%). The encounter number runs as a calendar over 1999-2008 (curation
+        notes), so the windows are later care, but they count stays, not days. No gap: the outcome horizon is a fixed 30
+        days, and a 30-day gap before each window changed nothing measurable (untuned LightGBM over every stay, three
+        windows of the newest half: 0.652 with, 0.654 without; SPLIT-10). A patient's earlier stays can train a window
+        that tests their later ones (22% to 37% of the test stays, the most in the newest window), as when a hospital
+        scores a returning patient (USE-10, SPLIT-13). The split stays temporal, not grouped: the cut is in time, and
+        the test mixes returning and new patients as a hospital's next discharges do; holding returning patients out
+        would test new patients only, which is not the use case. The windows cost little against random folds over every stay (LightGBM
+        0.654 against 0.662; on the first stays 0.625 against 0.643). (2026-11-11, Andrej, review issue 1 d.)
+    """
+    temporal = Temporal(
+        on="time_index",
+        splits=TemporalSplits(window=5519, unit="rows", n_windows=9, min_train_fraction=0.5),
+    )
+
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/diabetic_data.csv")
         return df
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        # One encounter per patient: the first one (Strack et al. 2014, Sec. 2.3)
-        df = df.sort_values("encounter_id", kind="stable").drop_duplicates(subset="patient_nbr", keep="first")
+        # Every stay, in encounter order; the encounter number runs as a calendar across all hospitals (curation
+        # notes). It is 6n, or 6n + 2 after a change of the id scheme, so encounter_id // 6 is the running number.
+        df = df.sort_values("encounter_id", kind="stable")
+        df["time_index"] = df["encounter_id"] // 6
         # "we removed all encounters that resulted in either discharge to a hospice or patient death" (Sec. 2.3):
         # a patient who died cannot be readmitted (11 Expired, 19-21 Expired ... hospice; 13-14 Hospice)
         df = df[~df["discharge_disposition_id"].isin([11, 13, 14, 19, 20, 21])]
