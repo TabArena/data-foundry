@@ -28,14 +28,17 @@ windows are cut on and the gap.
   use case (SPLIT-5), as a departure for a reviewer.
 * `AssumedStationaryRelation` is only ever reached through a person's answer (SPLIT-32): offer it with the facts for
   and against and recommend it if you like, but answer "no" yourself unless a person has given the reason.
+  The same holds for the forced step's temporal-leakage question: only a person answers "no" there.
 * Where a definition ships another split than its leaf, its `splits_comment` says which leaf the tree gives and why
   the definition departs; the departure goes to a reviewer like a forced leaf. The departures a reviewer has not
   settled are at the end; a confirmed departure stays there with its reason, a resolved one leaves.
 * The tree is kept current with the definitions: adding a dataset or changing a split adds the definition to its
   leaf's examples where they are few, and a departure to the table at the end.
 * The examples under each leaf are v0.2 definitions that reach it; read one before writing yours.
-* A temporal leaf gives the date the windows are cut on and the gap; the windows and the horizon are signed off by
-  the curator (SPLIT-12, SPLIT-14), as is every window that trains on less than half of the rows.
+* A temporal leaf gives the date the windows are cut on and what the use case and the source set (SPLIT-12): the time
+  unit, the window length (the horizon), the step (the refit cadence) and the gap (SPLIT-10). The curator signs off on
+  the windows and the horizon (SPLIT-12), and a window that trains on less than half of the rows is the curator's
+  exception, down to 30% (SPLIT-14).
 
 ## Shared answers
 
@@ -46,17 +49,40 @@ windows are cut on and the gap.
 * **ForcedFromTemporal step.** Every forced point of the tree (too few periods or snapshots, an order lost, one
   prediction point) continues at the same step, written once below. It first asks whether the arrival order can be
   reconstructed from the data (SPLIT-22): if so, rebuild it, record it as recovered time (`Time: Inferred`) and walk
-  the tree again from the root. If the windows failed only for too few positives in a sequence that is not stationary,
-  the task is `Too Small` and never falls back to random (SPLIT-16). Otherwise it is the only place for a reason to keep
-  a split random: a relation
-  measured flat over the periods held (`StationaryRelation`), or, where nothing can be measured, a person's domain or
-  use-case reason (`AssumedStationaryRelation`); a unit with several rows makes either grouped by the unit. Without a
-  reason, whole periods are held out where the data has at least two, then the unit where it has several rows and the
-  use case meets new units, then random (SPLIT-8, SPLIT-32).
+  the tree again from the root. Then it asks for a reason to treat later samples as interchangeable, the only place for
+  a reason to keep a split random: a relation measured flat over the periods held (`StationaryRelation`), or, where
+  nothing can be measured, a person's domain or use-case reason (`AssumedStationaryRelation`); a unit with several
+  rows makes either grouped by the unit. A relation measured not flat is held out by whole periods, enough to
+  approximate the temporal split, or the task is `Too Small` (SPLIT-16): never the unit or random. With nothing
+  measurable and no reason, whole periods are held out where the data has enough for the task's repeats, then the unit
+  where it has several rows and the use case meets new units, then random (SPLIT-8, SPLIT-32).
 * **The gap.** Under every temporal leaf the gap follows SPLIT-10: late labels (a gap of about the delay, or training
   only on cases whose outcome is known before the window), a planning lead the use case states (a forecast issued
   ahead), an outcome window still open at the next scoring date (a policy year's claims when the next tariff is set). No
-  gap where the delay is within the time step or a written exception holds.
+  gap where the delay is within the time column's smallest recorded step (a date: one day; a timestamp: its resolution)
+  or a written exception holds.
+* **Windows step (③).** Every temporal branch asks one question, on its own time key (a date, rounds, an interview
+  order, a rebuilt order, whole periods across units): "Can the data hold at least three test windows of the use
+  case's size?" The window length (the horizon), the step (the refit cadence), the gap and the time unit come from the
+  use case and the source (SPLIT-12, SPLIT-10); where they are silent, a person sets them before the question is
+  answered. Each window trains on at least half of the rows and holds at least 33 scored units (SPLIT-14). Yes → the
+  branch's temporal leaf. No → "Does a person allow an exception that gives three windows: windows down to 30%
+  training, wider windows than the use case's, or no gap?", which only a person answers (SPLIT-14, SPLIT-10): yes →
+  the temporal leaf, the exception recorded in the splits comment and a CC line; no → the leaf the branch names for
+  no (the ForcedFromTemporal step). Under the temporal leaf, the number of windows aims at the splits an IID split of
+  the data would get, SPLIT-33's count for two thirds of all scored units, and fewer are accepted, never under three,
+  with the reason in the splits comment (SPLIT-15); windows do not overlap by default, and where the target cannot be
+  reached otherwise, overlapping windows (a step shorter than the window) are offered to the curator. Too few
+  positives in a window is part of the task, not a reason to leave the branch.
+* **Labels-arrive-later step (④).** Every fill-in branch (Survey: people or places not sampled; Database snapshot: rows
+  that lack the label; Panel data: fill in the covered period) first asks: "Do the rows that lack the target lie later
+  in time than the labelled ones?" _(data and documentation: label presence against the time column, and the source's
+  account of how a label arrives: an audit, a settlement or a follow-up that closes after the record → later)_. Yes →
+  **Temporal · labels arrive later**: the rows to fill in are the newest, whose label is not known yet, so the split
+  is windows on the time column, the newest labelled period tested on the earlier ones, with the gap the label's delay
+  sets (SPLIT-10) and the windows step ③; no three windows → the ForcedFromTemporal step. No → the branch's own
+  question. Examples: tunisian_fraud_detection_challenge.
+
 ## Expanding science catalogue
 
 **Does the use case predict for the items the catalogue adds next?** _(use case; reads SPLIT-37 step 3: the source's
@@ -74,21 +100,17 @@ reported, or no scope stated → yes. In every leaf an item's copies stay on one
     qsar_oral_toxicity)
   - yes →
     **Does arrival change what is recorded or selected, or does the date carry waves?** _(measurement; reads step 4a: a
-    recording convention or an intake that moves with the entry date; step 4b: a forward split leaves clearly fewer
-    close training neighbours than a random draw)_
+    change in how the target is recorded or in which items are taken in that moves with the entry date (a change in
+    how features are recorded is a fact for the notes); step 4b: a forward split leaves clearly fewer close training
+    neighbours than a random draw)_
     - yes →
-      **Does the order give the windows SPLIT-14 and SPLIT-15 ask for?** _(data and documentation; reads the span and
-      density of the order (the dates, rounds, entry dates or rebuilt order): at least three windows; the newest and one
-      other train on at least half of the rows, the others on at least 30% (SPLIT-14); about 50 test rows or more per
-      window (SPLIT-17), with enough positives in each for a classification task (TP-9; too few in a drifting sequence
-      makes the task Too Small, SPLIT-16); as many windows as an IID or grouped task of that size gets folds (SPLIT-15,
-      SPLIT-33), as long as they stay meaningful; counted after the gap a label delay needs: if the gap breaks the
-      floor, no (a curator may still accept an exception, SPLIT-10))_
+      **Can the order hold at least three test windows of the use case's size?** _(data and documentation; reads the
+      span and density of the order (the dates, rounds, entry dates or rebuilt order); the windows step ③)_
       - yes → **Temporal · entry date**. Items the catalogue adds next, each with a final entry date, and arrival
-        changes how items are recorded or which are taken in, or a forward split leaves clearly fewer close training
-        neighbours than a random draw (SPLIT-37 step 4): each era tested on the earlier ones; an item keys on its first
-        date, which orders the split and is no input; the gap as SPLIT-10 sets it (a label delay or a planning lead).
-        Examples: apistox, ecoli_proteins, qsar_tid_11.
+        changes how the target is recorded or which items are taken in, or a forward split leaves clearly fewer close
+        training neighbours than a random draw (SPLIT-37 step 4): each era tested on the earlier ones; an item keys on
+        its first date, which orders the split and is no input; the gap as SPLIT-10 sets it (a label delay or a planning
+        lead). Examples: apistox, ecoli_proteins, qsar_tid_11.
       - no → **① family-key step**
     - no → **① family-key step** (here:
       force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition, protein_model_quality_rf_pcp,
@@ -103,17 +125,12 @@ designed run, with no sample before or after another → no)_
   **Is the order available in the data?** _(data and documentation; reads the raw rows: a recorded date, or an order
   rebuilt from the data (a file position, an id) and checked against something dated (orientation: the Time tag))_
   - yes →
-    **Does the order give the windows SPLIT-14 and SPLIT-15 ask for?** _(data and documentation; reads the span and
-    density of the order (the dates, rounds, entry dates or rebuilt order): at least three windows; the newest and one
-    other train on at least half of the rows, the others on at least 30% (SPLIT-14); about 50 test rows or more per
-    window (SPLIT-17), with enough positives in each for a classification task (TP-9; too few in a drifting sequence
-    makes the task Too Small, SPLIT-16); as many windows as an IID or grouped task of that size gets folds (SPLIT-15,
-    SPLIT-33), as long as they stay meaningful; counted after the gap a label delay needs: if the gap breaks the floor,
-    no (a curator may still accept an exception, SPLIT-10))_
+    **Can the order hold at least three test windows of the use case's size?** _(data and documentation; reads the span
+    and density of the order (the dates, rounds, entry dates or rebuilt order); the windows step ③)_
     - yes → **Temporal · sample order**. Later samples in an order the data holds (a recorded date, or an order rebuilt
       from the data and checked against something dated): each window tested on the earlier samples; a rebuilt order
       orders the split and is no input; the gap as SPLIT-10 sets it (a label delay or a planning lead). Examples:
-      infrared_thermography_temperature, wine_quality.
+      wine_quality.
     - no → **ForcedFromTemporal step**
   - no → **ForcedFromTemporal step**
 - no →
@@ -166,13 +183,8 @@ designed run, with no sample before or after another → no)_
   dated (a date the raw rows record would make the set a dated event log); or the order is lost; or all patients share
   one prediction point, a cohort scored at one baseline exam (orientation: Time: Inferred, Samples: One Moment))_
   - yes →
-    **Does the order give the windows SPLIT-14 and SPLIT-15 ask for?** _(data and documentation; reads the span and
-    density of the order (the dates, rounds, entry dates or rebuilt order): at least three windows; the newest and one
-    other train on at least half of the rows, the others on at least 30% (SPLIT-14); about 50 test rows or more per
-    window (SPLIT-17), with enough positives in each for a classification task (TP-9; too few in a drifting sequence
-    makes the task Too Small, SPLIT-16); as many windows as an IID or grouped task of that size gets folds (SPLIT-15,
-    SPLIT-33), as long as they stay meaningful; counted after the gap a label delay needs: if the gap breaks the floor,
-    no (a curator may still accept an exception, SPLIT-10))_
+    **Can the order hold at least three test windows of the use case's size?** _(data and documentation; reads the span
+    and density of the order (the dates, rounds, entry dates or rebuilt order); the windows step ③)_
     - yes → **Temporal · rebuilt order**. The data holds the arrival order (encounter numbers) with enough periods: each
       window tested on the earlier patients; the gap as SPLIT-10 sets it (a label delay or a planning lead). Examples:
       diabetes_130_us, horse_colic_survival.
@@ -185,31 +197,26 @@ designed run, with no sample before or after another → no)_
 
 **Whom, and when, does the model predict for?** _(use case; reads the use case)_
 - later respondents, arriving one by one without rounds →
-  **Does the interview order give the windows SPLIT-14 and SPLIT-15 ask for?** _(data and documentation; reads a
-  recorded interview date, or an order rebuilt from the data and checked against something dated (SPLIT-22): at least
-  three windows; the newest and one other train on at least half of the rows, the others on at least 30% (SPLIT-14);
-  about 50 test rows or more per window (SPLIT-17), with enough positives in each for a classification task (TP-9; too
-  few in a drifting sequence makes the task Too Small, SPLIT-16); as many windows as an IID or grouped task of that size
-  gets folds (SPLIT-15, SPLIT-33), as long as they stay meaningful; counted after the gap a label delay needs: if the
-  gap breaks the floor, no (a curator may still accept an exception, SPLIT-10); no date or order → no)_
+  **Can the interview order hold at least three test windows of the use case's size?** _(data and documentation; reads a
+  recorded interview date, or an order rebuilt from the data and checked against something dated (SPLIT-22); the windows
+  step ③; no date or order → no)_
   - yes → **Temporal · interview order**. Later respondents arrive one by one, and a recorded interview date or a
-    rebuilt order gives the windows SPLIT-14 and SPLIT-15 ask for: each window tested on the earlier respondents, the
-    gap as SPLIT-10 sets it; a rebuilt order orders the split and is no input. No v0.2 definition reaches it yet.
+    rebuilt order gives at least three windows of the use case's size (the windows step ③): each window tested on the
+    earlier respondents, the gap as SPLIT-10 sets it; a rebuilt order orders the split and is no input. No v0.2
+    definition reaches it yet.
   - no → **ForcedFromTemporal step** (here: caracas_cervical_cancer)
 - the surveyed population at a later round →
-  **Do the rounds give the windows SPLIT-14 and SPLIT-15 ask for?** _(data and documentation; reads the rounds a round,
-  wave or date column records (an election year, an observation date), or rounds rebuilt from the data and checked: at
-  least three windows; the newest and one other train on at least half of the rows, the others on at least 30%
-  (SPLIT-14); about 50 test rows or more per window (SPLIT-17), with enough positives in each for a classification task
-  (TP-9; too few in a drifting sequence makes the task Too Small, SPLIT-16); as many windows as an IID or grouped task
-  of that size gets folds (SPLIT-15, SPLIT-33), as long as they stay meaningful; counted after the gap a label delay
-  needs: if the gap breaks the floor, no (a curator may still accept an exception, SPLIT-10); no rounds at all → no)_
-  - yes → **Temporal · round**. The next round is the use, and the rounds, recorded or rebuilt from the data, give the
-    windows SPLIT-14 and SPLIT-15 ask for: each round tested on the earlier ones; a rebuilt round orders the split and
-    is no input; the gap as SPLIT-10 sets it (a label delay or a planning lead). Examples:
-    ai4d_lab_tanzania_tourism_classification_challenge, anes_voting_2026, sdss_17.
-  - no → **ForcedFromTemporal step**
+  **Can the rounds hold at least three test windows of the use case's size?** _(data and documentation; reads the rounds
+  a round, wave or date column records (an election year, an observation date), or rounds rebuilt from the data and
+  checked; the windows step ③; no rounds at all → no)_
+  - yes → **Temporal · round**. The next round is the use, and the rounds, recorded or rebuilt from the data, give at
+    least three windows of the use case's size (the windows step ③): each round tested on the earlier ones; a rebuilt
+    round orders the split and is no input; the gap as SPLIT-10 sets it (a label delay or a planning lead). Examples:
+    anes_voting_2026, sdss_17.
+  - no → **ForcedFromTemporal step** (here: ai4d_lab_tanzania_tourism_classification_challenge, two rebuilt batches)
 - people or places the survey did not sample, at the rounds held →
+  **Do the rows that lack the target lie later in time than the labelled ones?** _(the labels-arrive-later step ④)_
+  yes → **Temporal · labels arrive later**; no → the question below.
   **Inside the population and area the survey covered, or outside them?** _(use case; reads the use case: gaps between
   sampled sites, respondents like these → inside; groups or places the survey never reached → outside)_
   - inside →
@@ -219,8 +226,7 @@ designed run, with no sample before or after another → no)_
     - yes → **Grouped · `Retrospective` (sampling cluster)**. People or places the survey did not sample, inside what it
       covered, where it sampled in clusters (sites, burn areas) or a respondent answered several items: whole clusters
       or respondents held out. Check that no row of a test row's time carries its target (one day's weather across
-      stations); if one does, group by that time unit (SPLIT-32, question 2). Examples: boreal_postfire_lichen_biomass,
-      in_vehicle_coupon_recommendation.
+      stations); if one does, group by that time unit (SPLIT-32, question 2). Examples: boreal_postfire_lichen_biomass.
     - no → **Random · `Retrospective`**. People the survey did not sample, inside what it covered, one row each and no
       clusters: random, a fair draw of the same design. Check that no row of a test row's time carries its target (one
       day's weather across stations); if one does, group by that time unit (SPLIT-32, question 2). No v0.2 definition
@@ -239,6 +245,8 @@ designed run, with no sample before or after another → no)_
 
 **What does a model trained on data from the snapshot meet in production?** _(use case; reads the use case)_
 - rows of this same snapshot that lack the label →
+  **Do the rows that lack the target lie later in time than the labelled ones?** _(the labels-arrive-later step ④)_
+  yes → **Temporal · labels arrive later**; no → the question below.
   **Are those rows scattered among labelled ones, or whole areas or groups with none?** _(use case; reads the use case:
   a listing among listings, a module not yet inspected → scattered; unmapped land, a producer new to the shop → whole
   areas or groups)_
@@ -267,14 +275,9 @@ designed run, with no sample before or after another → no)_
       snapshot holds no key fine enough to hold them out: random beside the Retrospective time basis, the share of test
       rows whose neighbours sit in training named in the `Group basis:` line. Examples: covertype.
 - a whole population scored at a date, for what happens after it →
-  **Can different snapshots be reconstructed from the data to give the windows SPLIT-14 and SPLIT-15 ask for?** _(data
-  and documentation; reads the source's reference dates: a second labelled file of the same population, scoring dates
-  kept per row; one reference date, or several mixed with their dates lost, give none. at least three windows; the
-  newest and one other train on at least half of the rows, the others on at least 30% (SPLIT-14); about 50 test rows or
-  more per window (SPLIT-17), with enough positives in each for a classification task (TP-9; too few in a drifting
-  sequence makes the task Too Small, SPLIT-16); as many windows as an IID or grouped task of that size gets folds
-  (SPLIT-15, SPLIT-33), as long as they stay meaningful; counted after the gap a label delay needs: if the gap breaks
-  the floor, no (a curator may still accept an exception, SPLIT-10))_
+  **Can snapshots reconstructed from the data hold at least three test windows of the use case's size?** _(data and
+  documentation; reads the source's reference dates: a second labelled file of the same population, scoring dates kept
+  per row; one reference date, or several mixed with their dates lost, give none; the windows step ③)_
   - yes → **Temporal · scoring date**. A whole population scored at a date, and enough snapshots with their outcomes can
     be reconstructed for three test windows, each trained on the earlier snapshots; the gap as SPLIT-10 sets it (a label
     delay or a planning lead). No v0.2 definition reaches it yet.
@@ -294,13 +297,8 @@ designed run, with no sample before or after another → no)_
   **Can the arrival order be rebuilt from the data and checked against time?** _(measurement; reads an id issued in
   sequence or the export's row order, checked against something dated (orientation: Time: Inferred))_
   - yes →
-    **Does the order give the windows SPLIT-14 and SPLIT-15 ask for?** _(data and documentation; reads the span and
-    density of the order (the dates, rounds, entry dates or rebuilt order): at least three windows; the newest and one
-    other train on at least half of the rows, the others on at least 30% (SPLIT-14); about 50 test rows or more per
-    window (SPLIT-17), with enough positives in each for a classification task (TP-9; too few in a drifting sequence
-    makes the task Too Small, SPLIT-16); as many windows as an IID or grouped task of that size gets folds (SPLIT-15,
-    SPLIT-33), as long as they stay meaningful; counted after the gap a label delay needs: if the gap breaks the floor,
-    no (a curator may still accept an exception, SPLIT-10))_
+    **Can the order hold at least three test windows of the use case's size?** _(data and documentation; reads the span
+    and density of the order (the dates, rounds, entry dates or rebuilt order); the windows step ③)_
     - yes → **Temporal · rebuilt order**. New cases arrive one by one; the raw rows hold no date, but an order rebuilt
       from an id or the file's row order tracks time: windows on it, the order no input when it comes with the target;
       the gap as SPLIT-10 sets it (a label delay or a planning lead). Examples: fremtpl2, labour_inspection_compliance,
@@ -328,13 +326,8 @@ new region)_
   - fill in → **Random · `Retrospective`**. The use fills in the period the data covers: random, or by time unit where
     rows of one time share the target. No v0.2 definition reaches it yet.
   - forward →
-    **Do the dates give the windows SPLIT-14 and SPLIT-15 ask for?** _(data and documentation; reads the span and
-    density of the dates: at least three windows; the newest and one other train on at least half of the rows, the
-    others on at least 30% (SPLIT-14); about 50 test rows or more per window (SPLIT-17), with enough positives in each
-    for a classification task (TP-9; too few in a drifting sequence makes the task Too Small, SPLIT-16); as many windows
-    as an IID or grouped task of that size gets folds (SPLIT-15, SPLIT-33), as long as they stay meaningful; counted
-    after the gap a label delay needs: if the gap breaks the floor, no (a curator may still accept an exception,
-    SPLIT-10))_
+    **Can the dates hold at least three test windows of the use case's size?** _(data and documentation; reads the span
+    and density of the dates; the windows step ③)_
     - no → **ForcedFromTemporal step** (here: 2_month_survival_rate_prediction, bad_customer_detection,
       frempl_french_motor_personal_line, …)
     - yes →
@@ -342,23 +335,24 @@ new region)_
       date at which the open cases are scored (bookings not yet arrived, accounts at a month-end, policies priced at the
       start of a tariff year))_
       - a case arrives →
-        **Is the target known only after a delay longer than the time step, or does the use case predict ahead?** _(data
-        and documentation; reads SPLIT-10: the source's account of when the target is known (a delivery, a chargeback, a
-        recorded sale), checked on the newest window (fewer or selected labels); or a planning lead the use case states
-        (a forecast made a day ahead); no gap where the delay is shorter than the time step or a written exception holds
+        **Is the target known only after a delay longer than the time column's smallest recorded step (a date: one day;
+        a timestamp: its resolution), or does the use case predict ahead?** _(data and documentation; reads SPLIT-10:
+        the source's account of when the target is known (a delivery, a chargeback, a recorded sale), checked on the
+        newest window (fewer or selected labels); or a planning lead the use case states (a forecast made a day ahead);
+        no gap where the delay is shorter than the time column's smallest recorded step or a written exception holds
         (orientation: the Target tag))_
         - yes, late labels → **Temporal · arrival date, label-delay gap**. Each case scored when it arrives, its target
-          known only after a delay longer than the time step (a delivery, a chargeback, a recorded sale): windows on the
-          arrival date, a gap of about the delay, or training only on cases whose outcome is known before the window
-          (SPLIT-10). Examples: 2024_lusaka_mobility_prediction_hackathon, aeolus_rebuilt_1m,
-          african_credit_scoring_challenge.
+          known only after a delay longer than the time column's smallest recorded step (a delivery, a chargeback, a
+          recorded sale): windows on the arrival date, a gap of about the delay, or training only on cases whose outcome
+          is known before the window (SPLIT-10). Examples: 2024_lusaka_mobility_prediction_hackathon,
+          acquire_valued_shoppers_challenge, aeolus_rebuilt_1m, african_credit_scoring_challenge.
         - yes, a planning lead → **Temporal · arrival date, planning gap**. Each case scored some time before it happens
           (a forecast made a day ahead): windows on the arrival date, the planning lead as the gap. A planning lead that
           makes the task look like forecasting is first checked for tabular scope (SEL-11, TP-10). No v0.2 definition
           reaches it yet.
         - no → **Temporal · arrival date**. Each case scored when it arrives, its target known with it or within the
-          time step, or no gap by a written SPLIT-10 exception: windows on the arrival date, no gap. Examples:
-          acquire_valued_shoppers_challenge, alfa_battle_2_0_task_2, ames_housing.
+          time column's smallest recorded step, or no gap by a written SPLIT-10 exception: windows on the arrival date,
+          no gap. Examples: alfa_battle_2_0_task_2, ames_housing.
       - a date at which open cases are scored (a month-end, a tariff year's start) →
         **Is the outcome window still open at the next scoring date?** _(data and documentation; reads the source's
         definition of the outcome window (a 20-day return, three months after the period, the arrival of a booking, a
@@ -379,6 +373,8 @@ the panel covers but did not record, or units it did not observe then (a reading
 network) → fill in; the next month of the same stores, the next visit of the same patients, new patients or stations
 after the data → predict after it)_
 - fill in the covered period →
+  **Do the rows that lack the target lie later in time than the labelled ones?** _(the labels-arrive-later step ④)_
+  yes → **Temporal · labels arrive later**; no → the question below.
   **Are the occasions to fill in scattered among a unit's recorded ones, or are whole units missing?** _(use case; reads
   the use case: a reading not taken at a station that reports, a month a firm did not file → scattered; a station not in
   the network, a firm not surveyed → whole units (also when some recorded units have gaps too: holding units out is the
@@ -391,7 +387,7 @@ after the data → predict after it)_
   - whole units missing → **Grouped · `Retrospective` (whole units)**. Fill in the covered period where whole units are
     missing (a station not in the network, a firm not surveyed): whole units held out with all their occasions. Check
     that no row of a test row's time carries its target (one day's weather across stations); if one does, group by that
-    time unit (SPLIT-32, question 2). Examples: 5g_energy_consumption, electric_motor_temperature_prediction,
+    time unit (SPLIT-32, question 2). Examples: 5g_energy_consumption,
     fraud_detection_in_electricity_and_gas_consumption_1m.
 - predict after it →
   **Which units does the model predict for?** _(use case; reads the use case: later occasions of units the panel holds,
@@ -402,24 +398,21 @@ after the data → predict after it)_
     rows: a date, month or year that all units share → shared; only a visit number or hours since admission → each
     unit's own sequence (orientation: Time: Dated, Within Entity))_
     - a shared calendar →
-      **Do the shared dates give the windows SPLIT-14 and SPLIT-15 ask for, in whole periods?** _(data and
-      documentation; reads the span and density of the shared dates, in whole periods across all units: at least three
-      windows; the newest and one other train on at least half of the rows, the others on at least 30% (SPLIT-14); about
-      50 test rows or more per window (SPLIT-17), with enough positives in each for a classification task (TP-9; too few
-      in a drifting sequence makes the task Too Small, SPLIT-16); as many windows as an IID or grouped task of that size
-      gets folds (SPLIT-15, SPLIT-33), as long as they stay meaningful; counted after the gap a label delay needs: if
-      the gap breaks the floor, no (a curator may still accept an exception, SPLIT-10))_
+      **Can the shared dates hold at least three test windows of the use case's size, in whole periods?** _(data and
+      documentation; reads the span and density of the shared dates, in whole periods across all units; the windows step
+      ③)_
       - no → **ForcedFromTemporal step** (here: spanish_motor_insurance_coverage_level_2022_2024)
       - yes →
-        **Is the target known only after a delay longer than the time step, or does the use case predict ahead?** _(data
-        and documentation; reads SPLIT-10: the source's account of when the target is known (the next day's reading, a
-        rate published years later), checked on the newest periods; or a planning lead the use case states (a forecast
-        issued days ahead, sales planned weeks ahead); no gap where the delay is within the time step or a written
-        exception holds (orientation: the Target tag))_
+        **Is the target known only after a delay longer than the time column's smallest recorded step (a date: one day;
+        a timestamp: its resolution), or does the use case predict ahead?** _(data and documentation; reads SPLIT-10:
+        the source's account of when the target is known (the next day's reading, a rate published years later), checked
+        on the newest periods; or a planning lead the use case states (a forecast issued days ahead, sales planned weeks
+        ahead); no gap where the delay is within the time column's smallest recorded step or a written exception holds
+        (orientation: the Target tag))_
         - yes, late labels → **Temporal · whole periods, label-delay gap**. Later occasions of the units held, on a
-          calendar they share, the target known only after a delay longer than the time step (the next day's minimum, a
-          completion rate published years later): windows of whole periods across all units, a gap of about the delay
-          (SPLIT-10). Examples: bias_correction_r_bias_correction_r_2, college_scorecard,
+          calendar they share, the target known only after a delay longer than the time column's smallest recorded step
+          (the next day's minimum, a completion rate published years later): windows of whole periods across all units,
+          a gap of about the delay (SPLIT-10). Examples: bias_correction_r_bias_correction_r_2, college_scorecard,
           g_research_crypto_forecasting_1m.
         - yes, a planning lead → **Temporal · whole periods, planning gap**. Later occasions of the units held, on a
           calendar they share, and the use case predicts ahead (a forecast issued days before, sales planned weeks
@@ -427,9 +420,10 @@ after the data → predict after it)_
           forecasting is first checked for tabular scope (SEL-11, TP-10). Examples:
           climate_model_weather_forecasting_1m, rossmann_store_sales.
         - no → **Temporal · whole periods**. Later occasions of the units held, on a calendar they share, the target
-          known with the occasion or within the time step, or no gap by a written SPLIT-10 exception: windows of whole
-          periods across all units, no gap. Examples: airqo_low_cost_air_quality_monitor_calibration_challenge,
-          ashrae_great_energy_predictor_iii_1m, garments_worker_productivity.
+          known with the occasion or within the time column's smallest recorded step, or no gap by a written SPLIT-10
+          exception: windows of whole periods across all units, no gap. Examples:
+          airqo_low_cost_air_quality_monitor_calibration_challenge, ashrae_great_energy_predictor_iii_1m,
+          garments_worker_productivity.
     - each unit's own sequence → **Temporal · each unit's last occasions (not declarable yet)**. Later occasions of the
       units held, each unit with only its own sequence (a visit number, hours since admission): each unit's last
       occasions tested, its earlier ones in training. Data Foundry cannot declare a split inside each unit yet (a
@@ -438,7 +432,7 @@ after the data → predict after it)_
     customers): the use case aims at units the panel does not hold, so whole units are held out (SPLIT-32); the unit's
     earlier occasions serve as context only where the use case reads them (Grouping with time_on and context past_rows,
     otherwise none); the later calendar stays untested, as the `Time basis:` line says. Examples: amex_non_iid_1m,
-    dementia_prediction, sepsis_prediction_1m.
+    dementia_prediction, electric_motor_temperature_prediction, sepsis_prediction_1m.
   - units of a place or group the panel does not hold (a new hospital, a new station network) →
     **Does the data hold several of them?** _(data and documentation; reads a hospital, region, network or site column;
     several means enough to hold out: whole groups per test fold with every class present, else they count as one
@@ -486,68 +480,87 @@ time (Time: Inferred); no → the forced split below)_
   rebuild it (SPLIT-22), record it as recovered time (Time: Inferred), and answer the tree again from the root with that
   order; the leaf it reaches decides the split. No v0.2 definition reaches it yet.
 - no →
-  **Did the windows fail only because they hold too few positives, in a sequence that is not stationary?** _(data and
-  documentation; reads SPLIT-16 and TP-9: count the positives per candidate window; a time series or a drifting sequence
-  whose windows would have enough rows but too few positives must not fall back to a random split. No when the windows
-  failed for too few periods, rows or a lost order)_
-  - yes → **Retire · Too Small**. The windows hold too few positives in a sequence that is not stationary: no random
-    fallback; the task is Too Small (SPLIT-16, TP-9), retired or kept only on the curator's call. No v0.2 definition
-    reaches it yet.
-  - no →
-    **Is there a reason to treat later samples as interchangeable with the data's?** _(measurement; reads SPLIT-32:
-    measured: the target and its relation to the features flat across the periods the data holds (dated or a rebuilt
-    order), over the longest span the source or a parent covers, in the `Time basis:` line; assumed: a person's domain
-    or use-case reason, only where no two periods can be measured (the time lost), written as AssumedStationaryRelation
-    (<person>, <date>): <reason>; neither: measured not flat, or nothing to measure and no person has given a reason)_
-    - yes, measured flat across the periods held →
-      **Does a unit have several rows, and does the use case meet new units?** _(data and documentation; reads USE-10: a
-      unit id that repeats, recorded or rebuilt exactly from the data (SPLIT-24: a household, a client, a policy, a
-      patient), and the use case: new units → grouped; more rows of units it holds, or one row per unit → random. Exact
-      copies are dropped, not grouped (LEAK-19); repeats that matter but cannot be identified retire the dataset
-      (SPLIT-25), for a reviewer (orientation: Entities: Recur))_
-      - yes: several rows, new units in use → **Grouped · `StationaryRelation` (the unit)**. No usable windows, but the
-        relation is measured flat across the periods held: whole units held out, as a unit has several rows; the
-        measurement in the `Time basis:` line, a later period untested. No v0.2 definition reaches it yet.
-      - no: one row per unit, or known units in use → **Random · `StationaryRelation`**. No usable windows, but the
-        relation is measured flat across the periods held: random, the measurement in the `Time basis:` line; a later
-        period untested. Examples: bad_customer_detection, distribution_transformers_at_cauca_department.
-    - yes, assumed by a person (nothing to measure) →
-      **Does a unit have several rows, and does the use case meet new units?** _(data and documentation; reads USE-10: a
-      unit id that repeats, recorded or rebuilt exactly from the data (SPLIT-24: a household, a client, a policy, a
-      patient), and the use case: new units → grouped; more rows of units it holds, or one row per unit → random. Exact
-      copies are dropped, not grouped (LEAK-19); repeats that matter but cannot be identified retire the dataset
-      (SPLIT-25), for a reviewer (orientation: Entities: Recur))_
-      - yes: several rows, new units in use → **Grouped · `AssumedStationaryRelation` (the unit)**. No usable windows
-        and nothing to measure, and a person gave a domain or use-case reason to treat later samples as interchangeable:
-        whole units held out, as a unit has several rows. No v0.2 definition reaches it yet.
-      - no: one row per unit, or known units in use → **Random · `AssumedStationaryRelation`**. No usable windows and
-        nothing to measure, and a person gave a domain or use-case reason to treat later samples as interchangeable:
-        random. No v0.2 definition reaches it yet.
-    - neither: measured not flat, or nothing measurable and no person's reason →
-      **Is there an order with at least two periods to hold out?** _(data and documentation; reads the raw rows: a date,
-      a phase, a round, a presentation or a rebuilt order that cuts the rows into two or more periods of usable size
-      (orientation: the Time tag). Opened at every forced point of the tree: too few periods or snapshots, an order
-      lost, one prediction point)_
-      - yes → **Grouped · `ForcedGroupedFromTemporal` (periods)**. Forced: the use is later in time, but no usable
-        windows; the data holds an order with at least two periods (scan periods, study phases, visit months,
-        presentations, policy years): whole periods held out, training also on later ones; closer to the shift a
-        temporal split tests than random folds, the step forward still untested. Where units recur across periods and
-        the use case meets new units, a unit's rows must stay in one period, or the unit is held out with its period
-        (USE-10, LEAK-17); check it before shipping. Examples: 2_month_survival_rate_prediction,
-        online_shoppers_purchasing_intention_dataset, open_university_learning_analytics_dataset.
-      - no →
-        **Does a unit have several rows, and does the use case meet new units?** _(data and documentation; reads USE-10:
-        a unit id that repeats, recorded or rebuilt exactly from the data (SPLIT-24: a household, a client, a policy, a
-        patient), and the use case: new units → grouped; more rows of units it holds, or one row per unit → random.
-        Exact copies are dropped, not grouped (LEAK-19); repeats that matter but cannot be identified retire the dataset
-        (SPLIT-25), for a reviewer (orientation: Entities: Recur))_
-        - yes: several rows, new units in use → **Grouped · `ForcedGroupedFromTemporal` (the unit)**. Forced, no periods
-          to hold out, and a unit has several rows (a household, a client, a policy, a patient): whole units held out,
-          so no unit's outcome sits on both sides; the step forward stays untested. Examples:
-          allstate_claim_prediction_challenge_1m, pricing_game_2017_french_mtpl, aps_failure.
-        - no: one row per unit, or known units in use → **Random · `ForcedIIDFromTemporal`**. Forced, no periods to hold
-          out and one row per unit: random; the step forward stays untested. Examples: account_debt_south_africa,
-          blood_transfusion, churn_telco_south_asia.
+  **Is there a reason to treat later samples as interchangeable with the data's?** _(measurement; reads SPLIT-32.
+  Attempt both: where the data or a parent source holds time (a date, a rebuilt order, two or more periods), run the
+  stationary-relation test; where it holds none, reason from the domain's mechanism and similar measured datasets and
+  offer `AssumedStationaryRelation` to a person in the review. Measured: the stationary-relation test across the periods
+  the data holds (dated or a rebuilt order), over the longest span the source or a parent covers, in the `Time basis:`
+  line; assumed: a person's domain or use-case reason, only where no two periods can be measured (the time lost),
+  written as AssumedStationaryRelation (<person>, <date>): <reason>; measured not flat: one period not flat for one
+  model, or a class share that moves twofold; nothing measurable: no two periods, or an inconclusive test, and no person
+  has given a reason)_
+  - yes, measured flat across the periods held →
+    **Does a unit have several rows, and does the use case meet new units?** _(data and documentation; reads USE-10:
+    a unit id that repeats, recorded or rebuilt exactly from the data (SPLIT-24: a household, a client, a policy, a
+    patient), and the use case: new units → grouped; more rows of units it holds, or one row per unit → random.
+    Exact copies are dropped, not grouped (LEAK-19); repeats that matter but cannot be identified retire the dataset
+    (SPLIT-25), for a reviewer (orientation: Entities: Recur))_
+    - yes: several rows, new units in use → **Grouped · `StationaryRelation` (the unit)**. No usable windows, but the
+      relation is measured flat across the periods held: whole units held out, as a unit has several rows; the
+      measurement in the `Time basis:` line, a later period untested. No v0.2 definition reaches it yet.
+    - no: one row per unit, or known units in use → **Random · `StationaryRelation`**. No usable windows, but the
+      relation is measured flat across the periods held: random, the measurement in the `Time basis:` line; a later
+      period untested. Examples: bad_customer_detection.
+  - yes, assumed by a person (nothing to measure) →
+    **Does a unit have several rows, and does the use case meet new units?** _(data and documentation; reads USE-10:
+    a unit id that repeats, recorded or rebuilt exactly from the data (SPLIT-24: a household, a client, a policy, a
+    patient), and the use case: new units → grouped; more rows of units it holds, or one row per unit → random.
+    Exact copies are dropped, not grouped (LEAK-19); repeats that matter but cannot be identified retire the dataset
+    (SPLIT-25), for a reviewer (orientation: Entities: Recur))_
+    - yes: several rows, new units in use → **Grouped · `AssumedStationaryRelation` (the unit)**. No usable windows
+      and nothing to measure, and a person gave a domain or use-case reason to treat later samples as interchangeable:
+      whole units held out, as a unit has several rows. No v0.2 definition reaches it yet.
+    - no: one row per unit, or known units in use → **Random · `AssumedStationaryRelation`**. No usable windows and
+      nothing to measure, and a person gave a domain or use-case reason to treat later samples as interchangeable:
+      random. Examples: distribution_transformers_at_cauca_department.
+  - measured not flat →
+    **Can enough meaningful groups be built without entity leakage to approximate the temporal split?** _(data and
+    documentation; reads SPLIT-16 and SPLIT-8: whole periods of a date, a phase, a round, a presentation or a rebuilt
+    order, held out as a temporal split would hold out its windows; enough that groupings of whole periods into three
+    folds give the repeats SPLIT-33 sets (four periods for 3 repeats, five for 10 or 20), each period with enough rows
+    and, under a ranking metric, at least one positive (SPLIT-16); and no entity on both sides: where units recur across
+    periods and the use case meets new units, each unit's rows fit in one period or the unit goes with its period
+    (USE-10, LEAK-17), else the groups do not count. No unit or random fallback: the relation moves with time)_
+    - yes → **Grouped · `ForcedGroupedFromTemporal` (periods, measured not flat)**. Forced and measured not flat: no
+      usable windows, but enough whole periods to approximate the temporal split: whole periods held out, training
+      also on later ones; the measurement in the `Time basis:` line, the step forward still untested. Where units
+      recur across periods and the use case meets new units, a unit's rows stay in one period, or the unit is held out
+      with its period (USE-10, LEAK-17). Examples: lung_cancer_epithelial_genexp,
+      online_shoppers_purchasing_intention_dataset, open_university_learning_analytics_dataset,
+      sendy_logistics_challenge.
+    - no → **Retire · Too Small**. The relation is measured not flat, and the data cannot build enough meaningful
+      groups to approximate the temporal split (too few periods, or too few positives in them): no unit or random
+      fallback; the task is Too Small (SPLIT-16, TP-9), retired or kept only on the curator's call. No v0.2
+      definition reaches it yet.
+  - nothing measurable (an inconclusive test included) and no person's reason →
+    **Are we willing to take the risk of temporal leakage?** _(use case; a person's judgement only (Andrej,
+    2026-11-19): a forced split trains on rows from the same time as, or later than, the test rows, so a shift over
+    time the data cannot show can make its score look better than the use case will see; where the domain makes such
+    a shift likely (prices, fraud, a policy or a population that changes), a person may decline the risk. Reviewers
+    decide it; the walk answers "yes" and may flag the question with the facts for and against, as for
+    `AssumedStationaryRelation`)_
+    - no (a person's call) → **Retire · forced split too risky**. Nothing measured, no reason to treat later samples
+      as interchangeable, and a person is not willing to take the risk of temporal leakage for this use case: no
+      forced split represents the task (`Not Representative`), retired or kept only on the curator's call with the
+      judgement in a CC line. No v0.2 definition reaches it yet.
+    - yes →
+      **Can meaningful groups be built without entity leakage?** _(data and documentation; reads USE-10, SPLIT-24 and
+      SPLIT-8. Groups that represent the task, tried in this order: the unit the use case meets new (a household, a
+      client, a policy, a patient: a unit id that repeats, recorded or rebuilt exactly from the data, the use case
+      meeting new units), else whole periods of an order (a date, a phase, a round, a presentation or a rebuilt
+      order) enough for the repeats SPLIT-33 sets (four periods for 3 repeats, five for 10 or 20). No entity on both
+      sides: a unit's rows stay in one group. Exact copies are dropped, not grouped (LEAK-19); repeats that matter but
+      cannot be identified retire the dataset (SPLIT-25), for a reviewer (orientation: Entities: Recur, the Time
+      tag))_
+      - yes → **Grouped · `ForcedGroupedFromTemporal`**. Forced and nothing measured, but meaningful groups
+        without entity leakage: the unit the use case meets new (a household, a client, a policy, a patient), else
+        whole periods enough for the repeats (scan periods, study phases, visit months, presentations, policy years);
+        whole groups held out, so no unit's outcome sits on both sides; the step forward stays untested. Examples:
+        allstate_claim_prediction_challenge_1m, pricing_game_2017_french_mtpl, aps_failure,
+        in_vehicle_coupon_recommendation.
+      - no → **Random · `ForcedIIDFromTemporal`**. Forced, nothing measured, no unit the use case meets new and no
+        periods enough for the repeats: random; the step forward stays untested. Examples:
+        account_debt_south_africa, blood_transfusion, churn_telco_south_asia.
 
 ## Definitions that ship another split
 
@@ -556,13 +569,8 @@ is open for a reviewer: change the split, or keep it and write the reason in the
 
 | Definition | Leaf | Ships |
 |---|---|---|
-| 2_month_survival_rate_prediction | Grouped · `ForcedGroupedFromTemporal` (periods) | random, `ForcedIIDFromTemporal` |
-| ai4d_lab_tanzania_tourism_classification_challenge | Temporal · round | random, `ForcedIIDFromTemporal` |
-| cirrhosis_patient_survival_prediction | Temporal · arrival date | random, `StationaryRelation` |
+| cirrhosis_patient_survival_prediction | Temporal · arrival date | random, `ForcedIIDFromTemporal`: kept on the curator's call (2026-11-19), the 60 random folds over three windows of 50 referrals |
 | ecoli_proteins | Temporal · entry date | random, `Timeless` |
 | fremtpl2 | Temporal · rebuilt order | random, `ForcedIIDFromTemporal` |
 | horse_colic_survival | Temporal · rebuilt order | grouped, `StationaryRelation` |
-| infrared_thermography_temperature | Temporal · sample order | random, `StationaryRelation` |
-| online_shoppers_purchasing_intention_dataset | Grouped · `ForcedGroupedFromTemporal` (periods) | random, `ForcedIIDFromTemporal` |
-| regensburg_pediatric_appendicitis | Grouped · `ForcedGroupedFromTemporal` (periods) | random, `ForcedIIDFromTemporal` |
-| tunisian_fraud_detection_challenge | Grouped · `Retrospective` (whole units) | temporal |
+| infrared_thermography_temperature | Temporal · arrival date | random, `StationaryRelation` |

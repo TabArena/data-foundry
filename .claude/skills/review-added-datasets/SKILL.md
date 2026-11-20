@@ -222,8 +222,8 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   block in the record's review a `**Resolved (<date>, <curator>):**` turn; `discuss`: an `**Answer (AI, <date>):**`
   turn in the block.
 * **A window under half the rows:** once the curator signs it off, the record gets the CC line and the definition
-  accepts `splits_train_under_half` (and `splits_train_under_floor` under 30%) in `accepted_check_warnings`, with the
-  windows, their shares and the CC date; never before the curator's mark (SPLIT-14, amended 2026-11-11).
+  accepts `splits_train_under_half` in `accepted_check_warnings`, with the windows, their shares and the CC date; never
+  before the curator's mark, and never under 30% (SPLIT-14).
 * **No open issue:** a record of the review whose issues, field rows, metric and split (when marked) are all settled
   ships by default (Lennart, 2026-11-05); apply it as **ship**, with the metric's and the split's CC lines in the form
   the page reads ("the declared metric (...) is checked, ...", "the declared split (...) is checked, ...") when the

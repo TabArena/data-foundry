@@ -50,8 +50,10 @@ def contradictions(facts: set[str], basis: set[str], regime: str) -> list[str]:
         found.append("StationaryRelation is measured on dates, and the time is lost")
     if "AssumedStationaryRelation" in basis and facts & {"Time: Dated", "Time: Inferred"}:
         found.append("AssumedStationaryRelation where the time can be measured: measure it instead")
-    if "AssumedStationaryRelation" in basis and "Samples: Over Time" not in facts:
-        found.append("AssumedStationaryRelation replaces a forced tag, which needs samples over time")
+    if "AssumedStationaryRelation" in basis and not facts & {"Samples: Over Time", "Samples: One Moment"}:
+        # SPLIT-32: only where the forced tag would stand: samples over time with the time lost, or one moment that
+        # holds a single period
+        found.append("AssumedStationaryRelation replaces a forced tag, which needs samples over time or one moment")
     return found
 
 
@@ -95,6 +97,7 @@ def test_pending_contradictions_still_hold(found: dict[str, list[str]]) -> None:
         ({"Samples: Over Time", "Time: Dated"}, {"AssumedStationaryRelation"}, "iid", 1),
         ({"Samples: Over Time", "Time: Inferred"}, {"AssumedStationaryRelation"}, "iid", 1),
         ({"Samples: No Time Dimension"}, {"AssumedStationaryRelation"}, "iid", 1),
+        ({"Samples: One Moment", "Target: Later"}, {"AssumedStationaryRelation"}, "iid", 0),
     ],
 )
 def test_contradictions(facts: set[str], basis: set[str], regime: str, expected: int) -> None:

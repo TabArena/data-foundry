@@ -12,6 +12,9 @@ so they run on a table from any source. Modules:
   the features carry a realized weight, such as a time on risk a claim can cut short (``weight_proxy``, probe 22), and
   the leak tests of a split forced from temporal: the outcome of a test row's period, and its unit, shared with the
   training side (``period_outcome``, ``shared_units``; probe 23).
+* ``stationarity``: is the target's relation to the features flat across the periods the data holds (SPLIT-32): a
+  forward model against a contemporaneous one on the same rows of each newest period, with LightGBM and optionally a
+  tabular foundation model (``stationary_relation``, ``kumo_tabular``); flat, not flat or inconclusive.
 * ``task``: is the task worth benchmarking, or empty, solved, or the same for every model (baselines, three model
   families, the best single feature, the task's own metric, and flags for the curator).
 * ``groups``: for a grouped task, does the grouping matter, and is there signal across groups.

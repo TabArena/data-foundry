@@ -156,10 +156,12 @@ domain and source from the record.
    `tests/test_v2_metrics_custom.py` to equal the official code on random inputs, on one hand-computed case, and timed
    on 1M rows. Never `Metric.local` in the working copy.
 6. `accepted_check_warnings` stays empty: the curator fills it once the warnings are known, one reason per slug. A
-   temporal task with a window under half the rows (`splits_train_under_half`, `splits_train_under_floor`) always gets
-   an issue in the record's review for the curator's sign-off: the windows and their shares, the reason for each, and an
-   option without them (SPLIT-14, amended 2026-11-11). So does a feature that stops or starts being recorded within
-   the history (`splits_feature_missing_in_test`) and a newest period cut short (`time_newest_period_short`).
+   temporal task with a window under half the rows (`splits_train_under_half`) always gets an issue in the record's
+   review for the curator's exception: the windows and their shares, the reason for each, and an option without them
+   (SPLIT-14); one with fewer windows than an IID split would get (`splits_below_target`) names the target, the count
+   and what stops more in the splits comment, and where only overlapping windows would reach it, offers them as an
+   option. So does a feature that stops or starts being recorded within the history (`splits_feature_missing_in_test`)
+   and a newest period cut short (`time_newest_period_short`).
 7. `_decisions` and `_extra_checks` only when there is something to show or test.
 
 Then point the record at the definition:

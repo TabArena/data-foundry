@@ -4,7 +4,9 @@ They complement the shared bundle checks, which look at the target as a whole (d
 a score is only defined, and only stable, when each test fold holds both classes in enough rows, or a target that
 varies.
 
-* ``splits_test_single_class`` (error): a classification test fold holds a single class, so ROC AUC is undefined.
+* ``splits_test_single_class``: a classification test fold holds a single class. An error under a ranking metric
+  (:data:`RANKING_METRICS`: ROC AUC, average precision, a Gini), which one class cannot score; a warning under any
+  other metric, where few or no positives in a window are part of the task (SPLIT-16).
 * ``splits_test_minority_few`` (warning): a binary test fold holds fewer than :data:`MIN_TEST_MINORITY` rows of its
   rarer class, so its ROC AUC rests on a handful of rows.
 * ``splits_test_class_missing`` (warning): a multiclass test fold lacks one or more classes.
@@ -29,6 +31,21 @@ from data_foundry.bundle_checks import CheckResult
 if TYPE_CHECKING:
     from data_foundry.curation_container import CuratedContainer
 
+RANKING_METRICS = frozenset(
+    {
+        "roc_auc",
+        "roc_auc_ovo_macro",
+        "roc_auc_ovr_macro",
+        "average_precision",
+        "average_precision_at_k",
+        "gini_stability",
+        "gini_top_capture",
+        "normalized_gini",
+    }
+)
+"""Classification metrics that rank the predictions against both classes: a test fold of one class leaves them
+undefined (SPLIT-16)."""
+
 MIN_TEST_MINORITY = 10
 """A binary test fold with fewer rows of its rarer class gives an unstable ROC AUC."""
 
@@ -46,11 +63,16 @@ def task_findings(container: CuratedContainer) -> list[CheckResult]:
         for fold, (_train, test) in by_fold.items()
     ]
     if task.is_classification:
-        return _classification_findings(target, folds, binary=task.problem_type == "binary_classification")
+        metric = getattr(task.objective_metric, "name", None)
+        return _classification_findings(
+            target, folds, binary=task.problem_type == "binary_classification", metric=metric
+        )
     return _regression_findings(pd.to_numeric(target, errors="coerce"), folds)
 
 
-def _classification_findings(target: pd.Series, folds: list, *, binary: bool) -> list[CheckResult]:
+def _classification_findings(
+    target: pd.Series, folds: list, *, binary: bool, metric: str | None = None
+) -> list[CheckResult]:
     codes, classes = pd.factorize(target, use_na_sentinel=True)
     n_classes = len(classes)
     single, few, missing = [], [], []
@@ -65,12 +87,23 @@ def _classification_findings(target: pd.Series, folds: list, *, binary: bool) ->
             missing.append((name, n_classes - present))
     findings = []
     if single:
+        ranking = metric is None or metric in RANKING_METRICS
         findings.append(
             CheckResult(
                 "splits_test_single_class",
-                "error",
-                f"{len(single)} test fold(s) hold a single class, so ROC AUC is undefined there: {single[:5]}.",
-                hint="Use fewer, larger test folds or windows, or stratify; a task this unbalanced may be too small.",
+                "error" if ranking else "warning",
+                f"{len(single)} test fold(s) hold a single class, so "
+                + (
+                    f"the ranking metric {metric or 'ROC AUC'} is undefined there"
+                    if ranking
+                    else f"{metric} scores them on one class"
+                )
+                + f": {single[:5]}.",
+                hint=(
+                    "Widen the window or move its cut until every test fold holds both classes (SPLIT-16)."
+                    if ranking
+                    else "Few or no positives in a window are part of the task (SPLIT-16); accept it with the counts."
+                ),
             ),
         )
     if few:
