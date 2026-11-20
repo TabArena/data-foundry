@@ -11,8 +11,14 @@ priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
+- Dated Event Log
 original_source: Other
 year: '2023'
+collection_period: Nov 2015 - Nov 2018
 domain: insurance
 required_split:
 - Temporal (NON-IID)
@@ -116,6 +122,10 @@ CC (2026-11-09, Andrej): a curation decision on the metric (Review issue 9, A; c
 
 CC (2026-11-09, Andrej): ship (review page of 2026-11-09).
 
+CC (2026-11-17, Andrej): the declared split (temporal on `period_start`, windows of 1 month, windows while training keeps 50% of the rows (5 in the build), gap 12 months) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-19, Andrej): windows below the target count kept (Review issue 11, A as implemented): five monthly windows (your call of 2026-11-03); July 2017 would train on 45.4%; the reason is in the splits comment.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it as built: the re-review of 2026-11-06 under the exposure rules found
@@ -175,7 +185,7 @@ customer's other policies in force at the start (2, design S), `Value_vehicle` k
 (4), ship and re-check `Trivial` (5); on 2026-11-06 the per-contract target under the exposure rules, with the count of
 first years cut short corrected to 2,055 (6); on 2026-11-08 the per-contract target with MET-14's clause amended for
 this case, its wording settled with australian_vehicle_insurance_2004_2005's issue 8 (7), and the sentence of your CC
-reworded (8).
+reworded (8). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 11).
 
 **Verdict (2026-11-09, Andrej):** ship (review page of 2026-11-09).
 
@@ -905,6 +915,45 @@ reworded (8).
    [^s10a]: **USE-10** (Must): "For a known entity, its history is legitimate: the split is temporal and the previous
      outcome is a feature." **CLEAN-19** (Should): we build a feature that is an input the actor reads at the
      prediction point from other rows of the same release, kept only where they are known by then. Both in main.
+
+11. **Windows: 5 of the target's 9; which layout?**
+
+   * **Problem:**
+     - With one-month windows and the twelve-month gap, five months train on half the rows or more: July 2017 trains on 45.4%[^split14]. The five windows are your call of 2026-11-03 (issue 2: "Good, we can ship S with 5 splits"), made after the answer that half-month windows would give about 10. What is new is the target an IID split of 37,090 first years would get, 9, which the rules have asked for since 2026-11-10, with the reason in `splits_comment` when fewer ship[^split33][^split15].
+
+       | Test window | First years | With a claim | Train | Train share |
+       |---|---|---|---|---|
+       | December 2017 | 973 | 371 | 27,043 | 72.9% |
+       | November 2017 | 922 | 337 | 26,221 | 70.7% |
+       | October 2017 | 938 | 325 | 23,882 | 64.4% |
+       | September 2017 | 763 | 261 | 21,673 | 58.4% |
+       | August 2017 | 766 | 276 | 19,629 | 52.9% |
+
+     - What the source fixes: one-year contracts whose claims are known when the year ends, hence the twelve-month gap; the release ends with the contracts that start in December 2017. What is assumed: the monthly refit of the new-business price; the data article names pricing of new business as a use and says nothing about the cadence.
+     - The monthly windows are already about the same size (763 to 973); equal sizes change little.
+     - Overlapping windows are not needed: B reaches the target without them (one-month windows every 15 days would give 10 at half or more).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Five monthly windows (implemented), the reason in `splits_comment` | 5 windows, train 52.9% to 72.9%, test 763 to 973 first years, 261 to 371 with a claim | your call of 2026-11-03; a monthly refit; nothing to rebuild | 4 short of the target |
+     | B | Half-month windows | 11 windows of 15 days, 20 July to 31 December 2017, at half the data or more (9 if stopped at the target, from 19 August); train 50.3% to 73.7%, test 329 to 549, 122 to 204 with a claim; down to 30%, 17 windows from 21 April | reaches the target at half the data or more | a half-monthly refit the use case does not state; each window has about half the claims, so each window's Gini is noisier |
+     | C | Monthly windows down to 30% (the curator's exception) | 8 windows, December back to May 2017; July, June and May train on 45.4%, 38.8% and 32.8%; test 763 to 973, 261 to 371 with a claim | keeps the monthly refit and the window size; adds the spring and early summer contracts | three windows under half need your sign-off; 1 short of the target |
+     | D | Nine windows of equal size, at half the data or more | about 525 first years each, 19 July to 31 December 2017, cut at day boundaries; train 50.2% to 73.5%, test 494 to 560, 164 to 212 with a claim | reaches the target; equal sizes | windows of 2 to 4 weeks, no calendar meaning; a custom `_make_splits` |
+
+   * **Recommendation:** A: the monthly windows are your call and the cadence the use case assumes; if the target weighs more than the cadence, B, which reaches it without a window under half. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Five windows, against the 9 an IID split of 37,090 first years would get: with one-month windows and the twelve-month gap, July 2017 would train on 45.4% of the rows (2026-11-03 and the date of your decision, Andrej)." On B: `TemporalSplits(window=15, unit="days", gap=12, gap_unit="months", min_train_fraction=0.5)` (add `n_windows=9` to stop at the target), and `splits_rows_unused` re-counted. On C: `min_train_fraction=0.3` and `splits_train_under_half` accepted for May to July 2017 with the reason. D needs a custom `_make_splits`. Then the window table in `splits_comment`, `task_summary.split`, `dataset check` on Slurm, a CHANGELOG entry and a CC line.
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: five monthly windows (your call of 2026-11-03); July 2017 would train on 45.4%. The splits comment names the target count and what stops more windows; `splits_below_target` is accepted with that reason. The split is unchanged.
+
+   [^split14]: **SPLIT-14** (Must): at least 3 windows; every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get; the use case sets the window length, step and gap, which are never shortened to reach the count; fewer are accepted, never under 3, with the target, the count reached and what stops more windows in the splits comment; overlapping windows are only offered.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count, here 9.
 
 **Review panel:** ship after changes, text only (mediator). A focused re-review of 2026-11-06 under LEAK-41 and
 MET-14 to MET-16, by a claim auditor and a mediator. Claims: 19; 14 hold, 4 refuted and 1 partly refuted, all

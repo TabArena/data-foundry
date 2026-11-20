@@ -11,8 +11,14 @@ priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Dated Event Log
 original_source: Other
 year: '2014'
+collection_period: '2004'
 domain: insurance
 required_split:
 - Grouped (NON-IID)
@@ -182,6 +188,10 @@ CC (2026-11-09, Andrej): the training labels' maturity is stated in the notes (c
 CC (2026-11-09, Andrej): review issue 11, B: the metric is `normalized_weighted_gini` weighted by `Exposure`, in place of `ordered_lorenz_gini` per unit of `Exposure` (D9), with the reason in the curation notes ("I would like to change it as you said and also add an explanation why to the curation notes").
 
 **Assessment (AI, 2026-11-09):** applied: the metric, its reason and a metric bullet in the notes (the two forms rank every model the same on each fold: ten predictors in the same order on each of the 9 shipped splits and on the mean; the perfect order's Gini is 0.959 to 0.966, so scores read 3.5% to 4.3% higher). The bullets on the metric's stand-ins, the learners and the paired comparisons are re-measured in the declared form (untuned LightGBM, 3 seeds; weighted Tweedie 0.178, squared error 0.146, 1/`Exposure` 0.191); older numbers are labelled unnormalised. `dataset check`: 0 errors, 0 warnings; README regenerated; no container built.
+
+CC (2026-11-19, Andrej): split stays whole policy components held out (Review issue 14, A as implemented; full-information split check):
+- holding out policies is closer to the task than start quarters: the tariff meets new policies;
+- the forced step now tries the unit before periods where nothing is measurable (SPLIT-8 amended 2026-11-19); the v3 test is inconclusive (two SD 10.4 floors for LightGBM, 19.2 for Kumo-Tabular).
 
 ## Review
 
@@ -1158,6 +1168,45 @@ component, whose 61,091 groups are unchanged, and it carried nothing measurable 
    a metric bullet in the notes say why, and the three bullets on the metric's stand-ins, the learners and the paired
    comparisons are re-measured in the declared form; the older numbers are labelled unnormalised. `dataset check`: 0
    errors, 0 warnings. The container is rebuilt only on your ask.
+
+14. **Hold out whole start quarters instead of whole policy components?**
+
+   * **Problem:**
+     - The release holds the policies of 2004 with their start dates, four start quarters; since 2026-11-17 the forced step holds out whole periods before the unit[^s8], and the component folds were chosen on 2026-11-02, 11-03 and 11-08, when the unit came first.
+     - The stationary-relation test of 2026-11-18 reads "flat, at a coarse resolution", but under the rule's threshold every quarter is inconclusive (two SD 0.03-0.10 Gini against ten floors 0.01-0.03), so `StationaryRelation` cannot replace the forced tag unless the cross-dataset item on that threshold says otherwise.
+     - A policy component runs across quarters, so each component stays in the quarter of its first record.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 3 x 3 folds over 61,091 policy components, `ForcedGroupedFromTemporal` (implemented) | No change | No component on both sides | Skips the forced step's first remedy |
+     | B | 3-fold CV over the four start quarters, each component in its first quarter, `ForcedGroupedFromTemporal` | The start quarter (no input) is the group | Tests a change between quarters | Four groups: three distinct groupings, so 3 repeats at most |
+     | C | The component folds, tagged `StationaryRelation` | Only if the threshold item takes its option B | No rebuild | Rests on a test that could not see a gap of a few floors |
+
+   * **Recommendation:** B, with option A of the threshold item; C only with its option B. **Decision:** A, B or C?
+
+   **Notes for the AI:** v3 for frempl reads inconclusive (pooled Gini gap -0.011 ± 0.011 for LightGBM, two SD 10.4 floors; Kumo-Tabular 19.2 floors); the blind walk's 2026-11-18 answer proposing `StationaryRelation` is not applied.
+
+   [^s8]: **SPLIT-8** (Must, amended 2026-11-17): "The closest regime holds out whole periods where the data has an order with at least two periods to hold out ... Without such periods it is grouped by the entity when an entity has several rows and the use case meets new entities ..., and IID otherwise."
+
+   **Answer (AI, 2026-11-18):** reassessed with the new forced step (the interchangeable question first; measured not flat leads to whole periods or Too Small) and the pooled flat verdict.
+
+   - The v3 test is inconclusive, pooled too, so the branch is "nothing measurable and no person's reason", whose first leaf is whole periods: four start quarters are enough for 3 repeats.
+   - C (`StationaryRelation`) is no longer open. Recommendation unchanged: B.
+
+   **Andrej (2026-11-18, discuss):** Something is wrong here. I believe that holding out policies is more correct and I also think that this should be general. Before holding out time windows, groups representative of the tasks or a similar substitute task should be attempted. I believe the tree needs to be adapted here.
+
+   **Answer (AI, 2026-11-18):** under today's tree the start quarters come first; with the tree change you describe, the policy components (A, as shipped) are the leaf. The change is now the cross-dataset item "Hold out units before periods in the forced step?"; this issue follows it.
+
+   - The forced step's "nothing measurable" branch asks for periods first and units only when no periods exist; frempl reaches it because its v3 test is inconclusive (two SD 10.4 floors for LightGBM, 19.2 for Kumo-Tabular).
+   - A tariff is applied to policies it was not fitted on, so a policy component is a unit the use case meets new: with units first, the shipped 61,091-component folds are the leaf and nothing changes.
+   - With the item's option a or b this issue closes as A; with c (no tree change) the recommendation stays B.
+
+   **Decision:** follows the cross-dataset item.
+
+   **Andrej (2026-11-19, instruction):** the forced subtree: groups without entity leakage; with nothing measurable, forced group, forced random, or forced too risky (a person's call).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: 3 x 3 folds over 61,091 policy components, `ForcedGroupedFromTemporal`. Under the amended forced step (nothing measurable, the unit before periods) the policy component is the leaf, as the tariff meets new policies; nothing changes in the definition.
 
 **Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
 after decision D9 (issue 6): 12 reports. Claims: 30 audited, 26 hold (one within seed noise, one by reasoning), 1

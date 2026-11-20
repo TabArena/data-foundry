@@ -3,6 +3,7 @@ unique_name: cooking_time
 name: Cooking Time
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -12,12 +13,18 @@ decision_markers:
 - Anonymized
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Dated Event Log
 collections:
 - TabArena Reject
 - TabRed
 - tabular-dl-more-data
 original_source: Kaggle
 year: '2024'
+collection_period: 15 Nov 2023 - 3 Jan 2024
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
@@ -61,6 +68,10 @@ CC (2026-11-10, Lennart): the declared horizon (7 days, a one-day gap, windows s
 CC (2026-11-11, Lennart): REVIEW issue 2 (every other week), "Option B: Every other week.": the test windows are the newest week and every other week before it, 28 December 2023 to 3 January 2024, 14-20 December and 4-10 December 2023 (7 days, a one-day gap), as for delivery_eta_1m; 4-10 December, a week before the holiday run-up, trains on 37.5% of the orders, the one window under half beside 84.8% and 54.2%, signed off (SPLIT-14 as amended on 2026-11-11). It supersedes the three newest weeks decided on 2026-11-10 (issue 1, B), which stays resolved; the 7-day length and the one-day gap of the horizon check of 2026-11-10 stay.
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` declares the cutoffs 2023-12-28, 2023-12-14 and 2023-12-04 (7 days, gap 1 day); test 1,662,794, 1,921,331 and 1,861,029 orders before the 500k cap, train 10,856,304, 6,935,762 and 4,797,156 (84.8%, 54.2%, 37.5% of 12,799,474). Every day of 4-10 December holds orders (208,774 to 326,051); its mean log minutes are 2.533, against 2.548 and 2.599 in the two newer windows. Without the gap 155 of its train orders would end after its start; the gap removes 277,577 of its 5,074,733 earlier orders (5.5%). `task_summary.split` and `splits_comment` (the windows and why, the counts, the shares, the gap figures) are rewritten; `accepted_check_warnings` accepts `splits_train_under_half` with the sign-off. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
+CC (2026-11-17, Andrej): Review issue 3, A, as implemented (Three one-week windows on `timestamp` (test 28 Dec-3 Jan, 14-20 Dec, 4-10 Dec 2023), train orders placed at least one day before (10,856,304, 6,935,762, 4,797,156: 84.8%, 54.2%, 37.5% of 12,799,474, sub-sampled to 1M), gap 1 day), settled by the cross-dataset item on the tree's gap questions (B: the step is the time column's smallest recorded step).
+
+CC (2026-11-19, Andrej): train floor (Review issue 4, A as implemented): 4-10 December (37.5% of the orders) stays as the curator's exception to the half-data floor (SPLIT-14 as amended 2026-11-19); no window is under 30%.
 
 ## Review
 
@@ -218,6 +229,67 @@ cooking times follow a weekly cycle).
    orders, and its mean log minutes (2.533) sit below the run-up's 2.548 and New Year's 2.599. `task_summary.split`
    and `splits_comment` (the windows and why, the counts, the shares, the gap figures for the new windows) are
    rewritten. The record has the decision CC line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
+3. **Gap: drop the one-day gap before each of the three one-week test windows?**
+
+   * **Problem:**
+     - The tree gives a one-day label-delay gap: a cooking time is known only when the order is cooked, up to 2 hours after it is placed, and without a gap 172, 108 and 155 training orders per window would finish cooking after the window starts.
+     - The blind walk, without that measured delay (it took the delay as shorter than the one-day step), reached no gap; that is where this issue came from.
+     - The gap removes 280k, 239k and 278k of the earlier orders (2.5-5.5%) from the three training sides.
+   * **Background:** Orders arrive one by one at known restaurants and the service refits weekly; 2.5M orders over 7 weeks give three one-week windows above 50% train. The label is known within the hour, so no gap. Confidence of the blind walk: high.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Used at a place or group the data does not hold? (use case): no. Evidence: The delivery service estimates cooking times at its own restaurants; features include each restaurant's past cooking times, so known restaurants are the use.
+     - Fill in the covered period or predict forward? (use case): forward. Evidence: Each new order; 'the model is refit every week' (TabReD, dossier).
+     - Do the dates give the windows the rule[^split-14]/15 ask for? (data): yes. Evidence: 15 Nov 2023 - 3 Jan 2024 (~7 weeks), 2,527,113 orders (~360k a week). Three one-week windows (the refit cadence): the newest trains on ~86%, the next on ~71%, the third on ~57%, all above 50%. The span holds no other season (the newest week is Christmas-New Year).
+     - What sets off a prediction? (use case): a case arrives. Evidence: An order placed.
+     - Target known only after a delay longer than the time step? (data): no. Evidence: The cooking time is known when the restaurant hands the order over, minutes to about an hour after the order. TabReD documents no gap (preprocessing page: train/val/test contiguous). Step used: the timestamp's resolution is not documented; with weekly refits and day-level windows the delay (< 1 day) is within the step.
+   * **The delay the walk measured:** none: step used = one day (window boundaries; the timestamp's own resolution is undocumented); delay = the cooking time itself, minutes to ~1 hour, under a day.
+   * **What the blind dossier lacked, and what it changes:** The delay answer changes: the definition measures that a cooking time is known up to 2 hours after the order, and without a gap 108-172 training orders per window would end after the window start; it ships a one-day gap. Against an order timestamp finer than the delay, that is a late label, so the leaf is 'Temporal · arrival date, label-delay gap' (gap one day). Windows: three one-week windows (28 Dec-3 Jan, 14-20 Dec, 4-10 Dec) at 84.8/54.2/37.5% train, the last under 50% (curator sign-off).
+   * **What changes:** Nothing: A is the shipped split.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: the dossier says 'We follow TabReD and use random sub-sampling of the train data' and the collection_period line says 'TabReD's own train/val/test are cut within this span'. Type fits.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Three one-week windows on `timestamp` (test 28 Dec-3 Jan, 14-20 Dec, 4-10 Dec 2023), train orders placed at least one day before (10,856,304, 6,935,762, 4,797,156: 84.8%, 54.2%, 37.5% of 12,799,474, sub-sampled to 1M), gap 1 day (implemented) | No change. | No training order is still cooking when its window starts, as at a real refit[^split-10]. | Drops 239k-280k orders per window, of which only 108-172 lacked a label at the window start. |
+     | B | The same three windows with no gap: train every order placed before the window | `gap=1` removed from `TemporalSplits`; each training side gains the day before its window (280k, 239k, 278k orders). | Trains on the newest day's orders, the closest to the test week. | 108-172 training orders per window carry cooking times a refit at the window start would not yet have. |
+
+   * **Recommendation:** A, because the definition counted 108-172 training orders per window whose label arrives after the window starts, the late labels the rule[^split-10]'s gap removes.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: change `gap=` in `TemporalSplits` and re-check each window's train share against the floors; nothing else in the definition changes.
+
+   [^split-10]: **SPLIT-10** (Should): When a label is known only some time after its row (a delivery time, a permit's processing time, an outcome after a follow-up), a model refit at a window's start knows only the rows whose label had arrived.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Resolved (2026-11-17, Andrej):** A, as implemented, through the cross-dataset item on the tree's gap questions (B: the step is the time column's smallest recorded step): a cooking time is known up to 2 hours after the order, longer than the timestamp's step, so the tree's leaf is the label-delay gap the definition ships.
+
+4. **Train floor: keep the window under half the data as the curator's exception, or drop it?**
+
+   * **Problem:**
+     - 4-10 December trains on 37.5% of the orders, beside 28 December-3 January and 14-20 December on 84.8% and 54.2%.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 2, B) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - The definition has 3 windows; the target an IID split would get[^split33] for 2,527,113 rows is 3; without the window under half it keeps 2.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the window as the curator's exception (implemented) | The accepted warning is reworded to the new rule; split unchanged | Keeps the periods it tests, as signed off; more windows toward the target | It trains on less than half the data |
+     | B | Drop the window under half | The windows under half leave the declaration; a rebuild | Every window trains on half the data or more | 1 fewer window and the period it tests |
+
+   * **Recommendation:** A, the sign-off's reason (periods or test rows the newest windows lack) still holds, and no window is under 30%. **Decision:** A or B?
+
+   **Notes for the AI:** on A, reword the `splits_train_under_half` acceptance (drop "SPLIT-14's two tiers admit it", name the curator's exception and this decision) and add a CC line; on B, remove the windows from the declaration, rebuild, and update the splits comment.
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: 4-10 December (37.5% of the orders) stays as the curator's exception to the half-data floor; the accepted `splits_train_under_half` warning now names this decision. The split is unchanged.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
 
 ## Reference
 

@@ -5,6 +5,7 @@ checked_by:
 - Lennart
 - Alex
 - Mustafa
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -13,15 +14,21 @@ priority: 3
 tags:
 - Free Text (Sentences)
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Dated Event Log
 collections:
 - TexTabBench Extra
 - STRABLE
 original_source: Company
 year: '2020'
+collection_period: 2007-2018
 domain: finance
 required_split:
 - Temporal (NON-IID)
-problem_type: Multiclass Classification
+problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/imsparsh/lending-club-loan-dataset-2007-2011
@@ -69,6 +76,8 @@ CC (2026-11-11, Lennart): REVIEW issue 1 (which quarters), "Reply (b): 2015 Q4, 
 CC (2026-11-11, Lennart): the declared horizon (3 months, no gap, windows starting 2015-10-01, 2015-04-01 and 2014-10-01) is checked, as the quarter matches the files LendingClub released by calendar quarter and no source names another cadence (the paper shuffles the loans into 5 folds).
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` declares the cutoffs 2015-10-01, 2015-04-01 and 2014-10-01 (3 months, no gap); test 88,667, 64,222 and 49,197 loans, train 520,877, 383,088 and 279,567 (85.5%, 62.8%, 45.9% of 609,544); default rate 14.8%, 15.4% and 14.6% in the windows, 13.8%, 13.3% and 12.8% on the train sides. For these windows a 36-month gap would leave 3.9-8.8% of the rows for training, a 12-month gap 22.5-45.9% and a 6-month gap 62.8%, 45.9% and 33.0%, so the exception's reason holds. `task_summary.split`, `splits_comment` (the windows and why, the shares, the quarterly files as the length's reason, "updated monthly" removed) and the issue-year bullet of `curation_comments` are rewritten; `accepted_check_warnings` accepts `splits_train_under_half` with the sign-off. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
+CC (2026-11-20, Andrej): the three quarters stay (Review issue 2, A as implemented); 2014 Q4 at 45.9% is the curator's exception to the half-data floor.
 
 ## Review
 
@@ -218,3 +227,72 @@ record has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README no
    `splits_comment` (the windows and why, the counts, the shares) and the issue-year bullet of `curation_comments` are
    rewritten. The record has the decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings (README not
    regenerated).
+
+2. **Train floor: keep the window under half the data as the curator's exception, or drop it?**
+
+   * **Problem:**
+     - October to December 2014 trains on 45.9% of the loans, beside October to December 2015 and April to June 2015 on 85.5% and 62.8%.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 1, b) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - The definition has 3 windows; the target an IID split would get[^split33] for 609,544 rows is 3; without the window under half it keeps 2.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the window as the curator's exception (implemented) | The accepted warning is reworded to the new rule; split unchanged | Keeps the periods it tests, as signed off; more windows toward the target | It trains on less than half the data |
+     | B | Drop the window under half | The windows under half leave the declaration; a rebuild | Every window trains on half the data or more | 1 fewer window and the period it tests |
+
+   * **Recommendation:** A, the sign-off's reason (periods or test rows the newest windows lack) still holds, and no window is under 30%. **Decision:** A or B?
+
+   **Notes for the AI:** on A, reword the `splits_train_under_half` acceptance (drop "SPLIT-14's two tiers admit it", name the curator's exception and this decision) and add a CC line; on B, remove the windows from the declaration, rebuild, and update the splits comment.
+
+   **Andrej (2026-11-19, discuss):** How exactly are the splits done? Could we reduce the window sizes while staying compliant with the use case and get to more than 50% on each train split?
+
+   **Answer (AI, 2026-11-19):** Yes, without even shortening: three of the four quarters of 2015 keep every train side above half (C); if the second year should stay, two-month windows (D) test November-December 2014 on 50.2%, while no quarter of 2014 clears the floor.
+
+   * **How the split is done today:** `TemporalSplits(window=3, unit="months", cutoffs=("2015-10-01", "2015-04-01", "2014-10-01"))` on `issue_d` (month of issue), no gap (the recorded exception), each train side every loan issued before the window. Scored unit: the loan (609,544 36-month loans; 84,758 defaulted).
+
+     | Test window | Test loans | Defaulted | Train | Train share |
+     |---|---|---|---|---|
+     | Oct-Dec 2015 | 88,667 | 13,137 | 520,877 | 85.5% |
+     | Apr-Jun 2015 | 64,222 | 9,878 | 383,088 | 62.8% |
+     | Oct-Dec 2014 | 49,197 | 7,185 | 279,567 | 45.9% |
+
+   * **What the use case and the source fix:** the time unit is the issue month (the data's resolution) and the gap is fixed at 0 by the recorded exception (a 12-month gap leaves 22.5-45.9%). The length is a convention: LendingClub released its loan files by calendar quarter, but the paper shuffles the loans and no refit cadence is stated (signed off 2026-11-11 as such). Our assumption: a model refit on every loan issued so far serves the next window.
+   * **The floor:** 46% of the loans were issued in 2015; the first month that keeps half is November 2014 (50.2%), so the only part of 2014 open above half is November-December, which no quarter covers.
+   * **Layouts above half,** gap 0, target 3 windows:
+
+     | Layout | Windows | Test loans | Defaulted | Train shares |
+     |---|---|---|---|---|
+     | C: quarters, all in 2015 | Oct-Dec, Apr-Jun, Jan-Mar 2015 | 88,667 / 64,222 / 54,324 | 13,137 / 9,878 / 8,082 | 85.5% / 62.8% / 53.9% |
+     | D: two months | Nov-Dec 2015, May-Jun 2015, Nov-Dec 2014 | 55,481 / 40,603 / 22,624 | 8,443 / 6,208 / 3,223 | 90.9% / 66.7% / 50.2% |
+
+     - C is the consistency check's option a of issue 1 (same length, one year). D keeps two years and two fourth-quarter seasons, as signed off, at 118,708 test loans (today 202,086), with the oldest just over the line.
+     - One-month windows give the same reach (November 2014 at 50.2%, December 2014 at 52.9% with only 6,051 loans).
+
+   **Recommendation:** D, with low stakes: the quarter is a convention, and two months keep the second year the curator chose while every train side stays above half; choose C if the quarter should stay. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-19, discuss):** How exactly where the splits that are currently implemented decided? E.g., why are AUg and Sep 2015 not tested?
+
+   **Answer (AI, 2026-11-19):** by two decisions of Lennart's on 2026-11-11 (issue 1, reply b; the horizon, A), on three rules: the newest quarter is always tested, a quarter is the window (LendingClub released its loan files by calendar quarter), and the other windows are chosen to cover other seasons and another year at the smallest cost in training data.
+
+   * **The window:** one calendar quarter, no gap, each trained on every loan issued before it. LendingClub released "complete loan data for all loans issued through the previous completed calendar quarter"; no source names a refit cadence (the paper shuffles the loans into 5 folds).
+   * **Why these quarters:** 46% of the loans were issued in 2015, so under the floor of the time only 2015 Q1-Q4 and 2014 Q2-Q4 kept 30% of the loans for training; Lennart chose to spread the windows over two years:
+
+     | Quarter | Train share | Chosen? | Why |
+     |---|---|---|---|
+     | 2015 Q4 (Oct-Dec) | 85.5% | yes | the newest, always tested; 14 new bureau fields start in it |
+     | 2015 Q3 (Jul-Sep) | 73.4% | no | the quarter just before the newest; the rule prefers other seasons and years over the windows next to the newest |
+     | 2015 Q2 (Apr-Jun) | 62.8% | yes | another season of 2015 |
+     | 2015 Q1 (Jan-Mar) | 53.9% | no | winter, as 2014 Q4 is; 2014 Q4 was taken for the other year |
+     | 2014 Q4 (Oct-Dec) | 45.9% | yes | another year, at the smallest loss of training data among 2014's quarters (Q3 39.2%, Q2 33.0%) |
+
+   * **August and September 2015** are in Q3, the quarter next to the newest: the rule of 2026-11-10 that Lennart applied keeps the newest and then prefers windows that differ in season or year, so Q3 was passed over for Q2 and 2014 Q4.
+   * Today's rules (half the data, a curator's exception down to 30%) would put 2014 Q4 under half; the options of this issue (C: 2015 Q4, Q2, Q1; D: two-month windows down to Nov-Dec 2014) answer that. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-20, ok):** As implemented (A).
+
+   **Resolved (2026-11-20, Andrej):** A, as implemented: the quarters 2015 Q4, 2015 Q2 and 2014 Q4 stay; 2014 Q4 (45.9%) stays as the curator's exception to the half-data floor, and its accepted warning names this decision.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.

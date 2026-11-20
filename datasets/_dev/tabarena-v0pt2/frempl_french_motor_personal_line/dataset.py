@@ -222,6 +222,12 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
         - CC (2026-11-08, Lennart): `Gender` leaves the features, on the stance Lennart set in australian_vehicle_insurance_2004_2005's issue 7 ("A stance for the family; as if we were to simulate the case in europe always"): sex is no rating factor of any insurance pricing task of this collection, whatever the actor's jurisdiction, as under EU law (Test-Achats). It stays in the policy component's key, which is unchanged (61,091 components). Supersedes the note that kept `Gender` as the insurer recorded it, with the EU-law note (AI, /add-dataset, 2026-11-01), which shipped with Andrej's verdict of 2026-11-03. It carried nothing measurable (-0.0004 with a weighted Tweedie fit, -0.0008 with squared error on the cost per year, with it against without; 5 of 9 splits each).
         - CC (2026-11-09, Andrej): a record gets no claim amount of the record its contract change continues and no flag that it continues one (review issue 10, A, as implemented). The claim counters and the bonus-malus carry the predecessor's claim and its type, the amount showed no signal beyond them in the raw counts, and under the folds it would put one test record's target into another's features.
         - CC (2026-11-09, Andrej): review issue 11 resolved, the normalized form: the metric is `normalized_weighted_gini` weighted by `Exposure`, in place of `ordered_lorenz_gini` per unit of `Exposure` (D9, Lennart, 2026-11-06; checked as declared by Lennart on 2026-11-08). Target, weight, features and folds are unchanged; the two forms rank every model the same on each fold, and the scores now read on the 0-to-1 scale of the other cost-per-year tasks (the metric bullet).
+        - Time basis: ForcedGroupedFromTemporal (SPLIT-8): a tariff is fit on one year's policies and applied to the
+          next year's, but the release holds one year, too few periods for windows; whole policy components are held out
+          instead (`splits_comment`). A release of later years would allow a split by year. The stationary-relation test
+          over the start quarters (2026-11-18, Q2 to Q4 of 2004 tested forward) is inconclusive: the forward model is
+          not worse (weighted Gini gap -0.011 ± 0.011 for LightGBM), but two SD reach 10.4 floors, so the forced tag
+          stays.
     """
     accepted_check_warnings = {
         "task_target_value_dominant": (

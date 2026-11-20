@@ -10,6 +10,9 @@ claimed_by: Andrej
 suggestion: 'Yes'
 priority: 2
 tags:
+- 'Samples: Over Time'
+- 'Time: Dated'
+- Dated Event Log
 - Non-IID (Temporal)
 original_source: UCI
 year: '1987'
@@ -36,6 +39,8 @@ CC (2026-11-12, Andrej): Review issue 1, option B: archive version only; verdict
 CC (2026-11-16, Lennart): PR #102 review: the temporal split is ok (the request date from the record id, three four-month windows from February 1986).
 
 **Assessment (AI, 2026-11-16):** checked against main for PR #102 (from the UCI zip, untuned LightGBM, ROC AUC on each window's rows): training on earlier requests only scores 0.964, 0.990 and 0.998, random training rows of the same size from any period outside the window 0.970, 0.989 and 0.998, random 3 x 3 folds over all rows 0.970, 0.993 and 0.988; so the windows test later requests rather than remove a leak. What moves with time: code R is 1.3% to 2.8% per quarter but 4.4% in 1986Q3 (chi-square across quarters p = 1.4e-5, p = 0.57 without it), and T3 is ordered for 79-87% of requests up to 1985Q3 and 32-75% after, while code R needs three of the five tests (0 of 458 requests with two or fewer). The source split by time too: the zip's ann-thyroid files, which their readme gives as the data of Quinlan's 1987 case study, train on 3,772 requests of 1985 and test on 3,428 of 1986 (all 2,317 and 1,560 rows that match exactly one archive record by their six numeric values fall in those years; the archive holds 3,428 requests of 1986). `DF: Yes` added: the dataset reaches `main` with this PR.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `request_date`, windows of 4 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Review
 

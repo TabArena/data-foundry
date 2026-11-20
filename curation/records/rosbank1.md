@@ -3,6 +3,7 @@ unique_name: rosbank1
 name: rosbank1
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -11,10 +12,15 @@ tags:
 - Free Text (Short)
 - '?'
 - Review Prio 1 (Atlas)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: Other
 year: '2018'
+collection_period: Oct 2016 - Apr 2018
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)
@@ -71,6 +77,56 @@ CC (2026-10-26, Lennart): verdict ship.
 CC (2026-11-11, Lennart): accepted `time_newest_period_short` with its reason (cross-dataset item "What to do with a newest period that holds far fewer rows than the periods before it?", A).
 
 **Assessment (AI, 2026-11-11):** the periods ending in November and December 2017 hold 123 and 63 clients against 416 to 524 a month from May to October.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `period_end`, windows of 1 month, windows while training keeps 50% of the rows (3 in the build), gap 3 months) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+
+CC (2026-11-20, Andrej): split kept (Review issue 1, A as implemented): the three monthly windows, the reason in the splits comment.
+
+## Review
+
+**Outcome:** added. Reopened on 2026-11-19 by the split check: the definition ships fewer windows than the target count for its size, without the reason in its splits comment.
+
+**Main points:** Which window layout (issue 1).
+
+**Issues for Andrej:**
+
+1. **Windows: 3 of the target's 9; which layout?**
+
+   * **Problem:**
+     - With one-month windows and the three-month label gap, only three months train on half the clients or more: September 2017 trains on 44.5%. The target an IID split of 4,791 clients would get is 9[^split33][^split15].
+
+       | Test window | Clients | Churned | Train | Train share |
+       |---|---|---|---|---|
+       | December 2017 | 63 | 23 | 3,566 | 74.4% |
+       | November 2017 | 123 | 49 | 3,078 | 64.2% |
+       | October 2017 | 515 | 179 | 2,559 | 53.4% |
+
+     - What the source fixes: the label covers "the next three months" after the period, so the three-month gap stays. What is assumed: the monthly refit; `splits_comment` says "refit, for example every month", and the source is silent on the cadence.
+     - The two newest windows are the thin tail of the client intake (123 and 63 clients against 416 to 524 a month from May to October; accepted by Lennart on 2026-11-11), and every test label window spans the New Year, which no training label window does.
+     - Shorter calendar windows do not help on their own: the newest half month (16 to 30 December) and the newest two weeks hold 25 and 23 clients, under the 33 a test window needs[^split14].
+     - Overlapping windows are not needed: B reaches the target without them (one-month windows every 10 days would give 8 at half or more).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Three monthly windows (implemented), the reason in `splits_comment` | 3 windows, train 53.4% to 74.4%, test 63 to 515 clients, 23 to 179 churned | the monthly refit as assumed; nothing to rebuild | 6 short of the target; two of the three windows are the thin tail |
+     | B | Nine windows of equal size, at half the data or more | about 100 clients each by `period_end`, 19 September to 30 December 2017, cut at day boundaries; train 50.1% to 70.7%, test 77 to 111, 30 to 43 churned | reaches the target; equal test sizes; no window under half | windows of 4 to 41 days, not the monthly refit; neighbouring windows train on sides 1 to 3 points apart, so they test nearly one model; a custom `_make_splits` |
+     | C | Monthly windows down to 30% (the curator's exception) | 6 windows, December back to July 2017; September, August and July train on 44.5%, 35.8% and 32.6%; test 63 to 524, 23 to 216 churned | keeps the monthly cadence; adds 1,531 clients of the regular intake and label windows that end before the New Year, which the newest three lack | three windows under half need your sign-off; 3 short of the target |
+     | D | Nine windows of equal size, down to 30% | about 250 clients each, 28 June to 30 December 2017; train 30.1% to 62.5%, test 248 to 263, 89 to 116 churned | reaches the target with larger, equal windows | 5 windows under half; windows of 12 days to 2 months; the newest window spans November and December |
+
+   * **Recommendation:** C: it keeps the cadence the use case assumes and adds the periods the thin newest windows lack, which is what the curator's exception is for. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Three windows, against the 9 an IID split of 4,791 clients would get: with one-month windows and the three-month label gap, September 2017 would train on 44.5% of the clients (the date of your decision, Andrej)." On C: `TemporalSplits(window=1, unit="months", gap=LABEL_MONTHS, min_train_fraction=0.3)`, `splits_train_under_half` accepted for July to September 2017 with the reason, the window table in `splits_comment` (the "fourth window" sentence goes), `splits_rows_unused` re-worded (the September clients are tested), `task_summary.split`. B and D need a custom `_make_splits` (windows of equal client counts on `period_end`, each training on the clients whose period ended three months before the window starts). Then `dataset check` on Slurm, a CHANGELOG entry and a CC line. The record has no Review section yet; this is its first issue.
+
+   **Andrej (2026-11-20, ok):** As implemented (A).
+
+   **Resolved (2026-11-20, Andrej):** A, as implemented: the three monthly windows, the reason in the splits comment. Not rebuilt.
+
+   [^split14]: **SPLIT-14** (Must): at least 3 windows; every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get; the use case sets the window length, step and gap, which are never shortened to reach the count; fewer are accepted, never under 3, with the target, the count reached and what stops more windows in the splits comment; overlapping windows are only offered.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count, here 9.
 
 ## Reference
 

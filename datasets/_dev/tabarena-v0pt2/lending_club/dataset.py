@@ -145,8 +145,8 @@ class LendingClub(AbstractCuratedDataset):
         ),
         "splits_train_under_half": (
             "Signed off (Lennart, 2026-11-11, review issue 1, b): October to December 2014 trains on 45.9% of the "
-            "loans, beside October to December 2015 and April to June 2015 on 85.5% and 62.8%; SPLIT-14's two tiers "
-            "admit it."
+            "loans, beside October to December 2015 and April to June 2015 on 85.5% and 62.8%; kept as the curator's "
+            "exception to the half-data floor (Andrej, 2026-11-20, review issue 2, A)."
         ),
     }
 

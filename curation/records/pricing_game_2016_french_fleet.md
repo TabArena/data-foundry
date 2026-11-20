@@ -11,7 +11,13 @@ priority: 4
 tags:
 - Non-IID (Grouped)
 - Two-Regime Zeros
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Dated Event Log
 year: '2016'
+collection_period: 2011-2013
 domain: insurance
 required_split:
 - Grouped (NON-IID)
@@ -195,6 +201,8 @@ CC (2026-11-10, Andrej): Review issue 14, A: "Disagree: We go with A over E beca
 **Assessment (AI, 2026-11-10):** against the 2013 hold-out (8 models fitted with the weight): A ranks 7 models as the hold-out does (Kendall's tau 1.00; 1.00 for the 5 sound ones), mean distance from the hold-out's margins 0.20 against E's 0.14, within the hold-out's noise (SE of a margin 0.33 to 0.54); the shipped folds' out-of-fold score on 2013 matched the hold-out (Tweedie GLM 83.45 against 83.43, bootstrap SE 0.12). Applied to `splits_comment`, a CC bullet, issue 13's Note and Decision; `dataset check`: 0 errors, 0 warnings.
 
 CC (2026-11-10, Andrej): ship after changes (review page of 2026-11-10).
+
+CC (2026-11-18, Andrej): the split stays as shipped under SPLIT-8 as amended today (cross-dataset decision on the period count, full-information split check): the data holds three policy years for a task of 3 repeats, which needs four, too few to hold out whole periods; the forced step goes on to the unit question: contracts recur and the use case meets new fleets, so whole contracts, as shipped.
 
 ## Review
 
