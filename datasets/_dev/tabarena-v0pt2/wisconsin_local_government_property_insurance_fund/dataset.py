@@ -203,7 +203,7 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
     accepted_check_warnings = {
         "splits_train_under_half": (
             "Signed off (Lennart, 2026-11-08, review issue 3): the 2008 window trains on 40.6% of the rows, "
-            "beside 2009 and 2010 on 60.6% and 80.3%; SPLIT-14's two tiers admit it."
+            "beside 2009 and 2010 on 60.6% and 80.3%; kept as the curator's exception to SPLIT-14's half-data floor (Andrej, 2026-11-19, review issue 7, A)."
         ),
         "task_time_on_few_unique": (
             "Five policy years, 2006-2010, the whole time axis of the file: the yearly windows train on two to four "
@@ -224,6 +224,11 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
         "splits_feature_missing_in_test": (
             "Decided (Lennart, 2026-11-11, cross-dataset item): `NoClaimCredit` is missing in 2006 and 2007 by "
             "construction, so the 2008 window trains on years without it (curation_comments)."
+        ),
+        "splits_below_target": (
+            "Three windows, against the 9 an IID split of 5,639 member-years would get: the release has five years, "
+            "and a 2007 window would train on 2006 alone, 20.5% of the rows, under the 30% floor (Andrej, 2026-11-19, "
+            "review issue 8, A)."
         ),
     }
     temporal = Temporal(
@@ -256,6 +261,10 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
         windows differ: the claims were $12.1M, $11.0M and $36.7M, and in 2010, a year of severe weather, coverage fell
         for 67.7% of the members and one claim is 35% of the year's claims, so that window's score moves with where that
         one member is ranked.
+
+        Three windows, against the 9 an IID split of 5,639 member-years would get: the release has five years, and a
+        2007 window would train on 2006 alone, 20.5% of the rows, under the 30% floor (Andrej, 2026-11-19, review issue
+        8, A).
     """
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:

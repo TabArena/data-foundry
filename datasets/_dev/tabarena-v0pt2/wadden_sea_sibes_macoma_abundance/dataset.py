@@ -193,7 +193,7 @@ class WaddenSeaSibesMacomaAbundance(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Spatial",)
+    data_tags = ("Spatial", "Retrospective")
     download_description = """
         We download version 6 (published 2024-12-21) of the SIBES dataset from the NIOZ data repository (doi:10.25850/nioz/7b.b.ug). The repository replaces the files with each yearly release (the newest three years stay embargoed), so a later download holds more years than these 2008-2022.
         mkdir -p local-data-warehouse/wadden_sea_sibes_macoma_abundance && cd local-data-warehouse/wadden_sea_sibes_macoma_abundance
@@ -229,6 +229,9 @@ class WaddenSeaSibesMacomaAbundance(AbstractCuratedDataset):
         - CC (2026-11-06, Lennart): decision D13 of the exposure study (#51; review issue 6): the 39 single boat cores stay, with the note above, and the notes name the effort the density folds in (the core area and the subsample fraction, chosen after the sample is seen and not released). No earlier call covered them: the definition has kept them without a note since the review panel of 2026-11-01, which counted them and raised nothing; the exposure study of 2026-11-05 found that the descriptor does not describe them and measured their zeros (79.5% against 57.4% for two-core boat samples).
         - CC (2026-11-10, Andrej): review issue 8, "Reply (b): Per-year normalised RMSE (C)": the score is `mean_group_normalized_rmse` over the survey years on the density, each survey's map one vote, in place of the pooled RMSE of 2026-11-02.
         - CC (2026-11-09, Andrej): review issue 9, A as implemented, "Go ahead" on the consistency check's (a): the elevation stays the latest vaklodingen survey stamped on or before the sample's date, though the map of a past survey could also take a later one. The reason: the survey nearest in time would move the elevation by a median 0.08 m (90th percentile 0.30 m, for the 49.7% of the samples it changes), about the median 0.07 m between two successive surveys of a cell, too little to move a settled join.
+        - Time basis: Retrospective: the use case fills in the map of a survey year already run, at places between its
+          stations (the prediction point); the split holds out whole stations with all their years, 2008-2022. It cannot
+          test a later survey year.
     """
 
     # Task

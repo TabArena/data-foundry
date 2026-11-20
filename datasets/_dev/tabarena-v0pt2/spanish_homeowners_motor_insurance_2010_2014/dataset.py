@@ -190,6 +190,11 @@ class SpanishHomeownersMotorInsurance20102014(AbstractCuratedDataset):
             "Zero-inflated by nature: 98.2% of customer-years have no home claim cost, a real no-claim year and not a "
             "placeholder (Andrej, 2026-11-02)."
         ),
+        "splits_below_target": (
+            "Three windows, against the 9 an IID split of 122,935 customer-years would get: the release has five "
+            "policy years, and a 2011 window would train on 2010 alone, 32.8% of the rows (Andrej, 2026-11-19, review "
+            "issue 6, A)."
+        ),
     }
 
     # Task
@@ -243,6 +248,9 @@ class SpanishHomeownersMotorInsurance20102014(AbstractCuratedDataset):
         null SD, 2012 0.182 to 0.207). Both effects are within the noise. A one-year gap, the smallest the yearly
         column allows, leaves 2012 a training side of 33%, so only two windows would meet SPLIT-14; the curator
         declined a SPLIT-10 amendment (CC on avito_demand_prediction, 2026-11-02).
+
+        Three windows, against the 9 an IID split of 122,935 customer-years would get: the release has five policy
+        years, and a 2011 window would train on 2010 alone, 32.8% of the rows (Andrej, 2026-11-19, review issue 6, A).
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

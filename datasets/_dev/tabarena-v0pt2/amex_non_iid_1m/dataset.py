@@ -69,7 +69,7 @@ class AmexNonIid1m(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Non-IID", "Grouped", "Anonymized")
+    data_tags = ("Non-IID", "Grouped", "Anonymized", "UnseenGroup")
     download_description = """
         We start with the preprocessed version of the dataset in Parquet format provided by
         the user 'raddar' on Kaggle. At the root of this project, I ran on linux with
@@ -89,6 +89,11 @@ class AmexNonIid1m(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
         - The row budget (1M train, 500k test rows): We keep the whole frame (5,531,451 statements of 458,913 customers) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole customers drawn from its third and stratified on the target, and trains on every other row (about 5.03M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole customers at random, stratified on the target.
+        - Time basis: UnseenGroup (Andrej, 2026-11-18; `ForcedGroupedFromTemporal` from 2026-11-16, `DelayedTarget`
+          before): the use case scores customers the data does not hold, so whole customers are held out, each with
+          its statements. Every customer is scored at its latest statement, and all 458,913 latest statements fall in
+          March 2018; the label covers a fixed 18 months after it. Not tested: a later scoring month, which later
+          scoring months in a release would allow.
     """
 
     # Task

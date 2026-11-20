@@ -11,8 +11,14 @@ priority: 4
 tags:
 - Two-Regime Zeros
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
+- Panel Data
 original_source: Github
 year: '2017'
+collection_period: 2006-2010
 domain: insurance
 required_split:
 - Temporal (NON-IID)
@@ -150,6 +156,10 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 
 **Assessment (AI, 2026-11-11):** `NoClaimCredit` is missing in all 2,292 rows of 2006-2007 and in 3% to 4% of 2008-2010.
 
+CC (2026-11-19, Andrej): train floor (Review issue 7, A as implemented): the 2008 window (40.6% of the rows) stays as the curator's exception to the half-data floor (SPLIT-14 as amended 2026-11-19); no window is under 30%.
+
+CC (2026-11-19, Andrej): windows below the target count kept (Review issue 8, A as implemented): three yearly windows; a 2007 window would train on 20.5%, under the 30% floor; the reason is in the splits comment.
+
 ## Review
 
 **Outcome:** added. Shipped on 2026-11-02 (the curator's verdict: changes, applied) on three expanding yearly windows
@@ -205,7 +215,7 @@ decides whether methods spread beyond each window's one-row swing); on 2026-11-0
 column only, the outside agency's price the source's engine replaces) and issue 5 (the member's claim count of the
 year before added as `prev_year_claims`); issue 3 (the three yearly windows, under the floor rule as amended on
 2026-11-08 on this fund's facts), issue 1 (the three windows, on the curator's call of 2026-11-02) and issue 2 (the
-claims in dollars).
+claims in dollars). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 8).
 
 **Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
 
@@ -905,6 +915,64 @@ claims in dollars).
      every loss uncapped." **TP-2** (Should): "A small but real signal is no reason to retire ... Retire, fix or keep a
      task for a concrete reason found in the task itself; until one is found, the task stays." **TP-3** (Must): "If
      tuned methods spread, keep the dataset." Both in main.
+
+7. **Train floor: keep the window under half the data as the curator's exception, or drop it?**
+
+   * **Problem:**
+     - The 2008 window trains on 40.6% of the rows, beside 2009 and 2010 on 60.6% and 80.3%.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-08, review issue 3) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - The definition has 3 windows; the target an IID split would get[^split33] for 5,639 rows is 9; without the window under half it keeps 2.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the window as the curator's exception (implemented) | The accepted warning is reworded to the new rule; split unchanged | Keeps the periods it tests, as signed off; more windows toward the target | It trains on less than half the data |
+     | B | Drop the window under half | The windows under half leave the declaration; a rebuild | Every window trains on half the data or more | 1 fewer window and the period it tests |
+
+   * **Recommendation:** A, the sign-off's reason (periods or test rows the newest windows lack) still holds, and no window is under 30%. **Decision:** A or B?
+
+   **Notes for the AI:** on A, reword the `splits_train_under_half` acceptance (drop "SPLIT-14's two tiers admit it", name the curator's exception and this decision) and add a CC line; on B, remove the windows from the declaration, rebuild, and update the splits comment.
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: the 2008 window (40.6% of the rows) stays as the curator's exception to the half-data floor; the accepted `splits_train_under_half` warning now names this decision. The split is unchanged.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
+
+8. **Windows: 3 of the target's 9; which layout?**
+
+   * **Problem:**
+     - No other layout of windows exists: a fourth yearly window, 2007, would train on 2006 alone, 1,154 of 5,639 rows (20.5%), under the 30% that even the curator's exception allows[^split14]. The target an IID split of 5,639 member-years would get is 9[^split33][^split15].
+
+       | Test window | Member-years | With a claim | Train | Train share |
+       |---|---|---|---|---|
+       | 2010 | 1,110 | 403 | 4,529 | 80.3% |
+       | 2009 | 1,112 | 301 | 3,417 | 60.6% |
+       | 2008 | 1,125 | 309 | 2,292 | 40.6% |
+
+     - What the source fixes: the fund rates its members once a year, the release holds the years 2006 to 2010 (the source's test year 2011 is not public), so a window is one year and no shorter or overlapping window exists. Settled already: the three yearly windows (Andrej, 2026-11-02, issue 1; Lennart, 2026-11-08, issue 3, A), folds by member left out for the shared-period leak (issue 1), and the 2008 window kept as the curator's exception (issue 7, A, today).
+     - The test years are already the same size (1,110 to 1,125).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Three yearly windows (implemented), the reason in `splits_comment` | 3 windows, train 40.6% to 80.3%, test 1,110 to 1,125 member-years, 301 to 403 with a claim | the yearly rating; the most the five years allow; equal test sizes; nothing to rebuild | 6 short of the target |
+
+   * **Recommendation:** A, with the reason sentence: the five years allow no fourth window, even as an exception. **Decision:** A?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Three windows, against the 9 an IID split of 5,639 member-years would get: the release has five years, and a 2007 window would train on 2006 alone, 20.5% of the rows, under the 30% floor (the date of your decision, Andrej)." Then `dataset check` on Slurm, a CHANGELOG entry and a CC line.
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: three yearly windows; a 2007 window would train on 20.5%, under the 30% floor. The splits comment names the target count and what stops more windows; `splits_below_target` is accepted with that reason. The split is unchanged.
+
+   [^split14]: **SPLIT-14** (Must): at least 3 windows; every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get; the use case sets the window length, step and gap, which are never shortened to reach the count; fewer are accepted, never under 3, with the target, the count reached and what stops more windows in the splits comment; overlapping windows are only offered.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count, here 9.
 
 **Review panel:** ship after changes (mediator). Tier focused, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
 MET-16, after the notes gained an exposure paragraph and issue 3 moved here from PR #47's conversation: the claim

@@ -11,8 +11,13 @@ priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Entities: Recur'
+- Panel Data
 original_source: GOV Website
 year: '2026'
+collection_period: 1982-2026
 domain: biology & life sciences
 required_split:
 - Temporal (NON-IID)
@@ -155,6 +160,8 @@ CC (2026-11-09, Andrej): columns held only for training rows stay out for now, n
 CC (2026-11-09, Andrej): review issue 10, "Go ahead" on the consistency check's (a): the nine two-year windows stay, each fitted once; the split text, the splits comment's no-gap sentence and the exception to SPLIT-10 above name a refit after each two-year survey cycle, not after each season, as each window's second year (42.6% of the test hauls) is predicted without the season before it. Rows, split and score unchanged.
 
 CC (2026-11-09, Andrej): ship (review page of 2026-11-09).
+
+CC (2026-11-17, Andrej): the declared split (temporal on `date`, windows of 2 years, 9 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Review
 

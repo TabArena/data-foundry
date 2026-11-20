@@ -11,8 +11,13 @@ priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Entities: Recur'
+- Panel Data
 original_source: Website
 year: '2024'
+collection_period: 2008-2022
 domain: biology & life sciences
 required_split:
 - Grouped (NON-IID)
@@ -140,6 +145,8 @@ CC (2026-11-10, Andrej): issue 8 of the record's Review, "Reply (b): Per-year no
 **Assessment (AI, 2026-11-10):** issue 8 (C) applied: declared from context with `inputs={"group": "survey_year"}` and `target_transform="log1p"`. `dataset check`: 0 errors, 0 warnings. Task probe (untuned, fit on log1p, 5 of 9 splits): random forest 0.962, LightGBM 0.967, linear 1.005, the back-transformed training mean 1.046; the random forest beats it on 5 of 5 splits by 0.084 (SE 0.005); no flag. Verdict mark of 2026-11-10 (Andrej): changes, now made.
 
 CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
+
+CC (2026-11-17, Andrej): the declared split (grouped on `station`, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
 ## Review
 
