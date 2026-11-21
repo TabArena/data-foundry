@@ -90,6 +90,7 @@ class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
             name="the authors' GitHub copy of Table S1A",
         ),
     )
+    data_tags = ("Timeless",)
     download_description = """
         We download the data from the GitHub repository and save it to a predefined folder.
 
@@ -100,9 +101,17 @@ class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
         We take the targets from the paper by Heinzel et al. (2025) and only rename the targets to be standardized and more concise.
         - The data is Supplementary Table S1A of Ruiz-Ramirez et al. (2023, VISAGE Enhanced Tool), which pools several reference sets. By sample ID, five classes come from 1000 Genomes (British, Finnish, Iberian, Toscani, Utah CEPH), four from HGDP (Russian, Basque, French, Sardinian) and Turkey from a third source (IDs 2TR-...). Each class comes from one source, so source and label coincide.
         - We drop the Turkey class (28 rows), deviating from the paper's ten classes. Its source has a genotyping artefact: rs3857620 is AG in 24 of 28 Turkey samples and never AA (about 5 expected under Hardy-Weinberg equilibrium), while all 607 other samples are GG, so the SNP alone separates Turkey (ROC AUC 0.93). Without Turkey, rs3857620 is constant and dropped, as is rs367953206 (TT in every sample; its only other value was the no-call NN, 9 Turkey rows and 1 Basque row).
-        - "NN" genotypes are no-calls and are set to missing. They occur only in the HGDP classes (24 rows: Russian 8, French 7, Sardinian 5, Basque 4), never in 1000 Genomes, so missingness weakly hints at the source.
+        - "NN" genotypes are no-calls and are set to missing. They occur only in the HGDP classes (24 rows: Russian 8, French 7, Sardinian 5, Basque 4), never in 1000 Genomes, so missingness weakly hints at the source. The hint is small: a predictor that knows only whether a row has a failed call scores log loss 1.95 against 2.03 for the class shares (over all 607 people, an upper bound), at most a tenth of what the best methods gain; kept as missing (Andrej, 2026-11-10).
         - rs2789823 is AG in 7 rows, all Iberian; it may be a smaller artefact of the same kind and is kept.
         - Class-dependent recording (record marker `Class-dependent Recording`): Turkey comes from a separate source with its own genotyping artefact, as described above; the class is dropped.
+        - Time basis: Timeless: genotypes are fixed at birth and the population label was set when the reference person
+          was sampled (1000 Genomes, HGDP-CEPH); no date is recorded and the table is ordered by population. No
+          duplicate genotypes, and no excess of related pairs beyond chance at 102 markers (2026-11-06). The one
+          arrival wave the sample identifiers recover is the reference project, not an entry date: 364 of the 503
+          1000 Genomes people were in its phase-1 release (2010), 139 arrived by phase 3 (93 of them Iberian), and
+          the 104 HGDP-CEPH people are in no 1000 Genomes release, so a split by arrival would test the project,
+          which is the label (2026-11-12). Not tested: people typed outside the reference project of their
+          population.
     """
     accepted_check_warnings = {
         "meta_license_unknown": (
