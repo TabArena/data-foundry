@@ -154,9 +154,9 @@ a mark.
      - No order: no user id, each visit a different user per the source, and the month the only time.
    * **Recommendation:** unchanged, A.
 
-   [^1e1]: **LEAK-41** (Must; draft PR #62): repeats of a unit the data does not record get one verdict; natural when
+   [^1e1]: **LEAK-41** (Must): repeats of a unit the data does not record get one verdict; natural when
      the look-alikes are distinct units (a coarse profile): the random split stays and the notes give the share of
-     test rows with a look-alike in training. **LEAK-42** (Should; draft PR #62): three tests set the verdict: a link
+     test rows with a look-alike in training. **LEAK-42** (Should): three tests set the verdict: a link
      above a chance rate that keeps the data's structure, a label that travels with the link beyond what the shared
      features predict, and an order.
 
