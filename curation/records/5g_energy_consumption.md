@@ -87,8 +87,8 @@ weighted MAPE, whose weights were never published (settled 2026-10-21). Weighed:
 decision +, a split that mirrors gap filling +, one week and an unknown unit -, a better-documented sibling found
 (`cetin_ran_base_station_energy`, a peer-reviewed release of a Slovak operator's stations, screened `TBD -> Yes`) -.
 
-**Main points:** The time basis is settled (issue 1, `Snapshot`, 2026-11-10). Record `year` and `domain` set from the
-definition (2026-11-11). Nothing open.
+**Main points:** The time basis is settled (issue 1, 2026-11-10): `Retrospective`, decided under its earlier name
+`Snapshot`. Record `year` and `domain` set from the definition (2026-11-11). Nothing open.
 
 **Record judgment:** valid. The record's `Data Quality Issue` marker has no stated reason, and the facts on file (an
 unknown energy unit, one week of data) do not reach what the marker means for a `No` (a leak or damage that cannot be
