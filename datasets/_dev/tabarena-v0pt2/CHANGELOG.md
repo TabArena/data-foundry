@@ -360,16 +360,16 @@ to be decided on its own with the grouped datasets it changes.
 
 ## 2026-11-13, 23 datasets kept after review: the time basis named (no container built)
 
-Andrej's decisions on the reviews of 2026-11-04 to 2026-11-12, for datasets whose data, split and metric stay as
-they were. Each definition that is not temporal names its time basis in `data_tags` with its `Time basis:` line
-(SPLIT-32): `Timeless` (airfoil_self_noise, electric_motor_temperature_prediction, musk,
+Andrej's decisions on the reviews of 2026-11-04 to 2026-11-12, for datasets whose data, split and metric stay as they
+were. Each definition that is not temporal names its time basis in `data_tags` with its `Time basis:` line (SPLIT-32):
+`Timeless` (airfoil_self_noise, electric_motor_temperature_prediction, musk,
 otto_group_product_classification_challenge, pancreatic_cancer_mouse_detection, video_transcoding_time_prediction),
-`Snapshot` (5g_energy_consumption, covertype, houses, jm1, santander_customer_satisfaction), `DelayedTarget`
-(credit_card_clients_default, porto_seguro), `StationaryRelation` (bad_customer_detection,
-cirrhosis_patient_survival_prediction), or a forced tag (allstate_claims_severity, eryhemato_squamous_disease,
-ljubljana_primary_tumor, online_shoppers_purchasing_intention_dataset, taiwanese_bankruptcy_prediction:
-`ForcedIIDFromTemporal`; emscad: `ForcedGroupedFromTemporal`). garments_worker_productivity and sf_permit_time stay
-temporal, with the arrival facts in their notes.
+`Retrospective` (5g_energy_consumption, covertype, houses, jm1, santander_customer_satisfaction), a forced tag for one
+shared scoring moment (credit_card_clients_default, porto_seguro; see 2026-11-16), `StationaryRelation`
+(bad_customer_detection, cirrhosis_patient_survival_prediction), or a forced tag (allstate_claims_severity,
+eryhemato_squamous_disease, ljubljana_primary_tumor, online_shoppers_purchasing_intention_dataset,
+taiwanese_bankruptcy_prediction: `ForcedIIDFromTemporal`; emscad: `ForcedGroupedFromTemporal`).
+garments_worker_productivity and sf_permit_time stay temporal, with the arrival facts in their notes.
 
 - Notes from the reviews in `curation_comments` (the facts behind each time basis, what each split cannot test, the
   measured cost of forced splits); santander_customer_satisfaction gains a column dictionary of the masked names;
@@ -438,9 +438,9 @@ Repeats of a unit the data does not record (LEAK-42 to LEAK-44, SPLIT-24's calib
   stays, named `Timeless`; the source is "compiled from 17 published studies".
 - `forensic_glass_identification`: Id 68, Id 67 entered again, dropped (212 rows); the random split stays as our
   decision, named `Timeless`.
-- `immoscout_german_house_prices`: one listing per house (10,203 rows); the random split named a `Snapshot` of the
+- `immoscout_german_house_prices`: one listing per house (10,203 rows); the random split named `Retrospective`, the
   14 July 2020 scrape.
-- `diamonds`: split by stone (43,000 stones; 40% of the rows are one stone in two price lists); a `Snapshot` of the
+- `diamonds`: split by stone (43,000 stones; 40% of the rows are one stone in two price lists); `Retrospective`, the
   February 2007 scrape.
 - `santander_transaction_value`: grouped by customer, built from exact shifted-lag links and confirmed sparse
   matches; `ForcedGroupedFromTemporal`.
@@ -448,19 +448,19 @@ Repeats of a unit the data does not record (LEAK-42 to LEAK-44, SPLIT-24's calib
   only (2.6% of rows never tested); forced from temporal with its `Time basis:` line.
 - `indian_liver_patient_dataset`: the 13 repeated records dropped, 11 impossible values set to missing; the random
   split stays, forced from temporal.
-- `coil_2000`: the identical rows stay, the reason written down; the random split named a `Snapshot`.
+- `coil_2000`: the identical rows stay, the reason written down; the random split stays, `ForcedIIDFromTemporal`:
+  one undated extract, and the use case looks forward to purchases after a mailing.
 - `early_learning_predictors`: split by facility (`id_facility` numbered per study, noted); every child and column
   stay with the use case reworded; three free-text answers typed as strings, four multi-select lists that copy their
   yes/no columns dropped.
 
 Each dataset's review is in its record's `## Review`.
 
-## 2026-11-16, 13 definitions: `DelayedTarget` retired for a forced tag or a measurement (Andrej; no container built)
+## 2026-11-16, 13 definitions scored at one shared moment: a forced tag or a measurement (Andrej; no container built)
 
-- `DelayedTarget` said that a random split is IID when every row shares one scoring moment and a target window closed
-  for all of them. That holds within the moment only: one moment is one period, too few for three windows, and the
-  next moment, which the use case asks for, stays untested, as for any forced split (SPLIT-8). No container carried
-  the tag, so it is dropped, not kept readable; a new definition that sets it is refused with the replacement.
+- A random split is valid within one scoring moment when every row shares it and a target window closed for all of
+  them, but no further: one moment is one period, too few for three windows, and the next moment, which the use case
+  asks for, stays untested, as for any forced split (SPLIT-8).
 - `ForcedIIDFromTemporal`: blood_transfusion, churn_telco_south_asia, credit_card_clients_default,
   expresso_churn_prediction_1m, framingham_heart_study_fhs, kdd_cup_09_appetency, mobile_churn, porto_seguro,
   pva_revenue_prediction_kddcup98, student_portuguese_performance. `ForcedGroupedFromTemporal` (they ship grouped):
@@ -469,7 +469,7 @@ Each dataset's review is in its record's `## Review`.
   0.639 on the random folds).
 - Each `Time basis:` line keeps its facts (the scoring date, the target window) and now names the reason, one period,
   and what later scoring dates would allow. Splits unchanged; the metadata changes, so the 13 need a rebuild. Each
-  record gets a CC line. SPLIT-8 and SPLIT-32 lose the prototype (SPLIT-32's questions renumbered, 4 to 3 and 5 to 4).
+  record gets a CC line.
 
 ## 2026-11-16, bioresponse and covertype: `ForcedIIDFromGrouped` beside the time basis (Andrej; no container built)
 
