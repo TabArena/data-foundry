@@ -50,7 +50,7 @@ class OttoGroupProductClassificationChallenge(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Anonymized",)
+    data_tags = ("Anonymized", "Retrospective")
     download_description = """
         We use the train.csv from the Kaggle competition.
 
@@ -63,6 +63,10 @@ class OttoGroupProductClassificationChallenge(AbstractCuratedDataset):
         - The data has been anonymized, so feature meanings are unknown.
         - Features and data is clean. Top Kaggle experts applied no relevant preprocessing.
         - We drop the index column.
+        - Time basis: Retrospective (Andrej, 2026-11-13; `Timeless` before): the use case cleans up the existing
+          catalogue, assigning the products of one 2015 extract to their main categories, which subsidiaries file
+          differently; the event counts are read at the extract, and the competition chose its test products at random.
+          Not tested: products listed after the 2015 extract, or a revised category tree.
     """
 
     # Task

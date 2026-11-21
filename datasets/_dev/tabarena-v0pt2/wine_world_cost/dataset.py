@@ -452,6 +452,7 @@ class WineWorldCost(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("Retrospective",)
     download_description = """
         There are many different wine datasets available, but this one is a comprehensive collection of wine-related data that includes information on various wine characteristics and text. So we stick to it.
 
@@ -502,7 +503,7 @@ class WineWorldCost(AbstractCuratedDataset):
           Alamos and Catena). The shop's own-label ranges are one group each, although some of their copy names the
           maker (Definition Fleurie by Pardon et Fils): the shop prices the range, and the maker is not named for all.
           615 producers, 1 to 35 wines (Definition), 250 with more than one wine.
-        - Time basis: Snapshot: one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023; the
+        - Time basis: Retrospective: one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023; the
           shelf prices, sales copy and catalogue attributes of that moment; the vintage is a wine attribute, not a
           time. Not tested: prices after 2023.
     """

@@ -3,16 +3,20 @@ unique_name: account_debt_south_africa
 name: ACCOUNT_DEBT_SOUTH_AFRICA
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 tags:
 - Larger IID Data
+- 'Samples: One Moment'
+- Database Snapshot
 collections:
 - TabSTAR
 original_source: Kaggle
 year: '2020'
+collection_period: Unknown
 domain: finance
 required_split:
 - Random (IID)
@@ -52,13 +56,93 @@ CC (2026-10-26, Lennart): issue 8: keep `TotalElectricityBill` with the note, "w
 
 CC (2026-10-26, Lennart): the declared metric, ROC AUC (the fallback), is checked as declared.
 
-**Assessment (AI, 2026-10-26):** issues 1 and 8 are settled as implemented. Issue 9 (keep the billing totals) waits for a LEAK-10 amendment: the keep is a Must departure that a Cases row cannot carry (consistency check on the review page).
+**Assessment (AI, 2026-10-26):** issues 1 and 8 are settled as implemented. Issue 9 (keep the billing totals) waits for a LEAK-10 amendment: the keep is a Must departure that a Cases row cannot carry (consistency check).
 
 CC (2026-10-26, Lennart): issue 9: "keep them, amend it but make clear this needs case by case curator judgement": `TotalBilling` and `AverageBilling` stay; LEAK-10 amended (a window sum that the data shows does not move with the outcome, given the covariates known at the prediction point, stays, case by case).
 
 **Assessment (AI, 2026-10-26):** the LEAK-10 amendment and its Cases row are written; no open issue is left, so the folder's REVIEW.md is removed.
 
 CC (2026-10-26, Lennart): verdict ship.
+
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Arrears depend on tariffs, collection policy and the economy, which change between extracts, and the file order already shows structure the random split hides; nothing measured supports ASR.
+
+## Review
+
+**Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
+
+**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13. Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
+
+**Issues for Andrej:**
+
+1. **`CrossSectional` instead of `ForcedIIDFromTemporal`?**
+
+   * **Problem:**
+     - The definition is tagged `ForcedIIDFromTemporal`, a forward use case whose time was lost[^fo-1].
+     - The target is a present state measured with the features: the account's arrears status at the extract, read from its billing up to then, and the use case reads it for new units at their own present[^cs-1].
+     - The tag alone changes: the split stays random.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Stay `ForcedIIDFromTemporal` (implemented) | the tag and its line stay | the decision stands | the tag claims a forecast the use case does not make |
+     | B | `CrossSectional` | the tag and a `Time basis:` line naming the present state, the untested drift for later units and what a dated release would show | names the use case; no claim of a lost forward split | a new prototype on a decided tag |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   **Notes for the AI:** on B, swap the tag, write the line, add a CC line; the split does not change.
+
+   [^cs-1]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
+   [^fo-1]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+
+   **Andrej (2026-11-13, discuss):** Reading from the use case this would rather be DelayedTarget, right?
+
+   **Answer (AI, 2026-11-13):** The use case is forward ("a municipality scores its accounts to forecast how many will turn into bad debt"), so not `CrossSectional`; the recommendation is now A. But not `DelayedTarget` either: the label is the account's status at the extract itself, mostly debt older than the two billing years, so no target arrives after a shared prediction moment in this data. A present-state label standing in for a forward use case on one extract is the forced tag of one period, as for coil_2000; the definition says so ("the status at its date stands in for the forecast the data card describes"). Keep A, or tell me if you read the extract date as the shared moment after all.
+
+   **Andrej (2026-11-13, ok):** As implemented, after the answer above.
+
+   **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
+
+2. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: One undated extract (OpenML 43838 / DMS Technologies Kaggle file); the file order is by municipality blocks, not time, and no parent release with dates is known.
+     - Use: A municipality scores its accounts to forecast bad debt at the next extract, i.e. after the collected two-year window (data card: fit on one snapshot, score the next).
+     - Mechanism: Arrears status follows billing, ability to pay and the municipality's collection practice; tariffs, the economy (2020 release) and collection policy change between extracts, and 83.7% of bad debts carry debt older than the window, so the label is inherited history.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | account_debt_south_africa itself (Lennart, 2026-10-12) | held out by file block (municipality segments, not time) | ROC AUC 0.877 random -> 0.849 (2,500-row blocks) and 0.787 (thirds of the file) | same data: shows strong structure in the file order the random split mixes |
+     | lending_club (this collection, matched-v2 stationary-relation test) | 36-month LendingClub loans, issue years 2013-2015 each tested forward vs contemporaneous on the same test half (LightGBM, whole half) | not flat: forward worse by 0.0043-0.0059 ROC AUC (2.4-4.2 floors, beyond 2 SD) in all three years; default rate 10.0-15.2% by year | consumer credit default from application/bureau data, outcome over months after the grant |
+
+   * **For a stationary use case:**
+     - The label is largely a status the account already carries (83.7% of bad debts hold debt older than the window), which persists between extracts.
+     - Use is the next extract of the same municipalities, close to the collected period.
+   * **Against:**
+     - Structure in the file order: holding out file blocks costs 0.03-0.09 ROC AUC.
+     - Tariffs, collection policy and the economy move between extracts (prices and rules).
+     - Eight municipalities, no key: a change at one municipality shifts the whole relation.
+     - Similar measured credit data (lending_club) is not flat.
+   * **Earlier views:**
+     - CC (2026-10-12, Lennart): ships as IID tagged ForcedIIDFromTemporal; file-block holdout 0.877 -> 0.843/0.786 (splits.md SPLIT-8 Cases row)
+     - Resolved (2026-11-13, Andrej): CrossSectional withdrawn, the forced tag stays.
+     - CC (2026-11-17, Andrej): blind split walk: the decision tree, walked without the current split, reaches the forced split it ships.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Structure in the file order: holding out file blocks costs 0.03-0.09 ROC AUC.; Tariffs, collection policy and the economy move between extracts (prices and rules). |
+
+   * **Recommendation:** A, arrears depend on tariffs, collection policy and the economy, which change between extracts, and the file order already shows structure the random split hides; nothing measured supports ASR. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Arrears depend on tariffs, collection policy and the economy, which change between extracts, and the file order already shows structure the random split hides; nothing measured supports ASR.)
 
 ## Reference
 

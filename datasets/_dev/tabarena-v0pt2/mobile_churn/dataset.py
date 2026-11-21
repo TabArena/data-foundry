@@ -136,6 +136,13 @@ class MobileChurn(AbstractCuratedDataset):
         - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month`, the record month (6 to 8), stays a number. A weekday or
           a month is a position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number;
           named weekdays and months are ordered categories instead.
+        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16): the operator scores each activated prepaid account at
+          the end of its record month (30 June 2013 for 97.2% of the accounts; the July and August joiners, 2.8%, at the
+          end of theirs), and churn follows it, as the data place the label after the snapshot. One stock month is one
+          period, too few for three windows (SPLIT-8); the source defines neither churn nor its window. Later months
+          would allow a temporal split. It cannot test the next month's scoring. Not taken as stationary (Andrej,
+          2026-11-18): The only forward comparison the data allow shows a gap whose CI excludes zero; with a competitive
+          market behind churn there is no reason to take later months as interchangeable.
     """
 
     # Task

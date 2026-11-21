@@ -9,10 +9,16 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- 'Samples: One Moment'
+- 'Entities: Recur'
+- Database Snapshot
 original_source: Kaggle
 year: '2020'
+collection_period: Unknown
 required_split:
 - Random (IID)
+problem_type: Regression
 source_links:
 - https://www.openml.org/search?type=data&id=43828
 - https://www.kaggle.com/datasets/paolocons/another-fiat-500-dataset-1538-rows
@@ -46,6 +52,8 @@ CC (2026-10-14, Lennart): Keep one row per car, its first listing (1,434 rows).
 CC (2026-11-01, Lennart): marks on the review board of PR #37: model stays unordered (pop below lounge and sport, which are not ranked), noted in the definition.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `autoscout24_car_listings_2025` (TBD -> Yes, priority 1). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-17, Andrej): the declared split (random, 10x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Reference
 
