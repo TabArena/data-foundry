@@ -254,11 +254,11 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 unordered codes carry their words:
           `material`; 1 scores with no words per level are numbers (`SCORES`): `state`.
-        - Test windows (Andrej, 2026-11-19, review issue 2, D): nine windows of one calendar month, every one training
+        - Test windows (Andrej, 2026-11-19): nine windows of one calendar month, every one training
           on more than half the sales, in place of three seven-month windows (Lennart, 2026-11-11) whose oldest,
           October 2013 to April 2014, trained on 35.4%; the use case ties no length, and no source gives Sberbank's
           refit cadence (splits comment).
-        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): the macro file gives `provision_retail_space_sqm` for 2011 and 2012 only and the two education shares (`modern_education_share`, `old_education_build_share`) from 2013 on, so their one-year lags are recorded in 2012-2013 and from 2014: the newest windows test without the first, and the oldest trains without the other two. Kept: the data as published.
+        - Columns recorded on one side of a window only (Lennart, 2026-11-11): the macro file gives `provision_retail_space_sqm` for 2011 and 2012 only and the two education shares (`modern_education_share`, `old_education_build_share`) from 2013 on, so their one-year lags are recorded in 2012-2013 and from 2014: the newest windows test without the first, and the oldest trains without the other two. Kept: the data as published.
     """
 
     # Task
@@ -277,7 +277,7 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Nine test windows of one calendar month (Andrej, 2026-11-19, review issue 2, D); each trains on every earlier
+        Nine test windows of one calendar month (Andrej, 2026-11-19); each trains on every earlier
         sale, with no gap. The use case (a lender values a flat at its sale) ties no window length and no source gives
         Sberbank's refit cadence: the sources fix only benchmark test periods for one frozen model (TabReD seven
         months, 1 December 2014 to 30 June 2015; the competition the eleven months after its training data, July 2015
@@ -312,11 +312,11 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
     )
     accepted_check_warnings = {
         "splits_feature_missing_in_test": (
-            "Decided (Lennart, 2026-11-11, cross-dataset item): three one-year lags of macro columns the source gives for "
+            "Decided (Lennart, 2026-11-11): three one-year lags of macro columns the source gives for "
             "some years only (curation_comments)."
         ),
         "time_newest_period_short": (
-            "Decided (Lennart, 2026-11-11, cross-dataset item): 2015 holds 394 to 724 sales a month against 1,044 to "
+            "Decided (Lennart, 2026-11-11): 2015 holds 394 to 724 sales a month against 1,044 to "
             "1,583 from September to December 2014, the market after the December 2014 rush; the data ends where the "
             "competition's training file ends, 30 June 2015, not at a download cut."
         ),

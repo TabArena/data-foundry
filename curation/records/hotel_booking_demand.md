@@ -77,10 +77,13 @@ CC (2026-11-19, Andrej): nine prediction dates, the target count (Review issue 2
 ## Review
 
 **Outcome:** added. On 2026-11-11 you chose all ten prediction dates, 1 September 2016 to 1 June 2017, the two
-oldest training on 48.3% and 44.0% of the bookings (issue 1, reply a), and kept the three-month horizon (H, A).
+oldest training on 48.3% and 44.0% of the bookings (issue 1, reply a), and kept the three-month horizon (H, A). On
+2026-11-19 Andrej dropped 1 September 2016: nine dates, 1 October 2016 to 1 June 2017, the target count, with 1 October
+2016 (48.3%) as the curator's exception (issue 2).
 
-**Main points:** Settled on 2026-11-11: the test predicts at the first of each month from September 2016 to June 2017,
-the newest date whose three months of arrivals the data holds (issue 1); three months of arrivals at monthly dates
+**Main points:** Settled on 2026-11-19: the test predicts at the first of each month from October 2016 to June 2017,
+nine dates, 1 September 2016 dropped (issue 2). Settled on 2026-11-11: June 2017 is the newest date whose three months
+of arrivals the data holds (issue 1); three months of arrivals at monthly dates
 hold, the length ours since the source scores every open booking (H). Nothing is left to decide.
 
 **Horizon:**

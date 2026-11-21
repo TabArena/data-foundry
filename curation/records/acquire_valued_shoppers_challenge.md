@@ -53,11 +53,11 @@ CC (2026-10-06, Lennart): Kept as a real task after the task-probe review (flag 
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined with the missing label gap recorded as an exception: the repeat period is unknown, a 5-day gap would leave 41% of the rows for the oldest window, and the newest offers show complete labels; separation is weak (12 of 21 tied), as Lennart accepted. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined with the missing label gap recorded as an exception: the repeat period is unknown, a 5-day gap would leave 41% of the rows for the oldest window, and the newest offers show complete labels; separation is weak (12 of 21 tied), as Lennart accepted. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
 
-CC (2026-11-06, Andrej): the arrival facts of the temporal split accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on arrival notes of temporal splits) and written into `splits_comment`; the split is unchanged. Each shopper is predicted on its offer day from purchases before it, and the repeat label arrives after a period the source does not state; a curation note records that no purchase after the offer reaches the features.
+CC (2026-11-06, Andrej): the arrival facts of the temporal split accepted (Review issue 2, B, through the cross-dataset item on arrival notes of temporal splits) and written into `splits_comment`; the split is unchanged. Each shopper is predicted on its offer day from purchases before it, and the repeat label arrives after a period the source does not state; a curation note records that no purchase after the offer reaches the features.
 
-CC (2026-11-12, Andrej): decided on the BeyondArena v0.2 review page (issues 1 and 3).
+CC (2026-11-12, Andrej): decided (issues 1 and 3).
 - A five-day gap, four windows (issue 1, b, the AI answer of 2026-11-06): where a test window continues an offer wave, the five days before it add ROC AUC 0.061 at equal training size (LightGBM; logistic regression 0.022 and 0.031; 0.001 to 0.008 where a window starts a new wave), outcomes not yet known at the window's start. Test windows 11-15, 16-20, 21-25 and 26-30 April 2013 (2,758 to 30,305 offers), each trained on the offers up to five days before it (90,387 to 110,396 rows, 56.5% to 69.0%); 6 to 10 April dropped. The no-gap exception proposed on 2026-11-04 falls away: every train side stays above half the rows. Labels of older waves may still be open, as the repeat period is not published.
 - `Target: Later` (issue 3, B): the repeat purchase comes after the offer, counted over a window the source does not state.
 - The definition's check pipeline on the shipped frame (the Kaggle download is refused, rules not accepted): 0 errors, 0 warnings; `dataset check` itself not run, README not regenerated; not rebuilt.
@@ -66,9 +66,9 @@ CC (2026-11-17, Andrej): Review issue 4, A, as implemented: Four expanding windo
 
 CC (2026-11-17, Andrej): Review issue 5, A, as implemented: Four expanding windows on `offerdate`, test 11-15, 16-20, 21-25 and 26-30 April 2013 (2,758 / 5,344 / 30,305 / 19,356 offers), train shares 56.5 / 63.9 / 65.6 / 69.0%, 5-day gap.
 
-CC (2026-11-17, Andrej): verdict ship (blind split review page).
+CC (2026-11-17, Andrej): verdict ship (blind split walk).
 
-CC (2026-11-17, Andrej): the declared split (temporal on `offerdate`, windows of 5 days, 4 windows, gap 5 days) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (temporal on `offerdate`, windows of 5 days, 4 windows, gap 5 days) is checked: split mark in the blind split walk.
 
 CC (2026-11-19, Andrej): windows below the target count kept (Review issue 6, A as implemented): four five-day windows; the next (6-10 April) would train on 41.4%; the reason is in the splits comment.
 
@@ -91,7 +91,7 @@ period and better data found for the same task -.
 
 **Main points:** Nothing open. Decided 2026-11-12: a five-day gap with four windows, since the five days before a
 window carry its offer wave's outcome (issue 1, b); `Target: Later` in the record (issue 3, B). The arrival facts are
-in the split comment (issue 2, resolved 2026-11-06). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 6).
+in the split comment (issue 2, resolved 2026-11-06). Decided 2026-11-17: the four windows with the 5-day gap stay, not Kaggle's history files (issues 4 and 5, A). Decided 2026-11-19: four windows, below the target count, as the next (6-10 April) would train on 41.4% (issue 6, A).
 
 **Record judgment:** valid, and the record's fields match the definition. The use case is the competition's: a brand
 aims its offers at shoppers who stay. The offer's product, chain and brand are not features (only the offer value and
@@ -222,7 +222,7 @@ record keeps the verdict its own data earns until that one is added.
 
    `dataset check` could not run: the raw files are not in the warehouse and the Kaggle download is refused (403,
    competition rules not accepted on this account). The definition's check pipeline on the shipped frame as raw input
-   (`check(write_report=False)`, Slurm job 1379771): 0 errors, 0 warnings, 2 info (23 duplicate rows, 7 conflicting);
+   (`check(write_report=False)`): 0 errors, 0 warnings, 2 info (23 duplicate rows, 7 conflicting);
    README not regenerated; not rebuilt.
 
 2. **Time basis: keep the split temporal, with no prototype, and write in `splits_comment` how the offers and their

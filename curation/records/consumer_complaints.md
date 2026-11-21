@@ -78,10 +78,11 @@ CC (2026-11-19, Andrej): a one-month gap before each test quarter (Review issue 
 
 **Outcome:** added as `consumer_complaints_1m`. In the working copy since the migration. Resolved on 2026-11-10: the
 test windows are October-December 2025, January-March 2025 and July-September 2024 instead of the last three quarters
-of 2025 (issue 1, option B); the quarter stays the window length, now argued as an assumed refit cadence, with no gap.
+of 2025 (issue 1, option B); the quarter stays the window length, now argued as an assumed refit cadence, with no gap. Since 2026-11-19 a
+one-month gap precedes each test quarter (issue 3, B).
 
 **Main points:** Open: none. Resolved on 2026-11-10: the test quarters are July-September 2024, January-March 2025 and
-October-December 2025 (issue 1).
+October-December 2025 (issue 1). Resolved on 2026-11-19: a one-month gap before each quarter (issue 3, B).
 
 **Horizon:**
 
@@ -189,7 +190,7 @@ needed.
 
    * **Recommendation:** measure first: what the complaints of the 60 days before each window add at equal training size; A if nothing, B if they carry a shortcut. **Decision:** A or B, after the measurement?
 
-   **Notes for the AI:** measure per window, split by whether the test company had a wave in those 60 days, as was done for acquire_valued_shoppers_challenge; Slurm, not the login node.
+   **Notes for the AI:** measure per window, split by whether the test company had a wave in those 60 days, as was done for acquire_valued_shoppers_challenge.
 
    [^gap]: The gap question compares the label's delay with the time column's smallest recorded step, not the window length (Andrej, 2026-11-17, option B on the time step).
    [^s10]: **SPLIT-10** (Should, amended 2026-11-05): "No gap is needed where the collection covers what the gap guards against and the measurements show neither: the time column's smallest step is longer than the delay ..., the newest period is as complete as a later read of it, or a fixed outcome horizon ..."

@@ -65,7 +65,7 @@ CC (2026-11-11, Lennart): the declared horizon (320 cars, no gap, windows starti
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` unchanged (`window=320, unit="rows", n_windows=9`); test 320 cars each, train 3,884, 3,564, 3,244, 2,924, 2,604, 2,284, 1,964, 1,644 and 1,324 (92.4%, 84.8%, 77.2%, 69.6%, 61.9%, 54.3%, 46.7%, 39.1%, 31.5% of 4,204). `task_summary.split` no longer says the first 1,000 cars are always in training (the oldest window trains on 1,324); `splits_comment` replaces the `TimeSeriesSplit` description with the windows by car ID, the train sides, the three under half with their shares, the length's origin (the first curation's `TimeSeriesSplit` arithmetic) and the reason it is kept, and the absent gap; the outlier bullet no longer names the first 1,000 cars. `dataset check`: 0 errors, 2 warnings that predate this change (11 constant and 45 duplicated option columns; README not regenerated).
 
-CC (2026-11-17, Andrej): the declared split (temporal on `time_index`, windows of 320 rows, 9 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `time_index`, windows of 320 rows, 9 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-19, Andrej): `time_index` stays a model input (Review issue 2, A as implemented): the car's ID exists before its bench test, so the planner holds it at prediction time.
 
@@ -74,10 +74,13 @@ CC (2026-11-19, Andrej): nine windows of 233 cars, all training on half the cars
 ## Review
 
 **Outcome:** added. On 2026-11-11 you kept the nine windows of 320 cars from ID 2,628 on (issue 1 and the horizon,
-A), which the amended floor admits with the three oldest training on 46.7%, 39.1% and 31.5% of the cars.
+A), which the amended floor admitted with the three oldest training on 46.7%, 39.1% and 31.5% of the cars. On
+2026-11-19 Andrej replaced them by nine windows of 233 cars, every one training on half the cars or more (issue 3, C),
+and kept `time_index` as a model input (issue 2, A).
 
-**Main points:** Issue 2: Keep `time_index` as a model input? Settled on 2026-11-11: the nine windows of 320 cars stay (issue 1, A), and the declared length of
-320 cars without a gap is checked: no source gives a length, and 320 tests 2,880 cars where 233 would test 2,097.
+**Main points:** Settled on 2026-11-19: nine windows of 233 cars in ID order, training on 50.1% to 94.5%, no gap
+(issue 3, C), in place of the nine windows of 320 cars kept on 2026-11-11 (issue 1, A); `time_index` stays a model
+input, as the planner holds a car's ID before its bench test (issue 2, A). Nothing is left to decide.
 
 **Horizon:**
 

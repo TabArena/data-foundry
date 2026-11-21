@@ -66,7 +66,7 @@ CC (2026-11-11, Lennart): the declared horizon (one calendar year of launches, a
 
 **Assessment (AI, 2026-11-11):** applied issue 2 (B) and issue 1 (C, reply b): `_clean` drops the 1,673 projects launched from 2025-11-13 11:00 on (74.2% successful; 60 days before the scrape's newest deadline, 2026-01-12 11:00), leaving 185,444 projects (62.50% successful); `temporal` declares one-year windows by `launched_at` from 2025 back to 2017 with a 60-day gap. Test 23,096 (1 January to 13 November 2025), 20,466, 12,096, 10,790, 9,523, 9,432, 11,187, 12,312 and 14,286 projects; train 159,342, 140,261, 128,277, 117,767, 108,032, 98,615, 87,250, 74,581 and 60,168 (85.9%, 75.6%, 69.2%, 63.5%, 58.3%, 53.2%, 47.0%, 40.2% and 32.4% of the projects). Success in the test years runs from 55.0% (2017) to 71.1% (2025), on the train sides from 58.3% to 61.3% (`dataset windows`); at most one training project per window (3 over the nine train sides, campaigns longer than 60 days) had not ended when its window starts. `task_summary`, the notes and `splits_comment` give the windows, the gap and the dating by launch, and drop the reason "not enough data per month" (1,500 to 2,200 projects a month). `dataset check`: 0 errors, 0 warnings, with `splits_train_under_half` accepted on the CC line above.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `launched_at`, windows of 1 year, 9 windows at fixed cutoffs, gap 60 days) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `launched_at`, windows of 1 year, 9 windows at fixed cutoffs, gap 60 days) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-20, Andrej): nine half-year windows from 2020 to 2025, all training on half the projects or more (Review issue 3, C); the one-year length was our convention.
 
@@ -74,11 +74,14 @@ CC (2026-11-20, Andrej): nine half-year windows from 2020 to 2025, all training 
 
 **Outcome:** added. On 2026-11-11 you dated the projects by launch with a 60-day gap and dropped the launches of the
 scrape's last 60 days (issue 2, B), chose the nine launch years 2017 to 2025 as test windows, the three oldest training
-on 47.0%, 40.2% and 32.4% of the projects (issue 1, C with reply b), and kept the one-year horizon (H, A).
+on 47.0%, 40.2% and 32.4% of the projects (issue 1, C with reply b), and kept the one-year horizon (H, A). On
+2026-11-20 Andrej replaced the years by nine half-year windows from 2020 H1 to 2025 H2, every one training on half the
+projects or more (issue 3, C).
 
-**Main points:** Settled on 2026-11-11: nine one-year windows by launch date, 2025 back to 2017, with a 60-day gap, on
-185,444 projects (issues 1 and 2); the one-year length holds, a convention no source contradicts (H). Nothing is left
-to decide.
+**Main points:** Settled on 2026-11-20: nine half-year windows by launch date, 2020 H1 to 2025 H2 without 2022 H2 and
+2024 H2, training on 53.2% to 91.9% (issue 3, C), in place of the nine one-year windows 2017 to 2025 and the one-year
+length of 2026-11-11 (issue 1, H). Settled on 2026-11-11: dated by launch with a 60-day gap, on 185,444 projects
+(issue 2). Nothing is left to decide.
 
 **Horizon:**
 

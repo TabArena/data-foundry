@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: v2:b3b6ac8612ecc7ebcc7ea8510e3d7c2ff39c380857ed4479bb3cdc3646fb8bd9
+checksum: v2:4ca28934fd39a898efe909b81dc58dac4cfd761e372bd585350766625f287020
 build:
   uuid: 01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7
   checksum: v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c
@@ -63,12 +63,12 @@ bundle_checks:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
   accepted:
-    splits_feature_missing_in_test: 'Decided (Lennart, 2026-11-11, cross-dataset item):
-      three one-year lags of macro columns the source gives for some years only (curation_comments).'
-    time_newest_period_short: 'Decided (Lennart, 2026-11-11, cross-dataset item):
-      2015 holds 394 to 724 sales a month against 1,044 to 1,583 from September to
-      December 2014, the market after the December 2014 rush; the data ends where
-      the competition''s training file ends, 30 June 2015, not at a download cut.'
+    splits_feature_missing_in_test: 'Decided (Lennart, 2026-11-11): three one-year
+      lags of macro columns the source gives for some years only (curation_comments).'
+    time_newest_period_short: 'Decided (Lennart, 2026-11-11): 2015 holds 394 to 724
+      sales a month against 1,044 to 1,583 from September to December 2014, the market
+      after the December 2014 rush; the data ends where the competition''s training
+      file ends, 30 June 2015, not at a download cut.'
 decisions: []
 ---
 
@@ -78,7 +78,7 @@ decisions: []
 
 Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 28,321 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:b3b6ac8612ecc7ebcc7ea8510e3d7c2ff39c380857ed4479bb3cdc3646fb8bd9`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:4ca28934fd39a898efe909b81dc58dac4cfd761e372bd585350766625f287020`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -224,15 +224,15 @@ We follow the preprocessing from TabRed (https://github.com/yandex-research/tabr
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 1 unordered codes carry their words:
   `material`; 1 scores with no words per level are numbers (`SCORES`): `state`.
-- Test windows (Andrej, 2026-11-19, review issue 2, D): nine windows of one calendar month, every one training
+- Test windows (Andrej, 2026-11-19): nine windows of one calendar month, every one training
   on more than half the sales, in place of three seven-month windows (Lennart, 2026-11-11) whose oldest,
   October 2013 to April 2014, trained on 35.4%; the use case ties no length, and no source gives Sberbank's
   refit cadence (splits comment).
-- Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): the macro file gives `provision_retail_space_sqm` for 2011 and 2012 only and the two education shares (`modern_education_share`, `old_education_build_share`) from 2013 on, so their one-year lags are recorded in 2012-2013 and from 2014: the newest windows test without the first, and the oldest trains without the other two. Kept: the data as published.
+- Columns recorded on one side of a window only (Lennart, 2026-11-11): the macro file gives `provision_retail_space_sqm` for 2011 and 2012 only and the two education shares (`modern_education_share`, `old_education_build_share`) from 2013 on, so their one-year lags are recorded in 2012-2013 and from 2014: the newest windows test without the first, and the oldest trains without the other two. Kept: the data as published.
 
 ## Splits
 
-Nine test windows of one calendar month (Andrej, 2026-11-19, review issue 2, D); each trains on every earlier
+Nine test windows of one calendar month (Andrej, 2026-11-19); each trains on every earlier
 sale, with no gap. The use case (a lender values a flat at its sale) ties no window length and no source gives
 Sberbank's refit cadence: the sources fix only benchmark test periods for one frozen model (TabReD seven
 months, 1 December 2014 to 30 June 2015; the competition the eleven months after its training data, July 2015
@@ -287,8 +287,8 @@ Each test window against its train side, by statistics of the data, never of a m
 
 Accepted on purpose:
 
-- `splits_feature_missing_in_test`: Decided (Lennart, 2026-11-11, cross-dataset item): three one-year lags of macro columns the source gives for some years only (curation_comments).
-- `time_newest_period_short`: Decided (Lennart, 2026-11-11, cross-dataset item): 2015 holds 394 to 724 sales a month against 1,044 to 1,583 from September to December 2014, the market after the December 2014 rush; the data ends where the competition's training file ends, 30 June 2015, not at a download cut.
+- `splits_feature_missing_in_test`: Decided (Lennart, 2026-11-11): three one-year lags of macro columns the source gives for some years only (curation_comments).
+- `time_newest_period_short`: Decided (Lennart, 2026-11-11): 2015 holds 394 to 724 sales a month against 1,044 to 1,583 from September to December 2014, the market after the December 2014 rush; the data ends where the competition's training file ends, 30 June 2015, not at a download cut.
 
 ## Data checks
 
@@ -525,4 +525,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b3b6ac8612ecc7ebcc7ea8510e3d7c2ff39c380857ed4479bb3cdc3646fb8bd9` |
+| stale | yes: the definition now gives checksum `v2:4ca28934fd39a898efe909b81dc58dac4cfd761e372bd585350766625f287020` |

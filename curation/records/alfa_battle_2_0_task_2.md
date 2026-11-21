@@ -88,10 +88,12 @@ CC (2026-11-20, Andrej): Review issue 6, E: the test windows walk back from the 
 
 **Outcome:** added. You shipped it on 2026-10-26. On 2026-11-11 you chose the test windows months 22-23, 20-21 and
 14-15 (issue 5, reply (b)), with months 14-15 training on 41.1% of the rows after the repeat-client filter and signed
-off, and kept the two-month horizon without a gap as a convention (Horizon, A).
+off, and kept the two-month horizon without a gap as a convention (Horizon, A). On 2026-11-20 Andrej replaced months
+14-15 by 18-19, so the windows walk back from the newest at two months and every one trains on 60.3% or more (issue 6, E).
 
-**Main points:** Settled on 2026-11-11: the windows months 22-23, 20-21 and 14-15 (issue 5) and the two-month horizon
-with the gap-0 exception as recorded. Nothing is left open.
+**Main points:** Settled on 2026-11-20: the windows months 22-23, 20-21 and 18-19 (issue 6, E, replacing issue 5's
+14-15 of 2026-11-11). Settled on 2026-11-11: the two-month horizon with the gap-0 exception as recorded. Nothing is
+left open.
 
 **Horizon:**
 

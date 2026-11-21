@@ -86,7 +86,7 @@ CC (2026-11-11, Lennart): accepted `time_newest_period_short` with its reason (c
 
 **Assessment (AI, 2026-11-11):** the lag of `provision_retail_space_sqm` is recorded from 2012 Q1 to 2013 Q4, the two education lags from 2014 Q1; 2015 holds 394 to 724 sales a month, 1,044 to 1,583 from September to December 2014, with a flat log price (11.80 to 11.87).
 
-CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 7 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 7 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-19, Andrej): nine one-month windows, all training on half the sales or more (the seven months were a benchmark's test period, not a refit cadence) (Review issue 2).
 
@@ -94,10 +94,12 @@ CC (2026-11-19, Andrej): nine one-month windows, all training on half the sales 
 
 **Outcome:** added. On 2026-11-11 you chose seven-month windows (H, a), which also settles the windows (issue 1):
 December 2014 to June 2015, May to November 2014 and October 2013 to April 2014, the oldest on 35.4% of the sales with
-your sign-off; both are applied and nothing is left open.
+your sign-off; both were applied. On 2026-11-19 Andrej replaced them by nine one-month windows from March 2014 to
+June 2015, every one training on half the sales or more (issue 2, D); nothing is left open.
 
-**Main points:** Settled on 2026-11-11: three seven-month test windows, the shortest test period of the sources, in
-place of five half-years from January 2013.
+**Main points:** Settled on 2026-11-19: nine one-month test windows (June, April and February 2015; December, October,
+August, June, April and March 2014), training on 50.9% to 98.6% (issue 2, D), in place of the three seven-month
+windows of 2026-11-11 (issue 1, H), which had replaced five half-years from January 2013.
 
 **Horizon:**
 

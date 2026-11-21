@@ -72,19 +72,20 @@ CC (2026-11-11, Lennart): the declared horizon (one month, a one-month gap, wind
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` unchanged (`window=1, unit="months", n_windows=3, gap=1`); test 89,326, 83,655 and 101,632 payments (May, April, March 2018), train 417,559, 315,927 and 229,906 (70.7%, 53.5%, 38.9% of 590,540); a February window would train on the 137,321 payments of December (23.3%). `task_summary.split`, `splits_comment` and the two `curation_comments` bullets that called the month a forecasting horizon and the gap a planning window now say the month is the winners' validation group, not a refit cadence (Vesta states none; the competition scores one model on six months), and give the gap's source and the Visa chargeback limit of 120 days. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
-CC (2026-11-17, Andrej): the declared split (temporal on `Transaction_date`, windows of 1 month, 3 windows, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `Transaction_date`, windows of 1 month, 3 windows, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-19, Andrej): three-week test windows with the competition's one-month gap, all training on half the payments or more (the month was the winners' validation scheme, not the use case) (Review issue 2).
 
 ## Review
 
 **Outcome:** added. On 2026-11-11 you kept the three test months, March, April and May 2018, with the competition's
-one-month gap (issue 1 and the horizon, A), which the amended floor admits with March training on 38.9% of the
-payments.
+one-month gap (issue 1 and the horizon, A), which the amended floor admitted with March training on 38.9% of the
+payments. On 2026-11-19 Andrej replaced them by three-week windows, 11-31 May, 20 April-10 May and 30 March-19 April
+2018, after the same one-month gap, training on 52.9% to 75.9% (issue 2, C).
 
-**Main points:** Settled on 2026-11-11: the test windows stay March to May 2018, one month each after the one-month
-gap (issue 1, A), and the declared horizon is checked, the month from the winners' month groups and the gap from the
-competition.
+**Main points:** Settled on 2026-11-19: three test windows of three weeks, 30 March to 31 May 2018, after the
+competition's one-month gap, all training on half the payments or more (issue 2, C), replacing the calendar months
+March to May 2018 kept on 2026-11-11 (issue 1, A). The gap comes from the competition.
 
 **Horizon:**
 

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mercedes_benz_greener_manufacturing
 container_format: 2
-checksum: v2:4a57253bdb36e50504350d8a1af055d2fb6a9b7cec653ca3b9691a620625e6c4
+checksum: v2:8d755643697824675666cbd69d1c923bf0be09865b782b6a6062df290de1f91c
 build:
   uuid: 01a13a7d-bd39-75dc-a072-0eebbfca32cb
   checksum: v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58
@@ -70,7 +70,7 @@ decisions: []
 
 Regression of `y`, scored with `r2` on temporal splits by `time_index`. 4,204 rows and 371 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-bd39-75dc-a072-0eebbfca32cb` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:4a57253bdb36e50504350d8a1af055d2fb6a9b7cec653ca3b9691a620625e6c4`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-bd39-75dc-a072-0eebbfca32cb` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:8d755643697824675666cbd69d1c923bf0be09865b782b6a6062df290de1f91c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -200,7 +200,7 @@ We start with the train.csv from Kaggle.
 
 ## Splits
 
-The car ID is the only order: the competition ships no dates, does not confirm that the IDs follow the order of testing, and held out its own test cars at random. Each test window is a run of 233 consecutive cars in ID order, trained on every earlier car (Andrej, 2026-11-19, review issue 3, C). No source gives a length (the 320 cars used until then were the arithmetic of the first curation's scikit-learn TimeSeriesSplit): half the cars come before ID 4,230, so nine windows, the count an IID task of this size gets (3 x 3), all train on half the cars or more only at 233 cars each, which fill the newest half (2,097 test cars). The windows walk back from the newest; with no dates there is no season or period to choose between. Newest first, they test the cars with IDs 7,973-8,417, 7,499-7,972, 7,005-7,498, 6,539-7,004, 6,111-6,538, 5,630-6,103, 5,163-5,627, 4,701-5,162 and 4,230-4,699, 233 each. Train is every earlier car: 3,971, 3,738, 3,505, 3,272, 3,039, 2,806, 2,573, 2,340 and 2,107 cars (94.5%, 88.9%, 83.4%, 77.8%, 72.3%, 66.8%, 61.2%, 55.7% and 50.1%). No gap is needed: a car's testing time is known when it leaves the bench, and no row carries a date to measure a longer delay.
+The car ID is the only order: the competition ships no dates, does not confirm that the IDs follow the order of testing, and held out its own test cars at random. Each test window is a run of 233 consecutive cars in ID order, trained on every earlier car (Andrej, 2026-11-19). No source gives a length (the 320 cars used until then were the arithmetic of the first curation's scikit-learn TimeSeriesSplit): half the cars come before ID 4,230, so nine windows, the count an IID task of this size gets (3 x 3), all train on half the cars or more only at 233 cars each, which fill the newest half (2,097 test cars). The windows walk back from the newest; with no dates there is no season or period to choose between. Newest first, they test the cars with IDs 7,973-8,417, 7,499-7,972, 7,005-7,498, 6,539-7,004, 6,111-6,538, 5,630-6,103, 5,163-5,627, 4,701-5,162 and 4,230-4,699, 233 each. Train is every earlier car: 3,971, 3,738, 3,505, 3,272, 3,039, 2,806, 2,573, 2,340 and 2,107 cars (94.5%, 88.9%, 83.4%, 77.8%, 72.3%, 66.8%, 61.2%, 55.7% and 50.1%). No gap is needed: a car's testing time is known when it leaves the bench, and no row carries a date to measure a longer delay.
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 2,107 to 3,971 rows, test 233 rows. Prediction horizon: 233 steps.
 
@@ -410,4 +410,4 @@ Each test window against its train side, by statistics of the data, never of a m
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:4a57253bdb36e50504350d8a1af055d2fb6a9b7cec653ca3b9691a620625e6c4` |
+| stale | yes: the definition now gives checksum `v2:8d755643697824675666cbd69d1c923bf0be09865b782b6a6062df290de1f91c` |

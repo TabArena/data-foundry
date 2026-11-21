@@ -44,7 +44,7 @@ Unclear what to do with SMILES. To correctly use this dataset, we would need to 
 
 CC (2026-10-14, Lennart): Ship (review of the 2026-10-07 run).
 
-CC (2026-10-14, Lennart): Drop the SMILES as a feature, as in every SMILES dataset; the structure ships as RDKit's 2D descriptors from one shared helper, the same tooling for all (review page, issue 1).
+CC (2026-10-14, Lennart): Drop the SMILES as a feature, as in every SMILES dataset; the structure ships as RDKit's 2D descriptors from one shared helper, the same tooling for all.
 
 **Assessment (AI, 2026-10-14):** Next to the descriptors the SMILES as character n-grams adds 0.010 ROC AUC to LightGBM over the 4 windows (standard error 0.023). The definition now drops it and keeps the 199 descriptors, computed by `data_foundry.v2.rdkit_descriptors` (CHANGELOG, 2026-10-14).
 
@@ -72,9 +72,9 @@ CC (2026-11-12, Andrej): `first_publication_year` orders the split but is no mod
 
 CC (2026-11-17, Andrej): Review issue 3, A, as implemented: Four ten-year windows on `first_publication_year` (test 1984-1993, 1994-2003, 2004-2013, 2014-2023: 173 / 118 / 106 / 54 compounds), each trained on every earlier compound (56 / 73 / 85 / 95% of 1,035), no gap, the year no model input.
 
-CC (2026-11-17, Andrej): verdict ship (blind split review page).
+CC (2026-11-17, Andrej): verdict ship (blind split walk).
 
-CC (2026-11-17, Andrej): the declared split (temporal on `first_publication_year`, windows of 10 values, 4 windows at fixed cutoffs, no gap) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (temporal on `first_publication_year`, windows of 10 values, 4 windows at fixed cutoffs, no gap) is checked: split mark in the blind split walk.
 
 ## Review
 
@@ -84,7 +84,8 @@ it enters the literature, no model input), as the authors' own time split. Opene
 fixed properties split: the definition splits by year while the record says the compounds have no time dimension.
 
 **Main points:** Nothing open. Settled: `first_publication_year` orders and splits the rows but is no model input
-(issue 2, B, resolved 2026-11-12); the record's collection facts corrected to `Samples: Over Time`, `Time: Dated` and
+(issue 2, B, resolved 2026-11-12); four ten-year windows on `first_publication_year`, not the authors' 80/20 splits
+(issue 3, A, resolved 2026-11-17); the record's collection facts corrected to `Samples: Over Time`, `Time: Dated` and
 `Target: Varying Delay` (issue 1, C, resolved 2026-11-11).
 
 **Issues for Andrej:**
@@ -207,9 +208,3 @@ ApisTox: a new benchmark dataset for the classification of small molecules toxic
 By Jakub Adamczyk, Jakub Poziemski, Paweł Siedlecki. 2024
 
 Published in Scientific Data 12:5 (2025), doi 10.1038/s41597-024-04232-w; preprint on arXiv (2024).
-
-CC (2026-11-11, Andrej): collection facts corrected to `Samples: Over Time`, `Time: Dated` and `Target: Varying Delay` (review issue 1, C), so that the record says what the definition's split already does.
-- The definition splits the compounds into four ten-year windows by `first_publication_year`, the year the compound first appears in the literature, as the authors' own time split; the record still carried `Samples: No Time Dimension`.
-- The collection facts describe the source whatever task is built on it, and a catalogue whose items enter in eras arose over time even where each item's own property is fixed.
-- `Target: Varying Delay`: the curation notes record that bee tests of old compounds were often published decades later, so a label is not always known at its window's cutoff.
-- The definition is unchanged: a temporal split carries no time-basis tag.

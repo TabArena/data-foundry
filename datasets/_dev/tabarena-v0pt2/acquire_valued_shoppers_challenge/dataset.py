@@ -122,7 +122,7 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
         ROC AUC 0.061 where a window continues a wave (LightGBM, equal training size). The repeat period is not
         published: the gap removes the same-wave outcomes, not every open label. Four of the nine windows an IID split
         of this size would get: the data hold 61 days, and with five-day windows and the five-day gap the next window
-        (6-10 April) would train on 41.4% of the offers (Andrej, 2026-11-19, review issue 6, A).
+        (6-10 April) would train on 41.4% of the offers (Andrej, 2026-11-19).
     """
     temporal = Temporal(
         on="offerdate",
@@ -132,7 +132,7 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
         "splits_below_target": (
             "Four of the nine windows an IID split of this size would get: the data hold 61 days, and with five-day "
             "windows and the five-day gap the next window (6-10 April) would train on 41.4% of the offers (Andrej, "
-            "2026-11-19, review issue 6, A)."
+            "2026-11-19)."
         ),
     }
 
