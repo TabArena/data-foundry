@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: diabetes_130_us
 container_format: 2
-checksum: v2:ceb3a71ceb61c329edbd97d66b48053ded372f73b44002b37716b10daff5443d
+checksum: v2:d297b14d461bd49d6520cdf1c6ae91ff0789eba25fb53de696123cba63f685b1
 build:
   uuid: 01a111fc-82d1-7838-bf50-fa314882cfef
   checksum: v2:eb9b004418443ea085fa8272aedde899f8b4e3492dd152825acedb8110288e02
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `EarlyReadmission`, scored with `roc_auc` on temporal splits by `time_index`. 99,343 rows and 45 features. Source: UCI (2014).
 
-Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ceb3a71ceb61c329edbd97d66b48053ded372f73b44002b37716b10daff5443d`, so the build is stale. See [Build](#build).
+Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d297b14d461bd49d6520cdf1c6ae91ff0789eba25fb53de696123cba63f685b1`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -186,7 +186,7 @@ The first 5 of 99,343 rows of the final frame (the oldest rows: the frame is sor
 
 ## Curation notes
 
-- Every stay (2026-11-11, Andrej, review issue 1 d): we keep all encounters of a patient, 99,343 stays of 69,990 patients after the filter below. The paper kept "only the first encounter for each patient as the primary admission" (Strack et al. 2014, Sec. 2.3) for the independence its logistic regression assumes; a hospital scores every discharge and knows a returning patient's earlier stays (USE-10, LEAK-34). In windows of encounter order the first stays are a group that narrows over the years (30-day rate 9.9% in the oldest half, 9.3%, 8.3% and 6.4% in three windows from the newest half), while over every stay it holds at 10.8% to 11.3%. TabArena v0.1 and BeyondArena kept the first stay (`drop_duplicates(subset="patient_nbr")`) with random folds; v0.2 did the same until 2026-11-11 (69,973 rows).
+- Every stay (2026-11-11, Andrej): we keep all encounters of a patient, 99,343 stays of 69,990 patients after the filter below. The paper kept "only the first encounter for each patient as the primary admission" (Strack et al. 2014, Sec. 2.3) for the independence its logistic regression assumes; a hospital scores every discharge and knows a returning patient's earlier stays (USE-10, LEAK-34). In windows of encounter order the first stays are a group that narrows over the years (30-day rate 9.9% in the oldest half, 9.3%, 8.3% and 6.4% in three windows from the newest half), while over every stay it holds at 10.8% to 11.3%. TabArena v0.1 and BeyondArena kept the first stay (`drop_duplicates(subset="patient_nbr")`) with random folds; v0.2 did the same until 2026-11-11 (69,973 rows).
 - We remove encounters that ended in death or discharge to a hospice, as the paper does ("we removed all encounters that resulted in either discharge to a hospice or patient death, to avoid biasing our analysis", Sec. 2.3): a patient who died cannot be readmitted (the 1,084 "Expired" encounters were all "No"), so these rows are not part of the readmission task.
 - We set "?" (race, weight, payer code, specialty, diagnoses) and the "NULL" code of the three ID columns to missing values; pandas also reads the "None" (test not taken) of max_glu_serum and A1Cresult as missing.
 - We reversed the original ordinal encoding for three ID-based features (admission_type_id, discharge_disposition_id, admission_source_id).
@@ -194,9 +194,9 @@ The first 5 of 99,343 rows of the final frame (the oldest rows: the frame is sor
 - We drop "patient_nbr", the patient id. "encounter_id" becomes `time_index` (encounter_id // 6, below) and is dropped otherwise. A patient's earlier stays as features of their own (their count in the file, the last stay's label) would be allowed under the temporal split (USE-10) and are a step to measure separately; the stay already carries the visits of the year before.
 - The other codes for an unknown value ("Not Available" and "Not Mapped" in the ID columns, "Unknown/Invalid" in gender) stay as categories, as IDS_mapping.csv lists them as codes of their own next to "NULL".
 - We drop examide and citoglipton, which are constant ("No") after the filters above, and glimepiride-pioglitazone, "Steady" in a single stay and "No" in all others.
-- Time order (2026-11-06 analysis, review issue 1): `encounter_id` is the Health Facts warehouse's running number of encounters (6 times a running number, 6n + 2 for the newest 11% of stays after a change of the id scheme; it ends at 73,977,870, close to the paper's 74,036,643 encounters), and it runs as a calendar across all hospitals: the distance in that number to the same patient's next stay tells a `<30` label from a `>30` one (ROC AUC 0.89), and summed over the file the 30-day scale gives 9.3 years from the first stay to the last, for the source's 1999-2008. Had the hospitals been loaded one after another, 30 days at one hospital would span far fewer numbers. We keep `time_index` = encounter_id // 6 (monotone in encounter_id across the scheme change) as the time column (SPLIT-22). The shift along the order that the earlier notes saw (payer code missing in the oldest fifth, up to 16 diagnoses only in the newest fifth) is time: a change of the warehouse's recording, which the windows now test. The drugs date the order without the label or a returning patient (2026-11-11 check, tenths of the stays in encounter order): troglitazone, withdrawn in March 2000, is in 3 stays, all in the first 0.1%; glipizide-metformin (approved 2002) first appears at 40%, metformin-rosiglitazone (2002) at 85%, metformin-pioglitazone (2005) at 97%; rosiglitazone falls from about 770 stays a tenth to 319 and 222 in the newest two (the 2007 safety warning); and among first stays alone payer code is missing in all of the oldest two tenths and 9% to 19% of the newest four.
+- Time order (2026-11-06 analysis): `encounter_id` is the Health Facts warehouse's running number of encounters (6 times a running number, 6n + 2 for the newest 11% of stays after a change of the id scheme; it ends at 73,977,870, close to the paper's 74,036,643 encounters), and it runs as a calendar across all hospitals: the distance in that number to the same patient's next stay tells a `<30` label from a `>30` one (ROC AUC 0.89), and summed over the file the 30-day scale gives 9.3 years from the first stay to the last, for the source's 1999-2008. Had the hospitals been loaded one after another, 30 days at one hospital would span far fewer numbers. We keep `time_index` = encounter_id // 6 (monotone in encounter_id across the scheme change) as the time column (SPLIT-22). The shift along the order that the earlier notes saw (payer code missing in the oldest fifth, up to 16 diagnoses only in the newest fifth) is time: a change of the warehouse's recording, which the windows now test. The drugs date the order without the label or a returning patient (2026-11-11 check, tenths of the stays in encounter order): troglitazone, withdrawn in March 2000, is in 3 stays, all in the first 0.1%; glipizide-metformin (approved 2002) first appears at 40%, metformin-rosiglitazone (2002) at 85%, metformin-pioglitazone (2005) at 97%; rosiglitazone falls from about 770 stays a tenth to 319 and 222 in the newest two (the 2007 safety warning); and among first stays alone payer code is missing in all of the oldest two tenths and 9% to 19% of the newest four.
 - Hospitals: the 130 hospitals are not recoverable; no copy (UCI, OpenML 4541 and 43874, the R package `readmission`) has a hospital id, both ids interleave the hospitals, and recording habits mark only 14.6% of the stays (SPLIT-24, SPLIT-25). A hospital scores its own next discharges, so the hospital would be a feature, not a reason for another split.
-- Target (2026-11-11, Andrej, review issue 2 A): the source's three-way `readmitted` (`<30`, `>30`, `NO`) stays binary, 30 days against the rest. Only `<30` has one horizon for every stay and is complete to the end of the file (10.5% to 12% in each estimated year); `>30` counts a readmission at any later time, so the oldest stays were followed about nine years longer than the newest. On the first stays the three classes rank `<30` as the binary model does (P(`<30`) ROC AUC 0.644 against 0.643, LightGBM), the order of the levels adds nothing, and any readmission (ROC AUC 0.668) loses its skill in the newest window (log-loss skill 0.006 against 0.059 at random).
+- Target (2026-11-11, Andrej): the source's three-way `readmitted` (`<30`, `>30`, `NO`) stays binary, 30 days against the rest. Only `<30` has one horizon for every stay and is complete to the end of the file (10.5% to 12% in each estimated year); `>30` counts a readmission at any later time, so the oldest stays were followed about nine years longer than the newest. On the first stays the three classes rank `<30` as the binary model does (P(`<30`) ROC AUC 0.644 against 0.643, LightGBM), the order of the levels adds nothing, and any readmission (ROC AUC 0.668) loses its skill in the newest window (log-loss skill 0.006 against 0.059 at random).
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 17 columns are
   ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 13 hold a state outside the
   scale, placed by the curator's rule (missing when the column has no other missing value, else the lowest
@@ -216,7 +216,7 @@ that tests their later ones (22% to 37% of the test stays, the most in the newes
 scores a returning patient (USE-10, SPLIT-13). The split stays temporal, not grouped: the cut is in time, and
 the test mixes returning and new patients as a hospital's next discharges do; holding returning patients out
 would test new patients only, which is not the use case. The windows cost little against random folds over every stay (LightGBM
-0.654 against 0.662; on the first stays 0.625 against 0.643). (2026-11-11, Andrej, review issue 1 d.)
+0.654 against 0.662; on the first stays 0.625 against 0.643). (2026-11-11, Andrej.)
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 49,672 to 93,824 rows, test 5,519 rows. Prediction horizon: 5519 steps.
 
@@ -251,7 +251,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -416,4 +416,4 @@ Each test window against its train side, by statistics of the data, never of a m
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ceb3a71ceb61c329edbd97d66b48053ded372f73b44002b37716b10daff5443d` |
+| stale | yes: the definition now gives checksum `v2:d297b14d461bd49d6520cdf1c6ae91ff0789eba25fb53de696123cba63f685b1` |

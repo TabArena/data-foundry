@@ -99,11 +99,11 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 3 scores are numbers (Elementary School Score, Middle School Score, High School Score).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after dropping 14 sales whose price is one transaction booked on several homes (8 of them carry 41% of the oldest window's squared error) and 11 descriptions that state the sale price; the tax assessment was checked and is the value before the sale. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after dropping 14 sales whose price is one transaction booked on several homes (8 of them carry 41% of the oldest window's squared error) and 11 descriptions that state the sale price; the tax assessment was checked and is the value before the sale. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
 
-CC (2026-11-06, Andrej): the arrival facts of the temporal split accepted on the BeyondArena v0.2 review page (issue 3, A, through the cross-dataset item on arrival notes of temporal splits) and written into `splits_comment`; the split is unchanged. The windows are cut in sale order, the time the label arrives, while a home is predicted at its listing. The cost for test homes listed before their window is to be measured once the Kaggle file is placed.
+CC (2026-11-06, Andrej): the arrival facts of the temporal split accepted (Review issue 3, A, through the cross-dataset item on arrival notes of temporal splits) and written into `splits_comment`; the split is unchanged. The windows are cut in sale order, the time the label arrives, while a home is predicted at its listing. The cost for test homes listed before their window is to be measured once the Kaggle file is placed.
 
-CC (2026-11-10, Andrej): decided on the BeyondArena v0.2 review page. Three row questions are still open (the Review, issues 1, 4 and 5).
+CC (2026-11-10, Andrej): decided. Three row questions are still open (the Review, issues 1, 4 and 5).
 
 **Changes made** (the input data changed: 39,060 to 39,047 sales):
 
@@ -116,7 +116,7 @@ CC (2026-11-10, Andrej): decided on the BeyondArena v0.2 review page. Three row 
 - 54 sales appear twice under two spellings of the address, as "SPACE 34" and "SPC 34". None crosses from training into a test window, but 24 pairs are scored twice. Recommended: keep the newest copy, as the existing scraped-twice rule does (issue 4).
 - 12 of the 13 dropped texts state an asking price (a price cut, "buy it now") or a loose bound, not the sale. Recommended: return them and drop only the "closed escrow" row (issue 5).
 
-CC (2026-11-11, Andrej): decided on the BeyondArena v0.2 review page; the input data changed: 39,047 to 38,991 sales.
+CC (2026-11-11, Andrej): decided; the input data changed: 39,047 to 38,991 sales.
 
 **Changes made:**
 
@@ -131,7 +131,7 @@ CC (2026-11-11, Andrej): decided on the BeyondArena v0.2 review page; the input 
 - A second leak search (each column alone, the text, status phrases, copies) finds no further leak; 5 sales scraped twice, one copy without a year built, are scored twice (issue 6, B recommended).
 - No planning gap: measured, a gap of a third or a whole window changes RMSLE by -0.001 to +0.005 in no consistent direction (issue 7, keeping the split recommended).
 
-CC (2026-11-12, Andrej): decided on the BeyondArena v0.2 review page; the input data changed: 38,991 to 38,986 sales.
+CC (2026-11-12, Andrej): decided; the input data changed: 38,991 to 38,986 sales.
 
 **Changes made:**
 
@@ -142,13 +142,13 @@ CC (2026-11-12, Andrej): decided on the BeyondArena v0.2 review page; the input 
 
 - The sale order `time_index` is still a model input (issue 8, open). It adds 0.001 to 0.003 RMSLE under LightGBM, and only together with the listing date, as the time on market (the time from listing to sale), which the buyer or agent does not know at the listing. Recommended: keep it to order and split the rows only.
 
-CC (2026-11-12, Andrej): the sale order `time_index` orders and splits the rows but is no model input (BeyondArena v0.2 review page, issue 8, reply b; `Temporal(..., feature=False)`): a home is predicted at its listing, and its place in the sale order is the listing plus the time on market, known only once it sells; the listing date stays a feature. 40 features (was 41), the three windows unchanged.
+CC (2026-11-12, Andrej): the sale order `time_index` orders and splits the rows but is no model input (Review issue 8, reply b; `Temporal(..., feature=False)`): a home is predicted at its listing, and its place in the sale order is the listing plus the time on market, known only once it sells; the listing date stays a feature. 40 features (was 41), the three windows unchanged.
 
 CC (2026-11-18, Andrej): Review issue 9, A, as implemented: Three windows of 6,497 sales each in sale order (`time_index`, rebuilt from the Kaggle Id, no model input), each trained on all earlier sales (50 / 67 / 83% of 38,986), no gap.
 
-CC (2026-11-18, Andrej): verdict ship (blind split review page).
+CC (2026-11-18, Andrej): verdict ship (blind split walk).
 
-CC (2026-11-18, Andrej): the declared split (temporal on `time_index`, up to 3 windows while training keeps 50% of the rows, no gap) is checked: split mark on the blind split review page.
+CC (2026-11-18, Andrej): the declared split (temporal on `time_index`, up to 3 windows while training keeps 50% of the rows, no gap) is checked: split mark in the blind split walk.
 
 CC (2026-11-19, Andrej): nine windows of 2,165 sales, all on half the sales or more (Review issue 10).
 
@@ -249,7 +249,7 @@ of the 2020 price for 0.7%; so it is the value before the sale, and dropping the
    * **Same 14 rows, now in 4 groups:** 8 condos of S Elm Dr, Beverly Hills ($35.8M each, 9 to 19 times the list price),
      and 2 sales each on Aster St (93562), Alderpoint Rd (95511) and Woodrow Wilson Dr (90046). 4 of the 14 fall in the
      training-only half.
-   * **Their weight in each window** (untuned LightGBM on log price, the three sale-order windows; Slurm job 1376291):
+   * **Their weight in each window** (untuned LightGBM on log price, the three sale-order windows):
 
      | Window (train share) | Test rows | The 14: rows | The 14: share of squared error | RMSLE | RMSLE without the 14 | Far-from-list sales: rows, share |
      |---|---|---|---|---|---|---|
@@ -443,7 +443,7 @@ of the 2020 price for 0.7%; so it is the value before the sale, and dropping the
      - The scraped-twice rule matches on the year built, so a missing year lets them pass, and each of these sales is
        scored twice (both copies in one test window: 4 in the middle, 1 in the newest).
      - Keep them, or keep the newest of each pair?
-   * **Leak search** (38,991 rows; untuned LightGBM on each column alone, three windows, Slurm job 1377370):
+   * **Leak search** (38,991 rows; untuned LightGBM on each column alone, three windows):
 
      | Test | Result |
      |---|---|
@@ -495,7 +495,7 @@ of the 2020 price for 0.7%; so it is the value before the sale, and dropping the
      - The delay from listing to sale is long: a median of about 4,400 sales in sale order (two thirds of a window), the
        90th percentile two windows (rough, as the data has no sale dates).
      - A gap of one window leaves the oldest window 33% of the data, under the floor of half.
-   * **Experiments** (LightGBM, equal training size with and without the newest training sales; Slurm job 1377452):
+   * **Experiments** (LightGBM, equal training size with and without the newest training sales):
 
      | Window | Test homes listed before the window | No gap | Gap of 1/3 window | Gap of 1 window (no gap at equal size) |
      |---|---|---|---|---|
@@ -572,7 +572,7 @@ of the 2020 price for 0.7%; so it is the value before the sale, and dropping the
      same day. The most it could enter for `time_index` is today's place in the sale order, and that follows from the
      listing date. The sale comes days to months later, so its place is the listing plus the time on market.
    * **Measured** on the three shipped windows: untuned LightGBM on the numeric, date and five categorical columns, no
-     text; mean of 3 seeds (seed SD at most 0.002); Slurm job 1379764. RMSLE on the price, R^2 on log(sold/list):
+     text; mean of 3 seeds (seed SD at most 0.002). RMSLE on the price, R^2 on log(sold/list):
 
      | Inputs | RMSLE newest / middle / oldest | R^2 of log(sold/list) newest / middle / oldest |
      |---|---|---|
@@ -609,7 +609,7 @@ of the 2020 price for 0.7%; so it is the value before the sale, and dropping the
    **Resolved (2026-11-12, Andrej):** b (B of the issue): `feature=False` on the `Temporal(...)` declaration;
    `task_summary.known` ends with "The sale order (`time_index`) orders the split but is no model input."; a curation
    bullet gives the reason (it arrives with the target; the listing date stays a feature), and the bullet that called
-   `time_index` a time feature now says it orders and splits the rows. Record CC line. `dataset check` (Slurm 1380075):
+   `time_index` a time feature now says it orders and splits the rows. Record CC line. `dataset check`:
    0 errors, 0 warnings, 0 info; README: 40 features (was 41), `time_is_feature: false`, the three windows unchanged
    (train 19,495 to 32,489 rows, test 6,497). Not rebuilt. It needs the `Temporal(..., feature=False)` framework
    change, uncommitted in the working copy.

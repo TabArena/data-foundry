@@ -74,7 +74,7 @@ class WineQuality(AbstractCuratedDataset):
         - We combine the original datasets for red and white wine into a single dataset with an additional column indicating the type of wine (red or white).
         - We treat the task as a regression problem, following the original work and because the target is the median wine quality (of at least 3 evaluations by experts).
         - We drop exact duplicate rows (1,177 of 6,497, 18%): identical in all 11 physicochemical values, the colour and the median score; no identical feature vector carries two different scores. The paper builds "a distinct wine sample (with all tests) per row" (Cortez et al. 2009, Sec. 2.1), so the copies are most likely repeated records from exporting the certification system's per-test entries, and under a random split they put a row's twin in train. Grouping identical rows would only reproduce this deduplication.
-        - We also drop 49 near-copies (2026-11-13, Andrej, review issue 1, B): pairs of one colour that agree on 10 of
+        - We also drop 49 near-copies (2026-11-13, Andrej): pairs of one colour that agree on 10 of
           the 11 lab values (47 pairs) or 9 (2 pairs), keeping the first in file order (41 white, 8 red rows leave;
           5,271 wines). They are double entries, not retests: 1 value differs (fixed acidity, alcohol, residual sugar
           or total sulphur dioxide only), against 3 to 6 in the 115 pairs analysed twice that we keep; the grade agrees
@@ -84,10 +84,10 @@ class WineQuality(AbstractCuratedDataset):
           positions are those of the raw file.
         - Density is recorded with 5 decimals in 2,443 rows and 4 or fewer in 2,877; the 5-decimal rows grade about
           0.1 higher in both colours (red 5.68 against 5.57, white 5.90 against 5.81), a recording batch (an
-          instrument or a period; the source does not say), kept as published (2026-11-13, Andrej, review issue 2,
-          B). A model reads it only through an engineered count of decimals; the fifth decimal (0.00001) is far below
+          instrument or a period; the source does not say), kept as published (2026-11-13,
+          Andrej). A model reads it only through an engineered count of decimals; the fifth decimal (0.00001) is far below
           the spread between wines (about 0.003).
-        - Split by file position, a judgement call (2026-11-13, Andrej, review issue 3, B). The release dates the wines
+        - Split by file position, a judgement call (2026-11-13, Andrej). The release dates the wines
           only as May 2004 to February 2007 and keeps no sample number, so `file_position` (a row's share of its
           own colour file, 0 first, 1 last) stands in for time; it is no date, and putting both colours on one axis
           assumes both were entered at a steady pace over the same period. Readings of the file order weighed:
@@ -157,7 +157,7 @@ class WineQuality(AbstractCuratedDataset):
         # (with all tests) per row" (Cortez et al. 2009, Sec. 2.1), so a repeated row adds no information
         # (keep first: the earlier entry of a copy)
         df = df[~df.duplicated(subset=[c for c in df.columns if c != "file_position"])].reset_index(drop=True)
-        # Near-copies (2026-11-13, Andrej, review issue 1, B): two rows of one colour that agree on at least 9 of the
+        # Near-copies (2026-11-13, Andrej): two rows of one colour that agree on at least 9 of the
         # 11 lab values are one wine entered twice with a value re-entered (49 pairs, same grade in all 49); keep the
         # first in file order. file_position was set above, so positions stay those of the raw file.
         lab = [c for c in df.columns if c not in ("wine_color", target_feature, "file_position")]

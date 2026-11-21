@@ -53,9 +53,9 @@ Andrej: Requires proper preprocessing and handling of duplicate patients before 
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 13 columns with a state outside the scale ordered, the state placed by the rule.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship, tagging the random split ForcedIIDFromTemporal: encounter_id orders each patient's stays in time and tracks recording changes across the file, while the 30-day label is not censored at the end. Priority 3: gap 0, use case 0, source 1, shape 1, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship, tagging the random split ForcedIIDFromTemporal: encounter_id orders each patient's stays in time and tracks recording changes across the file, while the 30-day label is not censored at the end. Priority 3: gap 0, use case 0, source 1, shape 1, risk -0.
 
-CC (2026-11-11, Andrej): **Every stay, split in windows of encounter order; the 30-day target kept.** Review page marks, issues 1 (d) and 2 (A).
+CC (2026-11-11, Andrej): **Every stay, split in windows of encounter order; the 30-day target kept.** Review issues 1 (d) and 2 (A).
 - Split: `encounter_id` is the Health Facts warehouse's running number of encounters and runs as a calendar across all hospitals (the distance to a patient's next stay tells a `<30` label from a `>30` one, ROC AUC 0.89, and gives 9.3 years over the file for 1999-2008), so the task gets 9 windows of 5,519 stays on `time_index` = encounter_id // 6, each trained on every earlier stay (50.0% to 94.4%), no gap (fixed 30-day horizon; a 30-day gap changed 0.654 to 0.652).
 - Rows: every stay instead of the first per patient (99,343 stays of 69,990 patients; deaths and hospice discharges still out). In windows the first stays are a group that narrows over time (30-day rate 9.9% down to 6.4%), every stay holds at 10.8% to 11.3%; a hospital scores every discharge and knows a returning patient's earlier stays. This replaces the first-stay part of the cohort decision of 2026-09-30.
 - Cost against random folds (untuned LightGBM, ROC AUC): 0.654 against 0.662 over every stay, 0.625 against 0.643 on the first stays.
@@ -68,7 +68,7 @@ CC (2026-11-11, Andrej): **Temporal split kept; tags `Time: Inferred` and `Entit
 - Returning patients (22% to 37% of the test stays) are a fact of the data, recorded as `Entities: Recur`; SPLIT-13 makes them part of the task, since a hospital scores every next discharge. No new split type: the cut is in time either way.
 - `Time: Dated` corrected to `Time: Inferred`: the stays carry no dates, only the running encounter number.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `time_index`, windows of 5,519 rows, up to 9 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `time_index`, windows of 5,519 rows, up to 9 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-20, Andrej): `time_index` (the running encounter number) stays a model input (Review issue 4, A): the hospital holds it from admission, so it exists at the prediction point at discharge (LEAK-10); unlike california_house_prices_2020, labour_inspection_compliance and wine_quality, whose reconstructed order the actor does not hold.
 
@@ -470,7 +470,7 @@ Nothing open.
    * **Consistency:** many temporal tasks have the same mix (clients in alfa_battle_2_0_task_2 and
      lt_vehicle_loan_default_prediction, policyholders in the Spanish motor and Wisconsin insurance tables, stores in
      rossmann_store_sales, stations in airqo and bias_correction), but only 10 records carry `Entities: Recur`
-     (cross-dataset item on the page).
+     (a cross-dataset item).
    * **Record:** `Time: Dated` was wrong under SPLIT-32: the stays carry no date, only the running encounter number,
      which is `Time: Inferred`; `Entities: Recur` was missing.
 

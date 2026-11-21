@@ -13,7 +13,6 @@ claimed_by: Andrej
 suggestion: 'Yes'
 priority: 2
 tags:
-- Larger IID Data
 - Free Text (Sentences)
 - 'Samples: Over Time'
 - 'Time: Inferred'
@@ -72,19 +71,19 @@ CC (2026-10-21, Lennart): the metric is precision_at_k with k_fraction 0.5, prec
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after dropping the 497 exact copies (0.8%), the one measured way a row's outcome crosses the forced random split; features are snapshots at the inspection (paper Sec. 4). Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after dropping the 497 exact copies (0.8%), the one measured way a row's outcome crosses the forced random split; features are snapshots at the inspection (paper Sec. 4). Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
 CC (2026-11-11, Andrej):
 - Split: three windows of the raw file's row order (`file_row`, 10,605 rows each, no gap) replace the forced random split; the export is in a coarse time order (business age rises along it in 92% of same-organisation pairs more than 40,000 rows apart), so later inspections are tested on earlier ones. `ForcedIIDFromTemporal` dropped, `required_split` Temporal (NON-IID). The windows follow the file order as recorded, not a visit key rebuilt from the features (review issue 2 b).
 - Account figures: kept with a note: one set per organisation, of an unknown fiscal year, attached to all its inspections (8,888 organisations, 33,168 rows); they add 0.004 precision at half, no more where they must come from another year (review issue 3 B).
 
-CC (2026-11-11, Andrej): "Keep all rows" (review page, item on the 497 exact copies, A): every row stays; the curation notes name the 497 copies and 179 conflicting rows, the double count (copies 57.7% breach against 74.3% overall) and that under the windows of file order only 0.03-0.10% of test rows find their copy in training. Window size stays 10,605.
+CC (2026-11-11, Andrej): "Keep all rows" (Review issue 1, A): every row stays; the curation notes name the 497 copies and 179 conflicting rows, the double count (copies 57.7% breach against 74.3% overall) and that under the windows of file order only 0.03-0.10% of test rows find their copy in training. Window size stays 10,605.
 
 CC (2026-11-12, Andrej): `file_row` orders the split but is no model input (review issue 4, B).
 - It is the inspection's place in the export's order, which stands in for the inspection's date; the authority picks whom to inspect before the inspection, so it does not hold that place when predicting.
 - `Temporal(..., feature=False)`: the three windows of 10,605 rows and their training sides stay; the inputs lose one column (376 features).
 
-CC (2026-11-17, Andrej): the declared split (temporal on `file_row`, windows of 10,605 rows, up to 3 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `file_row`, windows of 10,605 rows, up to 3 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-20, Andrej): split kept (Review issue 5, A as implemented): the three windows; the order resolves time only to about 10,000 rows.
 
@@ -230,7 +229,7 @@ definition's five-value threshold with one distinct value; dropping them needs n
    **Resolved (2026-11-11, Andrej):** A: all 63,634 rows stay; a curation bullet names the 497 exact copies and the
    179 conflicting rows, the double count in training and test windows, and the copies' class balance (57.7% breach
    against 74.3%; 74.28% against 74.41% if dropped); a CC line in the record. The window stays 10,605 rows.
-   `dataset check` (Slurm job 1378123): 0 errors, 1 warning (the three constant columns, as before).
+   `dataset check`: 0 errors, 1 warning (the three constant columns, as before).
 
 2. **Split by time, or keep the random split with no time-basis tag?**
 
@@ -347,7 +346,7 @@ definition's five-value threshold with one distinct value; dropping them needs n
    `fit_reason`, and the curation note on time order replace the IID note; record `required_split`
    `Temporal (NON-IID)` with the tag `Non-IID (Temporal)` (`Samples: Over Time` and `Time: Inferred` were already
    there; `Time: Inferred`, not `Time: Dated`, since only the row order survives). The window becomes 10,522 if issue
-   1 drops the copies. `dataset check` (Slurm job 1378071): 0 errors, 1 warning (the three constant columns, as
+   1 drops the copies. `dataset check`: 0 errors, 1 warning (the three constant columns, as
    before); test windows of 10,605 rows, training 31,819 to 53,029 rows; 377 features (`file_row` added); not rebuilt.
 
 3. **The account figures are one set per organisation, of an unknown year: keep them with a note, or drop them?**
@@ -360,7 +359,7 @@ definition's five-value threshold with one distinct value; dropping them needs n
      - The review's outcome reads every feature as an "information snapshot" of the organisation "at the time of the inspection" (paper, Sec. 4); that holds for business age and employees, which change between inspections, not for the accounts.
      - A later year's accounts would leak only if they moved with the inspection's result (a firm that shrinks after a breach); nothing in the release says which inspections the figures postdate, so the late cells cannot be located row by row.
      - 14,003 inspections (22%) have no accounts; 77.7% of them found a breach, against 73.3% of the others.
-   * **Experiments:** the v0.2 frame (63,634 inspections, 376 features), untuned LightGBM, the source's precision among the half scored highest with ROC AUC beside it, the shipped random 3 x 3 folds with and without the 367 account columns (the 365 figures, the currency code and the accounting type); scored on all test rows and on three parts of them (Slurm job 1366162):
+   * **Experiments:** the v0.2 frame (63,634 inspections, 376 features), untuned LightGBM, the source's precision among the half scored highest with ROC AUC beside it, the shipped random 3 x 3 folds with and without the 367 account columns (the 365 figures, the currency code and the accounting type); scored on all test rows and on three parts of them:
 
      | Test rows | With accounts | Without accounts |
      |---|---|---|
@@ -423,7 +422,7 @@ definition's five-value threshold with one distinct value; dropping them needs n
    **Resolved (2026-11-12, Andrej):** B: `feature=False` on the `Temporal(...)` declaration, so `file_row` orders and
    splits the rows but is no model input; `task_summary.known` says so, and a curation bullet gives the reason (it
    arrives with the target). No bullet called it a feature, and the record names no feature count. Record CC line.
-   `dataset check` (Slurm job 1380063): 0 errors, 1 warning (the three constant columns, as before); README: 376
+   `dataset check`: 0 errors, 1 warning (the three constant columns, as before); README: 376
    features (was 377), `time_is_feature: false`, the three windows unchanged (test 10,605 rows, training 31,819 to
    53,029). Depends on the uncommitted `Temporal(..., feature=False)` change in `src/data_foundry/v2/splits.py`; not
    rebuilt.

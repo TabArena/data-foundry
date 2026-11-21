@@ -10,8 +10,8 @@ import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
 
 # Entries of one sale scraped twice: the same address, ZIP code and sold price, with the same year built (51 pairs, a
-# median 61 Kaggle IDs apart) or, where one copy lacks the year, the same living area (6 pairs; issue 6 of the v0.2
-# review). One of the 6 older copies would leave anyway with the listings that predate their last sale.
+# median 61 Kaggle IDs apart) or, where one copy lacks the year, the same living area (6 pairs). One of the 6 older copies would leave anyway with the listings that
+# predate their last sale.
 SAME_SALE_ROWS = 57
 
 
@@ -31,12 +31,12 @@ def _same_sale(a: pd.Series, b: pd.Series) -> bool:
 
 # One sale scraped under two spellings of its address ("SPACE 34" / "SPC 34"): the same description, sold price, ZIP
 # code, living area and year built within 600 Kaggle IDs (the review counted 500 steps of the shipped order;
-# the widest pair, "1754 Lebec Oaks Rd" and "1754 Lebec Rd", is 517 IDs apart; issue 4 of the v0.2 review).
+# the widest pair, "1754 Lebec Oaks Rd" and "1754 Lebec Rd", is 517 IDs apart).
 RESPELLED_SALE_ROWS = 54
 RESPELLED_MAX_ID_SPAN = 600
 
 # One transaction booked on several homes: the same sold price on two or more addresses of one street and ZIP code,
-# each sold for more than 1.5 times its list price (issue 1 of the v0.2 review).
+# each sold for more than 1.5 times its list price.
 BUILDING_PRICE_ROWS = 14
 BUILDING_PRICE_MIN_RATIO = 1.5
 
@@ -160,7 +160,7 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Nine test windows in sale order, each a ninth of the newest half of the sales (2,165 rows), each trained on all earlier sales (Andrej, 2026-11-19, review issue 10, B): 50.0%, 55.6%, 61.1%, 66.7%, 72.2%, 77.8%, 83.3%, 88.9% and 94.4% of the 38,986 rows, so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods; 2,165 sales span about two to three weeks of listings. The use case (a price estimate at listing) sets no window length and no source gives a refit cadence, so the windows follow the nine an IID split of this size would get; until 2026-11-19 three windows of a sixth of the sales (6,497 rows) shipped, and before 2026-10-21 quarters, whose oldest trained on 25% of the rows.
+        Nine test windows in sale order, each a ninth of the newest half of the sales (2,165 rows), each trained on all earlier sales (Andrej, 2026-11-19): 50.0%, 55.6%, 61.1%, 66.7%, 72.2%, 77.8%, 83.3%, 88.9% and 94.4% of the 38,986 rows, so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods; 2,165 sales span about two to three weeks of listings. The use case (a price estimate at listing) sets no window length and no source gives a refit cadence, so the windows follow the nine an IID split of this size would get; until 2026-11-19 three windows of a sixth of the sales (6,497 rows) shipped, and before 2026-10-21 quarters, whose oldest trained on 25% of the rows.
         The windows are cut in sale order, the time the label arrives, while a home is predicted at its listing: a test
         home listed before its window began meets training sales that closed after its listing (97-100% of each
         window's test homes listed before the latest training listing, 2026-11-19; on the sixths a gap of a third or a

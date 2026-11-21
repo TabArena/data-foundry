@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: labour_inspection_compliance
 container_format: 2
-checksum: v2:c54a251eaa0dfb01959d06d4cee923c40ad316a3274dcce6e6f7ce8d6b6442c3
+checksum: v2:42770b68b4f19569fbcd3b56b4d5254cc1a38b0e136a388df34b4b21e15c6ed4
 build:
   uuid: 01a111fb-c91d-7b12-beaf-b56406cfc014
   checksum: v2:f6e38a18770cdade76cba8a95794eee525dba553b2d59acab9aed90e3261cf63
@@ -65,8 +65,7 @@ bundle_checks:
   accepted:
     splits_below_target: 'Three of the nine windows an IID split of this size would
       get: the order resolves time to about 10,000 rows, so windows are a sixth of
-      the rows, and the half-data floor leaves room for three (Andrej, 2026-11-20,
-      review issue 5, A).'
+      the rows, and the half-data floor leaves room for three (Andrej, 2026-11-20).'
 decisions: []
 ---
 
@@ -76,7 +75,7 @@ decisions: []
 
 Binary classification of `NonCompliance`, scored with `precision_at_k` on temporal splits by `file_row`. 63,634 rows and 376 features. Source: Other (2022).
 
-Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c54a251eaa0dfb01959d06d4cee923c40ad316a3274dcce6e6f7ce8d6b6442c3`, so the build is stale. See [Build](#build).
+Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:42770b68b4f19569fbcd3b56b4d5254cc1a38b0e136a388df34b4b21e15c6ed4`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -104,6 +103,7 @@ Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` 
 
 - The curation record, with the triage decision, its sources and the review: [`curation/records/labour_inspection_compliance.md`](../../../../curation/records/labour_inspection_compliance.md)
 - The original source: <https://doi.org/10.18710/7U6TZP>
+- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
 
@@ -204,22 +204,22 @@ We start with the data from dataverse. We create a task for the Non-compliance C
   register and account fields), the later row has the higher business age in 92% of pairs more than 40,000
   rows apart; 67 of the 228 checklists used 30 times or more stop before the last four tenths of the file and
   50 first appear after its first three tenths. We keep the raw row number as `file_row` and split by it
-  (2026-11-11, Andrej, review issue 2 b).
+  (2026-11-11, Andrej).
 - `file_row` orders and splits the rows and is no model input (`Temporal(..., time_of="label")`): it arrives
-  with the target (2026-11-12, Andrej, review issue 4 B).
+  with the target (2026-11-12, Andrej).
 - Account figures: one set per organisation, attached to all its inspections (8,888 organisations inspected
   at two or more business ages carry identical figures, 33,168 rows; first and last inspection a median 35
   months apart); the paper says the register keeps no history and gives no fiscal year; the payroll matches
   the employee count of the first inspection as well as of the last (Spearman 0.67 and 0.65). Kept: they add
   0.004 precision at half (untuned LightGBM, random folds), no more where they must come from another year
-  (0.003) than for organisations seen once (0.004) (2026-11-11, Andrej, review issue 3 B).
+  (0.003) than for organisations seen once (0.004) (2026-11-11, Andrej).
 - Repeats kept: 497 rows (0.8%) equal another row in every column, the outcome included, and 179 rows (0.3%)
   equal another row in every feature with the other outcome. The release has no date or case number to tell a
   re-inspection from a double entry; a copy lies a median 61 rows from its original, so under the windows of
   file order only 3 to 11 test rows per window find their copy in training (0.03% to 0.10%). Each copy counts
   twice in training and, inside a test window, twice in the score; the copies found a breach in 57.7%
   (287 of 497) against 74.3% of all rows, so the double count tilts the class balance slightly (dropped, the
-  breach share would move from 74.28% to 74.41%) (2026-11-11, Andrej, review issue 1 A).
+  breach share would move from 74.28% to 74.41%) (2026-11-11, Andrej).
 - Metric: precision at the median score (k = 50% of the test fold), which the paper calls the most important statistic; the same section calls accuracy or AUC also important, and the median cut is the paper's choice, not a stated inspection capacity (curator call, Lennart 2026-10-21).
 - The target (2026-11-01, CLEAN-25): `NonCompliance` ships its classes as words (1 is the event). Binary: "Yes"
   is the event, the class that sorts second, so it is the metrics' positive class.
@@ -233,9 +233,9 @@ of the 7.5 years), so the windows are a sixth of the rows each, wider than that 
 is later on average, not row by row. The windows follow the file's own order: the checklists of one visit lie
 a median 1,211 rows apart, so a window's start cuts some visits (0.3% to 1.0% of test rows have another row of
 their visit in training, against 4.0% on random folds). An inspection's result is known when it ends, so there
-is no gap (2026-11-11, Andrej, review issue 2 b). Three of the nine windows an IID split of this size would
+is no gap (2026-11-11, Andrej). Three of the nine windows an IID split of this size would
 get: the order resolves time to about 10,000 rows, so windows are a sixth of the rows, and the half-data floor
-leaves room for three (Andrej, 2026-11-20, review issue 5, A).
+leaves room for three (Andrej, 2026-11-20).
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 31,819 to 53,029 rows, test 10,605 rows. Prediction horizon: 10605 steps. The time column `file_row` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
@@ -265,7 +265,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 Accepted on purpose:
 
-- `splits_below_target`: Three of the nine windows an IID split of this size would get: the order resolves time to about 10,000 rows, so windows are a sixth of the rows, and the half-data floor leaves room for three (Andrej, 2026-11-20, review issue 5, A).
+- `splits_below_target`: Three of the nine windows an IID split of this size would get: the order resolves time to about 10,000 rows, so windows are a sixth of the rows, and the half-data floor leaves room for three (Andrej, 2026-11-20).
 
 ## Data checks
 
@@ -484,4 +484,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c54a251eaa0dfb01959d06d4cee923c40ad316a3274dcce6e6f7ce8d6b6442c3` |
+| stale | yes: the definition now gives checksum `v2:42770b68b4f19569fbcd3b56b4d5254cc1a38b0e136a388df34b4b21e15c6ed4` |

@@ -93,22 +93,22 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
           register and account fields), the later row has the higher business age in 92% of pairs more than 40,000
           rows apart; 67 of the 228 checklists used 30 times or more stop before the last four tenths of the file and
           50 first appear after its first three tenths. We keep the raw row number as `file_row` and split by it
-          (2026-11-11, Andrej, review issue 2 b).
+          (2026-11-11, Andrej).
         - `file_row` orders and splits the rows and is no model input (`Temporal(..., time_of="label")`): it arrives
-          with the target (2026-11-12, Andrej, review issue 4 B).
+          with the target (2026-11-12, Andrej).
         - Account figures: one set per organisation, attached to all its inspections (8,888 organisations inspected
           at two or more business ages carry identical figures, 33,168 rows; first and last inspection a median 35
           months apart); the paper says the register keeps no history and gives no fiscal year; the payroll matches
           the employee count of the first inspection as well as of the last (Spearman 0.67 and 0.65). Kept: they add
           0.004 precision at half (untuned LightGBM, random folds), no more where they must come from another year
-          (0.003) than for organisations seen once (0.004) (2026-11-11, Andrej, review issue 3 B).
+          (0.003) than for organisations seen once (0.004) (2026-11-11, Andrej).
         - Repeats kept: 497 rows (0.8%) equal another row in every column, the outcome included, and 179 rows (0.3%)
           equal another row in every feature with the other outcome. The release has no date or case number to tell a
           re-inspection from a double entry; a copy lies a median 61 rows from its original, so under the windows of
           file order only 3 to 11 test rows per window find their copy in training (0.03% to 0.10%). Each copy counts
           twice in training and, inside a test window, twice in the score; the copies found a breach in 57.7%
           (287 of 497) against 74.3% of all rows, so the double count tilts the class balance slightly (dropped, the
-          breach share would move from 74.28% to 74.41%) (2026-11-11, Andrej, review issue 1 A).
+          breach share would move from 74.28% to 74.41%) (2026-11-11, Andrej).
         - Metric: precision at the median score (k = 50% of the test fold), which the paper calls the most important statistic; the same section calls accuracy or AUC also important, and the median cut is the paper's choice, not a stated inspection capacity (curator call, Lennart 2026-10-21).
         - The target (2026-11-01, CLEAN-25): `NonCompliance` ships its classes as words (1 is the event). Binary: "Yes"
           is the event, the class that sorts second, so it is the metrics' positive class.
@@ -137,15 +137,15 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
         is later on average, not row by row. The windows follow the file's own order: the checklists of one visit lie
         a median 1,211 rows apart, so a window's start cuts some visits (0.3% to 1.0% of test rows have another row of
         their visit in training, against 4.0% on random folds). An inspection's result is known when it ends, so there
-        is no gap (2026-11-11, Andrej, review issue 2 b). Three of the nine windows an IID split of this size would
+        is no gap (2026-11-11, Andrej). Three of the nine windows an IID split of this size would
         get: the order resolves time to about 10,000 rows, so windows are a sixth of the rows, and the half-data floor
-        leaves room for three (Andrej, 2026-11-20, review issue 5, A).
+        leaves room for three (Andrej, 2026-11-20).
     """
     accepted_check_warnings = {
         "splits_below_target": (
             "Three of the nine windows an IID split of this size would get: the order resolves time to about 10,000 "
             "rows, so windows are a sixth of the rows, and the half-data floor leaves room for three (Andrej, "
-            "2026-11-20, review issue 5, A)."
+            "2026-11-20)."
         ),
     }
     temporal = Temporal(

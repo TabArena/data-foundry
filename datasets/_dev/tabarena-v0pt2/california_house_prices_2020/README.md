@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: california_house_prices_2020
 container_format: 2
-checksum: v2:74ea551986219b5cd209487c025cd881a4663e8b3038bde262e0ba50226c55cd
+checksum: v2:2cd71f93489fdf48a44bc68441800c7e618ec8f8f7e5bc3008ff8469fb368079
 build:
   uuid: 01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a
   checksum: v2:c703f2c88510fa9def52e7c79051dd9dd5f9e711d25ea0914082fd131606d0eb
@@ -72,7 +72,7 @@ decisions: []
 
 Regression of `Sold Price`, scored with `rmsle` on temporal splits by `time_index`. 38,986 rows and 40 features. Source: Kaggle (2021).
 
-Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:74ea551986219b5cd209487c025cd881a4663e8b3038bde262e0ba50226c55cd`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:2cd71f93489fdf48a44bc68441800c7e618ec8f8f7e5bc3008ff8469fb368079`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -220,7 +220,7 @@ We found out that the data was web scraped from a real-estate website and that t
 
 ## Splits
 
-Nine test windows in sale order, each a ninth of the newest half of the sales (2,165 rows), each trained on all earlier sales (Andrej, 2026-11-19, review issue 10, B): 50.0%, 55.6%, 61.1%, 66.7%, 72.2%, 77.8%, 83.3%, 88.9% and 94.4% of the 38,986 rows, so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods; 2,165 sales span about two to three weeks of listings. The use case (a price estimate at listing) sets no window length and no source gives a refit cadence, so the windows follow the nine an IID split of this size would get; until 2026-11-19 three windows of a sixth of the sales (6,497 rows) shipped, and before 2026-10-21 quarters, whose oldest trained on 25% of the rows.
+Nine test windows in sale order, each a ninth of the newest half of the sales (2,165 rows), each trained on all earlier sales (Andrej, 2026-11-19): 50.0%, 55.6%, 61.1%, 66.7%, 72.2%, 77.8%, 83.3%, 88.9% and 94.4% of the 38,986 rows, so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods; 2,165 sales span about two to three weeks of listings. The use case (a price estimate at listing) sets no window length and no source gives a refit cadence, so the windows follow the nine an IID split of this size would get; until 2026-11-19 three windows of a sixth of the sales (6,497 rows) shipped, and before 2026-10-21 quarters, whose oldest trained on 25% of the rows.
 The windows are cut in sale order, the time the label arrives, while a home is predicted at its listing: a test
 home listed before its window began meets training sales that closed after its listing (97-100% of each
 window's test homes listed before the latest training listing, 2026-11-19; on the sixths a gap of a third or a
@@ -437,4 +437,4 @@ Each test window against its train side, by statistics of the data, never of a m
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:74ea551986219b5cd209487c025cd881a4663e8b3038bde262e0ba50226c55cd` |
+| stale | yes: the definition now gives checksum `v2:2cd71f93489fdf48a44bc68441800c7e618ec8f8f7e5bc3008ff8469fb368079` |

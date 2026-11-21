@@ -50,16 +50,16 @@ Andrej: Add red/white wine indicator
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source mae — MAD of Cortez et al. 2009 (scored metric changed from rmse to mae).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after dropping 49 near-copies the exact deduplication missed (same wine, one value re-entered, grade equal in 49 of 49 pairs; 1.3% of test rows) and noting density's two recording precisions (about 0.1 grade apart). Priority 3: gap 0, use case 1, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after dropping 49 near-copies the exact deduplication missed (same wine, one value re-entered, grade equal in 49 of 49 pairs; 1.3% of test rows) and noting density's two recording precisions (about 0.1 grade apart). Priority 3: gap 0, use case 1, source 1, shape 1, risk -1.
 
-CC (2026-11-11, Andrej): `domain` set to the definition's `chemistry & material science` (review page field mark "update"; the record had none).
+CC (2026-11-11, Andrej): `domain` set to the definition's `chemistry & material science` (the record had none).
 
 CC (2026-11-13, Andrej): split by file position instead of random wines (Review issue 3, B), a judgement call, documented in the definition's notes:
 - Problem: the release has no dates (May 2004 to February 2007 only), but the raw file order is very likely the order of entry, and a random split trains on wines entered next to the test wines.
 - Evidence for entry order, against five other readings (requests entered together, sorted by producer, by a column, by a dropped attribute, shuffled): both colour files write density with 5 decimals in the same stretches; they drift alike (grade per tenth of each file r = 0.78, at most 0.48 shifted) with a wave of about a year; on equal test wines and training size, untuned LightGBM MAE 0.528 random, 0.535 neighbours left out, 0.546 earlier wines only.
 - Change: `file_position`, a row's share of its colour file (no date; assumes a steady pace in both files), orders nine windows of 295 wines over the newest half, each trained on all earlier wines (50% to 94%). It is no model input (`Temporal(..., feature=False)`): a row's place in an exported file is not something the grader holds.
 - Would overturn it: CVRVV sample numbers or dates showing another order, such as a sort by producer.
-- Not changed: rows (5,320), features, target, metric. Issues 1, 2 and 4 are still open.
+- Not changed: rows (5,320), features, target, metric. Issues 1, 2 and 4 were decided later the same day (below).
 
 CC (2026-11-13, Andrej): density's two recording precisions kept as published, with a curation note (Review issue 2, B):
 - Recording batch: density has 5 decimals in 2,443 rows and 4 or fewer in 2,877, and the 5-decimal rows grade about 0.1 higher in both colours (red 5.68 against 5.57, white 5.90 against 5.81); instrument or period is undocumented.
@@ -77,7 +77,7 @@ CC (2026-11-13, Andrej): the 49 near-copies dropped, keeping the first row of ea
 - Change: 5,320 -> 5,271 wines (41 white, 8 red rows leave); grade shares move by at most 0.04 points (mean 5.796 -> 5.794). `file_position` is computed before the drop, so positions stay those of the raw file; the nine windows keep 295 test wines each, trained on 2,616 to 4,976 wines.
 - Not changed: features, target, split definition, metric.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `file_position`, windows of 295 rows, 9 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `file_position`, windows of 295 rows, 9 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): nine windows of 292 wines in place of 295 (Review issue 5, B; full-information split check): the oldest window trained on 49.6% after the 49 near-copies were dropped; at 292 every train side holds 50.1% or more.
 
@@ -327,8 +327,7 @@ dates could overturn.
      decimals in the middle of both files (between 40% and 55% of the rows), and exact copies sit next to each other
      (91 red, 235 white), as in an export in entry order. Two files exported in date order from one certification system would show
      this; the source does not say so.
-   * **Experiments:** the 5,320 shipped wines and 12 features, untuned LightGBM and ridge regression, MAE (Slurm job
-     1365901):
+   * **Experiments:** the 5,320 shipped wines and 12 features, untuned LightGBM and ridge regression, MAE:
      - Shipped random split (3 x 3): LightGBM 0.541 (0.526 to 0.550), ridge 0.566.
      - Nine windows of 295 wines over the newest half by file position, each trained on all earlier wines (50% to 94%
        of the rows): LightGBM 0.486 to 0.611, 0.499 on the newest; ridge 0.507 to 0.613.
@@ -365,7 +364,7 @@ dates could overturn.
    order of entry (both colour files share the grade, alcohol and acidity pattern along the file, r = 0.78 for the
    grade at 10 bins); not split by file position, because the source does not document the order; nine windows by
    position cost +0.017 MAE at equal training size (untuned LightGBM 0.546 against 0.529; ridge +0.004).` The frame
-   has no date column, so no warning to accept. Results: Slurm job 1365901.
+   has no date column, so no warning to accept.
 
    [^3a]: **SPLIT-32** (Should): how the data was collected is information for the split; the record's collection
      facts and, where one fits, the definition's use-case prototype with its `Time basis:` line. **SPLIT-8** (Must): a
@@ -416,7 +415,7 @@ dates could overturn.
    | 5. Sorted by an attribute removed for privacy (grape, brand, price) | would give blocks of alike wines | as 3, and a sort gives no repeating wave | random or grouped; windows would test unseen kinds of wine |
    | 6. Shuffled or arbitrary | the paper scores random 5-fold CV and never uses the order | neighbours correlate, grades run, position explains up to 31% (first table) | random |
 
-   | Training wines for the same test wines (nine windows of the newest half, equal size, 3 folds x 3 seeds; Slurm job 1380067) | LightGBM MAE | Ridge MAE |
+   | Training wines for the same test wines (nine windows of the newest half, equal size, 3 folds x 3 seeds) | LightGBM MAE | Ridge MAE |
    |---|---|---|
    | Random, the test wines' neighbours included (the shipped regime) | 0.528 | 0.544 |
    | Outside the window, before and after it | 0.535 | 0.545 |
