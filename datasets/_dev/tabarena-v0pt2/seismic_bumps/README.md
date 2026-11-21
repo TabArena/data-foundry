@@ -53,8 +53,7 @@ bundle_checks:
     splits_below_target: '15 of the 30 windows an IID split of this size would get:
       windows of four weeks (84 shifts) fit 15 times within the newest half, so the
       window length and the 50% training floor stop more; overlapping windows are
-      not used, so each test shift is scored once (Andrej, 2026-11-20, review issue
-      4, B; review issue 5, A).'
+      not used, so each test shift is scored once (Andrej, 2026-11-20).'
 decisions: []
 ---
 
@@ -82,7 +81,7 @@ Not built yet. The current definition gives checksum `v2:bebe04fa311fbf10741251c
 
 **Our changes to the source.** We drop six rows that repeat the two shifts before them, and three bump counts (10^6 J and above) that are zero in every shift; the codes of the hazard ratings and the shift type become their words.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The rows are the consecutive shifts the service rates, and the split tests later shifts on earlier ones, but the order is rebuilt from the file without dates, the two longwalls cannot be told apart (no longwall id), the next shift's planned type is not given, and the monthly refit cadence (84-shift windows) is our assumption: the source states none, and a model refit every day (every 3 shifts) did not beat the window's model (ROC AUC refit better in 1-4 of 9 windows per model, log loss gains within one SD). The target is a proxy: a bump of 10^4 J or more stands for raised seismic activity, not a rockburst (ARFF header: 'not connected with accurate rockburst prediction'; the median energy of a bump shift's largest bump is 3 x 10^4 J, none reaches 10^6 J).
+> **Use case fit: approximate (a stand-in with a known gap).** Later shifts are tested on earlier ones, but the order is rebuilt without dates, the two longwalls cannot be told apart, and the monthly refit cadence is our assumption (a daily refit did not beat it). The target is a proxy: a bump of 10^4 J or more stands for raised seismic activity, not a rockburst.
 
 ## Files in this folder
 
@@ -234,15 +233,15 @@ pairs) -> at least three windows of the use case's size -> Temporal · rebuilt o
 strongly along the order (positives per tenth of the shipped rows 11, 72, 33, 2, 3, 8, 15, 8, 11, 7), so later shifts
 are tested on earlier ones; another mine or a new longwall's first weeks stay untested. Each test window is a run
 of 84 consecutive shifts (`shift_order`), trained on every earlier shift (SPLIT-11); the windows walk back from
-the newest and do not overlap (Andrej, 2026-11-20, review issue 5, A). Window length (SPLIT-12): four weeks of
-the file's measured week, a monthly refit of the service's model (Andrej, 2026-11-20, review issue 4, B). The
+the newest and do not overlap (Andrej, 2026-11-20). Window length (SPLIT-12): four weeks of
+the file's measured week, a monthly refit of the service's model (Andrej, 2026-11-20). The
 shift types of rows 150-905 follow a 21-row week (18 coal-getting and 3 preparation shifts, three a day;
 autocorrelation of the preparation flag 0.37 at lag 21, 0.38 at lag 84), so four weeks are 84 shifts; the cycle
 is not visible after row 1105, where the test windows lie. The source states no refit cadence; the monthly
-cadence remains our assumption (Andrej, 2026-11-20, review issue 1, A): within each of the nine newest windows,
+cadence remains our assumption (Andrej, 2026-11-20): within each of the 15 windows,
 a model refit every day (every 3 shifts) on all earlier shifts did not beat the window's model (ROC AUC refit
-better in 1-4 of 9 windows per model for LightGBM, logistic regression and Kumo-Tabular; log loss gains within
-one SD across windows). With no dates there is no season or month to choose between, so the windows walk back
+better in 3-8 of 15 windows per model, worse on average for logistic regression and Kumo-Tabular; log loss
+better in 10 of 15, p 0.14-0.33, not significant). With no dates there is no season or month to choose between, so the windows walk back
 (SPLIT-15). Target: 30 windows (SPLIT-33 for two thirds of 2,578 shifts); 15 are reached: 84-shift windows
 within the newest half (1,289 shifts) fit 15 times. What stops more: the window length and the 50% floor
 (SPLIT-14). Every window holds a bump (1 to 10, 49 in all; TP-9, SPLIT-16), and each trains on 51.1% to 96.7%
@@ -310,7 +309,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 Accepted on purpose:
 
-- `splits_below_target`: 15 of the 30 windows an IID split of this size would get: windows of four weeks (84 shifts) fit 15 times within the newest half, so the window length and the 50% training floor stop more; overlapping windows are not used, so each test shift is scored once (Andrej, 2026-11-20, review issue 4, B; review issue 5, A).
+- `splits_below_target`: 15 of the 30 windows an IID split of this size would get: windows of four weeks (84 shifts) fit 15 times within the newest half, so the window length and the 50% training floor stop more; overlapping windows are not used, so each test shift is scored once (Andrej, 2026-11-20).
 
 ## Data checks
 

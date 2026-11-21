@@ -166,12 +166,12 @@ class SeismicBumps(AbstractCuratedDataset):
         strongly along the order (positives per tenth of the shipped rows 11, 72, 33, 2, 3, 8, 15, 8, 11, 7), so later shifts
         are tested on earlier ones; another mine or a new longwall's first weeks stay untested. Each test window is a run
         of 84 consecutive shifts (`shift_order`), trained on every earlier shift (SPLIT-11); the windows walk back from
-        the newest and do not overlap (Andrej, 2026-11-20, review issue 5, A). Window length (SPLIT-12): four weeks of
-        the file's measured week, a monthly refit of the service's model (Andrej, 2026-11-20, review issue 4, B). The
+        the newest and do not overlap (Andrej, 2026-11-20). Window length (SPLIT-12): four weeks of
+        the file's measured week, a monthly refit of the service's model (Andrej, 2026-11-20). The
         shift types of rows 150-905 follow a 21-row week (18 coal-getting and 3 preparation shifts, three a day;
         autocorrelation of the preparation flag 0.37 at lag 21, 0.38 at lag 84), so four weeks are 84 shifts; the cycle
         is not visible after row 1105, where the test windows lie. The source states no refit cadence; the monthly
-        cadence remains our assumption (Andrej, 2026-11-20, review issue 1, A): within each of the 15 windows,
+        cadence remains our assumption (Andrej, 2026-11-20): within each of the 15 windows,
         a model refit every day (every 3 shifts) on all earlier shifts did not beat the window's model (ROC AUC refit
         better in 3-8 of 15 windows per model, worse on average for logistic regression and Kumo-Tabular; log loss
         better in 10 of 15, p 0.14-0.33, not significant). With no dates there is no season or month to choose between, so the windows walk back
@@ -193,7 +193,7 @@ class SeismicBumps(AbstractCuratedDataset):
         "splits_below_target": (
             "15 of the 30 windows an IID split of this size would get: windows of four weeks (84 shifts) fit 15 times "
             "within the newest half, so the window length and the 50% training floor stop more; overlapping windows "
-            "are not used, so each test shift is scored once (Andrej, 2026-11-20, review issue 4, B; review issue 5, A)."
+            "are not used, so each test shift is scored once (Andrej, 2026-11-20)."
         ),
     }
 
