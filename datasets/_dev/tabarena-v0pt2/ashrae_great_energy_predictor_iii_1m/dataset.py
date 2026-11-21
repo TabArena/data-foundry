@@ -248,8 +248,8 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
     )
     accepted_check_warnings = {
         "splits_train_under_half": (
-            "Signed off (Lennart, 2026-11-10, review issue 1, A): January-April 2017 trains on 49.47% of the "
-            "readings, beside 66.0% and 83.0%; kept as the curator's exception to SPLIT-14's half-data floor (Andrej, 2026-11-19, review issue 2, A)."
+            "Signed off (Lennart, 2026-11-10): January-April 2017 trains on 49.47% of the "
+            "readings, beside 66.0% and 83.0%; kept as the curator's exception to SPLIT-14's half-data floor (Andrej, 2026-11-19)."
         ),
     }
     splits_comment = """

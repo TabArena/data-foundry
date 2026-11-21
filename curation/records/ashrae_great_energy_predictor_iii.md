@@ -45,9 +45,9 @@ A lot of notes on this data....see data foundry. Split must be temporal/grouped.
 
 **Assessment (AI, 2026-10-07):** Valid; added as `ashrae_great_energy_predictor_iii_1m` (temporal, log1p reading, RMSE = the competition's RMSLE). The "only 1 year" gap closes with the competition team's own 2017 release: BDG2's `data/meters/kaggle/kaggle.csv`, "the data for the validation data set (2017) that matches seamlessly with the training data" (Miller et al. 2020, Sci Data, p. 8). We train on 2016 and test three 4-month windows of 2017. Scope: "regression-based machine learning to predict the energy savings of a retrofit" (GEPIII overview, Sec. 2.2); no lagged readings. Licence note: Kaggle rule 7B bars redistribution to non-participants; BDG2 is MIT at the pinned commit, CC BY 4.0 on Zenodo, CC BY-SA in its LICENSE since 2023.
 
-CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run): in scope as one regression task over all meter types and sites; a model beats the naive forecasts (issue 2).
+CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run): in scope as one regression task over all meter types and sites; a model beats the naive forecasts.
 
-CC (2026-10-15, Lennart): Temporal, not grouped: retrofit savings are measured on the same buildings after the cutoff (review page, issue 3). Clean the readings to the state an expert would ship, following the competition's top teams and the data owners (issue 4).
+CC (2026-10-15, Lennart): Temporal, not grouped: retrofit savings are measured on the same buildings after the cutoff. Clean the readings to the state an expert would ship, following the competition's top teams and the data owners.
 
 **Assessment (AI, 2026-10-15):** Cleaning: the readings come in kWh from BDG2's raw files (the competition kept each site's own unit: ton-hours, pounds of steam, mmBTU, kBTU; BDG2 paper, Table 4), and 1.70M hours (4.2%) are dropped as not recorded: electricity at 0, site 0's 2016 gap, a cooling or heating plant at 0 for 48 hours or more in its season, readings stuck for a week or more, building 1099's steam unit error. 94.5% of the 2016 hours dropped are on the 1st place team's hand-made list of bad readings (solution repository, `rank-1/input/bad_meter_readings.zip`). Task: the top five teams used no lagged readings (GEPIII overview, Table 2). The best naive forecast, each meter's hour-of-week profile from the same month a year earlier, scores RMSE 1.39 / 1.27 / 1.37 on the three windows; LightGBM with 1,000 trees on 1M training rows 1.26 / 1.18 / 1.22. One LightGBM per site scores about the same (1.24 / 1.18 / 1.22), one per building and meter worse (1.37 / 1.27 / 1.34). For unseen buildings (every fifth held out, January-April 2017) LightGBM without building_id scores 1.71, a site x use x meter profile 2.01, LightGBM with the buildings' 2016 history 1.43.
 
@@ -69,7 +69,7 @@ CC (2026-11-10, Lennart): the declared horizon (4 months, no gap, windows starti
 
 **Assessment (AI, 2026-11-10):** applied: `temporal` unchanged; `splits_comment` and `task_summary.split` now give the use case as the reason for the length and SPLIT-14's amendment of 2026-11-08 as the reason for the oldest window (two windows above the floor, every test meter's building in training, folds by entity would test unseen buildings) in place of "the competition's setting", and 49.47% (19,325,311 of 39,062,170 rows) in place of 49.12%. Horizon audit (model-free): the competition trained on 2016 "to predict the second and third years" and ranked on 2018 (Miller et al. 2020, arXiv 2007.06933, Sec. 2.2); CalTRACK fits the baseline "to baseline data in the 365 days immediately prior" and computes savings with "the coefficients ... from the final model" (Sec. 3.1.3, 3.6.1.1); LBNL's NMEC guidance v2.0 (p. 10) uses one year of baseline and performance periods; 3-month windows give 9 candidates above the floor, 2-month 10, 12-month one. The amendment's score: LightGBM (one seed, default parameters, 1,000 trees, early stopping on the last 10% in time order of the default 1M sample of the newest year, the date in skrub's recommended encoding) scores RMSLE 1.212, 1.342 and 1.213, newest first: 1.277 on the two valid windows, 1.256 on all three; without the absolute date features (year, total seconds) 1.240, 1.176 and 1.247 (1.208 and 1.221). Either way the oldest window scores like the newest and moves the mean by about 0.02; May-August decides the direction.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 4 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 4 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-19, Andrej): train floor (Review issue 2, A as implemented): January-April 2017 (49.47% of the readings) stays as the curator's exception to the half-data floor (SPLIT-14 as amended 2026-11-19); no window is under 30%.
 
@@ -81,7 +81,8 @@ without a refit), and the oldest window, on 49.5% of the rows, on the floor's am
 the score on the two valid windows next to all three.
 
 **Main points:** Open: none. Resolved on 2026-11-10: January-April, May-August and September-December 2017 stay the
-test windows at four months (issue 1).
+test windows at four months (issue 1). Resolved on 2026-11-19: January-April 2017 (49.47% of the readings) stays as
+the curator's exception to the half-data floor (issue 2).
 
 **Horizon:**
 

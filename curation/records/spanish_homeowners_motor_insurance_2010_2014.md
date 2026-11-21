@@ -47,7 +47,7 @@ type_adapter_id: curation-record-v1
 
 Screen verification: no ethics objection found in the release, and real provenance supported by the data paper (SEL-1, SEL-16, PROV-1); scope/use case and temporal structure supported by the source (SEL-3, USE-1, SPLIT-6); no duplicate found by provenance search (PROV-4). Prediction-time availability, label maturity and score stability cannot be verified from the description alone; confirm in /add-dataset. CSV dimensions and values were not independently measured in this screen (EV-7).
 
-CC (2026-11-02, Andrej): `Yes`, priority 3, as the AI screening proposed (screening review page of the Wisconsin alternatives). Precedent check: consistent with spanish_motor_insurance_2015_2018 and wisconsin_local_government_property_insurance_fund; late claims, attrition and the positives per test year (448 / 310 / 240) are settled in /add-dataset.
+CC (2026-11-02, Andrej): `Yes`, priority 3, as the AI screening of the Wisconsin alternatives proposed. Precedent check: consistent with spanish_motor_insurance_2015_2018 and wisconsin_local_government_property_insurance_fund; late claims, attrition and the positives per test year (448 / 310 / 240) are settled in /add-dataset.
 
 **Assessment (AI, 2026-11-02):** added as `datasets/_dev/tabarena-v0pt2/spanish_homeowners_motor_insurance_2010_2014/` by /add-dataset with the full review panel; the open questions are in its Review. Recommend shipping; the five issues (13 once-read rating fields kept, no gap before each test year, the Gini, frozen ages, two warnings) are weighings, none a reason for `No`. Target `Claims2` shipped as log1p, scored by `normalized_gini` on the amount from context: the screening's proposed `rmse` is superseded (every model scores R^2 at or below 0 on the amount; on a Tweedie deviance a constant beats every model). Split: test years 2012/2013/2014, expanding, no gap (train 57.0/75.3/89.2%, 448/310/240 claimants). Inputs: the year's own outcomes dropped (`NClaims2`, `Types`, `NClaims1`, `Claims1`, `Retention`); prior-year claims added. Measured: untuned Gini 0.11-0.32 (bootstrap SE 0.06-0.11 per year); no leak; lapse years kept (claim share 2.21% against 1.65%). Priority 3: gap + (insurance thin), use case + (renewal pricing, fit approximate), source + (original release and papers), shape + (122,935 customer-years, temporal), risk - (small signal, rating-field read date unknown, 240-448 claimants per test year).
 
@@ -59,7 +59,7 @@ CC (2026-11-02, Andrej): ship. Issue 1 (a), "I go with a)": the 13 once-read rat
 
 **Assessment (AI, 2026-11-06):** review panel (focused: claim auditor and mediator, re-review under LEAK-41, MET-14 to MET-16): ship after changes, text only and made (the Exposure note: at most the 29,296 lapse rows, 23.8%, can be years cut short, a bound since the release has no dates, and the lapse marker added as a feature gains no Gini; the elasticity of the cost to the insured values is 0.13 and 0.15, against 1 for an amount at risk, so they stay features; no LEAK-41 suspect; scored unweighted per contract, MET-15); disputed: none; for the curator: no issue.
 
-CC (2026-11-08, Lennart): the declared metric (`normalized_gini`) is checked, as declared; the record ships, with no open issue on the PR #47 review board.
+CC (2026-11-08, Lennart): the declared metric (`normalized_gini`) is checked, as declared; the record ships, with no open issue (PR #47).
 
 **Assessment (AI, 2026-11-08):** the exception line of 2026-11-02 above cites pricing_game_2016_french_fleet, whose windows were reopened on 2026-11-06 (its issue 6); the exception rests on its own fact (a one-year gap leaves the 2012 window 33% of the rows), so the notes no longer cite that case.
 
@@ -71,7 +71,7 @@ CC (2026-11-09, Andrej): columns held only for training rows stay out for now, n
 
 CC (2026-11-09, Andrej): the training labels' maturity is stated in the notes (cross-dataset item of 2026-11-09, option B).
 
-CC (2026-11-17, Andrej): the declared split (temporal on `policy_year`, windows of 1 value, 3 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `policy_year`, windows of 1 value, 3 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-19, Andrej): windows below the target count kept (Review issue 6, A as implemented): three yearly windows; a 2011 window would train on 2010 alone (32.8%); the reason is in the splits comment.
 
@@ -122,7 +122,7 @@ kept after a nine-test leak check (1), no gap (2), the Gini (3), the frozen ages
 exposure re-review of 2026-11-06 adds none: no column is a weight or a time on risk, and the notes now bound the lapse
 years that could be cut short. On 2026-11-08 (Lennart): `gender` dropped, as sex leaves every insurance pricing task
 (the stance of australian_vehicle_insurance_2004_2005's issue 7; for `gender` it supersedes the keep of issue 1); it
-carried little. Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 6).
+carried little. Three yearly windows, below the target count of 9, kept (issue 6, 2026-11-19).
 
 **Issues for Andrej:**
 
@@ -266,7 +266,7 @@ carried little. Open since 2026-11-19: which window layout, as the definition sh
 
    * **Recommendation:** A: three is what five yearly values give at half the data, and B adds a window trained on one year for a period the other three already cover. **Decision:** A or B?
 
-   **Notes for the AI:** on A, add to `splits_comment`: "Three windows, against the 9 an IID split of 122,935 customer-years would get: the release has five policy years, and a 2011 window would train on 2010 alone, 32.8% of the rows (the date of your decision, Andrej)." On B: `TemporalSplits(window=1, unit="unique", n_windows=4)`, `splits_train_under_half` accepted for 2011 with the reason, the window table in `splits_comment`, `task_summary.split`, `dataset check` on Slurm, a CHANGELOG entry and a CC line.
+   **Notes for the AI:** on A, add to `splits_comment`: "Three windows, against the 9 an IID split of 122,935 customer-years would get: the release has five policy years, and a 2011 window would train on 2010 alone, 32.8% of the rows (the date of your decision, Andrej)." On B: `TemporalSplits(window=1, unit="unique", n_windows=4)`, `splits_train_under_half` accepted for 2011 with the reason, the window table in `splits_comment`, `task_summary.split`, `dataset check`, a CHANGELOG entry and a CC line.
 
    **Andrej (2026-11-19, ok):** As implemented (A).
 

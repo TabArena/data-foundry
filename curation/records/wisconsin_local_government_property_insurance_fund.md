@@ -87,7 +87,7 @@ has the call.
 - Test years 2009 and 2010 (two windows; the SPLIT-8 call stays).
 
 CC (2026-10-30, Andrej): `Yes`, priority 3 (the AI screening had `TBD -> Yes`, priority 3; zero-inflated screening
-review page).
+review).
 
 Building-and-contents (BC) cover of Wisconsin's Local Government Property Insurance Fund, a state pool for counties,
 cities, towns, villages, school districts and other local entities (Frees, Lee and Yang 2016, Sec. 5). The public
@@ -116,7 +116,7 @@ the authors share the 2011 file; whether `Premium` stays as a feature or serves 
 
 **Assessment (AI, 2026-11-02):** the leak test across the forced grouped split (SPLIT-8 as amended 2026-11-02; untuned LightGBM on the 9 shipped member folds) finds a shared period, so the split as implemented would be `No`; added to issue 1 of the record's Review, the split unchanged. (1) Shared rows: no exact copy of a test row's inputs in training; 17-20 near copies per fold agree on a claim at 0.55-0.82 against 0.58 by chance; no renumbered member (none of 23 candidate pairs within 1% coverage). (2) Shared period: predicting each test year without that year's training rows, against without as many random rows, costs ROC AUC 0.010 (8 of 9 splits), R^2 0.017 on log1p (9 of 9) and the shipped Gini 0.113 on average (5 of 9, -0.23 to +0.55) on the pooled fold, but AUC 0.002 and Gini 0.008 (SD 0.20) within one year: the training side carries each year's claim level (2010's claims 3.3 times 2009's), and dropping `Year` does not remove it. (3) Features from other rows: `NoClaimCredit` is the member's own two earlier years in 3,227 of 3,227 rows and no member is on both sides. Recommend scoring within each year (the mean of the yearly Ginis, `Year` as the metric's group, a library change), or the two yearly windows with a SPLIT-14 amendment; the curator has the call.
 
-CC (2026-11-02, Andrej): split (issue 1, discuss on the review page): "We found that grouped splits leak, so I would recommend to use three splits, one for each year of 2008, 2009, 2010". Implemented: three expanding yearly windows, newest first, each training on every earlier policy year with no gap: test 2010 on 2006-2009 (80.3% of the rows; 1,110 test member-years, 403 with a claim), test 2009 on 2006-2008 (60.6%; 1,112, 301), test 2008 on 2006-2007 (40.6%; 1,125, 309). The 2008 window is below SPLIT-14's floor of half the rows, a departure on the curator's call; no gap is an exception to SPLIT-10 that serves SPLIT-14, as pricing_game_2016_french_fleet (splits.md Cases). `ForcedGroupedFromTemporal` dropped; `PolicyNum` is now an input (known members, USE-10). Untuned ordered_lorenz_gini (test 2008, 2009, 2010): Tweedie GLM 0.254, 0.251, 0.350; LightGBM Tweedie 0.146, 0.254, 0.327; coverage alone 0.019, 0.195, 0.540. No test year has a row on its training side.
+CC (2026-11-02, Andrej): split (issue 1, discuss): "We found that grouped splits leak, so I would recommend to use three splits, one for each year of 2008, 2009, 2010". Implemented: three expanding yearly windows, newest first, each training on every earlier policy year with no gap: test 2010 on 2006-2009 (80.3% of the rows; 1,110 test member-years, 403 with a claim), test 2009 on 2006-2008 (60.6%; 1,112, 301), test 2008 on 2006-2007 (40.6%; 1,125, 309). The 2008 window is below SPLIT-14's floor of half the rows, a departure on the curator's call; no gap is an exception to SPLIT-10 that serves SPLIT-14, as pricing_game_2016_french_fleet (splits.md Cases). `ForcedGroupedFromTemporal` dropped; `PolicyNum` is now an input (known members, USE-10). Untuned ordered_lorenz_gini (test 2008, 2009, 2010): Tweedie GLM 0.254, 0.251, 0.350; LightGBM Tweedie 0.146, 0.254, 0.327; coverage alone 0.019, 0.195, 0.540. No test year has a row on its training side.
 
 CC (2026-11-02, Andrej): target (issue 2) `ok`: the claims stay in dollars as implemented. Metric `ok` (ordered_lorenz_gini against the premium). Field rows: `year` updated from 2016 to 2017 (the definition's, the textbook repository's first commit); `required_split` kept Temporal (NON-IID) and the tag kept Non-IID (Temporal), which the definition now matches. Verdict: changes (applied 2026-11-02).
 
@@ -146,11 +146,11 @@ CC (2026-11-09, Andrej): the member's claim count of the year before is added as
 
 **Assessment (AI, 2026-11-09):** issue 5 applied in the definition. `dataset check` 0 errors, 0 warnings; the leak probes flag nothing (`prev_year_claims` alone R^2 0.027 on dollars, no exact copies across the split). On the declared Gini the count moves the scores in no consistent direction: the Tweedie GLM of the notes 0.260 against 0.285 without it, while the task probe's untuned families score higher with it (linear 0.202 against 0.119, random forest 0.202 against 0.142, LightGBM 0.073 against 0.020; SD across the 3 windows 0.075 to 0.152). The notes now say that `NoClaimCredit` looks computed from the file's own claims, not read from the fund's rating.
 
-CC (2026-11-09, Andrej): ship (review page of 2026-11-09).
+CC (2026-11-09, Andrej): ship.
 
 CC (2026-11-10, Andrej): the losses stay uncapped in scoring; the notes state each window's swing from its largest claim, and the first tuned benchmark run decides whether the table tells methods apart (Review issue 6, A, as implemented).
 
-CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
+CC (2026-11-10, Andrej): ship.
 
 CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note naming the columns (cross-dataset item "Accept splits_feature_missing_in_test where a column starts or stops being recorded within the history?", A: the data as the deployed model met it).
 
@@ -193,7 +193,7 @@ one-row swing of about 0.1 to 0.3 (issue 6). Quality: CLEAN-10 triggered, fixed
 (`NoClaimCredit` missing without two earlier years; `Fire5`'s unknown class kept with a note); CLEAN-16 exception kept
 (dollars, issue 2). Weighed: documented source and real decision +; small test sets, one claim that is 35% of 2010's
 losses, rating inputs the public file lacks (endorsements, county, the full fire class) and unseen members under any
-forced split -. Issues 1, 2 and 3 are resolved.
+forced split -. Issues 1 to 8 are resolved.
 
 Changes made after the review panel (AI, 2026-11-01): the changes the panel agreed are made (the source's metric
 `ordered_lorenz_gini`, new in the library, with `Premium` as base and scoring column; the target in dollars;
@@ -215,11 +215,12 @@ decides whether methods spread beyond each window's one-row swing); on 2026-11-0
 column only, the outside agency's price the source's engine replaces) and issue 5 (the member's claim count of the
 year before added as `prev_year_claims`); issue 3 (the three yearly windows, under the floor rule as amended on
 2026-11-08 on this fund's facts), issue 1 (the three windows, on the curator's call of 2026-11-02) and issue 2 (the
-claims in dollars). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 8).
+claims in dollars); on 2026-11-19 issue 7 (the 2008 window kept as the curator's exception to the half-data floor) and
+issue 8 (three yearly windows, fewer than the target count: a 2007 window would train on 20.5%, under the 30% floor).
 
-**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
+**Verdict (2026-11-10, Andrej):** ship.
 
-**Verdict (2026-11-09, Andrej):** ship (review page of 2026-11-09).
+**Verdict (2026-11-09, Andrej):** ship.
 
 **Issues for Andrej and Lennart:**
 
@@ -962,7 +963,7 @@ claims in dollars). Open since 2026-11-19: which window layout, as the definitio
 
    * **Recommendation:** A, with the reason sentence: the five years allow no fourth window, even as an exception. **Decision:** A?
 
-   **Notes for the AI:** on A, add to `splits_comment`: "Three windows, against the 9 an IID split of 5,639 member-years would get: the release has five years, and a 2007 window would train on 2006 alone, 20.5% of the rows, under the 30% floor (the date of your decision, Andrej)." Then `dataset check` on Slurm, a CHANGELOG entry and a CC line.
+   **Notes for the AI:** on A, add to `splits_comment`: "Three windows, against the 9 an IID split of 5,639 member-years would get: the release has five years, and a 2007 window would train on 2006 alone, 20.5% of the rows, under the 30% floor (the date of your decision, Andrej)." Then `dataset check`, a CHANGELOG entry and a CC line.
 
    **Andrej (2026-11-19, ok):** As implemented (A).
 

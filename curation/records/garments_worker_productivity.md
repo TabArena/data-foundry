@@ -60,13 +60,13 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `thai_apparel_line_productivity` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the same-day incentive leak is in the BeyondArena data only (v0.2 lags it), and the team's previous-day productivity adds nothing beyond the lagged columns. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the same-day incentive leak is in the BeyondArena data only (v0.2 lags it), and the team's previous-day productivity adds nothing beyond the lagged columns. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
 CC (2026-11-05, Andrej): ship as defined. The declared split (30 one-day windows, each trained on every earlier day) and the declared metric (RMSE on the productivity) checked and kept. `year` set to 2020, UCI's donation date of the rows (the paper is 2021), from the definition.
 
-CC (2026-11-06, Andrej): the arrival facts of the temporal split accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on arrival notes of temporal splits) and written into `splits_comment`; the split is unchanged. A day's productivity is in the efficiency report after the shift, before the next day's prediction, so no gap is needed.
+CC (2026-11-06, Andrej): the arrival facts of the temporal split accepted (Review issue 2, B, through the cross-dataset item on arrival notes of temporal splits) and written into `splits_comment`; the split is unchanged. A day's productivity is in the efficiency report after the shift, before the next day's prediction, so no gap is needed.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `date`, windows of 1 value, 30 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `date`, windows of 1 value, 30 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-19, Andrej): least test window (Review issue 3, A as implemented): the 30 one-day windows of 17-24 team records stay; a factory day is the task's natural test unit, so the 33-unit minimum of SPLIT-14 is waived as the curator's exception. Reopened on 2026-11-20 and settled the same day as A (see the CC line below).
 
@@ -90,7 +90,8 @@ prediction point and leak fix tested on the data +, 17 to 24 test rows per windo
 richer sibling (`thai_apparel_line_productivity`) is screened in its own record.
 
 **Main points:** Shipped as defined (issue 1, 2026-11-05), the record's year set from the definition; the arrival facts
-(end-of-day report, lags, no gap) written into the split comment (issue 2, 2026-11-06). Nothing open.
+(end-of-day report, lags, no gap) written into the split comment (issue 2, 2026-11-06); the 30 one-day windows kept as the curator's exception to the 33-unit test-window minimum
+(issue 3, 2026-11-20). Nothing open.
 
 **Record judgment:** valid. A known team's own history is a legitimate input under a temporal split, and the definition
 carries it through the lagged columns: today's check added the team's previous-day productivity (and its gap to that

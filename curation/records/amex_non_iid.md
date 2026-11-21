@@ -71,7 +71,8 @@ CC (2026-11-18, Andrej): time basis `UnseenGroup` in place of `ForcedGroupedFrom
 
 **Outcome:** added as `amex_non_iid_1m`. Full-information split check of 2026-11-18: the time basis tag disagreed with the split tree; decided below.
 
-**Main points:** Tag the customer folds `UnseenGroup`, as dementia_prediction?
+**Main points:** The customer folds are tagged `UnseenGroup`, as dementia_prediction (issue 3, B, 2026-11-18). Nothing
+open.
 
 **Issues for Andrej:**
 

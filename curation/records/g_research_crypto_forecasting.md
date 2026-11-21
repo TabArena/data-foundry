@@ -67,7 +67,7 @@ CC (2026-10-22, Lennart): verdict ship after changes. Issue 1: (a), amend TP-10 
 
 CC (2026-11-08, Lennart): issue 8 of the record's Review, as implemented (ok): the test still holds. TP-10 leg 1 is met on the shipped splits: the model is ahead of the coin's mean in every window by its point estimate (lead +0.038, +0.042 and +0.023), and the interval is read pooled (+0.034, about 4.3 standard errors above 0), as for ashrae_great_energy_predictor_iii and rain_in_australia. This confirms the keep of 2026-10-22 (Lennart), whose figures (every window's interval above 0) came from the earlier splits; the dataset stays as defined.
 
-CC (2026-11-08, Lennart): the declared metric (`weighted_pearsonr`) is checked, as declared on the PR #47 review board.
+CC (2026-11-08, Lennart): the declared metric (`weighted_pearsonr`) is checked, as declared (PR #47).
 
 CC (2026-11-11, Lennart): issue 10 of the record's Review, B (change): add the release's supplemental file ("Please do and raise this again, how did we miss this data in the first pass?"); supplemental_train.csv, 21 September 2021 to 24 January 2022, is read with train.csv, and issue 9's windows are proposed again on the longer history.
 
@@ -79,7 +79,7 @@ CC (2026-11-11, Lennart): Review issue 9, reply (a) to the answer of 2026-11-11 
 
 **Assessment (AI, 2026-11-11):** applied issue 9 (reply a): `temporal` declares `cutoffs=("2021-10-25", "2020-12-22", "2020-02-28")` with the rest unchanged (91 days, a 15-minute gap, `sample_by="time"`). On the 26,001,823 rows of the frame the windows test 1,830,834, 1,834,016 and 1,544,359 rows before the 500,000-row sampling by whole minutes and train on 24,170,779, 17,985,995 and 12,545,715 (93.0%, 69.2% and 48.25%), each train side ending at 23:44 the day before its window; the newest window holds the 99 EOS.IO bars of 26-27 October 2021 the notes record, kept. TP-10 leg 1 (issue 8's reading, the 12-seed ensemble against each coin's mean) was measured on the windows that ended on 20 September 2021 and was not re-run here: it is to be measured again on these windows (`fit_reason` and the Scope bullet say so). `task_summary.split`, `splits_comment` and the History bullet name the three windows and why each. `dataset check`: 0 errors, 0 warnings, with `splits_train_under_half` accepted on the CC line above.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 91 days, 3 windows at fixed cutoffs, gap 15 minutes) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 91 days, 3 windows at fixed cutoffs, gap 15 minutes) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-19, Andrej): the 91-day windows and the crash window at 48.25% stay as the curator's exception (Review issue 11, A).
 
@@ -128,8 +128,9 @@ correlation is positive on 75-77 of 91 days (+), against the oldest window's int
 the 2021 bull run from 22 December 2020 and the 2020 crash from 28 February 2020, the last on 48.25% of the rows
 (issue 9, a); the supplemental file is added (issue 10, B) and the 91 days with a 15-minute gap hold (H, A). Settled
 earlier: the model still clearly beats each coin's naive forecast, ahead in every window and with the interval read
-pooled (issue 8, A, 2026-11-08), measured on the earlier windows and to be measured again on these. The training
-weight needs no decision.
+pooled (issue 8, A, 2026-11-08), measured on the earlier windows and to be measured again on these. Settled on
+2026-11-19: the crash window, training on 48.25% of the rows, stays as the curator's exception (issue 11, A). The
+training weight needs no decision.
 
 **Record judgment:** valid. G-Research's own competition data and use case, a first-hand source; the record's fields
 agree with the definition. The earlier review file (issues 1 to 7) was settled on 2026-10-22 and removed, before the

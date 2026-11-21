@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: electric_motor_temperature_prediction
 container_format: 2
-checksum: v2:01ca85f37a51dc071fcb627fcfc220e4af151914a2b9060321b371ee93a9c4b1
+checksum: v2:20ef28979b5b1d78dad0bfe24344d66684c4f68ec906db99be59890c88efb8e3
 build:
   uuid: 01a111fb-0e27-7b57-8daa-3b40b8ba0e11
   checksum: v2:1a040aa25ec040f2562b37fea6a77524508b5631e7787896da8e95425b4415bd
@@ -76,7 +76,7 @@ decisions: []
 
 Regression of `permanent_magnet_temperature`, scored with `mse` on grouped splits by `profile_id`. 1,296,316 rows and 109 features. Source: Kaggle (2021).
 
-Built as `01a111fb-0e27-7b57-8daa-3b40b8ba0e11` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:01ca85f37a51dc071fcb627fcfc220e4af151914a2b9060321b371ee93a9c4b1`, so the build is stale. See [Build](#build).
+Built as `01a111fb-0e27-7b57-8daa-3b40b8ba0e11` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:20ef28979b5b1d78dad0bfe24344d66684c4f68ec906db99be59890c88efb8e3`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -132,7 +132,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2021 |
 | domain | industry & manufacturing |
 | license | CC BY-SA 4.0 |
-| data_tags | Non-IID, Grouped, Timeless |
+| data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | kirchgassner2020estimating |
 | rows x columns | 1,296,316 x 111 |
 | task.target | permanent_magnet_temperature |
@@ -200,7 +200,9 @@ We select the task to predict permanent magnet temperature from the input featur
 - We also add the derived inputs used in the original study.
 - We also add the EWMA/WEMS features with window sizes of [500, 2000, 4000, 8000]. To avoid the problem of having an incorrect EWMA/WEMS state and since not all recording are warmed up (https://www.kaggle.com/datasets/wkirgsn/electric-motor-temperature/discussion/117319), we drop the first 500 samples (first span) of each profile to simulate such a warm-up.
 - We take the full data (about 1.30M rows after the warm-up drop) with grouped 3-fold cross-validation over the 69 profiles, so every fold trains on about 860k rows. Until 2026-10 an `electric_motor_temperature_prediction_1m` version sub-sampled it to one 1M / 250k split.
-- Time basis: Timeless: 69 bench sessions of designed driving cycles of one prototype motor; the magnet
+- Time basis: UnseenGroup (Andrej, 2026-11-17; `Timeless` before): the use case predicts the magnet temperature
+  over a driving session not yet run, so whole sessions are held out; 69 bench sessions of designed driving
+  cycles of one prototype motor; the magnet
   temperature is the motor's physical response to the session's inputs, carried by smoothed features of the
   session's own past; whole sessions are held out. The sessions have no dates, so an ageing of the motor between
   sessions cannot be checked. Not tested: another motor.
@@ -243,7 +245,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 143,891,076 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 
@@ -420,4 +422,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:01ca85f37a51dc071fcb627fcfc220e4af151914a2b9060321b371ee93a9c4b1` |
+| stale | yes: the definition now gives checksum `v2:20ef28979b5b1d78dad0bfe24344d66684c4f68ec906db99be59890c88efb8e3` |

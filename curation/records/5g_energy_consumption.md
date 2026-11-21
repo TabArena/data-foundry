@@ -59,17 +59,17 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: weekday_number is a number again (a position in the week's continuous cycle, shipped as a number: the curator's cycle rule).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: hourly energy of 923 Huawei base stations over one week, split by station to fill measurement gaps (a direct fit decided 2026-10-14); only two missing record fields. Priority 3: gap 0, use case 1, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: hourly energy of 923 Huawei base stations over one week, split by station to fill measurement gaps (a direct fit decided 2026-10-14); only two missing record fields. Priority 3: gap 0, use case 1, source 1, shape 1, risk -1.
 
-CC (2026-11-10, Andrej): time basis (review page issue 1): option B, grouped by station, named `Snapshot` of the logged week (1 to 8 January 2023): the use case fills in the hours of unmetered stations inside that week. The `Time basis: Snapshot:` bullet is in `curation_comments`; the tag enters `data_tags`. Split unchanged.
+CC (2026-11-10, Andrej): time basis (Review issue 1): option B, grouped by station, named `Snapshot` of the logged week (1 to 8 January 2023): the use case fills in the hours of unmetered stations inside that week. The `Time basis: Snapshot:` bullet is in `curation_comments`; the tag enters `data_tags`. Split unchanged.
 
-CC (2026-11-11, Andrej): record fields set from the definition (review page field mark): `year` 2023; `domain` technology & internet.
+CC (2026-11-11, Andrej): record fields set from the definition: `year` 2023; `domain` technology & internet.
 
 CC (2026-11-17, Andrej): Review issue 2, A: the declared split stays; the competition's test file, part new stations and part further hours of known stations of undocumented construction, is not followed.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `BS`, 3x3 folds, `Retrospective`) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (grouped on `BS`, 3x3 folds, `Retrospective`) is checked (blind split walk).
 
-CC (2026-11-17, Andrej): verdict ship (blind split review page).
+CC (2026-11-17, Andrej): verdict ship (blind split walk).
 
 ## Review
 

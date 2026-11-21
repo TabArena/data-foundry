@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: garments_worker_productivity
 container_format: 2
-checksum: v2:42d4fec9e2c14eefebad0f9e360fedef38257cc2d6eadf54fa2acbee5035ccbd
+checksum: v2:79b766e36e9c51779ce02114b88b633a7a9b6b9eddaf8ad8d22b0fe113cc8fcd
 build:
   uuid: 01a111fc-d4cc-702b-99bc-38e5c3ea0aa4
   checksum: v2:7ca2ed38aad99f6130e49249c818bb3e7274bb810ad2bb57fd5a156a182cd9bc
@@ -59,7 +59,12 @@ bundle_checks:
   errors: []
   warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    splits_test_too_small: 'The curator''s exception (Andrej, 2026-11-19 and 2026-11-20):
+      one-day windows of 17-24 team records, under SPLIT-14''s 33 scored units, because
+      a factory day is the task''s natural test unit; two-day windows would score
+      each second day with a day-old model, which costs Kumo-Tabular 6.5% MAE (12
+      of 15 windows, p 0.012).'
 decisions: []
 ---
 
@@ -69,7 +74,7 @@ decisions: []
 
 Regression of `actual_productivity`, scored with `rmse` on temporal splits by `date`. 1,197 rows and 15 features. Source: UCI (2020).
 
-Built as `01a111fc-d4cc-702b-99bc-38e5c3ea0aa4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:42d4fec9e2c14eefebad0f9e360fedef38257cc2d6eadf54fa2acbee5035ccbd`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d4cc-702b-99bc-38e5c3ea0aa4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:79b766e36e9c51779ce02114b88b633a7a9b6b9eddaf8ad8d22b0fe113cc8fcd`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -210,7 +215,13 @@ We define 30 splits with one day for testing each, resulting in small test sizes
 A day's productivity and its other end-of-day values are in the efficiency report written after the shift; the
 prediction is made at the start of the next day, so every training label is known and no gap is needed. The
 end-of-day values enter lagged to the team's previous recorded day (no team has two rows on one day), and each
-window is a whole factory day.
+window is a whole factory day. The one-day windows hold fewer than the 33 scored units SPLIT-14 asks of a
+test window: the curator's exception (Andrej, 2026-11-19 and 2026-11-20), as the factory
+plans and is judged by the day, so a day's 17-24 team records are the natural test unit. Measured against
+two-day windows (15 windows, the second day scored by a model trained before the first): the second day is no
+harder (worse than the first in 5 to 8 of 15 windows for LightGBM, ridge and Kumo-Tabular), but a model one day
+older is worse for Kumo-Tabular in 12 of 15 windows (+0.006 MAE, 6.5%, Wilcoxon p 0.012; LightGBM +0.0007,
+p 0.89), so two-day windows would penalise methods that learn from the newest day: the daily refit stays.
 
 30 repeat(s) x 1 fold(s) with seed 4267; train 599 to 1,173 rows, test 17 to 24 rows. Prediction horizon: 1 days.
 
@@ -292,8 +303,12 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
+
+Accepted on purpose:
+
+- `splits_test_too_small`: The curator's exception (Andrej, 2026-11-19 and 2026-11-20): one-day windows of 17-24 team records, under SPLIT-14's 33 scored units, because a factory day is the task's natural test unit; two-day windows would score each second day with a day-old model, which costs Kumo-Tabular 6.5% MAE (12 of 15 windows, p 0.012).
 
 ## Data checks
 
@@ -393,4 +408,4 @@ Each test window against its train side, by statistics of the data, never of a m
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:42d4fec9e2c14eefebad0f9e360fedef38257cc2d6eadf54fa2acbee5035ccbd` |
+| stale | yes: the definition now gives checksum `v2:79b766e36e9c51779ce02114b88b633a7a9b6b9eddaf8ad8d22b0fe113cc8fcd` |

@@ -82,7 +82,7 @@ has the call.
   dates turn up (one temporal window).
 
 CC (2026-10-30, Andrej): `Yes`, priority 4 (the AI screening had `TBD -> Yes`, priority 3; zero-inflated screening
-review page).
+review).
 
 Anonymised motor portfolio of an unnamed Spanish insurer, 1 January 2022 to 31 December 2024 (Espinosa, Lledó and
 Atance, Data in Brief 66:112883, 2026; CC BY 4.0 on Mendeley). It has 354,140 rows for 185,678 insureds (67,172,
@@ -136,7 +136,7 @@ CC (2026-11-08, Lennart): the annualised premiums are rounded to the cent (Revie
 
 CC (2026-11-08, Lennart): `payment_frequency` is an ordered category, fewest payments a year first: annual < semiannual < quarterly (Review issue 8 (C), "Ordered in all three"), with the same order by payments a year in pricing_game_2016_french_fleet and pricing_game_2017_french_mtpl, so the three pricing tables stay alike.
 
-**Assessment (AI, 2026-11-08):** both CC lines above applied in the definition. Re-run on the rebuilt frame (premiums rounded to the cent; untuned LightGBM; the run folder of the exposure review, `apply_2026-11-08`): the eight premiums' decimal counts and cent-grid flags rank the 32,626 located cancellations among the 169,919 policy-years in force from 1 January at ROC AUC 0.565 (0.965 on the unrounded frame, same script, folds grouped by policy), and no grid from 1 EUR to 1e-5 separates them (AUC at most 0.501); the decimal counts as features gain +0.0001 under weighted Tweedie (SE 0.0017, 5 of 9) and -0.0012 under weighted L2 (SE 0.0013, 3 of 9), against +0.0035 and -0.0052 before (9 splits x 2 seeds). The premiums' values still mark a located cancellation at ROC AUC 0.795 from the shipped features (0.81 unrounded, 0.62 without the premiums; first shipped repeat), the flat-amount trace kept with its note. Probe 22 (3 splits x 3 seeds): the time on risk from the features at R^2 0.340 (0.350 before), 1/time on risk alone 0.070, no feature whose gain goes through it under weighted Tweedie or L2. Task probe (5 of 9 splits): LightGBM 0.3187 on the declared metric (0.3165 before), no flags. `dataset check`: 0 errors, 0 warnings.
+**Assessment (AI, 2026-11-08):** both CC lines above applied in the definition. Re-run on the rebuilt frame (premiums rounded to the cent; untuned LightGBM): the eight premiums' decimal counts and cent-grid flags rank the 32,626 located cancellations among the 169,919 policy-years in force from 1 January at ROC AUC 0.565 (0.965 on the unrounded frame, same script, folds grouped by policy), and no grid from 1 EUR to 1e-5 separates them (AUC at most 0.501); the decimal counts as features gain +0.0001 under weighted Tweedie (SE 0.0017, 5 of 9) and -0.0012 under weighted L2 (SE 0.0013, 3 of 9), against +0.0035 and -0.0052 before (9 splits x 2 seeds). The premiums' values still mark a located cancellation at ROC AUC 0.795 from the shipped features (0.81 unrounded, 0.62 without the premiums; first shipped repeat), the flat-amount trace kept with its note. Probe 22 (3 splits x 3 seeds): the time on risk from the features at R^2 0.340 (0.350 before), 1/time on risk alone 0.070, no feature whose gain goes through it under weighted Tweedie or L2. Task probe (5 of 9 splits): LightGBM 0.3187 on the declared metric (0.3165 before), no flags. `dataset check`: 0 errors, 0 warnings.
 
 CC (2026-11-08, Lennart): the declared metric (`normalized_weighted_gini`) is checked, as declared on the PR #47 review board.
 
@@ -152,11 +152,11 @@ CC (2026-11-09, Andrej): no claims of the year before for renewals, and a protoc
 
 CC (2026-11-09, Andrej): the forced split by policy stays (Review issue 10 (a), "Split by policy"), with issue 9's protocol line; the one 2024 window is not adopted, and the release has no date finer than the year.
 
-CC (2026-11-09, Andrej): ship (review page of 2026-11-09).
+CC (2026-11-09, Andrej): ship.
 
 CC (2026-11-10, Andrej): the cost per year stays on the log1p scale (Review issue 12, A, as implemented).
 
-CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
+CC (2026-11-10, Andrej): ship.
 
 CC (2026-11-18, Andrej): the split stays as shipped under SPLIT-8 as amended today (cross-dataset decision on the period count, full-information split check): the data holds three calendar years for a task of 3 repeats, which needs four, too few to hold out whole periods; the forced step goes on to the unit question: policies recur and the use case meets new ones, so whole policies, as shipped.
 
@@ -183,7 +183,8 @@ and gained +0.0035 under weighted Tweedie when a model read them, fixed by the c
 +0.0001 after, at no measurable cost); LEAK-41's report now covers
 `business_type`, read from the year's last record (no gain against its 1 January value); the two weaker late values stay
 with notes (issue 4), and the premiums' gain through any cancellation, +0.0010 under Tweedie with 10 seeds (SE 0.0006),
-keeps option A of issue 6; SPLIT-8 ships the three years as `ForcedGroupedFromTemporal` (Andrej, 2026-11-02), its cost
+keeps option A of issue 6; the three years ship grouped by policy, forced under SPLIT-8 (Andrej, 2026-11-02) and tagged
+`StationaryRelation` since the pooled test read flat (issue 13, Andrej, 2026-11-19), its cost
 and leak test re-measured: the 2024 window scores 0.300 to 0.316 against means of 0.309 and 0.311 on the folds' 2024
 rows, and a model that sees the test year's own training rows gains +0.0045 to +0.010 pooled, within each year and
 carried by no column; SPLIT-24 holds (no policy on both sides of any split); PROV-6 and PROV-7: distinct from
@@ -198,7 +199,8 @@ on issue 8);
 CLEAN-16 holds (the log1p scale kept on Lennart's call of 2026-11-06, at no measured cost). Weighed: recent real insurer
 data with costs and premiums per cover +, a data article with a variable table +, size +; core rating factors absent
 (vehicle age, postcode) -, low signal -, unnamed insurer -. Issues 7 and 8 were settled on 2026-11-08 (Lennart),
-9 to 11 on 2026-11-09 (Andrej), 12 on 2026-11-10 (Andrej: log1p stays).
+9 to 11 on 2026-11-09 (Andrej), 12 on 2026-11-10 (Andrej: log1p stays), 13 on 2026-11-19
+(Andrej: `StationaryRelation`).
 
 Changes made after the review panel (AI, 2026-11-01): the full-year fix now also covers the 13,842 cancelled
 new-business years of policies already in force on 1 January (they had a row the year before), which lowers no score
@@ -222,16 +224,17 @@ ask): the annualised premiums are rounded to the cent (issue 7) and `payment_fre
 < quarterly, as in the two pricing games (issue 8); the dated AI note after D10's CC gave way to Lennart's CC; the
 decimal check, probe 22 and the task probe were re-run (issue 7's resolved turn).
 
-**Main points:** No issue open. Resolved on 2026-11-10: issue 12, the cost per year stays on the log1p scale
-(Andrej, A). Resolved: 3, 4 and 5 on 2026-11-02, 6 on 2026-11-06, 7 (the annualised premiums rounded to
+**Main points:** No issue open. Resolved on 2026-11-19: issue 13, the split by policy tagged `StationaryRelation` in
+place of `ForcedGroupedFromTemporal` (Andrej, B). Resolved on 2026-11-10: issue 12, the cost per year stays on the log1p
+scale (Andrej, A). Resolved: 3, 4 and 5 on 2026-11-02, 6 on 2026-11-06, 7 (the annualised premiums rounded to
 the cent, which changes the wording of Andrej's issue 4 call and of D10's CC) and 8 (`payment_frequency` ordered here
 and in the two pricing games) on 2026-11-08; on 2026-11-09, 9 (no claims of the year before for renewals, and a
 protocol line in the notes that no feature or model step may use other test rows), 10 (the split by policy stays) and
 11 (the exposure-weighted Gini stays, not the Gini against the premium).
 
-**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
+**Verdict (2026-11-10, Andrej):** ship.
 
-**Verdict (2026-11-09, Andrej):** ship (review page of 2026-11-09).
+**Verdict (2026-11-09, Andrej):** ship.
 
 **Verdict (2026-11-02, Andrej):** ship. The metric is marked as declared (`normalized_weighted_gini` on the cost per
 year on risk, weighted by `actual_exposure`). The dataset joins the accepted set; a build waits for your ask.

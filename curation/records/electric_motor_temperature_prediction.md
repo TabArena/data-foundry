@@ -55,17 +55,17 @@ CC (2026-10-06, Lennart): Kept after the task-probe sweep of the 2026-10-06 buil
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source mse — Kirchgaessner, Wallscheid, Boecker 2021 (IEEE Trans. Energy Conversion, arXiv:2001.06246) rank and tune by MSE in K^2; the scored metric changes from rmse to mse.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the authors' own rotor-magnet temperature task, smoothed inputs from the session's past, whole sessions held out, tuned methods spread widely; the two early modality markers can go. Priority 4: gap 0, use case 1, source 1, shape 1, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the authors' own rotor-magnet temperature task, smoothed inputs from the session's past, whole sessions held out, tuned methods spread widely; the two early modality markers can go. Priority 4: gap 0, use case 1, source 1, shape 1, risk -0.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): 69 undated bench sessions of designed driving cycles of one motor, each held out whole. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted (Review  2, B, through the cross-dataset item on routine `Timeless` issues): 69 undated bench sessions of designed driving cycles of one motor, each held out whole. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
-CC (2026-11-09, Andrej): ship as defined (review page issue 1, A); the declared split and metric checked and kept. The markers `Wrong Domain / Source Modality` and `Time-series (Regression)` leave the record: the question they recorded is answered (tabular methods spread widely on the vectorised time series).
+CC (2026-11-09, Andrej): ship as defined (Review issue 1, A); the declared split and metric checked and kept. The markers `Wrong Domain / Source Modality` and `Time-series (Regression)` leave the record: the question they recorded is answered (tabular methods spread widely on the vectorised time series).
 
-CC (2026-11-09, Andrej): the record's facts are `Samples: No Time Dimension`, `Entities: Recur` and the new `Time: Within Entity` (review page issue 3, b): the 69 sessions are designed bench runs, each recorded as a 2 Hz series, so time runs inside a session and not across sessions.
+CC (2026-11-09, Andrej): the record's facts are `Samples: No Time Dimension`, `Entities: Recur` and the new `Time: Within Entity` (Review issue 3, b): the 69 sessions are designed bench runs, each recorded as a 2 Hz series, so time runs inside a session and not across sessions.
 
 CC (2026-11-17, Andrej): time basis `UnseenGroup` in place of `Timeless` (Review issue 4, B): the use case is the magnet temperature of driving sessions not yet run, so the split holds out whole sessions. The split is unchanged (grouped on `profile_id`).
 
-CC (2026-11-17, Andrej): the declared split (grouped on `profile_id`, 1x3 folds, `UnseenGroup`) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (grouped on `profile_id`, 1x3 folds, `UnseenGroup`) is checked: split mark in the blind split walk.
 
 ## Review
 
@@ -80,11 +80,11 @@ torque are dropped as in the study, and whole sessions are held out, so no sessi
 split would be wrong). Value: the `no_spread` probe flag is settled: tuned methods on BeyondArena range from RMSE 1.77 K
 (RealMLP, tuned) to 3.52 K, against 22.9 K for the dummy (Lennart, 2026-10-06). Quality: nothing open; the metric is the
 study's MSE (settled 2026-10-21). Weighed: the authors' own benchmark task with a stated use (+), a wide spread of
-methods (+), one prototype motor on a bench (-). The record still carries two early triage markers that question the
-modality (issue 1).
+methods (+), one prototype motor on a bench (-). The two early triage markers that questioned the modality have left the
+record (issue 1).
 
-**Main points:** Ship as defined (issue 1); the split by session named `Timeless` (issue 2); the record's facts with the
-new `Time: Within Entity` (issue 3). All resolved.
+**Main points:** Ship as defined (issue 1); the split by session named `Timeless` (issue 2), then `UnseenGroup` in its
+place (issue 4, 2026-11-17); the record's facts with the new `Time: Within Entity` (issue 3). All resolved.
 
 **Record judgment:** valid. A sensor stream turned into rows by the study's own smoothing, so each sample is one
 prediction from the session's past; one motor, so the task tests new driving cycles, not new motors.
@@ -251,7 +251,7 @@ prediction from the session's past; one motor, so the task tests new driving cyc
      - Does the model fill in the period the panel covers, or predict after it? (use case): predict after it. Evidence: Use case: 'The motor control of an electric vehicle estimates the rotor magnet temperature in real time' - driving sessions that happen after the bench data, not gaps in the recorded sessions.
      - Which units does the model predict for? (use case): only new units. Evidence: The unit is a session (profile_id, 69 sessions, 2,176-43,971 samples each, counted on measures_v2.csv). A vehicle meets new drive cycles; no recorded session continues. Within a session the model reads only the session so far (running averages are features).
    * **What changes:** only the tag and its `Time basis:` line. `data_tags` in `dataset.py` (`Timeless` → `UnseenGroup`), the opening of the `Time basis:` bullet in `curation_comments`. The rows, features, grouping key, folds and metric are untouched; the container is rebuilt only because `data_tags` ship in it.
-   * **Decided before:** Andrej, 2026-11-06: time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): 69 undated bench sessions of designed driving cycles of one motor, each held out whole. The `Time basis:` line is in…
+   * **Decided before:** Andrej, 2026-11-06: time basis `Timeless` accepted (Review issue 2, B, through the cross-dataset item on routine `Timeless` issues): 69 undated bench sessions of designed driving cycles of one motor, each held out whole. The `Time basis:` line is in…
    * **What the blind dossier lacked, and what it changes:** Partition unchanged (grouped 3-fold over the 69 profile_id sessions). The definition's time basis is Timeless (designed bench sessions, no time across sessions, Andrej 2026-11-09), where my Panel walk read 'predict after it, only new units' -> UnseenGroup (new units). Under Experimental results (repeated measurement, new items) it would be Grouped · Timeless (the measurement): my type doubt. Tag differs, split the same.
    * **Source split:** yes, paper (Kirchgässner, Wallscheid, Böcker 2021, Engineering Applications of AI / arXiv:2001.06246): grouped: a fixed set of whole profiles held out as generalization test set (a few profiles), others for training/validation ("'The authors hold out whole profiles' (definition grouping text); the study evaluates on a generalization set of held-out test-bench profiles.") https://arxiv.org/abs/2001.06246. Credible: yes, Holding out whole drive cycles tests the real-time estimate on unseen operation, the stated use; the choice of the few test profiles is the authors' (designed to cover the operating range), not a random draw.. Against the tree's leaf: yes, Both hold out whole sessions; the paper uses one fixed set of test profiles, my leaf rotates all sessions through folds.
    * **Blindness:** what the walker saw of the shipped split before deciding: saw: the tree's example lists name this dataset under 'Grouped · Retrospective (whole units)'; ignored as instructed.

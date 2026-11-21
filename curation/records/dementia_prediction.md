@@ -83,7 +83,8 @@ rows (raised on boreal_postfire_lichen_biomass's issue 7) found that the log los
 (issue 1).
 
 **Main points:** Open: none. Resolved on 2026-11-08: each person counts once in the log loss, weighted by 1 over the
-person's visits (issue 1).
+person's visits (issue 1). Issue 2 (`CrossSectional`) withdrawn on 2026-11-13. Resolved on 2026-11-17: time basis
+`UnseenGroup` in place of `ForcedGroupedFromTemporal`, split unchanged (issue 3).
 
 **Issues for Lennart:**
 
@@ -150,8 +151,7 @@ person's visits (issue 1).
    people are scored as if each were a first visit" goes, and the task summary's `split` says only first visits are
    scored; on B, the grouping's definition adds that each person counts once; (6) `dataset check`, the CC line, a
    CHANGELOG entry, a Cases row in metrics.md. On A: a note that a person counts by the number of visits (tau 0.94 per
-   split against one vote per person). The re-run: `one_vote_scan/apply_2026-11-08/dementia_first_visit.py` in the
-   exposure review's run folder.
+   split against one vote per person).
 
    [^dp-unit]: **SPLIT-23** (Must): the source's use case, cited, decides what one prediction is (a row, or a whole
      group). **MET-1** (Must): the declared metric scores the real task, at the unit the actor acts on.

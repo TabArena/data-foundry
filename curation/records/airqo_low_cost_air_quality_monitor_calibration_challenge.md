@@ -11,6 +11,7 @@ claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
 tags:
+- Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Entities: Recur'
@@ -76,11 +77,11 @@ CC (2026-11-04, Lennart): the reference's single-hour spikes are set missing by 
 
 CC (2026-11-04, Lennart): the split is temporal, three monthly windows over the newest season (December 2020 to February 2021), each trained on every earlier hour ("ok (a)"): AirQo corrects new readings with models retrained periodically, by season, and random folds gave the model the neighbouring reference hours. It replaces the site-balanced random folds of 2026-10-28. (superseded 2026-11-05: five monthly windows from October 2020, issue 1 A; the paper names seasonal retraining as future work, not as AirQo practice)
 
-**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled. Train sides 8,207-10,093 hours, test months 834-1,049; `dataset check` passes. (superseded 2026-11-04: the full review panel ran in a second pass, and Review issues 1-4 are open)
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of PR #33 and the research behind each mark, and all are settled. Train sides 8,207-10,093 hours, test months 834-1,049; `dataset check` passes. (superseded 2026-11-04: the full review panel ran in a second pass, and Review issues 1-4 are open)
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (stale retrospective text fixed in the definition; widen the test windows to five months, keep the Makerere test-window spike as a label, drop the 92-hour Nakawa reference outage, one dead-channel rule for both sensors); disputed: SPLIT-20 (widen the windows or record an exception), CLEAN-11 (clause and rank of the Nakawa outage); for the curator: issues 1-4. Priority 3: gap 0, use case 0, source +, shape +, risk 0 (no thin domain, problem type or regime; AirQo names the use but the fit is approximate, network transfer cannot be tested with three sites; Zindi codebook and Adong et al. 2022; 10,927 hourly rows, 16 features, temporal; no leak, the open issues are repairable cleaning and window choices).
 
-**Assessment (AI, 2026-11-04):** text corrections of the second-pass panel applied (Lennart's go-ahead on the review page): the outage-hour figures above, and `splits_comment` now gives the panel's LightGBM RMSE 12.94 against 18.26 instead of the pre-temporal 14.05 against 18.39. No data, split, feature or metric change. (superseded 2026-11-05: 12.30 against 16.69 on the five windows)
+**Assessment (AI, 2026-11-04):** text corrections of the second-pass panel applied (Lennart's go-ahead): the outage-hour figures above, and `splits_comment` now gives the panel's LightGBM RMSE 12.94 against 18.26 instead of the pre-temporal 14.05 against 18.39. No data, split, feature or metric change. (superseded 2026-11-05: 12.30 against 16.69 on the five windows)
 
 CC (2026-11-05, Lennart): five monthly windows from October 2020 instead of the three dry-season months (issue 1, A; SPLIT-20, as aeolus and perth_house_prices). The test covers October 2020 to February 2021, both seasons, and October and November score all three sites; train sides 6,204-10,001 hours (57-92%), test months 599-1,312. Nakawa enters October with 63 hours of history (2020-09-19 to 2020-09-23), close to a new-site test (USE-10). Untuned LightGBM mean RMSE 16.69 (27.5 / 16.8 / 12.5 / 13.0 / 13.6, February first) against 36.70 for the training mean and 21.82 for raw sensor 1; random folds score 12.30 on the same test months.
 
@@ -96,7 +97,7 @@ CC (2026-11-05, Lennart): the spike rule stays and drops its hours in every wind
 
 CC (2026-11-05, Lennart): Nakawa 2020-10-13 05:00 (3.06 times the sensors before a morning rise) is dropped with the other 11 single-hour reference errors (Review issue 5, A).
 
-CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
 CC (2026-11-11, Lennart): REVIEW issue 6 (a sixth test month), "Reply (c): Six months with August 2020" to the consistency check: the test windows are October 2020 to February 2021 and August 2020, the end of the June-August dry season that no other test month holds; September 2020 stays out, as Nakawa has no hour before it. August 2020 trains on 47.7% of the hours, the one window under half beside the five months at 57.3% to 92.3%, signed off (SPLIT-14 as amended on 2026-11-11); all its 576 hours are at Makerere.
 
@@ -106,9 +107,9 @@ CC (2026-11-11, Lennart): the declared horizon (one month, no gap, windows start
 
 CC (2026-11-17, Andrej): Review issue 9, A, as implemented: Six one-month windows on `created_at` (test August 2020 and October 2020 to February 2021: 576 / 1,310 / 596 / 836 / 1,048 / 834 hours), each trained on every earlier hour (47.7 / 57.3 / 69.4 / 74.9 / 82.6 / 92.3% of 10,828), no gap, temporal.
 
-CC (2026-11-17, Andrej): verdict ship (blind split review page).
+CC (2026-11-17, Andrej): verdict ship (blind split walk).
 
-CC (2026-11-17, Andrej): the declared split (temporal on `created_at`, windows of 1 month, 6 windows at fixed cutoffs, no gap) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (temporal on `created_at`, windows of 1 month, 6 windows at fixed cutoffs, no gap) is checked (blind split walk).
 
 CC (2026-11-19, Andrej): train floor (Review issue 10, A as implemented): August 2020 (47.7% of the hours) stays as the curator's exception to the half-data floor (SPLIT-14 as amended 2026-11-19); no window is under 30%.
 
@@ -131,7 +132,9 @@ half (47.7%), signed off, and kept the monthly windows without a gap (Horizon, A
 
 **Main points:** Settled on 2026-11-11: six test months, August 2020 and October 2020 to February 2021, with September
 left out for Nakawa's missing history (issue 6), and the one-month horizon without a gap; issues 1 to 5 were settled on
-2026-11-05. Nothing is left open. Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 11).
+2026-11-05. Settled on 2026-11-17: the temporal split on `created_at` stays rather than leaving a site out (issue 9).
+Settled on 2026-11-19: August 2020 stays as the curator's exception to the half-data floor (issue 10), and the six
+monthly windows stay below the target count (issue 11). Nothing is left open.
 
 **Horizon:**
 
@@ -609,7 +612,6 @@ reasons; the windows are issue 6's (c). The record has the horizon CC line. `dat
 
    **Resolved (2026-11-19, Andrej):** A, as implemented: six monthly windows; September 2020 stays out and earlier months train on under 47.7%. The splits comment names the target count and what stops more windows; `splits_below_target` is accepted with that reason. The split is unchanged.
 
-   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
    [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get, 9 here; the window length, step and gap follow the use case and are not shortened to reach it; fewer are accepted, never under 3, with the target, the count and what stops more in the splits comment; overlapping windows only as an offered option.
 
 **Review panel:** ship after changes (mediator). Tier full, a second pass after Lennart's PR #33 review (2026-11-04), 12 reports. Claims: 24, 12 hold, 9 refuted (stale or overstated text, fixed in `dataset.py`; the record's `required_split` is in the field row and its 15-hour figures in issue 4), 1 concern (issue 2), 2 untested. Blind review: include with changes; its main concerns are that the eight site descriptors repeat the site label (kept: legitimate for known sites, LEAK-34) and that the windows mix later time with newer sites. Task gamer: its best exploit, the previous hour's reference, lowers mean RMSE from 18.21 to 16.28, a leak under the stated prediction point; nothing else beat the noise. Agreed: no leak, the temporal regime, the site descriptors kept, RMSE, the text fixes, the spike rule on training rows only, one dead-channel rule for both sensors. Disputed: SPLIT-20, widen the windows or keep them with an exception (issue 1); the clause and rank of the Nakawa outage (issue 3).
