@@ -214,6 +214,7 @@ We start with the files MERGED1996_97_PP.csv to MERGED2025_26_PP.csv of the Coll
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
   (CLEAN-10).
+- Columns recorded on one side of a window only (Lennart, 2026-11-11): `DISTANCEONLY` is recorded from the 2011 cohort on, so the 2015 and 2016 windows, whose train sides end at 2009 and 2010, train on cohorts without it and test on cohorts that all have it. Kept: a model fit then met the column the same way.
 
 ## Splits
 

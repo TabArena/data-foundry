@@ -268,7 +268,7 @@ class CollegeScorecard(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
           (CLEAN-10).
-        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): `DISTANCEONLY` is recorded from the 2011 cohort on, so the 2015 and 2016 windows, whose train sides end at 2009 and 2010, train on cohorts without it and test on cohorts that all have it. Kept: a model fit then met the column the same way.
+        - Columns recorded on one side of a window only (Lennart, 2026-11-11): `DISTANCEONLY` is recorded from the 2011 cohort on, so the 2015 and 2016 windows, whose train sides end at 2009 and 2010, train on cohorts without it and test on cohorts that all have it. Kept: a model fit then met the column the same way.
     """
 
     # Task
@@ -299,7 +299,7 @@ class CollegeScorecard(AbstractCuratedDataset):
         "every window (the newest window trains on 2001-2012) and before the oldest test window (2015, the last one "
         "whose train side keeps half of the cohorts).",
         "splits_feature_missing_in_test": (
-            "Decided (Lennart, 2026-11-11, cross-dataset item): `DISTANCEONLY` is recorded from the 2011 cohort on, so "
+            "Decided (Lennart, 2026-11-11): `DISTANCEONLY` is recorded from the 2011 cohort on, so "
             "the 2015 and 2016 windows train on cohorts without it (curation_comments)."
         ),
     }

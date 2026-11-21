@@ -18,7 +18,6 @@ from data_foundry.schema import COLLECTION_TYPES
 REPO = resolve_curation_root().parent
 DATED = {"Time: Dated"}
 OCCASION = DATED | {"Time: Inferred", "Time: Within Entity"}
-FACT_PREFIXES = ("Samples:", "Time:", "Target:", "Entities:", "Features:")
 
 PENDING: dict[str, str] = {
     "loan_default_prediction_imperial_college": (
@@ -48,28 +47,14 @@ def contradictions(tags: set[str]) -> list[str]:
 
 @pytest.fixture(scope="module")
 def found() -> dict[str, list[str]]:
-    """Every typed definition record's contradictions, by unique name.
-
-    A record that carries neither a collection type nor a collection fact is not typed yet and is left out; the
-    definitions are typed in several pull requests, so such records exist until the last of them lands.
-    """
-    out = {}
-    for name, tags in _typed_records().items():
-        hits = contradictions(tags)
-        if hits:
-            out[name] = hits
-    return out
-
-
-def _typed_records() -> dict[str, set[str]]:
-    """The tags of every definition record that carries a collection type or a collection fact, by unique name."""
+    """Every definition record's contradictions, by unique name."""
     out = {}
     for record in load_all(records_dir()):
         if not record.v2_path or not (REPO / record.v2_path).exists():
             continue
-        tags = set(record.tags or [])
-        if tags & set(COLLECTION_TYPES) or any(t.startswith(FACT_PREFIXES) for t in tags):
-            out[record.unique_name] = tags
+        hits = contradictions(set(record.tags or []))
+        if hits:
+            out[record.unique_name] = hits
     return out
 
 
@@ -86,8 +71,8 @@ def test_collection_type_agrees_with_the_collection_facts(found: dict[str, list[
 
 
 def test_pending_contradictions_still_hold(found: dict[str, list[str]]) -> None:
-    """A pending entry whose contradiction is gone leaves the list (an entry whose record is not typed yet waits)."""
-    resolved = sorted((set(PENDING) & set(_typed_records())) - set(found))
+    """A pending entry whose contradiction is gone leaves the list."""
+    resolved = sorted(set(PENDING) - set(found))
     assert not resolved, f"no longer contradictory, drop from PENDING: {resolved}"
 
 

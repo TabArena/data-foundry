@@ -86,8 +86,7 @@ independent if it is zero inflated or not"), so how the source codes its zeros i
 priority. That the low value is a below-LOQ code therefore needs no rule beyond the cleaning at /add-dataset. The
 verdict and priority stay; the unbuilt target remains the risk.
 
-CC (2026-10-30, Andrej): `Yes`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening).
 
 The "biotoxin" table of a cross-dataset benchmark (Zhou et al. 2026, PLOS ONE; repository and Zenodo CC BY 4.0). Its
 upstream, which the repository's README leaves as placeholders, is AZTI's monitoring of the Mendexa offshore

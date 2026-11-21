@@ -53,7 +53,7 @@ triage, 2026-10-20, measured on v1), so the amount part may not be learnable.
   shape + (about 300,000 users per window, temporal), risk - (a heavy rebuild, few buyers).
 
 CC (2026-10-30, Andrej): `TBD -> Yes`, priority 2 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated
-screening review page).
+screening).
 
 Kaggle competition by RStudio and Google Cloud (2018) on obfuscated Google Analytics 360 visits to the Google
 Merchandise Store; the v1 train window (Aug 2016 to Aug 2017) is the period of Google's public BigQuery GA sample (not

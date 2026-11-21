@@ -54,7 +54,7 @@ patches, with no count table and no site covariate.
   release (https://github.com/visipedia/iwildcam_comp/tree/master/2020) holds images, image labels, detector boxes and
   image patches, with no count table and no site covariate.
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 iWildCam 2020 (Beery, Cole and Gjoka, Caltech; images from WCS): camera-trap images with COCO Camera Traps JSON
 (category, location, datetime, sequence), Landsat 8 patches per site and iNaturalist images. Paper Sec. 2: 217,959

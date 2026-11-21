@@ -63,8 +63,7 @@ in 5 folds; microplots of one site share soil, canopy and deer pressure, so a sp
 the same page `south_nation_riparian_birds_insect_emergence` (24 sites) was confirmed `No` with `Too Small` (TP-5), so
 the same call would follow here unless the curator accepts 24 sites.
 
-CC (2026-10-30, Andrej): `Yes`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening
-review page, after the AI's answer to the curator's question). "LGTM"
+CC (2026-10-30, Andrej): `Yes`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening, after the AI's answer to the curator's question). "LGTM"
 
 A factorial field experiment on tree regeneration (Begley-Miller et al. 2024): 24 sites x 11 microplots (7
 combinations of deer fencing, lime and herbicide plus 4 controls), about 264 rows (`DataCJFR.csv`, 30 KB; not
@@ -84,7 +83,7 @@ CC (2026-11-02, Andrej): metric (Review issue 4, cross-dataset item zi-count-met
 
 CC (2026-11-03, Andrej): `Yes` on the reworded use case, and the `No Good Target / Scientific Discovery` marker is removed (issue 1 (B) in pennsylvania_oak_hickory_regeneration_experiment): "I go with your suggestion".
 
-CC (2026-11-03, Andrej): issue 2, B: site folds stratified by state forest, tagged `ForcedGroupedFromTemporal` (training and test share the 2014-2021 years). Issue 3 asked whether scoring the same forests on the same dates leaks; answered on the review page.
+CC (2026-11-03, Andrej): issue 2, B: site folds stratified by state forest, tagged `ForcedGroupedFromTemporal` (training and test share the 2014-2021 years). Issue 3 asked whether scoring the same forests on the same dates leaks; answered in the same review.
 
 CC (2026-11-03, Andrej): `No` (`Too Small`, `Not Representative`): "Since it is both too small and not representative, I lean towards rejecting it now." 24 sites in two forests and one 2014-2021 cohort: training and test share the years' weather, deer and seed crops, so the score cannot test the forester's forecast of a later cohort. The v2 folder left the working copy; its last definition (with the forest-stratified split of today) is in the run folder of 2026-11-03, the committed one in 902011b3.
 

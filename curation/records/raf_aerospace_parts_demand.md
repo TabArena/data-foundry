@@ -45,7 +45,7 @@ spare parts, from a paper on forecasting for spare-parts ordering, with no colum
   (https://raw.githubusercontent.com/canerturkmen/gluon-ts/intermittent-datasets/datasets/intermittent_raf/metadata/metadata.json),
   so the only task is forecasting each series from its own past.
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 Monthly demand of 5,000 Royal Air Force spare parts over 84 months, attributed to Eaves and Kingsman (2004), in the
 same GluonTS fork as `auto_intermittent_demand`. Downloaded on 2026-10-19: 5,000 series x 84 months, 89.8% exact

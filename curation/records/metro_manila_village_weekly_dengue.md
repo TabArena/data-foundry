@@ -80,7 +80,7 @@ is measured against the 2013 mean, not each village's own history. Leg 2 holds (
 Next: download the CSV by hand from https://datadryad.org/dataset/doi:10.5061/dryad.x3ffbg7ss; the test (village-level
 naive forecasts against LightGBM on the 2011-2013 test years) is scripted and runs once the file is there.
 
-CC (2026-10-30, Andrej): `TBD -> Yes`, priority 3, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `TBD -> Yes`, priority 3, as screened (verified in the zero-inflated screening).
 "Test the leg, then decide."
 
 CC (2026-10-30, Andrej): `TBD -> 2nd Tier`, priority 3, in chat: "Put the manila dataset to a 2nd tier if we need to

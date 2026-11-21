@@ -214,8 +214,8 @@ The first 5 of 18,506 rows of the final frame (random rows: the frame is shuffle
 
 We start with the 18,506 labeled rows in Train.csv; the 6,169 unlabeled Test.csv rows are not training labels.
 
-- CC (2026-11-05, Lennart): the survey statistician joins the trip planner as actor (issue 3, option B; USE-9): NBS and the Bank of Tanzania, who estimate tourism earnings from the exit survey, fill in a respondent's spending band from the rest of the form when the expenditure answer is missing or implausible. That actor has every input at departure, and its test is other respondents of the same survey, which the random folds measure. The planner stays, so the use case still looks forward and the `ForcedIIDFromTemporal` tag stays (SPLIT-8); the fit stays approximate (six bands, USE-5).
-- CC (2026-11-05, Lennart): the scorer reads probability columns in the sorted order of the class labels (scikit-learn's classes_) and checks named columns; the ordered categories stay metadata (issue 5, C; MET-2).
+- CC (2026-11-05, Lennart): the survey statistician joins the trip planner as actor (USE-9): NBS and the Bank of Tanzania, who estimate tourism earnings from the exit survey, fill in a respondent's spending band from the rest of the form when the expenditure answer is missing or implausible. That actor has every input at departure, and its test is other respondents of the same survey, which the random folds measure. The planner stays, so the use case still looks forward and the `ForcedIIDFromTemporal` tag stays (SPLIT-8); the fit stays approximate (six bands, USE-5).
+- CC (2026-11-05, Lennart): the scorer reads probability columns in the sorted order of the class labels (scikit-learn's classes_) and checks named columns; the ordered categories stay metadata (MET-2).
 - Prediction point: a visitor supplies visitor context and a proposed trip plan, assumed to occur as specified.
   Nights, activity, party and package attributes are scenario inputs even though recorded in an exit survey.
   package_food denotes package inclusion, not meal consumption. cost_category stays target-only.
@@ -245,7 +245,7 @@ We start with the 18,506 labeled rows in Train.csv; the 6,169 unlabeled Test.csv
 - Retain all rows and stratified random evaluation, accepted by Myunghwan on 2026-10-25 after reviewing
   repetition evidence. Across all nine folds, 9.8509% of test evaluations match a training profile and
   90.1491% do not (pooled across three repeats, not distinct people). The copies are distinct respondents
-  the coarse features cannot tell apart, kept under LEAK-18 (few coarse features, plausible repeats; Lennart, 2026-11-05, issue 7 (d), not a widened LEAK-19): 361 repeated
+  the coarse features cannot tell apart, kept under LEAK-18 (few coarse features, plausible repeats; Lennart, 2026-11-05, not a widened LEAK-19): 361 repeated
   profiles are Alone (213 of them with more than one label), and 67.8% of copy groups are larger than their
   party. A split grouped by feature profile costs +0.0047 log loss (+0.0025 without age_group; LightGBM, one
   repeat), and out-of-fold copy lookups gain nothing (1.0765 against 1.0755). Residual LEAK-17 risk: With
