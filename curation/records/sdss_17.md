@@ -466,7 +466,7 @@ carries the footprint of the targeting programmes, part of the selection the mar
      **Decision:** A, B, C or D?
 
    **Notes for the AI:** on B, nothing beyond issue 2's notes (`data_tags` stays as it is; the class sets `Non-IID`,
-   `Temporal` from the windows). On C, once PR #50 is in: `data_tags = ("Timeless",)` and a curation bullet `- Time
+   `Temporal` from the windows). On C: `data_tags = ("Timeless",)` and a curation bullet `- Time
    basis: Timeless: an object's class is a fixed property, but the programmes observing from 2000 to 2020 chose
    different objects (quasars 3-11% of the spectra before 2010, 31-46% from 2014), so the split tests the catalogue as
    a whole, not the objects observed next; a split by year scores LightGBM 0.506 against 0.331 random.`; on D, the

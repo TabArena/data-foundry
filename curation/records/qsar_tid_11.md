@@ -295,7 +295,7 @@ record facts corrected (issue 3), all 2026-11-11; `original_source` set to `Open
    every training side at 50% or more (the four measured windows are one choice); `grouping`, the `scaffold` column
    and the scaffold bullet's split claims go (the analog numbers stay as background); task summary `split` and
    `fit_reason`; a curation bullet with the table; record `required_split: Temporal (NON-IID)` and issue 3's facts;
-   `dataset check`, CHANGELOG, record CC with `Andrej` in `checked_by`. On B, once PR #50 is in: `data_tags =
+   `dataset check`, CHANGELOG, record CC with `Andrej` in `checked_by`. On B: `data_tags =
    ("Timeless",)` and a bullet `- Time basis: Timeless: a compound's potency is a fixed property; the compounds were
    first published 1992-2013, and the scaffold folds keep siblings of the same paper (58% of test compounds have a
    close training analog, 85-90% of them first published the same year), so the split is optimistic for new
@@ -426,7 +426,7 @@ record facts corrected (issue 3), all 2026-11-11; `original_source` set to `Open
    `dataset check` 0 errors, 0 warnings, 1 info (horizon unit of an integer year); README: 1 feature (was 2, the
    SMILES remains), `time_is_feature: false`, the five windows unchanged (train 3,280 to 5,545 rows, test 159 to 744).
    Depends on the uncommitted `Temporal(..., feature=False)` framework change in `src/data_foundry/v2/splits.py`.
-   Edited in the working copy only, not in PR #81's branch. Not rebuilt.
+   Edited in the working copy only. Not rebuilt.
 
 5. **Windows: 5 of the target's 9; which layout?**
 
