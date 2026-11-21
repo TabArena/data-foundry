@@ -8,11 +8,7 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
-- WIP (Triage)
-claimed_by: Andrej
-suggestion: No (Retired)
-decision_markers:
-- Too Small
+suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
@@ -67,13 +63,15 @@ CC (2026-11-20, Andrej): Review issue 2, A: ROC AUC stays the metric; log loss, 
 
 CC (2026-11-20, Andrej): Review issue 4, B: test windows of 84 shifts (four weeks of the measured 21-shift week), 15 windows of 1-10 bumps, each trained on 51.1% or more of the shifts; the window length and the 50% floor stop more than 15 of the target 30.
 
+CC (2026-11-21, Andrej): reinstated, `suggestion` Yes and the `Too Small` marker removed. The retirement of 2026-09-30 rested on few bumps per test window, which since 2026-11-19 is part of the task (only a window without a bump breaks ROC AUC); the 15 windows of 84 shifts each hold 1-10 bumps (49 in all) and train on 51.1% to 96.7% of the shifts. Kept on the weak signal as recorded below.
+
 CC (2026-11-20, Andrej): Review issue 3, A: seismic_bumps is kept although no tuned method beats shuffled labels at p < 0.05 under ROC AUC on the 84-shift windows (TabPFN p 0.095); a weak shift-level signal is the task, and the only public shift-level seismic set stays.
 
 ## Review
 
-**Outcome:** added on 2026-11-19 on your note to issue 1: retired as `Too Small` on 2026-09-30 and reopened the same day, as the rule it rested on changed. The v0.2 definition is written and passes `dataset check`; the review panel is running, and its issues will follow here.
+**Outcome:** added and kept. Retired as `Too Small` on 2026-09-30; reinstated on 2026-11-20 as a temporal task, since few bumps per window no longer make a task `Too Small`. The v0.2 definition passes `dataset check`; not built yet.
 
-**Main points:** The panel's changes are made (the test-row protocol line, `shift_order` no input, the notes' numbers, the proxy target). Open: the metric (issue 2), keep or `No Signal` (issue 3, turns on issue 2), the window length (issue 4), overlapping windows (issue 5).
+**Main points:** Nothing open. Decided on 2026-11-20: monthly windows, a daily refit measured no better (issue 1); ROC AUC, the binary fallback (issue 2); kept although the signal is weak, as a curator's exception (issue 3); 15 windows of 84 shifts, four measured weeks, trained on 51.1% to 96.7% of the shifts (issue 4); no overlapping windows (issue 5). The panel's changes are made (the test-row protocol line, `shift_order` no input, the notes' numbers, the proxy target).
 
 **Issues for Andrej:**
 

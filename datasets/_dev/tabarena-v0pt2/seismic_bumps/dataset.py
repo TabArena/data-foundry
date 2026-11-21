@@ -63,7 +63,8 @@ class SeismicBumps(AbstractCuratedDataset):
         fit="approximate",
         fit_reason=(
             "Later shifts are tested on earlier ones, but the order is rebuilt without dates, the two longwalls cannot "
-            "be told apart, and the monthly refit cadence is our assumption (a daily refit did not beat it). The "
+            "be told apart, and the monthly refit cadence is our assumption (over all 15 windows a daily refit did not "
+            "beat it). The "
             "target is a proxy: a bump of 10^4 J or more stands for raised seismic activity, not a rockburst."
         ),
     )
