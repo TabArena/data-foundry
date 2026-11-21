@@ -53,10 +53,10 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 CC (2026-11-04, Andrej): ship as defined (issue 1); metric checked and kept. Split: random, tagged as forced from temporal and as a delayed target (issue 2).
 - **Forced from temporal:** the insurer prices next year's policies, but the release has no dates and its id is a random shuffle; the leak test passes (no shared rows, no hidden group, region-grouped folds score as random ones, 0.639).
-- **Delayed target, which justifies the random split:** the holder's data is taken at the start of the policy year and the claim arrives within it, so a random split tests what pricing does at that point; the tag `Delayed Target` (SPLIT-32, PR #50) holds once the audit shows every column existed at that point.
-- To do: `data_tags` and the feature audit once PR #50 is in the working copy.
+- **Delayed target, which justifies the random split:** the holder's data is taken at the start of the policy year and the claim arrives within it, so a random split tests what pricing does at that point; the tag `Delayed Target` (SPLIT-32) holds once the audit shows every column existed at that point.
+- To do: `data_tags` and the feature audit.
 
-CC (2026-11-09, Andrej): time basis `DelayedTarget` alone (review page issue 3, B): policy holders priced at one moment, a claim within the following year; the tag enters `data_tags` once PR #50 is in the working copy, and the feature check follows the record's `Target: Later`. The blanks in `ps_car_01_cat`, `ps_ind_04_cat` and `ps_ind_02_cat` stay (issue 4, A): "There is no evidence that this is a leak and not a real pattern. The difference in the target distributions is not too crazy, so this is not sufficient to drop."
+CC (2026-11-09, Andrej): time basis `DelayedTarget` alone (review page issue 3, B): policy holders priced at one moment, a claim within the following year; the tag enters `data_tags` and the feature check follows the record's `Target: Later`. The blanks in `ps_car_01_cat`, `ps_ind_04_cat` and `ps_ind_02_cat` stay (issue 4, A): "There is no evidence that this is a leak and not a real pattern. The difference in the target distributions is not too crazy, so this is not sufficient to drop."
 
 CC (2026-11-17, Andrej): the declared split (random, 1x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
@@ -271,8 +271,8 @@ random draws after measuring it, and the notes could say the same once measured 
 
    **Resolved (2026-11-04, Andrej):** random split kept, tagged forced from temporal and justified by the new tag
    `Delayed Target` (B; SPLIT-32: a snapshot whose features exist at one prediction point and whose target arrives
-   later): the tag, its rule (SPLIT-32) and the record tag on 12 records are in PR #50. Still to do here: the
-   definition's `data_tags` gain `ForcedIIDFromTemporal` and `DelayedTarget` once PR #50 is in this working copy, with
+   later): the tag, its rule (SPLIT-32) and the record tag on 12 records are in the split rules. Still to do here: the
+   definition's `data_tags` gain `ForcedIIDFromTemporal` and `DelayedTarget` with
    a `Prediction point:` line and the feature audit (whether `ps_car_01_cat` and `ps_ind_04_cat` missing together
    still marks claims once the other columns are known).
 
@@ -300,7 +300,7 @@ random draws after measuring it, and the notes could say the same once measured 
 
    * **Problem:**
      - Each row is a policy holder priced for the next year, the claim known after that year; the id is a random shuffle and no date survives, and the record calls the release one moment with a later target (`Samples: One Moment`, `Target: Later`), which the data can neither confirm nor refute.
-     - Issue 2 was resolved on 2026-11-04 with both `ForcedIIDFromTemporal` and `DelayedTarget`, but since 2026-11-05 a one-moment release is not forced, and the definitions of PR #50 refuse two time bases[^3a].
+     - Issue 2 was resolved on 2026-11-04 with both `ForcedIIDFromTemporal` and `DelayedTarget`, but since 2026-11-05 a one-moment release is not forced, and the definitions refuse two time bases[^3a].
      - If the policies were priced at one date and the claims counted over the next year, the basis is `DelayedTarget` alone; if their pricing dates spread over a period, `ForcedIIDFromTemporal` alone.
    * **Background:**
      - The host's framing is one pricing moment: "predict the probability that a driver will initiate an auto
@@ -322,7 +322,7 @@ random draws after measuring it, and the notes could say the same once measured 
    * **Recommendation:** B: one pricing moment with a claim window is what the record, the host and issue 2's new tag
      describe; the forced tag now belongs to releases whose rows arose over a period. **Decision:** A, B, C or D?
 
-   **Notes for the AI:** once PR #50 is in this working copy, on B: `data_tags = ("Anonymized", "DelayedTarget")`
+   **Notes for the AI:** on B: `data_tags = ("Anonymized", "DelayedTarget")`
    and in `curation_comments` the bullet `- Time basis: DelayedTarget: policy holders priced at one moment, the target
    a claim within the following year (the host's framing; record: Samples: One Moment, Target: Later). The id is a
    random shuffle and no date survives, so neither the moment nor a later pricing round can be checked; a later round
@@ -351,8 +351,7 @@ random draws after measuring it, and the notes could say the same once measured 
      that every feature be checked against the prediction point (LEAK-1, LEAK-10).
 
    **Resolved (2026-11-09, Andrej):** B: `DelayedTarget` alone. The `Time basis: DelayedTarget:` bullet is in
-   `curation_comments` and the `split` sentence names the one pricing moment; the tag enters `data_tags` once PR #50 is
-   in the working copy. The feature check follows the record's `Target: Later`, so nothing the resolution of 2026-11-04
+   `curation_comments` and the `split` sentence names the one pricing moment; the tag enters `data_tags`. The feature check follows the record's `Target: Later`, so nothing the resolution of 2026-11-04
    asked for is lost.
 
 4. **Blanks in `ps_car_01_cat`, `ps_ind_04_cat` and `ps_ind_02_cat` mark claims beyond the other features: drop those rows?**

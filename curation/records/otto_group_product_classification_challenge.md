@@ -47,7 +47,7 @@ CC: "Distinguish products in 10 groups based on 93 features. Competition not won
 
 CC (2026-11-04, Andrej): ship as defined (issue 1, A). The declared split (random products) and the declared metric (multi-class log loss, the competition's) checked and kept.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): a product's main category is a fixed property of the product, in one 2015 extract. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): a product's main category is a fixed property of the product, in one 2015 extract. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 CC (2026-11-09, Andrej): the record's collection fact is `Samples: One Moment` (review page issue 3, B): the features are event counts as of one 2015 extract.
 
@@ -133,7 +133,7 @@ curation question. The metric review page proposes accuracy for this dataset; th
    * **Recommendation:** B: the category is a property of the product; the extract belongs in the record (issue 3).
      **Decision:** A, B or C?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Anonymized", "Timeless")` (the class adds `IID`),
+   **Notes for the AI:** on B: `data_tags = ("Anonymized", "Timeless")` (the class adds `IID`),
    a curation bullet `- Time basis: Timeless: a product's main category is a fixed property of the product; the rows
    are one 2015 extract of the catalogue, its event counts as of the extract, and the competition chose its test
    products at random.`, no `splits_comment` change; `dataset check`. On C, `"Snapshot"` with the line naming the
@@ -147,7 +147,7 @@ curation question. The metric review page proposes accuracy for this dataset; th
    **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the routine `Timeless` time
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
    cannot test (products listed after the 2015 extract, or a revised category tree); the split and `data_tags` are
-   unchanged. The tag `Timeless` enters `data_tags` once PR #50 is in the working copy.
+   unchanged. The tag `Timeless` enters `data_tags`.
 
 3. **Correct the record's collection facts: one extract, not `No Time Dimension`?**
 

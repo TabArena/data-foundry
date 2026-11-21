@@ -52,7 +52,7 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: real 1990 census block groups with wide method separation; the only question is that the census publishes the value the task predicts, so the use case is a named stand-in. Priority 2: gap 0, use case 0, source 1, shape 0, risk -0.
 
-CC (2026-11-11, Andrej): kept as a valuation stand-in (review page, issue 1 A): the census publishes the value, the gap is named in the approximate fit. Random split named a `Snapshot` of the 1990 census (issue 2 B): a `Time basis:` line in the definition; the tag enters `data_tags` once PR #50 is in the working copy. Record fields set from the definition (field marks): `domain` business & marketing, `original_source` Other.
+CC (2026-11-11, Andrej): kept as a valuation stand-in (review page, issue 1 A): the census publishes the value, the gap is named in the approximate fit. Random split named a `Snapshot` of the 1990 census (issue 2 B): a `Time basis:` line in the definition; the tag enters `data_tags`. Record fields set from the definition (field marks): `domain` business & marketing, `original_source` Other.
 
 CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
@@ -150,7 +150,7 @@ TabRepo copy has a leak concerns another copy; our experiments found none in the
 
    * **Recommendation:** B, if issue 1 keeps the dataset. **Decision:** A or B?
 
-   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("Spatial", "Snapshot")` and the curation bullet "-
+   **Notes for the AI:** on B: `data_tags = ("Spatial", "Snapshot")` and the curation bullet "-
    Time basis: Snapshot: the 1990 census of every California block group; income, housing, population, households
    and the median house value come from the same census tables; the use case values a block group whose value is not
    recorded, at the census date, with its neighbours known."; `dataset check`. The record's facts stay.
@@ -162,7 +162,7 @@ TabRepo copy has a leak concerns another copy; our experiments found none in the
 
    **Resolved (2026-11-11, Andrej):** B: the `- Time basis: Snapshot: ...` bullet of the notes is in `curation_comments`
    (ending with what the split cannot test: values after 1990, block groups with no known neighbours); the `Snapshot`
-   tag enters `data_tags` once PR #50 is in the working copy. No change to rows or splits, so no `dataset check`.
+   tag enters `data_tags`. No change to rows or splits, so no `dataset check`.
 
 ## Reference
 

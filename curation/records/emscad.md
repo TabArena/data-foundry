@@ -175,7 +175,7 @@ record disagrees with the definition (source Other, 2017, business & marketing, 
      loosely, as the grouping answers the client, not the time. **Decision:** no time basis (A), forced grouped (B)
      or stationary relation (C)?
 
-   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("Spatial", "ForcedGroupedFromTemporal")` and, in
+   **Notes for the AI:** on B: `data_tags = ("Spatial", "ForcedGroupedFromTemporal")` and, in
    place of the curation bullet "The ads were posted from 2012 to 2014, but the release has no dates, ...", the
    bullet "- Time basis: ForcedGroupedFromTemporal: ads posted from 2012 to 2014 with no date in the release
    (`job_id` does not follow posting time); the split groups by poster because the label is set per client, so the

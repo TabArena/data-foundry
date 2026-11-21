@@ -61,7 +61,7 @@ CC (2026-11-04, Andrej): marks on the BeyondArena v0.2 review page.
 
 **Assessment (AI, 2026-11-04):** shares of -2 / -1 / 0 per status column 9-16% / 19-20% / 49-57%; default rate by September's code -2 13%, -1 17%, 0 13%, one month late 34%, two months 69%, so the order -2 to 0 sits below the months of delay. Code 1 is 12.3% of the rows in September and at most 0.1% in April to August: the earlier months record a short delay differently, alike in both classes. Noted in `curation_comments` and as an exception row in the cleaning rules' Cases table.
 
-CC (2026-11-06, Andrej): time basis `DelayedTarget` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on `DelayedTarget` issues of one-moment releases): 30,000 clients scored after the September 2005 statement, the target default on the next month's payment. The random split is IID here, as every row shares the moment and the outcome window, so no test row is later than a training row. The `Time basis:` line is in the definition's notes; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `DelayedTarget` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on `DelayedTarget` issues of one-moment releases): 30,000 clients scored after the September 2005 statement, the target default on the next month's payment. The random split is IID here, as every row shares the moment and the outcome window, so no test row is later than a training row. The `Time basis:` line is in the definition's notes; the tag enters `data_tags`.
 
 CC (2026-11-09, Andrej): random clients (review page issue 2, reply a), with issue 3's time basis `DelayedTarget`: one snapshot, the same six months and the same outcome month for every client.
 
@@ -239,7 +239,7 @@ for this dataset; it is not part of this review.
      credit_card_clients_default.
 
    **Resolved (2026-11-09, Andrej):** a: random clients, with issue 3's time basis, `DelayedTarget` (its line is in
-   `curation_comments` since 2026-11-06; the tag enters `data_tags` once PR #50 is in the working copy). Andrej's note:
+   `curation_comments` since 2026-11-06; the tag enters `data_tags`). Andrej's note:
    "Set this to DelayedTarget, if not already done."
 
 3. **Time basis: name the random split a `DelayedTarget`, one extract scored for the next month's payment?**
@@ -267,7 +267,7 @@ for this dataset; it is not part of this review.
 
    * **Recommendation:** B. **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("DelayedTarget",)` (no tag is listed now) and the
+   **Notes for the AI:** on B: `data_tags = ("DelayedTarget",)` (no tag is listed now) and the
    curation bullet "- Time basis: DelayedTarget: one extract of 30,000 card holders of one Taiwanese bank, scored
    after the September 2005 statement with the same six months of history for every client (April to September
    2005); the target is default on the next month's payment, one month closed for every client. The client ID is not
@@ -285,7 +285,7 @@ for this dataset; it is not part of this review.
    one-moment releases with one mark?" The `Time basis: DelayedTarget:` bullet is in `curation_comments`; it says why
    the random split is IID here (every row shares the moment and the outcome window, so no test row is later than a
    training row) and ends with what the split cannot test (a later month). The split and `data_tags` are unchanged; the
-   tag `DelayedTarget` enters `data_tags` once PR #50 is in the working copy. Issue 2 (the split) stays open for its own
+   tag `DelayedTarget` enters `data_tags`. Issue 2 (the split) stays open for its own
    mark.
 
 CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which was dropped before it shipped:
