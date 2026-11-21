@@ -106,7 +106,7 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         ),
         "task_label_time_gap": (
             "`review_date` is the month the review was published, which is when the score exists, so it is declared "
-            "`time_of=\"label\"` and is no input. The one-month gap stands for the roaster's submission delay: the "
+            '`time_of="label"` and is no input. The one-month gap stands for the roaster\'s submission delay: the '
             "roaster predicts at submission, weeks or months before publication, so each window trains only on "
             "reviews published at least a month before it starts (Andrej, 2026-11-18). The gap is "
             "the publication delay the split cannot read off the dates, not a second copy of it."

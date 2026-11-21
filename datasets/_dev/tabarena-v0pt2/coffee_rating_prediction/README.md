@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: coffee_rating_prediction
 container_format: 2
-checksum: v2:9005ae57a3fa6ccdcb2b5e9464947eba90fc03f2ddde05a2d6cf61ee67d655f1
+checksum: v2:87dead63334116b4286b609bdcf39c602eb73babf869b79f80aced25b521c6ed
 build:
   uuid: 01a111fc-f020-7625-b0b4-3e15565c2a7b
   checksum: v2:42fdd069b327bcb3840eb99b3ce9ae083ec892a2618bfe1dc6753c7687dc5694
@@ -59,9 +59,7 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - task_label_time_gap
-  - splits_below_target
+  warnings: []
   infos: []
   accepted:
     meta_license_unknown: Kaggle gives the licence as 'Other (specified in description)',
@@ -70,8 +68,9 @@ bundle_checks:
       is when the score exists, so it is declared `time_of="label"` and is no input.
       The one-month gap stands for the roaster''s submission delay: the roaster predicts
       at submission, weeks or months before publication, so each window trains only
-      on reviews published at least a month before it starts (Andrej, 2026-11-18). The gap is the publication delay the split cannot read off
-      the dates, not a second copy of it.'
+      on reviews published at least a month before it starts (Andrej, 2026-11-18).
+      The gap is the publication delay the split cannot read off the dates, not a
+      second copy of it.'
     splits_below_target: 12 two-month windows against the 30 an IID split of 2,367
       reviews would get (SPLIT-33). Monthly windows would reach 25, but some months
       hold only 2 to 10 reviews, which makes a per-window RMSE of noise; the window
@@ -87,7 +86,7 @@ decisions: []
 
 Regression of `rating`, scored with `rmse` on temporal splits by `review_date`. 2,367 rows and 8 features. Source: Kaggle (2023).
 
-Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9005ae57a3fa6ccdcb2b5e9464947eba90fc03f2ddde05a2d6cf61ee67d655f1`, so the build is stale. See [Build](#build).
+Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:87dead63334116b4286b609bdcf39c602eb73babf869b79f80aced25b521c6ed`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -288,8 +287,6 @@ Each test window against its train side, by statistics of the data, never of a m
 
 0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `task_label_time_gap`: The splits leave a gap (1 months) on a time that dates the label (`review_date`). (hint: A split on when the label became known trains only on labels known at each window's start, which is what a gap for the label's delay simulates (SPLIT-10). Drop the gap, or accept this warning with the planning or refit delay it stands for.)
-- **warning** `splits_below_target`: 12 window(s), against the 30 splits an IID split of 2,367 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
 
 Accepted on purpose:
 
@@ -380,4 +377,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9005ae57a3fa6ccdcb2b5e9464947eba90fc03f2ddde05a2d6cf61ee67d655f1` |
+| stale | yes: the definition now gives checksum `v2:87dead63334116b4286b609bdcf39c602eb73babf869b79f80aced25b521c6ed` |

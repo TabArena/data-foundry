@@ -400,7 +400,7 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         "task_label_time_gap": (
             "The 60-day gap is the label's own delay: death within 60 days of entry is known 60 days later, so each "
             "window trains only on patients whose outcome was known when it starts (SPLIT-10). `entry_date` is "
-            "declared `time_of=\"label\"` because it is our reconstruction of the entry order and no field of the "
+            'declared `time_of="label"` because it is our reconstruction of the entry order and no field of the '
             "release, so no actor holds it at the prediction point and it must stay out of the inputs; it dates the "
             "entry, not the moment the label became known, and the gap is not redundant with it "
             "(Andrej, 2026-11-19)."
