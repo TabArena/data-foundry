@@ -52,7 +52,7 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: month stays a num
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: a Kaggle upload of 1,723 point-of-sale consumer loans with no named lender and an undefined 'bad' label, kept under the source-gap rule by the curator; the rows look real and methods separate (0.244 to 0.270 1-AUC). Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
 
-CC (2026-11-10, Andrej): review page marks: time basis (issue 2, option B): random as a stationary relation; the `Time basis: StationaryRelation:` bullet is in `curation_comments` (twelve months in file order, flat bad rate, monthly windows score as random splits); the tag enters `data_tags` once PR #50 is in the working copy. Collection facts (issue 3, option B): `Time: Dated` in place of `Time: Lost`, `Target: Varying Delay` added. Split unchanged.
+CC (2026-11-10, Andrej): review page marks: time basis (issue 2, option B): random as a stationary relation; the `Time basis: StationaryRelation:` bullet is in `curation_comments` (twelve months in file order, flat bad rate, monthly windows score as random splits); the tag enters `data_tags`. Collection facts (issue 3, option B): `Time: Dated` in place of `Time: Lost`, `Target: Varying Delay` added. Split unchanged.
 
 CC (2026-11-11, Andrej): kept, with a note on `family_status` (BeyondArena v0.2 review page, issue 1, b): no mark of generated data was found, and the gap in source and label stays in the approximate fit. `family_status` is independent of every other column, age included, and is kept as recorded with a curation note.
 
@@ -218,7 +218,7 @@ already says.
      month could not wait for its labels. **Decision:** no time basis (A), stationary relation (B), monthly windows
      (C) or forced (D)?
 
-   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("StationaryRelation",)` and the curation bullet
+   **Notes for the AI:** on B: `data_tags = ("StationaryRelation",)` and the curation bullet
    "- Time basis: StationaryRelation: loans of twelve consecutive months; the uploader's file is in month order
    (`month` 1 to 12 once, rank correlation with the row 0.996), and over the months the bad rate stays flat (6.2% to
    15.4%, chi-squared p = 0.35) and five monthly windows, each trained on all earlier months, score as random splits
@@ -241,7 +241,7 @@ already says.
 
    **Resolved (2026-11-10, Andrej):** B, random as a stationary relation: the drafted `Time basis: StationaryRelation:`
    bullet is in `curation_comments`, ending with what the split cannot test (a later year or another credit climate).
-   Split unchanged. The tag `StationaryRelation` enters `data_tags` once PR #50 is in the working copy.
+   Split unchanged. The tag `StationaryRelation` enters `data_tags`.
 
 3. **Correct the record's collection facts?**
 
@@ -274,7 +274,7 @@ already says.
      Revised Later`, with no target fact when the target exists with the features.
 
    **Resolved (2026-11-10, Andrej):** B: the record's `tags` have `Time: Dated` in place of `Time: Lost` and gain
-   `Target: Varying Delay`, in the working copy and in the PR #50 worktree's copy of the record.
+   `Target: Varying Delay`, in the working copy.
 
 4. **Split: measure the relation across the twelve months, then keep the random folds (StationaryRelation) or hold out whole months?**
 

@@ -79,7 +79,7 @@ CC (2026-11-11, Andrej): kept next to `qsar_fish_toxicity` with the overlap writ
 - Their LC50s correlate at r = 0.81 (Spearman 0.82), the Daphnia values 0.37 log units more toxic on average.
 - The species, the exposure time and the endpoint differ (Daphnia magna 48 h against the fathead minnow 96 h), so the two are different tasks of one study design, not duplicates; the notes of both now say so, since a method that suits the design gains on both.
 
-CC (2026-11-11, Andrej): scaffold split kept and named `Timeless`, the dating written into the notes (review issue 2, a). The `Time basis:` line is in the definition's notes; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-11, Andrej): scaffold split kept and named `Timeless`, the dating written into the notes (review issue 2, a). The `Time basis:` line is in the definition's notes; the tag enters `data_tags`.
 - Dated through the EPA's ECOTOX bulk release (2026-09-15) by CAS-RN, the earliest Daphnia magna 48-hour LC50 test: 394 of 546 chemicals (72.2%), 481 (88.1%) on species alone; 1965 to 2018, median 1985; ECOTOX's values match the target at r = 0.903 (170 chemicals).
 - The relation does not move with the year (Spearman of first test year and LC50 +0.15), and a forward split by year is no stricter than the scaffold-disjoint one (RMSE LightGBM 1.207 against 1.264 on the same test chemicals).
 
@@ -254,7 +254,7 @@ record's first comment ("546 samples, too small for 3-fold CV") is an outdated c
    * **Recommendation:** B: toxicity is a property of the chemical, and the series split stands for new chemistry.
      **Decision:** A or B?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
+   **Notes for the AI:** on B: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
    a curation bullet `- Time basis: Timeless: a chemical's 48-hour LC50 for Daphnia magna is a property of the
    chemical; the tests were compiled from databases in 2014 without dates, and whole scaffolds are held out for new
    series.`, `splits_comment` unchanged; `dataset check`.
@@ -350,8 +350,7 @@ record's first comment ("546 samples, too small for 3-fold CV") is an outdated c
    `curation_comments` names the historic compilation, the ECOTOX dating (394 of 546 on the strict join, 481 on species
    alone, 1965 to 2018), the match of ECOTOX's values to the target (r = 0.903), the flat relation (Spearman +0.15 /
    +0.11) and the table above, and ends with what the split cannot test (a chemical class no tested series resembles;
-   the 152 chemicals from EAT5 and OASIS, undated). The tag `Timeless` enters `data_tags` once PR #50 is in the working
-   copy. Record: CC line; the collection facts follow separately (`Samples: Over Time`, `Time: Dated`, dated through
+   the 152 chemicals from EAT5 and OASIS, undated). The tag `Timeless` enters `data_tags`. Record: CC line; the collection facts follow separately (`Samples: Over Time`, `Time: Dated`, dated through
    ECOTOX). Data unchanged; `dataset check`: 0 errors, 0 warnings.
 
 3. **Collection facts: `Samples: Over Time` and `Time: Dated`, since a source dates the items?**

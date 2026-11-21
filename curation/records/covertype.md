@@ -72,7 +72,7 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: Soil_ClimaticZone
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship with the optimism measured in fit_reason: random cells are the source's design, but labels are per stand and four location columns alone predict 93% of test cells (LightGBM 97% with them, 70% without), so the score is mostly spatial interpolation. Priority 3: gap 1, use case 0, source 1, shape 1, risk -1.
 
-CC (2026-11-10, Andrej): review page marks: random cells kept, with the look-up measured (issue 1, option B): `fit_reason` and `curation_comments` give it (four location columns alone predict 93.4% of test cells; without them LightGBM falls from 97.1% to 70.2%). Time basis (issue 2, option B): random cells, `Snapshot` of one map extract; the `Time basis: Snapshot:` bullet is in `curation_comments`, the tag enters `data_tags` once PR #50 is in the working copy. Split unchanged.
+CC (2026-11-10, Andrej): review page marks: random cells kept, with the look-up measured (issue 1, option B): `fit_reason` and `curation_comments` give it (four location columns alone predict 93.4% of test cells; without them LightGBM falls from 97.1% to 70.2%). Time basis (issue 2, option B): random cells, `Snapshot` of one map extract; the `Time basis: Snapshot:` bullet is in `curation_comments`, the tag enters `data_tags`. Split unchanged.
 
 CC (2026-11-17, Andrej): the declared split (random, 1x3 folds, `Retrospective`, `ForcedIIDFromGrouped`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
@@ -203,7 +203,7 @@ priority 3), forest inventory plots with locations.
    * **Recommendation:** B: one extract, a fill-in use, and a target that does change over time, only not within
      the extract. **Decision:** A, B or C?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Spatial", "Snapshot")` (the class adds `IID`), a
+   **Notes for the AI:** on B: `data_tags = ("Spatial", "Snapshot")` (the class adds `IID`), a
    curation bullet `- Time basis: Snapshot: one extract of the Forest Service's stand map of four wilderness areas
    and of terrain, road and fire-point layers (date not documented, before the August 1998 donation); the task fills
    in cells of the same areas at that moment, and cells of one stand share its label (see the notes on the random
@@ -218,7 +218,7 @@ priority 3), forest inventory plots with locations.
 
    **Resolved (2026-11-10, Andrej):** B: the drafted `Time basis: Snapshot:` bullet is in `curation_comments` (one map
    extract before August 1998, the fill-in use), ending with what the split cannot test (a later map, land outside the
-   four areas). `data_tags` stays `("Spatial",)`; `Snapshot` enters it once PR #50 is in the working copy.
+   four areas). `data_tags` stays `("Spatial",)`; `Snapshot` enters it.
 
 CC (2026-11-16, Andrej): `ForcedIIDFromGrouped` beside `Retrospective` (SPLIT-35):
 - The use case maps land with no inventory, which comes as whole stands of 20 to 900 cells.

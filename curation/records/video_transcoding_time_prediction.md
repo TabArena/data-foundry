@@ -58,7 +58,7 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: real transcoding measurements held out by video for load balancing; no defect found, spread unmeasured. Priority 3: gap 0, use case 1, source 1, shape 1, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): designed transcoding jobs on one machine, none dated, all jobs of a video held out together. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): designed transcoding jobs on one machine, none dated, all jobs of a video held out together. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 **Assessment (AI, 2026-11-08):** one vote per unit (the scan of 2026-11-08 after boreal_postfire_lichen_biomass's issue 7): 80 of the 1,099 videos were transcoded to the full grid of 841 output settings and hold 97.8% of the 68,784 jobs; 1,018 videos have one job and would take 93% of the weight if each video counted once. The scheduler acts per job. Counting each video once ranks 8 untuned models at Kendall tau 0.90 per split (lowest 0.79) and 0.93 for the ranking by the mean over the 9 shipped splits, the same best model on 3 of 9 (random forest and LightGBM swap at the top). Open for Lennart as issue 1 of the record's Review; recommended: per job, with a note that names the 80 full-grid videos (B).
 
@@ -151,7 +151,7 @@ sweep, not of this definition.
 
    * **Recommendation:** B: one experiment of designed jobs on one machine, nothing dated. **Decision:** A or B?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
+   **Notes for the AI:** on B: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
    a curation bullet `- Time basis: Timeless: designed transcoding jobs on one machine (Deneke et al. 2014); the
    video's properties and the output setting are known before a job, no job is dated, and all jobs of a video are
    held out together.`, `splits_comment` unchanged; `dataset check`.
@@ -165,7 +165,7 @@ sweep, not of this definition.
    **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the routine `Timeless` time
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
    cannot test (another machine or newer codecs); the split and `data_tags` are unchanged. The tag `Timeless` enters
-   `data_tags` once PR #50 is in the working copy.
+   `data_tags`.
 
 3. **Is the transcoding task leaking, and is its score realistic?**
 

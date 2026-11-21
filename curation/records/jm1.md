@@ -58,7 +58,7 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: real NASA defect data cleaned as the field cleans it; methods spread, and the Halstead zero block, tested, marks no class. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
-CC (2026-11-12, Andrej): ship as defined (BeyondArena v0.2 review page, issues 1 and 2, A). The random split is read as a `Snapshot` of one code version, its `Time basis:` line in the curation notes (the tag enters the definition with PR #50); the Halstead tool's zero block (893 rows, all 16 Halstead and line-count measures 0) is noted there as kept, since it marks no class. `domain` filled from the definition (technology & internet). The declared split and metric checked and kept.
+CC (2026-11-12, Andrej): ship as defined (BeyondArena v0.2 review page, issues 1 and 2, A). The random split is read as a `Snapshot` of one code version, its `Time basis:` line in the curation notes; the Halstead tool's zero block (893 rows, all 16 Halstead and line-count measures 0) is noted there as kept, since it marks no class. `domain` filled from the definition (technology & internet). The declared split and metric checked and kept.
 
 CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
@@ -145,12 +145,12 @@ not added yet. The record has no `domain`; the definition's `technology & intern
 
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
-     | A | Random split, `Snapshot` (implemented) | the shipped split; once PR #50 is in, the tag and a `Time basis:` line naming the extraction | matches the definition's use case, this program's uninspected functions; matches the record's one moment | the moment is undated; whether the measures precede the defect reports is unknown |
+     | A | Random split, `Snapshot` (implemented) | the shipped split; the tag and a `Time basis:` line naming the extraction | matches the definition's use case, this program's uninspected functions; matches the record's one moment | the moment is undated; whether the measures precede the defect reports is unknown |
      | B | Random split, `ForcedIIDFromTemporal` | the same split, tagged as a forward task whose time is lost[^2b] | names the common use, the next release, as untested | the definition's use case is the one code base; the file holds one version, so there is no period to be forced from |
 
    * **Recommendation:** A: one extraction of one code base, and a use case that ranks the functions of that code base. **Decision:** A or B?
 
-   **Notes for the AI:** on A, once PR #50 is in: `data_tags = ("Snapshot",)` and a curation bullet `- Time basis:
+   **Notes for the AI:** on A: `data_tags = ("Snapshot",)` and a curation bullet `- Time basis:
    Snapshot: one extraction of the static code measures of one version of JM1, joined with each function's defect
    reports (NASA Metrics Data Program; donated to PROMISE on 2 December 2004); the test functions are functions of the
    same code base at the same moment. When the code was measured relative to the defect reports and their fixes is not
@@ -171,7 +171,7 @@ not added yet. The record has no `domain`; the definition's `technology & intern
    Snapshot: ...` names the one extraction of one code version (NASA Metrics Data Program; PROMISE, 2 December 2004),
    says the timing of the measures against the defect reports is not stated, and ends with what the split cannot
    test (a later release; defects one report shares across a file's functions). The tag `Snapshot` enters
-   `data_tags` once PR #50 is in the working copy. No `splits_comment` change; record CC line.
+   `data_tags`. No `splits_comment` change; record CC line.
 
 ## Reference
 

@@ -76,7 +76,7 @@ CC (2026-11-11, Andrej): kept next to `qsar_aquatic_toxicity` with the overlap w
 
 CC (2026-11-12, Andrej): the fit stays direct, the scaffold split's time basis is `Timeless`, and `problem_type` is filled (Review issues 2 and 3, record field); the input data did not change:
 - Fit (issue 2, A): whole chemical series are held out and the authors' selected descriptors have left, as for qsar_bioconcentration, so the open proposal to read the fit as approximate (2026-10-26) is closed as superseded. Under the shipped scaffold splits 12.4% of the test chemicals have a close training analog (Tanimoto similarity of the structure fingerprints 0.7 or more), under random splits of the same rows 13.1%.
-- Time basis (issue 3, reply a): `Timeless`, since a chemical's 96-hour LC50 for the fathead minnow is a property of the chemical. Dated through the EPA's ECOTOX database by CAS-RN, 850 of 908 chemicals (93.6%) were first tested between 1956 and 2005, 90% by 1990; the LC50 barely moves with the year (Spearman -0.06), and a forward split by first test year is no stricter than holding out series (RMSE 0.970 against 0.970, untuned LightGBM). The `Time basis:` line and the dating table are in the definition; the tag itself enters the definition's tags once the time-basis tags (PR #50) are in.
+- Time basis (issue 3, reply a): `Timeless`, since a chemical's 96-hour LC50 for the fathead minnow is a property of the chemical. Dated through the EPA's ECOTOX database by CAS-RN, 850 of 908 chemicals (93.6%) were first tested between 1956 and 2005, 90% by 1990; the LC50 barely moves with the year (Spearman -0.06), and a forward split by first test year is no stricter than holding out series (RMSE 0.970 against 0.970, untuned LightGBM). The `Time basis:` line and the dating table are in the definition; the tag itself enters the definition's tags once the time-basis tags are in.
 - `problem_type`: `Regression`, the definition's (the record had none).
 
 CC (2026-11-12, Andrej): kept, and settled against a larger fish set once one is added (Review issue 1, B).
@@ -245,7 +245,7 @@ before shipping outside the group.
    * **Recommendation:** B: toxicity is a property of the chemical, and the series split stands for new chemistry.
      **Decision:** A or B?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
+   **Notes for the AI:** on B: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
    a curation bullet `- Time basis: Timeless: a chemical's 96-hour LC50 for the fathead minnow is a property of the
    chemical; the tests were compiled from databases in 2015 without dates, and whole scaffolds are held out for new
    series.`, `splits_comment` unchanged; `dataset check`.
@@ -348,8 +348,7 @@ before shipping outside the group.
    **Resolved (2026-11-12, Andrej):** a: the scaffold split stays, with a `- Time basis: Timeless: ...` bullet in the
    curation notes that names the historic compilation, the ECOTOX dating (850 of 908 chemicals, 93.6%, 1956 to 2005),
    the join check, the flat relation (Spearman -0.06) and the table above, and ends with what the split cannot test
-   (chemistry newer than the 1990s, the 58 undated chemicals). The `Timeless` tag enters `data_tags` once PR #50 is in
-   the working copy. CC line in the record.
+   (chemistry newer than the 1990s, the 58 undated chemicals). The `Timeless` tag enters `data_tags`. CC line in the record.
 
 4. **Collection facts: `Samples: Over Time` and `Time: Dated`, since a source dates the items?**
 
