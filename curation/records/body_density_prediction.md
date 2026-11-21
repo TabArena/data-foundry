@@ -63,7 +63,7 @@ CC (2026-10-15, Andrej): Replacement candidate: `nhanes_dxa_body_fat` (NHANES DX
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Keep until nhanes_dxa_body_fat (the same task on about 21,800 people) is added, then retire as replaced; meanwhile set the impossible 29.5-inch height to missing. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on routine `Timeless` issues): each man was measured once in one study session, so density and features describe the same body at one time. It holds if issue 1 keeps the dataset. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on routine `Timeless` issues): each man was measured once in one study session, so density and features describe the same body at one time. It holds if issue 1 keeps the dataset. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 CC (2026-11-18, Andrej): collection type stays `Experimental Results` (Review issue 5, A as implemented; full-information split check). Supersedes the Clinical Study mark of 2026-11-17 (issue 4):
 - the type rules call volunteers measured by a study protocol experimental results;
@@ -199,7 +199,7 @@ more data could be collected; Andrej's CC of 2026-10-15 names the replacement, a
    * **Recommendation:** B, if issue 1 keeps the dataset: one session per man, nothing measured later, and the target
      is physics of the body that the features describe at the same moment. **Decision:** A, B or C?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the class adds `IID`), a curation
+   **Notes for the AI:** on B: `data_tags = ("Timeless",)` (the class adds `IID`), a curation
    bullet `- Time basis: Timeless: each man was measured once (tape, scale and underwater weighing in one study at
    BYU, before 1985), so density and features describe the same body at one time; no date or order is recorded, and
    the derivation block of the first 143 cases does not differ from the rest.`; on C the same fact with the tag
@@ -215,7 +215,7 @@ more data could be collected; Andrej's CC of 2026-10-15 names the replacement, a
    **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the routine `Timeless` time
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
    cannot test (bodies measured in another study, such as women); the split and `data_tags` are unchanged. It holds if
-   issue 1 keeps the dataset. The tag `Timeless` enters `data_tags` once PR #50 is in the working copy.
+   issue 1 keeps the dataset. The tag `Timeless` enters `data_tags`.
 
 4. **Collection type: `Clinical Study` instead of `Experimental Results`?**
 

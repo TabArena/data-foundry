@@ -58,7 +58,7 @@ CC (2026-10-20, Lennart): Grouped by setup, one chord length at one angle of att
 
 CC (2026-11-04, Andrej): ship as defined (issue 3, A). The declared split (whole setups held out: one chord length at one angle with all its speeds) and the declared metric (RMSE on the report's scaled level, in dB) checked and kept.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 4, B, through the cross-dataset item on routine `Timeless` issues): the rows are designed wind-tunnel runs, with no run date or order recorded. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 4, B, through the cross-dataset item on routine `Timeless` issues): the rows are designed wind-tunnel runs, with no run date or order recorded. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 CC (2026-11-17, Andrej): time basis `UnseenGroup` in place of `Timeless` (Review issue 11, B; replaces the tag of the CC of 2026-11-06): the use case is an airfoil size and angle of attack not yet tested, at any wind speed, so the split holds out whole setups (chord x angle), a group wider than one run. The split is unchanged (grouped on `setup`, 33 setups).
 
@@ -84,7 +84,7 @@ angle at every speed (an effect of the rig, real in the measured spectra). Weigh
 value (+), one airfoil shape in one tunnel and 33 setups (-).
 
 **Main points:** All four issues are resolved: ship as defined (2026-11-04), and the setup split named `Timeless`,
-designed wind-tunnel runs with no run date (issue 4, 2026-11-06; the tag waits for PR #50).
+designed wind-tunnel runs with no run date (issue 4, 2026-11-06).
 
 **Record judgment:** valid. The tripped NACA 0012 set of NASA RP-1218; year 1989 and source the report since
 2026-10-20 (a figure that shows every measured value holds the rows), so the record and the definition agree. "Maybe
@@ -203,7 +203,7 @@ restored here unchanged, with the decisions as closing turns.
    * **Recommendation:** B: nothing in a row arrives after the run and the run date plays no role. **Decision:** A
      or B?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the regime tags `Non-IID`, `Grouped`
+   **Notes for the AI:** on B: `data_tags = ("Timeless",)` (the regime tags `Non-IID`, `Grouped`
    are added by the class), a curation bullet `- Time basis: Timeless: designed wind-tunnel runs of NASA RP-1218
    (Brooks, Pope and Marcolini 1989); chord, angle, speed and band are set before a run and the level is measured in
    it; no run date or order is recorded.`, `splits_comment` unchanged; `dataset check` (the `meta_time_basis_missing`
@@ -218,7 +218,7 @@ restored here unchanged, with the decisions as closing turns.
    **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the routine `Timeless` time
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
    cannot test (another airfoil profile or tunnel); the split and `data_tags` are unchanged. The tag `Timeless` enters
-   `data_tags` once PR #50 is in the working copy.
+   `data_tags`.
 
 11. **Time basis: `UnseenGroup` instead of `Timeless`?**
 

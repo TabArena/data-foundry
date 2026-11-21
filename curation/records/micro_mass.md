@@ -63,7 +63,7 @@ CC (2026-11-12, Andrej): reviewed under the rule for cuts of growing scientific 
 
 CC (2026-11-04, Andrej): keep as defined (issue 1, A): 20 species scored per spectrum with the source's metric; the sister-species complexes are a limit laboratories also meet. The declared split (by strain) and metric checked and kept. Tagged `Spectral Data`: each row is one MALDI-TOF mass spectrum (a peak list on 1,300 bins), declared as a spectrum in the definition.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on five more routine `Timeless` issues): the species is a fixed property of the strain, and the release holds no acquisition date, run or plate. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on five more routine `Timeless` issues): the species is a fixed property of the strain, and the release holds no acquisition date, run or plate. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 CC (2026-11-12, Andrej): review page mark (issue 4, A): the strain-grouped split stays. The panel is a single 2013 deposit; the strain identifier is an integer with no accession or date, so no split by entry date can be built; noted in the `Time basis:` line.
 
@@ -227,7 +227,7 @@ et al. as "submitted"; it is arXiv:1506.07251 (2015). No record field disagrees 
    * **Recommendation:** B: the species belongs to the strain, the spectrum is all the laboratory has at
      identification, and the release holds no date or run order. **Decision:** A, B or C?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the class adds the grouped tags) and a
+   **Notes for the AI:** on B: `data_tags = ("Timeless",)` (the class adds the grouped tags) and a
    curation bullet `- Time basis: Timeless: the species is a fixed property of the strain, known from the reference
    collection before the culture, and the row is the spectrum of that culture. The release holds no acquisition date,
    run or plate (the metadata file has the species and the strain number only), and the file order carries no campaign
@@ -244,7 +244,7 @@ et al. as "submitted"; it is arXiv:1506.07251 (2015). No record field disagrees 
    **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept five more routine `Timeless`
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
    cannot test (an isolate of a species or a strain type the panel does not hold); the split and `data_tags` are
-   unchanged. The tag `Timeless` enters `data_tags` once PR #50 is in the working copy.
+   unchanged. The tag `Timeless` enters `data_tags`.
 
 4. **Keep the strain-grouped split, or split by when a strain entered the collection?**
 

@@ -106,7 +106,7 @@ time basis for its scaffold split.
 
 **Main points:** the chemicals dated by the year of their rat oral LD50 report (issue 1, C, resolved 2026-11-11): 7,927
 of 11,119, and a split by report year holds out less than the scaffold split. Settled: the scaffold split stays, named
-`Timeless` with the dating in its `Time basis:` line (issue 2, tag waits for PR #50). Settled 2026-11-12: collection
+`Timeless` with the dating in its `Time basis:` line (issue 2). Settled 2026-11-12: collection
 facts `Samples: Over Time`, `Time: Dated` (issue 3).
 
 **Issues for Andrej:**
@@ -202,14 +202,13 @@ facts `Samples: Over Time`, `Time: Dated` (issue 3).
    **Notes for the AI:** on b, a `curation_comments` bullet `- Time basis: Timeless: ...` naming the fixed property,
    the inventory use case, the RTECS dating (7,927 of 11,119, 1935-2023) and the forward-against-scaffold numbers,
    ending with what the split cannot test (the order of the undated rows); the prediction-set reference re-measured
-   first; the tag enters `data_tags` once PR #50 is in the working copy; then `dataset check`, a CHANGELOG entry and a
+   first; the tag enters `data_tags`; then `dataset check`, a CHANGELOG entry and a
    record CC line.
 
    **Resolved (2026-11-11, Andrej):** b (`ok` on the recommendation): the scaffold split stays; a `Time basis:
    Timeless` bullet in `curation_comments` names the fixed property, the inventory use case, the RTECS dating (7,927 of
    11,119, 1935-2023), the forward-against-scaffold numbers and the undated rows' class mix, and ends with what the
-   split cannot test (the order of the undated chemicals). The tag enters `data_tags` once PR #50 is in the working
-   copy. Record CC line. The prediction-set reference, re-measured first (no model, scaffold 3x3 folds on the public
+   split cannot test (the order of the undated chemicals). The tag enters `data_tags`. Record CC line. The prediction-set reference, re-measured first (no model, scaffold 3x3 folds on the public
    files' 11,119 chemicals):
 
    | Prediction chemicals (48,135 readable) | Share | Close training analog | Median nearest similarity |

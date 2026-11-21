@@ -71,7 +71,7 @@ CC (2026-11-12, Andrej): reviewed under the rule for cuts of growing scientific 
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: the one measurable form of a project artefact (a Hardy-Weinberg failure or a project-only genotype, the pattern that got the Turkey class dropped) is absent in all nine populations, and the methods separate widely; what stays open is the 27 failed typing calls, which occur only in the four HGDP populations. Priority 3: gap 1, use case 1, source 1, shape 0, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on routine `Timeless` issues): genotypes are fixed at birth and the population label was set at sampling, with no date recorded. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on routine `Timeless` issues): genotypes are fixed at birth and the population label was set at sampling, with no date recorded. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 CC (2026-11-10, Andrej): review page marks: ship as defined (issue 1, A): the one measurable project artefact (Hardy-Weinberg failures, project-only genotypes) is absent beyond the failed calls; the failed typing calls stay missing (issue 2, A), the curation note now gives the hint's size (log loss 1.95 from missingness alone against 2.03 for the class shares). The licence question stays open.
 
@@ -235,7 +235,7 @@ redistributed. The build is stale against the current definition, so the dataset
    * **Recommendation:** B: ancestry and the genotypes do not change, and no row carries information from after the
      sampling. **Decision:** A or B?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the class adds `IID`), a curation
+   **Notes for the AI:** on B: `data_tags = ("Timeless",)` (the class adds `IID`), a curation
    bullet `- Time basis: Timeless: genotypes are fixed at birth and the population label was set when the reference
    person was sampled (1000 Genomes, HGDP-CEPH); no date is recorded and the table is ordered by population. No
    duplicate genotypes, and no excess of related pairs beyond chance at 102 markers (2026-11-06).`, `splits_comment`
@@ -250,7 +250,7 @@ redistributed. The build is stale against the current definition, so the dataset
    **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the routine `Timeless` time
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
    cannot test (people typed outside the reference project of their population); the split and `data_tags` are
-   unchanged. The tag `Timeless` enters `data_tags` once PR #50 is in the working copy.
+   unchanged. The tag `Timeless` enters `data_tags`.
 
 4. **Keep the random split over people, or split by when a reference person entered the panel?**
 

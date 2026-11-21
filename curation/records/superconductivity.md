@@ -181,7 +181,7 @@ added yet. The record has no `problem_type` or `domain`; the definition's values
    * **Recommendation:** B: the temperature is a property of the material and nothing in the release is dated; a
      split by discovery belongs to `supercon_mdr_2024` if its references give years. **Decision:** A or B?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
+   **Notes for the AI:** on B: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
    a curation bullet `- Time basis: Timeless: a critical temperature is a property of the material; the SuperCon
    entries carry no report year, and the families came in waves (cuprates 1986, iron-based 2008), so the composition
    split does not test a family discovered after the training data.`, `splits_comment` unchanged; `dataset check`;

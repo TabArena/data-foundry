@@ -134,7 +134,7 @@ feature copy in training, 1-NN label agreement 0.621 against a chance of 0.462).
 CC (2026-11-11, Andrej): the chemicals are dated before the time basis is named (review issue 1, B). NITE's workbook of the CSCL carp bioconcentration tests dates 347 of 776 by CAS, 1975 to 2007, and its BCF matches the shipped logBCF (correlation 0.965).
 - A forward split by test year (three windows, Slurm 1378135) leaves 3.8% of test chemicals a close training analog against 4.6% scaffold-disjoint, and scores within noise of it; whether to keep the scaffold split and name it Timeless is review issue 2. The definition is unchanged.
 
-CC (2026-11-12, Andrej): review page mark (issue 2, b): the scaffold split stays, with time basis `Timeless`. NITE's carp tests date 347 of 776 chemicals (1975-2007), and a split by test year held out no more than the scaffold groups on the same chemicals (random forest log loss 0.798 against 0.768; close analogs 3.8% against 4.6%). The `Time basis:` line is in the definition's notes; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-12, Andrej): review page mark (issue 2, b): the scaffold split stays, with time basis `Timeless`. NITE's carp tests date 347 of 776 chemicals (1975-2007), and a split by test year held out no more than the scaffold groups on the same chemicals (random forest log loss 0.798 against 0.768; close analogs 3.8% against 4.6%). The `Time basis:` line is in the definition's notes; the tag enters `data_tags`.
 
 CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension` (Review issue 3): NITE's CSCL carp bioconcentration tests date 347 of 776 chemicals (44.7%), 1975 to 2007. The facts describe the source and do not change with the split, which stays as it is.
 
@@ -236,13 +236,13 @@ split by test year holds out no more than the scaffold split. Settled: the scaff
 
    **Notes for the AI:** on b, a `curation_comments` bullet `- Time basis: Timeless: ...` naming the fixed property,
    the NITE dating (347 of 776, 1975-2007) and the forward-against-scaffold numbers, ending with what the split cannot
-   test (the order of the undated half); the tag enters `data_tags` once PR #50 is in the working copy; then
+   test (the order of the undated half); the tag enters `data_tags`; then
    `dataset check`, a CHANGELOG entry and a record CC line.
 
    **Resolved (2026-11-12, Andrej):** b: the scaffold split stays. A `Time basis: Timeless:` bullet in
    `curation_comments` names the fixed property, the NITE dating (347 of 776, 1975-2007) and the forward against
    scaffold numbers, ending with what the split cannot test (the order of the undated half); record CC line. The tag
-   `Timeless` enters `data_tags` once PR #50 is in the working copy. Data, split and score unchanged; `dataset check`
+   `Timeless` enters `data_tags`. Data, split and score unchanged; `dataset check`
    re-run.
 
 3. **Collection facts: `Samples: Over Time` and `Time: Dated`, since a source dates the items?**

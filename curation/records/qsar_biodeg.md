@@ -201,7 +201,7 @@ Andrej's dispute of 2026-10-15 is not on the record.
    * **Recommendation:** B: the test outcome is a property of the chemical, and the series split stands for new
      chemistry. **Decision:** A or B?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
+   **Notes for the AI:** on B: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
    a curation bullet `- Time basis: Timeless: ready biodegradability under the OECD 301C test is a property of the
    chemical; the NITE/MITI results were curated in 2013 without test dates, and whole scaffolds are held out for new
    series.`, `splits_comment` unchanged; `dataset check`.
@@ -323,7 +323,7 @@ Andrej's dispute of 2026-10-15 is not on the record.
    `grouping` and the `scaffold` column are gone; `test_year` is a feature as well as the time column (as in
    qsar_tid_11). The measured table and the drift go into `curation_comments`, the task summary names the year, and a
    window table goes into the README's decisions. Record: `Non-IID (Temporal)`, `Samples: Over Time`, `Time: Dated`,
-   required split `Temporal (NON-IID)` (mirrored in PR #50's copy), CC line. No time-basis tag: the split is temporal.
+   required split `Temporal (NON-IID)`, CC line. No time-basis tag: the split is temporal.
    `dataset check`: 0 errors, 0 warnings (1 info: the year horizon on an integer column, as intended).
 
 3. **Should the time column be a model input?**

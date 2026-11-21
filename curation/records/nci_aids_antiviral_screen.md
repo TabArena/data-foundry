@@ -285,5 +285,5 @@ the record's `Time: Dated` corrected to `Time: Inferred` (issue 2, B); both reso
 
    **Resolved (2026-11-12, Andrej):** applied on approval of the plan that settled the split keys of growing catalogues
    (one decision for the eighteen datasets of that review): the `Time basis: Timeless:` bullet in `curation_comments`,
-   and the tag `Timeless` in `data_tags` where the time-basis rule is in the working copy (PR #50); record CC line.
+   and the tag `Timeless` in `data_tags` where the time-basis rule is in the working copy; record CC line.
    Data, split and score unchanged.

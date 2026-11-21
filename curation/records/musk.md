@@ -55,7 +55,7 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid tiny-data task after 
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the source's multiple-instance task scored per molecule, 13 musk molecules per test fold (tiny, not too small), and the methods spread, with a molecule-level model well ahead of all benchmark methods. Priority 3: gap 0, use case 1, source 1, shape 0, risk -0.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): the shapes are computed from each molecule's structure and the label is an expert's judgement of the molecule, with no date. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): the shapes are computed from each molecule's structure and the label is an expert's judgement of the molecule, with no date. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 CC (2026-11-09, Andrej): ship as defined (review page issue 1, A), scored per molecule; the declared split and metric checked and kept.
 
@@ -172,7 +172,7 @@ ray". No record field disagrees with the definition.
    * **Recommendation:** B: the label is a property of the molecule and the shapes are computed, so time plays no
      part. **Decision:** A or B?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
+   **Notes for the AI:** on B: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
    a curation bullet `- Time basis: Timeless: the shapes are computed from each molecule's structure, all at once,
    and the label is an expert's judgement of the molecule's smell (Dietterich et al. 1997); no row is dated, and every
    shape of a test molecule is held out with it.`, `splits_comment` unchanged; `dataset check`.
@@ -186,7 +186,7 @@ ray". No record field disagrees with the definition.
    **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the routine `Timeless` time
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
    cannot test (a new chemical class outside the 102 molecules); the split and `data_tags` are unchanged. The tag
-   `Timeless` enters `data_tags` once PR #50 is in the working copy.
+   `Timeless` enters `data_tags`.
 
 ## Reference
 
