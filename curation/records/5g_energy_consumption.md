@@ -61,7 +61,7 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: weekday_number is
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: hourly energy of 923 Huawei base stations over one week, split by station to fill measurement gaps (a direct fit decided 2026-10-14); only two missing record fields. Priority 3: gap 0, use case 1, source 1, shape 1, risk -1.
 
-CC (2026-11-10, Andrej): time basis (review page issue 1): option B, grouped by station, named `Snapshot` of the logged week (1 to 8 January 2023): the use case fills in the hours of unmetered stations inside that week. The `Time basis: Snapshot:` bullet is in `curation_comments`; the tag enters `data_tags` once PR #50 is in the working copy. Split unchanged.
+CC (2026-11-10, Andrej): time basis (review page issue 1): option B, grouped by station, named `Snapshot` of the logged week (1 to 8 January 2023): the use case fills in the hours of unmetered stations inside that week. The `Time basis: Snapshot:` bullet is in `curation_comments`; the tag enters `data_tags`. Split unchanged.
 
 CC (2026-11-11, Andrej): record fields set from the definition (review page field mark): `year` 2023; `domain` technology & internet.
 
@@ -123,7 +123,7 @@ source, so it is a sibling task, not a replacement: a valid task stays when a be
    * **Recommendation:** B: the use case you decided fills in the logged week, which is what the prototype names.
      **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("Snapshot",)` (the definition lists no tag now, so the
+   **Notes for the AI:** on B: `data_tags = ("Snapshot",)` (the definition lists no tag now, so the
    automatic `Non-IID` and `Grouped` stay), and the curation bullet "- Time basis: Snapshot: one logged week of 923
    stations, 2023-01-01 01:00 to 2023-01-08 00:00, hourly; the energy is metered in the same hour as the load and
    energy-saving settings, and the use case fills in the hours of stations without meters in that week while the other
@@ -142,7 +142,7 @@ source, so it is a sibling task, not a replacement: a valid task stays when a be
 
    **Resolved (2026-11-10, Andrej):** B, grouped by station, named `Snapshot`: the `Time basis: Snapshot:` bullet is in
    `curation_comments` (the logged week, the fill-in, and what the split cannot test: a later week or a new station
-   product). Split and rows unchanged. The tag `Snapshot` enters `data_tags` once PR #50 is in the working copy.
+   product). Split and rows unchanged. The tag `Snapshot` enters `data_tags`.
 
 2. **Split: follow the source's split (predefined test file of unknown exact construction: 10,076 rows, of which 3,067…)?**
 

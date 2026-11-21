@@ -57,7 +57,7 @@ CC (2026-10-06, Lennart): Kept after the task-probe sweep of the 2026-10-06 buil
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the authors' own rotor-magnet temperature task, smoothed inputs from the session's past, whole sessions held out, tuned methods spread widely; the two early modality markers can go. Priority 4: gap 0, use case 1, source 1, shape 1, risk -0.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): 69 undated bench sessions of designed driving cycles of one motor, each held out whole. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): 69 undated bench sessions of designed driving cycles of one motor, each held out whole. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 CC (2026-11-09, Andrej): ship as defined (review page issue 1, A); the declared split and metric checked and kept. The markers `Wrong Domain / Source Modality` and `Time-series (Regression)` leave the record: the question they recorded is answered (tabular methods spread widely on the vectorised time series).
 
@@ -156,7 +156,7 @@ prediction from the session's past; one motor, so the task tests new driving cyc
    * **Recommendation:** B: designed runs are the prototype's own example, and the within-session time is handled by
      the features and the grouping. **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("Non-IID", "Grouped", "Timeless")` (the definition
+   **Notes for the AI:** on B: `data_tags = ("Non-IID", "Grouped", "Timeless")` (the definition
    lists the regime tags itself) and the curation bullet "- Time basis: Timeless: 69 bench sessions of designed
    driving cycles of one prototype motor; the magnet temperature is the motor's physical response to the session's
    inputs, carried by smoothed features of the session's own past; whole sessions are held out. The sessions have no
@@ -172,8 +172,7 @@ prediction from the session's past; one motor, so the task tests new driving cyc
    **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the routine `Timeless` time
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
    cannot test (another motor); the split and `data_tags` are unchanged. The line keeps the drafted point that the
-   undated sessions cannot show an ageing of the motor. The tag `Timeless` enters `data_tags` once PR #50 is in the
-   working copy.
+   undated sessions cannot show an ageing of the motor. The tag `Timeless` enters `data_tags`.
 
 3. **Correct the record's collection facts: `Samples: No Time Dimension` for designed bench sessions?**
 
@@ -234,13 +233,12 @@ prediction from the session's past; one motor, so the task tests new driving cyc
      entity are a sequence, which the grouping and any lag features rest on. **Decision:** a or b?
 
    **Notes for the AI:** on b, `Time: Within Entity` goes into the vocabulary and into the `Time:` fact of SPLIT-32 in
-   PR #50 ("an order found only within each entity is `Time: Within Entity`, not `Dated`"); this record's `tags` take
+   the split rules ("an order found only within each entity is `Time: Within Entity`, not `Dated`"); this record's `tags` take
    `Samples: No Time Dimension`, `Entities: Recur` and `Time: Within Entity` in place of `Samples: Over Time` and `Time:
    Dated`; dementia_prediction 4, santander_transaction_value 3 and sepsis_survival_minimal_clinical_records then get
    answers proposing the same. On a, the issue's B plus `Entities: Recur`, and a curation bullet on the 2 Hz order.
 
-   **Resolved (2026-11-09, Andrej):** b: the new fact `Time: Within Entity` is in the vocabulary and in SPLIT-32 (PR
-   #50); the record's `tags` carry `Samples: No Time Dimension`, `Entities: Recur` and `Time: Within Entity`.
+   **Resolved (2026-11-09, Andrej):** b: the new fact `Time: Within Entity` is in the vocabulary and in SPLIT-32; the record's `tags` carry `Samples: No Time Dimension`, `Entities: Recur` and `Time: Within Entity`.
 
 4. **Time basis: `UnseenGroup` instead of `Timeless`?**
 
