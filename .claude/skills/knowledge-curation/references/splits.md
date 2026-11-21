@@ -599,7 +599,7 @@ cannot be reached otherwise, the review offers overlapping windows (a step short
 the curator judges whether the use case admits them. The splits comment names the windows, the reasons and the numbers
 they rest on. Why: on aeolus, climate_model and delivery_eta the newest three windows ranked a model pair the other way
 round than the whole eligible history did, and three windows spread over it cut that error 5 to 15 times, while three
-windows drawn at random did worse than three spread evenly (closed PR #69).
+windows drawn at random did worse than three spread evenly.
 
 **SPLIT-16 (Must; amended 2026-11-18, Andrej).** Do not fall back to the unit or to an IID split for a sequence whose
 relation is measured not stationary, whether its windows failed for too few periods or rows: where enough meaningful
