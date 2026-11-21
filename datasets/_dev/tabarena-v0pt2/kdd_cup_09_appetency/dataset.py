@@ -93,14 +93,14 @@ class KddCup09Appetency(AbstractCuratedDataset):
         - Anomaly: this dataset has many missing values.
         - The target (2026-11-01, CLEAN-25): `Appetency` ships its classes as words (1 is the event). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
-        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): one extract of
-          Orange's customer datamart (date not stated, before mid-2009), 100,000 customers resampled toward the labels
-          and split at random by the host; the target, appetency, is read as a purchase of a new product or service
-          after the scoring date, as the marketing use case needs. One extract is one period, too few for three windows
-          (SPLIT-8). The label window and the features' windows are not stated and the features are masked, so neither
-          can be checked. Extracts of later campaigns would allow a temporal split. Not tested: the next campaign. Not
-          taken as stationary (Andrej, 2026-11-18): The target is uptake of a campaign's new offer, which changes by
-          campaign; nothing makes later campaigns interchangeable.
+        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16): one extract of Orange's customer datamart (date not
+          stated, before mid-2009), 100,000 customers resampled toward the labels and split at random by the host; the
+          target, appetency, is read as a purchase of a new product or service after the scoring date, as the marketing
+          use case needs. One extract is one period, too few for three windows (SPLIT-8). The label window and the
+          features' windows are not stated and the features are masked, so neither can be checked. Extracts of later
+          campaigns would allow a temporal split. Not tested: the next campaign. Not taken as stationary (Andrej,
+          2026-11-18): The target is uptake of a campaign's new offer, which changes by campaign; nothing makes later
+          campaigns interchangeable.
     """
 
     accepted_check_warnings = {

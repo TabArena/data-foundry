@@ -117,13 +117,13 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
           words (`CODE_LABELS`), in the same order; 3 unordered codes carry their words: `school`, `address`, `Pstatus`;
           6 scores with no words per level are numbers (`SCORES`): `famrel`, `freetime`, `goout`, `Dalc`, `Walc`,
           `health`.
-        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): one cohort, the
-          2005-2006 school year at two public schools of the Alentejo; the use case predicts early in the year from
-          background and habits, and the target is the final grade at the year's end. One school year is one period, too
-          few for three windows (SPLIT-8). The questionnaire's date in the year is not stated. Later school years would
-          allow a temporal split. Not tested: the next school year. Not taken as stationary (Andrej, 2026-11-18): Two
-          dated Portuguese education sets in the collection are not flat across cohorts and a 2009 reform changed the
-          secondary intake; one 2005-06 cohort cannot stand for later years.
+        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16): one cohort, the 2005-2006 school year at two public
+          schools of the Alentejo; the use case predicts early in the year from background and habits, and the target is
+          the final grade at the year's end. One school year is one period, too few for three windows (SPLIT-8). The
+          questionnaire's date in the year is not stated. Later school years would allow a temporal split. Not tested:
+          the next school year. Not taken as stationary (Andrej, 2026-11-18): Two dated Portuguese education sets in the
+          collection are not flat across cohorts and a 2009 reform changed the secondary intake; one 2005-06 cohort
+          cannot stand for later years.
     """
 
     # Task

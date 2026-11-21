@@ -155,7 +155,7 @@ CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedGroupedFro
 - Every Year-0 premium is set at the start of the policy year and the year's claims follow: one shared moment and a closed window, which the sharpened one-moment rule names a `DelayedTarget`.
 - The split by client stays.
 
-CC (2026-11-16, Andrej): time basis `ForcedGroupedFromTemporal` instead of `DelayedTarget`, which is retired:
+CC (2026-11-16, Andrej): time basis `ForcedGroupedFromTemporal` instead of `DelayedTarget`, which was dropped before it shipped:
 - A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
 - The grouped split stays.
 
@@ -206,15 +206,16 @@ metric unchanged): `drv_sex1` and `drv_sex2` are dropped, since sex is no rating
 of this collection; the task probe was re-run without them (random forest 62.30 against the constant's 63.10, 62.22
 with them). The notes' other model scores were measured with the two columns in and say so.
 
-**Main points:** No issue open. Resolved on 2026-11-13 (Andrej): issue 8, the time basis is `DelayedTarget`. Before that, on 2026-11-10 (Andrej): issue 6, the task stays on Year 0 split by client,
-with a sentence on the yearly drift of the claim level (0% to 6% a year on the AIcrowd copy); issue 7, the floor stays
-at 0.1 EUR, its reason restated under MET-13 as amended on 2026-11-09 (no fact favours a higher value; the floor ranks
-only squared-error fits). Resolved on 2026-11-03: the
-deviance is in (2), euros stay (3) and the name stays (4); verdict ship (Andrej). On 2026-11-08 the floor was lowered
-from Andrej's 1 EUR to 0.1 EUR, following the collection's rule for a deviance floor, a convention that can change later
-(5, Lennart); `pol_pay_freq` is ordered by payments a year (from issue 8 of
-spanish_motor_insurance_coverage_level_2022_2024). The drivers' sex left the features on 2026-11-08, on Lennart's stance
-that sex is no rating factor of any insurance pricing task (australian_vehicle_insurance_2004_2005's issue 7).
+**Main points:** No issue open. The time basis is `ForcedGroupedFromTemporal` (Andrej, 2026-11-16); issue 8 was resolved
+on 2026-11-13 as `DelayedTarget`. Before that, on 2026-11-10 (Andrej): issue 6, the task stays on Year 0 split by
+client, with a sentence on the yearly drift of the claim level (0% to 6% a year on the AIcrowd copy); issue 7, the floor
+stays at 0.1 EUR, its reason restated under MET-13 as amended on 2026-11-09 (no fact favours a higher value; the floor
+ranks only squared-error fits). Resolved on 2026-11-03: the deviance is in (2), euros stay (3) and the name stays (4);
+verdict ship (Andrej). On 2026-11-08 the floor was lowered from Andrej's 1 EUR to 0.1 EUR, following the collection's
+rule for a deviance floor, a convention that can change later (5, Lennart); `pol_pay_freq` is ordered by payments a year
+(from issue 8 of spanish_motor_insurance_coverage_level_2022_2024). The drivers' sex left the features on 2026-11-08, on
+Lennart's stance that sex is no rating factor of any insurance pricing task (australian_vehicle_insurance_2004_2005's
+issue 7).
 
 **Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
 
@@ -752,7 +753,7 @@ that sex is no rating factor of any insurance pricing task (australian_vehicle_i
    * **Earlier views:**
      - CC (2026-11-02, Andrej): 'Forced group splits should be fine.'.
      - CC (2026-11-10, Andrej): stays on Year 0 split by client, drift sentence in splits_comment, no rebuild on the AIcrowd years (issue 6 (a)).
-     - Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-16; DelayedTarget from 2026-11-13, retired).
+     - Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-16; DelayedTarget from 2026-11-13).
    * **Options:**
 
      | | Option | What it does | Pro | Con |

@@ -179,13 +179,13 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
           but commercial, industrial and official clients are a second dimension.
         - Time basis: AssumedStationaryRelation (Andrej, 2026-11-18): the operator ranks its transformers for the year
           right after the inventory, and burns follow lightning density and network exposure, which one year does not
-          change. Before: StationaryRelation (Andrej, 2026-11-16; `DelayedTarget` before, retired): the operator ranks
-          its transformers at the start of 2020 from one inventory of the fleet, and the target is whether a transformer
-          burned during 2020. The source's two label years, its whole span, give one forward comparison: trained on the
-          2019 burns and tested on 2020, LightGBM scores ROC AUC 0.648 against 0.639 on the random folds, so the forward
-          split costs nothing measurable; the stationary-relation test of 2026-11-18 is inconclusive on that one period,
-          as one period cannot be pooled. One window is a thin measurement; a release with more years would allow three
-          windows. It cannot test a later year.
+          change. Before: StationaryRelation (Andrej, 2026-11-16): the operator ranks its transformers at the start of
+          2020 from one inventory of the fleet, and the target is whether a transformer burned during 2020. The source's
+          two label years, its whole span, give one forward comparison: trained on the 2019 burns and tested on 2020,
+          LightGBM scores ROC AUC 0.648 against 0.639 on the random folds, so the forward split costs nothing
+          measurable; the stationary-relation test of 2026-11-18 is inconclusive on that one period, as one period
+          cannot be pooled. One window is a thin measurement; a release with more years would allow three windows. It
+          cannot test a later year.
     """
 
     # Task (stratified on the target)

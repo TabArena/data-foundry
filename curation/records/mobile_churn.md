@@ -69,7 +69,7 @@ CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 1, C): wh
 
 CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedIIDFromTemporal`: the end of the record month is the shared prediction moment and churn follows it (`Target: Later`); the source states neither the churn rule nor its window, which is taken as closed. The random split stays.
 
-CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which was dropped before it shipped:
 - A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
 - The random split stays.
 

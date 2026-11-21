@@ -70,7 +70,7 @@ CC (2026-11-11, Andrej): BeyondArena v0.2 review page. Issue 1 (B): the target i
 
 CC (2026-11-12, Andrej): split checked, the random split kept as a `DelayedTarget` of the June 1997 mailing (BeyondArena v0.2 review page, issue 6, A, after the answer on samples per promotion date and target shifts): every row is about one promotion date (191,758 of the cup's 191,779 donors mailed in June 1997); the 23 earlier promotions are history columns whose responses (0.02% to 36%) the cup's lapsed-donor selection shapes, and a split on the donor dates (recruitment, last gift) tests new kinds of donors, not a later mailing. The numbers are in the definition's `Time basis:` line, which ends with what the split cannot test (the next mailing); the tag enters `data_tags` once PR #50 is in the working copy.
 
-CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which was dropped before it shipped:
 - A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
 - The random split stays.
 

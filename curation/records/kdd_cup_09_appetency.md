@@ -426,7 +426,7 @@ temporal (a note across datasets).
    `curation_comments` bullet. `Var57` belongs to the small set only and has no match in the large set, so it leaves
    with the switch.
 
-CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which was dropped before it shipped:
 - A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
 - The random split stays.
 
@@ -451,7 +451,7 @@ CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedT
      - Sample resampled toward the labels by the host.
      - Consumer purchase propensity measured not flat elsewhere in the collection (online_shoppers).
    * **Earlier views:**
-     - CC (2026-11-06, Andrej): DelayedTarget accepted (issue 2, B), later retired.
+     - CC (2026-11-06, Andrej): DelayedTarget accepted (issue 2, B), later dropped.
      - CC (2026-11-16, Andrej): ForcedIIDFromTemporal in place of DelayedTarget.
      - CC (2026-11-17, Andrej): blind split walk reaches the shipped split.
    * **Options:**

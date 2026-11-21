@@ -77,8 +77,9 @@ the best and the ranks agree across folds (Kendall's W 0.99); the best single ra
 Quality: nothing open. Weighed: the insurer's own policies, task and metric, and a clear if narrow ranking +,
 anonymised features and one undated period -.
 
-**Main points:** Ship as defined (issue 1, decided); random split decided (issue 2); `DelayedTarget` alone (issue 3,
-resolved 2026-11-09); the blanks in three columns stay (issue 4, resolved 2026-11-09).
+**Main points:** Ship as defined (issue 1, decided); random split decided (issue 2); `ForcedIIDFromTemporal` alone
+(issue 3, resolved 2026-11-09 as `DelayedTarget`, changed on 2026-11-16); the blanks in three columns stay (issue 4,
+resolved 2026-11-09).
 
 **Record judgment:** valid, and the record's fields match the definition. The use case is the host's: price a policy
 by the probability that the driver files a claim within a year. The policies carry no dates, so random policy holders
@@ -402,7 +403,7 @@ random draws after measuring it, and the notes could say the same once measured 
    difference in the target distributions is not too crazy, so this is not sufficient to drop." The definition is
    unchanged.
 
-CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which was dropped before it shipped:
 - A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
 - The random split stays.
 
@@ -432,7 +433,7 @@ CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedT
      - Claim levels move by year in the measured motor sets (pricing_game_2016 +16% 2011-2012; AIcrowd 0-6% a year).
    * **Earlier views:**
      - CC (2026-11-04, Andrej): split random, tagged forced from temporal (issue 2); 'I go with a random split, but want to work on a new tag.'.
-     - Time basis line: ForcedIIDFromTemporal (Andrej, 2026-11-16; DelayedTarget before, retired).
+     - Time basis line: ForcedIIDFromTemporal (Andrej, 2026-11-16; DelayedTarget before).
      - CC (2026-11-17, Andrej): blind split walk reaches the shipped random ForcedIIDFromTemporal split.
    * **Options:**
 

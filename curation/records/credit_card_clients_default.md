@@ -85,8 +85,8 @@ EDUCATION (0, 5, 6, with "others") and MARRIAGE (0) are missing by the curator's
 two undocumented codes as numbers (issue 1). Weighed: documented source and a direct decision +, methods separate +,
 one snapshot month for every client (an approximate fit) -.
 
-**Main points:** Random clients, with issue 3's `DelayedTarget` (issue 2, resolved 2026-11-09). The random split is
-named a `DelayedTarget` of one extract and one payment month (issue 3, resolved 2026-11-06). The repayment codes stay
+**Main points:** Random clients (issue 2, resolved 2026-11-09). The time basis is `ForcedIIDFromTemporal`: one extract
+and one payment month (issue 3, resolved 2026-11-06 as `DelayedTarget`, changed on 2026-11-16). The repayment codes stay
 numbers (issue 1, resolved).
 
 **Record judgment:** valid, ship. One bank, one snapshot: every client is scored for October 2005, so the random
@@ -288,7 +288,7 @@ for this dataset; it is not part of this review.
    tag `DelayedTarget` enters `data_tags` once PR #50 is in the working copy. Issue 2 (the split) stays open for its own
    mark.
 
-CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which was dropped before it shipped:
 - A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
 - The random split stays.
 
@@ -317,7 +317,7 @@ CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedT
    * **Earlier views:**
      - CC (2026-11-06, Andrej): time basis DelayedTarget accepted (one moment, shared outcome window)
      - CC (2026-11-09, Andrej): random clients (issue 2, a)
-     - Time basis line (Andrej, 2026-11-16): ForcedIIDFromTemporal, DelayedTarget retired; 'Not tested: a later month'.
+     - Time basis line (Andrej, 2026-11-16): ForcedIIDFromTemporal, DelayedTarget dropped before it shipped; 'Not tested: a later month'.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
