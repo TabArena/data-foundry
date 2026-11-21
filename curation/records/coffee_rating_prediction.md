@@ -80,7 +80,7 @@ CC (2026-11-10, Andrej): decided. The roaster's task is kept; whether it is stil
 
 **Problems found, not changed:**
 
-- The signal left is modest: untuned LightGBM RMSE 1.259 and ridge 1.266, against 1.598 for the training mean and 1.436 for the roaster's past mean score, on the 13 two-month windows. It beats the roaster's mean in 13 of 13 windows, so the task is real, but LightGBM beats ridge in only 7 of 13. Recommended: keep, and check the benchmark spread after the rebuild.
+- The signal left is modest (the spread check of 2026-11-21 settled this: the families separate, TabPFN 1.275 against LightGBM 1.376): untuned LightGBM RMSE 1.259 and ridge 1.266, against 1.598 for the training mean and 1.436 for the roaster's past mean score, on the 13 two-month windows. It beats the roaster's mean in 13 of 13 windows, so the task is real, but LightGBM beats ridge in only 7 of 13. Recommended: keep, and check the benchmark spread after the rebuild.
 
 CC (2026-11-11, Andrej): record field set from the definition: `original_source` Kaggle (was Other).
 
@@ -90,6 +90,8 @@ CC (2026-11-12, Andrej): the review month `review_date` orders and splits the ro
 
 CC (2026-11-18, Andrej): a one-month gap before each two-month window (Review issue 7, B; replaces the no-gap decision of 2026-11-06): the roaster predicts at submission, weeks or months before Coffee Review publishes the score in its review month, so training holds only scores published at least a month before the window. The delay is not stated; one month is the smallest gap the monthly dates allow.
 
+CC (2026-11-21, Andrej): the spread check the keep rested on, run on the rebuilt definition (9 features, the one-month gap, 12 windows, RMSE, three seeds, each family tuned on the newest fifth of its training side): the methods separate. TabPFN 1.275, ridge 1.344, random forest 1.364, LightGBM 1.376, against 1.572 for the training mean; best minus worst is 0.101 paired per window (SE 0.019, 5.4 SE, above the 0.01 floor), so TP-3 keeps the dataset. The three tuned families tie among themselves (LightGBM minus ridge 0.032, SE 0.047); the spread comes from TabPFN, which is ahead of random forest (0.089, SE 0.023) and LightGBM, and 1.6 SE ahead of ridge. On shuffled labels TabPFN scores 1.574, the training mean's own error, so the signal is real.
+
 ## Review
 
 **Outcome:** added. Kept after the changes of 2026-11-10 (issue 5, 2026-11-11). The data are a 2023 Kaggle
@@ -97,11 +99,11 @@ scrape of coffeereview.com: 2,369 coffees reviewed October 2018 to October 2023.
 location, the coffee's name and origin, the roast level, the Agtron roast-colour readings and the price per gram (NT$
 now converted); the review month orders the split but is no input (2026-11-12); the target is the overall score (82
 to 98, mean 93). The six sub-scores, the review notes and, since 2026-11-10, the reviewer's two passages are dropped.
-Validity: every feature exists before the review, which is the roaster's use case. Value: untuned LightGBM reaches skill 0.36 on the 13 windows, but LightGBM and ridge
-are within 0.007 RMSE of each other (issue 5). Weighed: a real roaster's question with signal +, features known before
-the review +, a modest signal and no model spread shown yet -, a scrape without documentation and one rating service -.
+Validity: every feature exists before the review, which is the roaster's use case. Value: on the rebuilt definition the methods separate (TabPFN 1.275 against LightGBM 1.376, paired 0.101 with SE
+0.019 over the 12 windows), and every family beats the training mean's 1.572 (issue 5, 2026-11-21). Weighed: a real roaster's question with signal +, features known before
+the review +, a modest signal, with a measured spread between the method families +, a scrape without documentation and one rating service -.
 
-**Main points:** Nothing open; check the methods' spread after the rebuild (issue 5). Settled: a one-month gap before
+**Main points:** Nothing open (the spread check of issue 5 ran on 2026-11-21: the methods separate). Settled: a one-month gap before
 each two-month window (issue 7, B, 2026-11-18); the review month orders
 and splits the rows but is no model input (issue 6, B, 2026-11-12); kept without the reviewer's text (issue 5, A,
 2026-11-11). Issues 1, 2 and 4 were resolved on 2026-11-10 (text dropped, NT$ converted, `Target: Varying Delay`);
@@ -296,6 +298,20 @@ defined. The licence is `None`: the review text is coffeereview.com's, scraped b
 
    **Resolved (2026-11-11, Andrej):** A (`ok`): kept as the 9-feature roaster-side task, with a CC line in the record.
    After the rebuild, check the spread of the benchmark methods; retire only if they tie there too.
+
+   **Resolved (2026-11-21, Andrej):** the check ran on the rebuilt definition: the families do not tie. Over the 12
+   windows, mean RMSE TabPFN 1.275, ridge 1.344, random forest 1.364, LightGBM 1.376, training mean 1.572; best minus
+   worst is 0.101 paired per window with SE 0.019, so TP-3 keeps the dataset. The three tuned families tie among
+   themselves (LightGBM minus ridge 0.032, SE 0.047) and the spread rests on TabPFN, untuned against the others'
+   small grids. On shuffled labels TabPFN reaches 1.574, the training mean's error, so the signal is real.
+
+   | Family | Mean RMSE | Paired against the best | Beats the training mean |
+   |---|---|---|---|
+   | TabPFN | 1.275 | - | 11 of 12 |
+   | ridge | 1.344 | +0.069 (SE 0.043) | 11 of 12 |
+   | random forest | 1.364 | +0.089 (SE 0.023) | 12 of 12 |
+   | LightGBM | 1.376 | +0.101 (SE 0.019) | 11 of 12 |
+   | training mean | 1.572 | +0.297 | - |
 
 6. **Should the time column be a model input?**
 
