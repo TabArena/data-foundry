@@ -55,15 +55,15 @@ CC (2026-10-27, Lennart): fit approximate (was direct): patients with metastases
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `seer_primary_site_from_metastases` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Keep, and drop the 61 rows without a tissue type: the population gap is named (fit approximate, Selection Bias) and the methods separate, but the missing tissue type marks lung and carries about 5% of the skill. Priority 1: gap 1, use case 0, source 0, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Keep, and drop the 61 rows without a tissue type: the population gap is named (fit approximate, Selection Bias) and the methods separate, but the missing tissue type marks lung and carries about 5% of the skill. Priority 1: gap 1, use case 0, source 0, shape 0, risk -1.
 
-CC (2026-11-09, Andrej): kept (review page issue 1, A). The random split is tagged forced from temporal (issue 3, reply a): no date survives, and a `StationaryRelation` must be measured. The repeated patients stay as distinct patients with the same coarse findings (issue 4, A).
+CC (2026-11-09, Andrej): kept (Review issue 1, A). The random split is tagged forced from temporal (issue 3, reply a): no date survives, and a `StationaryRelation` must be measured. The repeated patients stay as distinct patients with the same coarse findings (issue 4, A).
 
-CC (2026-11-11, Andrej): still kept after lung_cancer's retirement (review page issue 5, A). A retrospective series of patients whose primary was found is the known ground truth this task needs; every patient has the site identified. Unlike lung_cancer, whose label is read from the measured specimen, the primary site here comes from a separate work-up.
+CC (2026-11-11, Andrej): still kept after lung_cancer's retirement (Review issue 5, A). A retrospective series of patients whose primary was found is the known ground truth this task needs; every patient has the site identified. Unlike lung_cancer, whose label is read from the measured specimen, the primary site here comes from a separate work-up.
 
-CC (2026-11-11, Andrej): the 61 blank tissue types stay (review page issue 2, A: drop only a leak that cannot be resolved otherwise). The blank is no leak: 44 of the 61 are poorly differentiated (34 lung), a "type not determined" result a work-up also gives; the 15 rows with neither type nor grade are 27% lung, the base rate. The curation notes say so.
+CC (2026-11-11, Andrej): the 61 blank tissue types stay (Review issue 2, A: drop only a leak that cannot be resolved otherwise). The blank is no leak: 44 of the 61 are poorly differentiated (34 lung), a "type not determined" result a work-up also gives; the 15 rows with neither type nor grade are 27% lung, the base rate. The curation notes say so.
 
-CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 7, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. An old one-time study used today with a changed work-up is a long span in a changing domain.
 
@@ -85,7 +85,8 @@ the use case's, a class-dependent gap and a 1980s feature set -.
 
 **Main points:** Kept (issue 1), still kept after lung_cancer's retirement (issue 5, 2026-11-11); the random split
 tagged forced from temporal (issue 3), the repeated patients kept (issue 4) and the 61 blank tissue types kept as a
-real "type not determined" result, no leak (issue 2). Nothing open.
+real "type not determined" result, no leak (issue 2). The forced tag stays (issue 6 withdrawn 2026-11-13; issue 7, A,
+2026-11-18). Nothing open.
 
 **Record judgment:** the record's open points (ordinal encoding, small classes) are settled in the definition and in
 Lennart's comment of 2026-10-12, and the cohort gap is in `fit_reason` and the curation notes since 2026-10-20 (fit

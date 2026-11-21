@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_risk
 container_format: 2
-checksum: v2:950a41c512321ac2b82952c8c1c32d4e4ab04d5a0bc54d133acdbad74da4db7d
+checksum: v2:9c26578d545f2169012c96993db5d223182d7d47b814bc2345d3f5399ae1924b
 build:
   uuid: 01a111fb-c9a4-79ac-b807-b4b9dffd8068
   checksum: v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f
@@ -78,7 +78,7 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 307,507 rows and 709 features. Source: Kaggle (2018).
 
-Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:950a41c512321ac2b82952c8c1c32d4e4ab04d5a0bc54d133acdbad74da4db7d`, so the build is stale. See [Build](#build).
+Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9c26578d545f2169012c96993db5d223182d7d47b814bc2345d3f5399ae1924b`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -205,15 +205,17 @@ We start from this file.
 - Potential leak, kept on purpose: the 43 building columns (`*_AVG`, `*_MODE`, `*_MEDI`, `TOTALAREA_MODE`) are "normalized information about building where the client lives" (HomeCredit_columns_description.csv) and each spans exactly 0 to 1, so Home Credit likely scaled them over all applications, ours included; the method is not documented and no raw values exist. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak; revisit if Home Credit documents it.
 - We replace values that became inf after aggregation with NaN. This occurred across several aggregated columns.
 - Time basis: ForcedIIDFromTemporal: loan applications over a period Home Credit does not state, the label
-  payment difficulties on the first instalments; a lender scores later applicants. Every date is relative to
-  the application ("time only relative to the application", HomeCredit_columns_description.csv), the default
-  rate is flat along SK_ID_CURR (7.9% to 8.3% per tenth), and the earlier applications' ids do not follow
-  their decision day (Spearman 0.02), so no date can be rebuilt (Time: Lost). Leak test across the split:
-  5.4% of the applications share a client with another (same sex and the same days between birth and ID
-  issue and between birth and registration); the split tests each client's latest application and keeps the
-  client's earlier ones in training only (below), so no test row has its client's later application in
-  training. The random split cannot test how the score holds for later applicants; application dates would
-  allow a split by time.
+  payment difficulties on the first instalments; a lender scores later applicants. Every date is relative to the
+  application ("time only relative to the application", HomeCredit_columns_description.csv), the default rate is
+  flat along SK_ID_CURR (7.9% to 8.3% per tenth), and the earlier applications' ids do not follow their decision
+  day (Spearman 0.02), so no date can be rebuilt (Time: Lost). Leak test across the split: 5.4% of the
+  applications share a client with another (same sex and the same days between birth and ID issue and between
+  birth and registration); the split tests each client's latest application and keeps the client's earlier ones
+  in training only (below), so no test row has its client's later application in training. The random split
+  cannot test how the score holds for later applicants; application dates would allow a split by time. Not taken
+  as stationary (Andrej, 2026-11-18): The same lender documents score decay and recording changes in its dated
+  data; no mechanism makes later applicants interchangeable. A stationary-relation test on
+  home_credit_default_stability_1m would add a measured similar case but cannot set ASR here.
 - Returning clients (Andrej, 2026-11-11): 16,489 applications (5.4%) share a client key with another
   (8,004 clients); inside a client the order is exact, as `DAYS_BIRTH` counts back from each application, so
   the older (more negative) row is the later application, and in 61% of the pairs the later one lists the
@@ -229,9 +231,9 @@ We start from this file.
   | random (shipped before) | 3.7% | 0.7578 / 0.7865 | 0.7643 |
   | later application tested, earlier ones in training (shipped) | 2.5% | 0.7573 / 0.7862 | 0.7613 |
   | same folds, earlier applications dropped | 0% | 0.7570 / 0.7861 | 0.7556 |
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
-  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass cycles, in
-  their usual order (the wrap is not shown).
+- Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are
+  ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass
+  cycles, in their usual order (the wrap is not shown).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 2 scores with no words per level are
   numbers (`SCORES`): `REGION_RATING_CLIENT`, `REGION_RATING_CLIENT_W_CITY`.
@@ -263,7 +265,7 @@ release has no application dates, so this stands in for a split by time.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 218,329,970 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 218,329,970 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
@@ -509,4 +511,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:950a41c512321ac2b82952c8c1c32d4e4ab04d5a0bc54d133acdbad74da4db7d` |
+| stale | yes: the definition now gives checksum `v2:9c26578d545f2169012c96993db5d223182d7d47b814bc2345d3f5399ae1924b` |

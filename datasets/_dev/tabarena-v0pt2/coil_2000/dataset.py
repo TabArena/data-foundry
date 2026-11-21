@@ -1113,7 +1113,7 @@ class Coil2000(AbstractCuratedDataset):
           The two challenge files are a random partition of one undated extract; grouping the copies leaves the score
           unchanged (ROC AUC 0.749 grouped against 0.750 random, 5-fold LightGBM). 21% to 22% of test rows have a
           look-alike in training.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 58 columns are
+        - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 58 columns are
           ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 55 of them decoded from the
           source's codes into its words (`CODE_LABELS`, 2026-11-01).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what

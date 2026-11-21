@@ -176,9 +176,9 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
           | random (shipped before) | 3.7% | 0.7578 / 0.7865 | 0.7643 |
           | later application tested, earlier ones in training (shipped) | 2.5% | 0.7573 / 0.7862 | 0.7613 |
           | same folds, earlier applications dropped | 0% | 0.7570 / 0.7861 | 0.7556 |
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
-          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass cycles, in
-          their usual order (the wrap is not shown).
+        - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are
+          ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass
+          cycles, in their usual order (the wrap is not shown).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 2 scores with no words per level are
           numbers (`SCORES`): `REGION_RATING_CLIENT`, `REGION_RATING_CLIENT_W_CITY`.

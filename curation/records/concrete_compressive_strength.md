@@ -13,6 +13,7 @@ claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
+- Non-IID (Grouped)
 - 'Samples: No Time Dimension'
 - 'Entities: Recur'
 - Experimental Results
@@ -53,17 +54,17 @@ CC (2026-10-14, Lennart): Grouped by mix: a new prediction is for a mix not test
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `blended_cement_concrete_strength` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after merging re-entered records into their mix's group: 114 same-age pairs differ only by rounding (77% identical strength vs 0.12% by chance), so 17% of test rows have a copy of their mix in training; LightGBM R^2 0.864 -> 0.839. Priority 3: gap 0, use case 1, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after merging re-entered records into their mix's group: 114 same-age pairs differ only by rounding (77% identical strength vs 0.12% by chance), so 17% of test rows have a copy of their mix in training; LightGBM R^2 0.864 -> 0.839. Priority 3: gap 0, use case 1, source 1, shape 1, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): laboratory tests of designed mixes, the strength measured at a stated age, with no test date. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted (Review  2, B, through the cross-dataset item on routine `Timeless` issues): laboratory tests of designed mixes, the strength measured at a stated age, with no test date. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 CC (2026-11-11, Andrej): record fields filled from the definition (both were empty): `problem_type` Regression (dataset.py predicts the strength in MPa, RMSE), `domain` chemistry & material science (as for blended_cement_concrete_strength).
 
-CC (2026-11-11, Andrej): the data described as a compilation of published studies, not one laboratory's tests (BeyondArena v0.2 review page, issue 3, B): Yeh 1998 compiled the rows from 17 sources (its reference list names 8 Taiwanese master's theses and 8 journal papers, 7 in ACI Materials Journal). `fit_reason` and the row text of the definition say so; text only, the data is unchanged.
+CC (2026-11-11, Andrej): the data described as a compilation of published studies, not one laboratory's tests (Review issue 3, B): Yeh 1998 compiled the rows from 17 sources (its reference list names 8 Taiwanese master's theses and 8 journal papers, 7 in ACI Materials Journal). `fit_reason` and the row text of the definition say so; text only, the data is unchanged.
 
-CC (2026-11-11, Andrej): split by mix kept, not by source study (BeyondArena v0.2 review page, issue 4, a): the UCI file falls into about 11 source blocks (decimals, units, age schedules) that cannot be tied cleanly to the 17 sources of Yeh 1998; grouped by block, TabPFN R^2 falls to 0.70 from 0.91 by mix, and the use case is a new mix, not a new laboratory. A note in `curation_comments` says the split does not test a new laboratory; text only, the data is unchanged.
+CC (2026-11-11, Andrej): split by mix kept, not by source study (Review issue 4, a): the UCI file falls into about 11 source blocks (decimals, units, age schedules) that cannot be tied cleanly to the 17 sources of Yeh 1998; grouped by block, TabPFN R^2 falls to 0.70 from 0.91 by mix, and the use case is a new mix, not a new laboratory. A note in `curation_comments` says the split does not test a new laboratory; text only, the data is unchanged.
 
-CC (2026-11-12, Andrej): re-entered tests dropped (BeyondArena v0.2 review page, issue 1, c); the input data changed: 1,030 to 938 rows, 428 to 338 mixes.
+CC (2026-11-12, Andrej): re-entered tests dropped (Review issue 1, c); the input data changed: 1,030 to 938 rows, 428 to 338 mixes.
 
 **Changes made:**
 
@@ -75,7 +76,7 @@ CC (2026-11-12, Andrej): re-entered tests dropped (BeyondArena v0.2 review page,
 - 48 row pairs at one age with all amounts within 1 kg carry another strength (a median 2.9 MPa apart): separate tests, kept; they can sit on both sides of the split.
 - The record fields `domain` and `problem_type`, marked for update, already match the definition (filled on 2026-11-11).
 
-CC (2026-11-17, Andrej): the declared split (grouped on `mix`, 10x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `mix`, 10x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -404,7 +405,7 @@ data as high-performance mixes compiled by Yeh 1998 from 17 published studies, m
      - The blocks are not the 17 sources of Yeh 1998: one block holds 27 single mixes of several papers, another 14 age
        schedules, and which block is which reference is a guess (the paper was not read).
      - Grouped by block, every model loses 0.13 to 0.30 R^2 and LightGBM falls below ridge.
-   * **Background:** Andrej asked on the page (2026-11-11, dataset note): "Could a split by source make sense?" The mix
+   * **Background:** Andrej asked (2026-11-11, dataset note): "Could a split by source make sense?" The mix
      split asks for a new mix design from the same pool of studies (the use case: an engineer with past results). A
      source split asks for a new laboratory's materials, aggregates and curing, which the seven amounts do not
      describe, on a key reconstructed from the file order[^4a].

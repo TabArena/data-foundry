@@ -50,9 +50,9 @@ Follow preprocessing of Tschalzev et al. and check if splits are usable as IID
 
 **Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the raw transaction value, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship only after grouping by customer: 72% of rows have a later snapshot whose lag column holds their exact target (69% of test rows exposed under the random split, 8.8% RMSLE gain for a model that uses it); an exact k-step shift key gives 1,196 customer groups and 0% exposure; otherwise retire. Priority 1: gap 0, use case 0, source 0, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship only after grouping by customer: 72% of rows have a later snapshot whose lag column holds their exact target (69% of test rows exposed under the random split, 8.8% RMSLE gain for a model that uses it); an exact k-step shift key gives 1,196 customer groups and 0% exposure; otherwise retire. Priority 1: gap 0, use case 0, source 0, shape 0, risk -1.
 
-CC (2026-11-06, Andrej): Kept, split changed to whole customers (option D of the v0.2 review, decided 2026-11-05). The rows are snapshots of the same customers at different times, and a later snapshot holds an earlier one's target among its lag columns (Giba's "data property", https://www.kaggle.com/competitions/santander-value-prediction-challenge/discussion/61329), so under the random split 69-71% of test rows had a later snapshot of their own customer in training.
+CC (2026-11-06, Andrej): Kept, split changed to whole customers (Review issue 1, option D, decided 2026-11-05). The rows are snapshots of the same customers at different times, and a later snapshot holds an earlier one's target among its lag columns (Giba's "data property", https://www.kaggle.com/competitions/santander-value-prediction-challenge/discussion/61329), so under the random split 69-71% of test rows had a later snapshot of their own customer in training.
 
 **Changes made** (same 4,447 rows and 540 summaries; new split, record fields):
 
@@ -68,9 +68,9 @@ CC (2026-11-06, Andrej): Kept, split changed to whole customers (option D of the
 
 CC (2026-11-06, Andrej): the declared metric (the competition's RMSLE on the raw transaction value, computed after the inverse of the stored log1p) is checked and stays as declared, and so does the declared split (whole customers held out, 3x3 grouped folds). Ship; built with the next rebuild.
 
-CC (2026-11-10, Andrej): review page marks: a `Time basis: ForcedGroupedFromTemporal:` bullet in `curation_comments` says what dated snapshots would change (issue 2, option B; tag and split unchanged). The record's facts are `Time: Lost` in place of `Time: Dated`, plus `Time: Within Entity` (issue 3, "Agree" with the 2026-11-09 Answer): the shifted columns order each customer's own snapshots, nothing orders customers against each other.
+CC (2026-11-10, Andrej): decided: a `Time basis: ForcedGroupedFromTemporal:` bullet in `curation_comments` says what dated snapshots would change (issue 2, option B; tag and split unchanged). The record's facts are `Time: Lost` in place of `Time: Dated`, plus `Time: Within Entity` (issue 3, "Agree" with the 2026-11-09 Answer): the shifted columns order each customer's own snapshots, nothing orders customers against each other.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `customer`, 3x3 folds, `ForcedGroupedFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `customer`, 3x3 folds, `ForcedGroupedFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Andrej's own earlier review already ruled out a stationary relation because transaction values move with the period; an order within each entity alone does not argue for interchangeable later samples.
 
@@ -95,7 +95,8 @@ removes it +, no dates and a small file -.
 **Main points:** Grouped by customer (issue 1, decided: D, the exact key and the confirmed sparse matches);
 ship (Andrej, 2026-11-06), with the split and the metric checked as declared; the container is not rebuilt yet. Settled on
 2026-11-10: the `Time basis:` bullet on what dated snapshots would change (issue 2), and the record's facts `Time:
-Lost` and `Time: Within Entity` (issue 3).
+Lost` and `Time: Within Entity` (issue 3). The forced tag stays rather than `AssumedStationaryRelation` (issue 4,
+A, 2026-11-18). Nothing open.
 
 **Record judgment:** valid as data (real snapshots of real customers, anonymised by the host); the random split of
 the review let a later snapshot give the target away, and the split holds out whole customers since 2026-11-06.
@@ -408,7 +409,7 @@ the review let a later snapshot give the target away, and the split holds out wh
    * **Earlier views:**
      - CC (2026-11-06, Andrej): kept, split by whole customers, ForcedGroupedFromTemporal (option D)
      - CC (2026-11-10, Andrej): Time basis line on what dated snapshots would change; facts Time: Lost + Time: Within Entity; review answer: 'transaction values move with the period, so not a StationaryRelation'.
-     - CC (2026-11-17, Andrej): blind split review: the decision tree, walked without the current split, reaches the forced split it ships.
+     - CC (2026-11-17, Andrej): blind split walk: the decision tree, walked without the current split, reaches the forced split it ships.
    * **Options:**
 
      | | Option | What it does | Pro | Con |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: allstate_claims_severity
 container_format: 2
-checksum: v2:9b74337688a17e2f89ed25fed388a68e7f900541380c987a674d84c88c6659d4
+checksum: v2:5578ae9c2ade8c0d358302c5cad21a1a67b65260078eecdba7fc621d98339e38
 build:
   uuid: 01a111fc-59f8-730c-b058-7264a71a29bc
   checksum: v2:9bd68a8cd28f8fa26681521215dc26941632195f1a568a197a26eeb59caa380c
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `loss`, scored with `mae` on IID splits. 188,317 rows and 130 features. Source: Kaggle (2016).
 
-Built as `01a111fc-59f8-730c-b058-7264a71a29bc` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9b74337688a17e2f89ed25fed388a68e7f900541380c987a674d84c88c6659d4`, so the build is stale. See [Build](#build).
+Built as `01a111fc-59f8-730c-b058-7264a71a29bc` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5578ae9c2ade8c0d358302c5cad21a1a67b65260078eecdba7fc621d98339e38`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -124,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2016 |
 | domain | insurance |
 | license | Kaggle Competition Rules |
-| data_tags | IID, ForcedIIDFromTemporal, Anonymized |
+| data_tags | IID, Anonymized, ForcedIIDFromTemporal |
 | reference | Ferguson2016AllstateClaimsSeverity |
 | rows x columns | 188,317 x 131 |
 | task.target | loss |
@@ -201,7 +201,9 @@ We start with the train.csv from Kaggle.
   known after a settlement time that differs by claim; the release keeps no claim date and the id is a random
   draw (a model tells low from high ids at ROC AUC 0.501; training on the first 80% of ids scores RMSE 0.535
   against 0.538 to 0.541 on random splits), so random claims stand in for the claims to come. A dated release
-  would allow a split by filing date and show whether `loss` is final.
+  would allow a split by filing date and show whether `loss` is final. Not taken as stationary (Andrej,
+  2026-11-18): Claim severity is driven by prices, litigation and settlement practice, all documented to drift;
+  no domain reason makes later claims interchangeable.
 
 ## Splits
 
@@ -223,7 +225,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -414,4 +416,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9b74337688a17e2f89ed25fed388a68e7f900541380c987a674d84c88c6659d4` |
+| stale | yes: the definition now gives checksum `v2:5578ae9c2ade8c0d358302c5cad21a1a67b65260078eecdba7fc621d98339e38` |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: early_learning_predictors
 container_format: 2
-checksum: v2:d5706fc0f76564de8ddfbba05b98de7d67c3a65d8e4aa1709d43543e8b20e25c
+checksum: v2:6840f0c8bb4404c5311116799feb24e8d7586aedf6cb75613609322ed56c4dc7
 build:
   uuid: 01a1d456-e3ed-7619-a175-71edb149573f
   checksum: v2:9f19f13587e587573f9567fad966ee60b791686873463504277d2ee738abeb82
@@ -69,7 +69,6 @@ bundle_checks:
   infos:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
-  - meta_time_basis_missing
   - meta_time_present_unused
   accepted: {}
 decisions: []
@@ -81,7 +80,7 @@ decisions: []
 
 Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 735 features. Source: Other (2024).
 
-Built as `01a1d456-e3ed-7619-a175-71edb149573f` on 2026-11-13, but `dataset.py` has changed since: it now gives checksum `v2:d5706fc0f76564de8ddfbba05b98de7d67c3a65d8e4aa1709d43543e8b20e25c`, so the build is stale. See [Build](#build).
+Built as `01a1d456-e3ed-7619-a175-71edb149573f` on 2026-11-13, but `dataset.py` has changed since: it now gives checksum `v2:6840f0c8bb4404c5311116799feb24e8d7586aedf6cb75613609322ed56c4dc7`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -145,7 +144,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2024 |
 | domain | education |
 | license | Creative Commons CC-BY (Attribution-only) License |
-| data_tags | Non-IID, Grouped |
+| data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | DataDrive2030_2024_elom_thrivebyfive |
 | rows x columns | 18,874 x 737 |
 | task.target | child_total_elom |
@@ -211,7 +210,7 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
 - The data is collected for predictive analytics to find major drivers of early learning outcomes. Nevertheless, predictive performance matters and the data could also be used for identifying at risk children.
 - The data consists of different subsets that were collected at different times. Sometimes the target was even collected before the predictors. Although the data is collected over time, the task is cross-sectional. Therefore, we drop most date features, after checking whether relevant information was already extracted.
 - We use a grouped split based on id_facility to reflect a potential deployment scenario where we want to predict for a new facility. Note that a date (year) is available, but the data collection is conducted per facility so we don't use a time-based split.
-- Time order (2026-11-13, Andrej; Review issues 3 and 6): the children were assessed in about eight field
+- Time order (2026-11-13, Andrej): the children were assessed in about eight field
   campaigns, 2016-2023, each its own study with its own sample of facilities and questionnaire; the date
   follows from birth date and age (82% of the children) or the dropped `child_date` and `data_year`. A split
   by campaign (each campaign of 2022 and 2023 tested once on all earlier ones, chosen on 2026-11-12) was
@@ -222,9 +221,8 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
   training mean; r 0.32 against 0.30), and removing each campaign's mean error left 14.20 against 12.90 on
   the facility split, so the gap is the missing features, not a campaign offset. On the facility split
   LightGBM scores 12.91 (r 0.56; `child_age` alone 14.47). The facility split learns a campaign's level and
-  questions from its other facilities: it stands for a facility a campaign did not reach. Evidence: Slurm
-  1383049, 1383051, 1383087, 1383111, 1383112.
-- Feature modules (2026-11-13, Andrej; Review issue 7, option A): every child keeps every column; a module
+  questions from its other facilities: it stands for a facility a campaign did not reach.
+- Feature modules (2026-11-13, Andrej): every child keeps every column; a module
   a study did not run stays missing, so the use case is the child's record plus whichever facility
   instruments the study ran. Children with each module (half its columns filled): the child's record 18,874;
   the teacher's rating (21 columns) 7,785; the facility observation (160) 7,646; the registers (73) 6,873;
@@ -234,8 +232,7 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
   group as well or better than one trained on that group's rows only: own record only 12.96 against 13.16
   (`child_age` alone 14.77), with the observation 12.79 against 12.79 (14.09), with the interviews 12.19
   against 12.27 (14.11). The own-record-only children reach r 0.58 here against 0.32 on campaigns not seen
-  in training, so most of their gain over age is their campaign, learned from its other facilities
-  (Slurm 1383202).
+  in training, so most of their gain over age is their campaign, learned from its other facilities.
 - The target score ELOM is continuous, but decisions are made based on cutoffs to identify at-risk children. We keep the task as regression, to maintain the most information.
 - Note: The data consists of different age groups, for which the ELOM score is computed differently. While under these circumstances a multi-class target using the given cutoffs might be a valid choice, the age is given  as a feature and therefore, we assume that a model can be expected to learn patterns for subgroups.
 - The data is collected from several sources, including direct assessments, teacher questionnaires, parent surveys and facility data. The data is collected by different enumerators across different facilities. The target is from a separate tool (see further information below).
@@ -248,9 +245,9 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
   `pri_calc_time_close` ("HH:MM") are present only where the hour and minute columns are and equal to them, so
   they are dropped, as is `certificate_registration_npo`, a copy of `certificate_register`; 26 columns of the
   enumerators' free text (the "other" answers and the explanations of flagged measurements) are strings, and
-  three more on 2026-11-13 (Andrej; Review issue 8, option B): `pri_fees_exceptions_other` (124 different
+  three more on 2026-11-13 (Andrej): `pri_fees_exceptions_other` (124 different
   answers in 581 children), `pri_expenseother` (83 in 582) and `pra_online_training_details` (66 in 346).
-- Multi-select lists dropped (2026-11-13, Andrej; Review issue 9, option B): `obs_materials`, `obs_area`,
+- Multi-select lists dropped (2026-11-13, Andrej): `obs_materials`, `obs_area`,
   `obs_hazard` and `pri_covid_precautions` hold the codes a facility ticked as one space-separated string
   (1,134, 167, 94 and 33 different values) and agree in every cell with their per-code yes/no columns (22, 9,
   10 and 7 columns; 7,657, 7,646, 2,343 and 2,332 children), which stay. `pri_covid_awareness` stays: it
@@ -265,7 +262,7 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
   the DSD subsidy amount are programmes that receive it), while a skipped question is blank, so they are
   unanswered questions; the source does not say which code is which. They become missing values. The 46
   columns that held them are counts, rand amounts per month, a year and a timer in minutes, `numeric` in the
-  source's codebook: they are numbers, no longer categories (CLEAN-10, CLEAN-14; issue #36). The timer,
+  source's codebook: they are numbers, no longer categories (CLEAN-10, CLEAN-14). The timer,
   `teacher_duration`, is dropped (below).
 - We drop all indicator columns.
 - We drop some repeated columns, such as age_group_label.
@@ -278,7 +275,7 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
   should be used for prediction, so we drop it with the other ids, although it is predictive and explains
   noise in the target.
 - The ward ships as the national ward code `id_ward_best` (8 digits, 569 wards), a category, in place of
-  `ward_best`, the ward's number within its municipality (2026-11-05, Lennart, GitHub issue #48, CLEAN-14):
+  `ward_best`, the ward's number within its municipality (2026-11-05, Lennart, CLEAN-14):
   as a number `ward_best` read as an order of places that does not exist, and 101 numbers stood for 569
   wards (ward 4 of Steve Tshwete is 83103004, ward 4 of Dr JS Moroka 83106003). The ward is a location, kept
   like the municipality, district and province, not an id of the data collection like the other `id_`
@@ -287,8 +284,8 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
   dropped: it exists only in the 2021 round (5,222 children), so it is a unit of that survey's sample design
   and marks the round, which we drop as `data_year`; the ward is a place a new facility has too, recorded in
   the 2020-2022 rounds (2026-11-05, Lennart).
-- `id_facility` is numbered per study, not one number per facility across studies (2026-11-12, Andrej;
-  Review issue 4, option B). Where two campaigns share a number, the facility's province and quintile
+- `id_facility` is numbered per study, not one number per facility across studies (2026-11-12,
+  Andrej). Where two campaigns share a number, the facility's province and quintile
   agree within October 2020 to March 2022 (province 32 of 32 and 90 of 90, quintile 90 of 90) and elsewhere
   no more often than for two random facilities (quintile 0.30 against 0.27 for the 337 numbers that 2021
   shares with January-May 2023; province 6 of 52 and 5 of 27 for the pairs of 2022 and 2023 campaigns). So
@@ -306,7 +303,7 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
 - Anomaly: Many missing values
 - Feature families by column name (from the v1 exploration, counted 2026-10-22 on the cleaned data, 745 columns; a column can match more than one): pri 258, obs 161, pra 149, count_ 74, pqa 35, child 25, teacher 22. 576 columns are also in the Zindi train file, 136 more are pra/pqa/pri/obs columns not in it, and 33 others are new (among them the target, child_total_elom; Zindi calls it target). 102 Zindi columns are not in our data, among them latitude, longitude, the ward, municipality and province ids and the date columns. 80% of the cells are missing and every row has a missing value.
 - Anomaly: This is a highly underspecified task, leaving a lot of data cleaning to the user/model.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 86 columns are
+- Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 86 columns are
   ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 66 of them decoded from the
   source's codes into its words (`CODE_LABELS`, 2026-11-01); codes that mean unknown are missing (CLEAN-10).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
@@ -319,6 +316,8 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
   `pri_mobile`, `pra_gender`; 7 scores with no words per level are numbers (`SCORES`): `quintile`,
   `pra_class_space_2`, `pra_satisfaction_support`, `ses_cat`, `ses_proxy`, `teacher_familiarity_with_child`,
   `teacher_selfcare_total`.
+- Time basis: UnseenGroup: the use case predicts for a facility not yet assessed, so the split holds out
+  facilities and does not weigh the assessment round (dropped as `data_year`). It cannot test a later round.
 
 ## Splits
 
@@ -364,12 +363,11 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 4 info (27 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 3 info (28 checks run, plus the dataset's own checks).
 
 - **warning** `task_feature_looks_like_exposure`: Feature(s) ['programme_exposure'] look like an amount at risk (time insured, area swept). A realized one is cut by the outcome and never a feature; it is the rate's denominator and the weight (LEAK-41, MET-15). (hint: Say in the notes what the column is (planned or realized) and accept the warning, or ship the rate with the column as `sample_weight`.)
 - **info** `dataset_duplicate_rows`: 3 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 30 row(s) (0.2%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
-- **info** `meta_time_basis_missing`: The split is not temporal and the definition does not say why. (hint: Add the use-case prototype (Timeless, Snapshot, DelayedTarget, StationaryRelation) with a `Time basis:` line in `curation_comments`, a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`) with its line, or the line alone with the reason, SPLIT-32.)
 - **info** `meta_time_present_unused`: Date columns ['child_dob', 'pra_dob'] are in the data, and the split is not temporal. (hint: Information for the split (SPLIT-32): the data carries dates.)
 
 ## Data checks
@@ -607,4 +605,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 33221e166276781bf815b26fc972657cb578dfc2-dirty |
 | libraries | {'python': '3.11.16', 'pandas': '2.3.3', 'numpy': '2.4.6', 'pyarrow': '24.0.0', 'scikit-learn': '1.7.2', 'polars': '1.44.2'} |
-| stale | yes: the definition now gives checksum `v2:d5706fc0f76564de8ddfbba05b98de7d67c3a65d8e4aa1709d43543e8b20e25c` |
+| stale | yes: the definition now gives checksum `v2:6840f0c8bb4404c5311116799feb24e8d7586aedf6cb75613609322ed56c4dc7` |

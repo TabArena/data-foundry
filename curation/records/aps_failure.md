@@ -60,15 +60,15 @@ CC (2026-10-21, Lennart): the declared metric stays as it is (`cost_matrix`: a f
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `scania_component_x` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after keeping one row per truck: 30% of rows have a near copy (140-169 of 170 counters equal) that always shares the label, and the random split puts one in training for 21% of test rows. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after keeping one row per truck: 30% of rows have a near copy (140-169 of 170 counters equal) that always shares the label, and the random split puts one in training for 21% of test rows. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
 CC (2026-11-10, Andrej): ok (review issue 2, A): the random split keeps `ForcedIIDFromTemporal`, now with its `Time basis:` line in `curation_comments`.
 - Failures are undated, and the challenge's two files are not shown to be two periods (near copies across them go either way, 2,237 against 2,220 pairs).
 - `fit_reason` and the split summary no longer call the challenge's test rows later readings.
 
-CC (2026-11-11, Andrej): record field set from the definition (review page field mark): `domain` industry & manufacturing.
+CC (2026-11-11, Andrej): record field set from the definition: `domain` industry & manufacturing.
 
-CC (2026-11-12, Andrej): copies of one read-out dropped and the same truck held out together (BeyondArena v0.2 review page, issue 1, cg); the input data changed: 76,000 to 63,937 rows, a random split to one by truck.
+CC (2026-11-12, Andrej): copies of one read-out dropped and the same truck held out together (Review issue 1, cg); the input data changed: 76,000 to 63,937 rows, a random split to one by truck.
 
 **Changes made:**
 
@@ -80,7 +80,7 @@ CC (2026-11-12, Andrej): copies of one read-out dropped and the same truck held 
 - No time order hides in the copies: the one counter that changes between them, `bx_000`, is a usage counter that moves by a small step either way, so a split by time cannot be rebuilt (issue 2 stands).
 - 368 rows with 100 or more blank counters agree with each other on blanks only: look-alikes, not copies, kept.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `truck`, 3x3 folds, `ForcedGroupedFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `truck`, 3x3 folds, `ForcedGroupedFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A physical-measurement argument exists, but the label depends on fleet and workshop practice that the definition itself says moves with season and fleet, and no comparable dated set tested flat.
 
@@ -105,7 +105,8 @@ separate +, repeated trucks across the split -, anonymised counters and no dates
 **Main points:** Applied on 2026-11-12 (issue 1, cg): one row per copied read-out (63,937 of 76,000 rows), then a
 split by truck (61,466 trucks from the links at 60 counters), so 0.05% of the test rows keep a linked row in training
 instead of 25%; the forced tag is now the grouped one. `dataset check` 0 errors; not rebuilt. Record `domain` set
-(2026-11-11). Nothing open.
+(2026-11-11). The forced tag stays rather than `AssumedStationaryRelation` (issue 4, A, 2026-11-18). Nothing
+open.
 
 **Record judgment:** valid task; the split, damaged by copies of one truck, is repaired (issue 1). The description file in UCI's zip carries a GNU GPL v3 notice from
 Scania CV AB, while the definition states CC BY 4.0, UCI's licence for the page; the licence line should name both.
@@ -262,7 +263,7 @@ Scania CV AB, while the definition states CC BY 4.0, UCI's licence for the page;
    * Beyond the copies: 16% of 5,000 sampled rows have a partner higher in every counter, with `aa_000` up to 20% higher,
      but the 307 such pairs with fewer than 60 equal counters share the label in 93.5% of cases, against 96.5% for random
      pairs: bigger trucks, not later read-outs.
-   * Splits, untuned LightGBM, challenge cost at its threshold (Slurm jobs 1377079 and 1377122):
+   * Splits, untuned LightGBM, challenge cost at its threshold:
 
      | Split | Mean cost per truck | ROC AUC | Failures with a copy missed |
      |---|---|---|---|
@@ -299,7 +300,7 @@ Scania CV AB, while the definition states CC BY 4.0, UCI's licence for the page;
      similarity clusters. d uses the same clusters, so both depend on that link. The draft keeps copies of one record
      as one row and groups separate observations that each carry their own label. Here the copies differ in about one
      counter and always share the label.
-   * Untuned LightGBM, 3 folds, 2 seeds, the challenge cost at its threshold (Slurm job 1378343):
+   * Untuned LightGBM, 3 folds, 2 seeds, the challenge cost at its threshold:
 
      | Split | Rows | Test rows with a copy in training | Cost per truck | Cost, each truck once | ROC AUC |
      |---|---|---|---|---|---|
@@ -389,7 +390,7 @@ Scania CV AB, while the definition states CC BY 4.0, UCI's licence for the page;
    `Time basis:` line, the task summary, `splits_comment` and curation notes are rewritten; record `Grouped (NON-IID)`,
    `Non-IID (Grouped)`, a CC line. `dataset check`: 0 errors, the two known warnings (constant `cd_000`, blanks that
    mark the negative class) and a new info `groups_not_clustered` (most trucks have one row); not rebuilt. The split
-   table of 2026-11-11 with cg (untuned LightGBM, 3 folds, 2 seeds; Slurm jobs 1379970 and 1379994):
+   table of 2026-11-11 with cg (untuned LightGBM, 3 folds, 2 seeds):
 
    | Split | Rows | Test rows with a copy in training | Cost per row | Cost, each truck once | ROC AUC |
    |---|---|---|---|---|---|

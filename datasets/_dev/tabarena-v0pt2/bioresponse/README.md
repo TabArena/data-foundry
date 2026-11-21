@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bioresponse
 container_format: 2
-checksum: v2:8cf1faec9867f581da8db6a76b75bf5fc8d213fab425a1f17dfb221c0ff7791a
+checksum: v2:95a7a173dccc454410c90272b30617e7839e454bb7427a2590f49b39fbd58147
 build:
   uuid: 01a111fc-4c0b-76f4-b01d-a4db8e120e35
   checksum: v2:1879917730dc9cc5db736aa1cc90af3f1b8a3ee3153e041d93ba0b823cb52287
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `MoleculeElicitsResponse`, scored with `log_loss` on IID splits. 3,751 rows and 1,776 features. Source: Kaggle (2012).
 
-Built as `01a111fc-4c0b-76f4-b01d-a4db8e120e35` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8cf1faec9867f581da8db6a76b75bf5fc8d213fab425a1f17dfb221c0ff7791a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-4c0b-76f4-b01d-a4db8e120e35` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:95a7a173dccc454410c90272b30617e7839e454bb7427a2590f49b39fbd58147`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -124,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2012 |
 | domain | chemistry & material science |
 | license | Public Domain |
-| data_tags | IID, Anonymized, Timeless |
+| data_tags | IID, Anonymized, Timeless, ForcedIIDFromGrouped |
 | reference | bioresponse2012hamner |
 | rows x columns | 3,751 x 1,777 |
 | task.target | MoleculeElicitsResponse |
@@ -198,6 +198,11 @@ The first 5 of 3,751 rows of the final frame (random rows: the frame is shuffled
   own test set looks like a random draw (a model tells its 2,501 molecules from the 3,751 training molecules at
   ROC AUC 0.485, against 0.484-0.497 for a random third of train; nearest-training distances match), and
   scoring new analogues of series already in testing is the lead-optimisation use case the competition framed.
+- Group basis: ForcedIIDFromGrouped (Andrej, 2026-11-16): the use case screens molecules a chemist has not made
+  yet, which whole chemical series held out would stand for (scaffold groups, SPLIT-31), but no structure or
+  compound id is published, so no series can be computed and the split is random. Overlap left: close
+  analogues of a test molecule sit in training (the label agreement above), so the score is optimistic for a
+  new series.
 
 ## Splits
 
@@ -219,7 +224,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (29 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -393,4 +398,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8cf1faec9867f581da8db6a76b75bf5fc8d213fab425a1f17dfb221c0ff7791a` |
+| stale | yes: the definition now gives checksum `v2:95a7a173dccc454410c90272b30617e7839e454bb7427a2590f49b39fbd58147` |

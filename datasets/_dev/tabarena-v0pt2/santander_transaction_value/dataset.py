@@ -144,7 +144,7 @@ class SantanderTransactionValue(AbstractCuratedDataset):
         - We store log1p of the competition's target; the metric is the competition's RMSLE on the raw value, computed
           after the inverse (`target_transform="log1p"`; until 2026-10-14 the metric was `rmsle` without the inverse,
           which logged the stored target a second time).
-        - ForcedGroupedFromTemporal (Andrej, 2026-11-05, Review issue 1, option D): the rows are snapshots of the
+        - ForcedGroupedFromTemporal (Andrej, 2026-11-05): the rows are snapshots of the
           same customers at different times, and a snapshot k steps later holds the same values shifted by k columns,
           including the earlier snapshot's target in its lag columns (Giba's "data property",
           https://www.kaggle.com/competitions/santander-value-prediction-challenge/discussion/61329). The file has no

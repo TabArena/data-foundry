@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: coil_2000
 container_format: 2
-checksum: v2:65ae386e91cbffa8368f144d7c6545a87bbacae54cb2fb20939865111f2da149
+checksum: v2:eb79f823b29ff7e68fae3c7ce2c5ef6f77291841ac61ee26887699720d34059e
 build:
   uuid: 01a111fc-ceb4-7695-8b34-df7a285cfcb6
   checksum: v2:d2e67763e07858eea9e9b3cc295c8ca3b517b51a7969ec701a8323ad722d2ac8
@@ -73,7 +73,7 @@ decisions: []
 
 Binary classification of `MobileHomePolicy`, scored with `precision_at_k` on IID splits. 9,822 rows and 85 features. Source: UCI (2000).
 
-Built as `01a111fc-ceb4-7695-8b34-df7a285cfcb6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:65ae386e91cbffa8368f144d7c6545a87bbacae54cb2fb20939865111f2da149`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ceb4-7695-8b34-df7a285cfcb6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:eb79f823b29ff7e68fae3c7ce2c5ef6f77291841ac61ee26887699720d34059e`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -131,7 +131,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2000 |
 | domain | business & marketing |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | IID, ForcedIIDFromTemporal |
 | reference | van2000coil |
 | rows x columns | 9,822 x 86 |
 | task.target | MobileHomePolicy |
@@ -198,17 +198,20 @@ The first 5 of 9,822 rows of the final frame (random rows: the frame is shuffled
   The two challenge files are a random partition of one undated extract; grouping the copies leaves the score
   unchanged (ROC AUC 0.749 grouped against 0.750 random, 5-fold LightGBM). 21% to 22% of test rows have a
   look-alike in training.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 58 columns are
+- Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 58 columns are
   ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 55 of them decoded from the
   source's codes into its words (`CODE_LABELS`, 2026-11-01).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 55 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order; 2 scores with no words per level are numbers (`SCORES`):
   `averageIncome`, `purchasingPowerClass`.
-- Time basis: Snapshot: one undated extract of a Dutch insurer's customer book (before March 2000); the label
-  is whether the customer holds a caravan policy at the extract, read with the 21 other holdings and the
-  postal-area figures of the same moment; the challenge's evaluation customers are another part of the same
-  extract. Not tested: purchases after a mailing.
+- Time basis: ForcedIIDFromTemporal: one undated extract of a Dutch insurer's customer book (before March 2000);
+  the label is whether the customer holds a caravan policy at the extract, and the use case looks forward, to
+  purchases after a mailing, which one extract cannot test, so the split is forced until a dated release or the
+  target's timing is known. The challenge's evaluation customers are another part of the same extract. Not taken
+  as stationary (Andrej, 2026-11-18): A priced insurance product sold through mailings to a later population,
+  with a holding standing in for a purchase; nothing in the mechanism makes earlier and later customers
+  interchangeable.
 
 ## Splits
 
@@ -230,7 +233,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 Accepted on purpose:
@@ -437,4 +440,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:65ae386e91cbffa8368f144d7c6545a87bbacae54cb2fb20939865111f2da149` |
+| stale | yes: the definition now gives checksum `v2:eb79f823b29ff7e68fae3c7ce2c5ef6f77291841ac61ee26887699720d34059e` |

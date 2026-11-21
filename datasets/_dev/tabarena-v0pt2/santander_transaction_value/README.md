@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: santander_transaction_value
 container_format: 2
-checksum: v2:7ffd5059d7115e82807653508a579c30ed70d479823381572e58a8831fec8610
+checksum: v2:096f24950bee036a3661460c047e4ff507d8ccc1c116f6a12fb5ec27bd0e3419
 build:
   uuid: 01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b
   checksum: v2:cd62d4dfd097894bde1efea6af2e715b69e3864da94d1060cf28e979736f44d2
@@ -75,7 +75,7 @@ decisions: []
 
 Regression of `target`, scored with `rmsle` on grouped splits by `customer`. 4,447 rows and 540 features. Source: Kaggle (2018).
 
-Built as `01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:7ffd5059d7115e82807653508a579c30ed70d479823381572e58a8831fec8610`, so the build is stale. See [Build](#build).
+Built as `01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:096f24950bee036a3661460c047e4ff507d8ccc1c116f6a12fb5ec27bd0e3419`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -206,7 +206,7 @@ We start with the train.csv from Kaggle (4,459 rows, 4,991 anonymised columns).
 - We store log1p of the competition's target; the metric is the competition's RMSLE on the raw value, computed
   after the inverse (`target_transform="log1p"`; until 2026-10-14 the metric was `rmsle` without the inverse,
   which logged the stored target a second time).
-- ForcedGroupedFromTemporal (Andrej, 2026-11-05, Review issue 1, option D): the rows are snapshots of the
+- ForcedGroupedFromTemporal (Andrej, 2026-11-05): the rows are snapshots of the
   same customers at different times, and a snapshot k steps later holds the same values shifted by k columns,
   including the earlier snapshot's target in its lag columns (Giba's "data property",
   https://www.kaggle.com/competitions/santander-value-prediction-challenge/discussion/61329). The file has no
@@ -251,10 +251,12 @@ We start with the train.csv from Kaggle (4,459 rows, 4,991 anonymised columns).
   `none` (each row is predicted from its own values), and the splits comment states the protocol line that
   no model step may use other test rows (LEAK-9, as for medical_facility_operational_data and fremtpl2).
 - Time basis: ForcedGroupedFromTemporal: snapshots of customers at different steps, the target two steps after
-  the newest lag column, no calendar date: the steps of different customers cannot be aligned, only a
-  customer's own snapshots are ordered, through the shifted columns. A dated release would allow windows by
-  calendar step, testing later steps and the shocks that the customers of one month share, which the split by
-  customer leaves on both sides; it should be used if Santander releases the dates.
+  the newest lag column, no calendar date: the steps of different customers cannot be aligned, only a customer's
+  own snapshots are ordered, through the shifted columns. A dated release would allow windows by calendar step,
+  testing later steps and the shocks that the customers of one month share, which the split by customer leaves
+  on both sides; it should be used if Santander releases the dates. Not taken as stationary (Andrej,
+  2026-11-18): Andrej's own earlier review already ruled out a stationary relation because transaction values
+  move with the period; an order within each entity alone does not argue for interchangeable later samples.
 
 ## Splits
 
@@ -313,7 +315,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -483,4 +485,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7ffd5059d7115e82807653508a579c30ed70d479823381572e58a8831fec8610` |
+| stale | yes: the definition now gives checksum `v2:096f24950bee036a3661460c047e4ff507d8ccc1c116f6a12fb5ec27bd0e3419` |

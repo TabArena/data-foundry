@@ -62,22 +62,22 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: Home Credit's 2018 competition, 307,507 applications with 709 features aggregated from six linked tables, no statistic over all rows since 2026-10-19 and no leak found; its spread on the new feature set is not measured yet. Priority 3: gap 0, use case 0, source 1, shape 1, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: Home Credit's 2018 competition, 307,507 applications with 709 features aggregated from six linked tables, no statistic over all rows since 2026-10-19 and no leak found; its spread on the new feature set is not measured yet. Priority 3: gap 0, use case 0, source 1, shape 1, risk -0.
 
 CC (2026-11-11, Andrej): time basis stays forced from temporal (issue 2, option B): the definition's note is now a full Time basis line (every date relative to the application, no date rebuildable, 5.4% of applications share a client, grouping open). No temporal split is possible: time is known only between a client's own applications (median gap 175 days; 61% of the later applications list the earlier one), never across clients (issue 3, answer of 2026-11-11).
 
 CC (2026-11-11, Andrej): **`Entities: Recur` confirmed; split open (issue 3).** "Mark the dataset to contain repeating entities. But we also can't just pretend this is a grouped split if its just 2.7 % of samples that are affected."
 - 5.4% of the applications (8,004 clients) recur under the exact client key; under the random 3-fold split 3.7% of the test rows have their client's other application in training.
-- Measured (Slurm jobs 1377583, 1377584): keeping a client's applications in one fold costs 0.001 ROC AUC or less overall and 0.008 to 0.011 on the returning clients' rows; one application per client costs as little but drops 8,485 rows.
+- Measured: keeping a client's applications in one fold costs 0.001 ROC AUC or less overall and 0.008 to 0.011 on the returning clients' rows; one application per client costs as little but drops 8,485 rows.
 - Proposed: a random split of applications with a returning client's applications in one fold, tagged as random (forced IID), not grouped; the split is unchanged until decided.
 
 CC (2026-11-11, Andrej): **Split: a returning client's latest application is tested, the earlier ones only train (issue 3, option B of the answer of 2026-11-11).** "In the actual task, it makes sense that the same client could apply twice. Hence, the ideal split would place a later application of a customer in test."
 - Each client's latest application (by `DAYS_BIRTH`, one-application clients included, same-day ties in one fold) goes into stratified 3x3 folds grouped by the client key (sex and the two day differences, computed in the split, not a feature); the 7,917 earlier applications (2.6% of rows) are in every train side and never tested, an accepted check warning.
-- Measured (Slurm jobs 1378052, 1378053): 0.7862 ROC AUC overall against 0.7865 for the random split; still `ForcedIIDFromTemporal`, as there are no application dates.
+- Measured: 0.7862 ROC AUC overall against 0.7865 for the random split; still `ForcedIIDFromTemporal`, as there are no application dates.
 
 CC (2026-11-11, Andrej): ship as now defined (issue 1, closed as A: "Close as A, ship as now defined"). The task summary no longer says "504 features" and "keep the features it selected": the definition ships 709 features and does not apply the notebook's feature selection (since 2026-10-19).
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The same lender documents score decay and recording changes in its dated data; no mechanism makes later applicants interchangeable. A stationary-relation test on home_credit_default_stability_1m would add a measured similar case but cannot set ASR here.
 
@@ -98,7 +98,7 @@ leak audit untuned LightGBM reached ROC AUC 0.788, a real but modest signal. Qua
 lender's own competition and a direct decision +, a large multi-table task +, no dates (random split) -, spread not
 yet measured on this definition -.
 
-**Main points:** all settled: shipped as now defined (issue 1); issues 2 and 3: forced from temporal with a full `Time basis:` line; each client's latest application is tested with the client's earlier applications in training only (2.6% of rows never tested).
+**Main points:** all settled: shipped as now defined (issue 1); issues 2 and 3: forced from temporal with a full `Time basis:` line; each client's latest application is tested with the client's earlier applications in training only (2.6% of rows never tested); the forced tag stays rather than `AssumedStationaryRelation` (issue 4, A, 2026-11-18).
 
 **Record judgment:** valid, ship. The `task_summary` text now says 709 features and no selection (2026-11-11). The
 Assessment of 2026-10-26 (whether the 10 `CC_NAME_CONTRACT_STATUS` min/max aggregates are yes/no
@@ -141,7 +141,7 @@ flags) was settled by the curator on 2026-10-21: they stay numbers.
    **Answer (AI, 2026-11-11):** Yes, close issue 1 as "ship as now defined"?
 
    * **Problem:**
-     - Issue 1 only asks ship or retire; nothing in it found a defect, and the dataset verdict on the page decides the same question.
+     - Issue 1 only asks ship or retire; nothing in it found a defect, and the dataset verdict decides the same question.
      - Its one split-related part, "random 3x3 splits" in option A, is replaced by issue 3 (latest application tested, earlier ones in training only).
      - No fact found since 2026-11-04 argues for retiring.
    * **Options:**
@@ -157,7 +157,7 @@ flags) was settled by the curator on 2026-10-21: they stay numbers.
 
    **Resolved (2026-11-11, Andrej):** a (A): shipped as now defined. The task summary's `known` says 709 features (was
    504) and `changes` says the notebook's feature selection is not applied (was "keep the features it selected"); CC
-   line in the record. Dataset check (Slurm job 1378609): 0 errors, 0 warnings (2 accepted); the README changes in
+   line in the record. Dataset check: 0 errors, 0 warnings (2 accepted); the README changes in
    these two lines only.
 
 2. **Time basis: keep the forced tag and write its `Time basis:` line with the leak test?**
@@ -200,8 +200,8 @@ flags) was settled by the curator on 2026-10-21: they stay numbers.
 
    **Resolved (2026-11-11, Andrej):** B: the `Tagged ForcedIIDFromTemporal:` bullet of `curation_comments` is now a
    `Time basis: ForcedIIDFromTemporal:` line with the time probe and the leak test (recurring clients, grouping open
-   in issue 3) and what the random split cannot test; `data_tags` stays `("ForcedIIDFromTemporal",)`. Dataset check
-   (Slurm job 1377467): 0 errors, 0 warnings; the README changes in this line, the checksum and generated lines only. The tag
+   in issue 3) and what the random split cannot test; `data_tags` stays `("ForcedIIDFromTemporal",)`. Dataset check:
+   0 errors, 0 warnings; the README changes in this line, the checksum and generated lines only. The tag
    stays the same; no grouping until issue 3 is decided.
 
 3. **Applications of the same client sit on both sides of the split: group by the client?**
@@ -216,7 +216,7 @@ flags) was settled by the curator on 2026-10-21: they stay numbers.
      applications is missed. 7,676 keys hold two applications, 328 hold three to ten. A client's earlier loan shows
      in the later application's history columns, which is legitimate history; the route that is not is the later
      application in training when the earlier one is tested[^3a].
-   * **Experiments:** Slurm jobs 1366183 and 1366213, LightGBM, ROC AUC:
+   * **Experiments:** LightGBM, ROC AUC:
 
      | Features | Split | All rows | Rows of recurring clients |
      |---|---|---|---|
@@ -311,7 +311,7 @@ flags) was settled by the curator on 2026-10-21: they stay numbers.
      application is in training score like those whose earlier one is (ROC AUC 0.735 vs 0.735, application table).
    * Cost: 0.001 ROC AUC or less overall, 0.008 to 0.011 on the returning clients' rows. Keeping one application per
      client (option C) costs as little but drops 8,485 rows.
-   * Slurm jobs 1377583 (application table, 5 seeds) and 1377584 (shipped 504 features, 3 seeds), LightGBM, 3 folds:
+   * Application table (5 seeds) and shipped 504 features (3 seeds), LightGBM, 3 folds:
 
      | Split | Test rows whose client is in training | ROC AUC, application table | ROC AUC, 504 features | On returning clients' rows (504) |
      |---|---|---|---|---|
@@ -353,7 +353,7 @@ flags) was settled by the curator on 2026-10-21: they stay numbers.
    * The earlier application helps the later one legitimately (0.006 ROC AUC on those rows), mostly when they are under
      180 days apart (0.010 vs 0.003); whether the earlier loan's label is known by then is unclear, since Home Credit
      does not say how many instalments it covers.
-   * Slurm jobs 1378052 (application table, 5 seeds) and 1378053 (shipped 504 features, 3 seeds), LightGBM, 3 folds,
+   * Application table (5 seeds) and shipped 504 features (3 seeds), LightGBM, 3 folds,
      ROC AUC:
 
      | Split | Test rows whose client is in training | All test rows (app / 504) | Returning clients' later applications (504) |
@@ -384,8 +384,8 @@ flags) was settled by the curator on 2026-10-21: they stay numbers.
    one fold) into stratified grouped 3x3 folds (299,590 rows) and adds the 7,917 earlier applications (2.6%) to every
    train side; the key is computed in the split, not a feature. `ForcedIIDFromTemporal` stays. `split`, `fit_reason`,
    the `Time basis:` leak-test sentence, a curation note with the table and a `splits_comment` are updated;
-   `splits_rows_never_tested` is an accepted check warning with the reason. CC line in the record. Dataset check
-   (Slurm job 1378120): 0 errors, 0 warnings (2 accepted); folds train 207,621 to 207,663, test 99,844 to 99,886 rows.
+   `splits_rows_never_tested` is an accepted check warning with the reason. CC line in the record. Dataset check:
+   0 errors, 0 warnings (2 accepted); folds train 207,621 to 207,663, test 99,844 to 99,886 rows.
 
 4. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
 
@@ -411,7 +411,7 @@ flags) was settled by the curator on 2026-10-21: they stay numbers.
    * **Earlier views:**
      - CC (2026-11-11, Andrej): time basis stays forced from temporal (issue 2, B); no temporal split possible.
      - CC (2026-11-11, Andrej): latest application tested; 'still ForcedIIDFromTemporal, as there are no application dates' (0.7862 vs 0.7865)
-     - CC (2026-11-17, Andrej): blind split review: the decision tree, walked without the current split, reaches the forced split it ships.
+     - CC (2026-11-17, Andrej): blind split walk: the decision tree, walked without the current split, reaches the forced split it ships.
    * **Options:**
 
      | | Option | What it does | Pro | Con |

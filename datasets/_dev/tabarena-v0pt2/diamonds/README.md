@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: diamonds
 container_format: 2
-checksum: v2:644ead34405bca62a4914a7bdd3439d2e665520deb811eab5ee518f2fbe1419b
+checksum: v2:2c7f18768b1ac4d18aeec3538c39300a3b27a9967d94d15b45144c81d0bc39a0
 build:
   uuid: 01a111fc-d45e-7211-98d8-ee98e5da227f
   checksum: v2:c5776dcaa602180a8810b316b7bf78514aa234837b87df7f6438d0bc4de4231f
@@ -76,7 +76,7 @@ decisions: []
 
 Regression of `price`, scored with `rmsle` on grouped splits by `stone_id`. 53,940 rows and 9 features. Source: Other (2007).
 
-Built as `01a111fc-d45e-7211-98d8-ee98e5da227f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:644ead34405bca62a4914a7bdd3439d2e665520deb811eab5ee518f2fbe1419b`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d45e-7211-98d8-ee98e5da227f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2c7f18768b1ac4d18aeec3538c39300a3b27a9967d94d15b45144c81d0bc39a0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -134,7 +134,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2007 |
 | domain | business & marketing |
 | license | MIT License |
-| data_tags | Non-IID, Grouped |
+| data_tags | Non-IID, Grouped, Retrospective |
 | reference | wickham2016data |
 | rows x columns | 53,940 x 11 |
 | task.target | price |
@@ -197,12 +197,12 @@ The first 5 of 53,940 rows of the final frame (random rows: the frame is shuffle
 - The price ships on a log scale (log of US dollars), the scale a practitioner models a price on, and is scored
   by RMSLE on the dollar price after the inverse (`target_transform="log"`; Lennart, 2026-10-21): a price's
   error matters relative to the price.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
-  categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-- Time basis: Snapshot: one scrape of the search site diamondse.info in February 2007 (Wickham, R-help,
+- Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are
+  ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+- Time basis: Retrospective: one scrape of the search site diamondse.info in February 2007 (Wickham, R-help,
   April 2023); each row a listing's grading and its asking price at that moment; the use case prices a stone
   against the same day's price list. Not tested: prices after 2007.
-- Split by stone (2026-11-12, Andrej, review issue 1 B): 21,493 rows (40%) share carat, colour, clarity,
+- Split by stone (2026-11-12, Andrej): 21,493 rows (40%) share carat, colour, clarity,
   depth, table and z (height) with another row, mostly in pairs whose length and width are swapped: one stone
   in two price lists of the scrape. In 98% of the 9,747 swapped pairs the dearer price is the cheaper one
   times one of eight fixed factors set by the price band, exact to the dollar, so under random folds the 27%
@@ -256,7 +256,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 146 exact duplicate row(s) (0.3% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 199 row(s) (0.4%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
@@ -343,4 +343,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:644ead34405bca62a4914a7bdd3439d2e665520deb811eab5ee518f2fbe1419b` |
+| stale | yes: the definition now gives checksum `v2:2c7f18768b1ac4d18aeec3538c39300a3b27a9967d94d15b45144c81d0bc39a0` |

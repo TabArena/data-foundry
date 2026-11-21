@@ -137,7 +137,7 @@ class ApsFailure(AbstractCuratedDataset):
         - Anomaly: we cannot determine the data types of the features.
         - Anomaly: some features are bins of histograms (see original data description).
         - Metric: the challenge's cost matrix, scored from probabilities by the least expected cost rather than on hard labels (AI choice, 2026-10-21).
-        - Copies of one read-out dropped, the same truck grouped (2026-11-12, Andrej; Review issue 1, option cg). Two
+        - Copies of one read-out dropped, the same truck grouped (2026-11-12, Andrej). Two
           rows are linked when they share at least 5 values that 2 to 5 rows hold in their column and agree in many of
           the 170 counters (two missing cells count as equal). With every counter shuffled within its class (10 draws),
           no pair shares 5 such values and none agrees on more than 68 counters; in the data 17,461 pairs do.
@@ -156,8 +156,8 @@ class ApsFailure(AbstractCuratedDataset):
           - 368 rows with 100 or more blank counters (4 failures) agree with each other on blanks only, share no rare
             value and stay: look-alikes, not copies.
           - 4,458 pairs of copies sit across the challenge's two files, so its own split shared trucks.
-          - Effect (untuned LightGBM, 3 folds, 2 seeds, the challenge's cost at its threshold; Slurm 1379970 and
-            1379994): test rows with a linked row in training, 25.2% under random folds on all 76,000 rows (cost per
+          - Effect (untuned LightGBM, 3 folds, 2 seeds, the challenge's cost at its threshold):
+            test rows with a linked row in training, 25.2% under random folds on all 76,000 rows (cost per
             row 1.145), 5.1% with one row per copied read-out and random folds (1.530), 0.05% split by truck (1.625;
             1.539 with each truck counted once).
         - Time basis: ForcedGroupedFromTemporal: failed trucks read out over a period Scania does not state; the release

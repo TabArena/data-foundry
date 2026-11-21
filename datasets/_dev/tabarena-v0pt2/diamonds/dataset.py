@@ -16,7 +16,7 @@ ORDINAL_LEVELS = {
     "clarity": ["I1", "SI2", "SI1", "VS2", "VS1", "VVS2", "VVS1", "IF"],
 }
 
-# The columns a stone's listings share (review issue 1): its two price lists write length and width in swapped order
+# The columns a stone's listings share: its two price lists write length and width in swapped order
 # and grade the cut each its own way, so those columns differ between the listings of one stone.
 STONE_KEY = ["carat", "color", "clarity", "depth", "table", "z"]
 
@@ -88,12 +88,12 @@ class Diamonds(AbstractCuratedDataset):
         - The price ships on a log scale (log of US dollars), the scale a practitioner models a price on, and is scored
           by RMSLE on the dollar price after the inverse (`target_transform="log"`; Lennart, 2026-10-21): a price's
           error matters relative to the price.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
-          categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are
+          ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - Time basis: Retrospective: one scrape of the search site diamondse.info in February 2007 (Wickham, R-help,
           April 2023); each row a listing's grading and its asking price at that moment; the use case prices a stone
           against the same day's price list. Not tested: prices after 2007.
-        - Split by stone (2026-11-12, Andrej, review issue 1 B): 21,493 rows (40%) share carat, colour, clarity,
+        - Split by stone (2026-11-12, Andrej): 21,493 rows (40%) share carat, colour, clarity,
           depth, table and z (height) with another row, mostly in pairs whose length and width are swapped: one stone
           in two price lists of the scrape. In 98% of the 9,747 swapped pairs the dearer price is the cheaper one
           times one of eight fixed factors set by the price band, exact to the dollar, so under random folds the 27%

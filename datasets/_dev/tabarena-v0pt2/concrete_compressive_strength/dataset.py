@@ -9,7 +9,7 @@ import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
 
 # A re-entry of a test: a row at the same age as an earlier row of another mix, with all seven amounts within 1 kg and
-# the strength within 0.01 MPa (rows 936 to 1029 of the UCI file re-enter rows 721 to 935; issue 1 of the v0.2 review).
+# the strength within 0.01 MPa (rows 936 to 1029 of the UCI file re-enter rows 721 to 935).
 REENTRY_MAX_KG = 1.0
 REENTRY_MAX_MPA = 0.01
 REENTRY_ROWS = 92

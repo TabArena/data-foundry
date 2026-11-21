@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: aps_failure
 container_format: 2
-checksum: v2:68162a119d77cd6161a1ce401f4029b854fb4605de633fecf72035c339e44912
+checksum: v2:6e5e05b2c046956af9d313d2e51beb40f83fb3fe97d9fe6632b59cc4e78805ab
 build:
   uuid: 01a111fc-0ce6-78ed-a870-52ce14ff98d0
   checksum: v2:cae1c7b65ce55c1256886d454fc3d2a43dde6e99193119792535d6f71a0acec6
@@ -79,7 +79,7 @@ decisions: []
 
 Binary classification of `AirPressureSystemFailure`, scored with `cost_matrix` on grouped splits by `truck`. 63,937 rows and 170 features. Source: Other (2016).
 
-Built as `01a111fc-0ce6-78ed-a870-52ce14ff98d0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:68162a119d77cd6161a1ce401f4029b854fb4605de633fecf72035c339e44912`, so the build is stale. See [Build](#build).
+Built as `01a111fc-0ce6-78ed-a870-52ce14ff98d0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6e5e05b2c046956af9d313d2e51beb40f83fb3fe97d9fe6632b59cc4e78805ab`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -205,7 +205,7 @@ The first 5 of 63,937 rows of the final frame (random rows: the frame is shuffle
 - Anomaly: we cannot determine the data types of the features.
 - Anomaly: some features are bins of histograms (see original data description).
 - Metric: the challenge's cost matrix, scored from probabilities by the least expected cost rather than on hard labels (AI choice, 2026-10-21).
-- Copies of one read-out dropped, the same truck grouped (2026-11-12, Andrej; Review issue 1, option cg). Two
+- Copies of one read-out dropped, the same truck grouped (2026-11-12, Andrej). Two
   rows are linked when they share at least 5 values that 2 to 5 rows hold in their column and agree in many of
   the 170 counters (two missing cells count as equal). With every counter shuffled within its class (10 draws),
   no pair shares 5 such values and none agrees on more than 68 counters; in the data 17,461 pairs do.
@@ -224,17 +224,19 @@ The first 5 of 63,937 rows of the final frame (random rows: the frame is shuffle
   - 368 rows with 100 or more blank counters (4 failures) agree with each other on blanks only, share no rare
     value and stay: look-alikes, not copies.
   - 4,458 pairs of copies sit across the challenge's two files, so its own split shared trucks.
-  - Effect (untuned LightGBM, 3 folds, 2 seeds, the challenge's cost at its threshold; Slurm 1379970 and
-    1379994): test rows with a linked row in training, 25.2% under random folds on all 76,000 rows (cost per
+  - Effect (untuned LightGBM, 3 folds, 2 seeds, the challenge's cost at its threshold):
+    test rows with a linked row in training, 25.2% under random folds on all 76,000 rows (cost per
     row 1.145), 5.1% with one row per copied read-out and random folds (1.530), 0.05% split by truck (1.625;
     1.539 with each truck counted once).
 - Time basis: ForcedGroupedFromTemporal: failed trucks read out over a period Scania does not state; the release
   has no date, and the challenge's two files are not shown to be two periods (near copies across them have the
   larger counters in the test file in 2,237 pairs, the smaller in 2,220), and the one counter that changes
   between copies, `bx_000`, is a cumulative usage counter that moves by a small step in either direction, no
-  clock. Which component fails can move with season and fleet, so whole trucks held out stand in for the
-  trucks to come. Not tested: trucks read out later than the training trucks, which a dated release (as
-  `scania_component_x`) would allow.
+  clock. Which component fails can move with season and fleet, so whole trucks held out stand in for the trucks
+  to come. Not tested: trucks read out later than the training trucks, which a dated release (as
+  `scania_component_x`) would allow. Not taken as stationary (Andrej, 2026-11-18): A physical-measurement
+  argument exists, but the label depends on fleet and workshop practice that the definition itself says moves
+  with season and fleet, and no comparable dated set tested flat.
 
 ## Splits
 
@@ -289,7 +291,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 2 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 2 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_constant_column`: 1 constant column(s) (1 distinct non-null value): ['cd_000']. (hint: Drop them unless the constant is meaningful for the task.)
 - **warning** `dataset_pure_feature_value`: 8 feature value(s) determine the class on their own: bk_000 = <NA>: 25,916 rows, 99.7% AirPressureSystemFailure=neg (overall 98.0%); bl_000 = <NA>: 30,201 rows, 99.7% AirPressureSystemFailure=neg (overall 98.0%); bm_000 = <NA>: 41,652 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); bn_000 = <NA>: 46,030 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); bo_000 = <NA>: 48,372 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); bp_000 = <NA>: 49,758 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); bq_000 = <NA>: 50,747 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); br_000 = <NA>: 51,294 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%). (hint: Often a leak: a column derived from the outcome or recorded after it. Check the column's documentation; drop it if so, otherwise accept the warning with the reason.)
@@ -466,4 +468,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:68162a119d77cd6161a1ce401f4029b854fb4605de633fecf72035c339e44912` |
+| stale | yes: the definition now gives checksum `v2:6e5e05b2c046956af9d313d2e51beb40f83fb3fe97d9fe6632b59cc4e78805ab` |

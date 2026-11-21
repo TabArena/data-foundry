@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ljubljana_primary_tumor
 container_format: 2
-checksum: v2:035222867a36257071fb1fab50e62e3deb0dd2a6797a225579eade6317ae46cd
+checksum: v2:2af89b06c70ecfc02cf8024bffb1eab810835d1169194a1b427b9a35ecc1b1a6
 build:
   uuid: 01a111fc-e43e-74ec-8af2-b710f7045924
   checksum: v2:ddbe1140621ffda771f1ea9797d30fbd1fe902bc0a4c9f1d8337b9eee4d9fcd2
@@ -68,7 +68,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 302 rows and 17 features. Source: UCI (1988).
 
-Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:035222867a36257071fb1fab50e62e3deb0dd2a6797a225579eade6317ae46cd`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2af89b06c70ecfc02cf8024bffb1eab810835d1169194a1b427b9a35ecc1b1a6`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -186,20 +186,22 @@ The first 5 of 302 rows of the final frame (random rows: the frame is shuffled);
 We start with the data from UCI.
 
 - Note: the patients are cancer patients whose primary was found, not a series with metastases of unknown origin. The metastasis sites include lymph nodes next to the primary (neck nodes in all 20 head and neck patients, armpit nodes in 21 of 24 breast patients), and the tissue type is missing for 45% of the lung patients (38 of 84) against 11% of the others.
-- Missing tissue type (Andrej, 2026-11-11, review issue 2): kept as missing, read as a type outside the three codes. 44 of the 61 blanks are "poorly" differentiated (34 of them lung), so the tissue was examined and the type fit none of epidermoid, adeno or anaplastic, a "type not determined" result a work-up for an unknown primary also gives. The 15 rows with neither type nor grade are 27% lung, the base rate, so the part that may be unrecorded marks no site. The blank is worth about 5% of TabPFN 3.5's skill (log loss 1.314, 1.357 with the blank replaced by a random draw, class shares 2.203).
+- Missing tissue type (Andrej, 2026-11-11): kept as missing, read as a type outside the three codes. 44 of the 61 blanks are "poorly" differentiated (34 of them lung), so the tissue was examined and the type fit none of epidermoid, adeno or anaplastic, a "type not determined" result a work-up for an unknown primary also gives. The 15 rows with neither type nor grade are 27% lung, the base rate, so the part that may be unrecorded marks no site. The blank is worth about 5% of TabPFN 3.5's skill (log loss 1.314, 1.357 with the blank replaced by a random draw, class shares 2.203).
 - We encode missing values as np.nan instead of "?".
 - We reverse the ordinal encoding of all features, adding the text back to the categories.
 - We drop classes with less than 10 samples to have sufficient data per class for a robust benchmark task. In reality, this would call for collecting more data on these classes, or treating it as an individual few-shot prediction task.
-- Entity leakage, natural (2026-11-06; Andrej, 2026-11-09, review issue 4): 49 of 302 patients repeat another's
+- Entity leakage, natural (2026-11-06; Andrej, 2026-11-09): 49 of 302 patients repeat another's
   17 findings (30 with the same site); a null keeping the findings' links gives as many (57, 95% 45-70), 16 of
   the 25 groups hold several sites and copies share the site as often as their findings predict (58% against
   56%), and the file has no order but the site, so they are distinct patients with the same coarse findings.
   Under random 3-fold splits 20% of test patients have an exact copy in training.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
-  categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are
+  ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`).
 - Time basis: ForcedIIDFromTemporal: cancer patients of the Institute of Oncology, Ljubljana, seen before 1986
   over an unstated period; the UCI file is sorted by site and keeps no date, so whether the site shares or the
-  diagnostic work-up drifted cannot be measured. Years of diagnosis would allow a split by period.
+  diagnostic work-up drifted cannot be measured. Years of diagnosis would allow a split by period. Not taken as
+  stationary (Andrej, 2026-11-18): An old one-time study used today with a changed work-up is a long span in a
+  changing domain.
 
 ## Splits
 
@@ -277,7 +279,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 2 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 2 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_duplicate_rows`: 30 exact duplicate row(s) (9.9% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **warning** `dataset_conflicting_duplicate_rows`: 19 row(s) (6.3%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
@@ -405,4 +407,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:035222867a36257071fb1fab50e62e3deb0dd2a6797a225579eade6317ae46cd` |
+| stale | yes: the definition now gives checksum `v2:2af89b06c70ecfc02cf8024bffb1eab810835d1169194a1b427b9a35ecc1b1a6` |

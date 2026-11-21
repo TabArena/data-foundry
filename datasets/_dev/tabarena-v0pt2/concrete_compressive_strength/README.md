@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: concrete_compressive_strength
 container_format: 2
-checksum: v2:8c552fcfac1998c0c20ded2bc4f9c7c7d48987eeec734129d6554cfc40dd8e0a
+checksum: v2:9027b7f4b2aabec7596dadbaa33744aaba990932b87a5b4621d78702a09f706c
 build:
   uuid: 01a13a7d-c2ed-79de-abb8-3476f95e6667
   checksum: v2:5beb425c9d8c707dfa45d4535bd04431ebfe826172e5f94952c13dd5abb8ed1a
@@ -77,7 +77,7 @@ decisions: []
 
 Regression of `ConcreteCompressiveStrength`, scored with `rmse` on grouped splits by `mix`. 938 rows and 8 features. Source: UCI (2007).
 
-Built as `01a13a7d-c2ed-79de-abb8-3476f95e6667` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:8c552fcfac1998c0c20ded2bc4f9c7c7d48987eeec734129d6554cfc40dd8e0a`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2ed-79de-abb8-3476f95e6667` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:9027b7f4b2aabec7596dadbaa33744aaba990932b87a5b4621d78702a09f706c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -135,7 +135,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2007 |
 | domain | chemistry & material science |
 | license | CC BY 4.0 |
-| data_tags | Non-IID, Grouped |
+| data_tags | Non-IID, Grouped, Timeless |
 | reference | yeh1998modeling |
 | rows x columns | 938 x 10 |
 | task.target | ConcreteCompressiveStrength |
@@ -275,7 +275,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_duplicate_rows`: 25 exact duplicate row(s) (2.7% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 9 row(s) (1.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
@@ -338,4 +338,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8c552fcfac1998c0c20ded2bc4f9c7c7d48987eeec734129d6554cfc40dd8e0a` |
+| stale | yes: the definition now gives checksum `v2:9027b7f4b2aabec7596dadbaa33744aaba990932b87a5b4621d78702a09f706c` |

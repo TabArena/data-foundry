@@ -69,21 +69,21 @@ CC (2026-11-11, Andrej): the use-case fit reads `approximate` (Review issue 1); 
 - Close analogues under the shipped split: 3.6% of test rows have a training molecule within 0.5 of them, 42% within 3; the closest tenth scores log loss 0.331 and ROC AUC 0.932 against 0.586 and 0.822 for the farthest, and holding out every neighbour within 3 costs 0.03 log loss in all. Answered in Review issue 3: the task stands for filling in a collection that is already partly measured, so those neighbours are what the actor really has; the answer recommends keeping the random split with the overlap named.
 - Time basis: the `Timeless` tag and its `Time basis:` bullet (Review issue 2, resolved 2026-11-06, to enter once the time-basis rule was in the working copy) are now in the definition; the bundle check asked for them here and passes with them.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: Boehringer Ingelheim's own Kaggle competition, methods separate clearly (1 - AUC 0.117 to 0.211); only the fit label should become approximate because the response and assay are unnamed. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: Boehringer Ingelheim's own Kaggle competition, methods separate clearly (1 - AUC 0.117 to 0.211); only the fit label should become approximate because the response and assay are unnamed. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on five more routine `Timeless` issues): the response is a property of the molecule and every descriptor is computed from its structure; no date, structure or compound id is published, so nothing could date the rows. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted (Review  2, B, through the cross-dataset item on five more routine `Timeless` issues): the response is a property of the molecule and every descriptor is computed from its structure; no date, structure or compound id is published, so nothing could date the rows. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
-CC (2026-11-10, Andrej): review page issue 1, option B: use-case fit approximate; `fit_reason` names the unnamed response and assay and the chemical series a random split cannot hold out. No data, split or score change.
+CC (2026-11-10, Andrej): Review issue 1, option B: use-case fit approximate; `fit_reason` names the unnamed response and assay and the chemical series a random split cannot hold out. No data, split or score change.
 
-CC (2026-11-11, Andrej): record field set from the definition (review page field mark): `year` 2012 (was 2011).
+CC (2026-11-11, Andrej): record field set from the definition: `year` 2012 (was 2011).
 
-CC (2026-11-11, Andrej): BeyondArena v0.2 review page, issue 3 "Reply (a): Random, overlap named": the random split stays. The notes name the analogue overlap (no two molecules share all descriptors, the nearest pair differs in 16; close analogues share the label and cross the split, as no structure or compound id is published), Kaggle's own test set as a random-looking draw (a model tells it from train at ROC AUC 0.485) and the lead-optimisation use case. No data change.
+CC (2026-11-11, Andrej): Review issue 3 "Reply (a): Random, overlap named": the random split stays. The notes name the analogue overlap (no two molecules share all descriptors, the nearest pair differs in 16; close analogues share the label and cross the split, as no structure or compound id is published), Kaggle's own test set as a random-looking draw (a model tells it from train at ROC AUC 0.485) and the lead-optimisation use case. No data change.
 
 CC (2026-11-17, Andrej): Review issue 4, A, as implemented: Random 3-fold CV, 3 repeats (2,500-2,501 train / 1,250-1,251 test molecules of 3,751), `Timeless` and `ForcedIIDFromGrouped`.
 
-CC (2026-11-17, Andrej): verdict ship (blind split review page).
+CC (2026-11-17, Andrej): verdict ship (blind split walk).
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Timeless`, `ForcedIIDFromGrouped`) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Timeless`, `ForcedIIDFromGrouped`) is checked in the blind split walk.
 
 ## Review
 
@@ -104,7 +104,8 @@ random split rewards, as `fit_reason` already says. Weighed: a pharma company's 
 clear separation of methods +, an unnamed response and anonymous scaled descriptors -, no way to hold out a series -.
 
 **Main points:** The random split stays with the analogue overlap named (issue 3, resolved 2026-11-11); the use-case
-fit is approximate (issue 1, resolved 2026-11-10); the random split is named `Timeless` (issue 2, resolved 2026-11-06).
+fit is approximate (issue 1, resolved 2026-11-10); the random split is named `Timeless` (issue 2, resolved 2026-11-06) and keeps `ForcedIIDFromGrouped` (issue 4,
+resolved 2026-11-17).
 
 **Record judgment:** valid. The record's workbook notes ("data already normalized", "maybe the preprocessing") are
 settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `Anonymized` marker fits.

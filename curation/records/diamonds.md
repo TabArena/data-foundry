@@ -58,13 +58,13 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `brilliant_earth_diamond_prices` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after splitting by stone: 40% of rows are a stone listed twice at two prices, and under the random split 27% of test rows have their stone in training, which a lookup method exploits (4.6% RMSE for TabPFN-3.5). Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after splitting by stone: 40% of rows are a stone listed twice at two prices, and under the random split 27% of test rows have their stone in training, which a lookup method exploits (4.6% RMSE for TabPFN-3.5). Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
-CC (2026-11-11, Andrej): BeyondArena v0.2 review page, diamonds:
+CC (2026-11-11, Andrej): decided:
 - Issue 2 (time basis), B: the split is named a `Snapshot` of the one diamondse.info scrape of February 2007; the `Time basis:` line is in the definition's notes (not tested: prices after 2007). The tag enters `data_tags`.
 - Record fields set to the definition's values: `original_source` Other, `domain` business & marketing.
 
-CC (2026-11-12, Andrej): BeyondArena v0.2 review page, diamonds:
+CC (2026-11-12, Andrej): decided:
 - Issue 3 (better diamond price data), A: diamonds stays. No public table of single stones priced at several dates was found; `brilliant_earth_diamond_prices` stays a candidate in its own record.
 - Metric and split marked `ok`: RMSLE on the dollar price stays; the split stays random while issue 1 (split by stone) is open.
 
@@ -72,7 +72,7 @@ CC (2026-11-12, Andrej): split by stone (Review issue 1, B).
 - 40% of the rows are one stone listed twice (a few up to six times) in two price lists of the February 2007 scrape; the dearer price is the cheaper one times a fixed factor of the price band, so under random folds a stone's other listing in training gave its price.
 - `stone_id` (the group number of carat, colour, clarity, depth, table and z: 43,000 stones) is the group and no model input; grouped 3 x 3 folds; all 53,940 rows stay, both price lists with them. `required_split` Grouped (NON-IID), tag `Non-IID (Grouped)`.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `stone_id`, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `stone_id`, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -93,7 +93,8 @@ search site, its seller unknown, and better data for the same task under screeni
 -.
 
 **Main points:** Nothing open. Split by stone, so a stone's listings stay on one side (issue 1, B, resolved
-2026-11-12). The split is named a `Snapshot` of the February 2007 scrape (issue 2, resolved 2026-11-11). Diamonds
+2026-11-12). The split is named a `Snapshot` of the February 2007 scrape (issue 2, resolved 2026-11-11; the tag is now called
+`Retrospective`). Diamonds
 stays over other diamond price data (issue 3, resolved 2026-11-12, A).
 
 **Record judgment:** valid, with one leak, fixed by the split by stone (issue 1). The record's open point, "the seller and the date of the prices are
@@ -248,7 +249,7 @@ record.
    exact copies each inside one stone (said in the notes). The task summary's `row`, `split`, `fit_reason` and a new
    `changes` name the scrape (diamondse.info, February 2007, Wickham's R-help post) and the repeat listings; a curation
    bullet gives the evidence. Issue 2's `Time basis:` line holds as written. Record: `required_split` Grouped (NON-IID),
-   tag `Non-IID (Grouped)`, CC line. `dataset check` (Slurm job 1380062): 0 errors, 0 warnings, 2 info (the 146 exact
+   tag `Non-IID (Grouped)`, CC line. `dataset check`: 0 errors, 0 warnings, 2 info (the 146 exact
    copies, 199 rows with the same features and another price), 9 features, test folds of 17,954 to 18,029 rows
    (14,333 to 14,334 stones). Task probes on the 9 grouped splits, no flags:
 

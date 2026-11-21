@@ -69,30 +69,30 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 CC (2026-11-01, Lennart): counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14): the lossless form, chosen from the context rather than by model runs; the same day's numbers with censoring flags are reverted.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: target parts, other child assessments, ids and timers are dropped and the split holds out facilities; the use case is the curation's (approximate) and value is unmeasured. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: target parts, other child assessments, ids and timers are dropped and the split holds out facilities; the use case is the curation's (approximate) and value is unmeasured. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
 CC (2026-11-05, Lennart): GitHub issue #48 review: the ward ships as the national ward code `id_ward_best` (569 wards), a category, in place of `ward_best` (the ward's number within its municipality, which named different wards with one number). The sampling cluster `id_cluster_original` stays dropped: it exists only in the 2021 round, a unit of that survey's sample design that marks the round, while the ward is a place a new facility has too. The declared metric (RMSE, Zindi) is checked.
 
 **Assessment (AI, 2026-11-05):** a ward holds 1 to 18 facilities (median 3, 28.5% hold one), the split groups by facility, so the ward contains whole groups and reveals no test facility's rows. Issue #48's other points on this dataset hold no change: `programme` was categorical already, `pra_agency_*` and `pra_job` stay as the #37 ordinal review decided, the free-text "other" columns stay strings.
 
-CC (2026-11-12, Andrej): split by assessment campaign (a round of child assessments), from the BeyondArena v0.2 review page (Review issues 3-5).
+CC (2026-11-12, Andrej): split by assessment campaign (a round of child assessments), (Review issues 3-5).
 - Use case: a funder scores the children of its next campaign, at new facilities and at facilities surveyed before, and the survey can change between campaigns. The children were assessed in about eight campaigns (2016-2023), each its own study with its own sample of facilities and questionnaire, and the mean score jumps between them (40.9 to 54.2). So each of the four campaigns of 2022 and 2023 is tested once, trained on all earlier campaigns, including the earlier children of returning facilities. The facility split shipped before learned each campaign's level and questions from its other facilities and scored 0.4 to 5.0 RMSE better than a coming campaign allows (untuned LightGBM, same test children, equal training size).
 - `id_facility` is numbered per study: where two campaigns share a number, province and quintile agree only within October 2020 to March 2022, elsewhere at the rate of two random facilities. About 120 facilities return in a later campaign, not 761 as counted before. Noted in the curation notes; the number is dropped with the other ids.
 - `Entities: Recur`: a facility holds several children, and about 120 facilities return in a later campaign.
 - Not checked or built yet: `dataset check` needs the raw DataFirst file, which is not on this machine.
 
-CC (2026-11-12, Andrej): ships with the changes of issues 3 to 5 (BeyondArena v0.2 review page, issue 1, a); the split by assessment campaign and the metric (RMSE, Zindi's) are checked. Not checked or built: `dataset check` needs the raw DataFirst file, which is not on this machine.
+CC (2026-11-12, Andrej): ships with the changes of issues 3 to 5 (Review issue 1, a); the split by assessment campaign and the metric (RMSE, Zindi's) are checked. Not checked or built: `dataset check` needs the raw DataFirst file, which is not on this machine.
 
-CC (2026-11-13, Andrej): back to the facility split (BeyondArena v0.2 review page, issue 6): moving from the facility split to the split by assessment campaign was a mistake; the use case is a new facility again.
+CC (2026-11-13, Andrej): back to the facility split (Review issue 6): moving from the facility split to the split by assessment campaign was a mistake; the use case is a new facility again.
 - The facility, practitioner and teacher surveys the use case predicts from exist only in the campaigns of October 2020 to December 2021; the four test campaigns of 2022 and 2023 record 11 to 30 columns, the child's own. On them no model beat the child's age alone (untuned LightGBM RMSE 15.53 on all features, 14.84 on age, 15.89 for the mean); on the facility split LightGBM scores 12.91 (age alone 14.47).
 - `id_facility` groups the split again; numbers shared across studies fall on one side, a coarser group that cannot leak. `Samples: Over Time`, `Time: Dated` and `Entities: Recur` stay.
 - Checked on the raw DataFirst file (`dataset check`: 0 errors, 0 warnings); not built.
 
-CC (2026-11-13, Andrej): every child and every column stay (BeyondArena v0.2 review page, issue 7, A): the use case is the child's record plus whichever facility instruments the study ran (observation, registers, teacher rating; principal and practitioner interviews only in the 2021 national Index); a module a study did not run stays missing.
+CC (2026-11-13, Andrej): every child and every column stay (Review issue 7, A): the use case is the child's record plus whichever facility instruments the study ran (observation, registers, teacher rating; principal and practitioner interviews only in the 2021 national Index); a module a study did not run stays missing.
 - On the facility split a model on all rows and columns scores each group of children as well or better than one trained on that group alone (own record only 12.96 against 13.16 RMSE; with the observation 12.79 both; with the interviews 12.19 against 12.27; untuned LightGBM).
 - 47% of the children carry only their own record; their gain over age comes mostly from their campaign, learned from its other facilities (`fit_reason`).
 
-CC (2026-11-13, Andrej): two cleaning fixes from the review of the build (BeyondArena v0.2 review page, issues 8 and 9, both B); 735 features.
+CC (2026-11-13, Andrej): two cleaning fixes from the review of the build (Review issues 8 and 9, both B); 735 features.
 - Three free-text answers typed as strings like the other 26: `pri_fees_exceptions_other`, `pri_expenseother`, `pra_online_training_details` (66 to 124 different answers each).
 - Four multi-select lists dropped, `obs_materials`, `obs_area`, `obs_hazard` and `pri_covid_precautions`: each agrees in every cell with its per-code yes/no columns, which stay. `pri_covid_awareness` stays (55 cells differ).
 
@@ -249,7 +249,7 @@ change this task's validity.
      training, train on 53%, 71%, 61% and 86% of the children.
    * **Experiments:** the BeyondArena copy of the same 18,874 children, with the columns v0.2 has dropped since removed
      (738 of v0.2's 739 features; the national ward code is not in this copy), untuned LightGBM and ridge regression,
-     RMSE (Slurm job 1365903):
+     RMSE:
      - Shipped split by facility (3 x 3, the README's folds): LightGBM 12.97 (12.80 to 13.13); ridge 20.8 (17.2 to
        33.3), unstable on the sparse wide table, so LightGBM's numbers decide.
      - The four windows, each trained on all earlier assessments of other facilities: LightGBM 14.08 (January to June
@@ -287,7 +287,7 @@ change this task's validity.
    six-month windows from January 2022, each trained on earlier assessments of other facilities, cost +0.3 to +4.8
    RMSE at equal training size (untuned LightGBM, 36 of 36 folds).`, and `accepted_check_warnings` takes
    `meta_time_present_unused` with that reason (`child_dob` and `pra_dob` are dates). Under either option the record
-   gets the tags `Samples: Over Time` and `Time: Dated`. Results: Slurm job 1365903.
+   gets the tags `Samples: Over Time` and `Time: Dated`.
 
    [^3a]: **SPLIT-32** (Should): how the data was collected is information for the split; the record's collection
      facts and, where one fits, the definition's use-case prototype with its `Time basis:` line. **SPLIT-13** (Should): an entity that recurs across the
@@ -312,7 +312,7 @@ change this task's validity.
    * Temporal only (test facilities' earlier rows kept) is worse than B in all four windows (+0.1 to +0.8 RMSE) and tests
      facilities already seen.
 
-   LightGBM RMSE per test window (Slurm job 1365903; drift probes job 1377084):
+   LightGBM RMSE per test window (and drift probes):
 
    | Test window | Children | Mean score | Train share (B) | B: grouped + temporal | B's offset | B without offset | A: grouped only, same children |
    |---|---|---|---|---|---|---|---|
@@ -373,7 +373,7 @@ change this task's validity.
      | October-November 2020, then 2021 (same facility) | 32 | 0.17 |
      | 2021, then January-March 2022 (same facility) | 90 | 0.27 |
 
-   * Per test campaign, the earlier runs (LightGBM, Slurm 1365903) with today's revisit counts:
+   * Per test campaign, the earlier runs (LightGBM) with today's revisit counts:
 
      | Test campaign | Children | Same number earlier | Same facility earlier | Rows b drops | Train share b / c | RMSE a (same children) / b / c | c minus a at equal size |
      |---|---|---|---|---|---|---|---|
@@ -444,7 +444,7 @@ change this task's validity.
    check whether the time column ships as a feature (the campaign marks the round, dropped as `data_year`).
    `task_summary`: `split`, `use_case` and `fit_reason` for new and known facilities in a coming campaign whose survey
    may change; `splits_comment` names the four campaigns, the train shares (56%, 71%, 77%, 89%), the share of test
-   children at a facility seen before (24.6%, then none) and the cost against the facility split (Slurm 1365903).
+   children at a facility seen before (24.6%, then none) and the cost against the facility split.
    Record: `required_split` Temporal, `Non-IID (Temporal)` in place of `Non-IID (Grouped)`; `dataset check`; the leak
    probes the change touches. On a: the curation bullet of the issue's notes with the numbers above and
    `meta_time_present_unused` accepted. On b: the 2026-11-10 notes, with issue 4 C's key.
@@ -634,7 +634,7 @@ change this task's validity.
        2020 to December 2021 (7,168 of the 18,874 children); the others carry 11 to 64 columns, mostly the child's own.
      - On the facility split the child-only campaigns are scored too, from little more than age and height.
      - Drop the children without the surveys, or keep them?
-   * **Experiments:** untuned LightGBM, 3 folds by facility, RMSE (Slurm 1383112):
+   * **Experiments:** untuned LightGBM, 3 folds by facility, RMSE:
 
      | Rows | Children | Scored on | Training mean | `child_age` alone | All features | r all |
      |---|---|---|---|---|---|---|
@@ -687,7 +687,7 @@ change this task's validity.
      2,081; all modules 1,817; others smaller.
    * **Experiment:** the facility split as shipped (9 folds), untuned LightGBM, RMSE on the same test children per tier;
      "pooled" trains on all 18,874 children and 740 columns, "tier only" on the tier's own training children and the
-     columns they fill (Slurm 1383202):
+     columns they fill:
 
      | Test children | Per fold | Training mean | `child_age` alone | Tier only | Pooled | r pooled |
      |---|---|---|---|---|---|---|

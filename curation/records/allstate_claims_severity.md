@@ -49,11 +49,11 @@ CC: "Predict amount of insurance claims. Data anonymized. Unclear whether date i
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the host's claim-cost task and MAE are kept, methods spread (RMSE 0.531 to 0.565 on the log scale, mean 0.814), no copy or leak found. Priority 3: gap 1, use case 0, source 0, shape 1, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the host's claim-cost task and MAE are kept, methods spread (RMSE 0.531 to 0.565 on the log scale, mean 0.814), no copy or leak found. Priority 3: gap 1, use case 0, source 0, shape 1, risk -0.
 
-CC (2026-11-10, Andrej): review page marks: ship as defined (issue 1, decided 2026-11-04); the split stays random over claims, natural in effect, with the twins (7,654 claims sharing all 14 numbers, a link 56% to 75% real, residual correlation 0.07, grouping costs 0.0002 RMSE) noted in `curation_comments` (issue 2, option a: "We go with Random, tagged forced from temporal."); time basis forced from temporal (issue 3, option B): `ForcedIIDFromTemporal` added to `data_tags` with its `Time basis:` bullet (claims over an unstated period, the id a random draw).
+CC (2026-11-10, Andrej): decided: ship as defined (issue 1, decided 2026-11-04); the split stays random over claims, natural in effect, with the twins (7,654 claims sharing all 14 numbers, a link 56% to 75% real, residual correlation 0.07, grouping costs 0.0002 RMSE) noted in `curation_comments` (issue 2, option a: "We go with Random, tagged forced from temporal."); time basis forced from temporal (issue 3, option B): `ForcedIIDFromTemporal` added to `data_tags` with its `Time basis:` bullet (claims over an unstated period, the id a random draw).
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Claim severity is driven by prices, litigation and settlement practice, all documented to drift; no domain reason makes later claims interchangeable.
 
@@ -71,14 +71,15 @@ spread from RMSE 0.531 (TabPFN-3.5) to 0.565 (linear model) on the log scale, ag
 single raw column (`cat80`) reaches 0.713. Quality: nothing open. Weighed: the insurer's own claims and the
 competition's metric +, anonymised attributes and no claim dates -.
 
-**Main points:** All settled (2026-11-10): ship as defined (issue 1), the random split with the twins noted (issue 2,
-a), tagged forced from temporal (issue 3, B).
+**Main points:** All settled (2026-11-18): ship as defined (issue 1), the random split with the twins noted (issue 2,
+a), tagged forced from temporal (issue 3, B), the forced tag kept rather than `AssumedStationaryRelation` (issue 4,
+A).
 
 **Record judgment:** valid, and the record's fields match the definition. The use case is the host's ("predicting the
 cost, and hence severity, of claims", to improve its claims service); fit `approximate`, as the definition says, since
-the attributes' timing cannot be checked and random claims of one undated period stand in for the claims to come. Like
-the other undated snapshots of the benchmark, the split is plain IID and not tagged as forced from temporal (a note
-across datasets, not an issue here). The metric review page keeps the competition's MAE.
+the attributes' timing cannot be checked and random claims of one undated period stand in for the claims to come. The
+split is random over claims and tagged as forced from temporal (issues 3 and 4). The metric review keeps the
+competition's MAE.
 
 **Issues for Andrej:**
 
