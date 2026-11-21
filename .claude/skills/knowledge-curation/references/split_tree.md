@@ -564,13 +564,11 @@ time (Time: Inferred); no → the forced split below)_
 
 ## Definitions that ship another split
 
-When the tree was last regenerated (2026-11-17), these v0.2 definitions shipped a split other than their leaf's. Each
-is open for a reviewer: change the split, or keep it and write the reason in the `splits_comment`.
+These v0.2 definitions ship a split other than their leaf's; a reviewer confirmed each departure, for the reason given.
 
 | Definition | Leaf | Ships |
 |---|---|---|
-| cirrhosis_patient_survival_prediction | Temporal · arrival date | random, `ForcedIIDFromTemporal`: kept on the curator's call (2026-11-19), the 60 random folds over three windows of 50 referrals |
-| ecoli_proteins | Temporal · entry date | random, `Timeless` |
-| fremtpl2 | Temporal · rebuilt order | random, `ForcedIIDFromTemporal` |
-| horse_colic_survival | Temporal · rebuilt order | grouped, `StationaryRelation` |
-| infrared_thermography_temperature | Temporal · arrival date | random, `StationaryRelation` |
+| cirrhosis_patient_survival_prediction | Temporal · arrival date | random 20 x 3, `ForcedIIDFromTemporal`: kept on the curator's call (2026-11-19); the three windows that can be built hold about 50 referrals each, and the stationary-relation test is inconclusive for 1976-77 |
+| ecoli_proteins | Temporal · entry date | random 20 x 3, `StationaryRelation` (2026-11-20): windows would need a 37% train floor and hold 46 to 76 proteins each, and the relation over the entry years measures flat, narrowly |
+| horse_colic_survival | Temporal · rebuilt order | grouped by case 20 x 3, `StationaryRelation` (2026-11-20): the relation along the case-number order measures flat (pooled ROC AUC -0.001 ± 0.012), for cases held out whole |
+| infrared_thermography_temperature | Temporal · arrival date | random 10 x 3, `StationaryRelation` (2026-11-20): the relation measures flat on the two two-month windows that train on half the subjects or more |
