@@ -413,9 +413,6 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         Three windows against the nine splits that 8,967 patients would get at random (SPLIT-33): a fourth, the first
         half of 1992, would train only on phase I (4,232 patients, 47%), below the floor of half the data, and the
         study enrolled no one from mid-1991 to January 1992.
-        What the windows cost: the stationary-relation test finds the relation flat on every half-year (Kumo-Tabular,
-        pooled over these three windows +0.0002 ± 0.0011 ROC AUC from forward training, two SD 0.87 of the noise
-        floor; LightGBM +0.0024 ± 0.0030), so testing later patients costs little against random patients.
         Until 2026-11-19 the split was random patients (`ForcedIIDFromTemporal`).
     """
     temporal = Temporal(
