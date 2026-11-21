@@ -399,7 +399,7 @@ change this task's validity.
      that meets new and known entities (`ba-mixed-new-known`), and ids that span merged studies
      (`ba-merged-study-ids`).
 
-   [^3b]: **SPLIT-32** (Should; PR #50): the record's collection facts (`Samples:`, `Time:`, `Target:`, `Entities:`,
+   [^3b]: **SPLIT-32** (Should): the record's collection facts (`Samples:`, `Time:`, `Target:`, `Entities:`,
      `Features:`) and the definition's prototype; question 4: arriving over time affects the target when how the target
      or the features are recorded changes (a new instrument, a new selection of cases), and dated or inferred time then
      gives a temporal split. **USE-10** (Must): decide from the use case whether the entity is new or known before
@@ -542,7 +542,7 @@ change this task's validity.
    **Notes for the AI:** on B, through the store API (`Andrej` is in `checked_by` already), with a CC line that names
    the facility and the about 120 returns.
 
-   [^5a]: **SPLIT-32** (Should; PR #50): `Entities: Recur` when the source holds several rows of one entity, with or
+   [^5a]: **SPLIT-32** (Should): `Entities: Recur` when the source holds several rows of one entity, with or
      without an id.
 
    **Andrej (2026-11-12, change):** Option B: Entities: Recur.

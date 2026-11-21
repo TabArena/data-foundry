@@ -61,7 +61,7 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after splitting by stone: 40% of rows are a stone listed twice at two prices, and under the random split 27% of test rows have their stone in training, which a lookup method exploits (4.6% RMSE for TabPFN-3.5). Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
 CC (2026-11-11, Andrej): BeyondArena v0.2 review page, diamonds:
-- Issue 2 (time basis), B: the split is named a `Snapshot` of the one diamondse.info scrape of February 2007; the `Time basis:` line is in the definition's notes (not tested: prices after 2007). The tag enters `data_tags` once PR #50 is in the working copy.
+- Issue 2 (time basis), B: the split is named a `Snapshot` of the one diamondse.info scrape of February 2007; the `Time basis:` line is in the definition's notes (not tested: prices after 2007). The tag enters `data_tags`.
 - Record fields set to the definition's values: `original_source` Other, `domain` business & marketing.
 
 CC (2026-11-12, Andrej): BeyondArena v0.2 review page, diamonds:
@@ -174,12 +174,12 @@ record.
      by the size of a score gap[^1d].
    * **Recommendation stays B:** split by stone on the six columns.
 
-   [^1c]: **LEAK-42** (Must, draft PR #62): repeats of a unit the data does not record get one of four verdicts:
+   [^1c]: **LEAK-42** (Must): repeats of a unit the data does not record get one of four verdicts:
      natural, entity fix, temporal fix or not recoverable; in an entity fix copies of one record go down to one row
      per unit, and several observations of one unit, each with its own label (a stone listed with two prices among
      the examples), are grouped; a key rebuilt from the features is the curator's call. **SPLIT-24** (Must): a key
      constructed from the data by a calibrated link whose chance rate shows that most links are real.
-   [^1d]: **LEAK-43** (Should, draft PR #62): three tests set the verdict, not the size of a score gap: is the link
+   [^1d]: **LEAK-43** (Should): three tests set the verdict, not the size of a score gap: is the link
      above a chance rate that keeps the data's structure (values moved by their measurement step among the nulls),
      does the label travel with it beyond what the shared features predict, is there an order.
 
@@ -283,7 +283,7 @@ record.
 
    * **Recommendation:** B. **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("Snapshot",)` (no tag is listed now; under issue 1's
+   **Notes for the AI:** on B: `data_tags = ("Snapshot",)` (no tag is listed now; under issue 1's
    B the grouping adds `Non-IID` and `Grouped` itself) and the curation bullet "- Time basis: Snapshot: one scrape of
    the search site diamondse.info in February 2007 (Wickham); each row a listing's grading and its asking price at
    that moment; the use case prices a stone against the same day's price list. Not tested: prices after 2007.";
@@ -299,7 +299,7 @@ record.
    diamondse.info, February 2007; not tested: prices after 2007); rows, split and `data_tags` are unchanged. The line
    assumes the implemented random split, since issue 1 has no mark yet; its wording holds for a split by stone too,
    and under the random split a stone's other listing at the same scrape is the one same-moment target issue 1 still
-   decides. The tag `Snapshot` enters `data_tags` once PR #50 is in the working copy. Record fields `original_source`
+   decides. The tag `Snapshot` enters `data_tags`. Record fields `original_source`
    (Other) and `domain` (business & marketing) set to the definition's values (mark `update`).
 
 3. **Replace diamonds with better public diamond price data, possibly dated?**

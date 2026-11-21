@@ -55,7 +55,7 @@ CC (2026-10-14, Lennart): Grouped by mix: a new prediction is for a mix not test
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after merging re-entered records into their mix's group: 114 same-age pairs differ only by rounding (77% identical strength vs 0.12% by chance), so 17% of test rows have a copy of their mix in training; LightGBM R^2 0.864 -> 0.839. Priority 3: gap 0, use case 1, source 1, shape 1, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): laboratory tests of designed mixes, the strength measured at a stated age, with no test date. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): laboratory tests of designed mixes, the strength measured at a stated age, with no test date. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 CC (2026-11-11, Andrej): record fields filled from the definition (both were empty): `problem_type` Regression (dataset.py predicts the strength in MPa, RMSE), `domain` chemistry & material science (as for blended_cement_concrete_strength).
 
@@ -357,7 +357,7 @@ data as high-performance mixes compiled by Yeh 1998 from 17 published studies, m
    * **Recommendation:** B: the target is a material's strength at a chosen age, and no calendar time is in the
      source. **Decision:** A or B?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the class adds `Non-IID`,
+   **Notes for the AI:** on B: `data_tags = ("Timeless",)` (the class adds `Non-IID`,
    `Grouped`), a curation bullet `- Time basis: Timeless: laboratory tests of designed mixes (Yeh 1998); the amounts
    are chosen before casting and the strength is measured at the stated age, a feature; no test date is recorded.`,
    `splits_comment` unchanged; `dataset check`.
@@ -371,7 +371,7 @@ data as high-performance mixes compiled by Yeh 1998 from 17 published studies, m
    **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the routine `Timeless` time
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
    cannot test (mixes of a laboratory outside the compilation); the split and `data_tags` are unchanged. The tag
-   `Timeless` enters `data_tags` once PR #50 is in the working copy.
+   `Timeless` enters `data_tags`.
 
 3. **Describe the data as a compilation of published studies, not one laboratory's tests?**
 

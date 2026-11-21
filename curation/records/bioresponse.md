@@ -71,7 +71,7 @@ CC (2026-11-11, Andrej): the use-case fit reads `approximate` (Review issue 1); 
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: Boehringer Ingelheim's own Kaggle competition, methods separate clearly (1 - AUC 0.117 to 0.211); only the fit label should become approximate because the response and assay are unnamed. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on five more routine `Timeless` issues): the response is a property of the molecule and every descriptor is computed from its structure; no date, structure or compound id is published, so nothing could date the rows. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on five more routine `Timeless` issues): the response is a property of the molecule and every descriptor is computed from its structure; no date, structure or compound id is published, so nothing could date the rows. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 CC (2026-11-10, Andrej): review page issue 1, option B: use-case fit approximate; `fit_reason` names the unnamed response and assay and the chemical series a random split cannot hold out. No data, split or score change.
 
@@ -205,7 +205,7 @@ settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `An
    * **Recommendation:** B: the descriptors and the response belong to the structure, and nothing in or behind the
      release dates a row. **Decision:** A, B or C?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Anonymized", "Timeless")` (the class adds `IID`) and
+   **Notes for the AI:** on B: `data_tags = ("Anonymized", "Timeless")` (the class adds `IID`) and
    a curation bullet `- Time basis: Timeless: the response is a property of the molecule and every descriptor is
    computed from its structure, so nothing in a row arrives later. Boehringer Ingelheim tested the molecules over an
    unstated period and published no date, structure or compound id, so no forward split is possible; the label drifts
@@ -224,8 +224,7 @@ settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `An
 
    **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept five more routine `Timeless`
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
-   cannot test (a new chemical series); the split and `data_tags` are unchanged. The tag `Timeless` enters `data_tags`
-   once PR #50 is in the working copy.
+   cannot test (a new chemical series); the split and `data_tags` are unchanged. The tag `Timeless` enters `data_tags`.
 
 3. **Keep the random split with the analogue overlap named, as no molecule is a copy and the series are lost?**
 
@@ -260,7 +259,7 @@ settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `An
      analogue overlap is the series a medicinal chemist works within, already named in `fit_reason`.
      **Decision:** keep the random split with the overlap named (A) or retire (B)?
 
-   **Notes for the AI:** on A, once PR #62 is in, a curation bullet "- Entity leakage, not recoverable (2026-11-06): no
+   **Notes for the AI:** on A, a curation bullet "- Entity leakage, not recoverable (2026-11-06): no
    two molecules share all 1,776 descriptors and the nearest pair differs in 16, so no copy is dropped; close analogues
    of one series share the label (nearest-neighbour agreement 92% in the closest tenth of distances against 64% in the
    farthest) and cross the random split, as no structure or compound id is published to group them."; no data
@@ -268,7 +267,7 @@ settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `An
    line. The raw Kaggle file is not in the warehouse; the checks used OpenML 46912 (TabArena's copy of the same
    3,751 rows).
 
-   [^3a]: **LEAK-42** (Must, draft PR #62): repeats of a unit the data does not record get one verdict; not
+   [^3a]: **LEAK-42** (Must): repeats of a unit the data does not record get one verdict; not
      recoverable when neither the units nor their order can be recovered with enough confidence: the copies that can
      be identified are dropped, and the random split stays with the remaining overlap in the notes. **SPLIT-24**
      (Must): never group on a similarity-threshold cluster.
@@ -413,7 +412,7 @@ settled by Lennart's CC of 2026-10-19 (the scaling is kept with a note); the `An
 
    **Resolved (2026-11-11, Andrej):** a: the random split stays; a curation bullet names the analogue overlap (no copy,
    nearest pair 16 descriptors apart), Kaggle's random-looking test draw (ROC AUC 0.485) and the lead-optimisation use
-   case; no data change. The bullet cites no rule ID until PR #62 (LEAK-42) is in the working copy.
+   case; no data change. The bullet cites no rule ID until LEAK-42 is in the rules.
 
 CC (2026-11-16, Andrej): `ForcedIIDFromGrouped` beside `Timeless` (SPLIT-35):
 - The use case screens molecules not made yet, which whole chemical series held out would stand for (SPLIT-31).

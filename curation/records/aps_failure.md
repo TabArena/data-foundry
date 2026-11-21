@@ -235,12 +235,12 @@ Scania CV AB, while the definition states CC BY 4.0, UCI's licence for the page;
    `cq_000` are equal in 99.7% of the training file's rows), where one shared rare value counts several times; the
    label and `aa_000` tests do not depend on that.
 
-   [^1e]: **LEAK-42** (Must; draft PR #62): repeats of a unit the data does not record get one of four verdicts:
+   [^1e]: **LEAK-42** (Must): repeats of a unit the data does not record get one of four verdicts:
      natural, entity fix, temporal fix or not recoverable; an entity fix takes copies of one record down to one row
      per unit, and every drop gives the label shares before and after and asks whether the target still stands.
-     **LEAK-43** (Should; draft PR #62): three tests set the verdict: a link far above a chance rate that keeps the
+     **LEAK-43** (Should): three tests set the verdict: a link far above a chance rate that keeps the
      data's structure, a label that travels with the link beyond what the shared features predict, and an order.
-   [^1f]: **SPLIT-24** (Must; draft PR #62): a calibrated link takes its match rule from how the data were recorded
+   [^1f]: **SPLIT-24** (Must): a calibrated link takes its match rule from how the data were recorded
      (the same counters read again), never from the score, and a chance rate shows that most of its links are real;
      whether it holds is the curator's call. **LEAK-18** (Should): a match on all but one or two of many values is a
      calibrated link, and the evidence that may drop such a row may also group it.
@@ -295,7 +295,7 @@ Scania CV AB, while the definition states CC BY 4.0, UCI's licence for the page;
    * Group on the clusters at 60 counters: 0.05% of the test rows have a copy in training, the same as d. Cost per
      truck is 1.558 when each truck counts once and 1.557 for d, so the task is equally hard.
    * Grouped and unweighted, a truck with up to 6 copies counts up to 6 times in the test score: 1.491 against 1.557.
-   * Rules: grouping on these clusters needs the calibrated link of draft PR #62. The current group-id rule bars
+   * Rules: grouping on these clusters needs the calibrated link (SPLIT-24). The current group-id rule bars
      similarity clusters. d uses the same clusters, so both depend on that link. The draft keeps copies of one record
      as one row and groups separate observations that each carry their own label. Here the copies differ in about one
      counter and always share the label.
@@ -315,8 +315,8 @@ Scania CV AB, while the definition states CC BY 4.0, UCI's licence for the page;
      |---|---|---|---|---|
      | a | Keep all rows (implemented) | random split | the rows as published | 25% of test rows find a copy |
      | ge | Group on the exact key | groups of rows equal in all counters but `bx_000` | allowed by the current rules | 12% of test rows keep a copy |
-     | g | Group on the clusters at 60 counters | all 76,000 rows, cluster id as the group | rows as published, no arbitrary pick of one copy | copied trucks count several times in the score; needs draft PR #62 |
-     | d | One row per cluster at 60 counters | 61,524 rows | each truck counts once | 19% of rows go; needs draft PR #62 |
+     | g | Group on the clusters at 60 counters | all 76,000 rows, cluster id as the group | rows as published, no arbitrary pick of one copy | copied trucks count several times in the score; needs the calibrated link (SPLIT-24) |
+     | d | One row per cluster at 60 counters | 61,524 rows | each truck counts once | 19% of rows go; needs the calibrated link (SPLIT-24) |
 
    * **Recommendation:** d. The copies are one record read again, so one row per truck matches the use case and
      weights each truck once. Choose g if keeping the published rows matters more. g and d differ only in that
@@ -369,7 +369,7 @@ Scania CV AB, while the definition states CC BY 4.0, UCI's licence for the page;
      |---|---|---|---|---|
      | a | Keep all rows (implemented) | random split | the rows as published | 25% of test rows find a copy |
      | c | One row per cluster at 140 counters | 63,937 rows; looser copies stay apart | rests only on near-certain copies | 5.1% of test rows keep a looser copy in training |
-     | cg | c, then group on the clusters at 60 counters | 63,937 rows, the cluster id as the group | the drop rests on near-certain copies; the probable re-readings are grouped, the treatment the draft gives separate observations of one unit | not measured yet; needs draft PR #62 |
+     | cg | c, then group on the clusters at 60 counters | 63,937 rows, the cluster id as the group | the drop rests on near-certain copies; the probable re-readings are grouped, the treatment the rules give separate observations of one unit | not measured yet; needs the calibrated link (SPLIT-24) |
      | d | One row per cluster at 60 counters | 61,524 rows | each truck counts once | 2,413 of its 14,476 dropped rows rest on the label pattern more than on the values |
      | g | Group on the clusters at 60 counters | all 76,000 rows | the rows as published | copies count several times in the score |
 
@@ -441,7 +441,7 @@ Scania CV AB, while the definition states CC BY 4.0, UCI's licence for the page;
    * **Recommendation:** A: a forward use case whose time is lost is what the forced tag names; the line replaces a
      guess about the files with what they show. **Decision:** forced with its line (A) or stationary relation (B)?
 
-   **Notes for the AI:** once PR #50 is in, on A: `data_tags` stay `("ForcedIIDFromTemporal", "Anonymized")`; add
+   **Notes for the AI:** on A: `data_tags` stay `("ForcedIIDFromTemporal", "Anonymized")`; add
    the curation bullet "- Time basis: ForcedIIDFromTemporal: failed trucks read out over a period Scania does not
    state; the release has no date, and the challenge's two files are not shown to be two periods (near copies across
    them have the larger counters in the test file in 2,237 pairs, the smaller in 2,220), while which component fails

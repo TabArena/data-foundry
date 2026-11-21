@@ -184,7 +184,7 @@ flags) was settled by the curator on 2026-10-21: they stay numbers.
 
    * **Recommendation:** B, or C with issue 3's grouping. **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in this working copy, on B: replace the `Tagged ForcedIIDFromTemporal:`
+   **Notes for the AI:** on B: replace the `Tagged ForcedIIDFromTemporal:`
    bullet of `curation_comments` with `- Time basis: ForcedIIDFromTemporal: loan applications over a period Home
    Credit does not state, the label payment difficulties on the first instalments; a lender scores later applicants.
    Every date is relative to the application ("time only relative to the application"), the default rate is flat
@@ -240,7 +240,7 @@ flags) was settled by the curator on 2026-10-21: they stay numbers.
 
    **Notes for the AI:** on C, in `_clean` compute `client_key` = `CODE_GENDER` + (`DAYS_BIRTH` - `DAYS_ID_PUBLISH`)
    + (`DAYS_BIRTH` - `DAYS_REGISTRATION`, rounded) before the features are built, declare the grouping on it (labels
-   per row), keep it out of the features, set `data_tags = ("ForcedGroupedFromTemporal",)` once PR #50 is in, and
+   per row), keep it out of the features, set `data_tags = ("ForcedGroupedFromTemporal",)` and
    reword `split`; a curation note with the numbers above; `dataset check`. Scripts of the time review of 2026-11-06:
    `time_ids.py`, `client_split.py`, `client_split_full.py`.
 
@@ -300,7 +300,7 @@ flags) was settled by the curator on 2026-10-21: they stay numbers.
    **Answer (AI, 2026-11-11):** a random split of applications in which a returning client's applications share a
    fold. It stays a random split (97% of the clients have one application) and is not tagged grouped.
 
-   * Marked: the record already carries `Entities: Recur` (also in PR #50's copy); a CC line records your decision.
+   * Marked: the record already carries `Entities: Recur`; a CC line records your decision.
    * What a lender does: it scores every new application, returning clients included, and knows a returning client's
      earlier application and its payments (they already sit in the history columns for 61% of the pairs). It never
      knows the later application when scoring the earlier one.

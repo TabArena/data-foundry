@@ -307,12 +307,12 @@ needs no mark. Since 2026-10-31 the record notes better data for the same task, 
 
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
-     | A | Random split, `StationaryRelation` (implemented) | the shipped split; once PR #50 is in, the tag and a `Time basis:` line | the site and the features come from one work-up; names the drift in practice as the untested part | argued from the source; the years of diagnosis are unknown |
+     | A | Random split, `StationaryRelation` (implemented) | the shipped split; the tag and a `Time basis:` line | the site and the features come from one work-up; names the drift in practice as the untested part | argued from the source; the years of diagnosis are unknown |
      | B | Random split, `ForcedIIDFromTemporal` | the same split, tagged as forced from temporal[^3b] | says that patients of a later decade are not tested | nothing found that moves the relation; the file has no time for the leak test the forced tag asks for |
 
    * **Recommendation:** A, if issue 1 keeps the dataset: the target and every feature come from one work-up, and only practice and case mix can drift. **Decision:** A or B?
 
-   **Notes for the AI:** on A, once PR #50 is in: `data_tags = ("StationaryRelation",)` and a curation bullet `- Time
+   **Notes for the AI:** on A: `data_tags = ("StationaryRelation",)` and a curation bullet `- Time
    basis: StationaryRelation: cancer patients of the Institute of Oncology, Ljubljana, seen before 1986 over an unstated
    period; the primary site, the tissue type and the sites of spread come from the same diagnostic work-up. The UCI file
    is sorted by site and keeps no date, so this is argued from the source, not measured; the share of each site and the
@@ -384,7 +384,7 @@ needs no mark. Since 2026-10-31 the record notes better data for the same task, 
    * **Recommendation:** A: the copies are as frequent as the findings' own links predict and share the site only as
      often as their findings predict, so they are distinct patients. **Decision:** keep (A) or drop the copies (B)?
 
-   **Notes for the AI:** on A, once PR #62 is in, replace the duplicate bullet in `curation_comments` with "- Entity
+   **Notes for the AI:** on A, replace the duplicate bullet in `curation_comments` with "- Entity
    leakage, natural (2026-11-06): 49 of 302 patients repeat another's 17 findings (30 with the same site); a null
    keeping the findings' links gives as many (57, 95% 45-70), 16 of the 25 groups hold several sites and copies share
    the site as often as their findings predict (58% against 56%), and the file has no order but the site, so they are
@@ -393,9 +393,9 @@ needs no mark. Since 2026-10-31 the record notes better data for the same task, 
    `_clean` before the filter of small sites (prostate then leaves) or after it (prostate kept at 8, under the floor):
    ask which; `row`, `changes` and the notes updated, a `CC (<date>, Andrej):` line in the record.
 
-   [^4a]: **LEAK-41** (Must, draft PR #62): repeats of a unit the data does not record get one verdict; natural when
+   [^4a]: **LEAK-41** (Must): repeats of a unit the data does not record get one verdict; natural when
      the look-alikes are distinct units: the random split stays and the notes give the share of test rows with a
-     look-alike in training. **LEAK-42** (Should, draft PR #62): three tests set the verdict: matches against a chance
+     look-alike in training. **LEAK-42** (Should): three tests set the verdict: matches against a chance
      rate that keeps the data's structure, label agreement against what the shared features predict, and an order.
    [^4b]: **LEAK-18** (Should): few features and plausible repeats are natural: keep them and say so
      (sepsis_survival_minimal_clinical_records keeps 110,204 rows over 975 distinct feature rows;
@@ -410,11 +410,11 @@ needs no mark. Since 2026-10-31 the record notes better data for the same task, 
 
    * **Problem:**
      - Issue 1 kept this dataset with an approximate fit (2026-11-09). A day later lung_cancer was retired on its use
-       case (draft PR #75): molecular typing matters for ambiguous biopsies and tumours of unknown origin, and its rows
+       case: molecular typing matters for ambiguous biopsies and tumours of unknown origin, and its rows
        hold neither, only the cases where the answer is already clear.
      - The same reading fits here: the decision (where to look for a primary that is unknown) has no rows in this
        data. These are patients whose primary was found, and their regional nodes point at it (issue 1).
-     - The two decisions point opposite ways, and PR #75 states nothing that sets them apart. Keep this one with a
+     - The two decisions point opposite ways, and the lung_cancer retirement states nothing that sets them apart. Keep this one with a
        stated difference, or retire it the same way?
    * **Background:**
      - Issue 1 asked whether to retire for representativeness (`Not Representative`). This issue asks about the use
@@ -441,16 +441,16 @@ needs no mark. Since 2026-10-31 the record notes better data for the same task, 
      glioma retirements rest on; the population gap is the one issue 1 already weighed. **Decision:** keep (A) or
      retire (B)?
 
-   **Notes for the AI:** on A, add to the lung_cancer row of the USE-1 Cases table in `use_case.md` (PR #75 branch)
+   **Notes for the AI:** on A, add to the lung_cancer row of the USE-1 Cases table in `use_case.md`
    "Differs from ljubljana_primary_tumor (kept, approximate): its primary site comes from a separate work-up, not from
    the specimen the features measure", and a `CC (<date>, Andrej):` line in this record; `checked_by` gains Andrej. On
    B, `suggestion: No (Retired)`, the marker added, a CC line naming the use case, the USE-1 Cases row, priority
-   removed, folder removed and `v2_path` cleared, the same commit pattern as PR #75; then check sarcoma and
+   removed, folder removed and `v2_path` cleared, the same commit pattern as the lung_cancer retirement; then check sarcoma and
    eryhemato_squamous_disease against the same reading.
 
    [^5a]: **USE-1** (Must): a use case is an actor, a moment and a decision. Cases: glioma_grading_clinical_and_mutation_features
      (a grade already given by the pathologist, 2026-10-26, Lennart); lung_cancer (resected tumours whose slide is
-     clear, 2026-11-10, Andrej, draft PR #75).
+     clear, 2026-11-10, Andrej).
    [^5b]: **USE-8** (Must; amended 2026-10-27, Lennart): a selection bias is judged against the real-world setting of
      the use case; when that setting does not share it, the selection is a known gap and the fit is approximate.
 

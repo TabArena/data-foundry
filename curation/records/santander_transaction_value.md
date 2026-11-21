@@ -384,7 +384,7 @@ the review let a later snapshot give the target away, and the split holds out wh
    **Andrej (2026-11-10, discuss):** Agree.
 
    **Resolved (2026-11-10, Andrej):** B plus `Time: Within Entity`: the record's `tags` have `Time: Lost` in place of
-   `Time: Dated` and gain `Time: Within Entity`, in the working copy and in the PR #50 worktree's copy of the record.
+   `Time: Dated` and gain `Time: Within Entity`, in the working copy.
 
 4. **Keep `ForcedGroupedFromTemporal`, or tag `AssumedStationaryRelation`?**
 

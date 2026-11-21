@@ -239,11 +239,10 @@ across datasets, not an issue here). The metric review page keeps the competitio
    context="none", definition=...)`, the column out of the features; a curation bullet with the three tests above;
    record `required_split` Grouped; rebuild and check that no test row has a twin in training.
 
-   [^2e1]: **LEAK-41** (Must; draft PR #62): repeats of a unit the data does not record get one verdict: natural
+   [^2e1]: **LEAK-41** (Must): repeats of a unit the data does not record get one verdict: natural
      (distinct look-alikes, random split), entity fix (units recovered from the source or rebuilt from the features;
      several observations of one unit, each with its own label, grouped), temporal fix, or not recoverable (the
-     identifiable copies dropped). A key rebuilt from the features is the curator's call. **LEAK-42** (Should; draft
-     PR #62): three tests set the verdict: a link above a chance rate that keeps the data's structure, a label that
+     identifiable copies dropped). A key rebuilt from the features is the curator's call. **LEAK-42** (Should): three tests set the verdict: a link above a chance rate that keeps the data's structure, a label that
      travels with the link beyond what the shared features predict, and an order. A real link that carries no label
      is no leak.
    [^2e2]: **SPLIT-24** (Must): group on a true id, or on one constructed from the data, either exactly (identical
@@ -270,7 +269,7 @@ across datasets, not an issue here). The metric review page keeps the competitio
    **Notes for the AI:** on a, a curation bullet with the numbers above; issue 3 (the time basis) is unaffected; the
    cross-dataset item on entity leakage now lists allstate as a.
 
-   [^2f1]: **LEAK-41** and **SPLIT-24** (draft PR #62): a key rebuilt from the features is decided case by case, by how
+   [^2f1]: **LEAK-41** and **SPLIT-24**: a key rebuilt from the features is decided case by case, by how
    certain it is that the key works; a link calibrated against chance may group rows.
 
    **Andrej (2026-11-10, discuss):** We go with Random, tagged forced from temporal.
@@ -316,7 +315,7 @@ across datasets, not an issue here). The metric review page keeps the competitio
    * **Recommendation:** B: a forward use case whose time is lost is what the forced tag names; it holds for both
      random options of issue 2. **Decision:** no time basis (A), forced (B) or stationary relation (C)?
 
-   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("ForcedIIDFromTemporal", "Anonymized")` and the
+   **Notes for the AI:** on B: `data_tags = ("ForcedIIDFromTemporal", "Anonymized")` and the
    curation bullet "- Time basis: ForcedIIDFromTemporal: claims filed one by one over a period Allstate does not
    state, each cost known after a settlement time that differs by claim; the release keeps no claim date and the id
    is a random draw (a model tells low from high ids at ROC AUC 0.501; training on the first 80% of ids scores RMSE
