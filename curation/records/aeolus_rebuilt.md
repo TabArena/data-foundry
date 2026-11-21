@@ -3,6 +3,7 @@ unique_name: aeolus_rebuilt
 name: US flight delays with weather (Aeolus rebuilt from BTS and Meteostat)
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -11,8 +12,14 @@ decision_markers:
 - Needs extensive data wrangling
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Dated Event Log
 original_source: GOV Website
 year: '2026'
+collection_period: Jan 2023 - Dec 2024
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
@@ -49,15 +56,19 @@ CC (2026-10-26, Lennart): the record's year takes the definition's value (2026, 
 
 CC (2026-10-26, Lennart): verdict ship.
 
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `O_COCO` (a partial order); `D_COCO` (a partial order); `INBOUND_STATUS` (a level outside the scale is a state of its own).
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): left unordered: `O_COCO` (a partial order); `D_COCO` (a partial order); `INBOUND_STATUS` (a level outside the scale is a state of its own).
 
-CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 columns with a state outside the scale ordered, the state placed by the rule.
+CC (2026-10-31, Lennart): decided in the dtype review of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 columns with a state outside the scale ordered, the state placed by the rule.
 
 CC (2026-11-10, Lennart): REVIEW issue 1 (which fortnights of 2024 to test), "Option B: Holidays, July, March.": the test windows are 18-31 December, 3-16 July and 13-26 March 2024 instead of the newest six weeks (20 November to 31 December 2024) carried over from aeolus (its CC of 2026-10-12), under SPLIT-15 as amended on 2026-11-10.
 
 CC (2026-11-10, Lennart): the declared horizon (14 days, a one-day gap, windows starting 2024-12-18, 2024-07-03 and 2024-03-13) is checked, kept for a new reason: no source states a refit cadence (the paper tests about three days after nine), and two weeks keep a window under the 500k-row test cap and spread a single storm or outage over fourteen days, while the cutoffs choose the seasons.
 
 **Assessment (AI, 2026-11-10):** applied in dataset.py: `temporal` with the three cutoffs; test 264,245, 278,071 and 267,477 flights, train 13,426,458, 10,166,861 and 7,987,461 (97.9%, 74.2%, 58.3% of the 13,708,650 operated flights); the 17,947 flights of 2024-12-17, the newest window's gap day, are in no split, so the container holds 13,690,703. Cancelled and diverted flights are 1.44%, 1.96% and 1.16% of the scheduled flights of the three windows (the fit reason now says 1.2 to 2.0%; 0.4 to 1.4% on the old windows). `task_summary.split`, `splits_comment`, `TEST_WINDOWS` (the cancellation evidence table) and the row-budget note rewritten; the per-window scores and probe results in the notes are labelled as measured on the windows before 2026-11-10. Horizon audit (split-auditor, model-free): Xu et al. 2025 (arXiv 2510.26616) Sec. 4.1 split 1-15 June 2024 "temporally-stratified 6:2:2" and name no lead time or refit cadence; "a delay model is refit every two weeks" was copied from aeolus_1m, whose fortnight began with the CC of 2026-10-12; 14 days gives 25 candidates above the floor (17 January to 31 December 2024, 239k to 283k flights each), 7 days about 50, where one event can carry a window (19 July 2024, the CrowdStrike outage, 58.3% late), and a calendar month 11, each over the 500k test cap. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
+CC (2026-11-17, Andrej): Review issue 2, A, as implemented: Three 14-day windows on `FL_DATE` starting 2024-12-18, 2024-07-03 and 2024-03-13 (264,245 / 278,071 / 267,477 test flights), train every flight from 2023-01-01 up to two days before the window (97.9 / 74.2 / 58.3% of 13,708,650; a benchmark fits on a random 1M of the newest year), 1-day gap, temporal.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `FL_DATE`, windows of 14 days, 3 windows at fixed cutoffs, gap 1 day) is checked: confirmed in the blind split walk.
 
 ## Review
 
@@ -66,7 +77,8 @@ B (issue 1): the test fortnights are 18-31 December, 3-16 July and 13-26 March 2
 and the 14-day length and the one-day gap stay with a new reason. Nothing is left open.
 
 **Main points:** Settled on 2026-11-10: the test windows are the holiday peak, the summer peak and a spring fortnight
-of 2024 (issue 1, B), and the declared horizon is checked.
+of 2024 (issue 1, B), and the declared horizon is checked. Settled on 2026-11-17: the three 14-day windows stay
+instead of the paper's 60/20/20 cut of 1-15 June 2024 (issue 2, A).
 
 **Horizon:**
 
@@ -179,3 +191,31 @@ sense and is justifiable keep it and resolve them"); the record's CC line says t
    264,245, 278,071 and 267,477 flights, train 13,426,458, 10,166,861 and 7,987,461 (97.9%, 74.2%, 58.3%); the 17,947
    flights of 17 December 2024, the newest window's gap day, are in no split, so the frame holds 13,690,703. The record
    has the decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
+2. **Split: Xu et al.'s chronological 60/20/20 cut of 1-15 June 2024 instead of three 14-day windows of 2024?**
+
+   * **Problem:**
+     - Xu et al. 2025 (Sec. 4.1) split only the flights of 1-15 June 2024, in date order 6:2:2, so they test one stretch of about three days with no season and no gap.
+     - The paper states no refit cadence or lead time, so its cut was not chosen for the use of scoring the coming flights.
+     - The split can be rebuilt from `FL_DATE`, since our rows cover every operated flight of 2023-2024, but it would drop all other dates.
+   * **Source split:** yes, paper (Xu et al. 2025, Aeolus): temporal, chronological 6:2:2 within 1-15 June 2024 ("split 1-15 June 2024 "temporally-stratified 6:2:2" (Sec. 4.1, as quoted in the record)") https://arxiv.org/abs/2510.26616. Credible: partly, Chronological order is motivated, but 15 days of one month with no stated horizon is a convenience cut, not the deployment period.. Against the tree's leaf: partly, Xu et al. split chronologically 6:2:2 within 1-15 June 2024: the same direction (later flights), but one stretch with no gap or season; my leaf takes several windows and a gap.
+   * **Why it counts as chosen, not conventional:** Chronological order is motivated, but 15 days of one month with no stated horizon is a convenience cut, not the deployment period.
+   * **Background:** Each flight is scored shortly before departure, and two years of dated flights give ample windows. The arrival label is known within hours, inside the date column's day step, so no gap is needed unless the windows are cut finer than a day. Confidence of the blind walk: medium.
+   * **What changes on B:** the definition's split declaration is replaced by the source's own construction (its files, periods or groups), and the `splits_comment` records that the tree's leaf was not followed. The rows, features, target and metric do not change; the folds do, so the container is rebuilt.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: split_tree.md lists this dataset as an example of 'Temporal · arrival date, label-delay gap'.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Three 14-day windows on `FL_DATE` starting 2024-12-18, 2024-07-03 and 2024-03-13 (264,245 / 278,071 / 267,477 test flights), train every flight from 2023-01-01 up to two days before the window (97.9 / 74.2 / 58.3% of 13,708,650; a benchmark fits on a random 1M of the newest year), 1-day gap,… (implemented) | No change; `splits_comment` already names the paper's split as a departure. | Three seasons (holiday peak 25.9% late, summer peak 26.9%, spring 21.3%), each window under the 500k test cap; two years of history. | Not the paper's split, so scores are not comparable to its tables. |
+     | B | One chronological holdout inside 1-15 June 2024: the first 60% of those flights train, the next 20% validate, the last 20% test, no gap | The `temporal` declaration becomes one window on `FL_DATE` within 1-15 June 2024; every flight outside those 15 days leaves the dataset. | The paper's own evaluation, comparable to its reported numbers. | One test stretch of about three days, where the rule[^split-14] asks for three windows; one season (June, 25-30% late) and all of 2023 unused; row count not counted. |
+
+   * **Recommendation:** A, because the paper's 15-day cut is one window with no stated reason from the use, and the tree's leaf (windows on the arrival date) decides where the source differs.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: replace the split declaration with the source's construction (name the files or periods it uses) and say in `splits_comment` why the tree's leaf is not followed; on A: name the source's split in `splits_comment` as a departure.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   **Andrej (2026-11-17, ok):** as implemented.
+
+   **Resolved (2026-11-17, Andrej):** A, as implemented: Three 14-day windows on `FL_DATE` starting 2024-12-18, 2024-07-03 and 2024-03-13 (264,245 / 278,071 / 267,477 test flights), train every flight from 2023-01-01 up to two days before the window (97.9 / 74.2 / 58.3% of 13,708,650; a benchmark fits on a random 1M of the newest year), 1-day gap, temporal.

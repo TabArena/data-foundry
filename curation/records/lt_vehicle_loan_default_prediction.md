@@ -4,6 +4,7 @@ name: LT-Vehicle-Loan-Default-Prediction
 checked_by:
 - Lennart
 - Myunghwan
+- Andrej
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
@@ -13,10 +14,15 @@ decision_markers:
 - Selection Bias
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- Dated Event Log
 collections:
 - TabSTAR
 original_source: Website
 year: '2019'
+collection_period: Aug 2018 - Oct 2018
 domain: finance
 required_split:
 - Temporal (NON-IID)
@@ -75,11 +81,11 @@ CC (2026-11-04, Lennart): the use case is the source's approval decision at disb
 
 CC (2026-11-04, Lennart): SPLIT-10 is amended, and the zero gap is an application of it, not an exception: "do (d) but we argue from measurmeent and context taht we dont see this pattern in the data as a problem, the gap is already accounted for by collection or other means and hence iti s fine to do this".
 
-**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled. (superseded 2026-11-04: the full review panel ran in a second pass; Review issues 4-7 are open)
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static PR #33 review and the research behind each mark, and all are settled. (superseded 2026-11-04: the full review panel ran in a second pass; Review issues 4-7 are open)
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (mediator; data, rows, labels, features, metric, nine windows and gap 0 unchanged; the refuted wording in dataset.py fixed: "nothing through the dealer or staff codes", "about 90% training size", the one-month lag as fact, 41-60%); disputed: SPLIT-9 (recent default rates of shared dealer, branch, employee and postcode codes, +0.0026 to +0.0057 ROC AUC, as a shortcut), SPLIT-10 (application of the amendment or exception; the critic's 30-day gap with three two-day windows); for the curator: issues 4-7. Priority 3: gap 0, use case 0, source +1, shape +1, risk 0 (gap: finance, binary and temporal are not thin among the 107 accepted definitions; use case: the organizer names the underwriting decision, but the fit is approximate, issued loans only and a first-EMI proxy; risk: the open SPLIT-9 question is a small measured effect through shared codes with no row-level link, and the mediator recommends shipping).
 
-**Assessment (AI, 2026-11-04):** text corrections of the second-pass panel applied (Lennart's go-ahead on the review page): the stale lines above carry correction notes, and the `Selection Bias` marker is set (the issued-loan selection, USE-8). The CC of 2026-11-04 that points to 'Review issue 1' means the first PR #33 page; the zero gap is now issues 4 and 5. No data, split, feature or metric change.
+**Assessment (AI, 2026-11-04):** text corrections of the second-pass panel applied (Lennart's go-ahead): the stale lines above carry correction notes, and the `Selection Bias` marker is set (the issued-loan selection, USE-8). The CC of 2026-11-04 that points to 'Review issue 1' means the first PR #33 review; the zero gap is now issues 4 and 5. No data, split, feature or metric change.
 
 CC (2026-11-05, Lennart): the recent default rates of the supplier, branch, employee and postcode codes are not a shortcut, and gap 0 stays with the nine windows (issue 4, A; SPLIT-9 as amended 2026-11-05). They add +0.0026 ROC AUC at equal pool size (up to +0.0057 in other encodings), the size of alfa_battle_2_0_task_2's removed effect, but each code is shared by many borrowers and no borrower recurs, so no test row is linked to its own client's earlier label, and the effect does not grow at the release end. The mechanism goes into SPLIT-9's text and a Cases row, and principles.md's tension row is updated.
 
@@ -91,7 +97,9 @@ CC (2026-11-05, Lennart): what sets lt apart from lending_club, home_credit_defa
 
 CC (2026-11-05, Lennart): `Current_pincode_ID` ships as a number (Review issue 7, B, answered (a)): the masking kept the geographic order; +0.0049 ROC AUC over the category on 9 of 9 windows.
 
-CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `DisbursalDate`, windows of 4 days, up to 9 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -111,10 +119,12 @@ refuted: "nothing through the dealer or staff codes", "about 90% training size",
 `Selection Bias` marker (USE-8), mark the 2026-10-23 "Exception to SPLIT-10" line as history, correct this dataset's
 row in the SPLIT-10 Cases table, and in the record correct the 2026-11-04 Assessment ("about 90%", "20-53%
 (SPLIT-14)"), the pointer to "REVIEW.md issue 1" (now issues 4 and 5) and "review panel (none) ... all are settled".
+These record corrections were applied on 2026-11-04 (Assessment), and issues 4 to 7 were settled on 2026-11-05.
 
-**Main points:** Is the recent default rate of a dealer or branch a shortcut SPLIT-9 removes (issue 4), and is gap 0
-an application of the amended SPLIT-10 or an exception (issue 5)? Also: name the issued-loan selection on four sibling
-credit datasets or amend USE-8 (issue 6), and the postcode's dtype (issue 7).
+**Main points:** Nothing open. Settled on 2026-11-05 (Lennart): the recent default rates of dealer, branch, employee
+and postcode codes are no shortcut and gap 0 stays with the nine windows (issue 4, A); gap 0 is an application of
+SPLIT-10, not an exception (issue 5, B); lt names the issued-loan selection as a gap while its credit siblings hold the
+data they want to use (issue 6, C); `Current_pincode_ID` ships as a number (issue 7, B).
 
 **Issues for Lennart:**
 

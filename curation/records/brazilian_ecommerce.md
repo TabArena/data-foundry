@@ -10,10 +10,16 @@ decision_markers:
 - Needs extensive data wrangling
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: Kaggle
 year: '2018'
+collection_period: Sep 2016 - Oct 2018
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)
@@ -44,6 +50,8 @@ CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run) as implemented: th
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `jd_com_msom_2020_delivery_time` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `order_purchase_timestamp`, horizon 1 month, 5 windows, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Reference
 
