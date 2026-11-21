@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hepatitis_c_prediction
 container_format: 2
-checksum: v2:9665d086f41b3ae93f71b944924abc5fbe406039615f8dc4e4fd5a59aa1e50df
+checksum: v2:a9319226468c3775a050522e10094a819ee43d31ad3e1fa5587e4f36eea0525f
 build:
   uuid: 01a111fc-da06-7344-b05c-32c0c4829da1
   checksum: v2:3b064a7111c0feec2dbda78b7c01add1af848f38ec06d17d94232ac6bac1e80a
@@ -68,7 +68,7 @@ decisions: []
 
 Multiclass classification of `Category`, scored with `log_loss` on IID splits. 608 rows and 10 features. Source: UCI (2020).
 
-Built as `01a111fc-da06-7344-b05c-32c0c4829da1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9665d086f41b3ae93f71b944924abc5fbe406039615f8dc4e4fd5a59aa1e50df`, so the build is stale. See [Build](#build).
+Built as `01a111fc-da06-7344-b05c-32c0c4829da1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a9319226468c3775a050522e10094a819ee43d31ad3e1fa5587e4f36eea0525f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -126,7 +126,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2020 |
 | domain | medical & healthcare |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | IID, ForcedIIDFromTemporal |
 | reference | hoffmann2018using |
 | rows x columns | 608 x 11 |
 | task.target | Category |
@@ -194,6 +194,10 @@ We start with the data from UCI.
 - The target (2026-11-01, CLEAN-25): `Category` ships its classes as words, blood donor < hepatitis < fibrosis <
   cirrhosis (the source's own labels without their code; ordered by the course of the disease).
 - Class-dependent recording (record marker `Class-dependent Recording`): donors and patients follow different precision conventions and ALP is missing only for patients, as described above; harmonised by the rounding and the drop of ALP; ALT, recorded another way for most patients, is dropped too. Before the rounding, BIL alone gives ROC AUC 0.881, and 0.954 with its number format; CREA 0.628, and 0.790 with its format.
+- Time basis: ForcedIIDFromTemporal: the people of the collection were sampled over time, and the file carries
+  no date, so the time is lost. A dated release would test people sampled later. Not taken as stationary
+  (Andrej, 2026-11-18): Physiology supports it, but the class-dependent recording and the treatment change in
+  HCV are facts against; mixed, so forced.
 
 ## Splits
 
@@ -342,4 +346,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9665d086f41b3ae93f71b944924abc5fbe406039615f8dc4e4fd5a59aa1e50df` |
+| stale | yes: the definition now gives checksum `v2:a9319226468c3775a050522e10094a819ee43d31ad3e1fa5587e4f36eea0525f` |
