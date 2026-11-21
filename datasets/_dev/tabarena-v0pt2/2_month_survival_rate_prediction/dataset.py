@@ -396,6 +396,22 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         reference="Knaus et al. 1995, Ann Intern Med 122(3):191-203, The SUPPORT prognostic model",
         definition="Area under the ROC curve of the predicted probability of death within 2 months",
     )
+    accepted_check_warnings = {
+        "task_label_time_gap": (
+            "The 60-day gap is the label's own delay: death within 60 days of entry is known 60 days later, so each "
+            "window trains only on patients whose outcome was known when it starts (SPLIT-10). `entry_date` is "
+            "declared `time_of=\"label\"` because it is our reconstruction of the entry order and no field of the "
+            "release, so no actor holds it at the prediction point and it must stay out of the inputs; it dates the "
+            "entry, not the moment the label became known, and the gap is not redundant with it "
+            "(Andrej, 2026-11-19, review issue 3, B)."
+        ),
+        "splits_below_target": (
+            "Three windows against the nine an IID split of 8,967 patients would get (SPLIT-33). A fourth window, "
+            "the first half of 1992, would train only on phase I (4,232 patients, 47%), below the floor of half the "
+            "data, and the study enrolled no one from mid-1991 to January 1992. The splits comment names the target, "
+            "the count reached and what stops more (SPLIT-15)."
+        ),
+    }
 
     # Splits
     splits_comment = """

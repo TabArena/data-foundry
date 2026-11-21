@@ -81,6 +81,8 @@ CC (2026-11-20, Andrej): Review issue 6, B: `balance` is one reading per client 
 
 CC (2026-11-20, Andrej): Review issue 5, B: windows follow the calling (four campaign periods, then calendar quarters of the trickle; ten windows, 53.2% to 98.7% training), and the day's call count becomes an input, because the subscription rate follows the calling volume (5.8% on days with 200 or more calls, 48.5% on days with 20 or fewer, also for first-time clients) and the bank knows how many clients it calls that day.
 
+CC (2026-11-21, Andrej): Review issue 7: `time_index` is no model input (`time_of="label"`). It is the record's position in a file ordered by the date of the last contact, and 61.2% of the records take more than one call, so that date falls after the prediction point and is set by when the calling stopped; the same reason keeps the rebuilt date out of the inputs. 13 features now. The `dataset_sequential_id_column` warning is accepted in the definition with that reason.
+
 CC (2026-11-21, Andrej): the model numbers in the notes (the window scores and the worth of `campaign`, `contact`, `pdays` and `balance`) stay as measured on the five windows of 4,521 records and are not re-run on the ten windows the definition now ships; the notes say which windows each number was taken on, and that the shipped windows differ.
 
 ## Review
@@ -670,7 +672,7 @@ Left for you: nothing. Settled on 2026-11-08: issues 1, 2, 3 and 4 and the `year
 
    **Andrej (2026-11-20, discuss):** Reply (B): E, plus the day's call count as an input
 
-   **Resolved (2026-11-20, Andrej):** B: layout E (ten windows: four campaign periods and six calendar quarters of the trickle, cut at gaps or a burst's first day, each trained on every earlier record, no gap) and a new input `calls_that_day`, the number of records with the same rebuilt date (1 to 825). The rebuilt date ships no input; `time_index` stays one, as before. `splits_below_target` no longer fires (10 of 9). `dataset check`: 0 errors; one open warning (`time_index` numbered like an id, as before).
+   **Resolved (2026-11-20, Andrej):** B: layout E (ten windows: four campaign periods and six calendar quarters of the trickle, cut at gaps or a burst's first day, each trained on every earlier record, no gap) and a new input `calls_that_day`, the number of records with the same rebuilt date (1 to 825). The rebuilt date ships no input; `time_index` stays one, as before. (2026-11-21, Andrej, issue 7: it is no input either.) `splits_below_target` no longer fires (10 of 9). `dataset check`: 0 errors; one open warning (`time_index` numbered like an id, as before).
 
    | Start | End | Train share | Test records | Subscribed |
    |---|---|---|---|---|
@@ -713,6 +715,32 @@ Left for you: nothing. Settled on 2026-11-08: issues 1, 2, 3 and 4 and the `year
    **Andrej (2026-11-20, change):** Option B: State it and give the measurements.
 
    **Resolved (2026-11-20, Andrej):** B: the `balance` note in the definition now says it is one value per client (17.1% identical for linked records against 1.2% for different clients, no excess of slightly changed balances) and that logistic regression loses 0.002 to 0.003 ROC AUC without it whether or not the client has a later record, so it stays. The numbers are on today's five windows; they are recomputed when issue 5 settles the windows. (2026-11-21, Andrej: not recomputed - the numbers stay as measured on the five windows, and the note says the ten windows replace them.)
+
+7. **Is `time_index` available at the prediction point?**
+
+   * **Problem:**
+     - `time_index` is the record's position in the file, which UCI orders by the date of the last contact. It is the declared temporal order and ships as a model input, while the rebuilt date it ranks is kept out of the inputs because the campaign's end sets it (LEAK-10).
+     - 27,667 records (61.2%) take more than one call, so for them that date lies after the prediction point, and how far after is set by when the calling stopped: at a subscription or when the bank gave up. The subscription rate falls from 14.6% at one call to 5.8% at six or more.
+     - `dataset check` warns `dataset_sequential_id_column` on it, unanswered since before this review.
+   * **Experiments:**
+
+     | Test | Result |
+     |---|---|
+     | Within-day rank of the position against the label (days with 20 or more calls, 42,187 records) | Spearman 0.0013; the subscription rate is 7.4% to 10.0% across the ten within-day deciles: the position holds no finer information about the outcome than its date |
+     | The key as an input, earlier five windows (from the notes) | +0.018 ROC AUC to LightGBM, +0.004 to logistic regression |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep it as an input (implemented until 2026-11-21) | the period reaches the model through the key | carries the period, which the dropped month no longer gives | the actor does not hold it at the prediction point; in an expanding window every test value lies beyond the training range |
+     | B | Keep it as the split key only (`time_of="label"`) | 13 features; the column stays in the frame for the split | the inputs are what the team holds when it draws the list | the model loses the period it had |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Andrej (2026-11-21, change):** if the column would be available at prediction time, we can keep it, otherwise not.
+
+   **Resolved (2026-11-21, Andrej):** B: it is not available at the prediction point, so `Temporal(on="time_index", time_of="label")` takes it out of the inputs (13 features). The `dataset_sequential_id_column` warning is accepted in the definition with that reason, and `dataset check` reports 0 errors and 0 warnings. The window scores in the notes were measured while the key was an input, and stay as measured (CC 2026-11-21). Not rebuilt.
 
 **Review panel:** ship after changes (mediator). Tier focused (claim auditor, column auditor, mediator), a re-review of 2026-11-06 under LEAK-41 and MET-14 to MET-16, which do not apply here (no weight, no rate target). Claims: 33; 22 hold (6 of them with a caveat), 8 refuted or partly refuted (5 fixed in wording; the use case's moment and the split go to issues 1 and 2, the record's year to the field row), 1 not established (when `pdays` is counted) and 1 untested (the date of `balance`), both reworded as notes, 1 not applicable. Blind review: not run on this tier. Agreed: `contact` and `pdays` stay; the measured worth of `campaign`; the recurring-client leak (raised by the claim auditor, not contested); the mediator's changes a to h, applied (change i waits for issue 2). Disputed: keep or drop `campaign`, which turns on the prediction point (issue 2); settled in wording: whether cellular and telephone differ within a period (change a) and when `pdays` is counted (change c).
 

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: coffee_rating_prediction
 container_format: 2
-checksum: v2:f0ee18e7efb7d97756f19d95180d3254945bf444bf59c1dc80cf7ed16f61ef80
+checksum: v2:9005ae57a3fa6ccdcb2b5e9464947eba90fc03f2ddde05a2d6cf61ee67d655f1
 build:
   uuid: 01a111fc-f020-7625-b0b4-3e15565c2a7b
   checksum: v2:42fdd069b327bcb3840eb99b3ce9ae083ec892a2618bfe1dc6753c7687dc5694
@@ -37,7 +37,7 @@ task:
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: review_date
-  time_is_feature: false
+  time_of: label
   group_on: null
   group_labels: null
   group_time_on: null
@@ -48,11 +48,11 @@ splits:
   random_state: 4267
   time_horizon: 2
   time_horizon_unit: months
-  time_gap: null
-  time_gap_unit: null
+  time_gap: 1
+  time_gap_unit: months
   n_train:
-    min: 1256
-    max: 2263
+    min: 1211
+    max: 2212
   n_test:
     min: 62
     max: 137
@@ -64,6 +64,19 @@ bundle_checks:
   accepted:
     meta_license_unknown: Kaggle gives the licence as 'Other (specified in description)',
       but the description names none (checked 2026-11-10).
+    task_label_time_gap: '`review_date` is the month the review was published, which
+      is when the score exists, so it is declared `time_of="label"` and is no input.
+      The one-month gap stands for the roaster''s submission delay: the roaster predicts
+      at submission, weeks or months before publication, so each window trains only
+      on reviews published at least a month before it starts (Andrej, 2026-11-18,
+      review issue 7, B). The gap is the publication delay the split cannot read off
+      the dates, not a second copy of it.'
+    splits_below_target: 12 two-month windows against the 30 an IID split of 2,367
+      reviews would get (SPLIT-33). Monthly windows would reach 25, but some months
+      hold only 2 to 10 reviews, which makes a per-window RMSE of noise; the window
+      length and the gap follow the use case and are not shortened to reach the count
+      (SPLIT-15). The splits comment names the target, the count reached and what
+      stops more.
 decisions: []
 ---
 
@@ -73,7 +86,7 @@ decisions: []
 
 Regression of `rating`, scored with `rmse` on temporal splits by `review_date`. 2,367 rows and 8 features. Source: Kaggle (2023).
 
-Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f0ee18e7efb7d97756f19d95180d3254945bf444bf59c1dc80cf7ed16f61ef80`, so the build is stale. See [Build](#build).
+Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9005ae57a3fa6ccdcb2b5e9464947eba90fc03f2ddde05a2d6cf61ee67d655f1`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -140,7 +153,7 @@ Only curators run `build`, when the dataset ships.
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
 | task.time_on | review_date |
-| task.time_is_feature | False |
+| task.time_of | label |
 
 **Metric**
 
@@ -200,7 +213,7 @@ We start with the Kaggle version. Note, we acknowledge that the dataset is not o
   1.598 on the 13 windows) and beat every benchmark method. Exception to LEAK-35 (2026-11-10, Andrej): the
   passages alone explain most of the score (skill 0.71 against the rule's case of 0.25 to 0.67), and the use
   case's roaster predicts before the review; the roaster's own information keeps skill 0.34 to 0.36.
-- `review_date` orders and splits the rows and is no model input (`Temporal(..., feature=False)`): it arrives with the target (2026-11-12, Andrej). The roaster decides which coffees to submit before any review, and the month is the month Coffee Review published the score.
+- `review_date` orders and splits the rows and is no model input (`Temporal(..., time_of="label")`): it arrives with the target (2026-11-12, Andrej). The roaster decides which coffees to submit before any review, and the month is the month Coffee Review published the score.
 - We drop all_text as it is a concatenation of desc_1, desc_2, and desc_3. And desc_2 includes data leakage (such as if the coffee won an award or not). Thus, we drop all_test.
 - We drop aroma, acid, body, flavor, aftertaste, and with_milk as they are all features of the rating and thus leaking the target. Any of them could be used as a target, we focus on the overall rating.
 - We parse agtron into a lower and upper value as float.
@@ -218,33 +231,35 @@ We start with the Kaggle version. Note, we acknowledge that the dataset is not o
 
 We simulate a setting where we refit the model every 2 months and only test on the next 2 months, walking back
 from the newest review until the training data would fall below 50% of the rows (12 windows,
-August-September 2023 back to October-November 2021, 62 to 137 test reviews each). Monthly windows
-(25) would follow the split-count convention, but some months hold only 2-10 reviews, which makes per-window
-RMSE noise; 2-month windows keep at least ~50 test rows each.
-A score is published with its review month, so every training label is known when a window starts and no gap
-is needed; the time from a roaster's submission to the review is not stated. Reviews of one month share their
-scoring (the month explains 8% of the score's variance; some months are themed tastings), and whole two-month
-windows keep each month on one side.
+August-September 2023 back to October-November 2021, 62 to 137 test reviews each). Twelve windows against the
+30 an IID split of 2,367 reviews would get (SPLIT-33): monthly windows would reach 25, but some months hold
+only 2-10 reviews, which makes per-window RMSE noise; 2-month windows keep at least ~50 test rows each, and
+the window length and the gap follow the use case rather than the count (SPLIT-15).
+A score is published with its review month, weeks or months after the roaster submitted the coffee (the delay is
+not stated). The roaster predicts at submission, so each window trains only on reviews published at least one
+month before it starts: a one-month gap, the smallest the monthly dates allow (Andrej, 2026-11-18). Reviews of
+one month share their scoring (the month explains 8% of the score's variance; some months are themed tastings),
+and whole two-month windows keep each month on one side.
 
-12 repeat(s) x 1 fold(s) with seed 4267; train 1,256 to 2,263 rows, test 62 to 137 rows. Prediction horizon: 2 months. The time column `review_date` orders and splits the rows and is no model input: `feature_columns(container)` leaves it out.
+12 repeat(s) x 1 fold(s) with seed 4267; train 1,211 to 2,212 rows, test 62 to 137 rows. Prediction horizon: 2 months. Gap between train and test: 1 months. The time column `review_date` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
 <details>
 <summary>Show all 12 splits</summary>
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 2263 | 104 | 2018-10-01 00:00:00 | 2023-07-01 00:00:00 | 2023-08-01 00:00:00 | 2023-09-01 00:00:00 |
-| 1 | 0 | 2175 | 88 | 2018-10-01 00:00:00 | 2023-05-01 00:00:00 | 2023-06-01 00:00:00 | 2023-07-01 00:00:00 |
-| 2 | 0 | 2113 | 62 | 2018-10-01 00:00:00 | 2023-03-01 00:00:00 | 2023-04-01 00:00:00 | 2023-05-01 00:00:00 |
-| 3 | 0 | 2021 | 92 | 2018-10-01 00:00:00 | 2023-01-01 00:00:00 | 2023-02-01 00:00:00 | 2023-03-01 00:00:00 |
-| 4 | 0 | 1940 | 81 | 2018-10-01 00:00:00 | 2022-11-01 00:00:00 | 2022-12-01 00:00:00 | 2023-01-01 00:00:00 |
-| 5 | 0 | 1803 | 137 | 2018-10-01 00:00:00 | 2022-09-01 00:00:00 | 2022-10-01 00:00:00 | 2022-11-01 00:00:00 |
-| 6 | 0 | 1726 | 77 | 2018-10-01 00:00:00 | 2022-07-01 00:00:00 | 2022-08-01 00:00:00 | 2022-09-01 00:00:00 |
-| 7 | 0 | 1625 | 101 | 2018-10-01 00:00:00 | 2022-05-01 00:00:00 | 2022-06-01 00:00:00 | 2022-07-01 00:00:00 |
-| 8 | 0 | 1533 | 92 | 2018-10-01 00:00:00 | 2022-03-01 00:00:00 | 2022-04-01 00:00:00 | 2022-05-01 00:00:00 |
-| 9 | 0 | 1446 | 87 | 2018-10-01 00:00:00 | 2022-01-01 00:00:00 | 2022-02-01 00:00:00 | 2022-03-01 00:00:00 |
-| 10 | 0 | 1367 | 79 | 2018-10-01 00:00:00 | 2021-11-01 00:00:00 | 2021-12-01 00:00:00 | 2022-01-01 00:00:00 |
-| 11 | 0 | 1256 | 111 | 2018-10-01 00:00:00 | 2021-09-01 00:00:00 | 2021-10-01 00:00:00 | 2021-11-01 00:00:00 |
+| 0 | 0 | 2212 | 104 | 2018-10-01 00:00:00 | 2023-06-01 00:00:00 | 2023-08-01 00:00:00 | 2023-09-01 00:00:00 |
+| 1 | 0 | 2137 | 88 | 2018-10-01 00:00:00 | 2023-04-01 00:00:00 | 2023-06-01 00:00:00 | 2023-07-01 00:00:00 |
+| 2 | 0 | 2048 | 62 | 2018-10-01 00:00:00 | 2023-02-01 00:00:00 | 2023-04-01 00:00:00 | 2023-05-01 00:00:00 |
+| 3 | 0 | 1983 | 92 | 2018-10-01 00:00:00 | 2022-12-01 00:00:00 | 2023-02-01 00:00:00 | 2023-03-01 00:00:00 |
+| 4 | 0 | 1868 | 81 | 2018-10-01 00:00:00 | 2022-10-01 00:00:00 | 2022-12-01 00:00:00 | 2023-01-01 00:00:00 |
+| 5 | 0 | 1755 | 137 | 2018-10-01 00:00:00 | 2022-08-01 00:00:00 | 2022-10-01 00:00:00 | 2022-11-01 00:00:00 |
+| 6 | 0 | 1679 | 77 | 2018-10-01 00:00:00 | 2022-06-01 00:00:00 | 2022-08-01 00:00:00 | 2022-09-01 00:00:00 |
+| 7 | 0 | 1581 | 101 | 2018-10-01 00:00:00 | 2022-04-01 00:00:00 | 2022-06-01 00:00:00 | 2022-07-01 00:00:00 |
+| 8 | 0 | 1504 | 92 | 2018-10-01 00:00:00 | 2022-02-01 00:00:00 | 2022-04-01 00:00:00 | 2022-05-01 00:00:00 |
+| 9 | 0 | 1406 | 87 | 2018-10-01 00:00:00 | 2021-12-01 00:00:00 | 2022-02-01 00:00:00 | 2022-03-01 00:00:00 |
+| 10 | 0 | 1302 | 79 | 2018-10-01 00:00:00 | 2021-10-01 00:00:00 | 2021-12-01 00:00:00 | 2022-01-01 00:00:00 |
+| 11 | 0 | 1211 | 111 | 2018-10-01 00:00:00 | 2021-08-01 00:00:00 | 2021-10-01 00:00:00 | 2021-11-01 00:00:00 |
 
 </details>
 
@@ -255,27 +270,29 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
 |---|---|---|---|---|---|---|---|---|
-| 0 | Aug 2023 - Sep 2023 | 104 | 0.956 | mean 92.52, median 93, p10 90, p90 95 | mean 93.1, median 93, p10 91, p90 95 | 0.204 | roast (0.20), agtron_lower (0.18), price_per_gram_in_usd (0.18) | 0 |
-| 1 | Jun 2023 - Jul 2023 | 88 | 0.919 | mean 92.95, median 93, p10 90.7, p90 95 | mean 93.1, median 93, p10 91, p90 95 | 0.519 | agtron_lower (0.52), agtron_upper (0.32), roast (0.26) | 0 |
-| 2 | Apr 2023 - May 2023 | 62 | 0.893 | mean 93.23, median 93, p10 92, p90 95 | mean 93.1, median 93, p10 91, p90 95 | 1.477 | agtron_lower (1.48), agtron_upper (1.06), roast (0.59) | 0 |
-| 3 | Feb 2023 - Mar 2023 | 92 | 0.854 | mean 93.07, median 93, p10 91, p90 95 | mean 93.1, median 93, p10 91, p90 95 | 1.4 | agtron_lower (1.40), agtron_upper (0.95), roast (0.63) | 0 |
-| 4 | Dec 2022 - Jan 2023 | 81 | 0.82 | mean 93.3, median 93, p10 92, p90 95 | mean 93.09, median 93, p10 91, p90 95 | 1.374 | agtron_lower (1.37), agtron_upper (0.75), roast (0.53) | 0 |
-| 5 | Oct 2022 - Nov 2022 | 137 | 0.762 | mean 93.32, median 93, p10 92, p90 95 | mean 93.07, median 93, p10 91, p90 95 | 0.675 | agtron_lower (0.67), agtron_upper (0.45), roast (0.40) | 0 |
-| 6 | Aug 2022 - Sep 2022 | 77 | 0.729 | mean 93.35, median 93, p10 92, p90 95 | mean 93.06, median 93, p10 91, p90 95 | 0.904 | agtron_upper (0.90), agtron_lower (0.52), roast (0.38) | 0 |
-| 7 | Jun 2022 - Jul 2022 | 101 | 0.687 | mean 93.42, median 94, p10 92, p90 95 | mean 93.04, median 93, p10 91, p90 95 | 0.905 | agtron_lower (0.90), agtron_upper (0.48), roast (0.30) | 0 |
-| 8 | Apr 2022 - May 2022 | 92 | 0.648 | mean 93.39, median 93, p10 92, p90 95 | mean 93.02, median 93, p10 91, p90 95 | 0.601 | agtron_upper (0.60), agtron_lower (0.48), roast (0.15) | 0 |
-| 9 | Feb 2022 - Mar 2022 | 87 | 0.611 | mean 93.23, median 93, p10 92, p90 95 | mean 93, median 93, p10 91, p90 95 | 0.236 | agtron_upper (0.24), roast (0.18), agtron_lower (0.15) | 0 |
-| 10 | Dec 2021 - Jan 2022 | 79 | 0.578 | mean 92.59, median 93, p10 88, p90 95 | mean 93.03, median 93, p10 91, p90 95 | 0.354 | agtron_lower (0.35), agtron_upper (0.15), price_per_gram_in_usd (0.12) | 0 |
-| 11 | Oct 2021 - Nov 2021 | 111 | 0.531 | mean 93.57, median 94, p10 92, p90 95 | mean 92.98, median 93, p10 91, p90 95 | 0.496 | agtron_lower (0.50), roast (0.37), agtron_upper (0.34) | 0 |
+| 0 | Aug 2023 - Sep 2023 | 104 | 0.935 | mean 92.52, median 93, p10 90, p90 95 | mean 93.1, median 93, p10 91, p90 95 | 0.207 | roast (0.21), agtron_lower (0.19), price_per_gram_in_usd (0.18) | 0 |
+| 1 | Jun 2023 - Jul 2023 | 88 | 0.903 | mean 92.95, median 93, p10 90.7, p90 95 | mean 93.1, median 93, p10 91, p90 95 | 0.512 | agtron_lower (0.51), agtron_upper (0.31), roast (0.24) | 0 |
+| 2 | Apr 2023 - May 2023 | 62 | 0.865 | mean 93.23, median 93, p10 92, p90 95 | mean 93.09, median 93, p10 91, p90 95 | 1.726 | agtron_lower (1.73), agtron_upper (0.93), roast (0.59) | 0 |
+| 3 | Feb 2023 - Mar 2023 | 92 | 0.838 | mean 93.07, median 93, p10 91, p90 95 | mean 93.09, median 93, p10 91, p90 95 | 1.46 | agtron_lower (1.46), agtron_upper (0.98), roast (0.65) | 0 |
+| 4 | Dec 2022 - Jan 2023 | 81 | 0.789 | mean 93.3, median 93, p10 92, p90 95 | mean 93.08, median 93, p10 91, p90 95 | 1.304 | agtron_lower (1.30), agtron_upper (0.79), roast (0.56) | 0 |
+| 5 | Oct 2022 - Nov 2022 | 137 | 0.741 | mean 93.32, median 93, p10 92, p90 95 | mean 93.06, median 93, p10 91, p90 95 | 0.701 | agtron_lower (0.70), agtron_upper (0.47), roast (0.42) | 0 |
+| 6 | Aug 2022 - Sep 2022 | 77 | 0.709 | mean 93.35, median 93, p10 92, p90 95 | mean 93.05, median 93, p10 91, p90 95 | 0.92 | agtron_upper (0.92), agtron_lower (0.54), roast (0.39) | 0 |
+| 7 | Jun 2022 - Jul 2022 | 101 | 0.668 | mean 93.42, median 94, p10 92, p90 95 | mean 93.02, median 93, p10 91, p90 95 | 0.936 | agtron_lower (0.94), agtron_upper (0.48), roast (0.31) | 0 |
+| 8 | Apr 2022 - May 2022 | 92 | 0.635 | mean 93.39, median 93, p10 92, p90 95 | mean 93, median 93, p10 91, p90 95 | 0.602 | agtron_upper (0.60), agtron_lower (0.49), roast (0.15) | 0 |
+| 9 | Feb 2022 - Mar 2022 | 87 | 0.594 | mean 93.23, median 93, p10 92, p90 95 | mean 93.02, median 93, p10 91, p90 95 | 0.242 | agtron_upper (0.24), roast (0.18), agtron_lower (0.15) | 0 |
+| 10 | Dec 2021 - Jan 2022 | 79 | 0.55 | mean 92.59, median 93, p10 88, p90 95 | mean 93, median 93, p10 91, p90 95 | 0.377 | agtron_lower (0.38), agtron_upper (0.18), roast (0.12) | 0 |
+| 11 | Oct 2021 - Nov 2021 | 111 | 0.512 | mean 93.57, median 94, p10 92, p90 95 | mean 92.98, median 93, p10 91, p90 95 | 0.655 | agtron_lower (0.65), roast (0.39), agtron_upper (0.35) | 0 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 Accepted on purpose:
 
 - `meta_license_unknown`: Kaggle gives the licence as 'Other (specified in description)', but the description names none (checked 2026-11-10).
+- `task_label_time_gap`: `review_date` is the month the review was published, which is when the score exists, so it is declared `time_of="label"` and is no input. The one-month gap stands for the roaster's submission delay: the roaster predicts at submission, weeks or months before publication, so each window trains only on reviews published at least a month before it starts (Andrej, 2026-11-18, review issue 7, B). The gap is the publication delay the split cannot read off the dates, not a second copy of it.
+- `splits_below_target`: 12 two-month windows against the 30 an IID split of 2,367 reviews would get (SPLIT-33). Monthly windows would reach 25, but some months hold only 2 to 10 reviews, which makes a per-window RMSE of noise; the window length and the gap follow the use case and are not shortened to reach the count (SPLIT-15). The splits comment names the target, the count reached and what stops more.
 
 ## Data checks
 
@@ -360,4 +377,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f0ee18e7efb7d97756f19d95180d3254945bf444bf59c1dc80cf7ed16f61ef80` |
+| stale | yes: the definition now gives checksum `v2:9005ae57a3fa6ccdcb2b5e9464947eba90fc03f2ddde05a2d6cf61ee67d655f1` |

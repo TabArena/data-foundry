@@ -104,6 +104,19 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
             "Kaggle gives the licence as 'Other (specified in description)', but the description names none (checked "
             "2026-11-10)."
         ),
+        "task_label_time_gap": (
+            "`review_date` is the month the review was published, which is when the score exists, so it is declared "
+            "`time_of=\"label\"` and is no input. The one-month gap stands for the roaster's submission delay: the "
+            "roaster predicts at submission, weeks or months before publication, so each window trains only on "
+            "reviews published at least a month before it starts (Andrej, 2026-11-18, review issue 7, B). The gap is "
+            "the publication delay the split cannot read off the dates, not a second copy of it."
+        ),
+        "splits_below_target": (
+            "12 two-month windows against the 30 an IID split of 2,367 reviews would get (SPLIT-33). Monthly windows "
+            "would reach 25, but some months hold only 2 to 10 reviews, which makes a per-window RMSE of noise; the "
+            "window length and the gap follow the use case and are not shortened to reach the count (SPLIT-15). The "
+            "splits comment names the target, the count reached and what stops more."
+        ),
     }
 
     # Task
@@ -117,9 +130,10 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
     splits_comment = """
         We simulate a setting where we refit the model every 2 months and only test on the next 2 months, walking back
         from the newest review until the training data would fall below 50% of the rows (12 windows,
-        August-September 2023 back to October-November 2021, 62 to 137 test reviews each). Monthly windows
-        (25) would follow the split-count convention, but some months hold only 2-10 reviews, which makes per-window
-        RMSE noise; 2-month windows keep at least ~50 test rows each.
+        August-September 2023 back to October-November 2021, 62 to 137 test reviews each). Twelve windows against the
+        30 an IID split of 2,367 reviews would get (SPLIT-33): monthly windows would reach 25, but some months hold
+        only 2-10 reviews, which makes per-window RMSE noise; 2-month windows keep at least ~50 test rows each, and
+        the window length and the gap follow the use case rather than the count (SPLIT-15).
         A score is published with its review month, weeks or months after the roaster submitted the coffee (the delay is
         not stated). The roaster predicts at submission, so each window trains only on reviews published at least one
         month before it starts: a one-month gap, the smallest the monthly dates allow (Andrej, 2026-11-18). Reviews of
