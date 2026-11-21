@@ -39,7 +39,7 @@ Has two targets: predict min and max temperature of a day. Not sure if it makes 
 
 **Assessment (AI, 2026-10-07):** Valid task, added with target `Next_Tmin`. A v2 task holds one target; TALENT's `Bias_correction_r` is `Next_Tmax` and `_r_2` is `Next_Tmin`. On 9 weekly windows of summer 2017, the mean of untuned CatBoost, LightGBM and ridge (RMSE 0.78) beats a per-station MOS of the LDAPS forecast (0.82) on 7 of 9 windows. For `Next_Tmax`, MOS on the forecast alone (1.58) beats every untuned model. The split must be temporal: the 25 stations of a day share its weather (LightGBM RMSE 0.62 on random folds, 1.00 with each day kept together). Prediction point: the evening, once the LDAPS run started at 21 KST is out (Cho et al. 2020, Sec. 2.2-2.3).
 
-CC (2026-10-15, Lennart): The task corrects the LDAPS forecast; without one there is nothing to correct, so the three days without an LDAPS run are dropped (review page, issue 4).
+CC (2026-10-15, Lennart): The task corrects the LDAPS forecast; without one there is nothing to correct, so the three days without an LDAPS run are dropped.
 
 **Assessment (AI, 2026-10-15):** 75 station-days dropped (2013-08-10, 2016-07-31, 2016-08-20, all on the training side; 7,648 rows remain). On the shipped windows the mean of untuned CatBoost, LightGBM and ridge still beats per-station MOS on forecast and present-day minimum on 7 of 9 windows (RMSE 0.785 against 0.823, paired SE 0.022).
 
@@ -51,7 +51,7 @@ CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ppnn_ecmwf_t2m_postprocessing_germany` (TBD -> Yes, priority 4), `euppbench_t2m_station_postprocessing` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 7 days, 9 windows, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 7 days, 9 windows, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Reference
 

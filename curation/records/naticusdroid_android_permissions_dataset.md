@@ -49,22 +49,22 @@ CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `kronodroid_android_malware` (TBD -> Yes, priority 2), `drebin_android_malware` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after two changes: one row per permission set with its majority label (our de-duplication left 96 opposite-label twins, a leak still in v0.2), and Selection Bias with an approximate fit (no malware app has any permission introduced 2015-2018). Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after two changes: one row per permission set with its majority label (our de-duplication left 96 opposite-label twins, a leak still in v0.2), and Selection Bias with an approximate fit (no malware app has any permission introduced 2015-2018). Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
-CC (2026-11-12, Andrej): BeyondArena v0.2 review page, issues 2-4; the input data did not change (7,491 rows, repeated rows dropped as before). Issue 1 (the repeated permission sets) is still open.
+CC (2026-11-12, Andrej): Review issues 2-4; the input data did not change (7,491 rows, repeated rows dropped as before). Issue 1 (the repeated permission sets) is still open.
 
 **Changes made:**
 
 1. **Problem:** no malware row declares a permission Android or Google Play introduced in 2015-2018 (FOREGROUND_SERVICE, the install-referrer service, REQUEST_INSTALL_PACKAGES, USE_FINGERPRINT), which 14.5% of the benign rows declare. The malware comes from AMD, the Android Malware Dataset, whose 71 families were discovered 2010-2016 (Md Rafid Islam and Mohammad Ashrafuzzaman Khan, "Diagnosing and Mitigating Domain Shift in Permission-Based Android Malware Detection", arXiv:2605.09028, 2026, Sec. 3.1; Fengguo Wei, Yuping Li, Sankardas Roy, Xinming Ou and Wu Zhou, "Deep Ground Truth Analysis of Current Android Malware", DIMVA 2017, LNCS 10327:252-276, doi:10.1007/978-3-319-60876-1_12). **Change:** marker `Selection Bias`, fit approximate, `dataset_pure_feature_value` accepted (issue 2, B).
-2. **Change:** a `Time basis: Snapshot` bullet (apps of 2010-2019 classified after release); the tag enters `data_tags` once PR #50 is in the working copy (issue 3, B).
+2. **Change:** a `Time basis: Snapshot` bullet (apps of 2010-2019 classified after release); (issue 3, B); the definition was retired before the tag was added.
 3. **Change:** tags `Samples: Over Time` and `Time: Lost` in place of `Samples: No Time Dimension` (issue 4, B).
 
 **Problems found, not changed:**
 
-- The de-duplication on all columns, label included, leaves 96 permission sets as one benign and one malware row, so a test row's twin in training always carries the opposite label; open as issue 1 on the review page, with the leak measurements of 2026-11-12.
+- The de-duplication on all columns, label included, leaves 96 permission sets as one benign and one malware row, so a test row's twin in training always carries the opposite label; open as Review issue 1, with the leak measurements of 2026-11-12.
 - The release holds no hash, package name, family or date, so rows cannot be linked to their apps; variants of one AMD family sit on both sides of the random split.
 
-CC (2026-11-13, Andrej): retired (`No (Retired)`, reason `Selection Bias`; BeyondArena v0.2 review page, issue 1, e).
+CC (2026-11-13, Andrej): retired (`No (Retired)`, reason `Selection Bias`; Review issue 1, e).
 - **Why:** what no version of this release can fix is the collection, not the lookup. The benign apps come from AndroZoo and the malware from AMD (families discovered 2010-2016), and the period shows in the permissions (ROC AUC 0.970 to 0.991 even without the 26 store, library and benign-only permissions). Test malware has family siblings in training. Both need per-app dates or ids, which the UCI file lacks.
 - **Not the reason:** the exact lookup (79% of test apps on the full file, the opposite-label twins in the shipped 7,491 rows) is fixable without dates by dropping the repeated permission sets (7,299 rows), but that leaves the collection gap.
 - **Replacement candidate:** `kronodroid_android_malware` (record `TBD -> Yes`, priority 2): 78,137 apps of 2008-2020 with per-app dates and 240 malware families, so it can test new apps and new families.
@@ -96,7 +96,7 @@ store sees before install (+), a leak we made and can undo (-), classes that loo
 **Main points:** Retired on 2026-11-13 (issue 1, e), the reason restated on 2026-11-16 (Lennart): the malware
 families are the real groups, test malware has family siblings in training, and the release cannot recover the
 families (SPLIT-25, marker `Data Quality Issue`); `Selection Bias` stays as a concern flag;
-`kronodroid_android_malware` is the dated replacement candidate. The folder leaves in a retirement PR. Issues 2-4
+`kronodroid_android_malware` is the dated replacement candidate. The folder was removed in PR #97. Issues 2-4
 settled: `Selection Bias` with an approximate fit (2), a `Snapshot` of 2010-2019 (3), `Samples: Over Time` with
 `Time: Lost` (4). Not rebuilt.
 
@@ -105,7 +105,7 @@ the past) stands; issue 2 adds the measured reason why the record's early note (
 anyway. The metric (ROC AUC, fallback) is settled. The data-scouting run of 2026-10-31 found better data for the same
 task, `kronodroid_android_malware` (priority 2, per-app dates of 2008-2020) and `drebin_android_malware` (2nd tier),
 screened in their own records and not added yet; KronoDroid's dates can test issue 2. The record has no `problem_type`
-or `domain`; the definition's values can be filled in without a mark.
+or `domain`; the retired definition's values were not filled in.
 
 **Issues for Andrej:**
 
@@ -536,7 +536,7 @@ or `domain`; the definition's values can be filled in without a mark.
    * **Recommendation:** B: the definition asks about apps already released, and no date exists to test more; C if
      you read the use as detecting apps released after the training data. **Decision:** A, B, C or D?
 
-   **Notes for the AI:** once PR #50 is in this working copy, on B: `data_tags = ("Snapshot",)` and in
+   **Notes for the AI:** on B: `data_tags = ("Snapshot",)` and in
    `curation_comments` the bullet `- Time basis: Snapshot: apps released over 2010-2019, classified after release, as
    a store or scanner sweeps apps already published (the definition's question; Lennart: gap filling). The release
    keeps no date: the raw file is sorted by class, and inside the malware half RESTART_PACKAGES (deprecated 2010) jumps
@@ -553,8 +553,7 @@ or `domain`; the definition's values can be filled in without a mark.
 
    **Resolved (2026-11-12, Andrej):** B: the drafted `- Time basis: Snapshot: ...` bullet in `curation_comments`, on
    the shipped rows (naming the 96 twins the de-duplication leaves) and ending with what the split cannot test; the
-   `split` sentence calls the test data a snapshot of apps released 2010-2019. The `Snapshot` tag enters `data_tags`
-   once PR #50 is in the working copy.
+   `split` sentence calls the test data a snapshot of apps released 2010-2019. The `Snapshot` tag is in `data_tags`.
 
 4. **Correct the record's collection facts?**
 
@@ -582,7 +581,7 @@ or `domain`; the definition's values can be filled in without a mark.
      target exists with the features.
 
    **Resolved (2026-11-12, Andrej):** B: record `tags` `Samples: Over Time` and `Time: Lost` in place of `Samples: No
-   Time Dimension`, also in the PR #50 worktree's copy of the record; `Andrej` already in `checked_by`; record CC line.
+   Time Dimension`; `Andrej` already in `checked_by`; record CC line.
 
 ## Reference
 

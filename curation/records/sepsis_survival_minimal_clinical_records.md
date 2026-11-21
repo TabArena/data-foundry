@@ -56,7 +56,7 @@ CC (2026-11-10, Andrej): retired (`No (Retired)`, `Trivial`): a clinician's rule
 - **What TabPFN adds over age:** it keeps age's order on 94% of (died, survived) pairs; its gain (+0.0024) is men counted a few years older (+0.0019 net of large gains and losses) and a repeat episode in younger patients (+0.0005).
 - **Why the earlier keep does not hold:** age alone below the best on every fold (Lennart, 2026-10-06) met the single-feature test of the time; the amended test counts a rule within the spread of the folds as a match, which makes the dataset a candidate to drop, not a forced retirement.
 - **Curator call on top of the rules:** retired because the task is both almost solved and very simple. Almost solved: TabPFN 3.5 (0.7068) sits within about 0.002 of the best achievable ranking (about 0.709). Very simple: its gain over a naive baseline is +0.0024 ROC AUC over age alone and +0.0010 over the unfitted rule, too small to change any decision in practice; a benchmark task on which every method lands within 0.003 of a clinician's rule ranks nothing but smoothing.
-Marker `Trivial` added, `v2_path` cleared, folder removed. Evidence: TabPFN 3.5 on an A100 (Slurm 1376270 and 1376610).
+Marker `Trivial` added, `v2_path` cleared, folder removed. Evidence: TabPFN 3.5 on an A100.
 
 CC (2026-11-12, Lennart): the retirement stands, restated under TP-4 as amended on 2026-11-12 (compared paired per
 split; a gain of the methods over a rule that is real but too small for the use case's decision is step 2, the

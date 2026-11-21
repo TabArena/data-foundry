@@ -8,6 +8,7 @@ data_foundry_status:
 suggestion: 'Yes'
 priority: 3
 tags:
+- Non-IID (Temporal)
 - Review Prio 1 (Atlas)
 - 'Samples: Over Time'
 - 'Time: Dated'
@@ -104,7 +105,7 @@ CC (2026-11-10, Lennart): the declared horizon (7 days, a one-day gap, windows s
 
 **Assessment (AI, 2026-11-11):** the horizon CC of 2026-11-10 gave as one reason for a week that calendar months would leave only May and June above the 50% floor; under SPLIT-14 as amended on 2026-11-11 months give three windows (June 83.5%, May 66.3%, April 49.1% of the trips). The week stands on its other reasons (no source gives a horizon or a cadence, the week holds each weekday once, the default of the ETA tasks whose labels arrive within a day); the splits comment and the Horizon block are reworded (Lennart, 2026-11-11: "reopen cooking and nyc as needed or change the wording").
 
-CC (2026-11-17, Andrej): the declared split (temporal on `pickup_datetime`, windows of 7 days, 3 windows at fixed cutoffs, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `pickup_datetime`, windows of 7 days, 3 windows at fixed cutoffs, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 

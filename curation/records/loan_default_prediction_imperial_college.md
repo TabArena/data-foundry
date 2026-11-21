@@ -68,14 +68,14 @@ policy question 2 of the zero-inflated review: "We don't care. We want to add an
 if it is zero inflated or not"), so how the source codes its zeros is no reason for a No or a lower priority. The
 verdict and priority stay: the leaks and `Data Quality Issue` are the screening's other risks.
 
-**Consistency check (AI, 2026-10-30):** the review page sets `Yes`, priority 1 ("Give it your best to resolve the
+**Consistency check (AI, 2026-10-30):** the zero-inflated screening review sets `Yes`, priority 1 ("Give it your best to resolve the
 leaks"). The leak that remains after dropping f527/f528 is the one `iranian_churn` was retired for (Lennart,
 2026-10-01): 96.5% of defaults are the last row of an f274 block. Options: `Yes`, with /add-dataset testing whether f274
 is a loan id and grouping or dropping it; TBD -> Yes until that test (as for `pricing_game_2015_french_mtpl`); or `No`
 like iranian_churn.
 
 CC (2026-10-30, Andrej): `TBD -> Yes`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated
-screening review page, after the AI's consistency check). "Give it your best to resolve the leaks. If an unresolvable
+screening review, after the AI's consistency check). "Give it your best to resolve the leaks. If an unresolvable
 leak remains, explain it and move to No. If the iranian_churn leak and this one can be resolved in the same way then we
 should resolve both"
 
@@ -102,7 +102,7 @@ against 0.800), so /add-dataset chooses another metric. `iranian_churn`: a diffe
 features over a window ending at the churn month, no panel or row-order effect), so the same fix does not apply and it
 stays retired.
 
-CC (2026-11-01, Andrej): `Yes`, priority 1, by the curator's rule on the page ("Give it your best to resolve the leaks.
+CC (2026-11-01, Andrej): `Yes`, priority 1, by the curator's rule ("Give it your best to resolve the leaks.
 If an unresolvable leak remains, explain it and move to No. If the iranian_churn leak and this one can be resolved in
 the same way then we should resolve both"): both leaks resolved (Assessment above); iranian_churn not resolvable the
 same way, so it stays retired.
@@ -134,13 +134,13 @@ CC (2026-11-03, Andrej): issue 1, A: f529-f531, f533-f535 and f537 stay dropped 
 
 CC (2026-11-03, Andrej): issue 2, A: the gap of 5,800 loans stays. Issue 3, B: "We go with B and can change the rule. If the source metric is bad we don't want to use it." The normalized Gini is declared from context under MET-11 as amended (an overruled source metric, the task making one obvious), not as an exception.
 
-CC (2026-11-03, Andrej): ship (review page verdict); the declared metric, the normalized Gini from context, checked.
+CC (2026-11-03, Andrej): ship (review verdict); the declared metric, the normalized Gini from context, checked.
 
 CC (2026-11-03, Andrej): the check warning `task_target_value_dominant` accepted: "for these tasks this is natural and a core challenge" (zero-inflated target).
 
-CC (2026-11-08, Lennart): the declared metric (`normalized_gini`) is checked, as declared; the record ships, with no open issue on the PR #47 review board.
+CC (2026-11-08, Lennart): the declared metric (`normalized_gini`) is checked, as declared; the record ships, with no open issue in the PR #47 review.
 
-**Assessment (AI, 2026-11-08):** ships by default (no open issue on the PR #47 board), but the definition's changes of 2026-11-06 (the exposure paragraph) have not passed `dataset check`, and the re-review panel under LEAK-41 and MET-14 to MET-16 has not run: both wait for the competition files, which download only after the Kaggle competition rules are accepted. No container is built before both pass.
+**Assessment (AI, 2026-11-08):** ships by default (no open issue in the PR #47 review), but the definition's changes of 2026-11-06 (the exposure paragraph) have not passed `dataset check`, and the re-review panel under LEAK-41 and MET-14 to MET-16 has not run: both wait for the competition files, which download only after the Kaggle competition rules are accepted. No container is built before both pass.
 
 **Assessment (AI, 2026-11-08):** the competition files are in the warehouse, so `dataset check` and the re-review ran; the Assessment of 2026-11-08 above (both waiting for the files) is superseded. Changes from the panel, no decision needed: the check warning `dataset_missing_value_sentinel` is accepted, since -1 in f72, f586-f588, f648-f651 and f763 is a change of -100%, not a missing code (it predicts the loss differently from missing: f648 14.4% against 8.5%; CLEAN-10, a value kept as in home_credit_default_risk); the exposure bullet and `task_summary.predicted` mark "a share of the loan's amount" as our reading of the host's "loss = loss given default = scaled number between 0 and 100" (topic 6862), and the equal-notional sentence rests on that reading; the exposure bullet adds that the planned term varies by a factor of 1 to 3 and ships only as the maturity-range code f4 (MET-14); the metric reason adds that the Gini also leans on the tail (the 1% of loans with the largest losses hold 38-46% of a window's loss sum). `dataset check`: 0 errors, 0 warnings. The notes above that call the target "the loss as a percentage of the notional" give our reading too, not the host's words.
 
@@ -156,7 +156,7 @@ CC (2026-11-10, Andrej): f615 and f617 stay, with a LEAK-9 protocol line in the 
 
 **Assessment (AI, 2026-11-10):** f615/f617 record that the entity's previous loan defaulted, not the size of its settled loss; read with the row alone they add 0.000 ROC AUC on the row's own loss (+0.008 ± 0.007 normalized Gini, within noise); the entity's next row is found from f521 in 88.7% of the cases, and reading its f615/f617 lifts the Gini from 0.20 to 0.63.
 
-CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
+CC (2026-11-10, Andrej): ship (review of 2026-11-10).
 
 CC (2026-11-20, Andrej): `time_index` (the source's id, loans from old to new) stays a model input (Review issue 7, A): the lender holds the time of the grant at the prediction point (LEAK-10); unlike california_house_prices_2020, labour_inspection_compliance and wine_quality, whose reconstructed order the actor does not hold.
 
@@ -204,14 +204,14 @@ warning for -1 in nine columns is accepted: -1 is a change of -100%, and it pred
 (f648: 14.4% against 8.5%). The metric reason adds that the Gini also leans on the tail (the 1% of loans with the
 largest losses hold 38-46% of a window's loss sum, against 71-82% of RMSE's squared error).
 
-**Main points:** Issue 7: Keep `time_index` as a model input? No issue open. Settled on 2026-11-10 (Andrej): issue 6, f615 and f617 stay with a LEAK-9 protocol
+**Main points:** No issue open. Settled on 2026-11-20 (Andrej): issue 7, `time_index` stays a model input. Settled on 2026-11-10 (Andrej): issue 6, f615 and f617 stay with a LEAK-9 protocol
 line against reading other test rows (their gain read from the entity's next test row is an evaluation leak; with the
 row alone they add nothing on its own loss). Settled on 2026-11-09 (Andrej): issue 5, the seven aggregates stay out
 under the exception of 2026-11-03. Settled on 2026-11-08: issue 4, the record's `Data Quality Issue` marker removed
 (the chain pattern it stood for is refuted, the leak columns are dropped).
 Issues 1 to 3 are settled (Andrej, 2026-11-03).
 
-**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
+**Verdict (2026-11-10, Andrej):** ship (review of 2026-11-10).
 
 **Issues for Andrej:**
 

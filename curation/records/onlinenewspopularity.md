@@ -105,7 +105,7 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 
 CC (2026-11-17, Andrej): Review issue 12, A, as implemented: Nine expanding two-week windows on `publication_date` (the URL date), one every five weeks from 9 March to 27 December 2014, 699-1,003 test articles each (7,641), train = every article at least one week older (21,234-38,385 articles, 53.6-96.8%), one-week gap.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `publication_date`, windows of 2 weeks, 9 windows at fixed cutoffs, gap 1 week) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (temporal on `publication_date`, windows of 2 weeks, 9 windows at fixed cutoffs, gap 1 week) is checked: confirmed in the blind split walk.
 
 ## Review
 
@@ -114,7 +114,8 @@ CC (2026-11-17, Andrej): the declared split (temporal on `publication_date`, win
 two-week horizon (Horizon, A).
 
 **Main points:** Settled on 2026-11-11: nine windows spread over March to December 2014 (issue 11) and the two-week
-horizon with its one-week gap. Nothing is left open.
+horizon with its one-week gap. Settled on 2026-11-17: the expanding windows stay instead of the paper's 29 sliding
+windows (issue 12, A). Nothing is left open.
 
 **Horizon:**
 

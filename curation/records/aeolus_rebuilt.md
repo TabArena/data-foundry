@@ -56,9 +56,9 @@ CC (2026-10-26, Lennart): the record's year takes the definition's value (2026, 
 
 CC (2026-10-26, Lennart): verdict ship.
 
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `O_COCO` (a partial order); `D_COCO` (a partial order); `INBOUND_STATUS` (a level outside the scale is a state of its own).
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): left unordered: `O_COCO` (a partial order); `D_COCO` (a partial order); `INBOUND_STATUS` (a level outside the scale is a state of its own).
 
-CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 columns with a state outside the scale ordered, the state placed by the rule.
+CC (2026-10-31, Lennart): decided in the dtype review of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 columns with a state outside the scale ordered, the state placed by the rule.
 
 CC (2026-11-10, Lennart): REVIEW issue 1 (which fortnights of 2024 to test), "Option B: Holidays, July, March.": the test windows are 18-31 December, 3-16 July and 13-26 March 2024 instead of the newest six weeks (20 November to 31 December 2024) carried over from aeolus (its CC of 2026-10-12), under SPLIT-15 as amended on 2026-11-10.
 
@@ -68,7 +68,7 @@ CC (2026-11-10, Lennart): the declared horizon (14 days, a one-day gap, windows 
 
 CC (2026-11-17, Andrej): Review issue 2, A, as implemented: Three 14-day windows on `FL_DATE` starting 2024-12-18, 2024-07-03 and 2024-03-13 (264,245 / 278,071 / 267,477 test flights), train every flight from 2023-01-01 up to two days before the window (97.9 / 74.2 / 58.3% of 13,708,650; a benchmark fits on a random 1M of the newest year), 1-day gap, temporal.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `FL_DATE`, windows of 14 days, 3 windows at fixed cutoffs, gap 1 day) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (temporal on `FL_DATE`, windows of 14 days, 3 windows at fixed cutoffs, gap 1 day) is checked: confirmed in the blind split walk.
 
 ## Review
 
@@ -77,7 +77,8 @@ B (issue 1): the test fortnights are 18-31 December, 3-16 July and 13-26 March 2
 and the 14-day length and the one-day gap stay with a new reason. Nothing is left open.
 
 **Main points:** Settled on 2026-11-10: the test windows are the holiday peak, the summer peak and a spring fortnight
-of 2024 (issue 1, B), and the declared horizon is checked.
+of 2024 (issue 1, B), and the declared horizon is checked. Settled on 2026-11-17: the three 14-day windows stay
+instead of the paper's 60/20/20 cut of 1-15 June 2024 (issue 2, A).
 
 **Horizon:**
 

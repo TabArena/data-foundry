@@ -39,9 +39,9 @@ CC: "Good dataset with many features, can checkout leaderboard and code for some
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC of the WiDS Datathon 2021 evaluation page.
 
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): ordinal scales shipped as numbers, left as numbers for the curator's review: `gcs_eyes_apache`, `gcs_motor_apache`, `gcs_verbal_apache`.
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): ordinal scales shipped as numbers, left as numbers for the curator's review: `gcs_eyes_apache`, `gcs_motor_apache`, `gcs_verbal_apache`.
 
-CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 3 ordinal scales shipped as numbers are ordered categories (point 3).
+CC (2026-10-31, Lennart): decided in the dtype review of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 3 ordinal scales shipped as numbers are ordered categories (point 3).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `gossis_icu_hospital_mortality` (TBD -> Yes, priority 2); a related task: `gossis_icu_hospital_mortality` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
@@ -49,15 +49,15 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Do not ship: the label is a diabetes diagnosis the patient already has, an item of the same APACHE comorbidity history whose other items are features, the SEL-7 case of cdc_diabetes and stroke_prediction; if kept, drop the all-rows clipped flags and keep rows with impossible BMI/age as missing. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Do not ship: the label is a diabetes diagnosis the patient already has, an item of the same APACHE comorbidity history whose other items are features, the SEL-7 case of cdc_diabetes and stroke_prediction; if kept, drop the all-rows clipped flags and keep rows with impossible BMI/age as missing. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
-CC (2026-11-11, Andrej): marks on the BeyondArena v0.2 review page. The seven `_clipped` flags are dropped (computed from the whole table's minimum and maximum; the clipped values stay as published). Rows with an impossible value stay with it set missing: age 0 (30 rows) and a BMI more than 0.01 away from weight over height squared (2,549 rows), in place of dropping 2,800 rows; 130,157 admissions now. Retirement is not decided: Andrej asks for a better task in the same data (open, Review issue 1); the split questions are open (issues 4 and 5).
+CC (2026-11-11, Andrej): decided (Review issues 2 and 3). The seven `_clipped` flags are dropped (computed from the whole table's minimum and maximum; the clipped values stay as published). Rows with an impossible value stay with it set missing: age 0 (30 rows) and a BMI more than 0.01 away from weight over height squared (2,549 rows), in place of dropping 2,800 rows; 130,157 admissions now. Retirement is not decided: Andrej asks for a better task in the same data (open, Review issue 1); the split questions are open (issues 4 and 5).
 
-CC (2026-11-11, Andrej): superseded by `gossis_icu_hospital_mortality` (BeyondArena v0.2 review page, issue 1, c: "Replace the target by in-hospital death"): `No (Retired)` with `Duplicate`, since 130,127 of this table's 130,157 rows are rows of the WiDS 2020 files and the same cohort now ships with in-hospital death, a target nobody knows in the first day; not retired for the known-diagnosis rule (SEL-7). Issues 4 and 5 are moot (the new dataset is split by hospital). The folder and `v2_path` stay until a retirement PR; the claim stays. Found on the way: all 2,549 BMI mismatches set missing on 2026-11-11 sit at GOSSIS's clipping bounds of BMI, weight or height (clipped extremes, not impossible values).
+CC (2026-11-11, Andrej): superseded by `gossis_icu_hospital_mortality` (Review issue 1, c: "Replace the target by in-hospital death"): `No (Retired)` with `Duplicate`, since 130,127 of this table's 130,157 rows are rows of the WiDS 2020 files and the same cohort now ships with in-hospital death, a target nobody knows in the first day; not retired for the known-diagnosis rule (SEL-7). Issues 4 and 5 are moot (the new dataset is split by hospital). The folder and `v2_path` stay until a retirement PR; the claim stays. Found on the way: all 2,549 BMI mismatches set missing on 2026-11-11 sit at GOSSIS's clipping bounds of BMI, weight or height (clipped extremes, not impossible values).
 
 ## Review
 
-**Outcome:** added; superseded by `gossis_icu_hospital_mortality` (2026-11-11, Andrej, issue 1 c): the same ICU stays (WiDS 2020) with in-hospital death as the target; that dataset is on this page with its own open issues. Record `No (Retired)`, `Duplicate`; the folder leaves in a retirement PR. Before: The WiDS Datathon 2021 training table
+**Outcome:** added; superseded by `gossis_icu_hospital_mortality` (2026-11-11, Andrej, issue 1 c): the same ICU stays (WiDS 2020) with in-hospital death as the target; that dataset has its own record and review. Record `No (Retired)`, `Duplicate`; the folder was removed in PR #99. Before: The WiDS Datathon 2021 training table
 on Kaggle (https://www.kaggle.com/competitions/widsdatathon2021), drawn from MIT's GOSSIS intensive-care data: 127,358
 admissions to intensive care units of 204 hospitals, first-day vital signs, labs, admission details and chronic
 conditions, and whether the patient has been diagnosed with diabetes mellitus (21.6%); random splits, ROC AUC (the
@@ -74,11 +74,11 @@ Weighed: a large real ICU table with a named competition +, a label already know
 the same cohort's established mortality task found by the scouting -.
 
 **Main points:** Superseded (issue 1, c, 2026-11-11): in-hospital death of the same cohort ships as
-`gossis_icu_hospital_mortality`; this record is `No (Retired)` with `Duplicate`, the folder stays until a retirement PR.
+`gossis_icu_hospital_mortality`; this record is `No (Retired)` with `Duplicate`, the folder was removed in PR #99.
 Issues 2 and 3 were applied before; issues 4 and 5 are moot.
 
 **Record judgment:** valid source, disputed target. The record's only comment beyond the AI's is "Good dataset with many
-features"; Lennart's marks of 2026-10-31 and 2026-11-01 settle the scales and the target's words. The data scouting
+features"; Lennart's decisions of 2026-10-31 and 2026-11-01 settle the scales and the target's words. The data scouting
 found `gossis_icu_hospital_mortality`, in-hospital death on the WiDS 2020 table of the same GOSSIS data, a different
 task, not a duplicate; it would keep the ICU cohort in the benchmark if this one goes.
 
@@ -251,12 +251,12 @@ task, not a duplicate; it would keep the ICU cohort in the benchmark if this one
 
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
-     | A | Random split, `StationaryRelation` (implemented) | the shipped split; once PR #50 is in, the tag and a `Time basis:` line | the label and every feature come from the first day of one stay | argued from the source; the encounter id is unchecked |
+     | A | Random split, `StationaryRelation` (implemented) | the shipped split; the tag and a `Time basis:` line | the label and every feature come from the first day of one stay | argued from the source; the encounter id is unchecked |
      | B | Random split, `ForcedIIDFromTemporal` | the same split, tagged as forced from temporal[^4b] | says that a later year of admissions is not tested | nothing found that moves the relation within two years; the release has no time for the leak test the forced tag asks for |
 
    * **Recommendation:** A, if issue 1 keeps the dataset: a standing condition recorded with the first-day values of the same stay. **Decision:** A or B?
 
-   **Notes for the AI:** on A, once PR #50 is in: `data_tags = ("StationaryRelation",)` and a curation bullet `- Time
+   **Notes for the AI:** on A: `data_tags = ("StationaryRelation",)` and a curation bullet `- Time
    basis: StationaryRelation: ICU admissions of 2014 and 2015 (eICU, the source of GOSSIS and of this table); the
    diabetes history is recorded in the first day with every feature. The release keeps no admission date, so this is
    argued from the source, not measured; no repeat patient was found (REVIEW.md issue 5).` No `splits_comment` change.

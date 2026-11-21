@@ -13,13 +13,13 @@ decision_markers:
 - Too Small
 tags:
 - 'Samples: Over Time'
-- 'Time: Inferred'
+- 'Time: Dated'
 - Survey
 collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2022'
-collection_period: 2014-2021
+collection_period: 2012-2014
 domain: business & marketing
 required_split:
 - Random (IID)
@@ -103,7 +103,7 @@ CC (2026-11-04, Lennart): the target `cost_category` is an ordered category, Low
 
 CC (2026-11-04, Lennart): ship, with the ordered `cost_category` and `age_group` ("sounds good, we are ready to ship"). The build is a separate ask.
 
-**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; the PR #33 review page (a light static review of the definition, README and record) raised the two typing issues, both settled.
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; the PR #33 review (a light static review of the definition, README and record) raised the two typing issues, both settled.
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (text only, no change to data, target, metric or split; rebuild on the curator's ask. Made in the definition: the label is the party's total trip spending in TZS, bands at about 0.5M / 1M / 5M / 10M / 50M, 97.9% agreement on 2,401 rows linked to the 2020 cut (USE-5, EV-2); the 2020 cut is an earlier subset, a PROV-6 duplicate version, not a different task; year 2022 under PROV-9; `ForcedIIDFromTemporal` under SPLIT-8; the 965 copies kept under LEAK-19's distinct-entity clause, a profile-grouped split costs +0.0047 log loss; no leak and no exploit. This supersedes "no panel ran" above; the 2026-10-26 "retained in the review evidence" has no artefact behind it; `mmu_2022` is `No` / `Duplicate`, not `TBD -> Yes`; the screening's regression-framing risk is answered: keep the six classes, the cost exists only for the 4,809-row 2020 subset); disputed: SPLIT-8 (the tag stays unless the planner actor is replaced), PROV-6 (a record for the 2020 cut), MET-2 (the scorer's class column order, harness or dataset), LEAK-19 (exception line or note, settled as a note; issue 7); for the curator: issues 3-8. Priority 4: gap +, use case 0, source +, shape +, risk 0 (gap: multiclass is thin among the 162 accepted definitions; use case: Zindi names the planner, but the fit is approximate and a better-fitting actor is open, issue 3; source: NBS survey with Zindi's codebook and metric; shape: 18,506 rows, 19 mixed features; risk: no leak, the open issues are the actor, bookkeeping and the harness).
 
@@ -121,7 +121,7 @@ CC (2026-11-05, Lennart): the 965 exact copies stay under LEAK-18 (few coarse fe
 
 CC (2026-11-05, Lennart): the scorer reads probability columns in the sorted order of the class labels (scikit-learn's classes_) and checks named columns; the ordered categories stay metadata (issue 5, C; MET-2).
 
-CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
 CC (2026-11-13, Andrej): collection facts `Samples: Over Time` and `Time: Inferred` in place of `Samples: Unknown`:
 - The release stacks two batches of NBS's yearly exit survey. 6,390 of the 6,410 rows of the 2020 cut
@@ -431,7 +431,7 @@ line of 2026-11-04. The record fields agree with the definition.
      - The target is a present state measured with the features: the respondent's spending band, read from the rest of the same exit survey, and the use case reads it for new units at their own present[^cs-9].
      - The tag alone changes: the split stays random.
    * **Evidence (AI, 2026-11-13):** the recovered batches measure the drift of the relation, which either line can
-     give. Log loss, mean of 5 repeats; every setting trains on 4,676 rows; Slurm job 1384730:
+     give. Log loss, mean of 5 repeats; every setting trains on 4,676 rows:
 
      | Test rows | Trained on | LightGBM | Logistic regression | Class prior |
      |---|---|---|---|---|
@@ -1272,7 +1272,7 @@ The closest precedent is open_university_learning_analytics_dataset, whose `age_
 - Typo and alias merges (`Widlife` into `Wildlife`, `UAE`, `BURGARIA`) are synonyms of existing levels.
 - Metric `Metric.source("log_loss")`, the competition's metric (MET-4; zillow_prize `mae` kept on the same grounds).
 
-**8. Contradictions inside the record (not precedent departures; worth one line on the review page):**
+**8. Contradictions inside the record (not precedent departures; worth one line in the review):**
 
 - **Panel history:** the 2026-10-26 AI assessment says independent claim and blind reviews, a debate, a mediator and a cold editor are "retained in the review evidence". The 2026-11-04 AI assessment says "no panel ran for this dataset". One of them is wrong. This pass also supersedes the latter.
 - **Priority gap factor:** the screening (2026-10-22) has "gap 0 (multiclass ... not thin)", while 2026-10-26 has "gap + (multiclass is thin among 133 accepted definitions)". The priority stays 4 either way.

@@ -44,11 +44,11 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 CC (2026-10-21, Lennart): the declared metric stays as it is (`rmspe`, as Kaggle scored; cross-dataset item "Metrics still to settle").
 
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `DayOfWeek` (a partial order); `Assortment` (a partial order).
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): left unordered: `DayOfWeek` (a partial order); `Assortment` (a partial order).
 
-CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 calendar or compass cycles ordered.
+CC (2026-10-31, Lennart): decided in the dtype review of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 calendar or compass cycles ordered.
 
-CC (2026-11-01, Lennart): marks on the review board of PR #37: DayOfWeek (an unordered category before) and CompetitionOpenSinceMonth are numbers (the curator's cycle rule); Assortment stays unordered as a partial order, noted.
+CC (2026-11-01, Lennart): decided in the dtype review of PR #37: DayOfWeek (an unordered category before) and CompetitionOpenSinceMonth are numbers (the curator's cycle rule); Assortment stays unordered as a partial order, noted.
 
 **Assessment (AI, 2026-11-10):** priority for the review of the test windows and horizons, which this record never had. Priority 3: gap 0, use case 0, source + (Rossmann's competition), shape +, risk 0 (the open issue is the choice of windows).
 
@@ -58,7 +58,7 @@ CC (2026-11-11, Lennart): the declared horizon (42 days, a one-day gap, windows 
 
 **Assessment (AI, 2026-11-11):** applied issue 1 (B): test 40,282, 31,203 and 38,107 store-days, train 802,996, 617,355 and 443,771 (95.1%, 73.1% and 52.6%); the Christmas window sells 8,478 per open store-day against 6,837 on its train side and tests 935 stores until 31 December. The 1,114 store-days of 19 June 2015, the newest window's gap day, lie in no split (an accepted warning). `dataset check`: 0 errors, 0 warnings.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 42 days, 3 windows at fixed cutoffs, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 42 days, 3 windows at fixed cutoffs, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 

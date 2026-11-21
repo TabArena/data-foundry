@@ -87,7 +87,7 @@ CC (2026-11-13, Andrej): collection facts `Samples: Over Time`, `Time: Dated` an
 - `DATE_SOLD` dates every sale, and the attributes, the nearest station and the school are read at the scrape and joined onto older sales.
 - The temporal split by sale month stands; it now agrees with the facts.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `DATE_SOLD`, windows of 1 month, 9 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `DATE_SOLD`, windows of 1 month, 9 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 

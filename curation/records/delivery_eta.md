@@ -61,7 +61,7 @@ CC (2026-11-10, Lennart): the declared horizon (7 days, no gap, windows starting
 
 **Assessment (AI, 2026-11-10):** applied in dataset.py: `temporal` with the three cutoffs; test 1,188,182, 1,485,323 and 1,444,992 orders before the 500k cap, train 15,469,869, 12,517,876 and 9,706,793 (92.9%, 75.1%, 58.3%); 0 late orders at each start (the last training order before 4 December is delivered at 22:58 on 3 December, before 18 December at 23:04, before 1 January at 21:55), so still no gap. Orders carrying `num_96` in the test windows, measured on the frame: 4,508 of 4-10 December (0.31%), 5,126 of 18-24 December (0.35%), 7,823 of 1-7 January (0.66%). The `Kept on purpose:` bullet of issue 2 is in the notes; "refit every week (TabReD)" is gone from the use case, the split and the fit reason. Horizon audit (split-auditor, model-free): TabReD (arXiv 2406.19380, its datasheet and preprocessing) trains on 20 October to 11 December, validates on 11-18 December and tests on 18-25 December 2023 and names no refit cadence (the median label delay is 5.5 minutes); one day gives 41 candidates without a source, two weeks 2 (fails SPLIT-14). `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
-CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 7 days, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 7 days, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
