@@ -2,20 +2,56 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, anonymize_ids
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    ScoringColumn,
+    Source,
+    TaskSummary,
+    anonymize_ids,
+)
+
+# The problem family is the generator an instance comes from, read off its path
+# (./SAT<yy>/<track>/<submitter>/<generator>/.../<file>.cnf). Some generators are split over several folders, by
+# satisfiability or by a parameter; those folders are merged, so the 48 folders of the kept instances give 32 families.
+FAMILY_MERGES = (
+    (r"^SAT03/handmade/anton/(SAT|UNSAT)$", "SAT03/handmade/anton"),
+    (r"^SAT11/crafted/kullmann/VanDerWaerden/", "SAT11/crafted/kullmann/VanDerWaerden"),
+    (r"^SAT09/CRAFTED/rbsat/", "SAT09/CRAFTED/rbsat"),
+    (r"^SAT05/crafted/jarvisalo05/", "SAT05/crafted/jarvisalo05"),
+    (r"^SAT05/crafted/sorge05/QG", "SAT05/crafted/sorge05/QG"),
+    (r"^SAT02/handmade/pehoushek/", "SAT02/handmade/pehoushek"),
+    (r"^SAT09/CRAFTED/edgematching/", "SAT09/CRAFTED/edgematching"),
+    (r"^SAT04/handmade/anton/l\dk\d$", "SAT04/handmade/anton/lksat"),
+    (r"^SAT04/handmade/kexu/frb", "SAT04/handmade/kexu/frb"),
+    (r"^SAT04/handmade/connamacher/", "SAT04/handmade/connamacher"),
+)
+
+
+def problem_family(instance_path: str) -> str:
+    """The generator family of an instance: its folder, with the folders of one generator merged."""
+    folder = "/".join(instance_path.split("/")[1:-1])
+    for pattern, family in FAMILY_MERGES:
+        if re.search(pattern, folder):
+            return family
+    return folder
 
 
 class Sat11HandAlgoRuntime(AbstractCuratedDataset):
     task_summary = TaskSummary(
-        question="How long will each of ten SAT solvers take on a new problem instance?",
+        question="How long will each of ten SAT solvers take on a problem instance from a family not seen before?",
         use_case=(
             "Algorithm selection: given a new satisfiability problem, a portfolio predicts the runtime of each of its"
-            " ten solvers and runs the one predicted fastest (ASlib, Bischl et al. 2016)."
+            " ten solvers and runs the one predicted fastest (ASlib, Bischl et al. 2016); here from a problem family"
+            " not seen before, as the instances new at the 2011 competition were."
         ),
         row=(
             "One run of one of 10 SAT solvers on one handcrafted instance of the 2011 SAT competition, stopped at "
@@ -31,19 +67,19 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
             "solver's name."
         ),
         split=(
-            "Whole instances are held out, as in ASlib's folds, so the test data stands for new problems; other "
-            "instances of the same family can be in training, on purpose."
+            "Whole problem families (the instances of one generator, 32 families) are held out with all their runs, so"
+            " the test data stands for a kind of problem not seen in training, as at a later competition."
         ),
         changes=(
             "We drop the 112 of 296 instances on which every solver hits the limit: their labels are only lower "
             "bounds and leave the choice open. One model covers all solvers, with the solver described by its "
-            "features."
+            "features. We hold out whole problem families where ASlib splits the instances at random."
         ),
         fit="direct",
         fit_reason=(
-            "The features are known before any solver runs, and a held-out instance is a new problem. Counting a "
-            "timeout as the limit keeps the order of the solvers within an instance, which is what the selection "
-            "needs."
+            "The features are known before any solver runs, and a held-out family is a new kind of problem, as every"
+            " instance new in 2011 was. Counting a timeout as the limit keeps the order of the solvers within an"
+            " instance, which is what the selection needs."
         ),
     )
 
@@ -84,6 +120,7 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("UnseenGroup",)
     download_description = """
         wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/feature_values.arff && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/algorithm_feature_values.arff && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/algorithm_runs.arff && mkdir -p local-data-warehouse/sat11_hand_algo_runtime && mv feature_values.arff algorithm_feature_values.arff algorithm_runs.arff local-data-warehouse/sat11_hand_algo_runtime/
     """
@@ -100,6 +137,21 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
           linear models and TabPFN pick 17-19% better on the 60 splits, but it would replace the recorded value.
         - We log scale the target.
         - We drop duplicated columns and remove features that leak the target or are not relevant for the predictive task.
+        - Split (Andrej, 2026-11-18): whole problem families are held out. A family is the
+          generator an instance comes from, read off its path before the id is hashed (`problem_family`); folders that
+          split one generator by satisfiability or a parameter are merged (Anton's 2003 SAT/UNSAT, rbsat's four
+          forced/unforced folders, QG6/7/7a/8, two Van der Waerden folders and six more), so the 48 folders give 32
+          families, 11 of them a single instance, the largest 21. Generators of a shared problem stay apart (model RB in
+          2004 and 2009, subgraph isomorphism in 2003 and 2011). The use case decides: in this data a portfolio built on
+          the instances of 2002-2009 meets 88 new instances in 2011 from 7 generators no earlier competition used, so
+          a new member of a family it already has does not occur; holding out single instances (ASlib's random folds,
+          and this definition until 2026-11-18) put 91% of the test instances' families in training. The anonymised
+          instance ships as a scoring column only (`instance_id`): PAR10 picks per instance the solver with the lowest
+          predicted runtime. Never a feature.
+        - Time basis: UnseenGroup: whole problem families held out. Every solver ran on every instance in one campaign
+          of the 2011 SAT competition with a 5,000 s cutoff; the features exist before any full run, and no run is
+          dated. The competition that first used an instance gives one window with half of the rows in training (2011,
+          52%; 2009 trains on 38%), so no split by competition (SPLIT-14). Not tested: newer solvers.
     """
 
     # Task
@@ -124,13 +176,24 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
         inputs={"group": "instance_id"},
         target_transform="log",
     )
+    scoring_columns = (
+        ScoringColumn(
+            column="instance_id",
+            role="group",
+            used_by="par_k",
+            description=(
+                "the anonymised instance (10 rows each, one per solver); the metric picks per instance the solver with "
+                "the lowest predicted runtime and averages the picks' true runtimes."
+            ),
+        ),
+    )
     grouping = Grouping(
-        on="instance_id",
+        on="problem_family",
         labels="per_sample",
         prediction_unit="row",
         context="all_rows",
         definition="""
-            One group is a SAT instance; its rows are the runs of the 10 candidate algorithms on it, described by instance and algorithm features, with the log runtime as the target. The use case is algorithm selection: predict every algorithm's runtime on a new instance and run the one predicted fastest (ASlib, Bischl et al. 2016; one model for all algorithms as in Pulatov et al. 2022), scored by the selected algorithm's true runtime (PAR10, or the share of the gap between the single best and the virtual best solver that is closed). The split holds out instances as ASlib's folds do; the instances also come in families, which the split does not separate.
+            One group is a problem family: the instances of one generator (32 families with 1 to 21 instances), each instance with the runs of the 10 candidate algorithms on it, described by instance and algorithm features, with the log runtime as the target. The use case is algorithm selection: predict every algorithm's runtime on a new instance and run the one predicted fastest (ASlib, Bischl et al. 2016; one model for all algorithms as in Pulatov et al. 2022), scored per instance by the selected algorithm's true runtime (PAR10, or the share of the gap between the single best and the virtual best solver that is closed) through the instance id, a scoring column. ASlib's folds hold out instances at random; holding out whole families is our choice (Andrej, 2026-11-18): the instances new at the 2011 competition all came from generators no earlier competition used.
         """,
     )
 
@@ -157,8 +220,8 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
         df = df_algo_runs.merge(df_features, on="instance_id", how="left").merge(
             df_algo_features, on="algorithm", how="left"
         )
-        # Sanitize ID
-        # Create mapping: molecule -> random string id
+        # The problem family, read off the instance path before the path is hashed (the split's group)
+        df["problem_family"] = anonymize_ids(df["instance_id"].map(problem_family))
         # stable anonymous ids (random uuid4 ids changed the data on every run)
         df["instance_id"] = anonymize_ids(df["instance_id"])
         # Drop features
@@ -202,6 +265,7 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
             categorical=[
-                "instance_id",
+                "problem_family",  # the split's group, never a feature
+                "instance_id",  # scoring column only, never a feature
             ],
         )

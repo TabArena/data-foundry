@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import arff
@@ -19,6 +20,25 @@ from data_foundry.v2 import (
 )
 
 
+def problem_family(instance_path: str) -> str:
+    """The generator family of an instance: its class folder (the path without the file name), with the folders of
+    one generator merged: the 2007 competition's problems, stored under ASP-Comp-2007-Lparse/SLparse/ and again
+    directly under FolioSuite/; HamiltonClumpy's parameter folders; RLP-150 and RLP-200; plain and verbose searchTest.
+    The 96 class folders of the kept instances give 75 families.
+    """
+    folder = instance_path.rsplit("/", 1)[0]
+    if folder.startswith("FolioSuite/HamiltonClumpy/"):
+        return "FolioSuite/HamiltonClumpy"
+    if re.search(r"/RLP-\d+$", folder):
+        return re.sub(r"-\d+$", "", folder)
+    name = re.sub(r"^\d+[-_]", "", folder.rsplit("/", 1)[-1])
+    if re.fullmatch(r"searchTest-(plain|verbose)", name):
+        name = "searchTest"
+    if folder.startswith("FolioSuite/ASP-Comp-2007-Lparse/SLparse/") or folder.count("/") == 1:
+        return "FolioSuite/" + name.lower()
+    return folder
+
+
 class AspPotasscoClassification(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=(
@@ -32,7 +52,7 @@ class AspPotasscoClassification(AbstractCuratedDataset):
         ),
         row=(
             "One run of one of 11 clasp configurations on one instance of the Potassco benchmark set, stopped at 600 "
-            "seconds (1,212 instances from 96 problem classes that at least one configuration solved, 13,332 runs; "
+            "seconds (1,212 instances from 75 problem families that at least one configuration solved, 13,332 runs; "
             "ASlib, 2014)."
         ),
         predicted=(
@@ -45,17 +65,17 @@ class AspPotasscoClassification(AbstractCuratedDataset):
             "backjumps)."
         ),
         split=(
-            "Whole problem classes are held out (32 of the 96 in each test fold), so the test data stands for a kind of "
-            "problem never seen in training, as for a user with a new encoding."
+            "Whole problem families (the instances of one generator, 75 families) are held out, 25 in each test fold, so"
+            " the test data stands for a kind of problem never seen in training, as for a user with a new encoding."
         ),
         changes=(
-            "We drop instances that no configuration solved within the time limit, and hold out whole problem classes"
+            "We drop instances that no configuration solved within the time limit, and hold out whole problem families"
             " where claspfolio 2 and ASlib split instances at random. ASlib adds the cost of computing the features to"
             " the selected runtime; we leave it out, as it is the same whichever configuration is picked."
         ),
         fit="approximate",
         fit_reason=(
-            "The features exist before solving, a held-out class matches a new encoding, and the score is the time "
+            "The features exist before solving, a held-out family matches a new encoding, and the score is the time "
             "the user loses with the pick, timeouts included. But instances that no configuration solved are dropped,"
             " which a user cannot know in advance."
         ),
@@ -93,6 +113,7 @@ class AspPotasscoClassification(AbstractCuratedDataset):
             """,
         ),
     )
+    data_tags = ("UnseenGroup",)
     download_description = r"""
         wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/ASP-POTASSCO/algorithm_runs.arff \
         && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/ASP-POTASSCO/feature_values.arff \
@@ -110,9 +131,17 @@ class AspPotasscoClassification(AbstractCuratedDataset):
           LightGBM and linear models, worse with a random forest and TabPFN).
         - We log scale the target. The configuration's name (`algorithm`) is a categorical feature: the scenario publishes no configuration features.
         - The instance id is anonymised and ships as a scoring column only: the metric picks per instance the configuration with the lowest predicted runtime. Never a feature.
-        - We resolve the instance ID to a problem class (`task_id`) from its path: the instance path without the file name, for example `ASP-Comp-2011-Lparse/26-Solitaire`. A class holds different instances of one problem (here, Solitaire puzzles), and the best configuration depends on the class, which the instance features fingerprint. claspfolio 2 and ASlib split the instances at random, so their test instances come from known classes; we hold out whole classes instead, to predict the runtimes on a problem class not seen in training (the `definition` of the grouping).
+        - We resolve the instance ID to a problem family (`problem_family`) from its path: the instance path without the file name, for example `ASP-Comp-2011-Lparse/26-Solitaire`. A family holds different instances of one problem from one generator (here, Solitaire puzzles), and the best configuration depends on the family, which the instance features fingerprint. claspfolio 2 and ASlib split the instances at random, so their test instances come from known families; we hold out whole families instead, to predict the runtimes on a problem family not seen in training (the `definition` of the grouping).
+        - Families, not class folders (Andrej, 2026-11-18, the same key as sat11_hand_algo_runtime): some folders hold one generator twice or in parts, and are merged: the 15 problems of the 2007 competition stored both under `ASP-Comp-2007-Lparse/SLparse/` and directly under `FolioSuite/` (20 file names on both sides, 11 with identical features), `HamiltonClumpy`'s five parameter folders, `RLP-150` and `RLP-200`, and the plain and verbose `searchTest` (identical programs). The 96 class folders give 75 families. Grouped on the folders (`task_id` until 2026-11-18), 19% of the test instances (4-45% per fold, 30 folds) had their generator in training. The same problem under another competition's encoding (Towers of Hanoi in 2007, 2009 and 2011; Labyrinth in 2009 and 2011; Schur numbers in 2007 and 2009) stays its own family: a new encoding is the use case.
         - Metric: ASlib's PAR10 of the configuration predicted fastest per instance. ASlib adds the feature costs (`feature_costs.arff`) to the selected runtime; they are the same whichever configuration is picked, so we leave them out.
-        - To do: rename the dataset (it is no longer a classification task) once the BeyondArena v0.2 review page is done; its marks are stored under the current name.
+        - To do: rename the dataset (it is no longer a classification task).
+        - Time basis: UnseenGroup (Andrej, 2026-11-18; `Timeless` before): the use case picks a configuration for a kind
+          of problem not seen before, so whole problem families are held out. Every run comes from the one experimental
+          campaign of claspfolio 2 (Hoos, Lindauer and Schaub 2014) on one machine with a 600 s limit; features and
+          probing runs are computed before the run, and the runtime is a property of the instance and the configuration
+          on that machine. The instance collections are of earlier years, but only ASP-Comp-2007, -2009 and -2011 name
+          one, so no split by time is possible; problem families are held out instead. Not tested: another machine or a
+          newer clasp version.
     """
 
     # Task
@@ -146,12 +175,12 @@ class AspPotasscoClassification(AbstractCuratedDataset):
         ),
     )
     grouping = Grouping(
-        on="task_id",
+        on="problem_family",
         labels="per_sample",
         prediction_unit="row",
         context="none",
         definition="""
-            One group is a problem class of the Potassco ASP benchmark set (96 classes with 1 to 134 instances); its rows are the runs of the 11 clasp configurations on its instances, with the log runtime as the target. The use case is algorithm selection: predict every configuration's runtime on a new instance and run the one predicted fastest (ASlib, Bischl et al. 2016), scored per instance by the selected configuration's true runtime (PAR10) through the instance id, a scoring column. claspfolio 2 (Hoos et al. 2014) and ASlib split the instances at random; holding out whole problem classes is our choice and asks for a configuration on a problem class not seen in training.
+            One group is a problem family of the Potassco ASP benchmark set: the instances of one generator, a class folder with the folders of one generator merged (75 families); its rows are the runs of the 11 clasp configurations on its instances, with the log runtime as the target. The use case is algorithm selection: predict every configuration's runtime on a new instance and run the one predicted fastest (ASlib, Bischl et al. 2016), scored per instance by the selected configuration's true runtime (PAR10) through the instance id, a scoring column. claspfolio 2 (Hoos et al. 2014) and ASlib split the instances at random; holding out whole problem families is our choice and asks for a configuration on a problem family not seen in training.
         """,
     )
 
@@ -176,10 +205,9 @@ class AspPotasscoClassification(AbstractCuratedDataset):
         df_algo_runs = df_algo_runs[["instance_id", "algorithm", "runtime"]]
         # Merge
         df = df_algo_runs.merge(df_features, on="instance_id", how="left")
-        # Map instance ID to group ID
-        df["task_id"] = df["instance_id"].str.rsplit("/", n=1).str[0]
+        # The problem family, read off the instance path before the path is hashed (the split's group)
+        df["problem_family"] = anonymize_ids(df["instance_id"].map(problem_family))
         # stable anonymous ids (random uuid4 ids changed the data on every run)
-        df["task_id"] = anonymize_ids(df["task_id"])
         df["instance_id"] = anonymize_ids(df["instance_id"])
         df = df.drop(
             columns=[
@@ -194,7 +222,7 @@ class AspPotasscoClassification(AbstractCuratedDataset):
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
             categorical=[
-                "task_id",
+                "problem_family",  # the split's group, never a feature
                 "instance_id",  # scoring column only, never a feature
                 "algorithm",  # the configuration's name; the scenario publishes no configuration features
                 "Tight",  # whether the program is tight: a yes/no flag (CLEAN-14)
