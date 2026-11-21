@@ -81,9 +81,9 @@ a gradient-boosting model scores the same with the zeros as shipped or set to mi
 Change that needs no decision: a note on these zeros in the curation notes. Weighed: real defect data of a classic
 benchmark family with a clear inspection use (+), an unstated label period and possibly post-fix measures (-).
 
-**Main points:** Nothing open. Settled 2026-11-12: ship as defined, the Halstead zero block noted in the curation
-notes (issue 1, A); the random split named a `Snapshot` of one code version, its `Time basis:` line in the curation
-notes (issue 2, A).
+**Main points:** Nothing open. Settled 2026-11-12: ship as defined, the Halstead zero block noted in the curation notes
+(issue 1, A); the random split named `Retrospective` (decided as `Snapshot`) for one code version, its `Time basis:`
+line in the curation notes (issue 2, A).
 
 **Record judgment:** valid. The de-duplication is the curator's (2026-10-01) and follows the cleaning the field adopted
 for the NASA files, which removes repeated and inconsistent cases (Shepperd, Song, Sun and Mair, "Data Quality: Some

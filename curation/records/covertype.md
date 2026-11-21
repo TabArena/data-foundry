@@ -93,8 +93,8 @@ the one-hot blocks are reversed into named categories with their climatic and ge
 the source's design and a real mapping question +, wide separation +, a score that is mostly spatial interpolation
 between neighbouring cells -, no coordinates to split by -.
 
-**Main points:** All settled (2026-11-10): random cells with the look-up measured (issue 1, B), named a `Snapshot` of
-one map extract (issue 2, B).
+**Main points:** All settled (2026-11-10): random cells with the look-up measured (issue 1, B), named `Retrospective`
+(decided under its earlier name `Snapshot`) for one map extract (issue 2, B).
 
 **Record judgment:** valid with a known gap. The record carries Lennart's split, metric and dtype calls (CC 2026-10-01,
 2026-10-21, 2026-11-01); it has not been checked by Andrej. Better data is screened: `fia_forest_type` (`TBD -> Yes`,
