@@ -81,7 +81,8 @@ orders and signed off; this supersedes the three newest weeks of 2026-11-10 (iss
 one-day gap stays for its reason, TabReD's own validation and test length.
 
 **Main points:** Settled on 2026-11-11: test every other week from the newest, 4-10 December included (issue 2, in
-place of issue 1's windows); the declared horizon is checked. Nothing is left open.
+place of issue 1's windows); the declared horizon is checked; the one-day gap stays (issue 3, A, 2026-11-17); 4-10
+December stays as the curator's exception to the half-data floor (issue 4, A, 2026-11-19). Nothing is left open.
 
 **Horizon:**
 

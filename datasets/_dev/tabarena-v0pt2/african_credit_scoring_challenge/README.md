@@ -52,7 +52,7 @@ bundle_checks:
     splits_below_target: 'Six of the nine windows an IID split of this size would
       get: a label settles 37 days after disbursement, so only the loans from 15 October
       2022 have half the rows settled before them, and those 48 days hold six windows
-      of about a week (Andrej, 2026-11-19, review issue 1, A).'
+      of about a week (Andrej, 2026-11-19).'
 decisions:
 - 'Total_Amount_to_Repay and Lender_portion_to_be_repaid are dropped: recorded after
   the outcome'
@@ -196,7 +196,7 @@ We start with Train.csv of the Zindi African Credit Scoring Challenge, from a Ka
 
 - Prediction point: when a loan is disbursed, with the customer's earlier loans and their settled outcomes known.
 - We keep only the loans of the main product, Type_1 (Lennart, CC 2026-10-26): one lender's 7-day loans of 2022-07-12 to 2022-12-01, 52,826 rows after the lender-amount filter, 520 defaults (0.98%), 5,040 customers, 99.5% repeat loans. The file mixes this product with a few hundred loans a month of changing products (2021-2024) and a new product, Type_7, from July 2023; the other products default at about 10%, share 1.4% of their customers with Type_1, and are too few for test windows of their own. A mixed task would score telling the products apart rather than ranking the customers of one product (untuned LightGBM ROC AUC 0.68 on the mixed 2022 windows against 0.60 on Type_1 alone).
-- Not reproduced: the competition's test file also held 3,525 loans from Ghana (products absent from Train.csv, no labels released) and a random 18% of the Kenyan loans of the same dates; the competition's goal of models that "generalise well" to a new country cannot be tested here, and the Ghana part was won by a hand-written rule (issue 7 of the review, 2026-10-26).
+- Not reproduced: the competition's test file also held 3,525 loans from Ghana (products absent from Train.csv, no labels released) and a random 18% of the Kenyan loans of the same dates; the competition's goal of models that "generalise well" to a new country cannot be tested here, and the Ghana part was won by a hand-written rule (2026-10-26).
 - Within Type_1, lender_id, loan_type and duration are constant, and we drop them.
 - We rename target to default.
 - We add earlier_loans, the number of the customer's loans in the release disbursed on an earlier day (Train.csv and the Kenyan rows of Test.csv, any product, one count per loan id), known at disbursement and built without labels (CLEAN-19, a history aggregated per prediction; Lennart, CC 2026-10-26). The models reach the customer's history only through customer_id otherwise (CatBoost falls from 0.66 to 0.55 ROC AUC without it); the count alone ranks defaults at 0.72 on the six windows (0.61-0.83 per window), above every model on the source's columns. It counts only loans in the release, so it grows over the first months of the data (median 9). A count of the customer's earlier defaults settled before disbursement is 0 in every row (a default ends the customer's history in the product), so it is not added.
@@ -219,7 +219,7 @@ We start with Train.csv of the Zindi African Credit Scoring Challenge, from a Ka
 
 ## Splits
 
-A lender scores each loan when it is disbursed and refits on the loans whose outcome it knows, at least once a month; the six windows hold about a week of loans each (6-11 days, the declared horizon 7 days). A loan's label counts as known 30 days after its due date, so each training side holds the loans whose due date lies more than 30 days before the window starts; the loans of the five weeks before a window are not in its training side. Six windows of about equal numbers of rows cover the end of the product's lending, newest first, from the first day by which half of the rows have a settled label to the last Type_1 loan on 2022-12-01; they hold 18-22 default rows each. Six of the nine windows an IID split of this size would get: a label settles 37 days after disbursement, so only the loans from 15 October 2022 have half the rows settled before them, and those 48 days hold six windows of about a week (Andrej, 2026-11-19, review issue 1, A). The 2022 windows leave out the 8-18% of the rows of their dates whose lender funds less than one unit (curation comments).
+A lender scores each loan when it is disbursed and refits on the loans whose outcome it knows, at least once a month; the six windows hold about a week of loans each (6-11 days, the declared horizon 7 days). A loan's label counts as known 30 days after its due date, so each training side holds the loans whose due date lies more than 30 days before the window starts; the loans of the five weeks before a window are not in its training side. Six windows of about equal numbers of rows cover the end of the product's lending, newest first, from the first day by which half of the rows have a settled label to the last Type_1 loan on 2022-12-01; they hold 18-22 default rows each. Six of the nine windows an IID split of this size would get: a label settles 37 days after disbursement, so only the loans from 15 October 2022 have half the rows settled before them, and those 48 days hold six windows of about a week (Andrej, 2026-11-19). The 2022 windows leave out the 8-18% of the rows of their dates whose lender funds less than one unit (curation comments).
 
 6 repeat(s) x 1 fold(s) with seed 4267; train 26,490 to 39,722 rows, test 1,821 to 2,446 rows. Prediction horizon: 7 days.
 
@@ -309,7 +309,7 @@ Six windows of about equal numbers of rows run from the first day by which half 
 
 Accepted on purpose:
 
-- `splits_below_target`: Six of the nine windows an IID split of this size would get: a label settles 37 days after disbursement, so only the loans from 15 October 2022 have half the rows settled before them, and those 48 days hold six windows of about a week (Andrej, 2026-11-19, review issue 1, A).
+- `splits_below_target`: Six of the nine windows an IID split of this size would get: a label settles 37 days after disbursement, so only the loans from 15 October 2022 have half the rows settled before them, and those 48 days hold six windows of about a week (Andrej, 2026-11-19).
 
 ## Data checks
 

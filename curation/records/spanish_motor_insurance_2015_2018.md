@@ -83,8 +83,8 @@ has the call.
 - Metric: normalized Gini as a context metric (MET-11); the paper reports no model.
 - Drop `N_claims_history`, `Lapse` and `Date_lapse`, or rebuild the history from earlier rows (LEAK-10).
 
-CC (2026-10-30, Andrej): `Yes`, priority 3 (the AI screening had `TBD -> 2nd Tier`, priority 3; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 3 (the AI screening had `TBD -> 2nd Tier`, priority 3; zero-inflated
+screening).
 
 **Assessment (AI, 2026-11-01):** added as `datasets/_dev/tabarena-v0pt2/spanish_motor_insurance_2015_2018/` by /add-dataset with the full review panel; the open questions are in its Review. Recommend shipping; issue 1 (the task changed from renewal pricing to new-business pricing for customers with one policy) could still turn it to `No`. A policy's later yearly rows hold a remnant of earlier claims, not the year's own (0.9% have a claim after a claim-free year, against about a third of first years), so only first years are kept (25,665 rows, 5 monthly test windows of 2017). Changes after the panel: the 5,069 renewals never in force and `Payment` dropped, a 12-month gap before each window. Corrections to the notes above: PROV-6 and PROV-7 against the 2022-2024 sibling are settled as not a duplicate, closing the screening's call for the curator; "the zero is an observed claim-free policy-year" held for 83% of the zeros, not all (17% were years without cover). The screening's renewal use case and the Assessment's target and exposure lines wait for your mark on issue 1. Priority 3: gap + (insurance thin), use case 0 (fit approximate), source + (data article and variable sheet), shape + (25,665 rows, temporal), risk - (the premium alone ranks as well as any method; the task is open).
 
@@ -120,9 +120,9 @@ CC (2026-11-09, Andrej): the training labels' maturity is stated in the notes (c
 
 CC (2026-11-09, Andrej): a curation decision on the metric (Review issue 9, A; consistency check option (a)): "We keep A because it was how the Kaggle competition looked like. But note this decision as a curation decision." `normalized_gini` ordered by the prediction stays, each policy weighted 1, not the Gini against the premium. The source is a data article with no task and no metric, so the ground is the form of the insurers' Kaggle competitions (Allstate 2011, Liberty Mutual 2014) and the 2022-2024 sibling's call of 2026-11-02 (MET-11: a context metric names its basis); the use case now reads "to rank the risk and set the premium", as the sibling's, which is what this form scores (MET-1). Provisional; revisit with wisconsin_local_government_property_insurance_fund issue 4 and spanish_motor_insurance_coverage_level_2022_2024 issue 11: both were settled on 2026-11-09 with their metrics kept, so it stands.
 
-CC (2026-11-09, Andrej): ship (review page of 2026-11-09).
+CC (2026-11-09, Andrej): ship.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `period_start`, windows of 1 month, windows while training keeps 50% of the rows (5 in the build), gap 12 months) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `period_start`, windows of 1 month, windows while training keeps 50% of the rows (5 in the build), gap 12 months) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk).
 
 CC (2026-11-19, Andrej): windows below the target count kept (Review issue 11, A as implemented): five monthly windows (your call of 2026-11-03); July 2017 would train on 45.4%; the reason is in the splits comment.
 
@@ -185,9 +185,10 @@ customer's other policies in force at the start (2, design S), `Value_vehicle` k
 (4), ship and re-check `Trivial` (5); on 2026-11-06 the per-contract target under the exposure rules, with the count of
 first years cut short corrected to 2,055 (6); on 2026-11-08 the per-contract target with MET-14's clause amended for
 this case, its wording settled with australian_vehicle_insurance_2004_2005's issue 8 (7), and the sentence of your CC
-reworded (8). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 11).
+reworded (8); on 2026-11-19 the five monthly windows kept below the target count, the reason in the splits comment
+(11, A).
 
-**Verdict (2026-11-09, Andrej):** ship (review page of 2026-11-09).
+**Verdict (2026-11-09, Andrej):** ship.
 
 **Issues for Andrej and Lennart:**
 
@@ -320,7 +321,7 @@ reworded (8). Open since 2026-11-19: which window layout, as the definition ship
      one policy and 22.8% for customers who already had another policy in force: adding a policy after a claim (a
      replacement car) would explain it, and a count that sees it reads the future.
    * **Experiments:** the 5 windows as shipped (August to December 2017, 12-month gap), normalized Gini on the amount;
-     TabPFN with its default settings on a GPU (Slurm), untuned LightGBM beside it:
+     TabPFN with its default settings on a GPU, untuned LightGBM beside it:
 
      | Design | Rows | Test rows per window | TabPFN | LightGBM | Premium alone | Windows TabPFN beats the premium |
      |---|---|---|---|---|---|---|
@@ -348,10 +349,10 @@ reworded (8). Open since 2026-11-19: which window layout, as the definition ship
      version asks the authors (issue 4). **Decision:** A, S or B?
 
    **Notes for the AI:** script `designs.py` (frames and LightGBM), `tabpfn_windows.py` and `tabpfn_subsets.py`
-   (Slurm jobs 1342221 and 1342226) in the run folder of 2026-11-03 (spanish/). On S: build `other_policies_at_start`
+   in the run folder of 2026-11-03. On S: build `other_policies_at_start`
    in `_clean` from the raw rows (a customer is a birth date and a licence date; another policy of the customer with
    cover on the row's start), drop `Policies_in_force`, rewrite the filter bullet, `use_case`, `row` and the notes,
-   re-run `dataset check` and the leak probe on Slurm.
+   re-run `dataset check` and the leak probe.
 
    **Andrej (2026-11-03, discuss):** How many different splits do we get that way?
 
@@ -383,7 +384,7 @@ reworded (8). Open since 2026-11-19: which window layout, as the definition ship
    **Resolved (2026-11-03, Andrej):** S. Every first year is kept (37,090 rows); `Policies_in_force` is replaced by
    `other_policies_at_start`, the customer's other sampled policies with cover running on the row's start; the five
    monthly windows stay. `use_case`, `row`, `known`, `changes`, `fit_reason`, the notes, the splits comment and the
-   third decision are rewritten; `dataset check` and the leak probe re-run on Slurm.
+   third decision are rewritten; `dataset check` and the leak probe re-run.
 
 3. **Keep `Value_vehicle`, a valuation of 31 December 2019?**
 
@@ -608,8 +609,6 @@ reworded (8). Open since 2026-11-19: which window layout, as the definition ship
      against the annual payers than the cost per contract does. How far it reorders models is not measured (Unknown).
      233 of the 4,362 test rows are cut years, and nobody knows at the quote which they will be.
    * **Experiments:** on the shipped rows, matched to the container row by row (the claim auditor):
-     - Per contract the cut years claim like full years: a claim in 35.4% of each, 0.78 claims against 0.81.
-     - Per year at risk they claim 1.9 times as often: 1.53 claims a year against 0.81.
      - With the rating factors held equal, half-yearly payers pay about 20% more premium, and 12.9% of their first
        years are cut short against 1.7% of annual payers'. A cut year carries 3.5% more premium (standard error 0.8%)
        than a full one with the same factors and payment method, so the premium is the written annual premium, not
@@ -827,7 +826,7 @@ reworded (8). Open since 2026-11-19: which window layout, as the definition ship
 
    * **Recommendation:** a: it keeps your call and records it on the ground that holds. **Decision:** a or b?
 
-   **Resolved (2026-11-09, Andrej):** a (marked as implemented on the review page of 2026-11-09, no new note): A stays,
+   **Resolved (2026-11-09, Andrej):** a (implemented on 2026-11-09, no new note): A stays,
    `normalized_gini` ordered by the prediction, each policy weighted 1. The metric reason now states its ground: the
    source is a data article with no task and no metric, so the form follows the insurers' Kaggle competitions (Allstate
    2011, Liberty Mutual 2014) and the 2022-2024 sibling's call of 2026-11-02. The use case reads "to rank the risk and
@@ -943,7 +942,7 @@ reworded (8). Open since 2026-11-19: which window layout, as the definition ship
 
    * **Recommendation:** A: the monthly windows are your call and the cadence the use case assumes; if the target weighs more than the cadence, B, which reaches it without a window under half. **Decision:** A, B, C or D?
 
-   **Notes for the AI:** on A, add to `splits_comment`: "Five windows, against the 9 an IID split of 37,090 first years would get: with one-month windows and the twelve-month gap, July 2017 would train on 45.4% of the rows (2026-11-03 and the date of your decision, Andrej)." On B: `TemporalSplits(window=15, unit="days", gap=12, gap_unit="months", min_train_fraction=0.5)` (add `n_windows=9` to stop at the target), and `splits_rows_unused` re-counted. On C: `min_train_fraction=0.3` and `splits_train_under_half` accepted for May to July 2017 with the reason. D needs a custom `_make_splits`. Then the window table in `splits_comment`, `task_summary.split`, `dataset check` on Slurm, a CHANGELOG entry and a CC line.
+   **Notes for the AI:** on A, add to `splits_comment`: "Five windows, against the 9 an IID split of 37,090 first years would get: with one-month windows and the twelve-month gap, July 2017 would train on 45.4% of the rows (2026-11-03 and the date of your decision, Andrej)." On B: `TemporalSplits(window=15, unit="days", gap=12, gap_unit="months", min_train_fraction=0.5)` (add `n_windows=9` to stop at the target), and `splits_rows_unused` re-counted. On C: `min_train_fraction=0.3` and `splits_train_under_half` accepted for May to July 2017 with the reason. D needs a custom `_make_splits`. Then the window table in `splits_comment`, `task_summary.split`, `dataset check`, a CHANGELOG entry and a CC line.
 
    **Andrej (2026-11-19, ok):** As implemented (A).
 

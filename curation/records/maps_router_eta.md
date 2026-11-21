@@ -68,9 +68,9 @@ CC (2026-11-17, Andrej): Review issue 2, A, as implemented: Three expanding week
 
 CC (2026-11-17, Andrej): Review issue 3, A, as implemented: Gap of one day: the three weekly windows (4-10 Dec, 27 Nov-3 Dec, 20-26 Nov) train on routes requested at least one day before, 10,902,438 / 8,496,883 / 6,108,934 (79.9/62.3/44.8%).
 
-CC (2026-11-17, Andrej): verdict ship (blind split review page).
+CC (2026-11-17, Andrej): verdict ship (blind split walk).
 
-CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 7 days, 3 windows, gap 1 day) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 7 days, 3 windows, gap 1 day) is checked in the blind split walk.
 
 CC (2026-11-20, Andrej): split kept (Review issue 4, A as implemented): the three newest weeks; the oldest (44.8%) stays as the curator's exception, its acceptance reworded (not re-checked: the raw data is not on this machine).
 
@@ -82,7 +82,9 @@ amended floor admits with the oldest week training on 44.8% of the routes.
 
 **Main points:** Settled on 2026-11-11: the three newest weeks stay (issue 1, A, closing the consistency check),
 and the declared horizon of one week with a one-day gap is checked, a week being TabReD's own validation and test
-length.
+length. On 2026-11-17 the three expanding weekly windows (issue 2, A) and the one-day gap (issue 3, A) were kept; on
+2026-11-20 the oldest week (44.8%) stays as the curator's exception to the half-data floor (issue 4, A). Nothing is
+left open.
 
 **Horizon:**
 
@@ -263,7 +265,6 @@ the windows were counted with the definition's own split step (README not regene
      - Request times are recorded to the second, and a travel time is known only when the drive ends, up to 16.6 hours after the request, so without a gap 656, 654 and 578 training routes per window would still be on the road at the window's start.
      - The tree gives Temporal · arrival date with a label-delay gap; one day covers every drive (the longest is 16.6 hours).
      - The blind walk, without the timestamp's resolution, assumed day-resolution dates and proposed no gap.
-   * **Background:** A navigation service predicts each requested route's travel time going forward, and 40 days of 2.5 million timed requests give many windows. The travel time is known within hours, inside a day, so no gap at day resolution. Confidence of the blind walk: medium.
    * **Walk:** the questions as answered without the current split[^tree]:
      - Will the model be used at a place or group the data does not hold? (use case): no. Evidence: Use case: the navigation service predicts travel time on routes its drivers request; service and region are not stated and nothing points to another region.
      - Fill in the covered period or predict forward? (use case): forward. Evidence: 'when a driver requests a route, predicts the travel time from the current road conditions'.
@@ -273,7 +274,6 @@ the windows were counted with the definition's own split step (README not regene
    * **The delay the walk measured:** Smallest step: unknown (TabReD does not state it; day assumed). Delay: the drive itself, median ~11 min, max 16.6 h, under one day, so no gap at day resolution; at a finer resolution a gap of one day would cover every label.
    * **What the blind dossier lacked, and what it changes:** The gap answer changes: the definition treats the timestamp as finer than a day and sets a one-day gap because a travel time is known only when the drive ends (up to 16.6 h after the request), so the last routes before a window have no label at its start. That is my leaf_if outcome for a sub-day timestamp: Temporal · arrival date, label-delay gap (1 day). The full log has 13,639,272 routes (the dossier gave the 2.5M sample).
    * **What changes:** Nothing on A.
-   * **Blindness:** what the walker saw of the shipped split before deciding: Raw data not in the warehouse; the resolution of TabReD's `timestamp` column is not stated in the paper or the dossier.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
@@ -284,8 +284,6 @@ the windows were counted with the definition's own split step (README not regene
    * **Recommendation:** A, because second-resolution request times and drives of up to 16.6 hours put unknown labels into training without the gap.. **Decision:** A or B?
 
    **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: change `gap=` in `TemporalSplits` and re-check each window's train share against the floors; nothing else in the definition changes.
-
-   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
 
    [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
 

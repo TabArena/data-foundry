@@ -77,8 +77,8 @@ has the call.
 - Metric: normalized Gini as a context metric (MET-11); no source metric.
 - Pin CASdatasets >= 1.2-1; drop `ClaimInd`.
 
-CC (2026-10-30, Andrej): `Yes`, priority 5 (the AI screening had `TBD -> Yes`, priority 2; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 5 (the AI screening had `TBD -> Yes`, priority 2; zero-inflated
+screening).
 
 Ten tables from one "private motor French insurer", each with "risk features, claim amount and claim history of
 around 30,000 policies for year 2004" (CASdatasets documentation). The workbook lists freMPL2, 3, 5-9 as seven
@@ -278,7 +278,8 @@ declared metric (0.203).
 **Main points:** Nothing open. Resolved: 1, 3 and 4 on 2026-11-03, 6 on 2026-11-06, 8, 7 and 9 on 2026-11-08 (the
 component widened; the cost per year on the identity scale with the length to 31 December kept; that length unrounded,
 with Andrej's two superseded calls named), 10 on 2026-11-09 (no predecessor amount, from the information audit of that
-day), 11 on 2026-11-09 (the normalized weighted Gini, as the other cost-per-year tasks; no ranking changes). Verdict: ship (2026-11-03).
+day), 11 on 2026-11-09 (the normalized weighted Gini, as the other cost-per-year tasks; no ranking changes), 14 on
+2026-11-19 (whole policy components held out, `ForcedGroupedFromTemporal`, not start quarters). Verdict: ship (2026-11-03).
 Changed on 2026-11-08 without an issue: `Gender` left the features, on Lennart's stance that sex is no rating factor
 of any insurance pricing task (australian_vehicle_insurance_2004_2005's issue 7); it still builds the policy
 component, whose 61,091 groups are unchanged, and it carried nothing measurable (-0.0004 with a weighted Tweedie fit).

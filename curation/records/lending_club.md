@@ -85,7 +85,8 @@ CC (2026-11-20, Andrej): the three quarters stay (Review issue 2, A as implement
 with 2014 Q4 training on 45.9% of the loans and signed off, and kept the quarterly horizon without a gap (Horizon, A).
 
 **Main points:** Settled on 2026-11-11: the windows 2015 Q4, 2015 Q2 and 2014 Q4 (issue 1) and the one-quarter horizon
-with the gap-0 exception as recorded. Nothing is left open.
+with the gap-0 exception as recorded; on 2026-11-20 2014 Q4 (45.9%) stays as the curator's exception to the half-data
+floor (issue 2, A). Nothing is left open.
 
 **Horizon:**
 

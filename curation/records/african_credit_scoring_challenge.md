@@ -61,7 +61,7 @@ CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not 
 
 CC (2026-10-26, Lennart): issue 2: keep dropping the 8,899 rows whose lender funds less than 0.5 (LEAK-25).
 
-**Assessment (AI, 2026-10-26):** answers on the review page. Type_1 exists only from 2022-07-12 to 2022-12-01 (52,826 rows, 520 defaults); the six 2022 windows cut to Type_1 hold 18-22 defaults each, and the mixed windows' higher ROC AUC (0.68 against 0.60 untuned) comes from telling products apart (issue 1). Zindi's leaderboard was won with leaks and a hand-written Ghana rule, and its goal asked for default probabilities binned into risk grades; F1 per shipped window is 0.00-0.16 with about 20 defaults (issue 6, a consistency check against CC 2026-10-21). Zindi's Ghana test part cannot be reproduced: no labels, products absent from training (issue 7).
+**Assessment (AI, 2026-10-26):** answers to the review issues. Type_1 exists only from 2022-07-12 to 2022-12-01 (52,826 rows, 520 defaults); the six 2022 windows cut to Type_1 hold 18-22 defaults each, and the mixed windows' higher ROC AUC (0.68 against 0.60 untuned) comes from telling products apart (issue 1). Zindi's leaderboard was won with leaks and a hand-written Ghana rule, and its goal asked for default probabilities binned into risk grades; F1 per shipped window is 0.00-0.16 with about 20 defaults (issue 6, a consistency check against CC 2026-10-21). Zindi's Ghana test part cannot be reproduced: no labels, products absent from training (issue 7).
 
 CC (2026-10-26, Lennart): issue 1: "Do that then": keep the Type_1 loans only (six 2022 windows).
 
@@ -85,9 +85,9 @@ CC (2026-11-19, Andrej): windows below the target count kept (Review issue 1, A 
 
 ## Review
 
-**Outcome:** added. Reopened on 2026-11-19 by the split check: the definition ships fewer windows than the target count for its size, and its splits comment gives a reason the window rules no longer accept.
+**Outcome:** added. Reopened on 2026-11-19 by the split check: the definition ships fewer windows than the target count for its size, and its splits comment gives a reason the window rules no longer accept. Settled on 2026-11-19 (issue 1, A): six windows of about a week kept, with the reason corrected in the splits comment.
 
-**Main points:** Which window layout (issue 1).
+**Main points:** Which window layout (issue 1, resolved).
 
 **Issues for Andrej:**
 

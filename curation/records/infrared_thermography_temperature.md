@@ -70,7 +70,9 @@ CC (2026-11-20, Andrej): the random folds stay `StationaryRelation`, now on the 
 
 **Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
-**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13.
+**Main points:** Settled: issue 1 withdrawn (2026-11-13); collection type `Dated Event Log` (issue 3, a, 2026-11-17);
+the random folds stay `StationaryRelation`, on the stationary-relation test over the two two-month windows (issue 4,
+C, 2026-11-20). Open: issue 2 (three two-month windows instead of random folds) has no Resolved line.
 
 **Issues for Andrej:**
 
@@ -164,7 +166,6 @@ CC (2026-11-20, Andrej): the random folds stay `StationaryRelation`, now on the 
      - The walk followed the recorded type and reached Temporal · sample order.
    * **The doubt:** The subjects were recruited one by one at a health center over 18 months, closer to a clinical study at one site; walked under Experimental Results as recorded, where the arrival-order branch fits.
    * **What changes:** the record's collection-type tag only. The split follows from it, so the tree must be re-walked under the new type; where that gives the same leaf, nothing else changes.
-   * **Blindness:** what the walker saw of the shipped split before deciding: saw: split_tree.md lists infrared_thermography_temperature as an example under 'Temporal · sample order'; ignored as evidence.
    * **Options:**
 
      | | Option | What it does | Pro | Con |

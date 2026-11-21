@@ -152,7 +152,7 @@ class ThyroidDiscordantArchive(AbstractCuratedDataset):
         Three test windows of four months of request dates, newest first: October 1986 to January 1987 (the end of the
         archive), June to September 1986 and February to May 1986; each trains on every earlier request (87%, 73% and
         61% of the rows). The windows hold 1,215, 1,230 and 1,145 requests with 25, 54 and 24 discordant results. They
-        follow option C of thyroid_discordant's issue 4 (train on 1984-1985; test on the first half of 1986, its third
+        follow option C of thyroid_discordant's split decision (train on 1984-1985; test on the first half of 1986, its third
         quarter, and its fourth quarter with January 1987), as four-month windows, which one declaration can express:
         the archive holds only 2 requests in January 1986 and 1 in June 1986, none discordant, so the windows differ
         from option C's by those three requests (January trains the oldest window, June is tested with the summer) and

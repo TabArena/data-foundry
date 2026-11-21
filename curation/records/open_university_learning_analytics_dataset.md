@@ -11,6 +11,7 @@ decision_markers:
 - Needs extensive data wrangling
 - Too Small
 tags:
+- Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Later'

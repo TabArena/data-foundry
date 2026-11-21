@@ -96,7 +96,7 @@ observed outcome without any of that, and claim frequency is half of every prici
 concern that stays is the weak covariates (TP-4): AUC 0.69 against 0.67 for exposure alone.
 
 CC (2026-10-30, Andrej): `TBD -> Yes`, priority 3 (the AI screening had `TBD -> Yes`, priority 3; zero-inflated
-screening review page, after the AI's answer to the curator's question). "Do an additional test if this data is
+screening, after the AI's answer to the curator's question). "Do an additional test if this data is
 generated, if yes its a no otherwise a yes"
 
 **Assessment (AI, 2026-11-01):** the additional generated-data test the curator asked for, pg16 as the dataset under
@@ -119,7 +119,7 @@ generated, if yes its a no otherwise a yes"): not generated (Assessment above).
 
 CC (2026-11-02, Andrej): the `exposure` fix confirmed (issue 1 (a)): every period gets its length from the start to 31 December; recorded as the LEAK-10 case for time on risk cut short by the outcome (leak_checks.md, Mechanisms table): the cut is removed or fixed where the data locates it, kept with its measured size where it cannot.
 
-CC (2026-11-02, Andrej): split (issue 2, after discussion on the review page): "I don't want to have the same training
+CC (2026-11-02, Andrej): split (issue 2, after discussion): "I don't want to have the same training
 data and different test sets. We assume that whenever we have different test sets, we would be retraining." Three
 four-month windows of 2013, each trained on every period closed before the window starts (an expanding train side,
 SPLIT-11), test only the four months to the next refit. Amendment to SPLIT-14: windows that share one train side count
@@ -200,7 +200,7 @@ CC (2026-11-10, Andrej): Review issue 14, A: "Disagree: We go with A over E beca
 
 **Assessment (AI, 2026-11-10):** against the 2013 hold-out (8 models fitted with the weight): A ranks 7 models as the hold-out does (Kendall's tau 1.00; 1.00 for the 5 sound ones), mean distance from the hold-out's margins 0.20 against E's 0.14, within the hold-out's noise (SE of a margin 0.33 to 0.54); the shipped folds' out-of-fold score on 2013 matched the hold-out (Tweedie GLM 83.45 against 83.43, bootstrap SE 0.12). Applied to `splits_comment`, a CC bullet, issue 13's Note and Decision; `dataset check`: 0 errors, 0 warnings.
 
-CC (2026-11-10, Andrej): ship after changes (review page of 2026-11-10).
+CC (2026-11-10, Andrej): ship after changes.
 
 CC (2026-11-18, Andrej): the split stays as shipped under SPLIT-8 as amended today (cross-dataset decision on the period count, full-information split check): the data holds three policy years for a task of 3 repeats, which needs four, too few to hold out whole periods; the forced step goes on to the unit question: contracts recur and the use case meets new fleets, so whole contracts, as shipped.
 
@@ -295,7 +295,7 @@ the relativities in check (a Tweedie GLM, a regularised LightGBM, a frequency mo
 the GLM's margin over the constant is 1.06 (standard error 0.65) where the folds before gave 1.39 (0.46), so the draw
 of the folds moves it by about a standard error.
 
-**Verdict (2026-11-10, Andrej):** changes (review page of 2026-11-10): issue 14 (A) applied, the split by contract
+**Verdict (2026-11-10, Andrej):** changes: issue 14 (A) applied, the split by contract
 kept with your note on the hold-out in `splits_comment`; rows, target, split and metric unchanged.
 
 **Issues for Andrej and Lennart:**

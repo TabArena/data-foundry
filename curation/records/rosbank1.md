@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 priority: 2
 tags:
+- Non-IID (Temporal)
 - Free Text (Short)
 - '?'
 - Review Prio 1 (Atlas)
@@ -78,15 +79,15 @@ CC (2026-11-11, Lennart): accepted `time_newest_period_short` with its reason (c
 
 **Assessment (AI, 2026-11-11):** the periods ending in November and December 2017 hold 123 and 63 clients against 416 to 524 a month from May to October.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `period_end`, windows of 1 month, windows while training keeps 50% of the rows (3 in the build), gap 3 months) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `period_end`, windows of 1 month, windows while training keeps 50% of the rows (3 in the build), gap 3 months) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk).
 
 CC (2026-11-20, Andrej): split kept (Review issue 1, A as implemented): the three monthly windows, the reason in the splits comment.
 
 ## Review
 
-**Outcome:** added. Reopened on 2026-11-19 by the split check: the definition ships fewer windows than the target count for its size, without the reason in its splits comment.
+**Outcome:** added. Reopened on 2026-11-19 by the split check: the definition ships fewer windows than the target count for its size, without the reason in its splits comment. Settled on 2026-11-20 (issue 1, A): the three monthly windows stay, the reason in the splits comment.
 
-**Main points:** Which window layout (issue 1).
+**Main points:** Which window layout (issue 1, resolved).
 
 **Issues for Andrej:**
 
@@ -116,7 +117,7 @@ CC (2026-11-20, Andrej): split kept (Review issue 1, A as implemented): the thre
 
    * **Recommendation:** C: it keeps the cadence the use case assumes and adds the periods the thin newest windows lack, which is what the curator's exception is for. **Decision:** A, B, C or D?
 
-   **Notes for the AI:** on A, add to `splits_comment`: "Three windows, against the 9 an IID split of 4,791 clients would get: with one-month windows and the three-month label gap, September 2017 would train on 44.5% of the clients (the date of your decision, Andrej)." On C: `TemporalSplits(window=1, unit="months", gap=LABEL_MONTHS, min_train_fraction=0.3)`, `splits_train_under_half` accepted for July to September 2017 with the reason, the window table in `splits_comment` (the "fourth window" sentence goes), `splits_rows_unused` re-worded (the September clients are tested), `task_summary.split`. B and D need a custom `_make_splits` (windows of equal client counts on `period_end`, each training on the clients whose period ended three months before the window starts). Then `dataset check` on Slurm, a CHANGELOG entry and a CC line. The record has no Review section yet; this is its first issue.
+   **Notes for the AI:** on A, add to `splits_comment`: "Three windows, against the 9 an IID split of 4,791 clients would get: with one-month windows and the three-month label gap, September 2017 would train on 44.5% of the clients (the date of your decision, Andrej)." On C: `TemporalSplits(window=1, unit="months", gap=LABEL_MONTHS, min_train_fraction=0.3)`, `splits_train_under_half` accepted for July to September 2017 with the reason, the window table in `splits_comment` (the "fourth window" sentence goes), `splits_rows_unused` re-worded (the September clients are tested), `task_summary.split`. B and D need a custom `_make_splits` (windows of equal client counts on `period_end`, each training on the clients whose period ended three months before the window starts). Then `dataset check`, a CHANGELOG entry and a CC line. The record has no Review section yet; this is its first issue.
 
    **Andrej (2026-11-20, ok):** As implemented (A).
 

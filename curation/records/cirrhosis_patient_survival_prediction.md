@@ -78,11 +78,11 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the Mayo PBC cohort's 5-year death or transplant, the decision its source names; only the record's metric-based reason for keeping the old treatment era should be restated. Priority 2: gap 0, use case 0, source 1, shape 0, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the Mayo PBC cohort's 5-year death or transplant, the decision its source names; only the record's metric-based reason for keeping the old treatment era should be restated. Priority 2: gap 0, use case 0, source 1, shape 0, risk -0.
 
 CC (2026-11-05, Andrej): ship as defined (issue 1, B); the `Outdated` bullet of 2026-10-15 now argues from the data, not the metric: the relation between the findings and the risk still holds today, and the absolute risk is that of an earlier treatment era, named in the fit. The declared split and metric checked and kept.
 
-CC (2026-11-12, Andrej): random patients kept, as a stationary relation (BeyondArena v0.2 review page, issue 2, A). The measurement behind it is in the curation notes (`Time basis: StationaryRelation`): along the registration order the event rate is flat (34%, 40%, 34%, 35% by two-year period), the outcome is not autocorrelated (lag-1 -0.05, p 0.39; trial -0.11, p 0.08), the 10 nearest patients' event rate adds nothing (logistic regression ROC AUC 0.895 against 0.892), and the newest of three windows of 50 patients scores as high as random folds (0.921 against 0.861, untuned LightGBM). The tag enters the definition. The declared split and metric checked and kept.
+CC (2026-11-12, Andrej): random patients kept, as a stationary relation (Review  2, A). The measurement behind it is in the curation notes (`Time basis: StationaryRelation`): along the registration order the event rate is flat (34%, 40%, 34%, 35% by two-year period), the outcome is not autocorrelated (lag-1 -0.05, p 0.39; trial -0.11, p 0.08), the 10 nearest patients' event rate adds nothing (logistic regression ROC AUC 0.895 against 0.892), and the newest of three windows of 50 patients scores as high as random folds (0.921 against 0.861, untuned LightGBM). The tag enters the definition. The declared split and metric checked and kept.
 
 CC (2026-11-19, Andrej): random folds tagged `ForcedIIDFromTemporal` (Review issue 6, C): three windows of 50 referrals could be built, but the 60 random folds stay on the curator's call; the stationary-relation test is inconclusive in 1976-77 and flat when pooled (Kumo-Tabular).
 
@@ -101,9 +101,10 @@ not proven (TP-4). Quality: a shift of the clotting-time scale after 1977 is kep
 (selecting patients for transplant) on a documented cohort, against an earlier treatment era. Left for Andrej: issue
 1, one reason of the record to restate.
 
-**Main points:** Nothing open. Settled: random patients kept as a stationary relation, the neighbour test, the flat
-event rate and the windows' nil cost written into the curation notes (issue 2, A, 2026-11-12); ship as defined, the
-treatment-era reason restated (issue 1, 2026-11-05).
+**Main points:** Nothing open. Settled: the random folds stay, tagged `ForcedIIDFromTemporal`, the `Time basis:`
+line naming the three windows that could be built and the inconclusive stationary-relation test (issue 6, C,
+2026-11-19; it replaces the stationary relation of issue 2, A, 2026-11-12, whose measurement stays in the curation
+notes); ship as defined, the treatment-era reason restated (issue 1, 2026-11-05).
 
 **Record judgment:** valid with an approximate fit: the Mayo Clinic PBC cohort, the decision named by its source
 (Dickson et al. 1989: selecting patients for liver transplant), from an earlier treatment era.
