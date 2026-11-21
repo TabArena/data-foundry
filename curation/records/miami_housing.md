@@ -63,17 +63,17 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: month_sold stays 
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 1 scores are numbers (structure_quality).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after splitting the 2016 sales by month, as the other dated house sales are; the measured cost of the change is nil, so it rests on consistency and the use case. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after splitting the 2016 sales by month, as the other dated house sales are; the measured cost of the change is nil, so it rests on consistency and the use case. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
-CC (2026-11-05, Andrej): record field `problem_type` set to Regression, from the definition. The domain stays open on the review page.
+CC (2026-11-05, Andrej): record field `problem_type` set to Regression, from the definition. The domain stays open.
 
-CC (2026-11-11, Andrej): record field set from the definition (review page field mark): `domain` finance.
+CC (2026-11-11, Andrej): record field set from the definition: `domain` finance.
 
-CC (2026-11-11, Andrej): BeyondArena v0.2 review page, miami_housing:
+CC (2026-11-11, Andrej):
 - Issue 1 (split), reply (c): five monthly test windows, August to December 2016, each trained on all earlier months (58% to 92% of the sales), no gap; `sale_month` (2016-MM-01) from `month_sold` is the time column. Repeat sales of a home stay (13,932 rows, was 13,776); there are no exact copies. `required_split` Temporal (NON-IID), tag `Non-IID (Temporal)`. Measured cost of the change at equal training size: +0.001 RMSLE (2026-11-06).
 - Issue 2 (domain), B: `business & marketing`, as the other house prices, in the definition and here.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `sale_month`, windows of 1 month, up to 5 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `sale_month`, windows of 1 month, up to 5 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-19, Andrej): windows below the target count kept (Review issue 3, A as implemented): five monthly windows; July 2016 would train on 49.2%; the reason is in the splits comment.
 
@@ -82,7 +82,8 @@ CC (2026-11-19, Andrej): windows below the target count kept (Review issue 3, A 
 **Outcome:** added. Single-family homes sold in Miami in 2016, released on OpenML by the data's creator, Steven
 Bourassa (2021): land and living area, the value of special features such as pools, age, structure quality, the
 month of sale, airplane noise, and distances to the ocean, water, rail, highway and the centres; the target is the log
-sale price, scored by RMSLE on the price, with a random split. 13,776 sales after keeping one sale per parcel. The AI
+sale price, scored by RMSLE on the price, with a random split. 13,776 sales after keeping one sale per parcel (since
+2026-11-11: five monthly windows, and repeat sales stay, 13,932 sales; issue 1). The AI
 recommends shipping it after one change: split by month, as the other dated house sales are (issue 1). Reviewed
 without a panel, from the gathered evidence (the record, the definition, a model run on the TabArena v0.1 copy
 of the same rows) and one check of the rows. Validity: real sales of a documented release; no leak found; the random
@@ -93,11 +94,11 @@ open point. Weighed: the creator's own release with distances he built, real sal
 one year and one county, and better data under screening (florida_dor_property_sales) -.
 
 **Main points:** No open issue. Split by month into five monthly windows (issue 1, resolved 2026-11-11); domain
-`business & marketing` (issue 2, resolved 2026-11-11). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 3).
+`business & marketing` (issue 2, resolved 2026-11-11). Five windows, below the target count, kept: July 2016 would train on 49.2% (issue 3, A, 2026-11-19).
 
 **Record judgment:** valid. The source is settled (OpenML 43093, uploaded by Bourassa on 2021-09-24, citing Mayer,
-Bourassa, Hoesli and Scognamiglio 2021, https://doi.org/10.2139/ssrn.3924412). The definition's domain is finance;
-the other house-price datasets use business & marketing. Andrej's note in the record, "We need to write down the
+Bourassa, Hoesli and Scognamiglio 2021, https://doi.org/10.2139/ssrn.3924412). The definition's domain was finance;
+the other house-price datasets use business & marketing, which both took on 2026-11-11 (issue 2). Andrej's note in the record, "We need to write down the
 reason why we consider some housing datasets as random split data and others as temporal", is what issue 1 answers.
 A scouting run found Florida's statewide sales and assessment rolls (florida_dor_property_sales), screened in its own
 record with a temporal split.
@@ -160,7 +161,7 @@ record with a temporal split.
      $305,000 by March and $320,000 by June. Five monthly windows, August to December, train on 58% to 92% of the
      sales; the issue's earlier check compared only the last three months, with LightGBM.
    * **Experiments:** the 13,776 shipped sales and 15 features (`month_sold` kept), untuned LightGBM and ridge
-     regression (one-hot categories), RMSLE on the price (Slurm job 1365897):
+     regression (one-hot categories), RMSLE on the price:
      - Shipped random split (3 x 3): LightGBM 0.151 (0.142 to 0.158), ridge 0.273.
      - The five monthly windows, each trained on all earlier months: LightGBM 0.139 on December (the newest) and 0.146
        to 0.152 on August to November; ridge 0.260 to 0.277.
@@ -208,7 +209,7 @@ record with a temporal split.
 2. **Domain: `finance`, or `business & marketing` as the other house prices?**
 
    * **Problem:**
-     - The record took the definition's `domain`, `finance`, by Andrej's field mark of 2026-11-04, while every other
+     - The record took the definition's `domain`, `finance`, by Andrej's decision of 2026-11-04, while every other
        house-price record and definition uses `business & marketing`, including those whose use case names a lender.
      - The domains are kept one per family of siblings (Lennart, 2026-10-21, the ten QSAR records), and a record takes
        its definition's value (Lennart, 2026-10-26, aeolus).

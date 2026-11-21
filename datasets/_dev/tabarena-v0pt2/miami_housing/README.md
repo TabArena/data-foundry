@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: miami_housing
 container_format: 2
-checksum: v2:8f8966f419fd58cf4ed8f6ae5bfa880a7890a3a15c03a2933975a87c331dab93
+checksum: v2:6e61771e8f7d0b7515ab05dc074726d9ba2cad14eeddd214708fc04e73eba08c
 build:
   uuid: 01a111fc-b2f3-70cf-951c-6cf119716e45
   checksum: v2:bd320b218fcee1f7a1671353adce650be061341a6b03d25957fdd692a9e8b59c
@@ -66,8 +66,7 @@ bundle_checks:
       and zillow_prize).'
     splits_below_target: 'Five of the nine windows an IID split of this size would
       get: sales are dated by month and the data hold one year, so July 2016 and earlier
-      would train on under half the sales (49.2% for July; Andrej, 2026-11-19, review
-      issue 3, A).'
+      would train on under half the sales (49.2% for July; Andrej, 2026-11-19).'
 decisions: []
 ---
 
@@ -77,7 +76,7 @@ decisions: []
 
 Regression of `SALE_PRC`, scored with `rmsle` on temporal splits by `sale_month`. 13,932 rows and 16 features. Source: OpenML (2021).
 
-Built as `01a111fc-b2f3-70cf-951c-6cf119716e45` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8f8966f419fd58cf4ed8f6ae5bfa880a7890a3a15c03a2933975a87c331dab93`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b2f3-70cf-951c-6cf119716e45` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6e61771e8f7d0b7515ab05dc074726d9ba2cad14eeddd214708fc04e73eba08c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -230,7 +229,7 @@ replaced so that this dated house-sale table follows the regime of the others (2
 training size, training on earlier months only cost +0.001 RMSLE against sales from all other months
 (untuned LightGBM 0.147 against 0.146; ridge 0.268 against 0.267; 2026-11-06). Five of the nine windows an
 IID split of this size would get: sales are dated by month and the data hold one year, so July 2016 and
-earlier would train on under half the sales (49.2% for July; Andrej, 2026-11-19, review issue 3, A).
+earlier would train on under half the sales (49.2% for July; Andrej, 2026-11-19).
 
 5 repeat(s) x 1 fold(s) with seed 4267; train 8,062 to 12,771 rows, test 1,057 to 1,275 rows. Prediction horizon: 1 months.
 
@@ -264,7 +263,7 @@ Each test window against its train side, by statistics of the data, never of a m
 Accepted on purpose:
 
 - `meta_time_horizon_mismatch`: `sale_month` holds the first day of the sale month (the source gives no day), so each one-month test window holds a single date and its span reads as 1 day; the windows are calendar months (as perth_house_prices and zillow_prize).
-- `splits_below_target`: Five of the nine windows an IID split of this size would get: sales are dated by month and the data hold one year, so July 2016 and earlier would train on under half the sales (49.2% for July; Andrej, 2026-11-19, review issue 3, A).
+- `splits_below_target`: Five of the nine windows an IID split of this size would get: sales are dated by month and the data hold one year, so July 2016 and earlier would train on under half the sales (49.2% for July; Andrej, 2026-11-19).
 
 ## Data checks
 
@@ -349,4 +348,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8f8966f419fd58cf4ed8f6ae5bfa880a7890a3a15c03a2933975a87c331dab93` |
+| stale | yes: the definition now gives checksum `v2:6e61771e8f7d0b7515ab05dc074726d9ba2cad14eeddd214708fc04e73eba08c` |

@@ -129,7 +129,7 @@ class MiamiHousing(AbstractCuratedDataset):
         training size, training on earlier months only cost +0.001 RMSLE against sales from all other months
         (untuned LightGBM 0.147 against 0.146; ridge 0.268 against 0.267; 2026-11-06). Five of the nine windows an
         IID split of this size would get: sales are dated by month and the data hold one year, so July 2016 and
-        earlier would train on under half the sales (49.2% for July; Andrej, 2026-11-19, review issue 3, A).
+        earlier would train on under half the sales (49.2% for July; Andrej, 2026-11-19).
     """
     accepted_check_warnings = {
         "meta_time_horizon_mismatch": "`sale_month` holds the first day of the sale month (the source gives no day), "
@@ -138,7 +138,7 @@ class MiamiHousing(AbstractCuratedDataset):
         "splits_below_target": (
             "Five of the nine windows an IID split of this size would get: sales are dated by month and the data hold "
             "one year, so July 2016 and earlier would train on under half the sales (49.2% for July; Andrej, "
-            "2026-11-19, review issue 3, A)."
+            "2026-11-19)."
         ),
     }
 

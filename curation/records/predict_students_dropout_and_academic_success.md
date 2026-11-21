@@ -21,8 +21,10 @@ tags:
 original_source: UCI
 year: '2021'
 collection_period: 2008-2019
+domain: education
 required_split:
 - Temporal (NON-IID)
+problem_type: Multiclass Classification
 source_links:
 - https://doi.org/10.24432/C5MC89
 notebook_path: datasets/beyond_iid/old_iid/predict_students_dropout_and_academic_success/predict_students_dropout_and_academic_success.ipynb
@@ -56,16 +58,16 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: the three qualifi
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 1 scores are numbers (Application_order).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after dropping the undated fee and debt status (87% of students behind on fees dropped out) and splitting by enrolment year, which the macro triple gives exactly (2008-2017). Priority 3: gap 1, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after dropping the undated fee and debt status (87% of students behind on fees dropped out) and splitting by enrolment year, which the macro triple gives exactly (2008-2017). Priority 3: gap 1, use case 0, source 1, shape 1, risk -1.
 
 CC (2026-11-12, Andrej):
 - Split by enrolment cohort: `enrolment_year` (2008-2017) is mapped from the national unemployment, inflation and GDP figures each student carries; four test windows, cohorts 2014-2017, each trained on the students whose course's normal length (3 years, Nursing 4; Realinho et al. 2022, Sec. 3.1) had ended when the cohort finished its first year (training 54% to 80% of the 4,424 students).
 - Why not the random split: it flattered log loss by 0.02 to 0.14 at equal training size (untuned LightGBM, 2026-11-11), and the dropout share falls from 30-38% (2008-2014) to 24-28% (2015-2017).
 - `Scholarship_holder` kept with a note: no recording date, like the fee and debt status, but it can exist at the end of the first year, holders drop out at 12% against 39%, and log loss rises by only 0.004 without it.
 
-CC (2026-11-12, Andrej): `Tuition_fees_up_to_date` and `Debtor` dropped (BeyondArena v0.2 review page, issue 1, B); the input data changed: 37 to 35 features. The source gives no recording date for either, arrears cannot exist at enrolment, and the pattern fits one status read at the file's extract: 86.6% of the students behind on fees dropped out (24.7% of the others), and still-enrolled students are behind at 0.8% in the 2008-2011 cohorts against 15% in 2015-2017. A previous degree does not explain the debt (debtors 10% to 11% among holders of another degree, 8% among first-time students). `Scholarship_holder` stays (issue 3).
+CC (2026-11-12, Andrej): `Tuition_fees_up_to_date` and `Debtor` dropped (Review issue 1, B); the input data changed: 37 to 35 features. The source gives no recording date for either, arrears cannot exist at enrolment, and the pattern fits one status read at the file's extract: 86.6% of the students behind on fees dropped out (24.7% of the others), and still-enrolled students are behind at 0.8% in the 2008-2011 cohorts against 15% in 2015-2017. A previous degree does not explain the debt (debtors 10% to 11% among holders of another degree, 8% among first-time students). `Scholarship_holder` stays (issue 3).
 
-CC (2026-11-17, Andrej): the declared split (temporal on `enrolment_year`, horizon 1 year, gap 1 year) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `enrolment_year`, horizon 1 year, gap 1 year) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-19, Andrej): windows below the target count kept (Review issue 4, A as implemented): four cohort windows; the 2013 cohort would train on 43.9%; the reason is in the splits comment.
 
@@ -76,7 +78,7 @@ Realinho et al., "Predicting Student Dropout and Academic Success", Data 2022;7(
 https://doi.org/10.3390/data7110146): 4,424 students of 17 degrees at one Portuguese institution, their background at
 enrolment, fee and debt status, three national economic figures and the units and grades of their first two semesters,
 and whether at the end of the course's normal length they had graduated (50%), dropped out (32%) or were still enrolled
-(18%); random splits, log loss (fallback). The AI recommends shipping it after two changes (issues 1 and 2). Reviewed on
+(18%); random splits (four cohort windows since 2026-11-12, issue 2), log loss (fallback). The AI recommends shipping it after two changes (issues 1 and 2). Reviewed on
 2026-11-04 without a panel, from the gathered evidence (the record, model runs on the shipped data and on
 TabArena v0.1's copy) and two checks. Validity: no feature is the outcome itself, but the fee and debt status have no
 recording date and 87% of the students behind on fees dropped out (issue 1); the three economic figures identify the
@@ -90,10 +92,10 @@ three-way outcome and a spread +, a fee status of unknown date and a split that 
 
 **Main points:** Nothing open. Settled 2026-11-12: `Tuition_fees_up_to_date` and `Debtor` dropped, their recording
 date unknown and their pattern that of one late extract (issue 1, B); four cohort windows 2014-2017 with a gap per
-course length (2); `Scholarship_holder` kept with a note (3). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 4).
+course length (2); `Scholarship_holder` kept with a note (3). Settled 2026-11-19: the four cohort windows kept below the target count, as the 2013 cohort would train on 43.9% (issue 4, A).
 
-**Record judgment:** valid. The record has no `problem_type` (Multiclass Classification) and no `domain` (education);
-Claude fills them, as no value disagrees. The TabArena note "the features were collected after 2nd semestre" matches
+**Record judgment:** valid. The record had no `problem_type` (Multiclass Classification) and no `domain` (education);
+both are filled from the definition, as no value disagrees. The TabArena note "the features were collected after 2nd semestre" matches
 the definition's prediction point, the end of the first year. The data scouting found `upv_university_student_dropout`;
 it is screened in its own record and does not change this task's validity.
 
@@ -238,7 +240,7 @@ it is screened in its own record and does not change this task's validity.
      - The cost is large: trained on the cohorts whose outcomes are known, the models' log loss on a new cohort is 0.04
        to 0.20 higher than when trained on as many students drawn from all cohorts.
    * **Experiments:** the 4,424 shipped students and 36 features, untuned LightGBM and logistic regression (one-hot
-     categories), log loss (Slurm job 1365899):
+     categories), log loss:
      - Shipped random split (3 x 3): LightGBM 0.595 (0.571 to 0.615), logistic regression 0.568 (0.535 to 0.585).
      - B's windows, each trained on cohorts at least three years older: LightGBM 0.846 (2017, the newest), 0.814
        (2016) and 0.704 (2015); logistic regression 0.753, 0.715 and 0.568.
@@ -269,7 +271,7 @@ it is screened in its own record and does not change this task's validity.
    cohort, because <the curator's reason>; three cohort windows (2015-2017, each trained on cohorts at least three
    years older) cost +0.11 to +0.20 log loss at equal training size (untuned LightGBM 0.846 against 0.650 on 2017;
    logistic regression +0.04 to +0.15).` The frame has no date column on a, so no warning to accept. Under either
-   option the record gets the tags `Samples: Over Time` and `Time: Dated`. Results: Slurm job 1365899.
+   option the record gets the tags `Samples: Over Time` and `Time: Dated`.
 
    [^2c]: **SPLIT-32** (Should): how the data was collected is information for the split; the record's collection
      facts and, where one fits, the definition's use-case prototype with its `Time basis:` line.
@@ -310,7 +312,7 @@ it is screened in its own record and does not change this task's validity.
    * Your reading would hold for a target "status after the next year"; the file does not record that.
    * b's gap of two cohorts is set by Nursing. An exact gap per degree (one cohort for three-year degrees, two for
      Nursing) gives four windows instead of three.
-   * Measured (untuned LightGBM and logistic regression, log loss, same features; Slurm job 1378300):
+   * Measured (untuned LightGBM and logistic regression, log loss, same features):
 
      | Split | Windows | Train share | LightGBM per window (2017 ... oldest) | Cost vs random, equal size (LightGBM) |
      |---|---|---|---|---|
@@ -352,7 +354,7 @@ it is screened in its own record and does not change this task's validity.
      - Holders drop out at 12.2% against 38.7% of the others and graduate at 76.0% against 41.3%.
      - Among students who passed no unit in the first semester, 10.3% hold a scholarship against 27.7% of the others; a grant given at enrolment does not know who will fail, so this fits a later year's status, but it fits a grant that helps a student pass as well.
      - The holders' share is 11.2% of the 2008 cohort and 21% to 31% of each later one, a change of policy or of when the status was read; the source does not say.
-   * **Experiments:** the shipped frame (4,424 students, 36 features), untuned LightGBM and logistic regression (LR), log loss, the shipped random 3 x 3 folds with and without the columns (Slurm job 1366162): all columns LightGBM 0.587, LR 0.567; without `Scholarship_holder` 0.591 and 0.569; without the fee and debt status 0.633 and 0.599; without all three 0.634 and 0.602.
+   * **Experiments:** the shipped frame (4,424 students, 36 features), untuned LightGBM and logistic regression (LR), log loss, the shipped random 3 x 3 folds with and without the columns: all columns LightGBM 0.587, LR 0.567; without `Scholarship_holder` 0.591 and 0.569; without the fee and debt status 0.633 and 0.599; without all three 0.634 and 0.602.
    * **Effect on the task:** if the flag is a later year's status, a model reads a little of the outcome from it (0.004 log loss); if it is the status at enrolment or in the first year, it is a real early-warning input.
    * **Unknown:** the date of the status; the data paper (Realinho et al. 2022) or the institution could say, as for issue 1.
    * **Options:**

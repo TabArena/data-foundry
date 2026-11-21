@@ -59,7 +59,9 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings: []
+  warnings:
+  - task_label_time_gap
+  - splits_below_target
   infos: []
   accepted:
     meta_license_unknown: Kaggle gives the licence as 'Other (specified in description)',
@@ -68,8 +70,7 @@ bundle_checks:
       is when the score exists, so it is declared `time_of="label"` and is no input.
       The one-month gap stands for the roaster''s submission delay: the roaster predicts
       at submission, weeks or months before publication, so each window trains only
-      on reviews published at least a month before it starts (Andrej, 2026-11-18,
-      review issue 7, B). The gap is the publication delay the split cannot read off
+      on reviews published at least a month before it starts (Andrej, 2026-11-18). The gap is the publication delay the split cannot read off
       the dates, not a second copy of it.'
     splits_below_target: 12 two-month windows against the 30 an IID split of 2,367
       reviews would get (SPLIT-33). Monthly windows would reach 25, but some months
@@ -225,7 +226,7 @@ We start with the Kaggle version. Note, we acknowledge that the dataset is not o
 - The price feature is extremely messy as a result of web scrapping. We resolve this feature as real tabular data (not from a web scrapper but from the database source), would have these information stored in a more structured way. We drop coffees that are measured in "capsules" units as they exist only 8 times and seem to be strong outliers. We normalizes the price to be per grams. Moreover, we convert all currencies to USD (with a fixed rate); we ignore the temporal incorrectness this may introduce as it is most likely minimal.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-- We drop the 2 reviews of October 2023, the scrape's partial last month (24 to 65 reviews a month in the rest of 2023; cross-dataset item of 2026-11-11, Lennart). The windows walk back from September 2023.
+- We drop the 2 reviews of October 2023, the scrape's partial last month (24 to 65 reviews a month in the rest of 2023; Lennart, 2026-11-11). The windows walk back from September 2023.
 
 ## Splits
 
@@ -287,11 +288,13 @@ Each test window against its train side, by statistics of the data, never of a m
 
 0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
+- **warning** `task_label_time_gap`: The splits leave a gap (1 months) on a time that dates the label (`review_date`). (hint: A split on when the label became known trains only on labels known at each window's start, which is what a gap for the label's delay simulates (SPLIT-10). Drop the gap, or accept this warning with the planning or refit delay it stands for.)
+- **warning** `splits_below_target`: 12 window(s), against the 30 splits an IID split of 2,367 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
 
 Accepted on purpose:
 
 - `meta_license_unknown`: Kaggle gives the licence as 'Other (specified in description)', but the description names none (checked 2026-11-10).
-- `task_label_time_gap`: `review_date` is the month the review was published, which is when the score exists, so it is declared `time_of="label"` and is no input. The one-month gap stands for the roaster's submission delay: the roaster predicts at submission, weeks or months before publication, so each window trains only on reviews published at least a month before it starts (Andrej, 2026-11-18, review issue 7, B). The gap is the publication delay the split cannot read off the dates, not a second copy of it.
+- `task_label_time_gap`: `review_date` is the month the review was published, which is when the score exists, so it is declared `time_of="label"` and is no input. The one-month gap stands for the roaster's submission delay: the roaster predicts at submission, weeks or months before publication, so each window trains only on reviews published at least a month before it starts (Andrej, 2026-11-18). The gap is the publication delay the split cannot read off the dates, not a second copy of it.
 - `splits_below_target`: 12 two-month windows against the 30 an IID split of 2,367 reviews would get (SPLIT-33). Monthly windows would reach 25, but some months hold only 2 to 10 reviews, which makes a per-window RMSE of noise; the window length and the gap follow the use case and are not shortened to reach the count (SPLIT-15). The splits comment names the target, the count reached and what stops more.
 
 ## Data checks

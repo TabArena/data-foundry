@@ -403,7 +403,7 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
             "declared `time_of=\"label\"` because it is our reconstruction of the entry order and no field of the "
             "release, so no actor holds it at the prediction point and it must stay out of the inputs; it dates the "
             "entry, not the moment the label became known, and the gap is not redundant with it "
-            "(Andrej, 2026-11-19, review issue 3, B)."
+            "(Andrej, 2026-11-19)."
         ),
         "splits_below_target": (
             "Three windows against the nine an IID split of 8,967 patients would get (SPLIT-33). A fourth window, "

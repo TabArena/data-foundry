@@ -66,11 +66,11 @@ CC (2026-11-11, Lennart): drop the 2 reviews of October 2023, the scrape's parti
 
 **Assessment (AI, 2026-11-11):** October 2023 held 2 reviews against 24 to 65 a month in the rest of 2023; the 2-month windows now walk back from September 2023 instead of October.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after changes: drop the reviewer's two text passages (a word model on them alone reaches skill 0.71 and beats every benchmark method; the roaster's own information still gives 0.34-0.39) and convert the NT$ prices. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after changes: drop the reviewer's two text passages (a word model on them alone reaches skill 0.71 and beats every benchmark method; the roaster's own information still gives 0.34-0.39) and convert the NT$ prices. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
 
-CC (2026-11-06, Andrej): the arrival facts of the temporal split accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on arrival notes of temporal splits) and written into `splits_comment`; the split is unchanged. A score is published with its review month, so every training label is known when a window starts and no gap is needed.
+CC (2026-11-06, Andrej): the arrival facts of the temporal split accepted (Review issue 3, B, through the cross-dataset item on arrival notes of temporal splits) and written into `splits_comment`; the split is unchanged. A score is published with its review month, so every training label is known when a window starts and no gap is needed.
 
-CC (2026-11-10, Andrej): decided on the BeyondArena v0.2 review page. The roaster's task is kept; whether it is still meaningful is open (the Review, issue 5).
+CC (2026-11-10, Andrej): decided. The roaster's task is kept; whether it is still meaningful is open (the Review, issue 5).
 
 **Changes made** (the input data changed: 12 to 9 features, the same 2,369 rows):
 
@@ -82,11 +82,11 @@ CC (2026-11-10, Andrej): decided on the BeyondArena v0.2 review page. The roaste
 
 - The signal left is modest: untuned LightGBM RMSE 1.259 and ridge 1.266, against 1.598 for the training mean and 1.436 for the roaster's past mean score, on the 13 two-month windows. It beats the roaster's mean in 13 of 13 windows, so the task is real, but LightGBM beats ridge in only 7 of 13. Recommended: keep, and check the benchmark spread after the rebuild.
 
-CC (2026-11-11, Andrej): record field set from the definition (review page field mark): `original_source` Kaggle (was Other).
+CC (2026-11-11, Andrej): record field set from the definition: `original_source` Kaggle (was Other).
 
-CC (2026-11-11, Andrej): kept without the reviewer's text (BeyondArena v0.2 review page, issue 5, A): every feature exists before the review, and untuned LightGBM beats the mean and the roaster's past mean score in 13 of 13 windows (skill 0.36). The spread of the benchmark methods is checked after the rebuild; retire only if they tie there too.
+CC (2026-11-11, Andrej): kept without the reviewer's text (Review issue 5, A): every feature exists before the review, and untuned LightGBM beats the mean and the roaster's past mean score in 13 of 13 windows (skill 0.36). The spread of the benchmark methods is checked after the rebuild; retire only if they tie there too.
 
-CC (2026-11-12, Andrej): the review month `review_date` orders and splits the rows but is no model input (BeyondArena v0.2 review page, issue 6, B; `Temporal(..., feature=False)`): it is the month Coffee Review published the score, while the roaster decides which coffees to submit before any review. 8 features (was 9), the 13 windows unchanged.
+CC (2026-11-12, Andrej): the review month `review_date` orders and splits the rows but is no model input (Review issue 6, B; `Temporal(..., feature=False)`): it is the month Coffee Review published the score, while the roaster decides which coffees to submit before any review. 8 features (was 9), the 13 windows unchanged.
 
 CC (2026-11-18, Andrej): a one-month gap before each two-month window (Review issue 7, B; replaces the no-gap decision of 2026-11-06): the roaster predicts at submission, weeks or months before Coffee Review publishes the score in its review month, so training holds only scores published at least a month before the window. The delay is not stated; one month is the smallest gap the monthly dates allow.
 
@@ -101,7 +101,8 @@ Validity: every feature exists before the review, which is the roaster's use cas
 are within 0.007 RMSE of each other (issue 5). Weighed: a real roaster's question with signal +, features known before
 the review +, a modest signal and no model spread shown yet -, a scrape without documentation and one rating service -.
 
-**Main points:** Nothing open; check the methods' spread after the rebuild (issue 5). Settled: the review month orders
+**Main points:** Nothing open; check the methods' spread after the rebuild (issue 5). Settled: a one-month gap before
+each two-month window (issue 7, B, 2026-11-18); the review month orders
 and splits the rows but is no model input (issue 6, B, 2026-11-12); kept without the reviewer's text (issue 5, A,
 2026-11-11). Issues 1, 2 and 4 were resolved on 2026-11-10 (text dropped, NT$ converted, `Target: Varying Delay`);
 issue 3 on 2026-11-06.
@@ -127,7 +128,7 @@ defined. The licence is `None`: the review text is coffeereview.com's, scraped b
    * **Effect on the task:** with the passages, the benchmark mostly measures how well a method reads a reviewer's
      verdict from his vocabulary, a text task where a bag-of-words model beats the tabular methods[^1c]; without them,
      it measures the roaster's question, from the roaster, origin, roast, roast colour, price and the coffee's name.
-   * **Experiments:** on the 13 v0.2 windows (shipped container, same rows; Slurm job 1344880), RMSE against the
+   * **Experiments:** on the 13 v0.2 windows (shipped container, same rows), RMSE against the
      training mean's 1.598: ridge on TF-IDF of the two passages 0.861 (skill 0.71, better than the mean in 13 of 13
      windows); the roaster's information (roaster, location, origin, roast, Agtron readings, price with NT$ converted,
      review month, words of the name) 1.268 with ridge (skill 0.34, 12 of 13) and 1.239 with LightGBM (skill 0.39,
@@ -171,7 +172,7 @@ defined. The licence is `None`: the review text is coffeereview.com's, scraped b
      - Their median price per gram is 33 times the others' (1.98 against 0.06), and the separate `NT_price` flag is the only hint.
    * **Background:** the definition's own exchange table has a rate for NTD (0.031), but the parser splits "NT" off
      before reading the currency, so the rate is never used. One unit per column[^2a].
-   * **Experiments:** shipped container, same rows (Slurm job 1344880): NT rows 606, all located in Taiwan.
+   * **Experiments:** shipped container, same rows: NT rows 606, all located in Taiwan.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
@@ -269,7 +270,7 @@ defined. The licence is `None`: the review text is coffeereview.com's, scraped b
      - The signal is modest (RMSE 1.26 against the mean's 1.60, on scores of 82 to 98), and LightGBM and ridge are within 0.007 RMSE of each other (LightGBM is better in 7 of 13 windows).
      - Keep it as a small roaster-side task, or retire it?
    * **Background:** Andrej's verdict note (2026-11-10): "After applying the changes assess whether this is still a valid and meaningful prediction task and raise a new discussion item." Every feature now exists before the review, so the task fits the use case. A test window's roasters were seen in training for 77% of its coffees.
-   * **Experiments:** rows from the edited definition (2,369 rows, 9 features), the 13 two-month windows (Slurm job 1376292). Skill is 1 minus MSE over the mean's MSE, averaged over the windows.
+   * **Experiments:** rows from the edited definition (2,369 rows, 9 features), the 13 two-month windows. Skill is 1 minus MSE over the mean's MSE, averaged over the windows.
 
      | Model | RMSE | Skill | Windows better than the mean | Windows better than the roaster's mean |
      |---|---|---|---|---|
@@ -330,7 +331,7 @@ defined. The licence is `None`: the review text is coffeereview.com's, scraped b
    **Resolved (2026-11-12, Andrej):** B: `feature=False` on the `Temporal(...)` declaration; `task_summary.known` ends
    "the price per gram in US dollars; the review month orders the split but is no model input."; a curation bullet
    gives the reason (it arrives with the target: the roaster decides before any review). No bullet called it a
-   feature. Record CC line. `dataset check` (Slurm 1380078): 0 errors, 0 warnings, 0 info; README: 8 features (was 9),
+   feature. Record CC line. `dataset check`: 0 errors, 0 warnings, 0 info; README: 8 features (was 9),
    `time_is_feature: false`, the 13 windows unchanged (train 1,211 to 2,315 rows, test 54 to 115). Not rebuilt. It
    needs the `Temporal(..., feature=False)` framework change, uncommitted in the working copy.
 

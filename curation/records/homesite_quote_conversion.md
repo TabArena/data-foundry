@@ -64,26 +64,26 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after splitting by quote date (the data is dated and the use case scores new quotes) and two small cleanups; the kept status-like field pair (99.3-99.8% vs 0.1% buyers inside one branch) stays under LEAK-38 unless Andrej drops it. Priority 3: gap 1, use case 1, source 0, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after splitting by quote date (the data is dated and the use case scores new quotes) and two small cleanups; the kept status-like field pair (99.3-99.8% vs 0.1% buyers inside one branch) stays under LEAK-38 unless Andrej drops it. Priority 3: gap 1, use case 1, source 0, shape 1, risk -1.
 
-CC (2026-11-11, Andrej): `PropertyField37` and `PersonalField12` dropped (review page issue 1, B): "There is no way that it is possible to predict a task like that with such a precision. We can use common sense on that to justify the decision."
+CC (2026-11-11, Andrej): `PropertyField37` and `PersonalField12` dropped (Review issue 1, B): "There is no way that it is possible to predict a task like that with such a precision. We can use common sense on that to justify the decision."
 - With `PropertyField37` = Y, codes 1 to 3 of `PersonalField12` converted at 99.3% to 99.8% (19,934 quotes) and code 5 at 0.14% (54,769); no field known when a quote is issued tells a customer's purchase that precisely, so the pair is treated as recorded after the decision (LEAK-10).
 - Not kept under LEAK-38: its rule keeps untestable fields, but a near-certain outcome inside a large branch is the test here; the rule's wording is a separate question (the Review).
 - Untuned LightGBM, 3 random folds: ROC AUC 0.965 with the pair, 0.952 without (the 0.915 of 2026-10-01 is reached only when `PersonalField9` and `PersonalField10A/B` go too: `PersonalField9` = 3 marks the same 54,785 quotes as code 5; open as Review issue 4).
 - `fit_reason` and the curation note rewritten; `dataset check`: 0 errors, the 2 warnings of issue 3. Not built.
 
-CC (2026-11-11, Andrej): review page marks:
-- `year` 2015, as the definition has it (field mark): the competition launched in November 2015.
+CC (2026-11-11, Andrej): decisions:
+- `year` 2015, as the definition has it: the competition launched in November 2015.
 - `PersonalField9`, `PersonalField10A` and `PersonalField10B` dropped with the pair (issue 4, B): `PersonalField9` = 3 marks the same 54,785 non-buyers (0.14%) as code 5, and `PersonalField10A/B` are missing on exactly these rows; ROC AUC 0.916 without the five (untuned LightGBM, 3 random folds).
 - `PropertyField6` (0 in every row) dropped, the blank level of `GeographicField63` (2 quotes) set to missing, the twelve 25-or-missing presence flags accepted in `accepted_check_warnings` (issue 3, B); `dataset check`: 0 errors, 0 warnings.
 - LEAK-38 amended with a clause (issue 5, A): a field that fixes a person's later decision at near-certainty inside a large group is a measured mechanism, so LEAK-10 applies; homesite moves to its dropped cases, with a LEAK-10 mechanisms row. The rule's other kept fields (african_credit_scoring_challenge, medical_facility_operational_data, tunisian_fraud_detection_challenge, sendy_logistics_challenge) show no such group and stay.
 
-CC (2026-11-11, Andrej): split by quote date, no gap (review page issue 2, b, and the reply on the gap):
+CC (2026-11-11, Andrej): split by quote date, no gap (Review issue 2, b, and the reply on the gap):
 - Nine monthly windows back from May 2015, each trained on every earlier quote (smallest training side 184,261 quotes, 70.7%); `required_split` Temporal (NON-IID), tag Non-IID (Temporal) in place of Larger IID Data.
 - Why not random, as in the competition: Homesite scores the quotes it issues next and conversion drifts (15.3% to 19.9% a month); the random folds score 0.008 above the windows' mean (untuned LightGBM, before the drops), nearly all of it from the test months themselves.
 - No gap: the last weekdays convert as before (18 May 2015: 19.3%) and the source names no horizon; a 7-day gap moves the mean ROC AUC from 0.9043 to 0.9040, 30 days to 0.9025.
 
-CC (2026-11-11, Andrej): field set decided afresh (review page issue 6, D) and `SalesField5` kept (issue 7, A):
+CC (2026-11-11, Andrej): field set decided afresh (Review issue 6, D) and `SalesField5` kept (issue 7, A):
 - `PersonalField2` and `PersonalField13` dropped: after the five fields above, `PersonalField1` = 1 with `PersonalField2` = 0 still marked 7,266 quotes at 98.0% bought, and `PersonalField13` = 1 marked 2,092 at 97.8%; the fewest fields that leave no group of 300 quotes at 95% or more (a depth-6 tree) go, and `PersonalField1`, graded on its own (21.0% against 12.9%), stays. Mean ROC AUC over the nine windows 0.904 to 0.898 (untuned LightGBM).
 - Why not more: the near-zero side (66,506 quotes, 12 buyers) stays, as a quote that cannot be bought is known when it is issued; on the 130,844 quotes no near-certain marker settles the model scores 0.859, within what an insurer could plausibly reach with data known at the quote.
 - `SalesField5` kept with a `Potential leak, kept on purpose:` note: the strongest field (level 5 6.7% against 30.5% to 32.5% on those quotes, stable 2013 to 2015), which may be the sales channel or a sales stage; graded, so the untestable-field rule keeps it (0.879 without it).
@@ -117,8 +117,8 @@ stopping point (issues 5 and 6). Mean ROC AUC over the windows 0.898 (untuned Li
 rebuilt.
 
 **Record judgment:** valid. The use case is the host's: estimate
-which quotes turn into purchases, to judge price changes and keep the customer mix it wants. The metric review page
-proposes log loss for this dataset; that question stays there.
+which quotes turn into purchases, to judge price changes and keep the customer mix it wants. Whether log loss suits this
+dataset better is a separate metric question.
 
 **Issues for Andrej:**
 
@@ -592,7 +592,7 @@ proposes log loss for this dataset; that question stays there.
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
      | A | Temporal on `Original_Quote_Date` (implemented) | keeps the declared split, the question unanswered | no work | the split rests on an assumption the walk could not check |
-     | B | Measure, then take the leaf it gives | Conversion rate of the last weeks before 2015-05-18 against earlier weeks | settles the question on this dataset's own numbers | a Slurm job before the split can be fixed |
+     | B | Measure, then take the leaf it gives | Conversion rate of the last weeks before 2015-05-18 against earlier weeks | settles the question on this dataset's own numbers | a model run before the split can be fixed |
 
    * **Recommendation:** A: the full record already holds this measurement, and it gives the shipped split. **Decision:** A or B?
 

@@ -65,11 +65,11 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target is an ordered category, normal < suspect < pathologic.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the expert reading is not read off any single SisPorto measure, the overlapping segments stay together in the grouped split, and the methods spread (log loss 0.205 to 0.341). Priority 3: gap 1, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the expert reading is not read off any single SisPorto measure, the overlapping segments stay together in the grouped split, and the methods spread (log loss 0.205 to 0.341). Priority 3: gap 1, use case 0, source 1, shape 1, risk -1.
 
-CC (2026-11-11, Andrej): split by exam date (issue 2 (b), "Reply (b): Windows by exam date"; issue 1 settled by it): `Date` kept as `exam_date`, the 56 segments dated 1980-01-04 (an unset clock) dropped, three nine-month windows from October 1996, July 1997 and April 1998, each trained on all earlier exams (60%, 74%, 89% of 2,070 segments); the inferred patient key leaves the frame; `DR` (constant) dropped. `required_split` Temporal (NON-IID), tag Non-IID (Temporal). The labels shift between 1996 and 1997 (suspect 14% to 1%, pathologic 4% to 13%); on the two newest windows untuned LightGBM's log loss is 1.825 and 1.608 against 0.498 and 0.444 trained on all years (Slurm job 1365902).
+CC (2026-11-11, Andrej): split by exam date (issue 2 (b), "Reply (b): Windows by exam date"; issue 1 settled by it): `Date` kept as `exam_date`, the 56 segments dated 1980-01-04 (an unset clock) dropped, three nine-month windows from October 1996, July 1997 and April 1998, each trained on all earlier exams (60%, 74%, 89% of 2,070 segments); the inferred patient key leaves the frame; `DR` (constant) dropped. `required_split` Temporal (NON-IID), tag Non-IID (Temporal). The labels shift between 1996 and 1997 (suspect 14% to 1%, pathologic 4% to 13%); on the two newest windows untuned LightGBM's log loss is 1.825 and 1.608 against 0.498 and 0.444 trained on all years.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `exam_date`, windows of 9 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `exam_date`, windows of 9 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-20, Andrej): split kept (Review issue 4, A as implemented): the three nine-month windows; the splits comment gives the reason they stay temporal (models trained on earlier exams lose 0.30-0.78 log loss on the two newest windows; suspect 35.5% of segments in early 1995 against 2.2% in 1998) and why there are not more (47 exam dates).
 
@@ -80,7 +80,7 @@ CC (2026-11-20, Andrej): split kept (Review issue 4, A as implemented): the thre
 Maternal-Fetal Medicine 2000;9(5):311-318, https://doi.org/10.1002/1520-6661(200009/10)9:5<311::AID-MFM12>3.0.CO;2-9):
 2,126 segments of 352 fetal heart-rate recordings, 22 automatic measures of each segment, and the fetal state three
 expert obstetricians agreed on (normal 78%, suspect 14%, pathologic 8%); split by a patient key inferred from the file
-names, log loss (fallback). The AI recommends shipping it as defined. Reviewed on 2026-11-04 without a panel, from the
+names until 2026-11-11, since then by exam date in three nine-month windows (issue 2), log loss (fallback). The AI recommends shipping it as defined. Reviewed on 2026-11-04 without a panel, from the
 gathered evidence (the record, the CHANGELOG, a model run on the shipped data) and one check. Validity: the
 label is the experts' reading of the trace and the features are the program's measures of the same segment, the
 inputs of that reading rather than the reading itself; the 10-class pattern label and its one-hot columns, which encode
@@ -92,14 +92,14 @@ of 0.236 to 0.341 (default logistic regression), so the methods separate. Qualit
 a heuristic the notes describe. Weighed: an established clinical program's measures with an expert label +, a grouped
 split +, a clear spread +, an inferred patient key and a 1990s Portuguese hospital -.
 
-**Main points:** all settled: shipped (issue 1), split by exam date in three nine-month windows (issues 2 and 3). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 4).
+**Main points:** all settled: shipped (issue 1), split by exam date in three nine-month windows (issues 2 and 3). Settled on 2026-11-20: the three nine-month windows stay, as the 47 exam dates allow no more (issue 4, A).
 
 **Record judgment:** valid. The record keeps the TabArena rejection markers `Wrong Domain / Source Modality` and
 `Time-series (Classification)` next to Lennart's `Yes`; the raw traces are not in the release, and the program's measures
 are what clinical software reports, so the markers read as history, not as a reason against. The house rule drops a
-constant column, so `DR` (0 in every row, bundle warning) goes at the next edit; no decision is needed. The data
+constant column, so `DR` (0 in every row, bundle warning) was dropped on 2026-11-11; no decision was needed. The data
 scouting found `jnu_ctg_fetal_wellbeing` (20,769 recordings, 2026, not verified); it is screened in its own record and
-does not change this task's validity. The metric review proposes an ordinal score on its own page.
+does not change this task's validity. Whether an ordinal score suits better is a separate metric question.
 
 **Issues for Andrej:**
 
@@ -159,7 +159,7 @@ does not change this task's validity. The metric review proposes an ordinal scor
      18% in 1998. Three windows of nine months, October 1996 to June 1997 (307 segments, 27 files), July 1997 to March
      1998 (305, 26 files) and April to June 1998 (224, 14 files), train on 60%, 74% and 89% of the dated segments.
    * **Experiments:** the 2,126 shipped segments and 22 features, untuned LightGBM and logistic regression, log loss
-     (Slurm job 1365902):
+    :
      - Shipped split by patient (10 x 3): LightGBM 0.358 (0.207 to 0.570), logistic regression 0.367.
      - The three windows, each trained on all earlier dated segments: LightGBM 1.789 (April to June 1998, the newest),
        1.570 (July 1997 to March 1998) and 0.449 (October 1996 to June 1997); logistic regression 0.768, 0.632 and
@@ -200,7 +200,7 @@ does not change this task's validity. The metric review proposes an ordinal scor
    nine-month windows from October 1996 raise untuned LightGBM's log loss to 1.825 and 1.608 on the two newest, against
    0.498 and 0.444 trained on as many segments of all years (logistic regression 0.767 and 0.659 against 0.406 and
    0.191).` The frame has no date column on A, so no warning to accept. Under either option the record gets the tags
-   `Samples: Over Time` and `Time: Dated`. Results: Slurm job 1365902.
+   `Samples: Over Time` and `Time: Dated`.
 
    [^2a]: **SPLIT-32** (Should): how the data was collected is information for the split; the record's collection
      facts and, where one fits, the definition's use-case prototype with its `Time basis:` line. **SPLIT-14** (Must):
@@ -252,7 +252,7 @@ does not change this task's validity. The metric review proposes an ordinal scor
    grouping, and `patient_id` leaves the frame. `DR` (constant) dropped as the record judgment planned. `split`,
    `changes`, `row`, `fit_reason`, curation notes and `splits_comment` rewritten. Record: `required_split` Temporal
    (NON-IID), tag `Non-IID (Temporal)`, CC line; `Samples: Over Time` and `Time: Dated` were already there.
-   `dataset check` (Slurm job 1377585): 0 errors, 2 warnings accepted with reasons (`meta_time_horizon_mismatch`: the
+   `dataset check`: 0 errors, 2 warnings accepted with reasons (`meta_time_horizon_mismatch`: the
    newest window holds 6 April to 6 June 1998 only; `splits_test_class_missing`: no suspect segment in July 1997 to
    March 1998).
 
@@ -273,7 +273,7 @@ does not change this task's validity. The metric review proposes an ordinal scor
      leaves the exams from 31 August 1996 for testing: 1,010 segments of 84 exam files. The shipped windows start in
      October 1996 and test 836 segments of 67 files. Repeating a window adds nothing: the windows are fixed and the
      models are deterministic, so repeats would only re-draw model seeds, not new test exams.
-   * **Experiments:** Slurm job 1378287, six untuned models (LightGBM, logistic regression, random forest, extra trees,
+   * **Experiments:** six untuned models (LightGBM, logistic regression, random forest, extra trees,
      HistGB, kNN). Score = mean log loss over the windows. SE = bootstrap of the test exam files within each window
      (2,000 draws). Pair swaps = share of draws in which a pair of the 6 models changes order, averaged over the 15 pairs.
 

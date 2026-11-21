@@ -97,7 +97,7 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         - The price feature is extremely messy as a result of web scrapping. We resolve this feature as real tabular data (not from a web scrapper but from the database source), would have these information stored in a more structured way. We drop coffees that are measured in "capsules" units as they exist only 8 times and seem to be strong outliers. We normalizes the price to be per grams. Moreover, we convert all currencies to USD (with a fixed rate); we ignore the temporal incorrectness this may introduce as it is most likely minimal.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-        - We drop the 2 reviews of October 2023, the scrape's partial last month (24 to 65 reviews a month in the rest of 2023; cross-dataset item of 2026-11-11, Lennart). The windows walk back from September 2023.
+        - We drop the 2 reviews of October 2023, the scrape's partial last month (24 to 65 reviews a month in the rest of 2023; Lennart, 2026-11-11). The windows walk back from September 2023.
     """
     accepted_check_warnings = {
         "meta_license_unknown": (
@@ -108,7 +108,7 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
             "`review_date` is the month the review was published, which is when the score exists, so it is declared "
             "`time_of=\"label\"` and is no input. The one-month gap stands for the roaster's submission delay: the "
             "roaster predicts at submission, weeks or months before publication, so each window trains only on "
-            "reviews published at least a month before it starts (Andrej, 2026-11-18, review issue 7, B). The gap is "
+            "reviews published at least a month before it starts (Andrej, 2026-11-18). The gap is "
             "the publication delay the split cannot read off the dates, not a second copy of it."
         ),
         "splits_below_target": (
@@ -154,7 +154,7 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         df = raw
         # Ensure date time (parsed here: the sort at the end needs the date)
         df["review_date"] = pd.to_datetime(df["review_date"], format="%B %Y")
-        # The scrape's partial last month: October 2023 holds 2 reviews (cross-dataset item of 2026-11-11).
+        # The scrape's partial last month: October 2023 holds 2 reviews (2026-11-11).
         df = df.loc[df["review_date"] < "2023-10-01"].copy()
         # Parse argton
         df[["agtron_lower", "agtron_upper"]] = df["agtron"].str.split("/", expand=True)

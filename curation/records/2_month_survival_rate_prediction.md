@@ -11,7 +11,7 @@ priority: 3
 decision_markers:
 - Outdated
 tags:
-- New IID
+- Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Later'
@@ -90,9 +90,9 @@ CC (2026-11-19, Andrej): three half-year windows on the rebuilt entry date with 
 
 ## Review
 
-**Outcome:** added. Reopened by the full-information split check of 2026-11-18: the shipped split disagreed with the split tree; the issue below holds the decision.
+**Outcome:** added. Reopened by the full-information split check of 2026-11-18: the shipped split disagreed with the split tree; issue 3 is resolved (B, 2026-11-19): three half-year windows on the rebuilt entry date with a 60-day gap.
 
-**Main points:** Split on the recovered entry date instead of random patients?
+**Main points:** Split on the recovered entry date instead of random patients: yes (issue 3, B).
 
 **Issues for Andrej:**
 

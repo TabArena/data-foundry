@@ -75,7 +75,7 @@ CC (2026-11-08, Lennart): issue 4, A (as implemented): the month of the last cal
 
 CC (2026-11-08, Lennart, in chat): the protocol line for the newest window's recurring clients (703 test records whose later record in the same window gives the label away; no use of other test rows) is enough ("that sounds valid to me"); the five windows stay as they are.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `time_index`, up to 5 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `time_index`, up to 5 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-20, Andrej): Review issue 6, B: `balance` is one reading per client (linked records share it to the euro in 17.1% of pairs against 1.2% for different clients; no excess of slightly changed values); its date is unknown, but logistic regression loses only 0.002 to 0.003 ROC AUC without it whether or not the client has a later record, so it stays with that note (LEAK-10).
 
@@ -97,9 +97,9 @@ Quality: CLEAN-10 applied (`job`'s "unknown" missing; the reason for `pdays` = -
 
 Weighed: source + (a paper with a stated metric), use case + (a real decision), split + (by time, as the source evaluates), signal - on the windows.
 
-Left for you: nothing. Settled on 2026-11-08: issues 1, 2, 3 and 4 and the `year` field (the record now takes the definition's 2012, UCI's release, in place of 2011, the ESM paper, which only analysed the data).
+Left for you: nothing. Settled on 2026-11-20: issues 5 and 6. Settled on 2026-11-08: issues 1, 2, 3 and 4 and the `year` field (the record now takes the definition's 2012, UCI's release, in place of 2011, the ESM paper, which only analysed the data).
 
-**Main points:** Open: none. Settled on 2026-11-08: the month of the last call stays out of the inputs (issue 4); split by time on the file's date order, reversing your call that kept the random split (issue 1); before the campaign, so `campaign` is dropped (issue 2); the exact copies kept with a note (issue 3); the record's `year` set to 2012. Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 5).
+**Main points:** Open: none. Settled on 2026-11-08: the month of the last call stays out of the inputs (issue 4); split by time on the file's date order, reversing your call that kept the random split (issue 1); before the campaign, so `campaign` is dropped (issue 2); the exact copies kept with a note (issue 3); the record's `year` set to 2012. Settled on 2026-11-20: ten windows that follow the calling (four campaign periods, six calendar quarters of the trickle), with the day's call count `calls_that_day` as an input (issue 5, B), and the `balance` note (issue 6, B).
 
 **Record judgment:** valid, keep (`Yes`), after changes. The record's `year` (2011, the ESM paper, which only analysed the data) disagreed with the definition's 2012 (UCI's release, donated 2012-02-13); it was set to 2012 on 2026-11-08 (Lennart, `update`). Its `required_split` is `Temporal (NON-IID)`, with the tag `Non-IID (Temporal)`, since 2026-11-08 (issue 1). Its comment that the features "seem to be time-invariant" is superseded by an Assessment line of 2026-11-06 giving the measured shift by year; a second line of that date records this panel.
 

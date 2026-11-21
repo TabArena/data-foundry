@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cardiotocography
 container_format: 2
-checksum: v2:8c200ef0e57e900664c8938a7098d3dfcdc12473898fb410b0fb77c03135e8aa
+checksum: v2:0ed82eae740de2aadfe3a61a9a9f4b896f991a605f9ca91fba96f52347b81bbd
 build:
   uuid: 01a111fc-7d1e-7b12-8cc7-298d2fc12820
   checksum: v2:732dddb0e814a5736c664898ca5254d54ea242cee222a20e2e5a126a2636a504
@@ -63,8 +63,8 @@ bundle_checks:
   accepted:
     splits_below_target: 'Three of the thirty windows an IID split of this size would
       get: the exams fall on 47 dates, so finer windows would test single days, and
-      these reuse the same exams without steadying the score (issue 3, 2026-11-11;
-      Andrej, 2026-11-20, review issue 4, A).'
+      these reuse the same exams without steadying the score (2026-11-11; Andrej,
+      2026-11-20).'
     meta_time_horizon_mismatch: The exams fall on 47 dates and the data ends on 1998-06-06,
       so the newest nine-month window (from 1998-04-01) holds exams of 6 April to
       6 June 1998 only; the windows are nine calendar months.
@@ -82,7 +82,7 @@ decisions: []
 
 Multiclass classification of `NSP`, scored with `log_loss` on temporal splits by `exam_date`. 2,070 rows and 22 features. Source: UCI (2010).
 
-Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8c200ef0e57e900664c8938a7098d3dfcdc12473898fb410b0fb77c03135e8aa`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0ed82eae740de2aadfe3a61a9a9f4b896f991a605f9ca91fba96f52347b81bbd`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -111,6 +111,7 @@ Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` 
 
 - The curation record, with the triage decision, its sources and the review: [`curation/records/cardiotocography.md`](../../../../curation/records/cardiotocography.md)
 - The original source: <https://doi.org/10.24432/C51S4N>
+- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
 
@@ -198,7 +199,7 @@ The first 5 of 2,070 rows of the final frame (the oldest rows: the frame is sort
 We use the data from UCI and the 3 class problem of predicting NSP as it is more medical relevant.
 
 - Each row is a segment (sample `b` to `e`) of one exam file, and 1,706 of the 1,774 consecutive segment pairs within a file overlap, so the rows of a file must stay together. Each file has one exam date, so a split by date keeps them together.
-- Split by exam date (2026-11-11, Andrej; SPLIT-32, SPLIT-14): the "Raw Data" sheet dates every exam, January 1995 to June 1998, and the labels shift between 1996 and 1997 (suspect 14% to 1% of the segments, pathologic 4% to 13%). Monitoring software meets later exams, so we keep `Date` as `exam_date` and test three nine-month windows (details in the splits comment). Trained on earlier exams, untuned LightGBM's log loss on the two newest windows is 1.825 and 1.608, against 0.498 and 0.444 when trained on as many segments of all years (Slurm job 1365902). Whether the shift lies in the experts' reading, in which exams were sent, or in the program's measures is not documented.
+- Split by exam date (2026-11-11, Andrej; SPLIT-32, SPLIT-14): the "Raw Data" sheet dates every exam, January 1995 to June 1998, and the labels shift between 1996 and 1997 (suspect 14% to 1% of the segments, pathologic 4% to 13%). Monitoring software meets later exams, so we keep `Date` as `exam_date` and test three nine-month windows (details in the splits comment). Trained on earlier exams, untuned LightGBM's log loss on the two newest windows is 1.825 and 1.608, against 0.498 and 0.444 when trained on as many segments of all years. Whether the shift lies in the experts' reading, in which exams were sent, or in the program's measures is not documented.
 - 56 segments of 17 files (name stems `Mrsa`, `Moar`, `Mag`, `Caft`, `Cs`) carry the date 1980-01-04, an unset clock; we drop them, since they have no usable date.
 - The earlier split by a patient key inferred from the file names (176 keys for 352 files) is replaced by the date split, and the key leaves the frame. An earlier exam of a test segment's patient stem is in training for 20% of the oldest window's segments and 0% to 1% of the other two; files merged under one stem agree on the label no more than chance (55% against 57%), so this leaks nothing.
 - We drop the start and end index of the segment within the recording, which describe the file, not the fetal state.
@@ -215,9 +216,9 @@ We use the data from UCI and the 3 class problem of predicting NSP as it is more
 
 ## Splits
 
-Monitoring software trained on past exams meets later ones: three test windows of nine months by exam date, newest first, April to June 1998 (224 segments of 14 files; normal 182, suspect 5, pathologic 37), July 1997 to March 1998 (305 segments of 26 files; normal 255, suspect 0, pathologic 50) and October 1996 to June 1997 (307 segments of 27 files; normal 252, suspect 46, pathologic 9). Each trains on all earlier dated exams, 89%, 74% and 60% of the 2,070 segments, without a gap: the label is the experts' reading of the stored trace, available when the exam is classified. The exams fall on 47 dates; the windows hold 9, 9 and 4 of them, and the newest ends early, because the data ends on 1998-06-06. The labels shift between 1996 and 1997 (suspect 14% to 1%, pathologic 4% to 13%), so the newest windows hold few or no suspect segments and largely test the shift: untuned LightGBM's log loss is 1.825 and 1.608 on the two newest windows, against 0.498 and 0.444 trained on as many segments of all years (Slurm job 1365902). An exam's segments overlap and share its date, so they stay on one side.
+Monitoring software trained on past exams meets later ones: three test windows of nine months by exam date, newest first, April to June 1998 (224 segments of 14 files; normal 182, suspect 5, pathologic 37), July 1997 to March 1998 (305 segments of 26 files; normal 255, suspect 0, pathologic 50) and October 1996 to June 1997 (307 segments of 27 files; normal 252, suspect 46, pathologic 9). Each trains on all earlier dated exams, 89%, 74% and 60% of the 2,070 segments, without a gap: the label is the experts' reading of the stored trace, available when the exam is classified. The exams fall on 47 dates; the windows hold 9, 9 and 4 of them, and the newest ends early, because the data ends on 1998-06-06. The labels shift between 1996 and 1997 (suspect 14% to 1%, pathologic 4% to 13%), so the newest windows hold few or no suspect segments and largely test the shift: untuned LightGBM's log loss is 1.825 and 1.608 on the two newest windows, against 0.498 and 0.444 trained on as many segments of all years. An exam's segments overlap and share its date, so they stay on one side.
 
-Three of the thirty windows an IID split of this size would get: the exams fall on 47 dates, so finer windows would test single days, and these reuse the same exams without steadying the score (issue 3, 2026-11-11). The split stays temporal because the relation is measured not flat: in the stationary-relation test (2026-11-19, log loss, 5 seeds, exams kept whole), models trained on earlier exams lose 0.30 to 0.78 log loss on the two newest windows against models trained on as many segments of the window itself (LightGBM +0.777 ± 0.148 and +0.305 ± 0.123, Kumo-Tabular +0.759 ± 0.181 and +0.201 ± 0.129, floors 0.001-0.003), and the label mix moves sixteenfold (suspect 35.5% of the segments in January to March 1995 against 2.2% in April to June 1998), so no random or grouped folds could stand for the windows (Andrej, 2026-11-20, review issue 4, A).
+Three of the thirty windows an IID split of this size would get: the exams fall on 47 dates, so finer windows would test single days, and these reuse the same exams without steadying the score (2026-11-11). The split stays temporal because the relation is measured not flat: in the stationary-relation test (2026-11-19, log loss, 5 seeds, exams kept whole), models trained on earlier exams lose 0.30 to 0.78 log loss on the two newest windows against models trained on as many segments of the window itself (LightGBM +0.777 ± 0.148 and +0.305 ± 0.123, Kumo-Tabular +0.759 ± 0.181 and +0.201 ± 0.129, floors 0.001-0.003), and the label mix moves sixteenfold (suspect 35.5% of the segments in January to March 1995 against 2.2% in April to June 1998), so no random or grouped folds could stand for the windows (Andrej, 2026-11-20).
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 1,234 to 1,846 rows, test 224 to 307 rows. Prediction horizon: 9 months.
 
@@ -247,7 +248,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 Accepted on purpose:
 
-- `splits_below_target`: Three of the thirty windows an IID split of this size would get: the exams fall on 47 dates, so finer windows would test single days, and these reuse the same exams without steadying the score (issue 3, 2026-11-11; Andrej, 2026-11-20, review issue 4, A).
+- `splits_below_target`: Three of the thirty windows an IID split of this size would get: the exams fall on 47 dates, so finer windows would test single days, and these reuse the same exams without steadying the score (2026-11-11; Andrej, 2026-11-20).
 - `meta_time_horizon_mismatch`: The exams fall on 47 dates and the data ends on 1998-06-06, so the newest nine-month window (from 1998-04-01) holds exams of 6 April to 6 June 1998 only; the windows are nine calendar months.
 - `splits_test_class_missing`: The July 1997 to March 1998 window holds no suspect segment (normal 255, pathologic 50): the experts' suspect share falls from 14% of the segments in 1996 to 1% in 1997, the shift the date split is chosen to test (2026-11-11, Andrej). Every train side holds all three classes, and log loss is defined on the classes a fold holds.
 
@@ -356,4 +357,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8c200ef0e57e900664c8938a7098d3dfcdc12473898fb410b0fb77c03135e8aa` |
+| stale | yes: the definition now gives checksum `v2:0ed82eae740de2aadfe3a61a9a9f4b896f991a605f9ca91fba96f52347b81bbd` |

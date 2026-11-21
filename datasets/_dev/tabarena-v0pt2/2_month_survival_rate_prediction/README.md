@@ -74,13 +74,13 @@ Not built yet. The current definition gives checksum `v2:40f407507e778cf81b63e15
 
 **Predicted.** Whether the patient dies within 60 days of study entry (33% do).
 
-**Known at prediction time.** Age, sex, race, diagnosis, other illnesses, days in hospital before study entry, and the day-3 vital signs and lab values.
+**Known at prediction time.** Age, sex, race, diagnosis, other illnesses, days in hospital before study entry, and the day-3 vital signs and lab values; the rebuilt entry date orders the split but is no model input.
 
-**What the test data stands for.** Random patients, so the test data stands for new patients of the same hospitals and years.
+**What the test data stands for.** Three half-year windows of study entry, from the second half of 1992 to January 1994, each trained on the patients who entered at least 60 days earlier, when their outcome was known. The file has no entry date; it is rebuilt from the file order and the survivors' follow-up.
 
 **Our changes to the source.** In the public file the day-3 measurements of most phase II patients belong to other patients; we moved them back to their own rows with the study's archive. We drop the earlier models' scores and, since the task is the objective estimate set beside the physician's, the physicians' own estimates and the DNR orders.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is recorded by day 3 and the outcome follows within two months, as when the model is used. The care is that of 1989-1994.
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is recorded by day 3 and the outcome follows within two months, as when the model is used, and each window trains only on outcomes known when it starts. The care is that of 1989-1994, and the entry date is rebuilt, not recorded.
 
 ## Files in this folder
 
@@ -199,7 +199,26 @@ We start with support2.csv from the Vanderbilt Biostatistics data repository (hb
 
 - Prediction point: the end of study day 3, as in the SUPPORT model ("11 physiologic measures recorded on day 3 after study entry", Knaus et al. 1995, abstract).
 - Physiology restored. In most phase II rows the day-3 physiology block (meanbp to urine, 14 columns) belongs to another patient: crea against aps, the APACHE III score of the same values, has Spearman 0.52 in phase I and 0.05 in phase II. The study data, ICPSR 2957 V2 parts 9 and 10, show where each block is. `_link` matches each row to its ICPSR patient on ten columns both files hold on the patient's row (all 9,105 match once, and the 6,201 deaths agree to the day). `_source_rows` finds the block that holds the patient's ICPSR day-3 values, with ICPSR's normal-value fills set missing as in support2: phase I rows hold their own and 431 of the 4,804 phase II rows do; for 4,102 others the block sits 1 to 90 rows further down, for 181 further still (up to 1,094 rows) and for 90 above. `_restored` moves each block back. Every value comes from support2.csv; ICPSR only decides the row and is not shipped. Restored, phase II matches phase I (crea against aps 0.49).
-- Both phases, IID split over patients: the use case is new patients of the same hospitals and years. The phase II intervention "failed to improve care or patient outcomes" (SUPPORT Principal Investigators 1995, JAMA, abstract). The entry date can be recovered (a survivor entered on 31 Dec 1994 minus d.time, and within each of the file's ten blocks the rows are in entry order, Spearman 1.000), but it changes no score (LightGBM ROC AUC, review panel 2026-10-20): IID 0.818 (9 splits), three temporal windows over phase II 0.824, phase I to phase II 0.820. The ten blocks form five phase I / phase II pairs, probably the hospitals (the public ICPSR file blanks the site); leaving one pair out scores 0.815 (0.793-0.831), so we do not group by them.
+- Both phases, split by the rebuilt entry date (Andrej, 2026-11-19, decision B; it replaces the IID split over
+  patients and its `ForcedIIDFromTemporal` tag). The use case is new patients after those the model learned
+  from; the phase II intervention "failed to improve care or patient outcomes" (SUPPORT Principal
+  Investigators 1995, JAMA, abstract), so both phases are one population. The ten blocks of the file form five
+  phase I / phase II pairs, probably the hospitals (the public ICPSR file blanks the site); leaving one pair
+  out scored ROC AUC 0.815 (0.793-0.831) against 0.818 for random patients (LightGBM, review panel
+  2026-10-20), so we do not group by them.
+- `entry_date`, the study-entry date rebuilt by `_entry_dates` (exact for survivors, end of follow-up minus days followed; deaths placed between them; the file holds no date).
+  Rebuilt order: file position within each of the ten blocks, Spearman 1.000 with the survivors' entry dates
+  (31 Dec 1994 minus d.time: support2 follows every patient to the end of 1994); deaths placed between
+  neighbouring survivors (the two survivors either side a median 4 days apart). Eight half-years, 934 to 1,284 patients each (the first holds
+  June 1989, the last January 1994), from 1989-06-11 to 1994-01-21; patients entering in the 60 days before a
+  test period are left out of its training. It orders and splits the rows and is no model input
+  (`Temporal(..., time_of="label")`): the date is our reconstruction, not a field of the release.
+- What the windows cost, measured (stationary-relation test, 2026-11-19): Kumo-Tabular is flat on every
+  half-year; pooled over the newest three, forward training scores +0.0002 ± 0.0011 ROC AUC against training
+  on contemporaneous patients (two SD 0.87 of the noise floor), LightGBM +0.0024 ± 0.0030. The test ran on
+  the shipped features without the 11 physiology columns (the ICPSR files that restore phase II were not at
+  hand); on phase I's three half-years with physiology it is flat as well. The relation does not drift, so
+  the windows cost little against random patients while testing the use case's order.
 - Target `death_within_2_months`: `death` = 1 and `d.time` < 60, the cut-off of the source's sfdm2 level 5. Survivors were followed at least 344 days, so no label is censored. 2,993 of 8,967 (33.4%).
 - We drop the 138 patients who died on day 3: they are dead at the prediction point, and their values include values at death (heart rate 0 in 38% of them).
 - Dropped: the outputs of earlier models, sps, surv2m, surv6m and aps (supportdesc also advises against them).
@@ -218,7 +237,24 @@ We start with support2.csv from the Vanderbilt Biostatistics data repository (hb
 
 ## Splits
 
-Default splits.
+Three test windows of study entry, newest first: the second half of 1993 with January 1994 (1,216 patients),
+the first half of 1993 (1,247) and the second half of 1992 (1,099). Each trains on every patient who entered
+60 days or more before the window starts: 82%, 69% and 56% of the 8,967 patients (Andrej, 2026-11-19,
+decision B).
+The file has no entry date. Within each of its ten blocks the rows are in entry order: the survivors' entry
+dates (31 Dec 1994 minus d.time) rise with the file position, Spearman 1.000 in every block, and each death is
+dated between its neighbouring survivors (the two survivors either side a median 4 days apart). The eight half-years hold 934 to 1,284
+patients each.
+Gap: the label, death within 60 days of entry, is known 60 days after entry, so the patients who entered in
+the 60 days before a window are in neither side of it (325 to 382 per window): training holds only outcomes
+known when the window starts.
+Three windows against the nine splits that 8,967 patients would get at random (SPLIT-33): a fourth, the first
+half of 1992, would train only on phase I (4,232 patients, 47%), below the floor of half the data, and the
+study enrolled no one from mid-1991 to January 1992.
+What the windows cost: the stationary-relation test finds the relation flat on every half-year (Kumo-Tabular,
+pooled over these three windows +0.0002 ± 0.0011 ROC AUC from forward training, two SD 0.87 of the noise
+floor; LightGBM +0.0024 ± 0.0030), so testing later patients costs little against random patients.
+Until 2026-11-19 the split was random patients (`ForcedIIDFromTemporal`).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 5,978 rows, test 2,989 rows.
 

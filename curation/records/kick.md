@@ -77,16 +77,16 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: Size stays unorde
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after one change: drop the four MMR guide prices looked up 'as of current day' (after the outcome), which equal the purchase-time price for 23% of bad buys vs 10% of good ones and add no score. Priority 3: gap 0, use case 1, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after one change: drop the four MMR guide prices looked up 'as of current day' (after the outcome), which equal the purchase-time price for 23% of bad buys vs 10% of good ones and add no score. Priority 3: gap 0, use case 1, source 1, shape 1, risk -1.
 
-CC (2026-11-10, Andrej): decided on the BeyondArena v0.2 review page; nothing is left open.
+CC (2026-11-10, Andrej): decided; nothing is left open.
 
 **Changes made** (the input data changed: 28 to 24 features, the same 72,983 rows; new splits):
 
 1. **Problem:** the four MMR guide prices "as of current day" (the Manheim Market Report's auction and retail values) were looked up when the data was pulled, after every purchase and its outcome. The current auction price equals the purchase-time price for 23.0% of bad buys against 10.4% of good ones. **Change:** the four dropped; the four purchase-time prices stay; `Andrej` added to `checked_by`.
 2. **Problem:** the split had no gap, although a kick (a car returned to the auction) is known only after the auction's return window, 10 calendar days in Manheim's arbitration guide. Its oldest window also trained on 48.7% of the cars. **Change:** 9 test windows of 35 days, each trained on the purchases made more than 14 days before it starts (the 10 days plus a margin). Every training side holds 52.6% or more; the test windows hold 3,028 to 4,515 cars, 33,054 in all.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `PurchDate`, windows of 35 days, up to 9 windows while training keeps 50% of the rows, gap 14 days) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `PurchDate`, windows of 35 days, up to 9 windows while training keeps 50% of the rows, gap 14 days) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -111,7 +111,7 @@ with a 14-day gap (2), both on 2026-11-10.
 **Record judgment:** valid, ship after the change. Every point of the record is settled in the definition: the split
 (2026-10-01), the four post-outcome fields (2026-10-22), the metric (the competition's Gini, which ranks models as ROC
 AUC does), the 0/1 flag and the unordered `Size` (2026-11-01). The newest-month check: bad-buy rate per purchase month
-from the shipped container's 72,983 rows (Slurm job 1344878), 0.076 to 0.158 by month, 0.107 to 0.152 per v0.2
+from the shipped container's 72,983 rows, 0.076 to 0.158 by month, 0.107 to 0.152 per v0.2
 window, newest window 0.147, so no sign that late kicks were still missing at the snapshot. The licence `Public
 Domain` is the record's assumption for an old competition without stated terms (a note only). Nothing in the record
 disagrees with the definition.
@@ -130,7 +130,7 @@ disagrees with the definition.
      after the outcome goes when it may carry a gain, and stays with a note only when the traced part shows none[^1a].
    * **Effect on the task:** a model that compares the two prices can tell part of the bad buys by a lookup that a
      buyer at the auction does not have.
-   * **Experiments:** shipped container, v0.2 columns, LightGBM on the 9 v0.2-style windows (Slurm job 1344953):
+   * **Experiments:** shipped container, v0.2 columns, LightGBM on the 9 v0.2-style windows:
      ROC AUC 0.660 with the current prices and 0.660 without, so they add nothing a tree finds; their equality with
      the purchase-time price is the pattern (alone it would give about 0.56). The ratio of current to purchase-time
      price ranks bad buys at 0.51 overall and 0.32 to 0.65 by month.

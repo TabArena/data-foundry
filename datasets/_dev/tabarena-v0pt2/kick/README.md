@@ -285,7 +285,7 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 1 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 

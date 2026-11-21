@@ -120,7 +120,7 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
           ten value triples, each Portugal's published figures of one year (INE, via PORDATA, the source's macro
           data), so `enrolment_year` (2008 to 2017) is mapped from `Unemployment_rate` and checked against the other
           two. It is the time column of the splits; it adds no information the triple does not already give.
-        - We drop `Tuition_fees_up_to_date` and `Debtor` (2026-11-12, Andrej, review issue 1 B): the source gives no
+        - We drop `Tuition_fees_up_to_date` and `Debtor` (2026-11-12, Andrej): the source gives no
           recording date (the data paper lists them as socioeconomic data from the student-records file), arrears
           cannot exist at enrolment, and the pattern fits one status read at the file's extract. 86.6% of the 528
           students behind on fees dropped out, against 24.7% of the others (debtors: 62.0% of 503, against 28.3%);
@@ -154,13 +154,12 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
         (2014), +0.02 to +0.14 above training on as many students drawn from all cohorts; the random split this
         replaces flattered log loss by that much. Four of the nine windows an IID split of this size would get: one
         window is one cohort, and with the gap the label needs, the 2013 cohort would train on 43.9% of the students
-        (Andrej, 2026-11-19, review issue 4, A).
+        (Andrej, 2026-11-19).
     """
     accepted_check_warnings = {
         "splits_below_target": (
             "Four of the nine windows an IID split of this size would get: one window is one cohort, and with the gap "
-            "the label needs, the 2013 cohort would train on 43.9% of the students (Andrej, 2026-11-19, review issue "
-            "4, A)."
+            "the label needs, the 2013 cohort would train on 43.9% of the students (Andrej, 2026-11-19)."
         ),
     }
 
