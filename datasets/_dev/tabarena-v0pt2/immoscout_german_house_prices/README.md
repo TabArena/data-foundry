@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: immoscout_german_house_prices
 container_format: 2
-checksum: v2:b40bafeacfd9acd099ad8b2fa75ef62e1227c57b04e0d77db3e08bf07730f5b9
+checksum: v2:cb5a77f245239d9bff75597cf119f32f9e102a2aad7bcf7fea64e90ad6190dea
 build:
   uuid: 01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9
   checksum: v2:e91f49bdb50c1cd545a4e8d63445b34d9d9656af0c38c65cf81d41e18ec5054d
@@ -70,7 +70,7 @@ decisions: []
 
 Regression of `LogPrice`, scored with `rmsle` on IID splits. 10,203 rows and 23 features. Source: Kaggle (2020).
 
-Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b40bafeacfd9acd099ad8b2fa75ef62e1227c57b04e0d77db3e08bf07730f5b9`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cb5a77f245239d9bff75597cf119f32f9e102a2aad7bcf7fea64e90ad6190dea`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -132,7 +132,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2020 |
 | domain | business & marketing |
 | license |  |
-| data_tags | IID |
+| data_tags | IID, Retrospective |
 | reference | Shritech2020GermanHousingPricePrediction, OpenML43342Dataset |
 | copy: OpenML 43342, which we download | OpenML (2022): https://www.openml.org/d/43342; license: CC BY-NC-SA 4.0 |
 | rows x columns | 10,203 x 24 |
@@ -233,7 +233,7 @@ We treat this as an IID time-independent task, because the prices is not sold pr
 - We drop all rows where the living space is less than 10 (in Germany, this would likely not be enough living space for a real house, and thus might be a data error.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-- Time basis: Snapshot: one scrape of the houses live on ImmoScout24 on 14 July 2020; the asking prices of that
+- Time basis: Retrospective: one scrape of the houses live on ImmoScout24 on 14 July 2020; the asking prices of that
   day, set at listing and possibly lowered since, without listing dates; the use case prices a house against
   the same day's market. Not tested: prices after July 2020.
 
@@ -257,7 +257,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 Accepted on purpose:
@@ -406,4 +406,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b40bafeacfd9acd099ad8b2fa75ef62e1227c57b04e0d77db3e08bf07730f5b9` |
+| stale | yes: the definition now gives checksum `v2:cb5a77f245239d9bff75597cf119f32f9e102a2aad7bcf7fea64e90ad6190dea` |

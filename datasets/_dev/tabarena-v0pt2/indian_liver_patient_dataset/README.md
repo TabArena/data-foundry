@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: indian_liver_patient_dataset
 container_format: 2
-checksum: v2:612156092687841205db38ee6a168cf329805d7fd81cf24630fa681b0d3b5ccf
+checksum: v2:c001df30ecd1bfa541c5ca2d9ed16fafd393f377417432a9dba83220d943a446
 build:
   uuid: 01a111fc-e244-78f8-9686-1c2a0bf3b820
   checksum: v2:e7039f8157260832229136963282d84e47ed2500e1bf7067d3d6f1b20c7e8a85
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `Selector`, scored with `roc_auc` on IID splits. 570 rows and 10 features. Source: UCI (2012).
 
-Built as `01a111fc-e244-78f8-9686-1c2a0bf3b820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:612156092687841205db38ee6a168cf329805d7fd81cf24630fa681b0d3b5ccf`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e244-78f8-9686-1c2a0bf3b820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c001df30ecd1bfa541c5ca2d9ed16fafd393f377417432a9dba83220d943a446`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -125,7 +125,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2012 |
 | domain | medical & healthcare |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | IID, ForcedIIDFromTemporal |
 | reference | ramana2012critical |
 | rows x columns | 570 x 11 |
 | task.target | Selector |
@@ -197,9 +197,11 @@ The first 5 of 570 rows of the final frame (random rows: the frame is shuffled).
 - Time basis: ForcedIIDFromTemporal: patients seen over a period the sources do not state; the file keeps no
   date, so random patients stand in for the patients to come. The file order carries some structure (lag-1
   correlation of 0.10 to 0.26 for age and the lab values, none for the label: 0.03) but no cost: held out by
-  file position (contiguous 5-fold, or the last third after the first two) ROC AUC stays within the spread
-  of random splits for logistic regression, random forest and TabPFN 3.5. A dated release would test later
-  patients and whether the two groups were collected in different periods, which this split cannot.
+  file position (contiguous 5-fold, or the last third after the first two) ROC AUC stays within the spread of
+  random splits for logistic regression, random forest and TabPFN 3.5. A dated release would test later patients
+  and whether the two groups were collected in different periods, which this split cannot. Not taken as
+  stationary (Andrej, 2026-11-18): The physiology is stable but the label and the group collection are
+  undocumented, and a flat file order is not a dated measurement; mixed.
 - Repeated records (2026-11-11, LEAK-18, LEAK-19): 13 records appear twice, equal in age, sex and all eight
   blood tests and with the same label; each pair sits on adjacent rows of the UCI file (rows 19/20 to 201/202),
   and none of 500 tables with each column shuffled on its own held a repeated row. They are one record
@@ -289,7 +291,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -356,4 +358,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:612156092687841205db38ee6a168cf329805d7fd81cf24630fa681b0d3b5ccf` |
+| stale | yes: the definition now gives checksum `v2:c001df30ecd1bfa541c5ca2d9ed16fafd393f377417432a9dba83220d943a446` |

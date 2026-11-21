@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: forensic_glass_identification
 container_format: 2
-checksum: v2:6138f3d456c8a22d415ba2dae8b88f5f04204f2410770395d0b8497bb1af2c38
+checksum: v2:515c95e963d35721df2a34aa4583fd2be7597ddeccf6028cd8aabe92e3bc59e3
 build:
   uuid: 01a111fc-a27d-7f21-999e-eb82f18aaf21
   checksum: v2:de970f5266371fcd98c9a0f2deba0e93336a1f4adbc1ecf3539b8445cc24c18b
@@ -67,7 +67,7 @@ decisions: []
 
 Multiclass classification of `Type_of_glass`, scored with `log_loss` on IID splits. 212 rows and 9 features. Source: UCI (1987).
 
-Built as `01a111fc-a27d-7f21-999e-eb82f18aaf21` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6138f3d456c8a22d415ba2dae8b88f5f04204f2410770395d0b8497bb1af2c38`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a27d-7f21-999e-eb82f18aaf21` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:515c95e963d35721df2a34aa4583fd2be7597ddeccf6028cd8aabe92e3bc59e3`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -124,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | year | 1987 |
 | domain | chemistry & material science |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | IID, Timeless |
 | reference | German1987glass |
 | rows x columns | 212 x 10 |
 | task.target | Type_of_glass |
@@ -184,7 +184,7 @@ We start with the data from UCI. Its documentation (`glass.names`) gives the cre
 
 - We drop the ID column, as it is a just a row identifier and does not contain any useful information for modeling.
 - We drop one of two identical rows (Ids 39 and 40, float window glass), so that a copy cannot sit on both sides of a split.
-- We drop Id 68 (2026-11-12, Andrej, review issue 4, B): it agrees with Id 67 in eight of nine values and differs only in silicon (72.22 against 72.32), while two analyses of one glass do not agree to 0.01 percent in six oxides, so it reads as Id 67 entered a second time. Float building windows go from 69 to 68 of 212 rows; the class shares move by less than 0.2 points.
+- We drop Id 68 (2026-11-12, Andrej): it agrees with Id 67 in eight of nine values and differs only in silicon (72.22 against 72.32), while two analyses of one glass do not agree to 0.01 percent in six oxides, so it reads as Id 67 entered a second time. Float building windows go from 69 to 68 of 212 rows; the class shares move by less than 0.2 points.
 - The source file is sorted by class and, within a class, in a few blocks that each run roughly from high to low magnesium; the features predict the order (Spearman 0.67-0.90 per class). We shuffle the rows, so the order carries no information here. Beyond that sort, fragments of one object sit next to each other in the file (Ids 67 and 69 share the refractive index), but holding out blocks of 3 neighbouring rows costs at most 0.06 log loss and leaves the ranking of models unchanged. Near-copies: 6 rows have a copy within 0.08 SD on RI, Mg, Al, K and Ca (all of the same type, 4 of them file neighbours), 75 (35%) within 0.16 SD (95% of the same type, 31% file neighbours; about six times what a within-class shuffle of the columns gives); looking such copies up gains an explicit model 0.03 to 0.045 log loss on random splits. 7 glass objects (14 rows) share an identical refractive index with every oxide within the tolerance of two analyses (7 such pairs where chance gives 1.8); they are not grouped, and the split stays random by decision (splits comment).
 - The target (2026-11-01, CLEAN-25): `Type_of_glass` ships its classes as words (glass.names, 11. Type of
   glass).
@@ -197,7 +197,7 @@ We start with the data from UCI. Its documentation (`glass.names`) gives the cre
 ## Splits
 
 Default splits: random fragments, stratified on the glass type. The random split is a deliberate choice
-(2026-11-12, Andrej, review issue 2, A), weighed against a split grouped on glass objects: no clean groups
+(2026-11-12, Andrej), weighed against a split grouped on glass objects: no clean groups
 govern how the collection was made. Only 7 objects (14 rows, 7%) are tied together by a link calibrated against
 chance (identical refractive index, the same type and every oxide within the tolerance of two analyses: 7
 pairs where chance gives 1.8, so one or two may be chance), and their fragments can sit on both sides. The
@@ -277,7 +277,7 @@ random split over them matches the use. Holding out the 7 objects cost TabPFN 0.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -343,4 +343,4 @@ random split over them matches the use. Holding out the 7 objects cost TabPFN 0.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6138f3d456c8a22d415ba2dae8b88f5f04204f2410770395d0b8497bb1af2c38` |
+| stale | yes: the definition now gives checksum `v2:515c95e963d35721df2a34aa4583fd2be7597ddeccf6028cd8aabe92e3bc59e3` |

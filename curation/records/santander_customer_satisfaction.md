@@ -48,24 +48,24 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined with a note: real (masked) customer rows; the leak found earlier is a household link through an exact var38 value that reaches 0.3% of test rows and is worth 0.5% of the error. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined with a note: real (masked) customer rows; the leak found earlier is a household link through an exact var38 value that reaches 0.3% of test rows and is worth 0.5% of the error. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
 
-CC (2026-11-06, Andrej): keep, with random customers (option A of issue 1 on the BeyondArena v0.2 review page). The declared split (random, stratified 3x3 folds, as the competition's winners validated) and metric (ROC AUC, the competition's own) were checked.
+CC (2026-11-06, Andrej): keep, with random customers (Review issue 1, A). The declared split (random, stratified 3x3 folds, as the competition's winners validated) and metric (ROC AUC, the competition's own) were checked.
 - `var38` is Santander's gross household income, times 3 (every amount and count in the file is masked times 3): its most frequent values match, to the cent, those of `renta` ("gross income of the household") in Santander's Product Recommendation competition of 2016. Its spike, 117,310.98, is the mean filled in for the 19.5% of customers without an income on file.
 - Customers who share an exact `var38` value (6,203 in 2,837 groups) are mostly members of one household, different people: a minor who shares a value shares it with another minor in 40% of pairs (no random pair does), and 79 pairs hold the same rare balance to the cent (a joint account). One person under two IDs and an area or branch value do not fit (ages differ in 87% of pairs; 82% of customers hold a value nobody else holds).
 - A customer with a dissatisfied household member is dissatisfied in 17.9% of cases against 2.8%, but only 0.3% of test customers have such a member in training (about 0.5% of TabPFN's error). The random split stays: the bank sees a new customer's household members, only not their satisfaction in the same period.
 - Changes made (the data is unchanged): the analysis and the likely meaning of each column family, with a confidence, in the definition's notes; one sentence on households in its splits note; the warning that term-deposit holders are almost all satisfied accepted as an ordinary category effect; `Andrej` added to checked_by.
 - Reference: https://www.kaggle.com/competitions/santander-product-recommendation/discussion/26786 (the most frequent `renta` values).
 
-CC (2026-11-06, Andrej): column names kept as Santander shipped them (option D of issue 2 on the BeyondArena v0.2 review page), with a column dictionary added instead.
+CC (2026-11-06, Andrej): column names kept as Santander shipped them (Review issue 2, D), with a column dictionary added instead.
 - The README's "Column dictionary" gives each of the 307 shipped columns its likely meaning, a confidence and the evidence. It is built from rules in `dataset.py` (every column matches exactly one rule) and is our reading of the data, not Santander's.
 - Confidence: 43 columns high (shown by an exact identity or the value grid, e.g. age, term deposits, household income), 176 medium (one consistent reading of names, sums and values, e.g. the cards, the current account), 54 low (a likely reading, e.g. transfers, `var3`) and 34 unknown.
 - Renaming was not chosen: a wrong name would mislead readers and methods that read column names, and the masked names keep the data traceable to the competition and its write-ups.
 - The data is unchanged: no value, row or column name.
 
-CC (2026-11-10, Andrej): review page issue 3, option B: random, named `Snapshot` of one extract, the label read as dissatisfaction at the extract (its date unstated); the `Time basis: Snapshot:` bullet is in `curation_comments`, the tag enters `data_tags`. Split and record facts unchanged.
+CC (2026-11-10, Andrej): Review issue 3, option B: random, named `Snapshot` of one extract, the label read as dissatisfaction at the extract (its date unstated); the `Time basis: Snapshot:` bullet is in `curation_comments`, the tag enters `data_tags`. Split and record facts unchanged.
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -87,7 +87,7 @@ undefined label and masked columns -, a weak household link between different cu
 
 **Main points:** All settled: random customers, with the analysis in the definition's notes (issue 1); the masked
 names stay, with a column dictionary in the README (issue 2); the random split is named a `Snapshot` of one extract
-(issue 3, 2026-11-10).
+(issue 3, 2026-11-10), the prototype now called `Retrospective`.
 
 **Record judgment:** valid, approximate: real customers of a named bank, masked by the host (marker set); what
 "dissatisfied" means and when it was measured is not published.

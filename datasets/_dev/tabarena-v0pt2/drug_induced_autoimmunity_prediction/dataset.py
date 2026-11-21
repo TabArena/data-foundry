@@ -98,7 +98,7 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
           against 19.1 for all pairs). Not tested: a newly approved drug, whose reporting window is still open. Trained
           on the drugs approved before a cut and tested on the later ones, ROC AUC falls against random folds of the
           same training size (untuned logistic regression, random forest and histogram gradient boosting on the source's
-          RDKit descriptors, the 496 dated drugs; Slurm job 1366251, 2026-11-06):
+          RDKit descriptors, the 496 dated drugs; 2026-11-06):
 
           | Test from | Training drugs | Test drugs | Forward: LR / RF / boosting | Random folds: LR / RF / boosting |
           |---|---|---|---|---|
@@ -114,14 +114,6 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
           positive, its active metabolite desvenlafaxine negative). The positives' meaning is clear and the classic
           drug-induced lupus drugs are all positive (2026-10-19), so the label definition is unverified rather than
           wrong.
-
-          | Test from | Training drugs | Test drugs | Forward: LR / RF / boosting | Random folds: LR / RF / boosting |
-          |---|---|---|---|---|
-          | 1990 | 219 | 277 | 0.606 / 0.642 / 0.607 | 0.716 / 0.740 / 0.721 |
-          | 1995 | 267 | 229 | 0.582 / 0.698 / 0.714 | 0.716 / 0.777 / 0.754 |
-          | 2000 | 351 | 145 | 0.617 / 0.692 / 0.765 | 0.740 / 0.794 / 0.803 |
-          | 2005 | 399 | 97 | 0.692 / 0.828 / 0.810 | 0.752 / 0.812 / 0.825 |
-
         - Label and time on the market (2026-11-11, Andrej): the drugs ChEMBL dates to a first approval from 2010 on
           are almost all negative, a share no chemistry explains (binomial p 0.0002 against the drugs approved
           earlier), and the structure shows the era (molecular weight alone separates the approvals from 2010 at ROC

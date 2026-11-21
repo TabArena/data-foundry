@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: drug_induced_autoimmunity_prediction
 container_format: 2
-checksum: v2:c585d25990505d940f26dc03d63ea8f20dff62a16bb38b0527e7837c9fe1c935
+checksum: v2:33decbe987083218ada44630df411b5cd9aabba928ed8875ce6640eecfa4e410
 build:
   uuid: 01a13aff-7235-73c3-932c-785cd540127b
   checksum: v2:8b265d2d3eddb7add77dc45cb583a5b314652160191f2bb7923a2256ac744c09
@@ -77,7 +77,7 @@ decisions:
 
 Binary classification of `Label`, scored with `roc_auc` on grouped splits by `scaffold`. 587 rows and 1 features. Source: UCI (2025).
 
-Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:c585d25990505d940f26dc03d63ea8f20dff62a16bb38b0527e7837c9fe1c935`, so the build is stale. See [Build](#build).
+Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:33decbe987083218ada44630df411b5cd9aabba928ed8875ce6640eecfa4e410`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -133,7 +133,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2025 |
 | domain | medical & healthcare |
 | license | CC BY 4.0 |
-| data_tags | Non-IID, Grouped |
+| data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | huang2025interdia |
 | rows x columns | 587 x 3 |
 | task.target | Label |
@@ -203,23 +203,17 @@ We start with the dataset from UCI.
 - Duplicates dropped: 9 pairs of rows are one structure once the stereo marks are set aside (the same 18 rows that share every one of the source's descriptors), stereoisomers a 2D encoding does not tell apart (PubChem): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
 - The target (2026-11-01, CLEAN-25): `Label` ships its classes as words (1 is the event). Binary: "Yes" is the
   event, the class that sorts second, so it is the metrics' positive class.
-- The fit is `approximate` (2026-11-11, Andrej): neither the InterDIA paper nor its repository says how the
-  drugs were picked as positive or negative, so a negative most likely means that no autoimmune reaction had
-  been reported, as in the nearest documented set (Wu et al. 2021, Int J Environ Res Public Health
-  18(13):7139), not that the drug was shown safe; a few negatives read as reporting gaps (venlafaxine is
-  positive, its active metabolite desvenlafaxine negative). The positives' meaning is clear and the classic
-  drug-induced lupus drugs are all positive (2026-10-19), so the label definition is unverified rather than
-  wrong.
-- Time basis: no prototype fits. Whether a drug can cause an autoimmune reaction is a property of its
-  structure, but the label is what had been reported by the compilation (InterDIA, 2025), so it accrues with
-  time on the market: ChEMBL dates 496 of the 587 drugs by first approval (1940-2020; the API's
-  `molecule_structures__canonical_smiles__flexmatch` and `first_approval`, 2026-11-06) and the positive share
-  falls with the approval era (the table in the next bullet). The split holds out scaffolds, which separates
-  eras only in part (mean approval-year gap within a scaffold group 14.5 years against 19.1 for all pairs).
-  Not tested: a newly approved drug, whose reporting window is still open. Trained on the drugs approved
-  before a cut and tested on the later ones, ROC AUC falls against random folds of the same training size
-  (untuned logistic regression, random forest and histogram gradient boosting on the source's RDKit
-  descriptors, the 496 dated drugs; Slurm job 1366251, 2026-11-06):
+- Time basis: UnseenGroup (Andrej, 2026-11-13; no prototype before): the scaffold split holds out chemistry the
+  training drugs do not hold, as decided on 2026-11-11, and the label still moves with time. Whether a drug can
+  cause an autoimmune reaction is a property of its structure, but the label is what had been reported by the
+  compilation (InterDIA, 2025), so it accrues with time on the market: ChEMBL dates 496 of the 587 drugs by
+  first approval (1940-2020; the API's `molecule_structures__canonical_smiles__flexmatch` and `first_approval`,
+  2026-11-06) and the positive share falls with the approval era (the table in the next bullet). The split holds
+  out scaffolds, which separates eras only in part (mean approval-year gap within a scaffold group 14.5 years
+  against 19.1 for all pairs). Not tested: a newly approved drug, whose reporting window is still open. Trained
+  on the drugs approved before a cut and tested on the later ones, ROC AUC falls against random folds of the
+  same training size (untuned logistic regression, random forest and histogram gradient boosting on the source's
+  RDKit descriptors, the 496 dated drugs; 2026-11-06):
 
   | Test from | Training drugs | Test drugs | Forward: LR / RF / boosting | Random folds: LR / RF / boosting |
   |---|---|---|---|---|
@@ -228,6 +222,13 @@ We start with the dataset from UCI.
   | 2000 | 351 | 145 | 0.617 / 0.692 / 0.765 | 0.740 / 0.794 / 0.803 |
   | 2005 | 399 | 97 | 0.692 / 0.828 / 0.810 | 0.752 / 0.812 / 0.825 |
 
+- The fit is `approximate` (2026-11-11, Andrej): neither the InterDIA paper nor its repository says how the
+  drugs were picked as positive or negative, so a negative most likely means that no autoimmune reaction had
+  been reported, as in the nearest documented set (Wu et al. 2021, Int J Environ Res Public Health
+  18(13):7139), not that the drug was shown safe; a few negatives read as reporting gaps (venlafaxine is
+  positive, its active metabolite desvenlafaxine negative). The positives' meaning is clear and the classic
+  drug-induced lupus drugs are all positive (2026-10-19), so the label definition is unverified rather than
+  wrong.
 - Label and time on the market (2026-11-11, Andrej): the drugs ChEMBL dates to a first approval from 2010 on
   are almost all negative, a share no chemistry explains (binomial p 0.0002 against the drugs approved
   earlier), and the structure shows the era (molecular weight alone separates the approvals from 2010 at ROC
@@ -376,7 +377,7 @@ A 2D encoding carries no stereochemistry, so each pair differs only in the stere
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -433,4 +434,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c585d25990505d940f26dc03d63ea8f20dff62a16bb38b0527e7837c9fe1c935` |
+| stale | yes: the definition now gives checksum `v2:33decbe987083218ada44630df411b5cd9aabba928ed8875ce6640eecfa4e410` |

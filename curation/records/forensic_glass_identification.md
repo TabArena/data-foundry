@@ -61,16 +61,16 @@ References: German B. Glass Identification. UCI Machine Learning Repository; 198
 **Assessment (AI, 2026-10-27):** The open questions for the curator are in the record's Review (review of the Tiny Data datasets, written from the earlier findings, no review panel); the AI recommends shipping it. Priority 3: gap +, use case - (dated; class shares come from a collection), source +, shape -, risk +.
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships its class names.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined with the random split and a note: real forensic measurements whose methods spread; near-copies across the random split are real but the ones that look like one object are few file neighbours, and the rest cannot be tied to objects. Priority 2: gap 1, use case 0, source 1, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined with the random split and a note: real forensic measurements whose methods spread; near-copies across the random split are real but the ones that look like one object are few file neighbours, and the rest cannot be tied to objects. Priority 2: gap 1, use case 0, source 1, shape 0, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on five more routine `Timeless` issues): the glass type belongs to the object and the measurements to the fragment; the casework before 1987 carries no published date. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted (Review  3, B, through the cross-dataset item on five more routine `Timeless` issues): the glass type belongs to the object and the measurements to the fragment; the casework before 1987 carries no published date. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
-CC (2026-11-12, Andrej): BeyondArena v0.2 review page, forensic_glass_identification: the random split stays as a decision of ours (issue 2, A), and Id 68 is dropped (issue 4, B).
+CC (2026-11-12, Andrej): the random split stays as a decision of ours (issue 2, A), and Id 68 is dropped (issue 4, B).
 - **Random split, deliberate:** no clean groups govern how the collection was made. Only 7 glass objects (14 rows) are tied together by a link calibrated against chance: identical refractive index, the same type and every oxide within the tolerance of two analyses, 7 pairs where chance gives 1.8. The other near-copies (35% of the rows within 0.16 SD on five columns) are different objects of the same kind of glass, which a reference collection holds. Holding out the 7 objects cost TabPFN 0.009 log loss and left the ranking unchanged. The definition's `splits_comment` states the choice and its reason; the row-order note gives the near-copy shares.
 - **Id 68 dropped:** equal to Id 67 in eight of nine values, silicon 72.32 against 72.22; two analyses of one glass do not agree to 0.01 percent in six oxides, so it is one record entered twice. 212 rows; float building windows 69 to 68.
 - Sources: Curran JM, Hicks TN, Buckleton JS. Forensic Interpretation of Glass Evidence. CRC Press, Boca Raton; 2000. ISBN 0-8493-0069-2. Lambert JA, Evett IW. The refractive index distribution of control glass samples examined by the forensic science laboratories in the United Kingdom. Forensic Science International 1984;26(1):1-23, https://doi.org/10.1016/0379-0738(84)90207-x.
 
-CC (2026-11-13, Andrej): BeyondArena v0.2 review page, forensic_glass_identification: ship as defined (issue 1, A, closed on the note "This can be closed."; verdict ship, split and metric ok).
+CC (2026-11-13, Andrej): ship as defined (issue 1, A, closed on the note "This can be closed."; verdict ship, split and metric ok).
 - Ships with 212 rows, 9 features, six glass types and the random split, as settled on 2026-11-12.
 - Not an exclusion: the dated use case is recorded by the `Outdated` marker and the approximate fit; the short classes carry about their share of the log loss.
 
@@ -182,7 +182,7 @@ your choice. The record fields agree with the definition.
      block test puts this at 0.013 log loss for TabPFN (0.670 with blocks of 3 file neighbours held out, against 0.657
      for blocks of the same size in an order by magnesium) and 0.06 for logistic regression; a lookup
      takes 0.03 to 0.045 from an explicit model, of which the exact copy dropped in v0.2 is about one test row in 71.
-   * **Experiments:** a check on the v0.2 frame (job 1344817): near-copies by Euclidean distance on the five columns,
+   * **Experiments:** a check on the v0.2 frame: near-copies by Euclidean distance on the five columns,
      standardized; within 0.08 SD 8 rows (3.8%, all same type), within 0.16 SD 76 rows (36%, 95% same type), within
      0.25 SD 127 rows (60%, 88% same type); with each column shuffled within its class (200 draws), 0.7, 12 and 45 rows
      (95th percentiles 4, 18 and 56); the shuffle also breaks the correlation between the columns (the refractive

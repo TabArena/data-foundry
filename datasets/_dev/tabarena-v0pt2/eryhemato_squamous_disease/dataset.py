@@ -103,7 +103,7 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
           papules`, `follicular papules`, `oral mucosal involvement`, `knee and elbow involvement`, `scalp involvement`.
         - The target (2026-11-01, CLEAN-25): `class` ships its classes as words (dermatology.names, 9. Class
           Distribution).
-        - The 10 scores ship as numbers (2026-11-05, Lennart, GitHub issue #48, CLEAN-14): `_feature_types` had cast
+        - The 10 scores ship as numbers (2026-11-05, Lennart, CLEAN-14): `_feature_types` had cast
           every column but age to a category, so they shipped unordered although the decoding above made them
           numbers. The source names only the ends of the scale ("0 indicates that the feature was not present, 3
           indicates the largest amount possible, and 1, 2 indicate the relative intermediate values").
@@ -113,8 +113,8 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
           alone). The random split puts both parts on both sides, so each test patient has training patients of its own
           part: on the shipped splits, logistic regression's log loss on one part's patients is 0.536 and 0.345 when it
           trains on a random mix of both parts, against 0.688 and 0.425 when it trains on as many patients of the other
-          part alone; told the part, it improves by another 0.014, and the case mix of the parts adds nothing (Slurm job
-          1373758). Read as two collection periods, too few for three windows; dates of examination would allow a split
+          part alone; told the part, it improves by another 0.014, and the case mix of the parts adds nothing. Read as
+          two collection periods, too few for three windows; dates of examination would allow a split
           by period. Not taken as stationary (Andrej, 2026-11-18): The rule lists structure in the file order as a fact
           against, and here it is measured as a sizeable cost.
     """

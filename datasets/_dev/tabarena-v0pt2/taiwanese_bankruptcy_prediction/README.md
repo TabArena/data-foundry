@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: taiwanese_bankruptcy_prediction
 container_format: 2
-checksum: v2:fc328ecbbd207f0eb04213380ce8abf24885e6a9bd43da61855cf96fc1f1baf7
+checksum: v2:aeda55fb161ca77fbe1a648c3f016eee7c18739fc464411c6331f2737fff00c8
 build:
   uuid: 01a111fc-bec6-75e8-b645-262ad3c192c3
   checksum: v2:a027be8b51a224d179f31b7ea653a0012e5c8f38a916bcc581c5a625144788f4
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `Bankrupt`, scored with `roc_auc` on IID splits. 6,819 rows and 92 features. Source: UCI (2020).
 
-Built as `01a111fc-bec6-75e8-b645-262ad3c192c3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fc328ecbbd207f0eb04213380ce8abf24885e6a9bd43da61855cf96fc1f1baf7`, so the build is stale. See [Build](#build).
+Built as `01a111fc-bec6-75e8-b645-262ad3c192c3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:aeda55fb161ca77fbe1a648c3f016eee7c18739fc464411c6331f2737fff00c8`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -212,14 +212,15 @@ The first 5 of 6,819 rows of the final frame (random rows: the frame is shuffled
   and 0.881; grouped by 10 contiguous file segments 0.934 (sd 0.031) and 0.877. The chains miss most bankrupt
   runs, so the grouped scores bound the leak loosely. Kept with the random split and this note.
 - Time basis: ForcedIIDFromTemporal: listed Taiwanese companies of 1999-2009, used to screen later statements;
-  no row carries its year or company. The raw file repeats its rows at a regular period (26 to about 200
-  rows; one period after a row its closest match lies below the 1st percentile of random-pair distances for
-  34% of rows, 13-17% at other offsets), so the rows look like company-years ordered by industry and year,
-  but no block can be dated (Time: Lost). Leak test across the split: a company's other years sit on the
-  other side, and 69% of bankrupt rows have a bankrupt row one period later (21-25% at other offsets);
-  grouping on rebuilt chains or on file segments moves ROC AUC from 0.941 to 0.939 and 0.934 (LightGBM).
-  Years and company ids would allow a split by time. Not tested: later years and companies not seen in
-  training.
+  no row carries its year or company. The raw file repeats its rows at a regular period (26 to about 200 rows;
+  one period after a row its closest match lies below the 1st percentile of random-pair distances for 34% of
+  rows, 13-17% at other offsets), so the rows look like company-years ordered by industry and year, but no block
+  can be dated (Time: Lost). Leak test across the split: a company's other years sit on the other side, and 69%
+  of bankrupt rows have a bankrupt row one period later (21-25% at other offsets); grouping on rebuilt chains or
+  on file segments moves ROC AUC from 0.941 to 0.939 and 0.934 (LightGBM). Years and company ids would allow a
+  split by time. Not tested: later years and companies not seen in training. Not taken as stationary (Andrej,
+  2026-11-18): The record already names crises within the span and the file holds undatable time structure;
+  bankruptcy relations are documented as period-dependent.
 
 ## Splits
 
@@ -241,7 +242,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -417,4 +418,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:fc328ecbbd207f0eb04213380ce8abf24885e6a9bd43da61855cf96fc1f1baf7` |
+| stale | yes: the definition now gives checksum `v2:aeda55fb161ca77fbe1a648c3f016eee7c18739fc464411c6331f2737fff00c8` |

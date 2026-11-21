@@ -23,6 +23,7 @@ year: '2020'
 collection_period: 1999-2009
 required_split:
 - Random (IID)
+problem_type: Binary Classification
 source_links:
 - https://doi.org/10.24432/C5004D
 notebook_path: datasets/beyond_iid/old_iid/taiwanese_bankruptcy_prediction/taiwanese_bankruptcy_prediction.ipynb
@@ -58,9 +59,9 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `american_companies_bankruptcy` (TBD -> Yes, priority 2), `v4finbench_corporate_distress` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined with the gap noted: the paper states no lag between the ratios and the bankruptcy and the UCI release is not its matched sample, but both classes follow one recording convention (markers alone 0.51-0.64 ROC AUC) and methods separate (0.039 to 0.063 1-AUC). Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined with the gap noted: the paper states no lag between the ratios and the bankruptcy and the UCI release is not its matched sample, but both classes follow one recording convention (markers alone 0.51-0.64 ROC AUC) and methods separate (0.039 to 0.063 1-AUC). Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
-CC (2026-11-11, Andrej): kept with the source gap noted (review page, issue 1 A): the paper sample (239 bankrupt and 239 matched companies) differs from the UCI release, whose sampling is undocumented, and the time between ratios and bankruptcy is unstated; this answers the note "Need to verify correct lag between features and target": the source does not state it. Forced IID kept with a full `Time basis:` line (issue 2 B). The rows look like company-years with the bankrupt label recurring one block later: random split kept and written down with the measured leak (issue 3 B; grouping moves ROC AUC 0.941 to 0.939/0.934). Collection facts added (issue 4 B): `Samples: Over Time`, `Time: Lost`.
+CC (2026-11-11, Andrej): kept with the source gap noted (Review issue 1, A): the paper sample (239 bankrupt and 239 matched companies) differs from the UCI release, whose sampling is undocumented, and the time between ratios and bankruptcy is unstated; this answers the note "Need to verify correct lag between features and target": the source does not state it. Forced IID kept with a full `Time basis:` line (issue 2 B). The rows look like company-years with the bankrupt label recurring one block later: random split kept and written down with the measured leak (issue 3 B; grouping moves ROC AUC 0.941 to 0.939/0.934). Collection facts added (issue 4 B): `Samples: Over Time`, `Time: Lost`.
 
 CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 5, C): whether the company goes bankrupt after the statements, so it arrives after the features; the forced tag and the split stay.
 
@@ -85,9 +86,10 @@ bankruptcy were found on 2026-10-31 (american_companies_bankruptcy, v4finbench_c
 priority 2); a valid task stays meanwhile. Weighed: documented source and bankruptcy rule +, one recording convention
 for both classes +, methods separate +, unknown prediction point and an undocumented sample -.
 
-**Main points:** settled on 2026-11-11: kept with the source gap written down (issue 1); the forced tag's full
-`Time basis:` line (issue 2); the company-year structure and its measured leak written down, random split kept
-(issue 3); collection facts `Samples: Over Time`, `Time: Lost` added (issue 4).
+**Main points:** all settled: kept with the source gap written down (issue 1, 2026-11-11); the forced tag's full
+`Time basis:` line (issue 2, 2026-11-11); the company-year structure and its measured leak written down, random split
+kept (issue 3, 2026-11-11); collection facts `Samples: Over Time`, `Time: Lost` added (issue 4, 2026-11-11) and
+`Target: Later` (issue 5, 2026-11-13); the forced tag stays (issue 7, 2026-11-18).
 
 **Record judgment:** valid with a known gap, ship. Your note "Need to verify correct lag between features and
 target" is answered in issue 1: the paper does not state it. The scaling over all companies is the paper's own
@@ -206,7 +208,7 @@ target" is answered in issue 1: the paper does not state it. The scaling over al
      - The definition's `row` says "whether a company can appear in more than one year is not stated"; the earlier
        review found no near copies of rows, which company-years would not have either. If a company's early years
        carry its later failure, the gap between ratios and bankruptcy of issue 1 is wider than one year.
-   * **Experiments:** on the UCI file (Slurm jobs 1366176 and 1366181), 5 folds x 3 repeats, ROC AUC:
+   * **Experiments:** on the UCI file, 5 folds x 3 repeats, ROC AUC:
 
      | Split | LightGBM | kNN, k = 25 |
      |---|---|---|
@@ -327,7 +329,7 @@ target" is answered in issue 1: the paper does not state it. The scaling over al
    * **Earlier views:**
      - Resolved (2026-11-11, Andrej): issue 2 B, forced tag kept with full Time basis line ('a lender scores later statements in a climate that moved (2001, 2008)')
      - CC (2026-11-13, Andrej): Target: Later recorded; forced tag and split stay.
-     - CC (2026-11-17, Andrej): blind split review: the decision tree, walked without the current split, reaches the forced split it ships.
+     - CC (2026-11-17, Andrej): blind split walk: the decision tree, walked without the current split, reaches the forced split it ships.
    * **Options:**
 
      | | Option | What it does | Pro | Con |

@@ -56,9 +56,9 @@ To do: ask the authors what `t` marks and where the 10 missing control spectra w
 
 CC (2026-11-02, Lennart): The serum spectrum is declared as a spectrum (`spectra`, CLEAN-26; PR #21, Andrej's proposal): it ships raw as the NCI-FDA page publishes it (6,771 bins of 400 ppm, m/z 800 to 11,993), the container records the bins in m/z order as a feature group, and the benchmark encodes it row by row, by default with MALDIquant's steps (square root, Savitzky-Golay over 21 points, SNIP baseline, total ion current). On the 60 shipped splits the default lifts the tree models by 0.10 to 0.15 ROC AUC, PLS-DA by 0.06 and TabPFN v3.5 by 0.03 (0.659 to 0.690); logistic regression loses 0.02. A reconstruction of PR #21's own chain, which ends in a log, scores higher for TabPFN (0.716) and the linear models; the default stays the published workflow. Full resolution: the width is the benchmark's feature-limit step's job.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: Andrej's keep with the raw spectra (2026-10-21) and the spectrum declaration (2026-11-02) settle it; only questions for the authors (the t marker, 10 missing control spectra) remain. Priority 1: gap 0, use case 0, source 1, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: Andrej's keep with the raw spectra (2026-10-21) and the spectrum declaration (2026-11-02) settle it; only questions for the authors (the t marker, 10 missing control spectra) remain. Priority 1: gap 0, use case 0, source 1, shape 0, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): the label is the mouse's genotype, fixed at birth, and its undated bleeds are held out with it. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted (Review  2, B, through the cross-dataset item on routine `Timeless` issues): the label is the mouse's genotype, fixed at birth, and its undated bleeds are held out with it. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 **Assessment (AI, 2026-11-08):** one vote per unit (the scan of 2026-11-08 after boreal_postfire_lichen_biomass's issue 7): the 73 mice gave 1 to 6 serum samples each (median 2, 29 one), the label is the mouse's, and the use case reads each sample of an unseen mouse as a new patient's test, so a mouse bled six times counts as six patients. Weighting each sample by 1 over its mouse's samples ranks 8 untuned models at Kendall tau 0.66 per split (lowest -0.07, on 24 test mice) and 0.86 for the ranking by the mean over 30 of the shipped splits, the same best model on 23 of 30, the largest shift of the scan. Open for Lennart as issue 1 of the record's Review; recommended: each mouse counts once (B), unless the use case is a person tested again and again; ROC AUC would first need an optional weight input.
 
@@ -73,9 +73,9 @@ CC (2026-11-11, Andrej): `Selection Bias` marker; the controls were bled about a
 - The release has no age per bleed, so the share of the signal that is age cannot be measured; written into `curation_comments` and `fit_reason`.
 - A third question for the authors, after what `t` marks and where the 10 control spectra went: the age of each mouse at each bleed.
 
-CC (2026-11-12, Andrej): the age gap is `Selection Bias` only, neither a leak nor `Class-dependent Recording` (BeyondArena v0.2 review page, issue 4, A): both classes went through the same instrument, m/z grid, chips and number format, and no feature holds the age or the class. Revisit if the authors say the `t` marker is a separate recording route.
+CC (2026-11-12, Andrej): the age gap is `Selection Bias` only, neither a leak nor `Class-dependent Recording` (Review issue 4, A): both classes went through the same instrument, m/z grid, chips and number format, and no feature holds the age or the class. Revisit if the authors say the `t` marker is a separate recording route.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `mouse_id`, 20x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `mouse_id`, 20x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -102,7 +102,8 @@ on the files -.
 the age per bleed are still outstanding). The controls were bled about a month older: noted and marked `Selection
 Bias` (issue 3, C, resolved 2026-11-11); neither a leak nor `Class-dependent Recording` (issue 4, A, resolved
 2026-11-12; revisit if the authors say `t` is a separate recording route). The mouse split is named `Timeless`
-(issue 2, resolved 2026-11-06). Issue 5 (Lennart, 2026-11-08): Resolved on 2026-11-08: each mouse counts once in the ROC AUC, weighted by 1 over its number of serum samples (issue 1).
+(issue 2, resolved 2026-11-06). Each mouse counts once in the ROC AUC, weighted by 1 over its number of serum
+samples (issue 5, resolved 2026-11-08).
 
 **Record judgment:** valid, decided. Andrej's CC of 2026-10-21 holds the evidence and the to-do (ask the authors what
 `t` marks and where the 10 control spectra went); Lennart's CC of 2026-11-02 the spectrum declaration. An earlier chat

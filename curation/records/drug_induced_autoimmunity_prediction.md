@@ -109,11 +109,11 @@ CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encod
 
 **Assessment (AI, 2026-11-01):** the definition now ships `SMILES` (RDKit's canonical form) in `smiles_columns`, as Andrej decided to keep it on 2026-10-26, but typed as a structure, and the source's 176 RDKit descriptors leave: the recommended encoding reproduces them (LightGBM / random forest ROC AUC over the 60 scaffold splits: source descriptors 0.771 / 0.776, our full RDKit set 0.772 / 0.777) and adds the MACCS keys (0.796 / 0.799, better on 51 and 59 of 60 splits); the SMILES read as text gives 0.763 / 0.766. The stereoisomer pairs are now found on the stereo-free canonical SMILES: the same 9 pairs, 587 drugs, 140 positive. The split groups come from `scaffold_groups` (the same 443 groups, other folds).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: a real structure-based screen, split by scaffold with the SMILES as a typed structure (issue 1 resolved 2026-11-01); only the fit label should move to approximate for the undocumented negatives (issue 2). Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: a real structure-based screen, split by scaffold with the SMILES as a typed structure (issue 1 resolved 2026-11-01); only the fit label should move to approximate for the undocumented negatives (issue 2). Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
 
-CC (2026-11-11, Andrej): Four decisions from the v0.2 review page (folder the Review, issues 2-5): the fit becomes approximate, the scaffold split stays with the label's reporting window written down, all 587 drugs stay, and the record's collection facts are corrected.
+CC (2026-11-11, Andrej): Four decisions (Review issues 2-5): the fit becomes approximate, the scaffold split stays with the label's reporting window written down, all 587 drugs stay, and the record's collection facts are corrected.
 - Fit `approximate` (issue 2, B): the source does not say how the negative drugs were chosen, most likely "no autoimmune reaction reported" as in the nearest documented set (Wu et al. 2021), an unverified label definition. `fit_reason` and a curation bullet name the gap; no row, split or score changes.
-- Time basis (issue 3, B): no prototype fits, so the definition states the facts in a `Time basis:` line and claims no tag. The label is what had been reported by the compilation (InterDIA, 2025), so it accrues with a drug's time on the market: ChEMBL dates 496 of the 587 drugs by first approval, 1940-2020 (the API's `molecule_structures__canonical_smiles__flexmatch` and `first_approval`; 575 of the 597 source rows matched). The scaffold split stays: a forward split by approval year would test the delay of the label rather than the drugs. Untuned logistic regression, random forest and histogram gradient boosting on the source's RDKit descriptors over the 496 dated drugs, ROC AUC (Slurm job 1366251, 2026-11-06; the scaffold rows of the same run: 0.676 / 0.721 / 0.717):
+- Time basis (issue 3, B): no prototype fits, so the definition states the facts in a `Time basis:` line and claims no tag. The label is what had been reported by the compilation (InterDIA, 2025), so it accrues with a drug's time on the market: ChEMBL dates 496 of the 587 drugs by first approval, 1940-2020 (the API's `molecule_structures__canonical_smiles__flexmatch` and `first_approval`; 575 of the 597 source rows matched). The scaffold split stays: a forward split by approval year would test the delay of the label rather than the drugs. Untuned logistic regression, random forest and histogram gradient boosting on the source's RDKit descriptors over the 496 dated drugs, ROC AUC (2026-11-06; the scaffold rows of the same run: 0.676 / 0.721 / 0.717):
 
   | Test from | Training drugs | Test drugs | Forward: LR / RF / boosting | Random folds of the same training size |
   |---|---|---|---|---|
@@ -144,7 +144,7 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of no prototype (2026-
 - The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
 - The split does not change; the definition's `Time basis:` line keeps the measured evidence.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `scaffold`, 20x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `scaffold`, 20x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -164,12 +164,12 @@ scaffolds); MACCS keys from the structure lift it from 0.803 to 0.826 (27 of 30 
 random splits the 40 benchmark methods span ROC AUC 0.74 (logistic regression) to 0.865, and a hand-written
 structural-similarity model ties the best: the analog effect the scaffold split takes out.
 Quality: 9 stereoisomer pairs, one 2D structure each, keep one row; both streptomycin rows (one per label) leave.
-Andrej's mark on the review page of 2026-10-27: ship, metric ok. Weighed: a real screening use and an open licence +,
+Andrej's decision of 2026-10-27: ship, metric ok. Weighed: a real screening use and an open licence +,
 the scaffold split and the structure itself +, undocumented negatives -, 587 drugs -.
 
 **Main points:** all issues are settled (2026-11-11, Andrej): the SMILES ships as a typed structure (issue 1), the
-fit is `approximate` for the undocumented negatives (issue 2), the scaffold split stays with a `Time basis:` line and
-no tag (issue 3), all 587 drugs stay with the era gradient of the label written down (issue 4), and the record carries
+fit is `approximate` for the undocumented negatives (issue 2), the scaffold split stays with a `Time basis:` line (issue 3;
+`UnseenGroup` since 2026-11-13), all 587 drugs stay with the era gradient of the label written down (issue 4), and the record carries
 `Samples: Over Time`, `Time: Dated` and `Target: Revised Later` (issue 5). Nothing rebuilt.
 
 **Record judgment:** valid and current to 2026-11-01 (Andrej's CC lines of 2026-10-19 and 2026-10-26, Lennart's of
@@ -289,7 +289,7 @@ descriptors, so the dataset needs a rebuild; the record's early "need to check S
      the chemistry.
    * **Experiments:** approval years from ChEMBL (flexmatch on the canonical SMILES: 575 of 597 source rows matched,
      496 of the 587 shipped drugs dated), then untuned logistic regression, random forest and histogram gradient
-     boosting on the source's RDKit descriptors, ROC AUC (Slurm job 1366251, 2026-11-06); the scaffold rows are 10
+     boosting on the source's RDKit descriptors, ROC AUC (2026-11-06); the scaffold rows are 10
      repeats of 3 scaffold-grouped folds over the 496 dated drugs (logistic regression 0.676, random forest 0.721,
      boosting 0.717):
 
@@ -327,8 +327,8 @@ descriptors, so the dataset needs a rebuild; the record's early "need to check S
    drugs by first approval (1940-2020) and the positive share falls from 28.7% before 1980 to 5.8% from 2010 on (3 of
    52). The split holds out scaffolds, which separates eras only in part (mean approval-year gap within a scaffold
    group 14.5 years against 19.1 for all pairs). Not tested: a newly approved drug, whose reporting window is still
-   open; trained on the drugs approved before a cut, ROC AUC falls by 0.03-0.13 for cuts up to 2000 (Slurm job
-   1366251, 2026-11-06).` On D, add the year in `_prepare_raw_files` from a one-off ChEMBL extract (the API's
+   open; trained on the drugs approved before a cut, ROC AUC falls by 0.03-0.13 for cuts up to 2000
+   (2026-11-06).` On D, add the year in `_prepare_raw_files` from a one-off ChEMBL extract (the API's
    `molecule_structures__canonical_smiles__flexmatch` and `first_approval`, as
    `scripts/approval_years.py` of this review), keep it as a feature, `temporal = Temporal(on="first_approval", ...)`
    with windows of at least about 50 test drugs and every training side at half the rows or more, drop `grouping` and
@@ -370,7 +370,7 @@ descriptors, so the dataset needs a rebuild; the record's early "need to check S
    * **Effect on the task:** dropping them removes 8.9% of the rows and 3 of the 140 positives, and takes away the
      drugs that look most like tomorrow's candidates; keeping them leaves a block of rows whose label is the
      compilation's reporting window.
-   * **Experiments:** the era gradient and the molecular-weight separation above (Slurm job 1366251 and the ChEMBL
+   * **Experiments:** the era gradient and the molecular-weight separation above (the model runs and the ChEMBL
      lookup of 2026-11-06); no model was run on the frame with the block removed.
    * **Consistency:** follows taiwanese_bankruptcy_prediction (company-year blocks kept with the effect written down)
      and labour_inspection_compliance (one undated account set kept with a note); the alternative is the row drop

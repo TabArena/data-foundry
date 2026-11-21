@@ -51,19 +51,19 @@ Moreover, this is not sold prices (as immoscout shows only prices you can ask to
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Energy_efficiency_class` (the README lists their levels); left unordered: `Furnishing_quality` (low confidence); `Condition` (a partial order); Condition and Furnishing_quality labels are permuted in the scrape ("dilapidated": 1,137 houses, median year built 2010, the highest median price; "as new": 11, 1870, the lowest; Furnishing "refined" the oldest and cheapest); the German labels are lost, so both stay unordered with a note. Options for the curator: swap the two clear levels, neutral codes, or keep..
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Energy_efficiency_class` (the README lists their levels); left unordered: `Furnishing_quality` (low confidence); `Condition` (a partial order); Condition and Furnishing_quality labels are permuted in the scrape ("dilapidated": 1,137 houses, median year built 2010, the highest median price; "as new": 11, 1870, the lowest; Furnishing "refined" the oldest and cheapest); the German labels are lost, so both stay unordered with a note. Options for the curator: swap the two clear levels, neutral codes, or keep..
 
-CC (2026-10-31, Lennart): marks on the review board of PR #37: Condition, Furnishing_quality, Type and Heating relabelled with ImmoScout24's own codes, found by matching 3,548 houses to an April 2020 scrape that keeps them (each label permuted, the missing value swapped with a real level in each column); Furnishing_quality then ordered.
+CC (2026-10-31, Lennart): decided on PR #37: Condition, Furnishing_quality, Type and Heating relabelled with ImmoScout24's own codes, found by matching 3,548 houses to an April 2020 scrape that keeps them (each label permuted, the missing value swapped with a real level in each column); Furnishing_quality then ordered.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `rwi_geo_red_houses_for_sale` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 CC (2026-11-01, Lennart): keep this dataset as fixed in PR #37 (ImmoScout24's codes restored); the April 2020 scrape it was matched against is a new record, germany_housing_rent_and_price_apr_20, screened as a candidate to replace this one.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after keeping one row per house: 105 houses are listed twice, crossing the split for 1.5% of test rows with no measured effect; provenance stays a caveat and better data is being screened. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after keeping one row per house: 105 houses are listed twice, crossing the split for 1.5% of test rows with no measured effect; provenance stays a caveat and better data is being screened. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
 
-CC (2026-11-11, Andrej): one listing per house (review page, issue 1 B, agreeing with the answer of 2026-11-06): 105 houses listed twice (same living space, lot, year built, state, city and place) keep their first listing; 114 rows go (10,317 to 10,203), the price distribution does not move (LEAK-17, LEAK-42). Random split named a `Snapshot` of the 14 July 2020 scrape (issue 2 B): a `Time basis:` line in the definition; the tag enters `data_tags`.
+CC (2026-11-11, Andrej): one listing per house (Review  1 B, agreeing with the answer of 2026-11-06): 105 houses listed twice (same living space, lot, year built, state, city and place) keep their first listing; 114 rows go (10,317 to 10,203), the price distribution does not move (LEAK-17, LEAK-42). Random split named a `Snapshot` of the 14 July 2020 scrape (issue 2 B): a `Time basis:` line in the definition; the tag enters `data_tags`.
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -82,7 +82,7 @@ location effects ranks 7th to 28th of 41. Quality: settled by the ordinal-scale 
 16 states and wide method separation +; an anonymous uploader, an unknown licence and better data under screening -.
 
 **Main points:** settled on 2026-11-11: one listing per house, 10,203 rows (issue 1); the random split named a
-`Snapshot` of the 14 July 2020 scrape (issue 2).
+`Snapshot` of the 14 July 2020 scrape (issue 2), the prototype now called `Retrospective`.
 
 **Record judgment:** valid, with a provenance caveat. The origin is ImmoScout24, but the first upload is a deleted
 Kaggle dataset of an unknown owner, so the licence is OpenML's CC BY-NC-SA 4.0 and the original's is unknown; the

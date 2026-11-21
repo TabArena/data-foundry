@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: eryhemato_squamous_disease
 container_format: 2
-checksum: v2:6a5fe8ad37c46bce817a9d69fe9a6111377a8d43a8183cd36bdb39be9b5167e9
+checksum: v2:6e74b1a5e32e55511924154ba2d883658e46e179fedc3eb0af9d1bcdb7cfc605
 build:
   uuid: 01a111fc-a1c3-79c0-8d48-48221a6702fe
   checksum: v2:aba9d540c391f2a14f0cf06bd994fff1205b5549b7de973316d943823e12ad15
@@ -69,7 +69,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 366 rows and 12 features. Source: UCI (1998).
 
-Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6a5fe8ad37c46bce817a9d69fe9a6111377a8d43a8183cd36bdb39be9b5167e9`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6e74b1a5e32e55511924154ba2d883658e46e179fedc3eb0af9d1bcdb7cfc605`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -201,19 +201,20 @@ We start with the data from UCI.
   papules`, `follicular papules`, `oral mucosal involvement`, `knee and elbow involvement`, `scalp involvement`.
 - The target (2026-11-01, CLEAN-25): `class` ships its classes as words (dermatology.names, 9. Class
   Distribution).
-- The 10 scores ship as numbers (2026-11-05, Lennart, GitHub issue #48, CLEAN-14): `_feature_types` had cast
+- The 10 scores ship as numbers (2026-11-05, Lennart, CLEAN-14): `_feature_types` had cast
   every column but age to a category, so they shipped unordered although the decoding above made them
   numbers. The source names only the ends of the scale ("0 indicates that the feature was not present, 3
   indicates the largest amount possible, and 1, 2 indicate the relative intermediate values").
-- Time basis: ForcedIIDFromTemporal: patients examined over a period the source does not state (published
-  1998); the file keeps no date but has two parts, rows 1 to 169 in mixed order and rows 170 to 366 mostly in
-  runs of one diagnosis. The clinical findings tell them apart (random forest ROC AUC 0.70; 0.54 from the
-  diagnosis alone). The random split puts both parts on both sides, so each test patient has training patients
-  of its own part: on the shipped splits, logistic regression's log loss on one part's patients is 0.536 and
-  0.345 when it trains on a random mix of both parts, against 0.688 and 0.425 when it trains on as many
-  patients of the other part alone; told the part, it improves by another 0.014, and the case mix of the parts
-  adds nothing (Slurm job 1373758). Read as two collection periods, too few for three windows; dates of
-  examination would allow a split by period.
+- Time basis: ForcedIIDFromTemporal: patients examined over a period the source does not state (published 1998);
+  the file keeps no date but has two parts, rows 1 to 169 in mixed order and rows 170 to 366 mostly in runs of
+  one diagnosis. The clinical findings tell them apart (random forest ROC AUC 0.70; 0.54 from the diagnosis
+  alone). The random split puts both parts on both sides, so each test patient has training patients of its own
+  part: on the shipped splits, logistic regression's log loss on one part's patients is 0.536 and 0.345 when it
+  trains on a random mix of both parts, against 0.688 and 0.425 when it trains on as many patients of the other
+  part alone; told the part, it improves by another 0.014, and the case mix of the parts adds nothing. Read as
+  two collection periods, too few for three windows; dates of examination would allow a split
+  by period. Not taken as stationary (Andrej, 2026-11-18): The rule lists structure in the file order as a fact
+  against, and here it is measured as a sizeable cost.
 
 ## Splits
 
@@ -291,7 +292,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_conflicting_duplicate_rows`: 1 row(s) (0.3%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
@@ -375,4 +376,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6a5fe8ad37c46bce817a9d69fe9a6111377a8d43a8183cd36bdb39be9b5167e9` |
+| stale | yes: the definition now gives checksum `v2:6e74b1a5e32e55511924154ba2d883658e46e179fedc3eb0af9d1bcdb7cfc605` |

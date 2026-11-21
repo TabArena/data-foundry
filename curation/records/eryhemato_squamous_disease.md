@@ -61,13 +61,13 @@ Done (2026-10-20): `fit_reason` in `dataset.py` names the selected cases.
 
 CC (2026-10-27, Lennart): fit approximate (was direct): a dermatologist's lichen planus patients do not show the selection of these rows, so it is a known gap (USE-8, amended on the review of PR #16); the Selection Bias marker stays.
 
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 10 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `erythema`, `scaling`, `definite borders`, `itching`, `koebner phenomenon`, `polygonal papules`, `follicular papules`, `oral mucosal involvement`, `knee and elbow involvement`, `scalp involvement` (the README lists their levels).
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): 10 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `erythema`, `scaling`, `definite borders`, `itching`, `koebner phenomenon`, `polygonal papules`, `follicular papules`, `oral mucosal involvement`, `knee and elbow involvement`, `scalp involvement` (the README lists their levels).
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 10 scores are numbers (erythema, scaling, definite borders, itching, koebner phenomenon, polygonal papules, follicular papules, oral mucosal involvement and more).
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships its class names.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship the clinical-only differential diagnosis (no exclusion reason survived Andrej's audit, TabPFN beats LR on 59 of 60 splits) after typing the ten graded findings as numbers, which the definition still ships as unordered categories against its own notes and the decode rule. Priority 3: gap 1, use case 0, source 1, shape 0, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship the clinical-only differential diagnosis (no exclusion reason survived Andrej's audit, TabPFN beats LR on 59 of 60 splits) after typing the ten graded findings as numbers, which the definition still ships as unordered categories against its own notes and the decode rule. Priority 3: gap 1, use case 0, source 1, shape 0, risk -0.
 
 CC (2026-11-05, Andrej): ship (issue 1, A) once the type of the ten graded findings (issue 2) is settled.
 
@@ -93,9 +93,9 @@ model run used the 34-feature BeyondArena table with the biopsy findings, so its
 Quality: the ten findings typed as unordered categories (issue 2); one patient aged 0, kept with a note. Weighed: a
 stage the source describes and a clear model ranking +, a selected, small and old cohort -.
 
-**Main points:** All settled: ship the clinical-only task with the ten graded findings as numbers (issues 1 and 2,
-resolved 2026-11-05); the random split is tagged forced from temporal with the measured cost of the file's two parts
-(issue 3, resolved 2026-11-10). Issue 4 (Lennart, 2026-11-05): Ship the 10 clinical scores 0 to 3 as numbers, as ordered categories, or keep them unordered?
+**Main points:** All settled: ship the clinical-only task with the ten graded findings as numbers (issues 1, 2 and
+4, resolved 2026-11-05); the random split is tagged forced from temporal with the measured cost of the file's two parts
+(issue 3, resolved 2026-11-10), and the forced tag stays (issue 7, resolved 2026-11-18); issue 5 was withdrawn.
 
 **Record judgment:** valid. Settled by CC 2026-10-06 (Lennart: clinical features only), CC 2026-10-20 (Andrej: keep,
 selection named in the fit), CC 2026-10-27 (Lennart: fit approximate, the marker stays) and CC 2026-11-01 (Lennart: the
@@ -250,7 +250,7 @@ counts one pair because age breaks the other ties).
      - What moves within a diagnosis: in the second part, psoriasis patients have itching graded 0.84 lower and the Koebner phenomenon (new lesions where the skin is injured) 0.77 lower on the 0 to 3 scale; pityriasis rosea patients itching 0.61 and Koebner 0.90 lower and definite borders 0.64 higher. That fits another examiner, another period, or cases added by diagnosis.
      - The 8 missing ages come in two runs of four consecutive rows (rows 34 to 37 and 263 to 266), so within each part the order looks like the order of recording; the source (Güvenir et al. 1998, not readable here) and the UCI page say nothing about the order or the period.
      - The record's facts, `Samples: Over Time` and `Time: Lost`, still fit: the parts are not dates. By the rule's questions the diagnosis is a present state, which would make a `StationaryRelation`, but the rule counts a change in practice or recording as time reaching the target, and two parts are too few for three windows, which makes the split forced[^3a].
-   * **Experiments:** the raw UCI file, the 12 clinical features of the v0.2 task, untuned logistic regression and random forest (Slurm job 1366170):
+   * **Experiments:** the raw UCI file, the 12 clinical features of the v0.2 task, untuned logistic regression and random forest:
      - Telling the parts apart (5 x 5-fold, random forest): ROC AUC 0.704 from the findings, 0.735 with the diagnosis added, 0.539 from the diagnosis alone.
      - Each part's patients in 3 folds (5 seeds), trained on the other part (169 or 197 patients) or on as many patients drawn from both parts outside the test fold: on the second part, logistic regression log loss 0.381 against 0.318 (worse on 14 of 15 folds), random forest 0.527 against 0.400 (15 of 15); on the first part, 0.696 against 0.479 (15 of 15) and 0.651 against 0.572 (12 of 15). Accuracy falls by 0.01 to 0.04.
      - The time probe of 2026-11-06 flagged the order: consecutive rows share the diagnosis 42% of the time against 20% by chance, all of it in the second part (14% in rows 1 to 169, 66% after).
@@ -271,7 +271,7 @@ counts one pair because age breaks the other ties).
    keeps no date but has two parts, rows 1 to 169 in mixed order and rows 170 to 366 mostly in runs of one diagnosis.
    The clinical findings tell them apart (random forest ROC AUC 0.70; 0.54 from the diagnosis alone), and trained on one
    part, logistic regression's log loss on the other is 0.381 and 0.696, against 0.318 and 0.479 trained on as many
-   patients of both parts (Slurm job 1366170). Read as two collection periods, too few for three windows; dates of
+   patients of both parts. Read as two collection periods, too few for three windows; dates of
    examination would allow a split by period.` On A, `data_tags = ("StationaryRelation",)` and the same facts with the
    curator's reason. C needs a column from the raw row order and a grouping with two groups; not drafted. No
    `splits_comment` change on A or B.
@@ -302,7 +302,7 @@ counts one pair because age breaks the other ties).
      - `StationaryRelation` (A) is closed anyway since your rule of 2026-11-06: it needs a measurement on dates, and
        this file has none[^3p].
    * **Experiments:** the shipped task (12 clinical features, 60 random splits), each patient's part traced from its
-     raw row, untuned logistic regression (LR), random forest (RF) and LightGBM, log loss (Slurm job 1373758):
+     raw row, untuned logistic regression (LR), random forest (RF) and LightGBM, log loss:
      - Each part's test patients, by what the model trained on. The first three columns train on the same number of
        patients (104 to 120, the smaller part's training rows); the last on the whole training side:
 
@@ -350,7 +350,7 @@ counts one pair because age breaks the other ties).
    puts both parts on both sides, so each test patient has training patients of its own part: on the shipped splits,
    logistic regression's log loss on one part's patients is 0.536 and 0.345 when it trains on a random mix of both
    parts, against 0.688 and 0.425 when it trains on as many patients of the other part alone; told the part, it
-   improves by another 0.014, and the case mix of the parts adds nothing (Slurm job 1373758). Read as two collection
+   improves by another 0.014, and the case mix of the parts adds nothing. Read as two collection
    periods, too few for three windows; dates of examination would allow a split by period.` On c, no tag and the same
    facts in a `Time basis:` line that says why no prototype fits. No `splits_comment` change.
 
@@ -366,7 +366,7 @@ counts one pair because age breaks the other ties).
    **Resolved (2026-11-10, Andrej):** B, which is the 2026-11-09 Answer's option a: the random split stays,
    `data_tags = ("ForcedIIDFromTemporal",)`, and the `Time basis: ForcedIIDFromTemporal:` bullet in `curation_comments`
    carries the numbers measured on the shipped splits (mix 0.536 and 0.345 against the other part 0.688 and 0.425, the
-   part as a feature 0.014; Slurm job 1373758). No `splits_comment` change; record facts unchanged.
+   part as a feature 0.014). No `splits_comment` change; record facts unchanged.
 
 4. **Ship the 10 clinical scores 0 to 3 as numbers?**
 
@@ -434,7 +434,7 @@ counts one pair because age breaks the other ties).
 
      | Similar dataset or source | What was measured | Verdict | Why similar |
      |---|---|---|---|
-     | eryhemato_squamous_disease's own file parts | LR log loss on one part trained on a mix vs the other part (Slurm 1373758) | not flat: 0.536 -> 0.688 and 0.345 -> 0.425 | same data |
+     | eryhemato_squamous_disease's own file parts | LR log loss on one part trained on a mix vs the other part | not flat: 0.536 -> 0.688 and 0.345 -> 0.425 | same data |
      | cardiotocography | class share by exam year | not flat by recording: suspect share 36% -> 1% | clinician-read diagnostic label; shows labelling practice drifting |
 
    * **For a stationary use case:**

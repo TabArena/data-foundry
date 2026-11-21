@@ -52,13 +52,13 @@ CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 means a liver patient (UCI)).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Keep with changes: the label is undocumented, but the test that retired hepatitis_c finds no separate recording here and methods spread; drop the 13 records entered twice (worth +0.02 ROC AUC to a lookup) and set 12 impossible values to missing. Priority 1: gap 0, use case 0, source 0, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Keep with changes: the label is undocumented, but the test that retired hepatitis_c finds no separate recording here and methods spread; drop the 13 records entered twice (worth +0.02 ROC AUC to a lookup) and set 12 impossible values to missing. Priority 1: gap 0, use case 0, source 0, shape 0, risk -1.
 
-CC (2026-11-11, Andrej): review page marks: the second copy of the 13 records entered twice dropped (issue 3, option B; each pair sits on adjacent rows of the UCI file, 583 to 570 rows, patient share 71.4% to 71.2%); the impossible values set to missing, rows kept (issue 2, option B: both bilirubin values in 3 rows where direct exceeds total, the albumin-to-globulin ratio in 8 rows where it differs from albumin / (total protein - albumin) by more than 0.2); collection facts `Samples: Over Time` and `Time: Lost` added (issue 5, option B). The label question (issue 1) and the time basis (issue 4) are answered on the page and stay open.
+CC (2026-11-11, Andrej): the second copy of the 13 records entered twice dropped (issue 3, option B; each pair sits on adjacent rows of the UCI file, 583 to 570 rows, patient share 71.4% to 71.2%); the impossible values set to missing, rows kept (issue 2, option B: both bilirubin values in 3 rows where direct exceeds total, the albumin-to-globulin ratio in 8 rows where it differs from albumin / (total protein - albumin) by more than 0.2); collection facts `Samples: Over Time` and `Time: Lost` added (issue 5, option B). The label question (issue 1) and the time basis (issue 4) are answered on the page and stay open.
 
-CC (2026-11-11, Andrej): review page marks, afternoon: kept with a note (issue 1, option a): the values are real hand-transcribed lab reports, labelled by a physician on a criterion not stated, the others are other patients, and the 583 records are a subset of the 751 of Ramana et al. (2011); `fit_reason` and a `curation_comments` bullet say so. Random split tagged `ForcedIIDFromTemporal` with a `Time basis:` line (issue 4, option a): held out by file position the scores stay within the spread of random splits.
+CC (2026-11-11, Andrej): kept with a note (issue 1, option a): the values are real hand-transcribed lab reports, labelled by a physician on a criterion not stated, the others are other patients, and the 583 records are a subset of the 751 of Ramana et al. (2011); `fit_reason` and a `curation_comments` bullet say so. Random split tagged `ForcedIIDFromTemporal` with a `Time basis:` line (issue 4, option a): held out by file position the scores stay within the spread of random splits.
 
-CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 7, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The physiology is stable but the label and the group collection are undocumented, and a flat file order is not a dated measurement; mixed.
 
@@ -77,10 +77,10 @@ Value: tuned methods spread (Lennart, 2026-10-06; TabPFN 3.5 0.766 against logis
 60 splits), which keeps a dataset unless an earlier rule applies (TP-3). Quality: 12 impossible values (issue 2).
 Weighed: a real liver-panel table whose methods separate, against a label of unknown basis.
 
-**Main points:** all issues settled 2026-11-11: kept with a note (issue 1: real lab reports labelled by a physician;
+**Main points:** all issues settled: kept with a note (issue 1: real lab reports labelled by a physician;
 criterion, hospital and period unknown); random split tagged forced from temporal, measured by file position (issue
-4); the 13 repeated records dropped (issue 3), 11 impossible values set to missing (issue 2), collection facts added
-(issue 5).
+4; the forced tag kept on 2026-11-18, issue 7); the 13 repeated records dropped (issue 3), 11 impossible values set to
+missing (issue 2), collection facts added (issue 5); issue 6 was withdrawn.
 
 **Record judgment:** a real liver-panel table with an undocumented label; the spread between methods is real, the
 basis of the label is not known. The data-scouting run of 2026-10-31 screened `nhanes_liver_elastography_fibrosis`

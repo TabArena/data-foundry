@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: santander_customer_satisfaction
 container_format: 2
-checksum: v2:c02bc08c9867d8a690777c23681cf3a2fed225492d0b9a6bb9deb85f9549bbd0
+checksum: v2:11643d47d38649cef1633d41d75bd37e1ab999bbd018f38b0ea31aa88f414c1a
 build:
   uuid: 01a111fc-12c0-72fc-95ab-3a7ad03daa2b
   checksum: v2:d5f915868cfcb2e0753992af307356871db8faaaea391a911fb35064a7c1aa19
@@ -73,7 +73,7 @@ decisions:
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 71,080 rows and 307 features. Source: Kaggle (2016).
 
-Built as `01a111fc-12c0-72fc-95ab-3a7ad03daa2b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c02bc08c9867d8a690777c23681cf3a2fed225492d0b9a6bb9deb85f9549bbd0`, so the build is stale. See [Build](#build).
+Built as `01a111fc-12c0-72fc-95ab-3a7ad03daa2b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:11643d47d38649cef1633d41d75bd37e1ab999bbd018f38b0ea31aa88f414c1a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -132,7 +132,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2016 |
 | domain | business & marketing |
 | license | Kaggle Competition Rules |
-| data_tags | IID, Anonymized, Snapshot |
+| data_tags | IID, Anonymized, Retrospective |
 | reference | Jimenez2016SantanderCustomerSatisfaction |
 | rows x columns | 71,080 x 308 |
 | task.target | TARGET |
@@ -261,7 +261,7 @@ We start with the train.csv from Kaggle (76,020 customers, 369 masked columns an
   - Why it stays: the bank keeps one income for all members of a household, so it sees a new customer's
     members, only not their label of the same period, and the link is small. Revisit if Santander states how
     and when the label was taken.
-- Time basis: Snapshot: one extract of Santander's customers (period not stated; competition 2016), with
+- Time basis: Retrospective: one extract of Santander's customers (period not stated; competition 2016), with
   windows of the last month to three months ending at it; the label is a state the host does not define or
   date, read as dissatisfaction at the extract, which the use case fills in for customers not yet known to be
   dissatisfied. No exit trace in the last month: customers whose current account emptied in the last month are
@@ -607,7 +607,7 @@ Santander masked the column names and gave no data dictionary. The names stay as
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 Accepted on purpose:
@@ -850,4 +850,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c02bc08c9867d8a690777c23681cf3a2fed225492d0b9a6bb9deb85f9549bbd0` |
+| stale | yes: the definition now gives checksum `v2:11643d47d38649cef1633d41d75bd37e1ab999bbd018f38b0ea31aa88f414c1a` |

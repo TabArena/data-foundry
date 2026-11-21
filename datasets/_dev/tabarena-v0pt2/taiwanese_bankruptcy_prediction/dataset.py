@@ -97,8 +97,6 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
           repeats on the UCI file: random split LightGBM 0.941, kNN (k = 25) 0.884; grouped by rebuilt chains 0.939
           and 0.881; grouped by 10 contiguous file segments 0.934 (sd 0.031) and 0.877. The chains miss most bankrupt
           runs, so the grouped scores bound the leak loosely. Kept with the random split and this note.
-        - ForcedIIDFromTemporal: the companies span 1999-2009 (Taiwan Economic Journal, per UCI), but no row carries its
-          year, so the split stays random.
         - Time basis: ForcedIIDFromTemporal: listed Taiwanese companies of 1999-2009, used to screen later statements;
           no row carries its year or company. The raw file repeats its rows at a regular period (26 to about 200 rows;
           one period after a row its closest match lies below the 1st percentile of random-pair distances for 34% of
