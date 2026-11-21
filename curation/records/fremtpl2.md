@@ -207,10 +207,13 @@ blocks 5-6 are cut mostly at a date; the metric's identity is stated above the f
 `BonusMalus` is blank and how small the signal is; the notes say a method must use the weight. The panel's reports
 quote the definition before these changes.
 
-**Main points:** Open: none. Settled on 2026-11-08: one task, the claims per year insured, and the claim cost per year
-insured is not created (issue 12); the tag `Two-Regime Zeros` stays and bemtpl97 gets it, as the tag describes the
-target's distribution (issue 10); the random split stays, with the note on the one rating profile behind its gap to a
-split grouped on identical rating factors (issue 11).
+**Main points:** Open: none. Settled on 2026-11-20 and 11-21: three windows on the IDpol blocks replace the random
+folds, the block ordering the split and no model input (issue 13), and `BonusMalus` keeps its blanking, the one window
+that meets the column only in its test accepted with its reason (issue 14). Settled on 2026-11-08: one task, the claims
+per year insured, and the claim cost per year insured is not created (issue 12); the tag `Two-Regime Zeros` stays and
+bemtpl97 gets it, as the tag describes the target's distribution (issue 10); the note on the one rating profile behind
+the gap to a split grouped on identical rating factors stays (issue 11), while the random split it kept is replaced by
+the windows of issue 13.
 
 **Issues for Lennart:**
 
@@ -895,7 +898,10 @@ split grouped on identical rating factors (issue 11).
 
    **Resolved (2026-11-20, Andrej):** B. Three windows on the IDpol blocks: block 6 tested on blocks 0-5 (640,557 rows, 94.5% training; 37,434 test), block 5 on 0-4 (597,998, 93.4%; 42,559), block 4 on 0-3 (488,801, 81.7%; 109,197); the block orders the split and is no input; no gap; `ForcedIIDFromTemporal` removed; the texts give the stationarity test, the window-vs-random comparison and the renewal leak the windows remove. `dataset check`: 0 errors. Not rebuilt.
 
-   **Answer (AI, 2026-11-20):** one consequence needs your call: the block-5 window trains only on blocks 0-4, where `BonusMalus` is blanked (it looks recorded after the year's own claims there), and tests on block 5, where it is recorded, so in that window models learn without the tariff's main factor and meet it in the test (`splits_feature_missing_in_test`); blocks 4 and 6 are not affected that way (block 4 trains and tests without it; block 6 trains on blocks 0-5, with block 5's values).
+14. **`BonusMalus` is blank in the blocks the block-5 window trains on: keep it and accept the warning, drop the
+    column, or drop that window?**
+
+   **Answer (AI, 2026-11-20):** one consequence of issue 13 needs your call: the block-5 window trains only on blocks 0-4, where `BonusMalus` is blanked (it looks recorded after the year's own claims there), and tests on block 5, where it is recorded, so in that window models learn without the tariff's main factor and meet it in the test (`splits_feature_missing_in_test`); blocks 4 and 6 are not affected that way (block 4 trains and tests without it; block 6 trains on blocks 0-5, with block 5's values).
 
    | | Option | What it does | Pro | Con |
    |---|---|---|---|---|
@@ -921,6 +927,11 @@ split grouped on identical rating factors (issue 11).
 
    * Blocks 5 and 6 look cut at a calendar date: almost no record covers a full year, so the release most likely ends inside the contract periods of the 4-6 sub-portfolio. The two newest windows are therefore smaller (16,079 and 13,357 years insured against 62,723 for block 4) and made of short records, a different mix from block 4.
    * The metric weights records by exposure, so short records count less; the windows still test a later block each, and every train side holds 82-94% of the rows.
+
+   **Resolved (2026-11-21, Andrej):** A, as implemented: `BonusMalus` keeps its blanking in blocks 0-4 and the
+   `splits_feature_missing_in_test` warning is accepted in `accepted_check_warnings` with its reason (a pricing model
+   meets a factor once it starts being recorded, and block 6's window learns it from block 5; most of block 5's
+   stationarity gap is this column, +0.0014 with it against +0.0005 without). No definition change. Not rebuilt.
 
 **Review panel:** ship after changes (mediator). Tier full, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
 MET-16, after option A of #51 (issue 6): 12 reports. Claims: 32 audited; 20 hold, 3 hold in part (`Exposure`'s share of

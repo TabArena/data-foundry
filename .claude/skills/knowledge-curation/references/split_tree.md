@@ -344,8 +344,12 @@ new region)_
         - yes, late labels → **Temporal · arrival date, label-delay gap**. Each case scored when it arrives, its target
           known only after a delay longer than the time column's smallest recorded step (a delivery, a chargeback, a
           recorded sale): windows on the arrival date, a gap of about the delay, or training only on cases whose outcome
-          is known before the window (SPLIT-10). Examples: 2024_lusaka_mobility_prediction_hackathon,
-          acquire_valued_shoppers_challenge, aeolus_rebuilt_1m, african_credit_scoring_challenge.
+          is known before the window (SPLIT-10). Where a cut on the arrival date would train on cases that close inside
+          the window, and the order in which the targets arrived can be rebuilt from the data (SPLIT-22), cut on that
+          order instead: it is the strictest form of training only on closed cases, so it needs no gap, and it arrives
+          with the target, so it is no model input (`time_of="label"`). Examples:
+          2024_lusaka_mobility_prediction_hackathon, acquire_valued_shoppers_challenge, aeolus_rebuilt_1m,
+          african_credit_scoring_challenge, california_house_prices_2020.
         - yes, a planning lead → **Temporal · arrival date, planning gap**. Each case scored some time before it happens
           (a forecast made a day ahead): windows on the arrival date, the planning lead as the gap. A planning lead that
           makes the task look like forecasting is first checked for tabular scope (SEL-11, TP-10). No v0.2 definition
