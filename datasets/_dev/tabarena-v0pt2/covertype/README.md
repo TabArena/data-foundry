@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: covertype
 container_format: 2
-checksum: v2:2f6209c2775a59a1e6ec4dd21b4cef3162d058b8cdfbaafc2f0b70e9823458ed
+checksum: v2:8f757530504a9a88477ad57961edcd9e3bb1add2b86fea185c65f19da8546914
 build:
   uuid: 01a111fc-5b2f-72b3-983a-85ec312c2e8f
   checksum: v2:8b59376d1ce32c48c1fb0023a14c193e8fe1b640c393153f40f15361b6c541da
@@ -67,7 +67,7 @@ decisions: []
 
 Multiclass classification of `Cover_Type`, scored with `log_loss` on IID splits. 581,012 rows and 14 features. Source: UCI (1998).
 
-Built as `01a111fc-5b2f-72b3-983a-85ec312c2e8f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2f6209c2775a59a1e6ec4dd21b4cef3162d058b8cdfbaafc2f0b70e9823458ed`, so the build is stale. See [Build](#build).
+Built as `01a111fc-5b2f-72b3-983a-85ec312c2e8f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8f757530504a9a88477ad57961edcd9e3bb1add2b86fea185c65f19da8546914`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -124,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | year | 1998 |
 | domain | environmental science & climate |
 | license | CC BY 4.0 |
-| data_tags | IID, Spatial, Snapshot |
+| data_tags | IID, Spatial, Retrospective, ForcedIIDFromGrouped |
 | reference | blackard1999comparative |
 | rows x columns | 581,012 x 15 |
 | task.target | Cover_Type |
@@ -213,10 +213,15 @@ Other steps:
   59.6% of the test cells have a training cell within one cell's distance on the four location columns, and
   LightGBM is as accurate on the others (0.972 against 0.969): a stand is recognised from location values
   within a few cells. The score mostly measures interpolation between mapped cells inside the four areas.
-- Time basis: Snapshot: one extract of the Forest Service's stand map of four wilderness areas and of terrain,
+- Time basis: Retrospective: one extract of the Forest Service's stand map of four wilderness areas and of terrain,
   road and fire-point layers (date not documented, before the August 1998 donation); the task fills in cells
   of the same areas at that moment, and cells of one stand share its label (see the look-up above). Not
   tested: a later map of the same areas, or land outside the four areas.
+- Group basis: ForcedIIDFromGrouped (Andrej, 2026-11-16): the use case maps land with no inventory, which comes
+  as whole stands of 20 to 900 cells; the data has no stand id or coordinates, and its four wilderness areas
+  are too few groups (see above), so the split is random. Overlap left: a random test cell usually has cells
+  of its own stand in training, so the score is optimistic for unmapped tracts. Not measured: how much of the
+  score comes from recognising stands through the terrain and distance features (SPLIT-25).
 
 ## Splits
 
@@ -232,7 +237,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -333,4 +338,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2f6209c2775a59a1e6ec4dd21b4cef3162d058b8cdfbaafc2f0b70e9823458ed` |
+| stale | yes: the definition now gives checksum `v2:8f757530504a9a88477ad57961edcd9e3bb1add2b86fea185c65f19da8546914` |

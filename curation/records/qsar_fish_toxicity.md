@@ -65,7 +65,7 @@ CC (2026-11-02, Lennart): on how the Milano workbook was downloaded ("freeware w
 through a public link rather than the authors' notification form): "that is okay for now, we can note it but it is
 not blocking us here". Noted here; regularise before this ships outside the group.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: a regulator's real toxicity task that now ships the structure with held-out series and separates methods; the overlap with qsar_aquatic_toxicity and the larger ADORE/Lunghini sets is a keep-and-settle question, not a validity problem. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: a regulator's real toxicity task that now ships the structure with held-out series and separates methods; the overlap with qsar_aquatic_toxicity and the larger ADORE/Lunghini sets is a keep-and-settle question, not a validity problem. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
 
 CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension` (Review issue 4): ECOTOX's earliest fathead minnow 96-hour LC50 test dates 850 of 908 chemicals (93.6%), 1956 to 2005. The facts describe the source and do not change with the split, which stays as it is.
 
@@ -87,7 +87,7 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case predicts for items the catalogue does not hold, which the held-out scaffolds stand for; that the entry date carries no wave is a measurement for the `Time basis:` line, not a different use case.
 - `Timeless` now means a fixed target in data with no time dimension. The split does not change.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `scaffold`, 10x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `scaffold`, 10x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -96,9 +96,9 @@ chemicals for the fathead minnow, compiled by Cassotti et al. (2015, SAR and QSA
 26(3):217-243, https://doi.org/10.1080/1062936X.2015.1018938; UCI https://doi.org/10.24432/C5JG7B). Since 2026-11-01
 the structure ships as a SMILES from the authors' own workbook (the same rows in the same order) in place of their six
 descriptors, the target comes from the workbook at full precision, and whole chemical series (Bemis-Murcko scaffolds,
-786 groups) are held out; RMSE is the fallback metric. The AI recommends shipping it. Reviewed on 2026-11-04 without a
+786 groups) are held out; RMSE is the fallback metric. Reviewed on 2026-11-04 without a
 panel, from the gathered evidence (the record, Andrej's review of 2026-10-15, the CHANGELOG, model runs on
-the shipped data and on TabArena v0.1's copy); Andrej disputes Lennart's `Yes` (issue 1). Validity: a measured outcome
+the shipped data and on TabArena v0.1's copy); Andrej disputed Lennart's `Yes`, kept on 2026-11-12 (issue 1, B). Validity: a measured outcome
 of a standard test, the question a regulatory toxicologist asks of an untested chemical; the descriptors a genetic
 algorithm chose on 726 of the chemicals, the one leak concern, have left. Value: the task probes on the v0.2 frame
 give R^2 0.640 (LightGBM) and 0.614 (random forest), no flags; on the shipped data (descriptors, random splits) the 40
@@ -110,11 +110,11 @@ regulator's real task with structures and held-out series +, methods separate +,
 
 **Main points:** Nothing open. Settled 2026-11-12: kept next to qsar_aquatic_toxicity, to be settled against ADORE or
 the Lunghini set once one is added (issue 1, B); the fit stays direct (issue 2, A), the scaffold split's time basis is `Timeless`
-with the ECOTOX dating written down (issue 3, a), collection facts `Samples: Over Time`, `Time: Dated` (issue 4), and
+with the ECOTOX dating written down (issue 3, a; `UnseenGroup` in its place since 2026-11-13, CC line), collection facts `Samples: Over Time`, `Time: Dated` (issue 4), and
 the record's `problem_type` is `Regression`.
 
 **Record judgment:** valid. The record carries the v0.2 changes (CC and Assessment of 2026-11-01 and 2026-11-02);
-Andrej's dispute of 2026-10-15 is not on the record. The workbook was fetched through a public link rather than the
+Andrej's dispute of 2026-10-15 is settled in issue 1. The workbook was fetched through a public link rather than the
 authors' notification form ("freeware ... if proper reference is given"); Lennart: noted, not blocking, to regularise
 before shipping outside the group.
 
@@ -298,7 +298,7 @@ before shipping outside the group.
      -log10(mol/L) matches the workbook target at r = 0.923 on 212 chemicals, median difference 0.02 log units, 95.3%
      within one log; so the join finds the right chemical and the right endpoint.
    * **The split, three expanding windows by first test year against the scaffold folds** (untuned LightGBM / random
-     forest, `encode_smiles`, RMSE, every training side at least half the dated chemicals; Slurm 1378105):
+     forest, `encode_smiles`, RMSE, every training side at least half the dated chemicals):
 
      | Scheme | RMSE, LightGBM / RF | Close training analog | Test scaffold in training |
      |---|---|---|---|
@@ -369,8 +369,3 @@ before shipping outside the group.
 ## Reference
 
 Cassotti, Matteo, et al. "A similarity-based QSAR model for predicting acute toxicity towards the fathead minnow (Pimephales promelas)." SAR and QSAR in Environmental Research 26.3 (2015): 217-243.
-
-CC (2026-11-11, Andrej): kept next to `qsar_aquatic_toxicity` with the overlap written into both definitions (the decision is recorded as issue 1 of `qsar_aquatic_toxicity`).
-- Counted by structure, from the two authors' workbooks rather than the earlier MLOGP estimate: 237 chemicals are in both, 26.1% of this set and 43.4% of the Daphnia set, 225 of them under the same CAS-RN.
-- Their LC50s correlate at r = 0.81 (Spearman 0.82), the Daphnia values 0.37 log units more toxic on average.
-- The species, the exposure time and the endpoint differ, so the two are different tasks of one study design, not duplicates; a method that suits the design gains on both.

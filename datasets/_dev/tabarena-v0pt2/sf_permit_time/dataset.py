@@ -172,7 +172,7 @@ class SfPermitTime(AbstractCuratedDataset):
         - Re-read due around 2027-02-06 (Andrej, 2026-11-10): the read of 6 November 2026 of the 4,106 permits filed
           since 2025 and still open is saved; three months on, read the same permits by permit number from the API
           and count the changes in the kept fields among those issued since, to see whether the review rewrites them
-          before the issue. Reopen the split's review issue if any field changes for more than a few permits.
+          before the issue. Reopen the split question if any field changes for more than a few permits.
     """
 
     # Task

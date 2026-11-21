@@ -22,6 +22,7 @@ year: '2020'
 collection_period: Unknown
 required_split:
 - Random (IID)
+problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=43442
 - https://www.kaggle.com/datasets/podsyp/is-this-a-good-customer
@@ -46,21 +47,21 @@ Andrej: Need to clarify source
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Kaggle dataset (not a competition) with no stated task metric; the original source is unknown (open item in the record).
 
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `education` (the README lists their levels).
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `education` (the README lists their levels).
 
-CC (2026-11-01, Lennart): marks on the review board of PR #37: month stays a number (a position in the year's continuous cycle, shipped as a number: the curator's cycle rule).
+CC (2026-11-01, Lennart): decided in the dtype review of PR #37: month stays a number (a position in the year's continuous cycle, shipped as a number: the curator's cycle rule).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: a Kaggle upload of 1,723 point-of-sale consumer loans with no named lender and an undefined 'bad' label, kept under the source-gap rule by the curator; the rows look real and methods separate (0.244 to 0.270 1-AUC). Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: a Kaggle upload of 1,723 point-of-sale consumer loans with no named lender and an undefined 'bad' label, kept under the source-gap rule by the curator; the rows look real and methods separate (0.244 to 0.270 1-AUC). Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
 
-CC (2026-11-10, Andrej): review page marks: time basis (issue 2, option B): random as a stationary relation; the `Time basis: StationaryRelation:` bullet is in `curation_comments` (twelve months in file order, flat bad rate, monthly windows score as random splits); the tag enters `data_tags`. Collection facts (issue 3, option B): `Time: Dated` in place of `Time: Lost`, `Target: Varying Delay` added. Split unchanged.
+CC (2026-11-10, Andrej): decided: time basis (issue 2, option B): random as a stationary relation; the `Time basis: StationaryRelation:` bullet is in `curation_comments` (twelve months in file order, flat bad rate, monthly windows score as random splits); the tag enters `data_tags`. Collection facts (issue 3, option B): `Time: Dated` in place of `Time: Lost`, `Target: Varying Delay` added. Split unchanged.
 
-CC (2026-11-11, Andrej): kept, with a note on `family_status` (BeyondArena v0.2 review page, issue 1, b): no mark of generated data was found, and the gap in source and label stays in the approximate fit. `family_status` is independent of every other column, age included, and is kept as recorded with a curation note.
+CC (2026-11-11, Andrej): kept, with a note on `family_status` (Review issue 1, b): no mark of generated data was found, and the gap in source and label stays in the approximate fit. `family_status` is independent of every other column, age included, and is kept as recorded with a curation note.
 
 CC (2026-11-18, Andrej): Review issue 4, A, as implemented: Random 3-fold CV, 10 repeats (1,148-1,149 train / 574-575 test loans), `StationaryRelation`.
 
-CC (2026-11-18, Andrej): verdict ship (blind split review page).
+CC (2026-11-18, Andrej): verdict ship (blind split walk).
 
-CC (2026-11-18, Andrej): the declared split (random, 10x3 folds, `StationaryRelation`) is checked: split mark on the blind split review page.
+CC (2026-11-18, Andrej): the declared split (random, 10x3 folds, `StationaryRelation`) is checked: confirmed in the blind split walk.
 
 ## Review
 
@@ -83,7 +84,7 @@ source -.
 
 **Main points:** all issues resolved: kept with a note on `family_status`, no mark of generated data (issue 1,
 2026-11-11); random as a stationary relation (issue 2) and the record's time dated with a varying delay (issue 3),
-2026-11-10.
+2026-11-10; the relation measured flat across the months and the random folds kept (issue 4, A, 2026-11-18).
 
 **Record judgment:** valid with a known gap, ship. The label has no stated definition or horizon, which the fit
 already says.

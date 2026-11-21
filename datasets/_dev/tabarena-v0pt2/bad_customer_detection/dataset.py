@@ -91,7 +91,7 @@ class BadCustomerDetection(AbstractCuratedDataset):
           logistic regression). A split by month could not wait for the labels: the bad mark comes after a delay the
           source does not state, about a loan term. Not tested: loans of a later year or another credit climate, as
           the file covers twelve months of one lender.
-        - Checked for generated data (2026-11-10, kept on Andrej's mark of 2026-11-11): none of the marks of a generator
+        - Checked for generated data (2026-11-10, kept by Andrej, 2026-11-11): none of the marks of a generator
           (no rules on the row number, no repeated rows, structural zeros only of lending policy, complete integer ranges),
           and 9 of 13 columns are tied to the rest of the row, as in real credit data. One oddity: `family_status` is
           independent of every other column, age included (shuffle-test ROC AUC 0.488; 27% married at 18 to 22 and at over

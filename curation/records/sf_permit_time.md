@@ -63,17 +63,17 @@ CC (2026-10-19, Lennart): `DescriptionIsStandardPhrase` counts the descriptions 
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 2 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Existing Construction Type Description`, `Proposed Construction Type Description` (the README lists their levels).
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): 2 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Existing Construction Type Description`, `Proposed Construction Type Description` (the README lists their levels).
 
 **Assessment (AI, 2026-11-01):** the benchmark STRABLE (https://arxiv.org/abs/2605.12292) carries this record's data as "SF Building Permits": Raw file sf_Building_Permits.csv from TextTabBench. Paper says 'construction cost'; config target is time_to_approve. Subsampled by STRABLE to 75,000 rows. Tagged STRABLE on 2026-11-01.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: censoring, late labels and an all-rows feature were fixed and tested in three rounds; only the domain field differs. Priority 3: gap 0, use case 0, source 1, shape 1, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: censoring, late labels and an all-rows feature were fixed and tested in three rounds; only the domain field differs. Priority 3: gap 0, use case 0, source 1, shape 1, risk -0.
 
-CC (2026-11-10, Andrej): review page issue 1, option C: the half-year windows, the six-month gap and the issued-before-the-start filter stay; a curation bullet gives the check of 2026-11-06 (kept fields unchanged after the issue for 18,420 permits; the review's changes go to the dropped Revised Cost), and a second one the re-read due around 2027-02-06 of the 4,106 open permits saved on 2026-11-06. Splits and data unchanged.
+CC (2026-11-10, Andrej): Review issue 1, option C: the half-year windows, the six-month gap and the issued-before-the-start filter stay; a curation bullet gives the check of 2026-11-06 (kept fields unchanged after the issue for 18,420 permits; the review's changes go to the dropped Revised Cost), and a second one the re-read due around 2027-02-06 of the 4,106 open permits saved on 2026-11-06. Splits and data unchanged.
 
-CC (2026-11-11, Andrej): record field set from the definition (review page field mark): `domain` business & marketing (was industry & manufacturing).
+CC (2026-11-11, Andrej): record field set from the definition: `domain` business & marketing (was industry & manufacturing).
 
-CC (2026-11-17, Andrej): the declared split (temporal on `Filed Date`, horizon 6 months, gap 6 months) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `Filed Date`, horizon 6 months, gap 6 months) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 

@@ -64,17 +64,17 @@ CC (2026-10-01, Lennart): Back to IID splits on the full data (all 7 cover types
 
 CC (2026-10-21, Lennart): Fallback log loss, not the paper's accuracy.
 
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `Soil_ClimaticZone` (a partial order).
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): left unordered: `Soil_ClimaticZone` (a partial order).
 
-CC (2026-11-01, Lennart): marks on the review board of PR #37: Soil_ClimaticZone stays unordered (a second dimension within the altitude belts), noted in the definition.
+CC (2026-11-01, Lennart): decided in the dtype review of PR #37: Soil_ClimaticZone stays unordered (a second dimension within the altitude belts), noted in the definition.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `fia_forest_type` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship with the optimism measured in fit_reason: random cells are the source's design, but labels are per stand and four location columns alone predict 93% of test cells (LightGBM 97% with them, 70% without), so the score is mostly spatial interpolation. Priority 3: gap 1, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship with the optimism measured in fit_reason: random cells are the source's design, but labels are per stand and four location columns alone predict 93% of test cells (LightGBM 97% with them, 70% without), so the score is mostly spatial interpolation. Priority 3: gap 1, use case 0, source 1, shape 1, risk -1.
 
-CC (2026-11-10, Andrej): review page marks: random cells kept, with the look-up measured (issue 1, option B): `fit_reason` and `curation_comments` give it (four location columns alone predict 93.4% of test cells; without them LightGBM falls from 97.1% to 70.2%). Time basis (issue 2, option B): random cells, `Snapshot` of one map extract; the `Time basis: Snapshot:` bullet is in `curation_comments`, the tag enters `data_tags`. Split unchanged.
+CC (2026-11-10, Andrej): decided: random cells kept, with the look-up measured (issue 1, option B): `fit_reason` and `curation_comments` give it (four location columns alone predict 93.4% of test cells; without them LightGBM falls from 97.1% to 70.2%). Time basis (issue 2, option B): random cells, `Snapshot` of one map extract; the `Time basis: Snapshot:` bullet is in `curation_comments`, the tag enters `data_tags`. Split unchanged.
 
-CC (2026-11-17, Andrej): the declared split (random, 1x3 folds, `Retrospective`, `ForcedIIDFromGrouped`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 1x3 folds, `Retrospective`, `ForcedIIDFromGrouped`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -97,7 +97,7 @@ between neighbouring cells -, no coordinates to split by -.
 (decided under its earlier name `Snapshot`) for one map extract (issue 2, B).
 
 **Record judgment:** valid with a known gap. The record carries Lennart's split, metric and dtype calls (CC 2026-10-01,
-2026-10-21, 2026-11-01); it has not been checked by Andrej. Better data is screened: `fia_forest_type` (`TBD -> Yes`,
+2026-10-21, 2026-11-01) and Andrej's of 2026-11-10. Better data is screened: `fia_forest_type` (`TBD -> Yes`,
 priority 3), forest inventory plots with locations.
 
 **Issues for Andrej:**

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: jm1
 container_format: 2
-checksum: v2:6ac85918bf6b82f2699d3f1a0298e468d36107768ca0f11dc9866ca2eefd6a05
+checksum: v2:02f0e2d8bd72e0ef394f9bf694742999beb1192229e349ab668cbc3f0f377c4a
 build:
   uuid: 01a111fc-b2fb-721e-9fd2-4f7373b53bca
   checksum: v2:bc8ba9ad339045c44c01315e91b4c963a87914574576a3c1bd368d478f4efd5e
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `defects`, scored with `roc_auc` on IID splits. 8,736 rows and 21 features. Source: Other (2004).
 
-Built as `01a111fc-b2fb-721e-9fd2-4f7373b53bca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6ac85918bf6b82f2699d3f1a0298e468d36107768ca0f11dc9866ca2eefd6a05`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b2fb-721e-9fd2-4f7373b53bca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:02f0e2d8bd72e0ef394f9bf694742999beb1192229e349ab668cbc3f0f377c4a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -135,7 +135,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2004 |
 | domain | technology & internet |
 | license | Public Domain |
-| data_tags | IID, Snapshot |
+| data_tags | IID, Retrospective |
 | reference | menzies2004good |
 | copy: OpenML 1053, which we read (byte-identical to the PROMISE file) | OpenML (2014): https://www.openml.org/d/1053; license: Public |
 | rows x columns | 8,736 x 22 |
@@ -203,9 +203,9 @@ The first 5 of 8,736 rows of the final frame (random rows: the frame is shuffled
   Kept as shipped: tested, the zeros mark no class. The flag alone scores ROC AUC 0.52 (defect share 0.30
   against 0.21, higher among large modules and lower among small ones), and gradient boosting scores the same
   with the zeros as shipped or set to missing (0.709 against 0.710, 5 folds; review of 2026-11-04).
-- Time basis: Snapshot: one extraction of the static code measures of one version of JM1, joined with each
+- Time basis: Retrospective: one extraction of the static code measures of one version of JM1, joined with each
   function's defect reports (NASA Metrics Data Program; donated to PROMISE on 2 December 2004); the test
-  functions are functions of the same code base at the same moment (2026-11-12, Andrej, review issue 2 A).
+  functions are functions of the same code base at the same moment (2026-11-12, Andrej).
   When the code was measured relative to the defect reports and their fixes is not stated. The random split
   cannot test a later release of the code, nor defects that one report shares across the functions of a file
   (the data has no file or function name).
@@ -230,7 +230,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -323,4 +323,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6ac85918bf6b82f2699d3f1a0298e468d36107768ca0f11dc9866ca2eefd6a05` |
+| stale | yes: the definition now gives checksum `v2:02f0e2d8bd72e0ef394f9bf694742999beb1192229e349ab668cbc3f0f377c4a` |

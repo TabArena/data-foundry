@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_aquatic_toxicity
 container_format: 2
-checksum: v2:627b13ae41a8214871c8b67fb3058f34b5ae2b272f4b3f8b102a31d7380ab092
+checksum: v2:9fc9aa2bbe64f7d063690fda0497a64442f5cb3a3aeab00e465b17ea0a04f898
 build:
   uuid: 01a111fc-b7f2-70ec-b160-9c69d2d62b73
   checksum: v2:4f769b0dcc94908ac9ccffb008629f74efd0f80a1d9d641b36aa2b226ea925e6
@@ -76,7 +76,7 @@ decisions: []
 
 Regression of `LC50`, scored with `rmse` on grouped splits by `scaffold`. 546 rows and 1 features. Source: UCI (2014).
 
-Built as `01a111fc-b7f2-70ec-b160-9c69d2d62b73` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:627b13ae41a8214871c8b67fb3058f34b5ae2b272f4b3f8b102a31d7380ab092`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b7f2-70ec-b160-9c69d2d62b73` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9fc9aa2bbe64f7d063690fda0497a64442f5cb3a3aeab00e465b17ea0a04f898`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -143,7 +143,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2014 |
 | domain | chemistry & material science |
 | license | CC BY 4.0 |
-| data_tags | Non-IID, Grouped, Timeless |
+| data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | cassotti2014prediction |
 | rows x columns | 546 x 3 |
 | task.target | LC50 |
@@ -211,7 +211,18 @@ We start with the data from UCI and add the structures from the authors' own wor
 - The structures come from the authors' own workbook, which the UCI copy left out. It is the same 546 rows in the same order: all 8 descriptors and LC50 are identical on every row, so the link is exact and needs no key. All 546 SMILES parse, and no two are the same chemical, with or without stereochemistry.
 - Split (CLEAN-24, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the structure (`scaffold_groups`); chemicals without a ring, and those of a scaffold holding more than a tenth of the set, are groups of their own. An assessor estimates the toxicity of an untested chemical, often of a series not yet measured, so whole series are held out; qsar_bioconcentration, qsar_oral_toxicity, qsar_fish_toxicity and qsar_tid_11 group the same way. The source split at random.
 - Sibling of qsar_fish_toxicity (Andrej, 2026-11-11: keep both, note the overlap): the same Milano group, source databases (ECOTOX, EAT5, OASIS) and pipeline. 237 chemicals are in both, counted on the canonical SMILES of the two authors' workbooks with the stereo set aside (43.4% of this set, 26.1% of the fish set; 225 of them carry the same CAS-RN in both), and their LC50s correlate at r = 0.81 (Spearman 0.82), the Daphnia values 0.37 log units more toxic on average. Another species (Daphnia magna, not the fathead minnow) and exposure time (48 h, not 96 h), so a different task, not a duplicate (PROV-7); a method that suits this study design gains on both.
-- Time basis: Timeless (Andrej, 2026-11-11; REVIEW.md issue 2, option a): a chemical's 48-hour LC50 for Daphnia magna is a property of the chemical, and the Milano group compiled historic laboratory tests in 2014 without dates. Dated through the EPA's ECOTOX bulk release (`ecotox_ascii_09_15_2026`), joined on the CAS-RN of the authors' workbook to the Daphnia magna 48-hour LC50 records, the year being the publication year of the earliest matching test: 394 of 546 chemicals (72.2%), 481 (88.1%) when only the species has to match; 1965 to 2018, median 1985. Where ECOTOX gives mg/L, its median per chemical matches the target at r = 0.903 (170 chemicals, median difference 0.06 log units). The relation does not move with the year (Spearman of first test year and LC50 +0.15 on the strict join, +0.11 on the species join), and a forward split by first test year is no stricter than the scaffold folds (untuned models on `encode_smiles`, RMSE, three expanding windows from 1986, each training side at least half the dated chemicals; Slurm 1378106, 2026-11-11):
+- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before, Andrej, 2026-11-11): the
+  use case predicts for chemicals not tested yet, which whole scaffolds held out stand for. A chemical's
+  48-hour LC50 for Daphnia magna is a property of the chemical, and the Milano group compiled historic
+  laboratory tests in 2014 without dates. Dated through the EPA's ECOTOX bulk release
+  (`ecotox_ascii_09_15_2026`), joined on the CAS-RN of the authors' workbook to the Daphnia magna 48-hour LC50
+  records, the year being the publication year of the earliest matching test: 394 of 546 chemicals (72.2%), 481
+  (88.1%) when only the species has to match; 1965 to 2018, median 1985. Where ECOTOX gives mg/L, its median per
+  chemical matches the target at r = 0.903 (170 chemicals, median difference 0.06 log units). The relation does
+  not move with the year (Spearman of first test year and LC50 +0.15 on the strict join, +0.11 on the species
+  join), and a forward split by first test year is no stricter than the scaffold folds (untuned models on
+  `encode_smiles`, RMSE, three expanding windows from 1986, each training side at least half the dated
+  chemicals; 2026-11-11):
 
   | Scheme | RMSE, LightGBM / RF | Close training analog | Test scaffold in training |
   |---|---|---|---|
@@ -321,7 +332,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -372,4 +383,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:627b13ae41a8214871c8b67fb3058f34b5ae2b272f4b3f8b102a31d7380ab092` |
+| stale | yes: the definition now gives checksum `v2:9fc9aa2bbe64f7d063690fda0497a64442f5cb3a3aeab00e465b17ea0a04f898` |

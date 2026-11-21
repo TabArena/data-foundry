@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: video_transcoding_time_prediction
 container_format: 2
-checksum: v2:7cdb23e42c6e35e6d74cbac70f4d8c635c77ec56ea3fecc320ff591ad8937721
+checksum: v2:1ec183d8e152cff598c10fc5a5863f83922030132fb64a1a6217290ce53c929e
 build:
   uuid: 01a111fc-7b5a-7853-8e13-f42ccc0c3b03
   checksum: v2:3aa594889a2dde13c7f6af4bcea53b584d83d77906ab536ffec81e5413812dd5
@@ -76,7 +76,7 @@ decisions: []
 
 Regression of `log_transcoding_time`, scored with `rmsle` on grouped splits by `video_id`. 68,784 rows and 18 features. Source: UCI (2015).
 
-Built as `01a111fc-7b5a-7853-8e13-f42ccc0c3b03` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7cdb23e42c6e35e6d74cbac70f4d8c635c77ec56ea3fecc320ff591ad8937721`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7b5a-7853-8e13-f42ccc0c3b03` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1ec183d8e152cff598c10fc5a5863f83922030132fb64a1a6217290ce53c929e`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -197,7 +197,7 @@ We use the tabular prediction task from the UCI archive, which is a video transc
 - The data includes several transcoding per video (also with different output target formats), which creates a non-IID setting. We will use the video id as the group label, and we will make sure to split the data such that all transcoding measurements for a given video are in the same split (train/test).
 - We log scale the target variable.
 - Metric: RMSLE on the time, computed after the inverse of the shipped log (`target_transform="log"`), not the paper's R2 on the raw time (known only from a dissertation abstract, not read); the curator accepted the log-scale error (Lennart, 2026-10-21).
-- Scored per job (Lennart, 2026-11-08, review issue 1; MET-17): each job is a decision of the scheduler. 80 of the 1,099 videos were transcoded to the full grid of 841 output settings and hold 97.8% of the jobs, so the score is in effect the error on new output settings of these videos; 1,018 videos have one job, and counting each video once would give them 93% of the weight, neither mix a cluster's queue. Counting each video once ranks 8 untuned predictors (random forest, extra trees, two LightGBM, two ridge, kNN, the training mean) like the per-job RMSLE at Kendall tau 0.90 per split on average (lowest 0.79) and 0.93 for the ranking by the mean over the 9 shipped splits, and swaps the top pair (random forest leads per job, LightGBM per video).
+- Scored per job (Lennart, 2026-11-08; MET-17): each job is a decision of the scheduler. 80 of the 1,099 videos were transcoded to the full grid of 841 output settings and hold 97.8% of the jobs, so the score is in effect the error on new output settings of these videos; 1,018 videos have one job, and counting each video once would give them 93% of the weight, neither mix a cluster's queue. Counting each video once ranks 8 untuned predictors (random forest, extra trees, two LightGBM, two ridge, kNN, the training mean) like the per-job RMSLE at Kendall tau 0.90 per split on average (lowest 0.79) and 0.93 for the ranking by the mean over the 9 shipped splits, and swaps the top pair (random forest leads per job, LightGBM per video).
 - Time basis: Timeless: designed transcoding jobs on one machine (Deneke et al. 2014); the video's properties
   and the output setting are known before a job, no job is dated, and all jobs of a video are held out together.
   Not tested: another machine or newer codecs.
@@ -259,7 +259,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_conflicting_duplicate_rows`: 81 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
@@ -362,4 +362,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7cdb23e42c6e35e6d74cbac70f4d8c635c77ec56ea3fecc320ff591ad8937721` |
+| stale | yes: the definition now gives checksum `v2:1ec183d8e152cff598c10fc5a5863f83922030132fb64a1a6217290ce53c929e` |

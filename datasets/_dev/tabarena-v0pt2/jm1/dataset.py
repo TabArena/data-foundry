@@ -103,7 +103,7 @@ class Jm1(AbstractCuratedDataset):
           with the zeros as shipped or set to missing (0.709 against 0.710, 5 folds; review of 2026-11-04).
         - Time basis: Retrospective: one extraction of the static code measures of one version of JM1, joined with each
           function's defect reports (NASA Metrics Data Program; donated to PROMISE on 2 December 2004); the test
-          functions are functions of the same code base at the same moment (2026-11-12, Andrej, review issue 2 A).
+          functions are functions of the same code base at the same moment (2026-11-12, Andrej).
           When the code was measured relative to the defect reports and their fixes is not stated. The random split
           cannot test a later release of the code, nor defects that one report shares across the functions of a file
           (the data has no file or function name).

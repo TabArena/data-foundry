@@ -56,9 +56,9 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `x264_ugc_encoding_time` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: real transcoding measurements held out by video for load balancing; no defect found, spread unmeasured. Priority 3: gap 0, use case 1, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: real transcoding measurements held out by video for load balancing; no defect found, spread unmeasured. Priority 3: gap 0, use case 1, source 1, shape 1, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): designed transcoding jobs on one machine, none dated, all jobs of a video held out together. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted (Review  2, B, through the cross-dataset item on routine `Timeless` issues): designed transcoding jobs on one machine, none dated, all jobs of a video held out together. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 **Assessment (AI, 2026-11-08):** one vote per unit (the scan of 2026-11-08 after boreal_postfire_lichen_biomass's issue 7): 80 of the 1,099 videos were transcoded to the full grid of 841 output settings and hold 97.8% of the 68,784 jobs; 1,018 videos have one job and would take 93% of the weight if each video counted once. The scheduler acts per job. Counting each video once ranks 8 untuned models at Kendall tau 0.90 per split (lowest 0.79) and 0.93 for the ranking by the mean over the 9 shipped splits, the same best model on 3 of 9 (random forest and LightGBM swap at the top). Open for Lennart as issue 1 of the record's Review; recommended: per job, with a note that names the 80 full-grid videos (B).
 
@@ -66,13 +66,13 @@ CC (2026-11-08, Lennart): issue 4, B: scored per job, with a note. Each job is a
 
 CC (2026-11-08, Lennart): the declared metric (rmsle) is checked.
 
-CC (2026-11-11, Andrej): BeyondArena v0.2 review page, video_transcoding_time_prediction, issue 3 (leak and score), B, keep with notes:
+CC (2026-11-11, Andrej): Review issue 3 (leak and score), B, keep with notes:
 - No leak: no column is measured during or after a job, and the video split raises LightGBM's RMSLE from 0.081 (row split) to 0.181.
 - The task summary now says the time does not grow with the video's duration (likely a fixed-length piece) and that 81 large videos carry the score; the check's table is in the definition's notes. Rows, split and metric unchanged.
 
 CC (2026-11-17, Andrej): Review issue 5, A: the declared split stays; the dissertation's evaluation on unseen video streams agrees with holding out whole videos.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `video_id`, 3x3 folds, `Timeless`) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (grouped on `video_id`, 3x3 folds, `Timeless`) is checked: confirmed in the blind split walk.
 
 ## Review
 
@@ -91,7 +91,7 @@ one machine and one ffmpeg version (-), few large test videos per fold and no me
 
 **Main points:** Shipped as defined (issue 1, 2026-11-11; verdict ship, metric and split ok); the video split is named
 `Timeless` (issue 2, resolved 2026-11-06); no leak, kept with notes on what the time is and that 81 videos carry the
-score (issue 3, resolved 2026-11-11). No open issue. Issue 4 (Lennart, 2026-11-08): Resolved on 2026-11-08: scored per job, each job a decision of the scheduler, with a note that 80 full-grid videos hold 97.8% of the jobs (issue 1).
+score (issue 3, resolved 2026-11-11); the split by video kept (issue 5, A, 2026-11-17). No open issue. Issue 4 (Lennart, 2026-11-08): Resolved on 2026-11-08: scored per job, each job a decision of the scheduler, with a note that 80 full-grid videos hold 97.8% of the jobs (issue 1).
 
 **Record judgment:** valid. The task is the source's ("transcoding time prediction for proactive load balancing"),
 the split by video is the record's and Lennart's early call, and the metric is his (RMSLE on the time, 2026-10-21).

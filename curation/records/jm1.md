@@ -56,11 +56,11 @@ CC (2026-10-01, Lennart): Leak audit: deduplicated to be on the safe side. 25% o
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (True means defects).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: real NASA defect data cleaned as the field cleans it; methods spread, and the Halstead zero block, tested, marks no class. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: real NASA defect data cleaned as the field cleans it; methods spread, and the Halstead zero block, tested, marks no class. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
-CC (2026-11-12, Andrej): ship as defined (BeyondArena v0.2 review page, issues 1 and 2, A). The random split is read as a `Snapshot` of one code version, its `Time basis:` line in the curation notes; the Halstead tool's zero block (893 rows, all 16 Halstead and line-count measures 0) is noted there as kept, since it marks no class. `domain` filled from the definition (technology & internet). The declared split and metric checked and kept.
+CC (2026-11-12, Andrej): ship as defined (Review  1 and 2, A). The random split is read as a `Snapshot` of one code version, its `Time basis:` line in the curation notes; the Halstead tool's zero block (893 rows, all 16 Halstead and line-count measures 0) is noted there as kept, since it marks no class. `domain` filled from the definition (technology & internet). The declared split and metric checked and kept.
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -93,7 +93,7 @@ removed are 95% defect-free, mostly small modules, so the defect share rises fro
 are the 88 profiles that occur with both labels. Andrej's early remark (keep one of the many related NASA tasks) is met:
 only jm1, the largest, is in. The data-scouting run of 2026-10-31 found newer defect data (`apachejit`, priority 2;
 `smartshark_release_defect_prediction`, priority 3; `unified_bug_dataset`, 2nd tier), screened in their own records and
-not added yet. The record has no `domain`; the definition's `technology & internet` can be filled in without a mark.
+not added yet. The record's `domain` is the definition's `technology & internet` (CC 2026-11-12).
 
 **Issues for Andrej:**
 

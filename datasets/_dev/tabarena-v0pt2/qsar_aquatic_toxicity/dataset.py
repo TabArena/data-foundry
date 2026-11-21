@@ -104,8 +104,8 @@ class QsarAquaticToxicity(AbstractCuratedDataset):
         - The structures come from the authors' own workbook, which the UCI copy left out. It is the same 546 rows in the same order: all 8 descriptors and LC50 are identical on every row, so the link is exact and needs no key. All 546 SMILES parse, and no two are the same chemical, with or without stereochemistry.
         - Split (CLEAN-24, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the structure (`scaffold_groups`); chemicals without a ring, and those of a scaffold holding more than a tenth of the set, are groups of their own. An assessor estimates the toxicity of an untested chemical, often of a series not yet measured, so whole series are held out; qsar_bioconcentration, qsar_oral_toxicity, qsar_fish_toxicity and qsar_tid_11 group the same way. The source split at random.
         - Sibling of qsar_fish_toxicity (Andrej, 2026-11-11: keep both, note the overlap): the same Milano group, source databases (ECOTOX, EAT5, OASIS) and pipeline. 237 chemicals are in both, counted on the canonical SMILES of the two authors' workbooks with the stereo set aside (43.4% of this set, 26.1% of the fish set; 225 of them carry the same CAS-RN in both), and their LC50s correlate at r = 0.81 (Spearman 0.82), the Daphnia values 0.37 log units more toxic on average. Another species (Daphnia magna, not the fathead minnow) and exposure time (48 h, not 96 h), so a different task, not a duplicate (PROV-7); a method that suits this study design gains on both.
-        - Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before, Andrej, 2026-11-11; REVIEW.md issue 2, option
-          a): the use case predicts for chemicals not tested yet, which whole scaffolds held out stand for. A chemical's
+        - Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before, Andrej, 2026-11-11): the
+          use case predicts for chemicals not tested yet, which whole scaffolds held out stand for. A chemical's
           48-hour LC50 for Daphnia magna is a property of the chemical, and the Milano group compiled historic
           laboratory tests in 2014 without dates. Dated through the EPA's ECOTOX bulk release
           (`ecotox_ascii_09_15_2026`), joined on the CAS-RN of the authors' workbook to the Daphnia magna 48-hour LC50
@@ -115,7 +115,7 @@ class QsarAquaticToxicity(AbstractCuratedDataset):
           not move with the year (Spearman of first test year and LC50 +0.15 on the strict join, +0.11 on the species
           join), and a forward split by first test year is no stricter than the scaffold folds (untuned models on
           `encode_smiles`, RMSE, three expanding windows from 1986, each training side at least half the dated
-          chemicals; Slurm 1378106, 2026-11-11):
+          chemicals; 2026-11-11):
 
           | Scheme | RMSE, LightGBM / RF | Close training analog | Test scaffold in training |
           |---|---|---|---|
