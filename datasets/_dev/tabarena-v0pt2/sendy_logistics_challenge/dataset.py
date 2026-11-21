@@ -114,7 +114,7 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
           the 740 leave, CC below). With them, LightGBM on the first repeat put 4.6% of its squared error on the
           legs of 10 s or less, a model trained only on legs of 100 s or more lost 11.5 RMSE over the nine splits
           (744.2 to 755.7), and an explicit wait feature gained 8.5: the task partly scored spotting late marks.
-        - CC (2026-11-05, Lennart): the 740 pickup legs of 60 s or less leave (issue 4, B; CLEAN-11's clause for a
+        - CC (2026-11-05, Lennart): the 740 pickup legs of 60 s or less leave (CLEAN-11's clause for a
           row whose target the source names as not the task's quantity; `MAX_LATE_MARK_SECONDS`, guarded at 740).
           The winners' page says the rider "forgot to mark that he took the order and did it just before it was
           delivered" (https://zindi.world/learn/meet-the-winners-of-the-sendy-logisitics-challenge). On these legs
@@ -134,7 +134,7 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
           is 7,883 s, and none passes 3 h.
         - Anomaly: five confirmation clocks precede placement by 1-42 s; kept as recorded.
         - `Distance (KM)`, tested: not measured between the rider's two taps; a GPS total recorded after delivery not
-          excluded (Lennart, 2026-11-05, issue 5, A as (a); it replaces the `Potential leak, kept on purpose` label of
+          excluded (Lennart, 2026-11-05; it replaces the `Potential leak, kept on purpose` label of
           2026-11-04; LEAK-38 names it among the kept fields). The dictionary reads "Distance covered (KM) - The
           distance from Pickup to Destination", which a trip records at arrival, while a distance Sendy computes
           when it prices the order is known at placement; the page does not say which. On Train.csv's 21,201 orders

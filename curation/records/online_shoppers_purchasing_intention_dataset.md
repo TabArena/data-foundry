@@ -13,6 +13,7 @@ claimed_by: Andrej
 suggestion: 'Yes'
 priority: 2
 tags:
+- Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Later'
@@ -21,7 +22,8 @@ original_source: UCI
 year: '2018'
 collection_period: Unknown
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
+problem_type: Binary Classification
 source_links:
 - https://doi.org/10.24432/C5F88Q
 notebook_path: datasets/beyond_iid/old_iid/online_shoppers_purchasing_intention_dataset/online_shoppers_purchasing_intention_dataset.ipynb
@@ -65,9 +67,9 @@ CC (2026-10-01, Lennart): Leak audit: kept `PageValues`, dropped the February-Ma
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (True means revenue).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: the page-value leak is handled by keeping June-December, methods separate on the source task, and the 40 repeated rows are natural one-page bounces of different users (keep). Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: the page-value leak is handled by keeping June-December, methods separate on the source task, and the 40 repeated rows are natural one-page bounces of different users (keep). Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
-CC (2026-11-11, Andrej): the 40 repeated one-page visits stay as natural repeats of different users (review page, issue 1 A, agreeing with the answer of 2026-11-06), with a note; this closes the Assessment of 2026-10-19. Random split kept as forced from temporal (issue 2 A): `ForcedIIDFromTemporal` and a `Time basis:` line (only December can train on half; testing December costs 0.009 ROC AUC for LightGBM). Issue 3 (finished-visit rows as a stand-in for the in-visit decision) parked.
+CC (2026-11-11, Andrej): the 40 repeated one-page visits stay as natural repeats of different users (Review issue 1, A, agreeing with the answer of 2026-11-06), with a note; this closes the Assessment of 2026-10-19. Random split kept as forced from temporal (issue 2 A): `ForcedIIDFromTemporal` and a `Time basis:` line (only December can train on half; testing December costs 0.009 ROC AUC for LightGBM). Issue 3 (finished-visit rows as a stand-in for the in-visit decision) parked.
 
 CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 4, B): whether the visit ends in a purchase, which closes the session the features describe, so it arrives after the features; the forced tag and the split stay.
 
@@ -77,8 +79,8 @@ CC (2026-11-20, Andrej): the finished-visit rows stay as an approximate stand-in
 
 ## Review
 
-**Outcome:** added. The AI recommends shipping it as defined; one small point is open (issue 1, the 40 repeated
-visits, recommended kept). Reviewed on 2026-11-04 without a panel, from the evidence already gathered (the record, the
+**Outcome:** added. The AI recommends shipping it as defined; all issues are settled (the 40 repeated visits kept,
+issue 1). Reviewed on 2026-11-04 without a panel, from the evidence already gathered (the record, the
 leak audit of 2026-10-01, model runs on the TabArena v0.1 task of the same source, which hold all 12,330
 visits) and one check on the v0.2 rows. The data are Sakar et al.'s (2019) Google Analytics visits to one online shop
 (UCI 468): one row per visit, each by a different user over one year, with page counts and times, the pages' bounce,
@@ -95,8 +97,10 @@ model's error, no action. Weighed: a documented source and a real decision +, me
 rests on a cut that cannot be proven -, a summary of the finished visit -, better data found
 (`ga_merchandise_store_sessions`, not screened yet) -.
 
-**Main points:** issues 1 and 2 settled on 2026-11-11 (repeats kept with a note; random split forced from temporal
-with its `Time basis:` line). Parked: the finished-visit rows as a stand-in for the in-visit decision (3).
+**Main points:** issue 1 settled on 2026-11-11 (repeats kept with a note); issue 4 on 2026-11-13 (`Target: Later`);
+issue 6 on 2026-11-19 (leave one month out, `ForcedGroupedFromTemporal`, `Month` the group and no input), which
+replaces the random split forced from temporal of issue 2 (2026-11-11); issue 3 on 2026-11-20 (the finished-visit
+rows stay as an approximate stand-in, the gap named in `fit_reason`). Nothing open.
 
 **Record judgment:** valid, ship. The cut of February to May, the IID split and the dropped `SpecialDay` are
 Lennart's decisions of 2026-10-01; the open point the Assessment of 2026-10-19 left for "the next pass" is issue 1.
@@ -119,8 +123,8 @@ a mark.
      zero or fixed for a one-page bounce, different users with the same month, browser, region, traffic source and
      visitor type give identical rows. Duplicates need a decision each time[^1a]; few features and plausible repeats
      are natural and stay[^1b].
-   * **Experiments:** the v0.2 rows rebuilt from the shipped container (June to December, `SpecialDay` dropped; Slurm
-     job 1344881): 40 repeats, 69 rows in repeat groups, all labelled No, all with 0 administrative and informational
+   * **Experiments:** the v0.2 rows rebuilt from the shipped container (June to December, `SpecialDay` dropped): 40
+     repeats, 69 rows in repeat groups, all labelled No, all with 0 administrative and informational
      pages, 1 product page (67 rows) or 2 (2 rows), 0 seconds, bounce and exit rate 0.2, page value 0.
    * **Options:**
 
@@ -180,7 +184,7 @@ a mark.
      December 612 against 578), so no finer window can be built. Every visit is a different user, so no entity can be
      held out across the months either.
    * **Experiments:** the 6,875 shipped visits and 16 features, untuned LightGBM and logistic regression (one-hot
-     categories), ROC AUC (Slurm job 1365898):
+     categories), ROC AUC:
      - Shipped random split (3 x 3): LightGBM 0.868 (0.863 to 0.873), logistic regression 0.839.
      - December trained on June to November: LightGBM 0.890, logistic regression 0.881.
      - Same December visits and same training size (December in 3 folds, 3 seeds; June to November only against visits
@@ -211,7 +215,7 @@ a mark.
    as the time column, `Temporal(on="month_index", splits=TemporalSplits(window=1, unit="unique", n_windows=1),
    horizon=1, horizon_unit="months")`, `accepted_check_warnings` for `splits_too_few` with the reason, `split` and
    `splits_comment` rewritten, record `required_split` Temporal. Under either option the record gets the tags
-   `Samples: Over Time` and `Time: Dated`. Results: Slurm job 1365898.
+   `Samples: Over Time` and `Time: Dated`.
 
    [^2a]: **SPLIT-14** (Must): a temporal task has at least 3 windows, none training on less than half of the data; a
      task that cannot meet it ships in the closest regime, tagged as forced from temporal (SPLIT-8; IID:

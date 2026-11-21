@@ -10,6 +10,7 @@ claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 2
 tags:
+- Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Varying Delay'
@@ -76,7 +77,7 @@ CC (2026-11-04, Lennart): the placement and confirmation weekdays are numbers (C
 
 CC (2026-11-04, Lennart): the fit stays approximate under the forced-IID split, as beMTPL97, freMTPL2 and the other forced-IID definitions ("(b)").
 
-**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of PR #33 and the research behind each mark, and all are settled.
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes, then a rebuild on the curator's ask (USE-5 holds, the label being exact from the logged pickup mark; `Distance (KM)` tested under EV-1 and passes; a weak leak across rows, +3.4 RMSE, kept with a note; SPLIT-8 holds at a measured cost of 1.3 s; MET-1 to MET-4 hold; the notes now give these numbers); disputed: USE-5 and CLEAN-11 on the 547 late-marked legs (11.5 RMSE for a model trained without them), P5 on the stale build; for the curator: issues 4-7. Priority 2: gap 0, use case 0, source +, shape +, risk - (use case: Sendy's own ETA decision, but the fit is approximate; source: Zindi page with a codebook; shape: 21,201 orders, 19 mixed inputs; risk: the late-marked labels, issue 4, leave the target partly unclear).
 
@@ -92,30 +93,33 @@ CC (2026-11-05, Lennart): `Distance (KM)` is labelled "tested: not measured betw
 
 **Assessment (AI, 2026-11-05):** after the drop of issue 4: 20,461 orders and 922 riders on random 3x3 folds (6,820-6,821 test rows; 99.1-99.4% of test orders have a rider seen in training); `dataset check` 0 errors, 0 warnings; leak probes: all features R² 0.392 (Distance alone 0.348), no exact copies across the split, and probe 19 flags the removed rows as the cut on the label. LightGBM on the shipped folds: RMSE 742.8 s on the first repeat (766.6 without Distance); over the nine splits the wait feature gains 3.2 (8.5 before), training only on legs of 100 s or more costs 0.2 (11.5 before), the rider's later orders that day gain 4.2 (3.4 before), and holding out calendar days or month classes costs 2.1 and 1.1 s. The same scripts on the rows before the drop give 764.2 and 787.2 s on the first repeat, not the 761.3 and 789.6 the notes quoted, so those two old figures do not reproduce exactly.
 
-CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
 CC (2026-11-19, Andrej): 3-fold CV over whole month classes, `ForcedGroupedFromTemporal` (Review issue 11, B): the stationary-relation test reads not flat across the classes (pooled +4.6 ± 1.1 s RMSE for LightGBM, +4.0 ± 0.8 s for Kumo-Tabular), so whole months are held out, never random orders.
 
 ## Review
 
-**Outcome:** added. Sendy's 21,201 labelled Nairobi express orders from the Zindi challenge, as the source's own task:
-the seconds from the rider's pickup mark to arrival at the destination, predicted at pickup, scored by the source's
-RMSE in seconds, on random folds forced from temporal. The review panel recommends shipping after the note edits made
-in this pass and a rebuild on your ask. Validity: USE-1 and USE-8 hold (fit approximate); USE-5 holds by the
-mediator's reading and is disputed by the critic for the late-marked legs (issue 4); LEAK-10 and LEAK-16 hold;
-`Distance (KM)` was tested under EV-1: it is not measured between the rider's two marks, and a GPS total recorded
-after delivery is not ruled out (issue 5: which label its note takes); a weak leak across rows is kept with a note
-(LEAK-30 tension row); USE-7 holds for two orders that end 89-90 m from their pickup (anonymised coordinates, source
-distance 3-4 km; note added). This departs from your 100 m radius for Lusaka of the same day; the mediator would drop
-both orders if you disagree. SPLIT-4 and SPLIT-8 hold, the forced-IID cost measured at 1.3 s RMSE. Value: MET-1 to
-MET-4 hold, every fold scorable; LightGBM 752-762 s against 987 s for the mean. Quality: CLEAN-11 keep of the short
-legs (issue 4), CLEAN-10 meaning of blank precipitation (issue 6), CLEAN-14 holds. Weighed: the source's own task and
-real deliveries (+) against the late-mark labels, which are worth 12 s of RMSE (-). For you: issue 4 (a disputed
-Must), then 5, 7 and 6.
+**Outcome:** added. Sendy's labelled Nairobi express orders from the Zindi challenge (20,461 of 21,201 after the
+740 late-marked legs of 60 s or less left, issue 4, B), as the source's own task: the seconds from the rider's pickup
+mark to arrival at the destination, predicted at pickup, scored by the source's RMSE in seconds, on 3x3 folds over
+whole month classes, forced from temporal (`ForcedGroupedFromTemporal`, issue 11, B, 2026-11-19; random folds
+before). The review panel of 2026-11-04 recommended shipping after the note edits made in that pass. Validity: USE-1
+and USE-8 hold (fit approximate); USE-5 was disputed by the critic for the late-marked legs, settled by their drop
+(issue 4); LEAK-10 and LEAK-16 hold; `Distance (KM)` was tested under EV-1: it is not measured between the rider's two
+marks, and a GPS total recorded after delivery is not ruled out, so its note says so and names it as a kept risk
+(issue 5, a); a weak leak across rows is kept with a note (LEAK-30 tension row); USE-7 holds for two orders that end
+89-90 m from their pickup (anonymised coordinates, source distance 3-4 km; note added), a departure from the 100 m
+radius for Lusaka of the same day. SPLIT-8 holds: the release has no month or year, and the stationary-relation test
+reads not flat across the month classes, so whole classes are held out (issue 11). Value: MET-1 to MET-4 hold, every
+fold scorable; LightGBM 752-762 s against 987 s for the mean (random folds, before the drop). Quality: CLEAN-11 drop of
+the late-marked legs (issue 4), CLEAN-10 blank precipitation kept missing with a note (issue 6), CLEAN-14 holds; no
+rebuild now, the container is rebuilt with the release (issue 7). Weighed: the source's own task and real deliveries
+(+) against the riders' marks as labels (-).
 
-**Main points:** Keep the 547 late-marked pickup legs or drop them (4)? Call `Distance (KM)` tested rather than a
-potential leak (5)? Rebuild, since the container is the superseded placement task (7)? Fill blank precipitation with
-0 (6)?
+**Main points:** No issue open. Settled on 2026-11-05 (Lennart): the 740 pickup legs of 60 s or less leave (4, B);
+`Distance (KM)` labelled tested, with the untested GPS-total case a kept risk (5, a); blank precipitation stays missing
+with a note (6, A); no rebuild now (7, A). Settled on 2026-11-19 (Andrej): 3x3 folds over whole month classes,
+`ForcedGroupedFromTemporal` (11, B). Not rebuilt since.
 
 **Record judgment:** valid. The 2026-11-04 CC lines replace Myunghwan's placement task of 2026-10-29 and his "yes,
 ship", which `suggestion: 'Yes'` and `claimed_by: Myunghwan` still carry. The record's line 70 ("no panel ran")
