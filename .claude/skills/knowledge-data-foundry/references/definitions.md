@@ -247,9 +247,7 @@ A metric input known at the prediction point (a weight that is a function of the
   and what a dated release would change. A definition refuses two time bases, and a prototype on a temporal split or
   without its line. `dataset check` notes a split that is not temporal and says nothing about why (no time basis and
   no `Time basis:` line), a forced tag without its line, and date columns in the data of such a split unless the basis
-  is `Retrospective` or a `Time basis:` line gives the reason. `"Snapshot"` is retired (2026-11-13) for
-  `"Retrospective"`, which names the use case rather than the data, and `"DelayedTarget"` (2026-11-16) for a forced
-  tag, since one shared moment is one period; a new definition refuses both.
+  is `Retrospective` or a `Time basis:` line gives the reason.
   `"2ndTierData"` is retired (2026-10-21): old containers that carry it still load, but a new definition refuses it;
   write the doubts as a finding and the fit as `approximate`.
 * `problem_type`: "Regression" to `"regression"`, "Binary Classification" to `"binary_classification"`,

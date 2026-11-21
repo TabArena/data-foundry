@@ -115,10 +115,9 @@ DataTags = Literal[
     "ForcedIIDFromGrouped",
     # Retired (2026-10-21): kept readable for containers that carry it; new definitions refuse it (RETIRED_DATA_TAGS).
     "2ndTierData",
-    "Snapshot",  # retired 2026-11-13 for `Retrospective`: it described the data, not a use case
     "WrongDomain",  # Task that was transformed to another domain (like audio) to tabular.
 ]
-RETIRED_DATA_TAGS = ("2ndTierData", "Snapshot")
+RETIRED_DATA_TAGS = ("2ndTierData",)
 """Tags old containers may carry and loading accepts, but a new definition may not set."""
 
 TIME_BASIS_TAGS = (

@@ -2077,17 +2077,6 @@ def test_assumed_stationary_relation_needs_a_person_and_a_reason() -> None:
     assert cls.dataset_metadata.data_tags == ["IID", "AssumedStationaryRelation"]
 
 
-def test_snapshot_is_retired_for_retrospective() -> None:
-    with pytest.raises(Exception, match="`Snapshot` is retired"):
-        _define(data_tags=("Snapshot",), curation_comments="- Time basis: one scrape.")
-
-
-def test_delayed_target_is_retired_for_the_forced_tag() -> None:
-    """One shared scoring moment is one period, so a forward use case from it is forced (SPLIT-8)."""
-    with pytest.raises(Exception, match="`DelayedTarget` is retired"):
-        _define(data_tags=("DelayedTarget",), curation_comments="- Time basis: one scoring date.")
-
-
 def test_unseen_group_needs_a_grouping() -> None:
     with pytest.raises(Exception, match="`UnseenGroup` holds out whole groups"):
         _define(data_tags=("UnseenGroup",), curation_comments="- Time basis: a new hospital.")

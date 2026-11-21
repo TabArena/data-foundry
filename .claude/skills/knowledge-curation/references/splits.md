@@ -109,15 +109,14 @@ person's reason replaces it, as above. (Lennart, 2026-10-12; amended 2026-10-21,
 month, from mobile_churn and the churn snapshots; too few periods, from nba_players_2016_2019,
 open_university_learning_analytics_dataset and distribution_transformers_at_cauca_department; amended 2026-11-02,
 Andrej, on the insurance tables of the zero-inflated batch: a leak test across a forced split; reworded 2026-11-05,
-Lennart: the test informs a case-by-case call and the forced tag stays; one-moment releases moved to SPLIT-32; amended
-2026-11-16, Andrej: a one-moment release with a forward use case is forced whatever its target's timing, and the
-`DelayedTarget` prototype is retired; amended 2026-11-17, Andrej: whole periods held out before the entity, and a
-measured flat relation replaces the forced tag; amended 2026-11-18, Andrej: enough periods for the task's
-repeats, not two; amended 2026-11-19, Andrej: groups without entity leakage, and with nothing measured the entity
-before periods and a person's refusal of the temporal-leakage risk.) Cases: open_university_learning_analytics_dataset
-(nba_players_2016_2019 was
-retired on 2026-10-26 on its use case, not its split); account_debt_south_africa, mobile_churn and the twelve
-definitions tagged `DelayedTarget` from 2026-11-13 to 2026-11-16 are one-moment releases forced here.
+Lennart: the test informs a case-by-case call and the forced tag stays; amended 2026-11-16, Andrej: a one-moment
+release with a forward use case is forced whatever its target's timing; amended 2026-11-17, Andrej: whole periods
+held out before the entity, and a measured flat relation replaces the forced tag; amended 2026-11-18, Andrej:
+enough periods for the task's repeats, not two; amended 2026-11-19, Andrej: groups without entity leakage, and with
+nothing measured the entity before periods and a person's refusal of the temporal-leakage risk.) Cases:
+open_university_learning_analytics_dataset (nba_players_2016_2019 was retired on 2026-10-26 on its use case, not its
+split); account_debt_south_africa, mobile_churn and the other one-moment releases with a forward use case are forced
+here.
 
 ### When information arrives
 
@@ -208,11 +207,9 @@ later period, at a known group or at all groups at once; where the label still m
    who will leave) is not retrospective: it is forced (SPLIT-8), whether its target is of that moment or arrives after
    it. A shared moment and a target window closed for every row make the random split valid within that moment only:
    one moment is one period, and what the use case asks, the next moment, stays untested (blood_transfusion,
-   credit_card_clients_default; the `DelayedTarget` prototype that named such releases is retired, 2026-11-16). The
-   line names the time covered and the need, and ends with what the split cannot test: a later time. Time can then
-   affect a target only through samples of the same time: check that no sample of a test sample's time carries its
-   target (one day's weather across stations); if one does, group by that time unit. `Snapshot`, which named the data
-   rather than a use case, is retired for it (2026-11-13).
+   credit_card_clients_default). The line names the time covered and the need, and ends with what the split cannot
+   test: a later time. Time can then affect a target only through samples of the same time: check that no sample of a
+   test sample's time carries its target (one day's weather across stations); if one does, group by that time unit.
 3. **The samples arrive over time: does that affect the target?** It does when the target or its relation to the
    features moves with the period (prices, a credit climate, an adversary), when how the target or the features are
    recorded changes (a new grading, a new instrument, a new selection of cases), or when a sample's target depends on
