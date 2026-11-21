@@ -224,7 +224,7 @@ class Mic(AbstractCuratedDataset):
         - We treat "?" as missing values.
         - We dropped the "id" column.
         - We reversed the ordinal encoding of the target feature.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
+        - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 9 of them decoded from the source's codes
           into its words (`CODE_LABELS`, 2026-11-01).
         - Partial order, left unordered (2026-11-01, CLEAN-14): `ZSN_A` (chronic heart failure) has two lines of

@@ -153,7 +153,7 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
           leak the severity.
         - The data contains string data, but only for a very small number of patients and the text is often seemingly very useless. The features add most likely no value, but we keep them in for the pipeline/model to ignore if needed.
         - We drop the few patients that did not have an ultrasound to avoid them being leaking due to missing features.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
+        - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - `Appendix_Wall_Layers` (2026-10-31, CLEAN-14): the codebook's "regular / irregular" (Zenodo Data Summary); the
           labels translate the German record of the 2021 release (intact = intakt, raised = aufgehoben, the layering
@@ -208,7 +208,7 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
           (`NOTHING_FOUND`). The three text columns alone told operated from not operated uncomplicated children at
           ROC AUC 0.572, 0.527 after (on the label 0.552, then 0.531); the full model scores the same with or without
           them (gradient boosting 0.905 and 0.906), so no model had used the route.
-        - Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-19, review issue 6 B): children are admitted over
+        - Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-19): children are admitted over
           2016-2021 and a deployed model scores later admissions, but the file has no dates; the ultrasound case
           numbers tell only two periods apart (2016-2018 and 2019-2021), too few for windows. The stationary-relation
           test (2026-11-19) on these two periods reads flat: tested on 2019-2021, training on 2016-2018 instead of as
@@ -219,7 +219,7 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
     splits_comment = """
         Default splits: stratified random 3-fold cross-validation with 10 repeats (seed 4267). Tests stand for other
         children of the same hospital and years.
-        The relation is measured stationary (StationaryRelation, review issue 6): children are admitted over 2016-2021 and a deployed model scores
+        The relation is measured stationary (StationaryRelation; Andrej, 2026-11-19): children are admitted over 2016-2021 and a deployed model scores
         later admissions, but the file has no dates. Only two periods can be told apart: ultrasound case numbers up to
         440 are 2016-2018 (every child also in the authors' 2021 study of those years has a number up to 440), higher
         ones 2019-2021; within each period the numbers follow the children's group, not the admission order (curation

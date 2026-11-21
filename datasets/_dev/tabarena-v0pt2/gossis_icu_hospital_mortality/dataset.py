@@ -115,7 +115,7 @@ class GossisIcuHospitalMortality(AbstractCuratedDataset):
 
         - Prediction point: the end of the first 24 hours in the ICU; every feature is a first-hour or first-day value,
           an admission fact or a chronic condition, and the label is death before hospital discharge.
-        - Built in place of wids_diabetes_mellitus (2026-11-11, the curator's mark on its issue 1, c): the same GOSSIS
+        - Built in place of wids_diabetes_mellitus (2026-11-11, the curator's decision on it, option c): the same GOSSIS
           cohort, with a target nobody knows at 24 hours. 130,127 of WiDS 2021's 130,157 rows are rows of the WiDS 2020
           files, 90,998 of them in this labelled file.
         - APACHE IVa's `apache_4a_hospital_death_prob` and `apache_4a_icu_death_prob` are dropped (CLEAN-6): another

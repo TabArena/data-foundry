@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: horse_colic_survival
 container_format: 2
-checksum: v2:5ac8ebe982855f2c6c8cdd7908c539924bac1e2cfa430a4f21fddb8db304f4b1
+checksum: v2:462ca9b668adadcf2273c6a39617880345c5bad28e5d6913ffdf3d6a6ae3dc46
 build:
   uuid: 01a111fc-df0b-7d08-9ad5-3bfee18c9b55
   checksum: v2:3edea035ca49ff4f42bfa2eb137a98817c67387f49f0fb111c2fd7cf979fa727
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `did_not_survive`, scored with `roc_auc` on grouped splits by `case_number`. 344 rows and 20 features. Source: UCI (1989).
 
-Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5ac8ebe982855f2c6c8cdd7908c539924bac1e2cfa430a4f21fddb8db304f4b1`, so the build is stale. See [Build](#build).
+Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:462ca9b668adadcf2273c6a39617880345c5bad28e5d6913ffdf3d6a6ae3dc46`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -105,6 +105,7 @@ Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` 
 
 - The curation record, with the triage decision, its sources and the review: [`curation/records/horse_colic_survival.md`](../../../../curation/records/horse_colic_survival.md)
 - The original source: <https://doi.org/10.24432/C58W23>
+- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
 
@@ -198,7 +199,7 @@ We start with the data from UCI and merge the train and test data.
 - We drop features that leak the target.
 - We keep the first row per hospital number. The 22 repeated hospital numbers are one visit with several lesion
   codes (one pair with conflicting outcomes), not repeat visits; the first row is kept (corrected 2026-11-10).
-- Target (2026-11-10, Andrej, review issue 1 B): `did_not_survive`, "Yes" when the horse died or was
+- Target (2026-11-10, Andrej): `did_not_survive`, "Yes" when the horse died or was
   euthanized (129 of 344), "No" when it lived, the usual survival-to-discharge outcome of colic prognosis
   (Bishop et al. 2022, Vet Surg 51:891, https://doi.org/10.1111/vsu.13839). Died against euthanized follows the
   admission period (earlier case numbers 58 died / 14 euthanized among non-survivors, later ones 4 / 34) with
@@ -215,7 +216,7 @@ We start with the data from UCI and merge the train and test data.
   was chosen as a solution for cost reasons" (arXiv:1304.2344). UCI's 300/68 files are not a time split (both
   span the whole range of case numbers).
 - We keep the duplicates occurring in the data.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 8 columns are ordered
+- Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 8 columns are ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`); 8 of them decoded from the source's codes
   into its words (`CODE_LABELS`, 2026-11-01); codes that mean unknown are missing (CLEAN-10).
 - Partial order, left unordered (2026-11-01, CLEAN-14): `pain`: the codebook says it "should NOT be treated as
@@ -226,7 +227,7 @@ We start with the data from UCI and merge the train and test data.
   each level is carries the words, a score without them is a number): 8 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order; 5 unordered codes carry their words: `mucous_membranes`, `pain`,
   `abdomen`, `abdominocentesis_appearance`, `age`.
-- Recording change, harmonised (2026-11-12, Andrej, review issue 7 B, CLEAN-21; replaces the exception of
+- Recording change, harmonised (2026-11-12, Andrej, CLEAN-21; replaces the exception of
   2026-11-10): `total_protein` is recorded in g/L (values above 15) for 95 horses, 92 of them with case numbers
   above 530,560, and in g/dL for 209; we divide the g/L values by 10, the scale of the codebook (normal 6 to
   7.5 g/dL), as an analyst at the hospital would. In those 95 rows every measured
@@ -237,15 +238,14 @@ We start with the data from UCI and merge the train and test data.
   loss 2.126 against 0.761 harmonised, while LightGBM and TabPFN 3.5 did not change beyond noise (2026-11-12).
   Under the source's three classes the unit told died from euthanized (ROC AUC 0.79 alone), which the
   `Class-dependent Recording` marker records.
-- Case number (2026-11-10, review issue 3; 2026-11-12, Andrej, review issue 6 D): `case_number` is the hospital
+- Case number (2026-11-10; 2026-11-12, Andrej): `case_number` is the hospital
   number's first six digits (the 42 seven-digit numbers are a six-digit case number with one digit appended, a
   9 for 25 of 28 foals); the frame is sorted by case number, then by the full number. It orders the admissions
   as far as the data shows and is the split's group, no model input. From 2026-11-10 to 2026-11-12 it was the
   time column of three windows of 57 horses and a feature; on those windows' test rows, training on as many
   random horses instead of the earlier ones scored 0.045 log loss better for LightGBM, 0.009 for TabPFN 3.5
   and 0.003 for logistic regression (harmonised recording).
-- Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-20, review issue "Back to three windows in
-  case-number order", C): admissions to one hospital, in the order of their case numbers, which stand in for
+- Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-20): admissions to one hospital, in the order of their case numbers, which stand in for
   the missing admission dates (`Time: Inferred`; an inferred order serves the measurement as it would a
   temporal split). The stationary-relation test (v3, 2026-11-18, ROC AUC, 5 seeds) on six runs of 57 cases in
   case-number order, the newest three tested, reads flat pooled: Kumo-Tabular -0.001 ± 0.012, floor 0.003;
@@ -257,10 +257,10 @@ We start with the data from UCI and merge the train and test data.
   zero (2026-11-12). The recording change is harmonised (above); what
   remains of it, 55 missing cells, is unrelated to survival. Not tested: a later change of recording or of
   practice.
-- Return visits kept (2026-11-10, Andrej, review issue 4 A): nine cases appear two or three times under one
+- Return visits kept (2026-11-10, Andrej): nine cases appear two or three times under one
   six-digit case number with a suffix (10 later rows; the codebook: "may not be unique if the horse is treated >
   1 time"), all first visits survived. A return visit is an admission to score; the split groups by case, so no
-  fold trains on one visit of a horse and tests another (2026-11-12, review issue 6 D; until then the time
+  fold trains on one visit of a horse and tests another (2026-11-12; until then the time
   order kept each later visit after its first).
 
 ## Splits
@@ -269,9 +269,8 @@ Stratified grouped 20-repeated 3-fold split on `case_number`: the 334 horses (ab
 horse's return visits on the side of its first visit. The case number is the only time order (no dates);
 along it the relation of survival to the examination measures stationary for horses held out whole (v3 test,
 2026-11-18; `Time basis: StationaryRelation` in the curation notes), so random horses stand for later
-admissions; the grouping by case is part of that basis (Andrej, 2026-11-20, review issue "Back to three
-windows in case-number order", C). Not tested: a later change of recording or of practice. From 2026-11-10 to 2026-11-12 the split was three windows of 57 horses in case-number order
-(2026-11-12, Andrej, review issue 6 D, on Lennart's question).
+admissions; the grouping by case is part of that basis (Andrej, 2026-11-20). Not tested: a later change of recording or of practice. From 2026-11-10 to 2026-11-12 the split was three windows of 57 horses in case-number order
+(2026-11-12, Andrej, on Lennart's question).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 226 to 232 rows, test 112 to 118 rows.
 
@@ -507,4 +506,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:5ac8ebe982855f2c6c8cdd7908c539924bac1e2cfa430a4f21fddb8db304f4b1` |
+| stale | yes: the definition now gives checksum `v2:462ca9b668adadcf2273c6a39617880345c5bad28e5d6913ffdf3d6a6ae3dc46` |

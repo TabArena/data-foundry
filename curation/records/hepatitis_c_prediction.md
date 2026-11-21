@@ -61,7 +61,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 3, A; stationarity r
 
 **Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
-**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13.
+**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13; `ForcedIIDFromTemporal` stays (issue 3, A, 2026-11-18).
 
 **Issues for Andrej:**
 

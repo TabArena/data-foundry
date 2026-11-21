@@ -58,7 +58,7 @@ CC (2026-10-21, Lennart): SelectArena's copy (`datasets/_dev/feature_selection/f
 
 CC (2026-10-22, Lennart): issue 2: participants who died of other causes within 10 years stay No. Issues 3 and 7: as the amended PROV-3 and PROV-14 say (kept, a repair under this record). Issue 8: `education` is a categorical code and is encoded as such (its labels). Issue 9: keep one row per participant, with a note that every exam could make a grouped task in the future. Record field `year` takes the definition's value (2004). Issue 1 asked: is MI_FCHD closer to the real task?
 
-**Assessment (AI, 2026-10-22):** applied issues 2, 3, 7, 8, 9: `education` mapped to its four labels as a category; the grouped-variant note added; LEAK-22 now names a competing death after the prediction point as no excluded row (this case). Issue 1 answered on the review page: hard ASCVD (MI_FCHD or stroke, 301 Yes, logistic regression ROC AUC 0.795) is the outcome of today's treatment thresholds, hard CHD (191 Yes, 0.785) that of ATP III, ANYCHD (379 Yes, 0.743) that of the classic FHS score. dataset check: 0 errors, 0 warnings. Not built yet.
+**Assessment (AI, 2026-10-22):** applied issues 2, 3, 7, 8, 9: `education` mapped to its four labels as a category; the grouped-variant note added; LEAK-22 now names a competing death after the prediction point as no excluded row (this case). The outcome question answered: hard ASCVD (MI_FCHD or stroke, 301 Yes, logistic regression ROC AUC 0.795) is the outcome of today's treatment thresholds, hard CHD (191 Yes, 0.785) that of ATP III, ANYCHD (379 Yes, 0.743) that of the classic FHS score. dataset check: 0 errors, 0 warnings. Not built yet.
 
 CC (2026-10-22, Lennart): issue 1: (a), hard ASCVD within 10 years, as it matches real-world use now.
 
@@ -80,9 +80,11 @@ CC (2026-11-20, Andrej): random folds over participants stay, a written departur
 
 ## Review
 
-**Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below.
+**Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issues 2 and 3).
 
-**Main points:** Measure the relation on the dated periods a parent source holds, before deciding the tag?
+**Main points:** Measured on the teaching file's exams: not flat, so `ForcedIIDFromTemporal` stays (issue 2, A,
+2026-11-18); the random folds over participants stay as a written departure from the measured-not-flat rule (issue
+3, A, 2026-11-20). Nothing is left open.
 
 **Issues for Andrej:**
 
@@ -115,7 +117,7 @@ CC (2026-11-20, Andrej): random folds over participants stay, a written departur
      |---|---|---|---|---|
      | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
      | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | ~70-year span to use; changed treatments (statins, BP drugs) and smoking |
-     | C | Measure first | The shipped rows are one moment (period 1, ~1956), but the parent BioLINCC teaching file holds three exam periods (~1956, ~1962, ~1968) with TIME and 24-year follow-up, so later exams of event-free participants with 10 years left are a dated comparison. | The rule asks for a measurement where time exists | Takes a Slurm run |
+     | C | Measure first | The shipped rows are one moment (period 1, ~1956), but the parent BioLINCC teaching file holds three exam periods (~1956, ~1962, ~1968) with TIME and 24-year follow-up, so later exams of event-free participants with 10 years left are a dated comparison. | The rule asks for a measurement where time exists | Takes a cluster run |
 
    * **Recommendation:** C, the parent's exams 2 and 3 are dated periods: test period-1-trained models on period-2/3 event-free exams (10-year hard ASCVD) against contemporaneous models; even flat, the 12-year span does not reach today's use, so expect the forced tag to stay. Confidence: medium. **Decision:** A, B or C?
 

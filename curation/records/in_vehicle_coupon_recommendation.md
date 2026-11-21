@@ -12,6 +12,7 @@ suggestion: 'Yes'
 decision_markers:
 - Selection Bias
 tags:
+- Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Entities: Recur'
@@ -21,6 +22,7 @@ year: '2017'
 collection_period: Unknown
 required_split:
 - Grouped (NON-IID)
+problem_type: Binary Classification
 source_links:
 - https://www.researchgate.net/publication/318645502_in-vehicle_coupon_recommendation
 - https://doi.org/10.24432/C5GS4P
@@ -63,9 +65,10 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 3, A; stationarity r
 
 ## Review
 
-**Outcome:** added. Full-information split check of 2026-11-18: the time basis tag disagreed with the split tree; decided below.
+**Outcome:** added. Full-information split check of 2026-11-18: the time basis tag disagreed with the split tree; decided below (issues 2 and 3).
 
-**Main points:** Tag the respondent folds `ForcedGroupedFromTemporal` instead of `Timeless`?
+**Main points:** The respondent folds are tagged `ForcedGroupedFromTemporal` in place of `Timeless` (issue 2, B,
+2026-11-18), and the forced tag stays (issue 3, A, 2026-11-18). Nothing is left open.
 
 **Issues for Andrej:**
 

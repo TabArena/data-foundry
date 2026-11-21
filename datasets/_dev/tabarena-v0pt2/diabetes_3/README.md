@@ -196,6 +196,9 @@ We start with `diabetes.data` from Trevor Hastie's LARS page at Stanford: the un
 - The target is the paper's response on its own scale (25 to 346, skewness 0.44), not logged. The paper fits it by least squares, which RMSE matches.
 - IID: one row per patient, no visit dates and no time trend in the file order. No missing values or duplicate rows.
 - Not trivial, despite the record's `Trivial` marker: on all 60 shipped splits, the best of least squares, ridge and a random forest (R^2 0.49) beats the best single feature (0.30) by at least 0.08.
+- Time basis: ForcedIIDFromTemporal: the baseline visits of an undocumented cohort, collected over time, with no
+  visit date in the file, so the time is lost. A dated release would test patients enrolled later. Not taken as
+  stationary (Andrej, 2026-11-18): With the target undocumented there is no domain mechanism to rest ASR on.
 
 ## Splits
 

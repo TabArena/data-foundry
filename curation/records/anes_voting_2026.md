@@ -84,9 +84,9 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 
 CC (2026-11-17, Andrej): Review issue 3, A, as implemented: Nine windows of one study each on `VCF0004` (test 1996, 2000, 2002, 2004, 2008, 2012, 2016, 2020, 2024: 1,066 to 7,442 respondents), each trained on every earlier study (40.0% to 89.8% of 48,587 rows; the four oldest below half, signed off 2026-11-11), no gap, temporal.
 
-CC (2026-11-17, Andrej): verdict ship (blind split review page).
+CC (2026-11-17, Andrej): verdict ship (blind split walk).
 
-CC (2026-11-17, Andrej): the declared split (temporal on `VCF0004`, windows of 1 value, 9 windows, no gap) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (temporal on `VCF0004`, windows of 1 value, 9 windows, no gap) is checked in the blind split walk.
 
 CC (2026-11-19, Andrej): train floor (Review issue 4, A as implemented): the four oldest elections (49.2%, 46.4%, 43.2% and 40.0% of the respondents) stays as the curator's exception to the half-data floor (SPLIT-14 as amended 2026-11-19); no window is under 30%.
 
@@ -129,7 +129,9 @@ over inference).
 
 **Main points:** Only the verdict: the re-review left no issue, so the dataset ships unless you decide otherwise; the
 codebook follow-up in the outcome needs no decision. Settled on 2026-11-11: the nine studies 1996 to 2024 stay the
-test windows (issue 1, A), and the declared horizon of one election without a gap is checked.
+test windows (issue 1, A), and the declared horizon of one election without a gap is checked. Settled on 2026-11-17:
+nine windows of one study each, in place of TableShift's held-out South (issue 3, A). Settled on 2026-11-19: the four
+oldest elections stay as the curator's exception to the half-data floor (issue 4, A). Nothing is left open.
 
 **Record judgment:** valid. The record fields agree with the definition (the record's `Website` counts as `Other`).
 Before this review the record had no line on the survey weights; its Assessment line of 2026-11-06 adds one. The

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: regensburg_pediatric_appendicitis
 container_format: 2
-checksum: v2:180dc3e7335c9c0bac62d1b06bfbdc1b53f225ec09924811b6d292fcca53d9f5
+checksum: v2:39232fe02516529c2a3a3a0bf388c247d07e6564514d9be2e5ff51c23bc8a475
 build:
   uuid: 01a111fc-ee89-74ad-b25b-309464691fe6
   checksum: v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `Severity`, scored with `roc_auc` on IID splits. 763 rows and 47 features. Source: Other (2023).
 
-Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:180dc3e7335c9c0bac62d1b06bfbdc1b53f225ec09924811b6d292fcca53d9f5`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:39232fe02516529c2a3a3a0bf388c247d07e6564514d9be2e5ff51c23bc8a475`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -128,7 +128,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2023 |
 | domain | medical & healthcare |
 | license | CC-BY-NC-4.0 |
-| data_tags | IID, ForcedIIDFromTemporal |
+| data_tags | IID, StationaryRelation |
 | reference | marcinkevivcs2024interpretable |
 | rows x columns | 763 x 48 |
 | task.target | Severity |
@@ -213,7 +213,7 @@ We start with the tabular meta-data used in the paper. We create only one task o
   leak the severity.
 - The data contains string data, but only for a very small number of patients and the text is often seemingly very useless. The features add most likely no value, but we keep them in for the pipeline/model to ignore if needed.
 - We drop the few patients that did not have an ultrasound to avoid them being leaking due to missing features.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
+- Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`).
 - `Appendix_Wall_Layers` (2026-10-31, CLEAN-14): the codebook's "regular / irregular" (Zenodo Data Summary); the
   labels translate the German record of the 2021 release (intact = intakt, raised = aufgehoben, the layering
@@ -268,12 +268,19 @@ We start with the tabular meta-data used in the paper. We create only one task o
   (`NOTHING_FOUND`). The three text columns alone told operated from not operated uncomplicated children at
   ROC AUC 0.572, 0.527 after (on the label 0.552, then 0.531); the full model scores the same with or without
   them (gradient boosting 0.905 and 0.906), so no model had used the route.
+- Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-19): children are admitted over
+  2016-2021 and a deployed model scores later admissions, but the file has no dates; the ultrasound case
+  numbers tell only two periods apart (2016-2018 and 2019-2021), too few for windows. The stationary-relation
+  test (2026-11-19) on these two periods reads flat: tested on 2019-2021, training on 2016-2018 instead of as
+  many 2019-2021 children costs LightGBM +0.016 ± 0.016 ROC AUC (floor 0.004) and Kumo-Tabular +0.004 ±
+  0.010 (floor 0.004); the complicated share moves 1.63-fold (p 0.006), under the twofold move that counts as
+  a recording change. So children are split at random. Admission dates would allow a split by period.
 
 ## Splits
 
 Default splits: stratified random 3-fold cross-validation with 10 repeats (seed 4267). Tests stand for other
 children of the same hospital and years.
-The split is forced (ForcedIIDFromTemporal): children are admitted over 2016-2021 and a deployed model scores
+The relation is measured stationary (StationaryRelation; Andrej, 2026-11-19): children are admitted over 2016-2021 and a deployed model scores
 later admissions, but the file has no dates. Only two periods can be told apart: ultrasound case numbers up to
 440 are 2016-2018 (every child also in the authors' 2021 study of those years has a number up to 440), higher
 ones 2019-2021; within each period the numbers follow the children's group, not the admission order (curation
@@ -282,8 +289,9 @@ share rises from 12.0% to 18.8% (among operated children from 32% to 52%, with t
 36%), loss of appetite is recorded for 30% of the children in 2016-2018 and 77% later, and the features tell
 the two periods apart at ROC AUC 0.86. Against random splits of the same sizes, training on 2016-2018 and
 testing on 2019-2021 costs little in ranking and more in calibration: TabPFN 3.5 ROC AUC 0.931 against 0.935
-and log loss 0.290 against 0.221; logistic regression 0.887 against 0.905 and 0.377 against 0.265. Recover
-the admission dates if a later release has them.
+and log loss 0.290 against 0.221; logistic regression 0.887 against 0.905 and 0.377 against 0.265. The
+stationary-relation test on the two periods reads flat (Time basis line). Recover the admission dates if a later
+release has them.
 
 10 repeat(s) x 3 fold(s) with seed 4267; train 508 to 509 rows, test 254 to 255 rows.
 
@@ -327,7 +335,7 @@ the admission dates if a later release has them.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -506,4 +514,4 @@ the admission dates if a later release has them.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:180dc3e7335c9c0bac62d1b06bfbdc1b53f225ec09924811b6d292fcca53d9f5` |
+| stale | yes: the definition now gives checksum `v2:39232fe02516529c2a3a3a0bf388c247d07e6564514d9be2e5ff51c23bc8a475` |

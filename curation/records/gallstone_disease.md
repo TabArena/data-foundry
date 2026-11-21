@@ -58,7 +58,7 @@ CC (2026-11-13, Andrej): the time basis is `ForcedIIDFromTemporal` instead of `S
 - `StationaryRelation` asks for a measurement on dated data, and the file keeps no visit date (`Time: Lost`), so the stationary relation was argued, not measured.
 - The random split stays; the forced tag says what it is: random patients standing in for later ones, with the drift along the file's order and what a dated release would test in the `Time basis:` line.
 
-CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The mechanism and one-year span would support ASR, but the measured drift along the file order is an explicit fact against; mixed, so forced.
 
@@ -66,7 +66,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
 **Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
-**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13.
+**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13; `ForcedIIDFromTemporal` stays (issue 2, A, 2026-11-18).
 
 **Issues for Andrej:**
 

@@ -73,7 +73,7 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37: Appendix_Wall_Lay
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `pecarn_pediatric_head_trauma_citbi` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: kept on review with BMI and the neutrophil share at measured precision (issue 1 resolved 2026-10-27); nothing open. Priority 2: gap 0, use case 0, source 1, shape 0, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: kept on review with BMI and the neutrophil share at measured precision (issue 1 resolved 2026-10-27); nothing open. Priority 2: gap 0, use case 0, source 1, shape 0, risk -0.
 
 CC (2026-11-06, Andrej): retired (`No (Retired)`, `No Good Target / Scientific Discovery` beside `Class-dependent Recording`): the label is largely the surgeon's decision to operate, and the versions that remove that decision still carry the hospital's practice. The data: 763 children with suspected appendicitis and an ultrasound at the Regensburg children's hospital, 2016-2021, and whether the appendicitis was complicated (115).
 - **What the label is:** a complicated appendicitis is found only at surgery, and the 479 children not operated (63%) count as uncomplicated without any tissue examination. A model trained only to predict whether the surgeon operated, which never sees the label, ranks it at ROC AUC 0.904 against 0.938 for the model trained on it; 74% of the pairs behind that score set a complicated child against one who was not operated.
@@ -130,8 +130,10 @@ shaped by one hospital's practice.
 
 **Main points:** Kept (2026-11-16, issue 3), reversing the retirement of 2026-11-06 (issue 2): the label of the
 children not operated is read as an outcome of observation, not as the surgeon's decision; the use case, the drops
-and the precision fixes are in the definition. The split stays random, tagged as forced from temporal (issue 4).
-The free-text findings are written in one spelling (issue 5). Open since 2026-11-19: the stationary-relation test reads the relation flat, so `StationaryRelation` could replace the forced tag (issue 6).
+and the precision fixes are in the definition. The split stays random (issue 4).
+The free-text findings are written in one spelling (issue 5). Since 2026-11-19 the random folds are tagged
+`StationaryRelation` in place of the forced tag, as the stationary-relation test reads the relation flat (issue 6, B).
+Nothing is left open.
 
 **Record judgment:** valid after repair, settled by CC 2026-10-27 (Andrej: keep, BMI and neutrophil share at
 measured precision, the label's origin in the texts); the ordinal scales of PR #37 follow Lennart's marks of
