@@ -50,6 +50,20 @@ def test_binary_folds_with_one_class_or_few_positives() -> None:
     assert _slugs(_container(y, few, "binary_classification")) == {"splits_test_minority_few": "warning"}
 
 
+def test_a_single_class_fold_is_an_error_only_under_a_ranking_metric() -> None:
+    """SPLIT-16: one class cannot be ranked; other metrics score the fold, a warning."""
+    from data_foundry.v2.task_checks import _classification_findings
+
+    target = pd.Series([0] * 90 + [1] * 10)
+    folds = [("r0f0", np.arange(50))]
+    assert [(r.slug, r.severity) for r in _classification_findings(target, folds, binary=True, metric="roc_auc")] == [
+        ("splits_test_single_class", "error")
+    ]
+    assert [(r.slug, r.severity) for r in _classification_findings(target, folds, binary=True, metric="log_loss")] == [
+        ("splits_test_single_class", "warning")
+    ]
+
+
 def test_balanced_binary_folds_pass() -> None:
     y = [0, 1] * 50
     splits = {0: {0: (list(range(50)), list(range(50, 100)))}}

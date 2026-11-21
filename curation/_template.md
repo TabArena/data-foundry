@@ -11,6 +11,7 @@ tags: []
 collections: []
 original_source:
 year:
+collection_period:
 domain:
 required_split: []
 problem_type:
@@ -83,6 +84,9 @@ Field-by-field (the reference table is "The fields" in
   say) takes the original's source; `Kaggle` only when the data first appeared there or no other source is found.
 - **year** — the year the data was first published (free text; e.g. `2014` or `? (2014)`), not the collection
   year or the year of a later copy.
+- **collection_period** — when the rows were collected, read from the source like the time facts in `tags`
+  (`2010-2015`, `Jan 2015 - Jun 2015`, `2014`, `before 1988`, `Not applicable (generated)`); `Unknown` when the
+  source does not say and nothing else does (a bound from the release date alone is `Unknown` too).
 - **domain** — real-world application domain, e.g. `medical & healthcare`, `finance`,
   `business & marketing`, `industry & manufacturing`, `environmental science & climate`.
 - **required_split** — appropriate evaluation protocol: `Random (IID)`, `Temporal (NON-IID)`,

@@ -65,26 +65,445 @@ by an uploader, never shipped, or only implied by how the data was collected (re
 feature and the target contemporaneous). When the setup is values unfolding over time from a stream of signals, it is
 temporal or forecasting whether or not a date column survived. Cases: combined_cycle_power_plant.
 
-**SPLIT-8 (Must; narrows SPLIT-7, SPLIT-14 and USE-10).** When a task is temporal in nature or by its use case but
-the release cannot give the windows SPLIT-14 asks for, it ships in the closest regime that keeps the rows, tagged as
+**SPLIT-8 (Must; narrows SPLIT-7, SPLIT-14 and USE-10).** When a task is temporal in nature or by its use case but the
+release cannot give the windows SPLIT-14 asks for, it ships in the closest regime that keeps the rows, tagged as
 forced from temporal, with the cost measured against the valid windows where the data has any. This covers a release
-with no dates at all (one extract, the status at that moment standing in for a forecast), a release with one stock
-month of the base or a few cohort months of one customer base (a split by those months tests a change of cohort, not
-of time), and a release with too few periods for three windows. The closest regime is IID (tag
-`ForcedIIDFromTemporal`), or grouped by the entity when the periods are stacked and the entities recur across them
-(tag `ForcedGroupedFromTemporal`). Say what the timestamp or a dated window would change and that it should be
-recovered if a later release has it. A forced split, grouped or IID, gets a leak test across the split and the
-leak probes: does a row share its outcome, its unit's outcome or its period's outcome with the other side, is there
-a hidden group, an order dependence. A leak found is weighed case by case like any other: removed where it can be,
-otherwise the task may still ship as an approximate fit with the leak measured in the notes. Being forced alone never
-makes a dataset `No`, and a dataset stays tagged as forced whatever the test finds, since its source's regime was
-another. (Lennart, 2026-10-12; amended 2026-10-21, Lennart: one stock month, from
-mobile_churn and the churn snapshots; too few periods, from nba_players_2016_2019,
+whose rows arose over a period and lost their dates, a few cohort months of one customer base (a split by those months
+tests a change of cohort, not of time), and a release with too few periods for three windows. A release that is one
+moment (every row predicted at the same point) is one period, too few for windows, so a use case that looks forward
+from it is forced, whether its target is of that moment, of unknown timing or arrives after it in a window closed for
+every row (coil_2000, mobile_churn, credit_card_clients_default): a random split then draws train and test from that
+one moment and tests other rows of it, not the next moment. Where the use case looks back, SPLIT-32 gives it
+`Retrospective`.
+The closest regime holds out whole periods where the data has an order with enough periods to hold out (scan
+periods, study phases, visit months, course presentations): enough that different groupings of whole periods into
+three folds give the repeats SPLIT-33 sets for the task's size, four periods for 3 repeats, five for 10 or 20 (three
+periods allow one grouping, four six, five 25); with fewer, a period fold would give the task two or three splits
+where its size calls for more, so the next remedy applies: grouped by period (`ForcedGroupedFromTemporal`), training
+also on later periods, which still tests a change between periods rather than random rows, closer to the shift a
+temporal split tests (lung_cancer_epithelial_genexp's six scan periods); where entities recur across the periods and
+the use case meets new entities, an entity's rows stay in one period or the entity is held out with its period
+(USE-10, LEAK-17). Where the relation is measured not flat, such periods are the only remedy: without them the task is
+`Too Small` (SPLIT-16); periods count only where no entity sits on both sides. With nothing measured (an
+inconclusive test included) and no person's reason, three outcomes: a person may be unwilling to take the risk of
+temporal leakage (a forced split trains on rows as late as the test rows, and a likely shift over time would flatter
+its score) and retire the dataset (`Not Representative`; only a person decides this); otherwise it is grouped by
+meaningful groups built without entity leakage, first the entity when an entity has several rows and the use case
+meets new entities, else whole periods enough for the repeats (`ForcedGroupedFromTemporal`; USE-10); and IID where
+neither exists, also where the use case meets more rows of entities it holds (`ForcedIIDFromTemporal`); exact copies
+are dropped, not grouped (LEAK-19);
+SPLIT-32 says when a split is forced. The definition's
+`Time basis:` line names the reason (time lost, or too few periods), says what the timestamp or a dated window would
+change and that it should be recovered if a later release has it. Where a person judges the samples interchangeable
+for a reason from the dataset's domain or use case, `AssumedStationaryRelation` replaces the forced tag (SPLIT-32,
+question 3); only a person sets it. Where the relation is measured flat across the periods the data holds, over the
+longest span the source or a parent covers, `StationaryRelation` replaces it (SPLIT-32): the split is random, or
+grouped by the entity where an entity has several rows. A forced split, grouped or
+IID, gets a leak test across the split and the leak probes: does a row share its outcome, its unit's outcome or its
+period's outcome with the other side, is there a hidden group, an order dependence. A leak found is weighed case by
+case like any other: removed where it can be, otherwise the task may still ship as an approximate fit with the leak
+measured in the notes. Being forced alone never makes a dataset `No` (a person's refusal of the temporal-leakage risk
+above is the one exception), and a leak test does not lift the forced tag
+whatever it finds, since its source's regime was another; only a flat relation measured over the periods held or a
+person's reason replaces it, as above. (Lennart, 2026-10-12; amended 2026-10-21, Lennart: one stock
+month, from mobile_churn and the churn snapshots; too few periods, from nba_players_2016_2019,
 open_university_learning_analytics_dataset and distribution_transformers_at_cauca_department; amended 2026-11-02,
 Andrej, on the insurance tables of the zero-inflated batch: a leak test across a forced split; reworded 2026-11-05,
-Lennart: the test informs a case-by-case call and the forced tag stays.) Cases:
-account_debt_south_africa, mobile_churn, open_university_learning_analytics_dataset (nba_players_2016_2019 was
-retired on 2026-10-26 on its use case, not its split).
+Lennart: the test informs a case-by-case call and the forced tag stays; amended 2026-11-16, Andrej: a one-moment
+release with a forward use case is forced whatever its target's timing; amended 2026-11-17, Andrej: whole periods
+held out before the entity, and a measured flat relation replaces the forced tag; amended 2026-11-18, Andrej:
+enough periods for the task's repeats, not two; amended 2026-11-19, Andrej: groups without entity leakage, and with
+nothing measured the entity before periods and a person's refusal of the temporal-leakage risk.) Cases:
+open_university_learning_analytics_dataset (nba_players_2016_2019 was retired on 2026-10-26 on its use case, not its
+split); account_debt_south_africa, mobile_churn and the other one-moment releases with a forward use case are forced
+here.
+
+### When information arrives
+
+**SPLIT-32 (Should; relates to SPLIT-7, SPLIT-8 and SPLIT-14).** How the data was collected for the use case, when
+each sample, each feature and the target come into existence, is information for the split. When that order varies
+from sample to sample, the data is non-IID, and how it was collected helps to see which split represents the use case
+and which features are available at the prediction point. Two sets of tags record it.
+
+The curation record describes the source by independent collection facts, true whatever task is built on it. They are
+read from the source, its documentation and its raw file (a built container's row order is shuffled and says nothing
+about time), and they do not change with the split a definition chooses. A fact the source does not settle is
+`Unknown` rather than a guess:
+
+* **Samples:** `Samples: No Time Dimension` (designed runs, or a catalogue of fixed properties that no source dates),
+  `Samples: One Moment` (every row has the same prediction point: one census, one rating date, one exam round, one
+  customer base read at one date), `Samples: Over Time` (the rows' prediction points spread over a period) or
+  `Samples: Unknown`. The fact asks when each row is predicted, not how the file was pulled: one scrape of sales from
+  several years, or one extract of policies each priced at its own start, is over time (perth_house_prices, bemtpl97),
+  with `Features: Read Later` when the attributes come from the extract. The test: could two rows' prediction points
+  lie at different times? A survey or a catalogue whose items enter in eras, or whose features mean something different
+  by when an item was made, arose over time even when each item's value is fixed: the quasars of sdss_17, a sky survey,
+  are 3-11% of the spectra before 2010 and 31-46% from 2014 on, and phishing pages and malware change with their
+  year. A catalogue that a parent source dates is `Samples: Over Time` with `Time: Dated` even where the date turns
+  out to carry nothing: whether it does is measured for the time basis (`UnseenGroup` or the entry date; SPLIT-37),
+  and the fact stays what the source says.
+* **Time,** for samples over time: `Time: Dated` when the release or a parent source keeps the date (a date column, a
+  value that encodes the period, a date dropped from the raw file, or a parent upload that matches the rows by an id;
+  the time probe, `time_probes.py`, looks for them); `Time: Inferred` when only an order that tracks time survives,
+  with no calendar (an id, a case number, a file position); else `Time: Lost`. An order found only within each entity
+  (a policy's terms, a patient's visits, the 2 Hz samples of one bench session) is `Time: Within Entity`, whatever the
+  samples fact says (electric_motor_temperature_prediction: designed sessions, `Samples: No Time Dimension`). A time
+  recoverable only through the outcome does not count (heart_failure_followup_survival can date its survivors only).
+* **Target:** `Target: Later` (after the features, at one shared date or after a fixed window), `Target: Varying
+  Delay` (after a delay that differs between samples: a settlement, a chargeback, a follow-up), `Target: Revised
+  Later` (assigned, then updated or propagated; also a label that accrues while its window stays open, so the
+  newest samples' label is not final: drug_induced_autoimmunity_prediction counts reports since approval, and 49
+  of its 52 drugs approved from 2010 on are negative) or `Target: Unknown` (the source does not say
+  when the target arrives); no tag when the target exists with the features. More than one can hold
+  (ieee_fraud_detection: a chargeback's varying delay, and labels the host then carries along the client's later
+  payments).
+* **Entities:** `Entities: Recur` when the source holds several rows of one entity (a patient, a client, a company),
+  with or without an id. A forced split holds out periods first, then the entity where the use case meets new entities,
+  else rows (SPLIT-8), and the entity leaks of SPLIT-9 and SPLIT-13 start from it (home_credit_default_risk,
+  horse_colic_survival, lending_club).
+* **Features:** `Features: Read Later` when some features were read after their row's time and joined onto older rows
+  (one read of a store or district table at release, a price "as of current day"), `Features: Revised Later` when
+  rows were rewritten after their date (sf_permit_time's `data_as_of` stamps). Both ask for an as-of check whatever
+  the split (LEAK-10).
+* **Collection period:** the record's `collection_period` field, free text because a span is no vocabulary value:
+  when the rows were collected (`2010-2015`, `Jan 2015 - Jun 2015`, `before 1988`, `Not applicable (generated)`,
+  `Unknown`, also when only the release date bounds it). It tells how much time a temporal split has to work with
+  and how old the relation is that a model learns; the span of a release, not of the years a definition keeps.
+
+A definition can name the use-case prototype it follows; the same source can carry different use cases (SPLIT-1's two
+applications). A definition that names one carries its tag and a `Time basis:` line in the curation notes with the
+fact behind it, ending with what the split cannot test (musk: a new chemical class; a one-moment price scrape: a later
+market). The prototypes, by the questions that tell them apart.
+
+Before them: **does the use case aim at groups the data does not hold, rather than at a later period?** A model meant
+for a new hospital, facility, well, protein or survey project, or for chemistry outside the families a source was
+built from, is tested on held-out groups; the split groups by that unit, and the time order inside the data is not
+weighed. That is `UnseenGroup` (heart_disease: Detrano et al. built their model in Cleveland and applied it to the
+other hospitals; force_2020: a well not yet drilled; superconductivity: a source that keeps its model to known
+chemistry). The source or the use case names the transfer; a group column alone does not make one. A catalogue whose
+use case predicts for items it does not hold, held out by family, is `UnseenGroup` whether or not its entry date
+carries a wave (the qsar sets, nci_aids_antiviral_screen); the line gives the forward split's share against a random
+draw's. Its line names the group and why the use case aims at new ones, and ends with what the split cannot test: a
+later period, at a known group or at all groups at once; where the label still moves with time
+(drug_induced_autoimmunity_prediction's reporting window), the line says so.
+
+1. **Can time affect the target at all?** Not when the target is a fixed property of the item, the same whenever it is
+   measured (a material's strength, a molecule's activity, a species, the outcome of a designed run), and the data has
+   no time dimension (designed runs, a catalogue no source dates), or its time changes only which items are held, not
+   the target (a catalogue whose entry date does not decide its split, SPLIT-37): `Timeless`. The split is random, or
+   grouped by the item where it repeats (musk's conformations, concrete_compressive_strength's mixes). Which identifier
+   a parent source could date the items by (a structure in ChEMBL, an observation date) tells whether a catalogue has a
+   time dimension; "none published" is an answer too. A dated catalogue's use case decides between `UnseenGroup` (above)
+   and the entry date (question 3), and whether the date carries a wave is measured for the line: qsar_tid_11's ChEMBL
+   years show close training analogs first published in the test compound's own year for 71-93% of its scaffold folds,
+   and predicting each period from the earlier ones raises RMSE from 0.80-1.04 to 0.89-1.50, which is why it ships split
+   by first publication year.
+2. **Does the use case look back, into the time the data covers?** In the use case the samples arise over time, but
+   the data is one snapshot of a moment or a period, and what the use case wants is the missing information of that
+   time, not of a later one: the value of a block group the census did not record, a site not yet mapped in a past
+   survey, the hours a logged week lacks, the clients a campaign did not inspect. That is `Retrospective` (houses,
+   wadden_sea_sibes_macoma_abundance, 5g_energy_consumption, fraud_detection_in_electricity_and_gas_consumption_1m).
+   It needs that backward need: a one-moment release whose use case looks forward (prospects for a mailing, customers
+   who will leave) is not retrospective: it is forced (SPLIT-8), whether its target is of that moment or arrives after
+   it. A shared moment and a target window closed for every row make the random split valid within that moment only:
+   one moment is one period, and what the use case asks, the next moment, stays untested (blood_transfusion,
+   credit_card_clients_default). The line names the time covered and the need, and ends with what the split cannot
+   test: a later time. Time can then affect a target only through samples of the same time: check that no sample of a
+   test sample's time carries its target (one day's weather across stations); if one does, group by that time unit.
+3. **The samples arrive over time: does that affect the target?** It does when the target or its relation to the
+   features moves with the period (prices, a credit climate, an adversary), when how the target or the features are
+   recorded changes (a new grading, a new instrument, a new selection of cases), or when a sample's target depends on
+   samples before it (a shared shock, a label propagated along an entity, a row that exists only because an earlier one
+   was survived). A change in how often the target occurs does not count by itself. A class share that moves sharply
+   with the period is more often a change in labelling or case selection than in prevalence, and counts as a change in
+   recording (cardiotocography's suspect share falls from 36% to 1% by year, lung_cancer_epithelial_genexp's cancer
+   share rises from 6% to 81% along the sample number). The source, the time probe and the target by period answer it.
+   Measured flat means flat by the stationary-relation test
+   ([checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md), "The stationary-relation
+   test"). For each of the newest three periods (each period, where the periods have no order), a random half of the
+   period is the test half, drawn by whole units where units recur and the use case meets new ones, and their units
+   leave every training side. A forward model, trained on the rows before the period, and a contemporaneous one, trained
+   on as many rows made of the period's whole other half and filled up from the rows before it, are scored on the same
+   test half by the task's metric over five seeds, with a regularised LightGBM and a tabular foundation model. The gap
+   is how much worse the forward model scores; the floor is 1% of the distance between the contemporaneous model and a
+   constant predictor. A period is not flat for a model when the mean gap exceeds both two standard deviations and the
+   floor; flat when the contemporaneous model beats the constant and two standard deviations stay within ten floors, so
+   that a gap of a few floors would have shown; inconclusive otherwise. The relation is not flat when one period is not
+   flat for one model, or when a class share moves by a factor of two or more between two periods at chi-square p < 0.01
+   (the change in recording above); flat when, for at least one model that beats the constant, the gap averaged over the
+   tested periods has two standard deviations within ten floors, and no period is not flat (pooled over the periods, so
+   a small set gets the evidence of all its periods; amended 2026-11-18, Andrej); and inconclusive otherwise, which
+   counts as unmeasured. Whenever a split reaches this question (the ForcedFromTemporal step of SPLIT-36), two things
+   are attempted (amended 2026-11-18, Andrej): (1) where the data or a parent source holds temporal information (a date,
+   a rebuilt order, two or more periods), the stationary-relation test is run and its verdict goes into the `Time
+   basis:` line; (2) where it holds none, the review reasons whether the use case can be taken as stationary, from the
+   domain's mechanism and from similar datasets (the same domain or mechanism measured elsewhere in the collection or in
+   the literature), and writes the reasoning with the facts for and against into the dataset's review, where the AI
+   offers `AssumedStationaryRelation` with a recommendation for a person to decide. A dataset that skips both reaches
+   the forced split only as an open review issue.
+   * **No, and the windows SPLIT-14 asks for cannot be built:** the use case scores units later than the data, the
+     data holds too few periods for three windows (or a label delay breaks the floor), and the target and its relation
+     to the features are flat across the periods it holds, measured on a dated source or a rebuilt order. That is a
+     `StationaryRelation`, in place of the forced tag (SPLIT-8), and its line gives the measurement
+     (bad_customer_detection: twelve months of loans in file order whose bad mark comes about a loan term later, a flat
+     bad rate, chi-squared p = 0.35, and monthly windows scoring like random splits of the same sizes). Where the
+     windows can be built, the split is temporal however flat the relation (the next bullet), and the measurement goes
+     in the notes as what the windows cost (amended 2026-11-17, Andrej). It holds whether
+     the target is measured with the features (a diagnosis at the visit) or later; when the target arrives is a
+     collection fact, not a prototype. It is always measured, over the longest span the source or a parent source
+     covers: one year can look flat where a longer span moves. thyroid_discordant's 1985 extract had a flat
+     discordant share and monthly windows scoring like random folds, but its parent archive of 1984 to 1987 shows the
+     share at 4.4% in 1986Q3 against 1.3% to 2.8% in the other quarters, and fewer tests ordered from late 1985, so
+     thyroid_discordant_archive ships temporal (Lennart, 2026-11-16). Where time is lost it cannot be measured, and
+     the next branch applies.
+   * **Yes or flat, the time dated or inferred, and enough periods for three windows:** the split is temporal
+     (SPLIT-7, SPLIT-14). For a cut of a growing
+     catalogue, SPLIT-37 asks first whether the source's question reaches the later items at all; where it does not, a
+     change in recording is a fact for the notes, not a reason to split by time.
+   * **Yes or unmeasured (inconclusive included), and the time is lost or too short for three windows:** the split is
+     forced (SPLIT-8): `ForcedGroupedFromTemporal` for whole periods or new entities held out, else
+     `ForcedIIDFromTemporal` (SPLIT-8's order); a relation measured not flat is held out only by whole periods, else
+     `Too Small` (SPLIT-16). It ships after SPLIT-8's leak test. Its `Time basis:` line names the reason (time lost, or
+     too few periods) and what a dated release would change, with the measured cost of the forced split where the rows
+     are dated (eryhemato_squamous_disease's two file parts: training on the other part raises log loss from 0.318 to
+     0.381). A forward use case whose source does not show how the data was collected (`Samples: Unknown`, or a shared
+     moment it does not state) is forced too: the forced tag claims only what is known (give_me_some_credit: no scoring
+     date stated).
+   * **Unmeasured, the time lost, and a person judges the samples interchangeable:** `AssumedStationaryRelation`, in
+     place of the forced tag. It records that the split is random not only because the time is lost but because the
+     dataset's domain or use case gives a reason to take earlier and later samples as interchangeable: a mechanism that
+     the time between collection and use does not change (physiology read by a fixed reference test, a physical
+     measurement), or use within or right after the collected period. The collection span is no reason by itself; it
+     counts only against how fast the domain changes. A similar dataset counts where it shares the mechanism and was
+     measured: a dated set of the same domain whose relation tested flat (or not flat) over a comparable span. No
+     reason: no drift seen where nothing is dated, the random split being the only option, an unchanged model ranking.
+     Against it: opponents who adapt, prices and markets, changed rules or treatments, changed coding, assays or intake,
+     a change the source names, structure in the file order. It applies only where the forced tag would stand, and only
+     where no comparison over time is possible (`Time: Lost`, an order only within each entity, or one moment that holds
+     a single period); two dated periods or a rebuilt order are measured instead, for `StationaryRelation` or the forced
+     tag, and an inconclusive test leaves it open. Only a person sets it: an AI may offer it as an option, with the
+     facts for and against, and recommend it, but writes it only when a person asks. Its `Time basis:` line opens
+     `AssumedStationaryRelation (<person>, <YYYY-MM-DD>): <reason>` and also names why the time cannot be measured and
+     what a dated release would test; the definition and `dataset check` refuse the tag without a person and a reason of
+     eight words or more. The split stays as the forced one would be (periods, then new entities, else IID, in SPLIT-8's
+     order), with SPLIT-8's leak test.
+4. **None of these prototypes fits:** the dataset and its use case go to the curator as an issue with the arrival
+   facts found, rather than under the nearest tag.
+
+IID data is data whose order of arrival does not vary: `Samples: No Time Dimension`. `Samples: One Moment`, with the
+target at that moment or at one shared later date (the March 2007 drive of blood_transfusion, the October 2005 payment
+of credit_card_clients_default), is IID within that moment only; a forward use case on it is forced (SPLIT-8). A
+definition names one time basis. Whatever it is, a record with a `Target:`
+fact asks that every feature be checked against the prediction point (LEAK-1, LEAK-10), including fields the outcome
+cuts short, such as time on risk: a column that comes into existence after the prediction point is a leak whatever the
+split.
+
+Why: the same split can stand for the use case or flatter it, depending on how the data arrived; recording the
+collection facts and the prototype makes that visible. Cases: the arrival study of the 177 v0.2 definitions
+(2026-11-04) and the review of 98 of them (2026-11-06) are the evidence; examples are houses and 5g_energy_consumption
+(`Retrospective`), bad_customer_detection (`StationaryRelation`, measured; thyroid_discordant's one-year extract looked
+so too, its 1984-1987 archive did not), musk (`Timeless`), heart_disease (`UnseenGroup`), heloc and
+credit_card_clients_default (`ForcedIIDFromTemporal`, the second one shared moment).
+
+**SPLIT-34 (Should; relates to SPLIT-32).** Every record of a definition names how its source collected
+the rows with one **data collection type**, set at screening from the source and true whatever task is built on it.
+The type is information for the split: it says which keys the data holds (an item, a family, a unit, an occasion, a
+date), not which one the use case needs. Seven types:
+
+* `Expanding Science Catalogue`: a cut of a scientific database or a testing programme that keeps growing (a
+  bioactivity database's releases, a regulator's screening programme, a materials or sequence database, the rounds of a
+  community experiment).
+* `Experimental Results`: runs of a designed experiment (wind-tunnel conditions, concrete mixes, solvers run on
+  benchmark instances, a siRNA library), or a closed set of specimens, molecules or volunteers measured by a laboratory
+  or a study protocol.
+* `Clinical Study`: patients of a clinical study, a clinic's case series or a registry, labelled by a diagnosis or a
+  follow-up outcome, with no date recorded per row.
+* `Survey`: rows the survey collected itself, by its questionnaire (a clinical one too) or its sampling design
+  (vegetation quadrats, a sky survey's data releases), in one round or in waves of different units.
+* `Database Snapshot`: an organisation's records released as one extract with no date recorded per row: read for one
+  date or period (a customer base, a product catalogue, one scrape of listings, a census table), or cases that arrived
+  over time with their dates dropped.
+* `Dated Event Log`: each row is one event (a trip, an order, a loan, a sale, a report, an admission) whose raw row
+  records its date.
+* `Panel Data`: the same units observed at repeated periods or visits, one row per unit and occasion (station-hours,
+  store-days, account-months, policy-years, a person's study visits).
+
+Where more than one fits:
+
+1. **Panel data first,** when the release identifies the unit (an id or a link in the raw file), each occasion has a
+   recorded date or order (`Time: Dated`, `Time: Inferred` or `Time: Within Entity`; a designed factor such as a test
+   age does not count), and most rows come from units seen on two or more occasions. The rows are the unit's periods
+   or visits, not events that involve it: the storms of a county or the loans of a repeat customer are a dated event
+   log.
+2. **A dated event log needs a date its raw rows record** (`Time: Dated`: a date column, or a value that encodes the
+   period). An order rebuilt from the data (`Time: Inferred`: an id issued in sequence, a case number, the file's row
+   order) does not count: it is what the data allows, not what the source recorded, and the split takes it up within
+   the type (a window on the rebuilt order, SPLIT-22 and SPLIT-14). Without a recorded date, an organisation's
+   records are a database
+   snapshot, whatever period the source names.
+3. **Dates outrank only the clinical study:** a clinical set whose rows record a date is a dated event log.
+   Experimental results, surveys and catalogues keep their dated rows.
+4. **A catalogue is the growing database or programme itself,** not a company's own collection, a one-off deposit or a
+   closed programme; a survey's data releases are a survey.
+5. **Patient data without dates** is a clinical study when the patients arrived over time (`Samples: Over Time`), and
+   experimental results when the data has no time dimension (`Samples: No Time Dimension`: a tumour's type measured on
+   banked specimens).
+6. **A survey's rows are its own answers or samples;** a questionnaire joined with an organisation's records, or a table
+   aggregated from a census, is a database snapshot.
+
+What each type holds for the split: a catalogue its items, families and entry dates; experimental results the
+item or the run, which repeats across conditions; a clinical study patients who arrived over time with the dates lost
+or only an order rebuilt (SPLIT-8), sites and patients that may recur; a survey its sampled units and its rounds; a
+database snapshot one read moment (SPLIT-32's `Retrospective` where the use case looks back, otherwise forced by
+SPLIT-8) or arrivals whose time is lost or survives only as a rebuilt order (SPLIT-8); a dated event log the
+row's date (SPLIT-7, SPLIT-14) and the entities its events involve (SPLIT-9); panel data both the unit (SPLIT-24) and
+the occasion. `tests/test_collection_types.py` checks that each record has one type and that the date conditions of
+rules 1 to 3 agree with its collection facts.
+
+Why: the same split question reads differently by how the rows came into the table, and the type names that before
+the split is chosen. Cases, on the 174 TabArena v0.2 definitions: catalogue 15, experimental results 16, clinical
+study 16, survey 7, database snapshot 48, dated event log 50, panel data 22. Rule 1: dementia_prediction (visits),
+sepsis_prediction_1m (stay-hours), noaa_afsc_bottom_trawl_survey_cpue (stations surveyed every year) are panel data;
+pricing_game_2016_french_fleet (most vehicles have one period), open_university_learning_analytics_dataset (few
+students register twice), allstate_claim_prediction_challenge_1m (one row per vehicle) and numerai_v5_2_1m (an id per
+stock and week) are not. Rule 2: predict_students_dropout_and_academic_success (the economic figures give the
+enrolment year) and california_house_prices_2020 (each row records its listing date, though the split runs on the id's
+sale order) are event logs; fremtpl2, labour_inspection_compliance, loan_default_prediction_imperial_college and
+mercedes_benz_greener_manufacturing (orders rebuilt from an id or the file's row order) are snapshots;
+home_credit_default_risk (snapshot) against home_credit_default_stability_1m (event log), the same lender's
+applications released without and with dates. Rule 3: heart_disease (UCI's raw files date each exercise test and
+angiogram) and infrared_thermography_temperature (subjects screened one by one at a health centre, each visit
+dated) are event logs; diabetes_130_us, horse_colic_survival and lung_cancer_epithelial_genexp (orders rebuilt from
+encounter numbers, case numbers and deposit batches) are clinical studies; wine_quality (experimental results).
+Rule 4: sdss_17. Rule 5: sarcoma, lung_adenocarcinoma_metastasis (experimental results) against
+indian_liver_patient_dataset (clinical study). Rule 6: caracas_cervical_cancer, in_vehicle_coupon_recommendation
+(surveys) against student_portuguese_performance and houses (snapshots).
+
+**SPLIT-35 (Should; relates to SPLIT-8, SPLIT-24, SPLIT-25 and SPLIT-31).** When the use case holds out a group of
+distinct items, a family (a chemical series, an element set, a protein target), a site, an area or an instrument, and
+the data cannot key that group (no structure to compute a scaffold, no stand id or coordinates, a single site), the
+split is random and the definition carries `ForcedIIDFromGrouped`. Its `Group basis:` line names the group the use case
+holds out, why the data cannot key it, and the overlap the random split leaves (the share of test items with a close
+training neighbour, or rows of one unkeyed group on both sides). The tag sits beside the time basis (SPLIT-32), which
+still says why the split is not temporal. It is not for a catalogue, whose missing family key SPLIT-37 step 2 handles,
+nor for repeats of one entity the data does not identify, whose rows share one outcome: SPLIT-24 groups those where the
+entity can be rebuilt exactly, and SPLIT-25 retires the dataset where it cannot. Like a forced tag from temporal, it
+stays whatever a leak test finds, as the use case asks for another split. Why: a random score stands for items of groups
+already seen, and the tag tells a reader that the use case asks for more. Cases: bioresponse (`Timeless`; no structure
+or compound id, so no chemical series), covertype (`Retrospective`; no stand id or coordinates, and four wilderness
+areas are too few groups).
+
+**SPLIT-36 (Should; applies SPLIT-8, SPLIT-10, SPLIT-32, SPLIT-34 and SPLIT-35).** A definition's split is decided by
+walking the decision tree in [split_tree.md](split_tree.md) from its record's data collection type: the use case
+first, then what the data and its documentation allow, then a measurement where one decides. The leaf reached gives
+the split and the tag that justifies it (a time basis, a forced tag or `ForcedIIDFromGrouped`), and for a temporal
+split the date the windows are cut on and the gap. Answer each question from what it reads; a collection fact only
+points to where to look. A forced leaf, a leaf no definition has reached yet, and a question no answer fits go to a
+human reviewer with the split suggested and the facts behind it; only a reviewer adds a branch. A split the source
+prescribes answers a question only where the source chose it for the use case: matching the leaf, it fills in the
+leaf's periods, gap and training history (SPLIT-19); differing, the leaf decides (SPLIT-5). A definition that ships
+another split than its leaf names the leaf, what the source prescribed and the reason in its `splits_comment`, and the
+departure goes to a reviewer. The rules above still decide each step (the windows, the gap, the groups, the leak
+tests); the tree orders them. Why: the same questions asked in the same order make splits of similar data agree, and
+show where a dataset is new. Cases: the 175 v0.2 definitions placed when the tree was adopted and regenerated
+(2026-11-17); ten shipped another split and are listed in split_tree.md.
+
+**SPLIT-37 (Should; relates to SPLIT-4, SPLIT-31 and SPLIT-32).** A dataset drawn from an **expanding science
+catalogue** is a cut of a database or a testing programme that keeps growing: a bioactivity database's releases, a
+regulator's screening programme, a materials database, a sequence database, the rounds of a community experiment.
+Each item's target is a property of the item and does not move; what moves is **which items the catalogue holds**,
+because a programme adds them in waves - the compounds of one paper's series, one year's batch of tests, one round's
+entries. The record carries the tag `Expanding Science Catalogue`, set at screening, so this rule is read before the
+split is chosen. A survey's data releases are not a catalogue (sdss_17, a sky survey): the survey chooses which
+objects it observes, and SPLIT-32 reads its split from when they were observed. Three keys can keep a test item
+apart from training, and each tests something else:
+
+* **the item:** its copies and re-measurements stay on one side (a structure, a composition, a mix; SPLIT-24,
+  SPLIT-26);
+* **its family:** a series not measured yet (a scaffold, an element set, a plate, a protein target);
+* **when it entered the catalogue:** the items added after the training data (a first publication, a test year, the
+  night of a spectrum, a competition round).
+
+Which key stands for the use case is information from the use case and the source, read in this order:
+
+1. **The item key always holds.** An item's copies and re-measurements stay on one side whichever key splits the rest
+   (SPLIT-24, SPLIT-26); a split by entry date keys on each item's first date, so they stay together there too.
+2. **The family key is the default:** the scaffold for molecules (SPLIT-31), otherwise the unit the actor has not met
+   yet (a protein target, a plate, a well, a strain, a sampled soil profile). Where no family key can be computed, or
+   none exists apart from the label, the split is random with the time basis `Timeless` (the target is a property of
+   the item), grouped by the item where an item has several rows (step 1); the family the use case would hold out and
+   the overlap the split leaves go in the notes. A catalogue does not carry `ForcedIIDFromGrouped`.
+3. **The source's purpose sets which items the test set stands for.** The use case is the source's, cited, as it is
+   for what one prediction is (SPLIT-23): its stated aim and scope, from the abstract, the methods and the caveats.
+   Where the source keeps its model to items like those it was built from (a screen within known chemistry, a
+   regulatory estimate validated on chemicals from other sources), the family key stands and the entry date is not
+   weighed: the catalogue's later items are outside the source's question. How the catalogue arrived (new families in
+   later eras, a test protocol that changed over the span) is then a fact for the notes, with its measurement, and the
+   time basis is `UnseenGroup` (SPLIT-32), its line naming the source's scope and what the later items hold that it
+   leaves out. Where the source's aim reaches the items that come next (compounds not yet made, materials not yet
+   reported), or the source names no scope, the definition's use case goes on to step 4. Where the source aims at
+   items from elsewhere (other places, other instruments) and tests on independent sets from there, the family key
+   that stands for elsewhere (a survey, a site) is the one, the date is not weighed, and the time basis is
+   `UnseenGroup`. The source's own split is evidence of its scope only where it was chosen for the use (a time split,
+   whole strains, whole wells); a random cross-validation used by habit says nothing about it.
+4. **The entry date replaces the family key** when the use case predicts for items the catalogue does not hold yet
+   (not an inventory already collected, a closed study set or a designed experiment), the date is when the item entered
+   this catalogue (not a registration number that predates it), and the labels are final (not `Target: Revised Later`,
+   where a split by date tests the delay of the label more than the items), and when either
+   * **(a) arrival changes how the target is recorded, or which items are selected** (SPLIT-32, question 3): a
+     new grading of the label, a programme that changed which items it takes in. A change in how the features are
+     recorded (a later round's descriptor convention, the curves a newer well is logged with) does not move the split
+     by itself: the newest items, which the use case meets, are recorded like the newest training items, so it is a
+     fact for the notes with its measurement (protein_model_quality_rf_pcp, force_2020; Andrej, 2026-11-18); or
+   * **(b) the date carries the waves:** a forward split leaves the test items clearly fewer close training neighbours
+     than a random draw does. A programme that adds items in series (one paper's compounds, one family of materials)
+     makes waves, and a family key still trains on the siblings that arrived with the test item, which the actor
+     does not have.
+
+   (a) and (b) are two readings of one condition and lead to the same split. The entry date must also give the windows
+   SPLIT-14 and SPLIT-15 ask for; where it does not, the family key stands (step 5), not a split forced from temporal:
+   the target does not move, only which items the catalogue holds.
+5. **Otherwise the family key stands,** and the time basis is `UnseenGroup` (SPLIT-32): the use case predicts for
+   families the data does not hold (a scaffold not yet tested, a well not yet drilled, a protein target with no known
+   structure), whether or not the date carries a wave. The `Time basis:` line gives the forward split's share against
+   a random draw's, which says whether it does; where the labels are not final, it says so.
+6. **A structure the use case does not hold out is disclosed with its measurement, not grouped on:** a submission
+   batch whose only channel is the structure the family key already holds out, the tissue source site a laboratory's
+   new patients share with its earlier ones.
+
+The share of test items with a close training neighbour is measured on the same test items under each key (for
+molecules, Tanimoto 0.7 or more on Morgan radius 2). It says what each key leaves on the training side, and step 4 (b)
+compares the date with a random draw, never with the family key.
+
+Why: the key follows the application as the source states it, never the size of the gap (SPLIT-1, SPLIT-4, SPLIT-23,
+SPLIT-30); a lower score is not the aim and never chooses the key. On the catalogues measured so far, the share of test
+items with a close training neighbour (a score in brackets where no share was measured):
+
+| Dataset | Step | Family key | Entry date | Random | What decides |
+|---|---|---|---|---|---|
+| qsar_tid_11 | 4b | scaffold 58% | first ChEMBL year 6-30% | 79.7% | 71-93% of the scaffold split's close analogs were first published in the test compound's own year |
+| apistox | 4b | scaffold 14-19% | decade of first publication 10-24% | 17-30% | the literature adds compounds in series |
+| superconductivity | 3 | composition: 79-86% of test compositions with an element-set sibling in training | first report year 23-51% | | the source keeps its model to known chemistry ("We should not expect good predictions for completely new superconductors"); the later families (cuprates from 1986, iron-based from 2008) are outside its question |
+| qsar_biodeg | 3 | scaffold 10.3% | MITI test year 10.3% | 11.8% | the source builds a regulatory screen and validates it on chemicals from other sources; the move from 14-day to 28-day tests is a fact about the labels |
+| qsar_oral_toxicity | 5 | scaffold 8.6% | report year 12.4% | 13.1% | an inventory the programme screens; its untested chemicals have 11.2% |
+| qsar_fish_toxicity | 5 | scaffold 5.9% | first ECOTOX test year 7.2% | 6.9% | the testing programme sets the pace, not the chemistry |
+| qsar_aquatic_toxicity | 5 | scaffold 0.6% | first ECOTOX test year 2.3% | 2.6% | as qsar_fish_toxicity |
+| qsar_bioconcentration | 5 | scaffold 4.6% | NITE test year 3.8% | 3.8% | as qsar_fish_toxicity; ECOTOX's years match the compiled values less well (correlation 0.744) and are left out |
+| nci_aids_antiviral_screen | 5 | scaffold 4.3% | registration order 8.4% | 9.8% | the only order predates the screen; its submission batches are disclosed (step 5) |
+| drug_induced_autoimmunity_prediction | 5 | scaffold | first approval year | | the label accrues with reports after approval |
+| protein_model_quality_rf_pcp | 5 | protein target (per-protein Pearson 0.34-0.57 on CASP7-9) | CASP round (0.30-0.56; CASP10 about 0) | | the user ranks candidate models of a target with no known structure, which the protein key holds out; CASP10's other descriptor convention is a fact for the notes |
+| open_soil_spectral_library | 3 | survey project (93-96% of test layers kept their survey in training under the pedon key) | scan date (older scans only 0.178 against 0.141 for a matched control, RMSLE) | | the source aims at scans from other instruments and sites; a whole survey is the part of that this one-instrument cut can test |
+| splice | 5 | GenBank entry component | entry year (1974-1990, 94% of entries dated): 4.1% of test windows with a training window within 3 of 60 bases | 4.0% | entries reach GenBank one at a time, so the date carries no wave |
+| force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | 5 | well: 61.9% of test wells with a training well in their block | release date 62.0% | | wells are released one at a time, two years after completion, so the date carries no wave; the curves a well carries change with its year (shear sonic in 0% of wells before 1990, 92% in the 2010s), a change in how features are recorded and a fact for the notes (step 4a, 2026-11-18) |
+
+Cases, by step. 3, the source's scope: superconductivity, qsar_biodeg, open_soil_spectral_library (items from
+elsewhere). 4b: qsar_tid_11, apistox. 5: qsar_oral_toxicity (an inventory), nci_aids_antiviral_screen (the
+date predates the screen), drug_induced_autoimmunity_prediction (labels not final), qsar_fish_toxicity,
+qsar_aquatic_toxicity, qsar_bioconcentration,
+force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition, splice (no wave in the date),
+protein_model_quality_rf_pcp (the source's question is a new target). Random for want of a family key: bioresponse (no
+structure or compound id), biogeographical_ancestry_prediction (the population is the label). Step 6:
+nci_aids_antiviral_screen, sarcoma.
 
 ### Temporal tasks
 
@@ -127,9 +546,12 @@ window, with the most training data and the most representative; the others walk
 
 **SPLIT-12 (Should).** The horizon is a human judgment from the source: how far ahead the actor predicts ("managers
 predict sales up to six weeks in advance"), the competition's own test window, the refit cadence. Choose the test
-windows to match it and write the reasoning down. The curator signs off on the horizon and the test windows of every
-new temporal dataset, as on its metric (Lennart, 2026-11-10: "I am not even sure there is a good reason for some of
-the forecast horizons here").
+windows to match it and write the reasoning down. The definition derives from the use case and the source: the horizon
+(the window length), the refit cadence (the step between windows), the planning gap and the label delay (the gap,
+SPLIT-10) and the time unit the decision is made in; the splits comment names each and where it comes from, or says the
+source is silent and what is assumed. The curator signs off on the horizon and the test windows of every new temporal
+dataset, as on its metric (Lennart, 2026-11-10: "I am not even sure there is a good reason for some of the forecast
+horizons here").
 
 **SPLIT-13 (Should).** Look for grouped structure inside a temporal task: repeated observations of one entity over
 time (transactions of one customer). An entity that recurs across the cutoff is part of the task when the model
@@ -137,48 +559,61 @@ predicts for known entities, and a question when the use case is a new entity (U
 
 ### How many windows
 
-**SPLIT-14 (Must; amended 2026-11-08 and 2026-11-11, Lennart).** A temporal task has at least 3 windows. The newest
-window and at least one other train on at least 50% of the data; further windows may train on less, down to 30% of the
-data, and at most as many windows train on less than 50% as on 50% or more. A window under 30% needs a reason the
-curator accepts for that dataset. Every window under 50% needs the curator's sign-off: the review raises it as an issue,
-`dataset check` warns (`splits_train_under_half`, and `splits_train_under_floor` under 30%; a broken core is the error
-`splits_floor_core`), and the definition accepts the warning only once the record carries the curator's CC line, never
-on the AI's word (Lennart, 2026-11-11). The splits comment names every window under 50% and its train share; no model
-score is required for it. Why: a much smaller train side is too unlike the real application, but in every floor case of
-the reviews of 2026-11-10 and 2026-11-11 at least two windows already trained on 50% or more, and the windows below them
-added years, seasons, events or test rows the newest windows lack (Lennart, 2026-11-11: "we very much noticed that the
-floor can be below 50% to get better/more test windows quite frequently ... In some cases we can also go lower"). A flat
-lower floor would not do: at 40% mercedes_benz_greener_manufacturing (31.5%) and ieee_fraud_detection (38.9%) would
-still lose windows the curator kept. A task that cannot meet it ships under SPLIT-8 (Lennart, 2026-10-21). Each window
-has its own train side: windows that share one train side test one model on several test periods, which is one
-evaluation, not several. As time moves on, a refit sees the data that arrived since, so each window trains on what is
-known before it starts (Andrej, 2026-11-02; reframed 2026-11-05, Lennart). The amendment of 2026-11-08 (one older window
-at 40% when most test entities recur; Lennart: "the task is too good to remove because of the 50% floor") is replaced by
-the two tiers since 2026-11-11: its condition of recurring entities and its duty to report a model's score lapse.
+**SPLIT-14 (Must; amended 2026-11-08 and 2026-11-11, Lennart).** A temporal task has at least 3 windows (splits). Every
+window trains on at least 50% of the data. A window under 50% is the curator's exception for that dataset, down to 30%
+and never below: the review raises it as an issue, `dataset check` warns (`splits_train_under_half`; under 30% the error
+`splits_train_under_floor`), and the definition accepts the warning only once the record carries the curator's CC line,
+never on the AI's word. The splits comment names every window under 50%, its train share and the reason. Every test
+window holds at least 33 scored units, counted as SPLIT-33 counts them (the group, else the scored unit, else the row):
+a third of a 100-unit table, as one test fold of the smallest IID split holds it (`splits_test_too_small`, an error).
+A smaller test window is the curator's exception only where the use case's own period holds fewer units (a factory day
+of team records: garments_worker_productivity); as under 50%, the record carries the CC line before the definition
+accepts the error.
+Why: a much smaller train side is too unlike the real application, and a smaller test window scores noise; the
+exceptions down to 30% kept windows that added years, seasons, events or test rows the newest windows lack
+(mercedes_benz_greener_manufacturing at 31.5%, ieee_fraud_detection at 38.9%). The windows under 50% signed off under
+the earlier wording (two windows at 50% or more, the others down to 30%) stand as recorded exceptions. A task that
+cannot meet it ships under SPLIT-8 (Lennart, 2026-10-21). Each window has its own train side: windows that share one
+train side test one model on several test periods, which is one evaluation, not several. As time moves on, a refit sees
+the data that arrived since, so each window trains on what is known before it starts (Andrej, 2026-11-02; reframed
+2026-11-05, Lennart).
 
 **SPLIT-15 (Must for the newest window, Should for the others; amended 2026-11-10, Lennart and Andrej).** The newest
 window is always a test window: it is the deployment period. The other windows are the curator's choice, per dataset,
-argued from the use case: which periods a deployed model must handle (other years, seasons, holidays, events, a
-change of rules or of the data collection). The evidence is statistics of the data, never a model's score: the
-candidate windows of the declared length and gap with their months and weekdays, their rows and train share, the
-target's distribution, and how far the features drift from the train side (`dataset windows <name>`,
+argued from the use case: which periods a deployed model must handle (other years, seasons, holidays, events, a change
+of rules or of the data collection). The evidence is statistics of the data, never a model's score: the candidate
+windows of the declared length and gap with their months and weekdays, their rows and train share, the target's
+distribution, and how far the features drift from the train side (`dataset windows <name>`,
 [definitions.md](../../knowledge-data-foundry/references/definitions.md), "Choosing the test windows"). Prefer windows
-in other years, then other seasons, then other months, weeks or days, over the windows just before the newest
-(Andrej, 2026-11-10). Walking back from the newest is one choice among others and needs its reason too, such as a
-history too short for others, or a use case that only cares about the weeks after a refit. Every choice stays above
-SPLIT-14's floor; the length and the gap come from SPLIT-12; as many windows as an IID or grouped task of that size
-would get folds, then check that they are still meaningful (SPLIT-16 to SPLIT-18). The splits comment names the
-windows, the reasons and the numbers they rest on. Why: on aeolus, climate_model and delivery_eta the newest three
-windows ranked a model pair the other way round than the whole eligible history did, and three windows spread over it
-cut that error 5 to 15 times, while three windows drawn at random did worse than three spread evenly (closed PR #69).
+in other years, then other seasons, then other months, weeks or days, over the windows just before the newest (Andrej,
+2026-11-10). Walking back from the newest is one choice among others and needs its reason too, such as a history too
+short for others, or a use case that only cares about the weeks after a refit. The number of windows aims at the splits
+an IID split of the dataset would get: SPLIT-33's count for two thirds of all its scored units (60, 30, 9 or 3). The use
+case comes first: the window length, the step and the gap follow SPLIT-12 and SPLIT-10 and are never shortened or
+dropped to reach the count; then SPLIT-14's floor and least test window; within them, as many windows as reach the
+target. Fewer are accepted, never fewer than 3: `dataset check` warns (`splits_below_target`), and the splits comment
+names the target, the count reached and what stops more windows. Splits are counted by their training sides: test
+parts that share one training side (a window cut into folds by group, say) are one split, and are never offered to reach
+the count or the minimum of 3. Windows do not overlap by default; where the target
+cannot be reached otherwise, the review offers overlapping windows (a step shorter than the window) as an option, and
+the curator judges whether the use case admits them. The splits comment names the windows, the reasons and the numbers
+they rest on. Why: on aeolus, climate_model and delivery_eta the newest three windows ranked a model pair the other way
+round than the whole eligible history did, and three windows spread over it cut that error 5 to 15 times, while three
+windows drawn at random did worse than three spread evenly.
 
-**SPLIT-16 (Must).** Do not fall back to an IID split for a non-stationary sequence whose windows hold too few
-positives. Counting the positives per window and the `Too Small` verdict are TP-9 ([task_probes.md](task_probes.md)).
-Marker: `Too Small`. Cases: seismic_bumps.
+**SPLIT-16 (Must; amended 2026-11-18, Andrej).** Do not fall back to the unit or to an IID split for a sequence whose
+relation is measured not stationary, whether its windows failed for too few periods or rows: where enough meaningful
+groups can be built to approximate the temporal split (whole periods, enough for the task's repeats, SPLIT-8), hold them
+out; where they cannot, the task is `Too Small`. Few positives in a test window are part of the task, not a reason to
+change the split. Only a window without a positive is a problem, and only for a ranking metric (ROC AUC, average
+precision), which one class cannot score: widen that window or move its cut until every test window holds a positive.
+The stationarity question comes first: a relation measured flat, or a person's reason where nothing can be measured,
+keeps the split random (SPLIT-32); nothing measurable and no reason goes to SPLIT-8's order. Counting the positives per
+window is TP-9 ([task_probes.md](task_probes.md)). Marker: `Too Small`. Cases: seismic_bumps.
 
-**SPLIT-17 (Should).** Widen windows that get too small: below about 50 test rows per window, use wider windows and
-fewer splits. Why: finer windows add no test rows (SPLIT-14's floor fixes the test pool); they cut it into
-smaller, noisier pieces. Cases: coffee_rating_prediction.
+**SPLIT-17 (Should).** Widen windows that get too small: a window holds at least 33 scored units (SPLIT-14), and where
+windows near that make each window's score noise, use wider windows and fewer splits. Why: finer windows add no test
+rows (SPLIT-14's floor fixes the test pool); they cut it into smaller, noisier pieces. Cases: coffee_rating_prediction.
 
 **SPLIT-18 (Should).** Short-lived quantities need short windows: weather test windows of one to two weeks at most.
 Cases: climate_model_weather_forecasting.
@@ -186,7 +621,8 @@ Cases: climate_model_weather_forecasting.
 ### The training history
 
 **SPLIT-19 (Should).** When the source defines the split (a competition's or a paper's official periods), follow it.
-A prescribed split is still a claim to check (SPLIT-5).
+A prescribed split is still a claim to check (SPLIT-5): it fills in the leaf SPLIT-36 reaches, and where it differs
+from that leaf the leaf decides.
 
 **SPLIT-20 (Should).** Otherwise decide what the train side holds from the use case: the history a model refit at each
 window would train on. Read what the source's authors trained on, check the history for breaks (COVID-19, a change of
@@ -212,14 +648,20 @@ when predicting; the label structure alone does not.
 Cold start or warm start is decided from the use case before grouping: USE-10 and USE-11 in
 [use_case.md](use_case.md).
 
-**SPLIT-24 (Must).** Group on a true group id, or on one constructed exactly from the data: identical profile text or
-a poster-specific masked contact, consecutive blocks of identical person-level answers in the raw file order,
-identical values in the columns that define the entity. Never on a similarity-threshold cluster, and never on a hash
-of the feature vector standing in for an unknown entity. Cases: emscad, in_vehicle_coupon_recommendation,
-concrete_compressive_strength, airfoil_self_noise, maternal_health_risk, frempl_french_motor_personal_line.
+**SPLIT-24 (Must).** Group on a true group id, or on one constructed from the data, either exactly (identical profile
+text or a poster-specific masked contact, consecutive blocks of identical person-level answers in the raw file order,
+identical values in the columns that define the entity) or by a calibrated link. A calibrated link takes its match rule
+from how the data were recorded (the same counters read again, values shifted by one step, a policy record starting
+the day the other ends), never from the score, and a chance rate shows that most of its links are real (LEAK-43 in
+[leak_checks.md](leak_checks.md)); whether it holds is the curator's call, case by case, by how certain the evidence
+is. Never on a similarity-threshold cluster, and never on a hash of the feature vector standing in for an unknown
+entity. Cases: emscad, in_vehicle_coupon_recommendation, concrete_compressive_strength, airfoil_self_noise,
+maternal_health_risk, frempl_french_motor_personal_line, santander_transaction_value.
 
-**SPLIT-25 (Must).** When the real groups matter and cannot be recovered, retire the dataset rather than group on a
-guess, and note that the authors could be asked for the group labels. Cases: maternal_health_risk,
+**SPLIT-25 (Must).** When the real groups matter and cannot be recovered, never group on a guess. Drop the repeats
+that can be identified and ask whether the target still stands for the use case (LEAK-42, not recoverable); retire
+the dataset when the repeats cannot be identified, or when what stays still rewards recognising an unrecorded group,
+and note that the authors could be asked for the group labels. Cases: maternal_health_risk,
 hazelnut_spread_contaminant_detection, naticusdroid_android_permissions_dataset (malware families).
 
 **SPLIT-26 (Should).** Take the group key from the source's own data, at the resolution the features see. Keep the
@@ -250,8 +692,9 @@ qsar_bioconcentration: "in other cases, we also moved towards a scaffold split a
 molecule dataset whose rows carry exact structures groups on the Bemis-Murcko scaffold, as a new chemical under
 assessment often comes from a series not yet measured. A molecule without a ring is a group of its own, and so is each
 molecule of a scaffold that holds more than a tenth of the molecules, which is no series and would leave folds of very
-unequal size (`scaffold_groups` in `data_foundry.v2.chemistry`). Cases: drug_induced_autoimmunity_prediction,
-qsar_bioconcentration, qsar_oral_toxicity, qsar_tid_11.
+unequal size (`scaffold_groups` in `data_foundry.v2.chemistry`). Where the set is a cut of a catalogue that keeps
+growing, SPLIT-37 says when the date a molecule entered it replaces the scaffold. Cases:
+drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity, qsar_tid_11.
 
 The hidden-group cases and the probe's calibration are in [task_probes.md](task_probes.md), "Hidden groups".
 
@@ -289,9 +732,10 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-8 | account_debt_south_africa | ships as IID, tagged forced IID from temporal; held out by file block, ROC AUC falls from 0.877 to 0.843 and 0.786 (2026-10-12, Lennart) | applied |
 | SPLIT-8 | mobile_churn, churn_telco_south_asia, bank_customer_churn, tour_travels_churn | one stock month (mobile_churn: June's base plus the July and August joiners) or one undated snapshot: IID, `ForcedIIDFromTemporal`; on mobile_churn's 1,533 later joiners, training on June gives ROC AUC 0.661 against 0.690 IID, the others cannot measure it (2026-10-21, Lennart) | applied |
 | SPLIT-8 | nba_players_2016_2019, open_university_learning_analytics_dataset | too few periods (3 seasons; 4 start dates): stacked and grouped by player or by module-presentation, `ForcedGroupedFromTemporal`; on the one valid window R^2 0.745 against 0.744 grouped (nba), log loss 1.185 against 1.205 grouped (open_university) (2026-10-21, Lennart); nba retired on 2026-10-26 on its use case (USE-1, USE-5), not on the split | applied |
-| SPLIT-8 | distribution_transformers_at_cauca_department | two label years, one window: one year IID, `ForcedIIDFromTemporal`, not stacked, as the two files hold the same units with identical attributes; ROC AUC 0.648 trained on 2019 and tested on 2020 against 0.639 on the random folds (2026-10-21, Lennart) | applied |
+| SPLIT-8 | distribution_transformers_at_cauca_department | two label years, one window: one year IID, not stacked, as the two files hold the same units with identical attributes; `ForcedIIDFromTemporal` (2026-10-21, Lennart), `StationaryRelation` since 2026-11-16 (Andrej): ROC AUC 0.648 trained on 2019 and tested on 2020 against 0.639 on the random folds; `AssumedStationaryRelation` since 2026-11-18 (Andrej), the stationary-relation test (v3) being inconclusive | applied |
 | SPLIT-8 | bemtpl97 | one policy year (1997), undated, the raw order sorted by postcode: IID, `ForcedIIDFromTemporal`; the cost cannot be measured (2026-11-04, Lennart: beMTPL97 and freMTPL2 treated alike) | applied |
 | SPLIT-8 | fremtpl2 | no policy dates; the blocks read as stacked periods with linked IDpols, but both the periods and the links are inferred, not the source's key (SPLIT-24), unlike nba and open_university, which group by a recorded entity: IID, `ForcedIIDFromTemporal`, because prior work uses a random hold-out or a split grouped on identical rating factors and none links records across years (2026-11-04 and 2026-11-05, Lennart; the size of a gap decides nothing, SPLIT-4, SPLIT-30). On 2026-11-08 (Lennart, its issue 11) the random split stays with a note rather than folds grouped on identical rating factors: one 19-row rating profile with 72 claims in 3.63 years makes the whole IID-against-grouped gap (94-102% of 0.0007 to 0.0017), 19 rows of 677,991 are not many (SPLIT-29), and LightGBM ranks ahead of a Poisson GLM under every split | applied |
+| SPLIT-8, SPLIT-24 | santander_transaction_value | no dates; the rows are snapshots of the same customers, a later one holding an earlier one's lag values and target shifted by the steps between them: grouped by customers rebuilt from the data, `ForcedGroupedFromTemporal`. Exact links where the shifted values agree in all 12 lag groups (3 or more non-zero, unique on both sides, no target used), plus a calibrated link where a sparse match is confirmed by the earlier row's exact target in the later row's lag column (4,371 links, 85-110 with shuffled targets); 710 customers, the largest 104 rows. Set apart from fremtpl2 (IID kept over inferred policy chains) by the use case, potential customers the model has not seen, and by the links: equal values at many shifted positions at once | applied |
 | SPLIT-9 | hotel_booking_demand | train kept bookings arriving after the prediction date that were already cancelled (100% positive), so the model learned "future arrival means cancelled"; filtering on the status date kept the shortcut, filtering on the arrival date removed it | applied |
 | SPLIT-9 | alfa_battle_2_0_task_2 | the training products of clients with a product in the test window are dropped (32,861-39,221 rows; 60-83% of each training side kept), standing in for the as-of filter on label dates the data lacks: a later product defaults at 95.1% after a defaulted earlier one (2.3% otherwise), flat over lags of 1-10 months, while 45.5% of later defaults had one, so the earlier flag was set after the later issue; without the filter the window's ROC AUC rises by 0.002-0.009. Differs from ieee_fraud_detection (LEAK-34, 2026-10-01), whose carried labels follow the host's labelling rule and are read as known history (2026-10-26, Lennart) | applied |
 | SPLIT-9 | lt_vehicle_loan_default_prediction | not a shortcut, gap 0 kept: the last 30 days' default rates of the supplier, branch, employee and postcode codes add +0.0026 ROC AUC at equal pool size (0.0005-0.0051, 9 of 9 windows; up to +0.0057 in other encodings), the size of alfa_battle_2_0_task_2's removed effect; set apart by the mechanism: each code is shared by many borrowers and no borrower recurs (rebuilt borrowers score 0.517-0.543), so no test row is linked to its own client's earlier label (alfa: 95.1% default after an earlier default against 2.3%), and the effect does not grow at the release end (0.0025 in the newest window against 0.0028); the notes give its size (2026-11-05, Lennart) | applied |
@@ -305,6 +749,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-10 | zillow_prize | a one-month gap: training is every sale before the preceding month, since Zillow receives sales with a delay (review of 2026-10-20) | applied |
 | SPLIT-10 | melbourne_housing_market | no gap, measured: every weekly sheet from August 2017 holds as many sales as the companion file read up to October 2018 (558 of 558 on 17 March 2018), and the newest window's mean residual is +0.009 against -0.013 to +0.022 (2026-10-21, Lennart: a gap only if the newest months show selection) | applied |
 | SPLIT-10 | lt_vehicle_loan_default_prediction | no gap, an application of the amendment as reworded on 2026-11-05: one due date per loan (the first instalment, inferred at least about a month after disbursement; the release gives none) and every label final at release, so the unmatured rows are not selected by their outcome, and the release end shows drift, not censoring; the newest training labels add 0.0018-0.0051 ROC AUC at equal training size across four learners (no gap scores 0.007-0.017 above a 30-day gap), +0.0026 of it through recent default rates of shared codes (SPLIT-9 row); a 30-day gap would keep the 50% floor only with three two-day windows instead of nine (SPLIT-15) (2026-11-04, Lennart: the amendment; 2026-11-05, Lennart: an application, not an exception) | applied |
+| SPLIT-10 | acquire_valued_shoppers_challenge | a five-day gap, measured: the offers come in waves that run over a week and the repeat period is not published; where a test window continues a wave, the five days before it add ROC AUC 0.061 at equal training size (LightGBM; logistic regression 0.022 and 0.031), against 0.001 to 0.008 where a window starts a new wave. The gap costs one of five windows (four five-day windows, 11 to 30 April 2013) and every train side keeps 56% to 69% of the rows, so SPLIT-14 holds and the earlier no-gap exception falls away; labels of older waves may still be open | applied |
 | SPLIT-9, SPLIT-10 | nyc_taxi_trip_duration_1m, pkdd_15_taxi_trip_time_prediction_ii_1m, cooking_time_1m, maps_router_eta_1m, delivery_eta_1m | trip and order times in weekly or monthly windows: the training rows whose trip or order ends after the window start are counted per window, and a one-day gap is set where any are (nyc 77-127 per window, pkdd 8-48, cooking_time 108-172, maps_router_eta 578-656; 0 after); delivery_eta_1m has none, its orders stop overnight (2026-10-21, Lennart) | applied |
 | SPLIT-10 | ames_housing, perth_house_prices | proposed amendment, due at the third exception of this reason (principles.md, "Exceptions and amendments"): "No gap is needed when the label's delay is shorter than the resolution of the time column (sales dated by month) and the newest period shows no selection by the outcome (its mean residual within the other windows' range)." Both exceptions rest on these two facts; alfa_battle_2_0_task_2 and lending_club depart for another reason (SPLIT-14's floor) and do not count (proposed 2026-10-26 from the consistency check on ames_housing; open for Lennart) (settled by the amendment of 2026-11-04, Lennart) | applied |
 | SPLIT-10 | spanish_homeowners_motor_insurance_2010_2014 | no gap for late-reported claims: the panel is yearly and a one-year gap leaves the 2012 window 33% of the rows, below SPLIT-14's floor; hiding 30 or 90 days of the newest year's claims moves the mean Gini from 0.219 to 0.226 and 0.203, within noise. Serves SPLIT-14 (2026-11-02, Andrej; row added 2026-11-06) | exception |
@@ -322,6 +767,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-16 (TP-9) | seismic_bumps | 49 positives in the newest half, 0-5 per window: `Too Small`, no fallback to an IID split | applied |
 | SPLIT-17 | coffee_rating_prediction | 26 monthly windows of 2-72 reviews doubled the confidence interval of a model comparison; 13 two-month windows hold 54-115 | applied |
 | SPLIT-18 | climate_model_weather_forecasting | weather test windows of one to two weeks at most | applied |
+| SPLIT-19, SPLIT-5 | santander_transaction_value | the competition's split checked on the data: the customer key over Kaggle's train and test files links 12 of 111,552 snapshot pairs across them (4 customers), so the files hold different customers, as the grouped split does. The leak competitors read ran inside the test file (a later test snapshot shows 6,991 of 17,550 test targets, a training row 4): a competition's known leak says where to look, not that its split crossed entities | applied |
 | SPLIT-20, SPLIT-21 | aeolus | flights from 2023 on rather than all of 2016-2024, two-week windows with one of three in the holiday peak (2026-10-12, Lennart) | applied |
 | SPLIT-20 | perth_house_prices | one-month windows every third month back from December 2020 (`step=3`) instead of nine contiguous months in 2020, so most windows fall outside the COVID months and the stale-record period; chosen from counts, not scores (2026-10-26, Lennart) | applied |
 | SPLIT-20 | airqo_low_cost_air_quality_monitor_calibration_challenge | five monthly windows from October 2020 (`n_windows=5`) instead of the three dry-season months December 2020 to February 2021, so the test covers both seasons and October and November score all three sites (smallest train side 57.3%); the fact proposed for an exception, that only the newest season has all three sites, was false; Nakawa enters October with 63 hours of history, noted under USE-10; chosen from season and site coverage, not scores (2026-11-05, Lennart, issue 1) | applied |
@@ -353,11 +799,14 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-31 | drug_induced_autoimmunity_prediction | grouped on the Bemis-Murcko scaffold, ring-less drugs alone, the bare benzene ring one group (7% of the drugs): new candidates come from series not yet tested, as in the TDC ADMET benchmarks (2026-10-19, Lennart) | applied |
 | SPLIT-31 | qsar_bioconcentration | the amendment: scaffold groups in place of IID, ring-less chemicals and the bare benzene ring (34%) alone; close training analogs of the test chemicals fall from 12.6% to 6.4% (2026-10-26, Lennart) | applied |
 | SPLIT-31 | qsar_oral_toxicity | reopened under the amendment: every row has its own QSAR-ready structure since 2026-10-21, so the scaffold is exact; ring-less chemicals (23%) and the bare benzene ring (18%) alone; close training analogs fall from 24.7% to 16.3%, against 11.0% for the untested chemicals, so the fit stays approximate (2026-10-26, Lennart) | applied |
-| SPLIT-31 | qsar_tid_11 | scaffold groups in place of IID: the file carries ChEMBL compound ids, and ChEMBL 17 (the release the data was drawn from) gives every one its structure; 21 ring-less compounds alone, the bare benzene ring 2%; close training analogs fall from 79.7% to 59.2%, untuned LightGBM RMSE 0.794 to 0.920; the features stay the source's fingerprint (2026-11-01, Lennart) | applied |
+| SPLIT-31 | qsar_tid_11 | scaffold groups in place of IID: the file carries ChEMBL compound ids, and ChEMBL 17 (the release the data was drawn from) gives every one its structure; 21 ring-less compounds alone, the bare benzene ring 2%; close training analogs fall from 79.7% to 59.2%, untuned LightGBM RMSE 0.794 to 0.920; the features stay the source's fingerprint (2026-11-01, Lennart); superseded on 2026-11-11 by a split by first publication year, since the scaffold folds kept the test compound's siblings of its own year (SPLIT-37) | applied |
 | SPLIT-24, SPLIT-26, SPLIT-4 | boreal_postfire_lichen_biomass | one group per Saskatchewan plot kept (the names carry no burn key), with the measured effect in the notes, over a burn key joined from an outside source (Canada's NFDB and NBAC fire polygons, point in polygon on the plot's fire year): tried on 2026-11-09 and taken back on 2026-11-10 (Andrej: "Back to A, with the note"). 94 of 190 SK plots lay inside a mapped burn of their year (none of the 66 dated before 1945); burn-mates in training flattered the SK RMSE by about 5 kg/ha against a fold-draw SE of about 40, and no model changed rank; the join cost 2 GB of maps, a shapefile reader and a build tied to NFDB's current version only | applied |
-| SPLIT-33 | sat11_hand_algo_runtime | one row per instance and solver, scored by PAR10 per instance, the instances held out: the repeats follow the 184 instances (20 x 3), not the 1,840 runs (10 x 3) | proposed |
+| SPLIT-33 | sat11_hand_algo_runtime | one row per instance and solver, scored by PAR10 per instance, the instances inside held-out problem families: the repeats follow the 184 instances (20 x 3), not the 1,840 runs (10 x 3) | proposed |
 | SPLIT-33 | protein_model_quality_rf_pcp, huesken_sirna_efficacy, sepsis_prediction_1m | scored per protein, per gene and per patient, each held out whole: 445 proteins and 30 genes give 20 x 3 (the rows 3 x 3 and 10 x 3), 40,336 patients 3 x 3 (the 1.55M rows 1 x 3) | proposed |
 | SPLIT-33 | wadden_sea_sibes_macoma_abundance | scored per survey year (15) over a split by station: every test fold holds part of every year, about 1,300 stations a year, so the years do not set the repeats; the rows do (59,044: 3 x 3, not 20 x 3) | proposed |
+| SPLIT-37 | apistox | split by the decade of first publication (four expanding windows), not by scaffold: the use case predicts compounds that appear later, and the windows leave 10-24% of the test compounds a close training analog, against 14-19% for scaffold groups and 17-30% at random | applied |
+| SPLIT-37 | qsar_biodeg | scaffold groups kept over windows on the year of the MITI test: the source builds a regulatory screen for chemicals from outside its collection and validates it on chemicals from other sources, so the next chemicals of one testing programme are not its question; the move from 14-day to 28-day tests is recorded as a fact about the labels | applied |
+| SPLIT-37 | superconductivity | composition groups kept over windows on the first report year: the source keeps its model to known chemistry and warns against expecting good predictions for completely new superconductors; the later families and the measured drift are recorded in the notes | applied |
 
 ## In Data Foundry
 

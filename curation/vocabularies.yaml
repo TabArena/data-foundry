@@ -64,6 +64,21 @@ tags:
 - New IID
 - Non-IID (Grouped)
 - Random (IID)
+- 'Samples: No Time Dimension'
+- 'Samples: One Moment'
+- 'Samples: Over Time'
+- 'Samples: Unknown'
+- 'Time: Dated'
+- 'Time: Inferred'
+- 'Time: Within Entity'
+- 'Time: Lost'
+- 'Target: Later'
+- 'Target: Varying Delay'
+- 'Target: Revised Later'
+- 'Target: Unknown'
+- 'Entities: Recur'
+- 'Features: Read Later'
+- 'Features: Revised Later'
 - Larger IID Data
 - Free Text (Short)
 - Free Text (Sentences)
@@ -72,6 +87,13 @@ tags:
 - Multi-target
 - Many class
 - Spectral Data
+- Expanding Science Catalogue
+- Experimental Results
+- Clinical Study
+- Survey
+- Database Snapshot
+- Dated Event Log
+- Panel Data
 - Two-Regime Zeros
 - Search for better data
 - Revisit later

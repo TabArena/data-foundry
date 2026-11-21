@@ -80,7 +80,11 @@ from data_foundry.collections import collection_file_budget
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
+    FORCED_TIME_TAGS,
+    GROUP_BASIS_TAGS,
+    HUMAN_SET_TIME_TAGS,
     RETIRED_DATA_TAGS,
+    TIME_BASIS_TAGS,
     DatasetMetadataV2,
     Grouping,
     MetricSpec,
@@ -93,6 +97,7 @@ from data_foundry.schema import (
     TrainSampling,
     UnitWeight,
     as_column_list,
+    assumed_stationary_problem,
     resolve_warehouse_dir,
     rows_text,
 )
@@ -117,6 +122,8 @@ from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Tempor
 from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from data_foundry.schema import SpecialFeature
     from data_foundry.v2.special import SpecialFeatureSpec
 
@@ -159,10 +166,13 @@ def newest_period_rate(times: pd.Series, *, days: int = NEWEST_PERIOD_DAYS) -> t
 
 
 FLOOR_CORE = 0.5
-"""SPLIT-14's core: the newest window and at least one other train on this share of the rows or more."""
+"""SPLIT-14's floor: every window trains on this share of the rows or more, unless the curator makes an exception."""
 
 FLOOR_LOWER = 0.3
-"""SPLIT-14's lower bound for further windows (amended 2026-11-11); lower only with a reason the curator accepts."""
+"""SPLIT-14's lower bound: a curator's exception goes down to this share of the rows, never below."""
+
+MIN_TEST_UNITS = 33
+"""SPLIT-14's least test window: 33 scored units, a third of a 100-unit table as one IID test fold holds it."""
 """The splits comment of every dataset on the recommended IID or grouped splits."""
 
 
@@ -1569,62 +1579,89 @@ class AbstractCuratedDataset(ABC):
         return report
 
     def _floor_findings(self, container: CuratedContainer) -> list[CheckResult]:
-        """SPLIT-14 (amended 2026-11-11): the newest window and at least one other train on at least half the rows,
-        further windows down to 30%, never more windows under half than at or above it.
+        """SPLIT-14 and SPLIT-15 on a temporal split: every window trains on at least half the rows; a window under
+        half is a curator's exception (a warning accepted once the record carries the curator's CC line), down to
+        30% and never below (an error); every test window holds at least ``MIN_TEST_UNITS`` scored units (an error);
+        fewer windows than an IID split of the dataset would get (SPLIT-33's count for two thirds of all scored
+        units) is a warning the splits comment answers.
 
-        A window under half is a warning the curator signs off (the review raises it as an issue, and the definition
-        accepts the warning once the record carries the curator's CC line); under 30% a warning that needs a reason
-        the curator accepts; a broken core an error. The shares count every row of the curated frame: a `_1m`
-        version's container keeps every training row but samples its test windows.
+        The shares count every row of the curated frame: a `_1m` version's container keeps every training row but
+        samples its test windows.
         """
         if self.temporal is None:
             return []
         n_rows = getattr(self, "_frame_rows", None) or len(container.dataset)
-        windows = [
-            (repeat, len(train) / n_rows)
-            for repeat, folds in container.experiment_metadata.splits.items()
-            for train, _test in folds.values()
-        ]
-        if len(windows) < 2:
+        splits = container.experiment_metadata.splits
+        windows = [(repeat, train, test) for repeat, folds in splits.items() for train, test in folds.values()]
+        if not windows:
             return []
-        shares = {repeat: share for repeat, share in windows}
-        newest = min(shares)  # repeat 0 is the newest window
-        core = [r for r, s in shares.items() if s >= FLOOR_CORE]
+        shares = {repeat: len(train) / n_rows for repeat, train, _test in windows}
         under = {r: s for r, s in shares.items() if s < FLOOR_CORE}
         low = {r: s for r, s in under.items() if s < FLOOR_LOWER}
-        listed = ", ".join(f"window {r} on {s:.1%}" for r, s in sorted(under.items()))
         findings = []
-        if newest not in core or len(core) < 2 or len(under) > len(core):
-            findings.append(
-                CheckResult(
-                    "splits_floor_core",
-                    "error",
-                    f"The core of SPLIT-14 does not hold: {len(core)} window(s) train on half the rows or more"
-                    f"{'' if newest in core else ', not the newest'}, {len(under)} on less ({listed}).",
-                    hint="The newest window and at least one other train on at least 50% of the rows, and at most as "
-                    "many windows train on less (knowledge-curation splits.md, SPLIT-14).",
-                )
-            )
         if under:
+            listed = ", ".join(f"window {r} on {s:.1%}" for r, s in sorted(under.items()))
             findings.append(
                 CheckResult(
                     "splits_train_under_half",
                     "warning",
                     f"{len(under)} window(s) train on less than half the rows: {listed}.",
-                    hint="SPLIT-14 admits them, but the curator signs off each: raise it in the record's `## Review`, "
-                    "and once the record carries the curator's CC line, accept this warning with that date.",
+                    hint="SPLIT-14 asks every window to train on at least half the rows; a window under half is the "
+                    "curator's exception for this dataset: raise it in the record's `## Review`, and once the record "
+                    "carries the curator's CC line, accept this warning with that date.",
                 )
             )
         if low:
             findings.append(
                 CheckResult(
                     "splits_train_under_floor",
-                    "warning",
+                    "error",
                     "Window(s) under SPLIT-14's lower bound of 30%: "
                     + ", ".join(f"window {r} on {s:.1%}" for r, s in sorted(low.items()))
                     + ".",
-                    hint="Allowed only with a reason the curator accepts for this dataset, in the splits comment and "
-                    "the record's CC line; then accept this warning with it.",
+                    hint="No exception goes below 30% of the rows: drop the window or widen the others "
+                    "(knowledge-curation splits.md, SPLIT-14).",
+                )
+            )
+        findings += self._window_size_findings(container, windows, n_rows)
+        return findings
+
+    def _window_size_findings(self, container: CuratedContainer, windows: list, n_rows: int) -> list[CheckResult]:
+        """SPLIT-14's least test window and SPLIT-15's target number of windows, both in scored units (SPLIT-33)."""
+        task = getattr(container, "task_metadata", None)
+        unit = protocol.scored_unit_column(task) if task is not None else None
+        frame = container.dataset
+        units = frame[unit] if unit is not None and hasattr(frame, "columns") and unit in frame.columns else None
+
+        def count(rows) -> int:
+            return int(units.iloc[list(rows)].nunique(dropna=False)) if units is not None else len(rows)
+
+        findings = []
+        small = {repeat: count(test) for repeat, _train, test in windows}
+        small = {r: n for r, n in small.items() if n < MIN_TEST_UNITS}
+        if small:
+            findings.append(
+                CheckResult(
+                    "splits_test_too_small",
+                    "error",
+                    f"Test window(s) with fewer than {MIN_TEST_UNITS} scored units: "
+                    + ", ".join(f"window {r} with {n}" for r, n in sorted(small.items()))
+                    + ".",
+                    hint="SPLIT-14: widen the windows (or fewer of them) until each holds 33 scored units.",
+                )
+            )
+        total = int(units.nunique(dropna=False)) if units is not None else n_rows
+        target = protocol.split_count(total)
+        if len(windows) < target:
+            findings.append(
+                CheckResult(
+                    "splits_below_target",
+                    "warning",
+                    f"{len(windows)} window(s), against the {target} splits an IID split of {total:,} scored units "
+                    "would get (SPLIT-33).",
+                    hint="SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the "
+                    "count reached and what stops more windows (the use case's horizon or gap, the training floor, "
+                    "the least test window); then accept this warning with it.",
                 )
             )
         return findings
@@ -2086,6 +2123,27 @@ def _gap(cls: type[AbstractCuratedDataset]) -> tuple[int | None, str | None]:
     return cls.temporal.resolved_gap if cls.temporal is not None else (None, None)
 
 
+def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str], None]) -> None:
+    """One time basis at most: a use-case prototype or a forced tag; a prototype never on a temporal split and always
+    with its `Time basis:` line (SPLIT-32).
+    """
+    tags = list(dict.fromkeys(cls.data_tags))
+    basis = [tag for tag in tags if tag in TIME_BASIS_TAGS or tag in FORCED_TIME_TAGS]
+    if len(basis) > 1:
+        fail(f"`data_tags` {basis}: a split has one time basis (SPLIT-32); keep the one that says why it is not.")
+    prototype = next((tag for tag in basis if tag in TIME_BASIS_TAGS), None)
+    if prototype is None:
+        return
+    if cls.temporal is not None:
+        fail(f"`{prototype}` says why a split is not temporal; this one is, so drop the tag.")
+    if "Time basis:" not in (cls.curation_comments or ""):
+        fail(f"`{prototype}` needs a `Time basis:` line in `curation_comments` stating the fact behind it (SPLIT-32).")
+    if prototype in HUMAN_SET_TIME_TAGS:
+        problem = assumed_stationary_problem(cls.curation_comments)
+        if problem:
+            fail(f"`{prototype}`: {problem} (SPLIT-32). Without it, keep the forced tag.")
+
+
 def _regime_tags(cls: type[AbstractCuratedDataset]) -> list[str]:
     tags = list(dict.fromkeys(cls.data_tags))
     if not is_task(cls) or any(tag in REGIME_TAGS for tag in tags):  # a parent has no split, so no regime
@@ -2357,12 +2415,27 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             f"`data_tags` {retired}: retired, kept only so that old containers load. Write the dataset's doubts as a "
             "finding and its fit as `approximate` instead."
         )
-    if not task and set(cls.data_tags) & {*REGIME_TAGS, "ForcedGroupedFromTemporal", "ForcedIIDFromTemporal"}:
+    if not task and set(cls.data_tags) & {
+        *REGIME_TAGS,
+        "ForcedGroupedFromTemporal",
+        "ForcedIIDFromTemporal",
+        *GROUP_BASIS_TAGS,
+    }:
         fail("a parent (no `target`) has no split, so no regime tag; its children get theirs from their task.")
     if task and "ForcedGroupedFromTemporal" in cls.data_tags and cls.grouping is None:
         fail("`ForcedGroupedFromTemporal` marks a grouped split; declare `grouping = Grouping(...)` or drop the tag.")
+    if task and "UnseenGroup" in cls.data_tags and cls.grouping is None:
+        fail("`UnseenGroup` holds out whole groups; declare `grouping = Grouping(...)` on the group or drop the tag.")
     if task and "ForcedIIDFromTemporal" in cls.data_tags and (cls.grouping is not None or cls.temporal is not None):
         fail("`ForcedIIDFromTemporal` marks an IID split; drop the tag or the `grouping`/`temporal` declaration.")
+    if task and "ForcedIIDFromGrouped" in cls.data_tags and (cls.grouping is not None or cls.temporal is not None):
+        fail("`ForcedIIDFromGrouped` marks an IID split; drop the tag or the `grouping`/`temporal` declaration.")
+    if "ForcedIIDFromGrouped" in cls.data_tags and "Group basis:" not in (cls.curation_comments or ""):
+        fail(
+            "`ForcedIIDFromGrouped` needs a `Group basis:` line in `curation_comments`: the group the use case holds "
+            "out, why the data cannot key it, and the overlap the random split leaves (SPLIT-35)."
+        )
+    _validate_time_basis(cls, fail)
     moved = [
         a for a in ("drop_columns", "categorical_features", "string_features", "datetime_features") if a in vars(cls)
     ]

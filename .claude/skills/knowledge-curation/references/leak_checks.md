@@ -201,10 +201,13 @@ probes 5 and 6.
 **LEAK-17 (Must).** Repeated entities in different rows (the same patient, house, molecule or object) leak the target
 across the split even when the rows differ: keep one row per entity when the use case is that row (USE-11,
 [use_case.md](use_case.md)), or group (SPLIT-24, SPLIT-29, [splits.md](splits.md)). Parse ids as strings: sdss_17's
-float-parsed `obj_ID` merged 21,947 distinct objects (it is now deduplicated on the sky position). Test: probe 11.
+float-parsed `obj_ID` merged 21,947 distinct objects (it is now deduplicated on the sky position). Test: probe 11. A
+unit the data does not record: "Entity leakage" below (LEAK-42 to LEAK-44).
 
 **LEAK-18 (Should).** Many degrees of freedom and an exact match: a collection artefact, drop it and give the share.
-Few features and plausible repeats: natural, keep them and say so. Cases: sepsis_survival_minimal_clinical_records
+Few features and plausible repeats: natural, keep them and say so. A match on all but one or two of many values is a
+calibrated link (SPLIT-24, LEAK-43): the evidence that may drop such a row may also group it. Cases:
+sepsis_survival_minimal_clinical_records
 keeps 110,204 rows over 975 distinct feature rows: three features, real patients, and predicting from them is the
 source's question. ai4d_lab_tanzania_tourism_classification_challenge keeps its 965 exact copies: 17 of 19 inputs are
 coarse survey answers with 2 to 10 levels, and 361 repeated profiles are `Alone` travellers, 67.8% of copy groups larger
@@ -226,6 +229,57 @@ to the file (PROV-13), not an ambiguous label.
 
 **LEAK-21 (Should).** Reposts identical except an id or a location: drop them, as the source paper did. Cases: emscad
 (Vidros et al. 2017, Sec. 5).
+
+### Entity leakage
+
+Entity leakage: a unit's label reaches the test side through another record of the same unit (a truck read again, a
+wine entered twice, a car listed by two dealers, fragments of one glass object, a policy's next year, a customer's
+later snapshot). With the unit recorded, LEAK-17 settles it. The rules below are for a unit the data does not record,
+where the look-alike rows may be records of one unit or distinct units. The goal is to keep the dataset with the leak
+removed wherever the evidence allows.
+
+**LEAK-42 (Must).** Repeats of a unit the data does not record get one of four verdicts, stated in the notes with the
+evidence of LEAK-43:
+
+1. Natural: the look-alikes are distinct units (a coarse profile, a shared area, one product made the same way). The
+   random split stays; the notes give the share of test rows with a look-alike in training.
+2. Entity fix: the units are recovered, from the source (an id in the raw files, another file of the release, the
+   documentation) or rebuilt from the features (SPLIT-24). Copies of one record (entered twice, listed again, read
+   again, overlapping source entries) go down to one row per unit. Several observations of one unit, each with its own
+   label (fragments, snapshots, inspections, a stone listed with two prices), are grouped.
+3. Temporal fix: each unit's order is recovered, from the source (a date, a period coded in an id, the file order) or
+   rebuilt from the features (a value that grows within the unit, values shifted by one step). The split then holds
+   out later periods, whole units, or follows a design made for the dataset: temporal when the use case sees the unit
+   again at prediction time (a renewal, a repost the moderator has seen), grouped when a new case is a new unit
+   (SPLIT-23).
+4. Not recoverable: neither the units nor their order can be recovered with enough confidence. The copies that can be
+   identified are dropped, and the random split stays with the remaining overlap in the notes (SPLIT-25).
+
+A key or an order rebuilt from the features is a discussion point for the curator, decided case by case by how
+certain the evidence is that it holds. Every drop is a discussion point too: the issue gives the share dropped and the
+label shares or the target's distribution before and after, and asks whether the target still stands for the use case
+(LEAK-19 for uneven copies). Cases: the "Entity leakage" table below.
+
+**LEAK-43 (Should).** Three tests set the verdict; the size of a score gap does not (SPLIT-30).
+
+* Is the link real? Count the matches against a chance rate that keeps the data's structure: each column shuffled
+  within its class, values jittered by their measurement error, round values against odd ones, shifted ids, shuffled
+  targets for a link the target confirms. Matches far above chance are repeats; matches at chance are look-alikes.
+* Does the label travel with the link? Compare the label agreement within linked rows with what their shared features
+  predict: rows with the same profile that are not linked, or the product of the per-column effects. Agreement the
+  features explain is natural; a real link that carries no label (a risk renewed with an unrelated loss) is no leak.
+* Is there an order? A value that grows within the unit, a period coded in an id, a shift between rows, or the file
+  order checked against a known date. Records of one unit side by side in the file are more often copies entered
+  together than later records.
+
+**LEAK-44 (Should).** A later record of the same unit that holds this record's label in a feature (a lag column, the
+outcome of the previous campaign, a readmission that tells the earlier stay was survived, a premium class set by last
+year's claims) carries the label forward. Any method that reads the training rows at prediction time (in-context
+models, nearest neighbours, a lookup) can use it, even when a row-only model gains nothing. Once a key and an order
+exist, test it: does a later row's feature equal or encode the earlier row's label, against shuffled labels? A hit is
+never natural: the split keeps a unit's later records out of training for its earlier ones (temporal, or grouped by
+the unit); the column goes only where it was not known at its own prediction point (LEAK-10). Cases:
+santander_transaction_value.
 
 ### Selection and censoring
 
@@ -300,7 +354,8 @@ carries labels forward (a known entity: USE-10). Cases: ghana's reporter history
 rows whose uid had fraud in train are 95% fraud; dropping it costs 0.001-0.007 AUC; kept).
 
 **LEAK-35 (Must; narrows LEAK-10).** Text written together with the label is the task when it does not map one to one
-onto the score. Cases: coffee_rating_prediction's review text (R^2 0.25 to 0.67; kept).
+onto the score. Cases: coffee_rating_prediction's review text, kept at R^2 0.25 to 0.67, then dropped as an
+exception (below) once the passages alone reached skill 0.71 and beat every benchmark method.
 
 **LEAK-36 (Must).** A value known at prediction time that rules the outcome out is a cohort question (LEAK-22), not a
 feature leak. Cases: diabetes "Expired".
@@ -318,14 +373,25 @@ whose timing is known to be late (a value looked up at extraction) is LEAK-10's,
 removing an unverified signal from host-designed data is arbitrary. The rule covers only fields whose timing cannot be
 tested. When a conditional test measures the mechanism (the field's missingness or fill, given the covariates known at
 the prediction point, differs by outcome), LEAK-10 applies and the field is dropped, even if the host's test file
-carries it the same way: that file is a holdout of the same snapshot, not deployment data. Cases: homesite
-(`PropertyField37` x `PersonalField12`, AUC 0.965 to 0.915, kept); kick's `WheelType` was kept here on 2026-10-01 and
-dropped under LEAK-10 on 2026-10-22, with `WheelTypeID`, `PRIMEUNIT` and `AUCGUART` (expresso's REGION the same way);
-fraud_detection_in_electricity_and_gas_consumption_1m cuts its invoice history at 2013-01-01 on the same kind of
-measured step (2026-10-26, Lennart). Named fields kept: african_credit_scoring_challenge `Amount_Funded_By_Lender`,
-medical_facility_operational_data's expected-delay table, tunisian_fraud_detection_challenge's refund and
-regularisation fields, sendy_logistics_challenge `Distance (KM)` (tested: not measured between the rider's two taps; a
-GPS total recorded after delivery not excluded) (2026-11-05, Lennart).
+carries it the same way: that file is a holdout of the same snapshot, not deployment data. The size of the effect is
+such a test too: a field that fixes an outcome no one could know at the prediction point (a person's later decision)
+at near-certainty inside a large group, where the rest of the data shows no such certainty, is a measured mechanism,
+and LEAK-10 applies; fields that mark the same rows go with it. The search continues after the first such field until
+no large group fixes that decision at near-certainty (measured by a shallow tree on all rows, for example depth 6 with
+groups of at least 300 rows), dropping the fewest fields that remove every such group; a field graded on its own stays.
+A graded difference in rates is no such test, and the other direction (rows the decision cannot reach, such as a quote
+that cannot be bought) is known at the prediction point and stays. Cases: homesite (`PropertyField37` x
+`PersonalField12`, with `PersonalField9` and `PersonalField10A/B`, which mark the same non-buyers: inside one branch
+99.3-99.8% against 0.14% buyers, 13.6-15.5% in the other; then `PersonalField2`, whose 0 with `PersonalField1` = 1
+marked 7,266 quotes at 98.0% bought, and `PersonalField13`, whose 1 marked 2,092 at 97.8%, until no group of 300 quotes
+converted at 95% or more; `PersonalField1`, graded alone, kept; dropped); kick's `WheelType` was kept here on
+2026-10-01 and dropped under LEAK-10 on 2026-10-22, with `WheelTypeID`, `PRIMEUNIT` and `AUCGUART` (expresso's
+REGION the same way); fraud_detection_in_electricity_and_gas_consumption_1m cuts its invoice history at 2013-01-01
+on the same kind of measured step (2026-10-26, Lennart). Named fields kept: african_credit_scoring_challenge
+`Amount_Funded_By_Lender`, medical_facility_operational_data's expected-delay table,
+tunisian_fraud_detection_challenge's refund and regularisation fields, sendy_logistics_challenge `Distance (KM)`
+(tested: not measured between the rider's two taps; a GPS total recorded after delivery not excluded) (2026-11-05,
+Lennart).
 
 Also not a leak, with their home elsewhere:
 
@@ -405,7 +471,7 @@ The numbers compare the shipped data with a suspected fix; they are not leaderbo
 | 20 | Each raw column the definition drops, alone against the shipped target on the shipped splits (`leak_probes.py --raw`) | a dropped column scores well alone: say why it is out, and check that no kept column carries it | protein_model_quality_rf_pcp: `TM` R^2 0.87 and `RMSD` 0.84, other quality scores of the same model, rightly dropped |
 | 21 | Exact copies in the raw table, before `_clean`: rows equal in every column but the target and the identifiers, by label (`leak_probes.py --raw`) | copies the definition removed, or the source's own repeats it kept (set against probe 5) | ai4d_lab_tanzania_tourism_classification_challenge: 2,018 of 18,506 rows in 718 groups, 370 with more than one label |
 | 22 | Weight proxy: the realized weight (a time on risk) fitted on the features; the declared metric with the weight added as a feature against the honest fit; each top feature's gain through the weight; for a Gini, 1/weight alone (`leak_probes.py --weight-proxy`) | a feature whose gain through the weight is above noise: decide by its timing (LEAK-41, LEAK-10) | australian_vehicle_insurance_2004_2005: the rating factors predict the exposure at R^2 0.06 (the study's folds) and 0.074 (the shipped splits); frempl_french_motor_personal_line: 1/length alone 0.184 Gini against the honest model's 0.183 (weighted Tweedie, 2026-11-06; 0.176 under the metric of 2026-11-03), the length as a feature 0.256 |
-| 23 | Forced split (`ForcedGroupedFromTemporal`, `ForcedIIDFromTemporal`; SPLIT-8; the end of `leak_probes.py`'s default run there, alone with `--forced-split`): (a) period outcome: each test period predicted by a fit without its period's training rows against one without as many random training rows, by the declared metric with the training weight, pooled and within a period; (b) shared units: the test rows whose group, exact profile of the inputs, or profile without the period column has training rows, and what a lookup of their training target adds on those rows (the training side's lookup out of fold by group on a grouped split) | a gain above 2 SEs over the splits: (a) the period's outcome is shared across the split (a shock or a level of the year); (b) the unit's outcome reaches the test rows with a lookup through training; for a profile it can also be natural repeats (LEAK-18), and whether the copies are one entity decides (LEAK-17). A change on the rows without a lookup is no leak, only a sign that the lookup changed the fit. Weighed case by case (SPLIT-8) | spanish_motor_insurance_coverage_level_2022_2024: the year's own rows add +0.0053 Gini pooled (SE 0.0026, 7 of 9 splits; +0.0045 by hand on 2026-11-02), +0.0014 within a year; pricing_game_2016_french_fleet: +0.07 pooled on its deviance (SE 0.22; -0.18 by hand); a lookup of the exact profile (4.3% of the test rows: other fleets with the same classes and start) -0.40 on those rows (SE 0.44), -0.018 in all; with lookup folds of rows it had read +0.117, an artefact (a training row's lookup took 78% of its weight from its own contract); on the folds since issue 9's join (2026-11-08): -0.38 pooled (SE 0.25; -0.43 by hand), the exact profile's lookup -0.23 on those rows (SE 0.17), +0.014 in all |
+| 23 | Forced split (`ForcedGroupedFromTemporal`, `ForcedIIDFromTemporal`, or `AssumedStationaryRelation` in their place; SPLIT-8; the end of `leak_probes.py`'s default run there, alone with `--forced-split`): (a) period outcome: each test period predicted by a fit without its period's training rows against one without as many random training rows, by the declared metric with the training weight, pooled and within a period; (b) shared units: the test rows whose group, exact profile of the inputs, or profile without the period column has training rows, and what a lookup of their training target adds on those rows (the training side's lookup out of fold by group on a grouped split) | a gain above 2 SEs over the splits: (a) the period's outcome is shared across the split (a shock or a level of the year); (b) the unit's outcome reaches the test rows with a lookup through training; for a profile it can also be natural repeats (LEAK-18), and whether the copies are one entity decides (LEAK-17). A change on the rows without a lookup is no leak, only a sign that the lookup changed the fit. Weighed case by case (SPLIT-8) | spanish_motor_insurance_coverage_level_2022_2024: the year's own rows add +0.0053 Gini pooled (SE 0.0026, 7 of 9 splits; +0.0045 by hand on 2026-11-02), +0.0014 within a year; pricing_game_2016_french_fleet: +0.07 pooled on its deviance (SE 0.22; -0.18 by hand); a lookup of the exact profile (4.3% of the test rows: other fleets with the same classes and start) -0.40 on those rows (SE 0.44), -0.018 in all; with lookup folds of rows it had read +0.117, an artefact (a training row's lookup took 78% of its weight from its own contract); on the folds since issue 9's join (2026-11-08): -0.38 pooled (SE 0.25; -0.43 by hand), the exact profile's lookup -0.23 on those rows (SE 0.17), +0.014 in all |
 
 ### The raw state (probes 10, 18 to 21)
 
@@ -473,6 +539,35 @@ over the splits, whose repeats share rows, so it is a lower bound. Untuned fits 
 false hit (+1.72, SE 0.56, with fits at 92.0 against the constant's 82.6). A hit is a measurement to weigh (SPLIT-8),
 not a verdict (2026-11-08, Lennart, cross-dataset item on forced splits).
 
+### Entity leakage (LEAK-42 to LEAK-44)
+
+1. Candidates come from probes 5, 6, 11 and 21 and from `hidden_groups.py` (composite keys, near copies, text keys,
+   [task_probes.md](task_probes.md), "Hidden groups"). A near-copy cluster points at a unit; it is not the key.
+2. Write the match rule from how the data were recorded: which values stay fixed for one unit and which change
+   between its records. aps_failure: all counters but `bx_000`, or 140 or more of 170 equal; fiat_500: trim, power,
+   age and a mileage that is not a round number; forensic_glass_identification: the refractive index with the oxides
+   within analytical noise; santander_transaction_value: 12 lag groups of 40 columns shifted by k steps; fremtpl2: the
+   id plus 1,000,000 plus 1 to 9, the driver a year older.
+3. Measure the chance rate with a null that keeps the structure. fremtpl2: 161,883 links against 16 to 75 with shuffled
+   or shifted ids; santander_transaction_value: 4,371 target-confirmed links against 85 to 110 with shuffled targets;
+   forensic_glass_identification: 9 shared refractive indices among same-type pairs with matching oxides against 2.0
+   expected, 16 against 17 across types; polish_companies_bankruptcy: 99-100% of bankrupt statements linked across
+   yearly files against 3-5%.
+4. Compare the label agreement within links with a baseline on the features. coil_2000: a copy that buys raises the
+   buying rate 3.3-fold, as product and area together predict (3.4-fold); wids_diabetes_mellitus: 67.3% agreement in
+   linked readmissions against 66.1% for unlinked pairs; wine_quality: the grade agrees in 49 of 49 near-copy pairs
+   against 32% for random pairs of the same colour.
+5. Look for an order: labour_inspection_compliance's business age orders an organisation's inspections exactly;
+   fremtpl2's id blocks read as periods; wine_quality's near-copy pairs sit 1 to 17 rows apart, entered together.
+6. For a drop, give the rows dropped by label or target band and the target's distribution before and after.
+7. After a fix, repeat the reading the fix guards against, on the new split and against chance: a test row's target or
+   copy found in the training rows (santander_transaction_value: 72-75% of test rows per random fold, 1-3% grouped).
+
+What the probes miss: the near-copy check needs 10 informative columns (it did not run on 32 of 173 datasets), a text
+key catches only an exact repost, and links that need the column order are invisible to matching values without it
+(santander_transaction_value holds only 8,960 distinct non-zero values in 4,459 rows, and a shuffled target is in a row
+sharing 10 or more values with it as often as the real one: 36.5% of pairs against 34.9%).
+
 ## Cases
 
 Precedents: how a rule was applied. They never change a rule; an exception is listed with the fact that set it apart.
@@ -510,6 +605,7 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-10 | Fitted from the same measurement that gives the label | drop it for the task we frame | sdss_17 `redshift` (photometric task) |
 | LEAK-10 | Targeting or pointing ids (they encode pre-selection or the observation date) | drop them | sdss_17 `plate`, `fiber_ID` (AUC 0.80 alone; they made log loss worse) |
 | LEAK-10, LEAK-38 (precedent, Lennart, 2026-10-22) | A named field whose missingness or fill, given the covariates known at the prediction point, differs by outcome (a conditional test), although the host's test file carries it the same way | drop it | expresso_churn_prediction REGION (flag AUC 0.936 among customers active all 62 days); kick `WheelType`/`WheelTypeID` (1.2% predicted missing for bad buys, 24.9% observed) and `PRIMEUNIT`/`AUCGUART` (42.3% predicted filled, 7.8% observed) |
+| LEAK-10, LEAK-38 | An anonymised field whose timing cannot be tested, but which fixes a person's later decision at near-certainty inside a large group | drop it, with every field that marks the same rows, and continue with the fewest fields until no large group is near-certain | homesite_quote_conversion: `PropertyField37` = Y with `PersonalField12` codes 1-3 99.3-99.8% bought (19,934 quotes), code 5 0.14% (54,769; the same rows as `PersonalField9` = 3); with N the same codes 13.6-15.5%; then `PersonalField2` (with `PersonalField1` = 1: 7,266 quotes, 98.0%) and `PersonalField13` (2,092, 97.8%); nine monthly windows ROC AUC 0.956 with every field, 0.898 without the seven |
 | LEAK-11 | Measured after the outcome, but it weakens the signal | keep it and note it | south_africa_coronary_heart_disease (ESL Sec. 5.2.2, p. 148; dropping `sbp`, `obesity`: AUC 0.774 to 0.778) |
 | LEAK-12 (SPLIT-9) | Temporal: training rows whose label is not yet known at the prediction point | filter training rows by an as-of date | hotel_booking_demand: in-window cancellations in train were 100% cancelled (log loss 1.7 to 0.33); a filter on `ReservationStatusDate` keeps the shortcut |
 | LEAK-13 | Class-specific recording conventions | harmonise (round every row to the shared precision, drop a column only one class has); first measure how much the fix removes | hepatitis_c_prediction (6 lab columns rounded; `ALP`, missing only for patients, and `ALT`, below the donors' values in most patients, dropped) |
@@ -536,8 +632,19 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-31 | Supervised feature selection on the full labelled set | measure it; keep with a note when small, remove it when we can | home_credit_default_risk (the kernel's importance-based selection removed, 2026-10-19); qsar_bioconcentration (the authors' 9 Dragon descriptors removed, 2026-10-26); numerai_v5_2_1m (the 372 Faith features removed, 2026-10-26) |
 | LEAK-32 | Masked or anonymised features that may hide such a transform | a known risk of anonymised data, covered by its tag and the `Anonymized` marker; no action | ieee_fraud_detection, kdd_cup_09_appetency (Lennart, 2026-10-19) |
 | LEAK-37, LEAK-10 (precedent, Lennart, 2026-10-21) | A known input that tracks a dropped post-outcome column | kept, with a `Potential leak, kept on purpose:` note in LEAK-38's format (the mechanism, the numbers, why it stays, when to revisit) | digicow_farmer_training_adoption_challenge `topics_list` (the day's topics) predicts the dropped `has_topic_trained_on` at ROC AUC 0.885-0.902 |
+| LEAK-35 (exception) | Text written together with the label that alone explains most of the score and beats every benchmark method, while the use case's actor does not have it at the prediction point | drop it | coffee_rating_prediction: the reviewer's blind assessment and bottom line (one clause per sub-score) dropped; ridge on them alone skill 0.71 (RMSE 0.861 against the mean's 1.598, 13 windows) and rank 1 of 41; the roaster's own information keeps skill 0.34-0.36; the roaster predicts before the review |
 | [task_probes.md](task_probes.md), TP-4 | The target is a lookup of the inputs | retire (`Trivial`, often `AHDS`) | video_game_fps_prediction |
 | USE-4 ([use_case.md](use_case.md)), TP-6 | Features from a stage after the decision the task models (a biopsy after the examination) | offer the task at the source's earlier stage | eryhemato_squamous_disease: clinical features only (macro AUC 0.999 to 0.98) |
+
+### Entity leakage
+
+| Rule | Dataset | Decision | Kind |
+|---|---|---|---|
+| LEAK-42, LEAK-18 | ai4d_lab_tanzania_tourism_classification_challenge | natural: 17 of 19 inputs are coarse survey answers, 410 of 766 repeated profiles carry several labels, and grouping by profile costs 0.005 log loss; random split, copies kept | applied |
+| LEAK-42 | santander_customer_satisfaction | natural: customers who share an exact `var38` (the household's income) are different people of one household, and their labels move TabPFN-3.5 by 0.5%; random split | applied |
+| LEAK-42, LEAK-43 | liberty_mutual_fire_peril_loss_cost | a real link that carries no label: risks rebuilt as rows equal in every column but `var15`, an age stepping by 1 (16.8-16.9% of test rows have their risk in training), yet a risk's training loss ranks its test terms at ROC AUC 0.500-0.524; an insurer prices renewals of its own risks, so the random split stays | applied |
+| LEAK-42, SPLIT-24 | frempl_french_motor_personal_line | entity fix, grouped: a policy's records rebuilt by a link from the recording (the same six profile columns, one record starting the day the other ends, the driver's age the same or one more), the most conservative of the keys offered: 68,857 policy components for 115,155 records | applied |
+| LEAK-42, LEAK-44 | santander_transaction_value | order and customers rebuilt without dates: snapshots linked by lag columns shifted by k steps, plus sparse links confirmed by the earlier target in the later row (4,371 links, 85-110 with shuffled targets); a later snapshot carries the earlier target; 710 customers held out whole, and the test rows whose target a training row shows fall from 72-75% to 1-3% | applied |
 
 ## In Data Foundry
 

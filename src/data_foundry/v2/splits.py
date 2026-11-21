@@ -121,6 +121,16 @@ def scored_units_within_groups(df: pd.DataFrame, group_on: str | list[str] | Non
     return bool(keyed.groupby(scored_unit_on, dropna=False, observed=True)[key].nunique(dropna=False).max() <= 1)
 
 
+def split_count(n_units: int) -> int:
+    """The number of splits SPLIT-33 gives a dataset of ``n_units`` scored units: repeats x folds of 3-fold
+    cross-validation, the repeats by the units on its train side (two thirds of them)."""
+    n_train = int(n_units * 2 / 3)
+    for limit, repeats in REPEATS_BY_TRAIN_SIZE:
+        if n_train < limit:
+            return repeats * N_FOLDS
+    return N_FOLDS
+
+
 def recommended_dimensions(
     df: pd.DataFrame,
     *,
