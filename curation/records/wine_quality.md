@@ -174,10 +174,10 @@ dates could overturn.
    **Notes for the AI:** the dropped row is the later row of each pair in the
    frame's order (white file first), as in the notes above.
 
-   [^1e]: **LEAK-41** (Must; draft PR #62): repeats of a unit the data does not record get one of four verdicts:
+   [^1e]: **LEAK-41** (Must): repeats of a unit the data does not record get one of four verdicts:
      natural, entity fix, temporal fix or not recoverable; an entity fix takes copies of one record down to one row
      per unit and groups several observations of one unit that each carry their own label; every drop gives the
-     label shares before and after and asks whether the target still stands. **LEAK-42** (Should; draft PR #62):
+     label shares before and after and asks whether the target still stands. **LEAK-42** (Should):
      three tests set the verdict: a link far above a chance rate that keeps the data's structure, a label that
      travels with the link beyond what the shared features predict, and an order.
 
@@ -459,7 +459,7 @@ dates could overturn.
      would overturn it (CVRVV sample numbers or dates showing another order). `splits_comment`, the task summary's
      `split`, `changes` and `fit_reason` rewritten; the deduplication bullet no longer says the split stays IID.
    - Record: `required_split` `Temporal (NON-IID)`, tag `Non-IID (Temporal)`, CC line. The collection facts
-     (`Samples: Over Time`, `Time: Inferred`) were already set, so nothing goes to PR #50.
+     (`Samples: Over Time`, `Time: Inferred`) were already set, so nothing more was needed.
    - `dataset check`: 0 errors, 0 warnings, 0 info; README regenerated (12 features, `time_is_feature: false`); not
      rebuilt. Issue 4's recommendation under B is to keep its A (the windows hold the pairs together, 1 of 2,655 test
      rows); it stays open for your mark.
@@ -517,11 +517,11 @@ dates could overturn.
    `required_split`; `dataset check`; CHANGELOG. The 49 copies of issue 1 are a subset of the same pattern (9 or more
    values equal, 1 to 17 rows apart); under issue 1's C they would join these groups.
 
-   [^4a]: **LEAK-41** (Must; draft PR #62): repeats of a unit the data does not record get one of four verdicts; an
+   [^4a]: **LEAK-41** (Must): repeats of a unit the data does not record get one of four verdicts; an
      entity fix groups several observations of one unit that each carry their own label, and a key rebuilt from the
-     features is a discussion point, decided by how certain the evidence is. **LEAK-42** (Should; draft PR #62):
+     features is a discussion point, decided by how certain the evidence is. **LEAK-42** (Should):
      three tests set the verdict: a link far above a chance rate that keeps the data's structure, a label that
-     travels with the link beyond what the shared features predict, and an order. **SPLIT-24** (Must; draft PR #62):
+     travels with the link beyond what the shared features predict, and an order. **SPLIT-24** (Must):
      group on a true group id, or on one constructed from the data exactly or by a calibrated link whose match rule
      comes from how the data were recorded and whose chance rate shows most links are real; never on a
      similarity-threshold cluster.

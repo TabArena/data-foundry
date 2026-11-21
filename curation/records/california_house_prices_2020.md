@@ -612,7 +612,7 @@ of the 2020 price for 0.7%; so it is the value before the sale, and dropping the
    `time_index` a time feature now says it orders and splits the rows. Record CC line. `dataset check` (Slurm 1380075):
    0 errors, 0 warnings, 0 info; README: 40 features (was 41), `time_is_feature: false`, the three windows unchanged
    (train 19,495 to 32,489 rows, test 6,497). Not rebuilt. It needs the `Temporal(..., feature=False)` framework
-   change, uncommitted in the working copy (committed in PR #81).
+   change, uncommitted in the working copy.
 
 9. **Gap: leave a third of a window (about 2,166 sales, roughly two to three weeks) between training and each test window in sale order?**
 

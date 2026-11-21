@@ -502,7 +502,7 @@ Nothing open.
 
    * **Recommendation:** A. **Decision:** A or B?
 
-   **Notes for the AI:** on B, declare `Temporal(..., feature=False)` (the time-column-as-split-metadata change of #98) and add a CC line.
+   **Notes for the AI:** on B, declare `Temporal(..., feature=False)` (the time-column-as-split-metadata change) and add a CC line.
 
    [^lk-4]: **LEAK-10** (Must): every feature has to have existed, and be held by the actor, at the prediction time of its row; a time column that only orders the split is declared no input.
 

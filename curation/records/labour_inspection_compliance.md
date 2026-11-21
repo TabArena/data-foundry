@@ -187,7 +187,7 @@ definition's five-value threshold with one distinct value; dropping them needs n
      answer keeps each visit on one side of a window.
    * **Recommendation stays B.**
 
-   [^1d]: **LEAK-41** (Must, draft PR #62): repeats of a unit the data does not record get one of four verdicts:
+   [^1d]: **LEAK-41** (Must): repeats of a unit the data does not record get one of four verdicts:
      natural, entity fix, temporal fix or not recoverable; in an entity fix, copies of one record (entered twice,
      listed again, read again) go down to one row per unit, and every drop gives the share dropped and the label
      shares before and after and asks whether the target still stands for the use case. **LEAK-19** (Should): when
@@ -318,13 +318,13 @@ definition's five-value threshold with one distinct value; dropping them needs n
    min_train_fraction=0.5))` (windows cut between distinct times, so a visit is never split); `visit_row` replaces
    `file_row` as the time column; `splits_comment` names the visit rule and its counts.
 
-   [^2c]: **LEAK-41** (Must, draft PR #62): repeats of a unit the data does not record get one of four verdicts:
+   [^2c]: **LEAK-41** (Must): repeats of a unit the data does not record get one of four verdicts:
      natural, entity fix, temporal fix or not recoverable. A temporal fix recovers each unit's order and holds out later
      periods when the use case sees the unit again; in an entity fix, several observations of one unit, each with its
      own label (inspections among the examples), are grouped; a key or an order rebuilt from the features is the
      curator's call, case by case. **SPLIT-24** (Must): a key constructed from the data, exactly or by a calibrated
      link.
-   [^2d]: **LEAK-42** (Should, draft PR #62): three tests set the verdict, not the size of a score gap: is the link
+   [^2d]: **LEAK-42** (Should): three tests set the verdict, not the size of a score gap: is the link
      above a chance rate that keeps the data's structure, does the label travel with it beyond what the shared
      features predict (rows with the same profile that are not linked), is there an order.
 
