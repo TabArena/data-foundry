@@ -63,7 +63,7 @@ CC (2026-11-06, Andrej): column names kept as Santander shipped them (option D o
 - Renaming was not chosen: a wrong name would mislead readers and methods that read column names, and the masked names keep the data traceable to the competition and its write-ups.
 - The data is unchanged: no value, row or column name.
 
-CC (2026-11-10, Andrej): review page issue 3, option B: random, named `Snapshot` of one extract, the label read as dissatisfaction at the extract (its date unstated); the `Time basis: Snapshot:` bullet is in `curation_comments`, the tag enters `data_tags` once PR #50 is in the working copy. Split and record facts unchanged.
+CC (2026-11-10, Andrej): review page issue 3, option B: random, named `Snapshot` of one extract, the label read as dissatisfaction at the extract (its date unstated); the `Time basis: Snapshot:` bullet is in `curation_comments`, the tag enters `data_tags`. Split and record facts unchanged.
 
 CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
@@ -362,7 +362,7 @@ names stay, with a column dictionary in the README (issue 2); the random split i
 
    * **Recommendation:** B. **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("Anonymized", "Snapshot")` and the curation bullet "-
+   **Notes for the AI:** on B: `data_tags = ("Anonymized", "Snapshot")` and the curation bullet "-
    Time basis: Snapshot: one extract of Santander's customers (period not stated; competition 2016), with windows of
    the last month to three months ending at it; the label is a state the host does not define or date, read as
    dissatisfaction at the extract, which the use case fills in for customers not yet known to be dissatisfied. No exit
@@ -377,7 +377,7 @@ names stay, with a column dictionary in the README (issue 2); the random split i
 
    **Resolved (2026-11-10, Andrej):** B, random, named `Snapshot`: the drafted `Time basis: Snapshot:` bullet is in
    `curation_comments`, ending with what the split cannot test (a later extract, a label taken after it). Split and
-   record facts unchanged; `Snapshot` enters `data_tags` once PR #50 is in the working copy.
+   record facts unchanged; `Snapshot` enters `data_tags`.
 
 ## Reference
 

@@ -305,9 +305,9 @@ basis of the label is not known. The data-scouting run of 2026-10-31 screened `n
        open doubt about the label is issue 1's, not this drop's.
    * **Recommendation:** unchanged, B. **Decision:** keep (A) or drop the copies (B)?
 
-   [^3e1]: **LEAK-42** (Must; draft PR #62): repeats of a unit the data does not record get one verdict (natural,
+   [^3e1]: **LEAK-42** (Must): repeats of a unit the data does not record get one verdict (natural,
      entity fix, temporal fix or not recoverable); copies of one record go down to one row per unit, and every drop
-     gives the share dropped and the label shares before and after. **LEAK-43** (Should; draft PR #62): three tests
+     gives the share dropped and the label shares before and after. **LEAK-43** (Should): three tests
      set the verdict: a link above a chance rate that keeps the data's structure, a label that travels with the link
      beyond what the shared features predict, and an order.
 
@@ -333,12 +333,12 @@ basis of the label is not known. The data-scouting run of 2026-10-31 screened `n
 
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
-     | A | Random split, `StationaryRelation` (implemented) | the shipped split; once PR #50 is in, the tag and a `Time basis:` line | the diagnosis and every feature come from one panel | argued from a source that states neither period nor design |
+     | A | Random split, `StationaryRelation` (implemented) | the shipped split; the tag and a `Time basis:` line | the diagnosis and every feature come from one panel | argued from a source that states neither period nor design |
      | B | Random split, `ForcedIIDFromTemporal` | the same split, tagged as forced from temporal[^4b] | says that later patients are not tested | nothing found that moves the relation; the file has no time for the leak test the forced tag asks for |
 
    * **Recommendation:** A, if issue 1 keeps the dataset: the label and the panel come together, and no order or date suggests a period. **Decision:** A or B?
 
-   **Notes for the AI:** on A, once PR #50 is in: `data_tags = ("StationaryRelation",)` and a curation bullet `- Time
+   **Notes for the AI:** on A: `data_tags = ("StationaryRelation",)` and a curation bullet `- Time
    basis: StationaryRelation: each record is one liver panel with the diagnosis it accompanies, from north-east Andhra
    Pradesh over an unstated period (UCI, 2012). The file keeps no date and its order mixes the classes (226 label runs
    over 583 rows), so this is argued from the source, not measured; whether the two groups were collected in different
@@ -453,8 +453,7 @@ basis of the label is not known. The data-scouting run of 2026-10-31 screened `n
      `Time: Lost` when neither the release nor its source keeps or lets us recover the time; no target fact when the
      target exists with the features.
 
-   **Resolved (2026-11-11, Andrej):** B: `Samples: Over Time` and `Time: Lost` added to the record's `tags` (also in
-   the PR #50 worktree's copy of the record); `Andrej` already in `checked_by`.
+   **Resolved (2026-11-11, Andrej):** B: `Samples: Over Time` and `Time: Lost` added to the record's `tags`; `Andrej` already in `checked_by`.
 
 6. **`CrossSectional` instead of `ForcedIIDFromTemporal`?**
 

@@ -48,7 +48,7 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid tiny, high-dimensiona
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — the paper reports sensitivity and specificity at its classifier's operating point, with no single threshold-free metric.
 
 CC (2026-10-21, Andrej): Keep, with the raw spectra. Each row is one serum mass spectrum (intensities in 6,771 mass bins) of one of 73 mice; checked against shuffled labels, standard spectral processing and the `t` file marker.
-- Raw instrument signal: the rows are spectra before the usual processing (smoothing, removing the slowly varying background called the baseline, scaling each spectrum to its total intensity, log). Done on each spectrum without labels, that processing raises logistic regression from ROC AUC 0.66 to 0.74 and TabPFN 3.5 from 0.66 to 0.73 (better on 11 and 12 of 12 mouse-grouped folds); the data page itself asks for "normalization, baseline correction, and alignment prior to any such analysis". Not a reason to drop: after processing, ordinary tabular models are still the best tools. The data stays raw; the processing belongs in the evaluation pipeline (PR #21).
+- Raw instrument signal: the rows are spectra before the usual processing (smoothing, removing the slowly varying background called the baseline, scaling each spectrum to its total intensity, log). Done on each spectrum without labels, that processing raises logistic regression from ROC AUC 0.66 to 0.74 and TabPFN 3.5 from 0.66 to 0.73 (better on 11 and 12 of 12 mouse-grouped folds); the data page itself asks for "normalization, baseline correction, and alignment prior to any such analysis". Not a reason to drop: after processing, ordinary tabular models are still the best tools. The data stays raw; the processing belongs in the evaluation pipeline.
 - Weak signal: logistic regression reaches ROC AUC 0.66; with the labels shuffled between mice (200 times) it reaches 0.51 on average and 0.62 at the 95th percentile (p ≈ 0.01). Shuffled labels also beat 0.5 on at least 11 of 12 folds in 14% of the shuffles, so "above chance on every fold" alone is weak evidence. Not severe: the signal beats shuffled labels on the mouse-grouped split.
 - `t` file marker (66 files: 42 control, 24 PanIN): not a measurement batch. The run numbers and chip positions in the file names show marked and unmarked spectra, and both classes, measured mixed on the same 8-spot chips, more evenly than chance would place them. It marks about half the samples of mice bled several times and almost never a mouse's only sample (1 of 29), so it splits each mouse's bleeds in a way the files do not explain. Not severe: without the marked spectra logistic regression still reaches 0.63.
 To do: ask the authors what `t` marks and where the 10 missing control spectra went.
@@ -58,7 +58,7 @@ CC (2026-11-02, Lennart): The serum spectrum is declared as a spectrum (`spectra
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: Andrej's keep with the raw spectra (2026-10-21) and the spectrum declaration (2026-11-02) settle it; only questions for the authors (the t marker, 10 missing control spectra) remain. Priority 1: gap 0, use case 0, source 1, shape 0, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): the label is the mouse's genotype, fixed at birth, and its undated bleeds are held out with it. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): the label is the mouse's genotype, fixed at birth, and its undated bleeds are held out with it. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 **Assessment (AI, 2026-11-08):** one vote per unit (the scan of 2026-11-08 after boreal_postfire_lichen_biomass's issue 7): the 73 mice gave 1 to 6 serum samples each (median 2, 29 one), the label is the mouse's, and the use case reads each sample of an unseen mouse as a new patient's test, so a mouse bled six times counts as six patients. Weighting each sample by 1 over its mouse's samples ranks 8 untuned models at Kendall tau 0.66 per split (lowest -0.07, on 24 test mice) and 0.86 for the ranking by the mean over 30 of the shipped splits, the same best model on 23 of 30, the largest shift of the scan. Open for Lennart as issue 1 of the record's Review; recommended: each mouse counts once (B), unless the use case is a person tested again and again; ROC AUC would first need an optional weight input.
 
@@ -149,7 +149,7 @@ cancer); it is screened in its own record and does not change this task's validi
      through the declaration. **Decision:** raw and declared (A), processed in the data (B) or retire (C)?
 
    **Resolved (2026-10-21, Andrej):** (A), keep with the raw spectra; the processing belongs to the evaluation
-   pipeline (PR #21). Lennart declared the serum spectrum as a spectrum on 2026-11-02, with MALDIquant's
+   pipeline. Lennart declared the serum spectrum as a spectrum on 2026-11-02, with MALDIquant's
    steps as the recommended encoding. Open for the authors: what `t` marks and where the 10 control spectra went.
 
    [^1a]: **CLEAN-26** (Should): a spectrum ships as the source publishes it, one numeric column per position on its
@@ -178,7 +178,7 @@ cancer); it is screened in its own record and does not change this task's validi
    * **Recommendation:** B: the label is fixed at birth and the serial bleeds stay with their mouse. **Decision:** A
      or B?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
+   **Notes for the AI:** on B: `data_tags = ("Timeless",)` (the class adds `Non-IID`, `Grouped`),
    a curation bullet `- Time basis: Timeless: the label is the genotype, fixed at birth; each mouse gave 1 to 6 bleeds
    at least 5 days apart, undated, all held out with the mouse (Hingorani et al. 2003).`, `splits_comment`
    unchanged; `dataset check`.
@@ -191,7 +191,7 @@ cancer); it is screened in its own record and does not change this task's validi
    **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the routine `Timeless` time
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
    cannot test (mice of another cohort, or spectra from another instrument run); the split and `data_tags` are
-   unchanged. The tag `Timeless` enters `data_tags` once PR #50 is in the working copy.
+   unchanged. The tag `Timeless` enters `data_tags`.
 
 3. **Write down that the controls were bled about a month older than the mutants, and mark it?**
 

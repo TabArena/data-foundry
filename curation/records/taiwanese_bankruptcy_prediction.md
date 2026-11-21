@@ -172,7 +172,7 @@ target" is answered in issue 1: the paper does not state it. The scaling over al
 
    * **Recommendation:** B, with C only if issue 3 groups. **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in this working copy, on B: replace the `ForcedIIDFromTemporal:` bullet of
+   **Notes for the AI:** on B: replace the `ForcedIIDFromTemporal:` bullet of
    `curation_comments` with `- Time basis: ForcedIIDFromTemporal: listed Taiwanese companies of 1999-2009, used to
    screen later statements; no row carries its year or company. The raw file repeats its rows at a regular period
    (26 to about 200 rows; one period after a row its closest match lies below the 1st percentile of random-pair
@@ -278,8 +278,7 @@ target" is answered in issue 1: the paper does not state it. The scaling over al
    [^4a]: **SPLIT-32** (Should): `Samples: Over Time` when the samples arose over a period, with `Time: Dated` or
      `Time: Lost`; `Target: Later` after a fixed window; no target fact when the target exists with the features.
 
-   **Resolved (2026-11-11, Andrej):** B: the record's `tags` gain `Samples: Over Time` and `Time: Lost` (also in
-   the PR #50 worktree's copy), with a `CC` line.
+   **Resolved (2026-11-11, Andrej):** B: the record's `tags` gain `Samples: Over Time` and `Time: Lost`, with a `CC` line.
 
 5. **Stay forced and record `Target: Later`, or `CrossSectional`?**
 

@@ -61,7 +61,7 @@ CC (2026-11-01, Lennart): keep this dataset as fixed in PR #37 (ImmoScout24's co
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after keeping one row per house: 105 houses are listed twice, crossing the split for 1.5% of test rows with no measured effect; provenance stays a caveat and better data is being screened. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
 
-CC (2026-11-11, Andrej): one listing per house (review page, issue 1 B, agreeing with the answer of 2026-11-06): 105 houses listed twice (same living space, lot, year built, state, city and place) keep their first listing; 114 rows go (10,317 to 10,203), the price distribution does not move (LEAK-17, LEAK-42). Random split named a `Snapshot` of the 14 July 2020 scrape (issue 2 B): a `Time basis:` line in the definition; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-11, Andrej): one listing per house (review page, issue 1 B, agreeing with the answer of 2026-11-06): 105 houses listed twice (same living space, lot, year built, state, city and place) keep their first listing; 114 rows go (10,317 to 10,203), the price distribution does not move (LEAK-17, LEAK-42). Random split named a `Snapshot` of the 14 July 2020 scrape (issue 2 B): a `Time basis:` line in the definition; the tag enters `data_tags`.
 
 CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
 
@@ -70,7 +70,7 @@ CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`)
 **Outcome:** added. Houses for sale on the German portal ImmoScout24, one scrape of 14 July 2020 (a deleted Kaggle
 upload, copied to OpenML): 10,317 houses with their type, areas, rooms, build and renovation years, condition,
 furnishing, heating, energy certificate and place; the target is the log asking price, scored by RMSLE on the price,
-with a random split. The scrape's permuted labels carry ImmoScout24's own codes since PR #37, and Lennart kept the
+with a random split. The scrape's permuted labels carry ImmoScout24's own codes since the ordinal-scale change, and Lennart kept the
 dataset as fixed (2026-11-01). The AI recommends shipping it, with one small clean-up: 105 houses are listed twice
 (issue 1). Reviewed without a panel, from the gathered evidence (the record, the definition, a model run on the
 shipped BeyondArena data, the same rows) and one check of the rows. Validity: a direct fit (an asking price set against
@@ -78,7 +78,7 @@ the houses on the market the same day); the origin is ImmoScout24, shown by matc
 scrape with the portal's codes, while the uploader is unknown; the relistings cross the split for 1.5% of test rows
 and move no measured score (issue 1). Value: the benchmark methods separate (RMSE on the log price on the shipped data:
 LimiX-2 0.321, TabPFN-3.5 0.338, CatBoost 0.352, linear regression 0.470 to 0.473), and a hedonic model with nested
-location effects ranks 7th to 28th of 41. Quality: settled by PR #37. Weighed: a real portal snapshot, a direct fit,
+location effects ranks 7th to 28th of 41. Quality: settled by the ordinal-scale change. Weighed: a real portal snapshot, a direct fit,
 16 states and wide method separation +; an anonymous uploader, an unknown licence and better data under screening -.
 
 **Main points:** settled on 2026-11-11: one listing per house, 10,203 rows (issue 1); the random split named a
@@ -146,9 +146,9 @@ portal's codes (germany_housing_rent_and_price_apr_20) and RWI-GEO-RED, ImmoScou
        against the day's other houses, and the drop changes neither the price range nor its spread.
    * **Recommendation:** unchanged, B. **Decision:** one listing per house (B), or keep all (A)?
 
-   [^1e1]: **LEAK-42** (Must; draft PR #62): repeats of a unit the data does not record get one verdict (natural,
+   [^1e1]: **LEAK-42** (Must): repeats of a unit the data does not record get one verdict (natural,
      entity fix, temporal fix or not recoverable); copies of one record go down to one row per unit, and every drop
-     gives the share dropped and the target's distribution before and after. **LEAK-43** (Should; draft PR #62):
+     gives the share dropped and the target's distribution before and after. **LEAK-43** (Should):
      three tests set the verdict: a link above a chance rate that keeps the data's structure, a label that travels
      with the link beyond what the shared features predict, and an order.
 
@@ -187,7 +187,7 @@ portal's codes (germany_housing_rent_and_price_apr_20) and RWI-GEO-RED, ImmoScou
 
    * **Recommendation:** B, decided the same way as fiat_500's. **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("Snapshot",)` (no tag is listed now) and the curation bullet "- Time basis: Snapshot: one scrape of the houses live on
+   **Notes for the AI:** on B: `data_tags = ("Snapshot",)` (no tag is listed now) and the curation bullet "- Time basis: Snapshot: one scrape of the houses live on
    ImmoScout24 on 14 July 2020; the asking prices of that day, set at listing and possibly lowered since, without
    listing dates; the use case prices a house against the same day's market. Not tested: prices after July 2020.";
    `dataset check`. The record's facts stay.
@@ -199,8 +199,7 @@ portal's codes (germany_housing_rent_and_price_apr_20) and RWI-GEO-RED, ImmoScou
      exam round) is not forced; SPLIT-32 gives it `Snapshot` or `DelayedTarget`.
 
    **Resolved (2026-11-11, Andrej):** B: the `- Time basis: Snapshot: ...` bullet of the notes is in
-   `curation_comments` (ending "Not tested: prices after July 2020."); the `Snapshot` tag enters `data_tags` once PR #50
-   is in the working copy. The record's facts stay.
+   `curation_comments` (ending "Not tested: prices after July 2020."); the `Snapshot` tag enters `data_tags`. The record's facts stay.
 
 ## Reference
 

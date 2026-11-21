@@ -63,7 +63,7 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 **Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined with the random split and a note: real forensic measurements whose methods spread; near-copies across the random split are real but the ones that look like one object are few file neighbours, and the rest cannot be tied to objects. Priority 2: gap 1, use case 0, source 1, shape 0, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on five more routine `Timeless` issues): the glass type belongs to the object and the measurements to the fragment; the casework before 1987 carries no published date. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on five more routine `Timeless` issues): the glass type belongs to the object and the measurements to the fragment; the casework before 1987 carries no published date. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 CC (2026-11-12, Andrej): BeyondArena v0.2 review page, forensic_glass_identification: the random split stays as a decision of ours (issue 2, A), and Id 68 is dropped (issue 4, B).
 - **Random split, deliberate:** no clean groups govern how the collection was made. Only 7 glass objects (14 rows) are tied together by a link calibrated against chance: identical refractive index, the same type and every oxide within the tolerance of two analyses, 7 pairs where chance gives 1.8. The other near-copies (35% of the rows within 0.16 SD on five columns) are different objects of the same kind of glass, which a reference collection holds. Holding out the 7 objects cost TabPFN 0.009 log loss and left the ranking unchanged. The definition's `splits_comment` states the choice and its reason; the row-order note gives the near-copy shares.
@@ -528,11 +528,11 @@ your choice. The record fields agree with the definition.
    chance rate (9 against 2.0) and the verdict for the other near-copies. Record `required_split` Grouped, `CC` line.
    `dataset check`, the group probes, no rebuild until asked. Issue 4 (Id 68) is separate.
 
-   [^c1]: **SPLIT-24** (Must, amended in draft PR #62): group on a true id or one constructed from the data, exactly
+   [^c1]: **SPLIT-24** (Must, amended): group on a true id or one constructed from the data, exactly
      or by a calibrated link: a match rule from how the data were recorded and a chance rate showing most links are
-     real; whether it holds is the curator's call, case by case. **LEAK-43** (Should, draft PR #62): three tests set
+     real; whether it holds is the curator's call, case by case. **LEAK-43** (Should): three tests set
      the verdict (is the link above chance, does the label travel with it, is there an order).
-   [^c2]: **LEAK-42** (Must, draft PR #62): repeats of a unit the data does not record are natural (distinct
+   [^c2]: **LEAK-42** (Must): repeats of a unit the data does not record are natural (distinct
      look-alikes, random split), an entity fix (units recovered: copies dropped, observations grouped), a temporal
      fix, or not recoverable (identifiable copies dropped).
    [^c3]: **SPLIT-23** (Must): the source's use case decides what one prediction is and what is known about a new
@@ -586,7 +586,7 @@ your choice. The record fields agree with the definition.
      future of another; the collection's own date is recorded by the `Outdated` marker and belongs in the line.
      **Decision:** A, B or C?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("Timeless",)` (the class adds `IID`, or the grouped
+   **Notes for the AI:** on B: `data_tags = ("Timeless",)` (the class adds `IID`, or the grouped
    tags on issue 2's B) and a curation bullet `- Time basis: Timeless: the glass type is a property of the object the
    fragment came from, and the refractive index and oxides are measured on the fragment, so nothing in a row arrives
    later. The Home Office laboratory gathered the fragments from casework before September 1987 and no date is
@@ -602,7 +602,7 @@ your choice. The record fields agree with the definition.
    **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept five more routine `Timeless`
    issues with one mark?" The `Time basis: Timeless:` bullet is in `curation_comments`, ending with what the split
    cannot test (glass made since 1987, and today's trace-element casework); the split and `data_tags` are unchanged. The
-   tag `Timeless` enters `data_tags` once PR #50 is in the working copy.
+   tag `Timeless` enters `data_tags`.
 
 4. **Drop Id 68, which is Id 67 entered again?**
 
@@ -631,7 +631,7 @@ your choice. The record fields agree with the definition.
    equal values, silicon 72.22 against 72.32, read as one record entered twice); `CC` line in the record; `dataset
    check`.
 
-   [^4a]: **LEAK-42** (Must, draft PR #62): copies of one record (entered twice, listed again) go down to one row per
+   [^4a]: **LEAK-42** (Must): copies of one record (entered twice, listed again) go down to one row per
      unit, and every drop states what it does to the target. **LEAK-18** (Should): an exact match over many values is
      a collection artefact.
 

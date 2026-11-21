@@ -171,7 +171,7 @@ counts one pair because age breaks the other ties).
        present, 3 indicates the largest amount possible, and 1, 2 indicate the relative intermediate values").
      - Type them as numbers?
    * **Background:** the decode rule of 2026-11-01 makes a score with no words per level a number, and lists this
-     dataset's ten findings among the columns that "are numbers again"[^2a]. Pull request #37 added the conversion in
+     dataset's ten findings among the columns that "are numbers again"[^2a]. The ordinal-scale change added the conversion in
      `_clean` but left `_feature_types` as the notebook migration wrote it. Of the 16 definitions with such a list of
      scores, this is the only one whose README shows them as categories (checked 2026-11-04).
    * **Effect on the task:** with 244 training patients per split, a model has to learn each grade of each finding as
@@ -236,7 +236,7 @@ counts one pair because age breaks the other ties).
 
    **Lennart (2026-11-05, change):** Option B: Numbers.
 
-   **Resolved (2026-11-05, Lennart):** B, on GitHub issue #48 (#52). The 10 scores ship as numbers; `_feature_types`
+   **Resolved (2026-11-05, Lennart):** B, on GitHub issue #48. The 10 scores ship as numbers; `_feature_types`
    declares only `family history` categorical, the contradicting note is gone, and a test checks that every `SCORES`
    column ships numeric.
 
@@ -260,13 +260,13 @@ counts one pair because age breaks the other ties).
 
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
-     | A | Random split, `StationaryRelation` (implemented) | the shipped split; once PR #50 is in, the tag and a `Time basis:` line | the diagnosis is read at the examination | the measurement contradicts it: the relation moves between the file's parts |
+     | A | Random split, `StationaryRelation` (implemented) | the shipped split; the tag and a `Time basis:` line | the diagnosis is read at the examination | the measurement contradicts it: the relation moves between the file's parts |
      | B | Random split, `ForcedIIDFromTemporal` | the shipped split; the tag and a `Time basis:` line with the two parts and the measured cost[^3b] | states what the random split hides; keeps 60 splits over all 366 patients | reads the file's parts as periods, which the source does not state |
      | C | Split by file part | train on one part, test on the other | tests the shift directly | two groups make one shift test, not a benchmark split[^3c]; the boundary is estimated from the order, not recorded |
 
    * **Recommendation:** B: the relation measurably moves between the two parts, and two parts cannot give the windows a temporal split needs, so the random split stays as a forced one with its cost written down. If you read the parts as another examiner rather than another time, A with the shift named. **Decision:** A, B or C?
 
-   **Notes for the AI:** on B, once PR #50 is in: `data_tags = ("ForcedIIDFromTemporal",)` and a curation bullet `- Time
+   **Notes for the AI:** on B: `data_tags = ("ForcedIIDFromTemporal",)` and a curation bullet `- Time
    basis: ForcedIIDFromTemporal: patients examined over a period the source does not state (published 1998); the file
    keeps no date but has two parts, rows 1 to 169 in mixed order and rows 170 to 366 mostly in runs of one diagnosis.
    The clinical findings tell them apart (random forest ROC AUC 0.70; 0.54 from the diagnosis alone), and trained on one
@@ -343,7 +343,7 @@ counts one pair because age breaks the other ties).
    * **Recommendation:** a, unchanged: the measurement shows what B assumed, that the random split rewards learning
      each part's grading, and A is closed. **Decision:** a, b or c?
 
-   **Notes for the AI:** on a, once PR #50 is in: `data_tags = ("ForcedIIDFromTemporal",)` and a curation bullet `- Time
+   **Notes for the AI:** on a: `data_tags = ("ForcedIIDFromTemporal",)` and a curation bullet `- Time
    basis: ForcedIIDFromTemporal: patients examined over a period the source does not state (published 1998); the file
    keeps no date but has two parts, rows 1 to 169 in mixed order and rows 170 to 366 mostly in runs of one diagnosis.
    The clinical findings tell them apart (random forest ROC AUC 0.70; 0.54 from the diagnosis alone). The random split

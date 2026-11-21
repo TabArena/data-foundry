@@ -179,27 +179,27 @@ descriptors, so the dataset needs a rebuild; the record's early "need to check S
 
 **Issues for Andrej:**
 
-1. **Keep the SMILES string as a feature (PR #15): an exception to CLEAN-24 here, or an amendment for every SMILES
+1. **Keep the SMILES string as a feature: an exception to CLEAN-24 here, or an amendment for every SMILES
    dataset?** A SMILES is a line of text that spells out a molecule's structure. CLEAN-24 (Should) ships the structure
    as RDKit descriptors and drops the string, for apistox, this dataset and qsar_bioconcentration (Lennart,
    2026-10-14). On 2026-10-26 Andrej decided the string stays here ("the SMILES is important for performance"):
-   PR #15 ships it as a string feature next to the source's 176 descriptors (177 features, 587 rows), with a CC
-   line. The working copy on this branch still drops it, and PR #15 is open.
+   The SMILES change ships it as a string feature next to the source's 176 descriptors (177 features, 587 rows), with a CC
+   line. The working copy on this branch still drops it, and the SMILES change is not merged.
    - Effect on the task: the descriptors lose structure. MACCS keys, 166 yes/no flags for standard substructures
      computed from the SMILES, lift the scaffold-grouped ROC AUC next to the descriptors (TabPFN 3.5 0.803 to 0.826,
      better on 27 of 30 splits; random forest 0.770 to 0.795). Shipping the string lets a model read the structure
      its own way; a model that cannot read text gains nothing from it, and as plain text the string lowered LightGBM
      from 0.835 to 0.810 on random splits (15 splits, 2026-10-14).
-   - Implemented: on PR #15 only.
-   - Alternative (a): merge PR #15 and record an exception to CLEAN-24 for this dataset, with the fact that sets it
+   - Implemented: on the SMILES change only.
+   - Alternative (a): merge the SMILES change and record an exception to CLEAN-24 for this dataset, with the fact that sets it
      apart (the MACCS gain under a scaffold split). Cost: SMILES datasets are treated two ways.
    - Alternative (b): amend CLEAN-24 so every SMILES dataset ships the string next to the descriptors (apistox and
      qsar_bioconcentration change too). Cost: two more definitions change; the gain is measured here only.
-   - Alternative (c): keep the working copy as it is (string dropped) and close PR #15. Cost: undoes Andrej's
+   - Alternative (c): keep the working copy as it is (string dropped) and close the SMILES change. Cost: undoes Andrej's
      decision of 2026-10-26 and the structure the descriptors miss.
    - Rule: CLEAN-24 (Should) and the procedure for a departure: an exception names the fact that sets the case apart,
      an amendment changes the rule (principles.md, "Exceptions and amendments"). Lennart has not answered the question
-     on PR #15.
+     on the SMILES change.
    - Recommendation: (a), and ask Lennart whether (b) is wanted. Decision: (a), (b) or (c).
 
    **Resolved (2026-11-01, Lennart):** an amendment for every SMILES dataset, closest to (b) in a new form, after
@@ -321,7 +321,7 @@ descriptors, so the dataset needs a rebuild; the record's early "need to check S
      for the newest drugs, so a forward split would score the reporting delay; the line says that plainly and the
      scaffold split keeps testing new series. **Decision:** A, B, C or D?
 
-   **Notes for the AI:** on B, once PR #50 is in: no tag, and a curation bullet `- Time basis: no prototype fits.
+   **Notes for the AI:** on B: no tag, and a curation bullet `- Time basis: no prototype fits.
    Whether a drug can cause an autoimmune reaction is a property of its structure, but the label is what had been
    reported by the compilation (InterDIA, 2025), so it accrues with time on the market: ChEMBL dates 496 of the 587
    drugs by first approval (1940-2020) and the positive share falls from 28.7% before 1980 to 5.8% from 2010 on (3 of
