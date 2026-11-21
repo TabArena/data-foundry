@@ -84,8 +84,8 @@ document as a change that was not an instruction: "the changes look good". The c
 instead of the published ECFP bit vector, which moves the shipped row count from 11,105 to 11,116: the old key
 merged chemicals whose bit vectors collided rather than chemicals that are the same.
 
-CC (2026-11-11, Andrej): the chemicals are dated before the time basis is named (review issue 1, C). The RTECS citation of each chemical's earliest rat oral LD50 report (ToxValDB v9.6.2) dates 7,927 of 11,119, 1935 to 2023.
-- A forward split by report year (four windows, Slurm 1378153) leaves 12.4% of test chemicals a close training analog against 8.6% scaffold-disjoint, a third of the test scaffolds in training, and scores the same; whether to keep the scaffold split and name it Timeless is review issue 2. The definition is unchanged.
+CC (2026-11-11, Andrej): the chemicals are dated before the time basis is named (Review issue 1, C). The RTECS citation of each chemical's earliest rat oral LD50 report (ToxValDB v9.6.2) dates 7,927 of 11,119, 1935 to 2023.
+- A forward split by report year (four windows) leaves 12.4% of test chemicals a close training analog against 8.6% scaffold-disjoint, a third of the test scaffolds in training, and scores the same; whether to keep the scaffold split and name it Timeless is Review issue 2. The definition is unchanged.
 
 CC (2026-11-11, Andrej): time basis Timeless (issue 2, option b): the scaffold split stays; a curation bullet "Time basis: Timeless" states the fixed property, the inventory use case, the dating by RTECS report year (7,927 of 11,119, 1935-2023) and that a forward split by report year holds out less than the scaffold split (12.4% against 8.6% close training analogs, same score). The prediction-set reference re-measured: 19.8% of the project's 48,135 prediction chemicals are in this dataset; of the others 11.2% have a close training analog, against 15.1% of the test chemicals. The tag enters `data_tags` once the time-basis tags are in the working copy.
 
@@ -95,7 +95,7 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case predicts for items the catalogue does not hold, which the held-out scaffolds stand for; that the entry date carries no wave is a measurement for the `Time basis:` line, not a different use case.
 - `Timeless` now means a fixed target in data with no time dimension. The split does not change.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `scaffold`, 3x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `scaffold`, 3x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -175,7 +175,7 @@ facts `Samples: Over Time`, `Time: Dated` (issue 3).
      11,119 chemicals (71.3%, by DTXSID, else CAS), 1935 to 2023, median 1976.
    * **The split, four expanding windows by report year** (1977-80, 1981-85, 1986-90, 1991-2023; 756 to 1,196 test
      chemicals; training sides 52% to 90% of the dated), on the same test chemicals, untuned LightGBM / random forest
-     on the recommended encoding, means over the windows (Slurm 1378153):
+     on the recommended encoding, means over the windows:
 
      | Scheme | ROC AUC, LightGBM / RF | Log loss, LightGBM / RF | Close training analog | Test scaffold in training |
      |---|---|---|---|---|

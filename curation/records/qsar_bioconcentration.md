@@ -66,7 +66,7 @@ CC (2026-10-26, Lennart): the `Free Text (Short)` tag is removed, as the definit
 
 CC (2026-10-26, Lennart): issue 8, option (a): add the logKOW with its measured/predicted flag from the authors' 2015 table (USE-6, USE-3: the assessor of the use case holds it before any fish test).
 
-**Assessment (AI, 2026-10-26):** issue 8 applied. `logKOW` and `logKOW_type` come from the Chemosphere SI table (1-s2.0-S0045653515000879-mmc2.xlsx, sha256 53787477...), matched on the CAS numbers of the cell and the logBCF both tables list: 774 of 776 chemicals (652 measured, 122 predicted), 2 missing. dataset check: 0 errors, 0 warnings; task probes: no flags; leak probe: logKOW alone 0.657, no copies. Random forest, macro ROC AUC on 30 of our splits: 0.760 with everything, 0.756 without the logKOW, 0.759 without the authors' 9 descriptors (paired -0.002, SE 0.001). Answers on the page: issue 1 (class or logBCF, raised again), issue 5 (the 9 come from commercial Dragon 6, the pool is unpublished), issue 9 (follows issue 5), issue 10 (a scaffold-grouped split recommended, as drug_induced_autoimmunity_prediction).
+**Assessment (AI, 2026-10-26):** issue 8 applied. `logKOW` and `logKOW_type` come from the Chemosphere SI table (1-s2.0-S0045653515000879-mmc2.xlsx, sha256 53787477...), matched on the CAS numbers of the cell and the logBCF both tables list: 774 of 776 chemicals (652 measured, 122 predicted), 2 missing. dataset check: 0 errors, 0 warnings; task probes: no flags; leak probe: logKOW alone 0.657, no copies. Random forest, macro ROC AUC on 30 of our splits: 0.760 with everything, 0.756 without the logKOW, 0.759 without the authors' 9 descriptors (paired -0.002, SE 0.001). Answers to the open questions: class or logBCF (raised again); the 9 come from commercial Dragon 6, the pool is unpublished; a scaffold-grouped split recommended, as drug_induced_autoimmunity_prediction.
 
 CC (2026-10-26, Lennart): issue 1: "let us keep the clf task": the class only, no logBCF regression.
 
@@ -88,9 +88,9 @@ CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encod
 
 **Assessment (AI, 2026-11-01):** the definition now ships `SMILES` (RDKit's canonical form of the repaired SMILES) in `smiles_columns` and no longer RDKit's 193 descriptors; logKOW stays. In the recommended encoding every chemical has its own values. MACCS keys next to the descriptors: -0.003 (LightGBM) / +0.009 (random forest) macro ROC AUC.
 
-CC (2026-11-02, Lennart): the declared metric checked and kept as declared (review page).
+CC (2026-11-02, Lennart): the declared metric checked and kept as declared.
 
-CC (2026-11-02, Lennart): on the review page, issue 1: "ok keep logkow for now, but remove logkow_type  and then
+CC (2026-11-02, Lennart): on the logKOW question: "ok keep logkow for now, but remove logkow_type  and then
 ship the dateaset unless this creates any problems", and on the consistency check that followed, "go with (a)".
 Applied. `logKOW` stays, all 774 values, which confirms the first half of the CC of 2026-10-26; `logKOW_type` leaves
 the frame, which revises its second half. The shipped frame is the `SMILES` and the `logKOW`, 776 rows and 2
@@ -131,10 +131,10 @@ task probes raise no flag (random forest macro ROC AUC 0.678, LightGBM 0.689, be
 test class 9 rows) and the leak probes none (all features 0.705, shallow tree 0.581, no test row with an exact
 feature copy in training, 1-NN label agreement 0.621 against a chance of 0.462).
 
-CC (2026-11-11, Andrej): the chemicals are dated before the time basis is named (review issue 1, B). NITE's workbook of the CSCL carp bioconcentration tests dates 347 of 776 by CAS, 1975 to 2007, and its BCF matches the shipped logBCF (correlation 0.965).
-- A forward split by test year (three windows, Slurm 1378135) leaves 3.8% of test chemicals a close training analog against 4.6% scaffold-disjoint, and scores within noise of it; whether to keep the scaffold split and name it Timeless is review issue 2. The definition is unchanged.
+CC (2026-11-11, Andrej): the chemicals are dated before the time basis is named (Review issue 1, B). NITE's workbook of the CSCL carp bioconcentration tests dates 347 of 776 by CAS, 1975 to 2007, and its BCF matches the shipped logBCF (correlation 0.965).
+- A forward split by test year (three windows) leaves 3.8% of test chemicals a close training analog against 4.6% scaffold-disjoint, and scores within noise of it; whether to keep the scaffold split and name it Timeless is Review issue 2. The definition is unchanged.
 
-CC (2026-11-12, Andrej): review page mark (issue 2, b): the scaffold split stays, with time basis `Timeless`. NITE's carp tests date 347 of 776 chemicals (1975-2007), and a split by test year held out no more than the scaffold groups on the same chemicals (random forest log loss 0.798 against 0.768; close analogs 3.8% against 4.6%). The `Time basis:` line is in the definition's notes; the tag enters `data_tags`.
+CC (2026-11-12, Andrej): Review issue 2, b: the scaffold split stays, with time basis `Timeless`. NITE's carp tests date 347 of 776 chemicals (1975-2007), and a split by test year held out no more than the scaffold groups on the same chemicals (random forest log loss 0.798 against 0.768; close analogs 3.8% against 4.6%). The `Time basis:` line is in the definition's notes; the tag enters `data_tags`.
 
 CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension` (Review issue 3): NITE's CSCL carp bioconcentration tests date 347 of 776 chemicals (44.7%), 1975 to 2007. The facts describe the source and do not change with the split, which stays as it is.
 
@@ -142,7 +142,7 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case predicts for items the catalogue does not hold, which the held-out scaffolds stand for; that the entry date carries no wave is a measurement for the `Time basis:` line, not a different use case.
 - `Timeless` now means a fixed target in data with no time dimension. The split does not change.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `scaffold`, 10x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `scaffold`, 10x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -152,7 +152,7 @@ the review of how catalogues of fixed properties split: the definition names no 
 
 **Main points:** the chemicals dated through NITE's carp tests (issue 1, B, resolved 2026-11-11): 347 of 776, and a
 split by test year holds out no more than the scaffold split. Settled: the scaffold split stays, named `Timeless` (issue
-2, b, 2026-11-12). Settled 2026-11-12: collection facts `Samples: Over Time`, `Time: Dated` (issue 3).
+2, b, 2026-11-12), `UnseenGroup` since 2026-11-13. Settled 2026-11-12: collection facts `Samples: Over Time`, `Time: Dated` (issue 3).
 
 **Issues for Andrej:**
 
@@ -213,7 +213,7 @@ split by test year holds out no more than the scaffold split. Settled: the scaff
      not the year of the compiled value; the run with it gave the same picture.
    * **The split, three expanding windows by NITE test year** (test 65, 60, 42 chemicals; training sides 52% to 88%
      of the dated), on the same test chemicals, untuned LightGBM / random forest on the shipped encoding, means over
-     the windows (Slurm 1378135):
+     the windows:
 
      | Scheme | Log loss, LightGBM / RF | Macro ROC AUC, LightGBM / RF | Close training analog | Test scaffold in training |
      |---|---|---|---|---|

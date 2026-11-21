@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_biodeg
 container_format: 2
-checksum: v2:93a652273e35712aa36f8c4659448c6d49651f2e2659427831f4cbee71c27545
+checksum: v2:b516e717b5c6ff9c440fa4e15e46f434784fcd5b1b74ffea5626160c4c63e4cd
 build:
   uuid: 01a13a7d-c2bf-742d-b04d-f9b569da1f3d
   checksum: v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `Biodegradable`, scored with `roc_auc` on grouped splits by `scaffold`. 1,055 rows and 1 features. Source: UCI (2013).
 
-Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:93a652273e35712aa36f8c4659448c6d49651f2e2659427831f4cbee71c27545`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:b516e717b5c6ff9c440fa4e15e46f434784fcd5b1b74ffea5626160c4c63e4cd`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -140,7 +140,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2013 |
 | domain | chemistry & material science |
 | license | CC BY 4.0 |
-| data_tags | Non-IID, Grouped |
+| data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | mansouri2013quantitative |
 | rows x columns | 1,055 x 3 |
 | task.target | Biodegradable |
@@ -230,18 +230,18 @@ The first 5 of 1,055 rows of the final frame (random rows: the frame is shuffled
   are groups of their own. A screener judges an untested chemical, often of a series not yet measured, so whole
   series are held out; qsar_bioconcentration, qsar_oral_toxicity, qsar_fish_toxicity, qsar_aquatic_toxicity and
   qsar_tid_11 group the same way. The source split at random.
-- Time basis: no prototype tag (Andrej, 2026-11-12; review issue 4). The source builds a regulatory screen:
-  Mansouri et al. (2013) open with REACH, which "requires information on ready biodegradation" and encourages
-  QSAR predictions in place of tests, and they validate on 670 chemicals from other sources (the external set
-  above). Its question is a chemical from outside the collection, so the scaffold split stands (SPLIT-37, the
-  source's scope), and the order in which Japan's programme tested its existing chemicals lies outside it. That
-  order was measured and is recorded here: NITE's workbook of the CSCL biodegradation results of existing
-  chemicals (https://www.nite.go.jp/data/000064112.xlsx) dates 1,006 chemicals by CAS-RN and J-CHECK's bulletin
-  year 44 more (1,050 of 1,055, 1971 to 2008); the test moved from 14 days (80% of the tests before 1980) to 28
-  days (88% from 2000 on), and the share readily biodegradable swings by decade (40%, 28%, 45%, 27%), a fact
-  about the labels. A forward split by test year leaves 10.3% of the test chemicals a close training analog, as
-  the scaffold split does, against 11.8% at random (Slurm job 1378095). The split
-  cannot test how labels from the older 14-day tests differ from today's 28-day ones.
+- Time basis: UnseenGroup (Andrej, 2026-11-13; no prototype tag before, 2026-11-12). The source
+  builds a regulatory screen: Mansouri et al. (2013) open with REACH, which "requires information on ready
+  biodegradation" and encourages QSAR predictions in place of tests, and they validate on 670 chemicals from
+  other sources (the external set above). Its question is a chemical from outside the collection, so the
+  scaffold split stands (SPLIT-37, the source's scope), and the order in which Japan's programme tested its
+  existing chemicals lies outside it. That order was measured and is recorded here: NITE's workbook of the CSCL
+  biodegradation results of existing chemicals (https://www.nite.go.jp/data/000064112.xlsx) dates 1,006
+  chemicals by CAS-RN and J-CHECK's bulletin year 44 more (1,050 of 1,055, 1971 to 2008); the test moved from 14
+  days (80% of the tests before 1980) to 28 days (88% from 2000 on), and the share readily biodegradable swings
+  by decade (40%, 28%, 45%, 27%), a fact about the labels. A forward split by test year leaves 10.3% of the test
+  chemicals a close training analog, as the scaffold split does, against 11.8% at random.
+  The split cannot test how labels from the older 14-day tests differ from today's 28-day ones.
 
 ## Splits
 
@@ -312,7 +312,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -369,4 +369,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:93a652273e35712aa36f8c4659448c6d49651f2e2659427831f4cbee71c27545` |
+| stale | yes: the definition now gives checksum `v2:b516e717b5c6ff9c440fa4e15e46f434784fcd5b1b74ffea5626160c4c63e4cd` |

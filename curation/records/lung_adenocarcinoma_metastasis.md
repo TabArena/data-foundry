@@ -34,7 +34,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC (2026-11-11, Andrej): new record for the metastasis task on the arrays of `lung_cancer`, whose histology target was retired on 2026-11-10 (BeyondArena v0.2 review page, lung_cancer issues 7, B, and 4, B: a new record, since rows, target and values all changed). Ship.
+CC (2026-11-11, Andrej): new record for the metastasis task on the arrays of `lung_cancer`, whose histology target was retired on 2026-11-10 (lung_cancer's Review issues 7, B, and 4, B: a new record, since rows, target and values all changed). Ship.
 - **The source's own task:** "A key issue in lung tumor diagnosis is the discrimination of a primary lung adenocarcinoma from a distant metastasis to the lung" (Bhattacharjee et al. 2001, Results); "metastases of nonlung origin can be difficult to distinguish from lung adenocarcinomas" (Introduction). The paper finds them by clustering and scores no classifier.
 - **Where the label comes from:** the study's annotation sheet (`SampleData.xls`, sheet DATASET B, in GEO's caArray archive) flags 16 of its 139 adenocarcinomas as "possible mets" (8 colon, 4 breast, 4 other). 15 are written in the resected tumour's own pathology note, AD218's only in the study's second reading. The call is read from the specimen's pathology but not settled there: it rests on the earlier cancer outside the specimen, and the source calls the two "difficult to distinguish". The 8 colon flags are the firmest and the easiest part. All count but AD218's (below), leaving 15.
 - **Rows:** 123 adenocarcinomas: the paper's 125 with clinical data, less AD218 and AD224; the 12 `A` patients and AD355, AD360 have no clinical data, so "no flag" is no finding for them. One MAS5 array per tumour, scaled on that array alone (the GEO rebuild of lung_cancer's issue 1); the 67 control probes are dropped.
@@ -55,9 +55,9 @@ CC (2026-11-16, Andrej): collection fact `Samples: No Time Dimension`, missing b
 
 CC (2026-11-17, Andrej): Review issue 10, A, as implemented: Keep `Experimental Results`: 20 x 3-fold random cross-validation over patients stratified on the target (train 82, test 41, 5 metastases per test fold), `Timeless`.
 
-CC (2026-11-17, Andrej): verdict ship (blind split review page).
+CC (2026-11-17, Andrej): verdict ship (blind split walk).
 
-CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `Timeless`) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `Timeless`) is checked in the blind split walk.
 
 ## Review
 
@@ -70,7 +70,7 @@ CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `Timeless`) is 
 
 Either of issues 1 and 2 can still end at `No`.
 
-**Main points:** Sign the PR's use-case wording, or retire the task like lung_cancer? Keep it at 15 metastases, or retire it as too small? Ask Andrej to apply the nine fixes the panel agreed on?
+**Main points:** All settled: the PR's use-case wording signed, USE-1 amended on this case (issue 1, B); kept at 15 metastases, 5 per test fold (issue 2, A); the nine fixes the panel agreed on applied (issue 3, B); all 2026-11-11. The collection type stays `Experimental Results` (issue 10, A, 2026-11-17).
 
 **Record judgment:** valid provenance. Every flag, row and quote checks out against the study's annotation sheet, its arrays and the paper. The record's numbers hold apart from the details listed in issue 3.
 

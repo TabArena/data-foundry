@@ -80,13 +80,13 @@ CC (2026-10-21, Lennart): the benchmark's LightGBM default is checked on this da
 
 CC (2026-10-26, Lennart): verdict ship.
 
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `GROUP` (a partial order).
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): left unordered: `GROUP` (a partial order).
 
-CC (2026-11-01, Lennart): marks on the review board of PR #37: GROUP stays unordered (regional equivalents), noted in the definition.
+CC (2026-11-01, Lennart): decided on PR #37: GROUP stays unordered (regional equivalents), noted in the definition.
 
 CC (2026-11-12, Andrej): reviewed under the rule for cuts of growing scientific catalogues. The Norwegian well database does grow and all 118 wells are datable from the national register (entry, completion and release, 115 of them released exactly two years after completion), but wells reach the public one by one on that clock rather than in waves: on four expanding windows of the release date a forward split leaves 62% of test wells a training well in their own licence block and the nearest one 10 km away, against 62% and 9.5 km for a random draw of wells and 0% and 39 km for a quadrant-disjoint draw (random forest, mean penalty 0.698, 0.674 and 0.768). The grouped split by well stands (Review issue 9, open).
 
-CC (2026-11-12, Andrej): review page mark (issue 9, A): the grouped split by well stays. All 118 wells are dated in the national register (released two years after completion, one by one), and a split by release date held out no more than random wells of the same size (random forest mean penalty 0.698 against 0.674; quadrant-disjoint 0.768); the measurement is in the splits comment and a curation note.
+CC (2026-11-12, Andrej): Review issue 9, A: the grouped split by well stays. All 118 wells are dated in the national register (released two years after completion, one by one), and a split by release date held out no more than random wells of the same size (random forest mean penalty 0.698 against 0.674; quadrant-disjoint 0.768); the measurement is in the splits comment and a curation note.
 
 CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension` (Review issue 10): the national register dates all 118 wells (entry, completion and release; released 1969 to 2018). The facts describe the source and do not change with the split, which stays as it is.
 
@@ -106,7 +106,8 @@ Norwegian well database does grow as wells are drilled and released, so whether 
 well entered it was never asked. The AI recommends keeping the well-grouped split.
 
 **Main points:** Settled: the grouped split by well stays, with the release-date measurement in the notes (issue 9, A,
-2026-11-12). Settled 2026-11-12: collection facts `Samples: Over Time`, `Time: Dated` (issue 10).
+2026-11-12). Settled 2026-11-12: collection facts `Samples: Over Time`, `Time: Dated` (issue 10). Settled 2026-11-18: 3-fold CV
+over whole wells, `UnseenGroup` (issue 11, A).
 
 **Issues for Andrej:**
 
@@ -136,8 +137,7 @@ well entered it was never asked. The AI recommends keeping the well-grouped spli
      trained on every earlier well), against two keys on the same test wells: a family key `S`, training wells of
      the same size drawn from quadrants the test wells do not use, and a random key `R`, training wells of the same
      size drawn from the other wells. Every 5th depth sample, untuned LightGBM (200 trees) and a random forest (100
-     trees), the competition's mean penalty on hard labels and multiclass log loss, three draws for `S` and `R`;
-     Slurm job 1379231.
+     trees), the competition's mean penalty on hard labels and multiclass log loss, three draws for `S` and `R`.
 
      | Scheme | Mean penalty | Log loss | Accuracy | Test wells with a training well in their licence block | Median km to the nearest training well |
      |---|---|---|---|---|---|

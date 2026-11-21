@@ -53,17 +53,17 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid tiny-data task after 
 **Assessment (AI, 2026-10-27):** The open questions for the curator are in the record's Review (review of the Tiny Data datasets, written from the earlier findings, no review panel); the AI recommends shipping it. Priority 4: gap +, use case + (Dietterich et al. 1997 name the use), source +, shape -, risk +.
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `leffingwell_odor_musk` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the source's multiple-instance task scored per molecule, 13 musk molecules per test fold (tiny, not too small), and the methods spread, with a molecule-level model well ahead of all benchmark methods. Priority 3: gap 0, use case 1, source 1, shape 0, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the source's multiple-instance task scored per molecule, 13 musk molecules per test fold (tiny, not too small), and the methods spread, with a molecule-level model well ahead of all benchmark methods. Priority 3: gap 0, use case 1, source 1, shape 0, risk -0.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): the shapes are computed from each molecule's structure and the label is an expert's judgement of the molecule, with no date. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted (Review  2, B, through the cross-dataset item on routine `Timeless` issues): the shapes are computed from each molecule's structure and the label is an expert's judgement of the molecule, with no date. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
-CC (2026-11-09, Andrej): ship as defined (review page issue 1, A), scored per molecule; the declared split and metric checked and kept.
+CC (2026-11-09, Andrej): ship as defined (Review issue 1, A), scored per molecule; the declared split and metric checked and kept.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `molecule_name`, 20x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `molecule_name`, 20x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
-**Outcome:** added. The AI recommends shipping it as defined; nothing is open beyond the verdict (issue 1). Reviewed
+**Outcome:** added. The AI recommends shipping it as defined; the verdict (issue 1) was settled on 2026-11-09: ship. Reviewed
 without a review panel, from the gathered evidence: the record, Lennart's task-probe review of 2026-10-06 and the
 model runs on the shipped data. The data are UCI's Musk version 2 (Dietterich et al. 1997): 6,598 low-energy
 conformations (3D shapes) of 102 molecules, 39 judged musk by human experts, each described by 166 shape numbers.

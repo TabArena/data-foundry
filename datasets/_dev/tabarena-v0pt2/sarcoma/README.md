@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sarcoma
 container_format: 2
-checksum: v2:50ae18c65e7dc8a5f642d0ef129ad524773cc9ec99d9695bbeaf2aaaa1f7cbcc
+checksum: v2:a1cf57ad9d823428eb36d4221b0e72c66ddabbd4f468c5019686a036932547cd
 build: null
 build_stale: false
 data:
@@ -43,8 +43,7 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - meta_time_basis_missing
+  infos: []
   accepted: {}
 decisions:
 - 'Target: the type confirmed by TCGA''s expert pathology review'
@@ -57,7 +56,7 @@ decisions:
 
 Multiclass classification of `histological_type`, scored with `log_loss` on IID splits. 201 rows and 25,910 features. Source: Other (2018).
 
-Not built yet. The current definition gives checksum `v2:50ae18c65e7dc8a5f642d0ef129ad524773cc9ec99d9695bbeaf2aaaa1f7cbcc`.
+Not built yet. The current definition gives checksum `v2:a1cf57ad9d823428eb36d4221b0e72c66ddabbd4f468c5019686a036932547cd`.
 
 ## In brief
 
@@ -124,7 +123,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2018 |
 | domain | medical & healthcare |
 | license | TCGA open-access data (NCI GDC open tier); the benchmark page's footer reads 'All rights reserved'; the reviewed histology is a supplement of the TCGA publication on the GDC |
-| data_tags | IID |
+| data_tags | IID, Timeless |
 | reference | rappoport2018multi,tcga2017sarcoma |
 | rows x columns | 201 x 25,911 |
 | task.target | histological_type |
@@ -206,6 +205,8 @@ We start with the sarcoma files of the multi-omic cancer benchmark of Rappoport 
 - Split: IID over patients, one row each, since a lab types the tumours of new patients (splits comment; kept over a split by site, Lennart, 2026-10-22). One tissue source site holds 101 of the 201 rows and 40 of the 50 dedifferentiated liposarcomas, and holding out whole sites raises a random forest's log loss from 0.46 to 0.58 (four classes, mean of three seeds; 0.64 to 0.77 with MFS and UPS apart): a known optimism for a new lab.
 - Split by entry into TCGA, checked and not taken (2026-11-12): the programme is closed (the GDC lists the cohort's 261 cases, none added after the study that supplies the label), so no later wave exists to hold out. The TCGA batch (aliquot plate, 127 codes over the cohort) is recoverable only from the GDC's full barcodes, not from our rows, whose barcodes are trimmed to the sample, and a shipment is the tissue source site under another name. The one date per case, the year of diagnosis (169 of 261 cases, 1996 to 2013, 117 of them 2009 or later), dates the patient, not the case's entry.
 - Note: the generated-data probe flags rule leaves of dedifferentiated liposarcoma: `mRNA_MDM2.4193` alone separates the class (ROC AUC 1.000), since MDM2 sits on the 12q15 amplicon the review required. Unlike coad's copy-number block, the defining measurement is not shipped, a lab measures MDM2 at typing anyway, and the task is no rule (best single-feature skill 0.24 over 30 splits against 0.75 for the best model, four classes; 0.05 with five), so the column stays (SEL-5).
+- Time basis: Timeless: the histological type of a profiled primary tumour does not change once it is assigned.
+  It cannot test profiles from other platforms or laboratories.
 
 ## Splits
 
@@ -330,9 +331,8 @@ The `rs` probes of the methylation array measure the patient's germline genotype
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **info** `meta_time_basis_missing`: The split is not temporal and the definition does not say why. (hint: Add the use-case prototype (Timeless, Snapshot, DelayedTarget, StationaryRelation) with a `Time basis:` line in `curation_comments`, a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`) with its line, or the line alone with the reason, SPLIT-32.)
 
 ## Data checks
 

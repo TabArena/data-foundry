@@ -95,7 +95,7 @@ CC (2026-11-05, Lennart): `grouping.context="all_rows"` (Review issue 5, B, conf
 
 CC (2026-11-05, Lennart): `Outdated` stays as a note on a kept borderline dataset, now rule SEL-18 (issue 7, D); a Tensions row in principles.md says a measured target scored within groups is no ranking task (issue 8, B).
 
-CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
 CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` (Review issue 13): the CASP rows are dated by their round (CASP5 to CASP10, 2002 to 2012) and the classic decoy sets by their publication only. The facts describe the source and do not change with the split, which stays as it is.
 
@@ -109,7 +109,7 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case aims at groups the data does not hold, which the held-out groups of the split stand for; `UnseenGroup` (SPLIT-32, the question before the prototypes) names that, where `Timeless` named the target and "no tag" named nothing.
 - The split does not change; the definition's `Time basis:` line keeps the measured evidence.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `protein_id`, 3x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `protein_id`, 3x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the split by protein stands as SPLIT-37 now reads it (cross-dataset decision on recording changes, full-information split check, A): CASP10's descriptor convention is a change in how features are recorded, a fact for the notes, not a reason for windows by CASP round; step 4(a) amended so its example no longer contradicts the decision of 2026-11-12.
 
@@ -134,7 +134,8 @@ against PSIPRED, as the notes cite from Sections 2.2-2.3; EV-7). No action propo
 protein's other candidates (issue 5) and fix the metric's left-out proteins in the library (issue 6); then the
 `Outdated` consistency check (7), a SEL-9 Tensions row (8) and whether `huesken_sirna_efficacy` follows issue 5 (9).
 Settled 2026-11-12: the split stays by protein (10 A, on Andrej's issue 11 note; 11 moot), twenty repeats of it,
-20 x 3 (12 B), and collection facts `Samples: Over Time`, `Time: Dated` (13). Nothing open.
+20 x 3 (12 B), and collection facts `Samples: Over Time`, `Time: Dated` (13). Nothing open. Time basis `UnseenGroup`
+since 2026-11-13 (CC line).
 
 **Issues for Lennart:**
 
@@ -386,7 +387,7 @@ Settled 2026-11-12: the split stays by protein (10 A, on Andrej's issue 11 note;
       G is a grouped 3-fold over all rows, scored on each round; over all rows it reproduces the review's 0.322 and
       0.483. Features: "raw" are the six shipped descriptors; "ctx" adds each descriptor's z-score and rank within its
       protein, SL over the protein's largest SL and the protein's size, as `context="all_rows"` allows. Untuned
-      LightGBM and random forest, mean per-protein Pearson (the declared metric), Slurm job 1377541:
+      LightGBM and random forest, mean per-protein Pearson (the declared metric):
 
       | Test round | Proteins / rows | T trains on (share) | Features | T: LightGBM / RF | S: LightGBM / RF | D: LightGBM / RF | G: LightGBM / RF |
       |---|---|---|---|---|---|---|---|

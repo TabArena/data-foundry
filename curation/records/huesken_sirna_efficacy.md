@@ -86,7 +86,7 @@ CC (2026-11-04, Lennart): sequence encoding: "go ahead with (b)": the preprocess
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (mediator; the wording fixes are applied in the definition: the 97%/80% figure restated as 30 of 30 by RMSE and 29 of 30 by the metric, the `Revisit later` text naming its reopening test, notes on redundancy, scope and the gene offset); disputed: whether the unrun CNN gates shipping (SEL-12), the NaN on a constant prediction (MET-2), dropping or noting the redundant guide columns (CLEAN-8); for the curator: issues 4, 5, 6 and 8 (the rule rows moved to the cross-dataset REVIEW.md). Priority 4: gap + (biology & life sciences is thin among the accepted definitions), use case - (fit approximate, reporter assay), source + (Nature Biotechnology supplement as first publication), shape + (2,431 rows, grouped), risk - none (SEL-12 open but it drops only on a positive finding; no leak, no recommendation against shipping). This supersedes the priority 3 and the "direct" fit of the 2026-10-26 and 2026-10-28 lines.
 
-CC (2026-11-04, Lennart): the declared metric is checked and stays as declared (`mean_group_pearsonr` per target gene, the Exception to MET-5 above; second review page).
+CC (2026-11-04, Lennart): the declared metric is checked and stays as declared (`mean_group_pearsonr` per target gene, the Exception to MET-5 above; second review).
 
 CC (2026-11-05, Lennart): kept as a tabular task with the reworded `Revisit later` tag; the sequence-model run stays optional (Review issue 4, A; SEL-12).
 
@@ -100,24 +100,24 @@ CC (2026-11-05, Lennart): reopened with `grouping.context="all_rows"` like prote
 
 CC (2026-11-05, Lennart): `grouping.context="all_rows"` now, panel after (Review issue 9, B). Per-gene context adds nothing on the 30 splits (LightGBM 0.6708 rows alone against 0.6699 with context, paired SE 0.0025).
 
-CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
 CC (2026-11-17, Andrej): time basis `UnseenGroup` in place of `Timeless` (Review issue 11, B): the use case is a gene without previous efficacy measurements, so the split holds out whole target genes. The split is unchanged (grouped on `target_gene`).
 
-CC (2026-11-17, Andrej): the declared split (grouped on `target_gene`, 10x3 folds, `UnseenGroup`) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (grouped on `target_gene`, 10x3 folds, `UnseenGroup`) is checked in the blind split walk.
 
 ## Review
 
-**Outcome:** added. Huesken et al. (2005) siRNA knockdown efficacy, rebuilt from the corrected original supplement: 2,431 guides, 266 features, 30 target genes held out whole, scored by the per-gene correlation. The second-pass review panel (full tier, after your PR #33 review of 2026-11-04) recommends shipping after wording changes, applied in `dataset.py` (the README rebuild is pending your ask); no leak, no refuted claim on the data, no exploit beyond noise. What stays open is whether the unrun sequence-model test gates the shipment (SEL-12), and three small choices (the optional rule rows are an item across datasets).
+**Outcome:** added. Huesken et al. (2005) siRNA knockdown efficacy, rebuilt from the corrected original supplement: 2,431 guides, 266 features, 30 target genes held out whole, scored by the per-gene correlation. The second-pass review panel (full tier, after your PR #33 review of 2026-11-04) recommends shipping after wording changes, applied in `dataset.py` (the README rebuild is pending your ask); no leak, no refuted claim on the data, no exploit beyond noise. Whether the unrun sequence-model test gates the shipment (SEL-12) and three small choices were settled on 2026-11-05 (issues 4, 5, 6 and 8); the split count (issue 10) is open.
 
-**Main points:** Is a small CNN on the 30 folds a gate for shipping, or does the `Revisit later` tag with a named reopening test suffice (issue 4)? Make the shared metric score a constant prediction (issue 6)? Drop the 19 redundant guide columns or only note them (issue 5)? Add a companion view (issue 8)? Open: the split count, 20 x 3 in genes instead of 10 x 3 (issue 10).
+**Main points:** Settled 2026-11-05: kept as a tabular task with the `Revisit later` tag and a named reopening test, no CNN gate (issue 4, A); the shared metric scores a constant prediction 0 (issue 6, B); the 19 redundant guide columns dropped (issue 5, B); a companion view named (issue 8, B); `grouping.context="all_rows"` (issue 9, B). Time basis `UnseenGroup` (issue 11, B, 2026-11-17). Open: the split count, 20 x 3 in genes instead of 10 x 3 (issue 10).
 
 **Record judgment:** valid, keep (`Yes`).
 Validity: SEL-12 open (no sequence model run, no finding of "clearly better"); USE-1, USE-3, USE-5 hold with an approximate fit (USE-4, USE-8); LEAK-10 holds (266 features from guide and insert, best exploit +0.0015); SPLIT-4, SPLIT-5 hold (0 shared genes in 30 splits); PROV-13 holds (both PDF hashes, control scale 0.900/0.354, 2,431 rows).
 Value: real signal (LightGBM +0.357 over a constant, 30 of 30 splits); MET-1 holds with the exception to MET-5 kept; MET-2 holds on 30 folds (random -0.006, oracle 1.000) with a constant-prediction edge case (issue 6).
 Quality: CLEAN-8 hidden duplication (issue 5); descriptors kept against the CLEAN-24/26 direction for a stated reason (issue 4).
 Weighed: signal +, use case +, provenance +, size (2,431 rows, 30 genes) -, sequence modality open.
-Left for you: issues 4, 6, 5, 8.
+Left for you: issue 10.
 
 **Issues for Lennart:**
 
@@ -649,7 +649,7 @@ So: precedent says keep, and decide the revisit by that one experiment. A drop w
 
 **Status: consistent for now. Two weak points:**
 
-- **Keeping the 24 descriptors goes against the CLEAN-24/CLEAN-26 direction, with a reason stated.** Lennart's own recent amendments ship the raw entity and leave derived encodings to the benchmark: SMILES on 2026-11-01, spectra on 2026-11-02. The AI recommended (c), dropping the descriptors. Lennart's reason for not doing so is on the review page: no general `Sequence` kind exists, and "otherwise we can do the preprocessing here and add a tag". Neither rule covers sequences, so this is not a formal exception.
+- **Keeping the 24 descriptors goes against the CLEAN-24/CLEAN-26 direction, with a reason stated.** Lennart's own recent amendments ship the raw entity and leave derived encodings to the benchmark: SMILES on 2026-11-01, spectra on 2026-11-02. The AI recommended (c), dropping the descriptors. Lennart's reason for not doing so (2026-11-04): no general `Sequence` kind exists, and "otherwise we can do the preprocessing here and add a tag". Neither rule covers sequences, so this is not a formal exception.
 - **The deferral's trigger has already happened.** The definition says a `Sequence` kind will be considered "when a second sequence dataset arrives". `splice` is already a second one in the working copy, and the 2026-11-04 Assessment line says so itself. The spectra kind was declared when it covered two datasets (`pancreatic_cancer_mouse_detection`, `micro_mass`, 2026-11-02).
 - **The tag does not name what would reopen it.** The only other `Revisit later` record, `fraud_detection_in_electricity_and_gas_consumption` (2026-10-26), does: "dated inspections … would reopen it". Huesken's tag says neither what evidence would decide a drop nor what would trigger the kind.
 

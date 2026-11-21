@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: protein_model_quality_rf_pcp
 container_format: 2
-checksum: v2:41b2827b4bf69011e97974b1264253f884ecbf4528fc99e4ae4450568e76b3f0
+checksum: v2:c17d9e976dc3ee660c9e08b6fdbb744921c945626d6f2e0cf33a166a3e8dc6fc
 build:
   uuid: 01a18ba2-013a-7001-a61c-686e78b112d7
   checksum: v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a
@@ -47,7 +47,7 @@ task:
       min: 148
       max: 149
 splits:
-  n_repeats: 3
+  n_repeats: 20
   n_folds: 3
   random_state: 4267
   time_horizon: null
@@ -55,18 +55,17 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 58011
-    max: 69448
+    min: 50557
+    max: 71679
   n_test:
-    min: 24635
-    max: 36072
+    min: 22404
+    max: 43526
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos:
   - task_metric_input_is_model_input
-  - meta_time_basis_missing
   accepted: {}
 decisions: []
 ---
@@ -77,7 +76,7 @@ decisions: []
 
 Regression of `GDT`, scored with `mean_group_pearsonr` on grouped splits by `protein_id`. 94,083 rows and 6 features. Source: Other (2014).
 
-Built as `01a18ba2-013a-7001-a61c-686e78b112d7` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:41b2827b4bf69011e97974b1264253f884ecbf4528fc99e4ae4450568e76b3f0`, so the build is stale. See [Build](#build).
+Built as `01a18ba2-013a-7001-a61c-686e78b112d7` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:c17d9e976dc3ee660c9e08b6fdbb744921c945626d6f2e0cf33a166a3e8dc6fc`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -138,7 +137,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2014 |
 | domain | biology & life sciences |
 | license | No dataset licence stated in the author archive or inspected release listing |
-| data_tags | Non-IID, Grouped |
+| data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | rana2015rfpcp |
 | rows x columns | 94,083 x 8 |
 | task.target | GDT |
@@ -215,8 +214,8 @@ The first 5 of 94,083 rows of the final frame (random rows: the frame is shuffle
   IDs, casp5_T0156_1nxj.nNh1.pdb and ROSETTA_1aa2_1aa2h2.pdb, may be reference-like but their identities
   are unverified. Retain CASP10_T0676_HOMER_TS2.pdb: zero matched RMSD and low global scores can reflect
   limited alignment coverage; no label repair is supported by the source evidence.
-- CC (2026-11-05, Lennart): `grouping.context="all_rows"` (issue 5, B; SPLIT-23, USE-6; as sat11_hand_algo_runtime): the researcher holds all of a target's candidates when ranking them, so a model may compare a candidate with the other candidates of its protein. A model that does so (each descriptor's z-score and rank within its protein, the group size) scored 0.517 against 0.355 on the frame with the relaxed natives and 0.483 against 0.322 without them; that use is legitimate now, not an exploit. huesken_sirna_efficacy is reopened to follow (issue 9, A).
-- CC (2026-11-05, Lennart): the rosetta62 set's 1,011 relaxed natives leave by identity (issue 4, B; USE-7 via
+- CC (2026-11-05, Lennart): `grouping.context="all_rows"` (SPLIT-23, USE-6; as sat11_hand_algo_runtime): the researcher holds all of a target's candidates when ranking them, so a model may compare a candidate with the other candidates of its protein. A model that does so (each descriptor's z-score and rank within its protein, the group size) scored 0.517 against 0.355 on the frame with the relaxed natives and 0.483 against 0.322 without them; that use is legitimate now, not an exploit. huesken_sirna_efficacy is reopened to follow.
+- CC (2026-11-05, Lennart): the rosetta62 set's 1,011 relaxed natives leave by identity (USE-7 via
   CLEAN-11), like the 4,893 named natives. Their IDs (`rosetta62_<pdb>_rn<pdb>.out.N.pdb`, matched on
   `_rn<pdb>.out.`) sit in the folder `relaxed_natives/` of the set's own archive (Zenodo 48780): the
   experimental structure energy-minimised, which exists only once the reference is known. The pattern matches
@@ -271,8 +270,8 @@ The first 5 of 94,083 rows of the final frame (random rows: the frame is shuffle
 - `Energy` stays as supplied (Lennart, 2026-11-04): the extreme positive values (up to 7e11) are ProSEE's
   output for unminimized models whose atoms overlap, continuous with the rest and carrying signal (mean GDT_TS
   0.339 against 0.398), so unusual rather than impossible (CLEAN-11). `SS` has no bound the source gives.
-- CC (2026-11-12, Andrej): the split stays by protein ("I go back to by split by protein", issue 11, which
-  answers issue 10; SPLIT-37): a split by CASP round was weighed and is not built. Windows by round score
+- CC (2026-11-12, Andrej): the split stays by protein ("I go back to by split by protein"; SPLIT-37): a split
+  by CASP round was weighed and is not built. Windows by round score
   within 0.03 of a same-size protein split on CASP8 and CASP9 and 0.03 to 0.07 lower on CASP7; CASP10 scores
   about 0 under any split that trains on the earlier rounds, a change of descriptor convention rather than
   time (splits_comment).
@@ -280,6 +279,11 @@ The first 5 of 94,083 rows of the final frame (random rows: the frame is shuffle
   standard is the predictor's own confidence (pLDDT). Kept as a small grouped biology task, with no new features.
 - First release is the August 2014 source archive; the paper appeared online in December 2014 and in 2015.
   The year denotes the first release, not the paper's issue year. No source metadata is overwritten silently.
+- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case ranks the candidates of a
+  protein whose structure is not known, so the split holds out whole proteins. A candidate's GDT against its
+  reference is fixed once both exist; windows by CASP round score within 0.03 of the protein split on CASP8 and
+  CASP9. It cannot test candidates from later prediction methods (the descriptors come from 2002-2012 server
+  models).
 
 ## Splits
 
@@ -294,7 +298,10 @@ natives; 0.340, 0.483, 0.016 and 0.03 with them), so the rounds show no drift, a
 CASP10's low score comes from its other descriptor convention (the SL note), not from time. The grouped
 split is kept (Andrej, 2026-11-12: "I go back to by split by protein").
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 58,011 to 69,448 rows, test 24,635 to 36,072 rows.
+20 repeat(s) x 3 fold(s) with seed 4267; train 50,557 to 71,679 rows, test 22,404 to 43,526 rows.
+
+<details>
+<summary>Show all 60 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
@@ -307,6 +314,59 @@ split is kept (Andrej, 2026-11-12: "I go back to by split by protein").
 | 2 | 0 | 58474 | 35609 |
 | 2 | 1 | 69448 | 24635 |
 | 2 | 2 | 60244 | 33839 |
+| 3 | 0 | 62965 | 31118 |
+| 3 | 1 | 56635 | 37448 |
+| 3 | 2 | 68566 | 25517 |
+| 4 | 0 | 71679 | 22404 |
+| 4 | 1 | 54090 | 39993 |
+| 4 | 2 | 62397 | 31686 |
+| 5 | 0 | 61405 | 32678 |
+| 5 | 1 | 65073 | 29010 |
+| 5 | 2 | 61688 | 32395 |
+| 6 | 0 | 63826 | 30257 |
+| 6 | 1 | 55487 | 38596 |
+| 6 | 2 | 68853 | 25230 |
+| 7 | 0 | 62916 | 31167 |
+| 7 | 1 | 63307 | 30776 |
+| 7 | 2 | 61943 | 32140 |
+| 8 | 0 | 60109 | 33974 |
+| 8 | 1 | 65076 | 29007 |
+| 8 | 2 | 62981 | 31102 |
+| 9 | 0 | 60512 | 33571 |
+| 9 | 1 | 65565 | 28518 |
+| 9 | 2 | 62089 | 31994 |
+| 10 | 0 | 68677 | 25406 |
+| 10 | 1 | 68932 | 25151 |
+| 10 | 2 | 50557 | 43526 |
+| 11 | 0 | 68892 | 25191 |
+| 11 | 1 | 56132 | 37951 |
+| 11 | 2 | 63142 | 30941 |
+| 12 | 0 | 62041 | 32042 |
+| 12 | 1 | 59134 | 34949 |
+| 12 | 2 | 66991 | 27092 |
+| 13 | 0 | 60113 | 33970 |
+| 13 | 1 | 58598 | 35485 |
+| 13 | 2 | 69455 | 24628 |
+| 14 | 0 | 57859 | 36224 |
+| 14 | 1 | 64110 | 29973 |
+| 14 | 2 | 66197 | 27886 |
+| 15 | 0 | 62128 | 31955 |
+| 15 | 1 | 63174 | 30909 |
+| 15 | 2 | 62864 | 31219 |
+| 16 | 0 | 64252 | 29831 |
+| 16 | 1 | 59177 | 34906 |
+| 16 | 2 | 64737 | 29346 |
+| 17 | 0 | 66501 | 27582 |
+| 17 | 1 | 55409 | 38674 |
+| 17 | 2 | 66256 | 27827 |
+| 18 | 0 | 58059 | 36024 |
+| 18 | 1 | 64540 | 29543 |
+| 18 | 2 | 65567 | 28516 |
+| 19 | 0 | 69000 | 25083 |
+| 19 | 1 | 58290 | 35793 |
+| 19 | 2 | 60876 | 33207 |
+
+</details>
 
 ## Group structure
 
@@ -334,10 +394,9 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
 - **info** `task_metric_input_is_model_input`: The metric reads the task's group or time column(s) ['protein_id'] where they are; they are not scoring columns.
-- **info** `meta_time_basis_missing`: The split is not temporal and the definition does not say why. (hint: Add the use-case prototype (Timeless, Snapshot, DelayedTarget, StationaryRelation) with a `Time basis:` line in `curation_comments`, a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`) with its line, or the line alone with the reason, SPLIT-32.)
 
 ## Data checks
 
@@ -393,4 +452,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | ea35638cb7c9dc88ff6b7f6f6316594207a68393 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:41b2827b4bf69011e97974b1264253f884ecbf4528fc99e4ae4450568e76b3f0` |
+| stale | yes: the definition now gives checksum `v2:c17d9e976dc3ee660c9e08b6fdbb744921c945626d6f2e0cf33a166a3e8dc6fc` |

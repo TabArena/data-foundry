@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_bioconcentration
 container_format: 2
-checksum: v2:eb990fde35886e98e272de6fd2f7b6eb3e6082a8cc501e9a057577e78a603661
+checksum: v2:3362a00abc323912f35f5e4e85117c369bdfc7046c0f0c1013b2aceb1601396c
 build: null
 build_stale: false
 data:
@@ -68,7 +68,7 @@ decisions:
 
 Multiclass classification of `bioconcentration_mechanism`, scored with `log_loss` on grouped splits by `scaffold`. 776 rows and 2 features. Source: UCI (2016).
 
-Not built yet. The current definition gives checksum `v2:eb990fde35886e98e272de6fd2f7b6eb3e6082a8cc501e9a057577e78a603661`.
+Not built yet. The current definition gives checksum `v2:3362a00abc323912f35f5e4e85117c369bdfc7046c0f0c1013b2aceb1601396c`.
 
 ## In brief
 
@@ -136,7 +136,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2016 |
 | domain | chemistry & material science |
 | license | CC BY 4.0 |
-| data_tags | Non-IID, Grouped, Timeless |
+| data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | grisoni2016investigating,grisoni2015qsar |
 | rows x columns | 776 x 4 |
 | task.target | bioconcentration_mechanism |
@@ -219,7 +219,15 @@ We start with Grisoni_et_al_2016_EnvInt88.csv from UCI 510: 779 organic chemical
 - Repaired rows, 6: three pairs carry each other's SMILES and descriptors (benzene and cyclohexane, naphthalene and tetralin, chlorobenzene and chlorocyclohexane; CAS numbers looked up in Wikidata and PubChem). The BCF and the class belong to the CAS number, as the 2015 table lists all six with their right SMILES and the file's logBCF, and the descriptors follow the SMILES, so we swap the SMILES and the 9 descriptors back within each pair.
 - Dropped rows, 3: triticonazole and two dioxins carry the structure of another chemical and have no partner row to repair them from.
 - Split (Lennart, CC 2026-10-26, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold (the ring skeleton) of the repaired SMILES (`scaffold_groups`). The 42 congener series (260 chemicals, such as 64 biphenyls and 24 naphthalenes) and the other shared skeletons stay on one side; chemicals without a ring (104) and those whose skeleton is the bare benzene ring (262, 34%: more than a tenth of the set and no series) are groups of their own. A random split put relatives on both sides: a random forest scored macro ROC AUC 0.779 on test chemicals whose scaffold was in training and 0.655 on the others; under the groups 6.4% of the test chemicals have a training analog at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits), against 12.6% at random. The source split at random; qsar_oral_toxicity and drug_induced_autoimmunity_prediction group on the scaffold too.
-- Time basis: Timeless (2026-11-12, Andrej): a chemical's bioconcentration in fish is a fixed property of the chemical, and the assessor judges an untested chemical before a fish test. Dated by CAS through NITE's workbook of the Japanese CSCL carp tests (`000064113.xlsx`, with the test year): 347 of 776 chemicals (44.7%), 1975 to 2007, whose BCF agrees with the shipped logBCF (correlation 0.965). Three expanding windows by test year on the dated chemicals hold out no more than the scaffold groups on the same test chemicals (random forest log loss 0.798 forward, 0.768 scaffold-disjoint, 0.751 random; close training analogs 3.8% forward against 4.6% scaffold-disjoint), so the scaffold split stays and no row is dropped. Not tested: the arrival order of the 429 undated chemicals, which hold twice the share of class 2 (10.5% against 5.5%).
+- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before, 2026-11-12, Andrej): the use case predicts for
+  chemicals not tested yet, which whole scaffolds held out stand for. A chemical's bioconcentration in fish is a
+  fixed property of the chemical, and the assessor judges an untested chemical before a fish test. Dated by CAS
+  through NITE's workbook of the Japanese CSCL carp tests (`000064113.xlsx`, with the test year): 347 of 776
+  chemicals (44.7%), 1975 to 2007, whose BCF agrees with the shipped logBCF (correlation 0.965). Three expanding
+  windows by test year on the dated chemicals hold out no more than the scaffold groups on the same test
+  chemicals (random forest log loss 0.798 forward, 0.768 scaffold-disjoint, 0.751 random; close training analogs
+  3.8% forward against 4.6% scaffold-disjoint), so the scaffold split stays and no row is dropped. Not tested:
+  the arrival order of the 429 undated chemicals, which hold twice the share of class 2 (10.5% against 5.5%).
 - The authors' 9 Dragon descriptors are dropped (Lennart, CC 2026-10-26, LEAK-31): the authors selected them on their 584 training chemicals, which sit in our test folds too. They come from Dragon 6 (commercial software), and the pool they were selected from is not published. Removing them costs nothing measurable: a random forest scores macro ROC AUC 0.760 with them and 0.759 without on 30 of our splits (paired -0.002, SE 0.001); MLOGP among them was a calculated logKOW, which the measured logKOW and RDKit's MolLogP now carry.
 
 ## Splits
@@ -341,7 +349,7 @@ The 9 descriptors do not tell positional isomers apart; in the recommended encod
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks

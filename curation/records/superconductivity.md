@@ -25,6 +25,7 @@ year: '2018'
 collection_period: Unknown
 required_split:
 - Grouped (NON-IID)
+problem_type: Regression
 source_links:
 - https://www.openml.org/search?type=data&id=44964
 - https://doi.org/10.24432/C53P47
@@ -59,7 +60,7 @@ CC (2026-10-27, Lennart): fit approximate (was direct): a screen meets mostly ma
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `supercon_mdr_2024` (TBD -> Yes, priority 2), `systematically_verified_thermoelectric_zt` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: formula-only features with compositions held out whole and the source's RMSE; selection (only superconductors) already marked; methods spread. Priority 3: gap 1, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: formula-only features with compositions held out whole and the source's RMSE; selection (only superconductors) already marked; methods spread. Priority 3: gap 1, use case 0, source 1, shape 1, risk -1.
 
 **Assessment (AI, 2026-11-08):** one vote per unit (the scan of 2026-11-08 after boreal_postfire_lichen_biomass's issue 7): the per-row RMSE counts a composition as often as SuperCon lists it, 1 to 110 times (YBa2Cu3O7 110); the 2,422 compositions with two or more entries hold 40% of the 21,263 rows, and all 81 inputs are equal within 99.8% of them, so a model predicts per composition. Weighting each entry by 1 over its composition's entries (each composition counts once) ranks 8 untuned models at Kendall tau 0.98 per split (lowest 0.93) and 0.93 for the ranking by the mean over the 9 shipped splits, the same best model on 9 of 9. Open for Lennart as issue 1 of the record's Review; recommended: each composition counts once (B), RMSE already takes the weight.
 
@@ -71,7 +72,7 @@ CC (2026-11-11, Andrej): ship as defined (issue 1): 21,263 entries, compositions
 
 **Assessment (AI, 2026-11-11):** dated through the NIMS SuperCon datasheet Ver.240322 (CC BY 4.0, doi:10.48505/nims.4487; reference year per entry, 1913-2023): 18,057 of the 21,263 rows (85%) match an entry by formula and Tc, 1,432 more by formula only, 1,774 (8%, 97% cuprates with variable oxygen) stay undated. The catalogue drifts: cuprates make 4,885 of 5,431 dated rows in 1987-1995, iron-based 1,574 of 3,018 after 2008; median Tc 4.4 K to 1986, 58 K 1987-95, 10.5 K 2009-19. Trained on compositions first reported up to 2008, LightGBM and extra trees score RMSE 13.2 K (R^2 0.55) on the later ones against 8.5 K (0.81) with a random training set of the same size from all eras, on the same test rows (after 2001: 14.6 K against 8.5 K). `Timeless` and `StationaryRelation` do not fit; options in Review issue 2.
 
-CC (2026-11-11, Andrej): temporal split by the first report year (review issue 2, option a), in place of the grouped split on the composition.
+CC (2026-11-11, Andrej): temporal split by the first report year (Review issue 2, a), in place of the grouped split on the composition; replaced on 2026-11-12 by whole compositions held out again (CC below), which keeps the dating and the measurements here.
 
 - Dated through the parent database's own export, the MDR SuperCon Datasheet Ver.240322 (NIMS, doi:10.48505/nims.4487, CC BY 4.0, which asks to be cited; the definition's download notes do so), which gives every entry the publication year of its reference. A datasheet entry belongs to a composition when it holds the same elements and its element shares lie within 0.003 (L1) of the composition's, a variable oxygen read as its number (`O7-z` as 7) and a second time as a single oxygen, because UCI writes some cuprates as `...Cu3O`. `first_year` is the earliest year of a composition's matched entries. This dates 21,163 of the 21,263 rows (99.5%) and 15,065 of the 15,164 compositions, against 92% for the earlier match on the formula as written.
 - Checked: 99.9% of the dated rows have a matched entry whose critical temperature is within 0.01 K of their own, so the match finds the row's own entry, against 0.9% with the compositions shuffled; using only entries above 0 K, or only the entries without the oxygen variant, moves the year of 2.7% and 0.9% of the rows.
@@ -84,7 +85,7 @@ CC (2026-11-11, Andrej): temporal split by the first report year (review issue 2
   | 2002-2008 | 16,488 | 78% | 2,166 | 1,605 |
   | 1996-2001 | 13,180 | 62% | 3,308 | 2,740 |
 
-- Why the split moved: untuned LightGBM, the RMSE of a random half of each window's compositions over 3 seeds (Slurm job 1377613), trained on the earlier years against as many rows from all eras with no test composition (the old split): 18.2 against 14.2 K (1996-2001), 14.9 against 10.0 K (2002-2008), 12.6 against 8.6 K (2009-2019). The old split's ease came from other dopings of the test composition's element set (79-86% of the test compositions had one in training; by year 23-51%), and holding the iron-based family out of every year is harder still (20.1 K). `Timeless` and `StationaryRelation` are ruled out by the drift (median critical temperature 4.4 K up to 1986, 60 K in 1987-1995, 10.9 K in 2009-2019).
+- Why the split moved: untuned LightGBM, the RMSE of a random half of each window's compositions over 3 seeds, trained on the earlier years against as many rows from all eras with no test composition (the old split): 18.2 against 14.2 K (1996-2001), 14.9 against 10.0 K (2002-2008), 12.6 against 8.6 K (2009-2019). The old split's ease came from other dopings of the test composition's element set (79-86% of the test compositions had one in training; by year 23-51%), and holding the iron-based family out of every year is harder still (20.1 K). `Timeless` and `StationaryRelation` are ruled out by the drift (median critical temperature 4.4 K up to 1986, 60 K in 1987-1995, 10.9 K in 2009-2019).
 - Checked on the built splits: no test row shares its 81 features with a training row, which was the composition split's reason for existing.
 - `first_year` is the split's time column and therefore one of the model's inputs, as the joined year is in qsar_tid_11 and apistox. Inside a test window every value lies after the newest training year, so it tells a model only that the row is new; the 81 features stay formula-only.
 - Collection facts corrected: `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension`, `required_split` Temporal (NON-IID), tag `Non-IID (Temporal)`.
@@ -119,8 +120,10 @@ probable label errors among the worst-predicted rows (Cu1Cr1O2 at 132 K; Bi2Sr2C
 copper, at 109 K); kept as the release has them. Weighed: a widely used materials task with a documented source and a
 split that matches screening (+), only superconductors and some label noise (-).
 
-**Main points:** Settled 2026-11-12: whole compositions are held out again, on the source's scope (issue 5), so the
-time-column question (issue 3) is moot.
+**Main points:** All settled: ship as defined (issue 1, 2026-11-11); each composition counts once in the RMSE (issue
+4, 2026-11-08); whole compositions are held out again, on the source's scope (issue 5, 2026-11-12, replacing the split
+by first report year of issue 2), so the time-column question (issue 3) is moot; the composition split stays over the
+windows (issues 6 and 7, 2026-11-18). Time basis `UnseenGroup` since 2026-11-13.
 
 **Record judgment:** valid. The composition key, the decision not to group by element set and not to average repeated
 entries (Stanev et al. 2018 do) are the curator's (2026-10-06); the selection gap is his (2026-10-27). The metric is the
@@ -284,7 +287,7 @@ added yet. The record has no `problem_type` or `domain`; the definition's values
      half is open to the splits that may train on the same era. T trains on everything first reported before the
      window. S trains on as many rows from all other years, with no test composition (the shipped kind of split). R
      does the same with no test element set. F holds out the iron-based family of any year. All are scored with the
-     definition's composition-weighted RMSE, untuned LightGBM (random forest within 0.6 K), Slurm job 1377613:
+     definition's composition-weighted RMSE, untuned LightGBM (random forest within 0.6 K):
 
      | Test window | T: by year | S: by composition | R: by element set | Same element set in training: T / S | F: iron-based family out |
      |---|---|---|---|---|---|

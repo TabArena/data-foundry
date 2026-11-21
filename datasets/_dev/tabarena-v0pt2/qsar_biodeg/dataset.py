@@ -121,7 +121,7 @@ class QsarBiodeg(AbstractCuratedDataset):
           are groups of their own. A screener judges an untested chemical, often of a series not yet measured, so whole
           series are held out; qsar_bioconcentration, qsar_oral_toxicity, qsar_fish_toxicity, qsar_aquatic_toxicity and
           qsar_tid_11 group the same way. The source split at random.
-        - Time basis: UnseenGroup (Andrej, 2026-11-13; no prototype tag before, 2026-11-12, review issue 4). The source
+        - Time basis: UnseenGroup (Andrej, 2026-11-13; no prototype tag before, 2026-11-12). The source
           builds a regulatory screen: Mansouri et al. (2013) open with REACH, which "requires information on ready
           biodegradation" and encourages QSAR predictions in place of tests, and they validate on 670 chemicals from
           other sources (the external set above). Its question is a chemical from outside the collection, so the
@@ -131,7 +131,7 @@ class QsarBiodeg(AbstractCuratedDataset):
           chemicals by CAS-RN and J-CHECK's bulletin year 44 more (1,050 of 1,055, 1971 to 2008); the test moved from 14
           days (80% of the tests before 1980) to 28 days (88% from 2000 on), and the share readily biodegradable swings
           by decade (40%, 28%, 45%, 27%), a fact about the labels. A forward split by test year leaves 10.3% of the test
-          chemicals a close training analog, as the scaffold split does, against 11.8% at random (Slurm job 1378095).
+          chemicals a close training analog, as the scaffold split does, against 11.8% at random.
           The split cannot test how labels from the older 14-day tests differ from today's 28-day ones.
     """
 

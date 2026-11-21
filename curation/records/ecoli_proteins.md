@@ -17,7 +17,7 @@ collections:
 - TabArena Reject
 original_source: UCI
 year: '1996'
-collection_period: Unknown
+collection_period: 1986-1995
 domain: biology & life sciences
 required_split:
 - Random (IID)
@@ -63,7 +63,8 @@ https://doi.org/10.24432/C5388M): proteins annotated in SWISS-PROT up to 1996, f
 and the cell location; the five locations with 10 or more proteins are kept (327 proteins); random split, log loss
 (fallback). Its SWISS-PROT entry names date the proteins (CC of 2026-11-16), so the split is read again (issue 1).
 
-**Main points:** Open: which key splits the proteins now that their entries are dated (issue 1).
+**Main points:** Settled (2026-11-20, Andrej): the 20 x 3 random folds stay, tagged `StationaryRelation` on the
+SWISS-PROT entry years (issue 3, D, which also settles issue 1).
 
 **Record judgment:** valid. `Samples: Over Time`, `Time: Dated` and `Expanding Science Catalogue` added on 2026-11-16.
 

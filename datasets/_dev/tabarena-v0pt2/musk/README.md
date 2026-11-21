@@ -296,7 +296,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_missing_value_sentinel`: 1 numeric column(s) are dominated by a sentinel-looking value: feature_52=-1 (4.9%). (hint: If it encodes 'missing', replace it with `np.nan` (curation guidelines); if it is a real value, ignore this finding.)
 - **info** `dataset_duplicate_rows`: 17 exact duplicate row(s) (0.3% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)

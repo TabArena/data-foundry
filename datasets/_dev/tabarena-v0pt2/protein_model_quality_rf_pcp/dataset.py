@@ -116,8 +116,8 @@ class RfPcp(AbstractCuratedDataset):
           IDs, casp5_T0156_1nxj.nNh1.pdb and ROSETTA_1aa2_1aa2h2.pdb, may be reference-like but their identities
           are unverified. Retain CASP10_T0676_HOMER_TS2.pdb: zero matched RMSD and low global scores can reflect
           limited alignment coverage; no label repair is supported by the source evidence.
-        - CC (2026-11-05, Lennart): `grouping.context="all_rows"` (issue 5, B; SPLIT-23, USE-6; as sat11_hand_algo_runtime): the researcher holds all of a target's candidates when ranking them, so a model may compare a candidate with the other candidates of its protein. A model that does so (each descriptor's z-score and rank within its protein, the group size) scored 0.517 against 0.355 on the frame with the relaxed natives and 0.483 against 0.322 without them; that use is legitimate now, not an exploit. huesken_sirna_efficacy is reopened to follow (issue 9, A).
-        - CC (2026-11-05, Lennart): the rosetta62 set's 1,011 relaxed natives leave by identity (issue 4, B; USE-7 via
+        - CC (2026-11-05, Lennart): `grouping.context="all_rows"` (SPLIT-23, USE-6; as sat11_hand_algo_runtime): the researcher holds all of a target's candidates when ranking them, so a model may compare a candidate with the other candidates of its protein. A model that does so (each descriptor's z-score and rank within its protein, the group size) scored 0.517 against 0.355 on the frame with the relaxed natives and 0.483 against 0.322 without them; that use is legitimate now, not an exploit. huesken_sirna_efficacy is reopened to follow.
+        - CC (2026-11-05, Lennart): the rosetta62 set's 1,011 relaxed natives leave by identity (USE-7 via
           CLEAN-11), like the 4,893 named natives. Their IDs (`rosetta62_<pdb>_rn<pdb>.out.N.pdb`, matched on
           `_rn<pdb>.out.`) sit in the folder `relaxed_natives/` of the set's own archive (Zenodo 48780): the
           experimental structure energy-minimised, which exists only once the reference is known. The pattern matches
@@ -172,8 +172,8 @@ class RfPcp(AbstractCuratedDataset):
         - `Energy` stays as supplied (Lennart, 2026-11-04): the extreme positive values (up to 7e11) are ProSEE's
           output for unminimized models whose atoms overlap, continuous with the rest and carrying signal (mean GDT_TS
           0.339 against 0.398), so unusual rather than impossible (CLEAN-11). `SS` has no bound the source gives.
-        - CC (2026-11-12, Andrej): the split stays by protein ("I go back to by split by protein", issue 11, which
-          answers issue 10; SPLIT-37): a split by CASP round was weighed and is not built. Windows by round score
+        - CC (2026-11-12, Andrej): the split stays by protein ("I go back to by split by protein"; SPLIT-37): a split
+          by CASP round was weighed and is not built. Windows by round score
           within 0.03 of a same-size protein split on CASP8 and CASP9 and 0.03 to 0.07 lower on CASP7; CASP10 scores
           about 0 under any split that trains on the earlier rounds, a change of descriptor convention rather than
           time (splits_comment).

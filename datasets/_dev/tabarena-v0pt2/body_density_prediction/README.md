@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: body_density_prediction
 container_format: 2
-checksum: v2:1d3714ff354c28cc5fd51b6a5ff4a4c6ce7fb5a7708d430ce6833a7932b98477
+checksum: v2:1afebb3e1642ef4d399e006297a809caa95e5167ef8668c19179ad1db565b312
 build:
   uuid: 01a111fc-caac-7d14-8929-e266415ab9cf
   checksum: v2:7236bfa7aea6130e31ed60c800c3b35a123b0f14c84cbda8b2ff2733f68616c7
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `Density`, scored with `rmse` on IID splits. 252 rows and 13 features. Source: Other (1995).
 
-Built as `01a111fc-caac-7d14-8929-e266415ab9cf` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1d3714ff354c28cc5fd51b6a5ff4a4c6ce7fb5a7708d430ce6833a7932b98477`, so the build is stale. See [Build](#build).
+Built as `01a111fc-caac-7d14-8929-e266415ab9cf` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1afebb3e1642ef4d399e006297a809caa95e5167ef8668c19179ad1db565b312`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -128,7 +128,7 @@ Only curators run `build`, when the dataset ships.
 | year | 1995 |
 | domain | medical & healthcare |
 | license | Free to distribute and use for non-commercial purposes (Dr. A. Garth Fisher's permission, in the StatLib file) |
-| data_tags | IID |
+| data_tags | IID, Timeless |
 | reference | penrose1985generalized |
 | copy: the Kaggle copy we download | Kaggle: https://www.kaggle.com/datasets/fedesoriano/body-fat-prediction-dataset; license: Data files © Original Authors |
 | copy: OpenML 560 | OpenML (2014): https://www.openml.org/d/560; license: Public |
@@ -347,4 +347,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:1d3714ff354c28cc5fd51b6a5ff4a4c6ce7fb5a7708d430ce6833a7932b98477` |
+| stale | yes: the definition now gives checksum `v2:1afebb3e1642ef4d399e006297a809caa95e5167ef8668c19179ad1db565b312` |

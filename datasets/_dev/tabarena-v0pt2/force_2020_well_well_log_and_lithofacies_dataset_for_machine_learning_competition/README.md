@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition
 container_format: 2
-checksum: v2:82c0394a4c24c864ece505cd46aeb778a4649b80c8f36eab012509ff0ad2c6bf
+checksum: v2:d80e08469a48779faa9e1676d00e94b6accf6d0b039e6252918b18e1b5b4ea5c
 build: null
 build_stale: false
 data:
@@ -50,8 +50,7 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - meta_time_basis_missing
+  infos: []
   accepted:
     splits_test_class_missing: Halite occurs in 4 wells (14,711 rows) and Anhydrite
       in 10 (1,807 rows). The grouped folds keep wells whole, and fold r0f2 tests
@@ -70,7 +69,7 @@ decisions:
 
 Multiclass classification of `lithology`, scored with `cost_matrix` on grouped splits by `WELL`. 1,429,591 rows and 26 features. Source: GitHub (2020).
 
-Not built yet. The current definition gives checksum `v2:82c0394a4c24c864ece505cd46aeb778a4649b80c8f36eab012509ff0ad2c6bf`.
+Not built yet. The current definition gives checksum `v2:d80e08469a48779faa9e1676d00e94b6accf6d0b039e6252918b18e1b5b4ea5c`.
 
 ## In brief
 
@@ -136,7 +135,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2020 |
 | domain | environmental science & climate |
 | license | CC BY 4.0 (Zenodo record); the original well logs: NLOD 2.0 |
-| data_tags | Non-IID, GroupedTemporal, Spatial |
+| data_tags | Non-IID, GroupedTemporal, Spatial, UnseenGroup |
 | reference | bormann2020force |
 | rows x columns | 1,429,591 x 28 |
 | task.target | lithology |
@@ -227,6 +226,16 @@ We start with the four files of the FORCE 2020 lithology competition on GitHub: 
 - Partial order, left unordered (2026-11-01, CLEAN-14): `GROUP`: the groups stack by geological age, but
   regional equivalents that never occur in the same well (Viking, Tyne and Boknfjord in the Upper Jurassic, for
   example) have no order between them.
+- The curves a well carries change with its completion year (Sodir register): shear sonic in 0% of the
+  wells completed before 1990, 35% in the 1990s, 82% in the 2000s, 92% in the 2010s; SP and mud weight gone after
+  2000. A change in how features are recorded, kept as a note (SPLIT-37 step 4(a), Andrej, 2026-11-18): the newest
+  wells, which the use case meets, are logged like the newest training wells. Windows on the release date cost
+  little against random wells of the same size (mean penalty 0.698 against 0.674).
+- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case interprets a well not yet
+  drilled, from its logs, so the split holds out whole wells. The lithology at a depth is a property of the
+  rock, and the wells reach the public one by one, not in waves: a split by release date holds out no more than
+  random wells (the splits comment). It cannot test wells logged with later tools or in parts of the North Sea
+  the 118 wells do not cover.
 
 ## Splits
 
@@ -313,9 +322,8 @@ Values below -900 are the LAS null values -999.0, -999.25 and -999.9 (stored as 
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **info** `meta_time_basis_missing`: The split is not temporal and the definition does not say why. (hint: Add the use-case prototype (Timeless, Snapshot, DelayedTarget, StationaryRelation) with a `Time basis:` line in `curation_comments`, a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`) with its line, or the line alone with the reason, SPLIT-32.)
 
 Accepted on purpose:
 

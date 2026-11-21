@@ -62,7 +62,7 @@ CC (2026-10-26, Lennart): verdict ship.
 
 CC (2026-11-12, Andrej): reviewed under the rule for cuts of growing scientific catalogues. TCGA has closed: the GDC still lists the 261 sarcoma cases the 2017 study worked from, the plate code that marks a TCGA batch is recoverable only from the full GDC barcode (127 plates over the cohort, trimmed away in the benchmark's files), and the one date the index gives is the year of diagnosis (169 of 261 cases), which is not the date a case entered the programme; the random split over patients stands (Review issue 5, open).
 
-CC (2026-11-12, Andrej): review page mark (issue 5, A): the random split over patients stays. TCGA is closed, so no later wave exists; the aliquot plate is recoverable only from the GDC and stands for the source site, and the year of diagnosis (169 of 261 cases) dates the patient, not the entry into TCGA; recorded in a curation note.
+CC (2026-11-12, Andrej): Review issue 5, A: the random split over patients stays. TCGA is closed, so no later wave exists; the aliquot plate is recoverable only from the GDC and stands for the source site, and the year of diagnosis (169 of 261 cases) dates the patient, not the entry into TCGA; recorded in a curation note.
 
 CC (2026-11-18, Andrej): collection type stays `Experimental Results` (Review issue 7, A as implemented; full-information split check). Supersedes the Clinical Study mark of 2026-11-17 (issue 6):
 - the type rule for undated patient data names this dataset as experimental results;
@@ -78,7 +78,8 @@ TCGA is a programme that added its cases in batches, so whether this cut should 
 was never asked. The AI recommends keeping the random split over patients.
 
 **Main points:** Settled: the random split over patients stays; the TCGA batch and the year of diagnosis were checked
-as arrival keys and are in the notes (issue 5, A, 2026-11-12).
+as arrival keys and are in the notes (issue 5, A, 2026-11-12); the collection type stays `Experimental Results`
+(issues 6 and 7, 2026-11-18).
 
 **Issues for Andrej:**
 

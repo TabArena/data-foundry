@@ -13,6 +13,7 @@ claimed_by: Andrej
 suggestion: 'Yes'
 priority: 5
 tags:
+- Non-IID (Grouped)
 - 'Samples: No Time Dimension'
 - 'Entities: Recur'
 - Experimental Results
@@ -21,6 +22,7 @@ year: '1989'
 collection_period: Unknown
 required_split:
 - Grouped (NON-IID)
+problem_type: Regression
 source_links:
 - https://ntrs.nasa.gov/citations/19890016302
 - https://www.openml.org/search?type=data&id=44957
@@ -54,17 +56,17 @@ CC (2026-10-20, Lennart): Grouped by setup, one chord length at one angle of att
 
 **Assessment (AI, 2026-10-21):** the hidden-group probe now takes float columns (Lennart, 2026-10-21); in that day's sweep the suction-side displacement thickness is a hit (105 values for 106 runs, gap 0.123), next to the known run key. The question raised on 2026-10-20 in the working copy's cross-dataset review is closed.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: faithful NASA wind-tunnel data, setup split and scaled target settled by Lennart on 2026-10-20; methods spread. Priority 5: gap 1, use case 1, source 1, shape 1, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: faithful NASA wind-tunnel data, setup split and scaled target settled by Lennart on 2026-10-20; methods spread. Priority 5: gap 1, use case 1, source 1, shape 1, risk -0.
 
 CC (2026-11-04, Andrej): ship as defined (issue 3, A). The declared split (whole setups held out: one chord length at one angle with all its speeds) and the declared metric (RMSE on the report's scaled level, in dB) checked and kept.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 4, B, through the cross-dataset item on routine `Timeless` issues): the rows are designed wind-tunnel runs, with no run date or order recorded. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted (Review  4, B, through the cross-dataset item on routine `Timeless` issues): the rows are designed wind-tunnel runs, with no run date or order recorded. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
 CC (2026-11-17, Andrej): time basis `UnseenGroup` in place of `Timeless` (Review issue 11, B; replaces the tag of the CC of 2026-11-06): the use case is an airfoil size and angle of attack not yet tested, at any wind speed, so the split holds out whole setups (chord x angle), a group wider than one run. The split is unchanged (grouped on `setup`, 33 setups).
 
-CC (2026-11-17, Andrej): verdict ship (blind split review page).
+CC (2026-11-17, Andrej): verdict ship (blind split walk).
 
-CC (2026-11-17, Andrej): the declared split (grouped on `setup`, 10x3 folds, `UnseenGroup`) is checked: split mark on the blind split review page.
+CC (2026-11-17, Andrej): the declared split (grouped on `setup`, 10x3 folds, `UnseenGroup`) is checked in the blind split walk.
 
 ## Review
 
@@ -232,7 +234,7 @@ restored here unchanged, with the decisions as closing turns.
      - Was the experiment repeated, producing several rows for the same measurement? (data): yes. Evidence: Raw file: 1,503 rows = 106 runs (chord x angle x speed) of 8-19 frequency bands; 33 setups (chord x angle) each run at 2 or 4 speeds (computed from airfoil_self_noise.dat).
      - Does the model meet new items, or further measurements of items it has measured? (use case): new items. Evidence: Use case: 'an airfoil size and angle of attack not yet tested, at any wind speed'. The new item is a setup (chord x angle), wider than one run, so the leaf's wider-group clause applies: group on the setup and tag UnseenGroup.
    * **What changes:** only the tag and its `Time basis:` line. `data_tags` in `dataset.py` (`Timeless` → `UnseenGroup`), the opening of the `Time basis:` bullet in `curation_comments`. The rows, features, grouping key, folds and metric are untouched; the container is rebuilt only because `data_tags` ship in it.
-   * **Decided before:** Andrej, 2026-11-06: time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 4, B, through the cross-dataset item on routine `Timeless` issues): the rows are designed wind-tunnel runs, with no run date or order recorded. The `Time basis:` line is in the…
+   * **Decided before:** Andrej, 2026-11-06: time basis `Timeless` accepted (issue 4, B, through the cross-dataset item on routine `Timeless` issues): the rows are designed wind-tunnel runs, with no run date or order recorded. The `Time basis:` line is in the…
    * **What the blind dossier lacked, and what it changes:** none. The definition ships the same split (grouped by setup = chord x angle, 33 groups); the record's measurements (91.5% of test runs had their setup in training under a run split; chord-only grouping too few groups) support it. Round 1 also reached a setup grouping.
    * **Source split:** no. No split prescribed.
    * **Blindness:** what the walker saw of the shipped split before deciding: saw: split_tree.md lists airfoil_self_noise as an example under 'Grouped · Timeless (the measurement)'; ignored as evidence.

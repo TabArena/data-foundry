@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ecoli_proteins
 container_format: 2
-checksum: v2:70e9e931a2339c11b603e6b0f9b4965473d1c3c444f7c392117f1f6723c4d4cf
+checksum: v2:85c51de4b093c12f4b6f6612e1d5a9d3f2e8a1b1de5960b307c0ec30ceb3c269
 build:
   uuid: 01a111fc-d4ff-7dda-987a-8119d986e5f1
   checksum: v2:40d233040dcbf3af5eefe4763b03ce0a9aed28f9a8b2733ccf127668b2c5c642
@@ -67,7 +67,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 327 rows and 6 features. Source: UCI (1996).
 
-Built as `01a111fc-d4ff-7dda-987a-8119d986e5f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:70e9e931a2339c11b603e6b0f9b4965473d1c3c444f7c392117f1f6723c4d4cf`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d4ff-7dda-987a-8119d986e5f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:85c51de4b093c12f4b6f6612e1d5a9d3f2e8a1b1de5960b307c0ec30ceb3c269`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -96,6 +96,7 @@ Built as `01a111fc-d4ff-7dda-987a-8119d986e5f1` on 2026-10-06, but `dataset.py` 
 
 - The curation record, with the triage decision, its sources and the review: [`curation/records/ecoli_proteins.md`](../../../../curation/records/ecoli_proteins.md)
 - The original source: <https://doi.org/10.24432/C5388M>
+- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
 
@@ -186,10 +187,10 @@ We start with the dataset from UCI.
 - We drop the sequence name column, which is a unique identifier.
 - We drop three classes with less than 10 samples each: omL (5), imL (2), and imS (2).
 - We drop "chg", which becomes constant after our preprocessing steps.
-- Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-20, review issue "Windows on the entry year", D):
+- Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-20):
   the proteins are dated by their SWISS-PROT entry years (1986-1995; 309 of 336 entries dated, UniProt and
   UniSave lookup of 2026-11-16), and the random folds stand for later entries because the relation reads flat.
-  The stationary-relation test (2026-11-20, log loss, 5 seeds, 297 dated proteins, periods up to 1988, 1989-90,
+  The stationary-relation test (2026-11-19, log loss, 5 seeds, 297 dated proteins, periods up to 1988, 1989-90,
   1991-92 and 1993-96) pooled over the three tested periods gives LightGBM +0.012 ± 0.047 and Kumo-Tabular
   +0.034 ± 0.033; over the two periods trained on half the data or more Kumo-Tabular gives +0.050 ± 0.047
   (2 SD 9.8 floors of 10), flat, narrowly. The location mix moves (cytoplasm 54% of entries up to 1989 against
@@ -335,4 +336,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:70e9e931a2339c11b603e6b0f9b4965473d1c3c444f7c392117f1f6723c4d4cf` |
+| stale | yes: the definition now gives checksum `v2:85c51de4b093c12f4b6f6612e1d5a9d3f2e8a1b1de5960b307c0ec30ceb3c269` |

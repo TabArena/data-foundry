@@ -61,11 +61,11 @@ CC (2026-10-15, Andrej): Replacement candidate: `nhanes_dxa_body_fat` (NHANES DX
 **Assessment (AI, 2026-10-27):** The open questions for the curator are in the record's Review (review of the Tiny Data datasets, written from the earlier findings, no review panel); the AI recommends shipping it until better data replace it. Priority 2: gap -, use case + (Penrose et al. 1985 build equations to replace underwater weighing), source +, shape -, risk - (better data in triage would make it a near-duplicate).
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_dxa_body_fat` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Keep until nhanes_dxa_body_fat (the same task on about 21,800 people) is added, then retire as replaced; meanwhile set the impossible 29.5-inch height to missing. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Keep until nhanes_dxa_body_fat (the same task on about 21,800 people) is added, then retire as replaced; meanwhile set the impossible 29.5-inch height to missing. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on routine `Timeless` issues): each man was measured once in one study session, so density and features describe the same body at one time. It holds if issue 1 keeps the dataset. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted (Review  3, B, through the cross-dataset item on routine `Timeless` issues): each man was measured once in one study session, so density and features describe the same body at one time. It holds if issue 1 keeps the dataset. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
-CC (2026-11-18, Andrej): collection type stays `Experimental Results` (Review issue 5, A as implemented; full-information split check). Supersedes the Clinical Study mark of 2026-11-17 (issue 4):
+CC (2026-11-18, Andrej): collection type stays `Experimental Results` (Review issue 5, A as implemented; full-information split check, 2026-11-18). Supersedes the Clinical Study mark of 2026-11-17 (issue 4):
 - the type rules call volunteers measured by a study protocol experimental results;
 - the split is random under either type.
 
@@ -84,7 +84,7 @@ one density implies negative body fat (issue 2); `Outdated`, `Not Representative
 none tested. Weighed: a direct, still common use case against a small, dated sample with a much larger public one in
 triage.
 
-**Main points:** Parked (2026-11-11) on Andrej's note until it is decided whether better suited datasets replace this task: `nhanes_dxa_body_fat` as replacement (issue 1) and the impossible height (issue 2) wait. The `Timeless` split is settled (issue 3).
+**Main points:** Parked (2026-11-11) on Andrej's note until it is decided whether better suited datasets replace this task: `nhanes_dxa_body_fat` as replacement (issue 1) and the impossible height (issue 2) wait. The `Timeless` split is settled (issue 3), and the type stays `Experimental Results` (issues 4 and 5, 2026-11-18).
 
 **Record judgment:** valid task, better data available. The Discussion calls the task valid but limited, since much
 more data could be collected; Andrej's CC of 2026-10-15 names the replacement, and the data-scouting run of

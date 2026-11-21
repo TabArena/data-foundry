@@ -73,7 +73,7 @@ class EcoliProteins(AbstractCuratedDataset):
         - We drop the sequence name column, which is a unique identifier.
         - We drop three classes with less than 10 samples each: omL (5), imL (2), and imS (2).
         - We drop "chg", which becomes constant after our preprocessing steps.
-        - Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-20, review issue "Windows on the entry year", D):
+        - Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-20):
           the proteins are dated by their SWISS-PROT entry years (1986-1995; 309 of 336 entries dated, UniProt and
           UniSave lookup of 2026-11-16), and the random folds stand for later entries because the relation reads flat.
           The stationary-relation test (2026-11-19, log loss, 5 seeds, 297 dated proteins, periods up to 1988, 1989-90,

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: nci_aids_antiviral_screen
 container_format: 2
-checksum: v2:3626669552dffe5a4d8eab53b9658a4f80abb95d13c91374f0a7a7966f0082b0
+checksum: v2:a200f4c16a0679c4b8bac22af4f9a3bdf4ce1ee2746fe57c18c52e16189f3e4a
 build: null
 build_stale: false
 data:
@@ -66,7 +66,7 @@ decisions:
 
 Binary classification of `active_in_screen`, scored with `roc_auc` on grouped splits by `scaffold`. 41,140 rows and 1 features. Source: GOV Website (2004).
 
-Not built yet. The current definition gives checksum `v2:3626669552dffe5a4d8eab53b9658a4f80abb95d13c91374f0a7a7966f0082b0`.
+Not built yet. The current definition gives checksum `v2:a200f4c16a0679c4b8bac22af4f9a3bdf4ce1ee2746fe57c18c52e16189f3e4a`.
 
 ## In brief
 
@@ -138,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2004 |
 | domain | chemistry & material science |
 | license | Not stated (the DTP page names no terms; a release of the US National Cancer Institute) |
-| data_tags | Non-IID, Grouped, Timeless |
+| data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | nci_dtp_aids_antiviral_screen_2004,weislow1989new |
 | rows x columns | 41,140 x 3 |
 | task.target | active_in_screen |
@@ -221,12 +221,14 @@ We start with aids_conc_may04.txt (the screen's conclusion for 43,850 compounds,
 - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts: 1,407 columns on these compounds). The values are RDKit's canonical form (`canonical_smiles`) of the whole structure as published, every fragment kept. The NSC and the CAS RN are dropped (identifiers; 999-99-9 marks an unknown CAS RN). The draft of the same day shipped RDKit's descriptors in place of the string; on that draft's encoding (383 descriptor columns, before the charge repair) the whole structure scored as well as its largest fragment (untuned LightGBM log loss 0.1563 against 0.1578, ROC AUC 0.908 against 0.898 for confirmed active against the rest; 2 seeds x 3 scaffold-grouped folds).
 - Salt forms and copies (LEAK-19, LEAK-20): 3,130 of the 42,075 readable structures hold more than one fragment (counter-ions, which the file draws as bare cations such as `[Na+]`, solvents, complex partners). Salt forms of one compound are merged on the structure without RDKit's list of common salts and solvents (`FragmentRemover`: halides, metal ions, water, sulfate, ammonia, mesylate and others; organic counter-ions stay). The largest fragment is no such key here: in 57 groups (136 compounds) it would merge different compounds, such as dicyclohexylamine salts of different acids or crown-ether complexes of different tin compounds. 1,706 readable compounds share the key with another; the 39 compounds the screen concluded both active and inactive are dropped, all 104 rows (decision table), and of the others the first NSC is kept (831 rows dropped). 41,140 compounds remain: 1,404 active (390 CA, 1,014 CM) and 39,736 inactive, no two with one SMILES. 549 of them keep an organic counter-ion or a second component; the largest fragment of 49 of these is shipped as a compound of its own (a free form or another salt), 28 of them in another scaffold group, so a few near copies can sit across the split.
 - Split (SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the compound, its structure without common salts and solvents (`scaffold_groups`): 20,774 groups, 15,994 compounds alone (1,566 without a ring, 3.8%) and 4,780 series of 2 to 2,086. No scaffold holds a tenth of the compounds, so the bare benzene ring (2,086, 5.1%) stays one group. Under the groups 15.5% of the test compounds of repeat 0 have a training analog at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits, on the structure without its salts; median nearest 0.517), against 32.0% under a random split (0.606); for the actives 30.0% against 48.3%. MoleculeNet and OGB split this screen by scaffold too, and a scaffold split leaves this screen similar across the split either way: 78.1% of our test compounds have a training compound above Tanimoto 0.4, against the 56% Lo-Hi (Steshin 2023, Sec. 5.2) measured on MoleculeNet's cut, so the test side is a series not yet tested, not a new chemical class. The NSC number counts submission batches that the groups do not hold out; the splits comment has the numbers.
-- Time basis: Timeless (Andrej, 2026-11-12, review of how cuts of growing catalogues split): the screen's
-  conclusion for a compound is a property of the compound, and the only order the source keeps, the NSC
-  registration number, is not when a compound entered the screen (about a quarter were registered long before it
-  began). A forward split on that order leaves 8.4% of the test compounds a close training analog against 9.8% for
-  a random draw of the same size and 4.3% scaffold-disjoint (splits comment), so it carries no wave of arrivals the
-  scaffold split misses. The split cannot test a chemical class the screen received only later.
+- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before, Andrej, 2026-11-12, review of how cuts of
+  growing catalogues split): the use case screens compounds not tested yet, which whole scaffolds held out stand
+  for. The screen's conclusion for a compound is a property of the compound, and the only order the source
+  keeps, the NSC registration number, is not when a compound entered the screen (about a quarter were registered
+  long before it began). A forward split on that order leaves 8.4% of the test compounds a close training analog
+  against 9.8% for a random draw of the same size and 4.3% scaffold-disjoint (splits comment), so it carries no
+  wave of arrivals the scaffold split misses. The split cannot test a chemical class the screen received only
+  later.
 - Note: `hiva_agnostic` was the 2007 Agnostic Learning vs. Prior Knowledge challenge's cut of these compounds: its 4,229 labelled and 38,449 test compounds make 42,678, against the 42,682 conclusions with a structure here, and both are 3.52% active (149 of 4,229; 1,503 of 42,682). A linking run on 2026-11-01 recovered the NSC number behind its rows from their bits (97% with confidence) and every one of its 4,229 labels agrees with this file, so it adds no compound and no label; what it added was one 2006 ChemTK representation nobody can recompute. It is retired as a duplicate of this release (PROV-6; Lennart, 2026-11-02), and its BeyondArena and TabArena v0.1 containers stay as shipped.
 - Note: MoleculeNet's HIV.csv (41,127 compounds: 404 CA, 1,039 CM, 39,684 CI) is this SD file read by an older RDKit, salts and the stereo of the coordinates kept, and it carries the charge-code artefact repaired here: 413 `[NaH]`, 24 `[KH]` and 254 `[PH]` against 16 `[Na+]`, 11 `[K+]` and 56 `[P+]` (PROV-15, a problem of that copy; another collection's version is no reason to keep ours damaged, EV-4). So after the repair our structures differ from MoleculeNet's, and from OGB's `ogbg-molhiv` built on it, on the 690 compounds the repair touched: 40,385 of MoleculeNet's 41,116 InChIKey skeletons are among ours, where 41,077 were before the repair. Its conclusions agree with ours for 40,311 of the 40,343 stereo-free SMILES both hold; the other 32 are structures entered here under several NSC numbers with different conclusions, of which MoleculeNet kept one.
 - Licence: the DTP page states no terms.
@@ -323,7 +325,7 @@ A salt and its free form, or one compound under two NSC numbers, that the screen
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks

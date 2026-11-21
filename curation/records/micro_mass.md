@@ -59,20 +59,20 @@ CC (2026-11-02, Lennart): The spectrum is declared as a spectrum (`spectra`, CLE
 
 CC (2026-11-12, Andrej): reviewed under the rule for cuts of growing scientific catalogues. The panel is a one-off 2013 deposit of 20 species built for one study, the archive gives a strain nothing but an integer from 1 to 213, and a species the panel does not hold cannot be predicted at all, so no arrival key exists and the strain-grouped split stands (Review issue 4, open).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: a lab use the source names, strains held out, and a wide spread of methods; Andrej's dispute (about 80% of the error sits in sister species the instrument cannot separate) is a value concern that no validity rule turns into a retirement. Priority 4: gap 1, use case 1, source 1, shape 0, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: a lab use the source names, strains held out, and a wide spread of methods; Andrej's dispute (about 80% of the error sits in sister species the instrument cannot separate) is a value concern that no validity rule turns into a retirement. Priority 4: gap 1, use case 1, source 1, shape 0, risk -0.
 
 CC (2026-11-04, Andrej): keep as defined (issue 1, A): 20 species scored per spectrum with the source's metric; the sister-species complexes are a limit laboratories also meet. The declared split (by strain) and metric checked and kept. Tagged `Spectral Data`: each row is one MALDI-TOF mass spectrum (a peak list on 1,300 bins), declared as a spectrum in the definition.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on five more routine `Timeless` issues): the species is a fixed property of the strain, and the release holds no acquisition date, run or plate. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted (Review  3, B, through the cross-dataset item on five more routine `Timeless` issues): the species is a fixed property of the strain, and the release holds no acquisition date, run or plate. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
-CC (2026-11-12, Andrej): review page mark (issue 4, A): the strain-grouped split stays. The panel is a single 2013 deposit; the strain identifier is an integer with no accession or date, so no split by entry date can be built; noted in the `Time basis:` line.
+CC (2026-11-12, Andrej): Review issue 4, A: the strain-grouped split stays. The panel is a single 2013 deposit; the strain identifier is an integer with no accession or date, so no split by entry date can be built; noted in the `Time basis:` line.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `Strain`, 20x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `Strain`, 20x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
-**Outcome:** added. The AI recommends shipping it as defined; the one open question is Andrej's dispute of Lennart's
-keep (issue 1). Reviewed without a review panel, from the gathered evidence: the record, an earlier check of
+**Outcome:** added. The AI recommends shipping it as defined; Andrej's dispute of Lennart's keep (issue 1) was
+settled on 2026-11-04: keep as defined. Reviewed without a review panel, from the gathered evidence: the record, an earlier check of
 2026-10-15 (own runs on strain-grouped splits) and model runs on the shipped data. The data are 571
 MALDI-TOF mass spectra (the instrument's fingerprint of a colony's proteins) of 213 bacterial strains of 20 species
 (Mahé et al. 2014, UCI), one prediction per spectrum, whole strains held out, scored with the source's accuracy
