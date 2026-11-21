@@ -130,7 +130,7 @@ fixed properties split: the definition splits by year while the record says the 
 
    **Resolved (2026-11-11, Andrej):** C ("Option C: B and Target: Varying Delay"): the record's
    `Samples: No Time Dimension` replaced by `Samples: Over Time`, `Time: Dated` and `Target: Varying Delay`, with a CC
-   line and `Andrej` in `checked_by`, mirrored in the PR #50 worktree's copy; the definition is unchanged (a temporal
+   line and `Andrej` in `checked_by`; the definition is unchanged (a temporal
    split carries no time-basis tag), so no `dataset check`.
 
 2. **Should the time column be a model input?**

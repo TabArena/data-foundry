@@ -232,7 +232,7 @@ duplicated option columns) are about the data, not the windows, and are not sett
 
    * **Recommendation:** A. **Decision:** A or B?
 
-   **Notes for the AI:** on B, declare `Temporal(..., feature=False)` (the time-column-as-split-metadata change of #98) and add a CC line.
+   **Notes for the AI:** on B, declare `Temporal(..., feature=False)` (the time-column-as-split-metadata change) and add a CC line.
 
    **Andrej (2026-11-19, ok):** As implemented (A).
 

@@ -301,8 +301,7 @@ record keeps the verdict its own data earns until that one is added.
      a fixed window; `Target: Varying Delay` a target after a delay that differs between samples; no target tag when the
      target exists with the features.
 
-   **Resolved (2026-11-12, Andrej):** B ("Target: Later"): `Target: Later` added to the record's `tags`, also in the
-   PR #50 worktree's copy of the record; `Andrej` in `checked_by`; record CC line.
+   **Resolved (2026-11-12, Andrej):** B ("Target: Later"): `Target: Later` added to the record's `tags`; `Andrej` in `checked_by`; record CC line.
 
 4. **Split: measure the repeat rate by offer day, then keep the 5-day gap, drop it, or lengthen it?**
 
