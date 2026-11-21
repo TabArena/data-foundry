@@ -193,8 +193,7 @@ does not change this task's validity. The metric review proposes an ordinal scor
    cutoffs=("1996-10-01", "1997-07-01", "1998-04-01")))` in place of the grouping (one regime per definition; an
    exam's segments share its date, so they stay on one side); `patient_id` leaves the frame; `split`, `changes`,
    `fit_reason` and `splits_comment` say why (the label mix by year, the cost); the record's `required_split` becomes
-   Temporal, tag `Non-IID (Temporal)`; `dataset check`, and recount the classes per test window. On A, once PR #50 is
-   in: `data_tags = ("StationaryRelation",)` if you read the label mix as a selection (else no time-basis tag), and a
+   Temporal, tag `Non-IID (Temporal)`; `dataset check`, and recount the classes per test window. On A: `data_tags = ("StationaryRelation",)` if you read the label mix as a selection (else no time-basis tag), and a
    curation bullet `- Time basis: StationaryRelation: every exam is dated in the
    raw sheet (January 1995 to June 1998; 56 segments carry an unset clock), and the labels shift between
    1996 and 1997 (suspect 14% to 1%, pathologic 4% to 13%); not split by date, because <the curator's reason>; three

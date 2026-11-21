@@ -76,7 +76,7 @@ CC (2026-11-10, Andrej): decided on the BeyondArena v0.2 review page. The roaste
 
 1. **Problem:** the two review passages (`desc_1`, the blind assessment, and `desc_3`, the bottom line) are written by the reviewer together with the score. A roaster does not have them before the review, and a word model on them alone explained 71% of the score's variance and beat every benchmark method. **Change:** both dropped; the record loses `Free Text (Sentences)`. **Exception to LEAK-35 (2026-11-10, Andrej):** the kept-text rule had this dataset as its case at R² 0.25 to 0.67. What sets it apart now is the measured 0.71, a text-only model ranking first, and a use case in which the roaster predicts before the review.
 2. **Problem:** 606 prices of Taiwanese roasters were in New Taiwan dollars but read as US dollars (median price per gram 33 times the others'). **Change:** converted at 0.031; the `NT_price` flag dropped.
-3. **Problem:** the record had no target fact, although the score comes weeks or months after the roaster's information. **Change:** `Target: Varying Delay` added (also in PR #50's copy); `Andrej` added to `checked_by`.
+3. **Problem:** the record had no target fact, although the score comes weeks or months after the roaster's information. **Change:** `Target: Varying Delay` added; `Andrej` added to `checked_by`.
 
 **Problems found, not changed:**
 
@@ -259,7 +259,7 @@ defined. The licence is `None`: the review text is coffeereview.com's, scraped b
      `Target: Later` one at a shared date or after a fixed window; no target tag when the target exists with the
      features.
 
-   **Resolved (2026-11-10, Andrej):** B: `Target: Varying Delay` added to the record's `tags`, here and in PR #50's copy
+   **Resolved (2026-11-10, Andrej):** B: `Target: Varying Delay` added to the record's `tags`
    of the record.
 
 5. **Still a valid and meaningful task without the reviewer's text: keep it or retire it?**
@@ -332,7 +332,7 @@ defined. The licence is `None`: the review text is coffeereview.com's, scraped b
    gives the reason (it arrives with the target: the roaster decides before any review). No bullet called it a
    feature. Record CC line. `dataset check` (Slurm 1380078): 0 errors, 0 warnings, 0 info; README: 8 features (was 9),
    `time_is_feature: false`, the 13 windows unchanged (train 1,211 to 2,315 rows, test 54 to 115). Not rebuilt. It
-   needs the `Temporal(..., feature=False)` framework change, uncommitted in the working copy (committed in PR #81).
+   needs the `Temporal(..., feature=False)` framework change, uncommitted in the working copy.
 
 7. **Gap: train each two-month window only on reviews published at least one month before it, instead of no gap?**
 

@@ -180,7 +180,7 @@ record with a temporal split.
      the measured cost is nil. **Decision:** a, b or c?
 
    **Notes for the AI:** on c, B's notes above, without a gap: the windows are calendar months, longer than the time
-   from a sale to its record[^1d]; record tag `Non-IID (Temporal)`. Once PR #50 is in: on b, `data_tags = ("Spatial",
+   from a sale to its record[^1d]; record tag `Non-IID (Temporal)`. On b, `data_tags = ("Spatial",
    "Snapshot")` and a curation bullet `- Time basis: one year of sales (2016); the appraiser values the year's unsold
    homes from the same year's sales, so the test sales stand for homes of the same year.`; on a, `data_tags =
    ("Spatial", "StationaryRelation")` and a curation bullet `- Time basis: StationaryRelation: every sale is dated to
