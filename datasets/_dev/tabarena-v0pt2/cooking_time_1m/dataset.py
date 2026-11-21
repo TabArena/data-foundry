@@ -108,8 +108,9 @@ class CookingTime1m(AbstractCuratedDataset):
     )
     accepted_check_warnings = {
         "splits_train_under_half": (
-            "Signed off (Lennart, 2026-11-11, review issue 2, B): 4-10 December trains on 37.5% of the orders, beside "
-            "28 December-3 January and 14-20 December on 84.8% and 54.2%; SPLIT-14's two tiers admit it."
+            "Signed off (Lennart, 2026-11-11): 4-10 December trains on 37.5% of the orders, beside "
+            "28 December-3 January and 14-20 December on 84.8% and 54.2%; kept as the curator's exception to "
+            "SPLIT-14's half-data floor (Andrej, 2026-11-19)."
         ),
     }
 
