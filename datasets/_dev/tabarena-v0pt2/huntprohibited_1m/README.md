@@ -74,7 +74,7 @@ Not built yet. The current definition gives checksum `v2:1bfd22952b742b1ee4e7b41
 
 **Use case.** When an ad is submitted to Avito, a Russian classifieds site, the site scores it to decide which ads moderators check or block.
 
-**One row.** One closed ad posted on Avito.ru from December 2013 to March 2014, blocked for illicit content or never blocked; 1.5 million ads sampled from 3,963,488 after dropping duplicates.
+**One row.** One closed ad posted on Avito.ru from December 2013 to March 2014, blocked for illicit content or never blocked; 3,963,488 ads after dropping duplicates.
 
 **Predicted.** Whether a moderator blocked the ad for illicit content.
 
@@ -192,20 +192,29 @@ We start with avito_train.tsv from the Kaggle competition "The Hunt for Prohibit
 - We drop `close_hours`, how long the ad was live: it is known only after the moderation decision (the hosts: "not available at scoring phase").
 - We drop `is_proved`, which is set only for blocked ads: a component of the target, "not to be used as a direct modeling attribute" (data page).
 - We drop `itemid`: the ids "have been randomly assigned" (Kaggle discussion 9554).
-- IID split, tagged ForcedIIDFromTemporal: the competition split by month, but the file has no date and the random ids cannot stand in for one (decision table). A date would show drift in how sellers word ads to avoid blocks, seasonal items (New Year, 8 March) and shifts in the category mix; the April labels were never published, so the full cost cannot be measured, and the time axis should be recovered if Avito or Kaggle releases the dates. One partial marker bounds it (2026-10-22): the used-car form changed during December-March ("Объем" to "Объём двигателя"; 6.1% of train ads in the old form, 0.18% of April's), and training on the old form and testing on the new costs about 0.002 ROC AUC and 0.02 average precision against a mix of the same size (TF-IDF logistic regression, 4 seeds). The competition's own validation was random too (the winners and the forum describe random holdouts and K-fold, and local scores tracked the leaderboard).
+- Time basis: ForcedIIDFromTemporal: the competition split by month, but the file has no date and the random ids
+  cannot stand in for one (decision table). A date would show drift in how sellers word ads to avoid blocks,
+  seasonal items (New Year, 8 March) and shifts in the category mix; the April labels were never published, so
+  the full cost cannot be measured, and the time axis should be recovered if Avito or Kaggle releases the dates.
+  One partial marker bounds it (2026-10-22): the used-car form changed during December-March ("Объем" to "Объём
+  двигателя"; 6.1% of train ads in the old form, 0.18% of April's), and training on the old form and testing on
+  the new costs about 0.002 ROC AUC and 0.02 average precision against a mix of the same size (TF-IDF logistic
+  regression, 4 seeds). The competition's own validation was random too (the winners and the forum describe
+  random holdouts and K-fold, and local scores tracked the leaderboard). Not taken as stationary (Andrej,
+  2026-11-18): Adversarial moderation with drift sources the definition names; a 0.002 AUC marker over four
+  months bounds one change, not later use.
 - We drop exact copies of an ad (reposts with the same features and label) and every ad whose features occur with both labels (decision table).
 - Note: edited reposts stay and sellers are not grouped, because the label is per ad: the data page speaks of ads "blocked for illicit content". This is the source's wording; it cannot be checked against a seller key, as the file has none. By exact description keys, 1.4-4.9% of the test ads have a near copy in train, and 99.5% of those share its label; grouping on such a key (GroupKFold, fold 0, a logistic regression on word n-grams) gives ROC AUC 0.99384 and 0.99386 against 0.99390 for the random split, and AP within 0.002. In the 2026-10-07 run, 0.50% of the April test ads shared a 30+ character description with a training ad (not re-measured: the test file is not in the warehouse). A seller who rewrites every ad is not covered by any of these measurements.
 - `title`, `description` and `attrs` are Russian free text (string columns). `category` and `subcategory` are categorical; `price` and the counts of phone numbers, e-mails and URLs that Avito masked are numeric. The counts are Avito's own and mostly match the masks in the description: `phones_cnt` is higher on 0.92% of ads, which are blocked less often than the rest.
 - We keep `attrs`, the ad's form fields for its category, as the released JSON text: unpacking it would give 72 mostly empty columns with Russian names, and the winning solutions treated it as text (Kaggle discussion 10178).
 - Tags: no `Spatial` tag (Lennart, 2026-10-22). 901,011 real-estate ads (22.5% of the file) hold a street address inside the `attrs` form text, but the dataset has no geographic column of its own.
 - Anomaly: 6,004 `attrs` strings are not valid JSON, the description writes line breaks as "^p", and `price` is 0 for 12.4% of the ads (no price given, or free). We keep all of these as released.
-- Anomaly: sellers typed placeholder prices. `price` = 999,999,999, the form's maximum, on 29 ads of the file (14 in this version), 65.5% of them blocked; `price` = 1 on 3,962 ads of this version, 19.0% blocked. We keep them as codes: the seller entered them at submission, and they carry signal.
+- Anomaly: sellers typed placeholder prices. `price` = 999,999,999, the form's maximum, on 29 ads of the file, all in this version, 65.5% of them blocked; `price` = 1 on 10,331 ads of this version, 18.7% blocked. We keep them as codes: the seller entered them at submission, and they carry signal.
 - Note: we keep the source's cohort, closed ads that were blocked for illicit content or never blocked.
 - Note: text carries most of the signal. On fold 0, LightGBM on the structured columns reaches ROC AUC 0.932 and a logistic regression on TF-IDF of the three text columns 0.994 (average precision 0.51 against 0.95), so a pipeline that encodes Russian text poorly loses most of the remaining error and most of the average precision.
 - Note: the hidden-group probe hits on subcategory and attrs, but every ad has a subcategory, and attrs is its category's form (missing for the 2.8% of ads in categories without one), so both describe a new ad and the split stays IID.
 - Metric: AP@k as the competition, with k = 12,500 per 500,000-ad test fold, the competition's 2.5% (k = 32,500 of about 1.3M test ads, per the participants). The rules restrict the data to use within the competition, and the ads include illicit or offensive content (rules page).
-
-Version of `huntprohibited`: We sub-sample the frame (3,963,488 ads after dropping duplicates) to 1.5M ads, stratified on the target, and use 3-fold cross-validation, so every fold trains on 1M and tests on 500k ads (v2 split protocol).
+- The row budget (1M train, 500k test rows): We keep the whole frame (3,963,488 ads after dropping duplicates) and use 3-fold cross-validation over it (v2 split protocol). Each fold tests on 500k ads of its third, drawn stratified on the target, and trains on the other 3,463,488. The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M ads with `subsample_train`, whose default draws random rows stratified on the target.
 
 ## Splits
 

@@ -72,7 +72,7 @@ CC (2026-11-18, Andrej): time basis `AssumedStationaryRelation` in place of `Sta
 
 ## Review
 
-**Outcome:** added. The AI asks to retag the time basis after the one-moment rule was sharpened (2026-11-13).
+**Outcome:** added. The time basis went from `ForcedIIDFromTemporal` to `DelayedTarget` (2026-11-13), to `StationaryRelation` when `DelayedTarget` was retired (2026-11-16), and to `AssumedStationaryRelation` (2026-11-18).
 
 **Main points:** The time basis is `AssumedStationaryRelation` (Andrej, 2026-11-18); issue 1 was resolved on 2026-11-13
 as `DelayedTarget`, changed on 2026-11-16 and 2026-11-18 (CC lines).

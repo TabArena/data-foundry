@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: porto_seguro
 container_format: 2
-checksum: v2:c2555784e30ae716102e7ea5d5508b86153743114e7af899147c68ef25a94dd5
+checksum: v2:dbb18744ad4dd587e6902f44984171ef202030ca056dd3367c8764dd35827d60
 build:
   uuid: 01a111fb-fc94-70f9-9598-6ab89e8b220d
   checksum: v2:8f647d10da8ad0b5f14091489e40c4d88dfa457607fd1f474e1f49d68b23d72e
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on IID splits. 595,206 rows and 37 features. Source: Kaggle (2017).
 
-Built as `01a111fb-fc94-70f9-9598-6ab89e8b220d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c2555784e30ae716102e7ea5d5508b86153743114e7af899147c68ef25a94dd5`, so the build is stale. See [Build](#build).
+Built as `01a111fb-fc94-70f9-9598-6ab89e8b220d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:dbb18744ad4dd587e6902f44984171ef202030ca056dd3367c8764dd35827d60`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -127,7 +127,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2017 |
 | domain | insurance |
 | license | Kaggle Competition Rules |
-| data_tags | IID, Anonymized, DelayedTarget |
+| data_tags | IID, Anonymized, ForcedIIDFromTemporal |
 | reference | Howard2017PortoSegurosSafeDriverPrediction |
 | rows x columns | 595,206 x 38 |
 | task.target | target |
@@ -194,12 +194,14 @@ We start with the train.csv from Kaggle.
 - There exist only 6 duplicates in the training data. We drop them as the portion is too small to be meaningful.
 - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
   event, the class that sorts second, so it is the metrics' positive class.
-- Time basis: DelayedTarget: policy holders priced at one moment, the target a claim within the following year
-  (the host's framing; record: Samples: One Moment, Target: Later). Every row shares that moment and the claim
-  window, so no test row is later than a training row and the random split is IID. The id is a random shuffle
-  and no date survives, so neither the moment nor a later pricing round can be checked. Leak test across the
-  split: no repeated policy holder, no order along the id, the region code in ps_reg_03 held out scores the same
-  (ROC AUC 0.639). Not tested: a later pricing round.
+- Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): policy holders priced
+  at one moment, the target a claim within the following year (the host's framing; record: Samples: One Moment,
+  Target: Later). One pricing moment is one period, too few for three windows (SPLIT-8). The id is a random
+  shuffle and no date survives, so neither the moment nor a later pricing round can be checked. Leak test across
+  the split: no repeated policy holder, no order along the id, the region code in ps_reg_03 held out scores the
+  same (ROC AUC 0.639). Not tested: a later pricing round. Not taken as stationary (Andrej, 2026-11-18): A
+  consumer pricing task with market and selection drift, an unstated period and anonymised features; the
+  measured insurance neighbours are mostly inconclusive, so the evidence is mixed at best.
 
 ## Splits
 
@@ -215,7 +217,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -380,4 +382,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c2555784e30ae716102e7ea5d5508b86153743114e7af899147c68ef25a94dd5` |
+| stale | yes: the definition now gives checksum `v2:dbb18744ad4dd587e6902f44984171ef202030ca056dd3367c8764dd35827d60` |

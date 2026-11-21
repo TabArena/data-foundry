@@ -48,7 +48,7 @@ Credit Approval (690 rows), From a Japanese
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `hmda_mortgage_application_decision` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
-CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A lender's approval decision follows credit policy and markets, the data is decades old and anonymized; there is no domain reason for interchangeability.
 
@@ -56,7 +56,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
 **Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
-**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13.
+**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13. Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Issues for Andrej:**
 
@@ -104,7 +104,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
      - Similar measured credit data (lending_club) and credit-scoring literature show drift.
    * **Earlier views:**
      - Resolved (2026-11-13, Andrej): CrossSectional withdrawn, the forced tag stays.
-     - CC (2026-11-17, Andrej): blind split review: the decision tree, walked without the current split, reaches the forced split it ships.
+     - CC (2026-11-17, Andrej): blind split walk: the decision tree, walked without the current split, reaches the forced split it ships.
    * **Options:**
 
      | | Option | What it does | Pro | Con |

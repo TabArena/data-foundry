@@ -56,7 +56,7 @@ CC (2026-10-26, Lennart): issue 8: keep `TotalElectricityBill` with the note, "w
 
 CC (2026-10-26, Lennart): the declared metric, ROC AUC (the fallback), is checked as declared.
 
-**Assessment (AI, 2026-10-26):** issues 1 and 8 are settled as implemented. Issue 9 (keep the billing totals) waits for a LEAK-10 amendment: the keep is a Must departure that a Cases row cannot carry (consistency check on the review page).
+**Assessment (AI, 2026-10-26):** issues 1 and 8 are settled as implemented. Issue 9 (keep the billing totals) waits for a LEAK-10 amendment: the keep is a Must departure that a Cases row cannot carry (consistency check).
 
 CC (2026-10-26, Lennart): issue 9: "keep them, amend it but make clear this needs case by case curator judgement": `TotalBilling` and `AverageBilling` stay; LEAK-10 amended (a window sum that the data shows does not move with the outcome, given the covariates known at the prediction point, stays, case by case).
 
@@ -64,7 +64,7 @@ CC (2026-10-26, Lennart): issue 9: "keep them, amend it but make clear this need
 
 CC (2026-10-26, Lennart): verdict ship.
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Arrears depend on tariffs, collection policy and the economy, which change between extracts, and the file order already shows structure the random split hides; nothing measured supports ASR.
 
@@ -72,7 +72,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
 **Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
-**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13.
+**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13. Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Issues for Andrej:**
 
@@ -128,7 +128,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
    * **Earlier views:**
      - CC (2026-10-12, Lennart): ships as IID tagged ForcedIIDFromTemporal; file-block holdout 0.877 -> 0.843/0.786 (splits.md SPLIT-8 Cases row)
      - Resolved (2026-11-13, Andrej): CrossSectional withdrawn, the forced tag stays.
-     - CC (2026-11-17, Andrej): blind split review: the decision tree, walked without the current split, reaches the forced split it ships.
+     - CC (2026-11-17, Andrej): blind split walk: the decision tree, walked without the current split, reaches the forced split it ships.
    * **Options:**
 
      | | Option | What it does | Pro | Con |

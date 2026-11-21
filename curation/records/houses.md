@@ -50,11 +50,11 @@ Andrej: non-iid. Currently, we do not include spatial data as non-iid. Might cha
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: real 1990 census block groups with wide method separation; the only question is that the census publishes the value the task predicts, so the use case is a named stand-in. Priority 2: gap 0, use case 0, source 1, shape 0, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: real 1990 census block groups with wide method separation; the only question is that the census publishes the value the task predicts, so the use case is a named stand-in. Priority 2: gap 0, use case 0, source 1, shape 0, risk -0.
 
-CC (2026-11-11, Andrej): kept as a valuation stand-in (review page, issue 1 A): the census publishes the value, the gap is named in the approximate fit. Random split named a `Snapshot` of the 1990 census (issue 2 B): a `Time basis:` line in the definition; the tag enters `data_tags`. Record fields set from the definition (field marks): `domain` business & marketing, `original_source` Other.
+CC (2026-11-11, Andrej): kept as a valuation stand-in (Review  1 A): the census publishes the value, the gap is named in the approximate fit. Random split named a `Snapshot` of the 1990 census (issue 2 B): a `Time basis:` line in the definition; the tag enters `data_tags`. Record fields set from the definition (field marks): `domain` business & marketing, `original_source` Other.
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -74,7 +74,7 @@ one tract), which a random split puts on both sides, as the use case allows. Wei
 regression, wide method separation +; the census publishes the value it predicts, 1990 data -.
 
 **Main points:** settled on 2026-11-11: kept as a valuation stand-in (issue 1), the random split named a
-`Snapshot` of the 1990 census (issue 2), record fields filled.
+`Snapshot` of the 1990 census (issue 2; the prototype is now named `Retrospective`), record fields filled.
 
 **Record judgment:** valid data, weak decision. The table is Pace and Barry's census extract, the surviving copy of
 the California housing data (california_housing and california_housing_prices are retired as duplicates of it, which

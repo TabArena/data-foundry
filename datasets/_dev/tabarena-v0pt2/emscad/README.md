@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: emscad
 container_format: 2
-checksum: v2:8fbbaf54fa935e146324fc63ef6a129d2a7dc60da78530e29a83319ce58cb86f
+checksum: v2:fe141115f761dcc80963353d2c373e94397a1d7c6be6914590a69ab245250974
 build:
   uuid: 01a111fc-7ebc-7346-942e-09517a07829e
   checksum: v2:9b052a25b58d29e3edbdc3fb43d5480da80e75d90658e58f32ec216c64f27cc0
@@ -82,7 +82,7 @@ decisions: []
 
 Binary classification of `fraudulent`, scored with `roc_auc` on grouped splits by `poster_group`. 16,116 rows and 17 features. Source: Other (2017).
 
-Built as `01a111fc-7ebc-7346-942e-09517a07829e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8fbbaf54fa935e146324fc63ef6a129d2a7dc60da78530e29a83319ce58cb86f`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7ebc-7346-942e-09517a07829e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fe141115f761dcc80963353d2c373e94397a1d7c6be6914590a69ab245250974`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -211,10 +211,11 @@ The paper describes them in more detail as well in Table 2.
 In the original paper, the authors subsampled the data to have 450 fraudulent and 450 non-fraudulent samples.
 No details are given on how the subsampling was done. Moreover, duplicates were skipped, but no details are given on how duplicates were identified.
 
-- Time basis: ForcedGroupedFromTemporal: ads posted from 2012 to 2014 with no date in the release (`job_id`
-  does not follow posting time); the split groups by poster because the label is set per client, so the test
-  posters come from the same period as the training ones. Scams change over time; a dated release would allow
-  a split by posting date.
+- Time basis: ForcedGroupedFromTemporal: ads posted from 2012 to 2014 with no date in the release (`job_id` does
+  not follow posting time); the split groups by poster because the label is set per client, so the test posters
+  come from the same period as the training ones. Scams change over time; a dated release would allow a split by
+  posting date. Not taken as stationary (Andrej, 2026-11-18): Fraud against an adapting review is the textbook
+  case against ASR, and the source itself says the scams change.
 - Following the original paper, we drop all duplicates (when ignoring the job_id column) to avoid data leakage. We also drop reposts, which the paper describes as "fraudsters can quickly and repeatedly try to post the same job ad in identical or different locations" (Sec. 5): rows identical in every field except job_id and location (1,343 more rows, 115 of them fraudulent).
 - The labels were assigned per client ("based on client's suspicious activity on the system, false contact or company information, candidate complaints and periodic meticulous analysis of the clientele", Sec. 5), and ads of the same client appear several times. We group them exactly, without similarity thresholds: same non-empty company_profile (the client's own company text; none of the 1,708 profiles mixes labels), or a shared masked e-mail, phone or URL that occurs within at most one company profile (contacts shared by several companies, e.g. job-board links, are generic and not used). This gives about 4,500 groups (largest 539 ads, a legitimate recruiter); ads without a profile or shared contact are their own group. Random splits scored ROC AUC 0.99 because the model recognises known clients; grouped splits score about 0.93 (leak audit 2026-09-24, re-checked 2026-09-30).
 - Residual: about 335 ads without profile or shared contact still have a near-identical text (TF-IDF cosine >= 0.95) in another group, likely lightly edited reposts. Dropping them at thresholds 0.95 to 0.7 did not change the grouped AUC measurably, so we keep them.
@@ -277,7 +278,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 Accepted on purpose:
@@ -412,4 +413,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8fbbaf54fa935e146324fc63ef6a129d2a7dc60da78530e29a83319ce58cb86f` |
+| stale | yes: the definition now gives checksum `v2:fe141115f761dcc80963353d2c373e94397a1d7c6be6914590a69ab245250974` |

@@ -58,15 +58,15 @@ CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 2 coded columns carry their words.
 
-CC (2026-11-17, Andrej): the declared split (random, 1x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 1x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A price target in a consumer marketplace is the plainest case against ASR.
 
 ## Review
 
-**Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below.
+**Outcome:** added. Stationarity reasoning of 2026-11-18: the forced tag stays (issue 1, A, Andrej).
 
-**Main points:** Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?
+**Main points:** Nothing open: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 1 resolved on 2026-11-18).
 
 **Issues for Andrej:**
 

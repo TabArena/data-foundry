@@ -19,6 +19,7 @@ year: '2011'
 collection_period: Unknown
 required_split:
 - Random (IID)
+problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=44089
 - https://www.kaggle.com/competitions/GiveMeSomeCredit/overview
@@ -43,15 +44,15 @@ Andrej: Time-invariant features, may not be representative anymore, but still va
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Kaggle's evaluation: AUC.
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A two-year delinquency outcome in an unknown, likely crisis-era period moves with the credit climate; the rule itself cites this dataset as forced for lack of known collection facts.
 
 ## Review
 
-**Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below.
+**Outcome:** added. Stationarity reasoning of 2026-11-18: the forced tag stays (issue 1, A, Andrej).
 
-**Main points:** Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?
+**Main points:** Nothing open: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 1 resolved on 2026-11-18).
 
 **Issues for Andrej:**
 
@@ -76,7 +77,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
      - Similar measured credit data (lending_club) is not flat; credit-scoring literature documents population drift.
    * **Earlier views:**
      - splits.md SPLIT-32 names this dataset as the example of a forced tag that 'claims only what is known (no scoring date stated)'.
-     - CC (2026-11-17, Andrej): blind split review: the decision tree, walked without the current split, reaches the forced split it ships.
+     - CC (2026-11-17, Andrej): blind split walk: the decision tree, walked without the current split, reaches the forced split it ships.
    * **Options:**
 
      | | Option | What it does | Pro | Con |

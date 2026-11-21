@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: otto_group_product_classification_challenge
 container_format: 2
-checksum: v2:21e415a68f24041faa09308daaef8fbe2c8233254b5b263f7bb6c996959d8518
+checksum: v2:8ba131b38612abece6b14282e52a3340d69d713daa7ef63f047889c49678b1c8
 build:
   uuid: 01a111fc-7288-72b4-8ceb-e6f796d2a623
   checksum: v2:62fe34a2b43854c8a17a969d4e50a367f3cea10744dac40bbfe54860048ac6fe
@@ -67,7 +67,7 @@ decisions: []
 
 Multiclass classification of `target`, scored with `log_loss` on IID splits. 61,878 rows and 93 features. Source: Kaggle (2015).
 
-Built as `01a111fc-7288-72b4-8ceb-e6f796d2a623` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:21e415a68f24041faa09308daaef8fbe2c8233254b5b263f7bb6c996959d8518`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7288-72b4-8ceb-e6f796d2a623` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8ba131b38612abece6b14282e52a3340d69d713daa7ef63f047889c49678b1c8`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -124,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2015 |
 | domain | business & marketing |
 | license | Kaggle Competition Rules |
-| data_tags | IID, Anonymized, Timeless |
+| data_tags | IID, Anonymized, Retrospective |
 | reference | Bossan2015OttoGroupProductClassificationChallenge |
 | rows x columns | 61,878 x 94 |
 | task.target | target |
@@ -186,9 +186,10 @@ We start with the train.csv from Kaggle.
 - The data has been anonymized, so feature meanings are unknown.
 - Features and data is clean. Top Kaggle experts applied no relevant preprocessing.
 - We drop the index column.
-- Time basis: Timeless: a product's main category is a fixed property of the product; the rows are one 2015
-  extract of the catalogue, its event counts as of the extract, and the competition chose its test products at
-  random. Not tested: products listed after the 2015 extract, or a revised category tree.
+- Time basis: Retrospective (Andrej, 2026-11-13; `Timeless` before): the use case cleans up the existing
+  catalogue, assigning the products of one 2015 extract to their main categories, which subsidiaries file
+  differently; the event counts are read at the extract, and the competition chose its test products at random.
+  Not tested: products listed after the 2015 extract, or a revised category tree.
 
 ## Splits
 
@@ -210,7 +211,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -394,4 +395,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:21e415a68f24041faa09308daaef8fbe2c8233254b5b263f7bb6c996959d8518` |
+| stale | yes: the definition now gives checksum `v2:8ba131b38612abece6b14282e52a3340d69d713daa7ef63f047889c49678b1c8` |

@@ -73,7 +73,7 @@ CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedT
 - A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
 - The random split stays.
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The only forward comparison the data allow shows a gap whose CI excludes zero; with a competitive market behind churn there is no reason to take later months as interchangeable.
 
@@ -81,7 +81,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
 **Outcome:** added. The record gained `Target: Later` on 2026-11-13.
 
-**Main points:** Nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded).
+**Main points:** Nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded). Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Issues for Andrej:**
 

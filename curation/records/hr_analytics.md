@@ -19,6 +19,7 @@ year: '2018'
 collection_period: Unknown
 required_split:
 - Random (IID)
+problem_type: Binary Classification
 source_links:
 - https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists
 - https://www.analyticsvidhya.com/datahack/contest/the-data-supremacy
@@ -57,15 +58,15 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 CC (2026-11-01, Lennart): counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14): the lossless form, chosen from the context rather than by model runs; the same day's numbers with censoring flags are reverted.
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A labour-market behaviour with an undocumented target and not-flat similar intent sets; a low ceiling is no stationarity reason.
 
 ## Review
 
-**Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below.
+**Outcome:** added. Stationarity reasoning of 2026-11-18: the forced tag stays (issue 1, A, Andrej).
 
-**Main points:** Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?
+**Main points:** Nothing open: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 1 resolved on 2026-11-18).
 
 **Issues for Andrej:**
 

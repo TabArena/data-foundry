@@ -82,8 +82,7 @@ has the call.
 - Missingness occurs only in the training file and Allstate asked that models not use it (thread 826); the README says
   so, as a benchmark cannot enforce it.
 
-CC (2026-10-30, Andrej): `Yes`, priority 2 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 2 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening).
 
 Allstate's Kaggle competition: one row per insured vehicle and calendar year, 13,184,290 rows for 2005-2007 with
 `Household_ID`, `Vehicle`, model year, blinded make, model and submodel and anonymised vehicle and policy variables;

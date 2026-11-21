@@ -19,6 +19,7 @@ year: '2018'
 collection_period: Unknown
 required_split:
 - Random (IID)
+problem_type: Binary Classification
 source_links:
 - https://www.kaggle.com/datasets/averkiyoliabev/home-equity-line-of-creditheloc
 notebook_path: datasets/beyond_iid/old_iid/heloc/heloc.ipynb
@@ -50,15 +51,15 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 2 coded columns carry their words.
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. HELOC default is tied to house prices and rates, the period is unknown, and the sample is constructed; the file-order check is not a time measurement and 'no drift seen' is no reason.
 
 ## Review
 
-**Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below.
+**Outcome:** added. Stationarity reasoning of 2026-11-18: the forced tag stays (issue 1, A, Andrej).
 
-**Main points:** Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?
+**Main points:** Nothing open: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 1 resolved on 2026-11-18).
 
 **Issues for Andrej:**
 
@@ -84,7 +85,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
      - Similar measured credit data (lending_club) is not flat.
    * **Earlier views:**
      - splits.md SPLIT-32 Cases: heloc named as ForcedIIDFromTemporal example.
-     - CC (2026-11-17, Andrej): blind split review: the decision tree, walked without the current split, reaches the forced split it ships.
+     - CC (2026-11-17, Andrej): blind split walk: the decision tree, walked without the current split, reaches the forced split it ships.
    * **Options:**
 
      | | Option | What it does | Pro | Con |

@@ -85,8 +85,7 @@ has the call.
   its leaderboard `rmse` (MET-4).
 - `pol_department` (the commune's department, 96 values) as the category; `pol_insee_code` (17,794 communes) as text.
 
-CC (2026-10-30, Andrej): `Yes`, priority 3 (the AI screening had `TBD -> Yes`, priority 3; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 3 (the AI screening had `TBD -> Yes`, priority 3; zero-inflated screening).
 
 Motor policies of an unnamed French insurer ("Datasets from unknown private insurers", CASdatasets
 `pricingame.Rd`) from the French Institute of Actuaries' pricing game of 16 November 2017: 100,000 policies of 91,488
@@ -149,7 +148,7 @@ CC (2026-11-10, Andrej): the metric floor stays at 0.1 EUR (Review issue 7 (b), 
 
 **Assessment (AI, 2026-11-10):** on the AIcrowd copy the mean cost per policy is 119.3, 119.0, 112.3 and 106.2 EUR in years 1 to 4 (0% to 6% a year). No fact favours a floor above 0.1 EUR: no minimum premium is published and the source records claim amounts down to 0.02 EUR (8 of 12,391 positive claims below 1 EUR); between 0.1 and 1 EUR only squared-error fits move (ridge 66.33 against 61.61, squared-error LightGBM 102.83 against 74.94; repeat 0, folds 0 to 2).
 
-CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
+CC (2026-11-10, Andrej): ship.
 
 CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedGroupedFromTemporal` (Review issue 8, B):
 - Every Year-0 premium is set at the start of the policy year and the year's claims follow: one shared moment and a closed window, which the sharpened one-moment rule names a `DelayedTarget`.
@@ -217,7 +216,7 @@ rule for a deviance floor, a convention that can change later (5, Lennart); `pol
 Lennart's stance that sex is no rating factor of any insurance pricing task (australian_vehicle_insurance_2004_2005's
 issue 7).
 
-**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
+**Verdict (2026-11-10, Andrej):** ship.
 
 **Issues for Andrej and Lennart:**
 
@@ -760,7 +759,7 @@ issue 7).
      |---|---|---|---|---|
      | A | Keep `ForcedGroupedFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
      | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Claim level drifts 0-6% a year on the AIcrowd copy, which a random split hands to every model.; The AIcrowd later years may be organiser-built (splits_comment), so the measurement needs care. |
-     | C | Measure first | Time exists in a parent source: the AIcrowd release of the same portfolio holds claim years 1-4 (AIcrowd year k = pg17 Year k-1, linked via 6,280 equal amounts), on noised features; CASdatasets holds Year 0 only; that multi-year copy (AIcrowd, claim years 1-4, noised features) is not in the warehouse, so measuring needs a download first. | The rule asks for a measurement where time exists | Takes a Slurm run |
+     | C | Measure first | Time exists in a parent source: the AIcrowd release of the same portfolio holds claim years 1-4 (AIcrowd year k = pg17 Year k-1, linked via 6,280 equal amounts), on noised features; CASdatasets holds Year 0 only; that multi-year copy (AIcrowd, claim years 1-4, noised features) is not in the warehouse, so measuring needs a download first. | The rule asks for a measurement where time exists | Takes a cluster run |
 
    * **Recommendation:** C, the rule asks for the stationary-relation test where a parent source holds periods: run v3 on the AIcrowd years 1-4 (periods = claim years, units = policies, Tweedie deviance and Gini), and put its verdict in the Time basis line instead of assuming. Confidence: high. **Decision:** A, B or C?
 

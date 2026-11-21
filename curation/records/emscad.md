@@ -65,11 +65,11 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: a documented platform task (Vidros et al. 2017) with reposts dropped and posters held out, which removed the client-recognition leak (ROC AUC 0.99 random to 0.94 grouped). Priority 3: gap 0, use case 0, source 1, shape 1, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: a documented platform task (Vidros et al. 2017) with reposts dropped and posters held out, which removed the client-recognition leak (ROC AUC 0.99 random to 0.94 grouped). Priority 3: gap 0, use case 0, source 1, shape 1, risk -0.
 
-CC (2026-11-10, Andrej): review page marks: ship as defined (issue 1, ok, option A). Time basis forced from temporal, grouped (issue 2, option B): `ForcedGroupedFromTemporal` in `data_tags` next to `Spatial`, its `Time basis:` bullet in place of the note on the missing dates. The CC of 2026-10-14 refused the IID forced tag for a grouped split; the grouped tag now names the lost time. Grouping by poster unchanged.
+CC (2026-11-10, Andrej): ship as defined (Review issue 1, ok, option A). Time basis forced from temporal, grouped (issue 2, option B): `ForcedGroupedFromTemporal` in `data_tags` next to `Spatial`, its `Time basis:` bullet in place of the note on the missing dates. The CC of 2026-10-14 refused the IID forced tag for a grouped split; the grouped tag now names the lost time. Grouping by poster unchanged.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `poster_group`, 3x3 folds, `ForcedGroupedFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `poster_group`, 3x3 folds, `ForcedGroupedFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 3, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Fraud against an adapting review is the textbook case against ASR, and the source itself says the scams change.
 
@@ -92,7 +92,7 @@ Weighed: documented source and labels +, a real platform decision +, no dates, s
 2012-2014 period (approximate fit) -.
 
 **Main points:** All settled (2026-11-10): ship as defined (issue 1, A), the grouped split tagged forced from
-temporal (issue 2, B).
+temporal (issue 2, B). Issue 3 resolved on 2026-11-18: `ForcedGroupedFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Record judgment:** valid, ship. The curator's decisions of 2026-09-30 (reposts dropped, grouped by poster) and
 2026-10-14 (no `ForcedIIDFromTemporal` tag, since the grouped split already marks the task as non-IID) are in the

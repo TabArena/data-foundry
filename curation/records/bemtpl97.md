@@ -87,7 +87,7 @@ CC (2026-11-04, Lennart): the fit stays approximate under the `ForcedIIDFromTemp
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes; disputed: EV-7 (the rebuild as a separate gate); on LEAK-10 the advocate withdrew the amendment, so all sides recommend making `expo` a scoring column, as the source uses it, and keeping it as a feature under a LEAK-10 amendment stays open to the curator (for fremtpl2 too); for the curator: issues 1-3. Priority 3: gap +, use case -, source +, shape +, risk - (gap: insurance is thin among the accepted definitions; use case: the source names the insurer's pricing, but the fit is approximate, forced IID and realized exposure; risk: issue 1, a likely LEAK-10 leak through `expo`, 16-18% of the model's skill).
 
-**Assessment (AI, 2026-11-04):** text corrections of the second-pass panel applied (Lennart's go-ahead on the review page): the stale lines above carry correction notes. No data, split, feature or metric change.
+**Assessment (AI, 2026-11-04):** text corrections of the second-pass panel applied (Lennart's go-ahead): the stale lines above carry correction notes. No data, split, feature or metric change.
 
 CC (2026-11-05, Lennart): issue 2, (b): ship all 163,231 policies of the first public copy (PROV-8), data/P&Cdata.txt of katrienantonio/PE-pricing-analytics commit 0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e (26 September 2019), instead of the 2020 release's 163,212, which leaves out the 19 policies whose average claim cost exceeds EUR 81,000. Re-verified on 2026-11-05: the 2019 copy minus exactly those 19 rows equals the release row by row in the same order, every value equal to the text file's 15 digits; the 19 hold 21 claims (17 with one claim, 2 with two). The restored rows remove the selection by claim cost, so no `Selection Bias` marker is needed for it. The 2019 repository states no licence; CASdatasets declares GPL (>= 2) for the release. LightGBM-Poisson mean deviance (untuned, 9 folds, `expo` free): 0.5274 against the training mean's 0.5517 before, 0.5279 against 0.5520 after both of today's changes; the gain of a free `expo` over an offset is 0.0039 (was 0.0040), 16% of the skill either way.
 
@@ -114,7 +114,7 @@ CC (2026-11-13, Andrej): collection facts `Samples: Over Time` and `Time: Lost` 
 - No start date survives, so the time is lost.
 - The forced split (`ForcedIIDFromTemporal`) now agrees with the facts.
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A one-year 1997 study used today, with a rating rule (the legal bonus-malus scale) that the source country abolished in 2004; the span and the rule change both stand against ASR.
 
@@ -143,7 +143,7 @@ issue here; the panel's two open questions concern weighted tables in general an
 collection's training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate").
 
 **Main points:** No open issue, so it ships by default: issues 1-3 are resolved, and the re-review of 2026-11-06 adds
-none on this dataset (its two questions are the cross-dataset items X1 and X2).
+none on this dataset (its two questions are the cross-dataset items X1 and X2). Issue 4 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Record judgment:** valid; a documented Belgian motor-insurance portfolio and the source's own frequency task, now the
 claims per year insured weighted by `expo`. The CC of 2026-11-06 names the calls it supersedes (Myunghwan's of

@@ -21,6 +21,7 @@ year: '2016'
 collection_period: Apr 2005 - Oct 2005
 required_split:
 - Random (IID)
+problem_type: Binary Classification
 source_links:
 - https://doi.org/10.24432/C55S3H
 notebook_path: datasets/beyond_iid/old_iid/credit_card_clients_default/credit_card_clients_default.ipynb
@@ -50,9 +51,9 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 3 coded columns carry their words; MARRIAGE 0 (undocumented) missing.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: Yeh & Lien's 30,000 Taiwanese card holders, a direct default task with features dated before the payment and no leak; methods separate (0.207 to 0.255 1-AUC); keep the undocumented repayment codes -2 and 0 as numbers, as an exception noted in the definition. Priority 3: gap 0, use case 0, source 1, shape 1, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: Yeh & Lien's 30,000 Taiwanese card holders, a direct default task with features dated before the payment and no leak; methods separate (0.207 to 0.255 1-AUC); keep the undocumented repayment codes -2 and 0 as numbers, as an exception noted in the definition. Priority 3: gap 0, use case 0, source 1, shape 1, risk -0.
 
-CC (2026-11-04, Andrej): marks on the BeyondArena v0.2 review page.
+CC (2026-11-04, Andrej): decided:
 - Repayment status codes (issue 1): ok to keep -2 and 0 as numbers on one scale with -1 and 1-8 (option A), as an exception to the rule that makes an undocumented code missing.
 - Metric: ROC AUC checked and kept (the source's lift-chart area ratio is the Gini, 2 x ROC AUC - 1).
 - Split: open; he asks whether it should be temporal (Review issue 2).
@@ -61,11 +62,15 @@ CC (2026-11-04, Andrej): marks on the BeyondArena v0.2 review page.
 
 **Assessment (AI, 2026-11-04):** shares of -2 / -1 / 0 per status column 9-16% / 19-20% / 49-57%; default rate by September's code -2 13%, -1 17%, 0 13%, one month late 34%, two months 69%, so the order -2 to 0 sits below the months of delay. Code 1 is 12.3% of the rows in September and at most 0.1% in April to August: the earlier months record a short delay differently, alike in both classes. Noted in `curation_comments` and as an exception row in the cleaning rules' Cases table.
 
-CC (2026-11-06, Andrej): time basis `DelayedTarget` accepted on the BeyondArena v0.2 review page (issue 3, B, through the cross-dataset item on `DelayedTarget` issues of one-moment releases): 30,000 clients scored after the September 2005 statement, the target default on the next month's payment. The random split is IID here, as every row shares the moment and the outcome window, so no test row is later than a training row. The `Time basis:` line is in the definition's notes; the tag enters `data_tags`.
+CC (2026-11-06, Andrej): time basis `DelayedTarget` accepted (Review  3, B, through the cross-dataset item on `DelayedTarget` issues of one-moment releases): 30,000 clients scored after the September 2005 statement, the target default on the next month's payment. The random split is IID here, as every row shares the moment and the outcome window, so no test row is later than a training row. The `Time basis:` line is in the definition's notes; the tag enters `data_tags`.
 
-CC (2026-11-09, Andrej): random clients (review page issue 2, reply a), with issue 3's time basis `DelayedTarget`: one snapshot, the same six months and the same outcome month for every client.
+CC (2026-11-09, Andrej): random clients (Review issue 2, reply a), with issue 3's time basis `DelayedTarget`: one snapshot, the same six months and the same outcome month for every client.
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.
+
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Although use is the next month, the data were collected at the onset of a documented card-debt crisis after which rules and limits changed; the strongest candidate in the group fails on its own period.
 

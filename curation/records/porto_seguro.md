@@ -49,16 +49,20 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the host's next-year claim task with its Gini (as ROC AUC), a narrow but stable spread (0.618 to 0.646, Kendall's W 0.99), no copy or leak found. Priority 4: gap 1, use case 1, source 0, shape 1, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the host's next-year claim task with its Gini (as ROC AUC), a narrow but stable spread (0.618 to 0.646, Kendall's W 0.99), no copy or leak found. Priority 4: gap 1, use case 1, source 0, shape 1, risk -0.
 
 CC (2026-11-04, Andrej): ship as defined (issue 1); metric checked and kept. Split: random, tagged as forced from temporal and as a delayed target (issue 2).
 - **Forced from temporal:** the insurer prices next year's policies, but the release has no dates and its id is a random shuffle; the leak test passes (no shared rows, no hidden group, region-grouped folds score as random ones, 0.639).
 - **Delayed target, which justifies the random split:** the holder's data is taken at the start of the policy year and the claim arrives within it, so a random split tests what pricing does at that point; the tag `Delayed Target` (SPLIT-32) holds once the audit shows every column existed at that point.
 - To do: `data_tags` and the feature audit.
 
-CC (2026-11-09, Andrej): time basis `DelayedTarget` alone (review page issue 3, B): policy holders priced at one moment, a claim within the following year; the tag enters `data_tags` and the feature check follows the record's `Target: Later`. The blanks in `ps_car_01_cat`, `ps_ind_04_cat` and `ps_ind_02_cat` stay (issue 4, A): "There is no evidence that this is a leak and not a real pattern. The difference in the target distributions is not too crazy, so this is not sufficient to drop."
+CC (2026-11-09, Andrej): time basis `DelayedTarget` alone (Review issue 3, B): policy holders priced at one moment, a claim within the following year; the tag enters `data_tags` and the feature check follows the record's `Target: Later`. The blanks in `ps_car_01_cat`, `ps_ind_04_cat` and `ps_ind_02_cat` stay (issue 4, A): "There is no evidence that this is a leak and not a real pattern. The difference in the target distributions is not too crazy, so this is not sufficient to drop."
 
-CC (2026-11-17, Andrej): the declared split (random, 1x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which is retired:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.
+
+CC (2026-11-17, Andrej): the declared split (random, 1x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 5, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A consumer pricing task with market and selection drift, an unstated period and anonymised features; the measured insurance neighbours are mostly inconclusive, so the evidence is mixed at best.
 
@@ -364,7 +368,7 @@ random draws after measuring it, and the notes could say the same once measured 
      field filled in after a claim cannot be read from a codebook; Kaggle's test file has the same pattern (124 rows
      miss both), which does not clear it, since that file is a holdout of the same snapshot[^4a]. Filling the blanks
      with a level would need a statistic over all rows, which our cleaning does not compute[^4b].
-   * **Experiments:** Slurm jobs 1366178 and 1366184, Kaggle's train.csv (595,212 rows, -1 read as missing),
+   * **Experiments:** Kaggle's train.csv (595,212 rows, -1 read as missing),
      LightGBM on the 37 shipped features, out-of-fold over 5 folds, 3 seeds averaged; the three columns' blanks
      either visible or replaced by a level, so the model cannot see them:
      - Any of the three blank: 246 rows, 41 claims against 24.7 expected (p = 0.0003); `ps_ind_02_cat` blank: 216

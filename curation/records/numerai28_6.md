@@ -27,6 +27,9 @@ source_links:
 v2_path: datasets/_dev/tabarena-v0pt2/numerai28_6/dataset.py
 source_row: 719
 type_adapter_id: curation-record-v1
+required_split:
+- Random (IID)
+problem_type: Binary Classification
 ---
 
 ## Comments
@@ -70,7 +73,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 3, A; stationarity r
 
 **Outcome:** added. The record gained `Target: Later` on 2026-11-13.
 
-**Main points:** Nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded).
+**Main points:** Nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded). Issue 3 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Issues for Andrej:**
 
@@ -120,7 +123,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 3, A; stationarity r
    * **Earlier views:**
      - CC (2026-10-22, Lennart): 'add as forced IID' (record note: 'need to find a version with a timestamp (or treat it as forced IID)')
      - Resolved (2026-11-13, Andrej): C, Target: Later recorded, forced tag and split stay.
-     - CC (2026-11-17, Andrej): blind split review: the decision tree, walked without the current split, reaches the forced split it ships.
+     - CC (2026-11-17, Andrej): blind split walk: the decision tree, walked without the current split, reaches the forced split it ships.
    * **Options:**
 
      | | Option | What it does | Pro | Con |

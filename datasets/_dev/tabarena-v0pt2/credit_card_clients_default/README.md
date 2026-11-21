@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: credit_card_clients_default
 container_format: 2
-checksum: v2:bd80988d9bd7a3bf29370a95459aec0e9c8c826b65d859782941c877cf348e23
+checksum: v2:d9d9336a45eed5c927ff750e2e2f5e7d4daa4b25f2301c8228979587d6a55319
 build:
   uuid: 01a111fc-a3c4-755e-b3fb-ad77ce7129a5
   checksum: v2:5d236c15c392c1f552a15f01023ce7757e961813ba93c296485e1b897bfb1968
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `DefaultOnPaymentNextMonth`, scored with `roc_auc` on IID splits. 30,000 rows and 23 features. Source: UCI (2016).
 
-Built as `01a111fc-a3c4-755e-b3fb-ad77ce7129a5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bd80988d9bd7a3bf29370a95459aec0e9c8c826b65d859782941c877cf348e23`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a3c4-755e-b3fb-ad77ce7129a5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d9d9336a45eed5c927ff750e2e2f5e7d4daa4b25f2301c8228979587d6a55319`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -125,7 +125,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2016 |
 | domain | finance |
 | license | CC BY 4.0 |
-| data_tags | IID, DelayedTarget |
+| data_tags | IID, ForcedIIDFromTemporal |
 | reference | yeh2009comparisons |
 | rows x columns | 30,000 x 24 |
 | task.target | DefaultOnPaymentNextMonth |
@@ -207,12 +207,15 @@ The first 5 of 30,000 rows of the final frame (random rows: the frame is shuffle
   late 34%, 2 months 69%). The code 1 (one month late) occurs in 12.3% of the rows for September but in at
   most 0.1% for the five earlier months, where 2 is 9-13%: the earlier months record a short delay
   differently, alike in both classes.
-- Time basis: DelayedTarget: one extract of 30,000 card holders of one Taiwanese bank, scored after the
-  September 2005 statement with the same six months of history for every client (April to September 2005); the
-  target is default on the next month's payment, one month closed for every client. Every client was scored at
-  the same statement and its outcome is the same month's payment, so no test row is later than a training row
-  and the random split is IID. The client ID is not a time order (the first two quarters of IDs cannot be told
-  apart, ROC AUC 0.504). The credit limit and the demographics carry no date. Not tested: a later month.
+- Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): one extract of 30,000
+  card holders of one Taiwanese bank, scored after the September 2005 statement with the same six months of
+  history for every client (April to September 2005); the target is default on the next month's payment. One
+  statement month is one period, too few for three windows (SPLIT-8), so the random split tests other clients of
+  the same month. The client ID is not a time order (the first two quarters of IDs cannot be told apart, ROC AUC
+  0.504). The credit limit and the demographics carry no date. Extracts of later statements would allow a
+  temporal split. Not tested: a later month. Not taken as stationary (Andrej, 2026-11-18): Although use is the
+  next month, the data were collected at the onset of a documented card-debt crisis after which rules and limits
+  changed; the strongest candidate in the group fails on its own period.
 
 ## Splits
 
@@ -234,7 +237,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 35 exact duplicate row(s) (0.1% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 21 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
@@ -345,4 +348,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:bd80988d9bd7a3bf29370a95459aec0e9c8c826b65d859782941c877cf348e23` |
+| stale | yes: the definition now gives checksum `v2:d9d9336a45eed5c927ff750e2e2f5e7d4daa4b25f2301c8228979587d6a55319` |

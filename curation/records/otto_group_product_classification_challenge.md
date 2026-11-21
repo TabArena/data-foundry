@@ -21,7 +21,7 @@ collections:
 - TabArena Reject
 original_source: Kaggle
 year: '2015'
-collection_period: Unknown
+collection_period: '2015'
 domain: business & marketing
 required_split:
 - Random (IID)
@@ -43,17 +43,17 @@ CC: "Distinguish products in 10 groups based on 93 features. Competition not won
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source log_loss — multi-class logarithmic loss, the competition's evaluation metric (Kaggle evaluation page).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the host's product-category task and log loss are kept, the spread is wide (0.380 to 0.753), and the class-sorted row order our experiments found in the shipped file does not reach the shuffled v0.2 rows. Priority 4: gap 1, use case 1, source 0, shape 1, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the host's product-category task and log loss are kept, the spread is wide (0.380 to 0.753), and the class-sorted row order our experiments found in the shipped file does not reach the shuffled v0.2 rows. Priority 4: gap 1, use case 1, source 0, shape 1, risk -0.
 
 CC (2026-11-04, Andrej): ship as defined (issue 1, A). The declared split (random products) and the declared metric (multi-class log loss, the competition's) checked and kept.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): a product's main category is a fixed property of the product, in one 2015 extract. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted (Review  2, B, through the cross-dataset item on routine `Timeless` issues): a product's main category is a fixed property of the product, in one 2015 extract. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
-CC (2026-11-09, Andrej): the record's collection fact is `Samples: One Moment` (review page issue 3, B): the features are event counts as of one 2015 extract.
+CC (2026-11-09, Andrej): the record's collection fact is `Samples: One Moment` (Review issue 3, B): the features are event counts as of one 2015 extract.
 
 CC (2026-11-13, Andrej): time basis `Retrospective` instead of `Timeless`: the release is one 2015 extract (`Samples: One Moment`), which `Timeless` does not take, and the use case cleans up the existing catalogue, filling in the categories of the products it covers. The random split stays.
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -70,12 +70,12 @@ the class shares. Quality: nothing open. Weighed: a large retailer's catalogue, 
 +, anonymised features -.
 
 **Main points:** Shipped as defined (issue 1, resolved); the random split named `Timeless` (issue 2, resolved
-2026-11-06); the release recorded as one extract, `Samples: One Moment` (issue 3, resolved 2026-11-09).
+2026-11-06), `Retrospective` since 2026-11-13 (Andrej), as `Timeless` does not take one extract; the release recorded as one extract, `Samples: One Moment` (issue 3, resolved 2026-11-09).
 
 **Record judgment:** valid, and the record's fields match the definition. The use case is the host's: products that
 its subsidiaries classify differently are assigned to their main category, so existing products and a random split
 fit (fit `direct`). Lennart's note that Kaggle's rules forbid redistribution is a release-checklist item, not a
-curation question. The metric review page proposes accuracy for this dataset; that question stays there.
+curation question. A separate metric review proposes accuracy for this dataset; that question stays there.
 
 **Issues for Andrej:**
 

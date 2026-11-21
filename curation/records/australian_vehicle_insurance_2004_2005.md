@@ -77,8 +77,7 @@ has the call.
   the default.
 - Drop `clm`, `numclaims` and `X_OBSTAT_`; IID split (no dates, no ids).
 
-CC (2026-10-30, Andrej): `Yes`, priority 5 (the AI screening had `TBD -> Yes`, priority 3; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 5 (the AI screening had `TBD -> Yes`, priority 3; zero-inflated screening).
 
 One-year Australian vehicle policies taken out in 2004 or 2005, the "Car" data of de Jong and Heller (2008): 67,856
 policies, 4,624 (6.8%) with at least one claim. The same table ships as `dataCar` in the R package insuranceData and as
@@ -146,7 +145,7 @@ CC (2026-11-13, Andrej): collection facts `Samples: Over Time` and `Time: Lost` 
 - No date or policy id survives, and exposure does not tell the start, so the time is lost.
 - The forced split (`ForcedIIDFromTemporal`) now agrees with the facts.
 
-CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 11, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Insurance prices and claim costs drift, the use is decades after collection, and the file order holds unexplained structure; nothing gives a domain reason to take later policies as interchangeable.
 
@@ -228,7 +227,7 @@ the metric reason, which keeps its date.
 **Main points:** nothing open. On 2026-11-09: `gender` ships again, as Australian law allows sex in insurance pricing
 today (10, reopening 7, where it was dropped on 2026-11-08 under the family stance). On 2026-11-08: the cost per year
 insured kept, with MET-14's per-contract clause amended together with spanish_motor_insurance_2015_2018's issue 7 (8);
-the age bands as ordered categories (9). Issues 1 to 6 are resolved (6 supersedes 2 and changes the form of 4).
+the age bands as ordered categories (9). Issues 1 to 6 are resolved (6 supersedes 2 and changes the form of 4). Issue 11 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Issues for Andrej and Lennart:**
 

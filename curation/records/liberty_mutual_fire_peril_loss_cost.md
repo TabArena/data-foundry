@@ -79,8 +79,7 @@ has the call.
   case (thread 9880).
 - Drop `id` and `dummy`.
 
-CC (2026-10-30, Andrej): `Yes`, priority 4 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 4 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening).
 
 Liberty Mutual's Kaggle competition on commercial fire losses: 452,061 labelled policies (the test half was
 never labelled publicly) with 300 normalized, anonymised features in four blocks (17 policy, 9 crime, 37
@@ -187,7 +186,7 @@ target stays per contract (MET-14). No change to the data, the split, the metric
 
 **Main points:** Open: none. Resolved: `var1`, `var3`, `var7` and `var8` ship as unordered categories (4, 2026-11-08);
 `var11` a feature and the Gini's weight, MET-2 amended (2, 2026-11-02); its copy `var11_weight` the scoring column the
-metric reads (3, 2026-11-06).
+metric reads (3, 2026-11-06); `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (6, 2026-11-18).
 
 **Issues for Andrej and Lennart:**
 

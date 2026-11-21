@@ -68,9 +68,9 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
 ## Review
 
-**Outcome:** added as `huntprohibited_1m`. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below.
+**Outcome:** added as `huntprohibited_1m`. Stationarity reasoning of 2026-11-18: the forced tag stays (issue 2, A, Andrej).
 
-**Main points:** Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?
+**Main points:** Nothing open: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 2 resolved on 2026-11-18).
 
 **Issues for Andrej:**
 
