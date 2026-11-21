@@ -74,7 +74,7 @@ if it is zero inflated or not"), so how the source codes its zeros is no reason 
 below 0.1 mm counted as dry is the source's convention and stays as recorded. The verdict and priority stay.
 
 CC (2026-10-30, Andrej): `TBD -> 2nd Tier`, priority 2 (the AI screening had `TBD -> Yes`, priority 2; zero-inflated
-screening review page). "Since the table has to be requested we shelf it for now"
+screening). "Since the table has to be requested we shelf it for now"
 
 CC (2026-10-30, Andrej), in chat: `TBD -> Yes`, priority 2: "Data on request shall be a TBD then for the cases where it
 mattered." The verdict rests on the merits; `Available on Request` records that the request is still to be made (EV-4:

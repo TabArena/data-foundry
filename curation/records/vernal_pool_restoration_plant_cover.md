@@ -47,7 +47,7 @@ interaction effects, included as fixed effects" (Dryad methods, https://doi.org/
   pool area and the eDNA seed bank as the only non-design covariates, and the source fits GLMMs on the design
   (https://doi.org/10.5061/dryad.7m0cfxq79).
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 Plant cover in restored vernal pools (Tang and D'Antonio, UCSB): 180 permanent 1 m2 quadrats (12 per pool in 15
 pools), surveyed in August 2019 and each June 2020-2023, so at most 900 quadrat-years; the 3.6 MB quadrat CSV is

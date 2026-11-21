@@ -53,7 +53,7 @@ species interaction" (Methods, "Greenhouse experiment", PMC9298282).
   plant species, water treatment, soil species ...", Methods, https://pmc.ncbi.nlm.nih.gov/articles/PMC9298282/), and
   the deposit keeps "just what we used for our study" (https://doi.org/10.5061/dryad.tb2rbp00h).
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 A greenhouse experiment testing ecogeographic isolation between two Clarkia sister species (Goff, Martinez del Rio
 and Kay 2021; paper read via PMC9298282). Methods: "336 conetainers with germinants ... 204 C. breweri and 132 C.

@@ -53,7 +53,7 @@ ship an image model as the baseline; SEL-12 holds on its own, and the 32-frame h
   satellite images" and the output "a sequence of 32 images", with a "Unet-3D baseline model"
   (https://github.com/agruca-polsl/weather4cast-2023).
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 Weather4cast 2023 (IARAI and Silesian University of Technology): from four time slots of 11-band EUMETSAT satellite
 images, "predict the exact amount of rainfall for the next 8 hours in 32 time slots" on 252 x 252 OPERA radar crops

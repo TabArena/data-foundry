@@ -49,7 +49,7 @@ for a yearly population estimate, with no covariate of abundance to predict a co
   direction file, and the paper states "if there are no covariates, as in our case" (p. 938,
   https://repository.library.noaa.gov/view/noaa/61755).
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 Repeated side-scan sonar counts of green sturgeon in spawning pools (Battaile et al. 2024): pool-by-pass count
 matrices for 32, 38 and 69 pools in 2020-2022 with 3-7 passes, plus a size-restricted 2022 subset (`Count2022S`),

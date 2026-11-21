@@ -64,7 +64,7 @@ CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the a
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the active compound).
 
-CC (2026-11-02, Lennart): "Yes retire it as described" (review page, `nci_aids_antiviral_screen` issue 2). Retired as
+CC (2026-11-02, Lennart): "Yes retire it as described" (`nci_aids_antiviral_screen` issue 2). Retired as
 a duplicate of `nci_aids_antiviral_screen`, the NCI DTP AIDS antiviral screen this is the 2007 challenge's cut of
 (PROV-6). The full release ships instead: it labels every compound and carries the structures, where this cut is
 4,229 compounds as 1,617 anonymous bits from ChemTK 4.1.1 that nobody can recompute for a new compound. The folder
