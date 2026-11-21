@@ -23,8 +23,10 @@ tags:
 original_source: Other
 year: '2021'
 collection_period: 2000-2020
+domain: physics & astronomy
 required_split:
 - Temporal (NON-IID)
+problem_type: Multiclass Classification
 source_links:
 - https://www.kaggle.com/datasets/fedesoriano/stellar-classification-dataset-sdss17
 notebook_path: datasets/beyond_iid/old_iid/sdss_17/sdss_17.ipynb
@@ -61,9 +63,9 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `desi_dr1_star_galaxy_quasar` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: a photometric star/galaxy/quasar task from public-domain SDSS DR17 with the spectroscopic leaks dropped and the selection marked. Priority 3: gap 1, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: a photometric star/galaxy/quasar task from public-domain SDSS DR17 with the spectroscopic leaks dropped and the selection marked. Priority 3: gap 1, use case 0, source 1, shape 1, risk -1.
 
-CC (2026-11-11, Andrej): split by the year of the spectrum instead of at random, and the collection facts corrected (review page, issues 2, 4 and 5):
+CC (2026-11-11, Andrej): split by the year of the spectrum instead of at random, and the collection facts corrected (Review issues 2, 4 and 5):
 - Split: nine one-year windows, 2012 to 2020, newest first, each trained on every spectrum taken before it (51.3% to 99.9% of the 99,999 objects; 141 to 11,044 test spectra). Every row is a spectrum taken on a dated night through a plate drilled for one targeting programme, and the programmes changed what they observed (quasars 3-11% of each year's spectra in 2000-2009, 14-16% in 2010-2013, 31-46% from 2014 on). A classifier in use is trained on the spectra taken so far and labels objects the survey has not yet observed, so it has neither the test object's plate-mates nor the later programmes, which the random split gave it. The raw `MJD` returns as the time column `date`, never as a feature of its own right; `required_split` is Temporal (NON-IID).
 - Measured (log loss, lower is better; untuned LightGBM on the shipped features): 0.331 random, 0.338 by plate, 0.354 by sky cell of 10 degrees, 0.506 by year. On the same rows, the 48,743 spectra of 2012-2020, 0.391 random against 0.506 by year; trained on a random draw of the other years instead of the earlier ones, the loss on 2014 falls from 0.530 to 0.470 and on 2016 from 0.501 to 0.444. The sky position lowers the random score (0.353 -> 0.331) and raises the year score (0.491 -> 0.506): it teaches the sky footprints of past programmes. Under the year split TabPFN 3.5 scores 0.439 and logistic regression 0.755, against the class shares at 1.121.
 - Window sizes: the 2019 and 2020 windows hold 935 and 141 spectra, both above the 50 test rows below which windows are widened, and nine windows is what a task of this size gets as folds; 0 to 5 plates per window were also observed before it, at most 90 test rows (0.9% of the 2013 window).
@@ -82,12 +84,12 @@ CC (2026-11-12, Andrej): 2019 and 2020 form one last test window, and DR17's ful
 - Why: the windows shrink with DR17 itself (579,078 spectra in 2012, 56,989 in 2019, 5,957 in 2020; the file holds 1.6% to 2.4% of each year with DR17's class mix), not by a bias of the sample. eBOSS ended on 1 March 2019, and 2020 is 7 eFEDS plates of X-ray sources observed before the observatory closed for COVID-19 on 24 March 2020. A 2020 window alone (141 spectra, 8 plates) gave untuned LightGBM's log loss a standard error of 0.083 and 77% of the noise of the nine-window mean; merged with 2019 the newest window's is 0.024.
 - Larger data: the Kaggle cut stays for now. DR17's full set (4,618,684 objects, the file's own query without its cut at 100,000 rows) has its own record, `sdss_dr17_star_galaxy_quasar`, to be considered for inclusion, with the evidence of issue 8 (LightGBM 0.509 to 0.485 at the 1M row budget, logistic regression unchanged).
 
-CC (2026-11-12, Andrej): ship (Review issue 1 closed on Andrej's note, verdict ship); nothing open on the review page.
+CC (2026-11-12, Andrej): ship (Review issue 1 closed on Andrej's note, verdict ship); nothing open.
 - Split and metric marked `ok`: the eight windows by the year of the spectrum, the date no model input, and log loss stay as decided in issues 2, 6 and 7.
 
 CC (2026-11-16, Andrej): tag `Expanding Science Catalogue` removed. A sky survey's data releases are a survey, not a catalogue: the survey's targeting programmes choose which objects get a spectrum. The split by the year of the spectrum stands, as for dated samples whose selection moves with the period: quasars are 3-11% of the spectra before 2010 and 31-46% from 2014 on.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `date`, horizon 1 year, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `date`, horizon 1 year, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-19, Andrej): windows below the target count kept (Review issue 9, A as implemented): eight windows (2019 and 2020 as one); a 2011 window would train on 40.4%; the reason is in the splits comment.
 
@@ -110,7 +112,7 @@ it does not carry over. Quality: non-detections are stored as the asinh magnitud
 22.8269), which are real values of the survey's magnitude system and stay; the one -9999 sentinel is set to missing.
 Weighed: a public survey with documented classes and a real cataloguing use (+), the spectroscopic selection (-).
 
-**Main points:** Nothing open: ship (issue 1, A, resolved 2026-11-12; split and metric `ok`). Settled 2026-11-12: the date of the spectrum orders the split but is no model input (issue 6, A; new framework capability); 2019 and 2020 form one last window, eight windows (issue 7, B); the Kaggle cut stays for now, and DR17's full set (4.6M objects) has its own record, `sdss_dr17_star_galaxy_quasar`, to be considered (issue 8). Settled 2026-11-11: split by the year of the spectrum (issue 2), the photometric task kept, not spectra (issue 3), no time-basis tag (issue 4), the record's facts corrected (issue 5). Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 9).
+**Main points:** Nothing open: ship (issue 1, A, resolved 2026-11-12; split and metric `ok`). Settled 2026-11-12: the date of the spectrum orders the split but is no model input (issue 6, A; new framework capability); 2019 and 2020 form one last window, eight windows (issue 7, B); the Kaggle cut stays for now, and DR17's full set (4.6M objects) has its own record, `sdss_dr17_star_galaxy_quasar`, to be considered (issue 8). Settled 2026-11-11: split by the year of the spectrum (issue 2), the photometric task kept, not spectra (issue 3), no time-basis tag (issue 4), the record's facts corrected (issue 5). Settled 2026-11-19: eight windows kept below the target count of nine, the reason in the splits comment (issue 9, A).
 
 **Record judgment:** valid. Andrej's early question on the licence is answered by the survey: "All SDSS data released
 in our public data releases are considered in the public domain" ([SDSS image and data use
@@ -118,8 +120,8 @@ policy](https://www.sdss.org/collaboration/image-use-policy/)); the Kaggle file 
 stays while the plate goes: a position exists before an object is targeted, a plate does not; the position also
 carries the footprint of the targeting programmes, part of the selection the marker names. `cam_col` is a category
 (Lennart, 2026-10-31). The data-scouting run of 2026-10-31 found better data for the same task,
-`desi_dr1_star_galaxy_quasar` (priority 3), screened in its own record and not added yet. The record has no
-`problem_type` or `domain`; the definition's values can be filled in without a mark.
+`desi_dr1_star_galaxy_quasar` (priority 3), screened in its own record and not added yet. The record's
+`problem_type` and `domain` are the definition's values.
 
 **Issues for Andrej:**
 
@@ -925,7 +927,7 @@ carries the footprint of the targeting programmes, part of the selection the mar
 
    * **Recommendation:** A: one short of the target, with the yearly horizon and the merge you decided; B or C buy the ninth window with a window under half or with windows that cut through the survey's programmes. **Decision:** A, B, C or D?
 
-   **Notes for the AI:** on A, add to `splits_comment`: "Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window (2026-11-12), and a 2011 window would train on 40.4% of the spectra (the date of your decision, Andrej)." On B, `WINDOW_STARTS` gains 2011-01-01 and `splits_train_under_half` is accepted with the reason; on D, also 2010 and 2009. C needs `_make_splits` cut at the dates that split the rows from 16 November 2011 on into nine equal parts. Then `splits_comment`, `task_summary.split`, the curation split bullet, `dataset check` on Slurm, a CHANGELOG entry and a CC line.
+   **Notes for the AI:** on A, add to `splits_comment`: "Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window (2026-11-12), and a 2011 window would train on 40.4% of the spectra (the date of your decision, Andrej)." On B, `WINDOW_STARTS` gains 2011-01-01 and `splits_train_under_half` is accepted with the reason; on D, also 2010 and 2009. C needs `_make_splits` cut at the dates that split the rows from 16 November 2011 on into nine equal parts. Then `splits_comment`, `task_summary.split`, the curation split bullet, `dataset check`, a CHANGELOG entry and a CC line.
 
    **Andrej (2026-11-19, ok):** As implemented (A).
 

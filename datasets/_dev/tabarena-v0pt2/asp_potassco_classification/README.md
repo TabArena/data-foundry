@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: asp_potassco_classification
 container_format: 2
-checksum: v2:3c334a733dec53a223eb0ab6cac9d304fe6b2d2a454725f3619dac3da8bf1993
+checksum: v2:32211a9e8b436f402a9138542bc6a6a54d32629c50bc4a45672f059e611397b2
 build:
   uuid: 01a111fc-9534-79ba-a1c0-efe7268f38e0
   checksum: v2:b6bc3fcf579023a6bb681f97aa24b90c306eda42a2358ed61c14dcd15012cdb3
@@ -78,7 +78,7 @@ decisions: []
 
 Regression of `runtime`, scored with `par_k` on grouped splits by `problem_family`. 13,332 rows and 137 features. Source: ASlib (2014).
 
-Built as `01a111fc-9534-79ba-a1c0-efe7268f38e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3c334a733dec53a223eb0ab6cac9d304fe6b2d2a454725f3619dac3da8bf1993`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9534-79ba-a1c0-efe7268f38e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:32211a9e8b436f402a9138542bc6a6a54d32629c50bc4a45672f059e611397b2`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -228,9 +228,9 @@ We get the data from ASlib and merge them into one file.
 - We log scale the target. The configuration's name (`algorithm`) is a categorical feature: the scenario publishes no configuration features.
 - The instance id is anonymised and ships as a scoring column only: the metric picks per instance the configuration with the lowest predicted runtime. Never a feature.
 - We resolve the instance ID to a problem family (`problem_family`) from its path: the instance path without the file name, for example `ASP-Comp-2011-Lparse/26-Solitaire`. A family holds different instances of one problem from one generator (here, Solitaire puzzles), and the best configuration depends on the family, which the instance features fingerprint. claspfolio 2 and ASlib split the instances at random, so their test instances come from known families; we hold out whole families instead, to predict the runtimes on a problem family not seen in training (the `definition` of the grouping).
-- Families, not class folders (Andrej, 2026-11-18, blind split review, the same key as sat11_hand_algo_runtime): some folders hold one generator twice or in parts, and are merged: the 15 problems of the 2007 competition stored both under `ASP-Comp-2007-Lparse/SLparse/` and directly under `FolioSuite/` (20 file names on both sides, 11 with identical features), `HamiltonClumpy`'s five parameter folders, `RLP-150` and `RLP-200`, and the plain and verbose `searchTest` (identical programs). The 96 class folders give 75 families. Grouped on the folders (`task_id` until 2026-11-18), 19% of the test instances (4-45% per fold, 30 folds) had their generator in training. The same problem under another competition's encoding (Towers of Hanoi in 2007, 2009 and 2011; Labyrinth in 2009 and 2011; Schur numbers in 2007 and 2009) stays its own family: a new encoding is the use case.
+- Families, not class folders (Andrej, 2026-11-18, the same key as sat11_hand_algo_runtime): some folders hold one generator twice or in parts, and are merged: the 15 problems of the 2007 competition stored both under `ASP-Comp-2007-Lparse/SLparse/` and directly under `FolioSuite/` (20 file names on both sides, 11 with identical features), `HamiltonClumpy`'s five parameter folders, `RLP-150` and `RLP-200`, and the plain and verbose `searchTest` (identical programs). The 96 class folders give 75 families. Grouped on the folders (`task_id` until 2026-11-18), 19% of the test instances (4-45% per fold, 30 folds) had their generator in training. The same problem under another competition's encoding (Towers of Hanoi in 2007, 2009 and 2011; Labyrinth in 2009 and 2011; Schur numbers in 2007 and 2009) stays its own family: a new encoding is the use case.
 - Metric: ASlib's PAR10 of the configuration predicted fastest per instance. ASlib adds the feature costs (`feature_costs.arff`) to the selected runtime; they are the same whichever configuration is picked, so we leave them out.
-- To do: rename the dataset (it is no longer a classification task) once the BeyondArena v0.2 review page is done; its marks are stored under the current name.
+- To do: rename the dataset (it is no longer a classification task).
 - Time basis: UnseenGroup (Andrej, 2026-11-18; `Timeless` before): the use case picks a configuration for a kind
   of problem not seen before, so whole problem families are held out. Every run comes from the one experimental
   campaign of claspfolio 2 (Hoos, Lindauer and Schaub 2014) on one machine with a 600 s limit; features and
@@ -506,4 +506,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3c334a733dec53a223eb0ab6cac9d304fe6b2d2a454725f3619dac3da8bf1993` |
+| stale | yes: the definition now gives checksum `v2:32211a9e8b436f402a9138542bc6a6a54d32629c50bc4a45672f059e611397b2` |

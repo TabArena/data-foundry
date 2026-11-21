@@ -19,7 +19,7 @@ tags:
 - Expanding Science Catalogue
 original_source: OpenML
 year: '2015'
-collection_period: Unknown
+collection_period: 1992-2013
 domain: chemistry & material science
 required_split:
 - Temporal (NON-IID)
@@ -75,7 +75,7 @@ CC (2026-11-01, Lennart): ship the SMILES only: "the real task here is going fro
 
 **Assessment (AI, 2026-11-01):** the authors' 1,024 FCFP6 bits leave; `SMILES` is the one feature. RDKit cannot recompute those exact bits (with its closest settings no source bit is matched exactly by any RDKit bit). LightGBM R^2 on the 9 scaffold splits: authors' bits 0.645; the recommended encoding (RDKit 2D + MACCS) 0.601; RDKit's FCFP6-like bits 0.628; the recommended encoding with RDKit's FCFP6-like bits 0.640, with RDKit's ECFP4 counts 0.658 (better than the authors' bits on 8 of 9 splits). The 474 stereoisomer rows (217 groups, potency range median 0.45 pXC50) stay, as decided on 2026-10-21; no two rows share a SMILES.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship with a note: real thrombin potencies with structures and held-out series that separate methods widely, but 11.5% of the targets are assay limits that ChEMBL records only as bounds (31 of 36 sampled), stored as exact values. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship with a note: real thrombin potencies with structures and held-out series that separate methods widely, but 11.5% of the targets are assay limits that ChEMBL records only as bounds (31 of 36 sampled), stored as exact values. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
 
 CC (2026-11-11, Andrej): the three open issues of the record's Review are settled; the definition and this
 record carry the decisions. Not built.
@@ -109,11 +109,11 @@ record carry the decisions. Not built.
   as a method for estimating the goodness of prospective prediction, J Chem Inf Model 2013;53(4):783-790,
   doi:10.1021/ci400084k.
 
-CC (2026-11-11, Andrej): `original_source` set to the definition's `OpenML` (review page field mark "update"; the record had none). The data is the OpenML upload (ID 3050) of the Olier et al. ChEMBL sets.
+CC (2026-11-11, Andrej): `original_source` set to the definition's `OpenML` (the record had none). The data is the OpenML upload (ID 3050) of the Olier et al. ChEMBL sets.
 
-CC (2026-11-12, Andrej): `first_year` orders and splits the rows but is no model input (BeyondArena v0.2 review page, issue 4, B): it arrives with the target, the paper that reports the compound's potency. The five two-year windows are unchanged; the SMILES is the one feature. The 2026-11-11 CC above, which calls the year a feature as well, is superseded on that point.
+CC (2026-11-12, Andrej): `first_year` orders and splits the rows but is no model input (Review issue 4, B): it arrives with the target, the paper that reports the compound's potency. The five two-year windows are unchanged; the SMILES is the one feature. The 2026-11-11 CC above, which calls the year a feature as well, is superseded on that point.
 
-CC (2026-11-17, Andrej): the declared split (temporal on `first_year`, up to 5 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (temporal on `first_year`, up to 5 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 CC (2026-11-19, Andrej): nine one-year windows (2005-2013), the target count (Review issue 5).
 
@@ -123,8 +123,8 @@ CC (2026-11-19, Andrej): nine one-year windows (2005-2013), the target count (Re
 al. 2018, Machine Learning 107:285-311, https://doi.org/10.1007/s10994-017-5685-x): the median measured potency
 (pXC50, minus the log of the concentration giving half the effect) of 5,704 compounds from ChEMBL 17, after the 37
 salt-form copies and one impossible value left. Since 2026-11-01 each compound's ChEMBL 17 structure ships as a SMILES
-in place of the authors' 1,024 FCFP6 bits, and whole chemical series (2,529 scaffold groups) are held out; RMSE is the
-source's metric. The AI recommends shipping it with the censored potencies documented (issue 1). Reviewed on 2026-11-04
+in place of the authors' 1,024 FCFP6 bits, and whole chemical series (2,529 scaffold groups) were held out (since
+2026-11-11 the split is by first publication year, issue 2); RMSE is the source's metric. The AI recommends shipping it with the censored potencies documented (issue 1). Reviewed on 2026-11-04
 without a panel, from the gathered evidence (the record, the CHANGELOG, model runs on the shipped data and on
 TabArena v0.1's copy) and one check of the targets against ChEMBL. Validity: a medicinal chemist's screening question
 on potencies measured against one target, from the structure alone, with series held out; but 11.5% of the targets
@@ -138,7 +138,7 @@ methods +, bounds stored as exact potencies -, a larger later release screened (
 
 **Main points:** Nothing open. Settled: `first_year` orders and splits the rows but is no model input (issue 4, B,
 2026-11-12); bound potencies kept as exact values with a note (issue 1), split by first publication year (issue 2),
-record facts corrected (issue 3), all 2026-11-11; `original_source` set to `OpenML`. Open since 2026-11-19: which window layout, as the definition ships fewer windows than the target count (issue 5).
+record facts corrected (issue 3), all 2026-11-11; `original_source` set to `OpenML`. Nine one-year windows, 2005 to 2013, the target count (issue 5, B, 2026-11-19).
 
 **Record judgment:** valid. The record carries the v0.2 changes (CC and Assessment of 2026-11-01); its workbook notes
 ("unsure what that is", "not in TabRepo, need to clarify") are answered by them.
@@ -254,7 +254,7 @@ record facts corrected (issue 3), all 2026-11-11; `original_source` set to `Open
    * **Experiments:** the 4,972 dated compounds, four windows by first year, each trained on every compound first
      published before it; the shipped-like split is 3 x 3 scaffold-grouped folds over all 5,704 compounds, scored on
      the same window compounds; the recommended SMILES encoding, untuned LightGBM and random forest, RMSE; a close
-     analog is a training compound at Tanimoto 0.7 or more (Morgan radius 2); Slurm jobs 1366166 and 1366180:
+     analog is a training compound at Tanimoto 0.7 or more (Morgan radius 2):
 
      | Test window (first year) | Compounds | Earlier compounds (share of dated) | Scaffold split: LightGBM | Random forest | Close analog | By year: LightGBM | Random forest | Close analog |
      |---|---|---|---|---|---|---|---|---|
@@ -326,8 +326,8 @@ record facts corrected (issue 3), all 2026-11-11; `original_source` set to `Open
    (633), trained on 5,545, 4,801, 4,511, 3,913 and 3,280 earlier compounds (97% to 57% of the rows). `grouping`, the
    `scaffold` column and the scaffold bullet's split claims are gone, the analog numbers stay as background.
 
-   The comparison above was re-measured on these windows and all 5,704 compounds (Slurm jobs 1378119 and 1378141,
-   2026-11-11), since the four windows of the table were dated from the web service with the deposit left out; the
+   The comparison above was re-measured on these windows and all 5,704 compounds (2026-11-11),
+   since the four windows of the table were dated from the web service with the deposit left out; the
    shipped-window numbers are now the table in `curation_comments` and the four-window one is one line of context.
    LightGBM RMSE, scaffold-grouped out-of-fold against the forward split, on the same compounds:
 
@@ -457,7 +457,7 @@ record facts corrected (issue 3), all 2026-11-11; `original_source` set to `Open
 
    * **Recommendation:** B: it reaches the target at half the data or more with whole years, and nothing in the use case asks for two. **Decision:** A, B, C, D or E?
 
-   **Notes for the AI:** on A, add to `splits_comment`: "Five windows, against the 9 an IID split of 5,704 compounds would get: the windows are two years long, the length the protocol cut from the newest half of the 22 years; one-year windows would give 9 (the date of your decision, Andrej)." On B: `TemporalSplits(window=1, unit="unique", n_windows=9)` (no `min_train_fraction`; 2005 trains on 64.2% of the rows), `horizon=1`; on C `n_windows=10`; on D `n_windows=13` with `splits_train_under_half` accepted for 2001-2003 once the CC line is in; then the window table in `splits_comment` and `curation_comments`, `task_summary.split`, `dataset check` on Slurm, a CHANGELOG entry and a CC line. E needs a custom `_make_splits` (rows in a fixed random order inside each year).
+   **Notes for the AI:** on A, add to `splits_comment`: "Five windows, against the 9 an IID split of 5,704 compounds would get: the windows are two years long, the length the protocol cut from the newest half of the 22 years; one-year windows would give 9 (the date of your decision, Andrej)." On B: `TemporalSplits(window=1, unit="unique", n_windows=9)` (no `min_train_fraction`; 2005 trains on 64.2% of the rows), `horizon=1`; on C `n_windows=10`; on D `n_windows=13` with `splits_train_under_half` accepted for 2001-2003 once the CC line is in; then the window table in `splits_comment` and `curation_comments`, `task_summary.split`, `dataset check`, a CHANGELOG entry and a CC line. E needs a custom `_make_splits` (rows in a fixed random order inside each year).
 
    **Andrej (2026-11-19, change):** Option B: One-year windows up to the target.
 

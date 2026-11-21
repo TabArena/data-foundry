@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sdss_17
 container_format: 2
-checksum: v2:f9f733caa82d9ee3d979d1e2b01880ff66c9b0ddb61e2b750c7acac5c70b6d3b
+checksum: v2:10ee9731343c254fbb68d71dda50d6c205bfdd786f0b9e02b9f552aa617a0c29
 build:
   uuid: 01a111fc-9499-7f77-abbe-45c6b8ec8291
   checksum: v2:23581aaf9a00d579de3f759616f9da199f4b250322ed730303150c7cfbc18d0d
@@ -62,7 +62,7 @@ bundle_checks:
   accepted:
     splits_below_target: 'Eight windows, against the 9 an IID split of 99,999 spectra
       would get: 2019 and 2020 form one window (2026-11-12), and a 2011 window would
-      train on 40.4% of the spectra (Andrej, 2026-11-19, review issue 9, A).'
+      train on 40.4% of the spectra (Andrej, 2026-11-19).'
 decisions: []
 ---
 
@@ -72,7 +72,7 @@ decisions: []
 
 Multiclass classification of `ObjectType`, scored with `log_loss` on temporal splits by `date`. 99,999 rows and 8 features. Source: Other (2021).
 
-Built as `01a111fc-9499-7f77-abbe-45c6b8ec8291` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f9f733caa82d9ee3d979d1e2b01880ff66c9b0ddb61e2b750c7acac5c70b6d3b`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9499-7f77-abbe-45c6b8ec8291` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:10ee9731343c254fbb68d71dda50d6c205bfdd786f0b9e02b9f552aa617a0c29`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -257,7 +257,7 @@ The year also holds out the test object's plate, which the random split did not:
 were also observed before it, at most 90 test rows (0.9% of the 2013 window).
 
 Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window
-(2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19, review issue 9, A).
+(2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19).
 
 8 repeat(s) x 1 fold(s) with seed 4267; train 51,256 to 98,923 rows, test 1,076 to 11,044 rows. Prediction horizon: 1 years. The time column `date` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
@@ -295,7 +295,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 Accepted on purpose:
 
-- `splits_below_target`: Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window (2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19, review issue 9, A).
+- `splits_below_target`: Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window (2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19).
 
 ## Data checks
 
@@ -368,4 +368,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f9f733caa82d9ee3d979d1e2b01880ff66c9b0ddb61e2b750c7acac5c70b6d3b` |
+| stale | yes: the definition now gives checksum `v2:10ee9731343c254fbb68d71dda50d6c205bfdd786f0b9e02b9f552aa617a0c29` |

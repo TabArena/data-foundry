@@ -13,12 +13,13 @@ claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
+- Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Dated'
 - Expanding Science Catalogue
 original_source: UCI
 year: '1992'
-collection_period: Unknown
+collection_period: 1974-1990
 domain: biology & life sciences
 required_split:
 - Grouped (NON-IID)
@@ -47,23 +48,23 @@ Andrej: Duplicate
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Towell, Shavlik & Noordewier report test error rates without costs between the site types; error rate rejected.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after dropping the duplicate windows: 125 windows repeat (310 rows, mostly the same gene in overlapping GenBank entries), 7.7% of test rows find their twin in training and one window is labelled both IE and N; methods separate widely. Priority 3: gap 1, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after dropping the duplicate windows: 125 windows repeat (310 rows, mostly the same gene in overlapping GenBank entries), 7.7% of test rows find their twin in training and one window is labelled both IE and N; methods separate widely. Priority 3: gap 1, use case 0, source 1, shape 1, risk -1.
 
-CC (2026-11-06, Andrej): time basis `Timeless` accepted on the BeyondArena v0.2 review page (issue 2, B, through the cross-dataset item on routine `Timeless` issues): a splice junction is a property of the sequence, cut from GenBank 64.1 in 1992 undated. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
+CC (2026-11-06, Andrej): time basis `Timeless` accepted (Review  2, B, through the cross-dataset item on routine `Timeless` issues): a splice junction is a property of the sequence, cut from GenBank 64.1 in 1992 undated. The `Time basis:` line is in the definition's notes, ending with what the split cannot test; the tag enters `data_tags`.
 
-CC (2026-11-11, Andrej): record field set from the definition (review page field mark): `domain` biology & life sciences.
+CC (2026-11-11, Andrej): record field set from the definition: `domain` biology & life sciences.
 
-CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension` (BeyondArena v0.2 review page, issue 4, B): the earliest reference year of each window's GenBank entry, looked up at NCBI by locus name or through the record that holds the entry's windows at the named position, dates 1,388 of 1,475 entries (94.1%; 2,879 of 3,017 windows once issue 1's option D drops the copies), 1974 to 1990. Junction share and difficulty show no trend with the year, and a split by year leaves as many close training relatives as a random one. The facts describe the source and do not change with the split, which stays as it is (issue 3 open).
+CC (2026-11-12, Andrej): collection facts `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension` (Review issue 4, B): the earliest reference year of each window's GenBank entry, looked up at NCBI by locus name or through the record that holds the entry's windows at the named position, dates 1,388 of 1,475 entries (94.1%; 2,879 of 3,017 windows once issue 1's option D drops the copies), 1974 to 1990. Junction share and difficulty show no trend with the year, and a split by year leaves as many close training relatives as a random one. The facts describe the source and do not change with the split, which stays as it is (issue 3 open).
 
-CC (2026-11-12, Andrej): split by GenBank entry component (BeyondArena v0.2 review page, issue 3, reply b, after the dating of issue 4; SPLIT-24, SPLIT-37): the entry is the instance name before the site type, and entries that share an identical 60-base window are joined, one gene in overlapping entries: 1,440 components over the 3,190 windows (the largest 82), grouped 10 x 3. No exact copy crosses the split (7.4% of the test windows at random), and 1.6% of the test windows keep a training window within 3 of 60 bases (10.2% at random). A split by entry year leaves as many close relatives as a random draw (4.1% against 4.0% within 3 bases), so the family key stands and the time basis stays `Timeless`, its line rewritten for the grouped split; the tag enters `data_tags`. `required_split` Grouped (NON-IID). The duplicate windows (issue 1) are still open.
+CC (2026-11-12, Andrej): split by GenBank entry component (Review  3, reply b, after the dating of issue 4; SPLIT-24, SPLIT-37): the entry is the instance name before the site type, and entries that share an identical 60-base window are joined, one gene in overlapping entries: 1,440 components over the 3,190 windows (the largest 82), grouped 10 x 3. No exact copy crosses the split (7.4% of the test windows at random), and 1.6% of the test windows keep a training window within 3 of 60 bases (10.2% at random). A split by entry year leaves as many close relatives as a random draw (4.1% against 4.0% within 3 bases), so the family key stands and the time basis stays `Timeless`, its line rewritten for the grouped split; the tag enters `data_tags`. `required_split` Grouped (NON-IID). The duplicate windows (issue 1) are still open.
 
-CC (2026-11-12, Andrej): the copies of one record dropped (BeyondArena v0.2 review page, issue 1, D, agreeing with the answer of 2026-11-10; LEAK-19, LEAK-20): 125 windows of 60 bases repeat (310 rows), most the same gene in overlapping GenBank entries. One row per window and label stays, both rows of `HUMCYPIIE`'s window labelled a junction and no junction go, and the 13 windows that one entry holds at two places (duplicated genes) keep one row per place: 173 rows go, 3,017 remain (exon-to-intron 685, intron-to-exon 679, neither 1,653). The entry-component groups are joined on the whole file before the drop: 1,440 over the 3,017 windows (the largest 65). On the shipped 10 x 3 folds no test window has an identical window in training and 1.6% have one within 3 of 60 bases (0.6% and 3.7% under random folds of the same rows). The marker `Duplicate` goes, as the issue's notes say: it described OpenML's StatLog copy `dna` (each base coded as binary columns), not UCI's file, which this definition reads.
+CC (2026-11-12, Andrej): the copies of one record dropped (Review issue 1, D, agreeing with the answer of 2026-11-10; LEAK-19, LEAK-20): 125 windows of 60 bases repeat (310 rows), most the same gene in overlapping GenBank entries. One row per window and label stays, both rows of `HUMCYPIIE`'s window labelled a junction and no junction go, and the 13 windows that one entry holds at two places (duplicated genes) keep one row per place: 173 rows go, 3,017 remain (exon-to-intron 685, intron-to-exon 679, neither 1,653). The entry-component groups are joined on the whole file before the drop: 1,440 over the 3,017 windows (the largest 65). On the shipped 10 x 3 folds no test window has an identical window in training and 1.6% have one within 3 of 60 bases (0.6% and 3.7% under random folds of the same rows). The marker `Duplicate` goes, as the issue's notes say: it described OpenML's StatLog copy `dna` (each base coded as binary columns), not UCI's file, which this definition reads.
 
 CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 - The use case predicts the junctions of genes the training windows do not hold, which the held-out entry components stand for; that the entry year carries no wave is a measurement for the `Time basis:` line, not a different use case.
 - The split does not change.
 
-CC (2026-11-17, Andrej): the declared split (grouped on `gene_group`, 10x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split review, cross-dataset item).
+CC (2026-11-17, Andrej): the declared split (grouped on `gene_group`, 10x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -88,7 +89,8 @@ across the split -, a selected class mix rather than a genome scan -.
 **Main points:** Nothing open. Settled 2026-11-12: the copies of one record dropped, the duplicated genes kept,
 3,017 windows (issue 1, D); split by GenBank entry component, `Timeless` kept with the dating in its line (issue 3,
 b); the entries dated, 94% of them, 1974 to 1990; collection facts `Samples: Over Time`, `Time: Dated` (issue 4).
-Time basis `Timeless` (issue 2, 2026-11-06).
+Time basis `Timeless` (issue 2, 2026-11-06), replaced on 2026-11-13 by `UnseenGroup` (the held-out
+entry components).
 
 **Record judgment:** valid, with a record inconsistency: the `Duplicate` marker and the TabArena workbook notes ("a
 processed version of the splice dataset", "preprocessed duplicate") describe OpenML's StatLog copy `dna` (each base
@@ -248,7 +250,7 @@ place and "acceptors" in another; the definition avoids both words.
 
    * The within-3 share stays 1.6%: every copy sat in one component already, so the drop changes look-ups only for a
      random split (7.4% identical before, 0.6% now).
-   * `dataset check` (Slurm 1380083): 0 errors, 0 warnings, 1 info (`dataset_duplicate_rows`, 13 rows: the duplicated
+   * `dataset check`: 0 errors, 0 warnings, 1 info (`dataset_duplicate_rows`, 13 rows: the duplicated
      genes' second places, each pair in one group); the 184-row warning and the two-label info are gone. README
      regenerated; not rebuilt.
 
@@ -410,7 +412,7 @@ place and "acceptors" in another; the definition avoids both words.
    * **Background:** three expanding windows by entry year (test 1988, 1989 and 1990; training 55%, 72% and 95% of the
      dated windows); the same test windows trained on every earlier window, on a random draw of the same size, or on
      that draw kept out of the test windows' entry components. Untuned LightGBM and one-hot logistic regression, 10
-     draws or seeds, means over the three windows (Slurm 1379990):
+     draws or seeds, means over the three windows:
 
      | Training side | Within 3 of 60 bases | Within 10 | LightGBM log loss | Logistic regression |
      |---|---|---|---|---|
@@ -421,7 +423,7 @@ place and "acceptors" in another; the definition avoids both words.
      - No identical window crosses under any of them. In the 1990 window the forward side is every other dated window,
        so forward and random coincide there.
      - On the 1,221 entries dated by name or at the named position only, the picture holds: 4.4%, 4.2% and 2.5% within
-       3 bases; LightGBM 0.092, 0.090 and 0.092 (Slurm 1380014).
+       3 bases; LightGBM 0.092, 0.090 and 0.092.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
@@ -466,7 +468,7 @@ place and "acceptors" in another; the definition avoids both words.
 
    * Every repeated window lies in one component, so no copy crosses whatever issue 1 decides; on D's 3,017 rows the
      share within 3 bases was 1.3%.
-   * `dataset check` (Slurm 1380066): 0 errors, 1 warning (`dataset_duplicate_rows`, 184 rows, issue 1), 1 info (the
+   * `dataset check`: 0 errors, 1 warning (`dataset_duplicate_rows`, 184 rows, issue 1), 1 info (the
      window labelled two ways), the same findings as before; README regenerated; not rebuilt. The split and group
      probes were not run.
    * Record `required_split` Grouped (NON-IID), CC line. The tag `Timeless` enters `data_tags`.
@@ -502,7 +504,7 @@ place and "acceptors" in another; the definition avoids both words.
 
    **Notes for the AI:** on B, a script: NCBI E-utilities (`esearch` on nuccore by
    entry name, then the earliest date in the record; a generic client name, rate-limited), coverage and range first; if
-   three windows fit, the forward-against-random measurement on D's rows as a Slurm CPU job; then an answer in this
+   three windows fit, the forward-against-random measurement on D's rows as a CPU job; then an answer in this
    issue and in issue 3. If the entries are dated, the record's facts become `Samples: Over Time` and `Time: Dated`
    whichever split wins. On A, issue 3's decision stands alone.
 

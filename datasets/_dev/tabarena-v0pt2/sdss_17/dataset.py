@@ -180,13 +180,12 @@ class Sdss17(AbstractCuratedDataset):
         were also observed before it, at most 90 test rows (0.9% of the 2013 window).
 
         Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window
-        (2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19, review issue 9, A).
+        (2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19).
     """
     accepted_check_warnings = {
         "splits_below_target": (
             "Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window "
-            "(2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19, review issue 9, "
-            "A)."
+            "(2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19)."
         ),
     }
 

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sat11_hand_algo_runtime
 container_format: 2
-checksum: v2:ad48338803b8fa963e1063f849bc2b5099c3e329bdbaa2cd54443fb933378522
+checksum: v2:91d2aa96ada611c37313142aa33985e21890449600a6322933aa2ea3ba273c9a
 build:
   uuid: 01a111fc-eda8-7830-9b0d-905bf0c5bc1d
   checksum: v2:082824cbfada42e34f46d496f770c9504874d054fc07938f04be92176b4fd0c0
@@ -78,7 +78,7 @@ decisions: []
 
 Regression of `runtime`, scored with `par_k` on grouped splits by `problem_family`. 1,840 rows and 169 features. Source: ASlib (2011).
 
-Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ad48338803b8fa963e1063f849bc2b5099c3e329bdbaa2cd54443fb933378522`, so the build is stale. See [Build](#build).
+Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:91d2aa96ada611c37313142aa33985e21890449600a6322933aa2ea3ba273c9a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -231,7 +231,7 @@ We get the data from ASlib and merge them into one file.
   linear models and TabPFN pick 17-19% better on the 60 splits, but it would replace the recorded value.
 - We log scale the target.
 - We drop duplicated columns and remove features that leak the target or are not relevant for the predictive task.
-- Split (Andrej, 2026-11-18, blind split review): whole problem families are held out. A family is the
+- Split (Andrej, 2026-11-18): whole problem families are held out. A family is the
   generator an instance comes from, read off its path before the id is hashed (`problem_family`); folders that
   split one generator by satisfiability or a parameter are merged (Anton's 2003 SAT/UNSAT, rbsat's four
   forced/unforced folders, QG6/7/7a/8, two Van der Waerden folders and six more), so the 48 folders give 32
@@ -531,4 +531,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ad48338803b8fa963e1063f849bc2b5099c3e329bdbaa2cd54443fb933378522` |
+| stale | yes: the definition now gives checksum `v2:91d2aa96ada611c37313142aa33985e21890449600a6322933aa2ea3ba273c9a` |

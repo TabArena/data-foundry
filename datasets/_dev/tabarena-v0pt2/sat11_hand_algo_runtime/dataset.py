@@ -137,7 +137,7 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
           linear models and TabPFN pick 17-19% better on the 60 splits, but it would replace the recorded value.
         - We log scale the target.
         - We drop duplicated columns and remove features that leak the target or are not relevant for the predictive task.
-        - Split (Andrej, 2026-11-18, blind split review): whole problem families are held out. A family is the
+        - Split (Andrej, 2026-11-18): whole problem families are held out. A family is the
           generator an instance comes from, read off its path before the id is hashed (`problem_family`); folders that
           split one generator by satisfiability or a parameter are merged (Anton's 2003 SAT/UNSAT, rbsat's four
           forced/unforced folders, QG6/7/7a/8, two Van der Waerden folders and six more), so the 48 folders give 32

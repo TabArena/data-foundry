@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_tid_11
 container_format: 2
-checksum: v2:5b53b40e99f8ff41c7667e31936e41249b43c158c96025a2aa17118d8edaa784
+checksum: v2:21b225245b24ccba33e573c4aacc136eeac6f8cb08ea97af462e627127d42be2
 build:
   uuid: 01a111fc-77d3-7128-8497-210288cab270
   checksum: v2:6aced922d7a0d199fe8637391bf863bc500c5c50733d7ca006d3a0643874bde3
@@ -72,7 +72,7 @@ decisions: []
 
 Regression of `MEDIAN_PXC50`, scored with `rmse` on temporal splits by `first_year`. 5,704 rows and 1 features. Source: OpenML (2015).
 
-Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5b53b40e99f8ff41c7667e31936e41249b43c158c96025a2aa17118d8edaa784`, so the build is stale. See [Build](#build).
+Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:21b225245b24ccba33e573c4aacc136eeac6f8cb08ea97af462e627127d42be2`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -204,8 +204,8 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
 - OpenML (uploaded 2015-10-06, creators the Meta-QSAR team) is the first publication; the Mendeley Data release
   (doi:10.17632/spwgrcnjdg.1) came in 2020 and computes the fingerprints with RDKit instead of Pipeline Pilot.
 - We drop the "MOLECULE_CHEMBL_ID" column after it has served the join to the structures and the years.
-- Split by the year a compound first appears in the literature (Andrej, 2026-11-11; review issue 2, option
-  C), in place of the scaffold-grouped split of 2026-11-01. `first_year` is the earliest year among the
+- Split by the year a compound first appears in the literature (Andrej, 2026-11-11),
+  in place of the scaffold-grouped split of 2026-11-01. `first_year` is the earliest year among the
   documents of the compound's human thrombin (CHEMBL204) activity records in ChEMBL 17, the release the
   Meta-QSAR data was drawn from; it orders and splits the rows but is no model input (next bullet). All 5,704
   compounds have a CHEMBL204 record there, 5,186 of them in a dated document (years 1992
@@ -221,8 +221,8 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
   the test compound, so the folds hold ring skeletons out but not the series of a paper, which a chemist
   screening a new candidate does not have either. Measured on all 5,704 compounds,
   on the two-year windows shipped from 2026-11-11 to 2026-11-19 (the test-windows bullet below gives today's
-  one-year windows), with the recommended SMILES encoding, untuned LightGBM and random forest, RMSE (Slurm jobs 1378119 and
-  1378141, 2026-11-11); the scaffold columns are the 3 x 3 scaffold-grouped out-of-fold scores on the same
+  one-year windows), with the recommended SMILES encoding, untuned LightGBM and random forest, RMSE
+  (2026-11-11); the scaffold columns are the 3 x 3 scaffold-grouped out-of-fold scores on the same
   compounds:
 
   | Test window | Compounds | Earlier compounds (train) | Scaffold split: LightGBM | Random forest | Close analog | By year: LightGBM | Random forest | Close analog |
@@ -250,7 +250,7 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
   nearly the same compounds. So on this layout the scaffold split's advantage is the same-year siblings it
   keeps rather than the later papers. An earlier run on four hand-chosen windows (2004, 2005-06, 2007-08,
   2009-13), dated from today's web service with the deposit left out, pointed the same way: LightGBM 0.68 to
-  0.90 by scaffold against 1.11 to 1.31 by year (Slurm jobs 1366166 and 1366180, 2026-11-06).
+  0.90 by scaffold against 1.11 to 1.31 by year (2026-11-06).
   Checked on the two-year windows (2026-11-11): the task probes raise no flag (LightGBM R^2 0.350, skill
   +0.419 over the dummy and ahead of it on all five windows, random forest 0.313, selected linear 0.138,
   plain linear -0.409; spread LightGBM - linear +0.659, paired standard error 0.177). The leak probes find no
@@ -264,9 +264,9 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
   in 2008-09, 5.44 in 2010-11, 5.77 in 2012-13; Spearman year against target -0.24).
 - `first_year` orders and splits the rows and is no model input (`Temporal(..., time_of="label")`): it arrives
   with the target, the paper that reports the compound's potency, while a chemist screens a molecule before
-  making and testing it (2026-11-12, Andrej, review issue 4 B). From 2026-11-11 to 2026-11-12 it was a feature
+  making and testing it (2026-11-12, Andrej). From 2026-11-11 to 2026-11-12 it was a feature
   as well; the probes above ran with it.
-- Assay limits (Andrej, 2026-11-11; review issue 1, option B): 654 targets (11.5%) sit at round limits
+- Assay limits (Andrej, 2026-11-11): 654 targets (11.5%) sit at round limits
   (pXC50 4.30: 348, 5.00: 204, 4.00: 81, 4.70: 21); in a sample of 36 such compounds, ChEMBL holds 31 only as
   bounds (">" the top concentration tested), 3 as exact values and 2 not at all, so these are upper bounds of
   the potency stored as exact values, as in the Meta-QSAR file (LEAK-26: documented). They are the inactive
@@ -276,11 +276,11 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
   concentration its laboratory tested rather than "inactive"; whether a compound is active, the chemist's
   decision, is unaffected. The source (Olier et al., Sec. 2.2) takes "the median of those activities falling
   in the modal log unit" and does not say how bounds were treated.
-- Collection facts (Andrej, 2026-11-11; Review issue 3, option B): the compounds arrive over time and
+- Collection facts (Andrej, 2026-11-11): the compounds arrive over time and
   ChEMBL dates them, so the record carries `Samples: Over Time` and `Time: Dated` in place of `Samples: No
   Time Dimension`. No `Target: Revised Later`: only 5.1% of the compounds have a thrombin record from a year
   later than their first, so a median label seldom moves after the compound's first publication.
-- Test windows (Andrej, 2026-11-19, review issue 5, B): one publication year each, nine windows from 2013 back
+- Test windows (Andrej, 2026-11-19): one publication year each, nine windows from 2013 back
   to 2005, in place of five windows of two years (2004-05 to 2012-13): the two years came from cutting the
   newest half of the 22 years into five windows, and nothing in the use case asks for them; whole years reach
   the target of nine windows at half the data or more (splits comment).
@@ -335,7 +335,7 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
 
 ## Splits
 
-Expanding-window temporal splits on the year a compound first appears in ChEMBL 17's human thrombin records: 9 test windows of one year (2013 back to 2005), newest first; train is every compound first published before the window (Andrej, 2026-11-19, review issue 5, B). The windows hold 49, 110, 638, 106, 105, 185, 308, 290 and 253 compounds (2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005), and their train sides 5,655, 5,545, 4,907, 4,801, 4,696, 4,511, 4,203, 3,913 and 3,660 compounds (99.1%, 97.2%, 86.0%, 84.2%, 82.3%, 79.1%, 73.7%, 68.6% and 64.2% of all 5,704). A model trained on the compounds known up to a year predicts the potency of the compounds that appear in the next. The use case sets no refit cadence, and the date gives whole years only: one year is the finest step, and nine whole-year windows reach the count an IID split of 5,704 compounds would get, all training on more than half the data; 2004 (57.5%) would be a tenth. The windows of 2013 (49), 2010 (106) and 2009 (105) are small and noisier. Until 2026-11-19 five two-year windows (2004-05 to 2012-13) shipped, a length cut from the newest half of the 22 years. The 518 compounds of the undated PubChem BioAssay deposit take 2011, the year ChEMBL 9 loaded it, which puts them in the 2010-11 window. The scaffold-grouped split this replaces trained on same-year siblings of the test compounds (curation notes).
+Expanding-window temporal splits on the year a compound first appears in ChEMBL 17's human thrombin records: 9 test windows of one year (2013 back to 2005), newest first; train is every compound first published before the window (Andrej, 2026-11-19). The windows hold 49, 110, 638, 106, 105, 185, 308, 290 and 253 compounds (2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005), and their train sides 5,655, 5,545, 4,907, 4,801, 4,696, 4,511, 4,203, 3,913 and 3,660 compounds (99.1%, 97.2%, 86.0%, 84.2%, 82.3%, 79.1%, 73.7%, 68.6% and 64.2% of all 5,704). A model trained on the compounds known up to a year predicts the potency of the compounds that appear in the next. The use case sets no refit cadence, and the date gives whole years only: one year is the finest step, and nine whole-year windows reach the count an IID split of 5,704 compounds would get, all training on more than half the data; 2004 (57.5%) would be a tenth. The windows of 2013 (49), 2010 (106) and 2009 (105) are small and noisier. Until 2026-11-19 five two-year windows (2004-05 to 2012-13) shipped, a length cut from the newest half of the 22 years. The 518 compounds of the undated PubChem BioAssay deposit take 2011, the year ChEMBL 9 loaded it, which puts them in the 2010-11 window. The scaffold-grouped split this replaces trained on same-year siblings of the test compounds (curation notes).
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 3,660 to 5,655 rows, test 49 to 638 rows. Prediction horizon: 1 years. The time column `first_year` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
@@ -418,4 +418,4 @@ Each test window against its train side, by statistics of the data, never of a m
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:5b53b40e99f8ff41c7667e31936e41249b43c158c96025a2aa17118d8edaa784` |
+| stale | yes: the definition now gives checksum `v2:21b225245b24ccba33e573c4aacc136eeac6f8cb08ea97af462e627127d42be2` |

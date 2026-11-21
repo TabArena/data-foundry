@@ -91,11 +91,11 @@ CC (2026-11-04, Lennart): the 1,701 MIR bins are declared as a spectrum ("delacr
 
 CC (2026-11-04, Lennart): the metric is the source's cross-validation metric, `rmsle` on the log1p target ("follow the recommendation, following the source"); the group description stands; the 600 cm-1 bin, a fill in 53 spectra, is dropped for every row ("do (b), document how to find this in the skills going forward"), and spectra.md now says how to find edge fill values.
 
-**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled. (superseded 2026-11-04: the full review panel ran in a second pass)
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of PR #33 and the research behind each mark, and all are settled. (superseded 2026-11-04: the full review panel ran in a second pass)
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (text, notes and filing; no row, split or metric change; the definition's text fixes are made: the four texts that said "scored in weight percent", the group description, the shift to later scans and new projects (8-26% worse, LightGBM), the encodings on the declared scale, the layers above 58% organic carbon, which equal the source's measured total carbon); disputed: MET-5 (holds, or departs until its fact is filed), CLEAN-16 (rename by default); settled by the mediator: EV-7 (shift note states the error level only), EV-1 (encoding evidence on the declared scale), CLEAN-11 (high values kept); for the curator: issues 6-10. Priority 3: gap 0, use case 0, source +, shape +, risk 0 (gap: no thin domain, problem type or regime among 107 accepted definitions; use case: the source names the actor, but the fit is approximate, with instrument transfer and later scans untested; risk: no open issue raises a leak, an unclear target or damage).
 
-**Assessment (AI, 2026-11-04):** the CC of 2026-11-04 that cites "Review issues 2-3" means issues 2 and 3 of the first PR #33 review page (metric origin, target scale), which never became a file in the folder. `curation_comments` now say that only the three layers above 70% organic carbon were checked against the source's measured total carbon (second-pass panel; Lennart's go-ahead on the review page).
+**Assessment (AI, 2026-11-04):** the CC of 2026-11-04 that cites "Review issues 2-3" means issues 2 and 3 of the first review of PR #33 (metric origin, target scale), which never became a file in the folder. `curation_comments` now say that only the three layers above 70% organic carbon were checked against the source's measured total carbon (second-pass panel; Lennart's go-ahead).
 
 CC (2026-11-05, Lennart): the spectrum only, with the source's scan-upload service as the actor (issue 6, ok on the implemented option; USE-3, USE-6). A KSSL laboratory also knows the layer's two depths and the preparation code (XS or XN), and adding them lowered RMSLE by 3.6% on the two folds tried; leaving them out is a choice of actor, now said in the task summary. The service accepts none of them: the OSSL API v1.2 prediction call takes the spectra file, the property, the spectral range, the subset (KSSL or OSSL) and the model; depth is only a filter for downloading library rows; every v1.2 model is coded `na`, "only the spectra data" (api.soilspectroscopy.org, the ossl-models README; checked 2026-11-05).
 
@@ -109,7 +109,7 @@ CC (2026-11-05, Lennart): the target column is renamed to `log1p_organic_carbon_
 
 CC (2026-11-05, Lennart): the `no_spread` flag is left unrecorded for this dataset only (Review issue 7, (b)): its default families all reach skill 0.98-0.985.
 
-CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
 CC (2026-11-12, Andrej): opened Review issue 11, which key holds the test layers apart, now that the OSSL is read as a catalogue that keeps growing.
 
@@ -135,8 +135,8 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of no time basis:
 mid-infrared spectrum (1,700 bins from 602 to 4,000 cm-1, declared as a spectrum, `state="raw"`) and its laboratory
 organic carbon, shipped as log1p and scored by `rmsle` (the RMSE of the shipped log1p values, the source's
 cross-validation and tuning scale), with whole KSSL survey projects held out (pedon keys until 2026-11-12). Verdict: ship after changes (review panel,
-full, second pass after your PR #33 review of 2026-11-04); the text changes in the definition are made, while the
-record's AI note on "issues 2-3" and the `spectra.md` table and its "1,701" are still to be updated. Validity: USE-3 and USE-5 hold (fit approximate); USE-6 holds for the source's scan-upload actor, and which
+full, second pass after your PR #33 review of 2026-11-04); the text changes in the definition are made, and the
+record's AI note on "issues 2-3" is added; `spectra.md` now counts 1,700 positions. Validity: USE-3 and USE-5 hold (fit approximate); USE-6 holds for the source's scan-upload actor, and which
 actor to model is your call (issue 6); LEAK-1, LEAK-10, LEAK-16 and CLEAN-23 hold (rows shuffled, no attack beat the
 honest baseline); SPLIT-1, SPLIT-23, SPLIT-24 and SPLIT-29 hold, and the notes now describe the group as it is and the
 untested shift to later scans and new projects (SPLIT-31). Value: MET-3 holds; MET-11 failed in four texts that still
@@ -145,7 +145,7 @@ said "scored in weight percent" (fixed); MET-5 departs from `forest_fires` witho
 precedents that kept the name (issue 9); the CLEAN-26 edge-bin drop is not filed (issue 10); CLEAN-11 keeps the 151
 layers above 58% organic carbon (the three above 70% equal the source's measured total carbon; note added). Weighed:
 size +, source +, use case +, saturation (R² 0.98) -, transfer to other instruments and to later scans untested -.
-Left for you: issues 6-10, five decisions; a rebuild on your ask (the container of 2026-10-29 predates the target,
+Issues 6-10 were settled on 2026-11-05 and issues 11-12 on 2026-11-12; left: a rebuild on your ask (the container of 2026-10-29 predates the target,
 metric and bin changes); and Myunghwan, who holds the claim and approved ("ship all", 2026-10-28) the definition
 before those changes, should be told before shipping.
 
@@ -155,9 +155,9 @@ case filed (8), the target renamed to `log1p_organic_carbon_weight_percent` (9),
 `Time: Dated` (12). Nothing open; a rebuild waits.
 
 **Record judgment:** valid. Your CC lines of 2026-11-04 replace Myunghwan's percent target and RMSE (2026-10-27) and
-come after his "ship all" (2026-10-28); `claimed_by: Myunghwan` still reflects his stage. The CC line that cites
-"REVIEW.md issues 2-3" means issues 2 and 3 of the PR #33 review page (metric origin, target scale), which never became a
-file in the folder; an AI note saying so is still to be added to the record. The Assessment "review panel (none)" is superseded by this panel's line.
+come after his "ship all" (2026-10-28); Myunghwan held the claim at that stage. The CC line that cites
+"REVIEW.md issues 2-3" means issues 2 and 3 of the PR #33 review (metric origin, target scale), which never became a
+file in the folder; the AI note of 2026-11-04 says so. The Assessment "review panel (none)" is superseded by this panel's line.
 
 **Issues for Lennart:**
 
@@ -1059,7 +1059,7 @@ The register has no flag for this dataset (19 entries, 0 flags). The two 2026-11
   - The paper tunes by RMSE on log1p but ranks model types by Lin's CCC with an RPIQ cut-off of 2 (C11).
   - `forest_fires` (2026-10-21): fitted on log1p, but the declared metric was the one the paper *ranks* by (MAD on the area).
   - `gallstone_disease` and `heart_disease` (Lennart, 2026-10-21 and 2026-10-27): several criteria, so they took the fallback.
-  - Following those precedents would give the fallback `rmse` in percent. That is what the screening (S5), the AI draft's issue 2 (PR #33 review page) and Myunghwan's CC2 (2026-10-27) all had.
+  - Following those precedents would give the fallback `rmse` in percent. That is what the screening (S5), the AI draft's issue 2 (PR #33 review) and Myunghwan's CC2 (2026-10-27) all had.
 - **What sets this case apart:**
   - The source's CV on log1p was run on exactly this cut (n = 75,929, RMSE 0.114) under the same lab and instrument that our split keeps.
   - The percent-scale evaluation is on independent sets, which is the transfer `fit_reason` says is not tested.
