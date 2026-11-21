@@ -24,7 +24,8 @@ def problem_family(instance_path: str) -> str:
     """The generator family of an instance: its class folder (the path without the file name), with the folders of
     one generator merged: the 2007 competition's problems, stored under ASP-Comp-2007-Lparse/SLparse/ and again
     directly under FolioSuite/; HamiltonClumpy's parameter folders; RLP-150 and RLP-200; plain and verbose searchTest.
-    The 96 class folders of the kept instances give 75 families."""
+    The 96 class folders of the kept instances give 75 families.
+    """
     folder = instance_path.rsplit("/", 1)[0]
     if folder.startswith("FolioSuite/HamiltonClumpy/"):
         return "FolioSuite/HamiltonClumpy"
