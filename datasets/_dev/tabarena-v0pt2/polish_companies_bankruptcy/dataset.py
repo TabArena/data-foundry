@@ -6,7 +6,7 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary, TimeBasis
 
 
 class PolishCompaniesBankruptcy(AbstractCuratedDataset):
@@ -62,7 +62,6 @@ class PolishCompaniesBankruptcy(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
@@ -73,11 +72,16 @@ class PolishCompaniesBankruptcy(AbstractCuratedDataset):
         - We created semantically meaningful feature names.
         - We removed duplicates.
         - Anomaly: the data contains a lot of features created by feature engineering.
-        - Time basis: ForcedIIDFromTemporal: the statements come from several years, and the file has no dates, so the
-          time is lost and part of the signal may be the period. A dated release would test statements later than those
-          used for training. Not taken as stationary (Andrej, 2026-11-18): The class/period confounding is explicit in
-          the source, and bankruptcy-ratio relations are documented as non-stationary across economic periods.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        the statements come from several years, and the file has no dates, so the
+        time is lost and part of the signal may be the period. A dated release would test statements later than those
+        used for training. Not taken as stationary (Andrej, 2026-11-18): The class/period confounding is explicit in
+        the source, and bankruptcy-ratio relations are documented as non-stationary across economic periods.
+        """,
+    )
 
     # Task
     target = "company_bankrupt"

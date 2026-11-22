@@ -6,7 +6,7 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -79,7 +79,6 @@ class WebsitePhishing(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
 
@@ -104,14 +103,19 @@ class WebsitePhishing(AbstractCuratedDataset):
           `having_IP_Address` = 1 (an IP address in the URL, 11% of sites) and the rare `popUpWidnow` = 1, so 1 is their
           phishy end, while `web_traffic` runs against them, as the data page codes it. `age_of_domain` and
           `having_IP_Address` have two levels.
-        - Time basis: ForcedIIDFromTemporal: phishing sites reported to PhishTank and legitimate sites gathered from
-          directories, at times the source does not give; a filter rates sites made later, and phishing pages change
-          with the period. The file has no date or URL, and its order interleaves the classes (Time: Lost). Leak test
-          across the split: 47% of the rows repeat another row's codes (kept, about 0.01 ROC AUC); the dates of the
-          domain-age and traffic look-ups are unknown. Collection dates would allow a split by time. Not taken as
-          stationary (Andrej, 2026-11-18): An adversarial domain whose central feature (HTTPS) is known to have reversed
-          its meaning; nothing supports interchangeable later samples.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        phishing sites reported to PhishTank and legitimate sites gathered from
+        directories, at times the source does not give; a filter rates sites made later, and phishing pages change
+        with the period. The file has no date or URL, and its order interleaves the classes (Time: Lost). Leak test
+        across the split: 47% of the rows repeat another row's codes (kept, about 0.01 ROC AUC); the dates of the
+        domain-age and traffic look-ups are unknown. Collection dates would allow a split by time. Not taken as
+        stationary (Andrej, 2026-11-18): An adversarial domain whose central feature (HTTPS) is known to have reversed
+        its meaning; nothing supports interchangeable later samples.
+        """,
+    )
 
     accepted_check_warnings = {
         "dataset_pure_feature_value": (

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary, TimeBasis
 
 
 class Houses(AbstractCuratedDataset):
@@ -62,7 +62,7 @@ class Houses(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Spatial", "Retrospective")
+    data_tags = ("Spatial",)
     download_description = """
         We download the houses.zip from the lib.stat.cmu.edu repository and preprocess cadata.txt (strip the 27-line header text, remove leading whitespace, add a column header row).
 
@@ -73,11 +73,16 @@ class Houses(AbstractCuratedDataset):
         - We kept the latitude and longitude features as they are.
         - We log scaled the target variable (with base e) as intended by the original task.
         - Anomaly: As always, we randomly shuffle the data before uploading. If one does not randomly shuffle the data, there would be a distribution shift from the longitude and latitude based on the original order of data samples.
-        - Time basis: Retrospective: the 1990 census of every California block group; income, housing, population,
-          households and the median house value come from the same census tables; the use case values a block group
-          whose value is not recorded, at the census date, with its neighbours known. Not tested: values after 1990,
-          and block groups with no known neighbours.
     """
+    time_basis = TimeBasis(
+        "Retrospective",
+        """
+        the 1990 census of every California block group; income, housing, population,
+        households and the median house value come from the same census tables; the use case values a block group
+        whose value is not recorded, at the census date, with its neighbours known. Not tested: values after 1990,
+        and block groups with no known neighbours.
+        """,
+    )
 
     # Task
     target = "LnMedianHouseValue"

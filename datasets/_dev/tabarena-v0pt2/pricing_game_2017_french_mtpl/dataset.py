@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     Metric,
     Source,
     TaskSummary,
+    TimeBasis,
     drop_columns,
 )
 
@@ -124,7 +125,7 @@ class PricingGame2017FrenchMtpl(AbstractCuratedDataset):
             name="R package CASdatasets",
         ),
     )
-    data_tags = ("Spatial", "ForcedGroupedFromTemporal")
+    data_tags = ("Spatial",)
     download_description = """
         The third actuarial pricing game (Arthur Charpentier with the ACTINFO chair and the Institut des Actuaires,
         announced on https://actinfo.hypotheses.org/86 on 10 January 2017) gave its players the Year-0 underwriting
@@ -173,12 +174,19 @@ class PricingGame2017FrenchMtpl(AbstractCuratedDataset):
         - CC (2026-11-08, Lennart): the drivers' sex leaves the features, on the stance Lennart set in australian_vehicle_insurance_2004_2005's review ("A stance for the family; as if we were to simulate the case in europe always"): sex is no rating factor of any insurance pricing task of this collection, whatever the actor's jurisdiction, as under EU law (Test-Achats). Supersedes the note that kept `drv_sex1` and `drv_sex2` as legal in the data's year (AI, 2026-11-01), which shipped with Andrej's verdict of 2026-11-03. They carried almost nothing: in the task probe the random forest scores 62.30 without them and 62.22 with them, against the constant's 63.10 (the same 5 splits).
         - CC (2026-11-10, Andrej): the task stays on Year 0 split by client, with a sentence on the yearly drift of the claim level in `splits_comment` ("Keep, with the drift sentence"); no rebuild on the AIcrowd years.
         - CC (2026-11-10, Andrej): the metric floor stays at 0.1 EUR ("0.1 EUR"), its reason restated under MET-13 as amended on 2026-11-09 (Metric floor bullet).
-        - Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-16): every premium of Year 0 is set at the start of the
-          policy year, with ages and durations counted from it; the target is the year's claims. One policy year is one
-          period, too few for three windows (SPLIT-8), and CASdatasets holds Year 0 only, so held-out clients of the
-          same year stand in for next year's policies, which the split cannot test (the splits comment gives the
-          measured cost).
     """
+    time_basis = TimeBasis(
+        "ForcedGroupedFromTemporal",
+        """
+        every premium of Year 0 is set at the start of the
+        policy year, with ages and durations counted from it; the target is the year's claims. One policy year is one
+        period, too few for three windows (SPLIT-8), and CASdatasets holds Year 0 only, so held-out clients of the
+        same year stand in for next year's policies, which the split cannot test (the splits comment gives the
+        measured cost).
+        """,
+        set_by="Andrej",
+        on="2026-11-16",
+    )
 
     # Task
     target = TARGET

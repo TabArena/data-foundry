@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, decode
 
 N_NUMERIC = 14740  # Var1-Var14740 numeric, Var14741-Var15000 categorical
 GENERATED_COLUMNS = ["Var5963", "Var11750"]
@@ -60,7 +60,7 @@ class KddCup09Appetency(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Anonymized", "ForcedIIDFromTemporal")
+    data_tags = ("Anonymized",)
     download_description = """
         We download the large training data (five zipped chunks, kept zipped) and its appetency labels from the KDD
         challenge website:
@@ -93,15 +93,22 @@ class KddCup09Appetency(AbstractCuratedDataset):
         - Anomaly: this dataset has many missing values.
         - The target (2026-11-01, CLEAN-25): `Appetency` ships its classes as words (1 is the event). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
-        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16): one extract of Orange's customer datamart (date not
-          stated, before mid-2009), 100,000 customers resampled toward the labels and split at random by the host; the
-          target, appetency, is read as a purchase of a new product or service after the scoring date, as the marketing
-          use case needs. One extract is one period, too few for three windows (SPLIT-8). The label window and the
-          features' windows are not stated and the features are masked, so neither can be checked. Extracts of later
-          campaigns would allow a temporal split. Not tested: the next campaign. Not taken as stationary (Andrej,
-          2026-11-18): The target is uptake of a campaign's new offer, which changes by campaign; nothing makes later
-          campaigns interchangeable.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        one extract of Orange's customer datamart (date not
+        stated, before mid-2009), 100,000 customers resampled toward the labels and split at random by the host; the
+        target, appetency, is read as a purchase of a new product or service after the scoring date, as the marketing
+        use case needs. One extract is one period, too few for three windows (SPLIT-8). The label window and the
+        features' windows are not stated and the features are masked, so neither can be checked. Extracts of later
+        campaigns would allow a temporal split. Not tested: the next campaign. Not taken as stationary (Andrej,
+        2026-11-18): The target is uptake of a campaign's new offer, which changes by campaign; nothing makes later
+        campaigns interchangeable.
+        """,
+        set_by="Andrej",
+        on="2026-11-16",
+    )
 
     accepted_check_warnings = {
         "dataset_constant_column": "Presence flags: one value or missing, as Orange released them.",

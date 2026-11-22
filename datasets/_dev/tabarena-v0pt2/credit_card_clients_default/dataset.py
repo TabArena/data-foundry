@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode, set_missing
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+    decode,
+    set_missing,
+)
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -50,7 +59,6 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
     # Dataset
     unique_name = "credit_card_clients_default"
     domain = "finance"
-    data_tags = ("ForcedIIDFromTemporal",)
     sources = (
         Source(
             role="publication",
@@ -99,16 +107,23 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
           late 34%, 2 months 69%). The code 1 (one month late) occurs in 12.3% of the rows for September but in at
           most 0.1% for the five earlier months, where 2 is 9-13%: the earlier months record a short delay
           differently, alike in both classes.
-        - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16): one extract of 30,000 card holders of one Taiwanese
-          bank, scored after the September 2005 statement with the same six months of history for every client (April to
-          September 2005); the target is default on the next month's payment. One statement month is one period, too few
-          for three windows (SPLIT-8), so the random split tests other clients of the same month. The client ID is not a
-          time order (the first two quarters of IDs cannot be told apart, ROC AUC 0.504). The credit limit and the
-          demographics carry no date. Extracts of later statements would allow a temporal split. Not tested: a later
-          month. Not taken as stationary (Andrej, 2026-11-18): Although use is the next month, the data were collected
-          at the onset of a documented card-debt crisis after which rules and limits changed; the strongest candidate in
-          the group fails on its own period.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        one extract of 30,000 card holders of one Taiwanese
+        bank, scored after the September 2005 statement with the same six months of history for every client (April to
+        September 2005); the target is default on the next month's payment. One statement month is one period, too few
+        for three windows (SPLIT-8), so the random split tests other clients of the same month. The client ID is not a
+        time order (the first two quarters of IDs cannot be told apart, ROC AUC 0.504). The credit limit and the
+        demographics carry no date. Extracts of later statements would allow a temporal split. Not tested: a later
+        month. Not taken as stationary (Andrej, 2026-11-18): Although use is the next month, the data were collected
+        at the onset of a documented card-debt crisis after which rules and limits changed; the strongest candidate in
+        the group fails on its own period.
+        """,
+        set_by="Andrej",
+        on="2026-11-16",
+    )
 
     # Task
     target = "DefaultOnPaymentNextMonth"

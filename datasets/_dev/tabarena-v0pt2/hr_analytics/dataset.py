@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, drop_columns
 
 RAW_FILE = "train_jqd04QH.csv"
 """The hackathon's train file: 18,359 enrollees with labels, 2,425 of them looking for a job change."""
@@ -109,7 +109,7 @@ class HrAnalytics(AbstractCuratedDataset):
             name="the Kaggle copy of 2020",
         ),
     )
-    data_tags = ("Spatial", "ForcedIIDFromTemporal")
+    data_tags = ("Spatial",)
     download_description = """
         We download the train file of Analytics Vidhya's Student DataFest 2018: The Data Supremacy (DataHack, 6 to 22
         July 2018) from the link on the contest page; the page of JanataHack: HR Analytics (May 2020) links the same
@@ -150,13 +150,18 @@ class HrAnalytics(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
           by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
           is simply not on the scale, such as Other, is missing).
-        - Time basis: ForcedIIDFromTemporal: enrollees signed up over a period the hackathon does not state, and the
-          release has no date; `enrollee_id` numbers the train and test files together and is not shown to follow
-          sign-up time (training hours flat along it), and windows in its order score as random folds do (ROC AUC 0.645
-          against 0.646, untuned LightGBM). A dated release would allow a split by sign-up date. Not taken as stationary
-          (Andrej, 2026-11-18): A labour-market behaviour with an undocumented target and not-flat similar intent sets;
-          a low ceiling is no stationarity reason.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        enrollees signed up over a period the hackathon does not state, and the
+        release has no date; `enrollee_id` numbers the train and test files together and is not shown to follow
+        sign-up time (training hours flat along it), and windows in its order score as random folds do (ROC AUC 0.645
+        against 0.646, untuned LightGBM). A dated release would allow a split by sign-up date. Not taken as stationary
+        (Andrej, 2026-11-18): A labour-market behaviour with an undocumented target and not-flat similar intent sets;
+        a low ceiling is no stationarity reason.
+        """,
+    )
 
     # Task
     target = "LookingForJobChange"

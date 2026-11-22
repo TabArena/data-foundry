@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+    drop_columns,
+)
 
 YEARS = (2019, 2020)
 """One file per year: the same 15,873 transformers in the same row order, labelled with that year's burns."""
@@ -145,7 +154,6 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("AssumedStationaryRelation",)
     download_description = """
         We download the two yearly files of version 4 of the Mendeley Data release (doi:10.17632/yzyj46xpmy.4) by
         their file ids, which the public API lists with their SHA-256 hashes
@@ -177,16 +185,23 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
         - The lightning densities (one value per area) are features, not groups, as a transformer's area is known. A same-year area effect, which the random split could reward, is absent: last year's burn rate of the area predicts the 2020 burns better than the same year's.
         - Partial order, left unordered (2026-11-01, CLEAN-14): `client_type`: the residential strata 1-6 are ordered,
           but commercial, industrial and official clients are a second dimension.
-        - Time basis: AssumedStationaryRelation (Andrej, 2026-11-18): the operator ranks its transformers for the year
-          right after the inventory, and burns follow lightning density and network exposure, which one year does not
-          change. Before: StationaryRelation (Andrej, 2026-11-16): the operator ranks its transformers at the start of
-          2020 from one inventory of the fleet, and the target is whether a transformer burned during 2020. The source's
-          two label years, its whole span, give one forward comparison: trained on the 2019 burns and tested on 2020,
-          LightGBM scores ROC AUC 0.648 against 0.639 on the random folds, so the forward split costs nothing
-          measurable; the stationary-relation test of 2026-11-18 is inconclusive on that one period, as one period
-          cannot be pooled. One window is a thin measurement; a release with more years would allow three windows. It
-          cannot test a later year.
     """
+    time_basis = TimeBasis(
+        "AssumedStationaryRelation",
+        """
+        the operator ranks its transformers for the year
+        right after the inventory, and burns follow lightning density and network exposure, which one year does not
+        change. Before: StationaryRelation (Andrej, 2026-11-16): the operator ranks its transformers at the start of
+        2020 from one inventory of the fleet, and the target is whether a transformer burned during 2020. The source's
+        two label years, its whole span, give one forward comparison: trained on the 2019 burns and tested on 2020,
+        LightGBM scores ROC AUC 0.648 against 0.639 on the random folds, so the forward split costs nothing
+        measurable; the stationary-relation test of 2026-11-18 is inconclusive on that one period, as one period
+        cannot be pooled. One window is a thin measurement; a release with more years would allow three windows. It
+        cannot test a later year.
+        """,
+        set_by="Andrej",
+        on="2026-11-18",
+    )
 
     # Task (stratified on the target)
     target = "burned"
