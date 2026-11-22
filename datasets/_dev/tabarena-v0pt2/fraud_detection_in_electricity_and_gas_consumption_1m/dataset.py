@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     Metric,
     Source,
     TaskSummary,
+    TimeBasis,
     drop_columns,
 )
 
@@ -122,7 +123,7 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Spatial", "Retrospective")
+    data_tags = ("Spatial",)
     download_description = """
         The Zindi files need a Zindi login (train.zip holds client_train.csv and invoice_train.csv:
         https://zindi.africa/competitions/fraud-detection-in-electricity-and-gas-consumption-challenge/data). We use the
@@ -204,11 +205,16 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
           described and their use changes over time (7 only up to 1995, 8 and 9 from 1996, 9 replacing 6 from 2012), so
           which end is bad is unknown.
         - The row budget (1M train, 500k test rows): We keep the whole frame (1,862,650 invoices of 81,531 clients, all before 2013) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole clients drawn from its third and stratified on the target, and trains on every other row (about 1.36M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole clients at random, stratified on the target.
-        - Time basis: Retrospective: the use case screens the clients STEG did not inspect in 2013-2019 from their
-          invoices before the cut, filling in the period the findings cover rather than forecasting from 2013; the fraud
-          rate by last-invoice year is flat for the kept clients (7.1-9.3%, 2015-2019). It cannot test a forecast made
-          at the cut or a later campaign.
     """
+    time_basis = TimeBasis(
+        "Retrospective",
+        """
+        the use case screens the clients STEG did not inspect in 2013-2019 from their
+        invoices before the cut, filling in the period the findings cover rather than forecasting from 2013; the fraud
+        rate by last-invoice year is flat for the kept clients (7.1-9.3%, 2015-2019). It cannot test a forecast made
+        at the cut or a later campaign.
+        """,
+    )
 
     # Task
     target = "fraud"

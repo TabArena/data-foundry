@@ -15,6 +15,7 @@ from data_foundry.v2 import (
     ScoringColumn,
     Source,
     TaskSummary,
+    TimeBasis,
     drop_columns,
 )
 
@@ -145,7 +146,6 @@ class SpanishMotorInsuranceCoverageLevel20222024(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("StationaryRelation",)
     download_description = """
         Version 1 of the Mendeley Data record (DOI 10.17632/sw4jmdb2sm.1, published 2026-02-16, CC BY 4.0) holds two
         files: the portfolio (semicolon-separated CSV, 354,140 rows x 47 columns) and the variable descriptions. The
@@ -195,13 +195,20 @@ class SpanishMotorInsuranceCoverageLevel20222024(AbstractCuratedDataset):
         - CC (2026-11-09, Andrej): the metric stays the normalized Gini of the cost per year weighted by the time on risk (as implemented), not the Gini against the premium charged (Frees, Meyers and Cummings' form, `ordered_lorenz_gini` with the earned premium as the base); the call of 2026-11-02 stands.
         - CC (2026-11-09, Andrej): the renewals get no claims or cost of the year before, and the notes carry the LEAK-9 protocol line against reading other test rows ("No history, a protocol line").
         - CC (2026-11-09, Andrej): the forced split by policy stays, with that protocol line; the one 2024 window is not adopted ("Split by policy"). The release has no date finer than the year.
-        - Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-19): a pricing model refit each
-          year scores the next year's book, but the release has three calendar years and no finer date, too few for
-          three yearly windows; whole policies are held out with all their years (2026-11-09).
-          The stationary-relation test (2026-11-18) reads flat when pooled over 2023 and 2024: LightGBM +0.001 ±
-          0.010 normalized weighted Gini (floor 0.003; 2024 +0.004 ± 0.014, 2023 -0.001 ± 0.015); Kumo-Tabular's 2023
-          gap (+0.076 ± 0.059) is inconclusive and not counted. More years would allow yearly windows.
     """
+    time_basis = TimeBasis(
+        "StationaryRelation",
+        """
+        a pricing model refit each
+        year scores the next year's book, but the release has three calendar years and no finer date, too few for
+        three yearly windows; whole policies are held out with all their years (2026-11-09).
+        The stationary-relation test (2026-11-18) reads flat when pooled over 2023 and 2024: LightGBM +0.001 ±
+        0.010 normalized weighted Gini (floor 0.003; 2024 +0.004 ± 0.014, 2023 -0.001 ± 0.015); Kumo-Tabular's 2023
+        gap (+0.076 ± 0.059) is inconclusive and not counted. More years would allow yearly windows.
+        """,
+        set_by="Andrej",
+        on="2026-11-19",
+    )
 
     # Task
     target = TARGET

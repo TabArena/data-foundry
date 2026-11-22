@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Metric,
     Source,
     TaskSummary,
+    TimeBasis,
     decode,
 )
 
@@ -86,7 +87,7 @@ class SepsisPrediction1m(AbstractCuratedDataset):
     )
     # Regime tags by hand: the automatic ones would read `GroupedTemporal` from `Grouping(time_on=...)`, but the split
     # uses the groups only (`time_on` orders the hours inside a stay).
-    data_tags = ("Non-IID", "Grouped", "UnseenGroup")
+    data_tags = ("Non-IID", "Grouped")
     download_description = """
         We download the data from Kaggle as the link for the data from the original PhysioNet challenge seems to be down.
 
@@ -111,11 +112,19 @@ class SepsisPrediction1m(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `SepsisLabel` ships its classes as words (1 is the event). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
         - The row budget (1M train, 500k test rows): We keep the whole frame (1,552,210 hours of 40,336 patients) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole patients drawn from its third, and trains on every other row (about 1.05M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole patients at random. Both draws are stratified by each patient's most frequent label.
-        - Time basis: UnseenGroup (Andrej, 2026-11-18; `ForcedGroupedFromTemporal` before): the use case scores new
-          ICU patients, whom the data does not hold, so whole patients are held out with all their hours. The source
-          keeps only hours since admission, so the calendar order across patients is lost. Not tested: patients
-          admitted later, which a dated release would allow.
     """
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the use case scores new
+        ICU patients, whom the data does not hold, so whole patients are held out with all their hours. The source
+        keeps only hours since admission, so the calendar order across patients is lost. Not tested: patients
+        admitted later, which a dated release would allow.
+        """,
+        set_by="Andrej",
+        on="2026-11-18",
+        note="`ForcedGroupedFromTemporal` before",
+    )
 
     # Task
     target = "SepsisLabel"
