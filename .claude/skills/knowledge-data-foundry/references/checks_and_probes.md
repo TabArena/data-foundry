@@ -60,7 +60,7 @@ K=.claude/skills/knowledge-data-foundry/scripts
 .venv/bin/python $K/leak_probes.py <unique_name> --raw [--splits 3] [--max-rows 50000] [--n-jobs 8] [--out DIR]
 .venv/bin/python $K/leak_probes.py <unique_name> --weight-proxy [--weight-column COLUMN] [--objective metric|l2|OBJ] [--seeds 3] [--splits 3] [--max-rows 50000]
 .venv/bin/python $K/leak_probes.py <unique_name> --forced-split [--time-on COLUMN] [--period Y|Q|M|W|D] [--objective metric|l2|OBJ] [--seeds 3] [--forced-splits 9] [--max-rows 50000]
-.venv/bin/python $K/leak_probes.py <unique_name> --stationary-relation [--time-on COLUMN] [--period Y|Q|M|W|D] [--unordered] [--unit COLUMN|none] [--exclude COLUMN ...] [--windows 3] [--test-period LABEL ...] [--stationary-seeds 5] [--foundation none|kumo] [--device cpu|cuda] [--threads N]
+.venv/bin/python $K/leak_probes.py <unique_name> --stationary-relation [--time-on COLUMN] [--period Y|Q|M|W|D] [--unordered] [--unit COLUMN|none] [--exclude COLUMN ...] [--windows 3] [--test-period LABEL ...] [--stationary-seeds 5] [--foundation none|tabpfn|kumo] [--device cpu|cuda] [--threads N]
 .venv/bin/python $K/task_probes.py <unique_name> [--built] [--splits N] [--no-text] [--out DIR]   # or --all --jobs 8
 .venv/bin/python $K/group_probes.py <unique_name> [--repeats 3] [--permutations 100]
 .venv/bin/python $K/hidden_groups.py <unique_name> [--built] [--include-grouped] [--out DIR]     # or --all
@@ -175,20 +175,25 @@ holds. `leak_probes.py <unique_name> --stationary-relation` measures it, the sam
 (`curation_probes.stationarity`):
 
 * **Periods:** the period column probe 13 finds or `--time-on` names, cut by `--period`. The windows are the newest
-  `--windows` periods (default 3) with at least 40 rows and 40 rows before them; with `--unordered` (periods without an
-  order, such as month classes) every period is a window and the other periods stand in for the rows before it. Columns
-  that name the period (the period column, `--exclude`) are left out of the features.
+  `--windows` periods (default 3) with at least 40 rows and 40 rows before them, whatever their training share
+  (SPLIT-14's floor is for a split's windows, not for this test); with `--unordered` (periods without an order, such as
+  month classes) every period is a window and the other periods stand in for the rows before it. Columns that name the
+  period (the period column, `--exclude`) are left out of the features. A run on fewer than the newest three
+  (`--test-period`, one job per window, or fewer `--windows`) reports `verdict: partial` with its own reading;
+  `curation_probes.stationarity.combine_runs` joins the jobs' JSON results into the verdict.
 * **Test half:** per seed, a random half of the window's rows; where a unit recurs and the use case meets new units
   (`--unit`, default the definition's group column; `none` for rows), whole units are drawn, and the test half's units
   leave every training side.
 * **Two models, scored on the same test half:** a forward model trained on every row before the window, and a
   contemporaneous model trained on as many rows: the window's whole other half, filled up by a random draw from the rows
   before it. A constant predictor (the forward side's weighted mean or class shares) is scored beside them.
-* **Models:** probe 23's regularised LightGBM with the task's objective and training weight, on all rows; and a tabular
-  foundation model, NVIDIA's Kumo-Tabular (`--foundation kumo`; the optional package `structured-data-models`, large, 8
-  estimators, the mean of its quantiles as the point for squared-error metrics, the median for absolute-error ones), on
-  at most `--max-foundation-train` (20,000) training and `--max-foundation-test` (5,000) test rows drawn by the same
-  rules. Both are scored by the task's metric, the training weight included.
+* **Models:** probe 23's regularised LightGBM with the task's objective and training weight, on all rows; and one
+  state-of-the-art tabular foundation model, on at most `--max-foundation-train` (20,000) training and
+  `--max-foundation-test` (5,000) test rows drawn by the same rules: TabPFN v3.5 (`--foundation tabpfn`; the public
+  `tabpfn` package with the public Hugging Face weights, categories as codes named categorical) or NVIDIA's
+  Kumo-Tabular (`--foundation kumo`; the optional package `structured-data-models`, large, 8 estimators, the mean of its
+  quantiles as the point for squared-error metrics, the median for absolute-error ones). Both models are scored by the
+  task's metric, the training weight included. A time basis quotes the two and names the foundation model.
 * **Seeds:** `--stationary-seeds` (5); each draws the test half, the contemporaneous fill and the models' seeds anew.
 * **Gap and floor:** the gap is how much worse the forward model scores than the contemporaneous one (positive when
   worse, whatever the metric's direction), its mean and SD over the seeds; the floor is 1% of the distance between the
@@ -199,18 +204,20 @@ The verdict:
 * **Per window and model:** not flat when the mean gap exceeds both 2 SD and the floor; flat when it does not, the
   contemporaneous model beats the constant, and 2 SD is at most ten floors (the test could have shown a gap of a few
   floors); inconclusive otherwise, which includes a model without skill.
-* **The relation:** not flat when one window is not flat for one model, or when, for classification, a class share
-  changes by a factor of 2 or more between two periods at chi-square p < 0.01 (a change in recording, SPLIT-32); flat
-  when, for a model that beats the constant in every window, the gap averaged over the windows has 2 SD within ten
-  mean floors (its SD: the root of the windows' summed variances, divided by their number), so a small dataset gets the
-  evidence of all its windows; inconclusive otherwise. A target rate that moves less is reported,
-  not counted. With no window, the test says `not measurable`.
+* **Pooled:** the gap averaged over the windows (its SD: the root of the windows' summed variances, divided by their
+  number), read like a window, so a small dataset gets the evidence of all its windows, both ways.
+* **The relation:** not flat when one window or the pooled gap is not flat for one model, or when, for classification,
+  a class share changes by a factor of 2 or more between two periods at chi-square p < 0.01 (a change in recording,
+  SPLIT-32); flat when, for a model that beats the constant in every window, the pooled gap is flat; inconclusive
+  otherwise. A target rate that moves less is reported, not counted. With no window, the test says `not measurable`.
 
-A flat relation gives `StationaryRelation`, and the definition's `Time basis:` line quotes the windows' gaps against
-their floors; not flat leaves the forced tag; inconclusive counts as unmeasured, so the forced tag stays unless a person
-gives `AssumedStationaryRelation` a reason (SPLIT-32). The run prints one line per window and model and, with `--out`,
-writes the result as JSON. Kumo-Tabular is slow on CPU (on 48 cores, about 50 s per fit on 2,000 training rows and 270 s
-on 20,000): run it as a Slurm job, as any probe, on a GPU where one is free (`--device cuda`).
+A flat relation lets a person set `StationaryRelation`: the AI offers it with the reading, and the definition's `Time
+basis:` line, which opens `StationaryRelation (<person>, <YYYY-MM-DD>):`, quotes the windows' gaps against their floors;
+not flat leaves the forced tag; inconclusive counts as unmeasured, so the forced tag stays unless a person gives
+`AssumedStationaryRelation` a reason (SPLIT-32). The run prints one line per window and model and, with `--out`, writes
+the result as JSON. Run the foundation model on a GPU node started through SkyPilot (the `skypilot` skill): TabPFN
+v3.5 refuses a CPU, and Kumo-Tabular is slow there (on 48 cores, about 50 s per fit on 2,000 training rows and 270 s on
+20,000; `--device cuda`).
 
 A sweep over the working copy (`--all`, for example after a rebuild) writes its output to a scratch folder, never into
 git; the rebuild runs it ([rebuild.md](rebuild.md), step 6).

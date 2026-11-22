@@ -35,10 +35,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "knowledge-curation
 
 import dataset_io
 from curation_probes import time_recovery
-from data_foundry.collections import get_collection, list_collections
-from data_foundry.curation_container import CuratedContainer
-from data_foundry.schema import as_column_list, resolve_warehouse_dir
-from data_foundry.v2 import read_report
 from joblib import Parallel, delayed
 
 BUILT_WARNING = (
@@ -47,57 +43,22 @@ BUILT_WARNING = (
 )
 
 
-def built_container(name: str, root: Path) -> tuple[CuratedContainer, str]:
-    """The built container of ``name`` and where it came from: the build of its ``README.md``'s build record in the
-    local warehouse, else the copy of a registered collection (read from the cache, downloaded into it if missing).
-    """
-    build = (read_report(Path(root) / name / "README.md") or {}).get("build") or {}
-    if build.get("path") and (resolve_warehouse_dir() / build["path"] / "dataset.parquet").is_file():
-        return CuratedContainer.load(resolve_warehouse_dir() / build["path"]), "built"
-    for collection_name in list_collections():
-        collection = get_collection(collection_name)
-        try:
-            collection.find_entry(name)
-        except KeyError:
-            continue
-        return collection.get_dataset(name), f"built ({collection_name})"
-    raise FileNotFoundError(f"{name}: no build in the local warehouse and no registered collection holds it")
-
-
-def built_input(name: str, root: Path) -> tuple[dataset_io.ProbeInput, tuple[str, ...]]:
-    """The container of ``name`` as the probes take it, and its group columns (a format-1 container has no grouping
-    block, only ``group_on``).
-    """
-    container, origin = built_container(name, root)
-    if container.format_version >= 2:
-        data = dataset_io.from_container(container, origin)
-        return data, tuple(data.group_cols)
-    task = container.task_metadata
-    data = dataset_io.ProbeInput(
-        df=container.dataset,
-        target=task.target_column_name,
-        problem_type=task.problem_type,
-        regime=task.split_regime,
-        splits=container.experiment_metadata.splits,
-        grouping=None,
-        time_on=task.time_on,
-        origin=origin,
-    )
-    return data, tuple(as_column_list(task.group_on))
-
-
 def probe(name: str, root: Path, *, built: bool, include_temporal: bool = False) -> dict:
     """Run ``time_recovery.check_frame`` on one dataset."""
     started = time.time()
     if built:
-        data, groups = built_input(name, root)
+        data = dataset_io.load(name, root, built=True)
     else:
-        data = dataset_io.from_definition(dataset_io.definition(name, root), raw=True)
-        groups = tuple(data.group_cols)
+        ds = dataset_io.definition(name, root)
+        if ds.temporal is not None and not include_temporal:  # decided before the raw frame is built
+            return {"name": name, "origin": "definition", "regime": "temporal_non_iid", "skipped": "temporal split"} | {
+                "flags": []
+            }
+        data = dataset_io.from_definition(ds, raw=True)
     result = {"name": name, "origin": data.origin, "regime": data.regime}
     if data.regime == "temporal_non_iid" and not include_temporal:
         return result | {"skipped": "temporal split", "flags": []}
-    exclude = groups + tuple(data.scoring_cols)
+    exclude = tuple(data.group_cols) + tuple(data.scoring_cols)
     result |= time_recovery.check_frame(
         data.df,
         data.target,
