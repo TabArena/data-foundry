@@ -4,9 +4,10 @@ They complement the shared bundle checks, which look at the target as a whole (d
 a score is only defined, and only stable, when each test fold holds both classes in enough rows, or a target that
 varies.
 
-* ``splits_test_single_class``: a classification test fold holds a single class. An error under a ranking metric
-  (:data:`RANKING_METRICS`: ROC AUC, average precision, a Gini), which one class cannot score; a warning under any
-  other metric, where few or no positives in a window are part of the task (SPLIT-16).
+* ``splits_test_single_class``: a classification test fold holds a single class. An error under a metric that one class
+  leaves undefined (:attr:`~data_foundry.v2.metrics.MetricDef.one_class_undefined`: ROC AUC, average precision, a
+  Gini, the early-detection utility) and under a metric the registry does not hold (a local one, which cannot say);
+  a warning under any other registered metric, where few or no positives in a window are part of the task (SPLIT-16).
 * ``splits_test_minority_few`` (warning): a binary test fold holds fewer than :data:`MIN_TEST_MINORITY` rows of its
   rarer class, so its ROC AUC rests on a handful of rows.
 * ``splits_test_class_missing`` (warning): a multiclass test fold lacks one or more classes.
@@ -27,24 +28,10 @@ import numpy as np
 import pandas as pd
 
 from data_foundry.bundle_checks import CheckResult
+from data_foundry.v2.metrics import METRICS
 
 if TYPE_CHECKING:
     from data_foundry.curation_container import CuratedContainer
-
-RANKING_METRICS = frozenset(
-    {
-        "roc_auc",
-        "roc_auc_ovo_macro",
-        "roc_auc_ovr_macro",
-        "average_precision",
-        "average_precision_at_k",
-        "gini_stability",
-        "gini_top_capture",
-        "normalized_gini",
-    }
-)
-"""Classification metrics that rank the predictions against both classes: a test fold of one class leaves them
-undefined (SPLIT-16)."""
 
 MIN_TEST_MINORITY = 10
 """A binary test fold with fewer rows of its rarer class gives an unstable ROC AUC."""
@@ -70,6 +57,15 @@ def task_findings(container: CuratedContainer) -> list[CheckResult]:
     return _regression_findings(pd.to_numeric(target, errors="coerce"), folds)
 
 
+def one_class_undefined(metric: str | None) -> bool:
+    """Whether a test fold of one class leaves ``metric`` undefined (SPLIT-16): the registry's
+    :attr:`~data_foundry.v2.metrics.MetricDef.one_class_undefined`; ROC AUC when no metric is named, and true for a
+    metric the registry does not hold, which cannot say.
+    """
+    spec = METRICS.get(metric or "roc_auc")
+    return spec is None or spec.one_class_undefined
+
+
 def _classification_findings(
     target: pd.Series, folds: list, *, binary: bool, metric: str | None = None
 ) -> list[CheckResult]:
@@ -87,21 +83,17 @@ def _classification_findings(
             missing.append((name, n_classes - present))
     findings = []
     if single:
-        ranking = metric is None or metric in RANKING_METRICS
+        undefined = one_class_undefined(metric)
         findings.append(
             CheckResult(
                 "splits_test_single_class",
-                "error" if ranking else "warning",
+                "error" if undefined else "warning",
                 f"{len(single)} test fold(s) hold a single class, so "
-                + (
-                    f"the ranking metric {metric or 'ROC AUC'} is undefined there"
-                    if ranking
-                    else f"{metric} scores them on one class"
-                )
+                + (f"{metric or 'ROC AUC'} is undefined there" if undefined else f"{metric} scores them on one class")
                 + f": {single[:5]}.",
                 hint=(
                     "Widen the window or move its cut until every test fold holds both classes (SPLIT-16)."
-                    if ranking
+                    if undefined
                     else "Few or no positives in a window are part of the task (SPLIT-16); accept it with the counts."
                 ),
             ),

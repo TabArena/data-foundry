@@ -6,7 +6,16 @@ import hashlib
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+    drop_columns,
+)
 
 
 class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
@@ -145,7 +154,15 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
         "dataset_duplicate_rows": "Myunghwan accepted row retention and stratified random evaluation on 2026-10-25 after reviewing all nine saved folds: 9.8509% matching and 90.1491% nonmatching test evaluations across three repeats. The 965 exact row extras are distinct respondents the coarse features cannot tell apart (LEAK-19): 361 repeated profiles are Alone and 67.8% of copy groups are larger than their party. A split grouped by profile costs +0.0047 log loss and copy lookups gain nothing. Residual LEAK-17 risk (With Spouse enriched, 44.6% against 27.8%) is bounded at about 0.005.",
         "dataset_conflicting_duplicate_rows": "Myunghwan accepted retention on 2026-10-25 after reviewing same- and different-label profile matches. The checker counts 468 additional distinct feature/label combinations; 410 profiles contain multiple labels (1,324 rows). On rows linked to the 2020 cut, such profiles have different real spending, so the ambiguity is genuine (LEAK-20). No outcome-based deduplication and no grouping on a feature hash (SPLIT-24).",
     }
-    data_tags = ("ForcedIIDFromTemporal",)
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        No date column or chronological meaning of Tour_ID is documented, and the raw row order carries none
+        (neighbouring labels agree 0.2211 against 0.2228 by chance). The use case looks forward (a trip before the
+        visit), so the split is IID forced from temporal: a dated survey wave would test drift of the TZS band edges
+        and of the visitor mix; recover it if NBS publishes it. No valid window exists to measure that cost.
+        """,
+    )
     splits_comment = """
         Stratified random 3-fold cross-validation with 3 repeats, using benchmark split seed 4267 and row shuffle 42.
         Tests represent held-out visitor/trip records from the represented survey population under the fulfilled-plan scenario.
