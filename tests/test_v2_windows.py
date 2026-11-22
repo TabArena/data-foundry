@@ -12,7 +12,13 @@ import pytest
 from data_foundry.v2 import get_dataset
 from data_foundry.v2.cli import add_dataset_parser
 from data_foundry.v2.dataset import NEWEST_PERIOD_RATIO, AbstractCuratedDataset, newest_period_rate
-from data_foundry.v2.splits import TemporalSplits, split_count, temporal_window_splits, window_bounds
+from data_foundry.v2.splits import (
+    TemporalSplits,
+    split_count,
+    temporal_window_splits,
+    training_sides,
+    window_bounds,
+)
 from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
 from tests.test_v2_dataset import temporal_version_body, warehouse, write_definition  # noqa: F401 - the fixture
@@ -189,7 +195,7 @@ def test_test_windows_hold_33_scored_units_and_the_count_follows_split_33() -> N
 
     def findings(test_sizes: list[int], n_rows: int, *, unit_column: bool = False) -> dict[str, str]:
         frame = pd.DataFrame({"era": np.arange(n_rows) // 2})
-        windows = [(i, list(range(10)), list(range(n))) for i, n in enumerate(test_sizes)]
+        windows = [(i, list(range(10 + i)), list(range(n))) for i, n in enumerate(test_sizes)]
         inputs = {"group": "era"} if unit_column else {}
         task = SimpleNamespace(objective_metric=SimpleNamespace(inputs=inputs))
         container = SimpleNamespace(task_metadata=task, dataset=frame)
@@ -203,6 +209,19 @@ def test_test_windows_hold_33_scored_units_and_the_count_follows_split_33() -> N
     assert findings([40, 32, 40] + [40] * 6, 5_000) == {"splits_test_too_small": "error"}
     assert findings([80] * 9, 12_000, unit_column=True) == {}  # 40 eras a window; 6,000 eras give 9 splits
     assert findings([80, 60] + [80] * 7, 12_000, unit_column=True) == {"splits_test_too_small": "error"}  # 30 eras
+
+
+def test_splits_count_by_their_training_sides() -> None:
+    """Test parts that share one training side are one split, for the target count and for the minimum of three
+    (SPLIT-15).
+    """
+    assert training_sides([[0, 1, 2], [2, 1, 0], [0, 1, 2, 3]]) == 2  # the order of the positions does not matter
+    frame = pd.DataFrame({"x": np.arange(5_000)})
+    task = SimpleNamespace(objective_metric=SimpleNamespace(inputs={}))
+    container = SimpleNamespace(task_metadata=task, dataset=frame)
+    shared = [(i, list(range(100)), list(range(100 + 40 * i, 140 + 40 * i))) for i in range(9)]
+    found = AbstractCuratedDataset._window_size_findings(SimpleNamespace(), container, shared, 5_000)
+    assert [(r.slug, r.message.split(" ")[0]) for r in found] == [("splits_below_target", "1")]
 
 
 def test_a_newest_period_cut_short_is_found() -> None:
