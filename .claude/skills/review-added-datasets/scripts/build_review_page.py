@@ -1320,6 +1320,14 @@ TIME_BASIS = (*TIME_BASIS_TAGS, *GROUP_BASIS_TAGS)
 """The definition's use-case prototypes (SPLIT-32) and its group basis (SPLIT-35)."""
 FORCED = FORCED_TIME_TAGS
 """The definition's forced tags (SPLIT-8)."""
+DECLARED_BASIS = re.compile(r"""time_basis = TimeBasis\(\s*["'](\w+)""")
+"""A ``time_basis`` declaration read from a definition's source when the class does not load."""
+
+
+def _declared_tags(code: str) -> list[str]:
+    """The tags a definition's ``time_basis`` and ``group_basis`` add, read from its source."""
+    group = ["ForcedIIDFromGrouped"] if "group_basis = GroupBasis(" in code else []
+    return [*DECLARED_BASIS.findall(code), *group]
 
 
 def _time_basis(tags: list[str], comments: str | None, regime: str | None = None) -> dict:
@@ -1524,7 +1532,7 @@ def _retired_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
         "metric": _metric_from_front(task),
         "split": _split(
             readme,
-            list(_literal_from_source(code, "data_tags") or ()) if code else [],
+            [*(_literal_from_source(code, "data_tags") or ()), *_declared_tags(code)] if code else [],
             _literal_from_source(code, "curation_comments") if code else None,
         ),
         "meta": meta,
