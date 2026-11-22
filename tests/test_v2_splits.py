@@ -524,6 +524,24 @@ def test_protocol_checks_want_three_temporal_windows(*, n_windows: int, flagged:
     assert ("splits_too_few" in slugs(container)) is flagged
 
 
+def test_temporal_test_parts_that_share_a_training_side_count_once() -> None:
+    """Three test parts on one training side are one split, under the minimum of three (SPLIT-15)."""
+    df = make_iid_frame(60).assign(t=pd.date_range("2024-01-01", periods=60, freq="D"))
+    train = list(range(40))
+    shared = {0: {0: (train, list(range(40, 47))), 1: (train, list(range(47, 54))), 2: (train, list(range(54, 60)))}}
+    task = PredictiveMLTaskMetadataV2(
+        target_column_name="target", problem_type="binary_classification", objective_metric=make_spec(), time_on="t"
+    )
+    container = make_container(
+        df,
+        task_metadata=task,
+        experiment_metadata=PredictiveMLSplitsMetadata(
+            splits_comment="x", splits=shared, time_horizon=5, time_horizon_unit="days"
+        ),
+    )
+    assert "splits_too_few" in slugs(container)
+
+
 def test_a_missing_build_dependency_names_the_extra() -> None:
     from data_foundry.v2._optional import BUILD_INSTALL, import_build_dependency
 

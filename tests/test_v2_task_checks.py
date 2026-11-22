@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import inspect
+import warnings
+
 import numpy as np
 import pandas as pd
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.schema import DatasetMetadata, PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2
-from data_foundry.v2.task_checks import task_findings
+from data_foundry.v2.metrics import METRICS
+from data_foundry.v2.task_checks import one_class_undefined, task_findings
 
 from tests.test_bundle_checks import make_spec
 
@@ -50,7 +54,7 @@ def test_binary_folds_with_one_class_or_few_positives() -> None:
     assert _slugs(_container(y, few, "binary_classification")) == {"splits_test_minority_few": "warning"}
 
 
-def test_a_single_class_fold_is_an_error_only_under_a_ranking_metric() -> None:
+def test_a_single_class_fold_is_an_error_only_under_a_metric_it_leaves_undefined() -> None:
     """SPLIT-16: one class cannot be ranked; other metrics score the fold, a warning."""
     from data_foundry.v2.task_checks import _classification_findings
 
@@ -62,6 +66,39 @@ def test_a_single_class_fold_is_an_error_only_under_a_ranking_metric() -> None:
     assert [(r.slug, r.severity) for r in _classification_findings(target, folds, binary=True, metric="log_loss")] == [
         ("splits_test_single_class", "warning")
     ]
+
+
+def test_every_binary_metric_one_class_leaves_undefined_says_so() -> None:
+    """SPLIT-16: a binary metric that scores an all-negative fold as NaN carries `one_class_undefined`, so a new metric
+    of that kind cannot fall back to a warning; a metric the registry does not hold counts as undefined.
+    """
+    flagged = {name for name, spec in METRICS.items() if spec.one_class_undefined}
+    rng = np.random.default_rng(0)
+    p1 = rng.random(60)
+    undefined = set()
+    for name, spec in METRICS.items():
+        if "binary_classification" not in spec.problem_types:
+            continue
+        args = inspect.signature(spec.fn).parameters
+        pred = np.column_stack([1 - p1, p1]) if spec.prediction == "proba" else (p1 > 0.5).astype(int)
+        kw = {"labels": np.array([0, 1])} if "labels" in args else {}
+        if "group" in args:
+            kw["group"] = np.repeat(np.arange(6), 10)
+        if "order" in args:
+            kw["order"] = np.tile(np.arange(10), 6)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            try:
+                if "params" in args:  # the defaults; a metric that needs parameters without one is skipped
+                    kw["params"] = (spec.check_params({}) if spec.check_params else None) or {}
+                value = spec.fn(np.zeros(60, dtype=int), pred, **kw)
+            except (TypeError, KeyError, ValueError):
+                continue
+        if not np.isfinite(value):
+            undefined.add(name)
+    assert undefined.issuperset({"roc_auc", "average_precision", "normalized_early_detection_utility"})
+    assert undefined.issubset(flagged)
+    assert one_class_undefined("a_local_metric") and one_class_undefined(None) and not one_class_undefined("log_loss")
 
 
 def test_balanced_binary_folds_pass() -> None:

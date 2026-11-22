@@ -11,14 +11,12 @@ from __future__ import annotations
 
 import pytest
 import yaml
+from data_foundry.curation import consistency
 from data_foundry.curation._paths import records_dir, resolve_curation_root
+from data_foundry.curation.consistency import COLLECTION_TYPES, collection_type_problems, is_typed
 from data_foundry.curation.store import load_all
-from data_foundry.schema import COLLECTION_TYPES
 
 REPO = resolve_curation_root().parent
-DATED = {"Time: Dated"}
-OCCASION = DATED | {"Time: Inferred", "Time: Within Entity"}
-FACT_PREFIXES = ("Samples:", "Time:", "Target:", "Entities:", "Features:")
 
 PENDING: dict[str, str] = {
     "loan_default_prediction_imperial_college": (
@@ -29,47 +27,27 @@ PENDING: dict[str, str] = {
 """Records whose contradiction is known, with where it is decided."""
 
 
-def contradictions(tags: set[str]) -> list[str]:
-    """The ways a record's collection type disagrees with SPLIT-34 or with its collection facts."""
-    types = tags & set(COLLECTION_TYPES)
-    if len(types) != 1:
-        return [f"{len(types)} collection types, one expected"]
-    (kind,) = types
-    found = []
-    dated_rows = "Samples: Over Time" in tags and bool(tags & DATED)
-    if kind == "Dated Event Log" and not dated_rows:
-        found.append("a dated event log needs samples over time with a date its rows record")
-    if kind in ("Database Snapshot", "Clinical Study") and dated_rows:
-        found.append(f"a {kind.lower()} whose rows record a date is a dated event log")
-    if kind == "Panel Data" and not tags & OCCASION:
-        found.append("panel data needs a recorded occasion: a date, an inferred order or an order within the unit")
-    return found
-
-
-@pytest.fixture(scope="module")
-def found() -> dict[str, list[str]]:
-    """Every typed definition record's contradictions, by unique name.
-
-    A record that carries neither a collection type nor a collection fact is not typed yet and is left out; the
-    definitions are typed in several pull requests, so such records exist until the last of them lands.
-    """
-    out = {}
-    for name, tags in _typed_records().items():
-        hits = contradictions(tags)
-        if hits:
-            out[name] = hits
-    return out
-
-
-def _typed_records() -> dict[str, set[str]]:
-    """The tags of every definition record that carries a collection type or a collection fact, by unique name."""
+def _records() -> dict[str, set[str]]:
+    """The tags of every definition record the check reads, by unique name: every one once
+    ``consistency.STRICT_COLLECTION_TYPES`` is set, until then those with a collection type or a collection fact."""
     out = {}
     for record in load_all(records_dir()):
         if not record.v2_path or not (REPO / record.v2_path).exists():
             continue
         tags = set(record.tags or [])
-        if tags & set(COLLECTION_TYPES) or any(t.startswith(FACT_PREFIXES) for t in tags):
+        if consistency.STRICT_COLLECTION_TYPES or is_typed(tags):
             out[record.unique_name] = tags
+    return out
+
+
+@pytest.fixture(scope="module")
+def found() -> dict[str, list[str]]:
+    """Every read definition record's contradictions, by unique name."""
+    out = {}
+    for name, tags in _records().items():
+        hits = collection_type_problems(tags)
+        if hits:
+            out[name] = hits
     return out
 
 
@@ -87,7 +65,7 @@ def test_collection_type_agrees_with_the_collection_facts(found: dict[str, list[
 
 def test_pending_contradictions_still_hold(found: dict[str, list[str]]) -> None:
     """A pending entry whose contradiction is gone leaves the list (an entry whose record is not typed yet waits)."""
-    resolved = sorted((set(PENDING) & set(_typed_records())) - set(found))
+    resolved = sorted((set(PENDING) & set(_records())) - set(found))
     assert not resolved, f"no longer contradictory, drop from PENDING: {resolved}"
 
 
@@ -112,4 +90,4 @@ def test_pending_contradictions_still_hold(found: dict[str, list[str]]) -> None:
 )
 def test_contradictions(tags: set[str], expected: int) -> None:
     """Each rule fires on its contradiction and not on the combination the rules allow."""
-    assert len(contradictions(tags)) == expected
+    assert len(collection_type_problems(tags)) == expected

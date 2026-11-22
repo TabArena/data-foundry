@@ -224,30 +224,48 @@ A metric input known at the prediction point (a weight that is a function of the
   [selection.md](../../knowledge-curation/references/selection.md), "Anonymized data"); `"Spatial"` when the data
   holds geographic information (ZIP, latitude and longitude, region, store location). An IID or grouped split carries
   one time basis that says why it is not temporal (SPLIT-32 in
-  [splits.md](../../knowledge-curation/references/splits.md)): a use-case prototype, `"Timeless"` (the target is a
-  fixed property of the item, and the data has no time dimension, or its time changes only which items are held, as
-  in a catalogue whose entry date does not decide the split), `"Retrospective"` (the data is one snapshot of a
-  moment or period, and the use case fills in what is missing for that time, not a later one), `"StationaryRelation"`
-  (the use case scores later units, too few periods give the windows SPLIT-14 asks for, and a measurement over the
-  periods held, dated or a rebuilt order, shows the relation does not move; it replaces a forced tag) or
-  `"UnseenGroup"` (the use case aims at groups the data does not hold, a site, a well, a protein or a chemical family,
-  not at a later period; it needs a `grouping` on the group); or a forced tag, `"ForcedIIDFromTemporal"` when a
-  forward use case has no usable time or too few periods and ships IID (a definition that declares a `grouping` or
-  `temporal` refuses it), `"ForcedGroupedFromTemporal"` when such a task ships grouped (it needs a `grouping`;
-  SPLIT-8). `"ForcedIIDFromGrouped"` sits beside the time basis when the use case holds out a group of distinct items
-  the data cannot key (no structure for a scaffold, no stand id or coordinates, a single site): an IID split (a
-  definition that declares a `grouping` or `temporal` refuses it) with a `Group basis:` line naming the group, why it
-  cannot be keyed and the overlap left (SPLIT-35). `"AssumedStationaryRelation"` replaces a forced tag where a person
-  judged earlier and later samples
-  interchangeable for a reason from the dataset's domain or use case and no comparison over time is possible; never
-  set it yourself unless a person asks (you may offer and recommend it in a review), and open its `Time basis:` line
-  with `AssumedStationaryRelation (<person>, <YYYY-MM-DD>): <reason>`, which the definition and `dataset check` require
-  (SPLIT-32). Either way the definition carries a `Time basis:` line in `curation_comments` that states the fact behind
-  it and ends with what the split cannot test; a forced tag's line names its reason (time lost, or too few periods)
-  and what a dated release would change. A definition refuses two time bases, and a prototype on a temporal split or
-  without its line. `dataset check` notes a split that is not temporal and says nothing about why (no time basis and
-  no `Time basis:` line), a forced tag without its line, and date columns in the data of such a split unless the basis
-  is `Retrospective` or a `Time basis:` line gives the reason.
+  [splits.md](../../knowledge-curation/references/splits.md)), declared as `time_basis = TimeBasis(tag, reason)`
+  (`from data_foundry.v2 import TimeBasis`), never as a tag in `data_tags` or a line written by hand: the build adds the
+  tag to `data_tags` and renders the reason as the `- Time basis: <tag>: <reason>` bullet of `curation_comments`, which
+  the container and the README carry. The tag is a use-case prototype, `"Timeless"` (the target is a fixed property of
+  the item, and the data has no time dimension, or its time changes only which items are held, as in a catalogue whose
+  entry date does not decide the split), `"Retrospective"` (the data is one snapshot of a moment or period, and the
+  use case fills in what is missing for that time, not a later one), `"StationaryRelation"` (the use case scores later
+  units, too few periods give the windows SPLIT-14 asks for, and the stationary-relation test over the periods held,
+  dated or a rebuilt order, reads the relation flat; it replaces a forced tag) or `"UnseenGroup"` (the use case aims at
+  groups the data does not hold, a site, a well, a protein or a chemical family, not at a later period; it needs a
+  `grouping` on the group); or a forced tag, `"ForcedIIDFromTemporal"` when a forward use case has no usable time or
+  too few periods and ships IID (a definition that declares a `grouping` or `temporal` refuses it),
+  `"ForcedGroupedFromTemporal"` when such a task ships grouped (it needs a `grouping`; SPLIT-8).
+  `"AssumedStationaryRelation"` replaces a forced tag where a person judged earlier and later samples interchangeable
+  for a reason from the dataset's domain or use case and nothing can be measured (no comparison over time is possible,
+  or the stationary-relation test is inconclusive); the split is then random, or grouped by the unit where a unit has
+  several rows and the use case meets new units. Only a person sets `StationaryRelation` (on the measurement) and
+  `AssumedStationaryRelation` (on a reason): never set them yourself unless a person asks (you may offer and recommend
+  them in a review), and give `set_by` and `on`, which render as `<tag> (<person>, <YYYY-MM-DD>):`:
+
+  ```python
+  time_basis = TimeBasis(
+      "StationaryRelation",
+      "the stationary-relation test reads flat pooled over 2023 and 2024 (LightGBM +0.001 +- 0.010, floor 0.003) ...",
+      set_by="Lennart",
+      on="2026-11-22",
+  )
+  ```
+
+  The reason states the fact behind the tag and ends with what the split cannot test; a forced tag's reason names
+  why (time lost, or too few periods) and what a dated release would change. `group_basis = GroupBasis(reason)` sits
+  beside the time basis when the use case holds out a group of distinct items the data cannot key (no structure for a
+  scaffold, no stand id or coordinates, a single site): it adds `"ForcedIIDFromGrouped"` and the `- Group basis:`
+  bullet, naming the group, why it cannot be keyed and the overlap left, and marks an IID split (SPLIT-35). A definition
+  refuses a malformed declaration, a prototype on a temporal split, a regime the tag contradicts, a human-set tag
+  without a person, a date and a reason of eight words or more, and a time-basis tag or line written by hand beside
+  `time_basis` (`data_foundry.time_basis` holds the rules, which `dataset check` applies to a built container too).
+  Definitions written before `TimeBasis` (a forced tag in `data_tags` and a free-text line) still load while
+  `data_foundry.time_basis.ALLOW_UNSTRUCTURED` holds; `dataset check` notes them (`meta_time_basis_unstructured`).
+  `dataset check` also notes a split that is not temporal and says nothing about why, and date columns in the data of
+  such a split unless the basis is `Retrospective` or a forced tag's line gives the reason; it prints where the
+  curation record's collection type and facts contradict the definition (`data_foundry.curation.consistency`).
   `"2ndTierData"` is retired (2026-10-21): old containers that carry it still load, but a new definition refuses it;
   write the doubts as a finding and the fit as `approximate`.
 * `problem_type`: "Regression" to `"regression"`, "Binary Classification" to `"binary_classification"`,

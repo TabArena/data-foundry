@@ -432,6 +432,9 @@ class MetricDef:
         rank_only: Whether it reads the predictions only through their order (a Gini sorted by the prediction). The
             inverse of a ``target_transform`` is increasing, so such a metric scores the transformed predictions as
             they are, which keeps a large log-scale prediction from overflowing on the way back.
+        one_class_undefined: Whether a test fold of one class leaves it undefined (SPLIT-16): it ranks the predictions
+            against both classes (ROC AUC, average precision, a Gini), or normalises by what alarms could gain (the
+            early-detection utility). Under such a metric a single-class test fold is an error, not a warning.
     """
 
     name: str
@@ -452,6 +455,7 @@ class MetricDef:
     row_weight: bool = False
     weighted_definition: str | None = None
     rank_only: bool = False
+    one_class_undefined: bool = False
 
     def definition_for(self, inputs: Mapping[str, str] | None) -> str:
         """The one-line formula of a spec that maps ``inputs``: :attr:`weighted_definition` when the spec maps the
@@ -509,6 +513,7 @@ METRICS: dict[str, MetricDef] = {
             row_weight=True,
             weighted_definition="area under the ROC curve, each positive-negative pair counted with w_i * w_j, w the "
             "weight input (finite, >= 0)",
+            one_class_undefined=True,
         ),
         _standard(
             "average_precision",
@@ -518,6 +523,7 @@ METRICS: dict[str, MetricDef] = {
             _average_precision,
             "sklearn.metrics.average_precision_score",
             "area under the precision-recall curve (step-wise)",
+            one_class_undefined=True,
         ),
         _standard(
             "log_loss",
@@ -621,6 +627,7 @@ METRICS: dict[str, MetricDef] = {
             _roc_auc_multiclass("ovo"),
             "sklearn.metrics.roc_auc_score(multi_class='ovo', average='macro')",
             "mean ROC AUC over all pairs of classes",
+            one_class_undefined=True,
         ),
         _standard(
             "roc_auc_ovr_macro",
@@ -630,6 +637,7 @@ METRICS: dict[str, MetricDef] = {
             _roc_auc_multiclass("ovr"),
             "sklearn.metrics.roc_auc_score(multi_class='ovr', average='macro')",
             "mean ROC AUC of each class against the rest",
+            one_class_undefined=True,
         ),
         # regression
         _standard(
@@ -1459,6 +1467,7 @@ _CUSTOM_METRICS = (
         "AP@K, https://www.kaggle.com/competitions/avito-prohibited-content/overview/evaluation",
         params=_TOP_K_PARAMS,
         check_params=_check_top_k,
+        one_class_undefined=True,
     ),
     _custom(
         "rmspe",
@@ -1497,6 +1506,7 @@ _CUSTOM_METRICS = (
             "negative_weight": "the weight of a negative row, a positive weighs 1 (default 20)",
         },
         check_params=_check_gini_top_capture,
+        one_class_undefined=True,
     ),
     _custom(
         "normalized_gini",
@@ -1509,6 +1519,7 @@ _CUSTOM_METRICS = (
         "https://www.kaggle.com/competitions/ClaimPredictionChallenge/overview/evaluation (normalized Gini, the "
         "reference code posted on Kaggle)",
         rank_only=True,
+        one_class_undefined=True,
     ),
     _custom(
         "normalized_weighted_gini",
@@ -1636,6 +1647,7 @@ _CUSTOM_METRICS = (
             "slope_weight": "the weight of min(0, slope) (default 88.0)",
             "residual_std_weight": "the weight subtracted per unit of the residuals' std (default 0.5)",
         },
+        one_class_undefined=True,
     ),
     _custom(
         "par_k",
@@ -1688,6 +1700,7 @@ _CUSTOM_METRICS = (
         },
         predictions=("proba",),
         check_params=_check_utility,
+        one_class_undefined=True,
     ),
 )
 METRICS.update({d.name: d for d in _CUSTOM_METRICS})

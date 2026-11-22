@@ -20,17 +20,23 @@ the data holds. ``stationary_relation`` measures it, the same way for every data
   gap below it is too small to matter, whatever its noise.
 * **Models:** a regularised LightGBM (probe 23's settings, ``leak._regularised``) on every training row, and, where
   ``foundation`` gives one, a tabular foundation model on at most ``max_foundation_train`` training rows and
-  ``max_foundation_test`` test rows (both drawn by the same rules).
+  ``max_foundation_test`` test rows (both drawn by the same rules). For a time basis it is one state-of-the-art
+  tabular foundation model, on a GPU: TabPFN v3.5 (``tabpfn_v35``) or Kumo-Tabular (``kumo_tabular``).
 
 A window is **not flat** for a model when its mean gap is above both two SDs and the floor; **flat** when it is not, the
 contemporaneous model beats the constant predictor, and the test was fine enough to see a gap of a few floors (two SDs
-at most ``INCONCLUSIVE_RATIO`` floors); **inconclusive** otherwise (a model without skill cannot lose any). The dataset
-is not flat when one window is not flat for one model; flat when, for a model that beats the constant in every window,
-the gap averaged over the windows (``pooled``: its SD is the root of the summed variances over k windows, divided by k)
-has two SDs within ``INCONCLUSIVE_RATIO`` mean floors; inconclusive otherwise. For classification, a class share that
-changes by a factor of ``SHARE_FACTOR`` or more between two periods, with a chi-square p below ``SHARE_P``, is a change
-in recording and makes the dataset not flat whatever the models say; a moving share below that is reported, not counted
-(SPLIT-32).
+at most ``INCONCLUSIVE_RATIO`` floors); **inconclusive** otherwise (a model without skill cannot lose any). The gap
+averaged over the windows (``pooled``: its SD is the root of the summed variances over k windows, divided by k) is read
+the same way, so a small set gets the evidence of all its windows, both ways. The dataset is not flat when one window,
+or the pooled gap, is not flat for one model; flat when, for a model that beats the constant in every window, the
+pooled gap is flat; inconclusive otherwise. For classification, a class share that changes by a factor of
+``SHARE_FACTOR`` or more between two periods, with a chi-square p below ``SHARE_P``, is a change in recording and makes
+the dataset not flat whatever the models say; a moving share below that is reported, not counted (SPLIT-32).
+
+The verdict on the relation covers the newest ``TIME_BASIS_WINDOWS`` periods (every period, unordered), whatever their
+training share: SPLIT-14's floor is for a split's windows, not for this test. A run on fewer (``test_periods``, or
+``n_windows`` below it, as when each window runs as its own job) reports ``verdict: partial`` with its own reading in
+``partial_verdict``; ``combine_runs`` joins the runs into the verdict.
 """
 
 from __future__ import annotations
@@ -39,7 +45,7 @@ from collections.abc import Callable
 
 import numpy as np
 import pandas as pd
-from scipy.stats import chi2_contingency
+from scipy.stats import fisher_exact
 
 from . import leak
 
@@ -52,9 +58,22 @@ SHARE_P = 0.01
 """A class share that changes by this factor between two periods, at this chi-square p, is a change in recording."""
 MIN_WINDOW_ROWS = 40
 """Rows a period needs to be a window: a test half of 20 rows at least."""
+TIME_BASIS_WINDOWS = 3
+"""The newest periods a verdict on the relation covers (SPLIT-32); a run on fewer is partial."""
 
 Foundation = Callable[[pd.DataFrame, np.ndarray, pd.DataFrame, int], np.ndarray]
 """``fit_predict(x_train, y_train, x_test, seed)``: values, or class probabilities in the order of ``fits.classes``."""
+
+
+def _draw_units(rows: np.ndarray, size: float, units: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+    """Whether each of ``rows`` is drawn: whole units in a random order until about ``size`` rows (at least one unit).
+    ``units`` are integer codes, so the membership test is vectorised.
+    """
+    u = units[rows]
+    keys, counts = np.unique(u, return_counts=True)
+    order = rng.permutation(len(keys))
+    n_take = max(1, int(np.searchsorted(np.cumsum(counts[order]), size)))
+    return np.isin(u, keys[order[:n_take]])
 
 
 def _halves(rows: np.ndarray, units: np.ndarray | None, rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:
@@ -62,11 +81,7 @@ def _halves(rows: np.ndarray, units: np.ndarray | None, rng: np.random.Generator
     if units is None:
         perm = rng.permutation(rows)
         return np.sort(perm[: len(rows) // 2]), np.sort(perm[len(rows) // 2 :])
-    u = units[rows]
-    keys = rng.permutation(pd.unique(u))
-    sizes = pd.Series(u).value_counts().reindex(keys).to_numpy()
-    take = set(keys[: int(np.searchsorted(np.cumsum(sizes), len(rows) / 2) + 1)])
-    in_test = np.fromiter((x in take for x in u), bool, len(u))
+    in_test = _draw_units(rows, len(rows) / 2, units, rng)
     return rows[in_test], rows[~in_test]
 
 
@@ -76,11 +91,7 @@ def _cap(rows: np.ndarray, cap: int | None, units: np.ndarray | None, rng: np.ra
         return rows
     if units is None:
         return np.sort(rng.choice(rows, cap, replace=False))
-    u = units[rows]
-    keys = rng.permutation(pd.unique(u))
-    sizes = pd.Series(u).value_counts().reindex(keys).to_numpy()
-    take = set(keys[: max(1, int(np.searchsorted(np.cumsum(sizes), cap)))])
-    return rows[np.fromiter((x in take for x in u), bool, len(u))]
+    return rows[_draw_units(rows, cap, units, rng)]
 
 
 def _contemporaneous(before: np.ndarray, rest: np.ndarray, size: int, rng: np.random.Generator) -> np.ndarray:
@@ -91,38 +102,44 @@ def _contemporaneous(before: np.ndarray, rest: np.ndarray, size: int, rng: np.ra
     return np.sort(np.concatenate([rest, fill]).astype(int))
 
 
-def recording_change(y: pd.Series, codes: np.ndarray, labels: list[str], problem_type: str) -> dict | None:
-    """The largest change of a class share between two periods, and whether it counts as a change in recording
-    (a factor of ``SHARE_FACTOR`` or more at a chi-square p below ``SHARE_P``); None for a regression.
+def recording_change(
+    y: pd.Series, codes: np.ndarray, labels: list[str], problem_type: str, *, min_rows: int = MIN_WINDOW_ROWS
+) -> dict | None:
+    """The largest change of a class share between two periods of ``min_rows`` rows or more, and whether it counts as
+    a change in recording (a factor of ``SHARE_FACTOR`` or more at a Fisher exact p below ``SHARE_P``); None for a
+    regression. Where a pair counts, the largest such change is reported.
     """
     if problem_type == "regression":
         return None
-    truth = y.to_numpy()
-    best = None
-    for c in pd.unique(truth):
-        hit = truth == c
-        counts = np.array([[(hit & (codes == k)).sum(), (~hit & (codes == k)).sum()] for k in range(len(labels))])
-        share = counts[:, 0] / np.maximum(counts.sum(axis=1), 1)
-        for a in range(len(labels)):
-            for b in range(len(labels)):
-                if counts[a].sum() == 0 or counts[b].sum() == 0 or share[a] <= share[b] or share[b] == 0:
+    classes, class_codes = np.unique(y.to_numpy(), return_inverse=True)
+    n_periods = len(labels)
+    table = np.bincount(codes * len(classes) + class_codes, minlength=n_periods * len(classes))
+    table = table.reshape(n_periods, len(classes))
+    rows = table.sum(axis=1)
+    periods = [k for k in range(n_periods) if rows[k] >= min_rows]
+    best, best_counting = None, None
+    for j, c in enumerate(classes):
+        share = table[:, j] / np.maximum(rows, 1)
+        for a in periods:
+            for b in periods:
+                if share[a] <= share[b] or share[b] == 0:
                     continue
-                factor = share[a] / share[b]
-                if best is not None and factor <= best["factor"]:
-                    continue
-                p = chi2_contingency(counts[[a, b]])[1] if counts[[a, b]].min() > 0 else 0.0
-                best = {
+                pair = np.array([[table[a, j], rows[a] - table[a, j]], [table[b, j], rows[b] - table[b, j]]])
+                change = {
                     "class": str(c),
                     "high": labels[a],
                     "low": labels[b],
                     "high_share": float(share[a]),
                     "low_share": float(share[b]),
-                    "factor": float(factor),
-                    "p": float(p),
+                    "factor": float(share[a] / share[b]),
+                    "p": float(fisher_exact(pair)[1]),
                 }
-    if best is not None:
-        best["counts"] = bool(best["factor"] >= SHARE_FACTOR and best["p"] < SHARE_P)
-    return best
+                change["counts"] = bool(change["factor"] >= SHARE_FACTOR and change["p"] < SHARE_P)
+                if best is None or change["factor"] > best["factor"]:
+                    best = change
+                if change["counts"] and (best_counting is None or change["factor"] > best_counting["factor"]):
+                    best_counting = change
+    return best_counting or best
 
 
 def _window_verdict(gap: float, sd: float, floor: float, skill: float) -> str:
@@ -137,7 +154,8 @@ def _summary(scores: dict, sign: float) -> dict:
     f, c, k = (np.asarray(scores[x], dtype=float) for x in ("forward", "contemporaneous", "constant"))
     gaps = sign * (c - f)
     gap, sd = float(np.nanmean(gaps)), float(np.nanstd(gaps, ddof=1)) if len(gaps) > 1 else float("nan")
-    floor = FLOOR_SHARE * float(abs(np.nanmean(c) - np.nanmean(k)))
+    skill = float(sign * (np.nanmean(c) - np.nanmean(k)))
+    floor = FLOOR_SHARE * abs(skill)
     return {
         "forward": float(np.nanmean(f)),
         "contemporaneous": float(np.nanmean(c)),
@@ -146,10 +164,8 @@ def _summary(scores: dict, sign: float) -> dict:
         "gap_sd": sd,
         "floor": floor,
         "gaps": [float(g) for g in gaps],
-        "skill": float(sign * (np.nanmean(c) - np.nanmean(k))),
-        "verdict": _window_verdict(
-            gap, sd if np.isfinite(sd) else np.inf, floor, sign * (np.nanmean(c) - np.nanmean(k))
-        ),
+        "skill": skill,
+        "verdict": _window_verdict(gap, sd if np.isfinite(sd) else np.inf, floor, skill),
     }
 
 
@@ -196,7 +212,8 @@ def stationary_relation(  # noqa: C901, PLR0913
         metric: The task's own metric (``curation_probes.weights``), or None for R^2 or ROC AUC.
         fit_params: LightGBM parameters, such as ``{"objective": "tweedie"}``.
         n_windows: Windows, newest first (ordered periods only).
-        test_periods: Only these windows, by label (to run each window as its own job); the verdict then covers them.
+        test_periods: Only these windows, by label (to run each window as its own job); the verdict is then
+            ``partial`` unless they hold the newest ``TIME_BASIS_WINDOWS`` (``combine_runs`` joins the jobs).
         seeds: Repeats; each draws the test half, the contemporaneous sample and the models' seeds anew.
         max_test: A cap on the LightGBM test rows per window (None: the whole half).
         foundation: A foundation model's ``fit_predict``, or None to run LightGBM alone.
@@ -213,7 +230,9 @@ def stationary_relation(  # noqa: C901, PLR0913
         raise ValueError(f"periods: one code per row needed ({len(codes):,} for {len(df):,} rows)")
     count = int(codes.max()) + 1
     labels = list(labels) if labels is not None else [str(k) for k in range(count)]
-    unit_arr = None if units is None else pd.Series(units).reset_index(drop=True).astype(str).to_numpy()
+    unit_arr = (
+        None if units is None else pd.factorize(pd.Series(units).reset_index(drop=True), use_na_sentinel=False)[0]
+    )
     df = df.reset_index(drop=True)
     fits = leak._TargetFits(
         df[target],
@@ -231,6 +250,9 @@ def stationary_relation(  # noqa: C901, PLR0913
     windows = _windows(
         codes, rows_per, labels, ordered=ordered, n_windows=n_windows, test_periods=test_periods, min_rows=min_rows
     )
+    newest = _windows(
+        codes, rows_per, labels, ordered=ordered, n_windows=TIME_BASIS_WINDOWS, test_periods=None, min_rows=min_rows
+    )
     out = {
         "protocol": "stationary-relation test",
         "periods": labels,
@@ -238,23 +260,26 @@ def stationary_relation(  # noqa: C901, PLR0913
         "rows_by_period": [int(r) for r in rows_per],
         "units": units is not None,
         "target_by_period": _target_by_period(fits, codes, labels),
-        "recording_change": recording_change(df[target], codes, labels, problem_type),
+        "recording_change": recording_change(df[target], codes, labels, problem_type, min_rows=min_rows),
         "foundation": foundation_name if foundation is not None else None,
+        "newest": [labels[k] for k in newest],
         "windows": [],
     }
     models = ["lightgbm"] + (["foundation"] if foundation is not None else [])
     for k in windows:
         scores = {m: {"forward": [], "contemporaneous": [], "constant": []} for m in models}
         sizes: dict = {"test_period": labels[k], "rows_in_period": int(rows_per[k])}
+        p_rows = np.flatnonzero(codes == k)
+        before_all = np.flatnonzero(codes < k) if ordered else np.flatnonzero(codes != k)
+        x_forward = X.iloc[before_all] if unit_arr is None else None  # without units, one forward side for all seeds
         for seed in range(seeds):
             rng = np.random.default_rng(1000 * k + seed)
-            p_rows = np.flatnonzero(codes == k)
             test, rest = _halves(p_rows, unit_arr, rng)
-            before = np.flatnonzero(codes < k) if ordered else np.flatnonzero(codes != k)
+            before = before_all
             if unit_arr is not None:  # the test half's units leave every training side
-                gone = set(unit_arr[test])
-                before = before[~np.isin(unit_arr[before], list(gone))]
-                rest = rest[~np.isin(unit_arr[rest], list(gone))]
+                gone = np.unique(unit_arr[test])
+                before = before[~np.isin(unit_arr[before], gone)]
+                rest = rest[~np.isin(unit_arr[rest], gone)]
             test = _cap(test, max_test, unit_arr, rng)
             forward = before
             contemporaneous = _contemporaneous(before, rest, len(forward), rng)
@@ -263,7 +288,8 @@ def stationary_relation(  # noqa: C901, PLR0913
             sizes.setdefault("n_test", []).append(len(test))
             const = fits.score(fits.constant(forward, len(test)), test)
             for side, tr in (("forward", forward), ("contemporaneous", contemporaneous)):
-                pred = fits.fit_predict(X.iloc[tr], X.iloc[test], tr, seed)
+                x_tr = x_forward if side == "forward" and x_forward is not None else X.iloc[tr]
+                pred = fits.fit_predict(x_tr, X.iloc[test], tr, seed)
                 scores["lightgbm"][side].append(fits.score(pred, test))
             scores["lightgbm"]["constant"].append(const)
             if foundation is not None:
@@ -275,11 +301,11 @@ def stationary_relation(  # noqa: C901, PLR0913
                     pred = foundation(X.iloc[tr], fits.truth[tr], X.iloc[t_f], seed)
                     scores["foundation"][side].append(fits.score(pred, t_f))
                 scores["foundation"]["constant"].append(fits.score(fits.constant(f_tr, len(t_f)), t_f))
-        window = {**{key: (sorted({min(v), max(v)}) if isinstance(v, list) else v) for key, v in sizes.items()}}
+        window = {key: (sorted({min(v), max(v)}) if isinstance(v, list) else v) for key, v in sizes.items()}
         for m in models:
             window[m] = _summary(scores[m], fits.sign)
         out["windows"].append(window)
-    out["verdict"] = _verdict(out, models)
+    _set_verdict(out, models)
     out["metric_errors"] = fits.errors
     if report:
         for line in stationary_relation_lines(out):
@@ -351,10 +377,48 @@ def _verdict(out: dict, models: list[str]) -> str:
         return "not flat"
     if any(w[m]["verdict"] == "not flat" for w in out["windows"] for m in models if m in w):
         return "not flat"
-    for p in out["pooled"].values():
-        if p["skill"] and 2 * p["gap_sd"] <= INCONCLUSIVE_RATIO * p["floor"]:
-            return "flat"
-    return "inconclusive"
+    complete = [m for m in models if all(m in w for w in out["windows"])]  # a model seen in some windows only
+    readings = [
+        _window_verdict(p["gap"], p["gap_sd"], p["floor"], 1.0 if p["skill"] else 0.0)
+        for m, p in out["pooled"].items()
+        if m in complete
+    ]
+    if "not flat" in readings:  # no window alone shows it, all of them together do
+        return "not flat"
+    return "flat" if "flat" in readings else "inconclusive"
+
+
+def _set_verdict(out: dict, models: list[str]) -> None:
+    """``out["verdict"]``, or ``partial`` (with ``partial_verdict``) when the windows miss one of the newest."""
+    verdict = _verdict(out, models)
+    tested = {w["test_period"] for w in out["windows"]}
+    untested = [p for p in out.get("newest", []) if p not in tested]
+    out.pop("partial_verdict", None)
+    out["untested"] = untested
+    if untested and verdict != "not flat":  # a not-flat window stands on its own
+        out["partial_verdict"] = verdict
+        verdict = "partial"
+    out["verdict"] = verdict
+
+
+def combine_runs(results: list[dict]) -> dict:
+    """One verdict from runs of the test on the same data, each on some of the windows (one job per window): the
+    windows joined (a period tested twice keeps its first run) and the verdict read again.
+    """
+    if not results:
+        raise ValueError("combine_runs: no runs")
+    first = results[0]
+    if any(r["periods"] != first["periods"] or r.get("newest") != first.get("newest") for r in results):
+        raise ValueError("combine_runs: the runs are not on the same periods")
+    seen: dict[str, dict] = {}
+    for r in results:
+        for w in r["windows"]:
+            seen.setdefault(w["test_period"], w)
+    order = {p: i for i, p in enumerate(first["periods"])}
+    out = {**first, "windows": sorted(seen.values(), key=lambda w: -order[w["test_period"]])}
+    models = ["lightgbm"] + (["foundation"] if any("foundation" in w for w in out["windows"]) else [])
+    _set_verdict(out, models)
+    return out
 
 
 def stationary_relation_lines(result: dict) -> list[str]:
@@ -379,8 +443,63 @@ def stationary_relation_lines(result: dict) -> list[str]:
             f"{rc['high_share']:.1%} ({rc['high']}), factor {rc['factor']:.1f}, p {rc['p']:.2g}: "
             f"{'a change in recording' if rc['counts'] else 'not counted'}"
         )
-    lines.append(f"  verdict: {result['verdict']}")
+    if result["verdict"] == "partial":
+        lines.append(
+            f"  verdict: partial ({result['partial_verdict']} on these windows; untested of the newest: "
+            f"{', '.join(result['untested'])}; combine the runs with combine_runs)"
+        )
+    else:
+        lines.append(f"  verdict: {result['verdict']}")
     return lines
+
+
+def tabpfn_v35(problem_type: str, classes, *, device: str = "cuda") -> Foundation:
+    """TabPFN v3.5 (the public ``tabpfn`` package with the public Hugging Face weights ``Prior-Labs/tabpfn_3_5``) as a
+    ``Foundation``: one of the state-of-the-art foundation models a time basis can quote (SPLIT-32).
+
+    Categories go in as their codes, named as categorical features; dates are already days. Classification returns
+    the probability columns in the order of ``classes`` (a class missing from a training side scores 0), regression
+    the mean. Run it on a GPU, on a node started through SkyPilot: v3.5 on a CPU is refused, as it is too slow there.
+    Raises ``ImportError`` without the package.
+    """
+    if device == "cpu":
+        raise ValueError("tabpfn_v35: run TabPFN v3.5 on a GPU (device='cuda'), not on a CPU")
+    from tabpfn import TabPFNClassifier, TabPFNRegressor  # noqa: PLC0415 - an optional dependency
+    from tabpfn.constants import ModelVersion  # noqa: PLC0415
+
+    regression = problem_type == "regression"
+    position = None if regression else {c: i for i, c in enumerate(classes)}
+
+    def fit_predict(x_tr: pd.DataFrame, y_tr: np.ndarray, x_te: pd.DataFrame, seed: int) -> np.ndarray:
+        both = pd.concat([x_tr, x_te], ignore_index=True)  # one coding of each category for both sides
+        cat_idx, columns = [], {}
+        for i, c in enumerate(both.columns):
+            s = both[c]
+            if isinstance(s.dtype, pd.CategoricalDtype):
+                columns[c] = s.cat.codes.astype(float).where(s.notna())
+                cat_idx.append(i)
+            else:
+                columns[c] = pd.to_numeric(s, errors="coerce").astype(float)
+        X = pd.DataFrame(columns).to_numpy(dtype=np.float32)
+        n = len(x_tr)
+        estimator = TabPFNRegressor if regression else TabPFNClassifier
+        model = estimator.create_default_for_version(
+            ModelVersion.V3_5,
+            device=device,
+            ignore_pretraining_limits=True,
+            random_state=seed,
+            categorical_features_indices=cat_idx or None,
+        )
+        model.fit(X[:n], np.asarray(y_tr))
+        if regression:
+            return np.asarray(model.predict(X[n:]), dtype=float)
+        proba = np.asarray(model.predict_proba(X[n:]), dtype=float)
+        out = np.zeros((len(x_te), len(position)))
+        for j, c in enumerate(model.classes_):
+            out[:, position[c]] = proba[:, j]
+        return out
+
+    return fit_predict
 
 
 def kumo_tabular(
@@ -393,7 +512,8 @@ def kumo_tabular(
     size: str = "large",
     point: str = "mean",
 ) -> Foundation:
-    """NVIDIA's Kumo-Tabular (``structured-data-models``, imported here) as a ``Foundation``.
+    """NVIDIA's Kumo-Tabular (``structured-data-models``, imported here) as a ``Foundation``: one of the
+    state-of-the-art foundation models a time basis can quote (SPLIT-32).
 
     Classification returns the probability columns in the order of ``classes``; regression the mean (``point="mean"``)
     or the median of its 999 quantiles. A column empty on a training side is left out of that fit. Raises
