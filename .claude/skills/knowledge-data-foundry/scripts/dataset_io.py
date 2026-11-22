@@ -329,13 +329,55 @@ def from_container(container: CuratedContainer, origin: str, *, encode_special: 
     )
 
 
+def built_container(name: str, root: Path | str) -> tuple[CuratedContainer, str]:
+    """The built container of ``name`` and where it came from: the build of its ``README.md``'s build record in the
+    local warehouse, else the copy of a registered collection (read from the cache, downloaded into it if missing).
+    Raises ``FileNotFoundError`` when neither holds it.
+    """
+    build = (read_report(Path(root) / name / "README.md") or {}).get("build") or {}
+    if build.get("path") and (resolve_warehouse_dir() / build["path"] / "dataset.parquet").is_file():
+        return CuratedContainer.load(resolve_warehouse_dir() / build["path"]), "built"
+    from data_foundry.collections import get_collection, list_collections  # noqa: PLC0415 - only for this fallback
+
+    for collection_name in list_collections():
+        collection = get_collection(collection_name)
+        try:
+            collection.find_entry(name)
+        except KeyError:
+            continue
+        return collection.get_dataset(name), f"built ({collection_name})"
+    raise FileNotFoundError(f"{name}: no build in the local warehouse and no registered collection holds it")
+
+
+def from_built(container: CuratedContainer, origin: str, *, encode_special: bool = True) -> ProbeInput:
+    """A built container of either format as the probes take it: a format-1 (BeyondArena) container has no grouping
+    block, so its ``group_on`` stands in for one.
+    """
+    if container.format_version >= 2:
+        return from_container(container, origin, encode_special=encode_special)
+    task = container.task_metadata
+    grouping = SimpleNamespace(on=task.group_on, labels=task.group_labels, time_on=None) if task.group_on else None
+    return ProbeInput(
+        df=container.dataset,
+        target=task.target_column_name,
+        problem_type=task.problem_type,
+        regime=task.split_regime,
+        splits=container.experiment_metadata.splits,
+        grouping=grouping,
+        time_on=task.time_on,
+        origin=origin,
+    )
+
+
 def load(name: str, root: Path | str, *, built: bool, encode_special: bool = True) -> ProbeInput:
-    """The container of ``name``: with ``built``, the one recorded in its ``README.md``'s build record (when there is
-    one), else rebuilt from the definition.
+    """The container of ``name``: with ``built``, the built one (:func:`built_container`: the local build, else a
+    registered collection's copy) when there is one, else rebuilt from the definition.
     """
     if built:
-        build = (read_report(Path(root) / name / "README.md") or {}).get("build") or {}
-        if build.get("path"):
-            container = CuratedContainer.load(resolve_warehouse_dir() / build["path"])
-            return from_container(container, "built", encode_special=encode_special)
+        try:
+            container, origin = built_container(name, root)
+        except FileNotFoundError:
+            pass
+        else:
+            return from_built(container, origin, encode_special=encode_special)
     return from_container(definition(name, root).to_container(), "rebuilt", encode_special=encode_special)

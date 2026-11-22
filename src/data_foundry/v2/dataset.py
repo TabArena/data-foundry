@@ -82,7 +82,6 @@ from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
     FORCED_TIME_TAGS,
     GROUP_BASIS_TAGS,
-    HUMAN_SET_TIME_TAGS,
     RETIRED_DATA_TAGS,
     TIME_BASIS_TAGS,
     DatasetMetadataV2,
@@ -97,7 +96,6 @@ from data_foundry.schema import (
     TrainSampling,
     UnitWeight,
     as_column_list,
-    assumed_stationary_problem,
     resolve_warehouse_dir,
     rows_text,
 )
@@ -118,6 +116,8 @@ from data_foundry.v2.preprocessing import (
     order_positions,
     order_rows,
 )
+from data_foundry import time_basis as basis_rules
+from data_foundry.time_basis import GroupBasis, TimeBasis
 from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal, TemporalSplits
 from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
@@ -173,7 +173,21 @@ FLOOR_LOWER = 0.3
 
 MIN_TEST_UNITS = 33
 """SPLIT-14's least test window: 33 scored units, a third of a 100-unit table as one IID test fold holds it."""
-"""The splits comment of every dataset on the recommended IID or grouped splits."""
+
+UNACCEPTABLE_CHECKS = frozenset(
+    {
+        "splits_train_under_floor",
+        "meta_time_basis_on_temporal",
+        "meta_time_basis_unattributed",
+        "meta_time_basis_several",
+        "meta_time_basis_lines",
+        "meta_time_basis_mismatch",
+        "meta_time_basis_regime",
+        "meta_group_basis_missing",
+    }
+)
+"""Check findings no definition may accept: errors the rules allow no exception for (SPLIT-14's 30% floor, a
+human-set time basis without its person, a time basis that contradicts the split)."""
 
 
 class _Auto:
@@ -500,6 +514,14 @@ class AbstractCuratedDataset(ABC):
     ``Temporal``/``Grouped``) are added from the task unless one is listed here."""
     curation_comments: ClassVar[str] = ""
     """The audit trail: the starting artifact, then one bullet per non-obvious decision."""
+    time_basis: ClassVar[TimeBasis | None] = None
+    """Why a split that is not temporal is not (SPLIT-32), or why a forward use case ships a forced split (SPLIT-8):
+    ``TimeBasis("Retrospective", "one census of 1990 ...; a later census stays untested")``. The build adds its tag
+    to ``data_tags`` and renders it as the ``- Time basis:`` bullet of ``curation_comments``; a human-set tag
+    (``StationaryRelation``, ``AssumedStationaryRelation``) also names ``set_by`` and ``on``."""
+    group_basis: ClassVar[GroupBasis | None] = None
+    """Why a split is random although the use case holds out a group the data cannot key (SPLIT-35): the build adds
+    ``ForcedIIDFromGrouped`` and renders the ``- Group basis:`` bullet."""
 
     # --- task ---------------------------------------------------------------------------------------
     target: ClassVar[str]
@@ -1571,7 +1593,8 @@ class AbstractCuratedDataset(ABC):
                     hint="Remove the entries that no longer apply, or fix a misspelled slug.",
                 ),
             )
-        report.results = sorted([r for r in found if r.slug not in accepted], key=lambda r: SEVERITY_ORDER[r.severity])
+        kept = [r for r in found if r.slug not in accepted or r.slug in UNACCEPTABLE_CHECKS]
+        report.results = sorted(kept, key=lambda r: SEVERITY_ORDER[r.severity])
         report.ignored = accepted
         if verbose:
             print("\n".join(["Metric:", *container.task_metadata.objective_metric.describe_lines()]))
@@ -1637,27 +1660,27 @@ class AbstractCuratedDataset(ABC):
             return int(units.iloc[list(rows)].nunique(dropna=False)) if units is not None else len(rows)
 
         findings = []
-        small = {repeat: count(test) for repeat, _train, test in windows}
-        small = {r: n for r, n in small.items() if n < MIN_TEST_UNITS}
+        small = sorted((repeat, n) for repeat, _train, test in windows if (n := count(test)) < MIN_TEST_UNITS)
         if small:
             findings.append(
                 CheckResult(
                     "splits_test_too_small",
                     "error",
                     f"Test window(s) with fewer than {MIN_TEST_UNITS} scored units: "
-                    + ", ".join(f"window {r} with {n}" for r, n in sorted(small.items()))
+                    + ", ".join(f"window {r} with {n}" for r, n in small)
                     + ".",
                     hint="SPLIT-14: widen the windows (or fewer of them) until each holds 33 scored units.",
                 )
             )
         total = int(units.nunique(dropna=False)) if units is not None else n_rows
         target = protocol.split_count(total)
-        if len(windows) < target:
+        n_splits = protocol.training_sides(train for _repeat, train, _test in windows)  # SPLIT-15: by training side
+        if n_splits < target:
             findings.append(
                 CheckResult(
                     "splits_below_target",
                     "warning",
-                    f"{len(windows)} window(s), against the {target} splits an IID split of {total:,} scored units "
+                    f"{n_splits} window(s), against the {target} splits an IID split of {total:,} scored units "
                     "would get (SPLIT-33).",
                     hint="SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the "
                     "count reached and what stops more windows (the use case's horizon or gap, the training floor, "
@@ -2124,28 +2147,50 @@ def _gap(cls: type[AbstractCuratedDataset]) -> tuple[int | None, str | None]:
 
 
 def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str], None]) -> None:
-    """One time basis at most: a use-case prototype or a forced tag; a prototype never on a temporal split and always
-    with its `Time basis:` line (SPLIT-32).
+    """The time basis of a task (SPLIT-8, SPLIT-32, SPLIT-35): ``time_basis`` and ``group_basis`` well formed, the
+    old way only while :data:`~data_foundry.time_basis.ALLOW_UNSTRUCTURED` lets it, and the rendered tags and lines
+    free of the errors of :func:`~data_foundry.time_basis.problems`, which the bundle check reads on a container.
     """
-    tags = list(dict.fromkeys(cls.data_tags))
-    basis = [tag for tag in tags if tag in TIME_BASIS_TAGS or tag in FORCED_TIME_TAGS]
-    if len(basis) > 1:
-        fail(f"`data_tags` {basis}: a split has one time basis (SPLIT-32); keep the one that says why it is not.")
-    prototype = next((tag for tag in basis if tag in TIME_BASIS_TAGS), None)
-    if prototype is None:
-        return
-    if cls.temporal is not None:
-        fail(f"`{prototype}` says why a split is not temporal; this one is, so drop the tag.")
-    if "Time basis:" not in (cls.curation_comments or ""):
-        fail(f"`{prototype}` needs a `Time basis:` line in `curation_comments` stating the fact behind it (SPLIT-32).")
-    if prototype in HUMAN_SET_TIME_TAGS:
-        problem = assumed_stationary_problem(cls.curation_comments)
-        if problem:
-            fail(f"`{prototype}`: {problem} (SPLIT-32). Without it, keep the forced tag.")
+    if (cls.grouping is not None and not isinstance(cls.grouping, Grouping)) or (
+        cls.temporal is not None and not isinstance(cls.temporal, Temporal)
+    ):
+        return  # the regime is malformed, which its own check reports
+    for name, kind in (("time_basis", TimeBasis), ("group_basis", GroupBasis)):
+        value = getattr(cls, name)
+        if value is not None and not isinstance(value, kind):
+            fail(f"`{name}` must be a `{kind.__name__}(...)`, not {type(value).__name__}.")
+            return
+        for problem in value.problems() if value is not None else ():
+            fail(f"`{name}`: {problem}.")
+    comments = cls.curation_comments or ""
+    listed = [t for t in cls.data_tags if t in (*basis_rules.BASIS_TAGS, *GROUP_BASIS_TAGS)]
+    handwritten = [kind for kind in ("Time", "Group") if basis_rules.lines(comments, kind)]
+    if cls.time_basis is not None or cls.group_basis is not None:
+        by_hand = [*(f"`{t}` from `data_tags`" for t in listed), *(f"the `{k} basis:` line" for k in handwritten)]
+        if by_hand:
+            fail(f"`time_basis` and `group_basis` add the tag and the line; drop {' and '.join(by_hand)}.")
+    elif listed or handwritten:
+        if not basis_rules.ALLOW_UNSTRUCTURED:
+            fail(
+                "declare the time basis as `time_basis = TimeBasis(...)` (and `group_basis = GroupBasis(...)`), not "
+                "by a tag in `data_tags` and a line in `curation_comments` (SPLIT-32)."
+            )
+        early = [t for t in listed if t not in FORCED_TIME_TAGS]
+        if early:
+            fail(
+                f"`data_tags` {early}: declare it as `time_basis = TimeBasis(...)` or `group_basis = GroupBasis(...)`."
+            )
+    old_way = cls.time_basis is None and cls.group_basis is None and bool(listed or handwritten)
+    spared = basis_rules.OLD_WAY_TOLERATED if old_way and basis_rules.ALLOW_UNSTRUCTURED else frozenset()
+    for slug, severity, message in basis_rules.problems(
+        _regime_tags(cls), _rendered_comments(cls), temporal=cls.temporal is not None, grouped=cls.grouping is not None
+    ):
+        if severity == "error" and slug not in spared:
+            fail(message)
 
 
 def _regime_tags(cls: type[AbstractCuratedDataset]) -> list[str]:
-    tags = list(dict.fromkeys(cls.data_tags))
+    tags = list(dict.fromkeys([*cls.data_tags, *basis_rules.tags_of(cls.time_basis, cls.group_basis)]))
     if not is_task(cls) or any(tag in REGIME_TAGS for tag in tags):  # a parent has no split, so no regime
         return tags
     if cls.temporal is not None:
@@ -2279,6 +2324,13 @@ def raw_name(cls: type[AbstractCuratedDataset]) -> str:
     return root.unique_name
 
 
+def _rendered_comments(cls: type[AbstractCuratedDataset]) -> str | None:
+    """``curation_comments`` as the container carries them: with the ``Time basis:`` and ``Group basis:`` bullets of
+    ``time_basis`` and ``group_basis`` (SPLIT-32, SPLIT-35).
+    """
+    return basis_rules.render(clean_text(cls.curation_comments), cls.time_basis, cls.group_basis)
+
+
 def _clean_source(source: Source) -> Source:
     """``source`` with its BibTeX dedented, ending in one newline (its citation key is read when it is built)."""
     return dataclasses.replace(source, bibtex=clean_text(source.bibtex) + "\n") if source.bibtex else source
@@ -2292,7 +2344,7 @@ def _build_dataset_metadata(cls: type[AbstractCuratedDataset]) -> DatasetMetadat
         sources=[_clean_source(source) for source in cls.sources],
         download_description=clean_text(cls.download_description),
         data_tags=_regime_tags(cls),
-        curation_comments=clean_text(cls.curation_comments),
+        curation_comments=_rendered_comments(cls),
         derived_from=None if parent is None else parent.unique_name,
         derivation=None if parent is None else clean_text(cls.derivation),
     )
@@ -2415,27 +2467,11 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             f"`data_tags` {retired}: retired, kept only so that old containers load. Write the dataset's doubts as a "
             "finding and its fit as `approximate` instead."
         )
-    if not task and set(cls.data_tags) & {
-        *REGIME_TAGS,
-        "ForcedGroupedFromTemporal",
-        "ForcedIIDFromTemporal",
-        *GROUP_BASIS_TAGS,
-    }:
+    declared = basis_rules.tags_of(cls.time_basis, cls.group_basis)
+    if not task and (set(cls.data_tags) & {*REGIME_TAGS, *FORCED_TIME_TAGS, *GROUP_BASIS_TAGS} or declared):
         fail("a parent (no `target`) has no split, so no regime tag; its children get theirs from their task.")
-    if task and "ForcedGroupedFromTemporal" in cls.data_tags and cls.grouping is None:
-        fail("`ForcedGroupedFromTemporal` marks a grouped split; declare `grouping = Grouping(...)` or drop the tag.")
-    if task and "UnseenGroup" in cls.data_tags and cls.grouping is None:
-        fail("`UnseenGroup` holds out whole groups; declare `grouping = Grouping(...)` on the group or drop the tag.")
-    if task and "ForcedIIDFromTemporal" in cls.data_tags and (cls.grouping is not None or cls.temporal is not None):
-        fail("`ForcedIIDFromTemporal` marks an IID split; drop the tag or the `grouping`/`temporal` declaration.")
-    if task and "ForcedIIDFromGrouped" in cls.data_tags and (cls.grouping is not None or cls.temporal is not None):
-        fail("`ForcedIIDFromGrouped` marks an IID split; drop the tag or the `grouping`/`temporal` declaration.")
-    if "ForcedIIDFromGrouped" in cls.data_tags and "Group basis:" not in (cls.curation_comments or ""):
-        fail(
-            "`ForcedIIDFromGrouped` needs a `Group basis:` line in `curation_comments`: the group the use case holds "
-            "out, why the data cannot key it, and the overlap the random split leaves (SPLIT-35)."
-        )
-    _validate_time_basis(cls, fail)
+    if task:
+        _validate_time_basis(cls, fail)
     moved = [
         a for a in ("drop_columns", "categorical_features", "string_features", "datetime_features") if a in vars(cls)
     ]
@@ -2493,6 +2529,8 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
     for slug, reason in cls.accepted_check_warnings.items():
         if not str(reason).strip():
             fail(f"accepted check warning {slug!r} needs a reason.")
+        if slug in UNACCEPTABLE_CHECKS:
+            fail(f"{slug!r} cannot be accepted: the rules allow no exception to it; fix the definition instead.")
 
     if not task:
         _validate_parent(cls, fail)

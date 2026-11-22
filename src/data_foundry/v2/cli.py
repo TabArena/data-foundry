@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING, get_args
 import pandas as pd
 
 from data_foundry.curation._paths import records_dir
+from data_foundry.curation.consistency import record_problems
 from data_foundry.curation.store import load_record
 from data_foundry.schema import DatasetSource, Domain
 from data_foundry.v2.dataset import (
@@ -94,13 +95,27 @@ def _cmd_list(args: argparse.Namespace) -> int:
 
 def _cmd_check(args: argparse.Namespace) -> int:
     try:
-        ds = instance(load_definition(_folder(args)))
+        cls = load_definition(_folder(args))
+        ds = instance(cls)
         result = ds.check()
     except DatasetDefinitionError as error:  # a partial parent
         print(error, file=sys.stderr)
         return 1
     print(f"Wrote {ds.report_path}")
+    _print_record_problems(cls)
     return 0 if result.ok else 1
+
+
+def _print_record_problems(cls: type) -> None:
+    """Print where the definition's curation record contradicts it (``data_foundry.curation.consistency``)."""
+    try:
+        record = load_record(records_dir() / f"{cls.unique_name}.md")
+    except (FileNotFoundError, OSError, ValueError):
+        return
+    problems = record_problems(set(record.tags or []), cls)
+    if problems:
+        print(f"The curation record {cls.unique_name}.md contradicts the definition (SPLIT-32, SPLIT-34):")
+        print("\n".join(f"  - {problem}" for problem in problems))
 
 
 WINDOW_COLUMNS = (
