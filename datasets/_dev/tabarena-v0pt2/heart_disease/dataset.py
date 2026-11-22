@@ -15,6 +15,7 @@ from data_foundry.v2 import (
     Source,
     SplitPlan,
     TaskSummary,
+    TimeBasis,
 )
 
 COLUMNS = [
@@ -123,7 +124,6 @@ class HeartDisease(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("UnseenGroup",)
     download_description = """
         Get the UCI data (the processed files of the three hospitals).
 
@@ -145,10 +145,15 @@ class HeartDisease(AbstractCuratedDataset):
         - Duplicates: the Long Beach pair of equal rows is one patient entered twice (the raw file gives both the same exercise and angiogram dates and the same ten vessel readings, which no other Long Beach pair shares), so one is dropped. The Hungarian pair is two patients (exams in March and May 1986) and stays.
         - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-        - Time basis: UnseenGroup: the source's question is whether a model carries over to another hospital (Detrano et al.
-          built it on the Cleveland patients and applied it to Budapest and Long Beach), so the split holds out each
-          hospital and does not weigh the patients' dates. It cannot test a later period at a hospital the model knows.
     """
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the source's question is whether a model carries over to another hospital (Detrano et al.
+        built it on the Cleveland patients and applied it to Budapest and Long Beach), so the split holds out each
+        hospital and does not weigh the patients' dates. It cannot test a later period at a hospital the model knows.
+        """,
+    )
 
     # Task
     target = "heart_disease_diagnosis"
