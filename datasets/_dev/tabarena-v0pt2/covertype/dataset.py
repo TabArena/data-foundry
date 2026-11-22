@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, GroupBasis, Metric, Source, TaskSummary, TimeBasis
 
 
 class Covertype(AbstractCuratedDataset):
@@ -64,7 +64,7 @@ class Covertype(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Spatial", "Retrospective", "ForcedIIDFromGrouped")
+    data_tags = ("Spatial",)
     download_description = """
         We download the data from UCI.
 
@@ -102,16 +102,25 @@ class Covertype(AbstractCuratedDataset):
           59.6% of the test cells have a training cell within one cell's distance on the four location columns, and
           LightGBM is as accurate on the others (0.972 against 0.969): a stand is recognised from location values
           within a few cells. The score mostly measures interpolation between mapped cells inside the four areas.
-        - Time basis: Retrospective: one extract of the Forest Service's stand map of four wilderness areas and of terrain,
-          road and fire-point layers (date not documented, before the August 1998 donation); the task fills in cells
-          of the same areas at that moment, and cells of one stand share its label (see the look-up above). Not
-          tested: a later map of the same areas, or land outside the four areas.
-        - Group basis: ForcedIIDFromGrouped (Andrej, 2026-11-16): the use case maps land with no inventory, which comes
-          as whole stands of 20 to 900 cells; the data has no stand id or coordinates, and its four wilderness areas
-          are too few groups (see above), so the split is random. Overlap left: a random test cell usually has cells
-          of its own stand in training, so the score is optimistic for unmapped tracts. Not measured: how much of the
-          score comes from recognising stands through the terrain and distance features (SPLIT-25).
     """
+    time_basis = TimeBasis(
+        "Retrospective",
+        """
+        one extract of the Forest Service's stand map of four wilderness areas and of terrain,
+        road and fire-point layers (date not documented, before the August 1998 donation); the task fills in cells
+        of the same areas at that moment, and cells of one stand share its label (see the look-up above). Not
+        tested: a later map of the same areas, or land outside the four areas.
+        """,
+    )
+    group_basis = GroupBasis(
+        """
+        ForcedIIDFromGrouped (Andrej, 2026-11-16): the use case maps land with no inventory, which comes
+        as whole stands of 20 to 900 cells; the data has no stand id or coordinates, and its four wilderness areas
+        are too few groups (see above), so the split is random. Overlap left: a random test cell usually has cells
+        of its own stand in training, so the score is optimistic for unmapped tracts. Not measured: how much of the
+        score comes from recognising stands through the terrain and distance features (SPLIT-25).
+        """,
+    )
 
     # Task
     target = "Cover_Type"
