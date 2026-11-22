@@ -75,30 +75,29 @@ from it is forced, whether its target is of that moment, of unknown timing or ar
 every row (coil_2000, mobile_churn, credit_card_clients_default): a random split then draws train and test from that
 one moment and tests other rows of it, not the next moment. Where the use case looks back, SPLIT-32 gives it
 `Retrospective`.
-The closest regime holds out whole periods where the data has an order with enough periods to hold out (scan
-periods, study phases, visit months, course presentations): enough that different groupings of whole periods into
-three folds give the repeats SPLIT-33 sets for the task's size, four periods for 3 repeats, five for 10 or 20 (three
-periods allow one grouping, four six, five 25); with fewer, a period fold would give the task two or three splits
-where its size calls for more, so the next remedy applies: grouped by period (`ForcedGroupedFromTemporal`), training
-also on later periods, which still tests a change between periods rather than random rows, closer to the shift a
-temporal split tests (lung_cancer_epithelial_genexp's six scan periods); where entities recur across the periods and
-the use case meets new entities, an entity's rows stay in one period or the entity is held out with its period
-(USE-10, LEAK-17). Where the relation is measured not flat, such periods are the only remedy: without them the task is
-`Too Small` (SPLIT-16); periods count only where no entity sits on both sides. With nothing measured (an
+Whole periods held out (`ForcedGroupedFromTemporal`, grouped by period where the data has an order: scan periods,
+study phases, visit months, course presentations) train also on later periods but still test a change between periods
+rather than random rows, closer to the shift a temporal split tests (lung_cancer_epithelial_genexp's six scan
+periods). They count only with enough periods that different groupings of whole periods into three folds give the
+repeats SPLIT-33 sets for the task's size: four periods for 3 repeats, five for 10 or 20 (three periods allow one
+grouping, four six, five 25); with fewer, a period fold would give the task two or three splits where its size calls
+for more. Where entities recur across the periods and the use case meets new entities, an entity's rows stay in one
+period or the entity is held out with its period (USE-10, LEAK-17); periods count only where no entity sits on both
+sides. Which regime is closest depends on what was measured. Where the relation is measured not flat, such periods
+are the only remedy: without them the task is `Too Small` (SPLIT-16). With nothing measured (an
 inconclusive test included) and no person's reason, three outcomes: a person may be unwilling to take the risk of
 temporal leakage (a forced split trains on rows as late as the test rows, and a likely shift over time would flatter
 its score) and retire the dataset (`Not Representative`; only a person decides this); otherwise it is grouped by
 meaningful groups built without entity leakage, first the entity when an entity has several rows and the use case
 meets new entities, else whole periods enough for the repeats (`ForcedGroupedFromTemporal`; USE-10); and IID where
 neither exists, also where the use case meets more rows of entities it holds (`ForcedIIDFromTemporal`); exact copies
-are dropped, not grouped (LEAK-19);
-SPLIT-32 says when a split is forced. The definition's
+are dropped, not grouped (LEAK-19). SPLIT-32 says when a split is forced. The definition's
 `Time basis:` line names the reason (time lost, or too few periods), says what the timestamp or a dated window would
 change and that it should be recovered if a later release has it. Where a person judges the samples interchangeable
 for a reason from the dataset's domain or use case, `AssumedStationaryRelation` replaces the forced tag (SPLIT-32,
 question 3); only a person sets it. Where the relation is measured flat across the periods the data holds, over the
-longest span the source or a parent covers, `StationaryRelation` replaces it (SPLIT-32): the split is random, or
-grouped by the entity where an entity has several rows. A forced split, grouped or
+longest span the source or a parent covers, `StationaryRelation` replaces it (SPLIT-32), set by a person on that
+measurement: the split is random, or grouped by the entity where an entity has several rows. A forced split, grouped or
 IID, gets a leak test across the split and the leak probes: does a row share its outcome, its unit's outcome or its
 period's outcome with the other side, is there a hidden group, an order dependence. A leak found is weighed case by
 case like any other: removed where it can be, otherwise the task may still ship as an approximate fit with the leak
@@ -158,8 +157,9 @@ about time), and they do not change with the split a definition chooses. A fact 
   (ieee_fraud_detection: a chargeback's varying delay, and labels the host then carries along the client's later
   payments).
 * **Entities:** `Entities: Recur` when the source holds several rows of one entity (a patient, a client, a company),
-  with or without an id. A forced split holds out periods first, then the entity where the use case meets new entities,
-  else rows (SPLIT-8), and the entity leaks of SPLIT-9 and SPLIT-13 start from it (home_credit_default_risk,
+  with or without an id. A forced split with nothing measured holds out the entity where the use case meets new
+  entities, else whole periods, else rows; one whose relation is measured not flat holds out only whole periods
+  (SPLIT-8). The entity leaks of SPLIT-9 and SPLIT-13 start from it (home_credit_default_risk,
   horse_colic_survival, lending_club).
 * **Features:** `Features: Read Later` when some features were read after their row's time and joined onto older rows
   (one read of a store or district table at release, a price "as of current day"), `Features: Revised Later` when
@@ -222,21 +222,25 @@ later period, at a known group or at all groups at once; where the label still m
    ([checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md), "The stationary-relation
    test"). For each of the newest three periods (each period, where the periods have no order), a random half of the
    period is the test half, drawn by whole units where units recur and the use case meets new ones, and their units
-   leave every training side. A forward model, trained on the rows before the period, and a contemporaneous one, trained
-   on as many rows made of the period's whole other half and filled up from the rows before it, are scored on the same
-   test half by the task's metric over five seeds, with a regularised LightGBM and a tabular foundation model. The gap
-   is how much worse the forward model scores; the floor is 1% of the distance between the contemporaneous model and a
-   constant predictor. A period is not flat for a model when the mean gap exceeds both two standard deviations and the
-   floor; flat when the contemporaneous model beats the constant and two standard deviations stay within ten floors, so
-   that a gap of a few floors would have shown; inconclusive otherwise. The relation is not flat when one period is not
-   flat for one model, or when a class share moves by a factor of two or more between two periods at chi-square p < 0.01
-   (the change in recording above); flat when, for at least one model that beats the constant, the gap averaged over the
-   tested periods has two standard deviations within ten floors, and no period is not flat (pooled over the periods, so
-   a small set gets the evidence of all its periods; amended 2026-11-18, Andrej); and inconclusive otherwise, which
+   leave every training side. The newest three are tested whatever their training share: SPLIT-14's floor is for a
+   split's windows, not for this test, and a reading on fewer periods is partial, never the verdict. A forward model,
+   trained on the rows before the period, and a contemporaneous one, trained on as many rows made of the period's whole
+   other half and filled up from the rows before it, are scored on the same test half by the task's metric over five
+   seeds, with a regularised LightGBM and one state-of-the-art tabular foundation model (TabPFN v3.5 or Kumo-Tabular,
+   on a GPU; the `Time basis:` line names it). The gap is how much worse the forward model scores;
+   the floor is 1% of the distance between the contemporaneous model and a constant predictor. A period is not flat for
+   a model when the mean gap exceeds both two standard deviations and the floor; flat when the contemporaneous model
+   beats the constant and two standard deviations stay within ten floors, so that a gap of a few floors would have
+   shown; inconclusive otherwise. The gap averaged over the tested periods is read the same way, so a small set gets the
+   evidence of all its periods, both ways (amended 2026-11-18, Andrej; read both ways 2026-11-22, Lennart). The relation
+   is not flat when one period or the averaged gap is not flat for one model, or when a class share moves by a factor
+   of two or more between two periods at chi-square p < 0.01 (the change in recording above); flat when, for at least
+   one model that beats the constant in every period, the averaged gap is flat; and inconclusive otherwise, which
    counts as unmeasured. Whenever a split reaches this question (the ForcedFromTemporal step of SPLIT-36), two things
    are attempted (amended 2026-11-18, Andrej): (1) where the data or a parent source holds temporal information (a date,
    a rebuilt order, two or more periods), the stationary-relation test is run and its verdict goes into the `Time
-   basis:` line; (2) where it holds none, the review reasons whether the use case can be taken as stationary, from the
+   basis:` line, where the AI offers `StationaryRelation` on a flat verdict for a person to decide; (2) where it holds
+   none, the review reasons whether the use case can be taken as stationary, from the
    domain's mechanism and from similar datasets (the same domain or mechanism measured elsewhere in the collection or in
    the literature), and writes the reasoning with the facts for and against into the dataset's review, where the AI
    offers `AssumedStationaryRelation` with a recommendation for a person to decide. A dataset that skips both reaches
@@ -246,7 +250,11 @@ later period, at a known group or at all groups at once; where the label still m
      to the features are flat across the periods it holds, measured on a dated source or a rebuilt order. That is a
      `StationaryRelation`, in place of the forced tag (SPLIT-8), and its line gives the measurement
      (bad_customer_detection: twelve months of loans in file order whose bad mark comes about a loan term later, a flat
-     bad rate, chi-squared p = 0.35, and monthly windows scoring like random splits of the same sizes). Where the
+     bad rate, chi-squared p = 0.35, and monthly windows scoring like random splits of the same sizes). Only a person
+     sets it, on the measurement, as for `AssumedStationaryRelation`: the AI runs the test and offers the tag with the
+     reading (Lennart, 2026-11-22). The line opens `StationaryRelation (<person>, <YYYY-MM-DD>): <the measurement>`,
+     and the definition and `dataset check` refuse the tag without a person and a measurement of eight words or more.
+     Where the
      windows can be built, the split is temporal however flat the relation (the next bullet), and the measurement goes
      in the notes as what the windows cost (amended 2026-11-17, Andrej). It holds whether
      the target is measured with the features (a diagnosis at the visit) or later; when the target arrives is a
@@ -269,8 +277,9 @@ later period, at a known group or at all groups at once; where the label still m
      0.381). A forward use case whose source does not show how the data was collected (`Samples: Unknown`, or a shared
      moment it does not state) is forced too: the forced tag claims only what is known (give_me_some_credit: no scoring
      date stated).
-   * **Unmeasured, the time lost, and a person judges the samples interchangeable:** `AssumedStationaryRelation`, in
-     place of the forced tag. It records that the split is random not only because the time is lost but because the
+   * **Unmeasured (the time lost, or the test inconclusive), and a person judges the samples interchangeable:**
+     `AssumedStationaryRelation`, in place of the forced tag. It records that the split is random not only because the
+     relation cannot be measured but because the
      dataset's domain or use case gives a reason to take earlier and later samples as interchangeable: a mechanism that
      the time between collection and use does not change (physiology read by a fixed reference test, a physical
      measurement), or use within or right after the collected period. The collection span is no reason by itself; it
@@ -279,14 +288,16 @@ later period, at a known group or at all groups at once; where the label still m
      reason: no drift seen where nothing is dated, the random split being the only option, an unchanged model ranking.
      Against it: opponents who adapt, prices and markets, changed rules or treatments, changed coding, assays or intake,
      a change the source names, structure in the file order. It applies only where the forced tag would stand, and only
-     where no comparison over time is possible (`Time: Lost`, an order only within each entity, or one moment that holds
-     a single period); two dated periods or a rebuilt order are measured instead, for `StationaryRelation` or the forced
-     tag, and an inconclusive test leaves it open. Only a person sets it: an AI may offer it as an option, with the
+     where nothing can be measured: no comparison over time is possible (`Time: Lost`, an order only within each
+     entity, or one moment that holds a single period), or the stationary-relation test on two dated periods or a
+     rebuilt order is inconclusive (distribution_transformers_at_cauca_department's two label years). Two periods or a
+     rebuilt order are always measured first: a test that reads flat gives `StationaryRelation`, one that reads not
+     flat the whole periods or `Too Small` above. Only a person sets it: an AI may offer it as an option, with the
      facts for and against, and recommend it, but writes it only when a person asks. Its `Time basis:` line opens
      `AssumedStationaryRelation (<person>, <YYYY-MM-DD>): <reason>` and also names why the time cannot be measured and
      what a dated release would test; the definition and `dataset check` refuse the tag without a person and a reason of
-     eight words or more. The split stays as the forced one would be (periods, then new entities, else IID, in SPLIT-8's
-     order), with SPLIT-8's leak test.
+     eight words or more. The split is random, or grouped by the unit where a unit has several rows and the use case
+     meets new units, as under `StationaryRelation`; SPLIT-8's leak test still runs.
 4. **None of these prototypes fits:** the dataset and its use case go to the curator as an issue with the arrival
    facts found, rather than under the nearest tag.
 
@@ -406,7 +417,8 @@ another split than its leaf names the leaf, what the source prescribed and the r
 departure goes to a reviewer. The rules above still decide each step (the windows, the gap, the groups, the leak
 tests); the tree orders them. Why: the same questions asked in the same order make splits of similar data agree, and
 show where a dataset is new. Cases: the 175 v0.2 definitions placed when the tree was adopted and regenerated
-(2026-11-17); ten shipped another split and are listed in split_tree.md.
+(2026-11-17); the definitions that ship another split, each departure confirmed by a reviewer, are listed at the end
+of split_tree.md.
 
 **SPLIT-37 (Should; relates to SPLIT-4, SPLIT-31 and SPLIT-32).** A dataset drawn from an **expanding science
 catalogue** is a cut of a database or a testing programme that keeps growing: a bioactivity database's releases, a
@@ -564,7 +576,8 @@ window trains on at least 50% of the data. A window under 50% is the curator's e
 and never below: the review raises it as an issue, `dataset check` warns (`splits_train_under_half`; under 30% the error
 `splits_train_under_floor`), and the definition accepts the warning only once the record carries the curator's CC line,
 never on the AI's word. The splits comment names every window under 50%, its train share and the reason. Every test
-window holds at least 33 scored units, counted as SPLIT-33 counts them (the group, else the scored unit, else the row):
+window holds at least 33 scored units, counted as SPLIT-33 counts them (the scored unit, else the row; a temporal
+split has no group):
 a third of a 100-unit table, as one test fold of the smallest IID split holds it (`splits_test_too_small`, an error).
 A smaller test window is the curator's exception only where the use case's own period holds fewer units (a factory day
 of team records: garments_worker_productivity); as under 50%, the record carries the CC line before the definition
@@ -605,8 +618,9 @@ windows drawn at random did worse than three spread evenly.
 relation is measured not stationary, whether its windows failed for too few periods or rows: where enough meaningful
 groups can be built to approximate the temporal split (whole periods, enough for the task's repeats, SPLIT-8), hold them
 out; where they cannot, the task is `Too Small`. Few positives in a test window are part of the task, not a reason to
-change the split. Only a window without a positive is a problem, and only for a ranking metric (ROC AUC, average
-precision), which one class cannot score: widen that window or move its cut until every test window holds a positive.
+change the split. Only a window without a positive is a problem, and only for a metric that one class leaves undefined
+(a ranking metric: ROC AUC, average precision, a Gini; or one normalised by what an alarm could gain: the
+early-detection utility): widen that window or move its cut until every test window holds a positive.
 The stationarity question comes first: a relation measured flat, or a person's reason where nothing can be measured,
 keeps the split random (SPLIT-32); nothing measurable and no reason goes to SPLIT-8's order. Counting the positives per
 window is TP-9 ([task_probes.md](task_probes.md)). Marker: `Too Small`. Cases: seismic_bumps.

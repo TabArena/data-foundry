@@ -1055,6 +1055,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       ["Time basis", basis],
       ["Record's collection type", t.collection ? "<code>" + esc(t.collection) + "</code>" : '<span class="missing-note">none</span>'],
       ["Record's collection facts", t.facts && t.facts.length ? t.facts.map((x) => "<code>" + esc(x) + "</code>").join(" ") : '<span class="missing-note">none</span>'],
+      ["Record against definition", t.problems && t.problems.length ? t.problems.map((x) => esc(x)).join("; ") : "no contradiction"],
       ["What the test data stands for", f.split ? esc(f.split) : ""],
       ["Folds", folds],
       ["Rows per fold", s.n_train ? "train " + range(s.n_train) + ", test " + range(s.n_test) : ""],

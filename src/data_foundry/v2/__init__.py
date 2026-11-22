@@ -20,6 +20,7 @@ from data_foundry.schema import (
     TrainSampling,
     UnitWeight,
 )
+from data_foundry.time_basis import GroupBasis, TimeBasis
 from data_foundry.utils.dtypes import object_columns
 from data_foundry.v2.chemistry import (
     DEFAULT_SMILES_ENCODING,
@@ -93,6 +94,7 @@ __all__ = [
     "Decision",
     "Encoding",
     "FeatureTypes",
+    "GroupBasis",
     "Grouping",
     "Metric",
     "NonFeature",
@@ -111,6 +113,7 @@ __all__ = [
     "TaskSummary",
     "Temporal",
     "TemporalSplits",
+    "TimeBasis",
     "TrainSampling",
     "UnitWeight",
     "Window",
