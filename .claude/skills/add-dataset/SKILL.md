@@ -133,9 +133,9 @@ domain and source from the record.
    and why this window (and any gap, sub-sampling or trimming). The leaf's tag and its reason go into
    `time_basis = TimeBasis(tag, reason)` (and `group_basis = GroupBasis(reason)` for `ForcedIIDFromGrouped`), which
    render the `Time basis:` (and `Group basis:`) line. A forced leaf, a leaf no definition reaches yet, or a question
-   no answer fits goes to the curator as an issue with the split you suggest. The record's collection facts and the use-case
-   prototypes of SPLIT-32 ([splits.md](../knowledge-curation/references/splits.md)) are information for the answers.
-   For a temporal task, run `dataset windows <name>` and choose
+   no answer fits goes to the curator as an issue with the split you suggest. The record's collection facts and the
+   use-case prototypes of SPLIT-32 ([splits.md](../knowledge-curation/references/splits.md)) are information for the
+   answers. For a temporal task, run `dataset windows <name>` and choose
    the windows from the use case and those statistics, never a model's score (SPLIT-15: the newest always, the others
    argued; definitions.md, "Choosing the test windows"); the choice goes into the record's review as the curator's
    decision, with the alternatives you weighed. Before the windows, three checks the reviews of 2026-11-10 and 11 found
