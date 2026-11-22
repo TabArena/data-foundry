@@ -14,7 +14,7 @@ Usage::
         [--forced-splits 9] [--max-rows 50000] [--n-jobs 8] [--out DIR]
     python .claude/skills/knowledge-data-foundry/scripts/leak_probes.py <unique_name> --stationary-relation
         [--time-on COLUMN] [--period D|W|M|Q|Y] [--unordered] [--unit COLUMN|none] [--exclude COLUMN ...]
-        [--windows 3] [--stationary-seeds 5] [--max-test N] [--foundation none|kumo] [--device cpu|cuda]
+        [--windows 3] [--stationary-seeds 5] [--max-test N] [--foundation none|tabpfn|kumo] [--device cpu|cuda]
         [--threads N] [--max-foundation-train 20000] [--max-foundation-test 5000] [--n-jobs 8] [--out DIR]
 
 Rebuilds the frame and the split plan from ``<root>/<unique_name>/dataset.py`` and runs the leak probes of
@@ -63,10 +63,14 @@ period column has a training row, and fits a lookup of their training target. Ho
 how it is built and read): on the periods of the same period column, for the newest ``--windows`` periods (every
 period with ``--unordered``), a forward model trained before the period against a contemporaneous one of the same size
 that also holds the period's other half, scored on the same test half over ``--stationary-seeds`` seeds, with probe
-23's regularised LightGBM and, with ``--foundation kumo``, NVIDIA's Kumo-Tabular (the optional package
-``structured-data-models``; on CPU, at most ``--max-foundation-train`` training and ``--max-foundation-test`` test
-rows). Whole units of ``--unit`` (default the definition's group column) are held out; ``--exclude`` names further
-columns that tell the period. The verdict is flat, not flat or inconclusive.
+23's regularised LightGBM and one state-of-the-art tabular foundation model, which a time basis quotes beside it:
+``--foundation tabpfn`` for TabPFN v3.5 (the public ``tabpfn`` package; never on a CPU) or ``--foundation kumo`` for
+NVIDIA's Kumo-Tabular (the optional package ``structured-data-models``), on a GPU node started through SkyPilot. Either
+fits at most
+``--max-foundation-train`` training and ``--max-foundation-test`` test rows. Whole units of ``--unit`` (default the
+definition's group column) are held out; ``--exclude`` names further columns that tell the period. The verdict is
+flat, not flat or inconclusive over the newest three periods, whatever their training share; a run on fewer
+(``--test-period``, or fewer ``--windows``) is ``partial``, and ``stationarity.combine_runs`` joins the jobs.
 The probes use the shipped target; when the definition changed the target (merged, dropped or binned classes), run
 the same checks on the source's labels in a scratch notebook as well (section 1 of that file).
 """
@@ -361,7 +365,8 @@ def forced_split(ds: object, data: dataset_io.ProbeInput, args: argparse.Namespa
 
 def stationary_relation(data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict | None:
     """The stationary-relation test (SPLIT-32, ``curation_probes.stationarity``) on the period column
-    (``period_column``): LightGBM, and Kumo-Tabular with ``--foundation kumo``; None, with the reason, without periods.
+    (``period_column``): LightGBM, and TabPFN v3.5 (``--foundation tabpfn``) or Kumo-Tabular (``kumo``); None, with the
+    reason, without periods.
     """
     column, values, why = period_column(data, args)
     if column is None:
@@ -383,13 +388,18 @@ def stationary_relation(data: dataset_io.ProbeInput, args: argparse.Namespace) -
     metric = data.declared_metric()
     params = fit_params(getattr(args, "objective", "metric"), metric, original_rate(data, metric), data.weights)
     foundation, name = None, None
-    if getattr(args, "foundation", "none") == "kumo":
+    kind_of_model = getattr(args, "foundation", "none")
+    if kind_of_model != "none":
         y = data.df[data.target]
         classes = None if data.problem_type == "regression" else np.unique(y.to_numpy())
+    if kind_of_model == "tabpfn":
+        foundation = stationarity.tabpfn_v35(data.problem_type, classes, device=args.device or "cuda")
+        name = "TabPFN v3.5"
+    elif kind_of_model == "kumo":
         foundation = stationarity.kumo_tabular(
             data.problem_type,
             classes,
-            device=args.device,
+            device=args.device or "cpu",
             threads=args.threads or args.n_jobs,
             point="median" if "absolute" in str((metric or {}).get("name", "")) else "mean",
         )
@@ -517,8 +527,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--test-period", nargs="*", help="Only these windows, by period label (one job per window).")
     parser.add_argument("--stationary-seeds", type=int, default=5, help="Its seeds (default 5).")
     parser.add_argument("--max-test", type=int, help="Its LightGBM test rows per window, at most; default all.")
-    parser.add_argument("--foundation", choices=("none", "kumo"), default="none", help="Its foundation model.")
-    parser.add_argument("--device", default="cpu", help="The foundation model's device (cpu or cuda).")
+    parser.add_argument(
+        "--foundation",
+        choices=("none", "tabpfn", "kumo"),
+        default="none",
+        help="Its foundation model, one state-of-the-art TFM for a time basis: tabpfn (TabPFN v3.5) or kumo.",
+    )
+    parser.add_argument("--device", help="The foundation model's device; default cuda for tabpfn, cpu for kumo.")
     parser.add_argument("--threads", type=int, help="The foundation model's threads; default --n-jobs.")
     parser.add_argument("--max-foundation-train", type=int, default=20_000, help="Its training rows per fit, at most.")
     parser.add_argument("--max-foundation-test", type=int, default=5_000, help="Its test rows per window, at most.")

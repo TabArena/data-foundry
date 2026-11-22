@@ -81,7 +81,8 @@ Marker: `Too Small`.
 
 **TP-9 (Must; narrows TP-5).** Count the minority-class rows (or the target's spread) per test window of a temporal task
 and report them. Few positives in a window are part of the task, not a reason for `Too Small` or for another split; only
-a window without a positive under a ranking metric (ROC AUC, average precision, a Gini) cannot be scored, and is widened
+a window without a positive under a metric one class leaves undefined (ROC AUC, average precision, a Gini, the
+early-detection utility) cannot be scored, and is widened
 or its cut moved until it holds one (SPLIT-16, SPLIT-17; [splits.md](splits.md), "How many windows"). Do not fall back
 to an IID split for a non-stationary sequence (SPLIT-16). Marker: `Too Small`, where the task as a whole holds a handful
 of positives (TP-5). Cases: seismic_bumps (49 positives in the newest half, 0-5 per window; marked `Too Small` on
