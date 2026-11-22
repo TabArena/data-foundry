@@ -280,7 +280,9 @@ forced tag and keeps its leak test (SPLIT-32)."""
 
 def forced_tags(ds: object) -> list[str]:
     """The definition's forced-split tags (``FORCED_TAGS``), none for another split."""
-    return [tag for tag in getattr(ds, "data_tags", None) or () if tag in FORCED_TAGS]
+    metadata = getattr(ds, "dataset_metadata", None)  # the tags as built: a `time_basis` adds its tag there
+    tags = getattr(metadata, "data_tags", None) or getattr(ds, "data_tags", None) or ()
+    return [tag for tag in tags if tag in FORCED_TAGS]
 
 
 def period_column(data: dataset_io.ProbeInput, args: argparse.Namespace) -> tuple[str | None, pd.Series | None, str]:
