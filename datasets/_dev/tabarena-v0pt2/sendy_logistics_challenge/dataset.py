@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, Source, TaskSummary
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+)
 
 # The order's events up to the prediction point (pickup), in order; each clock ships as seconds after midnight.
 KNOWN_EVENTS = ["Placement", "Confirmation", "Arrival at Pickup", "Pickup"]
@@ -80,7 +89,7 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedGroupedFromTemporal", "Anonymized", "Spatial")
+    data_tags = ("Anonymized", "Spatial")
     download_description = """
         Sign in to Zindi, obtain the Sendy Logistics Challenge files from
         https://zindi.world/competitions/sendy-logistics-challenge/data and extract the official archive into
@@ -154,16 +163,17 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
           so a blank where a temperature exists most likely means no rain; every row without a temperature also
           lacks precipitation.
         - Metric: the source's RMSE in seconds, with no target transform.
-        - Time basis: ForcedGroupedFromTemporal (SPLIT-8; Andrej, 2026-11-19, decision B; `ForcedIIDFromTemporal`
-          before): the use case predicts orders of later months from a model fit on earlier ones, but the release
-          has the day of the month and the weekday and no month or year. The stationary-relation test reads not flat
-          (v3 pooled +4.6 ± 1.1 s RMSE for LightGBM and +4.0 ± 0.8 s for Kumo-Tabular against floors of 2.2-2.5 s);
-          whole month classes are held out; the classes are not in time order (a class mixes months from across the
-          year). `month_class` = (placement weekday - placement day of month) mod 7, the weekday the month started
-          on (0 = Monday), built in `_clean` as the group key only (no input): seven classes of 1,109 to 4,632
-          orders.
         - Test.csv's 7,068 orders (per the 2026-10-29 audit) have no labels and are not used.
     """
+    time_basis = TimeBasis(
+        "ForcedGroupedFromTemporal",
+        """
+        the use case predicts orders of later months from a model fit on earlier ones, but the release has the day of the month and the weekday and no month or year. The stationary-relation test reads not flat (v3 pooled +4.6 ± 1.1 s RMSE for LightGBM and +4.0 ± 0.8 s for Kumo-Tabular against floors of 2.2-2.5 s); whole month classes are held out; the classes are not in time order (a class mixes months from across the year). `month_class` = (placement weekday - placement day of month) mod 7, the weekday the month started on (0 = Monday), built in `_clean` as the group key only (no input): seven classes of 1,109 to 4,632 orders.
+        """,
+        set_by="Andrej",
+        on="2026-11-19",
+        note="decision B; `ForcedIIDFromTemporal` before",
+    )
     target = "Time from Pickup to Arrival"
     problem_type = "regression"
     metric = Metric.source(

@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     Source,
     SplitPlan,
     TaskSummary,
+    TimeBasis,
     decode,
 )
 
@@ -81,7 +82,6 @@ class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedGroupedFromTemporal",)
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
@@ -91,10 +91,6 @@ class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
         - Anomaly: the data contains time-based features that were preprocessed to create a time-invariant predictive task.
         - We keep only the sessions from June to December (6,875 of 12,330). "PageValues" is meant as a historical Google Analytics metric per page, stored and updated at regular intervals, averaged over the pages a session visits (Sakar et al. 2019, Sec. 2.1). In February, March and May, however, every one of the 560 buyers has PageValues > 0 and PageValues alone separates buyers with ROC AUC 0.974, so these values most likely include the session's own purchase (the page-value table was probably computed over that period). From June on, 27% of buyers have PageValues = 0 and its AUC is 0.814, as expected for a historical page metric. We keep PageValues and drop the early months; this cannot be proven from the data, as a change in site tracking would leave a similar pattern.
         - We drop "SpecialDay": it is non-zero only in February and May, so it is constant on the kept months.
-        - Time basis: ForcedGroupedFromTemporal (SPLIT-8; Andrej, 2026-11-19): the visits carry their month but no
-          year; the stationary-relation test reads not flat (November: LightGBM +0.054 ± 0.007, Kumo-Tabular +0.039
-          ± 0.004 ROC AUC, floors 0.003-0.004; the purchase share moves from 10% in June to 25% in November), so whole
-          months are held out, each once.
         - Leave one month out (Andrej, 2026-11-19: "Leave one month out, but this would still be ForcedGrouped"), in
           place of 3 x 3 random folds: only December can train on half the visits in time order and the file order
           within a month is not the order of days, so three time windows do not exist. `Month` is the group column and
@@ -109,6 +105,17 @@ class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `Revenue` ships its classes as words (True means revenue). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
     """
+    time_basis = TimeBasis(
+        "ForcedGroupedFromTemporal",
+        """
+        the visits carry their month but no
+        year; the stationary-relation test reads not flat (November: LightGBM +0.054 ± 0.007, Kumo-Tabular +0.039
+        ± 0.004 ROC AUC, floors 0.003-0.004; the purchase share moves from 10% in June to 25% in November), so whole
+        months are held out, each once.
+        """,
+        set_by="Andrej",
+        on="2026-11-19",
+    )
 
     # Task
     target = "Revenue"
