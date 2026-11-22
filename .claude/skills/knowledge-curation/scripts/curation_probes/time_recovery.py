@@ -212,7 +212,7 @@ def period_values(df: pd.DataFrame, target: str, problem_type: str, exclude: set
             columns.append(column)
     if not columns:
         return {"columns": []}
-    key = df[columns].astype(str).agg("|".join, axis=1)
+    key = df.groupby(columns, dropna=False, sort=False, observed=True).ngroup()
     levels = int(key.nunique())
     widest = max(df[c].nunique() for c in columns)
     out = {"columns": [str(c) for c in columns], "levels": levels}
