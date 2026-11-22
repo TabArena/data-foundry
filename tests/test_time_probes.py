@@ -361,8 +361,8 @@ def test_built_reads_the_collection_cache_without_a_local_build(cli, tmp_path, m
         entries=(CollectionEntry(unique_name=toy.parent.name, uuid=toy.name),),
         source=LocalWarehouseSource(base_dir=toy.parents[1]),
     )
-    monkeypatch.setattr(cli, "list_collections", lambda: ["Toy"])
-    monkeypatch.setattr(cli, "get_collection", lambda _name: collection)
+    monkeypatch.setattr("data_foundry.collections.list_collections", lambda: ["Toy"])
+    monkeypatch.setattr("data_foundry.collections.get_collection", lambda _name: collection)
     monkeypatch.setenv("DATA_FOUNDRY_CACHE", str(tmp_path / "cache"))
     monkeypatch.setenv("DATA_FOUNDRY_WAREHOUSE", str(tmp_path / "warehouse"))
     result = cli.probe(toy.parent.name, tmp_path / "definitions", built=True)
@@ -374,6 +374,6 @@ def test_built_reads_the_collection_cache_without_a_local_build(cli, tmp_path, m
     readme = tmp_path / "definitions" / toy.parent.name / "README.md"
     readme.parent.mkdir(parents=True)
     readme.write_text(f"---\nbuild:\n  path: {toy.parent.name}/{toy.name}\n---\n")
-    assert cli.built_container(toy.parent.name, tmp_path / "definitions")[1] == "built"
+    assert cli.dataset_io.built_container(toy.parent.name, tmp_path / "definitions")[1] == "built"
     with pytest.raises(FileNotFoundError):
-        cli.built_container("no_such_dataset", tmp_path / "definitions")
+        cli.dataset_io.built_container("no_such_dataset", tmp_path / "definitions")
