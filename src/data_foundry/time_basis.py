@@ -57,6 +57,7 @@ _BULLET = re.compile(
 )
 _HEAD = re.compile(r"(?P<head>[A-Za-z]+)[ \t]*(?:\((?P<inside>[^)]*)\))?[ \t]*:(?P<rest>.*)", re.S)
 _RULE_ID = re.compile(r"^\s*SPLIT-\d+;\s*")
+_ATTRIBUTION = re.compile(r"(?P<who>[^,;]+),\s*(?P<on>\d{4}-\d{2}-\d{2})\s*(?:;\s*(?P<note>.*))?$", re.S)
 
 
 def person_problem(who: str | None) -> str | None:
@@ -90,16 +91,20 @@ class TimeBasis:
             or too few periods) and what a dated release would change; for ``StationaryRelation`` the measurement.
         set_by: The person who set it. Required for the tags of :data:`HUMAN_SET_TIME_TAGS`.
         on: The date they set it, ``YYYY-MM-DD``. Required with ``set_by``.
+        note: A short note on the basis's history, rendered in the brackets after the date (`` `Timeless` before``).
     """
 
     tag: str
     reason: str
     set_by: str | None = None
     on: str | None = None
+    note: str | None = None
 
     def line(self) -> str:
         """The ``- Time basis:`` bullet the build renders into ``curation_comments``."""
-        attribution = f" ({self.set_by}, {self.on})" if self.set_by or self.on else ""
+        parts = [f"{self.set_by}, {self.on}"] if self.set_by or self.on else []
+        parts += [" ".join(self.note.split())] if self.note else []
+        attribution = f" ({'; '.join(parts)})" if parts else ""
         return f"- Time basis: {self.tag}{attribution}: {' '.join(self.reason.split())}"
 
     def problems(self) -> list[str]:
@@ -170,6 +175,7 @@ class Line:
         tag: ``head`` when it is a time basis tag, else None (a free-text line of the old way).
         set_by: The person in the brackets after the tag, or None.
         on: The date in the brackets, or None.
+        note: The note after the date in the brackets, or None.
         reason: The text after the tag and its brackets; the whole text for a line without a tag. It ends at the next
             bullet or at a blank line.
     """
@@ -179,6 +185,7 @@ class Line:
     set_by: str | None
     on: str | None
     reason: str
+    note: str | None = None
 
 
 def lines(comments: str | None, kind: str = "Time") -> list[str]:
@@ -196,15 +203,13 @@ def parse(comments: str | None) -> Line | None:
     if m is None or m["head"] not in BASIS_TAGS:
         head = m["head"] if m is not None and m["inside"] is None and len(m["head"]) > 1 else None
         return Line(head=head, tag=None, set_by=None, on=None, reason=body)
-    inside = _RULE_ID.sub("", m["inside"] or "")
-    who, _, on = inside.rpartition(",") if "," in inside else (inside, "", "")
-    return Line(
-        head=m["head"],
-        tag=m["head"],
-        set_by=who.strip() or None,
-        on=on.strip() or None,
-        reason=m["rest"].strip(),
-    )
+    inside = _RULE_ID.sub("", m["inside"] or "").strip()
+    attribution = _ATTRIBUTION.match(inside)
+    if attribution is not None:
+        who, on, note = attribution["who"].strip(), attribution["on"], (attribution["note"] or "").strip() or None
+    else:
+        who, on, note = inside or None, None, None
+    return Line(head=m["head"], tag=m["head"], set_by=who, on=on, reason=m["rest"].strip(), note=note)
 
 
 def problems(tags: list[str], comments: str | None, *, temporal: bool, grouped: bool) -> list[Problem]:

@@ -2080,6 +2080,22 @@ def test_a_stationary_relation_needs_a_person_and_the_measurement() -> None:
     )
 
 
+def test_a_time_basis_note_renders_after_its_date() -> None:
+    """A note on the basis's history renders in the brackets after the date and reads back (``time_basis.parse``)."""
+    from data_foundry import time_basis as basis_rules
+
+    basis = dataclasses.replace(STATIONARY, note="`ForcedIIDFromTemporal` before")
+    comments = _define(time_basis=basis).dataset_metadata.curation_comments
+    assert "(Andrej, 2026-11-20; `ForcedIIDFromTemporal` before): the stationary" in comments
+    line = basis_rules.parse(comments)
+    assert (line.tag, line.set_by, line.on, line.note) == (
+        "StationaryRelation",
+        "Andrej",
+        "2026-11-20",
+        "`ForcedIIDFromTemporal` before",
+    )
+
+
 def test_a_group_basis_sits_beside_the_time_basis() -> None:
     """`group_basis` adds `ForcedIIDFromGrouped` and its `Group basis:` line; it marks an IID split (SPLIT-35)."""
     basis = GroupBasis("no structure, so no series can be held out.")
