@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
 
 # The file's headers and the names we give them, in the file's column order. The names spell out the authors' own
 # headers in the 2002 version of the file (age sex bmi map tc ldl hdl tch tg glu y), checked in `_decisions`.
@@ -78,7 +78,6 @@ class Diabetes3(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         The file is `diabetes.data` on Trevor Hastie's LARS page at Stanford
         (https://hastie.su.domains/Papers/LARS/diabetes.data, formerly under web.stanford.edu/~hastie/), which the paper
@@ -106,10 +105,15 @@ class Diabetes3(AbstractCuratedDataset):
         - The target is the paper's response on its own scale (25 to 346, skewness 0.44), not logged. The paper fits it by least squares, which RMSE matches.
         - IID: one row per patient, no visit dates and no time trend in the file order. No missing values or duplicate rows.
         - Not trivial, despite the record's `Trivial` marker: on all 60 shipped splits, the best of least squares, ridge and a random forest (R^2 0.49) beats the best single feature (0.30) by at least 0.08.
-        - Time basis: ForcedIIDFromTemporal: the baseline visits of an undocumented cohort, collected over time, with no
-          visit date in the file, so the time is lost. A dated release would test patients enrolled later. Not taken as
-          stationary (Andrej, 2026-11-18): With the target undocumented there is no domain mechanism to rest ASR on.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        the baseline visits of an undocumented cohort, collected over time, with no
+        visit date in the file, so the time is lost. A dated release would test patients enrolled later. Not taken as
+        stationary (Andrej, 2026-11-18): With the target undocumented there is no domain mechanism to rest ASR on.
+        """,
+    )
 
     # Task
     target = "disease_progression_one_year"

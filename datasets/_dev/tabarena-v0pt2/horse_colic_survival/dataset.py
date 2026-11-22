@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     Metric,
     Source,
     TaskSummary,
+    TimeBasis,
     decode,
     set_missing,
 )
@@ -124,7 +125,6 @@ class HorseColicSurvival(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("StationaryRelation",)
     download_description = """
         Get the train and test data from UCI.
 
@@ -183,24 +183,31 @@ class HorseColicSurvival(AbstractCuratedDataset):
           time column of three windows of 57 horses and a feature; on those windows' test rows, training on as many
           random horses instead of the earlier ones scored 0.045 log loss better for LightGBM, 0.009 for TabPFN 3.5
           and 0.003 for logistic regression (harmonised recording).
-        - Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-20): admissions to one hospital, in the order of their case numbers, which stand in for
-          the missing admission dates (`Time: Inferred`; an inferred order serves the measurement as it would a
-          temporal split). The stationary-relation test (v3, 2026-11-18, ROC AUC, 5 seeds) on six runs of 57 cases in
-          case-number order, the newest three tested, reads flat pooled: Kumo-Tabular -0.001 ± 0.012, floor 0.003;
-          LightGBM +0.010 ± 0.014; each run alone is inconclusive, and in none does the forward model do clearly worse.
-          The relation is measured stationary for cases held out whole (grouped by case: a horse's return visits stay
-          on one side); random folds over visits would not be covered by it. Earlier evidence: survival is flat along
-          the order (62.2% in the first half, 62.8% in the second, Fisher p = 1.0), and for the 60 horses at positions
-          200 to 259 training on their history instead of as many random horses moved log loss by no interval excluding
-          zero (2026-11-12). The recording change is harmonised (above); what
-          remains of it, 55 missing cells, is unrelated to survival. Not tested: a later change of recording or of
-          practice.
         - Return visits kept (2026-11-10, Andrej): nine cases appear two or three times under one
           six-digit case number with a suffix (10 later rows; the codebook: "may not be unique if the horse is treated >
           1 time"), all first visits survived. A return visit is an admission to score; the split groups by case, so no
           fold trains on one visit of a horse and tests another (2026-11-12; until then the time
           order kept each later visit after its first).
     """
+    time_basis = TimeBasis(
+        "StationaryRelation",
+        """
+        admissions to one hospital, in the order of their case numbers, which stand in for
+        the missing admission dates (`Time: Inferred`; an inferred order serves the measurement as it would a
+        temporal split). The stationary-relation test (v3, 2026-11-18, ROC AUC, 5 seeds) on six runs of 57 cases in
+        case-number order, the newest three tested, reads flat pooled: Kumo-Tabular -0.001 ± 0.012, floor 0.003;
+        LightGBM +0.010 ± 0.014; each run alone is inconclusive, and in none does the forward model do clearly worse.
+        The relation is measured stationary for cases held out whole (grouped by case: a horse's return visits stay
+        on one side); random folds over visits would not be covered by it. Earlier evidence: survival is flat along
+        the order (62.2% in the first half, 62.8% in the second, Fisher p = 1.0), and for the 60 horses at positions
+        200 to 259 training on their history instead of as many random horses moved log loss by no interval excluding
+        zero (2026-11-12). The recording change is harmonised (above); what
+        remains of it, 55 missing cells, is unrelated to survival. Not tested: a later change of recording or of
+        practice.
+        """,
+        set_by="Andrej",
+        on="2026-11-20",
+    )
 
     # Task
     target = "did_not_survive"

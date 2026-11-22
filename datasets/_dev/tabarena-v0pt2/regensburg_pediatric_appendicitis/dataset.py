@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, set_missing
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, set_missing
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -118,7 +118,6 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("StationaryRelation",)
     download_description = """
         We get the newest version of the tabular data from Zenodo.
 
@@ -208,14 +207,21 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
           (`NOTHING_FOUND`). The three text columns alone told operated from not operated uncomplicated children at
           ROC AUC 0.572, 0.527 after (on the label 0.552, then 0.531); the full model scores the same with or without
           them (gradient boosting 0.905 and 0.906), so no model had used the route.
-        - Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-19): children are admitted over
-          2016-2021 and a deployed model scores later admissions, but the file has no dates; the ultrasound case
-          numbers tell only two periods apart (2016-2018 and 2019-2021), too few for windows. The stationary-relation
-          test (2026-11-19) on these two periods reads flat: tested on 2019-2021, training on 2016-2018 instead of as
-          many 2019-2021 children costs LightGBM +0.016 ± 0.016 ROC AUC (floor 0.004) and Kumo-Tabular +0.004 ±
-          0.010 (floor 0.004); the complicated share moves 1.63-fold (p 0.006), under the twofold move that counts as
-          a recording change. So children are split at random. Admission dates would allow a split by period.
     """
+    time_basis = TimeBasis(
+        "StationaryRelation",
+        """
+        children are admitted over
+        2016-2021 and a deployed model scores later admissions, but the file has no dates; the ultrasound case
+        numbers tell only two periods apart (2016-2018 and 2019-2021), too few for windows. The stationary-relation
+        test (2026-11-19) on these two periods reads flat: tested on 2019-2021, training on 2016-2018 instead of as
+        many 2019-2021 children costs LightGBM +0.016 ± 0.016 ROC AUC (floor 0.004) and Kumo-Tabular +0.004 ±
+        0.010 (floor 0.004); the complicated share moves 1.63-fold (p 0.006), under the twofold move that counts as
+        a recording change. So children are split at random. Admission dates would allow a split by period.
+        """,
+        set_by="Andrej",
+        on="2026-11-19",
+    )
     splits_comment = """
         Default splits: stratified random 3-fold cross-validation with 10 repeats (seed 4267). Tests stand for other
         children of the same hospital and years.
