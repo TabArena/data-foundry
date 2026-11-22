@@ -135,3 +135,41 @@ def test_pooling_the_windows_can_make_a_set_flat():
     windows[0]["lightgbm"]["skill"] = -0.01
     assert stationarity._verdict(out, ["lightgbm"]) == "inconclusive"
 
+
+def test_a_pooled_gap_above_two_sds_is_not_flat():
+    """Pooling reads the gap both ways: three windows, each inconclusive alone, whose pooled gap of 8 floors stands
+    above its two SDs (6.9 floors) are not flat, never flat (SPLIT-32).
+    """
+    window = {"gap": 0.032, "gap_sd": 0.024, "floor": 0.004, "skill": 0.4}
+    window["verdict"] = stationarity._window_verdict(window["gap"], window["gap_sd"], window["floor"], window["skill"])
+    assert window["verdict"] == "inconclusive"
+    out = {"windows": [{"lightgbm": dict(window)} for _ in range(3)], "recording_change": None}
+    assert stationarity._verdict(out, ["lightgbm"]) == "not flat"
+
+
+def test_a_run_on_fewer_than_the_newest_three_is_partial_and_the_jobs_combine():
+    """A verdict covers the newest three periods; one job per window reports `partial`, and `combine_runs` gives the
+    verdict of the full run (SPLIT-32).
+    """
+    df, period = _data()
+    full = _run(df, period)
+    jobs = [_run(df, period, test_periods=[p]) for p in ("5", "4", "3")]
+    assert all(job["verdict"] == "partial" and job["partial_verdict"] == "flat" for job in jobs)
+    assert jobs[0]["untested"] == ["4", "3"]
+    assert any("verdict: partial" in line for line in stationarity.stationary_relation_lines(jobs[0]))
+    combined = stationarity.combine_runs(jobs)
+    assert combined["verdict"] == full["verdict"] == "flat"
+    assert [w["test_period"] for w in combined["windows"]] == ["5", "4", "3"]
+    assert _run(df, period, n_windows=2)["verdict"] == "partial"
+
+
+def test_a_not_flat_window_stands_in_a_partial_run():
+    """One window not flat is enough, so a partial run that finds one reports it (SPLIT-32)."""
+    df, period = _data(drift=True)
+    assert _run(df, period, test_periods=["3"])["verdict"] == "not flat"
+
+
+def test_tabpfn_v35_refuses_a_cpu():
+    """TabPFN v3.5 runs on a GPU only."""
+    with pytest.raises(ValueError, match="on a GPU"):
+        stationarity.tabpfn_v35("binary", [0, 1], device="cpu")

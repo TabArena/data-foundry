@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -32,6 +33,8 @@ from data_foundry.schema import RowBudget, TimeOf, TimeUnit, TrainSampling, as_c
 from data_foundry.v2._optional import import_build_dependency
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
     from data_foundry.curation_container import CuratedContainer
     from data_foundry.schema import PredictiveMLTaskMetadataV2
 
@@ -121,14 +124,36 @@ def scored_units_within_groups(df: pd.DataFrame, group_on: str | list[str] | Non
     return bool(keyed.groupby(scored_unit_on, dropna=False, observed=True)[key].nunique(dropna=False).max() <= 1)
 
 
-def split_count(n_units: int) -> int:
-    """The number of splits SPLIT-33 gives a dataset of ``n_units`` scored units: repeats x folds of 3-fold
-    cross-validation, the repeats by the units on its train side (two thirds of them)."""
+def repeats_for(n_units: int) -> int:
+    """SPLIT-33's repeats of 3-fold cross-validation for ``n_units`` units: by the units on the train side (two thirds
+    of them), 20, 10, 3 or 1.
+    """
     n_train = int(n_units * 2 / 3)
-    for limit, repeats in REPEATS_BY_TRAIN_SIZE:
-        if n_train < limit:
-            return repeats * N_FOLDS
-    return N_FOLDS
+    return next((repeats for limit, repeats in REPEATS_BY_TRAIN_SIZE if n_train < limit), 1)
+
+
+def split_count(n_units: int) -> int:
+    """The number of splits SPLIT-33 gives a dataset of ``n_units`` scored units: repeats x folds."""
+    return repeats_for(n_units) * N_FOLDS
+
+
+def training_sides(trains: Iterable[Sequence[int]]) -> int:
+    """The number of distinct training sides among ``trains`` (the train positions of each split): test parts that
+    share one training side test one model, so they count as one split (SPLIT-14, SPLIT-15). Sides that differ in
+    length or at an end are told apart at once; only sides that agree there are hashed whole.
+    """
+    by_shape: dict[tuple[int, int, int], list[np.ndarray]] = {}
+    for t in trains:
+        side = np.asarray(t, dtype=np.int64)
+        shape = (len(side), int(side.min()) if len(side) else -1, int(side.max()) if len(side) else -1)
+        by_shape.setdefault(shape, []).append(side)
+    count = 0
+    for sides in by_shape.values():
+        if len(sides) == 1:
+            count += 1
+        else:
+            count += len({hashlib.blake2b(np.sort(s).tobytes(), digest_size=16).digest() for s in sides})
+    return count
 
 
 def recommended_dimensions(
@@ -164,11 +189,7 @@ def recommended_dimensions(
         n = df[group_on].nunique()
     elif scored_unit_on is not None and scored_units_within_groups(df, group_on, scored_unit_on):
         n = df[scored_unit_on].nunique(dropna=False)
-    n_train = int(n * 2 / 3)
-    for limit, repeats in REPEATS_BY_TRAIN_SIZE:
-        if n_train < limit:
-            return repeats, N_FOLDS
-    return 1, N_FOLDS
+    return repeats_for(n), N_FOLDS
 
 
 # --- cross-validation -----------------------------------------------------------------------------------------
@@ -1147,12 +1168,15 @@ def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
     findings = _budget_findings(flat, meta.row_budget, getattr(meta, "train_sampling", None))
 
     if task.time_on is not None:
-        if len(flat) < MIN_TEMPORAL_SPLITS:
+        n_sides = training_sides(train for _r, _f, train, _test in flat)
+        if n_sides < MIN_TEMPORAL_SPLITS:
+            shared = f" ({len(flat)} test parts)" if n_sides < len(flat) else ""
             findings.append(
                 CheckResult(
                     "splits_too_few",
                     "warning",
-                    f"{len(flat)} test window(s); the v2 protocol wants at least {MIN_TEMPORAL_SPLITS}.",
+                    f"{n_sides} test window(s) with their own training side{shared}; the v2 protocol wants at least "
+                    f"{MIN_TEMPORAL_SPLITS}.",
                     hint="Declare more windows, e.g. `TemporalSplits(window=7, unit='days', n_windows=3)` or three "
                     "`cutoffs`.",
                 ),
