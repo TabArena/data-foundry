@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     Metric,
     Source,
     TaskSummary,
+    TimeBasis,
     drop_columns,
 )
 
@@ -203,7 +204,7 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
             """,
         ),
     )
-    data_tags = ("Spatial", "UnseenGroup")
+    data_tags = ("Spatial",)
     download_description = """
         We download the competition files from the organisers' GitHub repository, pinned to a commit (the data files
         are unchanged since they were added on 2020-11-13). The Zenodo record (https://doi.org/10.5281/zenodo.4351156)
@@ -251,12 +252,20 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
           2000. A change in how features are recorded, kept as a note (SPLIT-37 step 4(a), Andrej, 2026-11-18): the newest
           wells, which the use case meets, are logged like the newest training wells. Windows on the release date cost
           little against random wells of the same size (mean penalty 0.698 against 0.674).
-        - Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case interprets a well not yet
-          drilled, from its logs, so the split holds out whole wells. The lithology at a depth is a property of the
-          rock, and the wells reach the public one by one, not in waves: a split by release date holds out no more than
-          random wells (the splits comment). It cannot test wells logged with later tools or in parts of the North Sea
-          the 118 wells do not cover.
     """
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the use case interprets a well not yet
+        drilled, from its logs, so the split holds out whole wells. The lithology at a depth is a property of the
+        rock, and the wells reach the public one by one, not in waves: a split by release date holds out no more than
+        random wells (the splits comment). It cannot test wells logged with later tools or in parts of the North Sea
+        the 118 wells do not cover.
+        """,
+        set_by="Andrej",
+        on="2026-11-13",
+        note="`Timeless` before",
+    )
 
     # Task
     target = "lithology"

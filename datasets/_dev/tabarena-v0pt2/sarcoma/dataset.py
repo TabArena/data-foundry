@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, Metric, Source, TaskSummary, TimeBasis
 
 OMICS = {"exp": "mRNA", "methy": "Methy", "mirna": "miRNA"}
 """The omic files of the benchmark (features x samples) and the prefix their columns get."""
@@ -133,7 +133,6 @@ class Sarcoma(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Timeless",)
     download_description = """
         We download the preprocessed TCGA sarcoma omics and the clinical data of Rappoport & Shamir (2018) from the
         benchmark page https://acgt.cs.tau.ac.il/multi_omic_benchmark/download.html (files dated 16 July 2018;
@@ -162,9 +161,14 @@ class Sarcoma(AbstractCuratedDataset):
         - Split: IID over patients, one row each, since a lab types the tumours of new patients (splits comment; kept over a split by site, Lennart, 2026-10-22). One tissue source site holds 101 of the 201 rows and 40 of the 50 dedifferentiated liposarcomas, and holding out whole sites raises a random forest's log loss from 0.46 to 0.58 (four classes, mean of three seeds; 0.64 to 0.77 with MFS and UPS apart): a known optimism for a new lab.
         - Split by entry into TCGA, checked and not taken (2026-11-12): the programme is closed (the GDC lists the cohort's 261 cases, none added after the study that supplies the label), so no later wave exists to hold out. The TCGA batch (aliquot plate, 127 codes over the cohort) is recoverable only from the GDC's full barcodes, not from our rows, whose barcodes are trimmed to the sample, and a shipment is the tissue source site under another name. The one date per case, the year of diagnosis (169 of 261 cases, 1996 to 2013, 117 of them 2009 or later), dates the patient, not the case's entry.
         - Note: the generated-data probe flags rule leaves of dedifferentiated liposarcoma: `mRNA_MDM2.4193` alone separates the class (ROC AUC 1.000), since MDM2 sits on the 12q15 amplicon the review required. Unlike coad's copy-number block, the defining measurement is not shipped, a lab measures MDM2 at typing anyway, and the task is no rule (best single-feature skill 0.24 over 30 splits against 0.75 for the best model, four classes; 0.05 with five), so the column stays (SEL-5).
-        - Time basis: Timeless: the histological type of a profiled primary tumour does not change once it is assigned.
-          It cannot test profiles from other platforms or laboratories.
     """
+    time_basis = TimeBasis(
+        "Timeless",
+        """
+        the histological type of a profiled primary tumour does not change once it is assigned.
+        It cannot test profiles from other platforms or laboratories.
+        """,
+    )
     splits_comment = """
         IID over patients, stratified on the type: each patient is one row, and a lab types the tumours of new patients. One tissue source site holds 101 of the 201 rows and 40 of the 50 dedifferentiated liposarcomas, and the features carry the site weakly within a type (that site against the rest among dedifferentiated liposarcomas: ROC AUC 0.69-0.73, against 0.65 for the 95th percentile of shuffled labels). Holding out whole sites raises a random forest's log loss from 0.46 to 0.58 (mean of three seeds), so the scores are optimistic for a lab whose patients come from elsewhere.
     """

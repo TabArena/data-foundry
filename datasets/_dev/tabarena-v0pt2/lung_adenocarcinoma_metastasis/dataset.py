@@ -9,7 +9,7 @@ import tarfile
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
 
 SERIES_MATRIX = "GSE83227_series_matrix.txt.gz"
 ARRAY_DIR = "gse83227_txt"
@@ -111,7 +111,6 @@ class LungAdenocarcinomaMetastasis(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Timeless",)
     download_description = """
         We download the study's own deposit of its arrays from GEO (GSE83227, "caArray_meyer-00191"): the series
         matrix (sample titles and histology), each array's MAS5 output file (`.txt.gz`; the arrays of the 123
@@ -140,9 +139,14 @@ class LungAdenocarcinomaMetastasis(AbstractCuratedDataset):
         - Source: GEO GSE83227, the study's deposit of all 254 arrays (Affymetrix HG-U95Av2), each with its raw scan, its MAS5 output and the specimen's histology; the caArray archive in the same series holds the annotation sheet and the paper (13790.pdf). The paper's Dataset A (PNAS supplement; OpenML 45093 is a copy) averages up to four arrays per adenocarcinoma patient and uses MAS4 values.
         - CC (2026-11-10, Andrej): rebuilt from GEO. One array per tumour, the first piece and first hybridisation (the first title in sorted order: `157T1` before `157T2`, `347T1-1` before `347T1-2`), because a lab profiles a new specimen once; the value is the array's MAS5 `Signal`, scaled on that array alone, so no test array depends on the training arrays.
         - Array choice (review panel, 2026-11-11): the first title in GEO's sorted order is not always the first hybridisation. For the 10 tumours titled `-1`/`-2` (AD131, AD183, AD255, AD301, AD338, AD340, AD341, AD346, AD347, AD350; two of them metastases) it is the later preparation, and the study's own Dataset A names the other array `Sample1`; the shipped array is the study's `Sample1` for 113 of the 123 tumours. Taking `Sample1` throughout moves no score (random forest 0.879 to 0.870, logistic regression 0.844 to 0.833, within the noise).
-        - Time basis: Timeless: whether a resected tumour started in the lung or elsewhere does not change; the profiles were measured on banked specimens for one study (the 123 arrays scanned between 16 March and 17 April 2001, the study's last on 25 April), so when a tumour was resected plays no role. Not tested: tumours from another hospital, or arrays processed in another laboratory.
         - CC (2026-11-11, Lennart): the second review panel's decisions: USE-1 amended on this case (the use case names the expression tissue-of-origin test as the pathologist's second opinion), kept at 15 metastases (5 per test fold), and the nine agreed fixes (age, sex and pack-years as features, the target as No / Yes, the notes on the negatives, the four positives staged as primaries, the recording mechanism, and the claim corrections); the declared metric, ROC AUC (fallback), is checked.
     """
+    time_basis = TimeBasis(
+        "Timeless",
+        """
+        whether a resected tumour started in the lung or elsewhere does not change; the profiles were measured on banked specimens for one study (the 123 arrays scanned between 16 March and 17 April 2001, the study's last on 25 April), so when a tumour was resected plays no role. Not tested: tumours from another hospital, or arrays processed in another laboratory.
+        """,
+    )
     accepted_check_warnings = {
         "meta_license_unknown": (
             "GEO gives no licence for the GSE83227 deposit; the PNAS supplement states none either."
