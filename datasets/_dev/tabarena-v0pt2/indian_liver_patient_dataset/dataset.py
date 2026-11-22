@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, decode
 
 
 class IndianLiverPatientDataset(AbstractCuratedDataset):
@@ -57,7 +57,6 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We get the data from UCI.
 
@@ -75,14 +74,6 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
           records: 85 of the 167 others have low albumin and 18 high bilirubin or liver enzymes, and 55 of the 416
           patients have normal bilirubin, ALT, AST and albumin. The number format of the values gives ROC AUC 0.50
           for the label, so no recording difference shows between the two groups.
-        - Time basis: ForcedIIDFromTemporal: patients seen over a period the sources do not state; the file keeps no
-          date, so random patients stand in for the patients to come. The file order carries some structure (lag-1
-          correlation of 0.10 to 0.26 for age and the lab values, none for the label: 0.03) but no cost: held out by
-          file position (contiguous 5-fold, or the last third after the first two) ROC AUC stays within the spread of
-          random splits for logistic regression, random forest and TabPFN 3.5. A dated release would test later patients
-          and whether the two groups were collected in different periods, which this split cannot. Not taken as
-          stationary (Andrej, 2026-11-18): The physiology is stable but the label and the group collection are
-          undocumented, and a flat file order is not a dated measurement; mixed.
         - Repeated records (2026-11-11, LEAK-18, LEAK-19): 13 records appear twice, equal in age, sex and all eight
           blood tests and with the same label; each pair sits on adjacent rows of the UCI file (rows 19/20 to 201/202),
           and none of 500 tables with each column shuffled on its own held a repeated row. They are one record
@@ -96,6 +87,19 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `Selector` ships its classes as words (1 means a liver patient (UCI)).
           Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        patients seen over a period the sources do not state; the file keeps no
+        date, so random patients stand in for the patients to come. The file order carries some structure (lag-1
+        correlation of 0.10 to 0.26 for age and the lab values, none for the label: 0.03) but no cost: held out by
+        file position (contiguous 5-fold, or the last third after the first two) ROC AUC stays within the spread of
+        random splits for logistic regression, random forest and TabPFN 3.5. A dated release would test later patients
+        and whether the two groups were collected in different periods, which this split cannot. Not taken as
+        stationary (Andrej, 2026-11-18): The physiology is stable but the label and the group collection are
+        undocumented, and a flat file order is not a dated measurement; mixed.
+        """,
+    )
 
     # Task
     target = "Selector"

@@ -7,7 +7,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, decode
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+    decode,
+)
 
 # The column dictionary (Andrej, 2026-11-06): our reading of the masked columns from the data (review of 2026-11-05),
 # not Santander's. A column's confidence is the lower of its rule's (what kind of value it is) and its product's.
@@ -251,7 +260,7 @@ class SantanderCustomerSatisfaction(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Anonymized", "Retrospective")
+    data_tags = ("Anonymized",)
     download_description = """
         We use the train.csv from the Kaggle competition.
 
@@ -331,13 +340,18 @@ class SantanderCustomerSatisfaction(AbstractCuratedDataset):
           - Why it stays: the bank keeps one income for all members of a household, so it sees a new customer's
             members, only not their label of the same period, and the link is small. Revisit if Santander states how
             and when the label was taken.
-        - Time basis: Retrospective: one extract of Santander's customers (period not stated; competition 2016), with
-          windows of the last month to three months ending at it; the label is a state the host does not define or
-          date, read as dissatisfaction at the extract, which the use case fills in for customers not yet known to be
-          dissatisfied. No exit trace in the last month: customers whose current account emptied in the last month are
-          dissatisfied at 3.1%, against 1.8% for those who kept a balance (training file). Not tested: customers of a
-          later extract, or a label taken after the extract.
     """
+    time_basis = TimeBasis(
+        "Retrospective",
+        """
+        one extract of Santander's customers (period not stated; competition 2016), with
+        windows of the last month to three months ending at it; the label is a state the host does not define or
+        date, read as dissatisfaction at the extract, which the use case fills in for customers not yet known to be
+        dissatisfied. No exit trace in the last month: customers whose current account emptied in the last month are
+        dissatisfied at 3.1%, against 1.8% for those who kept a balance (training file). Not tested: customers of a
+        later extract, or a label taken after the extract.
+        """,
+    )
 
     # Task
     target = "TARGET"

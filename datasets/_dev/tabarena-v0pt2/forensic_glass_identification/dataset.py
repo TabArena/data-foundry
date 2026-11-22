@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary, TimeBasis, decode
 
 
 class ForensicGlassIdentification(AbstractCuratedDataset):
@@ -58,7 +58,6 @@ class ForensicGlassIdentification(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Timeless",)
     download_description = """
         We get the data from UCI.
 
@@ -74,12 +73,17 @@ class ForensicGlassIdentification(AbstractCuratedDataset):
         - The source file is sorted by class and, within a class, in a few blocks that each run roughly from high to low magnesium; the features predict the order (Spearman 0.67-0.90 per class). We shuffle the rows, so the order carries no information here. Beyond that sort, fragments of one object sit next to each other in the file (Ids 67 and 69 share the refractive index), but holding out blocks of 3 neighbouring rows costs at most 0.06 log loss and leaves the ranking of models unchanged. Near-copies: 6 rows have a copy within 0.08 SD on RI, Mg, Al, K and Ca (all of the same type, 4 of them file neighbours), 75 (35%) within 0.16 SD (95% of the same type, 31% file neighbours; about six times what a within-class shuffle of the columns gives); looking such copies up gains an explicit model 0.03 to 0.045 log loss on random splits. 7 glass objects (14 rows) share an identical refractive index with every oxide within the tolerance of two analyses (7 such pairs where chance gives 1.8); they are not grouped, and the split stays random by decision (splits comment).
         - The target (2026-11-01, CLEAN-25): `Type_of_glass` ships its classes as words (glass.names, 11. Type of
           glass).
-        - Time basis: Timeless: the glass type is a property of the object the fragment came from, and the refractive
-          index and oxides are measured on the fragment, so nothing in a row arrives later. The Home Office laboratory
-          gathered the fragments from casework before September 1987 and no date is published; the Id order is a sort by
-          class and by magnesium within it. Not tested: glass made since then (36% of the rows are non-float window
-          glass, hardly made since the mid-1970s) and today's trace-element casework.
     """
+    time_basis = TimeBasis(
+        "Timeless",
+        """
+        the glass type is a property of the object the fragment came from, and the refractive
+        index and oxides are measured on the fragment, so nothing in a row arrives later. The Home Office laboratory
+        gathered the fragments from casework before September 1987 and no date is published; the Id order is a sort by
+        class and by magnesium within it. Not tested: glass made since then (36% of the rows are non-float window
+        glass, hardly made since the mid-1970s) and today's trace-element casework.
+        """,
+    )
 
     # Task
     splits_comment = """

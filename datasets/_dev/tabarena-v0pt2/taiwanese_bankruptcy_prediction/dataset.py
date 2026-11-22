@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
 
 
 class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
@@ -62,7 +62,6 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the data from the UCI repository and uzip it to a predefined folder.
 
@@ -97,17 +96,22 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
           repeats on the UCI file: random split LightGBM 0.941, kNN (k = 25) 0.884; grouped by rebuilt chains 0.939
           and 0.881; grouped by 10 contiguous file segments 0.934 (sd 0.031) and 0.877. The chains miss most bankrupt
           runs, so the grouped scores bound the leak loosely. Kept with the random split and this note.
-        - Time basis: ForcedIIDFromTemporal: listed Taiwanese companies of 1999-2009, used to screen later statements;
-          no row carries its year or company. The raw file repeats its rows at a regular period (26 to about 200 rows;
-          one period after a row its closest match lies below the 1st percentile of random-pair distances for 34% of
-          rows, 13-17% at other offsets), so the rows look like company-years ordered by industry and year, but no block
-          can be dated (Time: Lost). Leak test across the split: a company's other years sit on the other side, and 69%
-          of bankrupt rows have a bankrupt row one period later (21-25% at other offsets); grouping on rebuilt chains or
-          on file segments moves ROC AUC from 0.941 to 0.939 and 0.934 (LightGBM). Years and company ids would allow a
-          split by time. Not tested: later years and companies not seen in training. Not taken as stationary (Andrej,
-          2026-11-18): The record already names crises within the span and the file holds undatable time structure;
-          bankruptcy relations are documented as period-dependent.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        listed Taiwanese companies of 1999-2009, used to screen later statements;
+        no row carries its year or company. The raw file repeats its rows at a regular period (26 to about 200 rows;
+        one period after a row its closest match lies below the 1st percentile of random-pair distances for 34% of
+        rows, 13-17% at other offsets), so the rows look like company-years ordered by industry and year, but no block
+        can be dated (Time: Lost). Leak test across the split: a company's other years sit on the other side, and 69%
+        of bankrupt rows have a bankrupt row one period later (21-25% at other offsets); grouping on rebuilt chains or
+        on file segments moves ROC AUC from 0.941 to 0.939 and 0.934 (LightGBM). Years and company ids would allow a
+        split by time. Not tested: later years and companies not seen in training. Not taken as stationary (Andrej,
+        2026-11-18): The record already names crises within the span and the file holds undatable time structure;
+        bankruptcy relations are documented as period-dependent.
+        """,
+    )
 
     # Task
     target = "Bankrupt"

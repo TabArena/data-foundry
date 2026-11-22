@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     Source,
     Spectrum,
     TaskSummary,
+    TimeBasis,
     UnitWeight,
 )
 
@@ -55,7 +56,6 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
     # Dataset
     unique_name = "pancreatic_cancer_mouse_detection"
     domain = "medical & healthcare"
-    data_tags = ("Timeless",)
     sources = (
         Source(
             role="publication",
@@ -101,10 +101,15 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
         - Each mouse counts once in the score (Lennart, 2026-11-08; MET-17): the ROC AUC weights a sample by 1 over its mouse's number of samples (`mouse_weight`), a scoring column for the metric only, no feature and no training weight, so the score is the chance that a random sample of a random PanIN mouse scores above a random sample of a random control mouse. The 73 mice gave 1 to 6 samples (median 2, 29 mice one), the label is the mouse's, and each mouse stands for one patient; unweighted, a mouse bled six times counted as six patients. Each sample is still read on its own. On 30 of the shipped splits the weighted ROC AUC ranks 8 untuned predictors (two logistic regressions, random forest, extra trees, two LightGBM, kNN, the class shares; raw spectrum standardized per bin) like the per-sample one at Kendall tau 0.66 per split on average (lowest -0.07, on 24 test mice) and 0.86 for the ranking by the mean over the splits, the same best model on 23 of 30. The weight is for scoring only (MET-15 as amended 2026-11-08): training a regularised logistic regression with it changes the weighted ROC AUC by -0.015 (SE 0.006, lower on 39 of 60 grouped random splits).
         - The spectrum ships raw, as the NCI-FDA page publishes it, and is declared as one (`special_features`, CLEAN-26, 2026-11-02): the container records its 6,771 columns in m/z order, and a benchmark encodes it row by row, by default with MALDIquant's steps (square root, Savitzky-Golay smoothing, SNIP baseline, total ion current). Processing the spectra lifts every model tested by 0.07 to 0.13 ROC AUC (Andrej, 2026-10-21); the page itself recommends "appropriate normalization, baseline correction, and alignment prior to any such analysis".
         - Selection bias (Andrej, 2026-11-11; marker `Selection Bias`): the classes were bled at different ages: mutants 5.5 ± 0.25 months, controls 6.5 ± 0.2 months (Hingorani et al. 2003, Table 2, prospective study), though the text calls the controls "aged-matched"; the pilot study, not in this download, was matched (9.4 against 9.0 months, Table 1). The release has no age per bleed, so the share of the signal that is age cannot be measured; the mouse grouping cannot remove it, since the gap runs between the classes. The measurement itself is alike for both classes: the same 6,771-bin grid and number format in every file, and both classes measured mixed on the same chips (record, 2026-10-21).
-        - Time basis: Timeless: the label is the genotype, fixed at birth; each mouse gave 1 to 6 bleeds at least 5 days
-          apart, undated, all held out with the mouse (Hingorani et al. 2003). Not tested: mice of another cohort, or
-          spectra from another instrument run.
     """
+    time_basis = TimeBasis(
+        "Timeless",
+        """
+        the label is the genotype, fixed at birth; each mouse gave 1 to 6 bleeds at least 5 days
+        apart, undated, all held out with the mouse (Hingorani et al. 2003). Not tested: mice of another cohort, or
+        spectra from another instrument run.
+        """,
+    )
     accepted_check_warnings = {
         "meta_license_unknown": ("The NCI-FDA Clinical Proteomics page gives no licence for the data."),
     }
