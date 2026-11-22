@@ -16,6 +16,7 @@ from data_foundry.v2 import (
     ScoringColumn,
     Source,
     TaskSummary,
+    TimeBasis,
     anonymize_ids,
 )
 
@@ -120,7 +121,6 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("UnseenGroup",)
     download_description = """
         wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/feature_values.arff && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/algorithm_feature_values.arff && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/SAT11-HAND-ALGO/algorithm_runs.arff && mkdir -p local-data-warehouse/sat11_hand_algo_runtime && mv feature_values.arff algorithm_feature_values.arff algorithm_runs.arff local-data-warehouse/sat11_hand_algo_runtime/
     """
@@ -148,11 +148,16 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
           and this definition until 2026-11-18) put 91% of the test instances' families in training. The anonymised
           instance ships as a scoring column only (`instance_id`): PAR10 picks per instance the solver with the lowest
           predicted runtime. Never a feature.
-        - Time basis: UnseenGroup: whole problem families held out. Every solver ran on every instance in one campaign
-          of the 2011 SAT competition with a 5,000 s cutoff; the features exist before any full run, and no run is
-          dated. The competition that first used an instance gives one window with half of the rows in training (2011,
-          52%; 2009 trains on 38%), so no split by competition (SPLIT-14). Not tested: newer solvers.
     """
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        whole problem families held out. Every solver ran on every instance in one campaign
+        of the 2011 SAT competition with a 5,000 s cutoff; the features exist before any full run, and no run is
+        dated. The competition that first used an instance gives one window with half of the rows in training (2011,
+        52%; 2009 trains on 38%), so no split by competition (SPLIT-14). Not tested: newer solvers.
+        """,
+    )
 
     # Task
     target = "runtime"

@@ -16,6 +16,7 @@ from data_foundry.v2 import (
     ScoringColumn,
     Source,
     TaskSummary,
+    TimeBasis,
     anonymize_ids,
 )
 
@@ -113,7 +114,6 @@ class AspPotasscoClassification(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("UnseenGroup",)
     download_description = r"""
         wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/ASP-POTASSCO/algorithm_runs.arff \
         && wget https://raw.githubusercontent.com/coseal/aslib_data/refs/heads/master/ASP-POTASSCO/feature_values.arff \
@@ -135,14 +135,22 @@ class AspPotasscoClassification(AbstractCuratedDataset):
         - Families, not class folders (Andrej, 2026-11-18, the same key as sat11_hand_algo_runtime): some folders hold one generator twice or in parts, and are merged: the 15 problems of the 2007 competition stored both under `ASP-Comp-2007-Lparse/SLparse/` and directly under `FolioSuite/` (20 file names on both sides, 11 with identical features), `HamiltonClumpy`'s five parameter folders, `RLP-150` and `RLP-200`, and the plain and verbose `searchTest` (identical programs). The 96 class folders give 75 families. Grouped on the folders (`task_id` until 2026-11-18), 19% of the test instances (4-45% per fold, 30 folds) had their generator in training. The same problem under another competition's encoding (Towers of Hanoi in 2007, 2009 and 2011; Labyrinth in 2009 and 2011; Schur numbers in 2007 and 2009) stays its own family: a new encoding is the use case.
         - Metric: ASlib's PAR10 of the configuration predicted fastest per instance. ASlib adds the feature costs (`feature_costs.arff`) to the selected runtime; they are the same whichever configuration is picked, so we leave them out.
         - To do: rename the dataset (it is no longer a classification task).
-        - Time basis: UnseenGroup (Andrej, 2026-11-18; `Timeless` before): the use case picks a configuration for a kind
-          of problem not seen before, so whole problem families are held out. Every run comes from the one experimental
-          campaign of claspfolio 2 (Hoos, Lindauer and Schaub 2014) on one machine with a 600 s limit; features and
-          probing runs are computed before the run, and the runtime is a property of the instance and the configuration
-          on that machine. The instance collections are of earlier years, but only ASP-Comp-2007, -2009 and -2011 name
-          one, so no split by time is possible; problem families are held out instead. Not tested: another machine or a
-          newer clasp version.
     """
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the use case picks a configuration for a kind
+        of problem not seen before, so whole problem families are held out. Every run comes from the one experimental
+        campaign of claspfolio 2 (Hoos, Lindauer and Schaub 2014) on one machine with a 600 s limit; features and
+        probing runs are computed before the run, and the runtime is a property of the instance and the configuration
+        on that machine. The instance collections are of earlier years, but only ASP-Comp-2007, -2009 and -2011 name
+        one, so no split by time is possible; problem families are held out instead. Not tested: another machine or a
+        newer clasp version.
+        """,
+        set_by="Andrej",
+        on="2026-11-18",
+        note="`Timeless` before",
+    )
 
     # Task
     target = "runtime"
