@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
 
 
 class AllstateClaimsSeverity(AbstractCuratedDataset):
@@ -59,7 +59,7 @@ class AllstateClaimsSeverity(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Anonymized", "ForcedIIDFromTemporal")
+    data_tags = ("Anonymized",)
     download_description = """
         We use the train.csv from the Kaggle competition.
 
@@ -83,14 +83,19 @@ class AllstateClaimsSeverity(AbstractCuratedDataset):
           RMSE on twin rows only from 0.552 to 0.551, and holding twins out together costs 0.0002 (0.5382 against
           0.5380). The release has no policy id, and a key rebuilt from the values would tie a quarter to almost half
           of the twin groups on a coincidence, so the split does not group on it.
-        - Time basis: ForcedIIDFromTemporal: claims filed one by one over a period Allstate does not state, each cost
-          known after a settlement time that differs by claim; the release keeps no claim date and the id is a random
-          draw (a model tells low from high ids at ROC AUC 0.501; training on the first 80% of ids scores RMSE 0.535
-          against 0.538 to 0.541 on random splits), so random claims stand in for the claims to come. A dated release
-          would allow a split by filing date and show whether `loss` is final. Not taken as stationary (Andrej,
-          2026-11-18): Claim severity is driven by prices, litigation and settlement practice, all documented to drift;
-          no domain reason makes later claims interchangeable.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        claims filed one by one over a period Allstate does not state, each cost
+        known after a settlement time that differs by claim; the release keeps no claim date and the id is a random
+        draw (a model tells low from high ids at ROC AUC 0.501; training on the first 80% of ids scores RMSE 0.535
+        against 0.538 to 0.541 on random splits), so random claims stand in for the claims to come. A dated release
+        would allow a split by filing date and show whether `loss` is final. Not taken as stationary (Andrej,
+        2026-11-18): Claim severity is driven by prices, litigation and settlement practice, all documented to drift;
+        no domain reason makes later claims interchangeable.
+        """,
+    )
 
     # Task
     target = "loss"

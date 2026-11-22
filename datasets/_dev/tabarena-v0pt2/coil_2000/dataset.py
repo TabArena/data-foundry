@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -1097,7 +1097,6 @@ class Coil2000(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
 
@@ -1120,14 +1119,19 @@ class Coil2000(AbstractCuratedDataset):
           each level is carries the words, a score without them is a number): 55 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 2 scores with no words per level are numbers (`SCORES`):
           `averageIncome`, `purchasingPowerClass`.
-        - Time basis: ForcedIIDFromTemporal: one undated extract of a Dutch insurer's customer book (before March 2000);
-          the label is whether the customer holds a caravan policy at the extract, and the use case looks forward, to
-          purchases after a mailing, which one extract cannot test, so the split is forced until a dated release or the
-          target's timing is known. The challenge's evaluation customers are another part of the same extract. Not taken
-          as stationary (Andrej, 2026-11-18): A priced insurance product sold through mailings to a later population,
-          with a holding standing in for a purchase; nothing in the mechanism makes earlier and later customers
-          interchangeable.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        one undated extract of a Dutch insurer's customer book (before March 2000);
+        the label is whether the customer holds a caravan policy at the extract, and the use case looks forward, to
+        purchases after a mailing, which one extract cannot test, so the split is forced until a dated release or the
+        target's timing is known. The challenge's evaluation customers are another part of the same extract. Not taken
+        as stationary (Andrej, 2026-11-18): A priced insurance product sold through mailings to a later population,
+        with a holding standing in for a purchase; nothing in the mechanism makes earlier and later customers
+        interchangeable.
+        """,
+    )
 
     accepted_check_warnings = {
         "dataset_duplicate_rows": "Distinct customers of one postal area with the same few products (21% hold none); "

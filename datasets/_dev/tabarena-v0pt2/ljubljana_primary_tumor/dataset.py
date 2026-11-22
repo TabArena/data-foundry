@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -67,7 +67,6 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We get the data from UCI.
 
@@ -88,12 +87,17 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
           Under random 3-fold splits 20% of test patients have an exact copy in training.
         - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are
           ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-        - Time basis: ForcedIIDFromTemporal: cancer patients of the Institute of Oncology, Ljubljana, seen before 1986
-          over an unstated period; the UCI file is sorted by site and keeps no date, so whether the site shares or the
-          diagnostic work-up drifted cannot be measured. Years of diagnosis would allow a split by period. Not taken as
-          stationary (Andrej, 2026-11-18): An old one-time study used today with a changed work-up is a long span in a
-          changing domain.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        cancer patients of the Institute of Oncology, Ljubljana, seen before 1986
+        over an unstated period; the UCI file is sorted by site and keeps no date, so whether the site shares or the
+        diagnostic work-up drifted cannot be measured. Years of diagnosis would allow a split by period. Not taken as
+        stationary (Andrej, 2026-11-18): An old one-time study used today with a changed work-up is a long span in a
+        changing domain.
+        """,
+    )
 
     # Task
     target = "class"

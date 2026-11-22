@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, TimeBasis
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -78,7 +78,6 @@ class Diamonds(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Retrospective",)
     download_description = """
         We download the CSV directly from the ggplot2 GitHub repository.
 
@@ -90,9 +89,6 @@ class Diamonds(AbstractCuratedDataset):
           error matters relative to the price.
         - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are
           ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-        - Time basis: Retrospective: one scrape of the search site diamondse.info in February 2007 (Wickham, R-help,
-          April 2023); each row a listing's grading and its asking price at that moment; the use case prices a stone
-          against the same day's price list. Not tested: prices after 2007.
         - Split by stone (2026-11-12, Andrej): 21,493 rows (40%) share carat, colour, clarity,
           depth, table and z (height) with another row, mostly in pairs whose length and width are swapped: one stone
           in two price lists of the scrape. In 98% of the 9,747 swapped pairs the dearer price is the cheaper one
@@ -103,6 +99,14 @@ class Diamonds(AbstractCuratedDataset):
           146 exact copies (features and price) fall into one stone each. Untuned LightGBM, 3 x 3 folds, RMSLE:
           random 0.0853, by stone 0.0860.
     """
+    time_basis = TimeBasis(
+        "Retrospective",
+        """
+        one scrape of the search site diamondse.info in February 2007 (Wickham, R-help,
+        April 2023); each row a listing's grading and its asking price at that moment; the use case prices a stone
+        against the same day's price list. Not tested: prices after 2007.
+        """,
+    )
 
     # Task
     target = "price"

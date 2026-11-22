@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Grouping, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Grouping, Metric, Source, TaskSummary, TimeBasis
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
 
@@ -123,7 +123,7 @@ class SantanderTransactionValue(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Anonymized", "ForcedGroupedFromTemporal")
+    data_tags = ("Anonymized",)
     download_description = """
         We use the train.csv from the Kaggle competition.
 
@@ -188,14 +188,19 @@ class SantanderTransactionValue(AbstractCuratedDataset):
           test file. Only a method that compares test rows with each other can read it; the grouping's context is
           `none` (each row is predicted from its own values), and the splits comment states the protocol line that
           no model step may use other test rows (LEAK-9, as for medical_facility_operational_data and fremtpl2).
-        - Time basis: ForcedGroupedFromTemporal: snapshots of customers at different steps, the target two steps after
-          the newest lag column, no calendar date: the steps of different customers cannot be aligned, only a customer's
-          own snapshots are ordered, through the shifted columns. A dated release would allow windows by calendar step,
-          testing later steps and the shocks that the customers of one month share, which the split by customer leaves
-          on both sides; it should be used if Santander releases the dates. Not taken as stationary (Andrej,
-          2026-11-18): Andrej's own earlier review already ruled out a stationary relation because transaction values
-          move with the period; an order within each entity alone does not argue for interchangeable later samples.
     """
+    time_basis = TimeBasis(
+        "ForcedGroupedFromTemporal",
+        """
+        snapshots of customers at different steps, the target two steps after
+        the newest lag column, no calendar date: the steps of different customers cannot be aligned, only a customer's
+        own snapshots are ordered, through the shifted columns. A dated release would allow windows by calendar step,
+        testing later steps and the shocks that the customers of one month share, which the split by customer leaves
+        on both sides; it should be used if Santander releases the dates. Not taken as stationary (Andrej,
+        2026-11-18): Andrej's own earlier review already ruled out a stationary relation because transaction values
+        move with the period; an order within each entity alone does not argue for interchangeable later samples.
+        """,
+    )
 
     # Task
     target = "target"

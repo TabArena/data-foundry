@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, TimeBasis
 
 # A re-entry of a test: a row at the same age as an earlier row of another mix, with all seven amounts within 1 kg and
 # the strength within 0.01 MPa (rows 936 to 1029 of the UCI file re-enter rows 721 to 935).
@@ -72,7 +72,6 @@ class ConcreteCompressiveStrength(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Timeless",)
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
 
@@ -85,10 +84,15 @@ class ConcreteCompressiveStrength(AbstractCuratedDataset):
         - Re-entries dropped (Andrej, 2026-11-12): rows 936 to 1029 of the UCI file re-enter tests of rows 721 to 935, one source entered from two documents, the amounts to 0.1 kg instead of whole kg. A row is a re-entry when an earlier row of another mix has the same age, all seven amounts within 1 kg and the strength within 0.01 MPa (median difference 0.003 MPa, at most 0.007; two tests of one exact mix at one age differ by SD 1.6 MPa). We keep the first entry and drop the 92 re-entries (87 of them in rows 936 to 1029): 1,030 to 938 rows, 428 to 338 mixes. With them, a re-entry fell into another mix group than its twin, and 18% of the test rows met their own record in training; grouping each copy with its twin instead scores the same (R^2 within 0.005) but counts 92 tests twice. The 48 row pairs within 1 kg at one age with another strength (median difference 2.9 MPa) are separate tests and stay; they can sit on both sides of the split.
         - Note: 34 rows repeat the features of another row, a mix tested again at the same age (25 with the same strength, 9 with another); they stay, and the grouped split keeps them in the fold of their mix.
         - The UCI file is ordered by source study: decimals, units and age schedules mark about 11 blocks (the 17 sources of Yeh 1998 cannot be told apart cleanly). The mix split does not test a new laboratory: grouped by block, TabPFN R^2 0.70 against 0.91 by mix.
-        - Time basis: Timeless: laboratory tests of designed mixes (Yeh 1998); the amounts are chosen before casting and
-          the strength is measured at the stated age, a feature; no test date is recorded. Not tested: mixes of a
-          laboratory outside the compilation, with its own materials and curing.
     """
+    time_basis = TimeBasis(
+        "Timeless",
+        """
+        laboratory tests of designed mixes (Yeh 1998); the amounts are chosen before casting and
+        the strength is measured at the stated age, a feature; no test date is recorded. Not tested: mixes of a
+        laboratory outside the compilation, with its own materials and curing.
+        """,
+    )
 
     # Task
     target = "ConcreteCompressiveStrength"

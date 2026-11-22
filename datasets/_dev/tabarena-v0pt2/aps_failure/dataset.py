@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Grouping, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Grouping, Metric, Source, TaskSummary, TimeBasis
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
 
@@ -124,7 +124,7 @@ class ApsFailure(AbstractCuratedDataset):
             name="UCI 414, the re-hosted challenge zip",
         ),
     )
-    data_tags = ("ForcedGroupedFromTemporal", "Anonymized")
+    data_tags = ("Anonymized",)
     download_description = """
         We download UCI's copy (https://doi.org/10.24432/C5V60Q) of the IDA 2016 Industrial Challenge files.
 
@@ -160,16 +160,21 @@ class ApsFailure(AbstractCuratedDataset):
             test rows with a linked row in training, 25.2% under random folds on all 76,000 rows (cost per
             row 1.145), 5.1% with one row per copied read-out and random folds (1.530), 0.05% split by truck (1.625;
             1.539 with each truck counted once).
-        - Time basis: ForcedGroupedFromTemporal: failed trucks read out over a period Scania does not state; the release
-          has no date, and the challenge's two files are not shown to be two periods (near copies across them have the
-          larger counters in the test file in 2,237 pairs, the smaller in 2,220), and the one counter that changes
-          between copies, `bx_000`, is a cumulative usage counter that moves by a small step in either direction, no
-          clock. Which component fails can move with season and fleet, so whole trucks held out stand in for the trucks
-          to come. Not tested: trucks read out later than the training trucks, which a dated release (as
-          `scania_component_x`) would allow. Not taken as stationary (Andrej, 2026-11-18): A physical-measurement
-          argument exists, but the label depends on fleet and workshop practice that the definition itself says moves
-          with season and fleet, and no comparable dated set tested flat.
     """
+    time_basis = TimeBasis(
+        "ForcedGroupedFromTemporal",
+        """
+        failed trucks read out over a period Scania does not state; the release
+        has no date, and the challenge's two files are not shown to be two periods (near copies across them have the
+        larger counters in the test file in 2,237 pairs, the smaller in 2,220), and the one counter that changes
+        between copies, `bx_000`, is a cumulative usage counter that moves by a small step in either direction, no
+        clock. Which component fails can move with season and fleet, so whole trucks held out stand in for the trucks
+        to come. Not tested: trucks read out later than the training trucks, which a dated release (as
+        `scania_component_x`) would allow. Not taken as stationary (Andrej, 2026-11-18): A physical-measurement
+        argument exists, but the label depends on fleet and workshop practice that the definition itself says moves
+        with season and fleet, and no comparable dated set tested flat.
+        """,
+    )
 
     # Task
     target = TARGET

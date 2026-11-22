@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Metric,
     Source,
     TaskSummary,
+    TimeBasis,
     decode,
     drop_columns,
     set_missing,
@@ -837,7 +838,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("UnseenGroup",)
     download_description = r"""
         No automatic download possible!
 
@@ -959,9 +959,14 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
           `pri_mobile`, `pra_gender`; 7 scores with no words per level are numbers (`SCORES`): `quintile`,
           `pra_class_space_2`, `pra_satisfaction_support`, `ses_cat`, `ses_proxy`, `teacher_familiarity_with_child`,
           `teacher_selfcare_total`.
-        - Time basis: UnseenGroup: the use case predicts for a facility not yet assessed, so the split holds out
-          facilities and does not weigh the assessment round (dropped as `data_year`). It cannot test a later round.
     """
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the use case predicts for a facility not yet assessed, so the split holds out
+        facilities and does not weigh the assessment round (dropped as `data_year`). It cannot test a later round.
+        """,
+    )
 
     # Task
     target = "child_total_elom"
