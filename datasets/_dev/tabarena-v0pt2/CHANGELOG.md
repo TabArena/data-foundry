@@ -1,5 +1,20 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-22, the split-rules review: the time basis as one declaration (no container built)
+
+Lennart's review of the split rules, applied across the definitions of the split work:
+- Every definition with a time basis declares it as `time_basis = TimeBasis(tag, reason, set_by=..., on=..., note=...)`
+  (109 definitions) and, where the use case holds out a group the data cannot key, `group_basis = GroupBasis(reason)`
+  (2). The tag left `data_tags` and the hand-written `- Time basis:` / `- Group basis:` bullet left `curation_comments`;
+  the build renders the same bullet, so a container carries what it did. The reasons, people, dates and notes are kept
+  word for word; a rule id in the brackets (`SPLIT-8`, `SPLIT-32`) was dropped.
+- bad_customer_detection: its `StationaryRelation` names the person and date of the change that set it (Andrej,
+  2026-11-20), since only a person sets that tag.
+- ai4d_lab_tanzania_tourism_classification_challenge: its `ForcedIIDFromTemporal` takes its reason from its own splits
+  comment (no date or order documented, a forward use case, a dated survey wave would test drift).
+- The old way is refused from here on (`ALLOW_UNSTRUCTURED` false), and every definition record names one collection
+  type (`STRICT_COLLECTION_TYPES` true).
+
 ## 2026-11-19, split check marks of the evening (no container built)
 
 Andrej's decisions on the split check page, applied in the definitions (each with its record's Resolved turn and CC line):
