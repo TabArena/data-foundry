@@ -1328,8 +1328,14 @@ def test_leak_probes_command_runs_the_forced_split_tests(leak_probe, tmp_path, w
     old = '        df["y"] = df["y"].map({0: "no", 1: "yes"})\n'
     assert old in body
     body = body.replace(old, old + '        df["year"] = 2001 + df["row_id"] % 4\n')
+    body = body.replace("TaskSummary, drop_columns\n", "TaskSummary, TimeBasis, drop_columns\n", 1)
     write_definition(
-        root, body=body.replace('    target = "y"\n', '    data_tags = ("ForcedIIDFromTemporal",)\n    target = "y"\n')
+        root,
+        body=body.replace(
+            '    target = "y"\n',
+            '    time_basis = TimeBasis("ForcedIIDFromTemporal", "time lost; a dated release would test.")\n'
+            '    target = "y"\n',
+        ),
     )
     script = _import("leak_probes")
     out = tmp_path / "out"
