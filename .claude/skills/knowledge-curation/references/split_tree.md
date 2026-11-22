@@ -26,8 +26,10 @@ windows are cut on and the gap.
   case. Where it matches the leaf, its official periods, gap and training history fill in the leaf (SPLIT-19); where
   it differs, the leaf decides, and the `splits_comment` says what the source prescribed and why it does not fit the
   use case (SPLIT-5), as a departure for a reviewer.
-* `AssumedStationaryRelation` is only ever reached through a person's answer (SPLIT-32): offer it with the facts for
-  and against and recommend it if you like, but answer "no" yourself unless a person has given the reason.
+* `StationaryRelation` and `AssumedStationaryRelation` are only ever reached through a person's answer (SPLIT-32):
+  run the stationary-relation test and offer `StationaryRelation` with its reading, or offer `AssumedStationaryRelation`
+  with the facts for and against, and recommend either if you like, but answer "no" yourself unless a person has signed
+  off the measurement or given the reason.
   The same holds for the forced step's temporal-leakage question: only a person answers "no" there.
 * Where a definition ships another split than its leaf, its `splits_comment` says which leaf the tree gives and why
   the definition departs; the departure goes to a reviewer like a forced leaf. The departures a reviewer has not
@@ -54,8 +56,9 @@ windows are cut on and the gap.
   nothing can be measured, a person's domain or use-case reason (`AssumedStationaryRelation`); a unit with several
   rows makes either grouped by the unit. A relation measured not flat is held out by whole periods, enough to
   approximate the temporal split, or the task is `Too Small` (SPLIT-16): never the unit or random. With nothing
-  measurable and no reason, whole periods are held out where the data has enough for the task's repeats, then the unit
-  where it has several rows and the use case meets new units, then random (SPLIT-8, SPLIT-32).
+  measurable and no reason, and a person willing to take the risk of temporal leakage, the unit is held out where it
+  has several rows and the use case meets new units, else whole periods where the data has enough for the task's
+  repeats, else random (SPLIT-8, SPLIT-32).
 * **The gap.** Under every temporal leaf the gap follows SPLIT-10: late labels (a gap of about the delay, or training
   only on cases whose outcome is known before the window), a planning lead the use case states (a forecast issued
   ahead), an outcome window still open at the next scoring date (a policy year's claims when the next tariff is set). No
@@ -485,11 +488,13 @@ time (Time: Inferred); no → the forced split below)_
   stationary-relation test; where it holds none, reason from the domain's mechanism and similar measured datasets and
   offer `AssumedStationaryRelation` to a person in the review. Measured: the stationary-relation test across the periods
   the data holds (dated or a rebuilt order), over the longest span the source or a parent covers, in the `Time basis:`
-  line; assumed: a person's domain or use-case reason, only where no two periods can be measured (the time lost),
-  written as AssumedStationaryRelation (<person>, <date>): <reason>; measured not flat: one period not flat for one
-  model, or a class share that moves twofold; nothing measurable: no two periods, or an inconclusive test, and no person
-  has given a reason)_
-  - yes, measured flat across the periods held →
+  line, over the newest three periods whatever their training share (a reading on fewer is partial); flat: signed off
+  by a person, written as StationaryRelation (<person>, <date>): <measurement>; assumed: a person's domain or use-case
+  reason, only where nothing can be measured (the time lost, or an inconclusive test), written as
+  AssumedStationaryRelation (<person>, <date>): <reason>; measured not flat: one period or the gap averaged over the
+  periods not flat for one model, or a class share that moves twofold; nothing measurable: no two periods, or an
+  inconclusive test, and no person has given a reason)_
+  - yes, measured flat across the periods held and signed off by a person →
     **Does a unit have several rows, and does the use case meet new units?** _(data and documentation; reads USE-10:
     a unit id that repeats, recorded or rebuilt exactly from the data (SPLIT-24: a household, a client, a policy, a
     patient), and the use case: new units → grouped; more rows of units it holds, or one row per unit → random.
@@ -501,25 +506,26 @@ time (Time: Inferred); no → the forced split below)_
     - no: one row per unit, or known units in use → **Random · `StationaryRelation`**. No usable windows, but the
       relation is measured flat across the periods held: random, the measurement in the `Time basis:` line; a later
       period untested. Examples: bad_customer_detection.
-  - yes, assumed by a person (nothing to measure) →
+  - yes, assumed by a person (nothing measurable: the time lost, or an inconclusive test) →
     **Does a unit have several rows, and does the use case meet new units?** _(data and documentation; reads USE-10:
     a unit id that repeats, recorded or rebuilt exactly from the data (SPLIT-24: a household, a client, a policy, a
     patient), and the use case: new units → grouped; more rows of units it holds, or one row per unit → random.
     Exact copies are dropped, not grouped (LEAK-19); repeats that matter but cannot be identified retire the dataset
     (SPLIT-25), for a reviewer (orientation: Entities: Recur))_
     - yes: several rows, new units in use → **Grouped · `AssumedStationaryRelation` (the unit)**. No usable windows
-      and nothing to measure, and a person gave a domain or use-case reason to treat later samples as interchangeable:
+      and nothing measurable, and a person gave a domain or use-case reason to treat later samples as interchangeable:
       whole units held out, as a unit has several rows. No v0.2 definition reaches it yet.
     - no: one row per unit, or known units in use → **Random · `AssumedStationaryRelation`**. No usable windows and
-      nothing to measure, and a person gave a domain or use-case reason to treat later samples as interchangeable:
+      nothing measurable, and a person gave a domain or use-case reason to treat later samples as interchangeable:
       random. Examples: distribution_transformers_at_cauca_department.
   - measured not flat →
     **Can enough meaningful groups be built without entity leakage to approximate the temporal split?** _(data and
     documentation; reads SPLIT-16 and SPLIT-8: whole periods of a date, a phase, a round, a presentation or a rebuilt
     order, held out as a temporal split would hold out its windows; enough that groupings of whole periods into three
     folds give the repeats SPLIT-33 sets (four periods for 3 repeats, five for 10 or 20), each period with enough rows
-    and, under a ranking metric, at least one positive (SPLIT-16); and no entity on both sides: where units recur across
-    periods and the use case meets new units, each unit's rows fit in one period or the unit goes with its period
+    and, under a metric one class leaves undefined, at least one positive (SPLIT-16); and no entity on both sides:
+    where units recur across periods and the use case meets new units, each unit's rows fit in one period or the unit
+    goes with its period
     (USE-10, LEAK-17), else the groups do not count. No unit or random fallback: the relation moves with time)_
     - yes → **Grouped · `ForcedGroupedFromTemporal` (periods, measured not flat)**. Forced and measured not flat: no
       usable windows, but enough whole periods to approximate the temporal split: whole periods held out, training
