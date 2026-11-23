@@ -229,8 +229,9 @@ A metric input known at the prediction point (a weight that is a function of the
   tag to `data_tags` and renders the reason as the `- Time basis: <tag>: <reason>` bullet of `curation_comments`, which
   the container and the README carry. The tag is a use-case prototype, `"Timeless"` (the target is a fixed property of
   the item, and the data has no time dimension, or its time changes only which items are held, as in a catalogue whose
-  entry date does not decide the split), `"Retrospective"` (the data is one snapshot of a moment or period, and the
-  use case fills in what is missing for that time, not a later one), `"StationaryRelation"` (the use case scores later
+  entry date does not decide the split), `"RetrospectiveFillIn"` (the data is one snapshot of a moment or period, and
+  the use case fills in what is missing for that time, not a later one; the old name `"Retrospective"` is still read,
+  with a note, until every definition uses the new one), `"StationaryRelation"` (the use case scores later
   units, too few periods give the windows SPLIT-14 asks for, and the stationary-relation test over the periods held,
   dated or a rebuilt order, reads the relation flat; it replaces a forced tag) or `"UnseenGroup"` (the use case aims at
   groups the data does not hold, a site, a well, a protein or a chemical family, not at a later period; it needs a
@@ -265,8 +266,12 @@ A metric input known at the prediction point (a weight that is a function of the
   (`data_foundry.time_basis.ALLOW_UNSTRUCTURED` is false); `dataset check` still notes it on an old container
   (`meta_time_basis_unstructured`).
   `dataset check` also notes a split that is not temporal and says nothing about why, and date columns in the data of
-  such a split unless the basis is `Retrospective` or a forced tag's line gives the reason; it prints where the
+  such a split unless the basis is `RetrospectiveFillIn` or a forced tag's line gives the reason; it prints where the
   curation record's collection type and facts contradict the definition (`data_foundry.curation.consistency`).
+  `split_leaf = "L-FILL.unit"` names the leaf of the split decision tree
+  ([split_tree.md](../../knowledge-curation/references/split_tree.md), SPLIT-36) the split comes from, by its ID; the
+  tests check that the leaf exists and that the definition ships its split and tag, unless the tree lists the
+  definition as a departure from it.
   `"2ndTierData"` is retired (2026-10-21): old containers that carry it still load, but a new definition refuses it;
   write the doubts as a finding and the fit as `approximate`.
 * `problem_type`: "Regression" to `"regression"`, "Binary Classification" to `"binary_classification"`,
