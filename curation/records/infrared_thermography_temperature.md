@@ -21,7 +21,7 @@ year: '2023'
 collection_period: Nov 2016 - May 2018
 domain: medical & healthcare
 required_split:
-- Random (IID)
+- Temporal (NON-IID)
 problem_type: Regression
 original_data_state: One Table
 source_links:
@@ -66,13 +66,15 @@ CC (2026-11-17, Andrej): collection type `Dated Event Log` instead of `Experimen
 
 CC (2026-11-20, Andrej): the random folds stay `StationaryRelation`, now on the stationary-relation test over the two two-month windows that train on half the subjects (flat for Kumo-Tabular); the window at the set-up change (Nov-Dec 2017, 48%) reads not flat and is named (Review issue 4, C).
 
+CC (2026-11-23, Andrej): temporal split, three two-month windows on the visit date from 15 March 2018, 15 January 2018 and 15 November 2017 (89%, 60% and 53% train; 108, 291 and 75 test subjects), no gap, the date no input (Review issue 5, B). The stationary-relation test reads Nov-Dec 2017 not flat, so random folds no longer stand; the 48% exception allowed for windows on the 1st is not needed, since mid-month starts keep every window on half the subjects or more and the newest window holds the last visits. Infrared leaves the departures table. `dataset check`: 0 errors, 0 warnings (below-target accepted). Not rebuilt.
+
 ## Review
 
 **Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
 **Main points:** Settled: issue 1 withdrawn (2026-11-13); collection type `Dated Event Log` (issue 3, a, 2026-11-17);
 the random folds stay `StationaryRelation`, on the stationary-relation test over the two two-month windows (issue 4,
-C, 2026-11-20); issue 2 superseded by issue 4 (2026-11-23). Open since 2026-11-23: issue 5 (the departure, now that the newest three periods read not flat).
+C, 2026-11-20); issue 2 superseded by issue 4 (2026-11-23). Temporal since 2026-11-23: three two-month windows on the visit date (issue 5, B). Nothing is left open.
 
 **Issues for Andrej:**
 
@@ -317,6 +319,8 @@ C, 2026-11-20); issue 2 superseded by issue 4 (2026-11-23). Open since 2026-11-2
 
    [^dep-newest]: **SPLIT-32** (Should; amended 2026-11-22): "The newest three are tested whatever their training share: SPLIT-14's floor is for a split's windows, not for this test, and a reading on fewer periods is partial, never the verdict." The relation "is not flat when one period or the averaged gap is not flat for one model".
    [^dep-notflat]: **SPLIT-32** (Should): "Where the windows can be built, the split is temporal however flat the relation"; for a forced split, "a relation measured not flat is held out only by whole periods, else `Too Small` (SPLIT-16)". **SPLIT-14** (Must): "A temporal task has at least 3 windows (splits). Every window trains on at least 50% of the data. A window under 50% is the curator's exception for that dataset, down to 30%".
+
+   **Resolved (2026-11-23, Andrej):** B, the split the tree gives, with the 48% exception allowed. As implemented, the windows start on the 15th (cutoffs 2018-03-15, 2018-01-15, 2017-11-15; `TemporalSplits(window=2, unit="months", min_train_fraction=0.5)`, `time_of="label"` on `VisitDate` from the subject id), because the newest window must hold the visits of May 2018; this keeps every window on 53% or more, so the exception is not used. The `StationaryRelation` time basis is removed, the splits comment and notes give the windows and the test, `required_split` is Temporal, and the row leaves the departures table. Not rebuilt.
 
 ## Reference
 
