@@ -1,5 +1,38 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-23, the curator's dataset review decisions of 2026-11-04 to 11-13, carried onto the split work (no container built)
+
+Andrej's decisions from his review of the v0.2 datasets that had not reached a definition, applied onto the newest
+version of each (the splits and time bases of the split work kept). Each record's `## Review` gains the issues with
+their Resolved lines and the CC lines; decisions a later one replaced are marked so and not applied.
+- Columns dropped: student_portuguese_performance `absences`; amazon_employee_access `ROLE_CODE` (copy of
+  `ROLE_TITLE`); credit_approval `A4` (relabelled copy of `A5`); hr_analytics `training_hours`;
+  in_vehicle_coupon_recommendation `direction_opp` (1 - `direction_same`); hotel_booking_demand `DepositType`;
+  heloc `MSinceMostRecentInqexcl7days`; blood_transfusion `TotalBloodDonated` (250 x `NumberOfDonations`);
+  bank_marketing `contact`; lending_club the 14 credit-report fields first reported in December 2015;
+  ecoli_proteins `aac`; gallstone_disease `Hyperlipidemia`. Restored: mercedes_benz_greener_manufacturing `X3`,
+  `X6`, `X8`.
+- Rows and values: heloc 588 empty credit reports dropped (9,871 rows); hepatitis_c_prediction 7 duplicated donor
+  panels dropped (601 rows); mercari_price_suggestion 874 listings priced $0 dropped; gallstone_disease the 77 rows
+  of the second recording route dropped (242 rows) and five lab columns at their measured precision;
+  heart_failure_followup_survival death within 60 days (291 rows) and 91 source-filled lab values missing again;
+  give_me_some_credit codes 96/98 and an age of 0 missing; dementia_prediction eTIV and ASF at one precision.
+- Targets and features: gallstone_disease decoded with 1 = gallstones; hepatitis_survival_prediction `histology`
+  renamed `physician_prognosis`, source and coding corrected; rossmann_store_sales 32 calendar day counters (47
+  features) and competitor fields blanked before the competitor opened; lending_club training sides leave out loans
+  of borrowers who borrow again in the test quarter (rebuilt borrower key).
+- Markers and fit: `Class-dependent Recording` on gallstone_disease, heart_failure_followup_survival, heloc and
+  dementia_prediction; kickstarter `Selection Bias` and fit approximate; gallstone_disease fit approximate;
+  ecoli_proteins `Outdated`; student_portuguese_performance loses `No Good Target / Scientific Discovery`;
+  fiat_500 and amazon_employee_access domain business & marketing; dementia_prediction suggestion `Yes`.
+- Notes and documentation: credit_g (UCI 573, period, sample), anes_voting_2026 (label arrival, panel links),
+  ieee_fraud_detection (gap from the chargeback delay), sberbank_housing_market_forecasting (neighbourhood values
+  kept), hotel_booking_demand (90-day rule and `ADR` measured), mercedes_benz_greener_manufacturing (bench time),
+  kickstarter (funded share by launch year), protein_model_quality_rf_pcp (60-split scores),
+  asp_potassco_classification (value study kept; baseline numbers open), dementia_prediction (OASIS licence).
+- Rule: LEAK-27 (fitted scores) amended: drop such a column and keep the task when the rest is still a real one;
+  yeast's record gets a re-check question.
+
 ## 2026-11-22, the split-rules review: the time basis as one declaration (no container built)
 
 Lennart's review of the split rules, applied across the definitions of the split work:

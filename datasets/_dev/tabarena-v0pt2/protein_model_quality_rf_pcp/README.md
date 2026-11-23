@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: protein_model_quality_rf_pcp
 container_format: 2
-checksum: v2:c17d9e976dc3ee660c9e08b6fdbb744921c945626d6f2e0cf33a166a3e8dc6fc
+checksum: v2:5fafcacddb15a639e4680686c439cf47d8414f82353b46f3bc2da4b58fd69796
 build:
   uuid: 01a18ba2-013a-7001-a61c-686e78b112d7
   checksum: v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a
@@ -76,7 +76,7 @@ decisions: []
 
 Regression of `GDT`, scored with `mean_group_pearsonr` on grouped splits by `protein_id`. 94,083 rows and 6 features. Source: Other (2014).
 
-Built as `01a18ba2-013a-7001-a61c-686e78b112d7` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:c17d9e976dc3ee660c9e08b6fdbb744921c945626d6f2e0cf33a166a3e8dc6fc`, so the build is stale. See [Build](#build).
+Built as `01a18ba2-013a-7001-a61c-686e78b112d7` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:5fafcacddb15a639e4680686c439cf47d8414f82353b46f3bc2da4b58fd69796`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -202,9 +202,12 @@ The first 5 of 94,083 rows of the final frame (random rows: the frame is shuffle
   (superseded 2026-11-05: 94,083 rows, the 1,011 relaxed natives leave too, CC below)
   and the three documented ambiguous zero-RMSD cases. Preserve source values and the
   historical approximate fit; no modern-generator or protein-family claim is made.
-- Models differ on the declared metric (TP-3): on the nine shipped splits, untuned LightGBM scores 0.322 and
+- Models differ on the declared metric (TP-3): on the 60 shipped splits (20 x 3), untuned ridge scores
+  0.328, a random forest 0.322 and LightGBM 0.320, an order that holds in every block of ten repeats
+  (2026-11-12). On the nine splits of the earlier 3 x 3 build, untuned LightGBM scored 0.322 and
   ridge 0.272, LightGBM higher in all nine (2026-11-05, without the relaxed natives; 0.355 against 0.294 with
-  them, review panel 2026-11-04). The earlier five-fold comparison
+  them, review panel 2026-11-04); why the two runs order ridge and LightGBM differently was not
+  examined. The earlier five-fold comparison
   (ridge RMSE 0.19318568 against LightGBM 0.17894541, 7.37%) was measured for the RMSE fallback and is
   historical.
 - The author archive has 99,987 complete rows. Exclude 4,893 IDs beginning native_ or ending _native.pdb
@@ -275,19 +278,21 @@ The first 5 of 94,083 rows of the final frame (random rows: the frame is shuffle
   within 0.03 of a same-size protein split on CASP8 and CASP9 and 0.03 to 0.07 lower on CASP7; CASP10 scores
   about 0 under any split that trains on the earlier rounds, a change of descriptor convention rather than
   time (splits_comment).
+- CC (2026-11-12, Andrej): twenty repeats of the protein split, 20 x 3 (SPLIT-33): the metric scores one
+  correlation per protein, so the split count counts the 445 proteins, 297 on the train side. On the earlier
+  3 x 3, two of three disjoint blocks of three repeats ranked LightGBM and the random forest in the opposite
+  order to the full 20 x 3 run; twenty repeats rank ridge, forest and LightGBM the same way in every subset
+  (LightGBM - ridge -0.008, t -4.5 across repeats).
 - Outdated (Lennart, 2026-11-04): six global descriptors of 2002-2012 server models; since CASP15 the
   standard is the predictor's own confidence (pLDDT). Kept as a small grouped biology task, with no new features.
 - First release is the August 2014 source archive; the paper appeared online in December 2014 and in 2015.
   The year denotes the first release, not the paper's issue year. No source metadata is overwritten silently.
-- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case ranks the candidates of a
-  protein whose structure is not known, so the split holds out whole proteins. A candidate's GDT against its
-  reference is fixed once both exist; windows by CASP round score within 0.03 of the protein split on CASP8 and
-  CASP9. It cannot test candidates from later prediction methods (the descriptors come from 2002-2012 server
-  models).
+- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case ranks the candidates of a protein whose structure is not known, so the split holds out whole proteins. A candidate's GDT against its reference is fixed once both exist; windows by CASP round score within 0.03 of the protein split on CASP8 and CASP9. It cannot test candidates from later prediction methods (the descriptors come from 2002-2012 server models).
 
 ## Splits
 
-Default repeated three-fold grouped evaluation with seed 4267. All rows of each recovered target key stay
+Twenty repeats of three-fold grouped evaluation with seed 4267: the metric scores one correlation per
+protein, so the split count counts proteins (297 on the train side). All rows of each recovered target key stay
 together, including verified same-protein accession aliases. The selected GDT task and preserved target alternatives share test groups;
 membership is verified explicitly.
 All 342 CASP identities are verified; three retain source IDs. Sequence-family independence is not claimed.
@@ -452,4 +457,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | ea35638cb7c9dc88ff6b7f6f6316594207a68393 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:c17d9e976dc3ee660c9e08b6fdbb744921c945626d6f2e0cf33a166a3e8dc6fc` |
+| stale | yes: the definition now gives checksum `v2:5fafcacddb15a639e4680686c439cf47d8414f82353b46f3bc2da4b58fd69796` |

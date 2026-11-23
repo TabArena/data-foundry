@@ -162,6 +162,9 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         - We removed text data from the "time" feature to make it numeric.
         - We drop constant columns.
         - We fixed a typo in the feature names.
+        - `direction_opp` dropped (Andrej, 2026-11-10; CLEAN-5): it is 1 minus `direction_same` in all 12,684 rows, a
+          copy of the same flag. The nested distance flags `toCoupon_GEQ15min` and `toCoupon_GEQ25min` stay separate
+          (CLEAN-13).
         - Anomaly: the data has many binned numeric features that are treated as categorical features with text describing the bins.
         - Anomaly: the numeric features in the dataset are low-cardinality (<25)
         - We simulate a cold-start model (as used before a recommender has any history for a user): predict whether a person accepts a coupon from their profile, stated habits and the scenario, for people not seen in training. The data is a survey (Wang et al. 2017, Sec. 6.2): each MTurk respondent first gave demographics and preferences, then answered hypothetical driving scenarios (22 per person in the file, 19 fixed questionnaire versions), all in one sitting and without timestamps, so there is no real interaction history for a warm-start setting. A random split puts about two-thirds of each person's other answers in train, which lets a model learn that person's tendency to say yes (ROC AUC 0.83 random vs 0.76 grouped; leak audit 2026-09-24).
@@ -240,8 +243,8 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
             .apply(lambda x: int(x.replace("AM", "")) if "AM" in x else int(x.replace("PM", "")) + 12)
             .astype(int)
         )
-        # Drop constant columns
-        df = df.drop(columns=["toCoupon_GEQ5min"])
+        # Drop the constant column, and `direction_opp`, which is 1 - `direction_same` in every row (CLEAN-5)
+        df = df.drop(columns=["toCoupon_GEQ5min", "direction_opp"])
         df = df.rename(columns={"passanger": "passenger"})
         # the codebook's words for its codes (CLEAN-12)
         df = decode(df, CODE_LABELS)
@@ -273,6 +276,5 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
                 "toCoupon_GEQ15min",
                 "toCoupon_GEQ25min",
                 "direction_same",
-                "direction_opp",
             ],
         )

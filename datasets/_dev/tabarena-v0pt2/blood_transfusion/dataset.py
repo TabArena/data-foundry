@@ -21,14 +21,13 @@ class BloodTransfusion(AbstractCuratedDataset):
         ),
         predicted="Whether the donor gave blood in March 2007.",
         known=(
-            "Months since the last and since the first donation, the number of donations and the total volume of "
-            "blood donated."
+            "Months since the last and since the first donation and the number of donations."
         ),
         split="Random donors of the same database and the same month.",
         fit="approximate",
         fit_reason=(
             "One month's outcome stands in for a forecast: the model is trained and tested on donors of the same "
-            "March 2007 collection, whereas a service would train on earlier drives. With four history counts, 29% of"
+            "March 2007 collection, whereas a service would train on earlier drives. With three history counts, 29% of"
             " the rows repeat another row, some with the other label."
         ),
     )
@@ -66,6 +65,11 @@ class BloodTransfusion(AbstractCuratedDataset):
         - We made feature names more descriptive.
         - We renamed the target and mapped binary values to "Yes"/"No".
         - Anomaly: the data has a lot of duplicates (29%) and several duplicates with different target values.
+        - We drop `TotalBloodDonated` (Andrej, 2026-11-12, CLEAN-5): it is 250 x `NumberOfDonations` on all 748 rows,
+          the count at 250 cc per donation, computed rather than measured. The count most likely counts 250 ml units,
+          so a 500 ml donation counts twice: 34 donors have 2 to 5 donations in the month of their first donation, and
+          51 of the 590 repeat donors more donations than a two-month gap between donations allows; these 51 give blood
+          in March 2007 at the same rate as the others (27% against 27%). The source does not say.
     """
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
@@ -106,4 +110,7 @@ class BloodTransfusion(AbstractCuratedDataset):
         ]
         df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
         df[target_feature] = df[target_feature].map({1: "Yes", 0: "No"})
+        # 250 cc per donation: 250 x NumberOfDonations on all rows, a copy of the count.
+        assert (df["TotalBloodDonated"] == 250 * df["NumberOfDonations"]).all()
+        df = df.drop(columns=["TotalBloodDonated"])
         return df

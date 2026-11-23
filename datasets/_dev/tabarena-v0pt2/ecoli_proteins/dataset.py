@@ -21,8 +21,8 @@ class EcoliProteins(AbstractCuratedDataset):
             "membrane with an uncleavable signal sequence (11%) or outer membrane (6%)."
         ),
         known=(
-            "Six scores computed from the sequence: two signal-sequence recognition methods, a lipoprotein signal "
-            "score, an amino-acid content score and two membrane-spanning region predictions."
+            "Five scores computed from the sequence: two signal-sequence recognition methods, a lipoprotein signal "
+            "score and two membrane-spanning region predictions."
         ),
         split=(
             "Random proteins, so the test data stands for proteins of unknown location; over the SWISS-PROT entry "
@@ -30,7 +30,8 @@ class EcoliProteins(AbstractCuratedDataset):
         ),
         changes=(
             "We drop the three rarest locations (inner- and outer-membrane lipoproteins, and inner membrane with a "
-            "cleavable signal sequence), each with fewer than 10 proteins."
+            "cleavable signal sequence), each with fewer than 10 proteins, and the amino-acid content score, a "
+            "discriminant fitted to the labels."
         ),
         fit="direct",
         fit_reason=(
@@ -72,6 +73,12 @@ class EcoliProteins(AbstractCuratedDataset):
         - We drop the sequence name column, which is a unique identifier.
         - We drop three classes with less than 10 samples each: omL (5), imL (2), and imS (2).
         - We drop "chg", which becomes constant after our preprocessing steps.
+        - We drop "aac", the score of a discriminant analysis of the amino-acid content of outer-membrane and
+          periplasmic proteins. It was fitted to the labels of the authors' protein database, the predecessor of this
+          dataset (Nakai & Kanehisa 1991, Proteins 11(2):95-110), and cannot be refitted per split, so it leaks the
+          labels (the reason `yeast` was rejected). Dropped and the task kept, as the amended LEAK-27 says when the
+          other columns still make a real one (Andrej, 2026-11-11). Without it, outer-membrane proteins (6% of rows)
+          are barely recognised: TabPFN recall 0.02 instead of 0.90 (stratified 3-fold x 20).
     """
     time_basis = TimeBasis(
         "StationaryRelation",
@@ -83,7 +90,7 @@ class EcoliProteins(AbstractCuratedDataset):
         +0.034 ± 0.033; over the two periods trained on half the data or more Kumo-Tabular gives +0.050 ± 0.047
         (2 SD 9.8 floors of 10), flat, narrowly. The location mix moves (cytoplasm 54% of entries up to 1989 against
         34% from 1990) but under twofold, so it changes which proteins arrive, not how the scores map to a location.
-        Three windows on the entry year would need the 1989-90 window, trained on 37%, as an exception and would
+        The test ran on the six scores, `aac` included, before `aac` was dropped. Three windows on the entry year would need the 1989-90 window, trained on 37%, as an exception and would
         test 46 to 76 proteins each; the 20 x 3 random folds stay. Not tested: a protein of a family the 1996
         database did not hold, and homologous proteins on both sides of the split, which the dropped accessions
         would be needed to find.
@@ -124,6 +131,7 @@ class EcoliProteins(AbstractCuratedDataset):
             columns=[
                 "Sequence Name",  # avoid leakage from look the name and otherwise unique identifier.
                 "chg",  # constant after preprocessing
+                "aac",  # discriminant fitted to the labels; leaks them
             ]
         )
         # Drop samples with classes with too little data (less than 10 samples)

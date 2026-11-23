@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: dementia_prediction
 container_format: 2
-checksum: v2:3c691498b7dd805ac29ffa31f56830fe43105694725f9f0ceec284f890d9e92f
+checksum: v2:c5516793c30c505f7b686737e1990b6132f1d5ef8348db73a85d8cf74ee72ab0
 build:
   uuid: 01a111fc-d5b5-7da4-8ffe-99dd2600b6e0
   checksum: v2:9ddc612f5674f4b595dfba519a28785aa6b30e0cf85e35380aab666fff024a7c
@@ -79,7 +79,7 @@ decisions: []
 
 Multiclass classification of `CDR`, scored with `log_loss` on grouped splits by `Subject ID`. 370 rows and 8 features. Source: Other (2010).
 
-Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3c691498b7dd805ac29ffa31f56830fe43105694725f9f0ceec284f890d9e92f`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c5516793c30c505f7b686737e1990b6132f1d5ef8348db73a85d8cf74ee72ab0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -97,7 +97,7 @@ Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We drop the group label (derived from the ratings of all visits), the visit number and the time since the first visit, and the 3 visits rated moderate dementia.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The use case is ours, as the source states none. Follow-up visits of test people are scored as if each were a first visit, and the MRI enters as three summary numbers of an imaging study.
+> **Use case fit: approximate (a stand-in with a known gap).** The use case is ours, as the source states none. The cohort is research volunteers, not clinic patients: the people without dementia stayed so over about three years, and only 14 of 150 convert, so borderline cases are rarer than in a clinic. Follow-up visits of test people are scored as if each were a first visit, and the MRI enters as three summary numbers of an imaging study.
 
 ## Files in this folder
 
@@ -136,7 +136,7 @@ Only curators run `build`, when the dataset ships.
 | source | Other: https://sites.wustl.edu/oasisbrains/ |
 | year | 2010 |
 | domain | medical & healthcare |
-| license | CC BY NC 3.0 |
+| license | OASIS Data Use Terms: non-commercial, academic research purposes only |
 | data_tags | Non-IID, Grouped, WrongDomain, UnseenGroup |
 | reference | marcus2010open |
 | rows x columns | 370 x 11 |
@@ -206,11 +206,11 @@ The first 5 of 370 rows of the final frame (random rows: the frame is shuffled).
 
 | CDR | Subject ID | M/F | Age | EDUC | SES | MMSE | eTIV | nWBV | ASF | person_weight |
 |---|---|---|---|---|---|---|---|---|---|---|
-| no_dementia | OAS2_0141 | F | 65 | 18 | 2 | 30 | 1276.91 | 0.811589 | 1.37442 | 0.5 |
-| no_dementia | OAS2_0041 | F | 71 | 16 | 1 | 27 | 1288.59 | 0.771306 | 1.36195 | 0.333333 |
-| no_dementia | OAS2_0090 | M | 75 | 18 | 2 | 29 | 1533.71 | 0.771706 | 1.14428 | 0.333333 |
-| very_mild_AD | OAS2_0041 | F | 75 | 16 | 1 | 28 | 1314.19 | 0.760334 | 1.33542 | 0.333333 |
-| no_dementia | OAS2_0068 | F | 88 | 12 | 3 | 30 | 1427.53 | 0.700452 | 1.2294 | 0.5 |
+| no_dementia | OAS2_0152 | F | 69 | 18 | 2 | 29 | 1202 | 0.770126 | 1.461 | 0.333333 |
+| very_mild_AD | OAS2_0075 | F | 75 | 8 | 5 | 22 | 1143 | 0.741187 | 1.535 | 0.5 |
+| no_dementia | OAS2_0142 | F | 69 | 16 | 3 | 29 | 1380 | 0.819459 | 1.272 | 0.5 |
+| no_dementia | OAS2_0012 | F | 78 | 16 | 2 | 29 | 1333 | 0.747875 | 1.316 | 0.333333 |
+| no_dementia | OAS2_0078 | M | 92 | 16 | 1 | 30 | 1662 | 0.681721 | 1.056 | 0.333333 |
 
 ## Curation notes
 
@@ -219,18 +219,22 @@ We start with the data from Mendeley.
 - CDR and Group are both the same target variable. CDR is the Clinical Dementia Rating (0 = no dementia, 0.5 = very mild AD, 1 = mild AD, 2 = moderate AD), which determines the group variable. 31 of the 150 subjects change their rating across visits (the 'Converted' group). We make this a task to predict for a patient (at any given time point of a scan) their dementia rating. The rating is ordinal but discrete, so we treat it as a classification problem (not regression). We drop cases with moderate_AD (n=3), as we do not have enough data on this class to include them in our prediction task.
 - We drop the group variable (Nondemented / Demented / Converted, derived from the ratings over the visits) and the time of the scan (visit number, MR delay). We predict each visit's rating from the subject's sex, age, years of education (EDUC), socioeconomic status (SES, 19 missing), the Mini-Mental State Examination score of the same visit (MMSE, 2 missing; a separate cognitive test, not derived from the rating) and three measures from the visit's MRI scan: estimated total intracranial volume (eTIV), normalized whole-brain volume (nWBV) and the atlas scaling factor (ASF, which is 1755 / eTIV, kept as in the source).
 - We also drop the constant hand column.
+- Sampling (Andrej, 2026-10-19): the participants are volunteers of the Washington University Alzheimer's Disease Research Center, recruited mainly through media appeals, with at least two MRI visits (Marcus et al. 2010). The 'Nondemented' group stayed CDR 0 over all visits and only 14 subjects convert, so few visits sit near the boundary of no and very mild dementia. Demented subjects have fewer visits (mean 2.2 vs 2.6) and shorter follow-up, so the people without dementia hold slightly more of the visits than of the people (51% against 48%); the score counts each person once (below).
+- Missing values are informative: the 19 visits without SES (8 subjects) and the 2 without MMSE (1 subject) are all rated very mild or mild dementia. SES comes from the clinical interview, which impaired participants may not complete, so a clinic would see the same pattern; we keep the missing values.
+- The source's group labels are not fully consistent with the per-visit rating (2 'Nondemented' subjects are rated 0.5 at a later visit, 1 'Converted' subject goes from 0.5 to 0); this does not affect the task, since the group label is dropped.
 - Each person counts once in the score (Lennart, 2026-11-08; MET-17): the log loss weights a visit by 1 over its person's number of visits (`person_weight`, counted after the moderate visits are dropped), a scoring column for the metric only, no feature and no training weight. The 150 people have 1 to 5 visits (91 two, 43 three, 13 four or five), and the memory clinic acts once per person; unweighted, a person seen five times counted five times. Follow-up visits are still scored, each as if it were a first visit, at one vote per person. On the 60 shipped splits the weighted log loss ranks 8 untuned predictors (two logistic regressions, random forest, extra trees, two LightGBM, kNN, the class shares) like the per-visit one at Kendall tau 0.94 per split on average (lowest 0.71) and 1.0 for the ranking by the mean over the splits, the same best model on 56 of 60. Scoring only the first visits was the alternative (tau 0.87 per split, 48 to 52 scored visits per fold against 112 to 138). The weight is for scoring only (MET-15 as amended 2026-11-08): training a logistic regression with it changes the weighted log loss by -0.004 (SE 0.003, lower on 35 of 60 grouped random splits), within noise.
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 1 scores with no words per level are
   numbers (`SCORES`): `SES`.
 - The target (2026-11-01, CLEAN-25): `CDR` ships its classes as words, no_dementia < very_mild_AD < mild_AD (the
   Clinical Dementia Rating's order (CDR 0, 0.5, 1)).
-- Time basis: UnseenGroup (Andrej, 2026-11-17; `ForcedGroupedFromTemporal` before): the use case is a person's
-  first visit at a memory clinic, a person the data does not hold, so whole people are held out and each
-  person's course stays on one side. The 150 people were scanned on 2 to 5 visits over 365 to 2,639 days during
-  the study's years (Marcus et al. 2010), and the release keeps no calendar date, only the order of each
-  person's visits, which the definition drops. Not tested: people seen later than the training people, and
-  changes of scanner or protocol over the study, which dated visits would allow (a split by visit year).
+- One precision for eTIV and ASF (Andrej, 2026-11-05; LEAK-13): in 112 of the 370 visits eTIV is written with 9
+  to 11 decimals and equals exactly 1755 / ASF, a second numerical route that covers 9 of 150 first visits but
+  103 of 220 follow-ups, so the number format tells a model which visit it is. Both columns are written at the
+  precision of the measured values in every row (`MEASURED_PRECISION`: eTIV in whole cm³, ASF to three
+  decimals). Checked on the 60 grouped splits: the decimal counts alone fall from ROC AUC 0.54-0.56 to
+  0.50-0.53, and logistic regression scores as before (log loss 0.6145, unweighted, before the person weight).
+- Time basis: UnseenGroup (Andrej, 2026-11-17; `ForcedGroupedFromTemporal` before): the use case is a person's first visit at a memory clinic, a person the data does not hold, so whole people are held out and each person's course stays on one side. The 150 people were scanned on 2 to 5 visits over 365 to 2,639 days during the study's years (Marcus et al. 2010), and the release keeps no calendar date, only the order of each person's visits, which the definition drops. Not tested: people seen later than the training people, and changes of scanner or protocol over the study, which dated visits would allow (a split by visit year).
 
 ## Splits
 
@@ -326,7 +330,7 @@ One group is a subject of OASIS-2: older adults scanned on two or more visits at
 | test groups per fold | 48 to 52 |
 | groups of two or more rows with a single label | 78.9% |
 | nearest neighbour in the same group | 88.9% of the rows (chance: 0.5%) |
-| label variance explained by the group | 0.83 (shuffled groups: 0.39) |
+| label variance explained by the group | 0.83 (shuffled groups: 0.41) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
@@ -348,10 +352,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | M/F | category | 0 | 0 | 2 | F, M |
 | CDR | category | 0 | 0 | 3 | no_dementia, very_mild_AD, mild_AD |
 | SES | float64 | 19 | 5.14 | 5 | 2.0, 1.0, 3.0, 4.0, 5.0 |
-| MMSE | float64 | 2 | 0.54 | 18 | 30.0, 29.0, 28.0, 27.0, 26.0, 25.0, 23.0, 21.0, 22.0, 20.0 |
-| eTIV | float64 | 0 | 0 | 368 | 1402.1, 1364.5, 1353.81, 1343.79, 1165.26, 1444.0083, 1495.24, 1519.7397, 1464.… |
-| nWBV | float64 | 0 | 0 | 370 | 0.8116, 0.7713, 0.7717, 0.7603, 0.7005, 0.7136, 0.7677, 0.7216, 0.7537, 0.7366 |
-| ASF | float64 | 0 | 0 | 368 | 1.2517, 1.2862, 1.2963, 1.306, 1.5061, 1.2154, 1.1737, 1.1548, 1.198, 1.1336 |
+| MMSE | float64 | 2 | 0.54 | 18 | 30.0, 29.0, 28.0, 27.0, 26.0, 23.0, 25.0, 21.0, 22.0, 20.0 |
+| eTIV | float64 | 0 | 0 | 286 | 1483.0, 1475.0, 1344.0, 1333.0, 1453.0, 1390.0, 1506.0, 1484.0, 1295.0, 1463.0 |
+| nWBV | float64 | 0 | 0 | 370 | 0.7701, 0.7412, 0.8195, 0.7479, 0.6817, 0.7069, 0.7573, 0.7707, 0.74, 0.7248 |
+| ASF | float64 | 0 | 0 | 263 | 1.184, 1.19, 1.134, 1.183, 1.335, 1.317, 1.208, 1.162, 1.262, 1.214 |
 | person_weight | float64 | 0 | 0 | 5 | 0.5, 0.3333, 0.25, 0.2, 1.0 |
 | Age | int64 | 0 | 0 | 38 | 73, 75, 78, 80, 71, 81, 82, 76, 77, 68 |
 | EDUC | int64 | 0 | 0 | 12 | 12, 16, 18, 14, 13, 15, 20, 11, 8, 17 |
@@ -374,9 +378,9 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | EDUC | 370 | 14.5784 | 2.87133 | 6 | 23 |
 | SES | 351 | 2.46724 | 1.1331 | 1 | 5 |
 | MMSE | 368 | 27.3995 | 3.62412 | 4 | 30 |
-| eTIV | 370 | 1487.72 | 176.411 | 1105.65 | 2004.48 |
+| eTIV | 370 | 1487.71 | 176.417 | 1106 | 2004 |
 | nWBV | 370 | 0.729742 | 0.0370475 | 0.644399 | 0.836842 |
-| ASF | 370 | 1.19584 | 0.138345 | 0.875539 | 1.5873 |
+| ASF | 370 | 1.19583 | 0.138327 | 0.876 | 1.587 |
 | person_weight | 370 | 0.405405 | 0.117246 | 0.2 | 1 |
 
 ### Categorical features
@@ -405,4 +409,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3c691498b7dd805ac29ffa31f56830fe43105694725f9f0ceec284f890d9e92f` |
+| stale | yes: the definition now gives checksum `v2:c5516793c30c505f7b686737e1990b6132f1d5ef8348db73a85d8cf74ee72ab0` |

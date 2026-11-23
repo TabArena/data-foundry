@@ -64,9 +64,15 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
+CC (2026-11-09, Andrej): three-week test windows with a one-month gap (Review issue 1, the suggestion of 2026-11-04): the last three 21-day periods, 30 March to 31 May 2018, each trained on every payment up to one month before it. The training sides hold 52.9%, 64.4% and 75.9% of the payments, so every window keeps at least half the data, where the monthly windows trained the March window on 38.9%. Replaced on 2026-11-11 by the calendar months (Review issue 4), restored on 2026-11-19 (Review issue 5).
+
+CC (2026-11-09, Andrej): the gap's reason is the label's delay, not planning (Review issue 2, B): a payment becomes fraud once its card is charged back, up to 120 days later, and the release holds the final labels, so the one-month gap keeps out labels a refit could not have known. The gap note, `splits_comment` and the task summary say so.
+
+CC (2026-11-09, Andrej): `Target: Revised Later` added next to `Target: Varying Delay` (Review issue 3, B): besides the chargeback delay, the host marks a client's later linked payments as fraud, so a payment's label is also set afterwards by another payment.
+
 **Assessment (AI, 2026-11-10):** priority for the review of the test windows and horizons, which this record never had. Priority 3: gap 0, use case 0, source + (Vesta's competition), shape +, risk 0 (the open issue is the window length and the floor).
 
-CC (2026-11-11, Lennart): REVIEW issue 1 (which test windows), as implemented (A): the test windows stay March, April and May 2018, one month each after the competition's one-month gap, in place of the AI's three-week windows; SPLIT-14 as amended on 2026-11-11 admits March, which trains on 38.9% of the payments (one window under half, two above). The windows walk back from the newest: with the gap a February window would train on December only (about 23%).
+CC (2026-11-11, Lennart): REVIEW issue 4 (which test windows), as implemented (A): the test windows stay March, April and May 2018, one month each after the competition's one-month gap, in place of the AI's three-week windows; SPLIT-14 as amended on 2026-11-11 admits March, which trains on 38.9% of the payments (one window under half, two above). The windows walk back from the newest: with the gap a February window would train on December only (about 23%).
 
 CC (2026-11-11, Lennart): the declared horizon (one month, a one-month gap, windows starting 2018-05-01, 2018-04-01 and 2018-03-01) is checked, as the month comes from the first-place team's month groups and the gap from the competition (labelled payments end on 31 May 2018, its test starts on 1 July 2018).
 
@@ -74,18 +80,22 @@ CC (2026-11-11, Lennart): the declared horizon (one month, a one-month gap, wind
 
 CC (2026-11-17, Andrej): the declared split (temporal on `Transaction_date`, windows of 1 month, 3 windows, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
-CC (2026-11-19, Andrej): three-week test windows with the competition's one-month gap, all training on half the payments or more (the month was the winners' validation scheme, not the use case) (Review issue 2).
+CC (2026-11-19, Andrej): three-week test windows with the competition's one-month gap, all training on half the payments or more (the month was the winners' validation scheme, not the use case) (Review issue 5).
 
 ## Review
 
-**Outcome:** added. On 2026-11-11 you kept the three test months, March, April and May 2018, with the competition's
-one-month gap (issue 1 and the horizon, A), which the amended floor admitted with March training on 38.9% of the
+**Outcome:** added. On 2026-11-09 Andrej chose three-week test windows with a one-month gap (issue 1), gave the gap
+its reason, the chargeback delay of the label (issue 2), and added `Target: Revised Later` to the collection facts
+(issue 3). On 2026-11-11 Lennart kept the three test months, March, April and May 2018, with the competition's
+one-month gap (issue 4 and the horizon, A), which the amended floor admitted with March training on 38.9% of the
 payments. On 2026-11-19 Andrej replaced them by three-week windows, 11-31 May, 20 April-10 May and 30 March-19 April
-2018, after the same one-month gap, training on 52.9% to 75.9% (issue 2, C).
+2018, after the same one-month gap, training on 52.9% to 75.9% (issue 5, C).
 
-**Main points:** Settled on 2026-11-19: three test windows of three weeks, 30 March to 31 May 2018, after the
-competition's one-month gap, all training on half the payments or more (issue 2, C), replacing the calendar months
-March to May 2018 kept on 2026-11-11 (issue 1, A). The gap comes from the competition.
+**Main points:** Settled on 2026-11-19: three test windows of three weeks, 30 March to 31 May 2018, after a one-month
+gap, all training on half the payments or more (issue 5, C), replacing the calendar months March to May 2018 kept on
+2026-11-11 (issue 4, A), which had replaced the three-week windows of 2026-11-09 (issue 1). Settled on 2026-11-09: the
+gap is there for the label's delay (a chargeback up to 120 days after the payment), its length the competition's
+(issue 2); `Target: Revised Later` stands next to `Target: Varying Delay` (issue 3). Nothing is left to decide.
 
 **Horizon:**
 
@@ -126,15 +136,205 @@ March to May 2018 kept on 2026-11-11 (issue 1, A). The gap comes from the compet
 **Resolved (2026-11-11, Lennart):** A, one calendar month with the competition's one-month gap, kept, in place of the
 AI's three-week windows: the month comes from the first-place team's month groups ("ordered months as non-overlapping
 groups"), the gap from the competition (labelled payments end on 31 May 2018, its test starts on 1 July). The amended
-floor of 2026-11-11 admits the March window (issue 1), so three windows of a month fit. The notes no longer call the
+floor of 2026-11-11 admits the March window (issue 4), so three windows of a month fit. The notes no longer call the
 month a forecasting horizon: `curation_comments`, `task_summary.split` and `splits_comment` say it is the winners'
 validation group, not a refit cadence (Vesta states none, and the competition scores one model on six months), and
 give the gap's reason. `temporal` is unchanged. The record has the horizon CC line. `dataset check`: 0 errors, 0
 warnings (README not regenerated).
 
-**Issues for Lennart:**
+**Issues:**
 
-1. **Which test windows should replace March, April and May 2018?**
+1. **Two-week test windows, so that every training side holds more than half the payments?**
+
+   * **Problem:**
+     - The three test windows are March, April and May 2018, each trained on everything up to one month before it, so the March window trains on December and January only: 229,906 of 590,540 payments (38.9%).
+     - A temporal task needs at least three windows with at least half the data on each training side, since a smaller training side is too unlike the deployed model, which is refit on all history[^1a].
+     - Shorten the test windows to two weeks (keeping the one-month gap), or keep the monthly windows?
+   * **Background:** the split table of the README gives the payments per period: December and January 229,906,
+     February 86,021, March 101,632, April 83,655, May 89,326. The training sides of the monthly windows hold 70.7%
+     (May), 53.5% (April) and 38.9% (March) of the payments. The one-month gap stays in every option: a chargeback
+     is reported weeks after the payment, so the newest labels are not known at a refit, and the competition's test
+     file also starts about a month after its training file[^1b].
+   * **Effect on the task:** the March window scores a model trained on two months of a six-month history, which no
+     processor that refits on all its history would deploy; its score weighs a third of the benchmark's result.
+   * **Experiments:** none run; the numbers come from the split table of the README (build of 2026-10-06). With
+     two-week windows (the last 14 days of May, the 14 before, the 14 before those) the oldest training side ends
+     around 20 March, about 380,000 payments (about 64%), and each test window holds about 40,000 payments with about
+     1,400 frauds at the 3.5% rate.
+   * **Consistency:** follows california_house_prices_2020, whose windows were moved to train on at least 50%[^1c].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Monthly windows (implemented) | test March, April, May; one-month gap | the first-place solution's month-wise validation; a month of payments per window | the March window trains on 38.9% of the data |
+     | B | Two-week windows | three 14-day test windows at the end of May and April; one-month gap | every training side above 60%; about 40,000 test payments per window | a shorter horizon than the winners' monthly validation |
+     | C | 30-day windows stepped by 15 days | three overlapping 30-day test windows; one-month gap | keeps a month per window; oldest training side about 54% | the windows share half their test rows, so they are not three separate tests |
+
+   * **Recommendation:** B: it meets the floor with room to spare and keeps the gap; a processor refits its fraud model
+     more often than monthly, so the shorter horizon is no loss for the use case. **Decision:** two-week windows (B),
+     monthly windows (A) or overlapping 30-day windows (C)?
+
+   **Notes for the AI:** on B, `temporal = Temporal(on="Transaction_date", splits=TemporalSplits(window=14,
+   unit="days", n_windows=3, gap=1, gap_unit="months"))`; rewrite `splits_comment` and the task summary's `split` and
+   `changes` ("Each of the last three two-week periods ..."), run `dataset check` and report the exact train shares and
+   frauds per window; record `CC` line; rebuild. On C, `TemporalSplits(window=30, unit="days", n_windows=3, step=15,
+   gap=1, gap_unit="months")`.
+
+
+   **Andrej (2026-11-04, discuss):** It would be better to keep more test samples if possible and use a shorter planning gap, unless there is a particular reason to go with one month.
+
+   **Answer (AI, 2026-11-04):**
+
+   - **Question:** is there a particular reason for a one-month gap, or can the windows keep more test payments with a shorter gap?
+   - **Settling fact:** there is a reason for some gap, but none for exactly a month. The gap changes the score more than anything else in the split: LightGBM on the same three test months scores 0.930 AUC with no gap, 0.921 with one week, 0.915 with two weeks and 0.904 with a month.
+   - **Why a gap:** a payment counts as fraud once its card is reported as charged back, and the client's later payments with it[^a1]. Cardholders report a chargeback weeks after the payment, so at a refit the frauds of the last days are not yet known. The data has no report dates, so the delay itself cannot be measured.
+   - **Why a month:** only the competition's file layout. Its unlabelled test file starts on 1 July 2018, 30.0 days after the training file ends (31 May). The host never says why. The first-place team validated both ways: "train 4 / skip 1 / predict 1", "train 2 / skip 2 / predict 2", and a holdout of the last 25% with no gap.
+   - **Not label carry-over:** the gain from a shorter gap is the same without the client key (0.931 vs 0.903 with no gap vs a month) and on test payments of clients with no earlier fraud (0.928 vs 0.903). It is not extra training data either: with every training side cut to the same 60 days, the gap still costs 0.025 (0.924 with no gap, 0.899 with a month). It is how recent the training payments are: fraud patterns change from week to week.
+   - **How far labels carry:** 99.3% of the clients with a fraud are fraud in every payment, and 98.7% of the payments after a client's first fraud are fraud. Payments of a client whose fraud lies on the training side are 0.2-0.3% of each test month with a one-month gap and 0.4-0.5% with no gap. They hold 5-7% of the test frauds with a month, 7-10% with two weeks and 10-15% with no gap.
+   - **What the windows cost:** the floor of half the data on each training side rules out calendar months with any gap of a week or more (oldest training side 49.8% with one week). Test payments and frauds per window, oldest window first:
+
+     | Windows and gap | Training sides | Test payments | Test frauds | All test payments |
+     |---|---|---|---|---|
+     | months, 1 month (now) | 38.9%, 53.5%, 70.7% | 101,632, 83,655, 89,326 | 4,019, 2,828, 3,114 | 274,613 |
+     | 14 days, 1 month | 64.4%, 72.4%, 79.0% | 39,992, 40,849, 37,693 | 1,299, 1,294, 1,480 | 118,534 |
+     | 21 days, 2 weeks | 62.4%, 73.5%, 83.1% | 61,405, 59,803, 58,731 | 2,171, 1,864, 2,209 | 179,939 |
+     | 4 weeks, 1 week | 54.2%, 69.5%, 83.1% | 86,813, 77,822, 78,542 | 3,486, 2,637, 2,774 | 243,177 |
+     | 4 weeks, 2 weeks | 50.4%, 66.0%, 79.9% | 86,813, 77,822, 78,542 | 3,486, 2,637, 2,774 | 243,177 |
+     | months, no gap | 53.5%, 70.7%, 84.9% | 101,632, 83,655, 89,326 | 4,019, 2,828, 3,114 | 274,613 |
+
+   - **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Monthly windows, one-month gap (implemented) | test March, April, May | the competition's gap; 274,613 test payments | the March window trains on 38.9%, below the floor |
+     | B | 14-day windows, one-month gap | the last three fortnights of May and April | the competition's gap; every training side above 64% | 118,534 test payments, 43% of A |
+     | C | 4-week windows, one-week gap | 4 May-31 May, 6 April-3 May, 9 March-5 April | 243,177 test payments, twice B; training sides 54-83%; frauds of the last week before a refit stay unknown | a week is shorter than most chargeback delays, so the score is about 0.017 higher than with a month |
+     | D | 21-day windows, two-week gap | three three-week windows from 30 March | training sides 62-83%; a gap closer to a chargeback delay | 179,939 test payments |
+     | E | Calendar months, no gap | test March, April, May, trained on everything before | the most test payments; training sides 54-85% | trains on frauds not yet reported at the refit; the highest score, about 0.026 above a month |
+
+   - **Recommendation:** C: twice the test payments of B, every training side above half the data, and a gap that keeps the newest unreported frauds out of training. D if the gap should stay closer to the chargeback delay. **Decision:** C (4 weeks, 1-week gap), D (21 days, 2-week gap), B (14 days, 1-month gap) or E (months, no gap)?
+
+   **Notes for the AI:** LightGBM (800 trees, lr 0.03, 256 leaves; transaction plus identity columns, D-columns normalised, `uid` from the folder's csv) on the train file, test windows March/April/May 2018, gaps 0/7/14 days/1 month, with and without `uid`, plus a control with each training side cut to the 60 days before the gap. The host's post (discussion 101203) could not be re-fetched (Kaggle needs JavaScript); its second sentence (unreported after 120 days counts as legit) was recalled, not verified, and is left out. The first-place validation schemes come from a summary of the write-up (eda-ai-lab.tistory.com/448), not the Kaggle post itself. Params: C `TemporalSplits(window=4, unit="weeks", n_windows=3, gap=1)`; D `TemporalSplits(window=21, unit="days", n_windows=3, gap=14)`; B `TemporalSplits(window=14, unit="days", n_windows=3, gap=1, gap_unit="months")`; E `TemporalSplits(window=1, unit="months", n_windows=3)`. On any choice rewrite `splits_comment`, the task summary's `split` and `changes`, and the gap line of `curation_comments` ("The competition test data left a planning window of one month, so do we."); record `CC` and `Assessment` lines; `dataset check`; the split probes.
+
+   [^a1]: The host (Lynn@Vesta, https://www.kaggle.com/c/ieee-fraud-detection/discussion/101203): "The logic of our labeling is define reported chargeback on the card as fraud transaction (isFraud=1) and transactions posterior to it with either user account, email address or billing address directly linked to these attributes as fraud too." **SPLIT-10** (Should): when a label is known only some time after its row, train on the rows whose outcome is known by the window's start, with a gap of about the label's delay. **SPLIT-14** (Must): at least 3 windows, no training side below 50% of the data. Andrej on noaa_afsc_bottom_trawl_survey_cpue (2026-11-02): "Unless the original paper says so, we should go with no planning gap."
+
+
+   **Andrej (2026-11-04, discuss):** Our main goal is to keep this as close as possible to a real application. What do you suggest?
+
+   **Answer (AI, 2026-11-04):**
+
+   - **Question:** which windows and gap come closest to how a processor like Vesta would really use the model?
+   - **Suggestion:** three-week test windows with a one-month gap. Each window trains on every payment up to a month before it starts. Of all window lengths that keep a one-month gap and at least half the data on every training side, this gives the most test payments.
+   - **The gap follows the label delay:** a fraud label exists only once the issuer files a chargeback. Visa gives the issuer up to 120 days from the processing date to file a card-absent fraud chargeback[^b1]. Cardholders usually find the fraud on their statement, so most chargebacks come weeks after the payment. No public source gives the share filed within a month[^b2]. The host chose a 30-day gap before its own test file, and Vesta knows its own label delay. So a month is the best supported gap; a week or two would train on frauds that are mostly not reported yet.
+   - **The window length follows the refit cadence, which is unknown:** Vesta does not publish how often it refits. The only cadence I found is Stripe's: Stripe's own blog says only that it "tripled the speed" of its Radar model updates, and press reports of daily retraining (2018) could not be checked. A refit at least weekly is likely, so a three-week window is not longer than a real deployment would see. Shorter windows add no test payments (the floor fixes the pool); they only make each score noisier.
+   - **Numbers (oldest window first):**
+
+     | Window | Test payments | Frauds | Training side |
+     |---|---|---|---|
+     | 30 March-19 April 2018 | 61,405 | 2,171 | 52.9% |
+     | 20 April-10 May 2018 | 59,803 | 1,864 | 64.4% |
+     | 11 May-31 May 2018 | 58,731 | 2,209 | 75.9% |
+
+     In total 179,939 test payments and 6,244 frauds: 1.5 times B (14-day windows, 118,534) and 66% of the monthly windows (274,613). LightGBM scores about 0.904 AUC with a one-month gap, against 0.930 with none (earlier answer).
+   - **What it trades:**
+     - A month still falls short of full label maturity: frauds reported 30-120 days after the payment are in the training labels, though a real refit would not know them yet.
+     - A full 120-day gap is impossible here: with six months of data, the training sides would hold only about two months, far below half the data.
+     - Monthly test windows with a one-month gap remain below the floor (38.9%).
+   - **Params:** `TemporalSplits(window=21, unit="days", n_windows=3, gap=1, gap_unit="months")`. Setting `window=23` holds 197,790 test payments, but its oldest training side is 51.0%, and 24 days falls below the floor (49.3%).
+   - **Recommendation:** three-week windows with a one-month gap: the host's own gap, the floor met in every window, and more test payments than the 14-day option. **Decision:** three-week windows with a one-month gap, or one of the options of the earlier answer?
+
+   **Notes for the AI:** on yes, set the params above; `splits_comment` and the task summary's `split` and `changes` ("Each of the last three three-week periods is a test window, trained on all payments up to one month before it, as in the competition's gap"); update the gap line of `curation_comments` with the chargeback limit and the host's 30-day gap; record `CC`/`Assessment` lines; `dataset check`; split probes. Window numbers from `temporal_window_splits` on the train file (the same call `dataset check` makes). Not verified: Vesta's refit cadence; the daily-retraining press reports (finextra and eweek returned 403); the share of fraud chargebacks filed within 30 days (no public statistic found).
+
+   [^b1]: Chargebacks911, Visa reason code 10.4 (card-absent fraud): "the issuing bank has a maximum of 120 calendar days from the transaction processing date to dispute a claim" (https://chargebacks911.com/chargeback-reason-codes/visa/10-4-card-absent-environment/). ClearSale adds that for fraud the clock "may begin on the date the cardholder notices unauthorized activity" (https://www.clear.sale/blog/what-is-the-time-limit-on-chargebacks). Both are industry write-ups, not Visa's rulebook. **SPLIT-10** (Should): a gap of about the label's delay. **SPLIT-14** (Must): at least 3 windows, no training side below 50%.
+   [^b2]: arXiv 2204.05265, on card fraud detection: "verification often takes days" (https://arxiv.org/abs/2204.05265). Stripe, "New Radar features": "we've tripled the speed at which we update Radar's machine learning models" (https://stripe.com/fr-be/blog/new-radar-features). **SPLIT-12** (Should): the horizon follows the source or the refit cadence. **SPLIT-17** (Should), its reason: finer windows add no test rows, since the 50% floor fixes the test pool.
+
+   [^1a]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less than 50%
+     of the data; a smaller train side is too unlike the real application.
+   [^1b]: **SPLIT-10** (Should): when a label is known only some time after its row, a model refit at a window's start
+     knows only the rows whose label had arrived. **SPLIT-12** (Should): the horizon is a human judgment from the
+     source, such as the competition's own test window or the refit cadence.
+   [^1c]: SPLIT-14 case: california_house_prices_2020, `min_train_fraction=0.25` let the oldest window train on 25% of
+     the rows; its windows now train on 50%, 67% and 83% (2026-10-21).
+
+   **Answer (AI, 2026-11-06):** the time review of 2026-11-06 adds how the labels arrive; it rules out a split without a gap (E) and leaves the last suggestion, three-week windows with a one-month gap, standing.
+
+   - **When each part arrives:** a payment and its features come at once, when Vesta accepts or declines it; its label comes when the card is charged back, up to 120 days later, and the host then marks the client's later linked payments as fraud too. The record's facts say `Samples: Over Time`, `Time: Dated` and `Target: Varying Delay`; issue 3 asks to add the forward carry. A temporal split carries no time-basis tag[^1t].
+   - **The release holds the final labels:** fraud is 3.1% to 4.0% a week in May 2018, the last month, against 3.4% to 4.0% a month from January to April (2.6% in December), so no late shortfall shows at the release end. A refit at a window's start would not have had the newest of these labels; only a gap keeps them out, since the release has no report dates for an as-of filter[^1u].
+   - **What this decides:** the gap is for the label's delay, not for planning, so the rule against planning gaps does not apply to it; its length cannot be measured here and rests on the host's 30-day layout and the chargeback limit, as in the last answer. Issue 2 asks to write this reason into the definition.
+
+   [^1t]: **SPLIT-32** (Should): how the data was collected (the record's facts on samples, time and target) is information for the split; a definition names a use-case prototype only for a split that is not temporal.
+   [^1u]: **SPLIT-10** (Should, amended 2026-11-05): a gap is set where late labels are documented and the collection does not cover them, and where a measurement shows a shortcut through recent labels or a selection by the outcome at the release end.
+
+   **Andrej (2026-11-06, discuss):** Agree. I follow your suggestion. Document it carefully.
+
+   **Resolved (2026-11-09, Andrej):** three-week test windows with a one-month gap, the suggestion of 2026-11-04 (the
+   split mark: change, "As we discussed."):
+   `TemporalSplits(window=21, unit="days", n_windows=3, gap=1, gap_unit="months")`. `dataset check` builds the
+   windows of the suggestion's table: 30 March-19 April 2018 (61,405 test payments, 2,171 frauds, training side
+   52.9%), 20 April-10 May (59,803, 1,864, 64.4%) and 11 May-31 May (58,731, 2,209, 75.9%). `splits_comment`, the task summary's `split` and `changes`, and a curation note on the
+   windows (the training floor, the chargeback delay of up to 120 days, the host's 30-day gap, what the choice trades,
+   the gap runs of 2026-11-04) are in `dataset.py`; the record has a CC line. Not rebuilt.
+
+   **Superseded:** on 2026-11-11 Lennart kept the calendar months March to May 2018 (issue 4); on 2026-11-19 Andrej
+   restored three-week windows after the one-month gap, at fixed cutoffs (30 March, 20 April and 11 May 2018), with
+   the same windows and training sides as above (issue 5). The definition ships issue 5's windows.
+
+2. **Give the one-month gap its reason, the label's delay, instead of "a planning window"?**
+
+   * **Problem:**
+     - The definition explains its gap as "a planning window of one month" taken from the competition's layout, while its reason in the data is the label's delay: a payment becomes fraud only once its card is charged back, up to 120 days later.
+     - The release holds every label as finally known (fraud 3.1% to 4.0% a week in May 2018, as in earlier months), so without a gap a refit would train on frauds nobody had reported yet.
+     - Rewrite the gap's line with this reason, or keep the wording?
+   * **Background:** a planning gap is set only where the source says so ("Unless the original paper says so, we should go with no planning gap", Andrej, 2026-11-02, on noaa_afsc_bottom_trawl_survey_cpue), while a gap for a late label is set where the delay is documented and the release does not cover it[^2a]. Read as a planning gap, the line invites removing it, which issue 1's runs show lifts the score by about 0.026 (ROC AUC 0.930 against 0.904). The label also travels forward along the client, so the gap holds back the carried labels too.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the wording (implemented) | "The competition test data left a planning window of one month, so do we." | no change | names a reason the curator's rule would remove, not the one that holds |
+     | B | State the label's delay | the gap's line, `splits_comment` and the task summary's `changes` give the chargeback delay and the final labels at the release end | the gap's reason is the one the data shows; it holds for whichever window issue 1 picks | none found |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, replace the curation bullet "The competition test data left a planning window of one month, so do we." with "- Gap (2026-11-06): the label arrives late. A payment counts as fraud once its card is charged back, which Visa allows up to 120 days after the processing date, and the host then also marks the client's later linked payments. The release holds the final labels (fraud 3.1% to 4.0% a week in May 2018, as in earlier months), so only a gap keeps out the labels a refit could not have known; the competition's own test file starts 30 days after its training file."; in `splits_comment`, "leave 1 month as the planning gap" becomes "leave <the gap of issue 1> for the chargeback delay"; the task summary's `changes` says "a gap for the chargeback delay". Under issue 1's option E (no gap) the line says instead that the training labels include frauds not yet reported at the refit. No time-basis tag.
+
+   [^2a]: **SPLIT-10** (Should): when a label is known only some time after its row, train on the rows whose outcome is known by the window's start, with a gap of about the label's delay; a planning gap the use case has is a gap too. **SPLIT-12** (Should): the horizon follows the source, such as the competition's own test window.
+
+   **Resolved (2026-11-09, Andrej):** B, state the label's delay. The curation note "The competition test data left a
+   planning window of one month, so do we." is replaced by a `Gap:` note: one month, for the label's delay (a chargeback
+   up to 120 days after the payment, the final labels in the release, the competition's test file 30 days after its
+   training file). `splits_comment` leaves 1 month "for the chargeback delay", and the task summary's `split` and
+   `changes` name the gap the same way. The gap is issue 1's, one month; no time-basis tag.
+
+   **Applied (2026-11-23):** issue 5's definition named the competition as the gap's reason; the curation note `Gap
+   (2026-11-09, Andrej)` now gives the label's delay, and `splits_comment` and the task summary's `split` and `changes`
+   name the gap "for the chargeback delay", its length the competition's own.
+
+3. **Correct the record's collection facts: add `Target: Revised Later` for the labels carried forward along the client?**
+
+   * **Problem:**
+     - The record tags the target `Target: Varying Delay` (the chargeback comes weeks after the payment), but a payment's label is also set later by another payment: the host marks "transactions posterior to it" with a linked account, email or billing address as fraud too.
+     - `Target: Revised Later` is the fact for a label "assigned, then updated or propagated", and 98.7% of the payments after a client's first fraud are fraud (issue 1's answer of 2026-11-04).
+     - Add it next to `Target: Varying Delay`, replace that tag with it, or keep the record as is?
+   * **Background:** the collection facts describe the source, true whatever task is built on it[^3a]. The records' field list gives the three target facts joined by "or", so whether two may stand together is not settled; both mechanisms are in this source, and the carried labels are what makes the client key carry test labels (kept as the client's own history, Lennart, 2026-10-01).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep (implemented) | `Target: Varying Delay` only | the delay that sets the gap | the forward carry along the client is not recorded |
+     | B | Add `Target: Revised Later` | both target facts | both mechanisms of the source recorded | two target facts on one record, which the field list does not foresee |
+     | C | Replace with `Target: Revised Later` | the carry only | one target fact | loses the chargeback delay, the reason for the gap |
+
+   * **Recommendation:** B. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, add `'Target: Revised Later'` to the record's `tags` after `'Target: Varying Delay'`, with a `CC (<date>, Andrej):` line; if two target facts are not allowed, the curator's answer settles it for every record and goes into the records reference.
+
+   [^3a]: **SPLIT-32** (Should): the curation record describes the source by independent collection facts: `Target: Later`, `Target: Varying Delay` (after a delay that differs between samples: a settlement, a chargeback, a follow-up) or `Target: Revised Later` (assigned, then updated or propagated).
+
+   **Resolved (2026-11-09, Andrej):** B: `'Target: Revised Later'` added to the record's `tags` after
+   `'Target: Varying Delay'`, with a CC line. Both target
+   facts stand: the chargeback delay and the labels carried forward along the client.
+
+4. **Which test windows should replace March, April and May 2018?**
 
    * **Problem:**
      - The three test windows are March, April and May 2018, each trained on the payments up to one month before it,
@@ -237,11 +437,11 @@ warnings (README not regenerated).
    competition); the two `curation_comments` bullets on the horizon and the gap say the same. The record has the
    decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
-2. **Train floor: keep the window under half the data as the curator's exception, or drop it?**
+5. **Train floor: keep the window under half the data as the curator's exception, or drop it?**
 
    * **Problem:**
      - March 2018 trains on 38.9% of the payments, beside May and April on 70.7% and 53.5%.
-     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 1, A) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 4, A) was given under the earlier rule, which admitted such windows beside two at half or more.
      - The definition has 3 windows; the target an IID split would get[^split33] for 590,540 rows is 3; without the window under half it keeps 2.
    * **Options:**
 

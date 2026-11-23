@@ -8,6 +8,8 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Outdated
 tags:
 - Tiny Data
 - 'Samples: Over Time'
@@ -38,7 +40,25 @@ Has some minor classes that might not be dropped for proper validation setup. Mi
 
 need to check sequence names again
 
+CC (2026-10-19, Andrej): Keep, with `aac` dropped (stratified 3-fold x 20).
+
+Changed:
+- Dropped `aac` (in `dataset.py`): a leak, as in `yeast` (crit. 4D). It is a discriminant-analysis score (linear classifier fitted to the labels) separating outer-membrane from periplasmic proteins, fitted on the authors' database that preceded this dataset (Nakai & Kanehisa 1991). Without it, outer-membrane (`om`) recall falls from 0.90 to 0.02 and TabPFN log loss rises from 0.359 to 0.462.
+- Marker `Outdated`: the features are 1996 scores from older sequence programs; today's localisation tools work from the sequence itself.
+
+Noted, no action (not severe):
+- Arbitrary labels: `im` vs `imU` (inner membrane without/with an uncleavable signal sequence, a sorting tag at the protein's start) causes over half the errors and log loss; the authors call the split "somewhat arbitrary" (Horton & Nakai 1997). A noise floor shared by all models.
+- Without `aac`, no feature identifies `om` (6% of rows), and TabPFN (0.462) beats LR (0.476) on only 68% of splits. A shared floor, and models are still ranked.
+- Labels: 283 of 287 proteins keep their location in today's UniProt; 27 of 336 names no longer resolve.
+- `lip` is constant in 324 of 327 rows. Kept: a real, if weak, feature.
+
+References: Nakai K, Kanehisa M. Expert system for predicting protein localization sites in gram-negative bacteria. Proteins. 1991;11(2):95-110. doi:10.1002/prot.340110203. Horton P, Nakai K. Better prediction of protein cellular localization sites with the k nearest neighbors classifier. Proc Int Conf Intell Syst Mol Biol. 1997;5:147-152. PMID: 9322029.
+
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Horton & Nakai 1996 report cross-validated accuracy over 8 sites, a field habit without costs, and we keep 5 of the 8 sites (MET-6, MET-2).
+
+CC (2026-11-06, Andrej): time basis `Timeless` (Review issue 1, B): a protein's location is a property of the protein and the scores are computed from its sequence; the 1996 release was taken to hold no date. Replaced on 2026-11-20 by `StationaryRelation` (Review issue 4, D), once the entries were dated.
+
+CC (2026-11-11, Andrej): Review issue 2, A: ecoli_proteins stays without `aac` (327 rows, five sequence scores), and LEAK-27 is amended in place: a feature fit by a supervised transform on the whole labelled set is dropped and the task kept when the other columns still make a real one; `Data Quality Issue`, `No` only when the transform runs through the columns the task needs or the task rests on it (leak_checks.md with its Mechanisms row, the principles.md conflict row, selection.md, verification.md). yeast gets a re-check question on its record.
 
 CC (2026-11-16, Andrej): collection facts `Samples: Over Time` and `Time: Dated` instead of `Samples: No Time Dimension`. The rows are a cut of SWISS-PROT, a sequence database that kept growing, and the raw file's first column, the sequence name the definition drops, is each protein's SWISS-PROT entry name, which UniProt dates (lookup of 2026-11-16 through UniProt's REST API and its entry history, UniSave):
 
@@ -52,29 +72,132 @@ CC (2026-11-16, Andrej): collection facts `Samples: Over Time` and `Time: Dated`
 - The location mix moves with the entry date. Of the five locations the definition keeps, the cytoplasm holds 54% of the 152 entries up to 1989 and 34% of the 145 from 1990; the inner membrane rises from 18% to 26% and the periplasm from 11% to 20% (chi-squared p = 0.005).
 - The definition's time basis (`Timeless`, which rests on "the release holds no date") is open: it follows from the expanding-catalogue split rule once the record carries that tag.
 
-CC (2026-11-16, Andrej): tag `Expanding Science Catalogue`: the rows are a cut of SWISS-PROT, a sequence database that keeps growing, as splice's windows are a cut of GenBank. The time basis is open in the Review (issue 1).
+CC (2026-11-16, Andrej): tag `Expanding Science Catalogue`: the rows are a cut of SWISS-PROT, a sequence database that keeps growing, as splice's windows are a cut of GenBank. The time basis is open in the Review (issue 3).
 
-CC (2026-11-20, Andrej): random folds tagged `StationaryRelation` on the entry years (Review issue 3, D): the relation measures flat across the entry-year periods; the `Timeless` line, false since the entries are dated, is replaced.
+CC (2026-11-20, Andrej): random folds tagged `StationaryRelation` on the entry years (Review issue 4, D): the relation measures flat across the entry-year periods; the `Timeless` line, false since the entries are dated, is replaced.
 
 ## Review
 
 **Outcome:** added. UCI's E. coli protein localization data (Horton and Nakai 1996; UCI 39,
 https://doi.org/10.24432/C5388M): proteins annotated in SWISS-PROT up to 1996, five scores computed from each sequence,
 and the cell location; the five locations with 10 or more proteins are kept (327 proteins); random split, log loss
-(fallback). Its SWISS-PROT entry names date the proteins (CC of 2026-11-16), so the split is read again (issue 1).
+(fallback). `aac`, a discriminant score fitted to the labels of the authors' earlier database, is dropped and the rule
+on fitted scores amended to keep such a task (issue 2). Its SWISS-PROT entry names date the proteins (CC of
+2026-11-16), so the split is read again (issue 3).
 
-**Main points:** Settled (2026-11-20, Andrej): the 20 x 3 random folds stay, tagged `StationaryRelation` on the
-SWISS-PROT entry years (issue 3, D, which also settles issue 1).
+**Main points:** All issues settled. ecoli is kept without `aac` and LEAK-27 amended (issue 2, A, 2026-11-11; yeast
+gets a re-check question on its record). The random split was named `Timeless` (issue 1, B, 2026-11-06); once the
+entries were dated, the 20 x 3 random folds stay, tagged `StationaryRelation` on the SWISS-PROT entry years (issue 4,
+D, 2026-11-20, which also settles issue 3).
 
 **Record judgment:** valid. `Samples: Over Time`, `Time: Dated` and `Expanding Science Catalogue` added on 2026-11-16.
+The comment of 2026-10-19 names `aac` "a leak, as in `yeast`" and keeps the dataset; issue 2 closes the gap to the
+rule that gave yeast `No` for the same kind of column.
 
 **Issues for Andrej:**
 
-1. **Which key splits ecoli now that its entries are dated: the entry date, the protein family, or random as now?**
+1. **Time basis: name the random split `Timeless`, as a protein's location is a fixed property?**
+
+   * **Problem:**
+     - The five kept scores are computed from the amino-acid sequence, which exists before any localisation
+       experiment, and the location is a property of the protein, so nothing in a row arrives after another part.
+     - The record carried `Samples: No Time Dimension` with no time or target fact, and the definition named no time
+       basis, although the proteins were characterised over the decades up to 1996.
+     - `Timeless` is the prototype for a target that is a fixed property of the item; what no split here can test is a
+       protein of a family the 1996 catalogue did not yet hold[^1a].
+   * **Background:**
+     - The release has no date: UCI donated it on 31 August 1996, the annotations come from SWISS-PROT, and the only
+       per-protein identifier, the accession, is dropped as an identifier.
+     - The raw order is one block per location (consecutive rows share the label far above chance, p 3.5e-155), so the
+       order is the label and not a collection order.
+     - Annotations are revised after a release, not within the task: 283 of the 287 proteins that still resolve keep
+       their location in today's UniProt (4 differ, and 27 of 336 names no longer resolve).
+   * **Effect on the task:** none on the data, split or score; the line states why a random split over proteins is
+     safe in time, and what it cannot test.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Random split, no time basis (implemented) | as then | nothing to change | the definition does not say why a random split is safe in time |
+     | B | Random split, `Timeless` | the tag and a `Time basis:` line naming the sequence-only scores, the fixed location and the 1996 catalogue | states the fact the split rests on; names what the split cannot test | none found; no data, split or score changes |
+     | C | Random split, `StationaryRelation` | the tag for a present state read through a relation time does not move, argued from the source | fits a label read off an experiment | the location is a property of the protein, not a state of it |
+
+   * **Recommendation:** B. **Decision:** A, B or C?
+
+   [^1a]: **SPLIT-32** (Should), as worded then: `Timeless`: the target is a fixed property of the item, the same
+     whenever it is measured; `StationaryRelation`: the target is a present state read through a relation that time
+     does not move, measured on a dated source and argued where the time is lost.
+
+   **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept five more routine `Timeless`
+   issues with one mark?" A `Time basis: Timeless:` line, ending with what the split cannot test (a protein of a family
+   the 1996 database did not hold, and homologous proteins on both sides of the split); the split unchanged. Replaced
+   on 2026-11-20 by issue 4 (D, `StationaryRelation`), once the SWISS-PROT entry names dated the proteins.
+
+2. **Keep ecoli with `aac` dropped, which needs an amendment of the rule on fitted scores, or retire it as the rule is
+   written?**
+
+   * **Problem:**
+     - Your review of 2026-10-19 dropped `aac`, a score fitted to the labels of the authors' earlier protein database,
+       and kept the dataset.
+     - The rule on fitted scores, as written, gives a dataset with such a column `No`, which is how Lennart retired
+       yeast, the sibling dataset of the same authors, for a score of the same kind[^2a].
+     - A strict rule takes no exception, so keeping ecoli needs the rule amended, or ecoli is retired as the rule
+       stands[^2b].
+   * **Background:** `aac` is the "score of discriminant analysis of the amino acid content of outer membrane and
+     periplasmic proteins" (UCI): a linear classifier that Nakai and Kanehisa fitted on "our database", which UCI calls
+     the predecessor of this dataset (Nakai K, Kanehisa M. Expert system for predicting protein localization sites in
+     gram-negative bacteria. Proteins. 1991;11(2):95-110. doi:10.1002/prot.340110203). It cannot be refitted per split,
+     so it carries the labels of test proteins. The rule that a leak is fixed and the task kept names the fitted score
+     as its limit[^2c]; but here the score is one column, and dropping it removes it.
+   * **Effect on the task:** without `aac`, outer-membrane proteins (6% of rows) are barely recognised, and the score
+     rests more on the inner-membrane boundary. The question is consistency: the same leak, two verdicts.
+   * **Experiments:** 60 stratified splits (3 folds x 20, the shipped seed), untuned models:
+
+     | Features | TabPFN log loss | Logistic regression log loss | Outer-membrane recall (TabPFN / LR / RF) | TabPFN beats LR |
+     |---|---|---|---|---|
+     | with `aac` | 0.359 | 0.393 | 0.90 / 0.88 / 0.86 | 83% of splits |
+     | without `aac` | 0.462 | 0.476 | 0.02 / 0.04 / 0.17 | 68% of splits (mean gap 0.014) |
+     | `aac` alone | | 1.19 | LR 0.71 | |
+
+   * **Kept on purpose:** (your comment of 2026-10-19, "not severe") the inner-membrane classes `im` and `imU` cause
+     over half the errors, and the authors call the split "somewhat arbitrary" (Horton P, Nakai K. Better prediction of
+     protein cellular localization sites with the k nearest neighbors classifier. Proc Int Conf Intell Syst Mol Biol.
+     1997;5:147-152. PMID: 9322029); nothing identifies outer-membrane proteins once `aac` is gone.
+   * **Consistency:** departs from yeast (`No`, Lennart, 2026-07-27: "Confirmed leak"). Dropping a column fitted to the
+     labels and keeping the task is how qsar_bioconcentration (the authors' 9 descriptors, 2026-10-26) and
+     numerai_v5_2_1m (the Faith features) were decided under the rule on feature selection[^2d], and kickstarter
+     (`staff_pick`) under the fix-the-leak rule.
+   * **Unknown:** how many of the 336 proteins were in the database `aac` was fitted on (the 1991 paper is
+     paywalled); whether yeast's other columns make a real task under the amended rule (not re-read).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep without `aac`, amend the rule | 327 rows, 5 scores; the rule says to drop a fitted column and keep the task when the other columns still make a real one; yeast is re-checked under it | follows your keep of 2026-10-19; follows the fix-the-leak rule; in line with the feature-selection cases | one more record (yeast) to look at; outer-membrane proteins barely recognised |
+     | B | Retire as the rule is written | record `No (Retired)` with `Data Quality Issue`; folder removed | consistent with yeast without touching the rule | undoes your keep; a valid task leaves for a column it no longer has |
+
+   * **Recommendation:** A. **Decision:** amend the rule and keep ecoli (A), or retire it as the rule is written (B)?
+
+   [^2a]: **LEAK-27** (Must), as worded then: a feature that is the output of a supervised transform fit on the whole
+     labelled set (a discriminant score, a target encoding, a model's prediction) is irreversible: `Data Quality
+     Issue`, `No`. Case: yeast's discriminant-analysis score.
+   [^2b]: principles.md, "Exceptions and amendments": a Must has no exceptions; only a higher-ranked Must overrides
+     it, and anything else is an amendment, which replaces the rule's text in place.
+   [^2c]: **USE-12** (Must): a leak in the features is no reason to reject a task whose use case is real; the remedy
+     is to fix it and keep the task. The principles' table of conflicts named the fitted score (LEAK-27) as its limit.
+   [^2d]: **LEAK-31** (Should): supervised feature selection on the full labelled set is measured, kept with a note
+     when small and removed when we can.
+
+   **Resolved (2026-11-11, Andrej):** A (`ok`): ecoli ships without `aac`; LEAK-27 is amended in place (drop a single
+   fitted column and keep the task when the other columns still make a real one; `No` when the transform runs through
+   the columns the task needs) in leak_checks.md, its Mechanisms row, the principles.md conflict row, selection.md and
+   verification.md; a re-check question is on yeast's record; the aac bullet in `curation_comments` names the rule.
+
+3. **Which key splits ecoli now that its entries are dated: the entry date, the protein family, or random as now?**
 
    * **Problem:**
      - The definition names `Timeless` and splits at random because "the release holds no date", but the raw file's
-       SWISS-PROT names date 309 of the 336 entries (1986 to 1995), so the catalogue split rule reads the split[^1a].
+       SWISS-PROT names date 309 of the 336 entries (1986 to 1995), so the catalogue split rule reads the split[^3a].
      - The use case predicts the location of a newly sequenced protein, and the source names no narrower scope: the
        test set stands for proteins the catalogue did not hold yet.
      - The rule's default is a family key (a protein family the actor has not met); the entry date replaces it when
@@ -109,19 +232,19 @@ SWISS-PROT entry years (issue 3, D, which also settles issue 1).
    on B, look up a UniRef50 cluster per accession and group on it, time basis `UnseenGroup`; on A, rewrite the
    `Time basis:` line. `dataset check` after each; rebuild only on ask.
 
-   [^1a]: The expanding-catalogue split rule (SPLIT-37, Should): the item key always holds; the family key is the
+   [^3a]: The expanding-catalogue split rule (SPLIT-37, Should): the item key always holds; the family key is the
      default; the source's purpose sets which items the test set stands for; the entry date replaces the family key
      when the use case predicts for items the catalogue does not hold yet and arrival changes which items are selected
      or the date carries waves.
 
-   **Resolved (2026-11-20, Andrej):** settled by issue 3 (D): the 20 x 3 random folds stay, tagged `StationaryRelation`, as the stationary-relation test on the entry years reads flat (narrowly).
+   **Resolved (2026-11-20, Andrej):** settled by issue 4 (D): the 20 x 3 random folds stay, tagged `StationaryRelation`, as the stationary-relation test on the entry years reads flat (narrowly).
 
-3. **Windows on the entry year, now that the proteins are dated?**
+4. **Windows on the entry year, now that the proteins are dated?**
 
    * **Problem:**
      - Since 2026-11-16, 309 of 336 entries carry their SWISS-PROT entry year (1986-1995), and the mix of locations moves with it (cytoplasm 54% of entries up to 1989 against 34% from 1990, p = 0.005), which the catalogue rule counts as arrival changing which items are taken in[^s37a].
      - Three windows (test 1989-90, 1991-92, 1993-96) train on 37%, 60% and 77% with 76, 56 and 46 test proteins: enough for the three-window floor with your sign-off on the 37% window, not for the 60 splits of your window-count reading.
-     - The definition still ships random folds tagged `Timeless` on the line "the release holds no date"; the record's issue 1 asked this and has no mark.
+     - The definition still ships random folds tagged `Timeless` on the line "the release holds no date"; the record's issue 3 asked this and has no mark.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
@@ -132,7 +255,7 @@ SWISS-PROT entry years (issue 3, D, which also settles issue 1).
 
    * **Recommendation:** B with option A of the window-count item, C with its option B. **Decision:** A, B or C?
 
-   **Notes for the AI:** this replaces the record's issue 1; tree: ecoli leaves the departures on B or C.
+   **Notes for the AI:** this replaces the record's issue 3; tree: ecoli leaves the departures on B or C.
 
    [^s37a]: **SPLIT-37** step 4 (Should): the entry date replaces the family key when "(a) arrival changes how the target or the features are recorded, or which items are selected ...: descriptors computed by another convention in a later round, a programme that changed which items it takes in".
 
